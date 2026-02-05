@@ -1,0 +1,19 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+.env
+.env.*
+
+# Replit
+.cache/
+.config/
+.local/
+.upm/
+.replit
+replit.md
+
+# Claude Code
+.claude/
