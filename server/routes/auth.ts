@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import type { AuthenticatedRequest } from "./types";
 import { storage } from "../storage";
 import { isAuthenticated, verifyFirebaseToken } from "../firebaseAuth";
 import {
@@ -16,7 +17,7 @@ import { eq, and, gt } from "drizzle-orm";
 
 export function registerAuthRoutes(app: Express) {
   // 玩家認證
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+  app.get("/api/auth/user", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) {
@@ -200,6 +201,12 @@ export function registerAuthRoutes(app: Express) {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
+      const sessionSecret = process.env.SESSION_SECRET;
+      if (!sessionSecret) {
+        console.error("SESSION_SECRET 環境變數未設定");
+        return res.status(500).json({ message: "伺服器設定錯誤" });
+      }
+
       const token = jwt.sign(
         {
           sub: adminAccount.id,
@@ -208,7 +215,7 @@ export function registerAuthRoutes(app: Express) {
           firebaseUserId: firebaseUserId,
           type: "admin",
         },
-        process.env.SESSION_SECRET || "admin-jwt-secret-key",
+        sessionSecret,
         { expiresIn: "24h" }
       );
 

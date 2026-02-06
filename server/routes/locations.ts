@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
+import type { AuthenticatedRequest } from "./types";
 import {
   insertLocationSchema,
   insertPlayerLocationSchema,
@@ -173,7 +174,7 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
   // Player Location Tracking Routes
   // ===========================================
 
-  app.post("/api/sessions/:sessionId/player-location", isAuthenticated, async (req: any, res) => {
+  app.post("/api/sessions/:sessionId/player-location", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { sessionId } = req.params;
       const userId = req.user?.claims?.sub;
@@ -219,7 +220,7 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/sessions/:sessionId/team-locations", isAuthenticated, async (req: any, res) => {
+  app.get("/api/sessions/:sessionId/team-locations", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { sessionId } = req.params;
       const userId = req.user?.claims?.sub;
@@ -274,7 +275,7 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
   // Location Visit Routes
   // ===========================================
 
-  app.post("/api/sessions/:sessionId/locations/:locationId/visit", isAuthenticated, async (req: any, res) => {
+  app.post("/api/sessions/:sessionId/locations/:locationId/visit", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { sessionId, locationId } = req.params;
       const userId = req.user?.claims?.sub;
@@ -339,7 +340,7 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/sessions/:sessionId/visits", isAuthenticated, async (req: any, res) => {
+  app.get("/api/sessions/:sessionId/visits", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { sessionId } = req.params;
       const userId = req.user?.claims?.sub;

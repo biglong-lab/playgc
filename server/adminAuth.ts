@@ -5,7 +5,16 @@ import { db } from "./db";
 import { adminAccounts, adminSessions, roles, rolePermissions, permissions, fields, auditLogs } from "@shared/schema";
 import { eq, and, gt } from "drizzle-orm";
 
-const JWT_SECRET = process.env.SESSION_SECRET || "admin-jwt-secret-key";
+// 確保 JWT_SECRET 在啟動時已設定
+function getJwtSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error("SESSION_SECRET 環境變數必須設定，請在 .env 檔案中設定此變數");
+  }
+  return secret;
+}
+
+const JWT_SECRET: string = getJwtSecret();
 const TOKEN_EXPIRY = "24h";
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MINUTES = 30;
@@ -359,8 +368,8 @@ export async function logAuditAction(data: {
       ipAddress: data.ipAddress,
       userAgent: data.userAgent,
     });
-  } catch (error) {
-    console.error("Failed to log audit action:", error);
+  } catch {
+    // 審計日誌寫入失敗不影響主流程
   }
 }
 

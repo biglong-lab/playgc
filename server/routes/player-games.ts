@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
+import type { AuthenticatedRequest } from "./types";
 import {
   generateGameQRCode,
   generateGameUrl,
@@ -96,7 +97,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.post("/api/games", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const data = insertGameSchema.parse(req.body);
       const userId = req.user?.claims?.sub;
@@ -110,7 +111,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/games/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/games/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await checkGameOwnership(req, req.params.id);
       if (!auth.authorized) {
@@ -131,7 +132,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/games/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/games/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await checkGameOwnership(req, req.params.id);
       if (!auth.authorized) {
@@ -154,7 +155,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.post("/api/games/:gameId/pages", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games/:gameId/pages", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await checkGameOwnership(req, req.params.gameId);
       if (!auth.authorized) {
@@ -172,7 +173,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/pages/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/pages/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const page = await storage.getPage(req.params.id);
       if (!page) {
@@ -195,7 +196,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/pages/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/pages/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const page = await storage.getPage(req.params.id);
       if (!page) {
@@ -214,7 +215,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.get("/api/games/:gameId/events", isAuthenticated, async (req: any, res) => {
+  app.get("/api/games/:gameId/events", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const user = userId ? await storage.getUser(userId) : null;
@@ -238,7 +239,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.post("/api/games/:gameId/events", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games/:gameId/events", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const user = userId ? await storage.getUser(userId) : null;
@@ -266,7 +267,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/events/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/events/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const user = userId ? await storage.getUser(userId) : null;
@@ -302,7 +303,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/events/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/events/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const user = userId ? await storage.getUser(userId) : null;
@@ -355,7 +356,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.post("/api/games/:gameId/items", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games/:gameId/items", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await checkGameOwnership(req, req.params.gameId);
       if (!auth.authorized) {
@@ -373,7 +374,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/items/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/items/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const item = await storage.getItem(req.params.id);
       if (!item) {
@@ -399,7 +400,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/items/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/items/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const item = await storage.getItem(req.params.id);
       if (!item) {
@@ -442,7 +443,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.post("/api/games/:gameId/achievements", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games/:gameId/achievements", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await checkGameOwnership(req, req.params.gameId);
       if (!auth.authorized) {
@@ -460,7 +461,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/achievements/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/achievements/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const achievement = await storage.getAchievement(parseInt(req.params.id));
       if (!achievement) {
@@ -486,7 +487,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/achievements/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/achievements/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const achievement = await storage.getAchievement(parseInt(req.params.id));
       if (!achievement) {
@@ -509,7 +510,7 @@ export function registerPlayerGameRoutes(app: Express) {
   // Session & Progress API
   // ============================================================================
 
-  app.get("/api/sessions/active", isAuthenticated, async (req: any, res) => {
+  app.get("/api/sessions/active", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const gameId = req.query.gameId as string;
       const userId = req.user?.claims?.sub;
@@ -538,7 +539,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.get("/api/sessions", isAuthenticated, async (req: any, res) => {
+  app.get("/api/sessions", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
 
@@ -562,13 +563,26 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.post("/api/sessions", isAuthenticated, async (req: any, res) => {
+  app.post("/api/sessions", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const data = insertGameSessionSchema.parse(req.body);
       const session = await storage.createSession(data);
 
       const userId = req.user?.claims?.sub;
       if (userId) {
+        // 確保用戶存在於 users 表中（處理 email 相同但 Firebase UID 不同的情況）
+        const existingUser = await storage.getUser(userId);
+        if (!existingUser) {
+          // 用戶不存在，建立一個基本的用戶記錄
+          await storage.upsertUser({
+            id: userId,
+            email: `user-${userId}@firebase.local`,
+            firstName: null,
+            lastName: null,
+            profileImageUrl: null,
+          });
+        }
+
         await storage.createPlayerProgress({
           sessionId: session.id,
           userId: userId,
@@ -582,6 +596,7 @@ export function registerPlayerGameRoutes(app: Express) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
+      console.error("建立 session 失敗:", error);
       res.status(500).json({ message: "Failed to create session" });
     }
   });
@@ -627,7 +642,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/sessions/:id/progress", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/sessions/:id/progress", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const sessionId = req.params.id;
       const userId = req.user?.claims?.sub;
@@ -680,7 +695,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.post("/api/chat/:sessionId", isAuthenticated, async (req: any, res) => {
+  app.post("/api/chat/:sessionId", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       const message = await storage.createChatMessage({
@@ -712,7 +727,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
+  app.get("/objects/:objectPath(*)", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.claims?.sub;
     const objectStorageService = new ObjectStorageService();
     try {
@@ -746,7 +761,7 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
-  app.put("/api/photos", isAuthenticated, async (req: any, res) => {
+  app.put("/api/photos", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     if (!req.body.photoURL) {
       return res.status(400).json({ error: "photoURL is required" });
     }

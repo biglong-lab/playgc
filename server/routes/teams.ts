@@ -11,8 +11,51 @@ import {
   teamScoreHistory,
   gameSessions,
 } from "@shared/schema";
-import { eq, and, desc } from "drizzle-orm";
-import type { RouteContext } from "./types";
+import { eq, and, desc, isNull } from "drizzle-orm";
+import { z } from "zod";
+import type { RouteContext, AuthenticatedRequest } from "./types";
+
+/** 建立隊伍的請求驗證 */
+const createTeamBodySchema = z.object({
+  name: z.string().min(1).max(50).optional(),
+});
+
+/** 加入隊伍的請求驗證 */
+const joinTeamBodySchema = z.object({
+  accessCode: z.string().min(1, "請輸入組隊碼"),
+});
+
+/** 更新準備狀態的請求驗證 */
+const readyBodySchema = z.object({
+  isReady: z.boolean(),
+});
+
+/** 建立投票的請求驗證 */
+const createVoteBodySchema = z.object({
+  title: z.string().min(1),
+  description: z.string().optional(),
+  options: z.array(z.object({
+    label: z.string().min(1),
+    targetPageId: z.string().optional(),
+    points: z.number().optional(),
+  })).min(2),
+  votingMode: z.enum(["majority", "unanimous"]).default("majority"),
+  expiresInSeconds: z.number().positive().optional(),
+  pageId: z.string().optional(),
+});
+
+/** 投票的請求驗證 */
+const castVoteBodySchema = z.object({
+  optionId: z.string().min(1),
+});
+
+/** 更新分數的請求驗證 */
+const updateScoreBodySchema = z.object({
+  delta: z.number(),
+  sourceType: z.string().optional(),
+  sourceId: z.string().optional(),
+  description: z.string().optional(),
+});
 
 function generateAccessCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -28,7 +71,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
   // Team Mode Routes (組隊模式)
   // ===========================================
 
-  app.post("/api/games/:gameId/teams", isAuthenticated, async (req: any, res) => {
+  app.post("/api/games/:gameId/teams", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { gameId } = req.params;
       const userId = req.user?.claims?.sub;
@@ -49,7 +92,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
       const existingMembership = await db.query.teamMembers.findFirst({
         where: and(
           eq(teamMembers.userId, userId),
-          eq(teamMembers.leftAt, null as any)
+          isNull(teamMembers.leftAt)
         ),
         with: {
           team: true,
@@ -75,11 +118,11 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         attempts++;
       }
 
-      const { name } = req.body;
+      const body = createTeamBodySchema.parse(req.body);
 
       const [team] = await db.insert(teams).values({
         gameId,
-        name: name || `隊伍 ${accessCode}`,
+        name: body.name || `隊伍 ${accessCode}`,
         accessCode,
         leaderId: userId,
         status: "forming",
@@ -110,28 +153,27 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
       res.status(201).json(fullTeam);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+      }
       res.status(500).json({ message: "建立隊伍失敗" });
     }
   });
 
-  app.post("/api/teams/join", isAuthenticated, async (req: any, res) => {
+  app.post("/api/teams/join", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
-      const { accessCode } = req.body;
+      const body = joinTeamBodySchema.parse(req.body);
       const userId = req.user?.claims?.sub;
 
       if (!userId) {
         return res.status(401).json({ message: "請先登入" });
       }
 
-      if (!accessCode) {
-        return res.status(400).json({ message: "請輸入組隊碼" });
-      }
-
       const team = await db.query.teams.findFirst({
-        where: eq(teams.accessCode, accessCode.toUpperCase()),
+        where: eq(teams.accessCode, body.accessCode.toUpperCase()),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
           },
           game: true,
         },
@@ -169,7 +211,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         where: eq(teams.id, team.id),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
             with: {
               user: true,
             },
@@ -186,11 +228,14 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
       res.json(updatedTeam);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+      }
       res.status(500).json({ message: "加入隊伍失敗" });
     }
   });
 
-  app.get("/api/teams/:teamId", isAuthenticated, async (req: any, res) => {
+  app.get("/api/teams/:teamId", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
 
@@ -198,7 +243,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         where: eq(teams.id, teamId),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
             with: {
               user: true,
             },
@@ -218,10 +263,10 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.patch("/api/teams/:teamId/ready", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/teams/:teamId/ready", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
-      const { isReady } = req.body;
+      const body = readyBodySchema.parse(req.body);
       const userId = req.user?.claims?.sub;
 
       if (!userId) {
@@ -232,7 +277,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         where: and(
           eq(teamMembers.teamId, teamId),
           eq(teamMembers.userId, userId),
-          eq(teamMembers.leftAt, null as any)
+          isNull(teamMembers.leftAt)
         ),
       });
 
@@ -241,14 +286,14 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
       }
 
       await db.update(teamMembers)
-        .set({ isReady: isReady })
+        .set({ isReady: body.isReady })
         .where(eq(teamMembers.id, membership.id));
 
       const team = await db.query.teams.findFirst({
         where: eq(teams.id, teamId),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
             with: {
               user: true,
             },
@@ -257,7 +302,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
       });
 
       if (team) {
-        const allReady = team.members.every(m => m.isReady || m.id === membership.id && isReady);
+        const allReady = team.members.every(m => m.isReady || m.id === membership.id && body.isReady);
         const hasEnoughPlayers = team.members.length >= (team.minPlayers || 2);
 
         if (allReady && hasEnoughPlayers && team.status === "forming") {
@@ -275,7 +320,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         where: eq(teams.id, teamId),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
             with: {
               user: true,
             },
@@ -292,11 +337,14 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
       res.json(updatedTeam);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+      }
       res.status(500).json({ message: "更新準備狀態失敗" });
     }
   });
 
-  app.post("/api/teams/:teamId/leave", isAuthenticated, async (req: any, res) => {
+  app.post("/api/teams/:teamId/leave", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
       const userId = req.user?.claims?.sub;
@@ -309,7 +357,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         where: eq(teams.id, teamId),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
           },
         },
       });
@@ -356,7 +404,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/teams/:teamId/start", isAuthenticated, async (req: any, res) => {
+  app.post("/api/teams/:teamId/start", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
       const userId = req.user?.claims?.sub;
@@ -369,7 +417,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         where: eq(teams.id, teamId),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
           },
           game: true,
         },
@@ -441,7 +489,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/games/:gameId/my-team", isAuthenticated, async (req: any, res) => {
+  app.get("/api/games/:gameId/my-team", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { gameId } = req.params;
       const userId = req.user?.claims?.sub;
@@ -453,14 +501,14 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
       const membership = await db.query.teamMembers.findFirst({
         where: and(
           eq(teamMembers.userId, userId),
-          eq(teamMembers.leftAt, null as any)
+          isNull(teamMembers.leftAt)
         ),
         with: {
           team: {
             with: {
               game: true,
               members: {
-                where: eq(teamMembers.leftAt, null as any),
+                where: isNull(teamMembers.leftAt),
                 with: {
                   user: true,
                 },
@@ -485,11 +533,11 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/teams/:teamId/votes", isAuthenticated, async (req: any, res) => {
+  app.post("/api/teams/:teamId/votes", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
       const userId = req.user?.claims?.sub;
-      const { title, description, options, votingMode, expiresInSeconds, pageId } = req.body;
+      const body = createVoteBodySchema.parse(req.body);
 
       if (!userId) {
         return res.status(401).json({ message: "請先登入" });
@@ -499,7 +547,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         where: eq(teams.id, teamId),
         with: {
           members: {
-            where: eq(teamMembers.leftAt, null as any),
+            where: isNull(teamMembers.leftAt),
           },
         },
       });
@@ -513,22 +561,22 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         return res.status(403).json({ message: "您不是此隊伍的成員" });
       }
 
-      const expiresAt = expiresInSeconds
-        ? new Date(Date.now() + expiresInSeconds * 1000)
+      const expiresAt = body.expiresInSeconds
+        ? new Date(Date.now() + body.expiresInSeconds * 1000)
         : null;
 
       const [vote] = await db.insert(teamVotes).values({
         teamId,
-        pageId: pageId || null,
-        title,
-        description,
-        options: options.map((opt: any, idx: number) => ({
+        pageId: body.pageId || null,
+        title: body.title,
+        description: body.description,
+        options: body.options.map((opt, idx) => ({
           id: `option_${idx}`,
           label: opt.label,
           targetPageId: opt.targetPageId,
           points: opt.points,
         })),
-        votingMode: votingMode || "majority",
+        votingMode: body.votingMode,
         status: "active",
         expiresAt,
       }).returning();
@@ -540,14 +588,17 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
       res.status(201).json(vote);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+      }
       res.status(500).json({ message: "建立投票失敗" });
     }
   });
 
-  app.post("/api/votes/:voteId/cast", isAuthenticated, async (req: any, res) => {
+  app.post("/api/votes/:voteId/cast", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { voteId } = req.params;
-      const { optionId } = req.body;
+      const body = castVoteBodySchema.parse(req.body);
       const userId = req.user?.claims?.sub;
 
       if (!userId) {
@@ -560,7 +611,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           team: {
             with: {
               members: {
-                where: eq(teamMembers.leftAt, null as any),
+                where: isNull(teamMembers.leftAt),
               },
             },
           },
@@ -593,10 +644,10 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
       await db.insert(teamVoteBallots).values({
         voteId,
         userId,
-        optionId,
+        optionId: body.optionId,
       });
 
-      const allBallots = [...vote.ballots, { userId, optionId }];
+      const allBallots = [...vote.ballots, { userId, optionId: body.optionId }];
       const totalMembers = vote.team.members.length;
       const voteCounts = new Map<string, number>();
 
@@ -661,11 +712,14 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         voteCounts: Object.fromEntries(voteCounts),
       });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+      }
       res.status(500).json({ message: "投票失敗" });
     }
   });
 
-  app.get("/api/teams/:teamId/votes", isAuthenticated, async (req: any, res) => {
+  app.get("/api/teams/:teamId/votes", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
 
@@ -686,10 +740,10 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/teams/:teamId/score", isAuthenticated, async (req: any, res) => {
+  app.post("/api/teams/:teamId/score", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
-      const { delta, sourceType, sourceId, description } = req.body;
+      const body = updateScoreBodySchema.parse(req.body);
       const userId = req.user?.claims?.sub;
 
       if (!userId) {
@@ -705,7 +759,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         return res.status(404).json({ message: "隊伍遊戲紀錄不存在" });
       }
 
-      const newScore = (teamSession.teamScore || 0) + delta;
+      const newScore = (teamSession.teamScore || 0) + body.delta;
 
       await db.update(teamSessions)
         .set({
@@ -716,32 +770,35 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
       await db.insert(teamScoreHistory).values({
         teamId,
-        delta,
+        delta: body.delta,
         runningTotal: newScore,
-        sourceType: sourceType || "manual",
-        sourceId,
-        description,
+        sourceType: body.sourceType || "manual",
+        sourceId: body.sourceId,
+        description: body.description,
       });
 
       ctx.broadcastToSession(`team_${teamId}`, {
         type: "score_update",
-        delta,
+        delta: body.delta,
         newScore,
-        sourceType,
-        description,
+        sourceType: body.sourceType,
+        description: body.description,
       });
 
       res.json({
         previousScore: teamSession.teamScore || 0,
-        delta,
+        delta: body.delta,
         newScore,
       });
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+      }
       res.status(500).json({ message: "更新分數失敗" });
     }
   });
 
-  app.get("/api/teams/:teamId/score-history", isAuthenticated, async (req: any, res) => {
+  app.get("/api/teams/:teamId/score-history", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { teamId } = req.params;
 

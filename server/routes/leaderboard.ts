@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
 import { requireAdminRole } from "./utils";
+import type { AuthenticatedRequest } from "./types";
 
 export function registerLeaderboardRoutes(app: Express) {
   app.get("/api/leaderboard", async (req, res) => {
@@ -14,7 +15,7 @@ export function registerLeaderboardRoutes(app: Express) {
     }
   });
 
-  app.get("/api/analytics/overview", isAuthenticated, async (req: any, res) => {
+  app.get("/api/analytics/overview", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {

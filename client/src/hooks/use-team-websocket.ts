@@ -134,13 +134,12 @@ export function useTeamWebSocket({
             case "team_chat":
               break;
           }
-        } catch (e) {
-          console.error("Failed to parse WebSocket message:", e);
+        } catch {
+          // WebSocket 訊息解析失敗
         }
       };
 
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+      ws.onerror = () => {
         setIsConnected(false);
       };
 
@@ -155,8 +154,8 @@ export function useTeamWebSocket({
           ws.close();
         }
       };
-    } catch (e) {
-      console.error("Failed to create WebSocket connection:", e);
+    } catch {
+      // WebSocket 連線建立失敗
     }
   }, [teamId, userId, userName, onMessage, onMemberJoined, onMemberLeft, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate]);
 

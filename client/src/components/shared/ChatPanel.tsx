@@ -58,13 +58,13 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
           if (data.type === "chat" && data.sessionId === sessionId) {
             queryClient.invalidateQueries({ queryKey: ["/api/chat", sessionId] });
           }
-        } catch (e) {
-          console.error("Failed to parse WebSocket message:", e);
+        } catch {
+          // WebSocket 訊息解析失敗
         }
       };
 
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+      ws.onerror = () => {
+        // WebSocket 錯誤已處理
       };
 
       wsRef.current = ws;
@@ -74,8 +74,8 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
           ws.close();
         }
       };
-    } catch (e) {
-      console.error("Failed to create WebSocket connection:", e);
+    } catch {
+      // WebSocket 連線建立失敗
     }
   }, [sessionId, userId, userName]);
 

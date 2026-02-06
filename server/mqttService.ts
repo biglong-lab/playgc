@@ -103,7 +103,6 @@ class MqttService {
         this.client = mqtt.connect(url, options);
 
         this.client.on("connect", () => {
-          console.log("[MQTT] Connected to broker:", url);
           this.isConnected = true;
           this.reconnectAttempts = 0;
           this.subscribeToDefaultTopics();
@@ -111,22 +110,18 @@ class MqttService {
         });
 
         this.client.on("error", (error) => {
-          console.error("[MQTT] Connection error:", error.message);
           if (!this.isConnected) {
             reject(error);
           }
         });
 
         this.client.on("close", () => {
-          console.log("[MQTT] Connection closed");
           this.isConnected = false;
         });
 
         this.client.on("reconnect", () => {
           this.reconnectAttempts++;
-          console.log(`[MQTT] Reconnecting... Attempt ${this.reconnectAttempts}`);
           if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-            console.error("[MQTT] Max reconnect attempts reached");
             this.client?.end();
           }
         });
@@ -551,7 +546,6 @@ class MqttService {
     if (this.client) {
       this.client.end(true);
       this.isConnected = false;
-      console.log("[MQTT] Disconnected from broker");
     }
   }
 
@@ -569,11 +563,8 @@ export async function initializeMqtt(): Promise<void> {
   if (process.env.MQTT_ENABLED === "true") {
     try {
       await mqttService.connect();
-      console.log("[MQTT] Service initialized successfully");
-    } catch (error) {
-      console.error("[MQTT] Failed to initialize:", error);
+    } catch {
+      // MQTT 初始化失敗，服務將不可用
     }
-  } else {
-    console.log("[MQTT] Service disabled (MQTT_ENABLED !== 'true')");
   }
 }

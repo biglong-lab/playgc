@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import type { AuthenticatedRequest } from "./types";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
 import {
@@ -40,7 +41,7 @@ export function registerMediaRoutes(app: Express) {
     sessionId: z.union([z.string(), z.number()]).optional(),
   });
 
-  app.post("/api/cloudinary/upload", isAuthenticated, async (req: any, res) => {
+  app.post("/api/cloudinary/upload", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const parsed = cloudinaryUploadSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -139,7 +140,7 @@ export function registerMediaRoutes(app: Express) {
     sessionId: z.string().min(1, "缺少 Session ID"),
   });
 
-  app.post("/api/cloudinary/player-photo", isAuthenticated, async (req: any, res) => {
+  app.post("/api/cloudinary/player-photo", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const parsed = playerPhotoSchema.safeParse(req.body);
       if (!parsed.success) {

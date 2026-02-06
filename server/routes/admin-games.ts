@@ -12,11 +12,12 @@ import {
 import {
   ObjectStorageService,
 } from "../objectStorage";
-import { insertGameSchema } from "@shared/schema";
+import { insertGameSchema, getTemplateById, pages } from "@shared/schema";
 import { db } from "../db";
 import { games } from "@shared/schema";
 import { z } from "zod";
 import { eq, desc } from "drizzle-orm";
+import { randomUUID } from "crypto";
 
 export function registerAdminGameRoutes(app: Express) {
   // ============================================================================
@@ -85,7 +86,12 @@ export function registerAdminGameRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      const data = insertGameSchema.parse(req.body);
+      // 從請求中取得 templateId（可選）
+      const { templateId, ...gameData } = req.body;
+      const data = insertGameSchema.parse(gameData);
+
+      // 如果有 templateId，取得模板配置
+      const template = templateId ? getTemplateById(templateId) : null;
 
       const fieldId = req.admin.systemRole === "super_admin"
         ? (data.fieldId || req.admin.fieldId)
@@ -93,12 +99,35 @@ export function registerAdminGameRoutes(app: Express) {
 
       const slug = generateSlug();
 
-      const [game] = await db.insert(games).values({
+      // 如果使用模板，套用模板的預設值
+      const gameValues = {
         ...data,
         fieldId,
         publicSlug: slug,
         creatorId: null,
-      }).returning();
+        // 從模板套用預設值（如果有）
+        ...(template && {
+          difficulty: data.difficulty || template.difficulty,
+          estimatedTime: data.estimatedTime ?? template.estimatedTime,
+          maxPlayers: data.maxPlayers || template.maxPlayers,
+        }),
+      };
+
+      const [game] = await db.insert(games).values(gameValues).returning();
+
+      // 如果使用模板且有預設頁面，自動建立頁面
+      if (template && template.pages.length > 0) {
+        for (let i = 0; i < template.pages.length; i++) {
+          const templatePage = template.pages[i];
+          await db.insert(pages).values({
+            id: randomUUID(),
+            gameId: game.id,
+            pageType: templatePage.pageType,
+            pageOrder: i + 1,
+            config: templatePage.config,
+          });
+        }
+      }
 
       const qrCodeDataUrl = await generateGameQRCode(game.id);
 
@@ -108,7 +137,7 @@ export function registerAdminGameRoutes(app: Express) {
         targetType: "game",
         targetId: game.id,
         fieldId,
-        metadata: { title: data.title },
+        metadata: { title: data.title, templateId: templateId || null },
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"],
       });
@@ -122,11 +151,46 @@ export function registerAdminGameRoutes(app: Express) {
     }
   });
 
+  // 遊戲更新 Schema - 明確列出允許更新的欄位，防止 mass assignment 攻擊
+  const updateGameSchema = z.object({
+    title: z.string().min(1).max(200).optional(),
+    description: z.string().nullable().optional(),
+    coverImageUrl: z.string().nullable().optional(),
+    difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+    estimatedTime: z.number().int().positive().nullable().optional(),
+    maxPlayers: z.number().int().min(1).max(100).optional(),
+    status: z.enum(["draft", "published", "archived"]).optional(),
+    // 位置鎖定設定
+    locationLockEnabled: z.boolean().optional(),
+    lockLatitude: z.string().nullable().optional(),
+    lockLongitude: z.string().nullable().optional(),
+    lockRadius: z.number().int().positive().nullable().optional(),
+    lockLocationName: z.string().max(200).nullable().optional(),
+    // 團隊模式設定
+    gameMode: z.enum(["individual", "team"]).optional(),
+    minTeamPlayers: z.number().int().min(1).optional(),
+    maxTeamPlayers: z.number().int().min(1).optional(),
+    enableTeamChat: z.boolean().optional(),
+    enableTeamVoice: z.boolean().optional(),
+    enableTeamLocation: z.boolean().optional(),
+    teamScoreMode: z.enum(["shared", "individual", "hybrid"]).optional(),
+  }).strict(); // strict() 拒絕未定義的欄位
+
   app.patch("/api/admin/games/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
     try {
       if (!req.admin) {
         return res.status(401).json({ message: "未認證" });
       }
+
+      // 驗證並過濾允許更新的欄位
+      const parseResult = updateGameSchema.safeParse(req.body);
+      if (!parseResult.success) {
+        return res.status(400).json({
+          message: "資料格式錯誤",
+          errors: parseResult.error.errors
+        });
+      }
+      const updateData = parseResult.data;
 
       const existingGame = await db.query.games.findFirst({
         where: eq(games.id, req.params.id),
@@ -141,7 +205,7 @@ export function registerAdminGameRoutes(app: Express) {
       }
 
       const [updatedGame] = await db.update(games)
-        .set({ ...req.body, updatedAt: new Date() })
+        .set({ ...updateData, updatedAt: new Date() })
         .where(eq(games.id, req.params.id))
         .returning();
 

@@ -1,6 +1,8 @@
 import { storage } from "../storage";
+import type { AuthenticatedRequest } from "./types";
+import type { User } from "@shared/schema";
 
-export async function checkGameOwnership(req: any, gameId: string): Promise<{ authorized: boolean; message?: string; user?: any; status?: number }> {
+export async function checkGameOwnership(req: AuthenticatedRequest, gameId: string): Promise<{ authorized: boolean; message?: string; user?: User; status?: number }> {
   const userId = req.user?.claims?.sub;
   if (!userId) {
     return { authorized: false, message: "Unauthorized", status: 401 };
@@ -27,7 +29,7 @@ export async function checkGameOwnership(req: any, gameId: string): Promise<{ au
   return { authorized: false, message: "Unauthorized: You can only modify your own games", status: 403 };
 }
 
-export async function requireAdminRole(req: any): Promise<{ authorized: boolean; message?: string; user?: any }> {
+export async function requireAdminRole(req: AuthenticatedRequest): Promise<{ authorized: boolean; message?: string; user?: User }> {
   const userId = req.user?.claims?.sub;
   if (!userId) {
     return { authorized: false, message: "Unauthorized" };

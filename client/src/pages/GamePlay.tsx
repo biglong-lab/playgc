@@ -163,19 +163,23 @@ export default function GamePlay() {
   // Track if we've already restored progress to avoid multiple toasts
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
 
+  // Track if session creation has been attempted to prevent infinite retries on error
+  const sessionCreationAttemptedRef = useRef(false);
+
   useEffect(() => {
     if (!user || !gameId) return;
-    
+
     // If replay mode is triggered, force create a new session
     if (forceNewSession && !sessionId && !createSessionMutation.isPending) {
       // 清除 URL 參數（forceNewSession 在 onSuccess 中清除）
       if (isReplayMode) {
         setLocation(`/game/${gameId}`, { replace: true });
       }
+      sessionCreationAttemptedRef.current = true;
       createSessionMutation.mutate();
       return;
     }
-    
+
     // Skip restoration if forceNewSession is active (waiting for new session creation)
     if (forceNewSession || createSessionMutation.isPending) {
       return;
@@ -222,11 +226,12 @@ export default function GamePlay() {
         title: "繼續遊戲",
         description: "從上次進度繼續",
       });
-    } else if (existingSession === null && !sessionId && !forceNewSession) {
-      // No existing session, create a new one
+    } else if (existingSession === null && !sessionId && !forceNewSession && !createSessionMutation.isPending && !sessionCreationAttemptedRef.current) {
+      // No existing session, create a new one (only once)
+      sessionCreationAttemptedRef.current = true;
       createSessionMutation.mutate();
     }
-  }, [user, gameId, existingSession, game?.pages, sessionId, hasRestoredProgress, forceNewSession, isReplayMode]);
+  }, [user, gameId, existingSession, game?.pages, sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending]);
 
   const currentPage = game?.pages?.[currentPageIndex];
   const totalPages = game?.pages?.length || 0;

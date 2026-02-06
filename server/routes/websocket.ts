@@ -1,16 +1,53 @@
 import { WebSocketServer, WebSocket } from "ws";
-import type { Server } from "http";
+import type { Server, IncomingMessage } from "http";
 import { storage } from "../storage";
 import { mqttService } from "../mqttService";
+import { verifyFirebaseToken } from "../firebaseAuth";
 import type { WebSocketClient, RouteContext } from "./types";
+
+// 從 URL 解析 query 參數
+function parseQueryParams(url: string | undefined): Record<string, string> {
+  if (!url) return {};
+  const queryString = url.split("?")[1];
+  if (!queryString) return {};
+
+  const params: Record<string, string> = {};
+  queryString.split("&").forEach((pair) => {
+    const [key, value] = pair.split("=");
+    if (key && value) {
+      params[decodeURIComponent(key)] = decodeURIComponent(value);
+    }
+  });
+  return params;
+}
 
 export function setupWebSocket(httpServer: Server): RouteContext {
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
   const clients: Map<string, Set<WebSocketClient>> = new Map();
   const teamClients: Map<string, Set<WebSocketClient>> = new Map();
 
-  wss.on("connection", (ws: WebSocketClient) => {
+  wss.on("connection", async (ws: WebSocketClient, request: IncomingMessage) => {
     ws.isAlive = true;
+
+    // 解析 URL 中的 token 參數進行認證
+    const params = parseQueryParams(request.url);
+    const token = params.token;
+
+    // 如果沒有提供 token，記錄警告但允許連線（向後兼容）
+    // 後續版本可改為強制要求 token
+    let authenticatedUserId: string | null = null;
+
+    if (token) {
+      try {
+        const decodedToken = await verifyFirebaseToken(token);
+        if (decodedToken) {
+          authenticatedUserId = decodedToken.uid;
+          ws.authenticatedUserId = authenticatedUserId;
+        }
+      } catch {
+        console.warn("WebSocket 連線 token 驗證失敗");
+      }
+    }
 
     ws.on("pong", () => {
       ws.isAlive = true;
@@ -22,6 +59,15 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
         switch (message.type) {
           case "join":
+            // 驗證：如果有認證的 userId，確保訊息中的 userId 匹配
+            if (ws.authenticatedUserId && message.userId !== ws.authenticatedUserId) {
+              ws.send(JSON.stringify({
+                type: "error",
+                message: "userId 與認證身份不符",
+              }));
+              return;
+            }
+
             ws.sessionId = message.sessionId;
             ws.userId = message.userId;
             ws.userName = message.userName;
@@ -39,6 +85,15 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
 
           case "team_join":
+            // 驗證：如果有認證的 userId，確保訊息中的 userId 匹配
+            if (ws.authenticatedUserId && message.userId !== ws.authenticatedUserId) {
+              ws.send(JSON.stringify({
+                type: "error",
+                message: "userId 與認證身份不符",
+              }));
+              return;
+            }
+
             ws.teamId = message.teamId;
             ws.userId = message.userId;
             ws.userName = message.userName;
@@ -152,7 +207,14 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
         }
       } catch (error) {
-        // 靜默處理 WebSocket 訊息錯誤
+        console.error("WebSocket 訊息處理錯誤:", error);
+        // 發送錯誤回應給客戶端
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: "error",
+            message: "訊息處理失敗",
+          }));
+        }
       }
     });
 

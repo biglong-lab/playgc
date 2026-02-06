@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedAdminRoute from "@/components/shared/ProtectedAdminRoute";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
@@ -14,12 +15,12 @@ import MapView from "@/pages/MapView";
 import Leaderboard from "@/pages/Leaderboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminGames from "@/pages/AdminGames";
-import AdminDevices from "@/pages/AdminDevices";
+import AdminDevices from "@/pages/admin-devices";
 import AdminAnalytics from "@/pages/AdminAnalytics";
 import AdminSessions from "@/pages/AdminSessions";
 import AdminLeaderboard from "@/pages/AdminLeaderboard";
 import AdminSettings from "@/pages/AdminSettings";
-import GameEditor from "@/pages/GameEditor";
+import GameEditor from "@/pages/game-editor";
 import LocationEditor from "@/pages/LocationEditor";
 import ItemEditor from "@/pages/ItemEditor";
 import AchievementEditor from "@/pages/AchievementEditor";
@@ -84,16 +85,18 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <I18nProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-          </TooltipProvider>
-        </I18nProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <I18nProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+            </TooltipProvider>
+          </I18nProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

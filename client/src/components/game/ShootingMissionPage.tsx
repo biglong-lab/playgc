@@ -105,8 +105,8 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
             description: `+${hit.score} 分`,
           });
         }
-      } catch (error) {
-        console.error("WebSocket message parse error:", error);
+      } catch {
+        // WebSocket 訊息解析失敗
       }
     };
 

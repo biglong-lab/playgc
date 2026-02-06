@@ -38,15 +38,12 @@ function getFirebaseAdmin(): App {
           privateKey: formattedPrivateKey,
         }),
       });
-    } catch (initError: any) {
-      console.error("[Firebase Admin] Init error:", initError?.message || initError);
-      // Fallback - this likely won't work for token verification
+    } catch {
+      // 服務帳號初始化失敗，fallback 至僅 projectId 模式（token 驗證可能失敗）
       firebaseAdmin = initializeApp({ projectId });
     }
   } else {
-    // Fallback to project ID only (may not work for token verification)
-    console.warn("[Firebase Admin] Missing FIREBASE_ADMIN_CLIENT_EMAIL or FIREBASE_ADMIN_PRIVATE_KEY");
-    console.warn("[Firebase Admin] Token verification may fail without proper service account credentials");
+    // 缺少服務帳號憑證，fallback 至僅 projectId 模式
     firebaseAdmin = initializeApp({ projectId });
   }
   

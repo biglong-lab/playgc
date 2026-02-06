@@ -5,10 +5,10 @@ import { mqttService } from "../mqttService";
 import { insertArduinoDeviceSchema, insertShootingRecordSchema } from "@shared/schema";
 import { z } from "zod";
 import { requireAdminRole } from "./utils";
-import type { RouteContext } from "./types";
+import type { RouteContext, AuthenticatedRequest } from "./types";
 
 export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
-  app.get("/api/devices", isAuthenticated, async (req: any, res) => {
+  app.get("/api/devices", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -22,7 +22,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/devices/:id", isAuthenticated, async (req: any, res) => {
+  app.get("/api/devices/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -39,7 +39,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/devices", isAuthenticated, async (req: any, res) => {
+  app.post("/api/devices", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -57,7 +57,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.patch("/api/devices/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/devices/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -78,7 +78,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.delete("/api/devices/:id", isAuthenticated, async (req: any, res) => {
+  app.delete("/api/devices/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -92,7 +92,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/mqtt/status", isAuthenticated, async (req: any, res) => {
+  app.get("/api/mqtt/status", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -174,9 +174,30 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
+  // 射擊記錄端點 - 需要驗證設備 ID 有效性
+  // 此端點由 IoT 設備調用，需確保只有有效的已註冊設備可以提交記錄
   app.post("/api/shooting-records", async (req, res) => {
     try {
       const data = insertShootingRecordSchema.parse(req.body);
+
+      // 驗證設備 ID 是否為有效的已註冊設備
+      if (!data.deviceId) {
+        return res.status(400).json({ message: "deviceId 為必填欄位" });
+      }
+
+      const device = await storage.getArduinoDevice(data.deviceId);
+      if (!device) {
+        return res.status(403).json({ message: "無效的設備 ID，設備未註冊" });
+      }
+
+      // 驗證 sessionId 是否有效（如果提供）
+      if (data.sessionId) {
+        const session = await storage.getSession(data.sessionId);
+        if (!session) {
+          return res.status(400).json({ message: "無效的 session ID" });
+        }
+      }
+
       const record = await storage.createShootingRecord(data);
 
       if (data.sessionId) {
@@ -204,7 +225,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/devices/:id/shooting-records", isAuthenticated, async (req: any, res) => {
+  app.get("/api/devices/:id/shooting-records", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -224,7 +245,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/devices/:id/statistics", isAuthenticated, async (req: any, res) => {
+  app.get("/api/devices/:id/statistics", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -249,7 +270,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.get("/api/devices/:id/logs", isAuthenticated, async (req: any, res) => {
+  app.get("/api/devices/:id/logs", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -270,7 +291,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/devices/:id/led", isAuthenticated, async (req: any, res) => {
+  app.post("/api/devices/:id/led", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -317,7 +338,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/devices/:id/config", isAuthenticated, async (req: any, res) => {
+  app.post("/api/devices/:id/config", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -343,7 +364,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/devices/:id/command", isAuthenticated, async (req: any, res) => {
+  app.post("/api/devices/:id/command", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -390,7 +411,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/devices/broadcast/led", isAuthenticated, async (req: any, res) => {
+  app.post("/api/devices/broadcast/led", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
@@ -413,7 +434,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  app.post("/api/devices/broadcast/ping", isAuthenticated, async (req: any, res) => {
+  app.post("/api/devices/broadcast/ping", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
       if (!auth.authorized) {
