@@ -9,6 +9,7 @@ export interface WebSocketClient extends WebSocket {
   userName?: string;
   isAlive?: boolean;
   authenticatedUserId?: string;  // 經 token 驗證的用戶 ID
+  matchId?: string;              // 對戰房間 ID
 }
 
 export interface RouteContext {
