@@ -14,3 +14,4 @@ export * from "./chapters";
 export * from "./relations";
 export * from "./extended-types";
 export * from "./game-templates";
+export * from "./game-modules";
