@@ -92,6 +92,42 @@
 
 ## 工作紀錄
 
+### 2026-02-17 (第十九階段：對戰元件測試補強 + 接力進度條)
+
+#### 修改 1：MatchTimer 測試
+- [x] 新增 `client/src/components/match/__tests__/MatchTimer.test.tsx` (11 測試)
+  - countdown 渲染/遞減/到 0 回呼、≤10 秒 destructive 樣式、icon 切換
+  - elapsed 模式遞增、格式化分鐘、秒數變更重置
+
+#### 修改 2：LiveRanking 測試
+- [x] 新增 `client/src/components/match/__tests__/LiveRanking.test.tsx` (11 測試)
+  - 空排名提示、排名渲染、Trophy icon、當前玩家高亮 "(你)"
+  - showRelay 3 種 badge（進行中/已完成/待命）、false 不顯示
+
+#### 修改 3：MatchViews 6 視圖測試
+- [x] 新增 `client/src/pages/__tests__/MatchViews.test.tsx` (23 測試)
+  - LoadingView、BrowseMatchesView（標題/按鈕/空列表/加入/返回/接力模式）
+  - WaitingView（存取碼/人數/開始按鈕/非創建者/1人禁用）
+  - CountdownView、PlayingView（計時器切換）、FinishedView
+
+#### 修改 4：RelayProgress 接力進度條元件
+- [x] 新增 `client/src/components/match/RelayProgress.tsx` (~85 行)
+  - 段落方塊：completed=綠、active=藍脈衝、pending=灰
+  - 進度文字：「第 N/M 段進行中」/「接力完成！」
+- [x] 修改 `client/src/pages/match-lobby/MatchViews.tsx` — PlayingView 整合 RelayProgress
+
+#### 修改 5：RelayProgress 測試
+- [x] 新增 `client/src/components/match/__tests__/RelayProgress.test.tsx` (8 測試)
+  - 段落數渲染、segmentCount=0 不渲染、3 種色彩、進度文字、全完成文字
+
+**測試結果**: 49 個測試檔案、746 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
+### 2026-02-17 (第十八階段：Rate Limiting 清理 + 圖片優化 + 對戰 UI 動畫)
+
+（詳見 Git 歷史）
+
+**測試結果**: 45 個測試檔案、693 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
 ### 2026-02-17 (第十七階段：安全強化 + GamePlay 拆分 + React 效能優化)
 
 #### 修改 1：media.ts 錯誤訊息洩漏修復
