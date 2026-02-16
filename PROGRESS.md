@@ -309,15 +309,15 @@
 1. **npm audit** - 5 個 esbuild/vite moderate 漏洞（開發環境限定，需 Vite 7 升級）
 
 ### 🟢 優化方向
-2. 建立 CI/CD Pipeline (GitHub Actions)
+2. ~~建立 CI/CD Pipeline (GitHub Actions)~~ ✅ 已完成
 3. 安全性審查（rate limiting、input validation 完整性）
 4. 效能優化（查詢最佳化、快取策略）
 5. Vite 7 升級（解決剩餘安全漏洞）
+6. Build chunk 過大警告（index.js 3MB，考慮 code splitting）
 
 ## 下一步建議
 
-1. **Phase 2 付費與票券系統** - 商業模式核心（按 PLAN.md 優先順序）
+1. **Phase 2 競爭/接力模式** - 新增 competitive + relay 遊戲模式（PLAN.md Phase 2）
 2. **前端元件測試** - React Testing Library 測試關鍵元件
 3. **E2E 測試** - Playwright 建立關鍵用戶流程
-4. **CI/CD Pipeline** - GitHub Actions 自動化測試與部署
-5. **Push 到 GitHub** - 目前領先 origin/main 約 30 個 commit
+4. **效能優化** - Code splitting 減少首包大小、查詢最佳化
