@@ -316,11 +316,13 @@
 6. ~~圖片懶載入~~ → 第十八階段已完成 OptimizedImage + Cloudinary URL 優化
 7. ~~對戰 UI 動畫~~ → 第十八階段已完成 framer-motion 倒數/排名/轉場/慶祝動畫
 8. Vite 7 升級（解決剩餘安全漏洞）
+9. ~~接力進度條 UI~~ → 第十九階段已完成 RelayProgress 元件
+10. ~~前端對戰元件測試~~ → 第十九階段已補 MatchTimer/LiveRanking/MatchViews 測試
 
 ## 下一步建議
 
 1. **DB Migration** - `npm run db:push` 同步 Phase 2 資料表
 2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
-3. **接力進度條 UI** - MatchViews 的 showRelay flag 存在但無視覺元件
-4. **前端測試補強** - MatchViews/useMatchLobby 尚無測試
-5. **Vite 7 升級** - 解決 esbuild/vite moderate 安全漏洞
+3. **useMatchLobby Hook 測試** - 對戰 Hook 邏輯測試
+4. **Vite 7 升級** - 解決 esbuild/vite moderate 安全漏洞
+5. **管理端元件測試** - AdminGames/GameEditor 測試覆蓋率提升
