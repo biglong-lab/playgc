@@ -40,6 +40,7 @@ export async function registerRoutes(
   registerTeamRoutes(app, ctx);
   registerPlayerChapterRoutes(app);
   registerAdminChapterRoutes(app);
+  registerAdminModuleRoutes(app);
 
   return httpServer;
 }
