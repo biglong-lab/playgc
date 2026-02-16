@@ -87,6 +87,19 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第十一階段：TeamLobby/AdminStaffGames 拆分 + AdminGames/AdminContent 測試)
+
+- [x] 拆分 TeamLobby.tsx：536 行 → 62 行
+  - `team-lobby/useTeamLobby.ts` (~190 行) - 5 個 mutation + WebSocket + handler
+  - `team-lobby/LobbyViews.tsx` (~310 行) - 5 個 View + 7 個私有子元件
+- [x] 拆分 AdminStaffGames.tsx：531 行 → 226 行
+  - `admin-staff-games/useAdminStaffGames.ts` (~260 行) - 6 個 mutation + state + handler
+- [x] 新增管理員遊戲路由測試：adminGames.test.ts (22 測試)
+  - CRUD、權限（場域隔離/super_admin 跨域）、QR Code 產生/檢視、Zod 驗證
+- [x] 新增管理員內容路由測試：adminContent.test.ts (24 測試)
+  - 道具 CRUD、頁面 CRUD（含場域權限）、事件 CRUD、成就 CRUD
+- [x] 測試結果：23 個測試檔案、392 個測試全部通過，TS 零錯誤
+
 ### 2026-02-16 (第十階段：QrScan/AdminGames 拆分 + TeamScores/TeamVotes 測試)
 
 - [x] 拆分 QrScanPage.tsx：523 行 → 38 行
