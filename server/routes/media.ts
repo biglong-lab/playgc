@@ -124,8 +124,8 @@ export function registerMediaRoutes(app: Express) {
         coverImageUrl: result.secure_url,
         game: updatedGame[0],
       });
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "上傳封面圖片失敗" });
+    } catch {
+      res.status(500).json({ message: "上傳封面圖片失敗" });
     }
   });
 
