@@ -68,8 +68,8 @@ export function registerMediaRoutes(app: Express) {
         width: result.width,
         height: result.height,
       });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || "上傳失敗" });
+    } catch {
+      res.status(500).json({ error: "上傳失敗" });
     }
   });
 
