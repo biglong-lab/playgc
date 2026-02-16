@@ -1,5 +1,5 @@
 // 對戰計時器元件 — 倒數計時 + 經過時間
-import { useState, useEffect, useRef } from "react";
+import { memo, useState, useEffect, useRef } from "react";
 import { Clock, Timer } from "lucide-react";
 
 interface MatchTimerProps {
@@ -8,13 +8,14 @@ interface MatchTimerProps {
   readonly onCountdownEnd?: () => void;
 }
 
+// 模組級純函式（不需要每次渲染重建）
 function formatTime(totalSeconds: number): string {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
   return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
-export default function MatchTimer({ mode, seconds, onCountdownEnd }: MatchTimerProps) {
+export default memo(function MatchTimer({ mode, seconds, onCountdownEnd }: MatchTimerProps) {
   const [timeLeft, setTimeLeft] = useState(seconds);
   const [elapsed, setElapsed] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
