@@ -235,7 +235,9 @@
 | server/__tests__/devices.test.ts | 26 | 新增 - 裝置 API 整合 |
 | server/__tests__/team-scores.test.ts | 12 | 新增 - 分數 API 整合 |
 | server/__tests__/team-votes.test.ts | 23 | 新增 - 投票 API 整合 |
-| **合計** | **346** | |
+| server/__tests__/adminGames.test.ts | 22 | 新增 - 管理員遊戲 API 整合 |
+| server/__tests__/adminContent.test.ts | 24 | 新增 - 管理員內容 API 整合 |
+| **合計** | **392** | |
 
 ## 待處理問題
 
