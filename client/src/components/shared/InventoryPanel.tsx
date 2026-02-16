@@ -145,10 +145,12 @@ export default function InventoryPanel({ items, gameId, onClose, onUseItem }: In
                     
                     <div className="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3 ring-2 ring-primary/20">
                       {item.iconUrl ? (
-                        <img 
-                          src={item.iconUrl} 
+                        <OptimizedImage
+                          src={item.iconUrl}
                           alt={item.name}
+                          preset="icon"
                           className="w-10 h-10 object-contain"
+                          fallback={<ItemIcon className="w-7 h-7 text-primary" />}
                         />
                       ) : (
                         <ItemIcon className="w-7 h-7 text-primary" />
