@@ -240,16 +240,19 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
         .where(eq(matchParticipants.matchId, matchId))
         .orderBy(desc(matchParticipants.currentScore));
 
-      // 更新排名
-      for (let i = 0; i < participants.length; i++) {
-        await db.update(matchParticipants)
-          .set({
-            finalScore: participants[i].currentScore,
-            finalRank: i + 1,
-            completedAt: new Date(),
-          })
-          .where(eq(matchParticipants.id, participants[i].id));
-      }
+      // 並行更新所有排名（避免 N+1 逐筆查詢）
+      const now = new Date();
+      await Promise.all(
+        participants.map((p, i) =>
+          db.update(matchParticipants)
+            .set({
+              finalScore: p.currentScore,
+              finalRank: i + 1,
+              completedAt: now,
+            })
+            .where(eq(matchParticipants.id, p.id))
+        ),
+      );
 
       const [updated] = await db.update(gameMatches)
         .set({ status: "finished", finishedAt: new Date(), updatedAt: new Date() })
