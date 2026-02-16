@@ -8,24 +8,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { GameWithPages, GameSession, Page, GameChapterWithPages } from "@shared/schema";
 
-import TextCardPage from "@/components/game/TextCardPage";
-import DialoguePage from "@/components/game/DialoguePage";
-import VideoPage from "@/components/game/VideoPage";
-import ButtonPage from "@/components/game/ButtonPage";
-import TextVerifyPage from "@/components/game/TextVerifyPage";
-import ChoiceVerifyPage from "@/components/game/ChoiceVerifyPage";
-import ConditionalVerifyPage from "@/components/game/ConditionalVerifyPage";
-import ShootingMissionPage from "@/components/game/ShootingMissionPage";
-import PhotoMissionPage from "@/components/game/PhotoMissionPage";
-import GpsMissionPage from "@/components/game/GpsMissionPage";
-import QrScanPage from "@/components/game/QrScanPage";
-import TimeBombPage from "@/components/game/TimeBombPage";
-import LockPage from "@/components/game/LockPage";
-import MotionChallengePage from "@/components/game/MotionChallengePage";
-import VotePage from "@/components/game/VotePage";
 import GameHeader from "@/components/shared/GameHeader";
 import ChatPanel from "@/components/shared/ChatPanel";
 import InventoryPanel from "@/components/shared/InventoryPanel";
+import GamePageRenderer from "@/components/game/GamePageRenderer";
+import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 
 import { 
   ChevronLeft, ChevronRight, MessageCircle, Backpack, 
