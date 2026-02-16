@@ -17,7 +17,7 @@
 
 **最後更新**: 2026-02-16
 **分支**: main
-**Git 狀態**: 有未提交變更（PageConfigEditor 拆分 + 漏洞修復）
+**Git 狀態**: 已提交，領先 origin/main 共 12 個提交
 
 ### 已完成功能
 
@@ -31,12 +31,14 @@
 - [x] QR Code 遊戲入口 (/g/:slug)
 - [x] Firebase 玩家認證
 - [x] i18n 多語系支援
+- [x] 章節選擇 (ChapterSelect) - Phase 1 章節系統
 
 #### 管理端（場主 Admin）
 - [x] 管理員登入 (Firebase Auth)
 - [x] 儀表板 (AdminDashboard)
 - [x] 遊戲管理 (AdminGames)
 - [x] 遊戲編輯器 (GameEditor) - 頁面拖拉排序
+- [x] 章節管理 (ChapterManager + ChapterConfigEditor) - Phase 1
 - [x] 地點編輯器 (LocationEditor)
 - [x] 道具編輯器 (ItemEditor)
 - [x] 成就編輯器 (AchievementEditor)
@@ -63,23 +65,40 @@
 - [x] 角色管理路由 (admin-roles) - 446 行
 - [x] 遊戲管理路由 (admin-games, admin-content) - 476/441 行
 - [x] 玩家遊戲路由 (player-games) - 678 行
-- [x] 玩家場次路由 (player-sessions) - 382 行 ← 新拆分
+- [x] 玩家場次路由 (player-sessions) - 382 行
 - [x] 裝置路由 (devices) - 450 行
 - [x] 排行榜路由 (leaderboard) - 124 行
 - [x] 媒體路由 (media) - 208 行
 - [x] 地點路由 (locations) - 522 行
 - [x] 團隊路由 (teams) - 591 行
-- [x] 團隊投票路由 (team-votes) - 270 行 ← 新拆分
-- [x] 團隊分數路由 (team-scores) - 106 行 ← 新拆分
+- [x] 團隊投票路由 (team-votes) - 270 行
+- [x] 團隊分數路由 (team-scores) - 106 行
+- [x] 管理端章節路由 (admin-chapters) - 177 行
+- [x] 玩家端章節路由 (player-chapters) - 271 行
 - [x] WebSocket 即時通訊
 - [x] MQTT 服務
 
 #### 資料庫 Schema
 - [x] users, roles, fields, games, sessions, teams, devices, locations, leaderboard
 - [x] game-templates
+- [x] gameChapters, playerChapterProgress (Phase 1 章節系統)
 - [x] relations
+- [x] DB Migration 完成（37 個資料表已同步）
 
 ## 工作紀錄
+
+### 2026-02-16 (第五階段：章節系統測試 + 路由修正)
+
+- [x] DB Migration 成功 - drizzle-kit push 同步 37 個資料表
+- [x] 修正 admin-chapters.ts 路由順序 bug（reorder 靜態路由需在 :id 動態路由前）
+- [x] 新增管理端章節 API 測試：adminChapters.test.ts (19 測試)
+  - GET 列表、POST 建立（含自動排序）、PATCH 更新、DELETE 刪除、重排序驗證、頁面指定
+- [x] 新增玩家端章節 API 測試：playerChapters.test.ts (30 測試)
+  - 章節列表含進度、free 解鎖、章節詳情（權限檢查）、開始/完成章節、重玩邏輯、進度概覽
+- [x] 新增 Storage 層章節測試：chapterStorage.test.ts (29 測試)
+  - 章節 CRUD、排序 transaction、進度追蹤、isChapterUnlocked 邏輯、unlockNextChapter 邏輯
+- [x] 測試結果：14 個測試檔案、190 個測試全部通過
+- [x] Phase 1 章節系統 100% 完成（含完整測試覆蓋）
 
 ### 2026-02-16 (第四階段：MapView 拆分 + 章節驗證 + 測試擴充)
 
@@ -91,46 +110,25 @@
   - `components/map/MapLocationList.tsx` (87 行) - 任務點清單
 - [x] 新增 map-utils 單元測試：24 個測試（距離、方位、方向、導航、圖標）
 - [x] 驗證 Phase 1 章節系統完整性：98% 完成
-  - Schema 層 ✅（gameChapters + playerChapterProgress）
-  - Storage 層 ✅（16 個方法）
-  - API 路由 ✅（管理端 6 端點 + 玩家端 5 端點）
-  - 前端元件 ✅（ChapterSelect + ChapterManager + ChapterConfigEditor + useChapterProgress）
-  - 路由配置 ✅（App.tsx 已註冊章節路由）
 - [x] 測試結果：11 個測試檔案、112 個測試全部通過
-- [x] TS 編譯零錯誤、Build 通過
 
 ### 2026-02-16 (第三階段：程式碼品質 + 漏洞修復)
 
 - [x] 拆分 PageConfigEditor.tsx：1,502 行 → 7 個檔案（主檔 676 行 + 6 個子元件）
-  - `page-config-shared.tsx` (163 行) - 共用區塊（獎勵、地圖定位）
-  - `ConditionalVerifyEditor.tsx` (193 行) - 碎片收集編輯器
-  - `TimeBombEditor.tsx` (169 行) - 拆彈任務編輯器
-  - `LockEditor.tsx` (106 行) - 密碼鎖編輯器
-  - `MotionChallengeEditor.tsx` (110 行) - 體感挑戰編輯器
-  - `VoteEditor.tsx` (146 行) - 投票編輯器
-- [x] 確認 TS 錯誤已全部修復（0 個錯誤）
 - [x] 修復 qs 安全漏洞（npm audit fix）
-- [x] 剩餘 5 個 esbuild/vite 漏洞為開發環境限定，需 Vite 7 breaking change
 - [x] 測試結果：10 個測試檔案、88 個測試全部通過
-- [x] Build 驗證通過
 
 ### 2026-02-08 (第二階段：測試建設)
 
-- [x] 安裝測試依賴：supertest + @types/supertest
-- [x] Schema 驗證測試：games.test.ts (13 測試) + sessions.test.ts (8 測試)
-- [x] Server 工具函式測試：qrCodeService.test.ts (5 測試) + routeUtils.test.ts (9 測試)
-- [x] API 路由整合測試：leaderboard.test.ts (6 測試) + playerGames.test.ts (11 測試)
+- [x] Schema 驗證測試 + Server 工具函式測試 + API 路由整合測試
 - [x] 測試結果：9 個測試檔案、77 個測試全部通過
-- [x] 測試覆蓋範圍：Schema 驗證、純函式、工具函式、HTTP 端點（含認證、權限檢查）
 
 ### 2026-02-08 (第一階段：清理 + 重構)
 
 - [x] 建立 PROGRESS.md 追蹤進度
-- [x] 清理 Replit 殘留套件（移除 @replit/vite-plugin-* 共 3 個）
-- [x] 拆分 teams.ts：816 行 → teams.ts (591) + team-votes.ts (270) + team-scores.ts (106)
-- [x] 拆分 player-games.ts：805 行 → player-games.ts (678) + player-sessions.ts (382)
-- [x] 修復 team-votes.ts 的 Map iteration TS 錯誤
-- [x] 驗證開發環境啟動正常，API 回應正確
+- [x] 清理 Replit 殘留套件
+- [x] 拆分 teams.ts 和 player-games.ts
+- [x] 驗證開發環境啟動正常
 
 ## 測試統計
 
@@ -141,29 +139,31 @@
 | client/src/lib/utils.test.ts | 8 | 既有 - 工具函式 |
 | shared/schema/__tests__/games.test.ts | 13 | 新增 - Schema 驗證 |
 | shared/schema/__tests__/sessions.test.ts | 8 | 新增 - Schema 驗證 |
+| shared/schema/__tests__/chapters.test.ts | 11 | 新增 - Schema 驗證 |
 | server/__tests__/qrCodeService.test.ts | 5 | 新增 - 純函式 |
 | server/__tests__/routeUtils.test.ts | 9 | 新增 - 工具函式 |
 | server/__tests__/leaderboard.test.ts | 6 | 新增 - API 整合 |
 | server/__tests__/playerGames.test.ts | 11 | 新增 - API 整合 |
-| shared/schema/__tests__/chapters.test.ts | 11 | 新增 - Schema 驗證 |
+| server/__tests__/adminChapters.test.ts | 19 | 新增 - 章節 API 整合 |
+| server/__tests__/playerChapters.test.ts | 30 | 新增 - 章節 API 整合 |
+| server/__tests__/chapterStorage.test.ts | 29 | 新增 - Storage 層 |
 | client/src/lib/map-utils.test.ts | 24 | 新增 - 地圖工具函式 |
-| **合計** | **112** | |
+| **合計** | **190** | |
 
 ## 待處理問題
 
 ### 🟡 注意
 1. **npm audit** - 5 個 esbuild/vite moderate 漏洞（開發環境限定，需 Vite 7 升級）
-2. **測試覆蓋率待提升** - 目前 112 個測試，需持續增加以達 80% 覆蓋率
 
 ### 🟢 優化方向
-3. 建立 CI/CD Pipeline (GitHub Actions)
-4. 安全性審查（rate limiting、input validation 完整性）
-5. 效能優化（查詢最佳化、快取策略）
-6. Vite 7 升級（解決剩餘安全漏洞）
-7. DB Migration - 執行 drizzle-kit push 將章節 schema 同步到資料庫
+2. 建立 CI/CD Pipeline (GitHub Actions)
+3. 安全性審查（rate limiting、input validation 完整性）
+4. 效能優化（查詢最佳化、快取策略）
+5. Vite 7 升級（解決剩餘安全漏洞）
 
 ## 下一步建議
 
-1. **DB Migration** - 執行 `npx drizzle-kit push` 同步章節系統 schema 到資料庫
-2. **Phase 2 付費與票券系統** - 商業模式核心（按 PLAN.md 優先順序）
-3. **持續增加測試** - storage 層、章節 API 整合測試、前端元件測試
+1. **Phase 2 付費與票券系統** - 商業模式核心（按 PLAN.md 優先順序）
+2. **前端元件測試** - React Testing Library 測試關鍵元件
+3. **E2E 測試** - Playwright 建立關鍵用戶流程
+4. **CI/CD Pipeline** - GitHub Actions 自動化測試與部署
