@@ -292,6 +292,22 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           timestamp: new Date().toISOString(),
         });
       }
+
+      // 清理對戰客戶端
+      const matchId = (ws as any).matchId;
+      if (matchId) {
+        matchClients.get(matchId)?.delete(ws);
+        if (matchClients.get(matchId)?.size === 0) {
+          matchClients.delete(matchId);
+        }
+
+        broadcastToMatch(matchId, {
+          type: "match_participant_left",
+          userId: ws.userId,
+          userName: ws.userName,
+          timestamp: new Date().toISOString(),
+        });
+      }
     });
   });
 
