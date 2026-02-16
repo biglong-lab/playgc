@@ -181,10 +181,25 @@ export function CountdownView({ seconds }: CountdownViewProps) {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="text-center">
-        <p className="text-7xl font-mono font-bold text-primary animate-pulse">
-          {seconds}
-        </p>
-        <p className="text-xl text-muted-foreground mt-4">準備開始...</p>
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={seconds}
+            variants={countdownNumber}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="text-8xl font-mono font-bold text-primary"
+          >
+            {seconds}
+          </motion.p>
+        </AnimatePresence>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-xl text-muted-foreground mt-4"
+        >
+          準備開始...
+        </motion.p>
       </div>
     </div>
   );
