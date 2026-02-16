@@ -65,7 +65,8 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           return res.status(404).json({ message: "遊戲不存在" });
         }
 
-        if (game.gameMode !== "team") {
+        const teamModes = ["team", "competitive", "relay"];
+        if (!teamModes.includes(game.gameMode ?? "")) {
           return res.status(400).json({ message: "此遊戲不支援團隊模式" });
         }
 
