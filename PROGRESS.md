@@ -87,6 +87,18 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第六階段：程式碼拆分優化)
+
+- [x] 拆分 game-editor/index.tsx：768 行 → 486 行
+  - `lib/page-sync.ts` (~100 行) - 頁面同步純函式
+  - `components/ToolboxSidebar.tsx` (~85 行) - 元件工具箱側邊欄
+  - `components/PageListSidebar.tsx` (~170 行) - 頁面列表側邊欄
+- [x] 拆分 GamePlay.tsx：636 行 → 532 行
+  - `GameCompletionScreen.tsx` (~100 行) - 完成畫面元件
+  - `GamePageRenderer.tsx` (~100 行) - 頁面類型分發器
+- [x] 掃描 console.log 殘留：僅存合法使用（錯誤日誌），無需清理
+- [x] 測試結果：14 個測試檔案、190 個測試全部通過，TS 零錯誤
+
 ### 2026-02-16 (第五階段：章節系統測試 + 路由修正)
 
 - [x] DB Migration 成功 - drizzle-kit push 同步 37 個資料表
