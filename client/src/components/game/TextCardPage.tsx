@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, Clock, Volume2, VolumeX } from "lucide-react";
 import type { TextCardConfig } from "@shared/schema";
+import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface TextCardPageProps {
   config: TextCardConfig;
