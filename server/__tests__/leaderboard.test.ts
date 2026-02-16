@@ -81,12 +81,22 @@ describe("排行榜路由", () => {
       mockStorage.getLeaderboard.mockResolvedValue([]);
 
       const app = createTestApp();
+      const gameId = "a0000000-0000-4000-8000-000000000001";
       const res = await request(app)
         .get("/api/leaderboard")
-        .query({ gameId: "game-123" });
+        .query({ gameId });
 
       expect(res.status).toBe(200);
-      expect(mockStorage.getLeaderboard).toHaveBeenCalledWith("game-123");
+      expect(mockStorage.getLeaderboard).toHaveBeenCalledWith(gameId);
+    });
+
+    it("無效 gameId 格式回傳 400", async () => {
+      const app = createTestApp();
+      const res = await request(app)
+        .get("/api/leaderboard")
+        .query({ gameId: "invalid-id" });
+
+      expect(res.status).toBe(400);
     });
 
     it("storage 錯誤回傳 500", async () => {
