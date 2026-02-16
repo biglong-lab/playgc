@@ -1,4 +1,5 @@
-// 對戰等候室主頁 — 根據狀態切換不同視圖
+// 對戰等候室主頁 — 根據狀態切換不同視圖（含轉場動畫）
+import { motion, AnimatePresence } from "framer-motion";
 import { useMatchLobby } from "./match-lobby/useMatchLobby";
 import {
   LoadingView,
@@ -8,10 +9,10 @@ import {
   PlayingView,
   FinishedView,
 } from "./match-lobby/MatchViews";
+import { pageTransition } from "@/lib/animation-variants";
 
-export default function MatchLobby() {
-  const lobby = useMatchLobby();
-
+/** 根據 lobby 狀態渲染對應視圖（純函式，不含動畫） */
+function renderView(lobby: ReturnType<typeof useMatchLobby>) {
   switch (lobby.currentView) {
     case "loading":
       return <LoadingView />;
@@ -63,4 +64,22 @@ export default function MatchLobby() {
         />
       );
   }
+}
+
+export default function MatchLobby() {
+  const lobby = useMatchLobby();
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={lobby.currentView}
+        variants={pageTransition}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
+        {renderView(lobby)}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
