@@ -201,8 +201,8 @@ export function registerMediaRoutes(app: Express) {
         resourceType: result.resource_type,
         duration: result.duration,
       });
-    } catch (error: any) {
-      res.status(500).json({ message: error.message || "上傳媒體失敗" });
+    } catch {
+      res.status(500).json({ message: "上傳媒體失敗" });
     }
   });
 }
