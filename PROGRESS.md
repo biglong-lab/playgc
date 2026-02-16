@@ -276,7 +276,8 @@
 | server/__tests__/adminFields.test.ts | 12 | 新增 - 場域管理 API 整合 |
 | server/__tests__/media.test.ts | 18 | 新增 - 媒體上傳 API 整合 |
 | server/__tests__/websocket.test.ts | 14 | 新增 - WebSocket 即時通訊 |
-| **合計** | **457** | |
+| server/__tests__/adminModules.test.ts | 10 | 新增 - 遊戲模組 API 整合 |
+| **合計** | **467** | |
 
 ## 待處理問題
 
