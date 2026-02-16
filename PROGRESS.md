@@ -87,6 +87,17 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第八階段：PhotoMission 拆分 + Auth/Locations 測試)
+
+- [x] 拆分 PhotoMissionPage.tsx：577 行 → 138 行
+  - `photo-mission/usePhotoCamera.ts` (~230 行) - 相機邏輯 Hook
+  - `photo-mission/PhotoViews.tsx` (~280 行) - 6 個 View 元件
+- [x] 新增認證路由測試：auth.test.ts (21 測試)
+  - 玩家認證、管理員帳密登入、Firebase 管理員登入、登出、session 驗證
+- [x] 新增地點路由測試：locations.test.ts (23 測試)
+  - 地點 CRUD、GPS 導航計算、接近偵測、訪問記錄
+- [x] 測試結果：17 個測試檔案、268 個測試全部通過，TS 零錯誤
+
 ### 2026-02-16 (第七階段：Landing/AdminStaff 拆分 + 隊伍測試)
 
 - [x] 拆分 Landing.tsx：629 行 → 242 行
