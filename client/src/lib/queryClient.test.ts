@@ -215,14 +215,14 @@ describe("queryClient 設定", () => {
     expect(defaults.queries?.refetchInterval).toBe(false);
   });
 
-  it("預設不重試", () => {
+  it("查詢重試 1 次，mutation 不重試", () => {
     const defaults = queryClient.getDefaultOptions();
-    expect(defaults.queries?.retry).toBe(false);
+    expect(defaults.queries?.retry).toBe(1);
     expect(defaults.mutations?.retry).toBe(false);
   });
 
-  it("staleTime 設為 Infinity", () => {
+  it("staleTime 設為 5 分鐘", () => {
     const defaults = queryClient.getDefaultOptions();
-    expect(defaults.queries?.staleTime).toBe(Infinity);
+    expect(defaults.queries?.staleTime).toBe(5 * 60 * 1000);
   });
 });
