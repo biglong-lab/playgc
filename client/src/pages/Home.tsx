@@ -260,6 +260,8 @@ export default function Home() {
                 onClick={() => {
                   if (game.gameStructure === "chapters") {
                     setLocation(`/game/${game.id}/chapters`);
+                  } else if (game.gameMode === "competitive" || game.gameMode === "relay") {
+                    setLocation(`/match/${game.id}`);
                   } else if (game.gameMode === "team") {
                     setLocation(`/team/${game.id}`);
                   } else {
