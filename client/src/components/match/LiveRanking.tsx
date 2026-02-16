@@ -37,7 +37,7 @@ function getRelayStatusBadge(status: string | null | undefined) {
   }
 }
 
-export default function LiveRanking({ ranking, currentUserId, showRelay }: LiveRankingProps) {
+export default memo(function LiveRanking({ ranking, currentUserId, showRelay }: LiveRankingProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
