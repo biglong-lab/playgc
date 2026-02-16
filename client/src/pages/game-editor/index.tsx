@@ -2,29 +2,35 @@
 import { useState, useCallback, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { GameWithDetails, Page } from "@shared/schema";
 import {
-  ChevronLeft, Save, Upload, Plus, GripVertical,
-  Trash2, Copy, FileText, Move, Gift,
+  ChevronLeft, Save, Upload, FileText,
   Eye, Settings, Package, Trophy, MapPin,
 } from "lucide-react";
 import { Link } from "wouter";
 import ItemsEditor from "@/components/ItemsEditor";
-import { PAGE_TYPES, PAGE_TEMPLATES, getPageTypeInfo } from "./constants";
+import { PAGE_TEMPLATES, getPageTypeInfo } from "./constants";
 import { getDefaultConfig } from "./getDefaultConfig";
 import PageConfigEditor from "./PageConfigEditor";
 import EventsEditor from "./EventsEditor";
 import ChapterManager from "./ChapterManager";
+import { syncPages } from "./lib/page-sync";
+import ToolboxSidebar from "./components/ToolboxSidebar";
+import PageListSidebar from "./components/PageListSidebar";
 
 export default function GameEditor() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -51,48 +57,54 @@ export default function GameEditor() {
   const [isUploading, setIsUploading] = useState(false);
 
   // 媒體上傳到 Cloudinary
-  const handleMediaUpload = useCallback(async (file: File, type: 'video' | 'audio' | 'image'): Promise<string | null> => {
-    if (!gameId) {
-      toast({ title: "錯誤", description: "請先儲存遊戲", variant: "destructive" });
-      return null;
-    }
-
-    setIsUploading(true);
-    try {
-      const reader = new FileReader();
-      const base64 = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const endpoint = type === 'video'
-        ? '/api/cloudinary/video'
-        : type === 'audio'
-          ? '/api/cloudinary/audio'
-          : '/api/cloudinary/game-media';
-
-      const response = await apiRequest("POST", endpoint, {
-        data: base64,
-        gameId: gameId,
-        fileName: file.name,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "上傳失敗");
+  const handleMediaUpload = useCallback(
+    async (file: File, type: "video" | "audio" | "image"): Promise<string | null> => {
+      if (!gameId) {
+        toast({ title: "錯誤", description: "請先儲存遊戲", variant: "destructive" });
+        return null;
       }
 
-      const result = await response.json();
-      toast({ title: "上傳成功", description: `${type === 'video' ? '影片' : type === 'audio' ? '音訊' : '圖片'}已上傳` });
-      return result.url;
-    } catch (error: any) {
-      toast({ title: "上傳失敗", description: error.message, variant: "destructive" });
-      return null;
-    } finally {
-      setIsUploading(false);
-    }
-  }, [gameId, toast]);
+      setIsUploading(true);
+      try {
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const endpoint =
+          type === "video"
+            ? "/api/cloudinary/video"
+            : type === "audio"
+              ? "/api/cloudinary/audio"
+              : "/api/cloudinary/game-media";
+
+        const response = await apiRequest("POST", endpoint, {
+          data: base64,
+          gameId,
+          fileName: file.name,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || "上傳失敗");
+        }
+
+        const result = await response.json();
+        const labels = { video: "影片", audio: "音訊", image: "圖片" };
+        toast({ title: "上傳成功", description: `${labels[type]}已上傳` });
+        return result.url;
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "未知錯誤";
+        toast({ title: "上傳失敗", description: message, variant: "destructive" });
+        return null;
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [gameId, toast]
+  );
 
   const { data: game, isLoading } = useQuery<GameWithDetails>({
     queryKey: [apiGamesPath, gameId],
@@ -110,98 +122,32 @@ export default function GameEditor() {
     }
   }, [game]);
 
-  // 更新頁面 ID 參照（如按鈕跳轉目標）
-  const updatePageIdReferences = (pagesToUpdate: Page[], idMapping: Map<string, string>): Page[] => {
-    return pagesToUpdate.map(page => {
-      const config = page.config as any;
-      if (page.pageType === "button" && config.buttons) {
-        const updatedButtons = config.buttons.map((btn: any) => ({
-          ...btn,
-          nextPageId: btn.nextPageId && idMapping.has(btn.nextPageId)
-            ? idMapping.get(btn.nextPageId)
-            : btn.nextPageId
-        }));
-        return { ...page, config: { ...config, buttons: updatedButtons } };
-      }
-      return page;
-    });
-  };
-
-  // 同步頁面到伺服器
-  const syncPages = async (targetGameId: string, currentPages: Page[], serverPages: Page[]): Promise<Page[]> => {
-    const tempIdMapping = new Map<string, string>();
-    const serverPageIds = new Set(serverPages.map(p => p.id));
-    const currentPageIds = new Set(currentPages.map(p => p.id));
-
-    const pagesToCreate = currentPages.filter(p => p.id.startsWith("temp-"));
-    const pagesToUpdate = currentPages.filter(p => !p.id.startsWith("temp-") && serverPageIds.has(p.id));
-    const pagesToDelete = serverPages.filter(p => !currentPageIds.has(p.id));
-
-    for (const page of pagesToDelete) {
-      await apiRequest("DELETE", `${apiPagesPath}/${page.id}`);
-    }
-
-    const createdPages: Page[] = [];
-    for (const page of pagesToCreate) {
-      const tempId = page.id;
-      const response = await apiRequest("POST", `${apiGamesPath}/${targetGameId}/pages`, {
-        pageType: page.pageType,
-        pageOrder: page.pageOrder,
-        config: page.config,
-      });
-      const createdPage = await response.json();
-      tempIdMapping.set(tempId, createdPage.id);
-      createdPages.push(createdPage);
-    }
-
-    let allPages = [
-      ...currentPages.filter(p => !p.id.startsWith("temp-")),
-      ...createdPages
-    ];
-
-    allPages = updatePageIdReferences(allPages, tempIdMapping);
-
-    for (const page of pagesToUpdate) {
-      const updatedConfig = allPages.find(p => p.id === page.id)?.config || page.config;
-      await apiRequest("PATCH", `${apiPagesPath}/${page.id}`, {
-        pageType: page.pageType,
-        pageOrder: page.pageOrder,
-        config: updatedConfig,
-      });
-    }
-
-    for (const page of createdPages) {
-      const updatedPage = allPages.find(p => p.id === page.id);
-      if (updatedPage) {
-        await apiRequest("PATCH", `${apiPagesPath}/${page.id}`, {
-          config: updatedPage.config,
-        });
-      }
-    }
-
-    return allPages;
-  };
-
   const saveGameMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       let targetGameId = gameId;
 
       if (isNew) {
         const response = await apiRequest("POST", apiGamesPath, data);
         const newGame = await response.json();
         targetGameId = newGame.id;
-
-        const syncedPages = await syncPages(targetGameId, pages, []);
+        const syncedPages = await syncPages(targetGameId, pages, [], {
+          apiGamesPath,
+          apiPagesPath,
+        });
         return { game: newGame, pages: syncedPages };
-      } else {
-        await apiRequest("PATCH", `${apiGamesPath}/${gameId}`, data);
-
-        const serverPagesResponse = await apiRequest("GET", `${apiGamesPath}/${gameId}/pages`);
-        const serverPages = await serverPagesResponse.json();
-
-        const syncedPages = await syncPages(gameId!, pages, serverPages);
-        return { game: null, pages: syncedPages };
       }
+
+      await apiRequest("PATCH", `${apiGamesPath}/${gameId}`, data);
+      const serverPagesResponse = await apiRequest(
+        "GET",
+        `${apiGamesPath}/${gameId}/pages`
+      );
+      const serverPages = await serverPagesResponse.json();
+      const syncedPages = await syncPages(gameId!, pages, serverPages, {
+        apiGamesPath,
+        apiPagesPath,
+      });
+      return { game: null, pages: syncedPages };
     },
     onSuccess: (result) => {
       toast({ title: "已儲存", description: "遊戲已成功儲存" });
@@ -210,13 +156,13 @@ export default function GameEditor() {
       if (result?.pages) {
         setPages(result.pages);
         if (selectedPage) {
-          const updatedSelectedPage = result.pages.find(p =>
-            p.id === selectedPage.id ||
-            (selectedPage.id.startsWith("temp-") && p.pageOrder === selectedPage.pageOrder)
+          const updated = result.pages.find(
+            (p) =>
+              p.id === selectedPage.id ||
+              (selectedPage.id.startsWith("temp-") &&
+                p.pageOrder === selectedPage.pageOrder)
           );
-          if (updatedSelectedPage) {
-            setSelectedPage(updatedSelectedPage);
-          }
+          if (updated) setSelectedPage(updated);
         }
       }
 
@@ -231,25 +177,17 @@ export default function GameEditor() {
 
   const handleSave = () => {
     saveGameMutation.mutate({
-      title,
-      description,
-      difficulty,
-      estimatedTime,
-      maxPlayers,
-      status: "draft",
+      title, description, difficulty, estimatedTime, maxPlayers, status: "draft",
     });
   };
 
   const handlePublish = () => {
     saveGameMutation.mutate({
-      title,
-      description,
-      difficulty,
-      estimatedTime,
-      maxPlayers,
-      status: "published",
+      title, description, difficulty, estimatedTime, maxPlayers, status: "published",
     });
   };
+
+  // ====== 頁面操作 ======
 
   const addPage = (pageType: string, atIndex?: number) => {
     const newPage: Page = {
@@ -265,7 +203,7 @@ export default function GameEditor() {
     if (atIndex !== undefined) {
       const newPages = [...pages];
       newPages.splice(atIndex, 0, newPage);
-      newPages.forEach((p, i) => p.pageOrder = i + 1);
+      newPages.forEach((p, i) => (p.pageOrder = i + 1));
       setPages(newPages);
     } else {
       setPages([...pages, newPage]);
@@ -275,7 +213,7 @@ export default function GameEditor() {
   };
 
   const addTemplatePages = (templateId: string) => {
-    const template = PAGE_TEMPLATES.find(t => t.id === templateId);
+    const template = PAGE_TEMPLATES.find((t) => t.id === templateId);
     if (!template) return;
 
     const newPages: Page[] = template.pages.map((p, idx) => ({
@@ -289,42 +227,39 @@ export default function GameEditor() {
     }));
 
     setPages([...pages, ...newPages]);
-    if (newPages.length > 0) {
-      setSelectedPage(newPages[0]);
-    }
+    if (newPages.length > 0) setSelectedPage(newPages[0]);
     toast({
       title: "已套用模板",
-      description: `${template.label} - 新增 ${newPages.length} 個頁面`
+      description: `${template.label} - 新增 ${newPages.length} 個頁面`,
     });
   };
 
   const handleReorder = (newPages: Page[]) => {
-    newPages.forEach((p, i) => p.pageOrder = i + 1);
+    newPages.forEach((p, i) => (p.pageOrder = i + 1));
     setPages(newPages);
   };
 
   const deletePage = (index: number) => {
     const newPages = pages.filter((_, i) => i !== index);
-    newPages.forEach((p, i) => p.pageOrder = i + 1);
+    newPages.forEach((p, i) => (p.pageOrder = i + 1));
     setPages(newPages);
-    if (selectedPage?.id === pages[index].id) {
-      setSelectedPage(null);
-    }
+    if (selectedPage?.id === pages[index].id) setSelectedPage(null);
   };
 
   const duplicatePage = (index: number) => {
-    const pageToCopy = pages[index];
     const newPage: Page = {
-      ...pageToCopy,
+      ...pages[index],
       id: `temp-${Date.now()}`,
       pageOrder: index + 2,
     };
     const newPages = [...pages];
     newPages.splice(index + 1, 0, newPage);
-    newPages.forEach((p, i) => p.pageOrder = i + 1);
+    newPages.forEach((p, i) => (p.pageOrder = i + 1));
     setPages(newPages);
     toast({ title: "已複製頁面" });
   };
+
+  // ====== 拖曳處理 ======
 
   const handleToolboxDragStart = (e: React.DragEvent, pageType: string) => {
     e.dataTransfer.setData("pageType", pageType);
@@ -339,17 +274,13 @@ export default function GameEditor() {
 
   const handlePageListDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
-    if (isDraggingFromToolbox) {
-      setDragOverIndex(index);
-    }
+    if (isDraggingFromToolbox) setDragOverIndex(index);
   };
 
   const handlePageListDrop = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     const pageType = e.dataTransfer.getData("pageType");
-    if (pageType) {
-      addPage(pageType, index);
-    }
+    if (pageType) addPage(pageType, index);
     setDragOverIndex(null);
     setIsDraggingFromToolbox(false);
   };
@@ -357,9 +288,7 @@ export default function GameEditor() {
   const handleDropZoneDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const pageType = e.dataTransfer.getData("pageType");
-    if (pageType) {
-      addPage(pageType);
-    }
+    if (pageType) addPage(pageType);
     setIsDraggingFromToolbox(false);
   };
 
@@ -377,54 +306,26 @@ export default function GameEditor() {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLocation(basePath)}
-              data-testid="button-back"
-            >
+            <Button variant="ghost" size="icon" onClick={() => setLocation(basePath)} data-testid="button-back">
               <ChevronLeft className="w-5 h-5" />
             </Button>
-            <div>
-              <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="遊戲標題"
-                className="font-display font-bold text-lg border-none bg-transparent p-0 h-auto focus-visible:ring-0"
-                data-testid="input-game-title"
-              />
-            </div>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="遊戲標題"
+              className="font-display font-bold text-lg border-none bg-transparent p-0 h-auto focus-visible:ring-0"
+              data-testid="input-game-title"
+            />
           </div>
-
           <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              onClick={() => setLocation(`/game/${gameId}`)}
-              className="gap-2"
-              disabled={isNew}
-              data-testid="button-preview"
-            >
-              <Eye className="w-4 h-4" />
-              預覽
+            <Button variant="outline" onClick={() => setLocation(`/game/${gameId}`)} className="gap-2" disabled={isNew} data-testid="button-preview">
+              <Eye className="w-4 h-4" /> 預覽
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleSave}
-              disabled={saveGameMutation.isPending}
-              className="gap-2"
-              data-testid="button-save"
-            >
-              <Save className="w-4 h-4" />
-              儲存
+            <Button variant="outline" onClick={handleSave} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-save">
+              <Save className="w-4 h-4" /> 儲存
             </Button>
-            <Button
-              onClick={handlePublish}
-              disabled={saveGameMutation.isPending}
-              className="gap-2"
-              data-testid="button-publish"
-            >
-              <Upload className="w-4 h-4" />
-              發布
+            <Button onClick={handlePublish} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-publish">
+              <Upload className="w-4 h-4" /> 發布
             </Button>
           </div>
         </div>
@@ -433,202 +334,43 @@ export default function GameEditor() {
           <div className="px-4 py-2 border-t border-border/50 flex items-center gap-2 bg-muted/30">
             <span className="text-xs text-muted-foreground mr-2">資源管理:</span>
             <Link href={`${basePath}/${gameId}/items`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-items">
-                <Package className="w-3.5 h-3.5" />
-                道具
-              </Button>
+              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-items"><Package className="w-3.5 h-3.5" /> 道具</Button>
             </Link>
             <Link href={`${basePath}/${gameId}/achievements`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-achievements">
-                <Trophy className="w-3.5 h-3.5" />
-                成就
-              </Button>
+              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-achievements"><Trophy className="w-3.5 h-3.5" /> 成就</Button>
             </Link>
             <Link href={`${basePath}/${gameId}/locations`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-locations">
-                <MapPin className="w-3.5 h-3.5" />
-                地點
-              </Button>
+              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-locations"><MapPin className="w-3.5 h-3.5" /> 地點</Button>
             </Link>
             <Link href={`${basePath}/${gameId}/settings`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-settings">
-                <Settings className="w-3.5 h-3.5" />
-                設定
-              </Button>
+              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-settings"><Settings className="w-3.5 h-3.5" /> 設定</Button>
             </Link>
           </div>
         )}
       </header>
 
       <div className="flex-1 flex">
-        {/* Left Sidebar - Element Toolbox */}
-        <aside className="w-56 border-r border-border bg-card/50 flex flex-col">
-          <Tabs defaultValue="elements" className="flex-1 flex flex-col">
-            <TabsList className="w-full rounded-none border-b">
-              <TabsTrigger value="elements" className="flex-1 text-xs">
-                <Move className="w-3 h-3 mr-1" />
-                元件
-              </TabsTrigger>
-              <TabsTrigger value="templates" className="flex-1 text-xs">
-                <Gift className="w-3 h-3 mr-1" />
-                模板
-              </TabsTrigger>
-            </TabsList>
+        <ToolboxSidebar
+          onDragStart={handleToolboxDragStart}
+          onDragEnd={handleToolboxDragEnd}
+          onAddTemplate={addTemplatePages}
+        />
 
-            <TabsContent value="elements" className="flex-1 overflow-auto p-2 space-y-1 m-0">
-              {PAGE_TYPES.map((type) => (
-                <motion.div
-                  key={type.value}
-                  draggable
-                  onDragStart={(e) => handleToolboxDragStart(e as unknown as React.DragEvent, type.value)}
-                  onDragEnd={handleToolboxDragEnd}
-                  className={`flex items-center gap-2 p-2 rounded-lg cursor-grab active:cursor-grabbing ${type.color} border border-transparent hover:border-border/50 transition-all`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  data-testid={`toolbox-${type.value}`}
-                >
-                  <type.icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{type.label}</span>
-                </motion.div>
-              ))}
-            </TabsContent>
+        <PageListSidebar
+          pages={pages}
+          selectedPage={selectedPage}
+          isDraggingFromToolbox={isDraggingFromToolbox}
+          dragOverIndex={dragOverIndex}
+          onSelectPage={setSelectedPage}
+          onReorder={handleReorder}
+          onDuplicate={duplicatePage}
+          onDelete={deletePage}
+          onDragOver={handlePageListDragOver}
+          onDrop={handlePageListDrop}
+          onDropZoneDrop={handleDropZoneDrop}
+        />
 
-            <TabsContent value="templates" className="flex-1 overflow-auto p-2 space-y-2 m-0">
-              {PAGE_TEMPLATES.map((template) => (
-                <motion.button
-                  key={template.id}
-                  onClick={() => addTemplatePages(template.id)}
-                  className={`w-full text-left p-2 rounded-lg ${template.color} border border-transparent hover:border-border/50 transition-all`}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  data-testid={`template-${template.id}`}
-                >
-                  <div className="flex items-center gap-2">
-                    <template.icon className="w-4 h-4" />
-                    <span className="text-sm font-medium">{template.label}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{template.description}</p>
-                </motion.button>
-              ))}
-            </TabsContent>
-          </Tabs>
-        </aside>
-
-        {/* Page List Sidebar */}
-        <aside className="w-72 border-r border-border bg-card/30 flex flex-col">
-          <div className="p-4 border-b border-border flex items-center justify-between">
-            <div>
-              <h3 className="font-medium text-sm">頁面流程</h3>
-              <p className="text-xs text-muted-foreground">{pages.length} 個頁面</p>
-            </div>
-            <Badge variant="outline" className="text-xs">
-              拖曳排序
-            </Badge>
-          </div>
-
-          <div
-            className="flex-1 overflow-auto p-2"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={handleDropZoneDrop}
-          >
-            <Reorder.Group
-              axis="y"
-              values={pages}
-              onReorder={handleReorder}
-              className="space-y-1"
-            >
-              <AnimatePresence>
-                {pages.map((page, index) => {
-                  const typeInfo = getPageTypeInfo(page.pageType);
-                  return (
-                    <div key={page.id}>
-                      {dragOverIndex === index && isDraggingFromToolbox && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 40 }}
-                          className="border-2 border-dashed border-primary/50 rounded-lg bg-primary/10 flex items-center justify-center text-xs text-primary mb-1"
-                        >
-                          放置於此
-                        </motion.div>
-                      )}
-                      <Reorder.Item
-                        value={page}
-                        className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors ${
-                          selectedPage?.id === page.id
-                            ? "bg-primary/10 border border-primary/30"
-                            : "bg-background/50 hover:bg-accent border border-transparent"
-                        }`}
-                        onClick={() => setSelectedPage(page)}
-                        onDragOver={(e) => handlePageListDragOver(e as unknown as React.DragEvent, index)}
-                        onDrop={(e) => handlePageListDrop(e as unknown as React.DragEvent, index)}
-                        whileDrag={{ scale: 1.02, boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
-                        data-testid={`page-item-${index}`}
-                      >
-                        <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
-                        <div className={`w-8 h-8 rounded flex items-center justify-center ${typeInfo.color}`}>
-                          <typeInfo.icon className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{typeInfo.label}</p>
-                          <p className="text-xs text-muted-foreground font-mono">#{index + 1}</p>
-                        </div>
-                        <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={(e) => { e.stopPropagation(); duplicatePage(index); }}
-                            data-testid={`button-duplicate-${index}`}
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 text-destructive hover:text-destructive"
-                            onClick={(e) => { e.stopPropagation(); deletePage(index); }}
-                            data-testid={`button-delete-${index}`}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </Reorder.Item>
-                    </div>
-                  );
-                })}
-              </AnimatePresence>
-            </Reorder.Group>
-
-            {pages.length === 0 && (
-              <motion.div
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                  isDraggingFromToolbox
-                    ? "border-primary bg-primary/10"
-                    : "border-border"
-                }`}
-                animate={{ scale: isDraggingFromToolbox ? 1.02 : 1 }}
-              >
-                <Plus className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">
-                  從左側拖曳元件到此處
-                </p>
-              </motion.div>
-            )}
-
-            {pages.length > 0 && isDraggingFromToolbox && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 60 }}
-                className="border-2 border-dashed border-primary/50 rounded-lg bg-primary/10 flex items-center justify-center text-sm text-primary mt-2"
-                onDragOver={(e) => e.preventDefault()}
-              >
-                放置於最後
-              </motion.div>
-            )}
-          </div>
-        </aside>
-
-        {/* Main Content */}
+        {/* 主內容區 */}
         <main className="flex-1 overflow-auto">
           <Tabs defaultValue="page" className="h-full">
             <div className="px-6 py-4 border-b border-border">
@@ -667,7 +409,7 @@ export default function GameEditor() {
                       handleMediaUpload={handleMediaUpload}
                       isUploading={isUploading}
                       onUpdate={(config) => {
-                        const newPages = pages.map(p =>
+                        const newPages = pages.map((p) =>
                           p.id === selectedPage.id ? { ...p, config } : p
                         );
                         setPages(newPages);
@@ -693,22 +435,13 @@ export default function GameEditor() {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium mb-2 block">遊戲描述</label>
-                    <Textarea
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="描述這個遊戲..."
-                      rows={4}
-                      data-testid="input-description"
-                    />
+                    <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="描述這個遊戲..." rows={4} data-testid="input-description" />
                   </div>
-
                   <div className="grid grid-cols-3 gap-4">
                     <div>
                       <label className="text-sm font-medium mb-2 block">難度</label>
                       <Select value={difficulty} onValueChange={setDifficulty}>
-                        <SelectTrigger data-testid="select-difficulty">
-                          <SelectValue />
-                        </SelectTrigger>
+                        <SelectTrigger data-testid="select-difficulty"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="easy">簡單</SelectItem>
                           <SelectItem value="medium">中等</SelectItem>
@@ -716,29 +449,13 @@ export default function GameEditor() {
                         </SelectContent>
                       </Select>
                     </div>
-
                     <div>
                       <label className="text-sm font-medium mb-2 block">預估時間 (分鐘)</label>
-                      <Input
-                        type="number"
-                        value={estimatedTime}
-                        onChange={(e) => setEstimatedTime(parseInt(e.target.value) || 30)}
-                        min={5}
-                        max={180}
-                        data-testid="input-time"
-                      />
+                      <Input type="number" value={estimatedTime} onChange={(e) => setEstimatedTime(parseInt(e.target.value) || 30)} min={5} max={180} data-testid="input-time" />
                     </div>
-
                     <div>
                       <label className="text-sm font-medium mb-2 block">最大人數</label>
-                      <Input
-                        type="number"
-                        value={maxPlayers}
-                        onChange={(e) => setMaxPlayers(parseInt(e.target.value) || 6)}
-                        min={1}
-                        max={20}
-                        data-testid="input-players"
-                      />
+                      <Input type="number" value={maxPlayers} onChange={(e) => setMaxPlayers(parseInt(e.target.value) || 6)} min={1} max={20} data-testid="input-players" />
                     </div>
                   </div>
                 </CardContent>
