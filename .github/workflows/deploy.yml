@@ -1,0 +1,67 @@
+name: Deploy
+
+# 手動觸發部署 - 配合嚴格部署控制規則
+# 指令：gh workflow run deploy.yml -f confirm=yes
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '確認部署（輸入 yes）'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: 部署前驗證
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm == 'yes' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: TypeScript 型別檢查
+        run: npm run check
+
+      - name: 執行完整測試
+        run: npm run test:run
+
+      - name: 建置專案
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+  deploy:
+    name: 部署到生產環境
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 部署（待配置）
+        run: |
+          echo "✅ 驗證通過，開始部署..."
+          echo "⚠️ 部署目標尚未配置，請根據實際環境設定部署步驟"
+          echo "  建議選項："
+          echo "  - Docker 映像推送"
+          echo "  - SSH 遠端部署"
+          echo "  - 雲端平台 API 部署（Vercel / Railway / Fly.io）"
+
+  rejected:
+    name: 部署已拒絕
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.confirm != 'yes' }}
+    steps:
+      - name: 拒絕部署
+        run: |
+          echo "❌ 部署已取消：confirm 參數必須為 'yes'"
+          exit 1
