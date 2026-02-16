@@ -80,7 +80,8 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
   // 取得遊戲的對戰列表
   app.get("/api/games/:gameId/matches", async (req, res) => {
     try {
-      const { gameId } = req.params;
+      const gameId = validateId(req.params.gameId, res);
+      if (!gameId) return;
       const matches = await db.select()
         .from(gameMatches)
         .where(eq(gameMatches.gameId, gameId))
