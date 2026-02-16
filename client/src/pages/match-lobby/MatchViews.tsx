@@ -219,6 +219,8 @@ interface PlayingViewProps {
 export function PlayingView({ match, ranking, userId, isRelay }: PlayingViewProps) {
   const settings = match?.settings as Record<string, unknown> | undefined;
   const timeLimit = (settings?.timeLimit as number) ?? 0;
+  const relayConfig = match?.relayConfig as Record<string, unknown> | undefined;
+  const segmentCount = (relayConfig?.segmentCount as number) ?? 0;
 
   return (
     <div className="container max-w-2xl mx-auto px-4 py-8">
@@ -234,6 +236,10 @@ export function PlayingView({ match, ranking, userId, isRelay }: PlayingViewProp
           <MatchTimer mode="elapsed" seconds={0} />
         )}
       </div>
+
+      {isRelay && segmentCount > 0 && (
+        <RelayProgress participants={ranking} segmentCount={segmentCount} />
+      )}
 
       <LiveRanking
         ranking={ranking as { userId: string; score: number; rank: number }[]}
