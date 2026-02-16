@@ -87,6 +87,19 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第十四階段：CI/CD Pipeline + 前端測試提升)
+
+- [x] 建立 GitHub Actions CI 工作流程 `.github/workflows/ci.yml`
+  - lint-and-typecheck：TypeScript 型別檢查
+  - test：550 個單元/整合測試
+  - build：生產環境建置（需 lint+test 通過才觸發）
+- [x] 建立手動部署工作流程 `.github/workflows/deploy.yml`
+  - 手動觸發：`gh workflow run deploy.yml -f confirm=yes`
+  - 配合嚴格部署控制規則，需明確確認才執行
+  - 部署前自動執行完整驗證（tsc + test + build）
+- [x] CI 首次觸發執行成功
+- [x] 測試結果：33 個測試檔案、550 個測試全部通過，TS 零錯誤，Build 通過
+
 ### 2026-02-16 (第十三階段：遊戲模組庫 + 種子資料 + Admin Staff 整合)
 
 - [x] 新增 `shared/schema/game-modules.ts` (~310 行) - GameModule 介面 + 5 套完整遊戲模組定義
