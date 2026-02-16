@@ -1,21 +1,32 @@
 // 遊戲頁面渲染器 - 根據 pageType 渲染對應元件
+// 使用 React.lazy 動態載入，避免 GamePlay chunk 過大
+import { lazy, Suspense, useMemo } from "react";
 import type { Page } from "@shared/schema";
+import { Loader2 } from "lucide-react";
 
-import TextCardPage from "@/components/game/TextCardPage";
-import DialoguePage from "@/components/game/DialoguePage";
-import VideoPage from "@/components/game/VideoPage";
-import ButtonPage from "@/components/game/ButtonPage";
-import TextVerifyPage from "@/components/game/TextVerifyPage";
-import ChoiceVerifyPage from "@/components/game/ChoiceVerifyPage";
-import ConditionalVerifyPage from "@/components/game/ConditionalVerifyPage";
-import ShootingMissionPage from "@/components/game/ShootingMissionPage";
-import PhotoMissionPage from "@/components/game/PhotoMissionPage";
-import GpsMissionPage from "@/components/game/GpsMissionPage";
-import QrScanPage from "@/components/game/QrScanPage";
-import TimeBombPage from "@/components/game/TimeBombPage";
-import LockPage from "@/components/game/LockPage";
-import MotionChallengePage from "@/components/game/MotionChallengePage";
-import VotePage from "@/components/game/VotePage";
+const TextCardPage = lazy(() => import("@/components/game/TextCardPage"));
+const DialoguePage = lazy(() => import("@/components/game/DialoguePage"));
+const VideoPage = lazy(() => import("@/components/game/VideoPage"));
+const ButtonPage = lazy(() => import("@/components/game/ButtonPage"));
+const TextVerifyPage = lazy(() => import("@/components/game/TextVerifyPage"));
+const ChoiceVerifyPage = lazy(() => import("@/components/game/ChoiceVerifyPage"));
+const ConditionalVerifyPage = lazy(() => import("@/components/game/ConditionalVerifyPage"));
+const ShootingMissionPage = lazy(() => import("@/components/game/ShootingMissionPage"));
+const PhotoMissionPage = lazy(() => import("@/components/game/PhotoMissionPage"));
+const GpsMissionPage = lazy(() => import("@/components/game/GpsMissionPage"));
+const QrScanPage = lazy(() => import("@/components/game/QrScanPage"));
+const TimeBombPage = lazy(() => import("@/components/game/TimeBombPage"));
+const LockPage = lazy(() => import("@/components/game/LockPage"));
+const MotionChallengePage = lazy(() => import("@/components/game/MotionChallengePage"));
+const VotePage = lazy(() => import("@/components/game/VotePage"));
+
+function PageLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center h-full min-h-[200px]">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    </div>
+  );
+}
 
 interface GamePageRendererProps {
   readonly page: Page;
@@ -41,62 +52,71 @@ export default function GamePageRenderer({
   inventory,
   score,
 }: GamePageRendererProps) {
-  // 各頁面元件有各自的 config 型別，統一使用 runtime config 傳遞
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const config = page.config as any;
-  const commonProps = {
+
+  // 記憶化 commonProps 避免每次渲染都建立新物件
+  const commonProps = useMemo(() => ({
     config,
     onComplete,
     onVariableUpdate,
     sessionId,
     gameId,
     variables,
+  }), [config, onComplete, onVariableUpdate, sessionId, gameId, variables]);
+
+  const renderPage = () => {
+    switch (page.pageType) {
+      case "text_card":
+        return <TextCardPage {...commonProps} />;
+      case "dialogue":
+        return <DialoguePage {...commonProps} />;
+      case "video":
+        return <VideoPage {...commonProps} />;
+      case "button":
+        return <ButtonPage {...commonProps} />;
+      case "text_verify":
+        return <TextVerifyPage {...commonProps} />;
+      case "choice_verify":
+        return <ChoiceVerifyPage {...commonProps} />;
+      case "conditional_verify":
+        return (
+          <ConditionalVerifyPage
+            {...commonProps}
+            inventory={inventory}
+            score={score}
+          />
+        );
+      case "shooting_mission":
+        return <ShootingMissionPage {...commonProps} />;
+      case "photo_mission":
+        return <PhotoMissionPage {...commonProps} />;
+      case "gps_mission":
+        return <GpsMissionPage {...commonProps} />;
+      case "qr_scan":
+        return <QrScanPage {...commonProps} />;
+      case "time_bomb":
+        return <TimeBombPage {...commonProps} />;
+      case "lock":
+        return <LockPage {...commonProps} />;
+      case "motion_challenge":
+        return <MotionChallengePage {...commonProps} />;
+      case "vote":
+        return <VotePage {...commonProps} />;
+      default:
+        return (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-muted-foreground">
+              未知頁面類型: {page.pageType}
+            </p>
+          </div>
+        );
+    }
   };
 
-  switch (page.pageType) {
-    case "text_card":
-      return <TextCardPage {...commonProps} />;
-    case "dialogue":
-      return <DialoguePage {...commonProps} />;
-    case "video":
-      return <VideoPage {...commonProps} />;
-    case "button":
-      return <ButtonPage {...commonProps} />;
-    case "text_verify":
-      return <TextVerifyPage {...commonProps} />;
-    case "choice_verify":
-      return <ChoiceVerifyPage {...commonProps} />;
-    case "conditional_verify":
-      return (
-        <ConditionalVerifyPage
-          {...commonProps}
-          inventory={inventory}
-          score={score}
-        />
-      );
-    case "shooting_mission":
-      return <ShootingMissionPage {...commonProps} />;
-    case "photo_mission":
-      return <PhotoMissionPage {...commonProps} />;
-    case "gps_mission":
-      return <GpsMissionPage {...commonProps} />;
-    case "qr_scan":
-      return <QrScanPage {...commonProps} />;
-    case "time_bomb":
-      return <TimeBombPage {...commonProps} />;
-    case "lock":
-      return <LockPage {...commonProps} />;
-    case "motion_challenge":
-      return <MotionChallengePage {...commonProps} />;
-    case "vote":
-      return <VotePage {...commonProps} />;
-    default:
-      return (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-muted-foreground">
-            未知頁面類型: {page.pageType}
-          </p>
-        </div>
-      );
-  }
+  return (
+    <Suspense fallback={<PageLoadingFallback />}>
+      {renderPage()}
+    </Suspense>
+  );
 }
