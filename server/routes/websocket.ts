@@ -356,5 +356,17 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
-  return { broadcastToSession, broadcastToTeam };
+  function broadcastToMatch(matchId: string, message: any) {
+    const matchClientSet = matchClients.get(matchId);
+    if (matchClientSet) {
+      const payload = JSON.stringify(message);
+      matchClientSet.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(payload);
+        }
+      });
+    }
+  }
+
+  return { broadcastToSession, broadcastToTeam, broadcastToMatch };
 }
