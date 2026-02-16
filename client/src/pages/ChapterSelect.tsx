@@ -175,9 +175,10 @@ export default function ChapterSelect() {
                   {/* 章節封面 */}
                   {chapter.coverImageUrl && (
                     <div className="relative h-32 overflow-hidden">
-                      <img
+                      <OptimizedImage
                         src={chapter.coverImageUrl}
                         alt={chapter.title}
+                        preset="card"
                         className="w-full h-full object-cover"
                       />
                       {!isUnlocked && (
