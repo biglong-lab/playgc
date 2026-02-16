@@ -83,10 +83,10 @@ export default memo(function LiveRanking({ ranking, currentUserId, showRelay }: 
                       {entry.score}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </AnimatePresence>
         )}
       </CardContent>
     </Card>
