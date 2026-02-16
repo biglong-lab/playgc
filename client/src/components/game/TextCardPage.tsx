@@ -261,10 +261,12 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
     <div className="min-h-full flex flex-col md:flex-row relative overflow-hidden">
       {config.backgroundImage && (
         <div className="relative w-full md:w-1/2 h-48 md:h-full">
-          <img 
-            src={config.backgroundImage} 
-            alt="" 
+          <OptimizedImage
+            src={config.backgroundImage}
+            alt=""
+            preset="cover"
             className="w-full h-full object-cover"
+            loading="eager"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-background hidden md:block" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background md:hidden" />
