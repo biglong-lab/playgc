@@ -17,6 +17,7 @@ import {
   BookOpen,
   Loader2,
 } from "lucide-react";
+import OptimizedImage from "@/components/shared/OptimizedImage";
 
 export default function ChapterSelect() {
   const { gameId } = useParams<{ gameId: string }>();
