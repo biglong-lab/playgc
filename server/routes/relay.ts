@@ -56,22 +56,22 @@ export function registerRelayRoutes(app: Express, ctx: RouteContext) {
         .orderBy(asc(matchParticipants.joinedAt));
 
       const segmentCount = relayConfig.segmentCount;
-      const updatedParticipants = [];
 
-      for (let i = 0; i < participants.length; i++) {
-        const segment = (i % segmentCount) + 1;
-        const isFirst = segment === 1;
-
-        const [updated] = await db.update(matchParticipants)
-          .set({
-            relaySegment: segment,
-            relayStatus: isFirst ? "active" : "pending",
-          })
-          .where(eq(matchParticipants.id, participants[i].id))
-          .returning();
-
-        updatedParticipants.push(updated);
-      }
+      // 並行更新所有參與者（避免 N+1 逐筆查詢）
+      const updateResults = await Promise.all(
+        participants.map((p, i) => {
+          const segment = (i % segmentCount) + 1;
+          const isFirst = segment === 1;
+          return db.update(matchParticipants)
+            .set({
+              relaySegment: segment,
+              relayStatus: isFirst ? "active" : "pending",
+            })
+            .where(eq(matchParticipants.id, p.id))
+            .returning();
+        }),
+      );
+      const updatedParticipants = updateResults.map((r) => r[0]);
 
       ctx.broadcastToMatch(matchId, {
         type: "relay_segments_assigned",
