@@ -28,6 +28,7 @@ import {
 const menuItems = [
   { title: "總覽", icon: Home, path: "/admin" },
   { title: "遊戲管理", icon: Gamepad2, path: "/admin/games" },
+  { title: "模組庫", icon: Library, path: "/admin/templates" },
   { title: "進行中場次", icon: Activity, path: "/admin/sessions" },
   { title: "設備管理", icon: Cpu, path: "/admin/devices" },
   { title: "數據分析", icon: BarChart3, path: "/admin/analytics" },
