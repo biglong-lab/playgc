@@ -87,6 +87,21 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第七階段：Landing/AdminStaff 拆分 + 隊伍測試)
+
+- [x] 拆分 Landing.tsx：629 行 → 242 行
+  - `hooks/useLoginHandlers.ts` (~180 行) - 登入邏輯 Hook
+  - `components/landing/LoginDialog.tsx` (~220 行) - 登入對話框元件
+  - `components/landing/EmbeddedBrowserWarning.tsx` (~80 行) - 嵌入式瀏覽器偵測
+- [x] 拆分 AdminStaffAccounts.tsx：613 行 → 233 行
+  - `pages/admin-staff/types.ts` (~90 行) - 共用型別與工具函式
+  - `pages/admin-staff/AccountFormDialog.tsx` (~190 行) - 帳號表單對話框
+  - `pages/admin-staff/AccountTable.tsx` (~130 行) - 帳號列表表格
+  - `pages/admin-staff/AccountActionDialogs.tsx` (~160 行) - 重設密碼/授權對話框
+- [x] 新增隊伍路由整合測試：teams.test.ts (34 測試)
+  - 建立隊伍、加入隊伍、取得隊伍、更新準備狀態、離開隊伍、開始遊戲、取得我的隊伍
+- [x] 測試結果：15 個測試檔案、224 個測試全部通過，TS 零錯誤
+
 ### 2026-02-16 (第六階段：程式碼拆分優化)
 
 - [x] 拆分 game-editor/index.tsx：768 行 → 486 行
