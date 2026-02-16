@@ -293,7 +293,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
       }
 
       // 清理對戰客戶端
-      const matchId = (ws as any).matchId;
+      const matchId = ws.matchId;
       if (matchId) {
         matchClients.get(matchId)?.delete(ws);
         if (matchClients.get(matchId)?.size === 0) {
