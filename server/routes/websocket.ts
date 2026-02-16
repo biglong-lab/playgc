@@ -46,7 +46,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           ws.authenticatedUserId = authenticatedUserId;
         }
       } catch {
-        console.warn("WebSocket 連線 token 驗證失敗");
+        // Token 驗證失敗，允許匿名連線（向後兼容）
       }
     }
 
