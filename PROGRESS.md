@@ -87,6 +87,20 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第十階段：QrScan/AdminGames 拆分 + TeamScores/TeamVotes 測試)
+
+- [x] 拆分 QrScanPage.tsx：523 行 → 38 行
+  - `qr-scan/useQrScanner.ts` (~230 行) - 掃描器生命週期、相機控制、QR 驗證邏輯
+  - `qr-scan/QrScanViews.tsx` (~200 行) - 6 個 View 元件 + CameraErrorBanner
+- [x] 拆分 AdminGames.tsx：551 行 → 188 行
+  - `admin-games/useAdminGames.ts` (~312 行) - 6 個 mutation + state + handler
+  - `admin-games/GamesTable.tsx` (~226 行) - 表格元件（GameRow, QRCodeCell, ActionButtons, PublishButton）
+- [x] 新增隊伍分數路由測試：team-scores.test.ts (12 測試)
+  - 分數更新（正值/負值/null 起算）、Zod 驗證、分數紀錄查詢、WebSocket 廣播
+- [x] 新增隊伍投票路由測試：team-votes.test.ts (23 測試)
+  - 建立投票（權限/驗證）、投票（多數決/全體一致/過期/重複）、投票列表
+- [x] 測試結果：21 個測試檔案、346 個測試全部通過，TS 零錯誤
+
 ### 2026-02-16 (第九階段：GameSettings/Achievement 拆分 + Sessions/Devices 測試)
 
 - [x] 拆分 GameSettings.tsx：566 行 → 109 行
