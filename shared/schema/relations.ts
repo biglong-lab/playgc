@@ -446,3 +446,41 @@ export const playerChapterProgressRelations = relations(
   })
 );
 
+// ============================================================================
+// Match Relations（對戰系統）
+// ============================================================================
+export const gameMatchesRelations = relations(gameMatches, ({ one, many }) => ({
+  game: one(games, {
+    fields: [gameMatches.gameId],
+    references: [games.id],
+  }),
+  chapter: one(gameChapters, {
+    fields: [gameMatches.chapterId],
+    references: [gameChapters.id],
+  }),
+  creator: one(users, {
+    fields: [gameMatches.creatorId],
+    references: [users.id],
+  }),
+  participants: many(matchParticipants),
+}));
+
+export const matchParticipantsRelations = relations(matchParticipants, ({ one }) => ({
+  match: one(gameMatches, {
+    fields: [matchParticipants.matchId],
+    references: [gameMatches.id],
+  }),
+  team: one(teams, {
+    fields: [matchParticipants.teamId],
+    references: [teams.id],
+  }),
+  user: one(users, {
+    fields: [matchParticipants.userId],
+    references: [users.id],
+  }),
+  session: one(gameSessions, {
+    fields: [matchParticipants.sessionId],
+    references: [gameSessions.id],
+  }),
+}));
+
