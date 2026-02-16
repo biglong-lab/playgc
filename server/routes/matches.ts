@@ -96,7 +96,8 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
   // 取得對戰詳情（含參與者與排名）
   app.get("/api/matches/:matchId", async (req, res) => {
     try {
-      const { matchId } = req.params;
+      const matchId = validateId(req.params.matchId, res);
+      if (!matchId) return;
       const [match] = await db.select()
         .from(gameMatches)
         .where(eq(gameMatches.id, matchId));
