@@ -87,6 +87,21 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第十二階段：完成全路由測試覆蓋 + README 使用說明)
+
+- [x] 新增 README.md 使用說明（471 行）- 快速開始、系統角色、路由表、API 文件、專案結構、常見問題
+- [x] 新增 .env.example 環境變數範本
+- [x] 新增管理員角色/帳號路由測試：adminRoles.test.ts (28 測試)
+  - 角色 CRUD（系統角色不可刪除）、帳號 CRUD（密碼隱藏）、帳號授權（跨場域 403）、密碼重設、審計日誌、玩家列表
+- [x] 新增場域管理路由測試：adminFields.test.ts (12 測試)
+  - 場域 CRUD、super_admin 取得所有/一般管理員限自己場域、場域編號 6 個月鎖定、編號重複檢查
+- [x] 新增媒體路由測試：media.test.ts (18 測試)
+  - Cloudinary 狀態、遊戲照片上傳（Zod 驗證/遊戲不存在）、封面上傳（跨場域 403）、玩家照片、媒體上傳（無效 mediaType）
+- [x] 新增 WebSocket 路由測試：websocket.test.ts (14 測試)
+  - 連線與認證（Firebase token/無效 token 向後兼容）、session/team 加入與廣播、聊天訊息儲存、準備狀態、broadcastToSession/broadcastToTeam、斷線通知、userId 冒用防護、MQTT 整合
+- [x] 測試結果：27 個測試檔案、457 個測試全部通過，TS 零錯誤
+- [x] **路由測試覆蓋率達 17/17 (100%)**
+
 ### 2026-02-16 (第十一階段：TeamLobby/AdminStaffGames 拆分 + AdminGames/AdminContent 測試)
 
 - [x] 拆分 TeamLobby.tsx：536 行 → 62 行
