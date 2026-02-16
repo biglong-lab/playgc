@@ -139,9 +139,10 @@ export default function ChapterSelect() {
       {/* 遊戲封面 */}
       {game.coverImageUrl && (
         <div className="relative h-48 max-w-4xl mx-auto overflow-hidden">
-          <img
+          <OptimizedImage
             src={game.coverImageUrl}
             alt={game.title}
+            preset="cover"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
