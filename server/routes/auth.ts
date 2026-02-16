@@ -203,8 +203,7 @@ export function registerAuthRoutes(app: Express) {
 
       const sessionSecret = process.env.SESSION_SECRET;
       if (!sessionSecret) {
-        console.error("SESSION_SECRET 環境變數未設定");
-        return res.status(500).json({ message: "伺服器設定錯誤" });
+        return res.status(500).json({ message: "伺服器設定錯誤：SESSION_SECRET 未設定" });
       }
 
       const token = jwt.sign(
