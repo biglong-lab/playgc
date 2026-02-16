@@ -1,8 +1,10 @@
-// 即時排名看板元件 — 對戰中的即時排名顯示
+// 即時排名看板元件 — 對戰中的即時排名顯示（含排名變動動畫）
 import { memo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, User } from "lucide-react";
+import { rankingItem } from "@/lib/animation-variants";
 
 interface RankingEntry {
   readonly userId: string;
