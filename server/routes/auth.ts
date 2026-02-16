@@ -106,11 +106,6 @@ export function registerAuthRoutes(app: Express) {
       });
 
       if (!field) {
-        if (attempts) {
-          attempts.count++;
-        } else {
-          firebaseLoginAttempts.set(rateLimitKey, { count: 1, firstAttempt: Date.now() });
-        }
         return res.status(404).json({ message: "找不到此場域" });
       }
 
