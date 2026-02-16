@@ -1,6 +1,21 @@
 import { storage } from "../storage";
 import type { AuthenticatedRequest } from "./types";
 import type { User } from "@shared/schema";
+import { z } from "zod";
+import type { Response } from "express";
+
+// UUID v4 格式驗證
+const uuidSchema = z.string().uuid("無效的 ID 格式");
+
+/** 驗證 ID 參數是否為合法 UUID，無效時自動回傳 400 */
+export function validateId(id: string, res: Response): string | null {
+  const result = uuidSchema.safeParse(id);
+  if (!result.success) {
+    res.status(400).json({ error: "無效的 ID 格式" });
+    return null;
+  }
+  return result.data;
+}
 
 export async function checkGameOwnership(req: AuthenticatedRequest, gameId: string): Promise<{ authorized: boolean; message?: string; user?: User; status?: number }> {
   const userId = req.user?.claims?.sub;
