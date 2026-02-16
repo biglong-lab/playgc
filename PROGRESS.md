@@ -120,7 +120,7 @@
 - [x] 新增 WebSocket 路由測試：websocket.test.ts (14 測試)
   - 連線與認證（Firebase token/無效 token 向後兼容）、session/team 加入與廣播、聊天訊息儲存、準備狀態、broadcastToSession/broadcastToTeam、斷線通知、userId 冒用防護、MQTT 整合
 - [x] 測試結果：27 個測試檔案、457 個測試全部通過，TS 零錯誤
-- [x] **路由測試覆蓋率達 17/17 (100%)**
+- [x] **路由測試覆蓋率達 17/17 (100%)** (第十三階段新增至 18/18)
 
 ### 2026-02-16 (第十一階段：TeamLobby/AdminStaffGames 拆分 + AdminGames/AdminContent 測試)
 
