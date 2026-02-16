@@ -59,6 +59,7 @@ export const gamesRelations = relations(games, ({ one, many }) => ({
   chapters: many(gameChapters),
   gameSessions: many(gameSessions),
   leaderboard: many(leaderboard),
+  matches: many(gameMatches),
 }));
 
 // ============================================================================
