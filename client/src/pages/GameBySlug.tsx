@@ -137,14 +137,11 @@ export default function GameBySlug() {
     <div className="min-h-screen bg-background">
       {game.coverImageUrl && (
         <div className="h-48 relative bg-muted">
-          <img
+          <OptimizedImage
             src={game.coverImageUrl}
             alt={game.title}
+            preset="cover"
             className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-            }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background" />
         </div>
