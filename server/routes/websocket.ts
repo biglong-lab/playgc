@@ -25,6 +25,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
   const clients: Map<string, Set<WebSocketClient>> = new Map();
   const teamClients: Map<string, Set<WebSocketClient>> = new Map();
+  const matchClients: Map<string, Set<WebSocketClient>> = new Map();
 
   wss.on("connection", async (ws: WebSocketClient, request: IncomingMessage) => {
     ws.isAlive = true;
