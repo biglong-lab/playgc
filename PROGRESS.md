@@ -220,7 +220,9 @@
 | server/__tests__/locations.test.ts | 23 | 新增 - 地點 API 整合 |
 | server/__tests__/playerSessions.test.ts | 17 | 新增 - 場次 API 整合 |
 | server/__tests__/devices.test.ts | 26 | 新增 - 裝置 API 整合 |
-| **合計** | **311** | |
+| server/__tests__/team-scores.test.ts | 12 | 新增 - 分數 API 整合 |
+| server/__tests__/team-votes.test.ts | 23 | 新增 - 投票 API 整合 |
+| **合計** | **346** | |
 
 ## 待處理問題
 
