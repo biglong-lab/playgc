@@ -49,6 +49,7 @@ import {
   ChevronDown,
   Settings,
   Link2,
+  Library,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
