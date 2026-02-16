@@ -87,6 +87,26 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第十三階段：遊戲模組庫 + 種子資料 + Admin Staff 整合)
+
+- [x] 新增 `shared/schema/game-modules.ts` (~310 行) - GameModule 介面 + 5 套完整遊戲模組定義
+  - 古鎮尋寶奇遇記 (8 頁)、密室危機倒數 (8 頁)、校園知識王爭霸戰 (7 頁)、野外生存大挑戰 (9 頁)、線上推理偵探社 (8 頁)
+  - 支援分類篩選（戶外探索/室內解謎/教育學習/團隊競技/數位互動）
+- [x] 新增 `server/routes/admin-modules.ts` (~120 行) - 3 個 API 端點
+  - GET /api/admin/modules、GET /api/admin/modules/:id、POST /api/admin/modules/:id/create-game
+- [x] 新增前端模組庫頁面 + 元件：
+  - `client/src/pages/AdminTemplates.tsx` (~140 行) - AdminLayout 版模組庫
+  - `client/src/pages/AdminStaffTemplates.tsx` (~140 行) - AdminStaffLayout 版模組庫
+  - `client/src/components/module-library/ModuleCard.tsx` (~100 行) - 模組卡片
+  - `client/src/components/module-library/ModulePreviewDialog.tsx` (~160 行) - 流程預覽彈窗
+  - `client/src/components/module-library/CreateFromModuleDialog.tsx` (~130 行) - 建立確認彈窗
+- [x] 修改 AdminLayout.tsx、AdminStaffLayout.tsx 側邊欄新增「模組庫」選項
+- [x] 修改 App.tsx 新增路由 /admin/templates、/admin-staff/templates
+- [x] 新增 `scripts/seed.ts` (~170 行) - 資料庫種子腳本
+  - 建立場域 (JIACHUN)、16 個權限、2 個角色、管理員帳號、3 個展示遊戲
+- [x] 新增模組 API 測試：adminModules.test.ts (10 測試)
+- [x] 測試結果：28 個測試檔案、467 個測試全部通過，TS 零錯誤
+
 ### 2026-02-16 (第十二階段：完成全路由測試覆蓋 + README 使用說明)
 
 - [x] 新增 README.md 使用說明（471 行）- 快速開始、系統角色、路由表、API 文件、專案結構、常見問題
