@@ -70,6 +70,32 @@ export function registerAdminChapterRoutes(app: Express) {
   );
 
   // ========================================================================
+  // 重新排序章節（靜態路由需在 :id 動態路由之前）
+  // ========================================================================
+  app.patch(
+    "/api/admin/chapters/reorder",
+    requireAdminAuth,
+    requirePermission("game:edit"),
+    async (req, res) => {
+      try {
+        const { gameId, chapterIds } = req.body;
+
+        if (!gameId || !Array.isArray(chapterIds)) {
+          return res
+            .status(400)
+            .json({ message: "需要 gameId 和 chapterIds" });
+        }
+
+        await storage.reorderChapters(gameId, chapterIds);
+        const chapters = await storage.getChapters(gameId);
+        res.json(chapters);
+      } catch (error) {
+        res.status(500).json({ message: "無法重新排序" });
+      }
+    }
+  );
+
+  // ========================================================================
   // 更新章節
   // ========================================================================
   app.patch(
@@ -113,32 +139,6 @@ export function registerAdminChapterRoutes(app: Express) {
         res.json({ message: "章節已刪除" });
       } catch (error) {
         res.status(500).json({ message: "無法刪除章節" });
-      }
-    }
-  );
-
-  // ========================================================================
-  // 重新排序章節
-  // ========================================================================
-  app.patch(
-    "/api/admin/chapters/reorder",
-    requireAdminAuth,
-    requirePermission("game:edit"),
-    async (req, res) => {
-      try {
-        const { gameId, chapterIds } = req.body;
-
-        if (!gameId || !Array.isArray(chapterIds)) {
-          return res
-            .status(400)
-            .json({ message: "需要 gameId 和 chapterIds" });
-        }
-
-        await storage.reorderChapters(gameId, chapterIds);
-        const chapters = await storage.getChapters(gameId);
-        res.json(chapters);
-      } catch (error) {
-        res.status(500).json({ message: "無法重新排序" });
       }
     }
   );
