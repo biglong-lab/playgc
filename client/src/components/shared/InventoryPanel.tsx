@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { X, Backpack, Package, Sparkles, Shield, Crosshair, FileQuestion } from "lucide-react";
 import type { Item } from "@shared/schema";
+import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface InventoryPanelProps {
   items: string[];
