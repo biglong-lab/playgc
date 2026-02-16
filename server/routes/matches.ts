@@ -13,6 +13,7 @@ import {
 import { eq, and, desc, asc } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
+import { validateId } from "./utils";
 import { registerRelayRoutes } from "./relay";
 
 // 建立對戰的請求驗證
