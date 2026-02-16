@@ -3,6 +3,9 @@ import type { Server, IncomingMessage } from "http";
 import { storage } from "../storage";
 import { mqttService } from "../mqttService";
 import { verifyFirebaseToken } from "../firebaseAuth";
+import { db } from "../db";
+import { gameMatches } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import type { WebSocketClient, RouteContext } from "./types";
 
 // 從 URL 解析 query 參數
