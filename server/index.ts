@@ -21,10 +21,9 @@ declare module "http" {
   }
 }
 
-const allowedOrigins: string[] = [
-  'http://localhost:3333',
-  'http://localhost:3000',
-];
+const allowedOrigins: string[] = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+  : ["http://localhost:3333", "http://localhost:3000"];
 
 // 安全標頭
 app.use(helmet({
