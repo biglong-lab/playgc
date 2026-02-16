@@ -210,11 +210,19 @@ describe("對戰路由 API", () => {
     it("對戰不存在時回傳 404", async () => {
       const { app } = createApp();
       selectResults = [[]];
+      // 使用合法 UUID 格式但 DB 查無資料
+      const res = await request(app)
+        .get("/api/matches/c0000000-0000-4000-8000-000000000099");
 
+      expect(res.status).toBe(404);
+    });
+
+    it("無效 ID 格式回傳 400", async () => {
+      const { app } = createApp();
       const res = await request(app)
         .get("/api/matches/nonexistent");
 
-      expect(res.status).toBe(404);
+      expect(res.status).toBe(400);
     });
   });
 
