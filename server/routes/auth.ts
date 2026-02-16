@@ -91,16 +91,6 @@ export function registerAuthRoutes(app: Express) {
 
       const ipAddress = req.ip || req.socket.remoteAddress || "unknown";
 
-      const rateLimitKey = `${ipAddress}`;
-      const attempts = firebaseLoginAttempts.get(rateLimitKey);
-
-      if (attempts && attempts.count >= MAX_ATTEMPTS) {
-        const remainingTime = Math.ceil((RATE_LIMIT_WINDOW - (Date.now() - attempts.firstAttempt)) / 60000);
-        return res.status(429).json({
-          message: `嘗試次數過多，請${remainingTime}分鐘後再試`
-        });
-      }
-
       const firebaseUserId = decodedToken.uid;
       const firebaseEmail = decodedToken.email || null;
       const firebaseDisplayName = decodedToken.name || null;
