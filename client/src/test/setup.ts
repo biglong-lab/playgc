@@ -7,22 +7,27 @@ import { afterEach, vi } from "vitest";
 vi.mock("firebase/app", () => ({
   initializeApp: vi.fn(() => ({})),
 }));
-vi.mock("firebase/auth", () => ({
-  getAuth: vi.fn(() => ({ currentUser: null })),
-  GoogleAuthProvider: vi.fn(),
-  OAuthProvider: vi.fn(() => ({ addScope: vi.fn() })),
-  signInWithPopup: vi.fn(),
-  signInWithRedirect: vi.fn(),
-  getRedirectResult: vi.fn(),
-  signOut: vi.fn(),
-  onAuthStateChanged: vi.fn(),
-  signInAnonymously: vi.fn(),
-  createUserWithEmailAndPassword: vi.fn(),
-  signInWithEmailAndPassword: vi.fn(),
-  sendPasswordResetEmail: vi.fn(),
-  linkWithCredential: vi.fn(),
-  EmailAuthProvider: { credential: vi.fn() },
-}));
+vi.mock("firebase/auth", () => {
+  function MockOAuthProvider() {
+    return { addScope: vi.fn() };
+  }
+  return {
+    getAuth: vi.fn(() => ({ currentUser: null })),
+    GoogleAuthProvider: vi.fn(),
+    OAuthProvider: MockOAuthProvider,
+    signInWithPopup: vi.fn(),
+    signInWithRedirect: vi.fn(),
+    getRedirectResult: vi.fn(),
+    signOut: vi.fn(),
+    onAuthStateChanged: vi.fn(),
+    signInAnonymously: vi.fn(),
+    createUserWithEmailAndPassword: vi.fn(),
+    signInWithEmailAndPassword: vi.fn(),
+    sendPasswordResetEmail: vi.fn(),
+    linkWithCredential: vi.fn(),
+    EmailAuthProvider: { credential: vi.fn() },
+  };
+});
 
 // 每個測試後自動清理 DOM
 afterEach(() => {
