@@ -22,6 +22,7 @@ const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
 const TeamLobby = lazy(() => import("@/pages/TeamLobby"));
 const ChapterSelect = lazy(() => import("@/pages/ChapterSelect"));
 const GameBySlug = lazy(() => import("@/pages/GameBySlug"));
+const MatchLobby = lazy(() => import("@/pages/MatchLobby"));
 
 // 管理端（場主） — lazy import
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
