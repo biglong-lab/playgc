@@ -211,7 +211,10 @@ export function CountdownView({ seconds }: CountdownViewProps) {
 // ============================================================================
 interface PlayingViewProps {
   readonly match: Record<string, unknown> | undefined;
-  readonly ranking: readonly { userId: string; score: number; rank: number }[];
+  readonly ranking: readonly {
+    userId: string; score: number; rank: number;
+    relaySegment?: number | null; relayStatus?: string | null;
+  }[];
   readonly userId?: string;
   readonly isRelay?: boolean;
 }
