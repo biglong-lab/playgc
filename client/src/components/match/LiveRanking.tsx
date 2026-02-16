@@ -84,4 +84,4 @@ export default memo(function LiveRanking({ ranking, currentUserId, showRelay }: 
       </CardContent>
     </Card>
   );
-}
+});
