@@ -202,18 +202,7 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
         timestamp: new Date().toISOString(),
       });
 
-      // 倒數後自動切換為 playing
-      setTimeout(async () => {
-        await db.update(gameMatches)
-          .set({ status: "playing", startedAt: new Date(), updatedAt: new Date() })
-          .where(eq(gameMatches.id, matchId));
-
-        ctx.broadcastToMatch(matchId, {
-          type: "match_started",
-          timestamp: new Date().toISOString(),
-        });
-      }, countdownSeconds * 1000);
-
+      // 倒數由前端處理，完成後透過 WebSocket 通知後端切換狀態
       return res.json(updated);
     } catch (error) {
       return res.status(500).json({ error: "開始對戰失敗" });
