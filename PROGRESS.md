@@ -273,14 +273,16 @@
 
 ### 🟢 優化方向
 1. ~~安全性審查（查詢優化）~~ → 第十六階段已完成 N+1 查詢優化 + setTimeout 風險修復
-2. 安全性審查（rate limiting、input validation 完整性）
-3. Vite 7 升級（解決剩餘安全漏洞）
-4. GamePlay.tsx chunk 過大警告（445KB，考慮進一步拆分）
+2. ~~安全性審查（error leak + ID validation + CORS）~~ → 第十七階段已完成
+3. ~~GamePlay.tsx chunk 過大警告（445KB）~~ → 第十七階段已用 React.lazy 拆分消除
+4. ~~React.memo 策略~~ → 第十七階段已完成高頻元件 memo + queryClient 快取調整
+5. Rate limiting（API 端點保護）
+6. Vite 7 升級（解決剩餘安全漏洞）
 
 ## 下一步建議
 
 1. **DB Migration** - `npm run db:push` 同步 Phase 2 資料表
 2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
 3. **Phase 2 功能完善** - 倒數計時動畫 UI、排名即時更新介面、接力進度條
-4. **效能優化** - GamePlay chunk 拆分、圖片懶載入、React.memo 策略
-5. **安全性強化** - rate limiting 端點檢查、input validation 完整性掃描
+4. **Rate Limiting** - API 端點流量保護（express-rate-limit）
+5. **圖片懶載入** - 遊戲大廳和遊戲內頁面圖片延遲載入
