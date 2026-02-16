@@ -92,6 +92,40 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第十六階段：穩定性 + 型別安全 + 效能強化)
+
+#### 修改 1：清理 console.log
+- [x] `server/routes/auth.ts` — console.error 改為 HTTP 錯誤回應
+- [x] `server/routes/websocket.ts` — 移除 console.warn/console.error
+- [x] `server/db.ts` — 精簡 pool 錯誤處理，移除 connect 監聽器與 closePool 日誌
+
+#### 修改 2：型別安全
+- [x] `server/routes/types.ts` — WebSocketClient 新增 `matchId?: string` 屬性
+- [x] `server/routes/websocket.ts` — 4 處 `(ws as any).matchId` → `ws.matchId`
+- [x] `server/routes/matches.ts` — `(match.settings as any)` → `(match.settings as MatchSettings | null)`
+
+#### 修改 3：N+1 查詢優化
+- [x] `server/routes/relay.ts` L58-74 — for-loop 逐筆 UPDATE → `Promise.all` 並行
+- [x] `server/routes/matches.ts` L243-252 — finish 排名更新同樣改為 `Promise.all`
+
+#### 修改 4：移除 setTimeout + 新增 recover 端點
+- [x] `server/routes/matches.ts` — 移除 server 端 `setTimeout` 倒數（重啟遺失風險）
+- [x] 新增 `POST /api/matches/:matchId/recover` — 自動恢復卡在 countdown 的對戰（含 2 秒容錯）
+- [x] `server/routes/websocket.ts` — 新增 `match_countdown_complete` 事件處理器
+  - 前端倒數完成後通知後端，後端驗證 countdown 狀態後切換為 playing
+
+#### 修改 5：WebSocket 重連 + 前端倒數
+- [x] `client/src/hooks/use-match-websocket.ts` — 全面重寫
+  - 指數退避重連（1s → 2s → 4s → ... 30s，最多 10 次）
+  - 前端 `setInterval` 倒數計時，倒數完成自動送 `match_countdown_complete`
+  - unmount 完整清理（重連計時器 + 倒數計時器 + WebSocket）
+
+#### 測試更新
+- [x] `server/__tests__/matches.test.ts` — 新增 4 個 recover 端點測試，更新 mock 策略
+- [x] `server/__tests__/websocket.test.ts` — 新增 db mock（因 websocket.ts 新增 db import）
+
+**測試結果**: 42 個測試檔案、663 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
 ### 2026-02-16 (第十五階段：全面推進 — Code Splitting + 前端測試 + Phase 2 對戰 + E2E)
 
 #### 步驟 1：Code Splitting 效能優化
