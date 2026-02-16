@@ -240,7 +240,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           }
 
           case "relay_handoff": {
-            const relayMatchId = (ws as any).matchId;
+            const relayMatchId = ws.matchId;
             if (relayMatchId) {
               broadcastToMatch(relayMatchId, {
                 type: "relay_handoff",
