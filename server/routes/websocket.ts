@@ -253,8 +253,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
           }
         }
-      } catch (error) {
-        console.error("WebSocket 訊息處理錯誤:", error);
+      } catch {
         // 發送錯誤回應給客戶端
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({
