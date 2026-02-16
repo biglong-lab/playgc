@@ -211,7 +211,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           case "match_join": {
             const matchId = message.matchId;
             if (matchId) {
-              (ws as any).matchId = matchId;
+              ws.matchId = matchId;
               if (!matchClients.has(matchId)) {
                 matchClients.set(matchId, new Set());
               }
