@@ -156,8 +156,8 @@ export function registerMediaRoutes(app: Express) {
         url: result.secure_url,
         publicId: result.public_id,
       });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || "上傳失敗" });
+    } catch {
+      res.status(500).json({ error: "上傳失敗" });
     }
   });
 
