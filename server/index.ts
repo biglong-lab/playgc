@@ -33,11 +33,14 @@ app.use(helmet({
 
 app.use(cors({
   origin: (origin, callback) => {
-    // 允許無 origin 的請求（如 server-to-server 或行動 app）
-    if (!origin || allowedOrigins.some(allowed => origin === allowed)) {
+    const isProduction = process.env.NODE_ENV === "production";
+    // 生產環境要求 origin；開發環境允許無 origin（Postman、curl 等）
+    if (!origin && !isProduction) {
+      callback(null, true);
+    } else if (origin && allowedOrigins.some((allowed) => origin === allowed)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS 不允許此來源: ${origin}`));
+      callback(new Error("CORS 不允許此來源"));
     }
   },
   credentials: true,
