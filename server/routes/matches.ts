@@ -8,6 +8,7 @@ import {
   games,
   matchSettingsSchema,
   type MatchStatus,
+  type MatchSettings,
 } from "@shared/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
 import { z } from "zod";
