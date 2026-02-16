@@ -255,6 +255,29 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
           }
+
+          // 前端倒數完成 → 切換對戰為 playing
+          case "match_countdown_complete": {
+            const countdownMatchId = ws.matchId;
+            if (countdownMatchId) {
+              const [match] = await db.select()
+                .from(gameMatches)
+                .where(eq(gameMatches.id, countdownMatchId));
+
+              // 僅在 countdown 狀態才執行（防重複）
+              if (match && match.status === "countdown") {
+                await db.update(gameMatches)
+                  .set({ status: "playing", startedAt: new Date(), updatedAt: new Date() })
+                  .where(eq(gameMatches.id, countdownMatchId));
+
+                broadcastToMatch(countdownMatchId, {
+                  type: "match_started",
+                  timestamp: new Date().toISOString(),
+                });
+              }
+            }
+            break;
+          }
         }
       } catch {
         // 發送錯誤回應給客戶端
