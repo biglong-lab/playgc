@@ -38,6 +38,7 @@ import AdminStaffQRCodes from "@/pages/AdminStaffQRCodes";
 import GameBySlug from "@/pages/GameBySlug";
 import TeamLobby from "@/pages/TeamLobby";
 import ChapterSelect from "@/pages/ChapterSelect";
+import AdminTemplates from "@/pages/AdminTemplates";
 
 function Router() {
   return (
