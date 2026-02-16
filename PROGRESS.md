@@ -252,7 +252,11 @@
 | server/__tests__/team-votes.test.ts | 23 | 新增 - 投票 API 整合 |
 | server/__tests__/adminGames.test.ts | 22 | 新增 - 管理員遊戲 API 整合 |
 | server/__tests__/adminContent.test.ts | 24 | 新增 - 管理員內容 API 整合 |
-| **合計** | **392** | |
+| server/__tests__/adminRoles.test.ts | 28 | 新增 - 角色帳號 API 整合 |
+| server/__tests__/adminFields.test.ts | 12 | 新增 - 場域管理 API 整合 |
+| server/__tests__/media.test.ts | 18 | 新增 - 媒體上傳 API 整合 |
+| server/__tests__/websocket.test.ts | 14 | 新增 - WebSocket 即時通訊 |
+| **合計** | **457** | |
 
 ## 待處理問題
 
