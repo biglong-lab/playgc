@@ -11,10 +11,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase";
 import type { Game, GameSession } from "@shared/schema";
-import { 
-  Gamepad2, Clock, Users, Zap, Search, Filter, 
+import {
+  Gamepad2, Clock, Users, Zap, Search, Filter,
   Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2
 } from "lucide-react";
+import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface UserGameStatus {
   gameId: string;
