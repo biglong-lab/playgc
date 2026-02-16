@@ -117,7 +117,7 @@ describe("對戰路由 API", () => {
       // select #0: 遊戲存在
       selectResults = [[{ id: "a0000000-0000-4000-8000-000000000001", title: "測試" }]];
       mockInsertReturning.mockResolvedValueOnce([{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         gameId: "a0000000-0000-4000-8000-000000000001",
         status: "waiting",
         accessCode: "ABC123",
@@ -129,7 +129,7 @@ describe("對戰路由 API", () => {
         .send({ matchMode: "competitive" });
 
       expect(res.status).toBe(201);
-      expect(res.body.id).toBe("match-1");
+      expect(res.body.id).toBe("b0000000-0000-4000-8000-000000000001");
     });
 
     it("未認證時回傳 401", async () => {
@@ -196,15 +196,15 @@ describe("對戰路由 API", () => {
       // select #0: match 存在（where 呼叫）
       // select #1: participants（where().orderBy()）
       selectResults = [
-        [{ id: "match-1", status: "waiting" }],
+        [{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting" }],
         [{ userId: "u1", currentScore: 100 }],
       ];
 
       const res = await request(app)
-        .get("/api/matches/match-1");
+        .get("/api/matches/b0000000-0000-4000-8000-000000000001");
 
       expect(res.status).toBe(200);
-      expect(res.body.id).toBe("match-1");
+      expect(res.body.id).toBe("b0000000-0000-4000-8000-000000000001");
     });
 
     it("對戰不存在時回傳 404", async () => {
@@ -228,34 +228,34 @@ describe("對戰路由 API", () => {
       // select #1: existing check (empty)
       // select #2: all participants (count check)
       selectResults = [
-        [{ id: "match-1", status: "waiting", maxTeams: 10 }],
+        [{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting", maxTeams: 10 }],
         [],
         [],
       ];
 
       mockInsertReturning.mockResolvedValueOnce([{
         id: "participant-1",
-        matchId: "match-1",
+        matchId: "b0000000-0000-4000-8000-000000000001",
         userId: "user-1",
       }]);
 
       const res = await request(app)
-        .post("/api/matches/match-1/join")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/join")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(201);
       expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "match-1",
+        "b0000000-0000-4000-8000-000000000001",
         expect.objectContaining({ type: "match_participant_joined" }),
       );
     });
 
     it("對戰已開始時回傳 400", async () => {
       const { app } = createApp();
-      selectResults = [[{ id: "match-1", status: "playing" }]];
+      selectResults = [[{ id: "b0000000-0000-4000-8000-000000000001", status: "playing" }]];
 
       const res = await request(app)
-        .post("/api/matches/match-1/join")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/join")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(400);
@@ -264,12 +264,12 @@ describe("對戰路由 API", () => {
     it("已加入時回傳 400", async () => {
       const { app } = createApp();
       selectResults = [
-        [{ id: "match-1", status: "waiting", maxTeams: 10 }],
+        [{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting", maxTeams: 10 }],
         [{ userId: "user-1" }], // 已加入
       ];
 
       const res = await request(app)
-        .post("/api/matches/match-1/join")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/join")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(400);
@@ -283,24 +283,24 @@ describe("對戰路由 API", () => {
     it("建立者可以開始對戰", async () => {
       const { app, ctx } = createApp();
       selectResults = [[{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "waiting",
         creatorId: "user-1",
         settings: { countdownSeconds: 3 },
       }]];
 
       mockUpdateReturning.mockResolvedValueOnce([{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "countdown",
       }]);
 
       const res = await request(app)
-        .post("/api/matches/match-1/start")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/start")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(200);
       expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "match-1",
+        "b0000000-0000-4000-8000-000000000001",
         expect.objectContaining({ type: "match_countdown" }),
       );
     });
@@ -308,13 +308,13 @@ describe("對戰路由 API", () => {
     it("非建立者不能開始", async () => {
       const { app } = createApp();
       selectResults = [[{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "waiting",
         creatorId: "other-user",
       }]];
 
       const res = await request(app)
-        .post("/api/matches/match-1/start")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/start")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(403);
@@ -330,7 +330,7 @@ describe("對戰路由 API", () => {
       // select #0: match
       // select #1: participants (where().orderBy())
       selectResults = [
-        [{ id: "match-1", status: "playing" }],
+        [{ id: "b0000000-0000-4000-8000-000000000001", status: "playing" }],
         [
           { id: "p1", userId: "u1", currentScore: 100 },
           { id: "p2", userId: "u2", currentScore: 50 },
@@ -340,27 +340,27 @@ describe("對戰路由 API", () => {
       // Promise.all 的 participant updates 不呼叫 .returning()（thenable resolve undefined）
       // 只有最後的 match update 呼叫 .returning()
       mockUpdateReturning.mockResolvedValueOnce([{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "finished",
       }]);
 
       const res = await request(app)
-        .post("/api/matches/match-1/finish")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/finish")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(200);
       expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "match-1",
+        "b0000000-0000-4000-8000-000000000001",
         expect.objectContaining({ type: "match_finished" }),
       );
     });
 
     it("非 playing 狀態不能結束", async () => {
       const { app } = createApp();
-      selectResults = [[{ id: "match-1", status: "waiting" }]];
+      selectResults = [[{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting" }]];
 
       const res = await request(app)
-        .post("/api/matches/match-1/finish")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/finish")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(400);
@@ -376,7 +376,7 @@ describe("對戰路由 API", () => {
       // select #0: participant 查詢 (where with and)
       // select #1: 排名查詢 (where().orderBy())
       selectResults = [
-        [{ id: "p1", matchId: "match-1", userId: "user-1" }],
+        [{ id: "p1", matchId: "b0000000-0000-4000-8000-000000000001", userId: "user-1" }],
         [{ userId: "user-1", currentScore: 100 }],
       ];
 
@@ -386,7 +386,7 @@ describe("對戰路由 API", () => {
       }]);
 
       const res = await request(app)
-        .patch("/api/matches/match-1/score")
+        .patch("/api/matches/b0000000-0000-4000-8000-000000000001/score")
         .set("Authorization", "Bearer valid-token")
         .send({ score: 100 });
 
@@ -399,7 +399,7 @@ describe("對戰路由 API", () => {
       selectResults = [[]];
 
       const res = await request(app)
-        .patch("/api/matches/match-1/score")
+        .patch("/api/matches/b0000000-0000-4000-8000-000000000001/score")
         .set("Authorization", "Bearer valid-token")
         .send({ score: 100 });
 
@@ -409,7 +409,7 @@ describe("對戰路由 API", () => {
     it("缺少 score 回傳 400", async () => {
       const { app } = createApp();
       const res = await request(app)
-        .patch("/api/matches/match-1/score")
+        .patch("/api/matches/b0000000-0000-4000-8000-000000000001/score")
         .set("Authorization", "Bearer valid-token")
         .send({});
 
@@ -430,7 +430,7 @@ describe("對戰路由 API", () => {
       ]];
 
       const res = await request(app)
-        .get("/api/matches/match-1/ranking");
+        .get("/api/matches/b0000000-0000-4000-8000-000000000001/ranking");
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(2);
@@ -447,25 +447,25 @@ describe("對戰路由 API", () => {
       // 6 秒前的時間（超過 3+2=5 秒容錯）
       const sixSecondsAgo = new Date(Date.now() - 6000);
       selectResults = [[{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "countdown",
         settings: { countdownSeconds: 3 },
         updatedAt: sixSecondsAgo.toISOString(),
       }]];
 
       mockUpdateReturning.mockResolvedValueOnce([{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "playing",
       }]);
 
       const res = await request(app)
-        .post("/api/matches/match-1/recover")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("playing");
       expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "match-1",
+        "b0000000-0000-4000-8000-000000000001",
         expect.objectContaining({ type: "match_started", recovered: true }),
       );
     });
@@ -474,14 +474,14 @@ describe("對戰路由 API", () => {
       const { app } = createApp();
       // 剛剛才進入 countdown
       selectResults = [[{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "countdown",
         settings: { countdownSeconds: 3 },
         updatedAt: new Date().toISOString(),
       }]];
 
       const res = await request(app)
-        .post("/api/matches/match-1/recover")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(400);
@@ -491,12 +491,12 @@ describe("對戰路由 API", () => {
     it("非 countdown 狀態回傳 400", async () => {
       const { app } = createApp();
       selectResults = [[{
-        id: "match-1",
+        id: "b0000000-0000-4000-8000-000000000001",
         status: "playing",
       }]];
 
       const res = await request(app)
-        .post("/api/matches/match-1/recover")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(400);
@@ -508,7 +508,7 @@ describe("對戰路由 API", () => {
       selectResults = [[]];
 
       const res = await request(app)
-        .post("/api/matches/match-1/recover")
+        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
         .set("Authorization", "Bearer valid-token");
 
       expect(res.status).toBe(404);
