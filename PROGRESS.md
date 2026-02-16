@@ -105,7 +105,13 @@
 - [x] 新增 `scripts/seed.ts` (~170 行) - 資料庫種子腳本
   - 建立場域 (JIACHUN)、16 個權限、2 個角色、管理員帳號、3 個展示遊戲
 - [x] 新增模組 API 測試：adminModules.test.ts (10 測試)
-- [x] 測試結果：28 個測試檔案、467 個測試全部通過，TS 零錯誤
+- [x] 新增前端測試覆蓋率提升（+88 測試）：
+  - `shared/schema/__tests__/game-modules.test.ts` (27 測試) - 模組庫常數、工具函式、分類篩選
+  - `shared/schema/__tests__/game-templates.test.ts` (17 測試) - 模板常數、查詢函式、頁面驗證
+  - `client/src/pages/game-editor/constants.test.ts` (22 測試) - 頁面類型、getPageTypeInfo、模板、事件、獎勵
+  - `client/src/lib/queryClient.test.ts` (14 測試) - apiRequest、getQueryFn、queryClient 設定
+  - `client/src/pages/game-editor/lib/page-sync.test.ts` (8 測試) - updatePageIdReferences 不可變邏輯
+- [x] 測試結果：33 個測試檔案、550 個測試全部通過，TS 零錯誤
 
 ### 2026-02-16 (第十二階段：完成全路由測試覆蓋 + README 使用說明)
 
