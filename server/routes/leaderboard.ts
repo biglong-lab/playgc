@@ -1,14 +1,21 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
-import { requireAdminRole } from "./utils";
+import { requireAdminRole, validateId } from "./utils";
 import type { AuthenticatedRequest } from "./types";
 
 export function registerLeaderboardRoutes(app: Express) {
   app.get("/api/leaderboard", async (req, res) => {
     try {
-      const gameId = req.query.gameId as string | undefined;
-      const entries = await storage.getLeaderboard(gameId);
+      const rawGameId = req.query.gameId as string | undefined;
+      // 若提供了 gameId 就驗證格式，未提供則回傳全部
+      if (rawGameId) {
+        const gameId = validateId(rawGameId, res);
+        if (!gameId) return;
+        const entries = await storage.getLeaderboard(gameId);
+        return res.json(entries);
+      }
+      const entries = await storage.getLeaderboard(undefined);
       res.json(entries);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch leaderboard" });
