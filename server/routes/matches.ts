@@ -320,7 +320,8 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
   // 取得即時排名
   app.get("/api/matches/:matchId/ranking", async (req, res) => {
     try {
-      const { matchId } = req.params;
+      const matchId = validateId(req.params.matchId, res);
+      if (!matchId) return;
       const participants = await db.select()
         .from(matchParticipants)
         .where(eq(matchParticipants.matchId, matchId))
