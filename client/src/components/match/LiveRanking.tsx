@@ -54,13 +54,18 @@ export default memo(function LiveRanking({ ranking, currentUserId, showRelay }: 
             尚無參與者
           </p>
         ) : (
-          <div className="space-y-2">
+          <AnimatePresence mode="popLayout">
             {ranking.map((entry) => {
               const isCurrentUser = entry.userId === currentUserId;
               return (
-                <div
+                <motion.div
                   key={entry.userId}
-                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+                  layout
+                  variants={rankingItem}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  className={`flex items-center gap-3 p-2 rounded-lg transition-colors mb-2 ${
                     isCurrentUser ? "bg-primary/10 border border-primary/30" : "hover:bg-muted"
                   }`}
                 >
