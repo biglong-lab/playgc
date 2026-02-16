@@ -204,7 +204,9 @@
 | server/__tests__/teams.test.ts | 34 | 新增 - 隊伍 API 整合 |
 | server/__tests__/auth.test.ts | 21 | 新增 - 認證 API 整合 |
 | server/__tests__/locations.test.ts | 23 | 新增 - 地點 API 整合 |
-| **合計** | **268** | |
+| server/__tests__/playerSessions.test.ts | 17 | 新增 - 場次 API 整合 |
+| server/__tests__/devices.test.ts | 26 | 新增 - 裝置 API 整合 |
+| **合計** | **311** | |
 
 ## 待處理問題
 
