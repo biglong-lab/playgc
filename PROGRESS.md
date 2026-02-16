@@ -77,7 +77,7 @@
 - [x] 團隊分數路由 (team-scores) - 106 行
 - [x] 管理端章節路由 (admin-chapters) - 177 行
 - [x] 玩家端章節路由 (player-chapters) - 271 行
-- [x] 對戰路由 (matches) - 350 行
+- [x] 對戰路由 (matches) - 392 行（含 recover 端點）
 - [x] 接力路由 (relay) - 199 行
 - [x] WebSocket 即時通訊 (含 match 廣播)
 - [x] MQTT 服務
