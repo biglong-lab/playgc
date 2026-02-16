@@ -72,6 +72,7 @@ function Router() {
       <Route path="/admin-staff/dashboard" component={AdminStaffDashboard} />
       <Route path="/admin-staff/fields" component={AdminStaffFields} />
       <Route path="/admin-staff/games" component={AdminStaffGames} />
+      <Route path="/admin-staff/templates" component={AdminStaffTemplates} />
       <Route path="/admin-staff/games/:gameId" component={GameEditor} />
       <Route path="/admin-staff/games/:gameId/items" component={ItemEditor} />
       <Route path="/admin-staff/games/:gameId/achievements" component={AchievementEditor} />
