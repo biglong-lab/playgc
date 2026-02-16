@@ -22,7 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase";
 import {
   Gamepad2, Settings, Cpu, BarChart3,
-  Trophy, Home, LogOut, Activity, Shield
+  Trophy, Home, LogOut, Activity, Shield, Library,
 } from "lucide-react";
 
 const menuItems = [
