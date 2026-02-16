@@ -283,7 +283,12 @@
 | server/__tests__/media.test.ts | 18 | 新增 - 媒體上傳 API 整合 |
 | server/__tests__/websocket.test.ts | 14 | 新增 - WebSocket 即時通訊 |
 | server/__tests__/adminModules.test.ts | 10 | 新增 - 遊戲模組 API 整合 |
-| **合計** | **467** | |
+| shared/schema/__tests__/game-modules.test.ts | 27 | 新增 - 模組庫常數/工具 |
+| shared/schema/__tests__/game-templates.test.ts | 17 | 新增 - 模板常數/查詢 |
+| client/src/pages/game-editor/constants.test.ts | 22 | 新增 - 編輯器常數/函式 |
+| client/src/lib/queryClient.test.ts | 14 | 新增 - API 請求層 |
+| client/src/pages/game-editor/lib/page-sync.test.ts | 8 | 新增 - 頁面同步邏輯 |
+| **合計** | **550** | |
 
 ## 待處理問題
 
