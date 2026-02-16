@@ -413,65 +413,6 @@ export default function GamePlay() {
     );
   }
 
-  const renderPage = () => {
-    if (!currentPage) return null;
-
-    const config = currentPage.config as any;
-    const commonProps = {
-      config,
-      onComplete: handlePageComplete,
-      onVariableUpdate: handleVariableUpdate,
-      sessionId: sessionId || "",
-      gameId: gameId || "",
-      variables,
-    };
-
-    switch (currentPage.pageType) {
-      case "text_card":
-        return <TextCardPage {...commonProps} />;
-      case "dialogue":
-        return <DialoguePage {...commonProps} />;
-      case "video":
-        return <VideoPage {...commonProps} />;
-      case "button":
-        return <ButtonPage {...commonProps} />;
-      case "text_verify":
-        return <TextVerifyPage {...commonProps} />;
-      case "choice_verify":
-        return <ChoiceVerifyPage {...commonProps} />;
-      case "conditional_verify":
-        return (
-          <ConditionalVerifyPage 
-            {...commonProps} 
-            inventory={inventory}
-            score={score}
-          />
-        );
-      case "shooting_mission":
-        return <ShootingMissionPage {...commonProps} />;
-      case "photo_mission":
-        return <PhotoMissionPage {...commonProps} />;
-      case "gps_mission":
-        return <GpsMissionPage {...commonProps} />;
-      case "qr_scan":
-        return <QrScanPage {...commonProps} />;
-      case "time_bomb":
-        return <TimeBombPage {...commonProps} />;
-      case "lock":
-        return <LockPage {...commonProps} />;
-      case "motion_challenge":
-        return <MotionChallengePage {...commonProps} />;
-      case "vote":
-        return <VotePage {...commonProps} />;
-      default:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-muted-foreground">未知頁面類型: {currentPage.pageType}</p>
-          </div>
-        );
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <GameHeader
@@ -497,7 +438,18 @@ export default function GamePlay() {
       </div>
 
       <main className="flex-1 relative overflow-hidden">
-        {renderPage()}
+        {currentPage && (
+          <GamePageRenderer
+            page={currentPage}
+            onComplete={handlePageComplete}
+            onVariableUpdate={handleVariableUpdate}
+            sessionId={sessionId || ""}
+            gameId={gameId || ""}
+            variables={variables}
+            inventory={inventory}
+            score={score}
+          />
+        )}
       </main>
 
       <nav className="sticky bottom-0 bg-card/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between gap-4">
