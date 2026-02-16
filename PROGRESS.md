@@ -275,3 +275,4 @@
 2. **前端元件測試** - React Testing Library 測試關鍵元件
 3. **E2E 測試** - Playwright 建立關鍵用戶流程
 4. **CI/CD Pipeline** - GitHub Actions 自動化測試與部署
+5. **Push 到 GitHub** - 目前領先 origin/main 約 30 個 commit
