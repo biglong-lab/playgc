@@ -6,6 +6,7 @@ import { Loader2, Swords, Users, Play, ArrowLeft, Trophy, Clock } from "lucide-r
 import { motion, AnimatePresence } from "framer-motion";
 import LiveRanking from "@/components/match/LiveRanking";
 import MatchTimer from "@/components/match/MatchTimer";
+import RelayProgress from "@/components/match/RelayProgress";
 import { countdownNumber, celebrationPop } from "@/lib/animation-variants";
 import type { Game } from "@shared/schema";
 
