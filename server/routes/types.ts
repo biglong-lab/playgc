@@ -14,6 +14,7 @@ export interface WebSocketClient extends WebSocket {
 export interface RouteContext {
   broadcastToSession: (sessionId: string, message: any) => void;
   broadcastToTeam: (teamId: string, message: any, excludeClient?: WebSocketClient) => void;
+  broadcastToMatch: (matchId: string, message: any) => void;
 }
 
 // 經 Firebase 認證後的 Request 型別
