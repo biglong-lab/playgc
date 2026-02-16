@@ -1,4 +1,5 @@
 // 即時排名看板元件 — 對戰中的即時排名顯示
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Medal, Award, User } from "lucide-react";
