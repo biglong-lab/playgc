@@ -22,6 +22,44 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
+  // 廣播路由必須在 :id 動態路由之前，避免被 /api/devices/:id 攔截
+  app.post("/api/devices/broadcast/led", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      const auth = await requireAdminRole(req);
+      if (!auth.authorized) {
+        return res.status(403).json({ message: auth.message });
+      }
+
+      const { mode, color } = req.body;
+
+      if (mode === "solid" || mode === "on") {
+        mqttService.turnOnAllLEDs(color);
+        res.json({ message: "LED on command broadcast to all devices" });
+      } else if (mode === "off") {
+        mqttService.turnOffAllLEDs();
+        res.json({ message: "LED off command broadcast to all devices" });
+      } else {
+        return res.status(400).json({ message: "Invalid mode. Use: solid, off" });
+      }
+    } catch (error) {
+      res.status(500).json({ message: "Failed to broadcast LED command" });
+    }
+  });
+
+  app.post("/api/devices/broadcast/ping", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      const auth = await requireAdminRole(req);
+      if (!auth.authorized) {
+        return res.status(403).json({ message: auth.message });
+      }
+
+      await mqttService.pingAllDevices();
+      res.json({ message: "Ping command broadcast to all devices" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to ping all devices" });
+    }
+  });
+
   app.get("/api/devices/:id", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
