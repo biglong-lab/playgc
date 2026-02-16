@@ -188,7 +188,8 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
       }
 
       // 倒數階段
-      const countdownSeconds = (match.settings as any)?.countdownSeconds ?? 3;
+      const settings = match.settings as MatchSettings | null;
+      const countdownSeconds = settings?.countdownSeconds ?? 3;
 
       const [updated] = await db.update(gameMatches)
         .set({ status: "countdown", updatedAt: new Date() })
