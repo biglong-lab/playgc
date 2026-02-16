@@ -15,6 +15,7 @@ import { registerLocationRoutes } from "./locations";
 import { registerTeamRoutes } from "./teams";
 import { registerPlayerChapterRoutes } from "./player-chapters";
 import { registerAdminChapterRoutes } from "./admin-chapters";
+import { registerAdminModuleRoutes } from "./admin-modules";
 
 export async function registerRoutes(
   httpServer: Server,
