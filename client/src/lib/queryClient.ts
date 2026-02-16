@@ -66,8 +66,9 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
+      staleTime: 5 * 60 * 1000,   // 5 分鐘後標記為過期
+      gcTime: 10 * 60 * 1000,     // 10 分鐘後清除快取
+      retry: 1,                    // 網路波動時重試 1 次
     },
     mutations: {
       retry: false,
