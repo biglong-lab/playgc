@@ -187,7 +187,9 @@
 | server/__tests__/chapterStorage.test.ts | 29 | 新增 - Storage 層 |
 | client/src/lib/map-utils.test.ts | 24 | 新增 - 地圖工具函式 |
 | server/__tests__/teams.test.ts | 34 | 新增 - 隊伍 API 整合 |
-| **合計** | **224** | |
+| server/__tests__/auth.test.ts | 21 | 新增 - 認證 API 整合 |
+| server/__tests__/locations.test.ts | 23 | 新增 - 地點 API 整合 |
+| **合計** | **268** | |
 
 ## 待處理問題
 
