@@ -81,6 +81,24 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第四階段：MapView 拆分 + 章節驗證 + 測試擴充)
+
+- [x] 拆分 MapView.tsx：800 行 → 5 個檔案
+  - `MapView.tsx` (435 行) - 主頁面（原 800 行）
+  - `lib/map-utils.ts` (89 行) - 距離計算、方位、導航等純函式
+  - `hooks/useMapGeolocation.ts` (213 行) - 定位追蹤 Hook
+  - `components/map/MapNavigationCard.tsx` (85 行) - 導航資訊卡片
+  - `components/map/MapLocationList.tsx` (87 行) - 任務點清單
+- [x] 新增 map-utils 單元測試：24 個測試（距離、方位、方向、導航、圖標）
+- [x] 驗證 Phase 1 章節系統完整性：98% 完成
+  - Schema 層 ✅（gameChapters + playerChapterProgress）
+  - Storage 層 ✅（16 個方法）
+  - API 路由 ✅（管理端 6 端點 + 玩家端 5 端點）
+  - 前端元件 ✅（ChapterSelect + ChapterManager + ChapterConfigEditor + useChapterProgress）
+  - 路由配置 ✅（App.tsx 已註冊章節路由）
+- [x] 測試結果：11 個測試檔案、112 個測試全部通過
+- [x] TS 編譯零錯誤、Build 通過
+
 ### 2026-02-16 (第三階段：程式碼品質 + 漏洞修復)
 
 - [x] 拆分 PageConfigEditor.tsx：1,502 行 → 7 個檔案（主檔 676 行 + 6 個子元件）
