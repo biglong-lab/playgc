@@ -55,9 +55,15 @@ vi.mock("../db", () => ({
     })),
     update: vi.fn(() => ({
       set: vi.fn(() => ({
-        where: vi.fn(() => ({
-          returning: mockUpdateReturning,
-        })),
+        where: vi.fn(() => {
+          // where() 回傳同時可 await（thenable）也可呼叫 .returning()
+          const whereResult = {
+            returning: mockUpdateReturning,
+            then: (resolve: (v: unknown) => void, reject?: (e: unknown) => void) =>
+              Promise.resolve().then(resolve, reject),
+          };
+          return whereResult;
+        }),
       })),
     })),
   },
