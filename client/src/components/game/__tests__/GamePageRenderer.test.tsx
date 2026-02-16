@@ -1,17 +1,10 @@
 /**
  * GamePageRenderer 測試 — 驗證頁面類型對應元件分發
+ * React.lazy 元件需 async 渲染，使用 waitFor 等待 Suspense 解析
  */
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import type { Page } from "@shared/schema";
-
-// Mock 所有子頁面元件 — 只渲染 testid
-const pageTypes = [
-  "TextCardPage", "DialoguePage", "VideoPage", "ButtonPage",
-  "TextVerifyPage", "ChoiceVerifyPage", "ConditionalVerifyPage",
-  "ShootingMissionPage", "PhotoMissionPage", "GpsMissionPage",
-  "QrScanPage", "TimeBombPage", "LockPage", "MotionChallengePage", "VotePage",
-];
 
 // 批次 mock 所有遊戲頁面元件
 vi.mock("@/components/game/TextCardPage", () => ({ default: () => <div data-testid="text_card" /> }));
@@ -67,17 +60,21 @@ describe("GamePageRenderer", () => {
   ];
 
   supportedTypes.forEach((pageType) => {
-    it(`pageType="${pageType}" 渲染對應元件`, () => {
+    it(`pageType="${pageType}" 渲染對應元件`, async () => {
       const page = createPage(pageType);
       render(<GamePageRenderer {...defaultProps} page={page} />);
-      expect(screen.getByTestId(pageType)).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByTestId(pageType)).toBeInTheDocument();
+      });
     });
   });
 
-  it("未知 pageType 顯示錯誤訊息", () => {
+  it("未知 pageType 顯示錯誤訊息", async () => {
     const page = createPage("unknown_type");
     render(<GamePageRenderer {...defaultProps} page={page} />);
-    expect(screen.getByText(/未知頁面類型/)).toBeInTheDocument();
-    expect(screen.getByText(/unknown_type/)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/未知頁面類型/)).toBeInTheDocument();
+      expect(screen.getByText(/unknown_type/)).toBeInTheDocument();
+    });
   });
 });
