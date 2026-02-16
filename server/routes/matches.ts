@@ -338,6 +338,47 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
+  // 恢復卡住的倒數（server 重啟或前端未回報時使用）
+  app.post("/api/matches/:matchId/recover", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { matchId } = req.params;
+
+      const [match] = await db.select()
+        .from(gameMatches)
+        .where(eq(gameMatches.id, matchId));
+
+      if (!match) return res.status(404).json({ error: "對戰不存在" });
+
+      if (match.status !== "countdown") {
+        return res.status(400).json({ error: "對戰不在倒數狀態" });
+      }
+
+      // 檢查是否已超過倒數時間 + 2 秒容錯
+      const settings = match.settings as MatchSettings | null;
+      const countdownSeconds = settings?.countdownSeconds ?? 3;
+      const elapsedMs = Date.now() - new Date(match.updatedAt).getTime();
+
+      if (elapsedMs < (countdownSeconds + 2) * 1000) {
+        return res.status(400).json({ error: "倒數尚未超時" });
+      }
+
+      const [updated] = await db.update(gameMatches)
+        .set({ status: "playing", startedAt: new Date(), updatedAt: new Date() })
+        .where(eq(gameMatches.id, matchId))
+        .returning();
+
+      ctx.broadcastToMatch(matchId, {
+        type: "match_started",
+        recovered: true,
+        timestamp: new Date().toISOString(),
+      });
+
+      return res.json(updated);
+    } catch (error) {
+      return res.status(500).json({ error: "恢復對戰失敗" });
+    }
+  });
+
   // 註冊接力子路由
   registerRelayRoutes(app, ctx);
 }
