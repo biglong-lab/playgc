@@ -180,7 +180,7 @@
 - [x] 修改 `package.json` — 新增 test:e2e / test:e2e:ui scripts
 - [x] 修改 `.github/workflows/ci.yml` — 新增 E2E job（main 分支限定，含 PostgreSQL service）
 
-**測試結果**: 42 個測試檔案、659 個 Vitest 測試全部通過 + 25 個 E2E 測試
+**測試結果**: 42 個測試檔案、659 個 Vitest 測試全部通過 + 25 個 E2E 測試（第十六階段已增至 663）
 
 ### 2026-02-16 (第十四階段：CI/CD Pipeline + 前端測試提升)
 
