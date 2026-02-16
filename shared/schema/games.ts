@@ -18,7 +18,7 @@ import { fields } from "./fields";
 import { gameChapters } from "./chapters";
 
 // Game mode enum
-export const gameModeEnum = ["individual", "team"] as const;
+export const gameModeEnum = ["individual", "team", "competitive", "relay"] as const;
 export type GameMode = typeof gameModeEnum[number];
 
 export const games = pgTable("games", {
