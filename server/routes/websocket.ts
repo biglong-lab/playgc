@@ -227,7 +227,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           }
 
           case "match_score_update": {
-            const mId = (ws as any).matchId;
+            const mId = ws.matchId;
             if (mId) {
               broadcastToMatch(mId, {
                 type: "match_ranking",
