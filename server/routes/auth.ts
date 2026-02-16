@@ -73,19 +73,6 @@ export function registerAuthRoutes(app: Express) {
     }
   });
 
-  const firebaseLoginAttempts: Map<string, { count: number; firstAttempt: number }> = new Map();
-  const RATE_LIMIT_WINDOW = 15 * 60 * 1000;
-  const MAX_ATTEMPTS = 10;
-
-  setInterval(() => {
-    const now = Date.now();
-    Array.from(firebaseLoginAttempts.entries()).forEach(([key, value]) => {
-      if (now - value.firstAttempt > RATE_LIMIT_WINDOW) {
-        firebaseLoginAttempts.delete(key);
-      }
-    });
-  }, 5 * 60 * 1000);
-
   app.post("/api/admin/firebase-login", async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
