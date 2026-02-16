@@ -273,20 +273,22 @@ export default function Home() {
               >
                 <div className="relative h-48 bg-card overflow-hidden">
                   {game.coverImageUrl ? (
-                    <img
+                    <OptimizedImage
                       src={game.coverImageUrl}
                       alt={game.title}
+                      preset="card"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        target.parentElement?.classList.add('cover-fallback');
-                      }}
+                      fallback={
+                        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                          <Gamepad2 className="w-16 h-16 text-primary/50" />
+                        </div>
+                      }
                     />
-                  ) : null}
-                  <div className={`w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center ${game.coverImageUrl ? 'absolute inset-0 -z-10' : ''}`}>
-                    <Gamepad2 className="w-16 h-16 text-primary/50" />
-                  </div>
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                      <Gamepad2 className="w-16 h-16 text-primary/50" />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
                   <Badge 
                     className={`absolute top-3 right-3 ${getDifficultyColor(game.difficulty || "medium")}`}
