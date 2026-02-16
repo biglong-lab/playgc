@@ -39,6 +39,7 @@ import GameBySlug from "@/pages/GameBySlug";
 import TeamLobby from "@/pages/TeamLobby";
 import ChapterSelect from "@/pages/ChapterSelect";
 import AdminTemplates from "@/pages/AdminTemplates";
+import AdminStaffTemplates from "@/pages/AdminStaffTemplates";
 
 function Router() {
   return (
