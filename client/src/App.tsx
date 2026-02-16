@@ -62,6 +62,7 @@ function Router() {
         <Route path="/game/:gameId/chapters" component={ChapterSelect} />
         <Route path="/game/:gameId" component={GamePlay} />
         <Route path="/team/:gameId" component={TeamLobby} />
+        <Route path="/match/:gameId" component={MatchLobby} />
         <Route path="/map/:gameId" component={MapView} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/admin/login" component={FieldAdminLogin} />
