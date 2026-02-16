@@ -61,4 +61,4 @@ export default memo(function MatchTimer({ mode, seconds, onCountdownEnd }: Match
       <span className="font-bold">{formatTime(displayTime)}</span>
     </div>
   );
-}
+});
