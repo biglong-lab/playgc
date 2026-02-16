@@ -14,9 +14,9 @@ import InventoryPanel from "@/components/shared/InventoryPanel";
 import GamePageRenderer from "@/components/game/GamePageRenderer";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 
-import { 
-  ChevronLeft, ChevronRight, MessageCircle, Backpack, 
-  Map, AlertTriangle, Trophy, Home, RefreshCw 
+import {
+  ChevronLeft, ChevronRight, MessageCircle, Backpack,
+  Map, AlertTriangle, Home
 } from "lucide-react";
 
 export default function GamePlay() {
