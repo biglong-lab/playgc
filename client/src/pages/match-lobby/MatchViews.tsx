@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Swords, Users, Play, ArrowLeft, Trophy, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import LiveRanking from "@/components/match/LiveRanking";
 import MatchTimer from "@/components/match/MatchTimer";
+import { countdownNumber, celebrationPop } from "@/lib/animation-variants";
 import type { Game } from "@shared/schema";
 
 // ============================================================================
