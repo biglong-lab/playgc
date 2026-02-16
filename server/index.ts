@@ -69,7 +69,6 @@ const authLimiter = rateLimit({
 app.use("/api/", apiLimiter);
 app.use("/api/admin/login", authLimiter);
 app.use("/api/admin/firebase-login", authLimiter);
-app.use("/api/auth/login", authLimiter);
 
 app.use(
   express.json({
