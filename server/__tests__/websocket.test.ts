@@ -33,6 +33,22 @@ vi.mock("../firebaseAuth", () => ({
   }),
 }));
 
+// Mock db（websocket.ts 新增了 db import 用於 match_countdown_complete）
+vi.mock("../db", () => ({
+  db: {
+    select: vi.fn(() => ({
+      from: vi.fn(() => ({
+        where: vi.fn(() => Promise.resolve([])),
+      })),
+    })),
+    update: vi.fn(() => ({
+      set: vi.fn(() => ({
+        where: vi.fn(() => Promise.resolve()),
+      })),
+    })),
+  },
+}));
+
 import { setupWebSocket } from "../routes/websocket";
 
 // 等待 WebSocket 連線建立
