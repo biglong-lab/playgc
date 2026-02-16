@@ -276,13 +276,15 @@
 2. ~~安全性審查（error leak + ID validation + CORS）~~ → 第十七階段已完成
 3. ~~GamePlay.tsx chunk 過大警告（445KB）~~ → 第十七階段已用 React.lazy 拆分消除
 4. ~~React.memo 策略~~ → 第十七階段已完成高頻元件 memo + queryClient 快取調整
-5. Rate limiting（API 端點保護）
-6. Vite 7 升級（解決剩餘安全漏洞）
+5. ~~Rate limiting 清理~~ → 第十八階段已清理重複邏輯（express-rate-limit 已覆蓋）
+6. ~~圖片懶載入~~ → 第十八階段已完成 OptimizedImage + Cloudinary URL 優化
+7. ~~對戰 UI 動畫~~ → 第十八階段已完成 framer-motion 倒數/排名/轉場/慶祝動畫
+8. Vite 7 升級（解決剩餘安全漏洞）
 
 ## 下一步建議
 
 1. **DB Migration** - `npm run db:push` 同步 Phase 2 資料表
 2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
-3. **Phase 2 功能完善** - 倒數計時動畫 UI、排名即時更新介面、接力進度條
-4. **Rate Limiting** - API 端點流量保護（express-rate-limit）
-5. **圖片懶載入** - 遊戲大廳和遊戲內頁面圖片延遲載入
+3. **接力進度條 UI** - MatchViews 的 showRelay flag 存在但無視覺元件
+4. **前端測試補強** - MatchViews/useMatchLobby 尚無測試
+5. **Vite 7 升級** - 解決 esbuild/vite moderate 安全漏洞
