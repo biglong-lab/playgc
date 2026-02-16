@@ -256,8 +256,21 @@ export function FinishedView({ ranking, userId, onGoBack }: FinishedViewProps) {
   return (
     <div className="container max-w-2xl mx-auto px-4 py-8">
       <div className="text-center mb-6">
-        <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
-        <h1 className="text-2xl font-bold">對戰結束！</h1>
+        <motion.div
+          variants={celebrationPop}
+          initial="initial"
+          animate="animate"
+        >
+          <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
+        </motion.div>
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.3 }}
+          className="text-2xl font-bold"
+        >
+          對戰結束！
+        </motion.h1>
       </div>
 
       <LiveRanking
