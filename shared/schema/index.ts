@@ -15,3 +15,4 @@ export * from "./relations";
 export * from "./extended-types";
 export * from "./game-templates";
 export * from "./game-modules";
+export * from "./matches";
