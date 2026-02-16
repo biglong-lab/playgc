@@ -33,6 +33,7 @@ import {
   playerAchievements,
 } from "./locations";
 import { leaderboard } from "./leaderboard";
+import { gameChapters, playerChapterProgress } from "./chapters";
 
 export const usersRelations = relations(users, ({ many }) => ({
   gameSessions: many(gameSessions),
@@ -54,6 +55,7 @@ export const gamesRelations = relations(games, ({ one, many }) => ({
   pages: many(pages),
   items: many(items),
   events: many(events),
+  chapters: many(gameChapters),
   gameSessions: many(gameSessions),
   leaderboard: many(leaderboard),
 }));
@@ -152,6 +154,10 @@ export const pagesRelations = relations(pages, ({ one }) => ({
     fields: [pages.gameId],
     references: [games.id],
   }),
+  chapter: one(gameChapters, {
+    fields: [pages.chapterId],
+    references: [gameChapters.id],
+  }),
 }));
 
 export const itemsRelations = relations(items, ({ one }) => ({
@@ -172,6 +178,10 @@ export const gameSessionsRelations = relations(gameSessions, ({ one, many }) => 
   game: one(games, {
     fields: [gameSessions.gameId],
     references: [games.id],
+  }),
+  currentChapter: one(gameChapters, {
+    fields: [gameSessions.currentChapterId],
+    references: [gameChapters.id],
   }),
   playerProgress: many(playerProgress),
   chatMessages: many(chatMessages),
@@ -403,4 +413,34 @@ export const playerAchievementsRelations = relations(playerAchievements, ({ one 
     references: [gameSessions.id],
   }),
 }));
+
+// ============================================================================
+// Chapter Relations
+// ============================================================================
+export const gameChaptersRelations = relations(gameChapters, ({ one, many }) => ({
+  game: one(games, {
+    fields: [gameChapters.gameId],
+    references: [games.id],
+  }),
+  pages: many(pages),
+  playerProgress: many(playerChapterProgress),
+}));
+
+export const playerChapterProgressRelations = relations(
+  playerChapterProgress,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [playerChapterProgress.userId],
+      references: [users.id],
+    }),
+    game: one(games, {
+      fields: [playerChapterProgress.gameId],
+      references: [games.id],
+    }),
+    chapter: one(gameChapters, {
+      fields: [playerChapterProgress.chapterId],
+      references: [gameChapters.id],
+    }),
+  })
+);
 

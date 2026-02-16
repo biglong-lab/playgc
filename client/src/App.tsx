@@ -37,12 +37,15 @@ import AdminStaffPlayers from "@/pages/AdminStaffPlayers";
 import AdminStaffQRCodes from "@/pages/AdminStaffQRCodes";
 import GameBySlug from "@/pages/GameBySlug";
 import TeamLobby from "@/pages/TeamLobby";
+import ChapterSelect from "@/pages/ChapterSelect";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/home" component={Home} />
+      <Route path="/game/:gameId/chapters/:chapterId" component={GamePlay} />
+      <Route path="/game/:gameId/chapters" component={ChapterSelect} />
       <Route path="/game/:gameId" component={GamePlay} />
       <Route path="/team/:gameId" component={TeamLobby} />
       <Route path="/map/:gameId" component={MapView} />

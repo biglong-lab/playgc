@@ -38,6 +38,12 @@ import {
   type InsertPlayerAchievement,
   type GameWithPages,
   type GameWithDetails,
+  type GameChapter,
+  type InsertGameChapter,
+  type PlayerChapterProgress,
+  type InsertPlayerChapterProgress,
+  type GameChapterWithPages,
+  type GameWithChapters,
 } from "@shared/schema";
 
 // 匯入各子模組的方法集合
@@ -47,6 +53,7 @@ import { sessionStorageMethods } from "./storage/session-storage";
 import { deviceStorageMethods } from "./storage/device-storage";
 import { locationStorageMethods } from "./storage/location-storage";
 import { leaderboardStorageMethods } from "./storage/leaderboard-storage";
+import { chapterStorageMethods } from "./storage/chapter-storage";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -156,6 +163,22 @@ export interface IStorage {
 
   // Location by QR Code
   getLocationByQRCode(gameId: string, qrCodeData: string): Promise<Location | undefined>;
+
+  // 章節方法
+  getChapters(gameId: string): Promise<GameChapter[]>;
+  getChapter(id: string): Promise<GameChapter | undefined>;
+  getChapterWithPages(id: string): Promise<GameChapterWithPages | undefined>;
+  createChapter(data: InsertGameChapter): Promise<GameChapter>;
+  updateChapter(id: string, data: Partial<InsertGameChapter>): Promise<GameChapter | undefined>;
+  deleteChapter(id: string): Promise<void>;
+  reorderChapters(gameId: string, chapterIds: string[]): Promise<void>;
+  getGameWithChapters(gameId: string): Promise<GameWithChapters | undefined>;
+  getPlayerChapterProgress(userId: string, gameId: string): Promise<PlayerChapterProgress[]>;
+  getChapterProgressByChapter(userId: string, chapterId: string): Promise<PlayerChapterProgress | undefined>;
+  createChapterProgress(data: InsertPlayerChapterProgress): Promise<PlayerChapterProgress>;
+  updateChapterProgress(id: string, data: Partial<InsertPlayerChapterProgress>): Promise<PlayerChapterProgress | undefined>;
+  isChapterUnlocked(userId: string, chapterId: string): Promise<boolean>;
+  unlockNextChapter(userId: string, gameId: string, completedChapterId: string): Promise<PlayerChapterProgress | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -274,6 +297,22 @@ export class DatabaseStorage implements IStorage {
 
   // ===== QR Code 查詢方法 =====
   getLocationByQRCode = locationStorageMethods.getLocationByQRCode;
+
+  // ===== 章節方法 =====
+  getChapters = chapterStorageMethods.getChapters;
+  getChapter = chapterStorageMethods.getChapter;
+  getChapterWithPages = chapterStorageMethods.getChapterWithPages;
+  createChapter = chapterStorageMethods.createChapter;
+  updateChapter = chapterStorageMethods.updateChapter;
+  deleteChapter = chapterStorageMethods.deleteChapter;
+  reorderChapters = chapterStorageMethods.reorderChapters;
+  getGameWithChapters = chapterStorageMethods.getGameWithChapters;
+  getPlayerChapterProgress = chapterStorageMethods.getPlayerChapterProgress;
+  getChapterProgressByChapter = chapterStorageMethods.getChapterProgressByChapter;
+  createChapterProgress = chapterStorageMethods.createChapterProgress;
+  updateChapterProgress = chapterStorageMethods.updateChapterProgress;
+  isChapterUnlocked = chapterStorageMethods.isChapterUnlocked;
+  unlockNextChapter = chapterStorageMethods.unlockNextChapter;
 }
 
 export const storage = new DatabaseStorage();

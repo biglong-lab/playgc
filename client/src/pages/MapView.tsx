@@ -62,7 +62,7 @@ export default function MapView() {
   const userMarkerRef = useRef<any>(null);
   const teamMarkersRef = useRef<Map<string, any>>(new Map());
   const locationMarkersRef = useRef<Map<number, any>>(new Map());
-  const pageMarkersRef = useRef<Map<number, any>>(new Map());
+  const pageMarkersRef = useRef<Map<string, any>>(new Map());
   
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [isLocating, setIsLocating] = useState(false);
@@ -279,7 +279,7 @@ export default function MapView() {
         }
       };
 
-      const iconEmoji = locationSettings.markerIcon || getPageTypeIcon(page.type);
+      const iconEmoji = locationSettings.markerIcon || getPageTypeIcon(page.pageType);
       
       const iconHtml = `
         <div class="w-8 h-8 rounded-full bg-amber-500/80 border-2 border-amber-400 flex items-center justify-center shadow-lg">
@@ -296,11 +296,13 @@ export default function MapView() {
 
       const marker = L.marker([lat, lng], { icon }).addTo(mapInstanceRef.current);
       
-      const label = locationSettings.markerLabel || page.title || `任務 ${page.order}`;
+      const pageConfig = page.config as Record<string, unknown>;
+      const pageTitle = (pageConfig?.title as string) || '';
+      const label = locationSettings.markerLabel || pageTitle || `任務 ${page.pageOrder}`;
       marker.bindPopup(`
         <div class="font-chinese p-2">
           <strong class="text-lg">${label}</strong>
-          <p class="text-sm text-muted-foreground mt-1">頁面: ${page.title || page.type}</p>
+          <p class="text-sm text-muted-foreground mt-1">頁面: ${pageTitle || page.pageType}</p>
           ${locationSettings.radius ? `<p class="text-xs mt-1">範圍: ${locationSettings.radius}m</p>` : ''}
         </div>
       `);

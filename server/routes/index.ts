@@ -13,6 +13,8 @@ import { registerLeaderboardRoutes } from "./leaderboard";
 import { registerMediaRoutes } from "./media";
 import { registerLocationRoutes } from "./locations";
 import { registerTeamRoutes } from "./teams";
+import { registerPlayerChapterRoutes } from "./player-chapters";
+import { registerAdminChapterRoutes } from "./admin-chapters";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -35,6 +37,8 @@ export async function registerRoutes(
   registerMediaRoutes(app);
   registerLocationRoutes(app, ctx);
   registerTeamRoutes(app, ctx);
+  registerPlayerChapterRoutes(app);
+  registerAdminChapterRoutes(app);
 
   return httpServer;
 }

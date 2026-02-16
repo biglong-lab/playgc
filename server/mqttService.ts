@@ -199,7 +199,7 @@ class MqttService {
       const handlers = this.messageHandlers.get("*") || new Set();
       const deviceHandlers = this.messageHandlers.get(deviceId) || new Set();
       
-      [...handlers, ...deviceHandlers].forEach((handler) => {
+      (Array.from(handlers).concat(Array.from(deviceHandlers))).forEach((handler) => {
         try {
           handler(deviceId, message);
         } catch (error) {

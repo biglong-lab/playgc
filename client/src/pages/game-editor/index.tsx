@@ -24,6 +24,7 @@ import { PAGE_TYPES, PAGE_TEMPLATES, getPageTypeInfo } from "./constants";
 import { getDefaultConfig } from "./getDefaultConfig";
 import PageConfigEditor from "./PageConfigEditor";
 import EventsEditor from "./EventsEditor";
+import ChapterManager from "./ChapterManager";
 
 export default function GameEditor() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -257,6 +258,7 @@ export default function GameEditor() {
       pageOrder: (atIndex ?? pages.length) + 1,
       pageType,
       config: getDefaultConfig(pageType),
+      chapterId: null,
       createdAt: new Date(),
     };
 
@@ -282,6 +284,7 @@ export default function GameEditor() {
       pageOrder: pages.length + idx + 1,
       pageType: p.pageType,
       config: p.config,
+      chapterId: null,
       createdAt: new Date(),
     }));
 
@@ -634,6 +637,7 @@ export default function GameEditor() {
                 <TabsTrigger value="game" data-testid="tab-game">遊戲設定</TabsTrigger>
                 <TabsTrigger value="items" data-testid="tab-items">道具</TabsTrigger>
                 <TabsTrigger value="events" data-testid="tab-events">事件</TabsTrigger>
+                <TabsTrigger value="chapters" data-testid="tab-chapters">章節</TabsTrigger>
               </TabsList>
             </div>
 
@@ -747,6 +751,14 @@ export default function GameEditor() {
 
             <TabsContent value="events" className="p-6">
               <EventsEditor gameId={gameId || ""} pages={pages} apiGamesPath={apiGamesPath} apiEventsPath={apiEventsPath} />
+            </TabsContent>
+
+            <TabsContent value="chapters" className="p-6">
+              {gameId && !isNew ? (
+                <ChapterManager gameId={gameId} />
+              ) : (
+                <p className="text-muted-foreground">請先儲存遊戲後再管理章節</p>
+              )}
             </TabsContent>
           </Tabs>
         </main>

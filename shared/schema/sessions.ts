@@ -15,6 +15,7 @@ import { z } from "zod";
 import { users } from "./users";
 import { games, pages } from "./games";
 import { teams } from "./teams";
+import { gameChapters } from "./chapters";
 
 // ============================================================================
 // Game Sessions table - Active game instances
@@ -28,6 +29,7 @@ export const gameSessions = pgTable(
     playerCount: integer("player_count").default(1),
     status: varchar("status", { length: 20 }).default("playing"), // playing, completed, abandoned
     score: integer("score").default(0),
+    currentChapterId: varchar("current_chapter_id").references(() => gameChapters.id, { onDelete: "set null" }),
     startedAt: timestamp("started_at").defaultNow(),
     completedAt: timestamp("completed_at"),
   },

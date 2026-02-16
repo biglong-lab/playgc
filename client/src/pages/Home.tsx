@@ -257,7 +257,15 @@ export default function Home() {
               <Card
                 key={game.id}
                 className="overflow-hidden group hover-elevate cursor-pointer"
-                onClick={() => setLocation(game.gameMode === "team" ? `/team/${game.id}` : `/game/${game.id}`)}
+                onClick={() => {
+                  if (game.gameStructure === "chapters") {
+                    setLocation(`/game/${game.id}/chapters`);
+                  } else if (game.gameMode === "team") {
+                    setLocation(`/team/${game.id}`);
+                  } else {
+                    setLocation(`/game/${game.id}`);
+                  }
+                }}
                 data-testid={`card-game-${game.id}`}
               >
                 <div className="relative h-48 bg-card overflow-hidden">

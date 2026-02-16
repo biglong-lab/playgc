@@ -15,6 +15,7 @@ import type {
   TeamVote,
   TeamVoteBallot,
 } from "./teams";
+import type { GameChapter, PlayerChapterProgress } from "./chapters";
 
 // Extended types for frontend use
 export type GameWithPages = Game & {
@@ -53,4 +54,20 @@ export type TeamWithSession = Team & {
 export type TeamVoteWithBallots = TeamVote & {
   ballots: (TeamVoteBallot & { user?: User })[];
 };
+
+// 章節擴展類型
+export type GameChapterWithPages = GameChapter & {
+  pages: Page[];
+};
+
+export type GameWithChapters = Game & {
+  chapters: GameChapterWithPages[];
+};
+
+export interface ChapterProgressSummary {
+  totalChapters: number;
+  completedChapters: number;
+  currentChapterId?: string;
+  progresses: PlayerChapterProgress[];
+}
 

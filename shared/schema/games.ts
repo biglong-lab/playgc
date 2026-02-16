@@ -15,6 +15,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { users } from "./users";
 import { fields } from "./fields";
+import { gameChapters } from "./chapters";
 
 // Game mode enum
 export const gameModeEnum = ["individual", "team"] as const;
@@ -50,6 +51,10 @@ export const games = pgTable("games", {
   enableTeamVoice: boolean("enable_team_voice").default(false), // Allow voice chat between team members
   enableTeamLocation: boolean("enable_team_location").default(true), // Show team members on map
   teamScoreMode: varchar("team_score_mode", { length: 20 }).default("shared"), // shared, individual, hybrid
+  // 章節系統欄位
+  gameStructure: varchar("game_structure", { length: 20 }).default("linear"), // linear, chapters
+  chapterUnlockMode: varchar("chapter_unlock_mode", { length: 20 }).default("sequential"), // sequential, manual, all_open
+  allowChapterReplay: boolean("allow_chapter_replay").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -67,6 +72,7 @@ export const pages = pgTable(
     pageOrder: integer("page_order").notNull(),
     pageType: varchar("page_type", { length: 50 }).notNull(), // text_card, dialogue, video, button, text_verify, choice_verify, conditional_verify, shooting_mission, photo_mission, gps_mission, qr_scan, arduino_sensor
     config: jsonb("config").notNull(), // Page-specific configuration
+    chapterId: varchar("chapter_id").references(() => gameChapters.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => [

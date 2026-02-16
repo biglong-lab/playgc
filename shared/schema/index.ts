@@ -10,6 +10,7 @@ export * from "./teams";
 export * from "./devices";
 export * from "./locations";
 export * from "./leaderboard";
+export * from "./chapters";
 export * from "./relations";
 export * from "./extended-types";
 export * from "./game-templates";

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { 
   Users, 
@@ -37,13 +37,13 @@ export default function TeamLobby() {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { dbUser } = useAuthContext();
-  
+  const { user: dbUser } = useAuth();
+
   const [accessCode, setAccessCode] = useState("");
   const [teamName, setTeamName] = useState("");
   const [copied, setCopied] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(false);
-  
+
   const currentUserId = dbUser?.id;
 
   const { data: game, isLoading: gameLoading } = useQuery<Game>({

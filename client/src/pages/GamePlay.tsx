@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { GameWithPages, GameSession, Page } from "@shared/schema";
+import type { GameWithPages, GameSession, Page, GameChapterWithPages } from "@shared/schema";
 
 import TextCardPage from "@/components/game/TextCardPage";
 import DialoguePage from "@/components/game/DialoguePage";
@@ -33,11 +33,12 @@ import {
 } from "lucide-react";
 
 export default function GamePlay() {
-  const { gameId } = useParams<{ gameId: string }>();
+  const { gameId, chapterId } = useParams<{ gameId: string; chapterId?: string }>();
   const [, setLocation] = useLocation();
   const searchString = useSearch();
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const isChapterMode = !!chapterId;
   
   // Parse query params to check for replay mode
   const isReplayMode = useMemo(() => {
@@ -93,6 +94,39 @@ export default function GamePlay() {
       }
     },
     enabled: !!user && !!gameId,
+  });
+
+  // 章節模式：載入章節頁面
+  const { data: chapterData } = useQuery<GameChapterWithPages>({
+    queryKey: ["/api/games", gameId, "chapters", chapterId],
+    enabled: isChapterMode && !!gameId && !!chapterId,
+  });
+
+  // 章節模式下使用章節頁面，否則使用全部頁面
+  const activePages: Page[] = useMemo(() => {
+    if (isChapterMode && chapterData?.pages) {
+      return [...chapterData.pages].sort((a, b) => a.pageOrder - b.pageOrder);
+    }
+    return game?.pages ?? [];
+  }, [isChapterMode, chapterData?.pages, game?.pages]);
+
+  const completeChapterMutation = useMutation({
+    mutationFn: async (finalScore: number) => {
+      if (!sessionId) return;
+      const response = await apiRequest(
+        "PATCH",
+        `/api/sessions/${sessionId}/chapter-complete`,
+        { score: finalScore }
+      );
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsCompleted(true);
+      toast({
+        title: "章節完成!",
+        description: data?.nextChapterUnlocked ? "已解鎖下一章" : `得分: ${score} 分`,
+      });
+    },
   });
 
   const createSessionMutation = useMutation({
@@ -186,7 +220,7 @@ export default function GamePlay() {
     }
     
     // If we have an existing session and haven't restored yet
-    if (existingSession?.session && !hasRestoredProgress && game?.pages) {
+    if (existingSession?.session && !hasRestoredProgress && activePages.length > 0) {
       const newSessionId = existingSession.session.id;
       const newScore = existingSession.progress?.score || existingSession.session.score || 0;
       const newInventory = existingSession.progress?.inventory || [];
@@ -205,7 +239,7 @@ export default function GamePlay() {
       // Check if the session is already completed
       if (existingSession.session.status === "completed") {
         setIsCompleted(true);
-        setCurrentPageIndex(game.pages.length - 1);
+        setCurrentPageIndex(activePages.length - 1);
         setHasRestoredProgress(true);
         toast({
           title: "遊戲已完成",
@@ -215,7 +249,7 @@ export default function GamePlay() {
       }
       
       if (existingSession.progress?.currentPageId) {
-        const pageIndex = game.pages.findIndex(p => p.id === existingSession.progress.currentPageId);
+        const pageIndex = activePages.findIndex(p => p.id === existingSession.progress.currentPageId);
         if (pageIndex !== -1) {
           setCurrentPageIndex(pageIndex);
         }
@@ -231,11 +265,14 @@ export default function GamePlay() {
       sessionCreationAttemptedRef.current = true;
       createSessionMutation.mutate();
     }
-  }, [user, gameId, existingSession, game?.pages, sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending]);
+  }, [user, gameId, existingSession, activePages, sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending]);
 
-  const currentPage = game?.pages?.[currentPageIndex];
-  const totalPages = game?.pages?.length || 0;
+  const currentPage = activePages[currentPageIndex];
+  const totalPages = activePages.length;
   const progressPercent = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
+
+  const activePagesRef = useRef(activePages);
+  useEffect(() => { activePagesRef.current = activePages; }, [activePages]);
 
   const handlePageComplete = useCallback((reward?: { points?: number; items?: string[] }, nextPageId?: string) => {
     // Use refs to get the latest values and avoid stale closures
@@ -243,8 +280,8 @@ export default function GamePlay() {
     let newScore = scoreRef.current;
     let newInventory = [...inventoryRef.current];
     const currentVars = variablesRef.current;
-    const pages = game?.pages;
-    const numPages = pages?.length || 0;
+    const pages = activePagesRef.current;
+    const numPages = pages.length;
     
     if (reward?.points) {
       newScore = newScore + reward.points;
@@ -257,19 +294,29 @@ export default function GamePlay() {
       inventoryRef.current = newInventory;
     }
 
-    if (nextPageId === "_end") {
-      if (currentSessionId) {
-        apiRequest("PATCH", `/api/sessions/${currentSessionId}`, {
-          status: "completed",
-          score: newScore,
+    // 遊戲/章節完成處理
+    const handleCompletion = (finalScore: number) => {
+      if (!currentSessionId) return;
+      if (isChapterMode) {
+        apiRequest("PATCH", `/api/sessions/${currentSessionId}/chapter-complete`, {
+          score: finalScore,
         }).then(() => {
           setIsCompleted(true);
-          toast({
-            title: "恭喜通關!",
-            description: `最終得分: ${newScore} 分`,
-          });
+          toast({ title: "章節完成!", description: `得分: ${finalScore} 分` });
+        });
+      } else {
+        apiRequest("PATCH", `/api/sessions/${currentSessionId}`, {
+          status: "completed",
+          score: finalScore,
+        }).then(() => {
+          setIsCompleted(true);
+          toast({ title: "恭喜通關!", description: `最終得分: ${finalScore} 分` });
         });
       }
+    };
+
+    if (nextPageId === "_end") {
+      handleCompletion(newScore);
       return;
     }
 
@@ -284,9 +331,8 @@ export default function GamePlay() {
       }
 
       if (nextIndex < numPages) {
-        const nextPage = pages?.[nextIndex];
+        const nextPage = pages[nextIndex];
 
-        // 使用 ref 值儲存進度
         if (nextPage && currentSessionId) {
           apiRequest("PATCH", `/api/sessions/${currentSessionId}/progress`, {
             pageId: nextPage.id,
@@ -297,22 +343,11 @@ export default function GamePlay() {
         }
         return nextIndex;
       } else {
-        if (currentSessionId) {
-          apiRequest("PATCH", `/api/sessions/${currentSessionId}`, {
-            status: "completed",
-            score: newScore,
-          }).then(() => {
-            setIsCompleted(true);
-            toast({
-              title: "恭喜通關!",
-              description: `最終得分: ${newScore} 分`,
-            });
-          });
-        }
+        handleCompletion(newScore);
         return prevIndex; // Stay on current page
       }
     });
-  }, [game?.pages, toast]);
+  }, [toast]);
 
   const handleVariableUpdate = useCallback((key: string, value: any) => {
     setVariables(prev => ({ ...prev, [key]: value }));
@@ -364,7 +399,6 @@ export default function GamePlay() {
 
   if (isCompleted) {
     const handlePlayAgain = async () => {
-      // Create a new session for replaying
       setIsCompleted(false);
       setCurrentPageIndex(0);
       setScore(0);
@@ -376,9 +410,35 @@ export default function GamePlay() {
       scoreRef.current = 0;
       inventoryRef.current = [];
       variablesRef.current = {};
-      // Trigger new session creation
       createSessionMutation.mutate();
     };
+
+    // 章節模式完成畫面
+    if (isChapterMode) {
+      return (
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="text-center max-w-md px-4">
+            <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6 animate-glow">
+              <Trophy className="w-12 h-12 text-primary" />
+            </div>
+            <h2 className="text-3xl font-display font-bold mb-2 text-glow">章節完成!</h2>
+            <p className="text-muted-foreground mb-2">
+              恭喜完成{chapterData?.title ? ` ${chapterData.title}` : "此章節"}
+            </p>
+            <p className="text-4xl font-number font-bold text-primary mb-8">{score} 分</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                onClick={() => setLocation(`/game/${gameId}/chapters`)}
+                className="gap-2"
+              >
+                <Home className="w-4 h-4" />
+                返回章節列表
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -389,7 +449,7 @@ export default function GamePlay() {
           <h2 className="text-3xl font-display font-bold mb-2 text-glow">任務完成!</h2>
           <p className="text-muted-foreground mb-2">恭喜完成 {game.title}</p>
           <p className="text-4xl font-number font-bold text-primary mb-8">{score} 分</p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button onClick={handlePlayAgain} variant="outline" className="gap-2" data-testid="button-play-again">
               <RefreshCw className="w-4 h-4" />
@@ -471,9 +531,9 @@ export default function GamePlay() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <GameHeader
-        title={game.title}
+        title={isChapterMode && chapterData?.title ? `${game.title} - ${chapterData.title}` : game.title}
         score={score}
-        onBack={() => setLocation("/home")}
+        onBack={() => setLocation(isChapterMode ? `/game/${gameId}/chapters` : "/home")}
         onChat={() => setShowChat(true)}
         onMap={goToMap}
         onInventory={() => setShowInventory(true)}

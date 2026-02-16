@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ChevronLeft, Save, MapPin, Crosshair, Navigation, Lock, AlertTriangle, Users, MessageCircle, Mic, Map, Trophy } from "lucide-react";
+import { ChevronLeft, Save, MapPin, Crosshair, Navigation, Lock, AlertTriangle, Users, MessageCircle, Mic, Map, Trophy, Settings } from "lucide-react";
 import type { Game, User } from "@shared/schema";
 
 export default function GameSettings() {
@@ -39,6 +39,11 @@ export default function GameSettings() {
   const [enableTeamVoice, setEnableTeamVoice] = useState(false);
   const [enableTeamLocation, setEnableTeamLocation] = useState(true);
   const [teamScoreMode, setTeamScoreMode] = useState<"shared" | "individual" | "hybrid">("shared");
+
+  // 章節系統設定
+  const [gameStructure, setGameStructure] = useState<"linear" | "chapters">("linear");
+  const [chapterUnlockMode, setChapterUnlockMode] = useState<"sequential" | "manual" | "all_open">("sequential");
+  const [allowChapterReplay, setAllowChapterReplay] = useState(true);
 
   const { data: user } = useQuery<User>({
     queryKey: ["/api/auth/user"],
@@ -70,6 +75,10 @@ export default function GameSettings() {
       setEnableTeamVoice(game.enableTeamVoice || false);
       setEnableTeamLocation(game.enableTeamLocation !== false);
       setTeamScoreMode((game.teamScoreMode as "shared" | "individual" | "hybrid") || "shared");
+      // 章節系統設定
+      setGameStructure((game.gameStructure as "linear" | "chapters") || "linear");
+      setChapterUnlockMode((game.chapterUnlockMode as "sequential" | "manual" | "all_open") || "sequential");
+      setAllowChapterReplay(game.allowChapterReplay !== false);
     }
   }, [game]);
 
@@ -110,6 +119,10 @@ export default function GameSettings() {
       enableTeamVoice,
       enableTeamLocation,
       teamScoreMode,
+      // 章節系統
+      gameStructure,
+      chapterUnlockMode,
+      allowChapterReplay,
     });
   };
 
@@ -311,6 +324,75 @@ export default function GameSettings() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 遊戲結構設定 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              遊戲結構
+            </CardTitle>
+            <CardDescription>
+              設定遊戲為線性或章節制
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>遊戲結構</Label>
+              <Select
+                value={gameStructure}
+                onValueChange={(v: "linear" | "chapters") => setGameStructure(v)}
+                disabled={!canEdit}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="linear">線性（頁面依序進行）</SelectItem>
+                  <SelectItem value="chapters">章節制（分章進行）</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {gameStructure === "linear"
+                  ? "頁面從頭到尾依序進行，適合單次遊戲"
+                  : "遊戲分為多個章節，支援進度保存和跨場次遊玩"}
+              </p>
+            </div>
+
+            {gameStructure === "chapters" && (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="space-y-2">
+                  <Label>章節解鎖模式</Label>
+                  <Select
+                    value={chapterUnlockMode}
+                    onValueChange={(v: "sequential" | "manual" | "all_open") => setChapterUnlockMode(v)}
+                    disabled={!canEdit}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sequential">依序解鎖（完成前一章才能開始下一章）</SelectItem>
+                      <SelectItem value="manual">手動設定（各章節獨立設定解鎖條件）</SelectItem>
+                      <SelectItem value="all_open">全部開放（所有章節一開始就可遊玩）</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>允許章節重玩</Label>
+                    <p className="text-xs text-muted-foreground">玩家完成章節後可以再次遊玩</p>
+                  </div>
+                  <Switch
+                    checked={allowChapterReplay}
+                    onCheckedChange={setAllowChapterReplay}
+                    disabled={!canEdit}
+                  />
+                </div>
               </div>
             )}
           </CardContent>
