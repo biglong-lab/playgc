@@ -92,6 +92,41 @@
 
 ## 工作紀錄
 
+### 2026-02-17 (第十七階段：安全強化 + GamePlay 拆分 + React 效能優化)
+
+#### 修改 1：media.ts 錯誤訊息洩漏修復
+- [x] `server/routes/media.ts` — 4 處 `catch (error: any) { error.message }` 改為固定錯誤訊息
+  - L72, L128, L160, L205 — 避免堆疊追蹤、DB 錯誤等內部資訊洩漏給客戶端
+
+#### 修改 2：ID 參數驗證 + 端點防護
+- [x] `server/routes/utils.ts` — 新增 `validateId()` 工具函式（Zod UUID 驗證）
+- [x] `server/routes/matches.ts` — 3 個 GET 端點加入 UUID 驗證
+- [x] `server/routes/leaderboard.ts` — gameId 查詢參數加入 UUID 驗證
+
+#### 修改 3：CORS 正式環境防護
+- [x] `server/index.ts` — allowedOrigins 改用 `CORS_ORIGIN` 環境變數
+  - 正式環境要求 origin header，開發環境允許無 origin 請求
+
+#### 修改 4：GamePlay chunk 拆分（React.lazy）
+- [x] `client/src/components/game/GamePageRenderer.tsx` — 15 個靜態 import → React.lazy 動態載入
+  - 新增 `Suspense` + `PageLoadingFallback` 元件
+  - 新增 `useMemo` 快取 commonProps
+  - **效果**: GamePlay 445KB chunk 消除，拆分為個別按需載入 chunk
+
+#### 修改 5：React 效能優化
+- [x] `client/src/components/match/MatchTimer.tsx` — 包裝 `memo()`（每秒更新的高頻元件）
+- [x] `client/src/components/match/LiveRanking.tsx` — 包裝 `memo()`（分數變更時更新）
+- [x] `client/src/lib/queryClient.ts` — 快取策略調整
+  - staleTime: Infinity → 5 分鐘、新增 gcTime: 10 分鐘、retry: false → 1
+
+#### 修改 6：測試修復
+- [x] `server/__tests__/matches.test.ts` — 測試 ID 改為 UUID 格式 + 新增「無效 ID 回傳 400」測試
+- [x] `server/__tests__/leaderboard.test.ts` — gameId 改為 UUID 格式 + 新增驗證測試
+- [x] `client/src/lib/queryClient.test.ts` — 更新 staleTime/retry 斷言
+- [x] `client/src/components/game/__tests__/GamePageRenderer.test.tsx` — async + waitFor 適配 React.lazy
+
+**測試結果**: 42 個測試檔案、665 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
 ### 2026-02-16 (第十六階段：穩定性 + 型別安全 + 效能強化)
 
 #### 修改 1：清理 console.log
