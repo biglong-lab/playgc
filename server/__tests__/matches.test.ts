@@ -437,4 +437,81 @@ describe("對戰路由 API", () => {
       expect(res.body[0].rank).toBe(1);
     });
   });
+
+  // ────────────────────────────────────────────────────
+  // POST /api/matches/:matchId/recover — 恢復卡住的倒數
+  // ────────────────────────────────────────────────────
+  describe("POST /api/matches/:matchId/recover — 恢復倒數", () => {
+    it("超過倒數時間的 countdown 狀態可恢復為 playing", async () => {
+      const { app, ctx } = createApp();
+      // 6 秒前的時間（超過 3+2=5 秒容錯）
+      const sixSecondsAgo = new Date(Date.now() - 6000);
+      selectResults = [[{
+        id: "match-1",
+        status: "countdown",
+        settings: { countdownSeconds: 3 },
+        updatedAt: sixSecondsAgo.toISOString(),
+      }]];
+
+      mockUpdateReturning.mockResolvedValueOnce([{
+        id: "match-1",
+        status: "playing",
+      }]);
+
+      const res = await request(app)
+        .post("/api/matches/match-1/recover")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe("playing");
+      expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
+        "match-1",
+        expect.objectContaining({ type: "match_started", recovered: true }),
+      );
+    });
+
+    it("倒數尚未超時時回傳 400", async () => {
+      const { app } = createApp();
+      // 剛剛才進入 countdown
+      selectResults = [[{
+        id: "match-1",
+        status: "countdown",
+        settings: { countdownSeconds: 3 },
+        updatedAt: new Date().toISOString(),
+      }]];
+
+      const res = await request(app)
+        .post("/api/matches/match-1/recover")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("倒數尚未超時");
+    });
+
+    it("非 countdown 狀態回傳 400", async () => {
+      const { app } = createApp();
+      selectResults = [[{
+        id: "match-1",
+        status: "playing",
+      }]];
+
+      const res = await request(app)
+        .post("/api/matches/match-1/recover")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("對戰不在倒數狀態");
+    });
+
+    it("對戰不存在時回傳 404", async () => {
+      const { app } = createApp();
+      selectResults = [[]];
+
+      const res = await request(app)
+        .post("/api/matches/match-1/recover")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(res.status).toBe(404);
+    });
+  });
 });
