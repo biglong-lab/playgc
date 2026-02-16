@@ -87,6 +87,21 @@
 
 ## 工作紀錄
 
+### 2026-02-16 (第九階段：GameSettings/Achievement 拆分 + Sessions/Devices 測試)
+
+- [x] 拆分 GameSettings.tsx：566 行 → 109 行
+  - `game-settings/useGameSettings.ts` (~185 行) - 設定邏輯 Hook
+  - `game-settings/SettingsCards.tsx` (~280 行) - 3 個設定卡片元件 + DRY TeamToggle
+- [x] 拆分 AchievementEditor.tsx：565 行 → 309 行
+  - `achievement-editor/constants.ts` (~100 行) - 常數、型別、工具函式
+  - `achievement-editor/AchievementFormDialog.tsx` (~180 行) - 表單對話框
+- [x] 新增玩家場次路由測試：playerSessions.test.ts (17 測試)
+  - 活躍場次、場次 CRUD、進度更新、排行榜自動建立、聊天 API
+- [x] 新增裝置路由測試：devices.test.ts (26 測試)
+  - 裝置 CRUD、MQTT 控制、射擊記錄、LED 控制、裝置指令、廣播
+- [x] 修正 devices.ts 路由順序 bug（broadcast 靜態路由移至 :id 動態路由前）
+- [x] 測試結果：19 個測試檔案、311 個測試全部通過，TS 零錯誤
+
 ### 2026-02-16 (第八階段：PhotoMission 拆分 + Auth/Locations 測試)
 
 - [x] 拆分 PhotoMissionPage.tsx：577 行 → 138 行
