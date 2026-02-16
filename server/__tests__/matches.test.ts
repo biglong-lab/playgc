@@ -337,10 +337,8 @@ describe("對戰路由 API", () => {
         ],
       ];
 
-      mockUpdateReturning.mockResolvedValue([]);
-      // 最後一個 update returning 是更新 match 狀態
-      mockUpdateReturning.mockResolvedValueOnce([]);
-      mockUpdateReturning.mockResolvedValueOnce([]);
+      // Promise.all 的 participant updates 不呼叫 .returning()（thenable resolve undefined）
+      // 只有最後的 match update 呼叫 .returning()
       mockUpdateReturning.mockResolvedValueOnce([{
         id: "match-1",
         status: "finished",
