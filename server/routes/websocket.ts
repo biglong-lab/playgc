@@ -206,6 +206,52 @@ export function setupWebSocket(httpServer: Server): RouteContext {
               });
             }
             break;
+
+          // 對戰系統事件
+          case "match_join": {
+            const matchId = message.matchId;
+            if (matchId) {
+              (ws as any).matchId = matchId;
+              if (!matchClients.has(matchId)) {
+                matchClients.set(matchId, new Set());
+              }
+              matchClients.get(matchId)?.add(ws);
+              broadcastToMatch(matchId, {
+                type: "match_participant_joined",
+                userId: message.userId,
+                userName: message.userName,
+                timestamp: new Date().toISOString(),
+              });
+            }
+            break;
+          }
+
+          case "match_score_update": {
+            const mId = (ws as any).matchId;
+            if (mId) {
+              broadcastToMatch(mId, {
+                type: "match_ranking",
+                userId: message.userId,
+                score: message.score,
+                timestamp: new Date().toISOString(),
+              });
+            }
+            break;
+          }
+
+          case "relay_handoff": {
+            const relayMatchId = (ws as any).matchId;
+            if (relayMatchId) {
+              broadcastToMatch(relayMatchId, {
+                type: "relay_handoff",
+                fromUserId: message.fromUserId,
+                toUserId: message.toUserId,
+                segment: message.segment,
+                timestamp: new Date().toISOString(),
+              });
+            }
+            break;
+          }
         }
       } catch (error) {
         console.error("WebSocket 訊息處理錯誤:", error);
