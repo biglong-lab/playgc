@@ -115,16 +115,16 @@ describe("對戰路由 API", () => {
     it("成功建立對戰", async () => {
       const { app } = createApp();
       // select #0: 遊戲存在
-      selectResults = [[{ id: "game-1", title: "測試" }]];
+      selectResults = [[{ id: "a0000000-0000-4000-8000-000000000001", title: "測試" }]];
       mockInsertReturning.mockResolvedValueOnce([{
         id: "match-1",
-        gameId: "game-1",
+        gameId: "a0000000-0000-4000-8000-000000000001",
         status: "waiting",
         accessCode: "ABC123",
       }]);
 
       const res = await request(app)
-        .post("/api/games/game-1/matches")
+        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
         .set("Authorization", "Bearer valid-token")
         .send({ matchMode: "competitive" });
 
@@ -135,7 +135,7 @@ describe("對戰路由 API", () => {
     it("未認證時回傳 401", async () => {
       const { app } = createApp();
       const res = await request(app)
-        .post("/api/games/game-1/matches")
+        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
         .send({});
 
       expect(res.status).toBe(401);
@@ -147,7 +147,7 @@ describe("對戰路由 API", () => {
       selectResults = [[]];
 
       const res = await request(app)
-        .post("/api/games/game-1/matches")
+        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
         .set("Authorization", "Bearer valid-token")
         .send({ matchMode: "competitive" });
 
@@ -158,7 +158,7 @@ describe("對戰路由 API", () => {
       const { app } = createApp();
 
       const res = await request(app)
-        .post("/api/games/game-1/matches")
+        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
         .set("Authorization", "Bearer valid-token")
         .send({ matchMode: "invalid" });
 
@@ -180,7 +180,7 @@ describe("對戰路由 API", () => {
       selectResults = [matches];
 
       const res = await request(app)
-        .get("/api/games/game-1/matches");
+        .get("/api/games/a0000000-0000-4000-8000-000000000001/matches");
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(2);
