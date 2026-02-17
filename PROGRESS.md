@@ -345,6 +345,6 @@
 
 1. **DB Migration** - `npm run db:push` 同步 Phase 2 資料表
 2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
-3. **useMatchLobby Hook 測試** - 對戰 Hook 邏輯測試
-4. **Vite 7 升級** - 解決 esbuild/vite moderate 安全漏洞
-5. **管理端元件測試** - AdminGames/GameEditor 測試覆蓋率提升
+3. **Vite 6 升級** - 解決 esbuild moderate 安全漏洞（Vite 5→6，plugin-react 4→5）
+4. **管理端元件測試** - AdminGames 頁面 + GameEditor 測試覆蓋率提升
+5. **useTeamLobby/use-team-websocket 測試** - 團隊 Hook 邏輯測試
