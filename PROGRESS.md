@@ -92,6 +92,28 @@
 
 ## 工作紀錄
 
+### 2026-02-17 (第二十階段：核心 Hook 測試補強)
+
+#### 修改 1：useMatchLobby 測試
+- [x] 新增 `client/src/pages/__tests__/useMatchLobby.test.ts` (12 測試)
+  - determineView 狀態轉換、authLoading/gameLoading、currentUserId 優先序
+  - isCreator/isLoading/isPending 初始值、handleGoBack 導航
+
+#### 修改 2：useMatchWebSocket 測試
+- [x] 新增 `client/src/hooks/__tests__/useMatchWebSocket.test.ts` (14 測試)
+  - MockWebSocket class 模擬完整 WebSocket 生命週期
+  - match_ranking/countdown/started/finished/relay_handoff 5 種消息處理
+  - 前端倒數遞減、到 0 發送 match_countdown_complete
+  - 初始 state、URL token 參數、sendMessage
+
+#### 修改 3：useAdminGames 測試
+- [x] 新增 `client/src/pages/__tests__/useAdminGames.test.ts` (12 測試)
+  - 初始 state、認證資訊、statusFilter/searchQuery 切換
+  - handleEdit/resetForm、mutation pending 初始值
+  - handleSubmit 呼叫 fetch POST、navigate 函式、isWizardOpen
+
+**測試結果**: 52 個測試檔案、784 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
 ### 2026-02-17 (第十九階段：對戰元件測試補強 + 接力進度條)
 
 #### 修改 1：MatchTimer 測試
