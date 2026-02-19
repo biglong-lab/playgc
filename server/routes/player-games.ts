@@ -11,9 +11,7 @@ import {
 import {
   insertGameSchema,
   insertPageSchema,
-  insertItemSchema,
   insertEventSchema,
-  insertAchievementSchema,
 } from "@shared/schema";
 import { db } from "../db";
 import { games } from "@shared/schema";
