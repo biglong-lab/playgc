@@ -66,7 +66,9 @@
 - [x] 場域管理路由 (admin-fields) - 145 行
 - [x] 角色管理路由 (admin-roles) - 446 行
 - [x] 遊戲管理路由 (admin-games, admin-content) - 476/441 行
-- [x] 玩家遊戲路由 (player-games) - 678 行
+- [x] 玩家遊戲路由 (player-games) - 445 行
+- [x] 玩家道具路由 (player-items) - 123 行
+- [x] 玩家成就路由 (player-achievements) - 132 行
 - [x] 玩家場次路由 (player-sessions) - 382 行
 - [x] 裝置路由 (devices) - 450 行
 - [x] 排行榜路由 (leaderboard) - 124 行
