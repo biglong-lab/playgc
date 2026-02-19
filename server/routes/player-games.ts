@@ -19,10 +19,14 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { checkGameOwnership } from "./utils";
 import { registerPlayerSessionRoutes } from "./player-sessions";
+import { registerPlayerItemRoutes } from "./player-items";
+import { registerPlayerAchievementRoutes } from "./player-achievements";
 
 export function registerPlayerGameRoutes(app: Express) {
   // 註冊子模組路由
   registerPlayerSessionRoutes(app);
+  registerPlayerItemRoutes(app);
+  registerPlayerAchievementRoutes(app);
 
   // ==========================================================================
   // Game QR Code Routes
