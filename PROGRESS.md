@@ -380,6 +380,8 @@
 8. ~~Vite 升級~~ → 第二十一階段已完成 Vite 5→6 升級（6.4.1 + plugin-react 5.2.0）
 9. ~~接力進度條 UI~~ → 第十九階段已完成 RelayProgress 元件
 10. ~~前端對戰元件測試~~ → 第十九階段已補 MatchTimer/LiveRanking/MatchViews 測試
+11. ~~useTeamWebSocket 測試~~ → 第二十二階段已完成 17 個測試
+12. ~~player-games.ts 行數超標~~ → 第二十二階段已拆分為 3 個模組（445+123+132 行）
 
 ## 下一步建議
 
