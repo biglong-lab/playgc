@@ -386,5 +386,5 @@
 1. **DB Migration** - `npm run db:push` 同步 Phase 2 資料表
 2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
 3. **GameEditor 測試** - 遊戲編輯器頁面測試覆蓋率提升
-4. **useTeamLobby/use-team-websocket 測試** - 團隊 Hook 邏輯測試
+4. **useTeamLobby 測試** - 團隊大廳 Hook 邏輯測試
 5. **ESLint 9 升級** - 解決 minimatch high 漏洞（需 eslint major 升級）
