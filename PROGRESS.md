@@ -92,6 +92,23 @@
 
 ## 工作紀錄
 
+### 2026-02-19 (第二十一階段：Vite 6 升級 + AdminGames 頁面測試)
+
+#### 修改 1：Vite 5→6 依賴升級
+- [x] `package.json` — `vite` ^5.4.20 → ^6.0.0（實裝 6.4.1）
+- [x] `package.json` — `@vitejs/plugin-react` ^4.7.0 → ^5.0.0（實裝 5.2.0）
+- [x] `server/vite.ts` — `ssrFixStacktrace` 仍保留為 backward compat alias，無需修改
+- [x] `npm audit fix` — 從 18→15 漏洞（剩餘為 eslint/drizzle-kit 間接依賴，開發環境限定）
+
+#### 修改 2：AdminGames 頁面測試
+- [x] 新增 `client/src/pages/__tests__/AdminGames.test.tsx` (12 測試)
+  - authLoading spinner、未認證 null、AdminLayout 渲染
+  - 搜尋欄位 + setSearchQuery、4 個狀態標籤 + counts
+  - 新增遊戲按鈕、載入/空/篩選/有資料 4 種狀態
+  - 對話框 mock 全渲染
+
+**測試結果**: 53 個測試檔案、796 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
 ### 2026-02-17 (第二十階段：核心 Hook 測試補強)
 
 #### 修改 1：useMatchLobby 測試
