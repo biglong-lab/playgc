@@ -102,9 +102,9 @@ export function useTeamWebSocket({
                 const location: TeamMemberLocation = {
                   userId: data.userId,
                   userName: data.userName || "",
-                  latitude: (data as any).latitude,
-                  longitude: (data as any).longitude,
-                  accuracy: (data as any).accuracy,
+                  latitude: data.latitude ?? 0,
+                  longitude: data.longitude ?? 0,
+                  accuracy: data.accuracy ?? 0,
                   timestamp: data.timestamp || new Date().toISOString(),
                 };
                 setMemberLocations(prev => {
