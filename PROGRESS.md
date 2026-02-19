@@ -343,7 +343,7 @@
 ## 待處理問題
 
 ### 🟡 注意
-1. **npm audit** - 5 個 esbuild/vite moderate 漏洞（開發環境限定，需 Vite 7 升級）
+1. **npm audit** - 15 個漏洞（eslint/minimatch high + drizzle-kit moderate，皆開發環境間接依賴）
 2. **DB Migration** - Phase 2 的 game_matches + match_participants 表需要 `npm run db:push`
 
 ### 🟢 優化方向
