@@ -94,6 +94,27 @@
 
 ## 工作紀錄
 
+### 2026-02-19 (第二十二階段：團隊 WebSocket 測試 + player-games 路由拆分)
+
+#### 修改 1：useTeamWebSocket 測試
+- [x] 新增 `client/src/hooks/__tests__/useTeamWebSocket.test.ts` (17 測試)
+  - MockWebSocket class 模擬完整 WebSocket 生命週期
+  - team_member_joined/left/location/vote_cast/score_update/ready_update 6 種消息處理
+  - sendChat/sendLocation/sendVote/sendReady 4 種發送方法
+  - 未連線安全防護、無效 JSON 容錯、unmount 清理
+
+#### 修改 2：修復 use-team-websocket.ts 的 `any` 型別
+- [x] 修改 `client/src/hooks/use-team-websocket.ts`
+  - TeamMessage 介面新增 `latitude?/longitude?/accuracy?` 欄位
+  - 移除 3 處 `(data as any)` 改為型別安全存取 + `?? 0` 預設值
+
+#### 修改 3：player-games.ts 路由拆分
+- [x] 新增 `server/routes/player-items.ts` (123 行) — Items CRUD 5 端點
+- [x] 新增 `server/routes/player-achievements.ts` (132 行) — Achievements CRUD 5 端點
+- [x] 修改 `server/routes/player-games.ts` — 678 行 → 445 行（移除 items/achievements，新增子模組註冊）
+
+**測試結果**: 54 個測試檔案、813 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
 ### 2026-02-19 (第二十一階段：Vite 6 升級 + AdminGames 頁面測試)
 
 #### 修改 1：Vite 5→6 依賴升級
