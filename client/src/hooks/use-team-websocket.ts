@@ -24,6 +24,9 @@ interface TeamMessage {
   score?: number;
   change?: number;
   reason?: string;
+  latitude?: number;
+  longitude?: number;
+  accuracy?: number;
 }
 
 interface UseTeamWebSocketOptions {
