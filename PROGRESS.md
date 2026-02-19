@@ -354,7 +354,7 @@
 5. ~~Rate limiting 清理~~ → 第十八階段已清理重複邏輯（express-rate-limit 已覆蓋）
 6. ~~圖片懶載入~~ → 第十八階段已完成 OptimizedImage + Cloudinary URL 優化
 7. ~~對戰 UI 動畫~~ → 第十八階段已完成 framer-motion 倒數/排名/轉場/慶祝動畫
-8. Vite 7 升級（解決剩餘安全漏洞）
+8. ~~Vite 升級~~ → 第二十一階段已完成 Vite 5→6 升級（6.4.1 + plugin-react 5.2.0）
 9. ~~接力進度條 UI~~ → 第十九階段已完成 RelayProgress 元件
 10. ~~前端對戰元件測試~~ → 第十九階段已補 MatchTimer/LiveRanking/MatchViews 測試
 
