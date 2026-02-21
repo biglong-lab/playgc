@@ -213,20 +213,20 @@ export async function signInWithEmail(email: string, password: string) {
   try {
     const result = await signInWithEmailAndPassword(auth, email, password);
     return result.user;
-  } catch (error: any) {
-    
-    if (error?.code === "auth/invalid-email") {
+  } catch (error: unknown) {
+    const code = getFirebaseErrorCode(error);
+    if (code === "auth/invalid-email") {
       throw new Error("電子郵件格式無效");
-    } else if (error?.code === "auth/user-disabled") {
+    } else if (code === "auth/user-disabled") {
       throw new Error("此帳號已被停用");
-    } else if (error?.code === "auth/user-not-found") {
+    } else if (code === "auth/user-not-found") {
       throw new Error("找不到此電子郵件帳號");
-    } else if (error?.code === "auth/wrong-password") {
+    } else if (code === "auth/wrong-password") {
       throw new Error("密碼錯誤");
-    } else if (error?.code === "auth/invalid-credential") {
+    } else if (code === "auth/invalid-credential") {
       throw new Error("電子郵件或密碼錯誤");
     }
-    
+
     throw new Error("登入失敗，請重試");
   }
 }
