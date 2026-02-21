@@ -3,15 +3,15 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Plus, Trash2, Save, Zap, AlertTriangle } from "lucide-react";
 import type { Page } from "@shared/schema";
-import { EVENT_TYPES, REWARD_TYPES, getPageTypeInfo } from "./constants";
+import { EVENT_TYPES } from "./constants";
 import type { GameEvent } from "./types";
+import { TriggerConfigEditor, RewardConfigEditor } from "./event-config-editors";
 
 interface EventsEditorProps {
   gameId: string;
@@ -207,99 +207,13 @@ export default function EventsEditor({ gameId, pages, apiGamesPath, apiEventsPat
 
       <div>
         {selectedEvent ? (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">編輯事件</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">事件名稱</label>
-                <Input
-                  value={selectedEvent.name}
-                  onChange={(e) => updateEvent(selectedEvent.id, { name: e.target.value })}
-                  placeholder="輸入事件名稱"
-                  data-testid="input-event-name"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">觸發類型</label>
-                <Select
-                  value={selectedEvent.eventType}
-                  onValueChange={(value) => {
-                    let triggerConfig = {};
-                    switch (value) {
-                      case "qrcode":
-                        triggerConfig = { qrCodeId: "" };
-                        break;
-                      case "gps":
-                        triggerConfig = { lat: 25.033, lng: 121.565, radius: 50 };
-                        break;
-                      case "shooting":
-                        triggerConfig = { minScore: 100 };
-                        break;
-                      case "timer":
-                        triggerConfig = { delaySeconds: 60 };
-                        break;
-                    }
-                    updateEvent(selectedEvent.id, { eventType: value, triggerConfig });
-                  }}
-                >
-                  <SelectTrigger data-testid="select-event-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {EVENT_TYPES.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        <span className="flex items-center gap-2">
-                          <type.icon className="w-4 h-4" />
-                          {type.label}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="bg-accent/30 rounded-lg p-4 space-y-3">
-                <label className="text-sm font-medium block">觸發條件設定</label>
-                <TriggerConfigEditor
-                  eventType={selectedEvent.eventType}
-                  config={selectedEvent.triggerConfig}
-                  onChange={(triggerConfig) => updateEvent(selectedEvent.id, { triggerConfig })}
-                />
-              </div>
-
-              <div className="bg-accent/30 rounded-lg p-4 space-y-3">
-                <label className="text-sm font-medium block">獎勵設定</label>
-                <RewardConfigEditor
-                  config={selectedEvent.rewardConfig}
-                  pages={pages}
-                  onChange={(rewardConfig) => updateEvent(selectedEvent.id, { rewardConfig })}
-                />
-              </div>
-
-              {localEdits[selectedEvent.id] && (
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    const edits = localEdits[selectedEvent.id];
-                    if (edits) {
-                      updateEventMutation.mutate({
-                        id: selectedEvent.id,
-                        data: edits
-                      });
-                    }
-                  }}
-                  disabled={updateEventMutation.isPending}
-                  data-testid="button-save-event"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {updateEventMutation.isPending ? "儲存中..." : "儲存事件"}
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <EventDetailEditor
+            selectedEvent={selectedEvent}
+            localEdits={localEdits}
+            pages={pages}
+            updateEvent={updateEvent}
+            updateEventMutation={updateEventMutation}
+          />
         ) : (
           <Card>
             <CardContent className="py-20 text-center text-muted-foreground">
@@ -314,206 +228,113 @@ export default function EventsEditor({ gameId, pages, apiGamesPath, apiEventsPat
   );
 }
 
-function TriggerConfigEditor({
-  eventType,
-  config,
-  onChange
-}: {
-  eventType: string;
-  config: any;
-  onChange: (config: any) => void;
-}) {
-  switch (eventType) {
-    case "qrcode":
-      return (
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">QR Code ID</label>
-          <Input
-            value={config.qrCodeId || ""}
-            onChange={(e) => onChange({ ...config, qrCodeId: e.target.value })}
-            placeholder="QR-001"
-            data-testid="trigger-qrcode-id"
-          />
-        </div>
-      );
-    case "gps":
-      return (
-        <div className="space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">緯度</label>
-              <Input
-                type="number"
-                step="0.0001"
-                value={config.lat || 25.033}
-                onChange={(e) => onChange({ ...config, lat: parseFloat(e.target.value) })}
-                data-testid="trigger-gps-lat"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">經度</label>
-              <Input
-                type="number"
-                step="0.0001"
-                value={config.lng || 121.565}
-                onChange={(e) => onChange({ ...config, lng: parseFloat(e.target.value) })}
-                data-testid="trigger-gps-lng"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">觸發半徑 (公尺)</label>
-            <Input
-              type="number"
-              value={config.radius || 50}
-              onChange={(e) => onChange({ ...config, radius: parseInt(e.target.value) })}
-              data-testid="trigger-gps-radius"
-            />
-          </div>
-        </div>
-      );
-    case "shooting":
-      return (
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">最低分數</label>
-          <Input
-            type="number"
-            value={config.minScore || 100}
-            onChange={(e) => onChange({ ...config, minScore: parseInt(e.target.value) })}
-            data-testid="trigger-shooting-score"
-          />
-        </div>
-      );
-    case "timer":
-      return (
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">延遲秒數</label>
-          <Input
-            type="number"
-            value={config.delaySeconds || 60}
-            onChange={(e) => onChange({ ...config, delaySeconds: parseInt(e.target.value) })}
-            data-testid="trigger-timer-delay"
-          />
-        </div>
-      );
-    default:
-      return null;
-  }
-}
-
-function RewardConfigEditor({
-  config,
+// 事件詳細編輯面板
+function EventDetailEditor({
+  selectedEvent,
+  localEdits,
   pages,
-  onChange,
+  updateEvent,
+  updateEventMutation,
 }: {
-  config: any;
+  selectedEvent: GameEvent;
+  localEdits: Record<string, Partial<GameEvent>>;
   pages: Page[];
-  onChange: (config: any) => void;
+  updateEvent: (id: string, updates: Partial<GameEvent>) => void;
+  updateEventMutation: { mutate: (args: { id: string; data: Partial<GameEvent> }) => void; isPending: boolean };
 }) {
   return (
-    <div className="space-y-3">
-      <div>
-        <label className="text-xs text-muted-foreground mb-1 block">獎勵類型</label>
-        <Select
-          value={config.type || "points"}
-          onValueChange={(value) => {
-            let newConfig = { type: value };
-            switch (value) {
-              case "points":
-                newConfig = { ...newConfig, value: 10 } as any;
-                break;
-              case "item":
-                newConfig = { ...newConfig, itemId: "" } as any;
-                break;
-              case "unlock_page":
-                newConfig = { ...newConfig, pageId: "" } as any;
-                break;
-              case "message":
-                newConfig = { ...newConfig, message: "" } as any;
-                break;
-            }
-            onChange(newConfig);
-          }}
-        >
-          <SelectTrigger data-testid="select-reward-type">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {REWARD_TYPES.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                <span className="flex items-center gap-2">
-                  <type.icon className="w-4 h-4" />
-                  {type.label}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {config.type === "points" && (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg">編輯事件</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">分數</label>
+          <label className="text-sm font-medium mb-2 block">事件名稱</label>
           <Input
-            type="number"
-            value={config.value || 10}
-            onChange={(e) => onChange({ ...config, value: parseInt(e.target.value) })}
-            data-testid="reward-points-value"
+            value={selectedEvent.name}
+            onChange={(e) => updateEvent(selectedEvent.id, { name: e.target.value })}
+            placeholder="輸入事件名稱"
+            data-testid="input-event-name"
           />
         </div>
-      )}
 
-      {config.type === "item" && (
         <div>
-          <label className="text-xs text-muted-foreground mb-1 block">道具 ID</label>
-          <Input
-            value={config.itemId || ""}
-            onChange={(e) => onChange({ ...config, itemId: e.target.value })}
-            placeholder="輸入道具 ID"
-            data-testid="reward-item-id"
-          />
-        </div>
-      )}
-
-      {config.type === "unlock_page" && (
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">目標頁面</label>
+          <label className="text-sm font-medium mb-2 block">觸發類型</label>
           <Select
-            value={config.pageId || ""}
-            onValueChange={(value) => onChange({ ...config, pageId: value })}
+            value={selectedEvent.eventType}
+            onValueChange={(value) => {
+              let triggerConfig: Record<string, unknown> = {};
+              switch (value) {
+                case "qrcode":
+                  triggerConfig = { qrCodeId: "" };
+                  break;
+                case "gps":
+                  triggerConfig = { lat: 25.033, lng: 121.565, radius: 50 };
+                  break;
+                case "shooting":
+                  triggerConfig = { minScore: 100 };
+                  break;
+                case "timer":
+                  triggerConfig = { delaySeconds: 60 };
+                  break;
+              }
+              updateEvent(selectedEvent.id, { eventType: value, triggerConfig });
+            }}
           >
-            <SelectTrigger data-testid="reward-page-select">
-              <SelectValue placeholder="選擇頁面" />
+            <SelectTrigger data-testid="select-event-type">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {pages.map((p, idx) => {
-                const info = getPageTypeInfo(p.pageType);
-                return (
-                  <SelectItem key={p.id} value={p.id}>
-                    <span className="flex items-center gap-2">
-                      <info.icon className="w-4 h-4" />
-                      #{idx + 1} {info.label}
-                    </span>
-                  </SelectItem>
-                );
-              })}
+              {EVENT_TYPES.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  <span className="flex items-center gap-2">
+                    <type.icon className="w-4 h-4" />
+                    {type.label}
+                  </span>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
-      )}
 
-      {config.type === "message" && (
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">訊息內容</label>
-          <Textarea
-            value={config.message || ""}
-            onChange={(e) => onChange({ ...config, message: e.target.value })}
-            placeholder="輸入要顯示的訊息..."
-            rows={3}
-            data-testid="reward-message"
+        <div className="bg-accent/30 rounded-lg p-4 space-y-3">
+          <label className="text-sm font-medium block">觸發條件設定</label>
+          <TriggerConfigEditor
+            eventType={selectedEvent.eventType}
+            config={selectedEvent.triggerConfig}
+            onChange={(triggerConfig) => updateEvent(selectedEvent.id, { triggerConfig })}
           />
         </div>
-      )}
-    </div>
+
+        <div className="bg-accent/30 rounded-lg p-4 space-y-3">
+          <label className="text-sm font-medium block">獎勵設定</label>
+          <RewardConfigEditor
+            config={selectedEvent.rewardConfig}
+            pages={pages}
+            onChange={(rewardConfig) => updateEvent(selectedEvent.id, { rewardConfig })}
+          />
+        </div>
+
+        {localEdits[selectedEvent.id] && (
+          <Button
+            className="w-full"
+            onClick={() => {
+              const edits = localEdits[selectedEvent.id];
+              if (edits) {
+                updateEventMutation.mutate({
+                  id: selectedEvent.id,
+                  data: edits
+                });
+              }
+            }}
+            disabled={updateEventMutation.isPending}
+            data-testid="button-save-event"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {updateEventMutation.isPending ? "儲存中..." : "儲存事件"}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
