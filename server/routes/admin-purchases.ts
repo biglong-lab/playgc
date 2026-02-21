@@ -49,7 +49,7 @@ export function registerAdminPurchaseRoutes(app: Express) {
           .select({
             gameId: redeemCodes.gameId,
             totalCodes: sql<number>`COUNT(DISTINCT ${redeemCodes.id})`.as("total_codes"),
-            activeCodes: sql<number>`COUNT(DISTINCT CASE WHEN ${redeemCodes.isActive} = true THEN ${redeemCodes.id} END)`.as("active_codes"),
+            activeCodes: sql<number>`COUNT(DISTINCT CASE WHEN ${redeemCodes.status} = 'active' THEN ${redeemCodes.id} END)`.as("active_codes"),
             usedCount: sql<number>`COUNT(DISTINCT ${redeemCodeUses.id})`.as("used_count"),
           })
           .from(redeemCodes)
