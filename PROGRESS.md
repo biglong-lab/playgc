@@ -525,4 +525,7 @@
 5. ~~locations.ts 拆分~~ → 第二十五階段已拆分為 locations(245) + location-tracking(292)
 6. ~~EventsEditor.tsx 拆分~~ → 第二十五階段已拆分為 EventsEditor(340) + event-config-editors(215)
 7. ~~adminAuth.ts bug~~ → 第二十五階段修復 resolveUnifiedAdminContext 中 user 物件存取層級錯誤
-8. **Vitest 並行 mock 洩漏** - playerChapterActions 和 teams 偶爾因 mock 洩漏失敗（單獨跑通過）
+8. ~~GamePlay.tsx 超長函式~~ → 第二十六階段已重構（541→306 行 + useSessionManager 212 行）
+9. ~~game-editor any 型別~~ → 第二十六階段已統一為 EditorProps + PageConfigValue 型別
+10. ~~ErrorBoundary console.error~~ → 第二十六階段已移除
+11. **Vitest 並行 mock 洩漏** - playerChapterActions 和 teams 偶爾因 mock 洩漏失敗（單獨跑通過）
