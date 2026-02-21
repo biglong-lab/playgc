@@ -39,38 +39,12 @@ export function registerAuthRoutes(app: Express) {
   // Admin Authentication Routes - 管理員認證
   // ============================================================================
 
-  app.post("/api/admin/login", async (req, res) => {
-    try {
-      const { fieldCode, username, password } = req.body;
-
-      if (!fieldCode || !username || !password) {
-        return res.status(400).json({ message: "請填寫場域編號、帳號和密碼" });
-      }
-
-      const ipAddress = req.ip || req.socket.remoteAddress;
-      const userAgent = req.headers["user-agent"];
-
-      const result = await adminLogin(fieldCode, username, password, ipAddress, userAgent);
-
-      if (!result.success) {
-        return res.status(401).json({ message: result.error });
-      }
-
-      res.cookie("adminToken", result.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-
-      res.json({
-        success: true,
-        token: result.token,
-        admin: result.admin,
-      });
-    } catch (error) {
-      res.status(500).json({ message: "登入失敗" });
-    }
+  // 密碼登入已停用 — 統一使用 Firebase 認證
+  app.post("/api/admin/login", (_req, res) => {
+    res.status(410).json({
+      message: "密碼登入已停用，請使用 Google 帳號登入",
+      migration: "請前往登入頁面使用 Firebase Google 登入",
+    });
   });
 
   app.post("/api/admin/firebase-login", async (req, res) => {
