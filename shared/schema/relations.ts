@@ -35,6 +35,12 @@ import {
 import { leaderboard } from "./leaderboard";
 import { gameChapters, playerChapterProgress } from "./chapters";
 import { gameMatches, matchParticipants } from "./matches";
+import {
+  redeemCodes,
+  redeemCodeUses,
+  purchases,
+  paymentTransactions,
+} from "./purchases";
 
 export const usersRelations = relations(users, ({ many }) => ({
   gameSessions: many(gameSessions),
