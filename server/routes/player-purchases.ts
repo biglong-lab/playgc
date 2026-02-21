@@ -234,6 +234,80 @@ export function registerPlayerPurchaseRoutes(app: Express) {
   });
 
   // ========================================================================
+  // 線上付款 Checkout（Recur.tw）
+  // ========================================================================
+  app.post("/api/games/:gameId/checkout", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "需要登入" });
+      }
+
+      // 檢查 Recur 是否已設定
+      if (!isRecurConfigured()) {
+        return res.status(503).json({ message: "線上付款功能尚未開放" });
+      }
+
+      const { gameId } = req.params;
+      const game = await storage.getGame(gameId);
+      if (!game) {
+        return res.status(404).json({ message: "遊戲不存在" });
+      }
+
+      // 驗證遊戲定價
+      if (game.pricingType === "free" || !game.pricingType) {
+        return res.status(400).json({ message: "此遊戲為免費遊戲" });
+      }
+
+      if (!game.price || game.price <= 0) {
+        return res.status(400).json({ message: "遊戲定價未設定" });
+      }
+
+      // 檢查是否已有存取權
+      const existing = await storage.getUserGamePurchase(userId, gameId);
+      if (existing) {
+        return res.status(409).json({ message: "您已擁有此遊戲存取權" });
+      }
+
+      // 建立待處理的交易記錄
+      const transaction = await storage.createTransaction({
+        userId,
+        gameId,
+        amount: game.price,
+        currency: game.currency ?? "TWD",
+        status: "pending",
+      });
+
+      // 取得 APP_URL 作為成功/取消 URL 基底
+      const appUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3333}`;
+
+      // 呼叫 Recur API 建立 Checkout Session
+      const session = await createCheckoutSession({
+        productId: game.recurProductId || gameId,
+        successUrl: `${appUrl}/purchase/success?txId=${transaction.id}`,
+        cancelUrl: `${appUrl}/purchase/gate/${gameId}`,
+        mode: "PAYMENT",
+        customerEmail: req.user?.claims?.email as string | undefined,
+        metadata: {
+          transactionId: transaction.id,
+          gameId,
+          userId,
+        },
+      });
+
+      // 更新交易記錄的 Recur Session ID
+      await storage.updateTransaction(transaction.id, {
+        recurCheckoutSessionId: session.id,
+      });
+
+      res.json({ checkoutUrl: session.url });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "建立付款失敗";
+      res.status(500).json({ message });
+    }
+  });
+
+  // ========================================================================
   // 我的購買記錄
   // ========================================================================
   app.get("/api/purchases", isAuthenticated, async (req: AuthenticatedRequest, res) => {
