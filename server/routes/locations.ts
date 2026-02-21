@@ -37,11 +37,11 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
           const gpsMissionPages = pages.filter(p => p.pageType === 'gps_mission');
 
           gpsMissionPages.forEach((page, index) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB JSON 動態結構
-            const config = page.config as any;
+            const config = page.config as Record<string, unknown> | null;
             if (config) {
-              const lat = config.targetLocation?.lat || config.targetLatitude;
-              const lng = config.targetLocation?.lng || config.targetLongitude;
+              const targetLocation = config.targetLocation as Record<string, unknown> | undefined;
+              const lat = targetLocation?.lat || config.targetLatitude;
+              const lng = targetLocation?.lng || config.targetLongitude;
 
               if (lat && lng) {
                 const existingLocation = gameLocations.find(loc =>
@@ -49,25 +49,28 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
                 );
 
                 if (!existingLocation) {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 合成虛擬地點物件
+                  const onSuccess = config.onSuccess as Record<string, unknown> | undefined;
+                  // 合成虛擬地點物件供前端地圖顯示（非 DB 實體）
                   gameLocations.push({
                     id: 10000 + index,
                     gameId,
-                    name: config.title || config.locationName || `GPS任務 ${index + 1}`,
-                    description: config.instruction || config.description || '',
+                    name: String(config.title || config.locationName || `GPS任務 ${index + 1}`),
+                    description: String(config.instruction || config.description || ''),
                     latitude: String(lat),
                     longitude: String(lng),
-                    radius: config.radius || 50,
-                    type: 'gps_mission',
+                    radius: Number(config.radius) || 50,
+                    locationType: 'gps_mission',
                     status: 'active',
-                    points: config.onSuccess?.points || 15,
-                    order: page.pageOrder || index,
-                    qrCode: null,
-                    imageUrl: config.imageUrl || null,
+                    points: Number(onSuccess?.points) || 15,
+                    orderIndex: page.pageOrder || index,
+                    qrCodeData: null,
+                    icon: null,
+                    reward: null,
+                    isRequired: true,
                     unlockCondition: null,
                     createdAt: new Date(),
                     updatedAt: new Date(),
-                  } as any);
+                  });
                 }
               }
             }
