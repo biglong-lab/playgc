@@ -104,6 +104,14 @@ export default function GamePageRenderer({
         return <MotionChallengePage {...commonProps} />;
       case "vote":
         return <VotePage {...commonProps} />;
+      case "flow_router":
+        return (
+          <FlowRouterPage
+            {...commonProps}
+            inventory={inventory}
+            score={score}
+          />
+        );
       default:
         return (
           <div className="flex items-center justify-center h-full">
