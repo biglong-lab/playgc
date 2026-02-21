@@ -19,7 +19,7 @@ interface HitData {
 
 interface SensorData {
   sensorType: string;
-  value: any;
+  value: string | number | boolean;
   triggered: boolean;
 }
 
