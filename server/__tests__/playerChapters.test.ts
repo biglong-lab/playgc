@@ -235,7 +235,7 @@ describe("玩家章節路由", () => {
     });
 
     it("章節不存在回傳 404", async () => {
-      mockStorage.isChapterUnlocked.mockResolvedValue(true);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: true });
       mockStorage.getChapterWithPages.mockResolvedValue(undefined);
 
       const app = createTestApp();
@@ -255,7 +255,7 @@ describe("玩家章節路由", () => {
           { id: "page-2", title: "頁面2" },
         ],
       };
-      mockStorage.isChapterUnlocked.mockResolvedValue(true);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: true });
       mockStorage.getChapterWithPages.mockResolvedValue(chapterWithPages);
 
       const app = createTestApp();
@@ -307,7 +307,7 @@ describe("玩家章節路由", () => {
 
     it("建立新進度（首次遊玩）", async () => {
       const progress = makeProgress({ status: "in_progress" });
-      mockStorage.isChapterUnlocked.mockResolvedValue(true);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: true });
       mockStorage.getChapterProgressByChapter.mockResolvedValue(null);
       mockStorage.createChapterProgress.mockResolvedValue(progress);
 
@@ -329,7 +329,7 @@ describe("玩家章節路由", () => {
     it("更新 unlocked → in_progress", async () => {
       const existing = makeProgress({ status: "unlocked" });
       const updated = makeProgress({ status: "in_progress" });
-      mockStorage.isChapterUnlocked.mockResolvedValue(true);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: true });
       mockStorage.getChapterProgressByChapter.mockResolvedValue(existing);
       mockStorage.updateChapterProgress.mockResolvedValue(updated);
 
@@ -347,7 +347,7 @@ describe("玩家章節路由", () => {
 
     it("已完成但不允許重玩回傳 400", async () => {
       const existing = makeProgress({ status: "completed" });
-      mockStorage.isChapterUnlocked.mockResolvedValue(true);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: true });
       mockStorage.getChapterProgressByChapter.mockResolvedValue(existing);
       mockStorage.getGame.mockResolvedValue({
         id: "game-1",
@@ -366,7 +366,7 @@ describe("玩家章節路由", () => {
     it("已完成且允許重玩 → 重設為 in_progress", async () => {
       const existing = makeProgress({ status: "completed" });
       const replayed = makeProgress({ status: "in_progress" });
-      mockStorage.isChapterUnlocked.mockResolvedValue(true);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: true });
       mockStorage.getChapterProgressByChapter.mockResolvedValue(existing);
       mockStorage.getGame.mockResolvedValue({
         id: "game-1",
