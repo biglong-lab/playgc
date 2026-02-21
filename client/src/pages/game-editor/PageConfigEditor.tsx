@@ -348,6 +348,15 @@ export default function PageConfigEditor({
     case "vote":
       return <VoteEditor config={config} updateField={updateField} />;
 
+    case "flow_router":
+      return (
+        <FlowRouterEditor
+          config={config}
+          updateField={updateField}
+          allPages={allPages}
+        />
+      );
+
     default:
       return (
         <div className="bg-accent/30 rounded-lg p-4">
