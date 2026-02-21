@@ -146,7 +146,7 @@ export default function AdminDevices() {
   });
 
   const commandMutation = useMutation({
-    mutationFn: ({ id, command, data }: { id: string; command: string; data?: any }) =>
+    mutationFn: ({ id, command, data }: { id: string; command: string; data?: Record<string, unknown> }) =>
       apiRequest("POST", `/api/devices/${id}/command`, { command, data }),
     onSuccess: (_, variables) => {
       toast({ title: `${variables.command} 命令已發送` });
