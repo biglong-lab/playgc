@@ -3,7 +3,6 @@ import type { AuthenticatedRequest } from "./types";
 import { storage } from "../storage";
 import { isAuthenticated, verifyFirebaseToken } from "../firebaseAuth";
 import {
-  adminLogin,
   adminLogout,
   requireAdminAuth,
   logAuditAction,
