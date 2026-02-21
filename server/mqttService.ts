@@ -50,7 +50,7 @@ interface DeviceConfig {
 }
 
 type MessageHandler = (deviceId: string, message: MqttMessage) => void;
-type HitBroadcastHandler = (sessionId: string, record: any) => void;
+type HitBroadcastHandler = (sessionId: string, record: unknown) => void;
 
 class MqttService {
   private client: MqttClient | null = null;
