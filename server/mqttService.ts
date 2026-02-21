@@ -342,7 +342,7 @@ class MqttService {
     return true;
   }
 
-  sendCommand(deviceId: string, command: string, data: any = {}): boolean {
+  sendCommand(deviceId: string, command: string, data: Record<string, unknown> = {}): boolean {
     const topic = `jiachun/commands/${deviceId}`;
     const message = {
       command,
