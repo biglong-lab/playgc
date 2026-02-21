@@ -70,6 +70,8 @@ function Router() {
         <Route path="/map/:gameId" component={MapView} />
         <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/game/:gameId/purchase" component={PurchaseGate} />
+        <Route path="/purchase/gate/:gameId" component={PurchaseGate} />
+        <Route path="/purchase/success" component={PurchaseSuccess} />
         <Route path="/purchases" component={MyPurchases} />
         <Route path="/admin/login" component={FieldAdminLogin} />
         <Route path="/admin">{() => <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>}</Route>
