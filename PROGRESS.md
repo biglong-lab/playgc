@@ -493,5 +493,7 @@
 2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
 3. **ESLint 9 升級** - 解決 minimatch high 漏洞（需 eslint major 升級）
 4. ~~PageConfigEditor 拆分~~ → 第二十四階段已拆分為 PageConfigEditor(234) + page-config-inline-editors(461)
-5. **locations.ts 拆分** - 522 行，可拆分 CRUD vs 地理計算
-6. **Vitest 並行 mock 洩漏** - playerChapterActions 和 teams 偶爾因 mock 洩漏失敗（單獨跑通過）
+5. ~~locations.ts 拆分~~ → 第二十五階段已拆分為 locations(245) + location-tracking(292)
+6. ~~EventsEditor.tsx 拆分~~ → 第二十五階段已拆分為 EventsEditor(340) + event-config-editors(215)
+7. ~~adminAuth.ts bug~~ → 第二十五階段修復 resolveUnifiedAdminContext 中 user 物件存取層級錯誤
+8. **Vitest 並行 mock 洩漏** - playerChapterActions 和 teams 偶爾因 mock 洩漏失敗（單獨跑通過）
