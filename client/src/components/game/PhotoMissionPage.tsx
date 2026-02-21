@@ -65,6 +65,7 @@ export default function PhotoMissionPage({
         targetKeywords: config.targetKeywords || [],
         instruction: config.instruction,
         confidenceThreshold: config.aiConfidenceThreshold ?? 0.6,
+        gameId,
       });
       return response.json();
     },
