@@ -5,8 +5,10 @@ import {
   logAuditAction,
 } from "../adminAuth";
 import { db } from "../db";
-import { fields } from "@shared/schema";
+import { fields, parseFieldSettings } from "@shared/schema";
+import type { FieldSettings } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
+import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
 import { eq, desc } from "drizzle-orm";
 
