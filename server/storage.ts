@@ -44,6 +44,14 @@ import {
   type InsertPlayerChapterProgress,
   type GameChapterWithPages,
   type GameWithChapters,
+  type RedeemCode,
+  type InsertRedeemCode,
+  type RedeemCodeUse,
+  type InsertRedeemCodeUse,
+  type Purchase,
+  type InsertPurchase,
+  type PaymentTransaction,
+  type InsertPaymentTransaction,
 } from "@shared/schema";
 
 // 匯入各子模組的方法集合
