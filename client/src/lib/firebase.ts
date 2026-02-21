@@ -118,7 +118,7 @@ export async function handleRedirectResult() {
       return result.user;
     }
     return null;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw error;
   }
 }
