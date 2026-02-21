@@ -177,7 +177,7 @@ export interface IStorage {
   getChapterProgressByChapter(userId: string, chapterId: string): Promise<PlayerChapterProgress | undefined>;
   createChapterProgress(data: InsertPlayerChapterProgress): Promise<PlayerChapterProgress>;
   updateChapterProgress(id: string, data: Partial<InsertPlayerChapterProgress>): Promise<PlayerChapterProgress | undefined>;
-  isChapterUnlocked(userId: string, chapterId: string): Promise<boolean>;
+  isChapterUnlocked(userId: string, chapterId: string): Promise<{ unlocked: boolean; reason?: string; detail?: Record<string, unknown> }>;
   unlockNextChapter(userId: string, gameId: string, completedChapterId: string): Promise<PlayerChapterProgress | null>;
 }
 
