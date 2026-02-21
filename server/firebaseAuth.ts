@@ -57,13 +57,13 @@ export async function verifyFirebaseToken(idToken: string): Promise<DecodedIdTok
     const auth = getAuth(app);
     const decodedToken = await auth.verifyIdToken(idToken);
     return decodedToken;
-  } catch (error: any) {
+  } catch (_error: unknown) {
     return null;
   }
 }
 
 export async function isAuthenticated(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) {
