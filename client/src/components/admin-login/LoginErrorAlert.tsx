@@ -1,19 +1,17 @@
 // 登入錯誤提示元件
 import { Button } from "@/components/ui/button";
-import { LogOut, KeyRound } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 interface LoginErrorAlertProps {
   error: string;
   email?: string | null;
   onSignOut: () => void;
-  onSwitchToPassword: () => void;
 }
 
 export default function LoginErrorAlert({
   error,
   email,
   onSignOut,
-  onSwitchToPassword,
 }: LoginErrorAlertProps) {
   return (
     <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg space-y-3">
@@ -25,27 +23,16 @@ export default function LoginErrorAlert({
           目前登入帳號：{email}
         </p>
       )}
-      <div className="flex flex-col gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          data-testid="button-firebase-signout"
-          onClick={onSignOut}
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          登出並切換帳號
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          className="w-full"
-          onClick={onSwitchToPassword}
-        >
-          <KeyRound className="w-4 h-4 mr-2" />
-          改用帳號密碼登入
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        data-testid="button-firebase-signout"
+        onClick={onSignOut}
+      >
+        <LogOut className="w-4 h-4 mr-2" />
+        登出並切換帳號
+      </Button>
     </div>
   );
 }
