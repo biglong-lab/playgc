@@ -22,7 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase";
 import {
   Gamepad2, Settings, Cpu, BarChart3,
-  Trophy, Home, LogOut, Activity, Shield, Library,
+  Trophy, Home, LogOut, Activity, Shield, Library, Sliders,
 } from "lucide-react";
 
 const menuItems = [
@@ -33,6 +33,7 @@ const menuItems = [
   { title: "設備管理", icon: Cpu, path: "/admin/devices" },
   { title: "數據分析", icon: BarChart3, path: "/admin/analytics" },
   { title: "排行榜", icon: Trophy, path: "/admin/leaderboard" },
+  { title: "場域設定", icon: Sliders, path: "/admin/field-settings" },
   { title: "系統設定", icon: Settings, path: "/admin/settings" },
 ];
 
