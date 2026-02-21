@@ -52,7 +52,7 @@
 - [x] 系統設定 (AdminSettings)
 
 #### 管理端（場域管理員 Admin Staff）
-- [x] 場域管理員登入 (JWT)
+- [x] 場域管理員登入 (Firebase Auth — 統一認證，密碼登入已停用)
 - [x] 場域管理儀表板
 - [x] 場域管理 (Fields)
 - [x] 場域進階設定 (FieldSettings) — AI Key / 配額 / 功能開關 / 品牌 (Phase 31)
