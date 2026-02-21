@@ -53,9 +53,18 @@ export function generateToken(payload: object): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRY });
 }
 
-export function verifyToken(token: string): any {
+export interface AdminTokenPayload {
+  sub: string;
+  fieldId: string;
+  roleId: string | null;
+  type: "admin";
+  iat: number;
+  exp: number;
+}
+
+export function verifyToken(token: string): AdminTokenPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, JWT_SECRET) as AdminTokenPayload;
   } catch {
     return null;
   }
