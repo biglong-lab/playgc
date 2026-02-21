@@ -110,18 +110,30 @@ export default function PurchaseGate() {
           </CardContent>
         </Card>
 
-        {/* 線上購買（Phase B） */}
+        {/* 線上購買 */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">線上購買</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button className="w-full gap-2" disabled>
-              <CreditCard className="w-4 h-4" />
-              線上付款（即將開放）
+            <Button
+              className="w-full gap-2"
+              onClick={() => checkoutMutation.mutate()}
+              disabled={checkoutMutation.isPending}
+            >
+              {checkoutMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CreditCard className="w-4 h-4" />
+              )}
+              {checkoutMutation.isPending
+                ? "跳轉付款中..."
+                : access?.price
+                  ? `線上付款 NT$${access.price}`
+                  : "線上付款"}
             </Button>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              線上金流功能開發中，請先使用兌換碼解鎖
+              付款後自動解鎖遊戲
             </p>
           </CardContent>
         </Card>
