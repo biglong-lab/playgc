@@ -119,12 +119,16 @@ export function registerPlayerChapterRoutes(app: Express) {
         }
 
         // 確認章節已解鎖
-        const isUnlocked = await storage.isChapterUnlocked(
+        const unlockResult = await storage.isChapterUnlocked(
           userId,
           chapterId
         );
-        if (!isUnlocked) {
-          return res.status(403).json({ message: "章節尚未解鎖" });
+        if (!unlockResult.unlocked) {
+          return res.status(403).json({
+            message: "章節尚未解鎖",
+            reason: unlockResult.reason,
+            ...unlockResult.detail,
+          });
         }
 
         // 取得或建立章節進度
