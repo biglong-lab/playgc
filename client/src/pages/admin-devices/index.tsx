@@ -135,7 +135,7 @@ export default function AdminDevices() {
   });
 
   const ledMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
       apiRequest("POST", `/api/devices/${id}/led`, data),
     onSuccess: () => {
       toast({ title: "LED 命令已發送" });
