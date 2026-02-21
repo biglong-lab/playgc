@@ -100,6 +100,55 @@
 
 ## 工作紀錄
 
+### 2026-02-22 (Phase 29：AI 自動評分 — 照片驗證 + 文字語意評分)
+
+整合 Google Gemini 2.0 Flash，實現照片 AI 驗證和文字語意評分。
+
+#### 後端
+- [x] 安裝 `@google/generative-ai` SDK
+- [x] 新增 `server/lib/gemini.ts` (~120 行) — Gemini API 封裝
+  - `verifyPhoto()` — 下載圖片 → base64 → Gemini Vision → 結構化 JSON 結果
+  - `scoreTextAnswer()` — 語意相似度評分 → 0-100 分 + 回饋
+  - `isGeminiConfigured()` — 環境變數檢查
+- [x] 新增 `server/routes/ai-scoring.ts` (~140 行) — 2 個 API 端點
+  - `POST /api/ai/verify-photo` — 照片 AI 驗證（Zod 驗證 + rate limit）
+  - `POST /api/ai/score-text` — 文字語意評分（Zod 驗證 + rate limit）
+  - Rate limit: 每用戶每分鐘 10 次（記憶體 Map + 定期清理）
+  - Graceful fallback: AI 失敗時照片自動通過、文字回傳 fallback 標記
+- [x] 修改 `server/routes/index.ts` — 註冊 AI 路由
+
+#### Schema 更新
+- [x] `PhotoMissionConfig` +4 欄位: aiConfidenceThreshold, aiFailMessage, allowRetryOnAiFail, maxAiRetries
+- [x] `TextVerifyConfig` +3 欄位: aiScoring, aiPassingScore, aiContext
+
+#### 前端 — 照片任務 AI 驗證
+- [x] 改寫 `PhotoMissionPage.tsx` — 上傳後呼叫真實 AI 驗證端點
+  - AI 通過 → 完成任務、AI 未通過 → 顯示回饋 + 重拍、API 失敗 → graceful fallback
+- [x] 更新 `PhotoViews.tsx` — 新增 AiFailView（顯示回饋、偵測物件、重拍/跳過按鈕）
+- [x] 更新 `usePhotoCamera.ts` — 新增 ai_fail 模式
+
+#### 前端 — 文字語意評分
+- [x] 改寫 `TextVerifyPage.tsx` — checkAnswer 增加 AI 分支
+  - 精確匹配優先（匹配成功不呼叫 AI，省費用）
+  - AI 評分中顯示 loading spinner
+  - API 失敗 → fallback 到原始邏輯
+
+#### 管理端編輯器
+- [x] 修改 `PageConfigEditor.tsx` — 新增 AI 設定 UI
+  - photo_mission: AI 開關、目標關鍵字標籤編輯器、信心度滑桿、失敗提示、重拍次數
+  - text_verify: AI 開關、通過分數滑桿、場景描述
+
+**設計決策**:
+1. Gemini 2.0 Flash — 價格最低（~$0.001/照片），速度快
+2. 後端 AI 呼叫 — API Key 不暴露前端
+3. 精確匹配優先 — 省 API 費用
+4. Graceful fallback — AI 掛掉遊戲不中斷
+5. Rate limit 防濫用 — 每用戶每分鐘 10 次
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 58 檔案 860 測試全通過、`npm run build` 成功（90 precache entries）
+
+---
+
 ### 2026-02-21 (第二十七階段：Phase 27 Phase A — 付費/票券系統：兌換碼 + 現金收款)
 
 #### 步驟 A1：Schema + Storage
