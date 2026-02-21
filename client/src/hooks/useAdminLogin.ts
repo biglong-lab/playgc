@@ -39,9 +39,6 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
   const [fieldCode, setFieldCode] = useState("");
   const [step, setStep] = useState<LoginStep>("field");
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   // Firebase 登入 mutation
