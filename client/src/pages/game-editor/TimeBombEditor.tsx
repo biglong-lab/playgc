@@ -61,7 +61,7 @@ export default function TimeBombEditor({ config, updateField }: EditorProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    const newTasks = config.tasks.filter((_: any, idx: number) => idx !== i);
+                    const newTasks = (config.tasks as BombTask[]).filter((_: BombTask, idx: number) => idx !== i);
                     updateField("tasks", newTasks);
                   }}
                 >
