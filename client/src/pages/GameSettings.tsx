@@ -4,7 +4,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChevronLeft, Save, Lock } from "lucide-react";
 import { useGameSettings } from "./game-settings/useGameSettings";
-import { LocationLockCard, ChapterCard, TeamModeCard } from "./game-settings/SettingsCards";
+import { LocationLockCard, ChapterCard, TeamModeCard, PricingCard } from "./game-settings/SettingsCards";
 
 export default function GameSettings() {
   const [, setLocation] = useLocation();
