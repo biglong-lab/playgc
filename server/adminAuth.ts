@@ -465,14 +465,15 @@ export function resolveUnifiedAdminContext(
   }
 
   // Then check for Firebase user (field admin system)
-  const user = (req as AuthenticatedRequest).user;
-  if (user) {
+  const authUser = (req as AuthenticatedRequest).user;
+  if (authUser) {
+    const dbUser = authUser.dbUser;
     req.unifiedAdmin = {
       source: "firebase",
-      userId: user.id,
-      fieldId: user.defaultFieldId,
-      systemRole: user.role === "admin" ? "field_manager" : "player",
-      permissions: user.role === "admin" ? ["game:view", "game:edit", "page:view", "page:edit", "item:view", "item:edit"] : [],
+      userId: dbUser.id,
+      fieldId: dbUser.defaultFieldId,
+      systemRole: dbUser.role === "admin" ? "field_manager" : "player",
+      permissions: dbUser.role === "admin" ? ["game:view", "game:edit", "page:view", "page:edit", "item:view", "item:edit"] : [],
       isSuperAdmin: false, // Firebase users are never super admins
     };
     next();
