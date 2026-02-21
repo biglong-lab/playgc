@@ -1,12 +1,14 @@
 // 付費攔截頁面 — 遊戲需付費時顯示
 import { useParams, useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, Lock, CreditCard } from "lucide-react";
+import { ChevronLeft, Lock, CreditCard, Loader2 } from "lucide-react";
 import { RedeemCodeInput } from "@/components/shared/RedeemCodeInput";
 import { useRedeemCode } from "@/hooks/useRedeemCode";
 import { useGameAccess } from "@/hooks/useGameAccess";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Game } from "@shared/schema";
 
 export default function PurchaseGate() {
