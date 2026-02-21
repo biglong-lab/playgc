@@ -66,7 +66,7 @@ export default function VoteEditor({ config, updateField }: EditorProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => {
-                  const newOpts = voteOptions.filter((_: any, i: number) => i !== idx);
+                  const newOpts = voteOptions.filter((_: { text: string }, i: number) => i !== idx);
                   updateField("options", newOpts);
                 }}
                 disabled={voteOptions.length <= 2}
