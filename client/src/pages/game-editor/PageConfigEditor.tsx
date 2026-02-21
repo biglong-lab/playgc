@@ -368,6 +368,15 @@ export default function PageConfigEditor({
         </div>
       );
   }
+  };
+
+  return (
+    <div className="space-y-4">
+      {renderPageConfig()}
+      {/* 通用完成動作（所有頁面類型共用） */}
+      <OnCompleteActionsEditor config={config} updateField={updateField} />
+    </div>
+  );
 }
 
 // ============================================================================
