@@ -465,7 +465,7 @@ export function resolveUnifiedAdminContext(
   }
 
   // Then check for Firebase user (field admin system)
-  const user = (req as any).user;
+  const user = (req as AuthenticatedRequest).user;
   if (user) {
     req.unifiedAdmin = {
       source: "firebase",
