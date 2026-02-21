@@ -33,6 +33,12 @@ export function registerPlayerChapterRoutes(app: Express) {
             progresses.map((p) => [p.chapterId, p])
           );
 
+          // 計算玩家總最佳分數（供 score_threshold 判斷）
+          const totalBestScore = progresses.reduce(
+            (sum, p) => sum + (p.bestScore ?? 0),
+            0
+          );
+
           const chaptersWithProgress = chapters.map((chapter, index) => {
             const progress = progressMap.get(chapter.id);
             const isFirstChapter = index === 0;
@@ -44,12 +50,35 @@ export function registerPlayerChapterRoutes(app: Express) {
               status = "unlocked";
             }
 
+            // score_threshold：分數達標自動解鎖
+            const config = chapter.unlockConfig as Record<string, unknown> | null;
+            if (
+              status === "locked" &&
+              chapter.unlockType === "score_threshold"
+            ) {
+              const requiredScore = (config?.requiredScore as number) ?? 0;
+              if (totalBestScore >= requiredScore) {
+                status = "unlocked";
+              }
+            }
+
+            // paid 章節：附上價格資訊讓前端顯示
+            const unlockDetail: Record<string, unknown> = {};
+            if (chapter.unlockType === "score_threshold") {
+              unlockDetail.requiredScore = (config?.requiredScore as number) ?? 0;
+              unlockDetail.currentScore = totalBestScore;
+            }
+            if (chapter.unlockType === "paid") {
+              unlockDetail.price = (config?.price as number) ?? 0;
+            }
+
             return {
               ...chapter,
               playerStatus: status,
               bestScore: progress?.bestScore ?? 0,
               completedAt: progress?.completedAt ?? null,
               lastPlayedAt: progress?.lastPlayedAt ?? null,
+              unlockDetail,
             };
           });
 
