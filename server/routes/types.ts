@@ -12,10 +12,16 @@ export interface WebSocketClient extends WebSocket {
   matchId?: string;              // 對戰房間 ID
 }
 
+/** WebSocket 廣播訊息型別 */
+export interface WsBroadcastMessage {
+  type: string;
+  [key: string]: unknown;
+}
+
 export interface RouteContext {
-  broadcastToSession: (sessionId: string, message: any) => void;
-  broadcastToTeam: (teamId: string, message: any, excludeClient?: WebSocketClient) => void;
-  broadcastToMatch: (matchId: string, message: any) => void;
+  broadcastToSession: (sessionId: string, message: WsBroadcastMessage) => void;
+  broadcastToTeam: (teamId: string, message: WsBroadcastMessage, excludeClient?: WebSocketClient) => void;
+  broadcastToMatch: (matchId: string, message: WsBroadcastMessage) => void;
 }
 
 // 經 Firebase 認證後的 Request 型別
