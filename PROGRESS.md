@@ -95,6 +95,41 @@
 
 ## 工作紀錄
 
+### 2026-02-21 (第二十三階段：型別安全強化 + teams.ts 拆分 + 測試補強)
+
+#### 修改 1：後端 `any` 型別消除
+- [x] 修改 `server/index.ts` — `Record<string, any>` → `Record<string, unknown>`，錯誤處理 `err: any` → 具體型別
+- [x] 修改 `server/routes/types.ts` — 新增 `WsBroadcastMessage` 介面，3 個 broadcast 函式 `any` → 型別安全
+- [x] 修改 `server/routes/websocket.ts` — 4 個 broadcast 函式 + hitBroadcast `any` → 具體型別
+- [x] 修改 `server/mqttService.ts` — 11 處 `any` 改為具體型別
+  - `MqttMessage.data` → `unknown`
+  - `SensorData.value` → `string | number | boolean`
+  - `updateData` → `Partial<Pick<ArduinoDevice, ...>>`
+  - 回呼參數 → `unknown`
+  - publish/sendCommand/broadcastToAllDevices → `Record<string, unknown>`
+
+#### 修改 2：teams.ts 路由拆分
+- [x] 新增 `server/routes/team-lifecycle.ts` (284 行) — 準備狀態/離開/開始遊戲 3 個端點
+- [x] 修改 `server/routes/teams.ts` — 592 行 → 323 行（移除 ready/leave/start，新增子模組註冊）
+
+#### 修改 3：useTeamLobby Hook 測試
+- [x] 新增 `client/src/pages/__tests__/useTeamLobby.test.ts` (21 測試)
+  - 初始狀態、currentUserId、gameLoading/teamLoading、myTeam
+  - isLeader/allReady/hasEnoughPlayers 計算屬性
+  - mutation pending 狀態、setAccessCode/setTeamName/setShowJoinForm
+  - handleJoinTeam 空碼防護 + API 呼叫、handleCreateTeam API 呼叫
+  - navigate、wsConnected
+  - WebSocket callbacks: onMemberJoined/onMemberLeft/onReadyUpdate
+
+#### 修改 4：GameEditor 頁面測試
+- [x] 新增 `client/src/pages/__tests__/GameEditor.test.tsx` (14 測試)
+  - 載入 spinner、新遊戲模式、標題輸入框、儲存/發布按鈕
+  - 預覽 disabled、返回導航、admin-staff 路徑分流
+  - 資源管理列隱藏、Tabs 頁籤、Sidebar 元件
+  - 提示文字、標題修改、遊戲設定 Tab、章節 Tab 提示
+
+**測試結果**: 56 個測試檔案、848 個 Vitest 測試全部通過，TS 零錯誤，Build 成功
+
 ### 2026-02-19 (第二十二階段：團隊 WebSocket 測試 + player-games 路由拆分)
 
 #### 修改 1：useTeamWebSocket 測試
