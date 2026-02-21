@@ -251,6 +251,56 @@ export default function PageConfigEditor({
               data-testid="config-answers"
             />
           </div>
+
+          {/* AI 語意評分設定 */}
+          <div className="border border-border rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-primary" />
+                <label className="text-sm font-medium">AI 語意評分</label>
+              </div>
+              <Switch
+                checked={!!config.aiScoring}
+                onCheckedChange={(checked) => updateField("aiScoring", checked)}
+                data-testid="config-ai-scoring"
+              />
+            </div>
+
+            {config.aiScoring && (
+              <div className="space-y-4 pt-2 border-t">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    通過分數: {(config.aiPassingScore as number) ?? 70} 分
+                  </label>
+                  <Slider
+                    value={[(config.aiPassingScore as number) ?? 70]}
+                    onValueChange={([v]) => updateField("aiPassingScore", v)}
+                    min={30}
+                    max={95}
+                    step={5}
+                    data-testid="config-ai-passing"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    越低越寬鬆，建議 60-80 分
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">場景描述（選填）</label>
+                  <Textarea
+                    value={(config.aiContext as string) || ""}
+                    onChange={(e) => updateField("aiContext", e.target.value)}
+                    placeholder="描述問題的場景背景，幫助 AI 更準確評分..."
+                    rows={2}
+                    data-testid="config-ai-context"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  啟用後，即使答案不完全相同，語意相近也能通過（例如「太陽」和「日頭」）
+                </p>
+              </div>
+            )}
+          </div>
+
           <LocationSettingsSection config={config} updateField={updateField} />
         </div>
       );
