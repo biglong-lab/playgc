@@ -1,8 +1,12 @@
-// AI 評分路由 — 照片驗證 + 文字語意評分
+// AI 評分路由 — 照片驗證 + 文字語意評分（支援場域獨立 API Key）
 import type { Express } from "express";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
 import { isAuthenticated } from "../firebaseAuth";
 import { isGeminiConfigured, verifyPhoto, scoreTextAnswer } from "../lib/gemini";
+import { decryptApiKey } from "../lib/crypto";
+import { db } from "../db";
+import { games, fields, parseFieldSettings } from "@shared/schema";
 import type { AuthenticatedRequest } from "./types";
 import { apiError } from "./types";
 
