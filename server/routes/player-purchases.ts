@@ -287,7 +287,7 @@ export function registerPlayerPurchaseRoutes(app: Express) {
         successUrl: `${appUrl}/purchase/success?txId=${transaction.id}`,
         cancelUrl: `${appUrl}/purchase/gate/${gameId}`,
         mode: "PAYMENT",
-        customerEmail: req.user?.claims?.email as string | undefined,
+        customerEmail: (req.user?.claims as Record<string, unknown>)?.email as string | undefined,
         metadata: {
           transactionId: transaction.id,
           gameId,
