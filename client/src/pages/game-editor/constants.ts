@@ -3,7 +3,7 @@ import {
   FileText, MessageCircle, Video, Grid,
   HelpCircle, Target, Camera, MapPin, QrCode,
   Play, Clock, Zap, Gift, ArrowRight,
-  Bomb, Lock, Smartphone, Vote, Puzzle,
+  Bomb, Lock, Smartphone, Vote, Puzzle, GitBranch,
 } from "lucide-react";
 
 export const PAGE_TYPES = [
