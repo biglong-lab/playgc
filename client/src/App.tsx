@@ -110,6 +110,7 @@ function Router() {
         <Route path="/admin-staff/audit-logs" component={AdminStaffAuditLogs} />
         <Route path="/admin-staff/players" component={AdminStaffPlayers} />
         <Route path="/admin-staff/qrcodes" component={AdminStaffQRCodes} />
+        <Route path="/admin-staff/field-settings" component={FieldSettingsPage} />
         {/* Game by Slug - 玩家透過 QR Code 進入遊戲 */}
         <Route path="/g/:slug" component={GameBySlug} />
         <Route component={NotFound} />
