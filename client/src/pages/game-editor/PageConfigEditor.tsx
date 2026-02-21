@@ -355,3 +355,70 @@ export default function PageConfigEditor({
       );
   }
 }
+
+// ============================================================================
+// AI 照片關鍵字編輯器（內部元件）
+// ============================================================================
+function PhotoAiKeywordsEditor({
+  keywords,
+  onChange,
+}: {
+  keywords: string[];
+  onChange: (keywords: string[]) => void;
+}) {
+  const [newKeyword, setNewKeyword] = useState("");
+
+  const addKeyword = () => {
+    const trimmed = newKeyword.trim();
+    if (trimmed && !keywords.includes(trimmed)) {
+      onChange([...keywords, trimmed]);
+      setNewKeyword("");
+    }
+  };
+
+  const removeKeyword = (index: number) => {
+    onChange(keywords.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div>
+      <label className="text-sm font-medium mb-2 block">目標關鍵字</label>
+      <div className="flex flex-wrap gap-1 mb-2">
+        {keywords.map((kw, i) => (
+          <Badge key={i} variant="secondary" className="gap-1 pr-1">
+            {kw}
+            <button
+              type="button"
+              onClick={() => removeKeyword(i)}
+              className="ml-1 hover:text-destructive"
+            >
+              <XIcon className="w-3 h-3" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <Input
+          value={newKeyword}
+          onChange={(e) => setNewKeyword(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addKeyword())}
+          placeholder="輸入關鍵字..."
+          className="flex-1 h-8"
+          data-testid="config-ai-keyword-input"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addKeyword}
+          disabled={!newKeyword.trim()}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground mt-1">
+        AI 會檢查照片中是否包含這些物體或場景
+      </p>
+    </div>
+  );
+}
