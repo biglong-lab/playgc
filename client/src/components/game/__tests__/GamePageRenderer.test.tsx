@@ -57,7 +57,7 @@ describe("GamePageRenderer", () => {
     "text_card", "dialogue", "video", "button",
     "text_verify", "choice_verify", "conditional_verify",
     "shooting_mission", "photo_mission", "gps_mission",
-    "qr_scan", "time_bomb", "lock", "motion_challenge", "vote",
+    "qr_scan", "time_bomb", "lock", "motion_challenge", "vote", "flow_router",
   ];
 
   supportedTypes.forEach((pageType) => {
