@@ -118,7 +118,7 @@ export function registerAdminFieldRoutes(app: Express) {
         }
 
         data.code = data.code.toUpperCase();
-        (data as any).codeLastChangedAt = new Date();
+        data.codeLastChangedAt = new Date();
       }
 
       const [field] = await db.update(fields)
