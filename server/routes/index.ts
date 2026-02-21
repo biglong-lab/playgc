@@ -46,6 +46,9 @@ export async function registerRoutes(
   registerAdminChapterRoutes(app);
   registerAdminModuleRoutes(app);
   registerMatchRoutes(app, ctx);
+  registerAdminRedeemCodeRoutes(app);
+  registerAdminPurchaseRoutes(app);
+  registerPlayerPurchaseRoutes(app);
 
   return httpServer;
 }
