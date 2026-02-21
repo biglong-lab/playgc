@@ -164,11 +164,6 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     setStep("field");
   };
 
-  // 返回選擇登入方式
-  const backToLoginChoice = () => {
-    setStep("firebase");
-  };
-
   // 重新檢查授權狀態
   const recheckAuthorization = () => {
     firebaseLoginMutation.mutate();
