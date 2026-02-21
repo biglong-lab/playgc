@@ -4,14 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { LocationSettingsSection } from "./page-config-shared";
+import { LocationSettingsSection, type EditorProps } from "./page-config-shared";
 
-interface VoteEditorProps {
-  config: Record<string, any>;
-  updateField: (field: string, value: any) => void;
-}
-
-export default function VoteEditor({ config, updateField }: VoteEditorProps) {
+export default function VoteEditor({ config, updateField }: EditorProps) {
   const voteOptions = config.options || [{ text: "選項一" }, { text: "選項二" }];
 
   return (
