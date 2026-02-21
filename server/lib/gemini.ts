@@ -125,8 +125,9 @@ export async function scoreTextAnswer(
   expectedAnswers: string[],
   context?: string,
   passingScore: number = 70,
+  apiKey?: string,
 ): Promise<TextScoreResult> {
-  const client = getClient();
+  const client = getClient(apiKey);
   const model = client.getGenerativeModel({
     model: "gemini-2.0-flash",
     generationConfig: {
