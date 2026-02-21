@@ -201,6 +201,9 @@ export function useGameSettings(): GameSettingsReturn {
       gameStructure,
       chapterUnlockMode,
       allowChapterReplay,
+      pricingType,
+      price: price ? parseInt(price) : null,
+      currency: "TWD",
     });
   };
 
