@@ -275,7 +275,20 @@ export default function ChapterSelect() {
                               disabled={isPurchasing}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                purchaseChapter(chapter.id).catch(() => {});
+                                purchaseChapter(chapter.id)
+                                  .then(() => {
+                                    toast({
+                                      title: "解鎖成功",
+                                      description: `已花費 ${chapter.unlockDetail?.price ?? 0} 點解鎖章節`,
+                                    });
+                                  })
+                                  .catch(() => {
+                                    toast({
+                                      title: "購買失敗",
+                                      description: "點數不足或發生錯誤，請重試",
+                                      variant: "destructive",
+                                    });
+                                  });
                               }}
                             >
                               {isPurchasing ? (
