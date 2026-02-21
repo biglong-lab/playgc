@@ -2,7 +2,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload } from "lucide-react";
+import { Upload, Bot, Plus, X as XIcon } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import ButtonConfigEditor from "./ButtonConfigEditor";
 import ConditionalVerifyEditor from "./ConditionalVerifyEditor";
 import TimeBombEditor from "./TimeBombEditor";
