@@ -418,11 +418,15 @@
 10. ~~前端對戰元件測試~~ → 第十九階段已補 MatchTimer/LiveRanking/MatchViews 測試
 11. ~~useTeamWebSocket 測試~~ → 第二十二階段已完成 17 個測試
 12. ~~player-games.ts 行數超標~~ → 第二十二階段已拆分為 3 個模組（445+123+132 行）
+13. ~~teams.ts 行數超標~~ → 第二十三階段已拆分為 teams.ts(323) + team-lifecycle.ts(284)
+14. ~~後端 any 型別~~ → 第二十三階段已消除 types.ts/websocket.ts/mqttService.ts/index.ts 的 any
+15. ~~useTeamLobby 測試~~ → 第二十三階段已完成 21 個測試
+16. ~~GameEditor 測試~~ → 第二十三階段已完成 14 個測試
 
 ## 下一步建議
 
 1. **DB Migration** - `npm run db:push` 同步 Phase 2 資料表
 2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
-3. **GameEditor 測試** - 遊戲編輯器頁面測試覆蓋率提升
-4. **useTeamLobby 測試** - 團隊大廳 Hook 邏輯測試
-5. **ESLint 9 升級** - 解決 minimatch high 漏洞（需 eslint major 升級）
+3. **ESLint 9 升級** - 解決 minimatch high 漏洞（需 eslint major 升級）
+4. **PageConfigEditor 拆分** - 676 行，超過 500 行警戒線
+5. **locations.ts 拆分** - 522 行，可拆分 CRUD vs 地理計算
