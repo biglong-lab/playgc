@@ -7,7 +7,8 @@ import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 let genAI: GoogleGenerativeAI | null = null;
 
-function getClient(): GoogleGenerativeAI {
+/** 取得全域客戶端（使用 env var） */
+function getGlobalClient(): GoogleGenerativeAI {
   if (!genAI) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -18,9 +19,17 @@ function getClient(): GoogleGenerativeAI {
   return genAI;
 }
 
-/** 檢查 Gemini API 是否已設定 */
-export function isGeminiConfigured(): boolean {
-  return Boolean(process.env.GEMINI_API_KEY);
+/** 取得客戶端：有場域 Key 就用場域的，否則 fallback 到全域 */
+function getClient(apiKey?: string): GoogleGenerativeAI {
+  if (apiKey) {
+    return new GoogleGenerativeAI(apiKey);
+  }
+  return getGlobalClient();
+}
+
+/** 檢查 Gemini API 是否已設定（全域或場域級） */
+export function isGeminiConfigured(fieldApiKey?: string): boolean {
+  return Boolean(fieldApiKey || process.env.GEMINI_API_KEY);
 }
 
 // ============================================================================
