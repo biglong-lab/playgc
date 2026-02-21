@@ -232,13 +232,60 @@ export default function ChapterSelect() {
 
                     {/* 解鎖條件提示 */}
                     {!isUnlocked && chapter.unlockType && (
-                      <p className="text-xs text-muted-foreground mt-2 italic">
-                        {chapter.unlockType === "complete_previous" &&
-                          "完成前一章後解鎖"}
-                        {chapter.unlockType === "score_threshold" &&
-                          "達到指定分數後解鎖"}
-                        {chapter.unlockType === "paid" && "需要購買解鎖"}
-                      </p>
+                      <div className="mt-2 space-y-2">
+                        {chapter.unlockType === "complete_previous" && (
+                          <p className="text-xs text-muted-foreground italic">
+                            完成前一章後解鎖
+                          </p>
+                        )}
+                        {chapter.unlockType === "score_threshold" && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <Star className="w-3 h-3 text-amber-500" />
+                            <span className="text-muted-foreground">
+                              需要{" "}
+                              <span className="font-bold text-foreground">
+                                {chapter.unlockDetail?.requiredScore ?? 0}
+                              </span>{" "}
+                              分（目前{" "}
+                              <span className="font-bold text-primary">
+                                {chapter.unlockDetail?.currentScore ?? 0}
+                              </span>{" "}
+                              分）
+                            </span>
+                          </div>
+                        )}
+                        {chapter.unlockType === "paid" && (
+                          <>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Coins className="w-3 h-3 text-amber-500" />
+                              <span>
+                                需花費{" "}
+                                <span className="font-bold text-foreground">
+                                  {chapter.unlockDetail?.price ?? 0}
+                                </span>{" "}
+                                點解鎖
+                              </span>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="w-full gap-2"
+                              disabled={isPurchasing}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                purchaseChapter(chapter.id).catch(() => {});
+                              }}
+                            >
+                              {isPurchasing ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <ShoppingCart className="w-4 h-4" />
+                              )}
+                              購買解鎖（{chapter.unlockDetail?.price ?? 0} 點）
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     )}
 
                     {/* 操作按鈕 */}
