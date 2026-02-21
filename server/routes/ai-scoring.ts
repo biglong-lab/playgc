@@ -121,8 +121,19 @@ export function registerAiScoringRoutes(app: Express): void {
   // POST /api/ai/verify-photo — AI 照片驗證
   app.post("/api/ai/verify-photo", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
+      // 驗證輸入
+      const parsed = verifyPhotoSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
+      }
+
+      const { imageUrl, targetKeywords, instruction, confidenceThreshold, gameId } = parsed.data;
+
+      // 解析場域 API Key（有場域 Key 就用場域的，否則 fallback 全域）
+      const fieldApiKey = await resolveAiApiKey(gameId);
+
       // 檢查 Gemini 是否已設定
-      if (!isGeminiConfigured()) {
+      if (!isGeminiConfigured(fieldApiKey)) {
         return apiError(res, 503, "AI 服務未設定");
       }
 
@@ -132,16 +143,8 @@ export function registerAiScoringRoutes(app: Express): void {
         return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
       }
 
-      // 驗證輸入
-      const parsed = verifyPhotoSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
-      }
-
-      const { imageUrl, targetKeywords, instruction, confidenceThreshold } = parsed.data;
       const threshold = confidenceThreshold ?? 0.6;
-
-      const result = await verifyPhoto(imageUrl, targetKeywords, instruction);
+      const result = await verifyPhoto(imageUrl, targetKeywords, instruction, fieldApiKey);
 
       // 根據閾值判斷是否通過
       const verified = result.confidence >= threshold;
@@ -153,7 +156,10 @@ export function registerAiScoringRoutes(app: Express): void {
         detectedObjects: result.detectedObjects,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "AI 驗證失敗";
+      // 場域 AI 被停用
+      if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
+        return apiError(res, 503, "此場域的 AI 功能已停用");
+      }
       // AI 失敗不應阻斷遊戲，回傳 fallback
       return res.json({
         verified: true,
