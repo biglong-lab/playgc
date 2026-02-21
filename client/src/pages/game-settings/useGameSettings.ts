@@ -271,6 +271,12 @@ export function useGameSettings(): GameSettingsReturn {
     setGameStructure,
     setChapterUnlockMode,
     setAllowChapterReplay,
+    pricing: {
+      pricingType,
+      price,
+    },
+    setPricingType,
+    setPrice,
     handleSave,
     isSaving: updateMutation.isPending,
   };
