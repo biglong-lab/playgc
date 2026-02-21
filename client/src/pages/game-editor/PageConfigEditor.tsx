@@ -267,7 +267,7 @@ export default function PageConfigEditor({
               />
             </div>
 
-            {config.aiScoring && (
+            {!!config.aiScoring && (
               <div className="space-y-4 pt-2 border-t">
                 <div>
                   <label className="text-sm font-medium mb-2 block">
