@@ -85,6 +85,7 @@ vi.mock("@shared/schema", () => ({
 vi.mock("drizzle-orm", () => ({
   eq: vi.fn((a: string, b: string) => ({ op: "eq", a, b })),
   desc: vi.fn((col: string) => ({ op: "desc", col })),
+  count: vi.fn().mockReturnValue("count(*)"),
 }));
 
 vi.mock("crypto", async (importOriginal) => {
