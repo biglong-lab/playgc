@@ -85,7 +85,7 @@ function makeProgress(overrides = {}) {
 
 describe("chapterStorageMethods", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   // ======================================================================
