@@ -54,6 +54,7 @@ const verifyPhotoSchema = z.object({
   targetKeywords: z.array(z.string()).min(1, "至少需要一個目標關鍵字"),
   instruction: z.string().optional(),
   confidenceThreshold: z.number().min(0).max(1).optional(),
+  gameId: z.string().uuid().optional(),
 });
 
 const scoreTextSchema = z.object({
@@ -62,7 +63,55 @@ const scoreTextSchema = z.object({
   expectedAnswers: z.array(z.string()).min(1, "至少需要一個參考答案"),
   context: z.string().optional(),
   passingScore: z.number().min(0).max(100).optional(),
+  gameId: z.string().uuid().optional(),
 });
+
+// ============================================================================
+// 場域 AI Key 解析：gameId → fieldId → fieldSettings → 解密 API Key
+// ============================================================================
+
+async function resolveAiApiKey(gameId?: string): Promise<string | undefined> {
+  if (!gameId) return undefined;
+
+  try {
+    // 查 game → fieldId
+    const [game] = await db.select({ fieldId: games.fieldId })
+      .from(games)
+      .where(eq(games.id, gameId))
+      .limit(1);
+
+    if (!game?.fieldId) return undefined;
+
+    // 查 field → settings
+    const [field] = await db.select({ settings: fields.settings })
+      .from(fields)
+      .where(eq(fields.id, game.fieldId))
+      .limit(1);
+
+    if (!field) return undefined;
+
+    const settings = parseFieldSettings(field.settings);
+
+    // 檢查 AI 是否啟用
+    if (settings.enableAI === false) {
+      throw new Error("FIELD_AI_DISABLED");
+    }
+
+    // 有加密 Key 就解密回傳
+    if (settings.geminiApiKey) {
+      return decryptApiKey(settings.geminiApiKey);
+    }
+
+    return undefined; // fallback 到全域
+  } catch (error) {
+    // FIELD_AI_DISABLED 需要向上拋
+    if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
+      throw error;
+    }
+    // 其他查詢錯誤 → fallback 到全域
+    return undefined;
+  }
+}
 
 // ============================================================================
 // 路由註冊
