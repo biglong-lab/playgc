@@ -363,6 +363,10 @@ export interface PhotoMissionConfig {
   instruction?: string;
   aiVerify?: boolean;
   targetKeywords?: string[];
+  aiConfidenceThreshold?: number; // AI 信心度閾值（0-1，預設 0.6）
+  aiFailMessage?: string;         // AI 驗證失敗時的提示訊息
+  allowRetryOnAiFail?: boolean;   // AI 失敗是否允許重拍（預設 true）
+  maxAiRetries?: number;          // 最多重拍次數（預設 3）
   manualVerify?: boolean;
   onSuccess?: {
     message?: string;
