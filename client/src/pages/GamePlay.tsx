@@ -1,18 +1,19 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useParams, useLocation, useSearch } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { GameWithPages, GameSession, Page, GameChapterWithPages } from "@shared/schema";
+import { apiRequest } from "@/lib/queryClient";
+import type { GameWithPages, Page, GameChapterWithPages } from "@shared/schema";
 
 import GameHeader from "@/components/shared/GameHeader";
 import ChatPanel from "@/components/shared/ChatPanel";
 import InventoryPanel from "@/components/shared/InventoryPanel";
 import GamePageRenderer from "@/components/game/GamePageRenderer";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
+import { useSessionManager } from "./hooks/useSessionManager";
 
 import {
   ChevronLeft, ChevronRight, MessageCircle, Backpack,
@@ -26,69 +27,17 @@ export default function GamePlay() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const isChapterMode = !!chapterId;
-  
-  // Parse query params to check for replay mode
+
   const isReplayMode = useMemo(() => {
     const params = new URLSearchParams(searchString);
     return params.get("replay") === "true";
   }, [searchString]);
-  
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
-  const [inventory, setInventory] = useState<string[]>([]);
-  const [variables, setVariables] = useState<Record<string, unknown>>({});
+
   const [showChat, setShowChat] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [forceNewSession, setForceNewSession] = useState(isReplayMode);
-  
-  // Use refs to avoid stale closure issues
-  const sessionIdRef = useRef(sessionId);
-  const scoreRef = useRef(score);
-  const inventoryRef = useRef(inventory);
-  const variablesRef = useRef(variables);
-  
-  useEffect(() => { sessionIdRef.current = sessionId; }, [sessionId]);
-  useEffect(() => { scoreRef.current = score; }, [score]);
-  useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
-  useEffect(() => { variablesRef.current = variables; }, [variables]);
 
   const { data: game, isLoading: gameLoading, error: gameError } = useQuery<GameWithPages>({
     queryKey: ["/api/games", gameId],
-  });
-
-  const { data: existingSession } = useQuery<{
-    session: GameSession;
-    progress: {
-      score?: number;
-      inventory?: string[];
-      variables?: Record<string, unknown>;
-      currentPageId?: string;
-    } | null;
-  } | null>({
-    queryKey: ["/api/sessions/active", gameId],
-    queryFn: async () => {
-      try {
-        const { getIdToken } = await import("@/lib/firebase");
-        const token = await getIdToken();
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-        const response = await fetch(`/api/sessions/active?gameId=${gameId}`, {
-          credentials: 'include',
-          headers,
-        });
-        if (response.ok) {
-          return response.json();
-        }
-        return null;
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!user && !!gameId,
   });
 
   // 章節模式：載入章節頁面
@@ -105,254 +54,96 @@ export default function GamePlay() {
     return game?.pages ?? [];
   }, [isChapterMode, chapterData?.pages, game?.pages]);
 
-  const completeChapterMutation = useMutation({
-    mutationFn: async (finalScore: number) => {
-      if (!sessionId) return;
-      const response = await apiRequest(
-        "PATCH",
-        `/api/sessions/${sessionId}/chapter-complete`,
-        { score: finalScore }
-      );
-      return response.json();
-    },
-    onSuccess: (data) => {
-      setIsCompleted(true);
-      toast({
-        title: "章節完成!",
-        description: data?.nextChapterUnlocked ? "已解鎖下一章" : `得分: ${score} 分`,
-      });
-    },
+  const {
+    sessionId, score, inventory, variables,
+    currentPageIndex, isCompleted,
+    stateRef, activePagesRef,
+    setState, resetAndCreateNew,
+  } = useSessionManager({
+    gameId,
+    userId: user?.id,
+    isReplayMode,
+    activePages,
+    userName: user?.firstName || "玩家",
   });
-
-  const createSessionMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/sessions", {
-        gameId,
-        teamName: `${user?.firstName || "玩家"}'s Team`,
-        playerCount: 1,
-      });
-      return response.json();
-    },
-    onSuccess: (data: GameSession) => {
-      // Reset all game state for fresh start
-      setSessionId(data.id);
-      sessionIdRef.current = data.id;
-      setScore(0);
-      scoreRef.current = 0;
-      setInventory([]);
-      inventoryRef.current = [];
-      setVariables({});
-      variablesRef.current = {};
-      setCurrentPageIndex(0);
-      setIsCompleted(false);
-      // Clear forceNewSession and mark restoration complete
-      setForceNewSession(false);
-      setHasRestoredProgress(true);
-      // Invalidate the existing session cache to prevent restoration
-      queryClient.invalidateQueries({ queryKey: ["/api/sessions/active", gameId] });
-      toast({
-        title: "遊戲開始",
-        description: "祝你好運!",
-      });
-    },
-    onError: () => {
-      setForceNewSession(false);
-      toast({
-        title: "錯誤",
-        description: "無法開始遊戲，請重試",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateProgressMutation = useMutation({
-    mutationFn: async (data: { pageId: string; score: number; inventory: string[]; variables: Record<string, unknown> }) => {
-      if (!sessionId) return;
-      await apiRequest("PATCH", `/api/sessions/${sessionId}/progress`, data);
-    },
-  });
-
-  const completeGameMutation = useMutation({
-    mutationFn: async () => {
-      if (!sessionId) return;
-      await apiRequest("PATCH", `/api/sessions/${sessionId}`, {
-        status: "completed",
-        score,
-      });
-    },
-    onSuccess: () => {
-      setIsCompleted(true);
-      toast({
-        title: "恭喜通關!",
-        description: `最終得分: ${score} 分`,
-      });
-    },
-  });
-
-  // Track if we've already restored progress to avoid multiple toasts
-  const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
-
-  // Track if session creation has been attempted to prevent infinite retries on error
-  const sessionCreationAttemptedRef = useRef(false);
-
-  useEffect(() => {
-    if (!user || !gameId) return;
-
-    // If replay mode is triggered, force create a new session
-    if (forceNewSession && !sessionId && !createSessionMutation.isPending) {
-      // 清除 URL 參數（forceNewSession 在 onSuccess 中清除）
-      if (isReplayMode) {
-        setLocation(`/game/${gameId}`, { replace: true });
-      }
-      sessionCreationAttemptedRef.current = true;
-      createSessionMutation.mutate();
-      return;
-    }
-
-    // Skip restoration if forceNewSession is active (waiting for new session creation)
-    if (forceNewSession || createSessionMutation.isPending) {
-      return;
-    }
-    
-    // If we have an existing session and haven't restored yet
-    if (existingSession?.session && !hasRestoredProgress && activePages.length > 0) {
-      const newSessionId = existingSession.session.id;
-      const newScore = existingSession.progress?.score || existingSession.session.score || 0;
-      const newInventory = existingSession.progress?.inventory || [];
-      const newVariables = existingSession.progress?.variables || {};
-      
-      // Update state and refs together
-      setSessionId(newSessionId);
-      sessionIdRef.current = newSessionId;
-      setScore(newScore);
-      scoreRef.current = newScore;
-      setInventory(newInventory);
-      inventoryRef.current = newInventory;
-      setVariables(newVariables);
-      variablesRef.current = newVariables;
-      
-      // Check if the session is already completed
-      if (existingSession.session.status === "completed") {
-        setIsCompleted(true);
-        setCurrentPageIndex(activePages.length - 1);
-        setHasRestoredProgress(true);
-        toast({
-          title: "遊戲已完成",
-          description: `最終得分: ${newScore} 分`,
-        });
-        return;
-      }
-      
-      if (existingSession.progress?.currentPageId) {
-        const savedPageId = existingSession.progress.currentPageId;
-        const pageIndex = activePages.findIndex(p => p.id === savedPageId);
-        if (pageIndex !== -1) {
-          setCurrentPageIndex(pageIndex);
-        }
-      }
-      
-      setHasRestoredProgress(true);
-      toast({
-        title: "繼續遊戲",
-        description: "從上次進度繼續",
-      });
-    } else if (existingSession === null && !sessionId && !forceNewSession && !createSessionMutation.isPending && !sessionCreationAttemptedRef.current) {
-      // No existing session, create a new one (only once)
-      sessionCreationAttemptedRef.current = true;
-      createSessionMutation.mutate();
-    }
-  }, [user, gameId, existingSession, activePages, sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending]);
 
   const currentPage = activePages[currentPageIndex];
   const totalPages = activePages.length;
   const progressPercent = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
 
-  const activePagesRef = useRef(activePages);
-  useEffect(() => { activePagesRef.current = activePages; }, [activePages]);
+  // === 遊戲/章節完成處理 ===
+  const handleCompletion = useCallback((finalScore: number) => {
+    const sid = stateRef.current.sessionId;
+    if (!sid) return;
+    if (isChapterMode) {
+      apiRequest("PATCH", `/api/sessions/${sid}/chapter-complete`, { score: finalScore })
+        .then(() => {
+          setState(prev => ({ ...prev, isCompleted: true }));
+          toast({ title: "章節完成!", description: `得分: ${finalScore} 分` });
+        });
+    } else {
+      apiRequest("PATCH", `/api/sessions/${sid}`, { status: "completed", score: finalScore })
+        .then(() => {
+          setState(prev => ({ ...prev, isCompleted: true }));
+          toast({ title: "恭喜通關!", description: `最終得分: ${finalScore} 分` });
+        });
+    }
+  }, [isChapterMode, toast, stateRef, setState]);
 
+  // === 頁面完成 → 更新分數/道具 → 導航 ===
   const handlePageComplete = useCallback((reward?: { points?: number; items?: string[] }, nextPageId?: string) => {
-    // Use refs to get the latest values and avoid stale closures
-    const currentSessionId = sessionIdRef.current;
-    let newScore = scoreRef.current;
-    let newInventory = [...inventoryRef.current];
-    const currentVars = variablesRef.current;
+    const currentState = stateRef.current;
     const pages = activePagesRef.current;
-    const numPages = pages.length;
-    
+    let newScore = currentState.score;
+    let newInventory = [...currentState.inventory];
+
     if (reward?.points) {
       newScore = newScore + reward.points;
-      setScore(newScore);
-      scoreRef.current = newScore;
     }
     if (reward?.items) {
       newInventory = [...newInventory, ...reward.items];
-      setInventory(newInventory);
-      inventoryRef.current = newInventory;
     }
 
-    // 遊戲/章節完成處理
-    const handleCompletion = (finalScore: number) => {
-      if (!currentSessionId) return;
-      if (isChapterMode) {
-        apiRequest("PATCH", `/api/sessions/${currentSessionId}/chapter-complete`, {
-          score: finalScore,
-        }).then(() => {
-          setIsCompleted(true);
-          toast({ title: "章節完成!", description: `得分: ${finalScore} 分` });
-        });
-      } else {
-        apiRequest("PATCH", `/api/sessions/${currentSessionId}`, {
-          status: "completed",
-          score: finalScore,
-        }).then(() => {
-          setIsCompleted(true);
-          toast({ title: "恭喜通關!", description: `最終得分: ${finalScore} 分` });
-        });
-      }
-    };
-
     if (nextPageId === "_end") {
+      setState(prev => ({ ...prev, score: newScore, inventory: newInventory }));
       handleCompletion(newScore);
       return;
     }
 
-    // 使用 functional update 取得正確的當前頁面索引
-    setCurrentPageIndex(prevIndex => {
-      let nextIndex = prevIndex + 1;
+    // 導航到下一頁
+    setState(prev => {
+      let nextIndex = prev.currentPageIndex + 1;
       if (nextPageId && pages) {
         const foundIndex = pages.findIndex(p => p.id === nextPageId);
-        if (foundIndex !== -1) {
-          nextIndex = foundIndex;
-        }
+        if (foundIndex !== -1) nextIndex = foundIndex;
       }
 
-      if (nextIndex < numPages) {
+      if (nextIndex < pages.length) {
         const nextPage = pages[nextIndex];
-
-        if (nextPage && currentSessionId) {
-          apiRequest("PATCH", `/api/sessions/${currentSessionId}/progress`, {
+        if (nextPage && prev.sessionId) {
+          apiRequest("PATCH", `/api/sessions/${prev.sessionId}/progress`, {
             pageId: nextPage.id,
             score: newScore,
             inventory: newInventory,
-            variables: currentVars,
+            variables: prev.variables,
           }).catch(() => {});
         }
-        return nextIndex;
-      } else {
-        handleCompletion(newScore);
-        return prevIndex; // Stay on current page
+        return { ...prev, score: newScore, inventory: newInventory, currentPageIndex: nextIndex };
       }
+      handleCompletion(newScore);
+      return { ...prev, score: newScore, inventory: newInventory };
     });
-  }, [toast]);
+  }, [stateRef, activePagesRef, setState, handleCompletion]);
 
   const handleVariableUpdate = useCallback((key: string, value: unknown) => {
-    setVariables(prev => ({ ...prev, [key]: value }));
-  }, []);
+    setState(prev => ({ ...prev, variables: { ...prev.variables, [key]: value } }));
+  }, [setState]);
 
   const goToMap = useCallback(() => {
     setLocation(`/map/${gameId}?session=${sessionId}`);
   }, [gameId, sessionId, setLocation]);
 
+  // === 載入中/錯誤/完成 狀態 ===
   if (authLoading || gameLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -365,7 +156,6 @@ export default function GamePlay() {
   }
 
   if (!user) {
-    // Redirect to landing page for login
     setLocation("/");
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -394,21 +184,6 @@ export default function GamePlay() {
   }
 
   if (isCompleted) {
-    const handlePlayAgain = async () => {
-      setIsCompleted(false);
-      setCurrentPageIndex(0);
-      setScore(0);
-      setInventory([]);
-      setVariables({});
-      setHasRestoredProgress(false);
-      setSessionId(null);
-      sessionIdRef.current = null;
-      scoreRef.current = 0;
-      inventoryRef.current = [];
-      variablesRef.current = {};
-      createSessionMutation.mutate();
-    };
-
     return (
       <GameCompletionScreen
         score={score}
@@ -416,7 +191,7 @@ export default function GamePlay() {
         isChapterMode={isChapterMode}
         chapterTitle={chapterData?.title}
         gameId={gameId || ""}
-        onPlayAgain={handlePlayAgain}
+        onPlayAgain={resetAndCreateNew}
         onNavigate={setLocation}
       />
     );
@@ -465,7 +240,7 @@ export default function GamePlay() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setCurrentPageIndex(prev => Math.max(0, prev - 1))}
+          onClick={() => setState(prev => ({ ...prev, currentPageIndex: Math.max(0, prev.currentPageIndex - 1) }))}
           disabled={currentPageIndex === 0}
           className="gap-1"
           data-testid="button-prev-page"
@@ -475,12 +250,7 @@ export default function GamePlay() {
         </Button>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowChat(true)}
-            data-testid="button-open-chat"
-          >
+          <Button variant="ghost" size="icon" onClick={() => setShowChat(true)} data-testid="button-open-chat">
             <MessageCircle className="w-5 h-5" />
           </Button>
           <Button
@@ -497,12 +267,7 @@ export default function GamePlay() {
               </span>
             )}
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={goToMap}
-            data-testid="button-open-map"
-          >
+          <Button variant="ghost" size="icon" onClick={goToMap} data-testid="button-open-map">
             <Map className="w-5 h-5" />
           </Button>
         </div>
