@@ -19,7 +19,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { GameWithDetails, Page } from "@shared/schema";
 import {
   ChevronLeft, Save, Upload, FileText,
-  Eye, Settings, Package, Trophy, MapPin,
+  Eye, Settings, Package, Trophy, MapPin, Ticket,
 } from "lucide-react";
 import { Link } from "wouter";
 import ItemsEditor from "@/components/ItemsEditor";
