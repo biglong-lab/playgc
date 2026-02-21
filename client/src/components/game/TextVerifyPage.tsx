@@ -4,15 +4,24 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Check, X, HelpCircle, RefreshCw, History, BookOpen } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { Check, X, HelpCircle, RefreshCw, History, BookOpen, Loader2 } from "lucide-react";
 import type { TextVerifyConfig } from "@shared/schema";
 
 interface TextVerifyPageProps {
   config: TextVerifyConfig;
   onComplete: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
   sessionId: string;
-  variables: Record<string, any>;
+  variables: Record<string, unknown>;
   onVariableUpdate: (key: string, value: unknown) => void;
+}
+
+interface AiScoreResponse {
+  score: number;
+  isCorrect: boolean;
+  feedback: string;
+  fallback?: boolean;
 }
 
 export default function TextVerifyPage({ config, onComplete }: TextVerifyPageProps) {
@@ -31,23 +40,46 @@ export default function TextVerifyPage({ config, onComplete }: TextVerifyPagePro
   const currentHint = showHint && hasHints ? config.hints![Math.min(attempts, config.hints!.length - 1)] : null;
   const inputType = config.inputType || "text";
 
+  // AI 語意評分 mutation
+  const aiScoreMutation = useMutation({
+    mutationFn: async (userAnswer: string): Promise<AiScoreResponse> => {
+      const answersArray = buildAnswersArray();
+      const response = await apiRequest("POST", "/api/ai/score-text", {
+        question: config.question,
+        userAnswer,
+        expectedAnswers: answersArray,
+        context: config.aiContext,
+        passingScore: config.aiPassingScore ?? 70,
+      });
+      return response.json();
+    },
+  });
+
+  const buildAnswersArray = (): string[] => {
+    const arr = [...(config.answers || [])];
+    if (config.correctAnswer) {
+      arr.push(config.correctAnswer);
+    }
+    return arr;
+  };
+
   const getGradedFeedback = (userAnswer: string, correctAnswers: string[]): { level: "close" | "medium" | "far"; message: string } => {
     if (!config.gradedFeedback) {
       return { level: "far", message: "答案不正確" };
     }
 
     const normalizedUser = userAnswer.toLowerCase().trim();
-    
+
     for (const correct of correctAnswers) {
       const normalizedCorrect = correct.toLowerCase().trim();
-      
+
       if (normalizedUser.length === normalizedCorrect.length) {
         let matchCount = 0;
         for (let i = 0; i < normalizedUser.length; i++) {
           if (normalizedUser[i] === normalizedCorrect[i]) matchCount++;
         }
         const similarity = matchCount / normalizedCorrect.length;
-        
+
         if (similarity >= 0.8) {
           return { level: "close", message: "非常接近了！再想想！" };
         }
@@ -55,103 +87,143 @@ export default function TextVerifyPage({ config, onComplete }: TextVerifyPagePro
           return { level: "medium", message: "有點接近，繼續努力！" };
         }
       }
-      
+
       if (normalizedCorrect.includes(normalizedUser) || normalizedUser.includes(normalizedCorrect)) {
         return { level: "medium", message: "方向對了，但不完全正確" };
       }
     }
-    
+
     return { level: "far", message: "答案不正確，再試試！" };
   };
 
-  const checkAnswer = () => {
+  const handleCorrect = (feedbackMessage?: string) => {
+    setIsCorrect(true);
+    toast({
+      title: feedbackMessage || config.onSuccess?.message || config.successMessage || "答對了！",
+      description: "做得好！",
+    });
+
+    if (config.showExplanation && config.explanation) {
+      setShowExplanation(true);
+      setTimeout(() => {
+        const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
+        onComplete({ points: 10, items }, config.nextPageId);
+      }, 3000);
+    } else {
+      setTimeout(() => {
+        const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
+        onComplete({ points: 10, items }, config.nextPageId);
+      }, 1500);
+    }
+  };
+
+  const handleIncorrect = (feedbackMessage?: string) => {
+    setIsCorrect(false);
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
+
+    if (newAttempts >= maxAttempts) {
+      toast({
+        title: "答錯太多次",
+        description: feedbackMessage || config.failureMessage || "已達最大嘗試次數",
+        variant: "destructive",
+      });
+
+      if (config.showExplanation && config.explanation) {
+        setShowExplanation(true);
+        setTimeout(() => {
+          onComplete({ points: 0 }, config.nextPageId);
+        }, 3000);
+      } else {
+        setTimeout(() => {
+          onComplete({ points: 0 }, config.nextPageId);
+        }, 2000);
+      }
+    } else {
+      const answersArray = buildAnswersArray();
+      const feedback = feedbackMessage || getGradedFeedback(answer, answersArray).message;
+      toast({
+        title: feedback,
+        description: `還剩 ${maxAttempts - newAttempts} 次機會`,
+        variant: "destructive",
+      });
+      setTimeout(() => setIsCorrect(null), 1000);
+    }
+  };
+
+  const checkAnswer = async () => {
     if (!answer.trim()) return;
 
     setIsAnimating(true);
-    
-    const normalizedAnswer = config.caseSensitive 
-      ? answer.trim() 
+
+    const normalizedAnswer = config.caseSensitive
+      ? answer.trim()
       : answer.trim().toLowerCase();
 
-    const answersArray = [...(config.answers || [])];
-    if (config.correctAnswer) {
-      answersArray.push(config.correctAnswer);
-    }
-    
-    const isMatch = answersArray.some(validAnswer => {
-      const normalizedValid = config.caseSensitive 
-        ? validAnswer 
+    const answersArray = buildAnswersArray();
+
+    // 精確匹配檢查（所有模式都先做）
+    const isExactMatch = answersArray.some((validAnswer) => {
+      const normalizedValid = config.caseSensitive
+        ? validAnswer
         : validAnswer.toLowerCase();
       return normalizedAnswer === normalizedValid;
     });
 
     if (config.showAttemptHistory) {
-      setAttemptHistory(prev => [...prev, answer]);
+      setAttemptHistory((prev) => [...prev, answer]);
     }
 
+    // 精確匹配成功 → 直接通過（不呼叫 AI，省費用）
+    if (isExactMatch) {
+      setTimeout(() => {
+        setIsAnimating(false);
+        handleCorrect();
+      }, 500);
+      return;
+    }
+
+    // AI 語意評分模式
+    if (config.aiScoring) {
+      try {
+        const result = await aiScoreMutation.mutateAsync(answer.trim());
+
+        setIsAnimating(false);
+
+        // AI fallback（服務不可用）→ 使用原始邏輯
+        if (result.fallback) {
+          handleIncorrect();
+          return;
+        }
+
+        if (result.isCorrect) {
+          handleCorrect(result.feedback);
+        } else {
+          handleIncorrect(result.feedback);
+        }
+      } catch {
+        // API 錯誤 → fallback 到原始精確匹配邏輯
+        setIsAnimating(false);
+        handleIncorrect();
+      }
+      return;
+    }
+
+    // 非 AI 模式 → 原始邏輯
     setTimeout(() => {
       setIsAnimating(false);
-      
-      if (isMatch) {
-        setIsCorrect(true);
-        toast({
-          title: config.onSuccess?.message || config.successMessage || "答對了!",
-          description: "做得好!",
-        });
-        
-        if (config.showExplanation && config.explanation) {
-          setShowExplanation(true);
-          setTimeout(() => {
-            const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-            onComplete({ points: 10, items }, config.nextPageId);
-          }, 3000);
-        } else {
-          setTimeout(() => {
-            const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-            onComplete({ points: 10, items }, config.nextPageId);
-          }, 1500);
-        }
-      } else {
-        setIsCorrect(false);
-        setAttempts(prev => prev + 1);
-        
-        const feedback = getGradedFeedback(answer, answersArray);
-        
-        if (attempts + 1 >= maxAttempts) {
-          toast({
-            title: "答錯太多次",
-            description: config.failureMessage || "已達最大嘗試次數",
-            variant: "destructive",
-          });
-          
-          if (config.showExplanation && config.explanation) {
-            setShowExplanation(true);
-            setTimeout(() => {
-              onComplete({ points: 0 }, config.nextPageId);
-            }, 3000);
-          } else {
-            setTimeout(() => {
-              onComplete({ points: 0 }, config.nextPageId);
-            }, 2000);
-          }
-        } else {
-          toast({
-            title: feedback.message,
-            description: `還剩 ${maxAttempts - attempts - 1} 次機會`,
-            variant: "destructive",
-          });
-          setTimeout(() => setIsCorrect(null), 1000);
-        }
-      }
+      handleIncorrect();
     }, 500);
   };
+
+  const isChecking = aiScoreMutation.isPending || isAnimating;
 
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-6">
       <Card className={`w-full max-w-md transition-all duration-300 ${
         isAnimating ? "scale-95" : ""
       } ${
-        isCorrect === true ? "ring-2 ring-success" : 
+        isCorrect === true ? "ring-2 ring-success" :
         isCorrect === false ? "ring-2 ring-destructive" : ""
       }`}>
         <CardContent className="p-6">
@@ -160,6 +232,11 @@ export default function TextVerifyPage({ config, onComplete }: TextVerifyPagePro
               剩餘次數: {maxAttempts - attempts}
             </Badge>
             <div className="flex gap-1">
+              {config.aiScoring && (
+                <Badge variant="secondary" className="text-xs">
+                  AI 評分
+                </Badge>
+              )}
               {config.showAttemptHistory && attemptHistory.length > 0 && (
                 <Button
                   variant="ghost"
@@ -236,8 +313,8 @@ export default function TextVerifyPage({ config, onComplete }: TextVerifyPagePro
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder={inputType === "number" ? "輸入數字..." : "輸入你的答案..."}
-              onKeyDown={(e) => e.key === "Enter" && checkAnswer()}
-              disabled={isCorrect !== null}
+              onKeyDown={(e) => e.key === "Enter" && !isChecking && checkAnswer()}
+              disabled={isCorrect !== null || isChecking}
               className="text-center text-lg h-12"
               inputMode={inputType === "number" ? "numeric" : "text"}
               data-testid="input-answer"
@@ -248,7 +325,7 @@ export default function TextVerifyPage({ config, onComplete }: TextVerifyPagePro
                 onClick={() => setAnswer("")}
                 variant="outline"
                 className="flex-1 gap-2"
-                disabled={isCorrect !== null}
+                disabled={isCorrect !== null || isChecking}
                 data-testid="button-clear"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -257,10 +334,15 @@ export default function TextVerifyPage({ config, onComplete }: TextVerifyPagePro
               <Button
                 onClick={checkAnswer}
                 className="flex-1 gap-2"
-                disabled={!answer.trim() || isCorrect !== null}
+                disabled={!answer.trim() || isCorrect !== null || isChecking}
                 data-testid="button-submit-answer"
               >
-                {isCorrect === true ? (
+                {isChecking ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    AI 評分中...
+                  </>
+                ) : isCorrect === true ? (
                   <>
                     <Check className="w-4 h-4" />
                     正確!
