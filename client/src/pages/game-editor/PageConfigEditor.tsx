@@ -152,7 +152,7 @@ export default function PageConfigEditor({
               />
             </div>
 
-            {config.aiVerify && (
+            {!!config.aiVerify && (
               <div className="space-y-4 pt-2 border-t">
                 <PhotoAiKeywordsEditor
                   keywords={(config.targetKeywords as string[]) || []}
