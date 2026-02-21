@@ -32,8 +32,16 @@ export const appleProvider = new OAuthProvider('apple.com');
 appleProvider.addScope('email');
 appleProvider.addScope('name');
 
+// Firebase 錯誤碼提取（避免 catch error: any）
+function getFirebaseErrorCode(error: unknown): string | undefined {
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    return (error as { code: string }).code;
+  }
+  return undefined;
+}
+
 function isEmbeddedBrowser(): boolean {
-  const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera || "";
+  const userAgent = navigator.userAgent || navigator.vendor || (window as Record<string, unknown>).opera as string || "";
   const ua = userAgent.toLowerCase();
   
   const embeddedBrowserPatterns = [
