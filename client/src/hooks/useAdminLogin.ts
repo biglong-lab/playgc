@@ -99,39 +99,6 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     },
   });
 
-  // 密碼登入 mutation
-  const passwordLoginMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fieldCode, username, password }),
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "登入失敗");
-      }
-
-      return response.json() as Promise<AdminLoginResponse>;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: "登入成功",
-        description: `歡迎回來，${data.admin.displayName || data.admin.username}`,
-      });
-      navigate(successRedirect);
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "登入失敗",
-        description: error.message || "帳號或密碼錯誤",
-        variant: "destructive",
-      });
-    },
-  });
-
   // 自動觸發 Firebase 登入驗證
   useEffect(() => {
     if (isAuthenticated && step === "firebase" && fieldCode && !loginError && firebaseLoginMutation.status === "idle") {
