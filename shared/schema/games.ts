@@ -510,6 +510,49 @@ export interface MotionChallengeConfig {
   rewardPoints?: number;
 }
 
+// ============================================================================
+// Flow Router Config — 自動條件路由器（不顯示 UI，純邏輯判斷）
+// ============================================================================
+
+/** 單一路由規則的條件 */
+export interface FlowCondition {
+  type: 'variable_equals' | 'variable_gt' | 'variable_lt' | 'variable_gte' | 'variable_lte'
+    | 'has_item' | 'not_has_item' | 'score_above' | 'score_below' | 'random';
+  variableName?: string;
+  variableValue?: unknown;
+  itemId?: string;
+  scoreThreshold?: number;
+  weight?: number; // random 模式的權重（預設 1）
+}
+
+/** 單一路由規則 */
+export interface FlowRoute {
+  id: string;
+  label?: string;
+  conditions: FlowCondition[];
+  conditionLogic: 'and' | 'or';
+  nextPageId: string;
+}
+
+/** 流程路由器配置 */
+export interface FlowRouterConfig {
+  mode: 'conditional' | 'random';
+  routes: FlowRoute[];
+  defaultNextPageId?: string; // fallback（所有規則不滿足時）
+}
+
+// ============================================================================
+// OnComplete Actions — 頁面完成時的變數/道具/分數操作（通用）
+// ============================================================================
+export interface OnCompleteAction {
+  type: 'set_variable' | 'increment_variable' | 'decrement_variable'
+    | 'toggle_variable' | 'add_item' | 'remove_item' | 'add_score';
+  variableName?: string;
+  value?: unknown;      // set 用；increment/decrement 用 number
+  itemId?: string;
+  points?: number;
+}
+
 export type PageConfig =
   | TextCardConfig
   | DialogueConfig
@@ -526,7 +569,8 @@ export type PageConfig =
   | TimeBombConfig
   | LockConfig
   | VoteConfig
-  | MotionChallengeConfig;
+  | MotionChallengeConfig
+  | FlowRouterConfig;
 
 // Game schemas
 export const insertGameSchema = createInsertSchema(games).omit({
