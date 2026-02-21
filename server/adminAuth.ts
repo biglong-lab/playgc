@@ -232,7 +232,7 @@ export async function adminAuthMiddleware(
   // Priority: cookie token first, then Authorization header
   // This prevents Firebase ID tokens from overriding admin JWT cookies
   let token: string | undefined;
-  let decoded: any;
+  let decoded: AdminTokenPayload | null = null;
   
   // First try cookie token (admin-staff JWT)
   if (cookieToken) {
