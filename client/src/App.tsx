@@ -46,6 +46,7 @@ const GameSettings = lazy(() => import("@/pages/GameSettings"));
 const FieldAdminLogin = lazy(() => import("@/pages/FieldAdminLogin"));
 const AdminRedeemCodes = lazy(() => import("@/pages/admin-redeem-codes"));
 const FieldSettingsPage = lazy(() => import("@/pages/admin/FieldSettingsPage"));
+const TicketsOverview = lazy(() => import("@/pages/admin/TicketsOverview"));
 
 // 管理端（場域管理員） — lazy import
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
