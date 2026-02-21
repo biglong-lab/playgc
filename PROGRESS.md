@@ -96,6 +96,50 @@
 
 ## 工作紀錄
 
+### 2026-02-21 (第二十七階段：Phase 27 Phase A — 付費/票券系統：兌換碼 + 現金收款)
+
+#### 步驟 A1：Schema + Storage
+- [x] 修改 `shared/schema/games.ts` — +3 欄位：pricingType, price, currency
+- [x] 新增 `shared/schema/purchases.ts` (~220 行) — 4 張新表：redeemCodes, redeemCodeUses, purchases, paymentTransactions
+- [x] 修改 `shared/schema/index.ts` + `relations.ts` — 匯出新 schema + 關聯定義
+- [x] 新增 `server/storage/purchase-storage.ts` (~260 行) — 22 個兌換碼/購買 CRUD 方法
+- [x] 修改 `server/storage.ts` — IStorage 介面 + DatabaseStorage 整合 22 個購買方法
+- [x] `npm run db:push` 成功同步 4 張新表 + 3 個新欄位
+
+#### 步驟 A2：後端 API
+- [x] 新增 `server/utils/redeem-code-generator.ts` (~35 行) — 碼格式 JCQ-XXXX-XXXX（32 字元集排除 0/O/1/I）
+- [x] 新增 `server/routes/admin-redeem-codes.ts` (~235 行) — 6 個 API 端點（CRUD + 批次建立 + 使用紀錄）
+- [x] 新增 `server/routes/admin-purchases.ts` (~133 行) — 3 個 API 端點（購買記錄 + 現金收款授權 + 撤銷）
+- [x] 新增 `server/routes/player-purchases.ts` (~247 行) — 3 個 API 端點（兌換碼 + 存取權查詢 + 購買記錄）
+  - Rate limit: 15 分鐘/10 次（記憶體 Map）
+  - 兌換流程: rate limit → 格式 → DB 查碼 → 狀態/過期/用完/重複 → DB Transaction
+- [x] 修改 `server/routes/index.ts` — 註冊 3 個新路由模組
+- [x] 修改 `server/storage/chapter-storage.ts` — isChapterUnlocked() 整合購買記錄查詢（遊戲級 + 章節級）
+
+#### 步驟 A3：管理端前端
+- [x] 新增 `client/src/pages/admin-redeem-codes/` 目錄（6 個檔案）
+  - `index.tsx` (~95 行) — 票券管理主頁（Tab: 兌換碼/購買記錄）
+  - `useRedeemCodes.ts` (~140 行) — 管理 Hook（codes/purchases 查詢 + 6 個 mutation）
+  - `CodeTable.tsx` (~100 行) — 兌換碼列表（複製/停用/刪除）
+  - `CreateCodeDialog.tsx` (~155 行) — 單一/批次建立對話框
+  - `GrantAccessDialog.tsx` (~185 行) — 現金收款授權對話框（搜尋玩家 → 選遊戲/章節 → 授權）
+  - `PurchaseHistory.tsx` (~80 行) — 購買記錄列表
+- [x] 修改 `client/src/pages/game-settings/useGameSettings.ts` — 新增 PricingType/PricingState + state + 存儲邏輯
+- [x] 修改 `client/src/pages/game-settings/SettingsCards.tsx` — 新增 PricingCard 元件
+- [x] 修改 `client/src/pages/GameSettings.tsx` — 渲染 PricingCard
+- [x] 修改 `client/src/App.tsx` — 新增管理端票券路由
+
+#### 步驟 A4：玩家端前端
+- [x] 新增 `client/src/hooks/useGameAccess.ts` (~25 行) — 遊戲存取權查詢 Hook
+- [x] 新增 `client/src/hooks/useRedeemCode.ts` (~30 行) — 兌換碼兌換 Hook
+- [x] 新增 `client/src/hooks/usePurchases.ts` (~10 行) — 購買記錄 Hook
+- [x] 新增 `client/src/components/shared/RedeemCodeInput.tsx` (~55 行) — 格式化兌換碼輸入（自動加破折號）
+- [x] 新增 `client/src/pages/PurchaseGate.tsx` (~100 行) — 付費攔截頁面（兌換碼 + 線上付費按鈕預留）
+- [x] 新增 `client/src/pages/MyPurchases.tsx` (~90 行) — 玩家購買歷史頁面
+- [x] 修改 `client/src/App.tsx` — 新增玩家端路由（/game/:gameId/purchase, /purchases）
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 58 檔案 860 測試全通過、`npm run db:push` 成功
+
 ### 2026-02-21 (第二十六階段：程式碼品質持續改善 — any 清理 + GamePlay 重構)
 
 #### 修改 1：Server 端 any 型別消除（3 檔案 4 處）
