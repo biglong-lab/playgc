@@ -39,6 +39,13 @@ export interface ChapterState {
   allowChapterReplay: boolean;
 }
 
+// 定價 state
+export type PricingType = "free" | "one_time" | "per_chapter";
+export interface PricingState {
+  pricingType: PricingType;
+  price: string;
+}
+
 // Hook 回傳值
 export interface GameSettingsReturn {
   // 基本資訊
