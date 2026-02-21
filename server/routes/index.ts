@@ -17,6 +17,9 @@ import { registerPlayerChapterRoutes } from "./player-chapters";
 import { registerAdminChapterRoutes } from "./admin-chapters";
 import { registerAdminModuleRoutes } from "./admin-modules";
 import { registerMatchRoutes } from "./matches";
+import { registerAdminRedeemCodeRoutes } from "./admin-redeem-codes";
+import { registerAdminPurchaseRoutes } from "./admin-purchases";
+import { registerPlayerPurchaseRoutes } from "./player-purchases";
 
 export async function registerRoutes(
   httpServer: Server,
