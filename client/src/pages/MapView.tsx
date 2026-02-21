@@ -104,7 +104,7 @@ export default function MapView() {
       queryClient.invalidateQueries({ queryKey: [`/api/games/${gameId}/locations`] });
       toast({ title: "到達任務點!", description: "恭喜你完成了這個位置!" });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({ title: "打卡失敗", description: error.message || "無法完成打卡", variant: "destructive" });
     },
   });
