@@ -68,7 +68,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
 
     setTimeout(() => {
       const reward: { points?: number; items?: string[] } = {};
-      if (button.rewardPoints && button.rewardPoints > 0) {
+      if (button.rewardPoints && button.rewardPoints !== 0) {
         reward.points = button.rewardPoints;
       }
       if (button.items && button.items.length > 0) {
