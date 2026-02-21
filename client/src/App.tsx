@@ -23,6 +23,8 @@ const TeamLobby = lazy(() => import("@/pages/TeamLobby"));
 const ChapterSelect = lazy(() => import("@/pages/ChapterSelect"));
 const GameBySlug = lazy(() => import("@/pages/GameBySlug"));
 const MatchLobby = lazy(() => import("@/pages/MatchLobby"));
+const PurchaseGate = lazy(() => import("@/pages/PurchaseGate"));
+const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
 
 // 管理端（場主） — lazy import
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
