@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { storage } from "../storage";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 import { db } from "../db";
-import { games, purchases, redeemCodes, codeUses } from "@shared/schema";
+import { games, purchases, redeemCodes, redeemCodeUses } from "@shared/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { z } from "zod";
 
