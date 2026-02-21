@@ -55,6 +55,10 @@ export const games = pgTable("games", {
   gameStructure: varchar("game_structure", { length: 20 }).default("linear"), // linear, chapters
   chapterUnlockMode: varchar("chapter_unlock_mode", { length: 20 }).default("sequential"), // sequential, manual, all_open
   allowChapterReplay: boolean("allow_chapter_replay").default(true),
+  // 定價設定
+  pricingType: varchar("pricing_type", { length: 20 }).default("free"), // free | one_time | per_chapter
+  price: integer("price"), // 一次付費金額（新台幣元）
+  currency: varchar("currency", { length: 10 }).default("TWD"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
