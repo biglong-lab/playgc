@@ -177,12 +177,12 @@ export async function signInAnonymously() {
   try {
     const result = await firebaseSignInAnonymously(auth);
     return result.user;
-  } catch (error: any) {
-    
-    if (error?.code === "auth/operation-not-allowed") {
+  } catch (error: unknown) {
+    const code = getFirebaseErrorCode(error);
+    if (code === "auth/operation-not-allowed") {
       throw new Error("匿名登入未啟用。請在 Firebase Console 啟用。");
     }
-    
+
     throw new Error("訪客登入失敗，請重試");
   }
 }
