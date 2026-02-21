@@ -363,7 +363,7 @@ class MqttService {
     return this.sendCommand(deviceId, "deactivate", {});
   }
 
-  startSession(deviceId: string, sessionId: string, config: any = {}): boolean {
+  startSession(deviceId: string, sessionId: string, config: Record<string, unknown> = {}): boolean {
     return this.sendCommand(deviceId, "start_session", {
       sessionId,
       ...config,
