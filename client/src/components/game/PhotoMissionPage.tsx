@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -10,6 +11,7 @@ import {
   PhotoPreview,
   UploadingView,
   VerifyingView,
+  AiFailView,
 } from "./photo-mission/PhotoViews";
 
 interface PhotoMissionPageProps {
@@ -21,6 +23,14 @@ interface PhotoMissionPageProps {
   onVariableUpdate: (key: string, value: unknown) => void;
 }
 
+interface AiVerifyResponse {
+  verified: boolean;
+  confidence: number;
+  feedback: string;
+  detectedObjects: string[];
+  fallback?: boolean;
+}
+
 export default function PhotoMissionPage({
   config,
   onComplete,
@@ -29,7 +39,61 @@ export default function PhotoMissionPage({
 }: PhotoMissionPageProps) {
   const { toast } = useToast();
   const camera = usePhotoCamera();
+  const [aiRetryCount, setAiRetryCount] = useState(0);
+  const [aiFeedback, setAiFeedback] = useState("");
+  const [aiDetectedObjects, setAiDetectedObjects] = useState<string[]>([]);
 
+  const maxRetries = config.maxAiRetries ?? 3;
+  const canRetry = (config.allowRetryOnAiFail !== false) && aiRetryCount < maxRetries;
+
+  const buildReward = (aiVerified: boolean) => {
+    const basePoints = config.onSuccess?.points ?? (config.aiVerify ? 20 : 10);
+    const reward: { points?: number; items?: string[] } = {
+      points: aiVerified ? basePoints : 0,
+    };
+    if (aiVerified && config.onSuccess?.grantItem) {
+      reward.items = [config.onSuccess.grantItem];
+    }
+    return reward;
+  };
+
+  // AI 照片驗證
+  const verifyMutation = useMutation({
+    mutationFn: async (imageUrl: string): Promise<AiVerifyResponse> => {
+      const response = await apiRequest("POST", "/api/ai/verify-photo", {
+        imageUrl,
+        targetKeywords: config.targetKeywords || [],
+        instruction: config.instruction,
+        confidenceThreshold: config.aiConfidenceThreshold ?? 0.6,
+      });
+      return response.json();
+    },
+    onSuccess: (result) => {
+      if (result.verified || result.fallback) {
+        // AI 驗證通過（或 fallback 自動通過）
+        toast({
+          title: result.fallback ? "照片已上傳" : "照片驗證通過！",
+          description: result.feedback || config.onSuccess?.message || "任務完成！",
+        });
+        onComplete(buildReward(true));
+      } else {
+        // AI 驗證失敗
+        setAiFeedback(result.feedback || config.aiFailMessage || "照片不符合要求");
+        setAiDetectedObjects(result.detectedObjects || []);
+        camera.setMode("ai_fail");
+      }
+    },
+    onError: () => {
+      // API 錯誤 → graceful fallback：直接通過
+      toast({
+        title: "照片已上傳",
+        description: "AI 服務暫時無法使用，已自動通過",
+      });
+      onComplete(buildReward(true));
+    },
+  });
+
+  // 上傳照片
   const uploadMutation = useMutation({
     mutationFn: async (imageData: string) => {
       const response = await apiRequest("POST", "/api/cloudinary/player-photo", {
@@ -43,29 +107,18 @@ export default function PhotoMissionPage({
       }
       return response.json();
     },
-    onSuccess: () => {
-      const reward: { points?: number; items?: string[] } = {
-        points: config.aiVerify ? 20 : 10,
-      };
-      if (config.onSuccess?.grantItem) {
-        reward.items = [config.onSuccess.grantItem];
-      }
-
-      if (config.aiVerify) {
+    onSuccess: (data: { url: string }) => {
+      if (config.aiVerify && config.targetKeywords && config.targetKeywords.length > 0) {
+        // 啟用 AI 驗證 → 呼叫 AI 端點
         camera.setMode("verifying");
-        setTimeout(() => {
-          toast({
-            title: "照片驗證通過!",
-            description: config.onSuccess?.message || "任務完成!",
-          });
-          onComplete(reward);
-        }, 2000);
+        verifyMutation.mutate(data.url);
       } else {
+        // 無 AI 驗證 → 直接完成
         toast({
           title: "照片已上傳",
-          description: config.onSuccess?.message || "任務完成!",
+          description: config.onSuccess?.message || "任務完成！",
         });
-        onComplete(reward);
+        onComplete(buildReward(false));
       }
     },
     onError: (error: Error) => {
@@ -89,6 +142,21 @@ export default function PhotoMissionPage({
     }
     camera.setMode("uploading");
     uploadMutation.mutate(camera.capturedImage);
+  };
+
+  const handleAiRetry = () => {
+    setAiRetryCount((prev) => prev + 1);
+    setAiFeedback("");
+    setAiDetectedObjects([]);
+    camera.retake();
+  };
+
+  const handleAiSkip = () => {
+    toast({
+      title: "已跳過驗證",
+      description: "下次拍攝更符合要求的照片吧！",
+    });
+    onComplete(buildReward(false));
   };
 
   return (
@@ -132,6 +200,17 @@ export default function PhotoMissionPage({
 
       {camera.mode === "uploading" && <UploadingView />}
       {camera.mode === "verifying" && <VerifyingView />}
+      {camera.mode === "ai_fail" && (
+        <AiFailView
+          feedback={aiFeedback}
+          detectedObjects={aiDetectedObjects}
+          canRetry={canRetry}
+          retryCount={aiRetryCount}
+          maxRetries={maxRetries}
+          onRetry={handleAiRetry}
+          onSkip={handleAiSkip}
+        />
+      )}
     </div>
   );
 }
