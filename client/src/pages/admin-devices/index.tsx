@@ -157,7 +157,7 @@ export default function AdminDevices() {
   });
 
   const broadcastLedMutation = useMutation({
-    mutationFn: (data: { mode: string; color?: any }) =>
+    mutationFn: (data: { mode: string; color?: string }) =>
       apiRequest("POST", "/api/devices/broadcast/led", data),
     onSuccess: () => {
       toast({ title: "全體設備 LED 命令已發送" });
