@@ -92,27 +92,39 @@ export default function GamePlay() {
     }
   }, [isChapterMode, toast, stateRef, setState]);
 
-  // === 頁面完成 → 更新分數/道具 → 導航 ===
+  // === 頁面完成 → 更新分數/道具/變數 → 導航 ===
   const handlePageComplete = useCallback((reward?: { points?: number; items?: string[] }, nextPageId?: string) => {
     const currentState = stateRef.current;
     const pages = activePagesRef.current;
     let newScore = currentState.score;
     let newInventory = [...currentState.inventory];
+    let newVariables = { ...currentState.variables };
 
-    if (reward?.points) {
-      newScore = newScore + reward.points;
-    }
-    if (reward?.items) {
-      newInventory = [...newInventory, ...reward.items];
+    // 1. 處理 reward（現有邏輯）
+    if (reward?.points) newScore += reward.points;
+    if (reward?.items) newInventory = [...newInventory, ...reward.items];
+
+    // 2. 處理 onCompleteActions（通用變數/道具/分數操作）
+    const currentPage = pages[currentState.currentPageIndex];
+    if (currentPage) {
+      const cfg = currentPage.config as Record<string, unknown>;
+      const actions = (cfg.onCompleteActions || []) as OnCompleteAction[];
+      if (actions.length > 0) {
+        const result = processOnCompleteActions(actions, newVariables, newInventory, newScore);
+        newVariables = result.variables;
+        newInventory = result.inventory;
+        newScore = result.score;
+      }
     }
 
+    // 3. 遊戲結束特殊指令
     if (nextPageId === "_end") {
-      setState(prev => ({ ...prev, score: newScore, inventory: newInventory }));
+      setState(prev => ({ ...prev, score: newScore, inventory: newInventory, variables: newVariables }));
       handleCompletion(newScore);
       return;
     }
 
-    // 導航到下一頁
+    // 4. 導航到下一頁（含 flow_router 解析）
     setState(prev => {
       let nextIndex = prev.currentPageIndex + 1;
       if (nextPageId && pages) {
@@ -120,35 +132,38 @@ export default function GamePlay() {
         if (foundIndex !== -1) nextIndex = foundIndex;
       }
 
-      if (nextIndex < pages.length) {
-        const nextPage = pages[nextIndex];
+      // 解析連續的 flow_router 頁面
+      const resolvedIndex = resolveFlowRouter(pages, nextIndex, newVariables, newInventory, newScore);
+      if (resolvedIndex === -1) {
+        handleCompletion(newScore);
+        return { ...prev, score: newScore, inventory: newInventory, variables: newVariables };
+      }
+
+      if (resolvedIndex < pages.length) {
+        const nextPage = pages[resolvedIndex];
         if (nextPage && prev.sessionId) {
           const progressData = {
             sessionId: prev.sessionId,
             pageId: nextPage.id,
             score: newScore,
             inventory: newInventory,
-            variables: prev.variables as Record<string, unknown>,
+            variables: newVariables,
           };
           if (navigator.onLine) {
             apiRequest("PATCH", `/api/sessions/${prev.sessionId}/progress`, {
               pageId: nextPage.id,
               score: newScore,
               inventory: newInventory,
-              variables: prev.variables,
-            }).catch(() => {
-              // API 失敗時 fallback 到離線儲存
-              queueProgressUpdate(progressData);
-            });
+              variables: newVariables,
+            }).catch(() => queueProgressUpdate(progressData));
           } else {
-            // 離線：直接存 IndexedDB
             queueProgressUpdate(progressData);
           }
         }
-        return { ...prev, score: newScore, inventory: newInventory, currentPageIndex: nextIndex };
+        return { ...prev, score: newScore, inventory: newInventory, variables: newVariables, currentPageIndex: resolvedIndex };
       }
       handleCompletion(newScore);
-      return { ...prev, score: newScore, inventory: newInventory };
+      return { ...prev, score: newScore, inventory: newInventory, variables: newVariables };
     });
   }, [stateRef, activePagesRef, setState, handleCompletion]);
 
