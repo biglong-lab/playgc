@@ -77,16 +77,16 @@ export function registerAuthRoutes(app: Express) {
         // 無場域碼：搜尋 super_admin 帳號
         adminAccount = await db.query.adminAccounts.findFirst({
           where: eq(adminAccounts.firebaseUserId, firebaseUserId),
-          with: { role: true },
         });
 
         if (!adminAccount) {
           return res.status(404).json({ message: "找不到管理員帳號，請輸入場域編號" });
         }
 
-        const accountRole = adminAccount.role || (adminAccount.roleId
+        // 查角色確認 super_admin
+        const accountRole = adminAccount.roleId
           ? await db.query.roles.findFirst({ where: eq(roles.id, adminAccount.roleId) })
-          : null);
+          : null;
 
         if (accountRole?.systemRole !== "super_admin") {
           return res.status(400).json({ message: "非超級管理員請輸入場域編號" });
