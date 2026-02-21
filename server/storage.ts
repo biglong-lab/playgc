@@ -188,6 +188,30 @@ export interface IStorage {
   updateChapterProgress(id: string, data: Partial<InsertPlayerChapterProgress>): Promise<PlayerChapterProgress | undefined>;
   isChapterUnlocked(userId: string, chapterId: string): Promise<{ unlocked: boolean; reason?: string; detail?: Record<string, unknown> }>;
   unlockNextChapter(userId: string, gameId: string, completedChapterId: string): Promise<PlayerChapterProgress | null>;
+
+  // 購買/票券方法
+  getRedeemCodes(gameId: string): Promise<RedeemCode[]>;
+  getRedeemCodeByCode(code: string): Promise<RedeemCode | undefined>;
+  getRedeemCode(id: string): Promise<RedeemCode | undefined>;
+  createRedeemCode(data: InsertRedeemCode): Promise<RedeemCode>;
+  createRedeemCodes(data: InsertRedeemCode[]): Promise<RedeemCode[]>;
+  updateRedeemCode(id: string, data: Partial<InsertRedeemCode>): Promise<RedeemCode | undefined>;
+  deleteRedeemCode(id: string): Promise<void>;
+  incrementRedeemCodeUsage(id: string): Promise<void>;
+  getCodeUses(codeId: string): Promise<RedeemCodeUse[]>;
+  hasUserRedeemedCode(codeId: string, userId: string): Promise<boolean>;
+  createCodeUse(data: InsertRedeemCodeUse): Promise<RedeemCodeUse>;
+  getPurchasesByUser(userId: string): Promise<Purchase[]>;
+  getPurchasesByGame(gameId: string): Promise<Purchase[]>;
+  getUserGamePurchase(userId: string, gameId: string): Promise<Purchase | undefined>;
+  getUserChapterPurchase(userId: string, chapterId: string): Promise<Purchase | undefined>;
+  getPurchase(id: string): Promise<Purchase | undefined>;
+  createPurchase(data: InsertPurchase): Promise<Purchase>;
+  updatePurchase(id: string, data: Partial<InsertPurchase>): Promise<Purchase | undefined>;
+  getTransaction(id: string): Promise<PaymentTransaction | undefined>;
+  getTransactionByRecurSession(sessionId: string): Promise<PaymentTransaction | undefined>;
+  createTransaction(data: InsertPaymentTransaction): Promise<PaymentTransaction>;
+  updateTransaction(id: string, data: Partial<InsertPaymentTransaction>): Promise<PaymentTransaction | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
