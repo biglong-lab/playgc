@@ -58,7 +58,15 @@ export default function GamePlay() {
     queryKey: ["/api/games", gameId],
   });
 
-  const { data: existingSession } = useQuery<{ session: GameSession; progress: any } | null>({
+  const { data: existingSession } = useQuery<{
+    session: GameSession;
+    progress: {
+      score?: number;
+      inventory?: string[];
+      variables?: Record<string, unknown>;
+      currentPageId?: string;
+    } | null;
+  } | null>({
     queryKey: ["/api/sessions/active", gameId],
     queryFn: async () => {
       try {
