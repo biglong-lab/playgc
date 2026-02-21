@@ -69,9 +69,11 @@ export const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000,   // 5 分鐘後標記為過期
       gcTime: 10 * 60 * 1000,     // 10 分鐘後清除快取
       retry: 1,                    // 網路波動時重試 1 次
+      networkMode: "offlineFirst", // 離線時讓 Workbox SW 快取接管
     },
     mutations: {
       retry: false,
+      networkMode: "online",       // mutations 離線時不自動重試
     },
   },
 });
