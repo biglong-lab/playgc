@@ -5,14 +5,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { LocationSettingsSection } from "./page-config-shared";
+import { LocationSettingsSection, type EditorProps } from "./page-config-shared";
 
-interface TimeBombEditorProps {
-  config: Record<string, any>;
-  updateField: (field: string, value: any) => void;
+interface BombTask {
+  type: string;
+  question: string;
+  targetCount?: number;
+  answer?: string;
 }
 
-export default function TimeBombEditor({ config, updateField }: TimeBombEditorProps) {
+export default function TimeBombEditor({ config, updateField }: EditorProps) {
   return (
     <div className="space-y-4">
       <div>
