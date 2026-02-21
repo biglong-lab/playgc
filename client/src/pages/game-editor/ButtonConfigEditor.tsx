@@ -62,7 +62,7 @@ export default function ButtonConfigEditor({
                     size="icon"
                     className="text-destructive hover:text-destructive shrink-0"
                     onClick={() => {
-                      const newButtons = config.buttons.filter((_: any, idx: number) => idx !== i);
+                      const newButtons = (config.buttons as ButtonItem[]).filter((_: ButtonItem, idx: number) => idx !== i);
                       updateField("buttons", newButtons);
                     }}
                     data-testid={`config-button-delete-${i}`}
