@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function ChapterSelect() {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   const { data: game, isLoading: gameLoading } = useQuery<Game>({
     queryKey: ["/api/games", gameId],
