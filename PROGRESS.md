@@ -74,7 +74,8 @@
 - [x] 排行榜路由 (leaderboard) - 124 行
 - [x] 媒體路由 (media) - 208 行
 - [x] 地點路由 (locations) - 522 行
-- [x] 團隊路由 (teams) - 591 行
+- [x] 團隊路由 (teams) - 323 行
+- [x] 團隊生命週期路由 (team-lifecycle) - 284 行
 - [x] 團隊投票路由 (team-votes) - 270 行
 - [x] 團隊分數路由 (team-scores) - 106 行
 - [x] 管理端章節路由 (admin-chapters) - 177 行
