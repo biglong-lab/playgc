@@ -122,12 +122,27 @@ export default function GamePlay() {
       if (nextIndex < pages.length) {
         const nextPage = pages[nextIndex];
         if (nextPage && prev.sessionId) {
-          apiRequest("PATCH", `/api/sessions/${prev.sessionId}/progress`, {
+          const progressData = {
+            sessionId: prev.sessionId,
             pageId: nextPage.id,
             score: newScore,
             inventory: newInventory,
-            variables: prev.variables,
-          }).catch(() => {});
+            variables: prev.variables as Record<string, unknown>,
+          };
+          if (navigator.onLine) {
+            apiRequest("PATCH", `/api/sessions/${prev.sessionId}/progress`, {
+              pageId: nextPage.id,
+              score: newScore,
+              inventory: newInventory,
+              variables: prev.variables,
+            }).catch(() => {
+              // API 失敗時 fallback 到離線儲存
+              queueProgressUpdate(progressData);
+            });
+          } else {
+            // 離線：直接存 IndexedDB
+            queueProgressUpdate(progressData);
+          }
         }
         return { ...prev, score: newScore, inventory: newInventory, currentPageIndex: nextIndex };
       }
