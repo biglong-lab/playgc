@@ -91,6 +91,7 @@ function Router() {
         <Route path="/admin/games/:gameId/achievements">{() => <ProtectedAdminRoute><AchievementEditor /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId/settings">{() => <ProtectedAdminRoute><GameSettings /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId/tickets">{() => <ProtectedAdminRoute><AdminRedeemCodes /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/field-settings">{() => <ProtectedAdminRoute><FieldSettingsPage /></ProtectedAdminRoute>}</Route>
         {/* Admin Staff Routes - 場域管理員登入系統 */}
         <Route path="/admin-staff">{() => <Redirect to="/admin-staff/login" />}</Route>
         <Route path="/admin-staff/login" component={AdminLogin} />
