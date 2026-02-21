@@ -95,6 +95,35 @@
 
 ## 工作紀錄
 
+### 2026-02-21 (第二十四階段：程式碼品質清理 — 大檔案拆分 + any 型別消除)
+
+#### 修改 1：playerChapters.test.ts 拆分（975 → 3 檔 + helper）
+- [x] 新增 `server/__tests__/helpers/playerChapterSetup.ts` (75 行) — 共用 MockStorage 型別、工廠函式、常數
+- [x] 改寫 `server/__tests__/playerChapters.test.ts` (290 行) — GET 查詢類測試（15 個）
+- [x] 新增 `server/__tests__/playerChapterActions.test.ts` (323 行) — POST start + PATCH complete（15 個）
+- [x] 新增 `server/__tests__/playerChapterPurchase.test.ts` (353 行) — score_threshold 解鎖 + purchase（12 個）
+
+#### 修改 2：seed-fake-village.ts 拆分（758 → 3 檔）
+- [x] 新增 `scripts/seed-data/page-factories.ts` (179 行) — 12 個頁面配置工廠函式
+- [x] 新增 `scripts/seed-data/fake-village-data.ts` (415 行) — 章節定義、道具、團隊版差異
+- [x] 改寫 `scripts/seed-fake-village.ts` (174 行) — 純執行邏輯
+
+#### 修改 3：PageConfigEditor.tsx 拆分（676 → 2 檔）
+- [x] 新增 `client/src/pages/game-editor/page-config-inline-editors.tsx` (461 行) — 6 個子元件
+  - TextCardEditor、DialogueEditor、GpsMissionEditor、QrScanEditor、ChoiceVerifyEditor、VideoEditor
+- [x] 改寫 `client/src/pages/game-editor/PageConfigEditor.tsx` (234 行) — 純 switch 分發器
+- [x] 消除所有 `any` 型別 — `config: any` → `Record<string, unknown>` + 型別斷言
+
+#### 修改 4：GamePlay.tsx 型別修正
+- [x] `handleVariableUpdate` 參數 `value: any` → `value: unknown`
+- [x] 修復 TS18047: `existingSession.progress` null safety（提取局部變數）
+
+#### 修改 5：測試 mock 洩漏修復
+- [x] `resetStorageMocks()` — 對所有 11 個 storage mock 呼叫 `mockReset()`
+  - 修正 `vi.clearAllMocks()` 不重設 `mockResolvedValue` 的已知問題
+
+**測試結果**: 58 個測試檔案、860 個 Vitest 測試全部通過，TS 零錯誤
+
 ### 2026-02-21 (第二十三階段：型別安全強化 + teams.ts 拆分 + 測試補強)
 
 #### 修改 1：後端 `any` 型別消除
