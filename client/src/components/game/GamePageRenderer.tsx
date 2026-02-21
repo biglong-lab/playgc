@@ -52,7 +52,8 @@ export default function GamePageRenderer({
   inventory,
   score,
 }: GamePageRendererProps) {
-  const config = page.config as Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 動態分發器，config 從 DB JSON 傳給各元件
+  const config = page.config as any;
 
   // 記憶化 commonProps 避免每次渲染都建立新物件
   const commonProps = useMemo(() => ({
