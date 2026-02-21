@@ -51,6 +51,7 @@ import {
   Link2,
   Library,
   Sliders,
+  Ticket,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
