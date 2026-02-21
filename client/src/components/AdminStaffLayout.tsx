@@ -54,6 +54,7 @@ import {
   Ticket,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import FieldSelector from "@/components/FieldSelector";
 
 interface AdminPrincipal {
   id: string;
