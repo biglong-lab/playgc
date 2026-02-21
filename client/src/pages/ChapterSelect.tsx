@@ -20,6 +20,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import OptimizedImage from "@/components/shared/OptimizedImage";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ChapterSelect() {
   const { gameId } = useParams<{ gameId: string }>();
