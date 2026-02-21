@@ -1,7 +1,8 @@
 import { initializeApp, cert, getApps, getApp, App } from "firebase-admin/app";
 import { getAuth, DecodedIdToken } from "firebase-admin/auth";
-import type { Request, Response, NextFunction } from "express";
+import type { Response, NextFunction } from "express";
 import { storage } from "./storage";
+import type { AuthenticatedRequest } from "./routes/types";
 
 let firebaseAdmin: App | null = null;
 
