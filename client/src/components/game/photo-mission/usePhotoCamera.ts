@@ -7,7 +7,8 @@ export type PhotoMode =
   | "camera"
   | "preview"
   | "uploading"
-  | "verifying";
+  | "verifying"
+  | "ai_fail";
 
 export interface PhotoCameraState {
   mode: PhotoMode;
