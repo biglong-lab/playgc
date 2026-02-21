@@ -96,6 +96,35 @@
 
 ## 工作紀錄
 
+### 2026-02-21 (第二十六階段：程式碼品質持續改善 — any 清理 + GamePlay 重構)
+
+#### 修改 1：Server 端 any 型別消除（3 檔案 4 處）
+- [x] `adminAuth.ts` — `verifyToken(): any` → `AdminTokenPayload | null`（新增 AdminTokenPayload 介面）
+- [x] `adminAuth.ts` — `decoded: any` → `AdminTokenPayload | null`
+- [x] `admin-fields.ts` — `(data as any).codeLastChangedAt` → `data.codeLastChangedAt`（insertFieldSchema 已含此欄位）
+- [x] `locations.ts` — GPS 任務虛擬地點：`config as any` → `Record<string, unknown>` + 正確 Location 欄位名
+
+#### 修改 2：Client 端 game-editor any 型別統一治理（8 檔案）
+- [x] `page-config-shared.tsx` — 新增 `PageConfigValue`、`PageConfig`、`EditorProps` 共用型別
+- [x] 7 個編輯器改用 `EditorProps`：LockEditor, MotionChallengeEditor, ConditionalVerifyEditor, TimeBombEditor, VoteEditor, ButtonConfigEditor
+- [x] 每個元件內部集合型別具體化：`Fragment`、`BombTask`、`ButtonItem`
+- [x] 消除 `updateField: (field: string, value: any)` → `PageConfigValue`
+
+#### 修改 3：Client 端其他 any 消除（2 檔案 6 處）
+- [x] `admin-devices/index.tsx` — 3 個 mutation 參數：`data: any` → `Record<string, unknown>` / `{ r, g, b } | string`
+- [x] `MapView.tsx` — `error: any` → `Error` / `unknown`、`L: any` 加 eslint-disable 說明
+
+#### 修改 4：GamePlay.tsx 重構（541 → 306 行）
+- [x] 抽出 `useSessionManager` hook (212 行) — session 恢復/新建/replay 邏輯
+- [x] `handleCompletion` 函式獨立化，避免 `handlePageComplete` 超長
+- [x] 移除 7 個獨立 useState + useRef → 統一為 `SessionState` 物件
+- [x] 消除 stale closure 風險：ref 同步改在 hook 內部管理
+
+#### 修改 5：ErrorBoundary console.error 移除
+- [x] `ErrorBoundary.tsx` — 移除 2 處 `console.error`，錯誤資訊已在 state 中保留供 UI 顯示
+
+**測試結果**: 58 個測試檔案、860 個 Vitest 測試全部通過，TS 零錯誤
+
 ### 2026-02-21 (第二十五階段：any 型別全面清除 + 大檔案拆分 + Bug 修復)
 
 #### 修改 1：遊戲頁面元件 onVariableUpdate any → unknown（12 檔案）
