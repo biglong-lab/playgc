@@ -55,6 +55,8 @@
 - [x] 場域管理員登入 (JWT)
 - [x] 場域管理儀表板
 - [x] 場域管理 (Fields)
+- [x] 場域進階設定 (FieldSettings) — AI Key / 配額 / 功能開關 / 品牌 (Phase 31)
+- [x] 票券/收款管理 (TicketsOverview) — 統計總覽 + 各遊戲明細 (Phase 31)
 - [x] 角色管理 (Roles)
 - [x] 帳號管理 (Accounts)
 - [x] 稽核日誌 (Audit Logs)
