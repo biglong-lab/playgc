@@ -144,4 +144,114 @@ export function registerAdminFieldRoutes(app: Express) {
       res.status(500).json({ message: "Failed to update field" });
     }
   });
+
+  // ============================================================================
+  // Field Settings — 場域進階設定（AI Key、配額、功能開關）
+  // ============================================================================
+
+  // GET /api/admin/fields/:id/settings — 取得場域設定（Key 遮罩）
+  app.get("/api/admin/fields/:id/settings", requireAdminAuth, requirePermission("field:manage"), async (req, res) => {
+    try {
+      if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+      // 非 super_admin 只能存取自己的場域
+      if (req.admin.systemRole !== "super_admin" && req.params.id !== req.admin.fieldId) {
+        return res.status(403).json({ message: "無權存取此場域設定" });
+      }
+
+      const field = await db.query.fields.findFirst({
+        where: eq(fields.id, req.params.id),
+        columns: { settings: true },
+      });
+
+      if (!field) return res.status(404).json({ message: "場域不存在" });
+
+      const settings = parseFieldSettings(field.settings);
+
+      // 遮罩 API Key：只回傳是否已設定，不回傳明文
+      return res.json({
+        ...settings,
+        geminiApiKey: undefined,
+        hasGeminiApiKey: Boolean(settings.geminiApiKey),
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "取得設定失敗" });
+    }
+  });
+
+  // PATCH /api/admin/fields/:id/settings — 更新場域設定
+  app.patch("/api/admin/fields/:id/settings", requireAdminAuth, requirePermission("field:manage"), async (req, res) => {
+    try {
+      if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+      if (req.admin.systemRole !== "super_admin" && req.params.id !== req.admin.fieldId) {
+        return res.status(403).json({ message: "無權修改此場域設定" });
+      }
+
+      const field = await db.query.fields.findFirst({
+        where: eq(fields.id, req.params.id),
+        columns: { settings: true },
+      });
+
+      if (!field) return res.status(404).json({ message: "場域不存在" });
+
+      const currentSettings = parseFieldSettings(field.settings);
+      const body = req.body as Record<string, unknown>;
+
+      // 合併設定（不可變模式）
+      const updatedSettings: FieldSettings = { ...currentSettings };
+
+      // AI Key 處理：新值 → 加密存儲；空字串 → 清除
+      if (typeof body.geminiApiKey === "string") {
+        if (body.geminiApiKey.trim()) {
+          updatedSettings.geminiApiKey = encryptApiKey(body.geminiApiKey.trim());
+        } else {
+          updatedSettings.geminiApiKey = undefined;
+        }
+      }
+
+      // 布林開關
+      if (typeof body.enableAI === "boolean") updatedSettings.enableAI = body.enableAI;
+      if (typeof body.enablePayment === "boolean") updatedSettings.enablePayment = body.enablePayment;
+      if (typeof body.enableTeamMode === "boolean") updatedSettings.enableTeamMode = body.enableTeamMode;
+      if (typeof body.enableCompetitiveMode === "boolean") updatedSettings.enableCompetitiveMode = body.enableCompetitiveMode;
+
+      // 數值
+      if (typeof body.maxGames === "number") updatedSettings.maxGames = Math.max(0, Math.round(body.maxGames));
+      if (typeof body.maxConcurrentSessions === "number") {
+        updatedSettings.maxConcurrentSessions = Math.max(0, Math.round(body.maxConcurrentSessions));
+      }
+
+      // 品牌
+      if (typeof body.primaryColor === "string") updatedSettings.primaryColor = body.primaryColor;
+      if (typeof body.welcomeMessage === "string") updatedSettings.welcomeMessage = body.welcomeMessage;
+
+      await db.update(fields)
+        .set({ settings: updatedSettings, updatedAt: new Date() })
+        .where(eq(fields.id, req.params.id));
+
+      await logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "field:update_settings",
+        targetType: "field",
+        targetId: req.params.id,
+        fieldId: req.params.id,
+        metadata: {
+          updatedKeys: Object.keys(body),
+          apiKeyChanged: typeof body.geminiApiKey === "string",
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      // 回傳遮罩版本
+      return res.json({
+        ...updatedSettings,
+        geminiApiKey: undefined,
+        hasGeminiApiKey: Boolean(updatedSettings.geminiApiKey),
+      });
+    } catch (error) {
+      return res.status(500).json({ message: "更新設定失敗" });
+    }
+  });
 }
