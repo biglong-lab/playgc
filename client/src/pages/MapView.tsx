@@ -313,8 +313,9 @@ export default function MapView() {
       }
       visitLocationMutation.mutate(selectedLocation.id);
       setSelectedLocation(null);
-    } catch (error: any) {
-      toast({ title: "檢查失敗", description: error.message || "無法驗證位置", variant: "destructive" });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "無法驗證位置";
+      toast({ title: "檢查失敗", description: message, variant: "destructive" });
     }
   };
 
