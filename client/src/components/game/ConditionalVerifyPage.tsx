@@ -20,7 +20,7 @@ interface Condition {
   locationId?: number;
   scoreThreshold?: number;
   variableName?: string;
-  variableValue?: any;
+  variableValue?: unknown;
   description: string;
 }
 
@@ -28,13 +28,13 @@ interface ConditionalVerifyConfig {
   title?: string;
   instruction?: string;
   description?: string;
-  
+
   fragmentType?: 'numbers' | 'letters' | 'custom';
   fragmentCount?: number;
   fragments?: FragmentConfig[];
   targetCode?: string;
   verificationMode?: 'order_matters' | 'order_independent' | 'all_collected';
-  
+
   conditions?: Condition[];
   allRequired?: boolean;
   successMessage?: string;
@@ -52,8 +52,8 @@ interface ConditionalVerifyPageProps {
   config: ConditionalVerifyConfig;
   onComplete: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
   sessionId: string;
-  variables: Record<string, any>;
-  onVariableUpdate: (key: string, value: any) => void;
+  variables: Record<string, unknown>;
+  onVariableUpdate: (key: string, value: unknown) => void;
   inventory?: string[];
   score?: number;
   visitedLocations?: number[];

@@ -9,7 +9,7 @@ interface TextCardPageProps {
   onComplete: (reward?: { points?: number; items?: string[] }) => void;
   sessionId: string;
   variables: Record<string, any>;
-  onVariableUpdate: (key: string, value: any) => void;
+  onVariableUpdate: (key: string, value: unknown) => void;
 }
 
 export default function TextCardPage({ config, onComplete }: TextCardPageProps) {
