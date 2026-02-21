@@ -1,4 +1,5 @@
 // 頁面設定編輯器 - 各種頁面類型的設定表單（主分發器）
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
