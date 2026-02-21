@@ -41,7 +41,7 @@ function getFirebaseErrorCode(error: unknown): string | undefined {
 }
 
 function isEmbeddedBrowser(): boolean {
-  const userAgent = navigator.userAgent || navigator.vendor || (window as Record<string, unknown>).opera as string || "";
+  const userAgent = navigator.userAgent || navigator.vendor || (window as unknown as Record<string, string>).opera || "";
   const ua = userAgent.toLowerCase();
   
   const embeddedBrowserPatterns = [
