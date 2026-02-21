@@ -51,6 +51,7 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
         expectedAnswers: answersArray,
         context: config.aiContext,
         passingScore: config.aiPassingScore ?? 70,
+        gameId,
       });
       return response.json();
     },
