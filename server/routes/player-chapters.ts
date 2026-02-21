@@ -78,12 +78,16 @@ export function registerPlayerChapterRoutes(app: Express) {
           return res.status(401).json({ message: "需要登入" });
         }
 
-        const isUnlocked = await storage.isChapterUnlocked(
+        const unlockResult = await storage.isChapterUnlocked(
           userId,
           chapterId
         );
-        if (!isUnlocked) {
-          return res.status(403).json({ message: "章節尚未解鎖" });
+        if (!unlockResult.unlocked) {
+          return res.status(403).json({
+            message: "章節尚未解鎖",
+            reason: unlockResult.reason,
+            ...unlockResult.detail,
+          });
         }
 
         const chapterWithPages =
