@@ -78,6 +78,8 @@ vi.mock("@shared/schema", () => ({
   getTemplateById: vi.fn().mockReturnValue(null),
   pages: { id: "pages.id", gameId: "pages.gameId", pageOrder: "pages.pageOrder" },
   games: { id: "games.id", fieldId: "games.fieldId", createdAt: "games.createdAt" },
+  fields: { id: "fields.id", settings: "fields.settings" },
+  parseFieldSettings: vi.fn().mockReturnValue({}),
 }));
 
 vi.mock("drizzle-orm", () => ({
