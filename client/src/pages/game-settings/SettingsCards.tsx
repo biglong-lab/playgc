@@ -380,3 +380,83 @@ function TeamToggle({
     </div>
   );
 }
+
+// ==================== 定價設定卡片 ====================
+
+interface PricingCardProps {
+  state: PricingState;
+  canEdit: boolean;
+  onPricingTypeChange: (v: PricingType) => void;
+  onPriceChange: (v: string) => void;
+}
+
+export function PricingCard({
+  state,
+  canEdit,
+  onPricingTypeChange,
+  onPriceChange,
+}: PricingCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <DollarSign className="w-5 h-5" />
+          收費設定
+        </CardTitle>
+        <CardDescription>設定遊戲的收費方式和價格</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Label>收費模式</Label>
+          <Select
+            value={state.pricingType}
+            onValueChange={(v) => onPricingTypeChange(v as PricingType)}
+            disabled={!canEdit}
+          >
+            <SelectTrigger data-testid="select-pricing-type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="free">免費</SelectItem>
+              <SelectItem value="one_time">一次付費（解鎖全部）</SelectItem>
+              <SelectItem value="per_chapter">按章節收費</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {state.pricingType === "free" && "玩家可免費遊玩所有內容"}
+            {state.pricingType === "one_time" && "玩家付費一次即可解鎖全部章節"}
+            {state.pricingType === "per_chapter" && "玩家需個別購買每個章節"}
+          </p>
+        </div>
+
+        {state.pricingType === "one_time" && (
+          <div className="space-y-2">
+            <Label htmlFor="game-price">遊戲價格（新台幣）</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">NT$</span>
+              <Input
+                id="game-price"
+                type="number"
+                min="0"
+                value={state.price}
+                onChange={(e) => onPriceChange(e.target.value)}
+                disabled={!canEdit}
+                placeholder="例如 100"
+                className="max-w-32"
+                data-testid="input-game-price"
+              />
+            </div>
+          </div>
+        )}
+
+        {state.pricingType === "per_chapter" && (
+          <div className="p-3 bg-muted rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              按章節收費時，請在各章節設定中個別設定價格。
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
