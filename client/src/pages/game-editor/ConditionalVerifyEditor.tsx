@@ -4,20 +4,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Puzzle } from "lucide-react";
-import { LocationSettingsSection } from "./page-config-shared";
+import { LocationSettingsSection, type EditorProps } from "./page-config-shared";
 
-interface ConditionalVerifyEditorProps {
-  config: Record<string, any>;
-  updateField: (field: string, value: any) => void;
+interface Fragment {
+  id: string;
+  label: string;
+  value: string;
+  order: number;
 }
 
-export default function ConditionalVerifyEditor({ config, updateField }: ConditionalVerifyEditorProps) {
-  const fragments = config.fragments || [];
+export default function ConditionalVerifyEditor({ config, updateField }: EditorProps) {
+  const fragments = (config.fragments || []) as Fragment[];
 
-  const updateFragments = (newFragments: any[]) => {
+  const updateFragments = (newFragments: Fragment[]) => {
     updateField("fragments", newFragments);
     if (config.fragmentType !== 'custom') {
-      const targetCode = newFragments.map((f: any) => f.value).join('');
+      const targetCode = newFragments.map((f) => f.value).join('');
       updateField("targetCode", targetCode);
     }
   };
