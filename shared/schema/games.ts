@@ -59,6 +59,7 @@ export const games = pgTable("games", {
   pricingType: varchar("pricing_type", { length: 20 }).default("free"), // free | one_time | per_chapter
   price: integer("price"), // 一次付費金額（新台幣元）
   currency: varchar("currency", { length: 10 }).default("TWD"),
+  recurProductId: varchar("recur_product_id", { length: 200 }), // Recur.tw 產品 ID
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
