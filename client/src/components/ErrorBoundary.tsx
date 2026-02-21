@@ -29,12 +29,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+  componentDidCatch(_error: Error, errorInfo: React.ErrorInfo): void {
     this.setState({ errorInfo });
-
-    // 在生產環境可以發送錯誤報告到 Sentry 等服務
-    console.error("應用程式錯誤:", error);
-    console.error("錯誤堆疊:", errorInfo.componentStack);
+    // 錯誤資訊已儲存在 state 中，開發模式下會在 UI 上顯示
+    // 正式環境可整合 Sentry 等服務進行回報
   }
 
   handleReset = (): void => {
