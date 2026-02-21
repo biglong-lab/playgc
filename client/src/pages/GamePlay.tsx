@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
+import { queueProgressUpdate } from "@/lib/offlineStorage";
 import type { GameWithPages, Page, GameChapterWithPages } from "@shared/schema";
 
 import GameHeader from "@/components/shared/GameHeader";
