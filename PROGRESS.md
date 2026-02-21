@@ -94,8 +94,9 @@
 - [x] game-templates
 - [x] gameChapters, playerChapterProgress (Phase 1 章節系統)
 - [x] gameMatches, matchParticipants (Phase 2 對戰系統)
+- [x] redeemCodes, redeemCodeUses, purchases, paymentTransactions (Phase 27 付費系統)
 - [x] relations
-- [x] DB Migration 完成（37+ 資料表已同步）
+- [x] DB Migration 完成（41+ 資料表已同步）
 
 ## 工作紀錄
 
