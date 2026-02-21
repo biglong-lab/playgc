@@ -318,13 +318,17 @@ export default function AdminStaffLayout({ children }: AdminStaffLayoutProps) {
         
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between gap-2 p-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <SidebarTrigger data-testid="button-sidebar-toggle" />
             <div className="flex items-center gap-2">
-              {admin?.fieldCode && (
-                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                  {admin.fieldCode}
-                </span>
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              {admin && (
+                <FieldSelector
+                  currentFieldId={admin.fieldId}
+                  currentFieldName={admin.fieldName}
+                  isSuperAdmin={admin.systemRole === "super_admin"}
+                />
               )}
+            </div>
+            <div className="flex items-center gap-2">
               <ThemeToggle />
             </div>
           </header>
