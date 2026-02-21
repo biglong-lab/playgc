@@ -244,7 +244,8 @@ export default function GamePlay() {
       }
       
       if (existingSession.progress?.currentPageId) {
-        const pageIndex = activePages.findIndex(p => p.id === existingSession.progress.currentPageId);
+        const savedPageId = existingSession.progress.currentPageId;
+        const pageIndex = activePages.findIndex(p => p.id === savedPageId);
         if (pageIndex !== -1) {
           setCurrentPageIndex(pageIndex);
         }
