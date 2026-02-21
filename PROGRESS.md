@@ -136,7 +136,7 @@
 #### 測試更新
 - [x] 更新 `auth.test.ts` — 密碼登入測試改為驗證 410 Gone 行為（2 測試）
 - [x] 新增 super_admin 空 fieldCode 測試：無帳號回傳 404、非 super_admin 回傳 400
-- [x] 59 個測試檔案、871 個測試全部通過
+- [x] 59 個測試檔案、870 個測試全部通過
 
 **刪除檔案**: `client/src/components/admin-login/PasswordForm.tsx`
 **新增檔案**: `client/src/components/FieldSelector.tsx`
