@@ -350,7 +350,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     clearInterval(heartbeatInterval);
   });
 
-  mqttService.setHitBroadcastHandler((sessionId: string, record: any) => {
+  mqttService.setHitBroadcastHandler((sessionId: string, record: unknown) => {
     broadcastToSession(sessionId, {
       type: "shooting_hit",
       record,
