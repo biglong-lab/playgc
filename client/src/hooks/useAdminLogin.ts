@@ -114,16 +114,11 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     }
   }, [isAuthenticated]);
 
-  // 處理場域編號提交
+  // 處理場域編號提交（允許空場域碼，super_admin 可跳過）
   const handleFieldSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
     firebaseLoginMutation.reset();
-
-    if (!fieldCode.trim()) {
-      toast({ title: "請輸入場域編號", variant: "destructive" });
-      return;
-    }
 
     if (isAuthenticated) {
       firebaseLoginMutation.mutate();
