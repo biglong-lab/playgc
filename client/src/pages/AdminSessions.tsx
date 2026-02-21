@@ -362,6 +362,34 @@ export default function AdminSessions() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={showCleanupConfirm} onOpenChange={setShowCleanupConfirm}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-destructive" />
+              清理卡住的場次
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            將所有超過 24 小時仍在「進行中」的場次標記為「已放棄」。
+            目前有 <span className="font-bold text-foreground">{activeSessions}</span> 個進行中的場次。
+          </p>
+          <DialogFooter className="gap-2">
+            <DialogClose asChild>
+              <Button variant="outline">取消</Button>
+            </DialogClose>
+            <Button
+              variant="destructive"
+              onClick={() => cleanupMutation.mutate(24)}
+              disabled={cleanupMutation.isPending}
+              data-testid="button-confirm-cleanup"
+            >
+              {cleanupMutation.isPending ? "清理中..." : "確認清理"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
