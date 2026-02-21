@@ -176,28 +176,18 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     step,
     setStep,
     loginError,
-    username,
-    setUsername,
-    password,
-    setPassword,
-    showPassword,
-    setShowPassword,
     isGoogleLoading,
     firebaseUser,
     isAuthenticated,
 
     // Mutation 狀態
     isFirebaseLoginPending: firebaseLoginMutation.isPending,
-    isPasswordLoginPending: passwordLoginMutation.isPending,
 
     // 事件處理
     handleFieldSubmit,
     handleGoogleLogin,
     handleSignOut,
-    handlePasswordSubmit,
-    switchToPasswordLogin,
     backToFieldInput,
-    backToLoginChoice,
     recheckAuthorization,
   };
 }
