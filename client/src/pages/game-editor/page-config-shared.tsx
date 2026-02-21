@@ -6,9 +6,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Gift, MapPin } from "lucide-react";
 import ItemRewardPicker from "@/components/ItemRewardPicker";
 
-export interface SharedSectionProps {
-  config: Record<string, any>;
-  updateField: (field: string, value: any) => void;
+// 頁面設定值型別 — 涵蓋所有編輯器欄位的可能值
+export type PageConfigValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Record<string, unknown>
+  | PageConfigValue[];
+
+// 頁面設定 config 型別（JSON 動態結構）
+export type PageConfig = Record<string, unknown>;
+
+// 通用編輯器 Props
+export interface EditorProps {
+  config: PageConfig;
+  updateField: (field: string, value: PageConfigValue) => void;
+}
+
+export interface SharedSectionProps extends EditorProps {
   gameId: string;
 }
 
