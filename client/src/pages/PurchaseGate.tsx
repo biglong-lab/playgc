@@ -14,6 +14,7 @@ import type { Game } from "@shared/schema";
 export default function PurchaseGate() {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const redeemMutation = useRedeemCode();
 
   const { data: game } = useQuery<Game>({
@@ -22,6 +23,25 @@ export default function PurchaseGate() {
   });
 
   const { data: access, refetch } = useGameAccess(gameId);
+
+  // 線上付款 mutation
+  const checkoutMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", `/api/games/${gameId}/checkout`);
+      return res.json() as Promise<{ checkoutUrl: string }>;
+    },
+    onSuccess: (data) => {
+      // 重導向到 Recur 付款頁面
+      window.location.href = data.checkoutUrl;
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "付款失敗",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // 已有存取權 → 導向遊戲
   if (access?.hasAccess) {
