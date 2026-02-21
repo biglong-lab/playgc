@@ -76,6 +76,8 @@ export default function PageConfigEditor({
     </>
   );
 
+  // 渲染頁面特定設定 + 通用 onCompleteActions 區段
+  const renderPageConfig = () => {
   switch (page.pageType) {
     case "text_card":
       return (
