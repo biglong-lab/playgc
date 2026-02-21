@@ -62,6 +62,7 @@ import { deviceStorageMethods } from "./storage/device-storage";
 import { locationStorageMethods } from "./storage/location-storage";
 import { leaderboardStorageMethods } from "./storage/leaderboard-storage";
 import { chapterStorageMethods } from "./storage/chapter-storage";
+import { purchaseStorageMethods } from "./storage/purchase-storage";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
