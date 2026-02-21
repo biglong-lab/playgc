@@ -13,6 +13,8 @@ import TimeBombEditor from "./TimeBombEditor";
 import LockEditor from "./LockEditor";
 import MotionChallengeEditor from "./MotionChallengeEditor";
 import VoteEditor from "./VoteEditor";
+import FlowRouterEditor from "./FlowRouterEditor";
+import OnCompleteActionsEditor from "./OnCompleteActionsEditor";
 import { RewardsSection, LocationSettingsSection } from "./page-config-shared";
 import {
   TextCardEditor,
