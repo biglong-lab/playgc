@@ -381,7 +381,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
-  function broadcastToMatch(matchId: string, message: any) {
+  function broadcastToMatch(matchId: string, message: WsBroadcastMessage) {
     const matchClientSet = matchClients.get(matchId);
     if (matchClientSet) {
       const payload = JSON.stringify(message);
