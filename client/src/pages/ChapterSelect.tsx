@@ -16,6 +16,8 @@ import {
   Star,
   BookOpen,
   Loader2,
+  Coins,
+  ShoppingCart,
 } from "lucide-react";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 
