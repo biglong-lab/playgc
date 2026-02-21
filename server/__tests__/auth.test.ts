@@ -129,50 +129,27 @@ describe("認證路由 (auth)", () => {
   });
 
   // ===========================================
-  // POST /api/admin/login - 管理員帳密登入
+  // POST /api/admin/login - 密碼登入已停用 (410 Gone)
   // ===========================================
   describe("POST /api/admin/login", () => {
-    it("缺少欄位時回傳 400", async () => {
+    it("任何請求都回傳 410 Gone（密碼登入已停用）", async () => {
       const app = createApp();
-      const res = await request(app)
-        .post("/api/admin/login")
-        .send({ fieldCode: "F001" }); // 缺少 username, password
-
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("請填寫場域編號、帳號和密碼");
-    });
-
-    it("登入失敗時回傳 401", async () => {
-      const app = createApp();
-      mockAdminLogin.mockResolvedValue({
-        success: false,
-        error: "帳號或密碼錯誤",
-      });
-
-      const res = await request(app)
-        .post("/api/admin/login")
-        .send({ fieldCode: "F001", username: "admin", password: "wrong" });
-
-      expect(res.status).toBe(401);
-      expect(res.body.message).toBe("帳號或密碼錯誤");
-    });
-
-    it("登入成功時回傳 token 和 admin 資料", async () => {
-      const app = createApp();
-      mockAdminLogin.mockResolvedValue({
-        success: true,
-        token: "admin-jwt-token",
-        admin: { id: "admin-1", displayName: "Admin" },
-      });
-
       const res = await request(app)
         .post("/api/admin/login")
         .send({ fieldCode: "F001", username: "admin", password: "correct" });
 
-      expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body.token).toBe("admin-jwt-token");
-      expect(res.body.admin.id).toBe("admin-1");
+      expect(res.status).toBe(410);
+      expect(res.body.message).toBe("密碼登入已停用，請使用 Google 帳號登入");
+      expect(res.body.migration).toBeDefined();
+    });
+
+    it("空 body 也回傳 410 Gone", async () => {
+      const app = createApp();
+      const res = await request(app)
+        .post("/api/admin/login")
+        .send({});
+
+      expect(res.status).toBe(410);
     });
   });
 
