@@ -117,6 +117,21 @@ export const sessionStorageMethods = {
     return updated;
   },
 
+  /** 批次放棄超時場次（超過 thresholdHours 小時仍在 playing 的場次） */
+  async abandonStaleSessions(thresholdHours: number): Promise<GameSession[]> {
+    const cutoff = new Date(Date.now() - thresholdHours * 60 * 60 * 1000);
+    return db
+      .update(gameSessions)
+      .set({ status: "abandoned", completedAt: new Date() })
+      .where(
+        and(
+          eq(gameSessions.status, "playing"),
+          lt(gameSessions.startedAt, cutoff),
+        ),
+      )
+      .returning();
+  },
+
   // ===== 玩家進度 =====
 
   /** 取得工作階段的所有玩家進度 */
