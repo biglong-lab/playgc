@@ -357,7 +357,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     });
   });
 
-  function broadcastToSession(sessionId: string, message: any) {
+  function broadcastToSession(sessionId: string, message: WsBroadcastMessage) {
     const sessionClients = clients.get(sessionId);
     if (sessionClients) {
       const payload = JSON.stringify(message);
