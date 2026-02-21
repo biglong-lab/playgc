@@ -83,6 +83,9 @@
 - [x] 玩家端章節路由 (player-chapters) - 271 行
 - [x] 對戰路由 (matches) - 392 行（含 recover 端點）
 - [x] 接力路由 (relay) - 199 行
+- [x] 兌換碼管理路由 (admin-redeem-codes) - 235 行
+- [x] 購買管理路由 (admin-purchases) - 133 行
+- [x] 玩家購買路由 (player-purchases) - 247 行
 - [x] WebSocket 即時通訊 (含 match 廣播)
 - [x] MQTT 服務
 
