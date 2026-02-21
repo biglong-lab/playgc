@@ -64,7 +64,7 @@ export function RewardsSection({ config, updateField, gameId }: SharedSectionPro
 export function LocationSettingsSection({ config, updateField }: Omit<SharedSectionProps, 'gameId'>) {
   const locationSettings = config.locationSettings || { enabled: false };
 
-  const updateLocationSettings = (field: string, value: any) => {
+  const updateLocationSettings = (field: string, value: PageConfigValue) => {
     updateField("locationSettings", {
       ...locationSettings,
       [field]: value
