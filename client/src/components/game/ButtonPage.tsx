@@ -9,8 +9,8 @@ interface ButtonPageProps {
   config: ButtonConfig;
   onComplete: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
   sessionId: string;
-  variables: Record<string, any>;
-  onVariableUpdate: (key: string, value: any) => void;
+  variables: Record<string, unknown>;
+  onVariableUpdate: (key: string, value: unknown) => void;
 }
 
 export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
