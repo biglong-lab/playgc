@@ -236,14 +236,14 @@ export async function resetPassword(email: string) {
   try {
     await sendPasswordResetEmail(auth, email);
     return true;
-  } catch (error: any) {
-    
-    if (error?.code === "auth/invalid-email") {
+  } catch (error: unknown) {
+    const code = getFirebaseErrorCode(error);
+    if (code === "auth/invalid-email") {
       throw new Error("電子郵件格式無效");
-    } else if (error?.code === "auth/user-not-found") {
+    } else if (code === "auth/user-not-found") {
       throw new Error("找不到此電子郵件帳號");
     }
-    
+
     throw new Error("發送重設郵件失敗，請重試");
   }
 }
