@@ -489,7 +489,7 @@ class MqttService {
   }
 
   // Batch Operations
-  broadcastToAllDevices(command: string, data: any = {}): void {
+  broadcastToAllDevices(command: string, data: Record<string, unknown> = {}): void {
     const topic = "jiachun/commands/broadcast";
     const message = {
       command,
