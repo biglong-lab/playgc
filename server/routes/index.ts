@@ -21,11 +21,15 @@ import { registerAdminRedeemCodeRoutes } from "./admin-redeem-codes";
 import { registerAdminPurchaseRoutes } from "./admin-purchases";
 import { registerPlayerPurchaseRoutes } from "./player-purchases";
 import { registerAdminSessionRoutes } from "./admin-sessions";
+import { registerRecurWebhookRoutes } from "./webhook-recur";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // Webhook 路由必須在 adminAuthMiddleware 之前（外部服務呼叫，用自己的簽名驗證）
+  registerRecurWebhookRoutes(app);
+
   app.use(adminAuthMiddleware);
 
   // WebSocket 設定
