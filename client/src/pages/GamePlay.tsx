@@ -37,7 +37,7 @@ export default function GamePlay() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [inventory, setInventory] = useState<string[]>([]);
-  const [variables, setVariables] = useState<Record<string, any>>({});
+  const [variables, setVariables] = useState<Record<string, unknown>>({});
   const [showChat, setShowChat] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
