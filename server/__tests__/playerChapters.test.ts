@@ -223,7 +223,7 @@ describe("玩家章節路由", () => {
     });
 
     it("章節未解鎖回傳 403", async () => {
-      mockStorage.isChapterUnlocked.mockResolvedValue(false);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: false, reason: "locked" });
 
       const app = createTestApp();
       const res = await request(app)
@@ -294,7 +294,7 @@ describe("玩家章節路由", () => {
     });
 
     it("章節未解鎖回傳 403", async () => {
-      mockStorage.isChapterUnlocked.mockResolvedValue(false);
+      mockStorage.isChapterUnlocked.mockResolvedValue({ unlocked: false, reason: "locked" });
 
       const app = createTestApp();
       const res = await request(app)
