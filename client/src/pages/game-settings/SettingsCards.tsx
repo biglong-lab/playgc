@@ -7,11 +7,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   MapPin, Crosshair, Navigation, Users, MessageCircle,
-  Mic, Map, Trophy, Settings,
+  Mic, Map, Trophy, Settings, DollarSign,
 } from "lucide-react";
 import type {
-  LocationLockState, TeamModeState, ChapterState,
-  GameMode, TeamScoreMode, GameStructure, ChapterUnlockMode,
+  LocationLockState, TeamModeState, ChapterState, PricingState,
+  GameMode, TeamScoreMode, GameStructure, ChapterUnlockMode, PricingType,
 } from "./useGameSettings";
 
 // ==================== 地點鎖定卡片 ====================
