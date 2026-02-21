@@ -106,6 +106,18 @@ const AUTH_HEADER = { Authorization: "Bearer valid-token" };
 describe("玩家章節路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 重設所有 storage mock 的預設回傳值，避免測試間洩漏
+    mockStorage.getGame.mockReset();
+    mockStorage.getChapters.mockReset();
+    mockStorage.getChapter.mockReset();
+    mockStorage.getChapterWithPages.mockReset();
+    mockStorage.isChapterUnlocked.mockReset();
+    mockStorage.getPlayerChapterProgress.mockReset();
+    mockStorage.getChapterProgressByChapter.mockReset();
+    mockStorage.createChapterProgress.mockReset();
+    mockStorage.updateChapterProgress.mockReset();
+    mockStorage.unlockNextChapter.mockReset();
+    mockStorage.getSession.mockReset();
   });
 
   // ======================================================================
