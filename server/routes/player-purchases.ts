@@ -1,4 +1,4 @@
-// 玩家端購買路由 - 兌換碼兌換、存取權查詢、購買記錄
+// 玩家端購買路由 - 兌換碼兌換、存取權查詢、購買記錄、線上付款
 import type { Express } from "express";
 import { storage } from "../storage";
 import { z } from "zod";
@@ -8,6 +8,10 @@ import type { AuthenticatedRequest } from "./types";
 import {
   isValidCodeFormat,
 } from "../utils/redeem-code-generator";
+import {
+  createCheckoutSession,
+  isRecurConfigured,
+} from "../services/recur-client";
 
 // 兌換碼輸入驗證
 const redeemSchema = z.object({
