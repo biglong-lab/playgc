@@ -191,20 +191,23 @@ export const chapterStorageMethods = {
     return updated;
   },
 
-  /** 檢查章節是否已解鎖 */
+  /** 檢查章節是否已解鎖（含 score_threshold / paid 驗證） */
   async isChapterUnlocked(
     userId: string,
     chapterId: string
-  ): Promise<boolean> {
+  ): Promise<{ unlocked: boolean; reason?: string; detail?: Record<string, unknown> }> {
     const [chapter] = await db
       .select()
       .from(gameChapters)
       .where(eq(gameChapters.id, chapterId));
-    if (!chapter) return false;
+    if (!chapter) return { unlocked: false, reason: "chapter_not_found" };
 
-    // free 類型章節永遠解鎖
-    if (chapter.unlockType === "free") return true;
+    // free 類型或第一章永遠解鎖
+    if (chapter.unlockType === "free" || chapter.chapterOrder === 1) {
+      return { unlocked: true };
+    }
 
+    // 已有進度且非 locked 狀態 → 已解鎖
     const [progress] = await db
       .select()
       .from(playerChapterProgress)
@@ -214,14 +217,46 @@ export const chapterStorageMethods = {
           eq(playerChapterProgress.chapterId, chapterId)
         )
       );
-
-    if (!progress) {
-      // 第一章預設解鎖
-      if (chapter.chapterOrder === 1) return true;
-      return false;
+    if (progress && progress.status !== "locked") {
+      return { unlocked: true };
     }
 
-    return progress.status !== "locked";
+    // score_threshold：檢查玩家在此遊戲的總最佳分數
+    if (chapter.unlockType === "score_threshold") {
+      const config = chapter.unlockConfig as { requiredScore?: number } | null;
+      const requiredScore = config?.requiredScore ?? 0;
+      const allProgress = await db
+        .select()
+        .from(playerChapterProgress)
+        .where(
+          and(
+            eq(playerChapterProgress.userId, userId),
+            eq(playerChapterProgress.gameId, chapter.gameId)
+          )
+        );
+      const totalBestScore = allProgress.reduce((sum, p) => sum + (p.bestScore ?? 0), 0);
+      if (totalBestScore >= requiredScore) {
+        return { unlocked: true };
+      }
+      return {
+        unlocked: false,
+        reason: "score_insufficient",
+        detail: { requiredScore, currentScore: totalBestScore },
+      };
+    }
+
+    // paid：檢查玩家是否已付費（進度存在且非 locked）
+    if (chapter.unlockType === "paid") {
+      const config = chapter.unlockConfig as { price?: number } | null;
+      const price = config?.price ?? 0;
+      return {
+        unlocked: false,
+        reason: "payment_required",
+        detail: { price },
+      };
+    }
+
+    return { unlocked: false, reason: "locked" };
   },
 
   /** 完成章節後解鎖下一章 */
