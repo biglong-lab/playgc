@@ -52,8 +52,7 @@ export default function GamePageRenderer({
   inventory,
   score,
 }: GamePageRendererProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const config = page.config as any;
+  const config = page.config as Record<string, unknown>;
 
   // 記憶化 commonProps 避免每次渲染都建立新物件
   const commonProps = useMemo(() => ({
