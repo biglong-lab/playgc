@@ -22,6 +22,7 @@ export const PAGE_TYPES = [
   { value: "lock", label: "密碼鎖", icon: Lock, color: "bg-amber-500/20 text-amber-400" },
   { value: "motion_challenge", label: "體感挑戰", icon: Smartphone, color: "bg-violet-500/20 text-violet-400" },
   { value: "vote", label: "隊伍投票", icon: Vote, color: "bg-emerald-500/20 text-emerald-400" },
+  { value: "flow_router", label: "流程路由", icon: GitBranch, color: "bg-gray-500/20 text-gray-400" },
 ] as const;
 
 export const PAGE_TEMPLATES = [
