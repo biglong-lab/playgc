@@ -129,7 +129,7 @@ export async function optionalAuth(
       const user = await storage.getUser(userId);
       
       if (user) {
-        (req as any).user = {
+        req.user = {
           claims: {
             sub: userId,
           },
