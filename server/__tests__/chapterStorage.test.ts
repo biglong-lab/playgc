@@ -324,7 +324,7 @@ describe("chapterStorageMethods", () => {
 
       const result = await chapterStorageMethods.isChapterUnlocked("user-1", "ch-1");
 
-      expect(result).toBe(true);
+      expect(result.unlocked).toBe(true);
     });
 
     it("第一章預設解鎖（無進度記錄）", async () => {
@@ -337,7 +337,7 @@ describe("chapterStorageMethods", () => {
 
       const result = await chapterStorageMethods.isChapterUnlocked("user-1", "ch-1");
 
-      expect(result).toBe(true);
+      expect(result.unlocked).toBe(true);
     });
 
     it("非第一章且無進度 → 未解鎖", async () => {
@@ -349,7 +349,7 @@ describe("chapterStorageMethods", () => {
 
       const result = await chapterStorageMethods.isChapterUnlocked("user-1", "ch-2");
 
-      expect(result).toBe(false);
+      expect(result.unlocked).toBe(false);
     });
 
     it("有進度且非 locked → 已解鎖", async () => {
@@ -363,7 +363,7 @@ describe("chapterStorageMethods", () => {
 
       const result = await chapterStorageMethods.isChapterUnlocked("user-1", "ch-2");
 
-      expect(result).toBe(true);
+      expect(result.unlocked).toBe(true);
     });
 
     it("有進度但 locked → 未解鎖", async () => {
@@ -377,7 +377,7 @@ describe("chapterStorageMethods", () => {
 
       const result = await chapterStorageMethods.isChapterUnlocked("user-1", "ch-2");
 
-      expect(result).toBe(false);
+      expect(result.unlocked).toBe(false);
     });
 
     it("章節不存在 → false", async () => {
@@ -385,7 +385,7 @@ describe("chapterStorageMethods", () => {
 
       const result = await chapterStorageMethods.isChapterUnlocked("user-1", "not-exist");
 
-      expect(result).toBe(false);
+      expect(result.unlocked).toBe(false);
     });
   });
 
