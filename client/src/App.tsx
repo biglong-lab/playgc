@@ -117,12 +117,15 @@ function Router() {
 }
 
 function App() {
+  const { isOnline } = useOfflineSync();
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <I18nProvider>
             <TooltipProvider>
+              <OfflineBanner isOnline={isOnline} />
               <Toaster />
               <Router />
             </TooltipProvider>
