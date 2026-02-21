@@ -22,6 +22,7 @@ vi.mock("@/components/game/TimeBombPage", () => ({ default: () => <div data-test
 vi.mock("@/components/game/LockPage", () => ({ default: () => <div data-testid="lock" /> }));
 vi.mock("@/components/game/MotionChallengePage", () => ({ default: () => <div data-testid="motion_challenge" /> }));
 vi.mock("@/components/game/VotePage", () => ({ default: () => <div data-testid="vote" /> }));
+vi.mock("@/components/game/FlowRouterPage", () => ({ default: () => <div data-testid="flow_router" /> }));
 
 import GamePageRenderer from "@/components/game/GamePageRenderer";
 
