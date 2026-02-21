@@ -20,6 +20,7 @@ import { registerMatchRoutes } from "./matches";
 import { registerAdminRedeemCodeRoutes } from "./admin-redeem-codes";
 import { registerAdminPurchaseRoutes } from "./admin-purchases";
 import { registerPlayerPurchaseRoutes } from "./player-purchases";
+import { registerAdminSessionRoutes } from "./admin-sessions";
 
 export async function registerRoutes(
   httpServer: Server,
