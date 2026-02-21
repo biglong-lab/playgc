@@ -279,10 +279,10 @@ class MqttService {
 
   private async handleStatusUpdate(deviceId: string, statusData: DeviceStatusData) {
     try {
-      const updateData: any = {
+      const updateData: Partial<Pick<ArduinoDevice, "status" | "batteryLevel" | "firmwareVersion" | "ipAddress">> = {
         status: statusData.status || "unknown",
       };
-      
+
       if (statusData.batteryLevel !== undefined) {
         updateData.batteryLevel = statusData.batteryLevel;
       }
@@ -292,7 +292,7 @@ class MqttService {
       if (statusData.ipAddress) {
         updateData.ipAddress = statusData.ipAddress;
       }
-      
+
       await storage.updateArduinoDeviceByDeviceId(deviceId, updateData);
       await this.logDeviceActivity(deviceId, "status", `Status changed to: ${statusData.status}`);
     } catch (error) {
