@@ -90,7 +90,7 @@ export default function ItemEditor() {
 
   useEffect(() => {
     if (selectedItem) {
-      const effect = (selectedItem.effect as any) || { type: "none", value: 0, description: "" };
+      const effect = (selectedItem.effect as Record<string, unknown>) || { type: "none", value: 0, description: "" };
       setFormData({
         name: selectedItem.name,
         description: selectedItem.description || "",
