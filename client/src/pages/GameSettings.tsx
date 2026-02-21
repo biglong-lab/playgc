@@ -80,6 +80,13 @@ export default function GameSettings() {
           onReplayChange={settings.setAllowChapterReplay}
         />
 
+        <PricingCard
+          state={settings.pricing}
+          canEdit={canEdit}
+          onPricingTypeChange={settings.setPricingType}
+          onPriceChange={settings.setPrice}
+        />
+
         <TeamModeCard
           state={settings.teamMode}
           canEdit={canEdit}
