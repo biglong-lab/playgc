@@ -48,8 +48,9 @@ export async function verifyPhoto(
   imageUrl: string,
   targetKeywords: string[],
   instruction?: string,
+  apiKey?: string,
 ): Promise<PhotoVerifyResult> {
-  const client = getClient();
+  const client = getClient(apiKey);
   const model = client.getGenerativeModel({
     model: "gemini-2.0-flash",
     generationConfig: {
