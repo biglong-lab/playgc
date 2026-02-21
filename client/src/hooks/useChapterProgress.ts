@@ -8,6 +8,11 @@ interface ChapterWithProgress extends GameChapter {
   bestScore: number;
   completedAt: string | null;
   lastPlayedAt: string | null;
+  unlockDetail?: {
+    requiredScore?: number;
+    currentScore?: number;
+    price?: number;
+  };
 }
 
 export function useChapterProgress(gameId: string | undefined) {
