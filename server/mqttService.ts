@@ -308,7 +308,7 @@ class MqttService {
     await this.logDeviceActivity(deviceId, "response", `Command response: ${JSON.stringify(responseData)}`);
   }
 
-  private async handleConfigUpdate(deviceId: string, configData: any) {
+  private async handleConfigUpdate(deviceId: string, configData: unknown) {
     await this.logDeviceActivity(deviceId, "config", `Config updated: ${JSON.stringify(configData)}`);
   }
 
