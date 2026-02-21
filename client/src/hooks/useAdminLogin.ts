@@ -99,12 +99,12 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     },
   });
 
-  // 自動觸發 Firebase 登入驗證
+  // 自動觸發 Firebase 登入驗證（fieldCode 可空，super_admin 不需要場域碼）
   useEffect(() => {
-    if (isAuthenticated && step === "firebase" && fieldCode && !loginError && firebaseLoginMutation.status === "idle") {
+    if (isAuthenticated && step === "firebase" && !loginError && firebaseLoginMutation.status === "idle") {
       firebaseLoginMutation.mutate();
     }
-  }, [isAuthenticated, step, fieldCode, loginError, firebaseLoginMutation.status]);
+  }, [isAuthenticated, step, loginError, firebaseLoginMutation.status]);
 
   // 登出時清除錯誤
   useEffect(() => {
