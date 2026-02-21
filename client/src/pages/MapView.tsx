@@ -67,13 +67,13 @@ export default function MapView() {
   const pagesWithLocations: PageWithLocation[] = useMemo(() => {
     return pages
       .filter((page) => {
-        const config = page.config as any;
-        const ls = config?.locationSettings;
+        const config = page.config as Record<string, unknown>;
+        const ls = config?.locationSettings as Record<string, unknown> | undefined;
         return ls?.enabled && ls?.showOnMap && ls?.latitude && ls?.longitude;
       })
       .map((page) => ({
         page,
-        locationSettings: (page.config as any).locationSettings as PageLocationSettings,
+        locationSettings: (page.config as Record<string, unknown>).locationSettings as PageLocationSettings,
       }));
   }, [pages]);
 
