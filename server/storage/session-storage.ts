@@ -1,5 +1,5 @@
 // 遊戲工作階段、玩家進度、聊天訊息相關的資料庫儲存方法
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, lt, sql } from "drizzle-orm";
 import { db } from "../db";
 import {
   gameSessions,
