@@ -17,6 +17,91 @@ const grantAccessSchema = z.object({
 
 export function registerAdminPurchaseRoutes(app: Express) {
   // ========================================================================
+  // 票券/收款統計總覽
+  // ========================================================================
+  app.get(
+    "/api/admin/tickets/summary",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+        const fieldId = req.admin.systemRole === "super_admin"
+          ? (req.query.fieldId as string || req.admin.fieldId)
+          : req.admin.fieldId;
+
+        // 取得場域所有遊戲的收款統計
+        const gameStats = await db
+          .select({
+            gameId: games.id,
+            title: games.title,
+            revenue: sql<number>`COALESCE(SUM(CASE WHEN ${purchases.status} = 'completed' THEN ${purchases.amount} ELSE 0 END), 0)`.as("revenue"),
+            purchaseCount: sql<number>`COUNT(CASE WHEN ${purchases.status} = 'completed' THEN 1 END)`.as("purchase_count"),
+          })
+          .from(games)
+          .leftJoin(purchases, eq(purchases.gameId, games.id))
+          .where(eq(games.fieldId, fieldId))
+          .groupBy(games.id, games.title);
+
+        // 兌換碼統計
+        const codeStats = await db
+          .select({
+            gameId: redeemCodes.gameId,
+            totalCodes: sql<number>`COUNT(DISTINCT ${redeemCodes.id})`.as("total_codes"),
+            activeCodes: sql<number>`COUNT(DISTINCT CASE WHEN ${redeemCodes.isActive} = true THEN ${redeemCodes.id} END)`.as("active_codes"),
+            usedCount: sql<number>`COUNT(DISTINCT ${redeemCodeUses.id})`.as("used_count"),
+          })
+          .from(redeemCodes)
+          .leftJoin(redeemCodeUses, eq(redeemCodeUses.codeId, redeemCodes.id))
+          .where(eq(redeemCodes.fieldId, fieldId))
+          .groupBy(redeemCodes.gameId);
+
+        // 合併統計
+        const codeMap = new Map(codeStats.map((c) => [c.gameId, c]));
+
+        const gameList = gameStats.map((g) => {
+          const codes = codeMap.get(g.gameId);
+          return {
+            gameId: g.gameId,
+            title: g.title,
+            revenue: Number(g.revenue),
+            purchaseCount: Number(g.purchaseCount),
+            totalCodes: Number(codes?.totalCodes ?? 0),
+            activeCodes: Number(codes?.activeCodes ?? 0),
+            usedCount: Number(codes?.usedCount ?? 0),
+          };
+        });
+
+        const totalRevenue = gameList.reduce((sum, g) => sum + g.revenue, 0);
+
+        // 本月收入
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const [monthlyResult] = await db
+          .select({
+            revenue: sql<number>`COALESCE(SUM(${purchases.amount}), 0)`.as("revenue"),
+          })
+          .from(purchases)
+          .innerJoin(games, eq(purchases.gameId, games.id))
+          .where(and(
+            eq(games.fieldId, fieldId),
+            eq(purchases.status, sql`'completed'`),
+            sql`${purchases.completedAt} >= ${monthStart.toISOString()}`,
+          ));
+
+        return res.json({
+          totalRevenue,
+          monthlyRevenue: Number(monthlyResult?.revenue ?? 0),
+          games: gameList,
+        });
+      } catch (error) {
+        return res.status(500).json({ message: "取得票券統計失敗" });
+      }
+    }
+  );
+
+  // ========================================================================
   // 遊戲購買記錄列表
   // ========================================================================
   app.get(
