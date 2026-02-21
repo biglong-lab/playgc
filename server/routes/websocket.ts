@@ -6,7 +6,7 @@ import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
 import { gameMatches } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import type { WebSocketClient, RouteContext } from "./types";
+import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
 
 // 從 URL 解析 query 參數
 function parseQueryParams(url: string | undefined): Record<string, string> {
