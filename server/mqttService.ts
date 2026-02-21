@@ -5,7 +5,7 @@ import type { ArduinoDevice, InsertShootingRecord, InsertDeviceLog } from "@shar
 interface MqttMessage {
   deviceId: string;
   type: "hit" | "heartbeat" | "status" | "sensor" | "led" | "config" | "response";
-  data: any;
+  data: Record<string, unknown>;
   timestamp: string;
 }
 
