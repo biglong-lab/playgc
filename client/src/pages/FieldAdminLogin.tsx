@@ -1,15 +1,14 @@
-// 場域管理員登入頁面
+// 場域管理員登入頁面 — 統一 Firebase 認證
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, LogIn, ArrowRight, KeyRound } from "lucide-react";
+import { MapPin, LogIn, ArrowRight } from "lucide-react";
 import { useAdminLogin } from "@/hooks/useAdminLogin";
 import {
   FieldCodeBadge,
   LoginErrorAlert,
   CurrentUserBadge,
-  PasswordForm,
   PendingAuthView,
 } from "@/components/admin-login";
 
@@ -19,32 +18,21 @@ export default function FieldAdminLogin() {
     setFieldCode,
     step,
     loginError,
-    username,
-    setUsername,
-    password,
-    setPassword,
-    showPassword,
-    setShowPassword,
     isGoogleLoading,
     firebaseUser,
     isAuthenticated,
     isFirebaseLoginPending,
-    isPasswordLoginPending,
     handleFieldSubmit,
     handleGoogleLogin,
     handleSignOut,
-    handlePasswordSubmit,
-    switchToPasswordLogin,
     backToFieldInput,
-    backToLoginChoice,
     recheckAuthorization,
   } = useAdminLogin({ successRedirect: "/admin" });
 
   const getStepDescription = () => {
     switch (step) {
       case "field": return "請輸入您的場域編號";
-      case "firebase": return "請使用您的帳號登入";
-      case "password": return "請輸入帳號密碼";
+      case "firebase": return "請使用 Google 帳號登入";
       case "pending": return "您的授權申請正在審核中";
     }
   };
@@ -69,7 +57,6 @@ export default function FieldAdminLogin() {
                   error={loginError}
                   email={firebaseUser?.email}
                   onSignOut={handleSignOut}
-                  onSwitchToPassword={switchToPasswordLogin}
                 />
               )}
 
@@ -118,7 +105,7 @@ export default function FieldAdminLogin() {
             </div>
           )}
 
-          {/* 步驟 2: 選擇登入方式 */}
+          {/* 步驟 2: Google 登入 */}
           {step === "firebase" && (
             <div className="space-y-4">
               <FieldCodeBadge fieldCode={fieldCode} />
@@ -128,7 +115,6 @@ export default function FieldAdminLogin() {
                   error={loginError}
                   email={firebaseUser?.email}
                   onSignOut={handleSignOut}
-                  onSwitchToPassword={switchToPasswordLogin}
                 />
               )}
 
@@ -161,29 +147,6 @@ export default function FieldAdminLogin() {
                 </Button>
               )}
 
-              {!loginError && (
-                <>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">或</span>
-                    </div>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={switchToPasswordLogin}
-                  >
-                    <KeyRound className="w-4 h-4 mr-2" />
-                    使用帳號密碼登入
-                  </Button>
-                </>
-              )}
-
               <Button
                 type="button"
                 variant="ghost"
@@ -195,25 +158,7 @@ export default function FieldAdminLogin() {
             </div>
           )}
 
-          {/* 步驟 3: 密碼登入 */}
-          {step === "password" && (
-            <div className="space-y-4">
-              <FieldCodeBadge fieldCode={fieldCode} />
-              <PasswordForm
-                username={username}
-                setUsername={setUsername}
-                password={password}
-                setPassword={setPassword}
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-                isPending={isPasswordLoginPending}
-                onSubmit={handlePasswordSubmit}
-                onBack={backToLoginChoice}
-              />
-            </div>
-          )}
-
-          {/* 步驟 4: 等待授權 */}
+          {/* 步驟 3: 等待授權 */}
           {step === "pending" && (
             <PendingAuthView
               fieldCode={fieldCode}
