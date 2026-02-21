@@ -246,10 +246,38 @@ export const chapterStorageMethods = {
       };
     }
 
-    // paid：檢查玩家是否已付費（進度存在且非 locked）
+    // paid：檢查購買記錄（兌換碼/現金/線上付費）
     if (chapter.unlockType === "paid") {
       const config = chapter.unlockConfig as { price?: number } | null;
       const price = config?.price ?? 0;
+
+      // 檢查是否有整個遊戲的購買記錄
+      const [gamePurchase] = await db
+        .select()
+        .from(purchases)
+        .where(
+          and(
+            eq(purchases.userId, userId),
+            eq(purchases.gameId, chapter.gameId),
+            eq(purchases.status, "completed"),
+            sql`${purchases.chapterId} IS NULL`
+          )
+        );
+      if (gamePurchase) return { unlocked: true };
+
+      // 檢查是否有此章節的購買記錄
+      const [chapterPurchase] = await db
+        .select()
+        .from(purchases)
+        .where(
+          and(
+            eq(purchases.userId, userId),
+            eq(purchases.chapterId, chapterId),
+            eq(purchases.status, "completed")
+          )
+        );
+      if (chapterPurchase) return { unlocked: true };
+
       return {
         unlocked: false,
         reason: "payment_required",
