@@ -100,6 +100,57 @@
 
 ## 工作紀錄
 
+### 2026-02-23 (Phase 30：流程控制強化 — 條件分支、迴圈、隨機路徑)
+
+新增 `flow_router` 頁面類型 + `onCompleteActions` 通用機制，讓遊戲設計師建立非線性流程。
+
+#### Schema 更新
+- [x] 新增 `FlowCondition` — 10 種條件類型（variable_equals/gt/lt/gte/lte, has_item/not_has_item, score_above/below, random）
+- [x] 新增 `FlowRoute` — 路由規則（條件列表 + AND/OR 邏輯 + 目標頁面）
+- [x] 新增 `FlowRouterConfig` — 條件分支 / 隨機路徑 兩種模式
+- [x] 新增 `OnCompleteAction` — 7 種動作（set/increment/decrement/toggle 變數、add/remove 道具、add_score）
+- [x] 更新 PageConfig union type 加入 FlowRouterConfig
+
+#### 路由評估引擎
+- [x] 新增 `client/src/lib/flow-router.ts` (~188 行) — 純函式模組
+  - `evaluateCondition()` — 單一條件評估
+  - `evaluateRoute()` — AND/OR 邏輯評估
+  - `pickRandomRoute()` — 加權隨機選擇
+  - `evaluateFlowRouter()` — 主路由評估（conditional / random）
+  - `resolveFlowRouter()` — 連續 flow_router 解析（maxHops=10 防無限迴圈）
+  - `processOnCompleteActions()` — 不可變狀態更新
+
+#### 遊戲引擎整合
+- [x] 修改 `GamePlay.tsx` — handlePageComplete 加入 onCompleteActions 處理 + resolveFlowRouter 整合
+- [x] 新增 `FlowRouterPage.tsx` (~42 行) — Fallback 元件（正常不會渲染）
+- [x] 修改 `GamePageRenderer.tsx` — +flow_router lazy import + case
+
+#### 編輯器
+- [x] 新增 `FlowRouterEditor.tsx` (~383 行) — 流程路由編輯器
+  - 模式切換（conditional / random）
+  - 路由規則列表（條件/權重 + 目標頁面選擇器）
+  - 預設 fallback 頁面
+- [x] 新增 `OnCompleteActionsEditor.tsx` (~216 行) — 通用完成動作編輯器（可折疊）
+- [x] 修改 `PageConfigEditor.tsx` — +flow_router case + OnCompleteActionsEditor（flow_router 除外）
+- [x] 修改 `constants.ts` — PAGE_TYPES 新增 flow_router（第 16 種）
+
+#### 測試更新
+- [x] 修改 `constants.test.ts` — PAGE_TYPES 16 種
+- [x] 修改 `GamePageRenderer.test.tsx` — +flow_router mock + 涵蓋
+
+**設計決策**:
+1. 新頁面類型而非修改現有 — flow_router 是獨立的純邏輯節點
+2. 純函式評估引擎 — flow-router.ts 完全無副作用，方便測試
+3. onCompleteActions 通用化 — 所有 16 種頁面都能用
+4. maxHops=10 防護 — 防止無限迴圈導致瀏覽器凍結
+5. 向後兼容 — 所有新欄位 optional，不需 DB migration
+
+**迴圈支援**：flow_router 的 nextPageId 可指向之前的頁面，搭配 onCompleteActions 的變數操作，天然支援「重複直到條件滿足」的迴圈模式。
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 58 檔案 861 測試全通過、`npm run build` 成功
+
+---
+
 ### 2026-02-22 (Phase 29：AI 自動評分 — 照片驗證 + 文字語意評分)
 
 整合 Google Gemini 2.0 Flash，實現照片 AI 驗證和文字語意評分。
