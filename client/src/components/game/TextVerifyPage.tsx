@@ -13,6 +13,7 @@ interface TextVerifyPageProps {
   config: TextVerifyConfig;
   onComplete: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
   sessionId: string;
+  gameId: string;
   variables: Record<string, unknown>;
   onVariableUpdate: (key: string, value: unknown) => void;
 }
