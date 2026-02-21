@@ -47,6 +47,24 @@ export function useChapterProgress(gameId: string | undefined) {
     },
   });
 
+  const purchaseChapterMutation = useMutation({
+    mutationFn: async (chapterId: string) => {
+      const res = await apiRequest(
+        "POST",
+        `/api/games/${gameId}/chapters/${chapterId}/purchase`
+      );
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["/api/games", gameId, "chapters"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/games", gameId, "progress"],
+      });
+    },
+  });
+
   const isChapterUnlocked = (chapterId: string): boolean => {
     if (!chapters) return false;
     const chapter = chapters.find((c) => c.id === chapterId);
@@ -65,5 +83,7 @@ export function useChapterProgress(gameId: string | undefined) {
     isChapterUnlocked,
     startChapter: startChapterMutation.mutateAsync,
     isStarting: startChapterMutation.isPending,
+    purchaseChapter: purchaseChapterMutation.mutateAsync,
+    isPurchasing: purchaseChapterMutation.isPending,
   };
 }
