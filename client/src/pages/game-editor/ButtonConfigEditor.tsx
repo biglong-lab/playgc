@@ -7,14 +7,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2, Plus, ChevronDown, Play } from "lucide-react";
 import type { Page } from "@shared/schema";
 import { getPageTypeInfo } from "./constants";
+import type { PageConfig, PageConfigValue } from "./page-config-shared";
+
+interface ButtonItem {
+  text: string;
+  nextPageId?: string;
+  rewardPoints?: number;
+}
 
 export default function ButtonConfigEditor({
   config,
   updateField,
   allPages
 }: {
-  config: any;
-  updateField: (field: string, value: any) => void;
+  config: PageConfig;
+  updateField: (field: string, value: PageConfigValue) => void;
   allPages: Page[];
 }) {
   return (
