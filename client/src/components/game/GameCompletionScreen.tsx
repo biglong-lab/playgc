@@ -39,6 +39,14 @@ export default function GameCompletionScreen({
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
+              onClick={onPlayAgain}
+              variant="outline"
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              重玩本章
+            </Button>
+            <Button
               onClick={() => onNavigate(`/game/${gameId}/chapters`)}
               className="gap-2"
             >
