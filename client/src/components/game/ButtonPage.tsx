@@ -145,9 +145,11 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
                 <span className="flex-1 text-left">{button.text}</span>
               </div>
               <div className="flex items-center gap-2">
-                {button.rewardPoints && button.rewardPoints > 0 && (
-                  <span className="text-sm opacity-70 bg-primary/10 px-2 py-0.5 rounded">
-                    +{button.rewardPoints}分
+                {button.rewardPoints != null && button.rewardPoints !== 0 && (
+                  <span className={`text-sm opacity-70 px-2 py-0.5 rounded ${
+                    button.rewardPoints > 0 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+                  }`}>
+                    {button.rewardPoints > 0 ? "+" : ""}{button.rewardPoints}分
                   </span>
                 )}
                 {button.items && button.items.length > 0 && (
