@@ -8,13 +8,14 @@ export function updatePageIdReferences(
   idMapping: Map<string, string>
 ): Page[] {
   return pagesToUpdate.map((page) => {
-    const config = page.config as any;
+    const config = page.config as Record<string, unknown>;
     if (page.pageType === "button" && config.buttons) {
-      const updatedButtons = config.buttons.map((btn: any) => ({
+      const buttons = config.buttons as Array<Record<string, unknown>>;
+      const updatedButtons = buttons.map((btn) => ({
         ...btn,
         nextPageId:
-          btn.nextPageId && idMapping.has(btn.nextPageId)
-            ? idMapping.get(btn.nextPageId)
+          btn.nextPageId && idMapping.has(btn.nextPageId as string)
+            ? idMapping.get(btn.nextPageId as string)
             : btn.nextPageId,
       }));
       return { ...page, config: { ...config, buttons: updatedButtons } };
