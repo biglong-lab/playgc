@@ -166,7 +166,7 @@ export default function GamePlay() {
   });
 
   const updateProgressMutation = useMutation({
-    mutationFn: async (data: { pageId: string; score: number; inventory: string[]; variables: Record<string, any> }) => {
+    mutationFn: async (data: { pageId: string; score: number; inventory: string[]; variables: Record<string, unknown> }) => {
       if (!sessionId) return;
       await apiRequest("PATCH", `/api/sessions/${sessionId}/progress`, data);
     },
