@@ -108,16 +108,30 @@ export default function AdminSessions() {
     <AdminLayout 
       title="場次管理"
       actions={
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => refetch()}
-          className="gap-1"
-          data-testid="button-refresh-sessions"
-        >
-          <RefreshCw className="w-4 h-4" />
-          重新整理
-        </Button>
+        <div className="flex gap-2">
+          {activeSessions > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowCleanupConfirm(true)}
+              className="gap-1"
+              data-testid="button-cleanup-sessions"
+            >
+              <Trash2 className="w-4 h-4" />
+              清理卡住場次
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            className="gap-1"
+            data-testid="button-refresh-sessions"
+          >
+            <RefreshCw className="w-4 h-4" />
+            重新整理
+          </Button>
+        </div>
       }
     >
       <div className="space-y-6">
