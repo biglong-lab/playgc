@@ -120,6 +120,10 @@ export function useGameSettings(): GameSettingsReturn {
   const [chapterUnlockMode, setChapterUnlockMode] = useState<ChapterUnlockMode>("sequential");
   const [allowChapterReplay, setAllowChapterReplay] = useState(true);
 
+  // 定價 state
+  const [pricingType, setPricingType] = useState<PricingType>("free");
+  const [price, setPrice] = useState("");
+
   // 資料查詢
   const { data: user } = useQuery<User>({
     queryKey: ["/api/auth/user"],
