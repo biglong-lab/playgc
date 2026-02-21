@@ -6,6 +6,7 @@ import {
   playerChapterProgress,
   pages,
   games,
+  purchases,
   type GameChapter,
   type InsertGameChapter,
   type PlayerChapterProgress,
