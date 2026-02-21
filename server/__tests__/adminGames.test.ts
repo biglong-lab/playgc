@@ -12,6 +12,12 @@ const { mockDb } = vi.hoisted(() => {
   const mockWhere = vi.fn();
   const mockDelete = vi.fn();
 
+  // select 鏈式操作（用於配額檢查等）
+  const mockSelectLimit = vi.fn().mockResolvedValue([{ settings: {} }]);
+  const mockSelectWhere = vi.fn().mockReturnValue({ limit: mockSelectLimit });
+  const mockSelectFrom = vi.fn().mockReturnValue({ where: mockSelectWhere });
+  const mockSelect = vi.fn().mockReturnValue({ from: mockSelectFrom });
+
   // 鏈式操作
   mockInsert.mockReturnValue({ values: mockValues });
   mockValues.mockReturnValue({ returning: mockReturning });
@@ -28,7 +34,9 @@ const { mockDb } = vi.hoisted(() => {
       insert: mockInsert,
       update: mockUpdate,
       delete: mockDelete,
+      select: mockSelect,
       _chain: { values: mockValues, returning: mockReturning, set: mockSet, where: mockWhere },
+      _selectChain: { from: mockSelectFrom, where: mockSelectWhere, limit: mockSelectLimit },
     },
   };
 });
