@@ -49,6 +49,21 @@ export default function AdminSessions() {
     },
   });
 
+  const cleanupMutation = useMutation({
+    mutationFn: async (thresholdHours: number) => {
+      const res = await apiRequest("POST", "/api/admin/sessions/cleanup", { thresholdHours });
+      return res.json() as Promise<{ count: number; message: string }>;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+      toast({ title: data.message });
+      setShowCleanupConfirm(false);
+    },
+    onError: () => {
+      toast({ title: "清理失敗", variant: "destructive" });
+    },
+  });
+
   const filteredSessions = sessions.filter(session => {
     const matchesSearch = !searchTerm || 
       session.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
