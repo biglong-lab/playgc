@@ -12,11 +12,11 @@ import {
 import {
   ObjectStorageService,
 } from "../objectStorage";
-import { insertGameSchema, getTemplateById, pages } from "@shared/schema";
+import { insertGameSchema, getTemplateById, pages, fields, parseFieldSettings } from "@shared/schema";
 import { db } from "../db";
 import { games } from "@shared/schema";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, count } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export function registerAdminGameRoutes(app: Express) {
