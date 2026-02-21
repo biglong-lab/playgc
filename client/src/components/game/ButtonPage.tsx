@@ -57,7 +57,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
 
   const getIcon = (iconName?: string) => {
     if (!iconName) return null;
-    const Icon = (LucideIcons as any)[iconName];
+    const Icon = (LucideIcons as Record<string, unknown>)[iconName] as React.ComponentType<{ className?: string }> | undefined;
     return Icon ? <Icon className="w-5 h-5" /> : null;
   };
 
