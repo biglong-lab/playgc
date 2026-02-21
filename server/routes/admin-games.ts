@@ -97,6 +97,29 @@ export function registerAdminGameRoutes(app: Express) {
         ? (data.fieldId || req.admin.fieldId)
         : req.admin.fieldId;
 
+      // 配額檢查：場域最大遊戲數
+      if (fieldId) {
+        const [field] = await db.select({ settings: fields.settings })
+          .from(fields)
+          .where(eq(fields.id, fieldId))
+          .limit(1);
+
+        if (field) {
+          const settings = parseFieldSettings(field.settings);
+          if (settings.maxGames && settings.maxGames > 0) {
+            const [{ value: currentCount }] = await db.select({ value: count() })
+              .from(games)
+              .where(eq(games.fieldId, fieldId));
+
+            if (currentCount >= settings.maxGames) {
+              return res.status(403).json({
+                message: `此場域已達遊戲數上限（${settings.maxGames}），請聯繫管理員調整配額`,
+              });
+            }
+          }
+        }
+      }
+
       const slug = generateSlug();
 
       // 如果使用模板，套用模板的預設值
