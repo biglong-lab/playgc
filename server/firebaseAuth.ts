@@ -95,7 +95,7 @@ export async function isAuthenticated(
       });
     }
 
-    (req as any).user = {
+    req.user = {
       claims: {
         sub: userId,
       },
@@ -103,13 +103,13 @@ export async function isAuthenticated(
     };
 
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(401).json({ message: "Unauthorized" });
   }
 }
 
 export async function optionalAuth(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) {
