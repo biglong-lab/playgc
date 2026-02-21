@@ -42,7 +42,7 @@ export default function ButtonConfigEditor({
           <Badge variant="secondary" className="text-xs">條件分支</Badge>
         </label>
         <div className="space-y-3">
-          {(config.buttons || []).map((btn: any, i: number) => (
+          {((config.buttons || []) as ButtonItem[]).map((btn: ButtonItem, i: number) => (
             <Card key={i} className="p-3">
               <div className="space-y-3">
                 <div className="flex gap-2">
