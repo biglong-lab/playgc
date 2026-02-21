@@ -2,14 +2,9 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LocationSettingsSection } from "./page-config-shared";
+import { LocationSettingsSection, type EditorProps } from "./page-config-shared";
 
-interface MotionChallengeEditorProps {
-  config: Record<string, any>;
-  updateField: (field: string, value: any) => void;
-}
-
-export default function MotionChallengeEditor({ config, updateField }: MotionChallengeEditorProps) {
+export default function MotionChallengeEditor({ config, updateField }: EditorProps) {
   return (
     <div className="space-y-4">
       <div>
