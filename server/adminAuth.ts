@@ -1,9 +1,10 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { db } from "./db";
 import { adminAccounts, adminSessions, roles, rolePermissions, permissions, fields, auditLogs } from "@shared/schema";
 import { eq, and, gt } from "drizzle-orm";
+import type { AuthenticatedRequest } from "./routes/types";
 
 // 確保 JWT_SECRET 在啟動時已設定
 function getJwtSecret(): string {
