@@ -566,9 +566,10 @@
 
 ## 下一步建議
 
-1. **DB Migration** - `npm run db:push` 同步 Phase 2 資料表
-2. **E2E 完整流程測試** - 需要開發伺服器運行時執行
-3. **ESLint 9 升級** - 解決 minimatch high 漏洞（需 eslint major 升級）
+1. ~~DB Migration~~ → Phase 27 已完成 `npm run db:push`（41+ 資料表）
+2. **Phase 27 Phase B：Recur.tw 金流整合** — 線上付費（server/services/recur-client.ts + webhook）
+3. **E2E 完整流程測試** - 需要開發伺服器運行時執行
+4. **ESLint 9 升級** - 解決 minimatch high 漏洞（需 eslint major 升級）
 4. ~~PageConfigEditor 拆分~~ → 第二十四階段已拆分為 PageConfigEditor(234) + page-config-inline-editors(461)
 5. ~~locations.ts 拆分~~ → 第二十五階段已拆分為 locations(245) + location-tracking(292)
 6. ~~EventsEditor.tsx 拆分~~ → 第二十五階段已拆分為 EventsEditor(340) + event-config-editors(215)
