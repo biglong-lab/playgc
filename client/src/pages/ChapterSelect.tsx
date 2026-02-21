@@ -37,6 +37,8 @@ export default function ChapterSelect() {
     isChapterUnlocked,
     startChapter,
     isStarting,
+    purchaseChapter,
+    isPurchasing,
   } = useChapterProgress(gameId);
 
   const handleChapterClick = async (chapterId: string) => {
