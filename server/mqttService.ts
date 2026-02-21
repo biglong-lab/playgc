@@ -312,7 +312,7 @@ class MqttService {
     await this.logDeviceActivity(deviceId, "config", `Config updated: ${JSON.stringify(configData)}`);
   }
 
-  private async handleLEDResponse(deviceId: string, ledData: any) {
+  private async handleLEDResponse(deviceId: string, ledData: unknown) {
     await this.logDeviceActivity(deviceId, "led", `LED state: ${JSON.stringify(ledData)}`);
   }
 
