@@ -346,6 +346,30 @@ export class DatabaseStorage implements IStorage {
   updateChapterProgress = chapterStorageMethods.updateChapterProgress;
   isChapterUnlocked = chapterStorageMethods.isChapterUnlocked;
   unlockNextChapter = chapterStorageMethods.unlockNextChapter;
+
+  // ===== 購買/票券方法 =====
+  getRedeemCodes = purchaseStorageMethods.getRedeemCodes;
+  getRedeemCodeByCode = purchaseStorageMethods.getRedeemCodeByCode;
+  getRedeemCode = purchaseStorageMethods.getRedeemCode;
+  createRedeemCode = purchaseStorageMethods.createRedeemCode;
+  createRedeemCodes = purchaseStorageMethods.createRedeemCodes;
+  updateRedeemCode = purchaseStorageMethods.updateRedeemCode;
+  deleteRedeemCode = purchaseStorageMethods.deleteRedeemCode;
+  incrementRedeemCodeUsage = purchaseStorageMethods.incrementRedeemCodeUsage;
+  getCodeUses = purchaseStorageMethods.getCodeUses;
+  hasUserRedeemedCode = purchaseStorageMethods.hasUserRedeemedCode;
+  createCodeUse = purchaseStorageMethods.createCodeUse;
+  getPurchasesByUser = purchaseStorageMethods.getPurchasesByUser;
+  getPurchasesByGame = purchaseStorageMethods.getPurchasesByGame;
+  getUserGamePurchase = purchaseStorageMethods.getUserGamePurchase;
+  getUserChapterPurchase = purchaseStorageMethods.getUserChapterPurchase;
+  getPurchase = purchaseStorageMethods.getPurchase;
+  createPurchase = purchaseStorageMethods.createPurchase;
+  updatePurchase = purchaseStorageMethods.updatePurchase;
+  getTransaction = purchaseStorageMethods.getTransaction;
+  getTransactionByRecurSession = purchaseStorageMethods.getTransactionByRecurSession;
+  createTransaction = purchaseStorageMethods.createTransaction;
+  updateTransaction = purchaseStorageMethods.updateTransaction;
 }
 
 export const storage = new DatabaseStorage();
