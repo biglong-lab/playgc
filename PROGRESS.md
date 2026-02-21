@@ -102,6 +102,49 @@
 
 ## 工作紀錄
 
+### 2026-02-22 (Phase 31-1：統一 Firebase 認證 — 移除密碼登入 + super_admin 場域選擇)
+
+簡化管理員登入流程，統一使用 Firebase 認證，移除舊密碼登入機制。
+
+#### Phase 1-A：簡化登入流程
+- [x] 修改 `useAdminLogin.ts` — 移除 `LoginStep` 的 `"password"` 選項
+  - 移除 `username/password/showPassword` 狀態
+  - 移除 `passwordLoginMutation`、`handlePasswordSubmit`、`switchToPasswordLogin` 等函式
+  - `handleFieldSubmit` 允許空 fieldCode（super_admin 支援）
+- [x] 改寫 `AdminLogin.tsx` — 移除密碼表單，簡化為：場域碼 → Firebase Google 登入
+  - 新增 super_admin 提示：「超級管理員可留空」
+- [x] 改寫 `FieldAdminLogin.tsx` — 同步移除密碼登入相關 UI
+- [x] 簡化 `LoginErrorAlert.tsx` — 移除 `onSwitchToPassword` prop 和密碼登入按鈕
+- [x] 刪除 `PasswordForm.tsx` 元件
+- [x] 更新 `admin-login/index.ts` — 移除 PasswordForm 匯出
+
+#### Phase 1-B：super_admin 場域選擇
+- [x] 修改 `server/routes/auth.ts` `/api/admin/firebase-login`
+  - 空 fieldCode → 全域搜尋 firebaseUserId → 確認 super_admin 角色 → 自動取得場域
+  - 非 super_admin 空 fieldCode → 400「非超級管理員請輸入場域編號」
+- [x] 新增 `FieldSelector.tsx` (~100 行) — super_admin 場域切換下拉選單
+  - localStorage 持久化場域選擇
+  - 非 super_admin 顯示當前場域名稱
+  - 匯出 `getStoredFieldId()` / `setStoredFieldId()` 工具函式
+- [x] 修改 `AdminStaffLayout.tsx` — 頂部 header 整合 FieldSelector
+
+#### Phase 1-C：後端清理
+- [x] `POST /api/admin/login` 改為 410 Gone + 遷移提示
+  - 回傳：`{ message: "密碼登入已停用，請使用 Google 帳號登入", migration: "..." }`
+- [x] 移除 `adminLogin` 和 `storage` 未使用 import
+
+#### 測試更新
+- [x] 更新 `auth.test.ts` — 密碼登入測試改為驗證 410 Gone 行為（2 測試）
+- [x] 新增 super_admin 空 fieldCode 測試：無帳號回傳 404、非 super_admin 回傳 400
+- [x] 59 個測試檔案、871 個測試全部通過
+
+**刪除檔案**: `client/src/components/admin-login/PasswordForm.tsx`
+**新增檔案**: `client/src/components/FieldSelector.tsx`
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 59 檔案 871 測試全通過
+
+---
+
 ### 2026-02-23 (Phase 31：管理介面重構 — 場域設定 + AI Key + 票券 + 配額)
 
 針對管理介面 UX 問題進行優化：場域獨立 AI Key、票券管理直接入口、配額控制。
