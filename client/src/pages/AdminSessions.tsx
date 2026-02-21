@@ -24,6 +24,7 @@ export default function AdminSessions() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [gameFilter, setGameFilter] = useState<string>("all");
   const [selectedSession, setSelectedSession] = useState<GameSession | null>(null);
+  const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
 
   const { data: sessions = [], isLoading, refetch } = useQuery<GameSession[]>({
     queryKey: ["/api/sessions"],
