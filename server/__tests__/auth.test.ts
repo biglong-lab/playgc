@@ -180,11 +180,38 @@ describe("認證路由 (auth)", () => {
       expect(res.body.message).toBe("無效的登入令牌");
     });
 
-    it("缺少 fieldCode 時回傳 400", async () => {
+    it("缺少 fieldCode 且無管理員帳號時回傳 404", async () => {
       const app = createApp();
       mockVerifyFirebaseToken.mockResolvedValue({
         uid: "firebase-user-1",
         email: "admin@test.com",
+      });
+      mockDb.query.adminAccounts.findFirst.mockResolvedValue(null);
+
+      const res = await request(app)
+        .post("/api/admin/firebase-login")
+        .set({ Authorization: "Bearer firebase-token" })
+        .send({});
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe("找不到管理員帳號，請輸入場域編號");
+    });
+
+    it("缺少 fieldCode 且非 super_admin 時回傳 400", async () => {
+      const app = createApp();
+      mockVerifyFirebaseToken.mockResolvedValue({
+        uid: "firebase-user-1",
+        email: "admin@test.com",
+      });
+      mockDb.query.adminAccounts.findFirst.mockResolvedValue({
+        id: "admin-1",
+        roleId: "role-1",
+        fieldId: "field-1",
+        status: "active",
+      });
+      mockDb.query.roles.findFirst.mockResolvedValue({
+        id: "role-1",
+        systemRole: "field_admin",
       });
 
       const res = await request(app)
@@ -193,7 +220,7 @@ describe("認證路由 (auth)", () => {
         .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.message).toBe("請輸入場域編號");
+      expect(res.body.message).toBe("非超級管理員請輸入場域編號");
     });
 
     it("場域不存在時回傳 404", async () => {
