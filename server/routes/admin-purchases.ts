@@ -1,7 +1,10 @@
-// 管理端購買路由 - 購買記錄、現金收款授權
+// 管理端購買路由 - 購買記錄、現金收款授權、票券統計
 import type { Express } from "express";
 import { storage } from "../storage";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { db } from "../db";
+import { games, purchases, redeemCodes, codeUses } from "@shared/schema";
+import { eq, sql, and } from "drizzle-orm";
 import { z } from "zod";
 
 // 現金收款授權的驗證 schema
