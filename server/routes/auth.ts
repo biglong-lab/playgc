@@ -97,24 +97,53 @@ export function registerAuthRoutes(app: Express) {
 
       const { fieldCode } = req.body;
 
-      if (!fieldCode) {
-        return res.status(400).json({ message: "請輸入場域編號" });
+      // super_admin 可不填場域碼 → 依 firebaseUserId 全域搜尋
+      let field: typeof fields.$inferSelect | undefined;
+      let adminAccount: Awaited<ReturnType<typeof db.query.adminAccounts.findFirst>>;
+
+      if (!fieldCode || !fieldCode.trim()) {
+        // 無場域碼：搜尋 super_admin 帳號
+        adminAccount = await db.query.adminAccounts.findFirst({
+          where: eq(adminAccounts.firebaseUserId, firebaseUserId),
+          with: { role: true },
+        });
+
+        if (!adminAccount) {
+          return res.status(404).json({ message: "找不到管理員帳號，請輸入場域編號" });
+        }
+
+        const accountRole = adminAccount.role || (adminAccount.roleId
+          ? await db.query.roles.findFirst({ where: eq(roles.id, adminAccount.roleId) })
+          : null);
+
+        if (accountRole?.systemRole !== "super_admin") {
+          return res.status(400).json({ message: "非超級管理員請輸入場域編號" });
+        }
+
+        field = await db.query.fields.findFirst({
+          where: eq(fields.id, adminAccount.fieldId),
+        }) ?? undefined;
+
+        if (!field) {
+          return res.status(404).json({ message: "場域資料異常" });
+        }
+      } else {
+        // 一般流程：依場域碼查場域 → 再依 firebaseUserId 查帳號
+        field = await db.query.fields.findFirst({
+          where: eq(fields.code, fieldCode.toUpperCase()),
+        }) ?? undefined;
+
+        if (!field) {
+          return res.status(404).json({ message: "找不到此場域" });
+        }
+
+        adminAccount = await db.query.adminAccounts.findFirst({
+          where: and(
+            eq(adminAccounts.fieldId, field.id),
+            eq(adminAccounts.firebaseUserId, firebaseUserId),
+          ),
+        });
       }
-
-      const field = await db.query.fields.findFirst({
-        where: eq(fields.code, fieldCode.toUpperCase()),
-      });
-
-      if (!field) {
-        return res.status(404).json({ message: "找不到此場域" });
-      }
-
-      const adminAccount = await db.query.adminAccounts.findFirst({
-        where: and(
-          eq(adminAccounts.fieldId, field.id),
-          eq(adminAccounts.firebaseUserId, firebaseUserId),
-        ),
-      });
 
       if (!adminAccount) {
         await db.insert(adminAccounts).values({
