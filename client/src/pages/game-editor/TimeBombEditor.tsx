@@ -53,7 +53,7 @@ export default function TimeBombEditor({ config, updateField }: EditorProps) {
           <Badge variant="secondary" className="text-xs">{(config.tasks || []).length} 個任務</Badge>
         </label>
         <div className="space-y-2">
-          {(config.tasks || []).map((task: any, i: number) => (
+          {((config.tasks || []) as BombTask[]).map((task: BombTask, i: number) => (
             <div key={i} className="bg-accent/30 rounded-lg p-3 space-y-2">
               <div className="flex justify-between items-center">
                 <Badge variant="outline">任務 {i + 1}</Badge>
