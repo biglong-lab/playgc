@@ -259,14 +259,14 @@ export async function linkAnonymousToEmail(email: string, password: string) {
     const credential = EmailAuthProvider.credential(email, password);
     const result = await linkWithCredential(user, credential);
     return result.user;
-  } catch (error: any) {
-    
-    if (error?.code === "auth/email-already-in-use") {
+  } catch (error: unknown) {
+    const code = getFirebaseErrorCode(error);
+    if (code === "auth/email-already-in-use") {
       throw new Error("此電子郵件已被其他帳號使用");
-    } else if (error?.code === "auth/weak-password") {
+    } else if (code === "auth/weak-password") {
       throw new Error("密碼強度不足，至少需要 6 個字元");
     }
-    
+
     throw new Error("帳號綁定失敗，請重試");
   }
 }
