@@ -342,6 +342,9 @@ export default function GameEditor() {
             <Link href={`${basePath}/${gameId}/locations`}>
               <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-locations"><MapPin className="w-3.5 h-3.5" /> 地點</Button>
             </Link>
+            <Link href={`${basePath}/${gameId}/tickets`}>
+              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-tickets"><Ticket className="w-3.5 h-3.5" /> 票券</Button>
+            </Link>
             <Link href={`${basePath}/${gameId}/settings`}>
               <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-settings"><Settings className="w-3.5 h-3.5" /> 設定</Button>
             </Link>
