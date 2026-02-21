@@ -490,3 +490,71 @@ export const matchParticipantsRelations = relations(matchParticipants, ({ one })
   }),
 }));
 
+// ============================================================================
+// Purchase Relations（購買/票券系統）
+// ============================================================================
+export const redeemCodesRelations = relations(redeemCodes, ({ one, many }) => ({
+  game: one(games, {
+    fields: [redeemCodes.gameId],
+    references: [games.id],
+  }),
+  chapter: one(gameChapters, {
+    fields: [redeemCodes.chapterId],
+    references: [gameChapters.id],
+  }),
+  field: one(fields, {
+    fields: [redeemCodes.fieldId],
+    references: [fields.id],
+  }),
+  uses: many(redeemCodeUses),
+  purchases: many(purchases),
+}));
+
+export const redeemCodeUsesRelations = relations(redeemCodeUses, ({ one }) => ({
+  code: one(redeemCodes, {
+    fields: [redeemCodeUses.codeId],
+    references: [redeemCodes.id],
+  }),
+  user: one(users, {
+    fields: [redeemCodeUses.userId],
+    references: [users.id],
+  }),
+}));
+
+export const purchasesRelations = relations(purchases, ({ one }) => ({
+  user: one(users, {
+    fields: [purchases.userId],
+    references: [users.id],
+  }),
+  game: one(games, {
+    fields: [purchases.gameId],
+    references: [games.id],
+  }),
+  chapter: one(gameChapters, {
+    fields: [purchases.chapterId],
+    references: [gameChapters.id],
+  }),
+  redeemCode: one(redeemCodes, {
+    fields: [purchases.redeemCodeId],
+    references: [redeemCodes.id],
+  }),
+}));
+
+export const paymentTransactionsRelations = relations(
+  paymentTransactions,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [paymentTransactions.userId],
+      references: [users.id],
+    }),
+    game: one(games, {
+      fields: [paymentTransactions.gameId],
+      references: [games.id],
+    }),
+    chapter: one(gameChapters, {
+      fields: [paymentTransactions.chapterId],
+      references: [gameChapters.id],
+    }),
+  })
+);
+
