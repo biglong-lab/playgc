@@ -157,6 +157,8 @@ export function useGameSettings(): GameSettingsReturn {
     setGameStructure((game.gameStructure as GameStructure) || "linear");
     setChapterUnlockMode((game.chapterUnlockMode as ChapterUnlockMode) || "sequential");
     setAllowChapterReplay(game.allowChapterReplay !== false);
+    setPricingType((game.pricingType as PricingType) || "free");
+    setPrice(String(game.price ?? ""));
   }, [game]);
 
   // 儲存 mutation
