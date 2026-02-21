@@ -39,6 +39,7 @@ const ItemEditor = lazy(() => import("@/pages/ItemEditor"));
 const AchievementEditor = lazy(() => import("@/pages/AchievementEditor"));
 const GameSettings = lazy(() => import("@/pages/GameSettings"));
 const FieldAdminLogin = lazy(() => import("@/pages/FieldAdminLogin"));
+const AdminRedeemCodes = lazy(() => import("@/pages/admin-redeem-codes"));
 
 // 管理端（場域管理員） — lazy import
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
