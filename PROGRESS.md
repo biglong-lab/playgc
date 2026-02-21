@@ -95,6 +95,40 @@
 
 ## 工作紀錄
 
+### 2026-02-21 (第二十五階段：any 型別全面清除 + 大檔案拆分 + Bug 修復)
+
+#### 修改 1：遊戲頁面元件 onVariableUpdate any → unknown（12 檔案）
+- [x] 批次修正 11 個遊戲頁面元件 `value: any` → `value: unknown`
+  - TextCardPage, DialoguePage, VideoPage, GpsMissionPage, QrScanPage, ChoiceVerifyPage
+  - TextVerifyPage, ShootingMissionPage, TimeBombPage, LockPage, MotionChallengePage, VotePage
+- [x] ConditionalVerifyPage 手動修正 3 處：`variableValue?: any`、`Record<string, any>`、`onVariableUpdate`
+
+#### 修改 2：firebase.ts + AuthContext 型別安全
+- [x] `AuthContext.tsx` — `firebaseUser: any | null` → `User | null`（import from firebase/auth）
+- [x] `firebase.ts` — 新增 `getFirebaseErrorCode()` helper，8 處 `catch (error: any)` → `catch (error: unknown)`
+- [x] `firebase.ts` — `(window as any).opera` → `(window as unknown as Record<string, string>).opera`
+
+#### 修改 3：as any 殘留清理 + adminAuth bug 修復
+- [x] `firebaseAuth.ts` — import AuthenticatedRequest，移除 `(req as any).user` → `req.user`
+- [x] `adminAuth.ts` — **發現並修復真實 Bug**：`(req as any).user.id` 存取了錯誤的層級
+  - 修正前：`user.id` / `user.defaultFieldId` / `user.role`（undefined，因為 user 是 `{ claims, dbUser }`）
+  - 修正後：`authUser.dbUser.id` / `dbUser.defaultFieldId` / `dbUser.role`
+- [x] `page-sync.ts` — `config as any` → `Record<string, unknown>`，`btn: any` → 具型別陣列
+- [x] `MapView.tsx` — `page.config as any` → `Record<string, unknown>` + 型別斷言
+
+#### 修改 4：locations.ts 拆分（522 → 245 + 292）
+- [x] 新增 `server/routes/location-tracking.ts` (292 行) — 玩家位置追蹤 + 地點造訪 + 導航計算
+- [x] 改寫 `server/routes/locations.ts` (245 行) — 地點 CRUD + 導航路徑 + 掛載子模組
+- [x] 同步修正 `error: any` → `error: unknown` + 正確型別檢查
+
+#### 修改 5：EventsEditor.tsx 拆分（519 → 340 + 215）
+- [x] 新增 `client/src/pages/game-editor/event-config-editors.tsx` (215 行) — TriggerConfigEditor + RewardConfigEditor
+  - 消除所有 `config: any` → `Record<string, unknown>` + `String()` / `Number()` 安全轉換
+  - 消除 RewardConfigEditor 中 4 處 `as any`
+- [x] 改寫 `client/src/pages/game-editor/EventsEditor.tsx` (340 行) — 主元件 + EventDetailEditor 子元件
+
+**測試結果**: 58 個測試檔案、860 個 Vitest 測試全部通過，TS 零錯誤
+
 ### 2026-02-21 (第二十四階段：程式碼品質清理 — 大檔案拆分 + any 型別消除)
 
 #### 修改 1：playerChapters.test.ts 拆分（975 → 3 檔 + helper）
