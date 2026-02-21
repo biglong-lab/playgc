@@ -7,19 +7,13 @@ import { Gift, MapPin } from "lucide-react";
 import ItemRewardPicker from "@/components/ItemRewardPicker";
 
 // 頁面設定值型別 — 涵蓋所有編輯器欄位的可能值
-export type PageConfigValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | Record<string, unknown>
-  | PageConfigValue[];
+export type PageConfigValue = string | number | boolean | null | undefined | Record<string, unknown> | unknown[];
 
-// 頁面設定 config 型別（JSON 動態結構）
-export type PageConfig = Record<string, unknown>;
+// 頁面設定 config 型別（DB jsonb 動態結構，屬性值需在 JSX 中直接使用）
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB JSON 動態結構需搭配 || 預設值安全取用
+export type PageConfig = Record<string, any>;
 
-// 通用編輯器 Props
+// 通用編輯器 Props — 所有頁面設定編輯器共用
 export interface EditorProps {
   config: PageConfig;
   updateField: (field: string, value: PageConfigValue) => void;
