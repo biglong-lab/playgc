@@ -75,6 +75,10 @@ export interface GameSettingsReturn {
   setGameStructure: (v: GameStructure) => void;
   setChapterUnlockMode: (v: ChapterUnlockMode) => void;
   setAllowChapterReplay: (v: boolean) => void;
+  // 定價
+  pricing: PricingState;
+  setPricingType: (v: PricingType) => void;
+  setPrice: (v: string) => void;
   // 操作
   handleSave: () => void;
   isSaving: boolean;
