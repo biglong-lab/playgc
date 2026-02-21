@@ -192,18 +192,18 @@ export async function signUpWithEmail(email: string, password: string) {
   try {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     return result.user;
-  } catch (error: any) {
-    
-    if (error?.code === "auth/email-already-in-use") {
+  } catch (error: unknown) {
+    const code = getFirebaseErrorCode(error);
+    if (code === "auth/email-already-in-use") {
       throw new Error("此電子郵件已被使用");
-    } else if (error?.code === "auth/invalid-email") {
+    } else if (code === "auth/invalid-email") {
       throw new Error("電子郵件格式無效");
-    } else if (error?.code === "auth/weak-password") {
+    } else if (code === "auth/weak-password") {
       throw new Error("密碼強度不足，至少需要 6 個字元");
-    } else if (error?.code === "auth/operation-not-allowed") {
+    } else if (code === "auth/operation-not-allowed") {
       throw new Error("電子郵件登入未啟用");
     }
-    
+
     throw new Error("註冊失敗，請重試");
   }
 }
