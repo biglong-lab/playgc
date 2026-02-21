@@ -141,7 +141,7 @@
 **刪除檔案**: `client/src/components/admin-login/PasswordForm.tsx`
 **新增檔案**: `client/src/components/FieldSelector.tsx`
 
-**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 59 檔案 871 測試全通過
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 59 檔案 870 測試全通過
 
 ---
 
