@@ -344,7 +344,7 @@ export default function GamePlay() {
     });
   }, [toast]);
 
-  const handleVariableUpdate = useCallback((key: string, value: any) => {
+  const handleVariableUpdate = useCallback((key: string, value: unknown) => {
     setVariables(prev => ({ ...prev, [key]: value }));
   }, []);
 
