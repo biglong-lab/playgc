@@ -22,6 +22,7 @@ import { registerAdminPurchaseRoutes } from "./admin-purchases";
 import { registerPlayerPurchaseRoutes } from "./player-purchases";
 import { registerAdminSessionRoutes } from "./admin-sessions";
 import { registerRecurWebhookRoutes } from "./webhook-recur";
+import { registerAiScoringRoutes } from "./ai-scoring";
 
 export async function registerRoutes(
   httpServer: Server,
