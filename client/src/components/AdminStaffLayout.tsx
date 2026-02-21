@@ -190,6 +190,7 @@ export default function AdminStaffLayout({ children }: AdminStaffLayoutProps) {
         { title: "場域進階設定", icon: Sliders, href: "/admin-staff/field-settings", permission: "field:manage" },
         { title: "遊戲管理", icon: Gamepad2, href: "/admin-staff/games", permission: "game:view" },
         { title: "模組庫", icon: Library, href: "/admin-staff/templates", permission: "game:create" },
+        { title: "票券/收款", icon: Ticket, href: "/admin-staff/tickets", permission: "game:view" },
         { title: "QR Code", icon: QrCode, href: "/admin-staff/qrcodes", permission: "qr:generate" },
       ],
     },
