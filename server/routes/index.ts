@@ -50,6 +50,7 @@ export async function registerRoutes(
   registerAdminRedeemCodeRoutes(app);
   registerAdminPurchaseRoutes(app);
   registerPlayerPurchaseRoutes(app);
+  registerAdminSessionRoutes(app);
 
   return httpServer;
 }
