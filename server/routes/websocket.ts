@@ -369,7 +369,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
-  function broadcastToTeam(teamId: string, message: any, excludeClient?: WebSocketClient) {
+  function broadcastToTeam(teamId: string, message: WsBroadcastMessage, excludeClient?: WebSocketClient) {
     const teamClientSet = teamClients.get(teamId);
     if (teamClientSet) {
       const payload = JSON.stringify(message);
