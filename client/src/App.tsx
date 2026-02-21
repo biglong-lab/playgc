@@ -93,6 +93,7 @@ function Router() {
         <Route path="/admin-staff/games/:gameId/achievements" component={AchievementEditor} />
         <Route path="/admin-staff/games/:gameId/locations" component={LocationEditor} />
         <Route path="/admin-staff/games/:gameId/settings" component={GameSettings} />
+        <Route path="/admin-staff/games/:gameId/tickets" component={AdminRedeemCodes} />
         <Route path="/admin-staff/roles" component={AdminStaffRoles} />
         <Route path="/admin-staff/accounts" component={AdminStaffAccounts} />
         <Route path="/admin-staff/audit-logs" component={AdminStaffAuditLogs} />
