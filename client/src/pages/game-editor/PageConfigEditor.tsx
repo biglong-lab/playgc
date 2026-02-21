@@ -136,6 +136,76 @@ export default function PageConfigEditor({
               data-testid="config-instruction"
             />
           </div>
+
+          {/* AI 照片驗證設定 */}
+          <div className="border border-border rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bot className="w-4 h-4 text-primary" />
+                <label className="text-sm font-medium">AI 照片驗證</label>
+              </div>
+              <Switch
+                checked={!!config.aiVerify}
+                onCheckedChange={(checked) => updateField("aiVerify", checked)}
+                data-testid="config-ai-verify"
+              />
+            </div>
+
+            {config.aiVerify && (
+              <div className="space-y-4 pt-2 border-t">
+                <PhotoAiKeywordsEditor
+                  keywords={(config.targetKeywords as string[]) || []}
+                  onChange={(keywords) => updateField("targetKeywords", keywords)}
+                />
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    信心度門檻: {Math.round(((config.aiConfidenceThreshold as number) ?? 0.6) * 100)}%
+                  </label>
+                  <Slider
+                    value={[((config.aiConfidenceThreshold as number) ?? 0.6) * 100]}
+                    onValueChange={([v]) => updateField("aiConfidenceThreshold", v / 100)}
+                    min={20}
+                    max={95}
+                    step={5}
+                    data-testid="config-ai-threshold"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    越高越嚴格，建議 50-70%
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">驗證失敗提示</label>
+                  <Input
+                    value={(config.aiFailMessage as string) || ""}
+                    onChange={(e) => updateField("aiFailMessage", e.target.value)}
+                    placeholder="照片不符合要求，請重新拍攝"
+                    data-testid="config-ai-fail-msg"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">允許重拍</label>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={config.allowRetryOnAiFail !== false}
+                      onCheckedChange={(checked) => updateField("allowRetryOnAiFail", checked)}
+                    />
+                    {config.allowRetryOnAiFail !== false && (
+                      <Input
+                        type="number"
+                        value={(config.maxAiRetries as number) ?? 3}
+                        onChange={(e) => updateField("maxAiRetries", parseInt(e.target.value) || 3)}
+                        className="w-16 h-8"
+                        min={1}
+                        max={10}
+                        data-testid="config-ai-max-retries"
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <RewardsSection config={config} updateField={updateField} gameId={gameId} />
           <LocationSettingsSection config={config} updateField={updateField} />
         </div>
