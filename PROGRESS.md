@@ -73,7 +73,8 @@
 - [x] 裝置路由 (devices) - 450 行
 - [x] 排行榜路由 (leaderboard) - 124 行
 - [x] 媒體路由 (media) - 208 行
-- [x] 地點路由 (locations) - 522 行
+- [x] 地點路由 (locations) - 245 行
+- [x] 地點追蹤路由 (location-tracking) - 292 行
 - [x] 團隊路由 (teams) - 323 行
 - [x] 團隊生命週期路由 (team-lifecycle) - 284 行
 - [x] 團隊投票路由 (team-votes) - 270 行
