@@ -304,7 +304,7 @@ class MqttService {
     this.logDeviceActivity(deviceId, "sensor", `Sensor: ${sensorData.sensorType}, Value: ${JSON.stringify(sensorData.value)}`);
   }
 
-  private async handleCommandResponse(deviceId: string, responseData: any) {
+  private async handleCommandResponse(deviceId: string, responseData: unknown) {
     await this.logDeviceActivity(deviceId, "response", `Command response: ${JSON.stringify(responseData)}`);
   }
 
