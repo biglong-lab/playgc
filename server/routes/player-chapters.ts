@@ -242,6 +242,95 @@ export function registerPlayerChapterRoutes(app: Express) {
   );
 
   // ========================================================================
+  // 購買付費章節（用遊戲點數解鎖）
+  // ========================================================================
+  app.post(
+    "/api/games/:gameId/chapters/:chapterId/purchase",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { gameId, chapterId } = req.params;
+        const userId = req.user?.claims?.sub;
+
+        if (!userId) {
+          return res.status(401).json({ message: "需要登入" });
+        }
+
+        const chapter = await storage.getChapter(chapterId);
+        if (!chapter || chapter.gameId !== gameId) {
+          return res.status(404).json({ message: "章節不存在" });
+        }
+        if (chapter.unlockType !== "paid") {
+          return res.status(400).json({ message: "此章節不需購買" });
+        }
+
+        const config = chapter.unlockConfig as { price?: number } | null;
+        const price = config?.price ?? 0;
+
+        // 計算玩家目前總分
+        const progresses = await storage.getPlayerChapterProgress(
+          userId,
+          gameId
+        );
+        const totalScore = progresses.reduce(
+          (sum, p) => sum + (p.bestScore ?? 0),
+          0
+        );
+
+        if (totalScore < price) {
+          return res.status(400).json({
+            message: "點數不足",
+            requiredPoints: price,
+            currentPoints: totalScore,
+          });
+        }
+
+        // 扣除點數：從最高分章節開始扣
+        let remaining = price;
+        const sorted = [...progresses]
+          .filter((p) => (p.bestScore ?? 0) > 0)
+          .sort((a, b) => (b.bestScore ?? 0) - (a.bestScore ?? 0));
+        for (const p of sorted) {
+          if (remaining <= 0) break;
+          const deduct = Math.min(p.bestScore ?? 0, remaining);
+          await storage.updateChapterProgress(p.id, {
+            bestScore: (p.bestScore ?? 0) - deduct,
+          });
+          remaining -= deduct;
+        }
+
+        // 解鎖章節
+        const existing = await storage.getChapterProgressByChapter(
+          userId,
+          chapterId
+        );
+        let progress;
+        if (existing) {
+          progress = await storage.updateChapterProgress(existing.id, {
+            status: "unlocked",
+          });
+        } else {
+          progress = await storage.createChapterProgress({
+            userId,
+            gameId,
+            chapterId,
+            status: "unlocked",
+          });
+        }
+
+        res.json({
+          purchased: true,
+          pointsSpent: price,
+          remainingPoints: totalScore - price,
+          progress,
+        });
+      } catch (error) {
+        res.status(500).json({ message: "無法購買章節" });
+      }
+    }
+  );
+
+  // ========================================================================
   // 完成章節
   // ========================================================================
   app.patch(
