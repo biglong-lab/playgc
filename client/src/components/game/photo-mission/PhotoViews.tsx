@@ -321,9 +321,82 @@ export function VerifyingView() {
         <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4 animate-pulse">
           <Camera className="w-8 h-8 text-primary" />
         </div>
-        <p className="text-lg font-medium">AI 驗證中...</p>
-        <p className="text-sm text-muted-foreground">正在分析照片內容</p>
+        <p className="text-lg font-medium">AI 正在分析照片內容...</p>
+        <p className="text-sm text-muted-foreground mt-1">請稍候，通常只需數秒</p>
       </div>
+    </div>
+  );
+}
+
+// ===========================================
+// AI 驗證失敗畫面
+// ===========================================
+interface AiFailViewProps {
+  feedback: string;
+  detectedObjects: string[];
+  canRetry: boolean;
+  retryCount: number;
+  maxRetries: number;
+  onRetry: () => void;
+  onSkip: () => void;
+}
+
+export function AiFailView({
+  feedback,
+  detectedObjects,
+  canRetry,
+  retryCount,
+  maxRetries,
+  onRetry,
+  onSkip,
+}: AiFailViewProps) {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center">
+      <Card className="w-full max-w-md">
+        <CardContent className="p-6">
+          <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-destructive" />
+          </div>
+
+          <h3 className="text-lg font-display font-bold text-center mb-2">
+            照片驗證未通過
+          </h3>
+
+          <p className="text-sm text-muted-foreground text-center mb-4">
+            {feedback}
+          </p>
+
+          {detectedObjects.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs text-muted-foreground mb-2">AI 偵測到：</p>
+              <div className="flex flex-wrap gap-1">
+                {detectedObjects.map((obj, i) => (
+                  <Badge key={i} variant="secondary" className="text-xs">
+                    {obj}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            {canRetry && (
+              <Button onClick={onRetry} className="w-full gap-2">
+                <RotateCcw className="w-4 h-4" />
+                重新拍照（剩餘 {maxRetries - retryCount} 次）
+              </Button>
+            )}
+            <Button
+              variant={canRetry ? "outline" : "default"}
+              onClick={onSkip}
+              className="w-full gap-2"
+            >
+              <SkipForward className="w-4 h-4" />
+              {canRetry ? "跳過此任務" : "繼續下一步"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
