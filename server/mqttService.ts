@@ -330,7 +330,7 @@ class MqttService {
     }
   }
 
-  publish(topic: string, message: any, options: mqtt.IClientPublishOptions = {}): boolean {
+  publish(topic: string, message: string | Record<string, unknown>, options: mqtt.IClientPublishOptions = {}): boolean {
     if (!this.client || !this.isConnected) {
       return false;
     }
