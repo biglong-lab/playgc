@@ -157,25 +157,6 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     await firebaseSignOut();
   };
 
-  // 處理密碼登入提交
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!username.trim() || !password.trim()) {
-      toast({ title: "請填寫帳號和密碼", variant: "destructive" });
-      return;
-    }
-
-    passwordLoginMutation.mutate();
-  };
-
-  // 切換到密碼登入
-  const switchToPasswordLogin = () => {
-    setLoginError(null);
-    firebaseLoginMutation.reset();
-    setStep("password");
-  };
-
   // 返回場域輸入
   const backToFieldInput = () => {
     setLoginError(null);
