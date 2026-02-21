@@ -19,6 +19,7 @@ const TimeBombPage = lazy(() => import("@/components/game/TimeBombPage"));
 const LockPage = lazy(() => import("@/components/game/LockPage"));
 const MotionChallengePage = lazy(() => import("@/components/game/MotionChallengePage"));
 const VotePage = lazy(() => import("@/components/game/VotePage"));
+const FlowRouterPage = lazy(() => import("@/components/game/FlowRouterPage"));
 
 function PageLoadingFallback() {
   return (
