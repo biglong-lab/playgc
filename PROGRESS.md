@@ -100,6 +100,56 @@
 
 ## 工作紀錄
 
+### 2026-02-23 (Phase 31：管理介面重構 — 場域設定 + AI Key + 票券 + 配額)
+
+針對管理介面 UX 問題進行優化：場域獨立 AI Key、票券管理直接入口、配額控制。
+
+#### Phase 0：基礎準備
+- [x] 新增 `FieldSettings` 介面 (`shared/schema/fields.ts`) — AI 設定、配額、功能開關、品牌
+- [x] 新增 `parseFieldSettings()` 安全解析函式
+- [x] 新增 `server/lib/crypto.ts` (~65 行) — AES-256-GCM 加密/解密 API Key
+- [x] 修改 `server/lib/gemini.ts` — `verifyPhoto()` 和 `scoreTextAnswer()` 新增可選 `apiKey` 參數
+- [x] 新增 9 個 crypto 單元測試（roundtrip、IV 隨機、竄改偵測、格式驗證等）
+
+#### Phase 5：AI 每場域獨立 Key
+- [x] 修改 `server/routes/ai-scoring.ts` — Schema 加入 `gameId`，新增 `resolveAiApiKey(gameId)`
+  - 路徑：gameId → games 表 → fieldId → fields 表 → settings → 解密 API Key
+  - 場域 `enableAI=false` → 回傳 503
+  - 無場域 Key → fallback 到全域 `GEMINI_API_KEY`
+- [x] 修改 `PhotoMissionPage.tsx` — AI 呼叫加入 `gameId`
+- [x] 修改 `TextVerifyPage.tsx` — 加入 `gameId` prop + AI 呼叫加入 `gameId`
+
+#### Phase 4：場域設定 UI
+- [x] 新增 GET/PATCH `/api/admin/fields/:id/settings` 端點 (`admin-fields.ts`)
+  - GET: Key 遮罩回傳（hasGeminiApiKey: boolean）
+  - PATCH: Key 自動 AES 加密、支援布林/數值/字串設定、稽核日誌
+- [x] 新增 `FieldSettingsPage.tsx` (~350 行) — 三個 Tab
+  - AI 設定：開關 + API Key（遮罩顯示/新增/清除）+ 加密說明
+  - 功能與配額：maxGames、maxSessions、收費/團隊/競賽開關
+  - 品牌：主色調（color picker）、歡迎訊息
+- [x] 配額檢查：遊戲建立時檢查 `maxGames`（`admin-games.ts`）
+
+#### Phase 6：票券/收款管理
+- [x] 新增 GET `/api/admin/tickets/summary` — 各遊戲收入統計 + 兌換碼統計 + 本月收入
+- [x] 新增 `TicketsOverview.tsx` (~170 行) — 統計卡片 + 遊戲明細列表
+- [x] AdminLayout 側邊導航新增「票券/收款」和「場域設定」入口
+- [x] AdminStaffLayout 導航新增「場域進階設定」和「票券/收款」入口
+- [x] App.tsx 路由：`/admin/tickets`、`/admin/field-settings`、`/admin-staff/*` 同步
+
+#### 路由和導航變更
+| 路徑 | 頁面 | 說明 |
+|------|------|------|
+| `/admin/tickets` | TicketsOverview | 票券/收款統計總覽 |
+| `/admin/field-settings` | FieldSettingsPage | 場域 AI/配額/品牌設定 |
+| `/admin-staff/tickets` | TicketsOverview | 同上（場域管理員） |
+| `/admin-staff/field-settings` | FieldSettingsPage | 同上（場域管理員） |
+
+**新增檔案**: `server/lib/crypto.ts`, `client/src/pages/admin/FieldSettingsPage.tsx`, `client/src/pages/admin/TicketsOverview.tsx`, `server/__tests__/crypto.test.ts`
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 59 檔案 870 測試全通過、`npm run build` 成功
+
+---
+
 ### 2026-02-23 (Phase 30：流程控制強化 — 條件分支、迴圈、隨機路徑)
 
 新增 `flow_router` 頁面類型 + `onCompleteActions` 通用機制，讓遊戲設計師建立非線性流程。
