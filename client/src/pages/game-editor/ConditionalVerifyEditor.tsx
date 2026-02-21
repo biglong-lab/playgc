@@ -130,7 +130,7 @@ export default function ConditionalVerifyEditor({ config, updateField }: EditorP
           <Badge variant="secondary" className="text-xs">{fragments.length} 個碎片</Badge>
         </label>
         <div className="space-y-2">
-          {fragments.map((fragment: any, i: number) => (
+          {fragments.map((fragment: Fragment, i: number) => (
             <div key={fragment.id || i} className="flex gap-2 items-center bg-accent/30 rounded-lg p-2">
               <div className="flex-shrink-0 w-16 text-center">
                 <Badge variant="outline" className="text-xs">碎片 {i + 1}</Badge>
