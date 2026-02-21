@@ -146,6 +146,10 @@ export default {
           "0%, 100%": { boxShadow: "0 0 20px rgba(217, 119, 6, 0.3)" },
           "50%": { boxShadow: "0 0 40px rgba(217, 119, 6, 0.6)" },
         },
+        "score-float": {
+          "0%": { opacity: "1", transform: "translateX(-50%) translateY(0)" },
+          "100%": { opacity: "0", transform: "translateX(-50%) translateY(-24px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -158,6 +162,7 @@ export default {
         targetPulse: "targetPulse 2s ease-in-out infinite",
         spin: "spin 1s linear infinite",
         glow: "glow 2s ease-in-out infinite",
+        "score-float": "score-float 1.5s ease-out forwards",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
