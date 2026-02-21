@@ -22,7 +22,7 @@ export interface AdminLoginResponse {
   };
 }
 
-export type LoginStep = "field" | "firebase" | "password" | "pending";
+export type LoginStep = "field" | "firebase" | "pending";
 
 export interface UseAdminLoginOptions {
   // 登入成功後導向的路徑
