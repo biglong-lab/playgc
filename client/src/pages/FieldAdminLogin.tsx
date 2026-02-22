@@ -31,7 +31,7 @@ export default function FieldAdminLogin() {
 
   const getStepDescription = () => {
     switch (step) {
-      case "field": return "請輸入您的場域編號";
+      case "field": return "請輸入場域編號（超級管理員可留空）";
       case "firebase": return "請使用 Google 帳號登入";
       case "pending": return "您的授權申請正在審核中";
     }
