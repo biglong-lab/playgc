@@ -90,30 +90,30 @@ export default function AdminStaffDashboard() {
               <CardDescription>常用管理功能</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <a
-                href="/admin-staff/accounts"
+              <Link
+                href="/admin/accounts"
                 className="block p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                 data-testid="link-manage-accounts"
               >
                 <div className="font-medium">管理員帳號管理</div>
                 <div className="text-sm text-muted-foreground">新增、編輯或停用管理員帳號</div>
-              </a>
-              <a
-                href="/admin-staff/roles"
+              </Link>
+              <Link
+                href="/admin/roles"
                 className="block p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                 data-testid="link-manage-roles"
               >
                 <div className="font-medium">角色權限設定</div>
                 <div className="text-sm text-muted-foreground">設定角色與權限對應關係</div>
-              </a>
-              <a
-                href="/admin-staff/qrcodes"
+              </Link>
+              <Link
+                href="/admin/qrcodes"
                 className="block p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                 data-testid="link-qrcodes"
               >
                 <div className="font-medium">遊戲 QR Code</div>
                 <div className="text-sm text-muted-foreground">產生與管理遊戲專屬 QR Code</div>
-              </a>
+              </Link>
             </CardContent>
           </Card>
 
