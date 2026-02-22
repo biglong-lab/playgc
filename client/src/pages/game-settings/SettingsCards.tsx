@@ -432,21 +432,37 @@ export function PricingCard({
         </div>
 
         {state.pricingType === "one_time" && (
-          <div className="space-y-2">
-            <Label htmlFor="game-price">遊戲價格（新台幣）</Label>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">NT$</span>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="game-price">遊戲價格（新台幣）</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">NT$</span>
+                <Input
+                  id="game-price"
+                  type="number"
+                  min="0"
+                  value={state.price}
+                  onChange={(e) => onPriceChange(e.target.value)}
+                  disabled={!canEdit}
+                  placeholder="例如 100"
+                  className="max-w-32"
+                  data-testid="input-game-price"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="recur-product-id">Recur 產品 ID</Label>
               <Input
-                id="game-price"
-                type="number"
-                min="0"
-                value={state.price}
-                onChange={(e) => onPriceChange(e.target.value)}
+                id="recur-product-id"
+                value={state.recurProductId}
+                onChange={(e) => onRecurProductIdChange(e.target.value)}
                 disabled={!canEdit}
-                placeholder="例如 100"
-                className="max-w-32"
-                data-testid="input-game-price"
+                placeholder="在 Recur.tw 後台建立產品後填入"
+                data-testid="input-recur-product-id"
               />
+              <p className="text-xs text-muted-foreground">
+                用於線上付款，留空則使用遊戲 ID 作為產品識別碼
+              </p>
             </div>
           </div>
         )}
