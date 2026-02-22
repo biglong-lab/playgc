@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, LogIn, ArrowRight } from "lucide-react";
+import { Shield, LogIn, ArrowRight } from "lucide-react";
 import { useAdminLogin } from "@/hooks/useAdminLogin";
 import {
   FieldCodeBadge,
