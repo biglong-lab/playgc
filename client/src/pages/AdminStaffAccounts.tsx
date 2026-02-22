@@ -223,6 +223,6 @@ export default function AdminStaffAccounts() {
         roles={roles}
         isPending={approveMutation.isPending}
       />
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
