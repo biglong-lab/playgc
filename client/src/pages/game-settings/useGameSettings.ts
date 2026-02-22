@@ -80,6 +80,7 @@ export interface GameSettingsReturn {
   pricing: PricingState;
   setPricingType: (v: PricingType) => void;
   setPrice: (v: string) => void;
+  setRecurProductId: (v: string) => void;
   // 操作
   handleSave: () => void;
   isSaving: boolean;
