@@ -166,13 +166,10 @@ export default function AdminStaffQRCodes() {
   };
 
   return (
-    <AdminStaffLayout>
+    <UnifiedAdminLayout title="QR Code 管理">
       <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-bold">QR Code 管理</h1>
-            <p className="text-muted-foreground">管理遊戲 QR Code 和公開連結</p>
-          </div>
+        <div>
+          <p className="text-muted-foreground">管理遊戲 QR Code 和公開連結</p>
         </div>
 
         <Card>
