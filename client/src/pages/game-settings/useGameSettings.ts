@@ -44,6 +44,7 @@ export type PricingType = "free" | "one_time" | "per_chapter";
 export interface PricingState {
   pricingType: PricingType;
   price: string;
+  recurProductId: string;
 }
 
 // Hook 回傳值
