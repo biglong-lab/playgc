@@ -191,7 +191,7 @@ export function registerPlayerPurchaseRoutes(app: Express) {
         });
       }
 
-      // per_chapter 模式：回傳已購買的章節列表
+      // per_chapter 模式：回傳已購買的章節列表（含個別價格）
       if (game.pricingType === "per_chapter") {
         const chapters = await storage.getChapters(gameId);
         const chapterAccess = await Promise.all(
@@ -200,6 +200,8 @@ export function registerPlayerPurchaseRoutes(app: Express) {
               userId,
               ch.id
             );
+            const config = ch.unlockConfig as Record<string, unknown> | null;
+            const chapterPrice = config?.price as number | undefined;
             return {
               chapterId: ch.id,
               chapterOrder: ch.chapterOrder,
@@ -208,12 +210,16 @@ export function registerPlayerPurchaseRoutes(app: Express) {
                 ch.unlockType === "free" ||
                 ch.chapterOrder === 1 ||
                 !!purchased,
+              price: chapterPrice ?? null,
             };
           })
         );
 
+        // 若所有章節都已解鎖 → hasAccess: true
+        const allUnlocked = chapterAccess.every((ch) => ch.hasAccess);
+
         return res.json({
-          hasAccess: false,
+          hasAccess: allUnlocked,
           pricingType: "per_chapter",
           price: game.price,
           currency: game.currency,
