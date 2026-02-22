@@ -205,6 +205,7 @@ export function useGameSettings(): GameSettingsReturn {
       pricingType,
       price: price ? parseInt(price) : null,
       currency: "TWD",
+      recurProductId: recurProductId || null,
     });
   };
 
