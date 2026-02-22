@@ -111,7 +111,7 @@ export default function FieldAdminLogin() {
           {/* 步驟 2: Google 登入 */}
           {step === "firebase" && (
             <div className="space-y-4">
-              <FieldCodeBadge fieldCode={fieldCode} />
+              {fieldCode && <FieldCodeBadge fieldCode={fieldCode} />}
 
               {loginError && isAuthenticated && (
                 <LoginErrorAlert
