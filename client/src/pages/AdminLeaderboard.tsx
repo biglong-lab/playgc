@@ -108,7 +108,7 @@ export default function AdminLeaderboard() {
   };
 
   return (
-    <AdminLayout 
+    <UnifiedAdminLayout 
       title="排行榜管理"
       actions={
         <Button 
