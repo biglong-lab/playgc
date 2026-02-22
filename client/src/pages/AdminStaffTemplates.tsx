@@ -1,6 +1,6 @@
 // 總管理後台 - 遊戲模組庫頁面
 import { useState, useMemo } from "react";
-import AdminStaffLayout from "@/components/AdminStaffLayout";
+import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
