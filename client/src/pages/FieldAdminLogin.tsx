@@ -172,17 +172,11 @@ export default function FieldAdminLogin() {
             />
           )}
 
-          <div className="mt-6 text-center space-y-2">
+          <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               玩家請使用{" "}
               <a href="/" className="text-primary hover:underline">
                 一般登入
-              </a>
-            </p>
-            <p className="text-sm text-muted-foreground">
-              系統管理員請使用{" "}
-              <a href="/admin-staff/login" className="text-primary hover:underline">
-                總管理後台
               </a>
             </p>
           </div>
