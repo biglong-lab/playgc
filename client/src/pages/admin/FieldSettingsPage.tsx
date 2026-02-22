@@ -53,7 +53,7 @@ export default function FieldSettingsPage() {
         <div className="flex items-center justify-center h-64 text-muted-foreground">
           載入中...
         </div>
-      </AdminLayout>
+      </UnifiedAdminLayout>
     );
   }
 
@@ -88,7 +88,7 @@ export default function FieldSettingsPage() {
           </TabsContent>
         </Tabs>
       )}
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
 
