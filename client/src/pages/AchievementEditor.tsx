@@ -68,8 +68,7 @@ export default function AchievementEditor() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<AchievementFormData> }) => {
-      const endpoint = isAdminStaff ? `/api/admin/achievements/${id}` : `/api/achievements/${id}`;
-      const response = await apiRequest("PATCH", endpoint, data);
+      const response = await apiRequest("PATCH", `/api/achievements/${id}`, data);
       return response.json();
     },
     onSuccess: () => {
