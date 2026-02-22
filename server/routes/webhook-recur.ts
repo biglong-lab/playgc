@@ -31,9 +31,8 @@ export function registerRecurWebhookRoutes(app: Express) {
         return res.status(401).json({ message: "簽名驗證失敗" });
       }
 
-      // 2. 解析事件
-      const event: RecurWebhookEvent =
-        typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      // 2. 解析事件（express.json() 已解析 body）
+      const event: RecurWebhookEvent = req.body;
 
       // 3. 冪等性檢查
       if (processedEvents.has(event.id)) {
