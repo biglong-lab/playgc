@@ -49,7 +49,7 @@ export default function FieldSettingsPage() {
 
   if (!fieldId) {
     return (
-      <AdminLayout title="場域設定">
+      <UnifiedAdminLayout title="場域設定">
         <div className="flex items-center justify-center h-64 text-muted-foreground">
           載入中...
         </div>
@@ -58,7 +58,7 @@ export default function FieldSettingsPage() {
   }
 
   return (
-    <AdminLayout title="場域設定">
+    <UnifiedAdminLayout title="場域設定">
       {isLoading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
