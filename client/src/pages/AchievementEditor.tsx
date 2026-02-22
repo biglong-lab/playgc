@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import AdminLayout from "@/components/AdminLayout";
+import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import type { Achievement, Game } from "@shared/schema";
 import { ChevronLeft, Plus, Trash2, Copy, Search, Trophy, EyeOff, Loader2 } from "lucide-react";
 import {
