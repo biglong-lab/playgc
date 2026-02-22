@@ -93,10 +93,8 @@ export function useGameSettings(): GameSettingsReturn {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // 路徑偵測
-  const isAdminStaff = location.startsWith("/admin-staff");
-  const basePath = isAdminStaff ? "/admin-staff/games" : "/admin/games";
-  const apiBasePath = isAdminStaff ? "/api/admin/games" : "/api/games";
+  const basePath = "/admin/games";
+  const apiBasePath = "/api/games";
 
   // 地點鎖定 state
   const [locationLockEnabled, setLocationLockEnabled] = useState(false);
