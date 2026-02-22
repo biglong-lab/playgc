@@ -54,7 +54,7 @@ export default function AdminStaffTemplates() {
   };
 
   return (
-    <AdminStaffLayout>
+    <UnifiedAdminLayout title="模組庫">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
