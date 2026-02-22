@@ -181,7 +181,7 @@ export default function PurchaseGate() {
             <CardContent>
               <Button
                 className="w-full gap-2"
-                onClick={() => checkoutMutation.mutate()}
+                onClick={() => checkoutMutation.mutate(undefined)}
                 disabled={checkoutMutation.isPending}
               >
                 {checkoutMutation.isPending ? (
