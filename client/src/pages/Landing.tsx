@@ -158,7 +158,7 @@ export default function Landing() {
           <p className="text-sm text-muted-foreground font-chinese">
             &copy; 2024 賈村競技體驗場. All rights reserved.
           </p>
-          <Link href="/admin-staff/login">
+          <Link href="/admin/login">
             <span
               className="text-xs text-muted-foreground/50 hover:text-muted-foreground cursor-pointer mt-4 inline-block transition-colors"
               data-testid="link-admin-login"
