@@ -85,6 +85,7 @@ export default function GameSettings() {
           canEdit={canEdit}
           onPricingTypeChange={settings.setPricingType}
           onPriceChange={settings.setPrice}
+          onRecurProductIdChange={settings.setRecurProductId}
         />
 
         <TeamModeCard
