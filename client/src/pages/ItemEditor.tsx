@@ -68,11 +68,8 @@ export default function ItemEditor() {
   const [location] = useLocation();
   const { toast } = useToast();
   
-  // Detect if we're in admin-staff context or admin context
-  const isAdminStaff = location.startsWith("/admin-staff");
-  const basePath = isAdminStaff ? "/admin-staff/games" : "/admin/games";
-  // Use different API paths based on authentication context
-  const apiBasePath = isAdminStaff ? "/api/admin/games" : "/api/games";
+  const basePath = "/admin/games";
+  const apiBasePath = "/api/games";
   
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
