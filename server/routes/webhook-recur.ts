@@ -24,8 +24,8 @@ export function registerRecurWebhookRoutes(app: Express) {
         return res.status(401).json({ message: "缺少簽名" });
       }
 
-      const rawBody =
-        typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+      // 使用 express.json verify 回呼捕獲的原始 Buffer（server/index.ts）
+      const rawBody = (req.rawBody as Buffer).toString("utf-8");
 
       if (!verifyWebhookSignature(rawBody, signature)) {
         return res.status(401).json({ message: "簽名驗證失敗" });
