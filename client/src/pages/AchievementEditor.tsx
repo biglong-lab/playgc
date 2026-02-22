@@ -22,9 +22,8 @@ export default function AchievementEditor() {
   const [location] = useLocation();
   const { toast } = useToast();
 
-  const isAdminStaff = location.startsWith("/admin-staff");
-  const basePath = isAdminStaff ? "/admin-staff/games" : "/admin/games";
-  const apiBasePath = isAdminStaff ? "/api/admin/games" : "/api/games";
+  const basePath = "/admin/games";
+  const apiBasePath = "/api/games";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAchievement, setSelectedAchievement] = useState<Achievement | null>(null);
