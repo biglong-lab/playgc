@@ -159,6 +159,6 @@ export default function AdminTemplates() {
         open={createModule !== null}
         onOpenChange={(open) => !open && setCreateModule(null)}
       />
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
