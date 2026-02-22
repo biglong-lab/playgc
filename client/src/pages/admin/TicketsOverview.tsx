@@ -84,7 +84,7 @@ export default function TicketsOverview() {
           </Card>
         </div>
       )}
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
 
