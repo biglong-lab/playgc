@@ -4,14 +4,8 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("管理端", () => {
-  test("場主登入頁面能正常載入", async ({ page }) => {
-    await page.goto("/admin/login");
-    const body = page.locator("body");
-    await expect(body).toBeVisible();
-  });
-
   test("管理員登入頁面能正常載入", async ({ page }) => {
-    await page.goto("/admin-staff/login");
+    await page.goto("/admin/login");
     const body = page.locator("body");
     await expect(body).toBeVisible();
   });
@@ -24,13 +18,19 @@ test.describe("管理端", () => {
     expect(content?.length).toBeGreaterThan(0);
   });
 
-  test("admin-staff 首頁重導向到 login", async ({ page }) => {
-    await page.goto("/admin-staff");
+  test("admin-staff 路徑重導向到 /admin/login", async ({ page }) => {
+    await page.goto("/admin-staff/login");
     await page.waitForTimeout(2000);
-    await expect(page).toHaveURL(/\/admin-staff\/login/);
+    await expect(page).toHaveURL(/\/admin\/login/);
   });
 
-  test("管理端頁面有正確的表單元素", async ({ page }) => {
+  test("admin-staff 首頁重導向到 /admin/login", async ({ page }) => {
+    await page.goto("/admin-staff");
+    await page.waitForTimeout(2000);
+    await expect(page).toHaveURL(/\/admin\/login/);
+  });
+
+  test("管理端登入頁面有正確的表單元素", async ({ page }) => {
     await page.goto("/admin/login");
     await page.waitForTimeout(2000);
     // 登入頁面應有輸入框或按鈕
