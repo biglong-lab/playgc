@@ -294,6 +294,6 @@ export default function AdminLeaderboard() {
           </div>
         )}
       </div>
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
