@@ -1,6 +1,6 @@
 // 遊戲模組庫頁面 - 瀏覽、篩選、預覽和套用遊戲模組
 import { useState, useMemo } from "react";
-import AdminLayout from "@/components/AdminLayout";
+import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
