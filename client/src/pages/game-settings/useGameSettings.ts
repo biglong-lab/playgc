@@ -276,9 +276,11 @@ export function useGameSettings(): GameSettingsReturn {
     pricing: {
       pricingType,
       price,
+      recurProductId,
     },
     setPricingType,
     setPrice,
+    setRecurProductId,
     handleSave,
     isSaving: updateMutation.isPending,
   };
