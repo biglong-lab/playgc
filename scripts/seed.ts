@@ -125,6 +125,51 @@ async function seed() {
   }
   console.log("  ✅ 場域管理員角色已建立");
 
+  // 場域主管角色（與場域管理員相同權限，可依需求微調）
+  const fieldDirectorRoleId = randomUUID();
+  await db.insert(roles).values({
+    id: fieldDirectorRoleId,
+    fieldId,
+    name: "場域主管",
+    systemRole: "field_director",
+    description: "場域主管，負責監督場域營運",
+    isCustom: false,
+    isDefault: false,
+  });
+
+  for (const perm of fieldAdminPerms) {
+    await db.insert(rolePermissions).values({
+      id: randomUUID(),
+      roleId: fieldDirectorRoleId,
+      permissionId: permissionIds[perm.key],
+      allow: true,
+    });
+  }
+  console.log("  ✅ 場域主管角色已建立");
+
+  // 場域執行者角色（唯讀權限）
+  const fieldExecutorRoleId = randomUUID();
+  await db.insert(roles).values({
+    id: fieldExecutorRoleId,
+    fieldId,
+    name: "場域執行者",
+    systemRole: "field_executor",
+    description: "場域執行者，只能查看資料和執行遊戲",
+    isCustom: false,
+    isDefault: false,
+  });
+
+  const executorPerms = ["game:view", "page:view", "item:view", "qr:view", "user:view"];
+  for (const permKey of executorPerms) {
+    await db.insert(rolePermissions).values({
+      id: randomUUID(),
+      roleId: fieldExecutorRoleId,
+      permissionId: permissionIds[permKey],
+      allow: true,
+    });
+  }
+  console.log("  ✅ 場域執行者角色已建立（唯讀）");
+
   // 4. 建立管理員帳號（帳密登入）
   console.log("\n👤 建立管理員帳號...");
   const passwordHash = await bcrypt.hash("admin123", 10);
