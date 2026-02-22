@@ -390,6 +390,6 @@ export default function AdminSessions() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
