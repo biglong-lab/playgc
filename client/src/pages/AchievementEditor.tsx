@@ -212,7 +212,7 @@ export default function AchievementEditor() {
           isSaving={createMutation.isPending || updateMutation.isPending}
         />
       </div>
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
 
