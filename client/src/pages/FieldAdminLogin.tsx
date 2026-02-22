@@ -42,7 +42,7 @@ export default function FieldAdminLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <MapPin className="w-8 h-8 text-primary" />
+            <Shield className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">場域管理員登入</CardTitle>
           <CardDescription>{getStepDescription()}</CardDescription>
