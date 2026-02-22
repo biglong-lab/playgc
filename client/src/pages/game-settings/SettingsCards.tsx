@@ -388,6 +388,7 @@ interface PricingCardProps {
   canEdit: boolean;
   onPricingTypeChange: (v: PricingType) => void;
   onPriceChange: (v: string) => void;
+  onRecurProductIdChange: (v: string) => void;
 }
 
 export function PricingCard({
@@ -395,6 +396,7 @@ export function PricingCard({
   canEdit,
   onPricingTypeChange,
   onPriceChange,
+  onRecurProductIdChange,
 }: PricingCardProps) {
   return (
     <Card>
