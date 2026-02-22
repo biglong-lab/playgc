@@ -22,14 +22,10 @@ export default function AdminStaffGames() {
   const ctx = useAdminStaffGames();
 
   return (
-    <AdminStaffLayout>
+    <UnifiedAdminLayout title="遊戲管理">
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2" data-testid="text-page-title">
-              <Gamepad2 className="h-6 w-6" />
-              遊戲管理
-            </h1>
             <p className="text-muted-foreground">管理您的實境遊戲</p>
           </div>
           <Button onClick={() => ctx.setIsDialogOpen(true)} data-testid="button-create-game">
