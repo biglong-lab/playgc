@@ -132,8 +132,7 @@ export default function ItemEditor() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const endpoint = isAdminStaff ? `/api/admin/items/${id}` : `/api/items/${id}`;
-      await apiRequest("DELETE", endpoint);
+      await apiRequest("DELETE", `/api/items/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [apiBasePath, gameId, "items"] });
