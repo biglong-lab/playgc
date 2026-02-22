@@ -453,6 +453,6 @@ export default function AdminStaffRoles() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
