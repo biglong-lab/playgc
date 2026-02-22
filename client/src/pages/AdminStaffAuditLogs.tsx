@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import AdminStaffLayout from "@/components/AdminStaffLayout";
+import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
