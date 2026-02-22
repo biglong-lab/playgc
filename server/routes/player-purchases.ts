@@ -308,6 +308,37 @@ export function registerPlayerPurchaseRoutes(app: Express) {
   });
 
   // ========================================================================
+  // 交易狀態查詢（Recur 付款後輪詢用）
+  // ========================================================================
+  app.get("/api/transactions/:txId/status", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      if (!userId) {
+        return res.status(401).json({ message: "需要登入" });
+      }
+
+      const { txId } = req.params;
+      const tx = await storage.getTransaction(txId);
+      if (!tx) {
+        return res.status(404).json({ message: "交易不存在" });
+      }
+
+      // 驗證交易屬於當前用戶
+      if (tx.userId !== userId) {
+        return res.status(403).json({ message: "無權查看此交易" });
+      }
+
+      res.json({
+        status: tx.status,
+        gameId: tx.gameId,
+        chapterId: tx.chapterId ?? null,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "無法查詢交易狀態" });
+    }
+  });
+
+  // ========================================================================
   // 我的購買記錄
   // ========================================================================
   app.get("/api/purchases", isAuthenticated, async (req: AuthenticatedRequest, res) => {
