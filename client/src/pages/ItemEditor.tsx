@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import AdminLayout from "@/components/AdminLayout";
+import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import type { Item, Game } from "@shared/schema";
 import {
   ChevronLeft, Plus, Save, Trash2, Copy, Search,
