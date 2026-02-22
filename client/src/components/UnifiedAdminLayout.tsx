@@ -1,0 +1,209 @@
+// 統一管理端 Layout — 合併 AdminLayout + AdminStaffLayout
+// 使用 JWT/RBAC 認證，根據角色權限動態顯示菜單
+import { Link, useLocation } from "wouter";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { ADMIN_MENU_GROUPS, SYSTEM_ROLE_LABELS, filterMenuByPermissions } from "@/config/admin-menu";
+import FieldSelector from "@/components/FieldSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarProvider,
+  SidebarTrigger,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Shield, LogOut, ChevronDown, Settings } from "lucide-react";
+
+interface UnifiedAdminLayoutProps {
+  children: React.ReactNode;
+  title: string;
+  actions?: React.ReactNode;
+}
+
+export default function UnifiedAdminLayout({ children, title, actions }: UnifiedAdminLayoutProps) {
+  const [location] = useLocation();
+  const { admin, isLoading, isAuthenticated, hasPermission, logout } = useAdminAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !admin) {
+    return null;
+  }
+
+  const filteredMenuGroups = filterMenuByPermissions(ADMIN_MENU_GROUPS, hasPermission);
+  const isSuperAdmin = admin.systemRole === "super_admin";
+  const roleLabel = SYSTEM_ROLE_LABELS[admin.systemRole] ?? admin.systemRole;
+  const displayName = admin.displayName || admin.username || "管理員";
+  const initials = displayName[0].toUpperCase();
+
+  const sidebarStyle = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "4rem",
+  };
+
+  return (
+    <SidebarProvider style={sidebarStyle as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <AdminSidebar
+          filteredMenuGroups={filteredMenuGroups}
+          location={location}
+          isSuperAdmin={isSuperAdmin}
+          displayName={displayName}
+          initials={initials}
+          roleLabel={roleLabel}
+          fieldName={admin.fieldName}
+          onLogout={logout}
+        />
+
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <header className="h-14 flex items-center justify-between gap-4 px-4 border-b border-border bg-background/95 backdrop-blur shrink-0">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <FieldSelector
+                currentFieldId={admin.fieldId}
+                currentFieldName={admin.fieldName}
+                isSuperAdmin={isSuperAdmin}
+              />
+              <h1 className="font-display font-bold text-lg">{title}</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              {actions}
+              <ThemeToggle />
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-auto p-6 bg-muted/30">
+            {children}
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
+
+// ============================================================================
+// Sidebar 子元件（避免主元件過長）
+// ============================================================================
+
+interface AdminSidebarProps {
+  filteredMenuGroups: ReturnType<typeof filterMenuByPermissions>;
+  location: string;
+  isSuperAdmin: boolean;
+  displayName: string;
+  initials: string;
+  roleLabel: string;
+  fieldName: string;
+  onLogout: () => void;
+}
+
+function AdminSidebar({
+  filteredMenuGroups,
+  location,
+  isSuperAdmin,
+  displayName,
+  initials,
+  roleLabel,
+  fieldName,
+  onLogout,
+}: AdminSidebarProps) {
+  return (
+    <Sidebar>
+      <SidebarHeader className="border-b p-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <Shield className="w-6 h-6 text-primary" />
+          </div>
+          <div>
+            <h2 className="font-bold text-sm">賈村競技場</h2>
+            <p className="text-xs text-muted-foreground">
+              {isSuperAdmin ? "系統管理" : fieldName || "管理後台"}
+            </p>
+          </div>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent>
+        {filteredMenuGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={
+                        location === item.path ||
+                        (item.path !== "/admin" && location.startsWith(item.path))
+                      }
+                    >
+                      <Link href={item.path}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
+      </SidebarContent>
+
+      <SidebarFooter className="border-t p-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start gap-3 h-auto py-2">
+              <Avatar className="w-8 h-8">
+                <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-sm font-medium truncate">{displayName}</p>
+                <Badge variant="outline" className="text-xs">
+                  {roleLabel}
+                </Badge>
+              </div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem>
+              <Settings className="w-4 h-4 mr-2" />
+              帳號設定
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onLogout} className="text-destructive">
+              <LogOut className="w-4 h-4 mr-2" />
+              登出
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
