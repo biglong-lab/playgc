@@ -52,7 +52,7 @@ vi.mock("../admin-games/useAdminGames", () => ({
 }));
 
 // Mock 子元件避免深度渲染
-vi.mock("@/components/AdminLayout", () => ({
+vi.mock("@/components/UnifiedAdminLayout", () => ({
   default: ({ title, children, actions }: { title: string; children: React.ReactNode; actions?: React.ReactNode }) => (
     <div data-testid="admin-layout">
       <h1>{title}</h1>
