@@ -1,18 +1,7 @@
 // 裝置管理常數定義
 import {
-  Home, Gamepad2, Activity, Cpu, BarChart3, Trophy, Settings,
-  Lightbulb, Power, Zap, TrendingUp,
+  Lightbulb, Power, Zap, Activity, TrendingUp,
 } from "lucide-react";
-
-export const menuItems = [
-  { title: "總覽", icon: Home, path: "/admin" },
-  { title: "遊戲管理", icon: Gamepad2, path: "/admin/games" },
-  { title: "進行中場次", icon: Activity, path: "/admin/sessions" },
-  { title: "設備管理", icon: Cpu, path: "/admin/devices" },
-  { title: "數據分析", icon: BarChart3, path: "/admin/analytics" },
-  { title: "排行榜", icon: Trophy, path: "/admin/leaderboard" },
-  { title: "系統設定", icon: Settings, path: "/admin/settings" },
-] as const;
 
 export const DEVICE_TYPES = [
   { value: "shooting_target", label: "射擊靶機" },
