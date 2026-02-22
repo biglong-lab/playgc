@@ -143,6 +143,55 @@
 
 ---
 
+### 2026-02-22 (Phase 31-2+3：統一 Layout + 路由合併 + 清理)
+
+合併 `/admin/*` 和 `/admin-staff/*` 雙軌管理系統為統一 `UnifiedAdminLayout`。
+
+#### Phase 2：統一 Layout 核心
+- [x] `scripts/seed.ts` — 新增 field_director、field_executor 角色（16 權限 x 6 分類）
+- [x] `client/src/config/admin-menu.ts` (109 行) — 集中菜單配置 + `filterMenuByPermissions()` 純函式
+- [x] `client/src/components/UnifiedAdminLayout.tsx` (209 行) — 統一 Layout（useAdminAuth + 權限過濾菜單 + FieldSelector）
+- [x] `client/src/components/shared/ProtectedAdminRoute.tsx` — 新增 `requiredPermission` prop + 403 提示
+
+#### Phase 3-A：遷移 9 個 AdminStaff 頁面
+- [x] AdminStaffDashboard/Fields/Roles/Accounts/AuditLogs/Games/Players/QRCodes/Templates — `AdminStaffLayout` → `UnifiedAdminLayout`
+
+#### Phase 3-B：遷移 9 個 Admin 頁面
+- [x] AdminGames/Settings/Sessions/Leaderboard/Templates/ItemEditor/AchievementEditor/FieldSettingsPage/TicketsOverview — `AdminLayout` → `UnifiedAdminLayout`
+
+#### Phase 3-C：3 個內嵌 Sidebar 頁面重構
+- [x] `AdminDashboard.tsx` (330→210 行) — 移除內嵌 SidebarProvider，保留儀表板卡片
+- [x] `AdminAnalytics.tsx` (464→393 行) — 移除內嵌 Sidebar，`useAuth` → `useAdminAuth`，抽出 5 個子元件
+- [x] `admin-devices/index.tsx` (515→416 行) — 移除內嵌 Sidebar，`useAuth` → `useAdminAuth`，header 轉 actions prop
+- [x] `admin-devices/constants.ts` — 移除 menuItems 死碼 + 未使用 icon import
+
+#### Phase 3-D：路由與登入統一
+- [x] `FieldAdminLogin.tsx` — 合併為唯一登入頁（Shield icon、超級管理員可留空場域碼）
+- [x] `App.tsx` — 所有管理路由統一到 `/admin/*`，13 個 `/admin-staff/*` 重導向
+
+#### Phase 3-E+F：清理 + 測試
+- [x] 移除 `isAdminStaff` 死碼（game-editor、AchievementEditor、ItemEditor、admin-redeem-codes、useGameSettings）
+- [x] `Landing.tsx` 連結修正 `/admin-staff/login` → `/admin/login`
+- [x] `AdminLogin.tsx` → 重導向到 `/admin/login`
+- [x] `AdminLayout.tsx` → deprecated re-export UnifiedAdminLayout
+- [x] `AdminStaffLayout.tsx` → deprecated re-export UnifiedAdminLayout
+- [x] 測試更新：GameEditor.test.tsx、AdminGames.test.tsx、admin-management.spec.ts
+
+**成功標準達成**：
+- ✅ 只有一個 Layout（UnifiedAdminLayout）
+- ✅ 只有一個登入頁（/admin/login）
+- ✅ 所有管理頁在 /admin/* 下
+- ✅ /admin-staff/* 自動重導向（13 條）
+- ✅ super_admin 看全部菜單 / field_manager 看場域菜單 / field_executor 只看唯讀項目
+- ✅ FieldSelector 對 super_admin 顯示
+
+**新增檔案**: `client/src/config/admin-menu.ts`, `client/src/components/UnifiedAdminLayout.tsx`
+**Deprecated**: `AdminLayout.tsx`, `AdminStaffLayout.tsx`, `AdminLogin.tsx`
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 59 檔案 870 測試全通過、`npm run build` 成功
+
+---
+
 ### 2026-02-23 (Phase 31：管理介面重構 — 場域設定 + AI Key + 票券 + 配額)
 
 針對管理介面 UX 問題進行優化：場域獨立 AI Key、票券管理直接入口、配額控制。
