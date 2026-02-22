@@ -243,14 +243,10 @@ export default function AdminStaffRoles() {
   }, {} as Record<string, Permission[]>) || {};
 
   return (
-    <AdminStaffLayout>
+    <UnifiedAdminLayout title="角色管理">
       <div className="p-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <Key className="w-6 h-6" />
-              角色管理
-            </h1>
             <p className="text-muted-foreground mt-1">管理系統角色和權限設定</p>
           </div>
           
