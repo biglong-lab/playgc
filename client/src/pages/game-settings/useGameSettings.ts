@@ -132,10 +132,10 @@ export function useGameSettings(): GameSettingsReturn {
     enabled: !!gameId,
   });
 
-  const canEdit = isAdminStaff || (!!user && !!game && (
+  const canEdit = !!user && !!game && (
     user.role === "admin" ||
     game.creatorId === user.id
-  ));
+  );
 
   // 載入遊戲資料到 state
   useEffect(() => {
