@@ -143,15 +143,11 @@ export default function AdminStaffAccounts() {
   };
 
   return (
-    <AdminStaffLayout>
+    <UnifiedAdminLayout title="管理員帳號">
       <div className="p-6 space-y-6">
         {/* 標題列 */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <UserCog className="w-6 h-6" />
-              管理員帳號
-            </h1>
             <p className="text-muted-foreground mt-1">
               管理系統管理員的帳號和權限
             </p>
