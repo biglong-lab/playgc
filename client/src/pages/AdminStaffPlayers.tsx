@@ -172,6 +172,6 @@ export default function AdminStaffPlayers() {
           </CardContent>
         </Card>
       </div>
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
