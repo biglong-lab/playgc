@@ -112,7 +112,7 @@ export default function AdminGames() {
           onOpenChange={ctx.setIsWizardOpen}
         />
       </div>
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
 
