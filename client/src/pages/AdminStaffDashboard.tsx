@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import AdminStaffLayout from "@/components/AdminStaffLayout";
+import { Link } from "wouter";
+import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Gamepad2, Activity } from "lucide-react";
 
