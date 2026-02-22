@@ -28,7 +28,7 @@ export default function AdminGames() {
   }
 
   return (
-    <AdminLayout
+    <UnifiedAdminLayout
       title="遊戲管理"
       actions={
         <Button onClick={() => ctx.setIsWizardOpen(true)} data-testid="button-create-game">
