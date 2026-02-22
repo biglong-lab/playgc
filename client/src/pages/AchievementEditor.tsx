@@ -141,7 +141,7 @@ export default function AchievementEditor() {
   };
 
   return (
-    <AdminLayout
+    <UnifiedAdminLayout
       title={`成就管理 - ${game?.title || "載入中..."}`}
       actions={
         <Link href={`${basePath}/${gameId}`}>
