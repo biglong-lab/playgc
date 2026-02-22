@@ -80,8 +80,7 @@ export default function AchievementEditor() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const endpoint = isAdminStaff ? `/api/admin/achievements/${id}` : `/api/achievements/${id}`;
-      await apiRequest("DELETE", endpoint);
+      await apiRequest("DELETE", `/api/achievements/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [apiBasePath, gameId, "achievements"] });
