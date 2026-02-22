@@ -90,7 +90,7 @@ export default function FieldAdminLogin() {
                   type="submit"
                   data-testid="button-next"
                   className="w-full"
-                  disabled={isFirebaseLoginPending || !fieldCode.trim() || !!loginError}
+                  disabled={isFirebaseLoginPending || !!loginError}
                 >
                   {isFirebaseLoginPending ? (
                     <span className="flex items-center gap-2">
