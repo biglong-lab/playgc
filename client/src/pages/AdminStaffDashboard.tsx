@@ -137,6 +137,6 @@ export default function AdminStaffDashboard() {
           </Card>
         </div>
       </div>
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
