@@ -29,7 +29,8 @@ const PurchaseGate = lazy(() => import("@/pages/PurchaseGate"));
 const PurchaseSuccess = lazy(() => import("@/pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
 
-// 管理端（場主） — lazy import
+// 管理端 — 統一在 /admin/* 下
+const FieldAdminLogin = lazy(() => import("@/pages/FieldAdminLogin"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AdminGames = lazy(() => import("@/pages/AdminGames"));
 const AdminDevices = lazy(() => import("@/pages/admin-devices"));
@@ -43,27 +44,21 @@ const LocationEditor = lazy(() => import("@/pages/LocationEditor"));
 const ItemEditor = lazy(() => import("@/pages/ItemEditor"));
 const AchievementEditor = lazy(() => import("@/pages/AchievementEditor"));
 const GameSettings = lazy(() => import("@/pages/GameSettings"));
-const FieldAdminLogin = lazy(() => import("@/pages/FieldAdminLogin"));
 const AdminRedeemCodes = lazy(() => import("@/pages/admin-redeem-codes"));
 const FieldSettingsPage = lazy(() => import("@/pages/admin/FieldSettingsPage"));
 const TicketsOverview = lazy(() => import("@/pages/admin/TicketsOverview"));
-
-// 管理端（場域管理員） — lazy import
-const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
-const AdminStaffDashboard = lazy(() => import("@/pages/AdminStaffDashboard"));
 const AdminStaffFields = lazy(() => import("@/pages/AdminStaffFields"));
 const AdminStaffRoles = lazy(() => import("@/pages/AdminStaffRoles"));
 const AdminStaffAccounts = lazy(() => import("@/pages/AdminStaffAccounts"));
 const AdminStaffAuditLogs = lazy(() => import("@/pages/AdminStaffAuditLogs"));
-const AdminStaffGames = lazy(() => import("@/pages/AdminStaffGames"));
 const AdminStaffPlayers = lazy(() => import("@/pages/AdminStaffPlayers"));
 const AdminStaffQRCodes = lazy(() => import("@/pages/AdminStaffQRCodes"));
-const AdminStaffTemplates = lazy(() => import("@/pages/AdminStaffTemplates"));
 
 function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
+        {/* 玩家端 */}
         <Route path="/" component={Landing} />
         <Route path="/home" component={Home} />
         <Route path="/game/:gameId/chapters/:chapterId" component={GamePlay} />
@@ -77,7 +72,11 @@ function Router() {
         <Route path="/purchase/gate/:gameId" component={PurchaseGate} />
         <Route path="/purchase/success" component={PurchaseSuccess} />
         <Route path="/purchases" component={MyPurchases} />
+
+        {/* 管理端登入 */}
         <Route path="/admin/login" component={FieldAdminLogin} />
+
+        {/* 管理端 — 統一在 /admin/* 下（ProtectedAdminRoute 保護） */}
         <Route path="/admin">{() => <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games">{() => <ProtectedAdminRoute><AdminGames /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId">{() => <ProtectedAdminRoute><GameEditor /></ProtectedAdminRoute>}</Route>
@@ -94,27 +93,29 @@ function Router() {
         <Route path="/admin/games/:gameId/tickets">{() => <ProtectedAdminRoute><AdminRedeemCodes /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/field-settings">{() => <ProtectedAdminRoute><FieldSettingsPage /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/tickets">{() => <ProtectedAdminRoute><TicketsOverview /></ProtectedAdminRoute>}</Route>
-        {/* Admin Staff Routes - 場域管理員登入系統 */}
-        <Route path="/admin-staff">{() => <Redirect to="/admin-staff/login" />}</Route>
-        <Route path="/admin-staff/login" component={AdminLogin} />
-        <Route path="/admin-staff/dashboard" component={AdminStaffDashboard} />
-        <Route path="/admin-staff/fields" component={AdminStaffFields} />
-        <Route path="/admin-staff/games" component={AdminStaffGames} />
-        <Route path="/admin-staff/templates" component={AdminStaffTemplates} />
-        <Route path="/admin-staff/games/:gameId" component={GameEditor} />
-        <Route path="/admin-staff/games/:gameId/items" component={ItemEditor} />
-        <Route path="/admin-staff/games/:gameId/achievements" component={AchievementEditor} />
-        <Route path="/admin-staff/games/:gameId/locations" component={LocationEditor} />
-        <Route path="/admin-staff/games/:gameId/settings" component={GameSettings} />
-        <Route path="/admin-staff/games/:gameId/tickets" component={AdminRedeemCodes} />
-        <Route path="/admin-staff/roles" component={AdminStaffRoles} />
-        <Route path="/admin-staff/accounts" component={AdminStaffAccounts} />
-        <Route path="/admin-staff/audit-logs" component={AdminStaffAuditLogs} />
-        <Route path="/admin-staff/players" component={AdminStaffPlayers} />
-        <Route path="/admin-staff/qrcodes" component={AdminStaffQRCodes} />
-        <Route path="/admin-staff/field-settings" component={FieldSettingsPage} />
-        <Route path="/admin-staff/tickets" component={TicketsOverview} />
-        {/* Game by Slug - 玩家透過 QR Code 進入遊戲 */}
+        <Route path="/admin/fields">{() => <ProtectedAdminRoute><AdminStaffFields /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/roles">{() => <ProtectedAdminRoute><AdminStaffRoles /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/accounts">{() => <ProtectedAdminRoute><AdminStaffAccounts /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/audit-logs">{() => <ProtectedAdminRoute><AdminStaffAuditLogs /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/players">{() => <ProtectedAdminRoute><AdminStaffPlayers /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/qrcodes">{() => <ProtectedAdminRoute><AdminStaffQRCodes /></ProtectedAdminRoute>}</Route>
+
+        {/* /admin-staff/* 向後兼容 — 重導向到 /admin/* */}
+        <Route path="/admin-staff">{() => <Redirect to="/admin/login" />}</Route>
+        <Route path="/admin-staff/login">{() => <Redirect to="/admin/login" />}</Route>
+        <Route path="/admin-staff/dashboard">{() => <Redirect to="/admin" />}</Route>
+        <Route path="/admin-staff/fields">{() => <Redirect to="/admin/fields" />}</Route>
+        <Route path="/admin-staff/games">{() => <Redirect to="/admin/games" />}</Route>
+        <Route path="/admin-staff/templates">{() => <Redirect to="/admin/templates" />}</Route>
+        <Route path="/admin-staff/roles">{() => <Redirect to="/admin/roles" />}</Route>
+        <Route path="/admin-staff/accounts">{() => <Redirect to="/admin/accounts" />}</Route>
+        <Route path="/admin-staff/audit-logs">{() => <Redirect to="/admin/audit-logs" />}</Route>
+        <Route path="/admin-staff/players">{() => <Redirect to="/admin/players" />}</Route>
+        <Route path="/admin-staff/qrcodes">{() => <Redirect to="/admin/qrcodes" />}</Route>
+        <Route path="/admin-staff/field-settings">{() => <Redirect to="/admin/field-settings" />}</Route>
+        <Route path="/admin-staff/tickets">{() => <Redirect to="/admin/tickets" />}</Route>
+
+        {/* 玩家透過 QR Code / slug 進入遊戲 */}
         <Route path="/g/:slug" component={GameBySlug} />
         <Route component={NotFound} />
       </Switch>
