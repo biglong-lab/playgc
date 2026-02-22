@@ -122,6 +122,7 @@ export function useGameSettings(): GameSettingsReturn {
   // 定價 state
   const [pricingType, setPricingType] = useState<PricingType>("free");
   const [price, setPrice] = useState("");
+  const [recurProductId, setRecurProductId] = useState("");
 
   // 資料查詢
   const { data: user } = useQuery<User>({
