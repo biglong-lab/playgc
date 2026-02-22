@@ -6,6 +6,7 @@ interface ChapterAccess {
   chapterOrder: number;
   title: string;
   hasAccess: boolean;
+  price?: number | null;
 }
 
 interface GameAccessData {
