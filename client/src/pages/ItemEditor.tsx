@@ -205,7 +205,7 @@ export default function ItemEditor() {
   };
 
   return (
-    <AdminLayout
+    <UnifiedAdminLayout
       title={`道具管理 - ${game?.title || "載入中..."}`}
       actions={
         <div className="flex items-center gap-2">
