@@ -323,6 +323,6 @@ export default function AdminSettings() {
           </Card>
         </TabsContent>
       </Tabs>
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
