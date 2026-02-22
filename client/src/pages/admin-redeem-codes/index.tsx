@@ -37,7 +37,7 @@ export default function AdminRedeemCodes() {
     deleteCode,
     grantAccess,
     revokePurchase,
-  } = useRedeemCodes(gameId ?? "", isAdminStaff);
+  } = useRedeemCodes(gameId ?? "");
 
   const [tab, setTab] = useState("codes");
 
