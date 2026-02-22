@@ -76,7 +76,7 @@ export default function AdminSettings() {
   const isMqttConnected = mqttStatus?.connected === true;
 
   return (
-    <AdminLayout title="系統設定">
+    <UnifiedAdminLayout title="系統設定">
       <Tabs defaultValue="general" className="space-y-6">
         <TabsList>
           <TabsTrigger value="general" className="gap-1" data-testid="tab-general">
