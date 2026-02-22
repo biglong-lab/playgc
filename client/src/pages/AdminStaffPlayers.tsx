@@ -93,10 +93,9 @@ export default function AdminStaffPlayers() {
   };
 
   return (
-    <AdminStaffLayout>
+    <UnifiedAdminLayout title="玩家管理">
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground" data-testid="text-page-title">玩家管理</h1>
           <p className="text-muted-foreground">查看系統中的所有玩家帳號</p>
         </div>
 
