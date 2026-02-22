@@ -159,6 +159,7 @@ export function useGameSettings(): GameSettingsReturn {
     setAllowChapterReplay(game.allowChapterReplay !== false);
     setPricingType((game.pricingType as PricingType) || "free");
     setPrice(String(game.price ?? ""));
+    setRecurProductId(game.recurProductId || "");
   }, [game]);
 
   // 儲存 mutation
