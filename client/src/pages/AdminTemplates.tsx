@@ -65,7 +65,7 @@ export default function AdminTemplates() {
   };
 
   return (
-    <AdminLayout title="遊戲模組庫">
+    <UnifiedAdminLayout title="遊戲模組庫">
       <div className="space-y-6">
         {/* 頁面標題區 */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
