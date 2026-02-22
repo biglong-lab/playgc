@@ -382,6 +382,6 @@ export default function AdminStaffQRCodes() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
