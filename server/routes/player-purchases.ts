@@ -249,6 +249,8 @@ export function registerPlayerPurchaseRoutes(app: Express) {
       }
 
       const { gameId } = req.params;
+      const chapterId = req.body?.chapterId as string | undefined;
+
       const game = await storage.getGame(gameId);
       if (!game) {
         return res.status(404).json({ message: "遊戲不存在" });
@@ -259,21 +261,56 @@ export function registerPlayerPurchaseRoutes(app: Express) {
         return res.status(400).json({ message: "此遊戲為免費遊戲" });
       }
 
-      if (!game.price || game.price <= 0) {
-        return res.status(400).json({ message: "遊戲定價未設定" });
-      }
+      let amount: number;
+      let productId: string;
 
-      // 檢查是否已有存取權
-      const existing = await storage.getUserGamePurchase(userId, gameId);
-      if (existing) {
-        return res.status(409).json({ message: "您已擁有此遊戲存取權" });
+      if (chapterId) {
+        // 章節級購買
+        if (game.pricingType !== "per_chapter") {
+          return res.status(400).json({ message: "此遊戲不支援章節購買" });
+        }
+
+        const chapter = await storage.getChapter(chapterId);
+        if (!chapter || chapter.gameId !== gameId) {
+          return res.status(404).json({ message: "章節不存在" });
+        }
+
+        const config = chapter.unlockConfig as Record<string, unknown> | null;
+        const chapterPrice = config?.price as number | undefined;
+        if (!chapterPrice || chapterPrice <= 0) {
+          return res.status(400).json({ message: "此章節未設定價格" });
+        }
+
+        // 檢查是否已有此章節存取權
+        const existingChapter = await storage.getUserChapterPurchase(userId, chapterId);
+        if (existingChapter) {
+          return res.status(409).json({ message: "您已擁有此章節存取權" });
+        }
+
+        amount = chapterPrice;
+        productId = `${game.recurProductId || gameId}-ch-${chapter.chapterOrder}`;
+      } else {
+        // 遊戲級購買
+        if (!game.price || game.price <= 0) {
+          return res.status(400).json({ message: "遊戲定價未設定" });
+        }
+
+        // 檢查是否已有存取權
+        const existing = await storage.getUserGamePurchase(userId, gameId);
+        if (existing) {
+          return res.status(409).json({ message: "您已擁有此遊戲存取權" });
+        }
+
+        amount = game.price;
+        productId = game.recurProductId || gameId;
       }
 
       // 建立待處理的交易記錄
       const transaction = await storage.createTransaction({
         userId,
         gameId,
-        amount: game.price,
+        chapterId: chapterId ?? undefined,
+        amount,
         currency: game.currency ?? "TWD",
         status: "pending",
       });
@@ -283,7 +320,7 @@ export function registerPlayerPurchaseRoutes(app: Express) {
 
       // 呼叫 Recur API 建立 Checkout Session
       const session = await createCheckoutSession({
-        productId: game.recurProductId || gameId,
+        productId,
         successUrl: `${appUrl}/purchase/success?txId=${transaction.id}`,
         cancelUrl: `${appUrl}/purchase/gate/${gameId}`,
         mode: "PAYMENT",
@@ -292,6 +329,7 @@ export function registerPlayerPurchaseRoutes(app: Express) {
           transactionId: transaction.id,
           gameId,
           userId,
+          ...(chapterId ? { chapterId } : {}),
         },
       });
 
