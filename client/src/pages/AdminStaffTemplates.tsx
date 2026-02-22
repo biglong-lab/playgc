@@ -137,6 +137,6 @@ export default function AdminStaffTemplates() {
         open={createModule !== null}
         onOpenChange={(open) => !open && setCreateModule(null)}
       />
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
