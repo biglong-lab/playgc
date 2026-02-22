@@ -100,6 +100,33 @@
 
 ## 工作紀錄
 
+### 2026-02-22 (Phase 27-B：Recur.tw 金流補齊 — Bug 修復 + 章節付款 + 測試)
+
+修復已知 Bug、補齊章節級線上付款、新增管理端 recurProductId UI、撰寫完整測試。
+
+#### Bug 修復
+- [x] `webhook-recur.ts` — rawBody 改用 `(req.rawBody as Buffer).toString("utf-8")`（原 `JSON.stringify` 重建字串導致簽名驗證失敗）
+- [x] `PurchaseSuccess.tsx` — 改用 `/api/transactions/:txId/status` 端點輪詢交易狀態（原 `purchases?.find()` 取到錯誤記錄）
+
+#### 新增功能
+- [x] `player-purchases.ts` — 新增 `GET /api/transactions/:txId/status` 端點（含 userId 驗證）
+- [x] `player-purchases.ts` — `POST /api/games/:gameId/checkout` 支援 `chapterId` body 參數（章節級付款）
+- [x] `PurchaseGate.tsx` — per_chapter 模式顯示章節清單（Lock/Unlock 狀態 + 單章購買按鈕）
+- [x] `useGameSettings.ts` — PricingState 新增 `recurProductId`，handleSave 傳送至後端
+- [x] `SettingsCards.tsx` — PricingCard 在 one_time 模式顯示 Recur 產品 ID 輸入欄位
+- [x] `GameSettings.tsx` — 傳遞 `onRecurProductIdChange` prop
+
+#### 測試（28 個新測試）
+- [x] `webhook-recur.test.ts` (9 測試) — 簽名驗證、事件處理、冪等性、錯誤處理
+- [x] `player-purchases-checkout.test.ts` (15 測試) — Checkout、交易狀態、存取權查詢
+- [x] `PurchaseSuccess.test.tsx` (4 測試) — 成功/失敗/載入/無 txId 狀態
+
+**新增檔案**: `server/__tests__/webhook-recur.test.ts`, `server/__tests__/player-purchases-checkout.test.ts`, `client/src/pages/__tests__/PurchaseSuccess.test.tsx`
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 62 檔案 898 測試全通過
+
+---
+
 ### 2026-02-22 (Phase 31-1：統一 Firebase 認證 — 移除密碼登入 + super_admin 場域選擇)
 
 簡化管理員登入流程，統一使用 Firebase 認證，移除舊密碼登入機制。
