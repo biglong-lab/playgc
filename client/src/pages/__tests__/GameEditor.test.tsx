@@ -136,13 +136,13 @@ describe("GameEditor", () => {
     expect(mockSetLocation).toHaveBeenCalledWith("/admin/games");
   });
 
-  it("admin-staff 路徑使用正確的 basePath", async () => {
+  it("統一使用 /admin/games basePath", async () => {
     mockGameId = "new";
-    mockLocationPath = "/admin-staff/games/new";
+    mockLocationPath = "/admin/games/new";
     customRender(<GameEditor />);
     const backBtn = screen.getByTestId("button-back");
     await userEvent.click(backBtn);
-    expect(mockSetLocation).toHaveBeenCalledWith("/admin-staff/games");
+    expect(mockSetLocation).toHaveBeenCalledWith("/admin/games");
   });
 
   it("新遊戲不顯示資源管理列", () => {
