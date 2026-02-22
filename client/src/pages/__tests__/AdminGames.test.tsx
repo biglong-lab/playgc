@@ -108,7 +108,7 @@ describe("AdminGames", () => {
     expect(container.innerHTML).toBe("");
   });
 
-  it("認證後渲染 AdminLayout", () => {
+  it("認證後渲染 UnifiedAdminLayout", () => {
     render(<AdminGames />);
     expect(screen.getByTestId("admin-layout")).toBeInTheDocument();
     expect(screen.getByText("遊戲管理")).toBeInTheDocument();
