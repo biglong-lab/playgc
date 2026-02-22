@@ -1,5 +1,5 @@
 // 場域管理員遊戲管理主頁面
-import AdminStaffLayout from "@/components/AdminStaffLayout";
+import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
