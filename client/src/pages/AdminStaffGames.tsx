@@ -92,7 +92,7 @@ export default function AdminStaffGames() {
           isPending={ctx.deletePending}
         />
       </div>
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
 
