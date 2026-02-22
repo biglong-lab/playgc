@@ -118,8 +118,7 @@ export default function ItemEditor() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ItemFormData> }) => {
-      const endpoint = isAdminStaff ? `/api/admin/items/${id}` : `/api/items/${id}`;
-      const response = await apiRequest("PATCH", endpoint, data);
+      const response = await apiRequest("PATCH", `/api/items/${id}`, data);
       return response.json();
     },
     onSuccess: () => {
