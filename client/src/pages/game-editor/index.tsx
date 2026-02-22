@@ -38,12 +38,10 @@ export default function GameEditor() {
   const { toast } = useToast();
   const isNew = gameId === "new";
 
-  // 判斷是 admin-staff 還是 admin 路徑
-  const isAdminStaff = location.startsWith("/admin-staff");
-  const basePath = isAdminStaff ? "/admin-staff/games" : "/admin/games";
-  const apiGamesPath = isAdminStaff ? "/api/admin/games" : "/api/games";
-  const apiPagesPath = isAdminStaff ? "/api/admin/pages" : "/api/pages";
-  const apiEventsPath = isAdminStaff ? "/api/admin/events" : "/api/events";
+  const basePath = "/admin/games";
+  const apiGamesPath = "/api/games";
+  const apiPagesPath = "/api/pages";
+  const apiEventsPath = "/api/events";
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
