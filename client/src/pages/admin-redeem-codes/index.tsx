@@ -15,8 +15,7 @@ import { PurchaseHistory } from "./PurchaseHistory";
 export default function AdminRedeemCodes() {
   const { gameId } = useParams<{ gameId: string }>();
   const [location, setLocation] = useLocation();
-  const isAdminStaff = location.startsWith("/admin-staff");
-  const basePath = isAdminStaff ? "/admin-staff/games" : "/admin/games";
+  const basePath = "/admin/games";
 
   const { data: game } = useQuery<Game>({
     queryKey: [`/api/admin/games/${gameId}`],
