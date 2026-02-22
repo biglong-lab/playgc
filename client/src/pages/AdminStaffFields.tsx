@@ -470,6 +470,6 @@ export default function AdminStaffFields() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
