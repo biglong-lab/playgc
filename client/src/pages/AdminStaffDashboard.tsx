@@ -62,10 +62,9 @@ export default function AdminStaffDashboard() {
   ];
 
   return (
-    <AdminStaffLayout>
+    <UnifiedAdminLayout title="管理儀表板">
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">管理儀表板</h1>
           <p className="text-muted-foreground">系統總覽與快速操作</p>
         </div>
 
