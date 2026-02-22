@@ -448,6 +448,6 @@ export default function ItemEditor() {
           </DialogContent>
         </Dialog>
       </div>
-    </AdminLayout>
+    </UnifiedAdminLayout>
   );
 }
