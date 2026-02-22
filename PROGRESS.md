@@ -35,8 +35,8 @@
 - [x] i18n 多語系支援
 - [x] 章節選擇 (ChapterSelect) - Phase 1 章節系統
 
-#### 管理端（場主 Admin）
-- [x] 管理員登入 (Firebase Auth)
+#### 管理端（統一 Layout — UnifiedAdminLayout + JWT/RBAC）
+- [x] 統一登入 `/admin/login` (Firebase Auth — 支援 super_admin 空場域碼)
 - [x] 儀表板 (AdminDashboard)
 - [x] 遊戲管理 (AdminGames)
 - [x] 遊戲編輯器 (GameEditor) - 頁面拖拉排序
@@ -50,18 +50,16 @@
 - [x] 數據分析 (AdminAnalytics)
 - [x] 排行榜管理 (AdminLeaderboard)
 - [x] 系統設定 (AdminSettings)
-
-#### 管理端（場域管理員 Admin Staff）
-- [x] 場域管理員登入 (Firebase Auth — 統一認證，密碼登入已停用)
-- [x] 場域管理儀表板
+- [x] 模組庫 (AdminTemplates)
 - [x] 場域管理 (Fields)
-- [x] 場域進階設定 (FieldSettings) — AI Key / 配額 / 功能開關 / 品牌 (Phase 31)
-- [x] 票券/收款管理 (TicketsOverview) — 統計總覽 + 各遊戲明細 (Phase 31)
-- [x] 角色管理 (Roles)
+- [x] 場域進階設定 (FieldSettings) — AI Key / 配額 / 功能開關 / 品牌
+- [x] 票券/收款管理 (TicketsOverview) — 統計總覽 + 各遊戲明細
+- [x] 角色管理 (Roles) — RBAC 權限過濾
 - [x] 帳號管理 (Accounts)
 - [x] 稽核日誌 (Audit Logs)
 - [x] 玩家管理 (Players)
 - [x] QR Code 管理
+- [x] `/admin-staff/*` 向後兼容重導向到 `/admin/*`
 
 #### 後端 API（已模組化拆分）
 - [x] 認證路由 (auth) - 355 行
