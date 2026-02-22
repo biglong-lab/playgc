@@ -105,7 +105,7 @@ export default function AdminSessions() {
   };
 
   return (
-    <AdminLayout 
+    <UnifiedAdminLayout 
       title="場次管理"
       actions={
         <div className="flex gap-2">
