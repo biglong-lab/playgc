@@ -23,9 +23,9 @@ interface GrantAccessData {
   note?: string;
 }
 
-export function useRedeemCodes(gameId: string, isAdminStaff: boolean) {
+export function useRedeemCodes(gameId: string) {
   const { toast } = useToast();
-  const apiBase = isAdminStaff ? "/api/admin" : "/api/admin";
+  const apiBase = "/api/admin";
 
   // 兌換碼列表
   const codesQuery = useQuery<RedeemCode[]>({
