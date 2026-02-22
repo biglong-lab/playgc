@@ -217,6 +217,6 @@ export default function AdminStaffAuditLogs() {
           </CardContent>
         </Card>
       </div>
-    </AdminStaffLayout>
+    </UnifiedAdminLayout>
   );
 }
