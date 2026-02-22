@@ -74,13 +74,16 @@ export default function FieldAdminLogin() {
                   <Input
                     id="fieldCode"
                     data-testid="input-field-code"
-                    placeholder="例如: JIACHUN"
+                    placeholder="例如: JIACHUN（超級管理員可留空）"
                     value={fieldCode}
                     onChange={(e) => setFieldCode(e.target.value.toUpperCase())}
                     disabled={isFirebaseLoginPending}
                     autoComplete="organization"
                     autoFocus
                   />
+                  <p className="text-xs text-muted-foreground">
+                    超級管理員可不填場域編號直接登入
+                  </p>
                 </div>
 
                 <Button
