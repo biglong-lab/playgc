@@ -86,6 +86,17 @@ const superAdminHeaders = {
 describe("admin-fields 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
+    mockDb.query.fields.findMany.mockReset();
+    mockDb.query.fields.findFirst.mockReset();
+    mockDb._chain.returning.mockReset();
+    mockDb._chain.where.mockReset();
+    // 重設鏈式 mock
+    mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
+    mockDb._chain.values.mockReturnValue({ returning: mockDb._chain.returning });
+    mockDb.update.mockReturnValue({ set: mockDb._chain.set });
+    mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });
+    mockDb._chain.where.mockReturnValue({ returning: mockDb._chain.returning });
     // 重設 insertFieldSchema mock
     (insertFieldSchema.parse as ReturnType<typeof vi.fn>).mockImplementation((data: Record<string, unknown>) => data);
     (insertFieldSchema.partial as ReturnType<typeof vi.fn>).mockReturnValue({
