@@ -43,15 +43,15 @@ vi.mock("../firebaseAuth", () => ({
   }),
 }));
 
-vi.mock("./utils", () => ({
-  checkGameOwnership: vi.fn(),
-}));
-
-// 因為 checkGameOwnership 從 ./utils 引入，但 locations.ts 引入的是 ../routes/utils
-// 需要用完整路徑 mock
-vi.mock("../routes/utils", () => ({
-  checkGameOwnership: vi.fn(),
-}));
+// 保留 validateId / requireAdminRole 等真實實作，只 mock checkGameOwnership
+// 防止跨檔案 mock 洩漏時其他路由缺少 validateId
+vi.mock("../routes/utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../routes/utils")>();
+  return {
+    ...actual,
+    checkGameOwnership: vi.fn(),
+  };
+});
 
 import { storage } from "../storage";
 import { registerLocationRoutes } from "../routes/locations";
