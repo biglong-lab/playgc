@@ -106,6 +106,9 @@ describe("對戰路由 API", () => {
     vi.clearAllMocks();
     selectResults = [];
     selectIndex = 0;
+    // 清除 mockResolvedValueOnce 佇列，防止跨測試洩漏
+    mockInsertReturning.mockReset();
+    mockUpdateReturning.mockReset();
   });
 
   // ────────────────────────────────────────────────────
