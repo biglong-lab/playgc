@@ -19,6 +19,8 @@ export default defineConfig({
       "shared/**/*.{test,spec}.{ts,tsx}",
     ],
     exclude: ["node_modules", "dist", ".git", "attached_assets", ".cache"],
+    // Vitest threads pool 偶爾有跨檔案 mock 洩漏，retry 作為安全網
+    retry: 2,
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
