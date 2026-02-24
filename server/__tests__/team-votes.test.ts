@@ -102,6 +102,12 @@ const validVoteBody = {
 describe("Team Votes 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
+    mockDb.query.teams.findFirst.mockReset();
+    mockDb.query.teamVotes.findFirst.mockReset();
+    mockDb.query.teamVotes.findMany.mockReset();
+    mockDb._chain.returning.mockReset();
+    mockDb._chain.where.mockReset();
     // 重設鏈式 mock
     mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
     mockDb._chain.values.mockReturnValue({ returning: mockDb._chain.returning });
