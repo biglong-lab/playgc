@@ -79,7 +79,7 @@ const AUTH_HEADER = { Authorization: "Bearer valid-token" };
 
 describe("隊伍路由 (teams)", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   // ===========================================
