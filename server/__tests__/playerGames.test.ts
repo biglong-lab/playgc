@@ -73,7 +73,7 @@ function createTestApp() {
 
 describe("玩家遊戲路由", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("GET /api/games", () => {

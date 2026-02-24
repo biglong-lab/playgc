@@ -77,7 +77,7 @@ const AUTH = { Authorization: "Bearer valid-token" };
 
 describe("地點路由 (locations)", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     mockCheckOwnership.mockResolvedValue({ authorized: true });
   });
 

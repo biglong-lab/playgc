@@ -93,7 +93,7 @@ describe("Devices 路由", () => {
   let app: ReturnType<typeof express>;
 
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     app = createApp();
   });
 

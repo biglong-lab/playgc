@@ -93,7 +93,7 @@ function makeGame(overrides: Record<string, unknown> = {}) {
 
 describe("玩家購買路由 — Checkout + 交易", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
     mockIsRecurConfigured.mockReturnValue(true);
   });
 

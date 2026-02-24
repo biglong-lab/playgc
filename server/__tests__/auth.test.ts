@@ -103,7 +103,7 @@ const ADMIN_HEADER = { Authorization: "Bearer admin-token" };
 
 describe("認證路由 (auth)", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   // ===========================================

@@ -8,6 +8,11 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./client/src/test/setup.ts"],
+    // server/shared 測試用 node 環境（避免 jsdom 共享狀態導致 mock 洩漏）
+    environmentMatchGlobs: [
+      ["server/**", "node"],
+      ["shared/**", "node"],
+    ],
     include: [
       "client/src/**/*.{test,spec}.{ts,tsx}",
       "server/**/*.{test,spec}.{ts,tsx}",
