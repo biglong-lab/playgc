@@ -88,6 +88,10 @@ const mockGame = { id: "game-1", fieldId: "field-1", title: "遊戲" };
 describe("Admin Content 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
+    for (const fn of Object.values(mockStorage)) {
+      (fn as ReturnType<typeof vi.fn>).mockReset();
+    }
   });
 
   // ========================
