@@ -70,6 +70,11 @@ function createApp() {
 describe("Team Scores 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
+    mockDb.query.teamSessions.findFirst.mockReset();
+    mockDb.query.teamScoreHistory.findMany.mockReset();
+    mockDb._chain.where.mockReset();
+    mockDb._chain.values.mockReset();
     // 重設鏈式 mock
     mockDb.update.mockReturnValue({ set: mockDb._chain.set });
     mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });
