@@ -79,7 +79,14 @@ const AUTH_HEADER = { Authorization: "Bearer valid-token" };
 
 describe("隊伍路由 (teams)", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
+    // 精準重設 db/storage mock 回傳值，保留 middleware 實作
+    mockDb.query.teams.findFirst.mockReset();
+    mockDb.query.teamMembers.findFirst.mockReset();
+    mockInsertReturning.mockReset();
+    mockUpdateSet.mockReset();
+    mockStorage.getGame.mockReset();
+    mockStorage.createPlayerProgress.mockReset();
   });
 
   // ===========================================
