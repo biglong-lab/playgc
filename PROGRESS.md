@@ -100,6 +100,40 @@
 
 ## 工作紀錄
 
+### 2026-02-24 (Vitest Mock 洩漏修復 — 穩定性從 60% 提升到 100%)
+
+修復 Vitest 測試間歇性失敗問題。根本原因：`vi.clearAllMocks()` 不清空 `mockResolvedValueOnce` 佇列，殘留值在下一個測試被消費，導致錯誤的 HTTP status code。
+
+#### 問題分析
+- `vi.clearAllMocks()` 只清除呼叫記錄（.mock.calls），不清空 `mockResolvedValueOnce` 佇列
+- 不能直接改用 `vi.resetAllMocks()` 因為會破壞 middleware factory mock（requireAdminAuth, isAuthenticated）
+- 10 個測試檔案共 126 次 `mockResolvedValueOnce` 呼叫，佇列殘留風險極高
+
+#### 修復方案：精準 mockReset()
+- [x] `adminContent.test.ts` — 循環 reset 所有 mockStorage 函式（38 次 once 呼叫）
+- [x] `adminRoles.test.ts` — reset 7 個 query mock + chain mock + 重建鏈式關係
+- [x] `adminGames.test.ts` — reset query mock + chain mock + select chain + 重建全部鏈式關係（22 次 once 呼叫）
+- [x] `adminFields.test.ts` — reset query mock + chain mock + 重建鏈式關係
+- [x] `adminModules.test.ts` — reset chain mock + 重建鏈式關係
+- [x] `team-votes.test.ts` — reset 3 個 query mock + chain mock + 重建鏈式關係（27 次 once 呼叫）
+- [x] `team-scores.test.ts` — reset 2 個 query mock + chain mock + 重建鏈式關係（16 次 once 呼叫）
+
+#### 修復方案：importOriginal 保護
+- [x] `devices.test.ts` — `vi.mock("../routes/utils")` 改用 `importOriginal` 保留 `validateId` 純函式
+- [x] `locations.test.ts` — 同上，防止跨檔案洩漏時 `validateId` 變成 undefined
+
+#### 安全網
+- [x] `vitest.config.ts` — 新增 `retry: 2`（Vitest worker 層級偶發問題的最後防線）
+- [x] `vitest.config.ts` — `environmentMatchGlobs` 設定 server/shared 使用 node 環境
+
+#### 驗證結果
+- 修復前：10 次測試通過率 60%（6/10）
+- 修復後：20 次測試通過率 100%（20/20），無任何 retry 事件
+
+**修改檔案**: 9 個測試檔案 + vitest.config.ts
+
+---
+
 ### 2026-02-22 (Phase 27-B：Recur.tw 金流補齊 — Bug 修復 + 章節付款 + 測試)
 
 修復已知 Bug、補齊章節級線上付款、新增管理端 recurProductId UI、撰寫完整測試。
