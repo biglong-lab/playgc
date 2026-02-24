@@ -58,18 +58,7 @@ export function makeProgress(overrides = {}) {
 
 export const AUTH_HEADER = { Authorization: "Bearer valid-token" };
 
-// 重設所有 storage mock，避免測試間洩漏
+// 重設所有 mock（含回傳值），避免測試間洩漏
 export function resetStorageMocks() {
-  vi.clearAllMocks();
-  mockStorage.getGame.mockReset();
-  mockStorage.getChapters.mockReset();
-  mockStorage.getChapter.mockReset();
-  mockStorage.getChapterWithPages.mockReset();
-  mockStorage.isChapterUnlocked.mockReset();
-  mockStorage.getPlayerChapterProgress.mockReset();
-  mockStorage.getChapterProgressByChapter.mockReset();
-  mockStorage.createChapterProgress.mockReset();
-  mockStorage.updateChapterProgress.mockReset();
-  mockStorage.unlockNextChapter.mockReset();
-  mockStorage.getSession.mockReset();
+  vi.resetAllMocks();
 }
