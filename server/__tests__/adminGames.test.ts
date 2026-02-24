@@ -130,6 +130,12 @@ const superAdminHeaders = {
 describe("Admin Games 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
+    mockDb.query.games.findMany.mockReset();
+    mockDb.query.games.findFirst.mockReset();
+    mockDb._chain.returning.mockReset();
+    mockDb._chain.where.mockReset();
+    mockDb._selectChain.limit.mockReset();
     // 重設鏈式 mock
     mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
     mockDb._chain.values.mockReturnValue({ returning: mockDb._chain.returning });
@@ -137,6 +143,10 @@ describe("Admin Games 路由", () => {
     mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });
     mockDb._chain.where.mockReturnValue({ returning: mockDb._chain.returning });
     mockDb.delete.mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+    mockDb.select.mockReturnValue({ from: mockDb._selectChain.from });
+    mockDb._selectChain.from.mockReturnValue({ where: mockDb._selectChain.where });
+    mockDb._selectChain.where.mockReturnValue({ limit: mockDb._selectChain.limit });
+    mockDb._selectChain.limit.mockResolvedValue([{ settings: {} }]);
   });
 
   describe("GET /api/admin/games", () => {
