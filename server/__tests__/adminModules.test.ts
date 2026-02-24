@@ -83,6 +83,12 @@ const adminHeaders = {
 describe("admin-modules 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
+    mockDb._chain.returning.mockReset();
+    mockDb._chain.values.mockReset();
+    // 重設鏈式 mock
+    mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
+    mockDb._chain.values.mockReturnValue({ returning: mockDb._chain.returning });
   });
 
   describe("GET /api/admin/modules", () => {
