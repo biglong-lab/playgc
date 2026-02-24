@@ -19,6 +19,8 @@ export default defineConfig({
       "shared/**/*.{test,spec}.{ts,tsx}",
     ],
     exclude: ["node_modules", "dist", ".git", "attached_assets", ".cache"],
+    // forks pool 提供進程級隔離，防止 vi.mock 跨檔案洩漏
+    pool: "forks",
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
