@@ -846,4 +846,4 @@
 8. ~~GamePlay.tsx 超長函式~~ → 第二十六階段已重構（541→306 行 + useSessionManager 212 行）
 9. ~~game-editor any 型別~~ → 第二十六階段已統一為 EditorProps + PageConfigValue 型別
 10. ~~ErrorBoundary console.error~~ → 第二十六階段已移除
-11. **Vitest 並行 mock 洩漏** - playerChapterActions 和 teams 偶爾因 mock 洩漏失敗（單獨跑通過）
+11. ~~Vitest mock 洩漏~~ → 已修復（mockResolvedValueOnce 佇列清理 + importOriginal 保護 + retry 安全網）
