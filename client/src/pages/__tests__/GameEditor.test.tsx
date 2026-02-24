@@ -86,7 +86,7 @@ import GameEditor from "../game-editor/index";
 
 describe("GameEditor", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockGameId = "game-123";
     mockLocationPath = "/admin/games/game-123";
   });

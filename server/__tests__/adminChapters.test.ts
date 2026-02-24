@@ -93,7 +93,7 @@ function makeChapter(overrides = {}) {
 
 describe("管理端章節路由", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   // ======================================================================

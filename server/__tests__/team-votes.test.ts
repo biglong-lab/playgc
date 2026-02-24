@@ -101,7 +101,7 @@ const validVoteBody = {
 
 describe("Team Votes 路由", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     // 重設鏈式 mock
     mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
     mockDb._chain.values.mockReturnValue({ returning: mockDb._chain.returning });

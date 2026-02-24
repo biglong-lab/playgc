@@ -58,7 +58,12 @@ export function makeProgress(overrides = {}) {
 
 export const AUTH_HEADER = { Authorization: "Bearer valid-token" };
 
-// 重設所有 mock（含回傳值），避免測試間洩漏
+// 精準重設 storage mock（含回傳值），保留 middleware 實作
 export function resetStorageMocks() {
-  vi.resetAllMocks();
+  vi.clearAllMocks();
+  // mockReset 會清除 mockResolvedValue/mockReturnValue，避免跨測試洩漏
+  const mocks = Object.values(mockStorage) as ReturnType<typeof vi.fn>[];
+  for (const mock of mocks) {
+    mock.mockReset();
+  }
 }

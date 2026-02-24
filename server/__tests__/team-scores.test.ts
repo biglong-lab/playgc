@@ -69,7 +69,7 @@ function createApp() {
 
 describe("Team Scores 路由", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     // 重設鏈式 mock
     mockDb.update.mockReturnValue({ set: mockDb._chain.set });
     mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });

@@ -58,7 +58,7 @@ function createTestApp() {
 
 describe("排行榜路由", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe("GET /api/leaderboard", () => {

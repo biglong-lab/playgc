@@ -85,7 +85,7 @@ function createApp() {
 
 describe("接力路由 API", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     selectResults = [];
     selectIndex = 0;
   });

@@ -46,7 +46,7 @@ function createWrapper(queryData?: { status: string; gameId: string; chapterId: 
 
 describe("PurchaseSuccess 頁面", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it("付款完成 → 顯示成功訊息", () => {

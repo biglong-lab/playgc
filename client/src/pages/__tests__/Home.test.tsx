@@ -80,7 +80,7 @@ import Home from "@/pages/Home";
 
 describe("Home 遊戲大廳", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockUseAuth.mockReturnValue({
       user: { id: "user-1", firstName: "測試" },
       firebaseUser: { displayName: "測試使用者", photoURL: null },

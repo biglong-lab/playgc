@@ -122,7 +122,7 @@ import GamePlay from "@/pages/GamePlay";
 
 describe("GamePlay 頁面", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockUseAuth.mockReturnValue({
       user: { id: "user-1", firstName: "測試" },
       isLoading: false,

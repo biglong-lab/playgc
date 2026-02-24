@@ -83,7 +83,7 @@ import AdminGames from "../AdminGames";
 
 describe("AdminGames", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockCtx.authLoading = false;
     mockCtx.isAuthenticated = true;
     mockCtx.admin = { id: "admin-1", email: "admin@test.com" };

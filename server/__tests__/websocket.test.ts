@@ -81,7 +81,7 @@ describe("websocket 路由", () => {
   const openSockets: WebSocket[] = [];
 
   beforeEach((testCtx) => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     return new Promise<void>((resolve) => {
       server = http.createServer();
       ctx = setupWebSocket(server);

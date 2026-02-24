@@ -66,7 +66,7 @@ function createWrapper() {
 
 describe("useTeamLobby", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockAuth.user = { id: "user-1", firstName: "測試", email: "test@example.com" };
     mockAuth.isLoading = false;
     mockWs.isConnected = false;

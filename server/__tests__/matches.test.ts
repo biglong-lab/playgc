@@ -103,7 +103,7 @@ function createApp() {
 
 describe("對戰路由 API", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     selectResults = [];
     selectIndex = 0;
   });

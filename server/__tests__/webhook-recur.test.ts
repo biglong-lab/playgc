@@ -69,7 +69,7 @@ function makeTx(overrides: Record<string, unknown> = {}) {
 
 describe("Recur Webhook 路由", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockVerify.mockReturnValue(true);
   });
 

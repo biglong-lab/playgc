@@ -89,7 +89,7 @@ import TeamLobby from "@/pages/TeamLobby";
 
 describe("TeamLobby 頁面", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockUseAuth.mockReturnValue({
       user: { id: "user-1", firstName: "測試" },
       firebaseUser: { uid: "uid-1" },

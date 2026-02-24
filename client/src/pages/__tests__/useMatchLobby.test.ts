@@ -59,7 +59,7 @@ function createWrapper() {
 
 describe("useMatchLobby", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockAuth.isLoading = false;
     mockAuth.user = { id: "user-1" };
     mockAuth.firebaseUser = { uid: "firebase-uid-1" };

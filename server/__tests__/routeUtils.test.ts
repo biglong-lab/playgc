@@ -25,7 +25,7 @@ function createMockRequest(userId?: string): AuthenticatedRequest {
 
 describe("checkGameOwnership", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it("未登入使用者回傳 401", async () => {
@@ -101,7 +101,7 @@ describe("checkGameOwnership", () => {
 
 describe("requireAdminRole", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   it("未登入使用者回傳未授權", async () => {

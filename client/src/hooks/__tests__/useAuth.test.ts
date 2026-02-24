@@ -38,7 +38,7 @@ function createWrapper() {
 
 describe("useAuth Hook", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockAuthContext.firebaseUser = null;
     mockAuthContext.isLoading = false;
     mockAuthContext.isAuthenticated = false;

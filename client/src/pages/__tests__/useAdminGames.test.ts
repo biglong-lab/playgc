@@ -68,7 +68,7 @@ function createMockGameData(overrides?: Partial<Game>): Game {
 
 describe("useAdminGames", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({}),

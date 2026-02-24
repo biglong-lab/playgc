@@ -70,7 +70,7 @@ import Landing from "@/pages/Landing";
 
 describe("Landing 頁面", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mockUseAuth.mockReturnValue({
       user: null,
       isLoading: false,
