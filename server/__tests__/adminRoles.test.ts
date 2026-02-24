@@ -100,6 +100,22 @@ const superAdminHeaders = {
 describe("admin-roles 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
+    mockDb.query.roles.findMany.mockReset();
+    mockDb.query.roles.findFirst.mockReset();
+    mockDb.query.permissions.findMany.mockReset();
+    mockDb.query.adminAccounts.findMany.mockReset();
+    mockDb.query.adminAccounts.findFirst.mockReset();
+    mockDb.query.auditLogs.findMany.mockReset();
+    mockDb.query.users.findMany.mockReset();
+    mockDb._chain.returning.mockReset();
+    mockDb._chain.where.mockReset();
+    // 重設鏈式 mock
+    mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
+    mockDb._chain.values.mockReturnValue({ returning: mockDb._chain.returning });
+    mockDb.update.mockReturnValue({ set: mockDb._chain.set });
+    mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });
+    mockDb._chain.where.mockReturnValue({ returning: mockDb._chain.returning });
   });
 
   // ============================
