@@ -88,6 +88,8 @@ describe("接力路由 API", () => {
     vi.clearAllMocks();
     selectResults = [];
     selectIndex = 0;
+    mockInsertReturning.mockReset();
+    mockUpdateReturning.mockReset();
   });
 
   // ────────────────────────────────────────────────────
