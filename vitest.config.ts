@@ -19,6 +19,8 @@ export default defineConfig({
       "shared/**/*.{test,spec}.{ts,tsx}",
     ],
     exclude: ["node_modules", "dist", ".git", "attached_assets", ".cache"],
+    // forks 模式使用子進程，提供完整的模組隔離（消除跨檔案 mock 洩漏）
+    pool: "forks",
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
