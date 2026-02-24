@@ -61,16 +61,20 @@ vi.mock("../firebaseAuth", () => ({
   }),
 }));
 
-// Mock requireAdminRole
-vi.mock("../routes/utils", () => ({
-  requireAdminRole: vi.fn(async (req: any) => {
-    if (req.user?.dbUser?.role === "admin") {
-      return { authorized: true };
-    }
-    return { authorized: false, message: "Forbidden" };
-  }),
-  checkGameOwnership: vi.fn(),
-}));
+// Mock requireAdminRole（保留 validateId 等純函式，防止跨檔案洩漏時缺失）
+vi.mock("../routes/utils", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../routes/utils")>();
+  return {
+    ...actual,
+    requireAdminRole: vi.fn(async (req: any) => {
+      if (req.user?.dbUser?.role === "admin") {
+        return { authorized: true };
+      }
+      return { authorized: false, message: "Forbidden" };
+    }),
+    checkGameOwnership: vi.fn(),
+  };
+});
 
 import { registerDeviceRoutes } from "../routes/devices";
 import type { RouteContext } from "../routes/types";
