@@ -1,13 +1,14 @@
-// 水彈對戰 PK 擂台 — 通知中心頁面
+// 水彈對戰 PK 擂台 — 通知中心頁面（深色軍事風格）
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bell, Check, CheckCheck, ArrowLeft } from "lucide-react";
+import { Bell, Check, CheckCheck } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { getIdToken } from "@/lib/firebase";
+import BattleLayout from "@/components/battle/BattleLayout";
 import {
   notificationTypeLabels,
   type BattleNotification,
@@ -65,44 +66,27 @@ export default function BattleNotifications() {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* 標題列 */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-6 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Link href="/battle">
-            <Button variant="ghost" size="sm" className="text-white hover:text-white/80 -ml-2 mb-2">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              返回首頁
-            </Button>
-          </Link>
+    <BattleLayout title="通知中心">
+      <div className="space-y-3">
+        {/* 全部已讀按鈕 */}
+        {unreadCount > 0 && (
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bell className="h-6 w-6" />
-              <h1 className="text-xl font-bold">通知中心</h1>
-              {unreadCount > 0 && (
-                <Badge className="bg-red-500 text-white">{unreadCount}</Badge>
-              )}
-            </div>
-            {unreadCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:text-white/80"
-                onClick={() => markAllReadMutation.mutate()}
-                disabled={markAllReadMutation.isPending}
-              >
-                <CheckCheck className="h-4 w-4 mr-1" />
-                全部已讀
-              </Button>
-            )}
+            <Badge variant="outline">{unreadCount} 則未讀</Badge>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => markAllReadMutation.mutate()}
+              disabled={markAllReadMutation.isPending}
+            >
+              <CheckCheck className="h-4 w-4 mr-1" />
+              全部已讀
+            </Button>
           </div>
-        </div>
-      </div>
+        )}
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-3">
         {isLoading ? (
           Array.from({ length: 5 }).map((_, i) => (
-            <Card key={i}>
+            <Card key={i} className="bg-card border-border">
               <CardContent className="p-4">
                 <Skeleton className="h-5 w-40 mb-2" />
                 <Skeleton className="h-4 w-64" />
@@ -110,7 +94,7 @@ export default function BattleNotifications() {
             </Card>
           ))
         ) : notifications.length === 0 ? (
-          <Card>
+          <Card className="bg-card border-border">
             <CardContent className="p-12 text-center text-muted-foreground">
               <Bell className="h-12 w-12 mx-auto mb-3 opacity-30" />
               <p>目前沒有通知</p>
@@ -126,7 +110,7 @@ export default function BattleNotifications() {
           ))
         )}
       </div>
-    </div>
+    </BattleLayout>
   );
 }
 
@@ -151,10 +135,8 @@ function NotificationCard({
 
   const inner = (
     <Card
-      className={`transition-colors ${
-        notification.isRead
-          ? "bg-white opacity-70"
-          : "bg-white border-blue-200 shadow-sm"
+      className={`bg-card border-border transition-colors ${
+        notification.isRead ? "opacity-60" : "border-primary/30"
       }`}
     >
       <CardContent className="p-4">
