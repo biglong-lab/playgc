@@ -10,6 +10,7 @@ export interface WebSocketClient extends WebSocket {
   isAlive?: boolean;
   authenticatedUserId?: string;  // 經 token 驗證的用戶 ID
   matchId?: string;              // 對戰房間 ID
+  battleSlotId?: string;         // 水彈對戰時段 ID
 }
 
 /** WebSocket 廣播訊息型別 */
