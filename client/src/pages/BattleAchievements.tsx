@@ -1,11 +1,11 @@
-// 水彈對戰 PK 擂台 — 成就頁面
+// 水彈對戰 PK 擂台 — 成就頁面（深色軍事風格）
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import BattleLayout from "@/components/battle/BattleLayout";
 import AchievementBadge from "@/components/battle/AchievementBadge";
 import {
   rarityLabels,
@@ -14,7 +14,7 @@ import {
   type AchievementRarity,
   type AchievementCategory,
 } from "@shared/schema";
-import { ArrowLeft, Medal, Trophy, Lock } from "lucide-react";
+import { Trophy, Lock } from "lucide-react";
 
 interface AchievementDef {
   id: string;
@@ -40,6 +40,14 @@ interface PlayerAchievement {
 }
 
 const CATEGORIES: AchievementCategory[] = ["milestone", "combat", "streak", "social"];
+
+const rarityColorMap: Record<string, string> = {
+  common: "bg-gray-500/20 text-gray-300",
+  uncommon: "bg-green-500/20 text-green-400",
+  rare: "bg-blue-500/20 text-blue-400",
+  epic: "bg-purple-500/20 text-purple-400",
+  legendary: "bg-yellow-500/20 text-yellow-400",
+};
 
 export default function BattleAchievements() {
   const { user } = useAuth();
@@ -78,37 +86,13 @@ export default function BattleAchievements() {
   const totalPoints = myAchievements.reduce((sum, a) => sum + a.points, 0);
   const maxPoints = allDefs.reduce((sum, a) => sum + a.points, 0);
 
-  const rarityColorMap: Record<string, string> = {
-    common: "bg-gray-100 text-gray-700",
-    uncommon: "bg-green-100 text-green-700",
-    rare: "bg-blue-100 text-blue-700",
-    epic: "bg-purple-100 text-purple-700",
-    legendary: "bg-yellow-100 text-yellow-800",
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 標題列 */}
-      <div className="bg-gradient-to-r from-amber-600 to-orange-600 text-white p-4">
-        <div className="flex items-center gap-3">
-          <Link href="/battle/my">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="flex-1">
-            <h1 className="text-lg font-bold flex items-center gap-2">
-              <Medal className="h-5 w-5" />
-              對戰成就
-            </h1>
-            <p className="text-sm text-white/80">
-              {myAchievements.length}/{allDefs.length} 已解鎖 · {totalPoints}/{maxPoints} 點
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-4 space-y-4">
+    <BattleLayout
+      title="對戰成就"
+      subtitle={`${myAchievements.length}/${allDefs.length} 已解鎖 · ${totalPoints}/${maxPoints} 點`}
+      backHref="/battle/my"
+    >
+      <div className="space-y-4">
         {/* 分類 Tab */}
         <div className="flex gap-2 overflow-x-auto pb-1">
           <Button
@@ -133,7 +117,7 @@ export default function BattleAchievements() {
         {/* 成就列表 */}
         <div className="space-y-3">
           {filteredDefs.length === 0 ? (
-            <Card>
+            <Card className="bg-card border-border">
               <CardContent className="p-8 text-center">
                 <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <p className="text-muted-foreground">此分類尚無成就</p>
@@ -147,7 +131,7 @@ export default function BattleAchievements() {
               return (
                 <Card
                   key={def.id}
-                  className={isUnlocked ? "border-l-4" : "opacity-60"}
+                  className={`bg-card border-border ${isUnlocked ? "border-l-4" : "opacity-50"}`}
                   style={isUnlocked ? { borderLeftColor: rarityColors[def.rarity as AchievementRarity] ?? "#9CA3AF" } : {}}
                 >
                   <CardContent className="p-4 flex items-center gap-4">
@@ -163,7 +147,7 @@ export default function BattleAchievements() {
                         <Badge className={`text-[10px] ${rarityColorMap[def.rarity] ?? ""}`}>
                           {rarityLabels[def.rarity as AchievementRarity] ?? def.rarity}
                         </Badge>
-                        <span className="text-xs text-muted-foreground">{def.points}pt</span>
+                        <span className="text-xs text-muted-foreground font-number">{def.points}pt</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         {def.isHidden && !isUnlocked ? (
@@ -175,7 +159,7 @@ export default function BattleAchievements() {
                         )}
                       </p>
                       {isUnlocked && playerAch && (
-                        <p className="text-[10px] text-green-600 mt-1">
+                        <p className="text-[10px] text-green-500 mt-1">
                           {new Date(playerAch.unlockedAt).toLocaleDateString("zh-TW")} 解鎖
                         </p>
                       )}
@@ -192,6 +176,6 @@ export default function BattleAchievements() {
           )}
         </div>
       </div>
-    </div>
+    </BattleLayout>
   );
 }
