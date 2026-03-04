@@ -157,6 +157,30 @@
 
 **驗證結果**: `npm run db:push` 成功、`npx tsc --noEmit` 零錯誤、`npx vitest run` 62 檔案 898 測試全通過
 
+#### Phase 3：戰隊系統
+
+##### Schema（2 張表）
+- [x] `shared/schema/battle-clans.ts` — battleClans 表 + battleClanMembers 子表
+  - 戰隊角色：leader / officer / member
+  - 唯一約束：場域+名稱、場域+標籤
+
+##### Storage 擴充（10 個新方法）
+- [x] `battle-storage.ts` — createClan, getClan, getClansByField, updateClan, getClanMembers, addClanMember, removeClanMember, getUserClan, updateClanMemberRole, updateClanStats
+
+##### API 路由
+- [x] `server/routes/battle-clans.ts` (~260 行) — 8 個端點
+  - GET 列表 + GET 詳情（含成員）+ GET 我的戰隊
+  - POST 建立（自動加入隊長）+ PATCH 更新（隊長/幹部限定）
+  - POST 加入 + DELETE 離開 + POST 轉讓隊長 + POST 設定角色
+
+##### 前端頁面（3 頁 + BattleHome 更新）
+- [x] `BattleClanDetail.tsx` — 戰隊詳情（數據卡/成員列表/加入離開）
+- [x] `BattleClanCreate.tsx` — 建立戰隊表單
+- [x] `BattleMyProfile.tsx` — 我的戰鬥檔案（段位/戰隊/快速連結）
+- [x] `BattleHome.tsx` — 底部新增 4 格導航（個人檔案/排行榜/戰隊/歷史）
+
+**驗證結果**: `npm run db:push` 成功、`npx tsc --noEmit` 零錯誤、`npx vitest run` 62 檔案 898 測試全通過
+
 ---
 
 ### 2026-02-24 (Vitest Mock 洩漏修復 — 穩定性從 60% 提升到 100%)
