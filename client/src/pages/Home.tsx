@@ -385,3 +385,44 @@ export default function Home() {
     </div>
   );
 }
+
+/** 對戰快速入口卡片 */
+function BattleQuickEntry() {
+  const { data: slots = [] } = useQuery<BattleSlot[]>({
+    queryKey: ["/api/battle/slots/open"],
+    queryFn: async () => {
+      const today = new Date().toISOString().split("T")[0];
+      const res = await fetch(`/api/battle/slots?fromDate=${today}`);
+      if (!res.ok) return [];
+      const all: BattleSlot[] = await res.json();
+      return all.filter((s) => s.status === "open" || s.status === "confirmed");
+    },
+  });
+
+  return (
+    <Link href="/battle">
+      <Card className="mb-8 bg-card border-tactical-orange/30 hover-elevate cursor-pointer group">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-tactical-orange/20 flex items-center justify-center">
+                <Swords className="w-5 h-5 text-tactical-orange" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-lg group-hover:text-tactical-orange transition-colors">
+                  水彈對戰 PK 擂台
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {slots.length > 0 ? `目前開放 ${slots.length} 場對戰` : "查看對戰時段與排行榜"}
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" className="border-tactical-orange/30 text-tactical-orange hover:bg-tactical-orange/10">
+              前往對戰 →
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
