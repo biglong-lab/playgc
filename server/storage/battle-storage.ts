@@ -29,6 +29,9 @@ import {
   battleClanMembers,
   type BattleClanMember,
   type InsertBattleClanMember,
+  battleNotifications,
+  type BattleNotification,
+  type InsertBattleNotification,
 } from "@shared/schema";
 
 // ============================================================================
