@@ -29,7 +29,9 @@ export default function BattleHistory() {
     <BattleLayout title="對戰歷史" subtitle="近期對戰紀錄">
       <div className="space-y-4">
         {isLoading ? (
-          <p className="text-muted-foreground">載入中...</p>
+          <div className="flex justify-center py-12">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
         ) : history.length === 0 ? (
           <Card className="bg-card border-border">
             <CardContent className="p-8 text-center text-muted-foreground">
