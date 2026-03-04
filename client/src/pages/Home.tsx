@@ -189,6 +189,9 @@ export default function Home() {
           <p className="text-muted-foreground">選擇一個任務開始你的冒險</p>
         </div>
 
+        {/* 對戰快速入口 */}
+        <BattleQuickEntry />
+
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
