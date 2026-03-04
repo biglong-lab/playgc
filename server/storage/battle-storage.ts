@@ -498,6 +498,91 @@ async function updateClanStats(
 }
 
 // ============================================================================
+// 通知 (Notifications)
+// ============================================================================
+
+/** 建立通知 */
+async function createNotification(data: InsertBattleNotification): Promise<BattleNotification> {
+  const [result] = await db.insert(battleNotifications).values(data).returning();
+  return result;
+}
+
+/** 批次建立通知 */
+async function createNotificationsBatch(dataList: InsertBattleNotification[]): Promise<BattleNotification[]> {
+  if (dataList.length === 0) return [];
+  return db.insert(battleNotifications).values(dataList).returning();
+}
+
+/** 取得使用者的通知列表 */
+async function getNotificationsByUser(userId: string, limit = 30): Promise<BattleNotification[]> {
+  return db
+    .select()
+    .from(battleNotifications)
+    .where(eq(battleNotifications.userId, userId))
+    .orderBy(desc(battleNotifications.createdAt))
+    .limit(limit);
+}
+
+/** 取得使用者未讀數量 */
+async function getUnreadCount(userId: string): Promise<number> {
+  const result = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(battleNotifications)
+    .where(and(
+      eq(battleNotifications.userId, userId),
+      eq(battleNotifications.isRead, false),
+    ));
+  return result[0]?.count ?? 0;
+}
+
+/** 標記單則通知為已讀 */
+async function markNotificationAsRead(id: string, userId: string): Promise<void> {
+  await db
+    .update(battleNotifications)
+    .set({ isRead: true, status: "read" })
+    .where(and(
+      eq(battleNotifications.id, id),
+      eq(battleNotifications.userId, userId),
+    ));
+}
+
+/** 標記所有通知為已讀 */
+async function markAllNotificationsAsRead(userId: string): Promise<void> {
+  await db
+    .update(battleNotifications)
+    .set({ isRead: true, status: "read" })
+    .where(and(
+      eq(battleNotifications.userId, userId),
+      eq(battleNotifications.isRead, false),
+    ));
+}
+
+/** 取得待發送的排程通知（scheduledAt <= now 且 status = pending） */
+async function getPendingScheduledNotifications(now: Date): Promise<BattleNotification[]> {
+  return db
+    .select()
+    .from(battleNotifications)
+    .where(and(
+      eq(battleNotifications.status, "pending"),
+      lte(battleNotifications.scheduledAt, now),
+    ))
+    .orderBy(battleNotifications.scheduledAt)
+    .limit(100);
+}
+
+/** 更新通知狀態 */
+async function updateNotificationStatus(
+  id: string,
+  status: string,
+  sentAt?: Date,
+): Promise<void> {
+  await db
+    .update(battleNotifications)
+    .set({ status, sentAt: sentAt ?? new Date() })
+    .where(eq(battleNotifications.id, id));
+}
+
+// ============================================================================
 // 匯出
 // ============================================================================
 export const battleStorageMethods = {
