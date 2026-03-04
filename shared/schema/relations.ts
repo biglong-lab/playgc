@@ -615,3 +615,42 @@ export const battlePremadeGroupsRelations = relations(battlePremadeGroups, ({ on
   }),
 }));
 
+// 對戰結果
+export const battleResultsRelations = relations(battleResults, ({ one, many }) => ({
+  slot: one(battleSlots, {
+    fields: [battleResults.slotId],
+    references: [battleSlots.id],
+  }),
+  venue: one(battleVenues, {
+    fields: [battleResults.venueId],
+    references: [battleVenues.id],
+  }),
+  mvp: one(users, {
+    fields: [battleResults.mvpUserId],
+    references: [users.id],
+  }),
+  playerResults: many(battlePlayerResults),
+}));
+
+export const battlePlayerResultsRelations = relations(battlePlayerResults, ({ one }) => ({
+  result: one(battleResults, {
+    fields: [battlePlayerResults.resultId],
+    references: [battleResults.id],
+  }),
+  user: one(users, {
+    fields: [battlePlayerResults.userId],
+    references: [users.id],
+  }),
+}));
+
+export const battlePlayerRankingsRelations = relations(battlePlayerRankings, ({ one }) => ({
+  user: one(users, {
+    fields: [battlePlayerRankings.userId],
+    references: [users.id],
+  }),
+  field: one(fields, {
+    fields: [battlePlayerRankings.fieldId],
+    references: [fields.id],
+  }),
+}));
+
