@@ -14,6 +14,15 @@ import {
   battlePremadeGroups,
   type BattlePremadeGroup,
   type InsertBattlePremadeGroup,
+  battleResults,
+  type BattleResult,
+  type InsertBattleResult,
+  battlePlayerResults,
+  type BattlePlayerResult,
+  type InsertBattlePlayerResult,
+  battlePlayerRankings,
+  type BattlePlayerRanking,
+  type InsertBattlePlayerRanking,
 } from "@shared/schema";
 
 // ============================================================================
