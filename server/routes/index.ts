@@ -30,6 +30,7 @@ import { registerBattleMatchmakingRoutes } from "./battle-matchmaking";
 import { registerBattleResultRoutes } from "./battle-results";
 import { registerBattleRankingRoutes } from "./battle-rankings";
 import { registerBattleClanRoutes } from "./battle-clans";
+import { registerBattleNotificationRoutes } from "./battle-notifications";
 
 export async function registerRoutes(
   httpServer: Server,
