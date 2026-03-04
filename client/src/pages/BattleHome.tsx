@@ -29,18 +29,18 @@ export default function BattleHome() {
   const { user } = useAuth();
   const [selectedFieldId] = useState<string | null>(null);
 
-  // 取得所有場地（需要知道 fieldId — 先用 query param 或從使用者取得）
-  // 暫時用全域列表，後續可依場域篩選
+  // 取得對戰場地（有 fieldId 則篩選，否則取全部）
+  const fieldId = selectedFieldId ?? user?.defaultFieldId;
   const { data: venues = [], isLoading: venuesLoading } = useQuery<BattleVenue[]>({
-    queryKey: ["/api/battle/venues", { fieldId: selectedFieldId ?? user?.defaultFieldId ?? "" }],
+    queryKey: ["/api/battle/venues", { fieldId: fieldId ?? "all" }],
     queryFn: async () => {
-      const fieldId = selectedFieldId ?? user?.defaultFieldId;
-      if (!fieldId) return [];
-      const res = await fetch(`/api/battle/venues?fieldId=${fieldId}`);
+      const url = fieldId
+        ? `/api/battle/venues?fieldId=${fieldId}`
+        : `/api/battle/venues`;
+      const res = await fetch(url);
       if (!res.ok) return [];
       return res.json();
     },
-    enabled: !!(selectedFieldId ?? user?.defaultFieldId),
   });
 
   return (
