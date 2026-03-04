@@ -131,6 +131,14 @@ export default function BattleHome() {
                 </CardContent>
               </Card>
             </Link>
+            <Link href="/battle/achievements">
+              <Card className="hover:bg-amber-50 cursor-pointer">
+                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
+                  <Medal className="h-5 w-5 text-amber-600" />
+                  <span className="text-xs font-medium">成就</span>
+                </CardContent>
+              </Card>
+            </Link>
             <Link href="/battle/history">
               <Card className="hover:bg-gray-100 cursor-pointer">
                 <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
