@@ -9,6 +9,10 @@ import { createServer } from "http";
 import { startBattleScheduler } from "./services/battle-scheduler";
 
 const app = express();
+
+// 信任反向代理（Nginx），讓 rate limiter 正確取得客戶端 IP
+app.set("trust proxy", 1);
+
 const httpServer = createServer(app);
 
 // 除錯用 health check（在所有 middleware 之前）
