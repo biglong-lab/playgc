@@ -24,12 +24,13 @@ function getFirebaseAdmin(): App {
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
 
   if (clientEmail && privateKey) {
-    // Use service account credentials for production
-    // Handle both literal \n (from env vars) and actual newlines
-    let formattedPrivateKey = privateKey;
-    if (privateKey.includes("\\n")) {
-      formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
-    }
+    // 處理 private key 換行符：
+    // .env 中可能是 "...\\n..." 或 "...\n..."
+    // node --env-file 在雙引號內會把 \\n 解析成 \+換行符（charCode 92,10）
+    // 需要移除多餘的反斜線，只保留真正的換行符
+    let formattedPrivateKey = privateKey
+      .replace(/\\\n/g, '\n')   // \+實際換行 → 只保留換行
+      .replace(/\\n/g, '\n');   // literal \n → 實際換行
 
     try {
       firebaseAdmin = initializeApp({
