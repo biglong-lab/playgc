@@ -37,7 +37,8 @@ export default function BattleClanDetail() {
     mutationFn: async () => {
       const { getIdToken } = await import("@/lib/firebase");
       const token = await getIdToken();
-      const res = await fetch(`/api/battle/clans/${clanId}/join?fieldId=${user?.defaultFieldId}`, {
+      const joinFieldId = user?.defaultFieldId || clan?.fieldId || "";
+      const res = await fetch(`/api/battle/clans/${clanId}/join?fieldId=${joinFieldId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
