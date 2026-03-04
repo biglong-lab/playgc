@@ -92,25 +92,31 @@ export function registerBattleClanRoutes(app: Express) {
           return res.status(409).json({ error: "你已經有戰隊了，請先離開現有戰隊" });
         }
 
-        const parsed = insertBattleClanSchema.parse(req.body);
+        const parsed = insertBattleClanSchema.safeParse(req.body);
+        if (!parsed.success) {
+          const firstError = parsed.error.errors[0];
+          return res.status(400).json({ error: `欄位驗證失敗：${firstError?.path.join(".")} ${firstError?.message}` });
+        }
 
-        const clan = await battleStorageMethods.createClan({
-          ...parsed,
+        // 使用事務確保建立戰隊 + 加入隊長的原子性
+        const clan = await battleStorageMethods.createClanWithLeader({
+          ...parsed.data,
           fieldId,
           leaderId: req.user.dbUser.id,
         });
 
-        // 自動加入隊長為成員
-        await battleStorageMethods.addClanMember({
-          clanId: clan.id,
-          userId: req.user.dbUser.id,
-          role: "leader",
-        });
-
         res.status(201).json(clan);
       } catch (error) {
-        if (error instanceof Error && error.message.includes("uq_battle_clan_field")) {
-          return res.status(409).json({ error: "戰隊名稱或標籤已被使用" });
+        if (error instanceof Error) {
+          if (error.message.includes("uq_battle_clan_field_name")) {
+            return res.status(409).json({ error: "此場域已有同名戰隊" });
+          }
+          if (error.message.includes("uq_battle_clan_field_tag")) {
+            return res.status(409).json({ error: "此場域已有相同標籤的戰隊" });
+          }
+          if (error.message.includes("battle_clans_field_id_fields_id_fk")) {
+            return res.status(400).json({ error: "無效的場域 ID" });
+          }
         }
         res.status(500).json({ error: "建立戰隊失敗" });
       }
