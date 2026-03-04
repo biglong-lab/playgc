@@ -694,3 +694,47 @@ export const battleNotificationsRelations = relations(battleNotifications, ({ on
   }),
 }));
 
+// 賽季系統
+export const battleSeasonsRelations = relations(battleSeasons, ({ one, many }) => ({
+  field: one(fields, {
+    fields: [battleSeasons.fieldId],
+    references: [fields.id],
+  }),
+  rankings: many(battleSeasonRankings),
+}));
+
+export const battleSeasonRankingsRelations = relations(battleSeasonRankings, ({ one }) => ({
+  season: one(battleSeasons, {
+    fields: [battleSeasonRankings.seasonId],
+    references: [battleSeasons.id],
+  }),
+  user: one(users, {
+    fields: [battleSeasonRankings.userId],
+    references: [users.id],
+  }),
+  field: one(fields, {
+    fields: [battleSeasonRankings.fieldId],
+    references: [fields.id],
+  }),
+}));
+
+// 成就系統
+export const battleAchievementDefsRelations = relations(battleAchievementDefs, ({ one, many }) => ({
+  field: one(fields, {
+    fields: [battleAchievementDefs.fieldId],
+    references: [fields.id],
+  }),
+  playerAchievements: many(battlePlayerAchievements),
+}));
+
+export const battlePlayerAchievementsRelations = relations(battlePlayerAchievements, ({ one }) => ({
+  achievement: one(battleAchievementDefs, {
+    fields: [battlePlayerAchievements.achievementId],
+    references: [battleAchievementDefs.id],
+  }),
+  user: one(users, {
+    fields: [battlePlayerAchievements.userId],
+    references: [users.id],
+  }),
+}));
+
