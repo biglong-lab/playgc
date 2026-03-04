@@ -4,6 +4,7 @@ import { requireAdminAuth } from "../adminAuth";
 import { battleStorageMethods } from "../storage/battle-storage";
 import { insertBattleResultSchema, insertPlayerResultSchema, getTierFromRating } from "@shared/schema";
 import { calculateElo, teamAvgRating } from "../services/battle-elo";
+import { checkAndUnlockAchievements } from "../services/battle-achievement-checker";
 import type { RouteContext } from "./types";
 import { z } from "zod";
 
