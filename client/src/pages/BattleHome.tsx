@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import type { BattleVenue, BattleSlot } from "@shared/schema";
-import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight } from "lucide-react";
+import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User } from "lucide-react";
 
 /** 時段狀態對應中文 + Badge 樣式 */
 function slotStatusBadge(status: string) {
