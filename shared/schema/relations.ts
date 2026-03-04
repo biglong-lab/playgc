@@ -41,6 +41,12 @@ import {
   purchases,
   paymentTransactions,
 } from "./purchases";
+import { battleVenues } from "./battle-venues";
+import {
+  battleSlots,
+  battleRegistrations,
+  battlePremadeGroups,
+} from "./battle-slots";
 
 export const usersRelations = relations(users, ({ many }) => ({
   gameSessions: many(gameSessions),
