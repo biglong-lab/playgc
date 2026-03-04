@@ -65,6 +65,16 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     ],
   },
   {
+    label: "水彈對戰",
+    items: [
+      { title: "對戰儀表板", icon: Swords, path: "/admin/battle/dashboard", permission: "game:view" },
+      { title: "場地管理", icon: MapPin, path: "/admin/battle/venues", permission: "game:view" },
+      { title: "時段管理", icon: Clock, path: "/admin/battle/slots", permission: "game:view" },
+      { title: "排名管理", icon: Trophy, path: "/admin/battle/rankings", permission: "game:view" },
+      { title: "賽季管理", icon: Calendar, path: "/admin/battle/seasons", permission: "game:view" },
+    ],
+  },
+  {
     label: "場域設定",
     items: [
       { title: "場域基本資料", icon: Building2, path: "/admin/fields", permission: "field:manage" },
