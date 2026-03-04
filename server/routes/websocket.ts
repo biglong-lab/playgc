@@ -420,5 +420,17 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
-  return { broadcastToSession, broadcastToTeam, broadcastToMatch };
+  function broadcastToBattleSlot(slotId: string, message: WsBroadcastMessage) {
+    const slotClientSet = battleSlotClients.get(slotId);
+    if (slotClientSet) {
+      const payload = JSON.stringify(message);
+      slotClientSet.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(payload);
+        }
+      });
+    }
+  }
+
+  return { broadcastToSession, broadcastToTeam, broadcastToMatch, broadcastToBattleSlot };
 }
