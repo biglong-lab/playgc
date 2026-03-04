@@ -48,9 +48,12 @@ export default function BattleHome() {
       {/* 標題區 */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <Swords className="h-8 w-8" />
-            <h1 className="text-2xl font-bold">水彈對戰 PK 擂台</h1>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <Swords className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">水彈對戰 PK 擂台</h1>
+            </div>
+            {user && <NotificationBell />}
           </div>
           <p className="text-blue-100">選擇場地和時段，與其他玩家組隊對戰！</p>
         </div>
