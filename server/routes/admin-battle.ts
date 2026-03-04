@@ -88,8 +88,7 @@ export function registerAdminBattleRoutes(app: Express) {
         avgPlayersPerBattle: avgPlayers,
       });
     } catch (error) {
-      console.error("stats 錯誤:", error);
-      res.status(500).json({ error: "取得統計失敗" });
+      res.status(500).json({ error: "取得統計失敗", detail: error instanceof Error ? error.message : String(error) });
     }
   });
 
