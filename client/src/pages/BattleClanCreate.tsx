@@ -7,13 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
+import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import BattleLayout from "@/components/battle/BattleLayout";
-import { Shield } from "lucide-react";
+import { Shield, AlertCircle } from "lucide-react";
+
+// 與後端 insertBattleClanSchema 一致的 tag 驗證
+const TAG_REGEX = /^[A-Za-z0-9\u4e00-\u9fff]+$/;
 
 export default function BattleClanCreate() {
   const { user } = useAuth();
+  const { fieldId, isLoading: fieldLoading } = useBattleFieldId();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -22,22 +27,30 @@ export default function BattleClanCreate() {
   const [tag, setTag] = useState("");
   const [description, setDescription] = useState("");
 
+  const tagError = tag.length > 0 && !TAG_REGEX.test(tag)
+    ? "標籤只能包含英文、數字或中文"
+    : null;
+
   const createMutation = useMutation({
     mutationFn: async () => {
+      if (!fieldId) throw new Error("無法取得場域資訊，請重新整理頁面");
+
       const { getIdToken } = await import("@/lib/firebase");
       const token = await getIdToken();
-      const res = await fetch(`/api/battle/clans?fieldId=${user?.defaultFieldId}`, {
+      if (!token) throw new Error("登入狀態異常，請重新登入");
+
+      const res = await fetch(`/api/battle/clans?fieldId=${fieldId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         credentials: "include",
-        body: JSON.stringify({ name, tag, description: description || undefined }),
+        body: JSON.stringify({ name: name.trim(), tag: tag.trim(), description: description.trim() || undefined }),
       });
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "建立失敗");
+        const err = await res.json().catch(() => ({ error: "建立失敗" }));
+        throw new Error(err.error || `建立失敗 (${res.status})`);
       }
       return res.json();
     },
@@ -52,9 +65,26 @@ export default function BattleClanCreate() {
     },
   });
 
+  const canSubmit = name.trim().length >= 2 && tag.trim().length >= 1 && !tagError && !!fieldId && !createMutation.isPending;
+
   return (
     <BattleLayout title="建立戰隊">
       <div className="max-w-md mx-auto">
+        {/* 場域缺失警告 */}
+        {!fieldLoading && !fieldId && (
+          <Card className="mb-4 border-destructive/50 bg-destructive/10">
+            <CardContent className="p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-destructive">無法取得場域資訊</p>
+                <p className="text-muted-foreground mt-1">
+                  系統尚未設定對戰場地，請聯繫管理員。
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -67,7 +97,7 @@ export default function BattleClanCreate() {
               <Label htmlFor="name">戰隊名稱</Label>
               <Input
                 id="name"
-                placeholder="如：王牌突擊隊"
+                placeholder="如：王牌突擊隊（至少 2 字）"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={50}
@@ -82,10 +112,15 @@ export default function BattleClanCreate() {
                 value={tag}
                 onChange={(e) => setTag(e.target.value.toUpperCase())}
                 maxLength={10}
+                className={tagError ? "border-destructive" : ""}
               />
-              <p className="text-xs text-muted-foreground">
-                顯示為 [{tag || "TAG"}]，1-10 字元
-              </p>
+              {tagError ? (
+                <p className="text-xs text-destructive">{tagError}</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  顯示為 [{tag || "TAG"}]，1-10 字元，英文/數字/中文
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -103,7 +138,7 @@ export default function BattleClanCreate() {
             <Button
               className="w-full"
               onClick={() => createMutation.mutate()}
-              disabled={createMutation.isPending || !name.trim() || !tag.trim()}
+              disabled={!canSubmit}
             >
               {createMutation.isPending ? "建立中..." : "建立戰隊"}
             </Button>
