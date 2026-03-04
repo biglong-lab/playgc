@@ -254,6 +254,106 @@ async function updatePremadeGroupCount(id: string, delta: number): Promise<Battl
 }
 
 // ============================================================================
+// 對戰結果 (Results)
+// ============================================================================
+
+/** 取得時段的對戰結果 */
+async function getResultBySlot(slotId: string): Promise<BattleResult | undefined> {
+  const [result] = await db
+    .select()
+    .from(battleResults)
+    .where(eq(battleResults.slotId, slotId));
+  return result;
+}
+
+/** 建立對戰結果 */
+async function createResult(data: InsertBattleResult): Promise<BattleResult> {
+  const [result] = await db.insert(battleResults).values(data).returning();
+  return result;
+}
+
+/** 取得個人戰績列表 */
+async function getPlayerResultsByResult(resultId: string): Promise<BattlePlayerResult[]> {
+  return db
+    .select()
+    .from(battlePlayerResults)
+    .where(eq(battlePlayerResults.resultId, resultId));
+}
+
+/** 批次建立個人戰績 */
+async function createPlayerResults(dataList: InsertBattlePlayerResult[]): Promise<BattlePlayerResult[]> {
+  if (dataList.length === 0) return [];
+  return db.insert(battlePlayerResults).values(dataList).returning();
+}
+
+/** 取得使用者的對戰歷史 */
+async function getPlayerHistory(userId: string, limit = 20): Promise<BattlePlayerResult[]> {
+  return db
+    .select()
+    .from(battlePlayerResults)
+    .where(eq(battlePlayerResults.userId, userId))
+    .orderBy(desc(battlePlayerResults.createdAt))
+    .limit(limit);
+}
+
+// ============================================================================
+// 排名 (Rankings)
+// ============================================================================
+
+/** 取得或建立玩家排名 */
+async function getOrCreateRanking(userId: string, fieldId: string): Promise<BattlePlayerRanking> {
+  const [existing] = await db
+    .select()
+    .from(battlePlayerRankings)
+    .where(and(
+      eq(battlePlayerRankings.userId, userId),
+      eq(battlePlayerRankings.fieldId, fieldId),
+    ));
+  if (existing) return existing;
+
+  const [created] = await db
+    .insert(battlePlayerRankings)
+    .values({ userId, fieldId })
+    .returning();
+  return created;
+}
+
+/** 更新玩家排名 */
+async function updateRanking(
+  id: string,
+  data: Partial<InsertBattlePlayerRanking>,
+): Promise<BattlePlayerRanking | undefined> {
+  const [result] = await db
+    .update(battlePlayerRankings)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(battlePlayerRankings.id, id))
+    .returning();
+  return result;
+}
+
+/** 取得場域排行榜（依 rating 降序） */
+async function getRankingsByField(fieldId: string, limit = 50): Promise<BattlePlayerRanking[]> {
+  return db
+    .select()
+    .from(battlePlayerRankings)
+    .where(eq(battlePlayerRankings.fieldId, fieldId))
+    .orderBy(desc(battlePlayerRankings.rating))
+    .limit(limit);
+}
+
+/** 取得玩家排名 */
+async function getPlayerRanking(userId: string, fieldId: string): Promise<BattlePlayerRanking | undefined> {
+  const [result] = await db
+    .select()
+    .from(battlePlayerRankings)
+    .where(and(
+      eq(battlePlayerRankings.userId, userId),
+      eq(battlePlayerRankings.fieldId, fieldId),
+    ));
+  return result;
+}
+
+// ============================================================================
 // 匯出
 // ============================================================================
 export const battleStorageMethods = {
