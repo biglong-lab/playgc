@@ -257,6 +257,24 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
           }
 
+          // 水彈對戰 — 加入時段房間
+          case "battle_slot_join": {
+            const battleSlotId = message.slotId;
+            if (battleSlotId) {
+              ws.battleSlotId = battleSlotId;
+              if (!battleSlotClients.has(battleSlotId)) {
+                battleSlotClients.set(battleSlotId, new Set());
+              }
+              battleSlotClients.get(battleSlotId)?.add(ws);
+              ws.send(JSON.stringify({
+                type: "battle_slot_joined",
+                slotId: battleSlotId,
+                timestamp: new Date().toISOString(),
+              }));
+            }
+            break;
+          }
+
           // 前端倒數完成 → 切換對戰為 playing
           case "match_countdown_complete": {
             const countdownMatchId = ws.matchId;
