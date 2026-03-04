@@ -383,6 +383,39 @@ async function createClan(data: InsertBattleClan): Promise<BattleClan> {
   return result;
 }
 
+/** 建立戰隊 + 自動加入隊長（事務） */
+async function createClanWithLeader(data: InsertBattleClan): Promise<BattleClan> {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const txDb = drizzle(client, { schema });
+
+    // 建立戰隊
+    const [clan] = await txDb.insert(battleClans).values(data).returning();
+
+    // 加入隊長為成員
+    await txDb.insert(battleClanMembers).values({
+      clanId: clan.id,
+      userId: data.leaderId,
+      role: "leader",
+    });
+
+    // 更新成員數
+    await txDb.update(battleClans).set({
+      memberCount: sql`${battleClans.memberCount} + 1`,
+      updatedAt: new Date(),
+    }).where(eq(battleClans.id, clan.id));
+
+    await client.query("COMMIT");
+    return clan;
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 /** 依 ID 取得戰隊 */
 async function getClan(id: string): Promise<BattleClan | undefined> {
   const [result] = await db
