@@ -61,5 +61,10 @@ export async function registerRoutes(
   registerAdminSessionRoutes(app);
   registerAiScoringRoutes(app);
 
+  // 水彈對戰 PK 擂台
+  registerBattleVenueRoutes(app);
+  registerBattleSlotRoutes(app);
+  registerBattleRegistrationRoutes(app);
+
   return httpServer;
 }
