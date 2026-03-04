@@ -337,6 +337,14 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         });
       }
 
+      // 清理水彈對戰時段客戶端
+      if (ws.battleSlotId) {
+        battleSlotClients.get(ws.battleSlotId)?.delete(ws);
+        if (battleSlotClients.get(ws.battleSlotId)?.size === 0) {
+          battleSlotClients.delete(ws.battleSlotId);
+        }
+      }
+
       // 清理對戰客戶端
       const matchId = ws.matchId;
       if (matchId) {
