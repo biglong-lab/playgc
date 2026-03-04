@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerRanking, BattleClan, BattleClanMember } from "@shared/schema";
 import {
@@ -24,7 +25,7 @@ interface MyClanResponse extends BattleClan {
 
 export default function BattleMyProfile() {
   const { user } = useAuth();
-  const fieldId = user?.defaultFieldId;
+  const { fieldId } = useBattleFieldId();
 
   const { data: ranking } = useQuery<MyRankingResponse>({
     queryKey: ["/api/battle/rankings/me", fieldId],
