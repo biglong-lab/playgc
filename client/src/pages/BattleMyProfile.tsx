@@ -1,15 +1,15 @@
-// 水彈對戰 PK 擂台 — 我的戰鬥檔案頁
+// 水彈對戰 PK 擂台 — 我的戰鬥檔案頁（深色軍事風格）
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerRanking, BattleClan, BattleClanMember } from "@shared/schema";
 import {
-  ArrowLeft, User, Trophy, Shield, Flame,
-  TrendingUp, History as HistoryIcon, Crown,
-  Medal, Calendar,
+  Trophy, Shield, Flame, Crown,
+  History as HistoryIcon, Medal, Calendar,
 } from "lucide-react";
 
 interface MyRankingResponse extends BattlePlayerRanking {
@@ -57,59 +57,45 @@ export default function BattleMyProfile() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Link href="/battle">
-            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white gap-1 mb-2">
-              <ArrowLeft className="h-4 w-4" /> 返回
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <User className="h-8 w-8" />
-            <h1 className="text-2xl font-bold">我的戰鬥檔案</h1>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <BattleLayout title="我的戰鬥檔案">
+      <div className="space-y-4">
         {/* 段位卡片 */}
         {ranking && (
-          <Card className="border-blue-200 bg-blue-50/50">
+          <Card className="border-primary/30 bg-primary/5">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm text-muted-foreground">目前段位</p>
-                  <p className="text-2xl font-bold">{ranking.tierLabel}</p>
+                  <p className="text-2xl font-display font-bold">{ranking.tierLabel}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-bold">{ranking.rating}</p>
+                  <p className="text-3xl font-number font-bold">{ranking.rating}</p>
                   <p className="text-sm text-muted-foreground">積分</p>
                 </div>
               </div>
               <div className="grid grid-cols-5 gap-2 text-center text-sm">
                 <div>
                   <p className="text-muted-foreground">總場</p>
-                  <p className="font-semibold">{ranking.totalBattles}</p>
+                  <p className="font-number font-semibold">{ranking.totalBattles}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">勝率</p>
-                  <p className="font-semibold">{ranking.winRate}%</p>
+                  <p className="font-number font-semibold">{ranking.winRate}%</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">連勝</p>
-                  <p className="font-semibold flex items-center justify-center gap-1">
+                  <p className="font-number font-semibold flex items-center justify-center gap-1">
                     {ranking.winStreak > 0 && <Flame className="h-3 w-3 text-orange-500" />}
                     {ranking.winStreak}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">最佳</p>
-                  <p className="font-semibold">{ranking.bestStreak}</p>
+                  <p className="font-number font-semibold">{ranking.bestStreak}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">MVP</p>
-                  <p className="font-semibold">{ranking.mvpCount}</p>
+                  <p className="font-number font-semibold">{ranking.mvpCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -117,7 +103,7 @@ export default function BattleMyProfile() {
         )}
 
         {/* 我的戰隊 */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4" /> 我的戰隊
@@ -126,7 +112,7 @@ export default function BattleMyProfile() {
           <CardContent>
             {myClan ? (
               <Link href={`/battle/clan/${myClan.id}`}>
-                <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50 cursor-pointer">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-card/80 cursor-pointer transition-colors">
                   <div>
                     <p className="font-semibold">[{myClan.tag}] {myClan.name}</p>
                     <p className="text-xs text-muted-foreground">
@@ -153,39 +139,39 @@ export default function BattleMyProfile() {
         {/* 快速連結 */}
         <div className="grid grid-cols-2 gap-3">
           <Link href="/battle/ranking">
-            <Card className="hover:bg-gray-50 cursor-pointer">
+            <Card className="bg-card/50 border-border hover:bg-card cursor-pointer transition-colors">
               <CardContent className="p-4 flex items-center gap-3">
-                <Trophy className="h-5 w-5 text-yellow-500" />
+                <Trophy className="h-5 w-5 text-tactical-orange" />
                 <span className="font-medium text-sm">排行榜</span>
               </CardContent>
             </Card>
           </Link>
           <Link href="/battle/history">
-            <Card className="hover:bg-gray-50 cursor-pointer">
+            <Card className="bg-card/50 border-border hover:bg-card cursor-pointer transition-colors">
               <CardContent className="p-4 flex items-center gap-3">
-                <HistoryIcon className="h-5 w-5 text-gray-500" />
+                <HistoryIcon className="h-5 w-5 text-muted-foreground" />
                 <span className="font-medium text-sm">對戰歷史</span>
               </CardContent>
             </Card>
           </Link>
           <Link href="/battle/achievements">
-            <Card className="hover:bg-gray-50 cursor-pointer">
+            <Card className="bg-card/50 border-border hover:bg-card cursor-pointer transition-colors">
               <CardContent className="p-4 flex items-center gap-3">
-                <Medal className="h-5 w-5 text-orange-500" />
+                <Medal className="h-5 w-5 text-orange-400" />
                 <span className="font-medium text-sm">成就徽章</span>
               </CardContent>
             </Card>
           </Link>
           <Link href="/battle/seasons">
-            <Card className="hover:bg-gray-50 cursor-pointer">
+            <Card className="bg-card/50 border-border hover:bg-card cursor-pointer transition-colors">
               <CardContent className="p-4 flex items-center gap-3">
-                <Calendar className="h-5 w-5 text-indigo-500" />
+                <Calendar className="h-5 w-5 text-indigo-400" />
                 <span className="font-medium text-sm">賽季歷史</span>
               </CardContent>
             </Card>
           </Link>
         </div>
       </div>
-    </div>
+    </BattleLayout>
   );
 }
