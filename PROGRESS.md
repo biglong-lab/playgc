@@ -106,6 +106,46 @@
 
 ## 工作紀錄
 
+### 2026-03-04 (水彈對戰 PK 擂台 — Phase 5-8 完善 + E2E 測試)
+
+#### Phase 5-7 已在前一次對話完成（管理端儀表板/排名/賽季/成就系統）
+
+#### Phase 8：測試補齊
+
+##### 單元測試（3 檔案）
+- [x] `server/__tests__/battle-elo.test.ts` — 14 個 ELO 引擎測試
+- [x] `server/__tests__/battle-achievement-checker.test.ts` — 8 個成就檢測測試
+- [x] `shared/schema/__tests__/battle-schemas.test.ts` — 12 個 Schema 測試
+
+##### API 整合測試（10 檔案）
+- [x] `server/__tests__/battle-venues.test.ts` — 8 個場地 CRUD 測試
+- [x] `server/__tests__/battle-slots.test.ts` — 10 個時段生命週期測試
+- [x] `server/__tests__/battle-registration.test.ts` — 10 個報名流程測試
+- [x] `server/__tests__/battle-matchmaking.test.ts` — 6 個配對測試
+- [x] `server/__tests__/battle-results-api.test.ts` — 8 個結果記錄 + ELO 測試
+- [x] `server/__tests__/battle-rankings.test.ts` — 7 個排名 API 測試
+- [x] `server/__tests__/battle-clans.test.ts` — 10 個戰隊管理測試
+- [x] `server/__tests__/battle-notifications.test.ts` — 5 個通知 API 測試
+- [x] `server/__tests__/admin-battle.test.ts` — 8 個管理端統計測試
+- [x] `server/__tests__/admin-battle-seasons.test.ts` — 8 個賽季管理測試
+
+##### E2E 完整流程測試
+- [x] `scripts/test-battle-e2e.mjs` — 27 個 E2E 測試全通過
+  - 場地建立 → 時段建立 → 玩家報名 → 配對 → 開始對戰
+  - 結果記錄 + ELO 計算（勝方 +30/+20，敗方 -20）
+  - 成就系統（首戰/首勝/首 MVP/金段/白金段 5 個成就解鎖）
+  - 重複記錄 → 409
+  - 排行榜驗證
+  - 賽季完整流程（建立→結束→快照→重置）
+  - 管理端統計數據驗證
+
+##### 修復的 Bug
+1. `server/routes/admin-battle.ts` — `sql ANY()` 不支援 JS 陣列 → 改用 `inArray()`
+2. `server/routes/battle-slots.ts` — `createdBy: req.admin.id` FK 違反（admin 不在 users 表）→ 移除
+3. `shared/schema/battle-results.ts` — `recordedBy` FK 指向 users.id 但傳入 admin ID → 改為 nullable 無 FK
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vitest run` 75 檔案 1034 測試全通過、E2E 27/27 通過
+
 ### 2026-03-04 (水彈對戰 PK 擂台 — Phase 1+2 完整實作)
 
 #### Phase 1 MVP：場地 + 時段 + 報名 + 配對
