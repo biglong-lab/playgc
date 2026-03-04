@@ -150,6 +150,8 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
+      // 啟動水彈對戰通知排程器
+      startBattleScheduler();
     },
   );
 })();
