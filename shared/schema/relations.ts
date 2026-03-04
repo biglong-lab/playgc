@@ -655,3 +655,27 @@ export const battlePlayerRankingsRelations = relations(battlePlayerRankings, ({ 
   }),
 }));
 
+// 戰隊系統
+export const battleClansRelations = relations(battleClans, ({ one, many }) => ({
+  field: one(fields, {
+    fields: [battleClans.fieldId],
+    references: [fields.id],
+  }),
+  leader: one(users, {
+    fields: [battleClans.leaderId],
+    references: [users.id],
+  }),
+  members: many(battleClanMembers),
+}));
+
+export const battleClanMembersRelations = relations(battleClanMembers, ({ one }) => ({
+  clan: one(battleClans, {
+    fields: [battleClanMembers.clanId],
+    references: [battleClans.id],
+  }),
+  user: one(users, {
+    fields: [battleClanMembers.userId],
+    references: [users.id],
+  }),
+}));
+
