@@ -597,6 +597,7 @@ async function updateNotificationStatus(
 export const battleStorageMethods = {
   // 場地
   getVenuesByField,
+  getAllActiveVenues,
   getVenue,
   createVenue,
   updateVenue,
