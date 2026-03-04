@@ -47,6 +47,11 @@ import {
   battleRegistrations,
   battlePremadeGroups,
 } from "./battle-slots";
+import {
+  battleResults,
+  battlePlayerResults,
+  battlePlayerRankings,
+} from "./battle-results";
 
 export const usersRelations = relations(users, ({ many }) => ({
   gameSessions: many(gameSessions),
