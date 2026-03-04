@@ -85,6 +85,9 @@ function Router() {
         {/* 水彈對戰 PK 擂台 */}
         <Route path="/battle" component={BattleHome} />
         <Route path="/battle/slot/:slotId" component={BattleSlotDetail} />
+        <Route path="/battle/slot/:slotId/result" component={BattleResult} />
+        <Route path="/battle/ranking" component={BattleRanking} />
+        <Route path="/battle/history" component={BattleHistory} />
 
         {/* 管理端登入 */}
         <Route path="/admin/login" component={FieldAdminLogin} />
