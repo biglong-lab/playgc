@@ -9,6 +9,7 @@ import type { BattlePlayerRanking, BattleClan, BattleClanMember } from "@shared/
 import {
   ArrowLeft, User, Trophy, Shield, Flame,
   TrendingUp, History as HistoryIcon, Crown,
+  Medal, Calendar,
 } from "lucide-react";
 
 interface MyRankingResponse extends BattlePlayerRanking {
