@@ -102,7 +102,7 @@ export function registerBattleSlotRoutes(app: Express) {
       }
 
       const parsed = slotsData.map((s) =>
-        insertBattleSlotSchema.parse({ ...(s as Record<string, unknown>), createdBy: req.admin!.id })
+        insertBattleSlotSchema.parse(s as Record<string, unknown>)
       );
       const slots = await battleStorageMethods.createSlotsBatch(parsed);
       res.status(201).json(slots);
