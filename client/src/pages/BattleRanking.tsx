@@ -103,7 +103,9 @@ export default function BattleRanking() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-muted-foreground py-4">載入中...</p>
+              <div className="flex justify-center py-8">
+                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+              </div>
             ) : rankings.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center">尚無排名資料</p>
             ) : (
