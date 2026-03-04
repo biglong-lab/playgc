@@ -53,6 +53,7 @@ import {
   battlePlayerRankings,
 } from "./battle-results";
 import { battleClans, battleClanMembers } from "./battle-clans";
+import { battleNotifications } from "./battle-notifications";
 
 export const usersRelations = relations(users, ({ many }) => ({
   gameSessions: many(gameSessions),
