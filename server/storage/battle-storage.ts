@@ -670,6 +670,7 @@ export const battleStorageMethods = {
   getPlayerRanking,
   // 戰隊
   createClan,
+  createClanWithLeader,
   getClan,
   getClansByField,
   updateClan,
