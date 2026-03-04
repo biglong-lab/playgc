@@ -38,6 +38,7 @@ const BattleHistory = lazy(() => import("@/pages/BattleHistory"));
 const BattleClanDetail = lazy(() => import("@/pages/BattleClanDetail"));
 const BattleClanCreate = lazy(() => import("@/pages/BattleClanCreate"));
 const BattleMyProfile = lazy(() => import("@/pages/BattleMyProfile"));
+const BattleNotifications = lazy(() => import("@/pages/BattleNotifications"));
 
 // 管理端 — 統一在 /admin/* 下
 const FieldAdminLogin = lazy(() => import("@/pages/FieldAdminLogin"));
