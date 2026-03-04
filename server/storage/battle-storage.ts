@@ -1,6 +1,8 @@
 // 水彈對戰 PK 擂台 — 資料存取層
 import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
-import { db } from "../db";
+import { db, pool } from "../db";
+import { drizzle } from "drizzle-orm/node-postgres";
+import * as schema from "@shared/schema";
 import {
   battleVenues,
   type BattleVenue,
