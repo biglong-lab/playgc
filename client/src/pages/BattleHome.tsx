@@ -1,4 +1,4 @@
-// 水彈對戰 PK 擂台 — 玩家端首頁
+// 水彈對戰 PK 擂台 — 玩家端首頁（深色軍事風格）
 import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleVenue, BattleSlot } from "@shared/schema";
 import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell, Medal } from "lucide-react";
-import { getIdToken } from "@/lib/firebase";
 
 /** 時段狀態對應中文 + Badge 樣式 */
 function slotStatusBadge(status: string) {
@@ -29,7 +29,6 @@ export default function BattleHome() {
   const { user } = useAuth();
   const [selectedFieldId] = useState<string | null>(null);
 
-  // 取得對戰場地（有 fieldId 則篩選，否則取全部）
   const fieldId = selectedFieldId ?? user?.defaultFieldId;
   const { data: venues = [], isLoading: venuesLoading } = useQuery<BattleVenue[]>({
     queryKey: ["/api/battle/venues", { fieldId: fieldId ?? "all" }],
@@ -44,36 +43,22 @@ export default function BattleHome() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* 標題區 */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-3">
-              <Swords className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">水彈對戰 PK 擂台</h1>
-            </div>
-            {user && <NotificationBell />}
-          </div>
-          <p className="text-blue-100">選擇場地和時段，與其他玩家組隊對戰！</p>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+    <BattleLayout title="水彈對戰 PK 擂台" subtitle="選擇場地和時段，與其他玩家組隊對戰！" backHref="/home">
+      <div className="space-y-6">
         {/* 我的報名 */}
         {user && <MyRegistrations />}
 
         {/* 場地列表 */}
         <div>
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
+          <h2 className="text-lg font-display font-semibold mb-4 flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
             對戰場地
           </h2>
 
           {venuesLoading ? (
             <div className="grid gap-4 sm:grid-cols-2">
               {[1, 2].map((i) => (
-                <Card key={i}>
+                <Card key={i} className="bg-card border-border">
                   <CardContent className="p-4">
                     <Skeleton className="h-6 w-40 mb-2" />
                     <Skeleton className="h-4 w-60" />
@@ -82,7 +67,7 @@ export default function BattleHome() {
               ))}
             </div>
           ) : venues.length === 0 ? (
-            <Card>
+            <Card className="bg-card border-border">
               <CardContent className="p-8 text-center text-muted-foreground">
                 目前沒有可用的對戰場地
               </CardContent>
@@ -97,64 +82,40 @@ export default function BattleHome() {
         </div>
 
         {/* 底部導航 */}
-        {user && (
-          <div className="grid grid-cols-5 gap-3">
-            <Link href="/battle/my">
-              <Card className="hover:bg-blue-50 cursor-pointer">
-                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <span className="text-xs font-medium">我的檔案</span>
-                </CardContent>
-              </Card>
-            </Link>
-            <Link href="/battle/ranking">
-              <Card className="hover:bg-yellow-50 cursor-pointer">
-                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
-                  <span className="text-xs font-medium">排行榜</span>
-                </CardContent>
-              </Card>
-            </Link>
-            <Link href="/battle/clan/create">
-              <Card className="hover:bg-purple-50 cursor-pointer">
-                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
-                  <Shield className="h-5 w-5 text-purple-600" />
-                  <span className="text-xs font-medium">戰隊</span>
-                </CardContent>
-              </Card>
-            </Link>
-            <Link href="/battle/notifications">
-              <Card className="hover:bg-orange-50 cursor-pointer">
-                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
-                  <Bell className="h-5 w-5 text-orange-500" />
-                  <span className="text-xs font-medium">通知</span>
-                </CardContent>
-              </Card>
-            </Link>
-            <Link href="/battle/achievements">
-              <Card className="hover:bg-amber-50 cursor-pointer">
-                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
-                  <Medal className="h-5 w-5 text-amber-600" />
-                  <span className="text-xs font-medium">成就</span>
-                </CardContent>
-              </Card>
-            </Link>
-            <Link href="/battle/history">
-              <Card className="hover:bg-gray-100 cursor-pointer">
-                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
-                  <History className="h-5 w-5 text-gray-500" />
-                  <span className="text-xs font-medium">歷史</span>
-                </CardContent>
-              </Card>
-            </Link>
-          </div>
-        )}
+        {user && <QuickNav />}
       </div>
+    </BattleLayout>
+  );
+}
+
+/** 快速導航六格 */
+function QuickNav() {
+  const navItems = [
+    { href: "/battle/my", icon: User, label: "我的檔案", color: "text-primary" },
+    { href: "/battle/ranking", icon: Trophy, label: "排行榜", color: "text-tactical-orange" },
+    { href: "/battle/clan/create", icon: Shield, label: "戰隊", color: "text-purple-400" },
+    { href: "/battle/notifications", icon: Bell, label: "通知", color: "text-orange-400" },
+    { href: "/battle/achievements", icon: Medal, label: "成就", color: "text-amber-400" },
+    { href: "/battle/history", icon: History, label: "歷史", color: "text-muted-foreground" },
+  ];
+
+  return (
+    <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+      {navItems.map(({ href, icon: Icon, label, color }) => (
+        <Link key={href} href={href}>
+          <Card className="bg-card/50 border-border hover:bg-card cursor-pointer transition-colors">
+            <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
+              <Icon className={`h-5 w-5 ${color}`} />
+              <span className="text-xs font-medium">{label}</span>
+            </CardContent>
+          </Card>
+        </Link>
+      ))}
     </div>
   );
 }
 
-/** 場地卡片，內含該場地的近期時段 */
+/** 場地卡片 */
 function VenueCard({ venue }: { venue: BattleVenue }) {
   const today = new Date().toISOString().split("T")[0];
   const { data: slots = [] } = useQuery<BattleSlot[]>({
@@ -169,7 +130,7 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
   const openSlots = slots.filter((s) => s.status === "open" || s.status === "confirmed");
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="bg-card border-border hover-elevate transition-shadow">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center justify-between">
           {venue.name}
@@ -192,7 +153,7 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
           <div className="space-y-2">
             {openSlots.slice(0, 3).map((slot) => (
               <Link key={slot.id} href={`/battle/slot/${slot.id}`}>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50 hover:bg-muted cursor-pointer">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-primary/5 hover:bg-primary/10 cursor-pointer transition-colors">
                   <div className="flex items-center gap-2 text-sm">
                     <CalendarDays className="h-4 w-4 text-muted-foreground" />
                     <span>{slot.slotDate}</span>
@@ -201,7 +162,7 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted-foreground font-number">
                       {slot.currentCount}/{slot.maxPlayersOverride ?? venue.maxPlayers}
                     </span>
                     {slotStatusBadge(slot.status)}
@@ -226,38 +187,6 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
   );
 }
 
-/** 標題列的通知鈴鐺（含未讀數） */
-function NotificationBell() {
-  const { data } = useQuery<{ count: number }>({
-    queryKey: ["/api/battle/notifications/unread-count"],
-    queryFn: async () => {
-      const token = await getIdToken();
-      const res = await fetch("/api/battle/notifications/unread-count", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return { count: 0 };
-      return res.json();
-    },
-    refetchInterval: 30000,
-  });
-
-  const count = data?.count ?? 0;
-
-  return (
-    <Link href="/battle/notifications">
-      <Button variant="ghost" size="sm" className="relative text-white hover:text-white/80">
-        <Bell className="h-5 w-5" />
-        {count > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-            {count > 9 ? "9+" : count}
-          </span>
-        )}
-      </Button>
-    </Link>
-  );
-}
-
 /** 我的報名紀錄 */
 function MyRegistrations() {
   const { data: registrations = [] } = useQuery({
@@ -277,10 +206,10 @@ function MyRegistrations() {
   if (registrations.length === 0) return null;
 
   return (
-    <Card className="border-blue-200 bg-blue-50/50">
+    <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <Swords className="h-4 w-4 text-blue-600" />
+          <Swords className="h-4 w-4 text-primary" />
           我的報名 ({registrations.length})
         </CardTitle>
       </CardHeader>
@@ -288,7 +217,7 @@ function MyRegistrations() {
         <div className="space-y-2">
           {registrations.slice(0, 3).map((reg: { id: string; slotId: string; status: string }) => (
             <Link key={reg.id} href={`/battle/slot/${reg.slotId}`}>
-              <div className="flex items-center justify-between p-2 rounded bg-white hover:bg-gray-50 cursor-pointer text-sm">
+              <div className="flex items-center justify-between p-2 rounded bg-card hover:bg-card/80 cursor-pointer text-sm transition-colors">
                 <span>時段 {reg.slotId.slice(0, 8)}...</span>
                 {slotStatusBadge(reg.status)}
               </div>
