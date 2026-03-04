@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import type { BattleVenue, BattleSlot } from "@shared/schema";
-import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell } from "lucide-react";
+import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell, Medal } from "lucide-react";
 import { getIdToken } from "@/lib/firebase";
 
 /** 時段狀態對應中文 + Badge 樣式 */
