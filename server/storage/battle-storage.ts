@@ -23,6 +23,12 @@ import {
   battlePlayerRankings,
   type BattlePlayerRanking,
   type InsertBattlePlayerRanking,
+  battleClans,
+  type BattleClan,
+  type InsertBattleClan,
+  battleClanMembers,
+  type BattleClanMember,
+  type InsertBattleClanMember,
 } from "@shared/schema";
 
 // ============================================================================
