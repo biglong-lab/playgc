@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import { startBattleScheduler } from "./services/battle-scheduler";
 
 const app = express();
 const httpServer = createServer(app);
