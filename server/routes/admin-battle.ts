@@ -9,7 +9,7 @@ import {
   battleSlots,
   battleVenues,
 } from "@shared/schema";
-import { eq, and, count, sql, gte, desc, like, or } from "drizzle-orm";
+import { eq, and, count, sql, gte, desc, like, or, inArray } from "drizzle-orm";
 import { getTierFromRating, tierLabels } from "@shared/schema";
 import { z } from "zod";
 
