@@ -132,6 +132,27 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
         // 批次寫入個人戰績
         const savedPlayerResults = await battleStorageMethods.createPlayerResults(playerResultInserts);
 
+        // 檢測並解鎖成就
+        const allUnlocked: Record<string, unknown[]> = {};
+        for (const pr of playerResults) {
+          const ranking = await battleStorageMethods.getOrCreateRanking(pr.userId, venue.fieldId);
+          const unlocked = await checkAndUnlockAchievements(
+            pr.userId,
+            {
+              totalBattles: ranking.totalBattles,
+              wins: ranking.wins,
+              winStreak: ranking.winStreak,
+              bestStreak: ranking.bestStreak,
+              mvpCount: ranking.mvpCount,
+              tier: ranking.tier,
+            },
+            result.id,
+          );
+          if (unlocked.length > 0) {
+            allUnlocked[pr.userId] = unlocked;
+          }
+        }
+
         // 更新時段為 completed
         if (slot.status === "in_progress") {
           await battleStorageMethods.updateSlot(slotId, { status: "completed" });
@@ -146,7 +167,11 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
           timestamp: new Date().toISOString(),
         });
 
-        res.status(201).json({ result, playerResults: savedPlayerResults });
+        res.status(201).json({
+          result,
+          playerResults: savedPlayerResults,
+          newAchievements: allUnlocked,
+        });
       } catch (error) {
         if (error instanceof z.ZodError) {
           return res.status(400).json({ error: "資料驗證失敗", details: error.errors });
