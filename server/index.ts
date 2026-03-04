@@ -34,11 +34,10 @@ app.use(helmet({
 
 app.use(cors({
   origin: (origin, callback) => {
-    const isProduction = process.env.NODE_ENV === "production";
-    // 生產環境要求 origin；開發環境允許無 origin（Postman、curl 等）
-    if (!origin && !isProduction) {
+    // 無 origin = 同源請求或非瀏覽器請求（curl、伺服器間呼叫），允許通過
+    if (!origin) {
       callback(null, true);
-    } else if (origin && allowedOrigins.some((allowed) => origin === allowed)) {
+    } else if (allowedOrigins.some((allowed) => origin === allowed)) {
       callback(null, true);
     } else {
       callback(new Error("CORS 不允許此來源"));
