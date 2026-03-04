@@ -10,10 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase";
-import type { Game, GameSession } from "@shared/schema";
+import type { Game, GameSession, BattleSlot } from "@shared/schema";
 import {
   Gamepad2, Clock, Users, Zap, Search, Filter,
-  Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2
+  Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords
 } from "lucide-react";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 
