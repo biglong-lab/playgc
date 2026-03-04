@@ -74,6 +74,7 @@ export async function registerRoutes(
   registerBattleResultRoutes(app, ctx);
   registerBattleRankingRoutes(app);
   registerBattleClanRoutes(app);
+  registerBattleNotificationRoutes(app);
 
   return httpServer;
 }
