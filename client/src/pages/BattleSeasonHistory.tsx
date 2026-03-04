@@ -1,12 +1,11 @@
-// 水彈對戰 PK 擂台 — 玩家端賽季歷史
+// 水彈對戰 PK 擂台 — 玩家端賽季歷史（深色軍事風格）
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { tierLabels } from "@shared/schema";
-import { Link } from "wouter";
-import { ArrowLeft, Calendar, Trophy, Medal } from "lucide-react";
+import BattleLayout from "@/components/battle/BattleLayout";
+import { Trophy, Medal } from "lucide-react";
 
 interface SeasonHistoryEntry {
   id: string;
@@ -25,27 +24,21 @@ interface SeasonHistoryEntry {
   endDate: string | null;
 }
 
+const tierColors: Record<string, string> = {
+  bronze: "bg-orange-500/20 text-orange-400",
+  silver: "bg-gray-500/20 text-gray-300",
+  gold: "bg-yellow-500/20 text-yellow-400",
+  platinum: "bg-cyan-500/20 text-cyan-400",
+  diamond: "bg-blue-500/20 text-blue-400",
+  master: "bg-purple-500/20 text-purple-400",
+};
+
 export default function BattleSeasonHistory() {
   const { user } = useAuth();
-
-  // 先取得場域 ID（從排名中）
-  const { data: ranking } = useQuery<{ fieldId?: string }>({
-    queryKey: ["/api/battle/rankings/me-field"],
-    queryFn: async () => {
-      // 嘗試取得使用者的場域
-      const res = await fetch("/api/battle/rankings/me?fieldId=default", {
-        credentials: "include",
-      });
-      if (!res.ok) return {};
-      return res.json();
-    },
-    enabled: !!user,
-  });
 
   const { data: history = [], isLoading } = useQuery<SeasonHistoryEntry[]>({
     queryKey: ["/api/battle/my/season-history"],
     queryFn: async () => {
-      // 使用第一個可用的 fieldId
       const res = await fetch("/api/battle/my/season-history?fieldId=default", {
         credentials: "include",
       });
@@ -55,40 +48,13 @@ export default function BattleSeasonHistory() {
     enabled: !!user,
   });
 
-  const tierColors: Record<string, string> = {
-    bronze: "bg-amber-100 text-amber-800",
-    silver: "bg-gray-100 text-gray-700",
-    gold: "bg-yellow-100 text-yellow-800",
-    platinum: "bg-cyan-100 text-cyan-800",
-    diamond: "bg-blue-100 text-blue-800",
-    master: "bg-purple-100 text-purple-800",
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 標題列 */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4">
-        <div className="flex items-center gap-3">
-          <Link href="/battle/my">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-lg font-bold flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              賽季歷史
-            </h1>
-            <p className="text-sm text-white/80">歷屆賽季排名紀錄</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-4 space-y-4">
+    <BattleLayout title="賽季歷史" subtitle="歷屆賽季排名紀錄" backHref="/battle/my">
+      <div className="space-y-4">
         {isLoading ? (
           <p className="text-center py-8 text-muted-foreground">載入中...</p>
         ) : history.length === 0 ? (
-          <Card>
+          <Card className="bg-card border-border">
             <CardContent className="p-8 text-center">
               <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">尚無賽季紀錄</p>
@@ -99,11 +65,11 @@ export default function BattleSeasonHistory() {
           </Card>
         ) : (
           history.map((entry) => (
-            <Card key={entry.id}>
+            <Card key={entry.id} className="bg-card border-border">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold">{entry.seasonName}</h3>
+                    <h3 className="font-display font-semibold">{entry.seasonName}</h3>
                     <p className="text-xs text-muted-foreground">
                       第 {entry.seasonNumber} 賽季 ·{" "}
                       {new Date(entry.startDate).toLocaleDateString("zh-TW")}
@@ -118,7 +84,7 @@ export default function BattleSeasonHistory() {
                         "text-amber-700"
                       }`} />
                     )}
-                    <span className="text-lg font-bold">#{entry.rank}</span>
+                    <span className="text-lg font-number font-bold">#{entry.rank}</span>
                   </div>
                 </div>
 
@@ -126,25 +92,25 @@ export default function BattleSeasonHistory() {
                   <Badge className={`${tierColors[entry.finalTier] ?? ""}`}>
                     {tierLabels[entry.finalTier as keyof typeof tierLabels] ?? entry.finalTier}
                   </Badge>
-                  <span className="text-lg font-bold">{entry.finalRating} 分</span>
+                  <span className="text-lg font-number font-bold">{entry.finalRating} 分</span>
                 </div>
 
                 <div className="grid grid-cols-4 gap-2 text-center text-sm">
-                  <div className="bg-muted/50 rounded p-2">
+                  <div className="bg-primary/5 rounded p-2">
                     <p className="text-xs text-muted-foreground">總場</p>
-                    <p className="font-semibold">{entry.totalBattles}</p>
+                    <p className="font-number font-semibold">{entry.totalBattles}</p>
                   </div>
-                  <div className="bg-muted/50 rounded p-2">
+                  <div className="bg-primary/5 rounded p-2">
                     <p className="text-xs text-muted-foreground">勝</p>
-                    <p className="font-semibold text-green-600">{entry.wins}</p>
+                    <p className="font-number font-semibold text-green-500">{entry.wins}</p>
                   </div>
-                  <div className="bg-muted/50 rounded p-2">
+                  <div className="bg-primary/5 rounded p-2">
                     <p className="text-xs text-muted-foreground">負</p>
-                    <p className="font-semibold text-red-600">{entry.losses}</p>
+                    <p className="font-number font-semibold text-red-500">{entry.losses}</p>
                   </div>
-                  <div className="bg-muted/50 rounded p-2">
+                  <div className="bg-primary/5 rounded p-2">
                     <p className="text-xs text-muted-foreground">平</p>
-                    <p className="font-semibold">{entry.draws}</p>
+                    <p className="font-number font-semibold">{entry.draws}</p>
                   </div>
                 </div>
               </CardContent>
@@ -152,6 +118,6 @@ export default function BattleSeasonHistory() {
           ))
         )}
       </div>
-    </div>
+    </BattleLayout>
   );
 }
