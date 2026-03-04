@@ -564,3 +564,49 @@ export const paymentTransactionsRelations = relations(
   })
 );
 
+// ============================================================================
+// Battle Relations（水彈對戰 PK 擂台）
+// ============================================================================
+export const battleVenuesRelations = relations(battleVenues, ({ one, many }) => ({
+  field: one(fields, {
+    fields: [battleVenues.fieldId],
+    references: [fields.id],
+  }),
+  slots: many(battleSlots),
+}));
+
+export const battleSlotsRelations = relations(battleSlots, ({ one, many }) => ({
+  venue: one(battleVenues, {
+    fields: [battleSlots.venueId],
+    references: [battleVenues.id],
+  }),
+  createdByUser: one(users, {
+    fields: [battleSlots.createdBy],
+    references: [users.id],
+  }),
+  registrations: many(battleRegistrations),
+  premadeGroups: many(battlePremadeGroups),
+}));
+
+export const battleRegistrationsRelations = relations(battleRegistrations, ({ one }) => ({
+  slot: one(battleSlots, {
+    fields: [battleRegistrations.slotId],
+    references: [battleSlots.id],
+  }),
+  user: one(users, {
+    fields: [battleRegistrations.userId],
+    references: [users.id],
+  }),
+}));
+
+export const battlePremadeGroupsRelations = relations(battlePremadeGroups, ({ one, many }) => ({
+  slot: one(battleSlots, {
+    fields: [battlePremadeGroups.slotId],
+    references: [battleSlots.id],
+  }),
+  leader: one(users, {
+    fields: [battlePremadeGroups.leaderId],
+    references: [users.id],
+  }),
+}));
+
