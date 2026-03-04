@@ -31,6 +31,10 @@ import { registerBattleResultRoutes } from "./battle-results";
 import { registerBattleRankingRoutes } from "./battle-rankings";
 import { registerBattleClanRoutes } from "./battle-clans";
 import { registerBattleNotificationRoutes } from "./battle-notifications";
+import { registerAdminBattleRoutes } from "./admin-battle";
+import { registerAdminBattleSeasonRoutes } from "./admin-battle-seasons";
+import { registerBattleSeasonRoutes } from "./battle-seasons";
+import { registerBattleAchievementRoutes } from "./battle-achievements";
 
 export async function registerRoutes(
   httpServer: Server,
