@@ -66,6 +66,7 @@ export async function registerRoutes(
   registerBattleVenueRoutes(app);
   registerBattleSlotRoutes(app);
   registerBattleRegistrationRoutes(app);
+  registerBattleMatchmakingRoutes(app, ctx);
 
   return httpServer;
 }
