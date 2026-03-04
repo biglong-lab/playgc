@@ -1,12 +1,11 @@
-// 水彈對戰 PK 擂台 — 排行榜
+// 水彈對戰 PK 擂台 — 排行榜（深色軍事風格）
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerRanking } from "@shared/schema";
-import { Trophy, ArrowLeft, Crown, Flame, Target } from "lucide-react";
+import { Crown, Flame } from "lucide-react";
 
 interface RankingEntry extends BattlePlayerRanking {
   rank: number;
@@ -15,12 +14,12 @@ interface RankingEntry extends BattlePlayerRanking {
 }
 
 const tierBg: Record<string, string> = {
-  master: "bg-gradient-to-r from-yellow-100 to-amber-100 border-yellow-300",
-  diamond: "bg-gradient-to-r from-cyan-50 to-blue-50 border-cyan-200",
-  platinum: "bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200",
-  gold: "bg-yellow-50 border-yellow-200",
-  silver: "bg-gray-50 border-gray-200",
-  bronze: "bg-orange-50 border-orange-200",
+  master: "bg-yellow-500/10 border-yellow-500/30",
+  diamond: "bg-cyan-500/10 border-cyan-500/30",
+  platinum: "bg-indigo-500/10 border-indigo-500/30",
+  gold: "bg-amber-500/10 border-amber-500/30",
+  silver: "bg-gray-500/10 border-gray-500/30",
+  bronze: "bg-orange-500/10 border-orange-500/30",
 };
 
 export default function BattleRanking() {
@@ -55,55 +54,41 @@ export default function BattleRanking() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white py-8 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Link href="/battle">
-            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white gap-1 mb-2">
-              <ArrowLeft className="h-4 w-4" /> 返回
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Trophy className="h-8 w-8" />
-            <h1 className="text-2xl font-bold">排行榜</h1>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <BattleLayout title="排行榜" subtitle="全場域積分排名">
+      <div className="space-y-4">
         {/* 我的排名 */}
         {myRanking && (
-          <Card className="border-blue-200 bg-blue-50/50">
+          <Card className="border-primary/30 bg-primary/5">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">我的段位</p>
-                  <p className="text-xl font-bold">{myRanking.tierLabel}</p>
+                  <p className="text-xl font-display font-bold">{myRanking.tierLabel}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold">{myRanking.rating}</p>
+                  <p className="text-2xl font-number font-bold">{myRanking.rating}</p>
                   <p className="text-sm text-muted-foreground">積分</p>
                 </div>
               </div>
               <div className="grid grid-cols-4 gap-2 mt-3 text-center text-sm">
                 <div>
                   <p className="text-muted-foreground">總場</p>
-                  <p className="font-semibold">{myRanking.totalBattles}</p>
+                  <p className="font-number font-semibold">{myRanking.totalBattles}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">勝率</p>
-                  <p className="font-semibold">{myRanking.winRate}%</p>
+                  <p className="font-number font-semibold">{myRanking.winRate}%</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">連勝</p>
-                  <p className="font-semibold flex items-center justify-center gap-1">
+                  <p className="font-number font-semibold flex items-center justify-center gap-1">
                     {myRanking.winStreak > 0 && <Flame className="h-3 w-3 text-orange-500" />}
                     {myRanking.winStreak}
                   </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">MVP</p>
-                  <p className="font-semibold">{myRanking.mvpCount}</p>
+                  <p className="font-number font-semibold">{myRanking.mvpCount}</p>
                 </div>
               </div>
             </CardContent>
@@ -111,7 +96,7 @@ export default function BattleRanking() {
         )}
 
         {/* 排行榜列表 */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">全場域排行</CardTitle>
           </CardHeader>
@@ -126,8 +111,8 @@ export default function BattleRanking() {
                   <div
                     key={entry.id}
                     className={`flex items-center justify-between p-3 rounded-lg border ${
-                      tierBg[entry.tier] ?? "bg-white"
-                    } ${entry.userId === user?.id ? "ring-2 ring-blue-400" : ""}`}
+                      tierBg[entry.tier] ?? "bg-card"
+                    } ${entry.userId === user?.id ? "ring-2 ring-primary" : ""}`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="w-8 text-center font-bold text-lg">
@@ -138,20 +123,20 @@ export default function BattleRanking() {
                             "text-orange-400"
                           }`} />
                         ) : (
-                          <span className="text-muted-foreground">{entry.rank}</span>
+                          <span className="text-muted-foreground font-number">{entry.rank}</span>
                         )}
                       </span>
                       <div>
                         <p className="font-medium text-sm">
                           {entry.userId.slice(0, 10)}...
-                          {entry.userId === user?.id && <span className="text-blue-600"> (你)</span>}
+                          {entry.userId === user?.id && <span className="text-primary"> (你)</span>}
                         </p>
                         <p className="text-xs text-muted-foreground">{entry.tierLabel}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold">{entry.rating}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-number font-bold">{entry.rating}</p>
+                      <p className="text-xs text-muted-foreground font-number">
                         {entry.wins}勝 {entry.losses}負 ({entry.winRate}%)
                       </p>
                     </div>
@@ -162,6 +147,6 @@ export default function BattleRanking() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </BattleLayout>
   );
 }
