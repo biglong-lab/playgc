@@ -79,6 +79,10 @@ function Router() {
         <Route path="/purchase/success" component={PurchaseSuccess} />
         <Route path="/purchases" component={MyPurchases} />
 
+        {/* 水彈對戰 PK 擂台 */}
+        <Route path="/battle" component={BattleHome} />
+        <Route path="/battle/slot/:slotId" component={BattleSlotDetail} />
+
         {/* 管理端登入 */}
         <Route path="/admin/login" component={FieldAdminLogin} />
 
