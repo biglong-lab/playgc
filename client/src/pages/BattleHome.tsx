@@ -98,7 +98,7 @@ export default function BattleHome() {
 
         {/* 底部導航 */}
         {user && (
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-5 gap-3">
             <Link href="/battle/my">
               <Card className="hover:bg-blue-50 cursor-pointer">
                 <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
@@ -120,6 +120,14 @@ export default function BattleHome() {
                 <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
                   <Shield className="h-5 w-5 text-purple-600" />
                   <span className="text-xs font-medium">戰隊</span>
+                </CardContent>
+              </Card>
+            </Link>
+            <Link href="/battle/notifications">
+              <Card className="hover:bg-orange-50 cursor-pointer">
+                <CardContent className="p-3 flex flex-col items-center gap-1 text-center">
+                  <Bell className="h-5 w-5 text-orange-500" />
+                  <span className="text-xs font-medium">通知</span>
                 </CardContent>
               </Card>
             </Link>
