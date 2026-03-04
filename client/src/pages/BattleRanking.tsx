@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
+import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerRanking } from "@shared/schema";
 import { Crown, Flame } from "lucide-react";
@@ -24,7 +25,7 @@ const tierBg: Record<string, string> = {
 
 export default function BattleRanking() {
   const { user } = useAuth();
-  const fieldId = user?.defaultFieldId;
+  const { fieldId } = useBattleFieldId();
 
   const { data: rankings = [], isLoading } = useQuery<RankingEntry[]>({
     queryKey: ["/api/battle/rankings", fieldId],
