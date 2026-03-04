@@ -106,6 +106,39 @@
 
 ## 工作紀錄
 
+### 2026-03-04 (Firebase Auth 登入修復 — Private Key PEM 解析錯誤)
+
+#### 問題描述
+所有 Firebase token 驗證失敗，導致玩家端/管理端登入全部無法運作。
+
+#### 根因分析
+- `.env` 的 `FIREBASE_ADMIN_PRIVATE_KEY` 使用雙引號包裹，含 `\\n` 跳脫序列
+- `node --env-file` 處理雙引號內的 `\\n` → 變成 `\`(charCode 92) + 實際換行(charCode 10)
+- 原修正邏輯用 `privateKey.includes("\\n")` 檢查 literal `\n`（charCode 92+110），永遠不匹配
+- Firebase Admin SDK 收到含 `\` + 換行的 PEM → 解析失敗 → `verifyFirebaseToken()` 永遠回傳 null
+
+#### 修復
+- [x] `server/firebaseAuth.ts` — 改寫 Private Key 格式化邏輯
+  ```typescript
+  // 修正前（無效）：
+  if (privateKey.includes("\\n")) {
+    formattedPrivateKey = privateKey.replace(/\\n/g, '\n');
+  }
+  // 修正後：
+  formattedPrivateKey = privateKey
+    .replace(/\\\n/g, '\n')   // \+實際換行 → 只保留換行
+    .replace(/\\n/g, '\n');   // literal \n → 實際換行
+  ```
+
+#### 驗證
+- [x] Firebase Admin SDK 成功連線（列出 14 個 Firebase 使用者）
+- [x] `verifyIdToken()` 驗證成功
+- [x] `isAuthenticated` middleware 回傳 200
+- [x] `npx tsc --noEmit` 零錯誤
+- [x] `npx vitest run` 75 檔案 1034 測試全通過
+
+---
+
 ### 2026-03-04 (水彈對戰 PK 擂台 — Phase 5-8 完善 + E2E 測試)
 
 #### Phase 5-7 已在前一次對話完成（管理端儀表板/排名/賽季/成就系統）
