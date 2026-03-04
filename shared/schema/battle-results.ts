@@ -81,7 +81,7 @@ export const battleResults = pgTable("battle_results", {
   highlights: jsonb("highlights").$type<BattleHighlight[]>().default([]),
   photos: jsonb("photos").$type<string[]>().default([]),
   notes: text("notes"),
-  recordedBy: varchar("recorded_by").notNull().references(() => users.id),
+  recordedBy: varchar("recorded_by"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 }, (table) => [
   unique("uq_battle_result_slot").on(table.slotId),
