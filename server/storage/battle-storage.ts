@@ -535,4 +535,15 @@ export const battleStorageMethods = {
   updateRanking,
   getRankingsByField,
   getPlayerRanking,
+  // 戰隊
+  createClan,
+  getClan,
+  getClansByField,
+  updateClan,
+  getClanMembers,
+  addClanMember,
+  removeClanMember,
+  getUserClan,
+  updateClanMemberRole,
+  updateClanStats,
 };
