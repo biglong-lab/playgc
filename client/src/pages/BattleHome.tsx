@@ -27,9 +27,8 @@ function slotStatusBadge(status: string) {
 
 export default function BattleHome() {
   const { user } = useAuth();
-  const [selectedFieldId] = useState<string | null>(null);
+  const { fieldId } = useBattleFieldId();
 
-  const fieldId = selectedFieldId ?? user?.defaultFieldId;
   const { data: venues = [], isLoading: venuesLoading } = useQuery<BattleVenue[]>({
     queryKey: ["/api/battle/venues", { fieldId: fieldId ?? "all" }],
     queryFn: async () => {
