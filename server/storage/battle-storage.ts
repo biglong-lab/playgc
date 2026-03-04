@@ -360,6 +360,141 @@ async function getPlayerRanking(userId: string, fieldId: string): Promise<Battle
 }
 
 // ============================================================================
+// 戰隊 (Clans)
+// ============================================================================
+
+/** 建立戰隊 */
+async function createClan(data: InsertBattleClan): Promise<BattleClan> {
+  const [result] = await db.insert(battleClans).values(data).returning();
+  return result;
+}
+
+/** 依 ID 取得戰隊 */
+async function getClan(id: string): Promise<BattleClan | undefined> {
+  const [result] = await db
+    .select()
+    .from(battleClans)
+    .where(eq(battleClans.id, id));
+  return result;
+}
+
+/** 取得場域下所有戰隊 */
+async function getClansByField(fieldId: string, limit = 50): Promise<BattleClan[]> {
+  return db
+    .select()
+    .from(battleClans)
+    .where(and(eq(battleClans.fieldId, fieldId), eq(battleClans.isActive, true)))
+    .orderBy(desc(battleClans.clanRating))
+    .limit(limit);
+}
+
+/** 更新戰隊 */
+async function updateClan(id: string, data: Partial<InsertBattleClan>): Promise<BattleClan | undefined> {
+  const [result] = await db
+    .update(battleClans)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(battleClans.id, id))
+    .returning();
+  return result;
+}
+
+/** 取得戰隊成員列表 */
+async function getClanMembers(clanId: string): Promise<BattleClanMember[]> {
+  return db
+    .select()
+    .from(battleClanMembers)
+    .where(and(
+      eq(battleClanMembers.clanId, clanId),
+      sql`${battleClanMembers.leftAt} IS NULL`,
+    ))
+    .orderBy(battleClanMembers.joinedAt);
+}
+
+/** 新增戰隊成員 */
+async function addClanMember(data: InsertBattleClanMember): Promise<BattleClanMember> {
+  const [result] = await db.insert(battleClanMembers).values(data).returning();
+  // 更新戰隊成員數
+  await db
+    .update(battleClans)
+    .set({
+      memberCount: sql`${battleClans.memberCount} + 1`,
+      updatedAt: new Date(),
+    })
+    .where(eq(battleClans.id, data.clanId));
+  return result;
+}
+
+/** 成員離開戰隊 */
+async function removeClanMember(clanId: string, userId: string): Promise<void> {
+  await db
+    .update(battleClanMembers)
+    .set({ leftAt: new Date() })
+    .where(and(
+      eq(battleClanMembers.clanId, clanId),
+      eq(battleClanMembers.userId, userId),
+      sql`${battleClanMembers.leftAt} IS NULL`,
+    ));
+  await db
+    .update(battleClans)
+    .set({
+      memberCount: sql`GREATEST(${battleClans.memberCount} - 1, 0)`,
+      updatedAt: new Date(),
+    })
+    .where(eq(battleClans.id, clanId));
+}
+
+/** 查詢使用者所屬戰隊（未離開的） */
+async function getUserClan(userId: string, fieldId: string): Promise<{ clan: BattleClan; membership: BattleClanMember } | undefined> {
+  const memberships = await db
+    .select()
+    .from(battleClanMembers)
+    .innerJoin(battleClans, eq(battleClanMembers.clanId, battleClans.id))
+    .where(and(
+      eq(battleClanMembers.userId, userId),
+      eq(battleClans.fieldId, fieldId),
+      sql`${battleClanMembers.leftAt} IS NULL`,
+    ))
+    .limit(1);
+  if (memberships.length === 0) return undefined;
+  return {
+    clan: memberships[0].battle_clans,
+    membership: memberships[0].battle_clan_members,
+  };
+}
+
+/** 更新成員角色 */
+async function updateClanMemberRole(clanId: string, userId: string, role: string): Promise<BattleClanMember | undefined> {
+  const [result] = await db
+    .update(battleClanMembers)
+    .set({ role })
+    .where(and(
+      eq(battleClanMembers.clanId, clanId),
+      eq(battleClanMembers.userId, userId),
+      sql`${battleClanMembers.leftAt} IS NULL`,
+    ))
+    .returning();
+  return result;
+}
+
+/** 更新戰隊戰績 */
+async function updateClanStats(
+  clanId: string,
+  result: "win" | "loss" | "draw",
+): Promise<void> {
+  const field = result === "win" ? battleClans.totalWins
+    : result === "loss" ? battleClans.totalLosses
+    : battleClans.totalDraws;
+  await db
+    .update(battleClans)
+    .set({
+      [result === "win" ? "totalWins" : result === "loss" ? "totalLosses" : "totalDraws"]:
+        sql`${field} + 1`,
+      updatedAt: new Date(),
+    })
+    .where(eq(battleClans.id, clanId));
+}
+
+// ============================================================================
 // 匯出
 // ============================================================================
 export const battleStorageMethods = {
