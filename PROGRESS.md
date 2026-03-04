@@ -98,7 +98,65 @@
 - [x] relations
 - [x] DB Migration 完成（41+ 資料表已同步）
 
+#### 水彈對戰 PK 擂台
+- [x] Phase 1 MVP：場地 + 時段 + 報名 + 配對 + WebSocket（Schema/Storage/API/前端）
+- [x] Phase 2：對戰結果 + ELO 排名 + 歷史紀錄（Schema/ELO 引擎/Storage/API/前端）
+
 ## 工作紀錄
+
+### 2026-03-04 (水彈對戰 PK 擂台 — Phase 1+2 完整實作)
+
+#### Phase 1 MVP：場地 + 時段 + 報名 + 配對
+
+##### Schema（3 張表）
+- [x] `shared/schema/battle-venues.ts` — battleVenues 場地表
+- [x] `shared/schema/battle-slots.ts` — battleSlots 時段表 + battleRegistrations 報名表 + battlePremadeGroups 預組隊伍表
+
+##### Storage
+- [x] `server/storage/battle-storage.ts` — 場地/時段/報名/預組隊伍 CRUD 方法
+
+##### API 路由（4 個模組）
+- [x] `server/routes/battle-venues.ts` — 場地 CRUD（GET 列表/詳情, POST/PATCH/DELETE）
+- [x] `server/routes/battle-slots.ts` — 時段管理（GET/POST/PATCH + batch/cancel/start/finish）
+- [x] `server/routes/battle-registration.ts` — 報名/取消/預組隊伍/Check-in
+- [x] `server/routes/battle-matchmaking.ts` — 蛇形分配配對 + WebSocket 廣播
+
+##### 前端頁面（4 頁）
+- [x] `client/src/pages/BattleHome.tsx` — 玩家首頁（場地列表 + 我的報名）
+- [x] `client/src/pages/BattleSlotDetail.tsx` — 時段詳情（報名/組隊/邀請碼）
+- [x] `client/src/pages/AdminBattleVenues.tsx` — 管理端場地 CRUD
+- [x] `client/src/pages/AdminBattleSlots.tsx` — 管理端時段管理 + 配對觸發
+
+#### Phase 2：對戰結果 + ELO 排名
+
+##### Schema（3 張表）
+- [x] `shared/schema/battle-results.ts` — battleResults + battlePlayerResults + battlePlayerRankings
+  - Tier 段位系統：bronze(0-299) → silver → gold → platinum(1000) → diamond → master(2000+)
+  - `getTierFromRating()` 純函式 + `tierLabels` 中文對照
+
+##### ELO 引擎
+- [x] `server/services/battle-elo.ts` (~90 行) — Modified ELO 系統
+  - K-factor 動態調整（新手 40 / 一般 20 / 高手 10）
+  - 連勝加分（+5/勝, 上限 +15）+ MVP 加分（+10）
+
+##### Storage 擴充（9 個新方法）
+- [x] `battle-storage.ts` — 結果 CRUD + 排名 getOrCreate/update + 歷史查詢
+
+##### API 路由（2 個模組）
+- [x] `server/routes/battle-results.ts` — POST 記錄結果（含 ELO 計算）+ GET 查詢
+- [x] `server/routes/battle-rankings.ts` — 排行榜 + 我的排名 + 對戰歷史
+
+##### 前端頁面（3 頁）
+- [x] `client/src/pages/BattleResult.tsx` — 對戰結果（勝負/隊伍分數/個人戰績/ELO 變動）
+- [x] `client/src/pages/BattleRanking.tsx` — 排行榜（段位卡片 + 全場域排名）
+- [x] `client/src/pages/BattleHistory.tsx` — 個人對戰歷史
+
+**新增檔案**: 17 個（schema 2 + storage 1 + services 2 + routes 6 + pages 7）
+**修改檔案**: App.tsx, index.ts, websocket.ts, types.ts, schema/index.ts, schema/relations.ts
+
+**驗證結果**: `npm run db:push` 成功、`npx tsc --noEmit` 零錯誤、`npx vitest run` 62 檔案 898 測試全通過
+
+---
 
 ### 2026-02-24 (Vitest Mock 洩漏修復 — 穩定性從 60% 提升到 100%)
 
