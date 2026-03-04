@@ -1,6 +1,7 @@
 // 水彈對戰 PK 擂台 — 玩家端賽季歷史（深色軍事風格）
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { tierLabels } from "@shared/schema";
