@@ -182,6 +182,36 @@
 
 **驗證結果**: `npm run db:push` 成功、`npx tsc --noEmit` 零錯誤、`npx vitest run` 62 檔案 898 測試全通過
 
+#### Phase 4：通知排程系統
+
+##### Schema（1 張表）
+- [x] `shared/schema/battle-notifications.ts` — battleNotifications 表
+  - 9 種通知類型（slot_confirmed, reminder_24h, reminder_2h, confirm_request, team_assigned, check_in_open, slot_cancelled, result_published, clan_invite）
+  - 3 種通知頻道（in_app, push, email）
+  - 4 種通知狀態（pending, sent, read, failed）
+  - JSONB 欄位儲存通知內容（title, body, actionUrl, meta）
+
+##### Storage 擴充（8 個新方法）
+- [x] `battle-storage.ts` — createNotification, createNotificationsBatch, getNotificationsByUser, getUnreadCount, markNotificationAsRead, markAllNotificationsAsRead, getPendingScheduledNotifications, updateNotificationStatus
+
+##### 通知服務
+- [x] `server/services/battle-notifier.ts` — 統一通知發送介面 + 9 種通知內容建構函式
+- [x] `server/services/battle-scheduler.ts` — 排程器（定期處理待發送通知 + 場次提醒排程 API）
+
+##### API 路由（4 個端點）
+- [x] `server/routes/battle-notifications.ts`
+  - GET `/api/battle/notifications` — 我的通知列表
+  - GET `/api/battle/notifications/unread-count` — 未讀數量
+  - POST `/api/battle/notifications/:id/read` — 標記已讀
+  - POST `/api/battle/notifications/read-all` — 全部標記已讀
+
+##### 前端
+- [x] `BattleNotifications.tsx` — 通知中心頁面（列表 + 標記已讀 + 全部已讀）
+- [x] `BattleHome.tsx` — 標題列通知鈴鐺（含未讀紅點，30 秒自動刷新）+ 底部導航新增通知入口
+- [x] `App.tsx` — 新增 `/battle/notifications` 路由
+
+**驗證結果**: `npm run db:push` 成功、`npx tsc --noEmit` 零錯誤、`npx vitest run` 62 檔案 898 測試全通過
+
 ---
 
 ### 2026-02-24 (Vitest Mock 洩漏修復 — 穩定性從 60% 提升到 100%)
