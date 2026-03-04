@@ -383,4 +383,15 @@ export const battleStorageMethods = {
   getPremadeGroupsBySlot,
   createPremadeGroup,
   updatePremadeGroupCount,
+  // 對戰結果
+  getResultBySlot,
+  createResult,
+  getPlayerResultsByResult,
+  createPlayerResults,
+  getPlayerHistory,
+  // 排名
+  getOrCreateRanking,
+  updateRanking,
+  getRankingsByField,
+  getPlayerRanking,
 };
