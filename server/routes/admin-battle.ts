@@ -44,7 +44,7 @@ export function registerAdminBattleRoutes(app: Express) {
       const [totalResult] = await db
         .select({ count: count() })
         .from(battleResults)
-        .where(sql`${battleResults.venueId} = ANY(${venueIds})`);
+        .where(inArray(battleResults.venueId, venueIds));
 
       // 活躍玩家數
       const [playerResult] = await db
@@ -62,7 +62,7 @@ export function registerAdminBattleRoutes(app: Express) {
         .from(battleResults)
         .where(
           and(
-            sql`${battleResults.venueId} = ANY(${venueIds})`,
+            inArray(battleResults.venueId, venueIds),
             gte(battleResults.createdAt, monthStart),
           ),
         );
@@ -77,7 +77,7 @@ export function registerAdminBattleRoutes(app: Express) {
           })
           .from(battlePlayerResults)
           .innerJoin(battleResults, eq(battlePlayerResults.resultId, battleResults.id))
-          .where(sql`${battleResults.venueId} = ANY(${venueIds})`);
+          .where(inArray(battleResults.venueId, venueIds));
         avgPlayers = Math.round((avgResult?.total ?? 0) / totalBattles);
       }
 
