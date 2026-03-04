@@ -17,3 +17,5 @@ export * from "./game-templates";
 export * from "./game-modules";
 export * from "./matches";
 export * from "./purchases";
+export * from "./battle-venues";
+export * from "./battle-slots";
