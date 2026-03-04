@@ -26,6 +26,7 @@ import { registerAiScoringRoutes } from "./ai-scoring";
 import { registerBattleVenueRoutes } from "./battle-venues";
 import { registerBattleSlotRoutes } from "./battle-slots";
 import { registerBattleRegistrationRoutes } from "./battle-registration";
+import { registerBattleMatchmakingRoutes } from "./battle-matchmaking";
 
 export async function registerRoutes(
   httpServer: Server,
