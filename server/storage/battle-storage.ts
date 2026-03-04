@@ -644,3 +644,7 @@ export const battleStorageMethods = {
   getPendingScheduledNotifications,
   updateNotificationStatus,
 };
+
+// Re-export 賽季和成就方法
+export * from "./battle-storage-seasons";
+export * from "./battle-storage-achievements";
