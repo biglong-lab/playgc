@@ -1,6 +1,6 @@
-// 水彈對戰 PK 擂台 — 建立戰隊頁
+// 水彈對戰 PK 擂台 — 建立戰隊頁（深色軍事風格）
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Shield } from "lucide-react";
+import BattleLayout from "@/components/battle/BattleLayout";
+import { Shield } from "lucide-react";
 
 export default function BattleClanCreate() {
   const { user } = useAuth();
@@ -52,20 +53,12 @@ export default function BattleClanCreate() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b px-4 py-3">
-        <Link href="/battle">
-          <Button variant="ghost" size="sm" className="gap-1">
-            <ArrowLeft className="h-4 w-4" /> 返回
-          </Button>
-        </Link>
-      </div>
-
-      <div className="max-w-md mx-auto px-4 py-6">
-        <Card>
+    <BattleLayout title="建立戰隊">
+      <div className="max-w-md mx-auto">
+        <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+              <Shield className="h-5 w-5 text-primary" />
               建立戰隊
             </CardTitle>
           </CardHeader>
@@ -117,6 +110,6 @@ export default function BattleClanCreate() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </BattleLayout>
   );
 }
