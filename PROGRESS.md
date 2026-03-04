@@ -101,6 +101,7 @@
 #### 水彈對戰 PK 擂台
 - [x] Phase 1 MVP：場地 + 時段 + 報名 + 配對 + WebSocket（Schema/Storage/API/前端）
 - [x] Phase 2：對戰結果 + ELO 排名 + 歷史紀錄（Schema/ELO 引擎/Storage/API/前端）
+- [x] Phase 3：戰隊系統（Schema/Storage/API/前端）
 
 ## 工作紀錄
 
