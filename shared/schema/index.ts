@@ -21,3 +21,4 @@ export * from "./battle-venues";
 export * from "./battle-slots";
 export * from "./battle-results";
 export * from "./battle-clans";
+export * from "./battle-notifications";
