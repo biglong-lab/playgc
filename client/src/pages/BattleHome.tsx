@@ -218,6 +218,38 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
   );
 }
 
+/** 標題列的通知鈴鐺（含未讀數） */
+function NotificationBell() {
+  const { data } = useQuery<{ count: number }>({
+    queryKey: ["/api/battle/notifications/unread-count"],
+    queryFn: async () => {
+      const token = await getIdToken();
+      const res = await fetch("/api/battle/notifications/unread-count", {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        credentials: "include",
+      });
+      if (!res.ok) return { count: 0 };
+      return res.json();
+    },
+    refetchInterval: 30000,
+  });
+
+  const count = data?.count ?? 0;
+
+  return (
+    <Link href="/battle/notifications">
+      <Button variant="ghost" size="sm" className="relative text-white hover:text-white/80">
+        <Bell className="h-5 w-5" />
+        {count > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {count > 9 ? "9+" : count}
+          </span>
+        )}
+      </Button>
+    </Link>
+  );
+}
+
 /** 我的報名紀錄 */
 function MyRegistrations() {
   const { data: registrations = [] } = useQuery({
