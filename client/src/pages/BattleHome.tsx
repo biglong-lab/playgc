@@ -1,5 +1,4 @@
 // 水彈對戰 PK 擂台 — 玩家端首頁（深色軍事風格）
-import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
+import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleVenue, BattleSlot } from "@shared/schema";
 import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell, Medal } from "lucide-react";
