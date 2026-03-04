@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } from "@shared/schema";
 import {
-  Swords, Clock, Users, CalendarDays, ArrowLeft, UserPlus,
+  Swords, Clock, Users, CalendarDays, UserPlus,
   UserMinus, Shield, Copy, Check,
 } from "lucide-react";
 
@@ -39,7 +40,6 @@ export default function BattleSlotDetail() {
   const [accessCode, setAccessCode] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // 取得時段詳情
   const { data: slotData, isLoading } = useQuery<SlotDetailResponse>({
     queryKey: ["/api/battle/slots", slotId],
     queryFn: async () => {
@@ -50,7 +50,6 @@ export default function BattleSlotDetail() {
     enabled: !!slotId,
   });
 
-  // 取得場地資訊
   const { data: venue } = useQuery<BattleVenue>({
     queryKey: ["/api/battle/venues", slotData?.venueId],
     queryFn: async () => {
@@ -61,7 +60,6 @@ export default function BattleSlotDetail() {
     enabled: !!slotData?.venueId,
   });
 
-  // 報名
   const registerMutation = useMutation({
     mutationFn: async () => {
       return apiRequest("POST", `/api/battle/slots/${slotId}/register`, {
@@ -80,7 +78,6 @@ export default function BattleSlotDetail() {
     },
   });
 
-  // 取消報名
   const cancelMutation = useMutation({
     mutationFn: async () => {
       return apiRequest("POST", `/api/battle/slots/${slotId}/cancel`);
@@ -95,7 +92,6 @@ export default function BattleSlotDetail() {
     },
   });
 
-  // 建立小隊
   const createTeamMutation = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", `/api/battle/slots/${slotId}/premade`, {
@@ -114,7 +110,6 @@ export default function BattleSlotDetail() {
     },
   });
 
-  // 加入小隊
   const joinTeamMutation = useMutation({
     mutationFn: async () => {
       const res = await apiRequest("POST", "/api/battle/premade/join", {
@@ -136,8 +131,8 @@ export default function BattleSlotDetail() {
 
   if (isLoading || !slotData) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -152,23 +147,14 @@ export default function BattleSlotDetail() {
   const myGroup = slotData.premadeGroups?.find((g) => g.leaderId === user?.id);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* 導航 */}
-      <div className="bg-white border-b px-4 py-3">
-        <Link href="/battle">
-          <Button variant="ghost" size="sm" className="gap-1">
-            <ArrowLeft className="h-4 w-4" /> 返回
-          </Button>
-        </Link>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <BattleLayout title={venue?.name ?? "對戰場地"} subtitle="時段詳情">
+      <div className="space-y-4">
         {/* 時段資訊 */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                <Swords className="h-5 w-5 text-blue-600" />
+                <Swords className="h-5 w-5 text-primary" />
                 {venue?.name ?? "對戰場地"}
               </span>
               <StatusBadge status={slotData.status} />
@@ -186,7 +172,7 @@ export default function BattleSlotDetail() {
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
-                <span>{slotData.currentCount} / {maxPlayers} 人</span>
+                <span className="font-number">{slotData.currentCount} / {maxPlayers} 人</span>
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4 text-muted-foreground" />
@@ -196,9 +182,9 @@ export default function BattleSlotDetail() {
 
             {/* 進度條 */}
             <div className="space-y-1">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 rounded-full transition-all"
+                  className="h-full bg-primary rounded-full transition-all"
                   style={{ width: `${Math.min((slotData.currentCount / maxPlayers) * 100, 100)}%` }}
                 />
               </div>
@@ -208,7 +194,7 @@ export default function BattleSlotDetail() {
             </div>
 
             {slotData.notes && (
-              <p className="text-sm text-muted-foreground bg-muted/50 rounded p-2">{slotData.notes}</p>
+              <p className="text-sm text-muted-foreground bg-primary/5 rounded p-2">{slotData.notes}</p>
             )}
           </CardContent>
         </Card>
@@ -244,7 +230,7 @@ export default function BattleSlotDetail() {
 
         {/* 邀請碼顯示 */}
         {myGroup && (
-          <Card className="border-green-200 bg-green-50/50">
+          <Card className="border-green-500/30 bg-green-500/10">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -271,7 +257,7 @@ export default function BattleSlotDetail() {
 
         {/* 已報名列表 */}
         {slotData.registrations && slotData.registrations.length > 0 && (
-          <Card>
+          <Card className="bg-card border-border">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">報名名單 ({slotData.registrations.filter((r) => r.status !== "cancelled").length})</CardTitle>
             </CardHeader>
@@ -376,7 +362,7 @@ export default function BattleSlotDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </BattleLayout>
   );
 }
 
@@ -407,14 +393,14 @@ function TeamsDisplay({ registrations }: { registrations: BattleRegistration[] }
   if (teamMap.size === 0) return null;
 
   const teamColors: Record<string, string> = {
-    紅隊: "border-red-300 bg-red-50",
-    藍隊: "border-blue-300 bg-blue-50",
-    綠隊: "border-green-300 bg-green-50",
-    黃隊: "border-yellow-300 bg-yellow-50",
+    紅隊: "border-red-500/30 bg-red-500/10",
+    藍隊: "border-blue-500/30 bg-blue-500/10",
+    綠隊: "border-green-500/30 bg-green-500/10",
+    黃隊: "border-yellow-500/30 bg-yellow-500/10",
   };
 
   return (
-    <Card>
+    <Card className="bg-card border-border">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <Swords className="h-4 w-4" /> 隊伍分配
@@ -425,7 +411,7 @@ function TeamsDisplay({ registrations }: { registrations: BattleRegistration[] }
           {Array.from(teamMap.entries()).map(([teamName, members]) => (
             <div
               key={teamName}
-              className={`rounded-lg border p-3 ${teamColors[teamName] ?? "border-gray-200 bg-gray-50"}`}
+              className={`rounded-lg border p-3 ${teamColors[teamName] ?? "border-border bg-card"}`}
             >
               <p className="font-medium text-sm mb-2">{teamName} ({members.length}人)</p>
               <div className="space-y-1">
