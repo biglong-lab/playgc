@@ -1,15 +1,14 @@
-// 水彈對戰 PK 擂台 — 戰隊詳情頁
+// 水彈對戰 PK 擂台 — 戰隊詳情頁（深色軍事風格）
 import { useRoute, Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleClan, BattleClanMember } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
-import { ArrowLeft, Shield, Users, Trophy, Crown, Star } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Shield, Users, Trophy, Crown, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ClanDetailResponse extends BattleClan {
@@ -88,15 +87,15 @@ export default function BattleClanDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
       </div>
     );
   }
 
   if (!clan) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
         <p className="text-muted-foreground">戰隊不存在</p>
         <Link href="/battle">
           <Button variant="outline">返回</Button>
@@ -113,57 +112,36 @@ export default function BattleClanDetail() {
 
   const roleIcon = (role: string) => {
     if (role === "leader") return <Crown className="h-3 w-3 text-yellow-500" />;
-    if (role === "officer") return <Star className="h-3 w-3 text-blue-500" />;
+    if (role === "officer") return <Star className="h-3 w-3 text-blue-400" />;
     return null;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-700 text-white py-8 px-4">
-        <div className="max-w-2xl mx-auto">
-          <Link href="/battle">
-            <Button variant="ghost" size="sm" className="text-white/70 hover:text-white gap-1 mb-2">
-              <ArrowLeft className="h-4 w-4" /> 返回
-            </Button>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Shield className="h-8 w-8" />
-            <div>
-              <h1 className="text-2xl font-bold">
-                [{clan.tag}] {clan.name}
-              </h1>
-              {clan.description && (
-                <p className="text-white/80 text-sm mt-1">{clan.description}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <BattleLayout title={`[${clan.tag}] ${clan.name}`} subtitle={clan.description || undefined}>
+      <div className="space-y-4">
         {/* 戰隊數據 */}
         <div className="grid grid-cols-4 gap-3">
-          <Card>
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{clan.clanRating}</p>
+              <p className="text-2xl font-number font-bold">{clan.clanRating}</p>
               <p className="text-xs text-muted-foreground">積分</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-green-600">{clan.totalWins}</p>
+              <p className="text-2xl font-number font-bold text-green-500">{clan.totalWins}</p>
               <p className="text-xs text-muted-foreground">勝</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold text-red-600">{clan.totalLosses}</p>
+              <p className="text-2xl font-number font-bold text-red-500">{clan.totalLosses}</p>
               <p className="text-xs text-muted-foreground">負</p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
-              <p className="text-2xl font-bold">{winRate}%</p>
+              <p className="text-2xl font-number font-bold">{winRate}%</p>
               <p className="text-xs text-muted-foreground">勝率</p>
             </CardContent>
           </Card>
@@ -182,7 +160,7 @@ export default function BattleClanDetail() {
         {isMember && !isLeader && (
           <Button
             variant="outline"
-            className="w-full text-red-600"
+            className="w-full text-destructive"
             onClick={() => leaveMutation.mutate()}
             disabled={leaveMutation.isPending}
           >
@@ -191,7 +169,7 @@ export default function BattleClanDetail() {
         )}
 
         {/* 成員列表 */}
-        <Card>
+        <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -211,7 +189,7 @@ export default function BattleClanDetail() {
                     <span className="flex items-center gap-2 text-sm">
                       {roleIcon(member.role)}
                       {member.userId.slice(0, 10)}...
-                      {member.userId === user?.id && <span className="text-blue-600">(你)</span>}
+                      {member.userId === user?.id && <span className="text-primary">(你)</span>}
                     </span>
                     <Badge variant="outline" className="text-xs">
                       {clanRoleLabels[member.role as ClanRole] ?? member.role}
@@ -222,6 +200,6 @@ export default function BattleClanDetail() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </BattleLayout>
   );
 }
