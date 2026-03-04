@@ -47,6 +47,15 @@ async function getVenuesByField(fieldId: string): Promise<BattleVenue[]> {
     .orderBy(desc(battleVenues.createdAt));
 }
 
+/** 取得所有活躍對戰場地（不限場域） */
+async function getAllActiveVenues(): Promise<BattleVenue[]> {
+  return db
+    .select()
+    .from(battleVenues)
+    .where(eq(battleVenues.isActive, true))
+    .orderBy(desc(battleVenues.createdAt));
+}
+
 /** 依 ID 取得場地 */
 async function getVenue(id: string): Promise<BattleVenue | undefined> {
   const [result] = await db
