@@ -19,3 +19,4 @@ export * from "./matches";
 export * from "./purchases";
 export * from "./battle-venues";
 export * from "./battle-slots";
+export * from "./battle-results";
