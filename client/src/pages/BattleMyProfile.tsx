@@ -168,6 +168,22 @@ export default function BattleMyProfile() {
               </CardContent>
             </Card>
           </Link>
+          <Link href="/battle/achievements">
+            <Card className="hover:bg-gray-50 cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Medal className="h-5 w-5 text-orange-500" />
+                <span className="font-medium text-sm">成就徽章</span>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/battle/seasons">
+            <Card className="hover:bg-gray-50 cursor-pointer">
+              <CardContent className="p-4 flex items-center gap-3">
+                <Calendar className="h-5 w-5 text-indigo-500" />
+                <span className="font-medium text-sm">賽季歷史</span>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
     </div>
