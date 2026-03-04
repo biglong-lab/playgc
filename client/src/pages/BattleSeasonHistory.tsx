@@ -36,17 +36,21 @@ const tierColors: Record<string, string> = {
 
 export default function BattleSeasonHistory() {
   const { user } = useAuth();
+  const { fieldId } = useBattleFieldId();
 
   const { data: history = [], isLoading } = useQuery<SeasonHistoryEntry[]>({
-    queryKey: ["/api/battle/my/season-history"],
+    queryKey: ["/api/battle/my/season-history", fieldId],
     queryFn: async () => {
-      const res = await fetch("/api/battle/my/season-history?fieldId=default", {
+      const { getIdToken } = await import("@/lib/firebase");
+      const token = await getIdToken();
+      const res = await fetch(`/api/battle/my/season-history?fieldId=${fieldId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         credentials: "include",
       });
       if (!res.ok) return [];
       return res.json();
     },
-    enabled: !!user,
+    enabled: !!user && !!fieldId,
   });
 
   return (
