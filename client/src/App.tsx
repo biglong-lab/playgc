@@ -57,6 +57,8 @@ const AdminStaffAccounts = lazy(() => import("@/pages/AdminStaffAccounts"));
 const AdminStaffAuditLogs = lazy(() => import("@/pages/AdminStaffAuditLogs"));
 const AdminStaffPlayers = lazy(() => import("@/pages/AdminStaffPlayers"));
 const AdminStaffQRCodes = lazy(() => import("@/pages/AdminStaffQRCodes"));
+const AdminBattleVenues = lazy(() => import("@/pages/AdminBattleVenues"));
+const AdminBattleSlots = lazy(() => import("@/pages/AdminBattleSlots"));
 
 function Router() {
   return (
