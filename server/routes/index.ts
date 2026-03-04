@@ -79,6 +79,10 @@ export async function registerRoutes(
   registerBattleRankingRoutes(app);
   registerBattleClanRoutes(app);
   registerBattleNotificationRoutes(app);
+  registerAdminBattleRoutes(app);
+  registerAdminBattleSeasonRoutes(app);
+  registerBattleSeasonRoutes(app);
+  registerBattleAchievementRoutes(app);
 
   return httpServer;
 }
