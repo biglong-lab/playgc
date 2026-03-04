@@ -23,6 +23,7 @@ export interface RouteContext {
   broadcastToSession: (sessionId: string, message: WsBroadcastMessage) => void;
   broadcastToTeam: (teamId: string, message: WsBroadcastMessage, excludeClient?: WebSocketClient) => void;
   broadcastToMatch: (matchId: string, message: WsBroadcastMessage) => void;
+  broadcastToBattleSlot: (slotId: string, message: WsBroadcastMessage) => void;
 }
 
 // 經 Firebase 認證後的 Request 型別
