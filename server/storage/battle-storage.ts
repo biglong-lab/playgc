@@ -634,4 +634,13 @@ export const battleStorageMethods = {
   getUserClan,
   updateClanMemberRole,
   updateClanStats,
+  // 通知
+  createNotification,
+  createNotificationsBatch,
+  getNotificationsByUser,
+  getUnreadCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  getPendingScheduledNotifications,
+  updateNotificationStatus,
 };
