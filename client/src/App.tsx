@@ -109,6 +109,8 @@ function Router() {
         <Route path="/admin/audit-logs">{() => <ProtectedAdminRoute><AdminStaffAuditLogs /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/players">{() => <ProtectedAdminRoute><AdminStaffPlayers /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/qrcodes">{() => <ProtectedAdminRoute><AdminStaffQRCodes /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/battle/venues">{() => <ProtectedAdminRoute><AdminBattleVenues /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/battle/slots">{() => <ProtectedAdminRoute><AdminBattleSlots /></ProtectedAdminRoute>}</Route>
 
         {/* /admin-staff/* 向後兼容 — 重導向到 /admin/* */}
         <Route path="/admin-staff">{() => <Redirect to="/admin/login" />}</Route>
