@@ -214,10 +214,20 @@ function MyRegistrations() {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {registrations.slice(0, 3).map((reg: { id: string; slotId: string; status: string }) => (
+          {registrations.slice(0, 3).map((reg: {
+            id: string; slotId: string; status: string;
+            slotDate?: string; startTime?: string; endTime?: string; venueName?: string;
+          }) => (
             <Link key={reg.id} href={`/battle/slot/${reg.slotId}`}>
               <div className="flex items-center justify-between p-2 rounded bg-card hover:bg-card/80 cursor-pointer text-sm transition-colors">
-                <span>時段 {reg.slotId.slice(0, 8)}...</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <CalendarDays className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <span className="truncate">
+                    {reg.venueName ?? "場地"}
+                    {reg.slotDate && ` · ${reg.slotDate}`}
+                    {reg.startTime && ` ${reg.startTime.slice(0, 5)}`}
+                  </span>
+                </div>
                 {slotStatusBadge(reg.status)}
               </div>
             </Link>
