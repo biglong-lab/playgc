@@ -680,3 +680,15 @@ export const battleClanMembersRelations = relations(battleClanMembers, ({ one })
   }),
 }));
 
+// 通知系統
+export const battleNotificationsRelations = relations(battleNotifications, ({ one }) => ({
+  slot: one(battleSlots, {
+    fields: [battleNotifications.slotId],
+    references: [battleSlots.id],
+  }),
+  user: one(users, {
+    fields: [battleNotifications.userId],
+    references: [users.id],
+  }),
+}));
+
