@@ -57,7 +57,9 @@ export default function BattleSeasonHistory() {
     <BattleLayout title="賽季歷史" subtitle="歷屆賽季排名紀錄" backHref="/battle/my">
       <div className="space-y-4">
         {isLoading ? (
-          <p className="text-center py-8 text-muted-foreground">載入中...</p>
+          <div className="flex justify-center py-12">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
         ) : history.length === 0 ? (
           <Card className="bg-card border-border">
             <CardContent className="p-8 text-center">
