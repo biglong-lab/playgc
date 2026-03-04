@@ -52,10 +52,7 @@ export function registerBattleSlotRoutes(app: Express) {
         return res.status(401).json({ error: "未認證" });
       }
 
-      const data = insertBattleSlotSchema.parse({
-        ...req.body,
-        createdBy: req.admin.id,
-      });
+      const data = insertBattleSlotSchema.parse(req.body);
 
       // 驗證場地歸屬
       const venue = await battleStorageMethods.getVenue(data.venueId);
