@@ -14,11 +14,13 @@ export function registerBattleVenueRoutes(app: Express) {
   // ============================================================================
   app.get("/api/battle/venues", async (req, res) => {
     try {
-      const fieldId = req.query.fieldId as string;
-      if (!fieldId) {
-        return res.status(400).json({ error: "缺少 fieldId 參數" });
+      const fieldId = req.query.fieldId as string | undefined;
+      if (fieldId) {
+        const venues = await battleStorageMethods.getVenuesByField(fieldId);
+        return res.json(venues);
       }
-      const venues = await battleStorageMethods.getVenuesByField(fieldId);
+      // 未指定 fieldId 時回傳所有活躍場地
+      const venues = await battleStorageMethods.getAllActiveVenues();
       res.json(venues);
     } catch {
       res.status(500).json({ error: "取得場地列表失敗" });
