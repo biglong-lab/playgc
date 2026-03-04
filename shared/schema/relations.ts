@@ -54,6 +54,8 @@ import {
 } from "./battle-results";
 import { battleClans, battleClanMembers } from "./battle-clans";
 import { battleNotifications } from "./battle-notifications";
+import { battleSeasons, battleSeasonRankings } from "./battle-seasons";
+import { battleAchievementDefs, battlePlayerAchievements } from "./battle-achievements";
 
 export const usersRelations = relations(users, ({ many }) => ({
   gameSessions: many(gameSessions),
