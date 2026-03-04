@@ -22,3 +22,5 @@ export * from "./battle-slots";
 export * from "./battle-results";
 export * from "./battle-clans";
 export * from "./battle-notifications";
+export * from "./battle-seasons";
+export * from "./battle-achievements";
