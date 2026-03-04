@@ -18,6 +18,11 @@ import {
   Users,
   FileText,
   Settings,
+  Swords,
+  MapPin,
+  Clock,
+  Medal,
+  Calendar,
 } from "lucide-react";
 
 export interface AdminMenuItem {
