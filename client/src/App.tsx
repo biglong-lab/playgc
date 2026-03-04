@@ -29,6 +29,10 @@ const PurchaseGate = lazy(() => import("@/pages/PurchaseGate"));
 const PurchaseSuccess = lazy(() => import("@/pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
 
+// 水彈對戰 PK 擂台
+const BattleHome = lazy(() => import("@/pages/BattleHome"));
+const BattleSlotDetail = lazy(() => import("@/pages/BattleSlotDetail"));
+
 // 管理端 — 統一在 /admin/* 下
 const FieldAdminLogin = lazy(() => import("@/pages/FieldAdminLogin"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
