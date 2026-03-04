@@ -66,6 +66,11 @@ const AdminStaffPlayers = lazy(() => import("@/pages/AdminStaffPlayers"));
 const AdminStaffQRCodes = lazy(() => import("@/pages/AdminStaffQRCodes"));
 const AdminBattleVenues = lazy(() => import("@/pages/AdminBattleVenues"));
 const AdminBattleSlots = lazy(() => import("@/pages/AdminBattleSlots"));
+const AdminBattleDashboard = lazy(() => import("@/pages/AdminBattleDashboard"));
+const AdminBattleRankings = lazy(() => import("@/pages/AdminBattleRankings"));
+const AdminBattleSeasons = lazy(() => import("@/pages/AdminBattleSeasons"));
+const BattleAchievements = lazy(() => import("@/pages/BattleAchievements"));
+const BattleSeasonHistory = lazy(() => import("@/pages/BattleSeasonHistory"));
 
 function Router() {
   return (
