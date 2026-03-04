@@ -95,6 +95,7 @@ function Router() {
         <Route path="/battle/clan/create" component={BattleClanCreate} />
         <Route path="/battle/clan/:clanId" component={BattleClanDetail} />
         <Route path="/battle/my" component={BattleMyProfile} />
+        <Route path="/battle/notifications" component={BattleNotifications} />
 
         {/* 管理端登入 */}
         <Route path="/admin/login" component={FieldAdminLogin} />
