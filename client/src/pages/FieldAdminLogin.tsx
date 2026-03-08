@@ -32,6 +32,7 @@ export default function FieldAdminLogin() {
     handleGoogleLogin,
     handleEmailLogin,
     handleEmailSignup,
+    handleDevLogin,
     handleSignOut,
     backToFieldInput,
     recheckAuthorization,
