@@ -1,7 +1,7 @@
 // 水彈對戰 PK 擂台 — 戰隊路由
 import type { Express } from "express";
 import { isAuthenticated } from "../firebaseAuth";
-import { battleStorageMethods } from "../storage/battle-storage";
+import { battleStorageMethods, getClanMembersWithNames } from "../storage/battle-storage";
 import type { AuthenticatedRequest } from "./types";
 import {
   insertBattleClanSchema,
