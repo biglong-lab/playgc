@@ -216,6 +216,11 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     isGoogleLoading,
     firebaseUser,
     isAuthenticated,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    isEmailLoading,
 
     // Mutation 狀態
     isFirebaseLoginPending: firebaseLoginMutation.isPending,
@@ -223,6 +228,8 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     // 事件處理
     handleFieldSubmit,
     handleGoogleLogin,
+    handleEmailLogin,
+    handleEmailSignup,
     handleSignOut,
     backToFieldInput,
     recheckAuthorization,
