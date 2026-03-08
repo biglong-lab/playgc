@@ -148,6 +148,45 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     }
   };
 
+  // 處理 Email 登入
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    setIsEmailLoading(true);
+    setLoginError(null);
+    try {
+      await signInWithEmail(email, password);
+      // Firebase 登入成功後，useEffect 會自動觸發 firebaseLoginMutation
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Email 登入失敗";
+      setLoginError(errorMessage);
+      toast({ title: "登入失敗", description: errorMessage, variant: "destructive" });
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
+
+  // 處理 Email 註冊
+  const handleEmailSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+    if (password.length < 6) {
+      toast({ title: "密碼太短", description: "密碼至少需要 6 個字元", variant: "destructive" });
+      return;
+    }
+    setIsEmailLoading(true);
+    setLoginError(null);
+    try {
+      await signUpWithEmail(email, password);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "註冊失敗";
+      setLoginError(errorMessage);
+      toast({ title: "註冊失敗", description: errorMessage, variant: "destructive" });
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
+
   // 處理登出
   const handleSignOut = async () => {
     setLoginError(null);
