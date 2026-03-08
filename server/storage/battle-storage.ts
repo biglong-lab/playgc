@@ -764,6 +764,7 @@ export const battleStorageMethods = {
   updateSlotConfirmedCount,
   // 報名
   getRegistrationsBySlot,
+  getRegistrationById,
   getRegistration,
   getUpcomingRegistrations,
   createRegistration,
