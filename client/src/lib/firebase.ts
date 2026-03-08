@@ -1,12 +1,13 @@
 import { initializeApp } from "firebase/app";
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
+import {
+  getAuth,
+  GoogleAuthProvider,
   OAuthProvider,
-  signInWithPopup, 
-  signInWithRedirect, 
-  getRedirectResult, 
-  signOut as firebaseSignOut, 
+  signInWithPopup,
+  signInWithRedirect,
+  signInWithCredential,
+  getRedirectResult,
+  signOut as firebaseSignOut,
   onAuthStateChanged,
   signInAnonymously as firebaseSignInAnonymously,
   createUserWithEmailAndPassword,
@@ -14,7 +15,7 @@ import {
   sendPasswordResetEmail,
   linkWithCredential,
   EmailAuthProvider,
-  type User 
+  type User
 } from "firebase/auth";
 
 const firebaseConfig = {
