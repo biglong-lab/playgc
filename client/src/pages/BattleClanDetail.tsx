@@ -11,8 +11,12 @@ import { clanRoleLabels, type ClanRole } from "@shared/schema";
 import { Shield, Users, Trophy, Crown, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface ClanMemberWithName extends BattleClanMember {
+  displayName?: string;
+}
+
 interface ClanDetailResponse extends BattleClan {
-  members: BattleClanMember[];
+  members: ClanMemberWithName[];
   myRole?: string;
 }
 
