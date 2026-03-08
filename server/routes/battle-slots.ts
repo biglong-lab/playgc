@@ -35,7 +35,7 @@ export function registerBattleSlotRoutes(app: Express) {
       }
 
       // JOIN 玩家名稱
-      const regRows = await battleStorageMethods.getRegistrationsBySlotWithNames(req.params.id);
+      const regRows = await getRegistrationsBySlotWithNames(req.params.id);
       const registrations = regRows.map((row) => ({
         ...row.registration,
         displayName: buildDisplayName(row.firstName, row.lastName, row.registration.userId),
