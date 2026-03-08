@@ -73,7 +73,11 @@ export function registerBattleClanRoutes(app: Express) {
           return res.json(null);
         }
 
-        const members = await battleStorageMethods.getClanMembers(result.clan.id);
+        const memberRows = await battleStorageMethods.getClanMembersWithNames(result.clan.id);
+        const members = memberRows.map((row) => ({
+          ...row.member,
+          displayName: buildDisplayName(row.firstName, row.lastName, row.member.userId),
+        }));
         res.json({ ...result.clan, myRole: result.membership.role, members });
       } catch {
         res.status(500).json({ error: "取得我的戰隊失敗" });
