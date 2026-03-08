@@ -57,8 +57,11 @@ export async function verifyFirebaseToken(idToken: string): Promise<DecodedIdTok
     const app = getFirebaseAdmin();
     const auth = getAuth(app);
     const decodedToken = await auth.verifyIdToken(idToken);
+    console.log("[AUTH] Token 驗證成功, uid:", decodedToken.uid);
     return decodedToken;
-  } catch (_error: unknown) {
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error("[AUTH] Token 驗證失敗:", msg);
     return null;
   }
 }
