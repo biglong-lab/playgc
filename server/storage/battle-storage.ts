@@ -690,13 +690,6 @@ export const battleStorageMethods = {
   getUserClan,
   updateClanMemberRole,
   updateClanStats,
-  // 帶名稱查詢
-  getRankingsByFieldWithNames,
-  getRegistrationsBySlotWithNames,
-  getClanMembersWithNames,
-  getPlayerResultsByResultWithNames,
-  getPlayerHistoryWithDetails,
-  getUpcomingRegistrationsWithDetails,
   // 通知
   createNotification,
   createNotificationsBatch,
