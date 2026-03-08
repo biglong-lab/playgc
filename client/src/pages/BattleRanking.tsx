@@ -12,6 +12,7 @@ interface RankingEntry extends BattlePlayerRanking {
   rank: number;
   tierLabel: string;
   winRate: number;
+  displayName?: string;
 }
 
 const tierBg: Record<string, string> = {
