@@ -5,6 +5,12 @@ import { battleStorageMethods } from "../storage/battle-storage";
 import type { AuthenticatedRequest } from "./types";
 import { tierLabels, getTierFromRating } from "@shared/schema";
 
+/** 組合顯示名稱 */
+function buildDisplayName(firstName: string | null, lastName: string | null, odId: string): string {
+  if (firstName || lastName) return [lastName, firstName].filter(Boolean).join("");
+  return `玩家${odId.slice(0, 6)}`;
+}
+
 export function registerBattleRankingRoutes(app: Express) {
   // ============================================================================
   // GET /api/battle/rankings — 場域排行榜
@@ -17,15 +23,15 @@ export function registerBattleRankingRoutes(app: Express) {
       }
 
       const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-      const rankings = await battleStorageMethods.getRankingsByField(fieldId, limit);
+      const rows = await battleStorageMethods.getRankingsByFieldWithNames(fieldId, limit);
 
-      // 附加段位中文
-      const enriched = rankings.map((r, idx) => ({
-        ...r,
+      const enriched = rows.map((row, idx) => ({
+        ...row.ranking,
         rank: idx + 1,
-        tierLabel: tierLabels[r.tier as keyof typeof tierLabels] ?? r.tier,
-        winRate: r.totalBattles > 0
-          ? Math.round((r.wins / r.totalBattles) * 100)
+        displayName: buildDisplayName(row.firstName, row.lastName, row.ranking.userId),
+        tierLabel: tierLabels[row.ranking.tier as keyof typeof tierLabels] ?? row.ranking.tier,
+        winRate: row.ranking.totalBattles > 0
+          ? Math.round((row.ranking.wins / row.ranking.totalBattles) * 100)
           : 0,
       }));
 
@@ -53,9 +59,14 @@ export function registerBattleRankingRoutes(app: Express) {
         }
 
         const ranking = await battleStorageMethods.getPlayerRanking(req.user.dbUser.id, fieldId);
+        const dbUser = req.user.dbUser;
+        const displayName = buildDisplayName(
+          dbUser.firstName ?? null,
+          dbUser.lastName ?? null,
+          dbUser.id,
+        );
 
         if (!ranking) {
-          // 尚未有排名紀錄，回傳預設值
           return res.json({
             rating: 1000,
             tier: "platinum",
@@ -68,11 +79,13 @@ export function registerBattleRankingRoutes(app: Express) {
             winStreak: 0,
             bestStreak: 0,
             mvpCount: 0,
+            displayName,
           });
         }
 
         res.json({
           ...ranking,
+          displayName,
           tierLabel: tierLabels[ranking.tier as keyof typeof tierLabels] ?? ranking.tier,
           winRate: ranking.totalBattles > 0
             ? Math.round((ranking.wins / ranking.totalBattles) * 100)
@@ -97,8 +110,16 @@ export function registerBattleRankingRoutes(app: Express) {
         }
 
         const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
-        const history = await battleStorageMethods.getPlayerHistory(req.user.dbUser.id, limit);
-        res.json(history);
+        const rows = await battleStorageMethods.getPlayerHistoryWithDetails(req.user.dbUser.id, limit);
+
+        const enriched = rows.map((row) => ({
+          ...row.playerResult,
+          slotDate: row.slotDate,
+          startTime: row.startTime,
+          venueName: row.venueName,
+        }));
+
+        res.json(enriched);
       } catch {
         res.status(500).json({ error: "取得對戰歷史失敗" });
       }
