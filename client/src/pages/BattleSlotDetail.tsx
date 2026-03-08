@@ -383,8 +383,8 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant={info.variant}>{info.label}</Badge>;
 }
 
-function TeamsDisplay({ registrations }: { registrations: BattleRegistration[] }) {
-  const teamMap = new Map<string, BattleRegistration[]>();
+function TeamsDisplay({ registrations }: { registrations: RegistrationWithName[] }) {
+  const teamMap = new Map<string, RegistrationWithName[]>();
   for (const reg of registrations) {
     if (reg.assignedTeam && reg.status !== "cancelled") {
       if (!teamMap.has(reg.assignedTeam)) {
