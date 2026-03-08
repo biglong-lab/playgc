@@ -112,6 +112,8 @@ export default function BattleClanDetail() {
 
   const isMember = clan.members.some((m) => m.userId === user?.id && !m.leftAt);
   const isLeader = clan.leaderId === user?.id;
+  const myMembership = clan.members.find((m) => m.userId === user?.id && !m.leftAt);
+  const myRole = clan.myRole ?? myMembership?.role ?? "member";
   const winRate = (clan.totalWins + clan.totalLosses + clan.totalDraws) > 0
     ? Math.round((clan.totalWins / (clan.totalWins + clan.totalLosses + clan.totalDraws)) * 100)
     : 0;
