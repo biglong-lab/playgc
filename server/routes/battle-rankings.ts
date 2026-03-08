@@ -18,7 +18,7 @@ export function registerBattleRankingRoutes(app: Express) {
       }
 
       const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
-      const rows = await battleStorageMethods.getRankingsByFieldWithNames(fieldId, limit);
+      const rows = await getRankingsByFieldWithNames(fieldId, limit);
 
       const enriched = rows.map((row, idx) => ({
         ...row.ranking,
