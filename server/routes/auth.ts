@@ -69,9 +69,6 @@ export function registerAuthRoutes(app: Express) {
 
       const { fieldCode } = req.body;
 
-      // 暫時除錯日誌
-      console.log("[ADMIN-LOGIN] uid:", firebaseUserId, "email:", firebaseEmail, "fieldCode:", fieldCode);
-
       // super_admin 可不填場域碼 → 依 firebaseUserId 全域搜尋
       let field: typeof fields.$inferSelect | undefined;
       let adminAccount: Awaited<ReturnType<typeof db.query.adminAccounts.findFirst>>;
