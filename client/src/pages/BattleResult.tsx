@@ -59,7 +59,7 @@ export default function BattleResult() {
     黃隊: "text-yellow-500",
   };
 
-  const teamMap = new Map<string, BattlePlayerResult[]>();
+  const teamMap = new Map<string, PlayerResultWithName[]>();
   for (const pr of data.playerResults ?? []) {
     if (!teamMap.has(pr.team)) teamMap.set(pr.team, []);
     teamMap.get(pr.team)!.push(pr);
