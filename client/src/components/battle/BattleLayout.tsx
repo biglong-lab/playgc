@@ -29,6 +29,7 @@ function NotificationBell() {
       return res.json();
     },
     refetchInterval: 30000,
+    refetchOnWindowFocus: true,
   });
 
   const count = data?.count ?? 0;
