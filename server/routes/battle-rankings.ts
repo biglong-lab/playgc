@@ -4,12 +4,7 @@ import { isAuthenticated } from "../firebaseAuth";
 import { battleStorageMethods } from "../storage/battle-storage";
 import type { AuthenticatedRequest } from "./types";
 import { tierLabels, getTierFromRating } from "@shared/schema";
-
-/** 組合顯示名稱 */
-function buildDisplayName(firstName: string | null, lastName: string | null, odId: string): string {
-  if (firstName || lastName) return [lastName, firstName].filter(Boolean).join("");
-  return `玩家${odId.slice(0, 6)}`;
-}
+import { buildDisplayName } from "../utils/display-name";
 
 export function registerBattleRankingRoutes(app: Express) {
   // ============================================================================
