@@ -2,7 +2,7 @@
 import type { Express } from "express";
 import { isAuthenticated } from "../firebaseAuth";
 import { requireAdminAuth } from "../adminAuth";
-import { battleStorageMethods } from "../storage/battle-storage";
+import { battleStorageMethods, getUpcomingRegistrationsWithDetails } from "../storage/battle-storage";
 import type { AuthenticatedRequest } from "./types";
 import { insertRegistrationSchema, insertPremadeGroupSchema } from "@shared/schema";
 import { z } from "zod";
