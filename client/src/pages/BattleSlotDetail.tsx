@@ -20,8 +20,12 @@ import {
   UserMinus, Shield, Copy, Check,
 } from "lucide-react";
 
+interface RegistrationWithName extends BattleRegistration {
+  displayName?: string;
+}
+
 interface SlotDetailResponse extends BattleSlot {
-  registrations: BattleRegistration[];
+  registrations: RegistrationWithName[];
   premadeGroups: BattlePremadeGroup[];
 }
 
