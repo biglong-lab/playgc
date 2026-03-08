@@ -162,7 +162,7 @@ export function registerBattleRegistrationRoutes(app: Express) {
         if (!req.user) {
           return res.status(401).json({ error: "未認證" });
         }
-        const rows = await battleStorageMethods.getUpcomingRegistrationsWithDetails(req.user.dbUser.id);
+        const rows = await getUpcomingRegistrationsWithDetails(req.user.dbUser.id);
         const registrations = rows.map((row) => ({
           ...row.registration,
           slotDate: row.slotDate,
