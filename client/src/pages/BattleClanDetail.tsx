@@ -6,15 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import BattleLayout from "@/components/battle/BattleLayout";
-import type { BattleClan, BattleClanMember } from "@shared/schema";
+import type { BattleClan } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
 import { Shield, Users, Trophy, Crown, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import ClanManagePanel, { MemberActionMenu } from "@/components/battle/ClanManagePanel";
-
-interface ClanMemberWithName extends BattleClanMember {
-  displayName?: string;
-}
+import { authFetch } from "@/lib/authFetch";
+import ClanManagePanel, { MemberActionMenu, type ClanMemberWithName } from "@/components/battle/ClanManagePanel";
 
 interface ClanDetailResponse extends BattleClan {
   members: ClanMemberWithName[];
