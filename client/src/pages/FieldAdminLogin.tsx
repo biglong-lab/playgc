@@ -116,7 +116,7 @@ export default function FieldAdminLogin() {
             </div>
           )}
 
-          {/* 步驟 2: Google 登入 */}
+          {/* 步驟 2: Firebase 登入 */}
           {step === "firebase" && (
             <div className="space-y-4">
               {fieldCode && <FieldCodeBadge fieldCode={fieldCode} />}
@@ -137,25 +137,82 @@ export default function FieldAdminLogin() {
               )}
 
               {!isAuthenticated && (
-                <Button
-                  data-testid="button-google-login"
-                  className="w-full"
-                  size="lg"
-                  onClick={handleGoogleLogin}
-                  disabled={isGoogleLoading}
-                >
-                  {isGoogleLoading ? (
-                    <span className="flex items-center gap-2">
-                      <span className="animate-spin">...</span>
-                      連接 Google 中...
-                    </span>
-                  ) : (
-                    <>
-                      <LogIn className="w-4 h-4 mr-2" />
-                      使用 Google 帳號登入
-                    </>
-                  )}
-                </Button>
+                <Tabs defaultValue="email" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="email">Email 登入</TabsTrigger>
+                    <TabsTrigger value="google">Google 登入</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="email" className="space-y-3 mt-3">
+                    <form onSubmit={handleEmailLogin} className="space-y-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-email">電子郵件</Label>
+                        <Input
+                          id="admin-email"
+                          type="email"
+                          placeholder="admin@example.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={isEmailLoading}
+                          autoComplete="email"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="admin-password">密碼</Label>
+                        <Input
+                          id="admin-password"
+                          type="password"
+                          placeholder="輸入密碼"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          disabled={isEmailLoading}
+                          autoComplete="current-password"
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          type="submit"
+                          className="flex-1"
+                          disabled={isEmailLoading || !email || !password}
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          {isEmailLoading ? "登入中..." : "登入"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          disabled={isEmailLoading || !email || !password}
+                          onClick={handleEmailSignup}
+                        >
+                          {isEmailLoading ? "處理中..." : "註冊"}
+                        </Button>
+                      </div>
+                    </form>
+                  </TabsContent>
+
+                  <TabsContent value="google" className="mt-3">
+                    <Button
+                      data-testid="button-google-login"
+                      className="w-full"
+                      size="lg"
+                      onClick={handleGoogleLogin}
+                      disabled={isGoogleLoading}
+                    >
+                      {isGoogleLoading ? (
+                        <span className="flex items-center gap-2">
+                          <span className="animate-spin">...</span>
+                          連接 Google 中...
+                        </span>
+                      ) : (
+                        <>
+                          <LogIn className="w-4 h-4 mr-2" />
+                          使用 Google 帳號登入
+                        </>
+                      )}
+                    </Button>
+                  </TabsContent>
+                </Tabs>
               )}
 
               <Button
