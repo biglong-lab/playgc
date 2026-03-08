@@ -72,15 +72,12 @@ export function useLoginHandlers(
   };
 
   const handleGoogleLogin = async () => {
-    console.log("[Login] Google 登入開始...");
     setIsLoggingIn(true);
     setLoginMethod("google");
     try {
       const user = await signInWithGoogle();
-      console.log("[Login] Google 登入結果:", user ? `uid=${user.uid}` : "null");
       if (user) handleLoginSuccess();
     } catch (error: unknown) {
-      console.error("[Login] Google 登入錯誤:", error);
       handleLoginError(error);
     }
   };
