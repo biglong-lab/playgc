@@ -256,6 +256,7 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     handleGoogleLogin,
     handleEmailLogin,
     handleEmailSignup,
+    handleDevLogin,
     handleSignOut,
     backToFieldInput,
     recheckAuthorization,
