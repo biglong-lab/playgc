@@ -193,7 +193,7 @@ export default function BattleClanDetail() {
                   <div key={member.id} className="flex items-center justify-between py-1.5">
                     <span className="flex items-center gap-2 text-sm">
                       {roleIcon(member.role)}
-                      {member.userId.slice(0, 10)}...
+                      {member.displayName ?? member.userId.slice(0, 10)}
                       {member.userId === user?.id && <span className="text-primary">(你)</span>}
                     </span>
                     <Badge variant="outline" className="text-xs">
