@@ -133,6 +133,19 @@ export default function BattleSlotDetail() {
     },
   });
 
+  const confirmMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      return apiRequest("POST", `/api/battle/registrations/${registrationId}/confirm`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/battle/slots", slotId] });
+      toast({ title: "已確認出席！" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "確認失敗", description: err.message, variant: "destructive" });
+    },
+  });
+
   if (isLoading || !slotData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
