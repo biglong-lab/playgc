@@ -5,7 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerResult } from "@shared/schema";
-import { History, TrendingUp, TrendingDown, Minus, Star } from "lucide-react";
+import { History, TrendingUp, TrendingDown, Minus, Star, MapPin } from "lucide-react";
+
+interface HistoryRecord extends BattlePlayerResult {
+  slotDate?: string;
+  startTime?: string;
+  venueName?: string;
+}
 
 export default function BattleHistory() {
   const { user } = useAuth();
