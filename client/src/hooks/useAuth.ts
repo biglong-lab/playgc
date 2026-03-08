@@ -9,7 +9,9 @@ export function useAuth() {
   const { data: dbUser, isLoading: dbLoading, isError, error } = useQuery<User>({
     queryKey: ["/api/auth/user"],
     enabled: !firebaseLoading && isSignedIn,
-    retry: false,
+    retry: 2,
+    retryDelay: 500,
+    staleTime: 30_000,
   });
 
   const user = dbUser ? {
