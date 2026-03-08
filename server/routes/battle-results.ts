@@ -8,6 +8,12 @@ import { checkAndUnlockAchievements } from "../services/battle-achievement-check
 import type { RouteContext } from "./types";
 import { z } from "zod";
 
+/** 組合顯示名稱 */
+function buildDisplayName(firstName: string | null, lastName: string | null, odId: string): string {
+  if (firstName || lastName) return [lastName, firstName].filter(Boolean).join("");
+  return `玩家${odId.slice(0, 6)}`;
+}
+
 export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
   // ============================================================================
   // POST /api/battle/slots/:slotId/result — 記錄對戰結果（管理員）
