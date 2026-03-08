@@ -10,6 +10,7 @@ import type { BattleClan, BattleClanMember } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
 import { Shield, Users, Trophy, Crown, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import ClanManagePanel, { MemberActionMenu } from "@/components/battle/ClanManagePanel";
 
 interface ClanMemberWithName extends BattleClanMember {
   displayName?: string;
