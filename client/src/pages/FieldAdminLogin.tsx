@@ -192,7 +192,7 @@ export default function FieldAdminLogin() {
                     </form>
                   </TabsContent>
 
-                  <TabsContent value="google" className="mt-3">
+                  <TabsContent value="google" className="space-y-3 mt-3">
                     <Button
                       data-testid="button-google-login"
                       className="w-full"
@@ -212,6 +212,18 @@ export default function FieldAdminLogin() {
                         </>
                       )}
                     </Button>
+
+                    {import.meta.env.DEV && (
+                      <Button
+                        variant="outline"
+                        className="w-full text-xs"
+                        size="sm"
+                        onClick={() => handleDevLogin("twfam4@gmail.com")}
+                        disabled={isEmailLoading}
+                      >
+                        {isEmailLoading ? "登入中..." : "🔧 Dev: 快速登入 (twfam4@gmail.com)"}
+                      </Button>
+                    )}
                   </TabsContent>
                 </Tabs>
               )}
