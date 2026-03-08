@@ -176,6 +176,11 @@ export default function BattleClanDetail() {
           </Button>
         )}
 
+        {/* 管理面板 */}
+        {user && isMember && (myRole === "leader" || myRole === "officer") && (
+          <ClanManagePanel clan={clan} members={clan.members} myRole={myRole} myUserId={user.id} />
+        )}
+
         {/* 成員列表 */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
