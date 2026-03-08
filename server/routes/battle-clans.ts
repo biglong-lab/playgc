@@ -42,7 +42,11 @@ export function registerBattleClanRoutes(app: Express) {
       if (!clan) {
         return res.status(404).json({ error: "戰隊不存在" });
       }
-      const members = await battleStorageMethods.getClanMembers(clan.id);
+      const memberRows = await battleStorageMethods.getClanMembersWithNames(clan.id);
+      const members = memberRows.map((row) => ({
+        ...row.member,
+        displayName: buildDisplayName(row.firstName, row.lastName, row.member.userId),
+      }));
       res.json({ ...clan, members });
     } catch {
       res.status(500).json({ error: "取得戰隊詳情失敗" });
