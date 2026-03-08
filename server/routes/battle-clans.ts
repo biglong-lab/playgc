@@ -9,6 +9,12 @@ import {
   clanRoleEnum,
 } from "@shared/schema";
 
+/** 組合顯示名稱 */
+function buildDisplayName(firstName: string | null, lastName: string | null, odId: string): string {
+  if (firstName || lastName) return [lastName, firstName].filter(Boolean).join("");
+  return `玩家${odId.slice(0, 6)}`;
+}
+
 export function registerBattleClanRoutes(app: Express) {
   // ============================================================================
   // GET /api/battle/clans — 場域戰隊列表
