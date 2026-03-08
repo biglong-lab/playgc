@@ -278,4 +278,10 @@ export function isAnonymousUser(): boolean {
   return auth.currentUser?.isAnonymous ?? false;
 }
 
+// 開發環境：Custom Token 登入（跳過 Google popup）
+export async function signInWithCustomToken(customToken: string) {
+  const result = await firebaseSignInWithCustomToken(auth, customToken);
+  return result.user;
+}
+
 export { onAuthStateChanged, type User };
