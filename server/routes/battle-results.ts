@@ -1,12 +1,13 @@
 // 水彈對戰 PK 擂台 — 對戰結果 + ELO 計算路由
 import type { Express } from "express";
 import { requireAdminAuth } from "../adminAuth";
-import { battleStorageMethods } from "../storage/battle-storage";
+import { battleStorageMethods, getPlayerResultsByResultWithNames } from "../storage/battle-storage";
 import { insertBattleResultSchema, insertPlayerResultSchema, getTierFromRating } from "@shared/schema";
 import { calculateElo, teamAvgRating } from "../services/battle-elo";
 import { checkAndUnlockAchievements } from "../services/battle-achievement-checker";
 import type { RouteContext } from "./types";
 import { z } from "zod";
+import { buildDisplayName } from "../utils/display-name";
 
 export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
   // ============================================================================
@@ -191,7 +192,11 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
         return res.status(404).json({ error: "尚無結果記錄" });
       }
 
-      const playerResults = await battleStorageMethods.getPlayerResultsByResult(result.id);
+      const rows = await getPlayerResultsByResultWithNames(result.id);
+      const playerResults = rows.map((row) => ({
+        ...row.playerResult,
+        displayName: buildDisplayName(row.firstName, row.lastName, row.playerResult.userId),
+      }));
       res.json({ ...result, playerResults });
     } catch {
       res.status(500).json({ error: "取得結果失敗" });

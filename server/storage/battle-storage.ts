@@ -170,6 +170,15 @@ async function getRegistrationsBySlot(slotId: string): Promise<BattleRegistratio
     .orderBy(battleRegistrations.registeredAt);
 }
 
+/** 依 ID 取得報名紀錄 */
+async function getRegistrationById(id: string): Promise<BattleRegistration | undefined> {
+  const [result] = await db
+    .select()
+    .from(battleRegistrations)
+    .where(eq(battleRegistrations.id, id));
+  return result;
+}
+
 /** 取得使用者在特定時段的報名 */
 async function getRegistration(slotId: string, userId: string): Promise<BattleRegistration | undefined> {
   const [result] = await db
@@ -646,6 +655,7 @@ export const battleStorageMethods = {
   updateSlotConfirmedCount,
   // 報名
   getRegistrationsBySlot,
+  getRegistrationById,
   getRegistration,
   getUpcomingRegistrations,
   createRegistration,
@@ -691,6 +701,7 @@ export const battleStorageMethods = {
   updateNotificationStatus,
 };
 
-// Re-export 賽季和成就方法
+// Re-export 子模組
+export * from "./battle-storage-queries";
 export * from "./battle-storage-seasons";
 export * from "./battle-storage-achievements";

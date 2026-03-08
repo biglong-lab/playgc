@@ -2,7 +2,7 @@
 import type { Express } from "express";
 import { isAuthenticated } from "../firebaseAuth";
 import { requireAdminAuth } from "../adminAuth";
-import { battleStorageMethods } from "../storage/battle-storage";
+import { battleStorageMethods, getUpcomingRegistrationsWithDetails } from "../storage/battle-storage";
 import type { AuthenticatedRequest } from "./types";
 import { insertRegistrationSchema, insertPremadeGroupSchema } from "@shared/schema";
 import { z } from "zod";
@@ -162,7 +162,15 @@ export function registerBattleRegistrationRoutes(app: Express) {
         if (!req.user) {
           return res.status(401).json({ error: "未認證" });
         }
-        const registrations = await battleStorageMethods.getUpcomingRegistrations(req.user.dbUser.id);
+        const rows = await getUpcomingRegistrationsWithDetails(req.user.dbUser.id);
+        const registrations = rows.map((row) => ({
+          ...row.registration,
+          slotDate: row.slotDate,
+          startTime: row.startTime,
+          endTime: row.endTime,
+          slotStatus: row.slotStatus,
+          venueName: row.venueName,
+        }));
         res.json(registrations);
       } catch {
         res.status(500).json({ error: "取得報名列表失敗" });
@@ -319,16 +327,25 @@ export function registerBattleRegistrationRoutes(app: Express) {
           return res.status(401).json({ error: "未認證" });
         }
 
-        const registration = await battleStorageMethods.getRegistration(req.params.id, req.user.dbUser.id);
-        // 因為 getRegistration 需要 slotId + userId，這邊用直接查詢
-        // 改用 updateRegistration 搭配 ID 即可
+        // 先查詢報名紀錄並驗證所有權
+        const registration = await battleStorageMethods.getRegistrationById(req.params.id);
+        if (!registration) {
+          return res.status(404).json({ error: "報名紀錄不存在" });
+        }
+        if (registration.userId !== req.user.dbUser.id) {
+          return res.status(403).json({ error: "無權限操作此報名" });
+        }
+        if (registration.status !== "registered") {
+          return res.status(400).json({ error: "此報名狀態無法確認出席" });
+        }
+
         const updated = await battleStorageMethods.updateRegistration(req.params.id, {
           status: "confirmed",
           confirmedAt: new Date(),
         });
 
         if (!updated) {
-          return res.status(404).json({ error: "報名紀錄不存在" });
+          return res.status(404).json({ error: "更新報名失敗" });
         }
 
         // 更新時段已確認人數
