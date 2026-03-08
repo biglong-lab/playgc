@@ -36,12 +36,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const { auth, onAuthStateChanged, handleRedirectResult } = await import("@/lib/firebase");
 
-        // 處理重導向登入流程
+        // 處理嵌入式瀏覽器的重導向登入流程
         try {
-          const redirectUser = await handleRedirectResult();
-          console.log("[AuthContext] handleRedirectResult:", redirectUser ? `uid=${redirectUser.uid}` : "null");
-        } catch (redirectError) {
-          console.error("[AuthContext] handleRedirectResult 錯誤:", redirectError);
+          await handleRedirectResult();
+        } catch (_redirectError) {
+          // 重導向結果處理失敗，繼續正常流程
         }
 
         if (!auth) {
