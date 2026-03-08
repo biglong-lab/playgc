@@ -59,12 +59,8 @@ export default function BattleClanDetail() {
 
   const leaveMutation = useMutation({
     mutationFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch(`/api/battle/clans/${clanId}/leave`, {
+      const res = await authFetch(`/api/battle/clans/${clanId}/leave`, {
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
       });
       if (!res.ok) {
         const err = await res.json();
