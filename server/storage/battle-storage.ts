@@ -171,6 +171,15 @@ async function getRegistrationsBySlot(slotId: string): Promise<BattleRegistratio
     .orderBy(battleRegistrations.registeredAt);
 }
 
+/** 依 ID 取得報名紀錄 */
+async function getRegistrationById(id: string): Promise<BattleRegistration | undefined> {
+  const [result] = await db
+    .select()
+    .from(battleRegistrations)
+    .where(eq(battleRegistrations.id, id));
+  return result;
+}
+
 /** 取得使用者在特定時段的報名 */
 async function getRegistration(slotId: string, userId: string): Promise<BattleRegistration | undefined> {
   const [result] = await db
