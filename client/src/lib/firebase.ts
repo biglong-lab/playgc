@@ -85,23 +85,24 @@ export async function signInWithGoogle() {
     return result.user;
   } catch (error: unknown) {
     const code = getFirebaseErrorCode(error);
-    if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
-      try {
-        await signInWithRedirect(auth, googleProvider);
-        return null;
-      } catch (_redirectError) {
-        throw new Error("無法開啟登入視窗。請使用外部瀏覽器（如 Safari 或 Chrome）開啟此網頁後重試。");
-      }
-    } else if (code === "auth/popup-closed-by-user") {
+    // 記錄完整原始錯誤，方便偵錯
+    console.error("[Firebase] Google 登入原始錯誤:", JSON.stringify({
+      code,
+      message: error instanceof Error ? error.message : String(error),
+      customData: (error as Record<string, unknown>)?.customData,
+      fullError: error,
+    }, null, 2));
+
+    if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
       throw new Error("登入視窗已關閉");
+    } else if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
+      throw new Error("彈窗被封鎖，請允許此網站的彈出式視窗");
     } else if (code === "auth/unauthorized-domain") {
-      throw new Error(`此網域未授權使用 Firebase：${window.location.hostname}。請在 Firebase Console 的 Authentication > Settings > Authorized domains 中新增此網域。`);
+      throw new Error(`此網域未授權：${window.location.hostname}`);
     } else if (code === "auth/operation-not-allowed") {
-      throw new Error("Google 登入未啟用。請在 Firebase Console 啟用 Google 登入提供者。");
-    } else if (code === "auth/cancelled-popup-request") {
-      throw new Error("登入請求已取消");
+      throw new Error("Google 登入未啟用");
     } else if (code === "auth/network-request-failed") {
-      throw new Error("網路連線失敗，請檢查網路後重試");
+      throw new Error("網路連線失敗");
     }
 
     throw error;
