@@ -77,20 +77,12 @@ function isEmbeddedBrowser(): boolean {
 }
 
 export async function signInWithGoogle() {
-  const useRedirect = isEmbeddedBrowser();
-  console.log("[Firebase] signInWithGoogle, useRedirect:", useRedirect, "hostname:", window.location.hostname);
+  console.log("[Firebase] signInWithGoogle — 使用 redirect 模式");
 
   try {
-    if (useRedirect) {
-      console.log("[Firebase] 使用 redirect 模式");
-      await signInWithRedirect(auth, googleProvider);
-      return null;
-    } else {
-      console.log("[Firebase] 使用 popup 模式");
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log("[Firebase] popup 登入成功, uid:", result.user.uid);
-      return result.user;
-    }
+    // 統一使用 redirect 模式，避免 popup 被第三方 cookie 擋住
+    await signInWithRedirect(auth, googleProvider);
+    return null;
   } catch (error: unknown) {
     const code = getFirebaseErrorCode(error);
     if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
