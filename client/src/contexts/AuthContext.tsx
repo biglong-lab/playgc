@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef, type ReactNode 
 import type { User } from "firebase/auth";
 import { queryClient } from "@/lib/queryClient";
 
+
 interface AuthContextType {
   firebaseUser: User | null;
   isLoading: boolean;
