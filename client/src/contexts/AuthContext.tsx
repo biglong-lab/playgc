@@ -17,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const prevUserRef = useRef<User | null>(null);
 
   useEffect(() => {
     let authStateReceived = false;
