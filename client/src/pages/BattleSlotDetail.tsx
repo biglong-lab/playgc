@@ -302,7 +302,10 @@ export default function BattleSlotDetail() {
                           <Badge variant="outline" className="text-xs">隊長</Badge>
                         )}
                       </span>
-                      <Badge variant="secondary" className="text-xs">{reg.skillLevel}</Badge>
+                      <span className="flex items-center gap-1">
+                        {reg.status === "confirmed" && <CheckCircle className="h-3 w-3 text-green-500" />}
+                        <Badge variant="secondary" className="text-xs">{reg.skillLevel}</Badge>
+                      </span>
                     </div>
                   ))}
               </div>
