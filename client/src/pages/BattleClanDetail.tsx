@@ -128,7 +128,7 @@ export default function BattleClanDetail() {
     <BattleLayout title={`[${clan.tag}] ${clan.name}`} subtitle={clan.description || undefined}>
       <div className="space-y-4">
         {/* 戰隊數據 */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-number font-bold">{clan.clanRating}</p>
