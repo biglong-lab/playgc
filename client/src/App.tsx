@@ -73,6 +73,14 @@ const AdminBattleSeasons = lazy(() => import("@/pages/AdminBattleSeasons"));
 const BattleAchievements = lazy(() => import("@/pages/BattleAchievements"));
 const BattleSeasonHistory = lazy(() => import("@/pages/BattleSeasonHistory"));
 
+/** 需要登入的對戰路由守衛 */
+function AuthBattleRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <PageLoader />;
+  if (!user) return <Redirect to="/battle" />;
+  return <Component />;
+}
+
 function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
