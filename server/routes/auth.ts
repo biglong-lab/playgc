@@ -277,15 +277,17 @@ export function registerAuthRoutes(app: Express) {
         if (!email) {
           return res.status(400).json({ message: "需要 email" });
         }
-        const { getAuth } = await import("firebase-admin/auth");
-        const { getApps } = await import("firebase-admin/app");
-        const adminApp = getApps()[0];
+        // 先觸發一次 verifyFirebaseToken 確保 Firebase Admin 已初始化
+        await verifyFirebaseToken("init").catch(() => {});
+        const { getAuth: getAdminAuth } = await import("firebase-admin/auth");
+        const { getApps: getAdminApps } = await import("firebase-admin/app");
+        const adminApp = getAdminApps()[0];
         if (!adminApp) {
           return res.status(500).json({ message: "Firebase Admin 未初始化" });
         }
-        const auth = getAuth(adminApp);
-        const userRecord = await auth.getUserByEmail(email);
-        const customToken = await auth.createCustomToken(userRecord.uid);
+        const adminAuth = getAdminAuth(adminApp);
+        const userRecord = await adminAuth.getUserByEmail(email);
+        const customToken = await adminAuth.createCustomToken(userRecord.uid);
         res.json({ customToken, uid: userRecord.uid, displayName: userRecord.displayName });
       } catch (error) {
         const msg = error instanceof Error ? error.message : "產生 token 失敗";
