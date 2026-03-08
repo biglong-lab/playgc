@@ -33,8 +33,12 @@ export function registerBattleSlotRoutes(app: Express) {
         return res.status(404).json({ error: "時段不存在" });
       }
 
-      // 同時取得該時段的報名列表
-      const registrations = await battleStorageMethods.getRegistrationsBySlot(req.params.id);
+      // JOIN 玩家名稱
+      const regRows = await battleStorageMethods.getRegistrationsBySlotWithNames(req.params.id);
+      const registrations = regRows.map((row) => ({
+        ...row.registration,
+        displayName: buildDisplayName(row.firstName, row.lastName, row.registration.userId),
+      }));
       const premadeGroups = await battleStorageMethods.getPremadeGroupsBySlot(req.params.id);
 
       res.json({ ...slot, registrations, premadeGroups });
