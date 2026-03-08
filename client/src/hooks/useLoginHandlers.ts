@@ -41,6 +41,7 @@ export function useLoginHandlers(
 ): LoginHandlers {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginMethod, setLoginMethod] = useState<LoginMethod>(null);
   const [email, setEmail] = useState("");
@@ -49,6 +50,8 @@ export function useLoginHandlers(
   const handleLoginSuccess = () => {
     setIsLoggingIn(false);
     setLoginMethod(null);
+    // 登入後強制 refetch 使用者資料，確保 UI 更新
+    queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     onSuccess?.();
     const target = options?.redirectTo;
     if (target !== null) {
