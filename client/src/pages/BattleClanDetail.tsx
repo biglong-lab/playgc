@@ -204,9 +204,14 @@ export default function BattleClanDetail() {
                       {member.displayName ?? member.userId.slice(0, 10)}
                       {member.userId === user?.id && <span className="text-primary">(你)</span>}
                     </span>
-                    <Badge variant="outline" className="text-xs">
-                      {clanRoleLabels[member.role as ClanRole] ?? member.role}
-                    </Badge>
+                    <span className="flex items-center gap-1">
+                      <Badge variant="outline" className="text-xs">
+                        {clanRoleLabels[member.role as ClanRole] ?? member.role}
+                      </Badge>
+                      {user && isMember && (myRole === "leader" || myRole === "officer") && (
+                        <MemberActionMenu clan={clan} member={member} myRole={myRole} myUserId={user.id} />
+                      )}
+                    </span>
                   </div>
                 ))}
             </div>
