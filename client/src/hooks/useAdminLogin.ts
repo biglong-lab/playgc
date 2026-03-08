@@ -40,6 +40,9 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
   const [step, setStep] = useState<LoginStep>("field");
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
   // Firebase 登入 mutation
   const firebaseLoginMutation = useMutation({
