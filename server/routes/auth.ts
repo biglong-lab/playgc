@@ -117,6 +117,22 @@ export function registerAuthRoutes(app: Express) {
         });
       }
 
+      // 若找不到帳號但有 email 匹配且 firebaseUserId 為空，自動綁定
+      if (!adminAccount && firebaseEmail) {
+        const emailMatch = await db.query.adminAccounts.findFirst({
+          where: and(
+            eq(adminAccounts.email, firebaseEmail),
+            eq(adminAccounts.fieldId, field.id),
+          ),
+        });
+        if (emailMatch && !emailMatch.firebaseUserId && emailMatch.status === "active") {
+          await db.update(adminAccounts)
+            .set({ firebaseUserId, displayName: firebaseDisplayName || emailMatch.displayName })
+            .where(eq(adminAccounts.id, emailMatch.id));
+          adminAccount = { ...emailMatch, firebaseUserId };
+        }
+      }
+
       if (!adminAccount) {
         await db.insert(adminAccounts).values({
           id: `pending-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
