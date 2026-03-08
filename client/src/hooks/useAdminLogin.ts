@@ -177,8 +177,10 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     }
     setIsEmailLoading(true);
     setLoginError(null);
+    firebaseLoginMutation.reset();
     try {
       await signUpWithEmail(email, password);
+      setStep("firebase");
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "註冊失敗";
       setLoginError(errorMessage);
