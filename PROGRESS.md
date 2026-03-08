@@ -16,9 +16,9 @@
 
 ## 目前狀態
 
-**最後更新**: 2026-03-04
+**最後更新**: 2026-03-08
 **分支**: main
-**Git 狀態**: 已提交並推送至 origin/main，CI/CD 已啟用
+**Git 狀態**: 已提交，待推送
 
 ### 已完成功能
 
@@ -103,8 +103,91 @@
 - [x] Phase 2：對戰結果 + ELO 排名 + 歷史紀錄（Schema/ELO 引擎/Storage/API/前端）
 - [x] Phase 3：戰隊系統（Schema/Storage/API/前端）
 - [x] Phase 4：通知排程系統（Schema/Storage/排程器/通知服務/API/前端）
+- [x] 功能優化：玩家名稱顯示 + 戰隊管理 UI + 響應式 + 路由守衛 + 確認出席 + Code Review 修復
 
 ## 工作紀錄
+
+### 2026-03-08 (對戰系統完整功能優化 + Code Review 修復)
+
+#### Phase 1：後端 API — JOIN users 表 + 資料擴充
+
+##### 新增共用查詢模組
+- [x] `server/storage/battle-storage-queries.ts`（新建 ~140 行）— 6 個 JOIN 查詢函式
+  - `getRankingsByFieldWithNames()` — 排行榜 JOIN users
+  - `getRegistrationsBySlotWithNames()` — 時段報名 JOIN users
+  - `getClanMembersWithNames()` — 戰隊成員 JOIN users
+  - `getPlayerResultsByResultWithNames()` — 對戰結果 JOIN users
+  - `getPlayerHistoryWithDetails()` — 歷史 JOIN results/slots/venues
+  - `getUpcomingRegistrationsWithDetails()` — 我的報名 JOIN slots/venues
+
+##### 修改路由（5 個模組）
+- [x] `battle-rankings.ts` — 排行榜/歷史回傳 displayName + slotDate/venueName
+- [x] `battle-slots.ts` — 時段詳情的報名列表加 displayName
+- [x] `battle-clans.ts` — 戰隊詳情/我的戰隊成員加 displayName + 新增 kick 端點
+- [x] `battle-registration.ts` — MyRegistrations 回傳 slotDate/startTime/endTime/venueName/slotStatus
+- [x] `battle-results.ts` — 對戰結果 playerResults 加 displayName
+
+##### 共用工具
+- [x] `server/utils/display-name.ts`（新建）— buildDisplayName 函式（原本重複 4 份）
+
+#### Phase 2：前端 — 顯示玩家名稱
+- [x] `BattleRanking.tsx` — RankingEntry 加 displayName，替換 userId.slice
+- [x] `BattleSlotDetail.tsx` — RegistrationWithName interface，報名列表/TeamsDisplay 改用 displayName
+- [x] `BattleClanDetail.tsx` — 成員列表改用 displayName
+- [x] `BattleResult.tsx` — PlayerResultWithName interface，全員戰績改用 displayName
+- [x] `BattleHistory.tsx` — 新增 HistoryRecord interface，顯示場地名/日期/時間
+
+#### Phase 3：戰隊管理 UI
+- [x] `ClanManagePanel.tsx`（新建 ~330 行）— 編輯戰隊 Dialog + 成員操作 DropdownMenu
+  - 隊長可：編輯戰隊/升幹部/降隊員/轉讓隊長/踢出
+  - 幹部可：踢出隊員
+  - 含 MemberActionMenu 元件（per-member dropdown）
+- [x] `BattleClanDetail.tsx` — 整合 ClanManagePanel + MemberActionMenu
+
+#### Phase 4：響應式 + 路由守衛 + 通知優化
+- [x] 響應式 Grid 修正（4 個檔案）— `grid-cols-2 sm:grid-cols-4` / `grid-cols-3 sm:grid-cols-5`
+- [x] `App.tsx` — AuthBattleRoute 路由守衛（保護 6 個需登入路由）
+- [x] `BattleNotifications.tsx` + `BattleLayout.tsx` — `refetchOnWindowFocus: true`
+
+#### Phase 5：確認出席按鈕
+- [x] `BattleSlotDetail.tsx` — confirmMutation + 確認出席按鈕 + CheckCircle 圖示
+
+#### Code Review 修復（4 項 HIGH/MEDIUM）
+
+| 問題 | 嚴重度 | 修復方式 |
+|------|--------|---------|
+| 確認出席 API 無所有權驗證 | HIGH | 新增 getRegistrationById + 完整所有權/狀態檢查 |
+| buildDisplayName 重複 4 份 | HIGH | 抽取至 `server/utils/display-name.ts` |
+| battle-storage.ts 超過 800 行 | HIGH | 拆分 6 個查詢至 `battle-storage-queries.ts`（822→707 行）|
+| authFetch + ClanMemberWithName 重複 | MEDIUM | 抽取至 `client/src/lib/authFetch.ts` + export 共用型別 |
+
+#### 修改檔案清單
+
+| 檔案 | 動作 | 說明 |
+|------|------|------|
+| `server/utils/display-name.ts` | 新建 | buildDisplayName 共用函式 |
+| `server/storage/battle-storage-queries.ts` | 新建 | 6 個 JOIN 查詢函式 |
+| `server/storage/battle-storage.ts` | 修改 | 拆分查詢 + 新增 getRegistrationById |
+| `server/routes/battle-rankings.ts` | 修改 | 使用帶名稱查詢 |
+| `server/routes/battle-slots.ts` | 修改 | 使用帶名稱查詢 |
+| `server/routes/battle-clans.ts` | 修改 | 使用帶名稱查詢 + kick 端點 |
+| `server/routes/battle-registration.ts` | 修改 | MyRegistrations 擴充 + confirm 安全修復 |
+| `server/routes/battle-results.ts` | 修改 | 使用帶名稱查詢 |
+| `client/src/lib/authFetch.ts` | 新建 | 共用認證 fetch |
+| `client/src/components/battle/ClanManagePanel.tsx` | 新建 | 戰隊管理面板 |
+| `client/src/pages/BattleRanking.tsx` | 修改 | displayName + 響應式 |
+| `client/src/pages/BattleSlotDetail.tsx` | 修改 | displayName + 確認出席 |
+| `client/src/pages/BattleClanDetail.tsx` | 修改 | displayName + 管理面板整合 + 響應式 |
+| `client/src/pages/BattleResult.tsx` | 修改 | displayName + 響應式 |
+| `client/src/pages/BattleHistory.tsx` | 修改 | 場地名/日期顯示 |
+| `client/src/pages/BattleMyProfile.tsx` | 修改 | 響應式 grid |
+| `client/src/pages/BattleNotifications.tsx` | 修改 | authFetch 抽取 + refetchOnWindowFocus |
+| `client/src/components/battle/BattleLayout.tsx` | 修改 | refetchOnWindowFocus |
+| `client/src/App.tsx` | 修改 | AuthBattleRoute 路由守衛 |
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vite build` 構建通過
+
+---
 
 ### 2026-03-04 (Firebase Auth 登入修復 — Private Key PEM 解析錯誤)
 

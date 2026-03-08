@@ -7,7 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { getIdToken } from "@/lib/firebase";
+import { useAuth } from "@/hooks/useAuth";
+import { authFetch } from "@/lib/authFetch";
 import BattleLayout from "@/components/battle/BattleLayout";
 import {
   notificationTypeLabels,
@@ -15,21 +16,8 @@ import {
   type NotificationType,
 } from "@shared/schema";
 
-/** 認證 fetch 輔助 */
-async function authFetch(url: string, options: RequestInit = {}) {
-  const token = await getIdToken();
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  });
-}
-
 export default function BattleNotifications() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,6 +28,8 @@ export default function BattleNotifications() {
       if (!res.ok) return [];
       return res.json();
     },
+    enabled: !!user,
+    refetchOnWindowFocus: true,
   });
 
   const markReadMutation = useMutation({

@@ -1,4 +1,5 @@
 // 水彈對戰 PK 擂台 — 玩家端首頁（深色軍事風格）
+import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -7,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useBattleFieldId } from "@/hooks/useBattleFieldId";
+import { useLoginHandlers } from "@/hooks/useLoginHandlers";
+import { LoginDialog } from "@/components/landing/LoginDialog";
+import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleVenue, BattleSlot } from "@shared/schema";
-import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell, Medal } from "lucide-react";
+import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell, Medal, LogIn } from "lucide-react";
 
 /** 時段狀態對應中文 + Badge 樣式 */
 function slotStatusBadge(status: string) {
@@ -44,6 +48,9 @@ export default function BattleHome() {
   return (
     <BattleLayout title="水彈對戰 PK 擂台" subtitle="選擇場地和時段，與其他玩家組隊對戰！" backHref="/home">
       <div className="space-y-6">
+        {/* 未登入提示 */}
+        {!user && <LoginPromptCard />}
+
         {/* 我的報名 */}
         {user && <MyRegistrations />}
 
@@ -111,6 +118,38 @@ function QuickNav() {
         </Link>
       ))}
     </div>
+  );
+}
+
+/** 登入提示卡片 */
+function LoginPromptCard() {
+  const [showLogin, setShowLogin] = useState(false);
+  const handlers = useLoginHandlers(() => setShowLogin(false), { redirectTo: null });
+
+  return (
+    <>
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="p-6 text-center space-y-3">
+          <LogIn className="h-8 w-8 mx-auto text-primary" />
+          <div>
+            <p className="font-medium">登入以解鎖完整功能</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              報名對戰、查看排行榜、組建戰隊
+            </p>
+          </div>
+          <Button className="gap-2" onClick={() => setShowLogin(true)}>
+            <LogIn className="h-4 w-4" />
+            立即登入
+          </Button>
+        </CardContent>
+      </Card>
+      <LoginDialog
+        open={showLogin}
+        onOpenChange={setShowLogin}
+        isEmbeddedBrowser={isEmbeddedBrowser()}
+        handlers={handlers}
+      />
+    </>
   );
 }
 
@@ -188,18 +227,16 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
 
 /** 我的報名紀錄 */
 function MyRegistrations() {
+  const { user } = useAuth();
   const { data: registrations = [] } = useQuery({
     queryKey: ["/api/battle/my-registrations"],
     queryFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch("/api/battle/my-registrations", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
+      const { authFetch } = await import("@/lib/authFetch");
+      const res = await authFetch("/api/battle/my-registrations");
       if (!res.ok) return [];
       return res.json();
     },
+    enabled: !!user,
   });
 
   if (registrations.length === 0) return null;

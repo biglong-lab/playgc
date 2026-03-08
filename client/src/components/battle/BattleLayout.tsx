@@ -1,10 +1,14 @@
 // 對戰系統共用佈局元件 — 深色軍事風格
+import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { getIdToken } from "@/lib/firebase";
-import { ArrowLeft, Bell, Swords } from "lucide-react";
+import { useLoginHandlers } from "@/hooks/useLoginHandlers";
+import { LoginDialog } from "@/components/landing/LoginDialog";
+import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
+import { ArrowLeft, Bell, LogIn } from "lucide-react";
 
 interface BattleLayoutProps {
   title: string;
@@ -15,8 +19,35 @@ interface BattleLayoutProps {
   children: React.ReactNode;
 }
 
+/** 登入按鈕（對戰頁面用） */
+function BattleLoginButton() {
+  const [showLogin, setShowLogin] = useState(false);
+  const handlers = useLoginHandlers(() => setShowLogin(false), { redirectTo: null });
+
+  return (
+    <>
+      <Button
+        variant="default"
+        size="sm"
+        className="gap-1.5"
+        onClick={() => setShowLogin(true)}
+      >
+        <LogIn className="h-4 w-4" />
+        登入
+      </Button>
+      <LoginDialog
+        open={showLogin}
+        onOpenChange={setShowLogin}
+        isEmbeddedBrowser={isEmbeddedBrowser()}
+        handlers={handlers}
+      />
+    </>
+  );
+}
+
 /** 通知鈴鐺（含未讀數） */
 function NotificationBell() {
+  const { user } = useAuth();
   const { data } = useQuery<{ count: number }>({
     queryKey: ["/api/battle/notifications/unread-count"],
     queryFn: async () => {
@@ -28,7 +59,9 @@ function NotificationBell() {
       if (!res.ok) return { count: 0 };
       return res.json();
     },
+    enabled: !!user,
     refetchInterval: 30000,
+    refetchOnWindowFocus: true,
   });
 
   const count = data?.count ?? 0;
@@ -77,7 +110,7 @@ export default function BattleLayout({
           </div>
           <div className="flex items-center gap-1 shrink-0">
             {headerRight}
-            {user && <NotificationBell />}
+            {user ? <NotificationBell /> : <BattleLoginButton />}
           </div>
         </div>
       </header>

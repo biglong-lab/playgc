@@ -31,9 +31,13 @@ export interface LoginHandlers {
 
 /**
  * 封裝所有登入方式的處理邏輯
- * @param onSuccess - 登入成功後的回呼（通常是關閉 Dialog + 導航）
+ * @param onSuccess - 登入成功後的回呼（通常是關閉 Dialog）
+ * @param options.redirectTo - 登入後重導向路徑，預設 "/home"，傳 null 表示不重導向（留在當前頁）
  */
-export function useLoginHandlers(onSuccess?: () => void): LoginHandlers {
+export function useLoginHandlers(
+  onSuccess?: () => void,
+  options?: { redirectTo?: string | null },
+): LoginHandlers {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -45,7 +49,10 @@ export function useLoginHandlers(onSuccess?: () => void): LoginHandlers {
     setIsLoggingIn(false);
     setLoginMethod(null);
     onSuccess?.();
-    setLocation("/home");
+    const target = options?.redirectTo;
+    if (target !== null) {
+      setLocation(target ?? "/home");
+    }
   };
 
   const handleLoginError = (error: unknown) => {
