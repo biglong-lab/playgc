@@ -1,7 +1,7 @@
 // 水彈對戰 PK 擂台 — 時段管理路由
 import type { Express } from "express";
 import { requireAdminAuth } from "../adminAuth";
-import { battleStorageMethods } from "../storage/battle-storage";
+import { battleStorageMethods, getRegistrationsBySlotWithNames } from "../storage/battle-storage";
 import { insertBattleSlotSchema } from "@shared/schema";
 import { z } from "zod";
 import { buildDisplayName } from "../utils/display-name";
