@@ -223,7 +223,18 @@ export default function BattleSlotDetail() {
               <UserPlus className="h-4 w-4" /> 我要報名
             </Button>
           )}
-          {isRegistered && myRegistration.status !== "checked_in" && (
+          {isRegistered && myRegistration.status === "registered" &&
+            (slotData.status === "confirmed" || slotData.status === "full") && (
+            <Button
+              variant="secondary"
+              className="flex-1 gap-1"
+              onClick={() => confirmMutation.mutate(myRegistration.id)}
+              disabled={confirmMutation.isPending}
+            >
+              <CheckCircle className="h-4 w-4" /> 確認出席
+            </Button>
+          )}
+          {isRegistered && myRegistration.status !== "checked_in" && myRegistration.status !== "confirmed" && (
             <Button
               variant="destructive"
               className="flex-1 gap-1"
