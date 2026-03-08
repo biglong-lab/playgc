@@ -269,6 +269,31 @@ export function registerAuthRoutes(app: Express) {
     }
   });
 
+  // 開發環境專用：產生 custom token 跳過 Google popup
+  if (process.env.NODE_ENV !== "production") {
+    app.post("/api/dev/custom-token", async (req, res) => {
+      try {
+        const { email } = req.body;
+        if (!email) {
+          return res.status(400).json({ message: "需要 email" });
+        }
+        const { getAuth } = await import("firebase-admin/auth");
+        const { getApps } = await import("firebase-admin/app");
+        const adminApp = getApps()[0];
+        if (!adminApp) {
+          return res.status(500).json({ message: "Firebase Admin 未初始化" });
+        }
+        const auth = getAuth(adminApp);
+        const userRecord = await auth.getUserByEmail(email);
+        const customToken = await auth.createCustomToken(userRecord.uid);
+        res.json({ customToken, uid: userRecord.uid, displayName: userRecord.displayName });
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : "產生 token 失敗";
+        res.status(500).json({ message: msg });
+      }
+    });
+  }
+
   app.post("/api/admin/logout", requireAdminAuth, async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
