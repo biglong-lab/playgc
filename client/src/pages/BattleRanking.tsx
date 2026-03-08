@@ -132,7 +132,7 @@ export default function BattleRanking() {
                       </span>
                       <div>
                         <p className="font-medium text-sm">
-                          {entry.userId.slice(0, 10)}...
+                          {entry.displayName ?? entry.userId.slice(0, 10)}
                           {entry.userId === user?.id && <span className="text-primary"> (你)</span>}
                         </p>
                         <p className="text-xs text-muted-foreground">{entry.tierLabel}</p>
