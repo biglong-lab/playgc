@@ -110,7 +110,7 @@ export default function BattleResult() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 gap-2 text-center text-sm mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-sm mb-3">
                 <div>
                   <p className="text-muted-foreground">得分</p>
                   <p className="text-lg font-number font-bold">{myResult.score}</p>
