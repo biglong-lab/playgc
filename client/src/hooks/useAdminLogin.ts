@@ -154,9 +154,10 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     if (!email || !password) return;
     setIsEmailLoading(true);
     setLoginError(null);
+    firebaseLoginMutation.reset();
     try {
       await signInWithEmail(email, password);
-      // Firebase 登入成功後，useEffect 會自動觸發 firebaseLoginMutation
+      setStep("firebase");
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Email 登入失敗";
       setLoginError(errorMessage);
