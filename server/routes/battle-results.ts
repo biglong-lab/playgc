@@ -191,7 +191,11 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
         return res.status(404).json({ error: "尚無結果記錄" });
       }
 
-      const playerResults = await battleStorageMethods.getPlayerResultsByResult(result.id);
+      const rows = await battleStorageMethods.getPlayerResultsByResultWithNames(result.id);
+      const playerResults = rows.map((row) => ({
+        ...row.playerResult,
+        displayName: buildDisplayName(row.firstName, row.lastName, row.playerResult.userId),
+      }));
       res.json({ ...result, playerResults });
     } catch {
       res.status(500).json({ error: "取得結果失敗" });
