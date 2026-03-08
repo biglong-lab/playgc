@@ -9,8 +9,12 @@ import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleResult as BattleResultType, BattlePlayerResult } from "@shared/schema";
 import { Trophy, Star, TrendingUp, TrendingDown, Minus, Swords } from "lucide-react";
 
+interface PlayerResultWithName extends BattlePlayerResult {
+  displayName?: string;
+}
+
 interface ResultResponse extends BattleResultType {
-  playerResults: BattlePlayerResult[];
+  playerResults: PlayerResultWithName[];
 }
 
 export default function BattleResult() {
