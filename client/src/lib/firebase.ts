@@ -77,13 +77,17 @@ function isEmbeddedBrowser(): boolean {
 
 export async function signInWithGoogle() {
   const useRedirect = isEmbeddedBrowser();
+  console.log("[Firebase] signInWithGoogle, useRedirect:", useRedirect, "hostname:", window.location.hostname);
 
   try {
     if (useRedirect) {
+      console.log("[Firebase] 使用 redirect 模式");
       await signInWithRedirect(auth, googleProvider);
       return null;
     } else {
+      console.log("[Firebase] 使用 popup 模式");
       const result = await signInWithPopup(auth, googleProvider);
+      console.log("[Firebase] popup 登入成功, uid:", result.user.uid);
       return result.user;
     }
   } catch (error: unknown) {
