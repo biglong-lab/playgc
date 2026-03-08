@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { signInWithGoogle, signInWithEmail, signUpWithEmail, signOut as firebaseSignOut, getIdToken } from "@/lib/firebase";
+import { signInWithGoogle, signInWithEmail, signUpWithEmail, signInWithCustomToken, signOut as firebaseSignOut, getIdToken } from "@/lib/firebase";
 import { useAuthContext } from "@/contexts/AuthContext";
 
 export interface AdminLoginResponse {
