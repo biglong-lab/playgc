@@ -17,7 +17,7 @@ import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } from "@shared/schema";
 import {
   Swords, Clock, Users, CalendarDays, UserPlus,
-  UserMinus, Shield, Copy, Check,
+  UserMinus, Shield, Copy, Check, CheckCircle,
 } from "lucide-react";
 
 interface RegistrationWithName extends BattleRegistration {
