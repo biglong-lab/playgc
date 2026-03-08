@@ -7,27 +7,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Bell, Check, CheckCheck } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
-import { getIdToken } from "@/lib/firebase";
+import { authFetch } from "@/lib/authFetch";
 import BattleLayout from "@/components/battle/BattleLayout";
 import {
   notificationTypeLabels,
   type BattleNotification,
   type NotificationType,
 } from "@shared/schema";
-
-/** 認證 fetch 輔助 */
-async function authFetch(url: string, options: RequestInit = {}) {
-  const token = await getIdToken();
-  return fetch(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-  });
-}
 
 export default function BattleNotifications() {
   const { toast } = useToast();
