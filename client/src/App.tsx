@@ -11,6 +11,7 @@ import ProtectedAdminRoute from "@/components/shared/ProtectedAdminRoute";
 import PageLoader from "@/components/shared/PageLoader";
 import OfflineBanner from "@/components/shared/OfflineBanner";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { useAuth } from "@/hooks/useAuth";
 
 // 首屏路由 — 靜態 import（不需 lazy）
 import Landing from "@/pages/Landing";
