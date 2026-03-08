@@ -79,6 +79,19 @@ export function registerAuthRoutes(app: Express) {
           where: eq(adminAccounts.firebaseUserId, firebaseUserId),
         });
 
+        // 若找不到但有 email 匹配且 firebaseUserId 為空，自動綁定
+        if (!adminAccount && firebaseEmail) {
+          const emailMatch = await db.query.adminAccounts.findFirst({
+            where: eq(adminAccounts.email, firebaseEmail),
+          });
+          if (emailMatch && !emailMatch.firebaseUserId && emailMatch.status === "active") {
+            await db.update(adminAccounts)
+              .set({ firebaseUserId, displayName: firebaseDisplayName || emailMatch.displayName })
+              .where(eq(adminAccounts.id, emailMatch.id));
+            adminAccount = { ...emailMatch, firebaseUserId };
+          }
+        }
+
         if (!adminAccount) {
           return res.status(404).json({ message: "找不到管理員帳號，請輸入場域編號" });
         }
