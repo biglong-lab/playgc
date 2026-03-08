@@ -187,6 +187,32 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
     }
   };
 
+  // 開發環境：透過 custom token 快速登入（跳過 Google popup）
+  const handleDevLogin = async (devEmail: string) => {
+    setIsEmailLoading(true);
+    setLoginError(null);
+    try {
+      const resp = await fetch("/api/dev/custom-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: devEmail }),
+      });
+      if (!resp.ok) {
+        const data = await resp.json();
+        throw new Error(data.message || "取得 token 失敗");
+      }
+      const { customToken } = await resp.json();
+      await signInWithCustomToken(customToken);
+      // onAuthStateChanged 會觸發 → firebaseLoginMutation 自動執行
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "Dev 登入失敗";
+      setLoginError(msg);
+      toast({ title: "登入失敗", description: msg, variant: "destructive" });
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
+
   // 處理登出
   const handleSignOut = async () => {
     setLoginError(null);
