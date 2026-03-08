@@ -50,16 +50,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         unsubscribe = onAuthStateChanged(auth, (user) => {
           authStateReceived = true;
           clearTimeout(timeout);
+          console.log("[AuthContext] onAuthStateChanged:", user ? `uid=${user.uid}, anonymous=${user.isAnonymous}` : "null");
           // 使用者狀態變更時（登入/登出）強制 refetch
           const wasSignedIn = !!prevUserRef.current;
           const isNowSignedIn = !!user;
           if (wasSignedIn !== isNowSignedIn) {
+            console.log("[AuthContext] 狀態變更 → invalidateQueries");
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
           }
           prevUserRef.current = user;
           setFirebaseUser(user);
           setIsLoading(false);
-        }, () => {
+        }, (error) => {
+          console.error("[AuthContext] onAuthStateChanged 錯誤:", error);
           authStateReceived = true;
           clearTimeout(timeout);
           setIsLoading(false);
