@@ -37,7 +37,7 @@ export function registerBattleClanRoutes(app: Express) {
       if (!clan) {
         return res.status(404).json({ error: "戰隊不存在" });
       }
-      const memberRows = await battleStorageMethods.getClanMembersWithNames(clan.id);
+      const memberRows = await getClanMembersWithNames(clan.id);
       const members = memberRows.map((row) => ({
         ...row.member,
         displayName: buildDisplayName(row.firstName, row.lastName, row.member.userId),
@@ -68,7 +68,7 @@ export function registerBattleClanRoutes(app: Express) {
           return res.json(null);
         }
 
-        const memberRows = await battleStorageMethods.getClanMembersWithNames(result.clan.id);
+        const memberRows = await getClanMembersWithNames(result.clan.id);
         const members = memberRows.map((row) => ({
           ...row.member,
           displayName: buildDisplayName(row.firstName, row.lastName, row.member.userId),
