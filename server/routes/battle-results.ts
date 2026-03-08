@@ -7,12 +7,7 @@ import { calculateElo, teamAvgRating } from "../services/battle-elo";
 import { checkAndUnlockAchievements } from "../services/battle-achievement-checker";
 import type { RouteContext } from "./types";
 import { z } from "zod";
-
-/** 組合顯示名稱 */
-function buildDisplayName(firstName: string | null, lastName: string | null, odId: string): string {
-  if (firstName || lastName) return [lastName, firstName].filter(Boolean).join("");
-  return `玩家${odId.slice(0, 6)}`;
-}
+import { buildDisplayName } from "../utils/display-name";
 
 export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
   // ============================================================================
