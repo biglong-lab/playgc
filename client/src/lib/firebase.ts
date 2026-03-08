@@ -5,7 +5,6 @@ import {
   OAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  signInWithCredential,
   getRedirectResult,
   signOut as firebaseSignOut,
   onAuthStateChanged,
