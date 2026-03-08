@@ -40,6 +40,7 @@ export default function BattleNotifications() {
       if (!res.ok) return [];
       return res.json();
     },
+    refetchOnWindowFocus: true,
   });
 
   const markReadMutation = useMutation({
