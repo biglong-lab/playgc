@@ -1,7 +1,7 @@
 // 水彈對戰 PK 擂台 — 對戰結果 + ELO 計算路由
 import type { Express } from "express";
 import { requireAdminAuth } from "../adminAuth";
-import { battleStorageMethods } from "../storage/battle-storage";
+import { battleStorageMethods, getPlayerResultsByResultWithNames } from "../storage/battle-storage";
 import { insertBattleResultSchema, insertPlayerResultSchema, getTierFromRating } from "@shared/schema";
 import { calculateElo, teamAvgRating } from "../services/battle-elo";
 import { checkAndUnlockAchievements } from "../services/battle-achievement-checker";
