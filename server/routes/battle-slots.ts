@@ -5,6 +5,12 @@ import { battleStorageMethods } from "../storage/battle-storage";
 import { insertBattleSlotSchema } from "@shared/schema";
 import { z } from "zod";
 
+/** 組合顯示名稱 */
+function buildDisplayName(firstName: string | null, lastName: string | null, odId: string): string {
+  if (firstName || lastName) return [lastName, firstName].filter(Boolean).join("");
+  return `玩家${odId.slice(0, 6)}`;
+}
+
 export function registerBattleSlotRoutes(app: Express) {
   // ============================================================================
   // GET /api/battle/slots — 取得場地的時段列表
