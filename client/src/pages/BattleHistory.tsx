@@ -82,8 +82,15 @@ export default function BattleHistory() {
                       <span className="text-xs text-muted-foreground font-number">{record.ratingAfter}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {new Date(record.createdAt).toLocaleDateString("zh-TW")}
+                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                    {record.venueName && (
+                      <span className="flex items-center gap-0.5">
+                        <MapPin className="h-3 w-3" />
+                        {record.venueName}
+                      </span>
+                    )}
+                    {record.slotDate ?? new Date(record.createdAt).toLocaleDateString("zh-TW")}
+                    {record.startTime && ` ${record.startTime.slice(0, 5)}`}
                   </p>
                 </CardContent>
               </Card>
