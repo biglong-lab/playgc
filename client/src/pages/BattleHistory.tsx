@@ -16,7 +16,7 @@ interface HistoryRecord extends BattlePlayerResult {
 export default function BattleHistory() {
   const { user } = useAuth();
 
-  const { data: history = [], isLoading } = useQuery<BattlePlayerResult[]>({
+  const { data: history = [], isLoading } = useQuery<HistoryRecord[]>({
     queryKey: ["/api/battle/my/history"],
     queryFn: async () => {
       const { getIdToken } = await import("@/lib/firebase");
