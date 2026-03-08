@@ -273,7 +273,7 @@ export default function BattleSlotDetail() {
                     <div key={reg.id} className="flex items-center justify-between py-1 text-sm">
                       <span className="flex items-center gap-2">
                         <Users className="h-3 w-3 text-muted-foreground" />
-                        {reg.userId.slice(0, 8)}...
+                        {reg.displayName ?? reg.userId.slice(0, 8)}
                         {reg.registrationType === "premade_leader" && (
                           <Badge variant="outline" className="text-xs">隊長</Badge>
                         )}
