@@ -105,13 +105,13 @@ function Router() {
         <Route path="/battle/slot/:slotId" component={BattleSlotDetail} />
         <Route path="/battle/slot/:slotId/result" component={BattleResult} />
         <Route path="/battle/ranking" component={BattleRanking} />
-        <Route path="/battle/history" component={BattleHistory} />
-        <Route path="/battle/clan/create" component={BattleClanCreate} />
+        <Route path="/battle/history">{() => <AuthBattleRoute component={BattleHistory} />}</Route>
+        <Route path="/battle/clan/create">{() => <AuthBattleRoute component={BattleClanCreate} />}</Route>
         <Route path="/battle/clan/:clanId" component={BattleClanDetail} />
-        <Route path="/battle/my" component={BattleMyProfile} />
-        <Route path="/battle/notifications" component={BattleNotifications} />
-        <Route path="/battle/achievements" component={BattleAchievements} />
-        <Route path="/battle/seasons" component={BattleSeasonHistory} />
+        <Route path="/battle/my">{() => <AuthBattleRoute component={BattleMyProfile} />}</Route>
+        <Route path="/battle/notifications">{() => <AuthBattleRoute component={BattleNotifications} />}</Route>
+        <Route path="/battle/achievements">{() => <AuthBattleRoute component={BattleAchievements} />}</Route>
+        <Route path="/battle/seasons">{() => <AuthBattleRoute component={BattleSeasonHistory} />}</Route>
 
         {/* 管理端登入 */}
         <Route path="/admin/login" component={FieldAdminLogin} />
