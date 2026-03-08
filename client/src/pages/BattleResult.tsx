@@ -167,7 +167,7 @@ export default function BattleResult() {
                   .map((pr) => (
                     <div key={pr.id} className="flex items-center justify-between text-sm py-1">
                       <span className="flex items-center gap-2">
-                        {pr.userId.slice(0, 8)}...
+                        {pr.displayName ?? pr.userId.slice(0, 8)}
                         {pr.isMvp && <Badge variant="outline" className="text-xs border-tactical-orange/30">MVP</Badge>}
                       </span>
                       <span className="flex items-center gap-3 text-muted-foreground font-number">
