@@ -191,6 +191,7 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
   const handleDevLogin = async (devEmail: string) => {
     setIsEmailLoading(true);
     setLoginError(null);
+    firebaseLoginMutation.reset();
     try {
       const resp = await fetch("/api/dev/custom-token", {
         method: "POST",
@@ -203,7 +204,8 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
       }
       const { customToken } = await resp.json();
       await signInWithCustomToken(customToken);
-      // onAuthStateChanged 會觸發 → firebaseLoginMutation 自動執行
+      // 設定 step 為 firebase，讓 useEffect 偵測到 isAuthenticated + step 後自動觸發 mutation
+      setStep("firebase");
     } catch (error: unknown) {
       const msg = error instanceof Error ? error.message : "Dev 登入失敗";
       setLoginError(msg);
