@@ -3,6 +3,7 @@ import { eq, and, desc, gte, lte, sql } from "drizzle-orm";
 import { db, pool } from "../db";
 import { drizzle } from "drizzle-orm/node-postgres";
 import * as schema from "@shared/schema";
+import { users } from "@shared/schema";
 import {
   battleVenues,
   type BattleVenue,
