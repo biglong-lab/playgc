@@ -701,6 +701,7 @@ export const battleStorageMethods = {
   updateNotificationStatus,
 };
 
-// Re-export 賽季和成就方法
+// Re-export 子模組
+export * from "./battle-storage-queries";
 export * from "./battle-storage-seasons";
 export * from "./battle-storage-achievements";
