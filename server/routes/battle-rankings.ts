@@ -105,7 +105,7 @@ export function registerBattleRankingRoutes(app: Express) {
         }
 
         const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
-        const rows = await battleStorageMethods.getPlayerHistoryWithDetails(req.user.dbUser.id, limit);
+        const rows = await getPlayerHistoryWithDetails(req.user.dbUser.id, limit);
 
         const enriched = rows.map((row) => ({
           ...row.playerResult,
