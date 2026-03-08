@@ -421,7 +421,7 @@ function TeamsDisplay({ registrations }: { registrations: RegistrationWithName[]
               <div className="space-y-1">
                 {members.map((m) => (
                   <p key={m.id} className="text-xs text-muted-foreground">
-                    {m.userId.slice(0, 8)}...
+                    {m.displayName ?? m.userId.slice(0, 8)}
                   </p>
                 ))}
               </div>
