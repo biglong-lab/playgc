@@ -78,99 +78,39 @@ function isEmbeddedBrowser(): boolean {
   return false;
 }
 
-// Google OAuth Client ID（從 Firebase 專案取得）
-const GOOGLE_CLIENT_ID = "885341500294-oug761eremfkjgtalnuhfpqtlj9gql6u.apps.googleusercontent.com";
+export async function signInWithGoogle() {
+  const useRedirect = isEmbeddedBrowser();
 
-/** Google 登入 — 使用 Google Identity Services 避免第三方 cookie 問題 */
-export async function signInWithGoogle(): Promise<User | null> {
-  console.log("[Firebase] signInWithGoogle — GIS 模式");
-
-  // 等待 GIS 腳本載入
-  const google = await waitForGoogleGIS();
-
-  return new Promise((resolve, reject) => {
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: async (response: { credential: string }) => {
-        try {
-          console.log("[Firebase] GIS 回傳 credential, 長度:", response.credential.length);
-          const credential = GoogleAuthProvider.credential(response.credential);
-          const result = await signInWithCredential(auth, credential);
-          console.log("[Firebase] Google 登入成功:", result.user.uid);
-          resolve(result.user);
-        } catch (error) {
-          console.error("[Firebase] signInWithCredential 失敗:", error);
-          reject(new Error("Google 登入失敗，請重試"));
-        }
-      },
-      auto_select: false,
-      context: "signin",
-    });
-
-    // 顯示 Google One Tap 或 popup
-    google.accounts.id.prompt((notification: { isNotDisplayed: () => boolean; isSkippedMoment: () => boolean; getNotDisplayedReason: () => string; getSkippedReason: () => string }) => {
-      if (notification.isNotDisplayed()) {
-        console.log("[Firebase] GIS prompt 未顯示:", notification.getNotDisplayedReason());
-        // One Tap 無法顯示時，改用按鈕式觸發
-        triggerGoogleSignInButton(google, resolve, reject);
-      } else if (notification.isSkippedMoment()) {
-        console.log("[Firebase] GIS prompt 被跳過:", notification.getSkippedReason());
-        triggerGoogleSignInButton(google, resolve, reject);
-      }
-    });
-  });
-}
-
-/** 等待 Google Identity Services 腳本載入 */
-function waitForGoogleGIS(): Promise<typeof globalThis.google> {
-  return new Promise((resolve, reject) => {
-    if (typeof globalThis.google !== "undefined" && globalThis.google.accounts) {
-      return resolve(globalThis.google);
+  try {
+    if (useRedirect) {
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    } else {
+      const result = await signInWithPopup(auth, googleProvider);
+      return result.user;
     }
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
-      if (typeof globalThis.google !== "undefined" && globalThis.google.accounts) {
-        clearInterval(interval);
-        resolve(globalThis.google);
-      } else if (attempts > 50) {
-        clearInterval(interval);
-        reject(new Error("Google 登入服務載入逾時"));
+  } catch (error: unknown) {
+    const code = getFirebaseErrorCode(error);
+    if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
+      try {
+        await signInWithRedirect(auth, googleProvider);
+        return null;
+      } catch (_redirectError) {
+        throw new Error("無法開啟登入視窗。請使用外部瀏覽器開啟此網頁後重試。");
       }
-    }, 100);
-  });
-}
-
-/** 使用隱藏按鈕觸發 Google 登入彈窗 */
-function triggerGoogleSignInButton(
-  google: typeof globalThis.google,
-  resolve: (user: User | null) => void,
-  reject: (error: Error) => void,
-) {
-  // 建立暫時的 Google 登入按鈕
-  const container = document.createElement("div");
-  container.id = "g_id_signin_temp";
-  container.style.cssText = "position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;";
-  document.body.appendChild(container);
-
-  google.accounts.id.renderButton(container, {
-    type: "standard",
-    theme: "outline",
-    size: "large",
-    text: "signin_with",
-    width: 300,
-  });
-
-  // 自動點擊按鈕
-  const btn = container.querySelector('[role="button"]') as HTMLElement;
-  if (btn) {
-    btn.click();
+    } else if (code === "auth/popup-closed-by-user") {
+      throw new Error("登入視窗已關閉");
+    } else if (code === "auth/unauthorized-domain") {
+      throw new Error(`此網域未授權使用 Firebase：${window.location.hostname}`);
+    } else if (code === "auth/operation-not-allowed") {
+      throw new Error("Google 登入未啟用");
+    } else if (code === "auth/cancelled-popup-request") {
+      throw new Error("登入請求已取消");
+    } else if (code === "auth/network-request-failed") {
+      throw new Error("網路連線失敗，請檢查網路後重試");
+    }
+    throw error;
   }
-
-  // 10 秒後清理（防止殘留）
-  setTimeout(() => {
-    container.remove();
-  }, 10000);
 }
 
 export async function handleRedirectResult() {
