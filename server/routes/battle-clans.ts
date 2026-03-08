@@ -316,4 +316,56 @@ export function registerBattleClanRoutes(app: Express) {
       }
     },
   );
+
+  // ============================================================================
+  // DELETE /api/battle/clans/:id/kick — 踢出成員（隊長/幹部）
+  // ============================================================================
+  app.delete(
+    "/api/battle/clans/:id/kick",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        if (!req.user) return res.status(401).json({ error: "未認證" });
+
+        const clan = await battleStorageMethods.getClan(req.params.id);
+        if (!clan) return res.status(404).json({ error: "戰隊不存在" });
+
+        const targetUserId = req.query.targetUserId as string;
+        if (!targetUserId) {
+          return res.status(400).json({ error: "缺少 targetUserId" });
+        }
+
+        // 驗證操作者身份
+        const operatorClan = await battleStorageMethods.getUserClan(req.user.dbUser.id, clan.fieldId);
+        if (!operatorClan || operatorClan.clan.id !== clan.id) {
+          return res.status(403).json({ error: "你不是此戰隊成員" });
+        }
+        const operatorRole = operatorClan.membership.role;
+        if (operatorRole === "member") {
+          return res.status(403).json({ error: "只有隊長或幹部可以踢出成員" });
+        }
+
+        // 查詢目標成員
+        const members = await battleStorageMethods.getClanMembers(clan.id);
+        const target = members.find((m) => m.userId === targetUserId);
+        if (!target) {
+          return res.status(404).json({ error: "目標不是戰隊成員" });
+        }
+
+        // 幹部不能踢幹部或隊長
+        if (operatorRole === "officer" && (target.role === "officer" || target.role === "leader")) {
+          return res.status(403).json({ error: "幹部不能踢出其他幹部或隊長" });
+        }
+        // 不能踢自己
+        if (targetUserId === req.user.dbUser.id) {
+          return res.status(400).json({ error: "不能踢出自己，請使用離開功能" });
+        }
+
+        await battleStorageMethods.removeClanMember(clan.id, targetUserId);
+        res.json({ success: true });
+      } catch {
+        res.status(500).json({ error: "踢出成員失敗" });
+      }
+    },
+  );
 }
