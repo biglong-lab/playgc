@@ -18,12 +18,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { getIdToken } from "@/lib/firebase";
+import { authFetch } from "@/lib/authFetch";
 import type { BattleClan, BattleClanMember } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
 import { Settings, MoreVertical, Crown, ArrowUp, ArrowDown, UserMinus } from "lucide-react";
 
-interface ClanMemberWithName extends BattleClanMember {
+export interface ClanMemberWithName extends BattleClanMember {
   displayName?: string;
 }
 
@@ -32,20 +32,6 @@ interface ClanManagePanelProps {
   members: ClanMemberWithName[];
   myRole: string;
   myUserId: string;
-}
-
-/** 認證 fetch 輔助 */
-async function authFetch(url: string, options: RequestInit = {}) {
-  const token = await getIdToken();
-  return fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-    credentials: "include",
-  });
 }
 
 export default function ClanManagePanel({ clan, members, myRole, myUserId }: ClanManagePanelProps) {
