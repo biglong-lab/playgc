@@ -6,13 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import BattleLayout from "@/components/battle/BattleLayout";
-import type { BattleClan, BattleClanMember } from "@shared/schema";
+import type { BattleClan } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
 import { Shield, Users, Trophy, Crown, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { authFetch } from "@/lib/authFetch";
+import ClanManagePanel, { MemberActionMenu, type ClanMemberWithName } from "@/components/battle/ClanManagePanel";
 
 interface ClanDetailResponse extends BattleClan {
-  members: BattleClanMember[];
+  members: ClanMemberWithName[];
   myRole?: string;
 }
 
@@ -35,16 +37,9 @@ export default function BattleClanDetail() {
 
   const joinMutation = useMutation({
     mutationFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
       const joinFieldId = user?.defaultFieldId || clan?.fieldId || "";
-      const res = await fetch(`/api/battle/clans/${clanId}/join?fieldId=${joinFieldId}`, {
+      const res = await authFetch(`/api/battle/clans/${clanId}/join?fieldId=${joinFieldId}`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        credentials: "include",
       });
       if (!res.ok) {
         const err = await res.json();
@@ -64,12 +59,8 @@ export default function BattleClanDetail() {
 
   const leaveMutation = useMutation({
     mutationFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch(`/api/battle/clans/${clanId}/leave`, {
+      const res = await authFetch(`/api/battle/clans/${clanId}/leave`, {
         method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
       });
       if (!res.ok) {
         const err = await res.json();
@@ -107,6 +98,8 @@ export default function BattleClanDetail() {
 
   const isMember = clan.members.some((m) => m.userId === user?.id && !m.leftAt);
   const isLeader = clan.leaderId === user?.id;
+  const myMembership = clan.members.find((m) => m.userId === user?.id && !m.leftAt);
+  const myRole = clan.myRole ?? myMembership?.role ?? "member";
   const winRate = (clan.totalWins + clan.totalLosses + clan.totalDraws) > 0
     ? Math.round((clan.totalWins / (clan.totalWins + clan.totalLosses + clan.totalDraws)) * 100)
     : 0;
@@ -121,7 +114,7 @@ export default function BattleClanDetail() {
     <BattleLayout title={`[${clan.tag}] ${clan.name}`} subtitle={clan.description || undefined}>
       <div className="space-y-4">
         {/* 戰隊數據 */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
               <p className="text-2xl font-number font-bold">{clan.clanRating}</p>
@@ -169,6 +162,11 @@ export default function BattleClanDetail() {
           </Button>
         )}
 
+        {/* 管理面板 */}
+        {user && isMember && (myRole === "leader" || myRole === "officer") && (
+          <ClanManagePanel clan={clan} members={clan.members} myRole={myRole} myUserId={user.id} />
+        )}
+
         {/* 成員列表 */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
@@ -189,12 +187,17 @@ export default function BattleClanDetail() {
                   <div key={member.id} className="flex items-center justify-between py-1.5">
                     <span className="flex items-center gap-2 text-sm">
                       {roleIcon(member.role)}
-                      {member.userId.slice(0, 10)}...
+                      {member.displayName ?? member.userId.slice(0, 10)}
                       {member.userId === user?.id && <span className="text-primary">(你)</span>}
                     </span>
-                    <Badge variant="outline" className="text-xs">
-                      {clanRoleLabels[member.role as ClanRole] ?? member.role}
-                    </Badge>
+                    <span className="flex items-center gap-1">
+                      <Badge variant="outline" className="text-xs">
+                        {clanRoleLabels[member.role as ClanRole] ?? member.role}
+                      </Badge>
+                      {user && isMember && (myRole === "leader" || myRole === "officer") && (
+                        <MemberActionMenu clan={clan} member={member} myRole={myRole} myUserId={user.id} />
+                      )}
+                    </span>
                   </div>
                 ))}
             </div>

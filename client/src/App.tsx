@@ -11,6 +11,7 @@ import ProtectedAdminRoute from "@/components/shared/ProtectedAdminRoute";
 import PageLoader from "@/components/shared/PageLoader";
 import OfflineBanner from "@/components/shared/OfflineBanner";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { useAuth } from "@/hooks/useAuth";
 
 // 首屏路由 — 靜態 import（不需 lazy）
 import Landing from "@/pages/Landing";
@@ -72,6 +73,14 @@ const AdminBattleSeasons = lazy(() => import("@/pages/AdminBattleSeasons"));
 const BattleAchievements = lazy(() => import("@/pages/BattleAchievements"));
 const BattleSeasonHistory = lazy(() => import("@/pages/BattleSeasonHistory"));
 
+/** 需要登入的對戰路由守衛 */
+function AuthBattleRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <PageLoader />;
+  if (!user) return <Redirect to="/battle" />;
+  return <Component />;
+}
+
 function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -96,13 +105,13 @@ function Router() {
         <Route path="/battle/slot/:slotId" component={BattleSlotDetail} />
         <Route path="/battle/slot/:slotId/result" component={BattleResult} />
         <Route path="/battle/ranking" component={BattleRanking} />
-        <Route path="/battle/history" component={BattleHistory} />
-        <Route path="/battle/clan/create" component={BattleClanCreate} />
+        <Route path="/battle/history">{() => <AuthBattleRoute component={BattleHistory} />}</Route>
+        <Route path="/battle/clan/create">{() => <AuthBattleRoute component={BattleClanCreate} />}</Route>
         <Route path="/battle/clan/:clanId" component={BattleClanDetail} />
-        <Route path="/battle/my" component={BattleMyProfile} />
-        <Route path="/battle/notifications" component={BattleNotifications} />
-        <Route path="/battle/achievements" component={BattleAchievements} />
-        <Route path="/battle/seasons" component={BattleSeasonHistory} />
+        <Route path="/battle/my">{() => <AuthBattleRoute component={BattleMyProfile} />}</Route>
+        <Route path="/battle/notifications">{() => <AuthBattleRoute component={BattleNotifications} />}</Route>
+        <Route path="/battle/achievements">{() => <AuthBattleRoute component={BattleAchievements} />}</Route>
+        <Route path="/battle/seasons">{() => <AuthBattleRoute component={BattleSeasonHistory} />}</Route>
 
         {/* 管理端登入 */}
         <Route path="/admin/login" component={FieldAdminLogin} />

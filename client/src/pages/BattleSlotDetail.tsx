@@ -12,16 +12,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useLoginHandlers } from "@/hooks/useLoginHandlers";
+import { LoginDialog } from "@/components/landing/LoginDialog";
+import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } from "@shared/schema";
 import {
   Swords, Clock, Users, CalendarDays, UserPlus,
-  UserMinus, Shield, Copy, Check,
+  UserMinus, Shield, Copy, Check, CheckCircle, LogIn,
 } from "lucide-react";
 
+interface RegistrationWithName extends BattleRegistration {
+  displayName?: string;
+}
+
 interface SlotDetailResponse extends BattleSlot {
-  registrations: BattleRegistration[];
+  registrations: RegistrationWithName[];
   premadeGroups: BattlePremadeGroup[];
 }
 
@@ -129,6 +136,19 @@ export default function BattleSlotDetail() {
     },
   });
 
+  const confirmMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      return apiRequest("POST", `/api/battle/registrations/${registrationId}/confirm`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/battle/slots", slotId] });
+      toast({ title: "已確認出席！" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "確認失敗", description: err.message, variant: "destructive" });
+    },
+  });
+
   if (isLoading || !slotData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -200,13 +220,27 @@ export default function BattleSlotDetail() {
         </Card>
 
         {/* 操作按鈕 */}
+        {!user && (slotData.status === "open" || slotData.status === "confirmed") && (
+          <SlotLoginPrompt />
+        )}
         <div className="flex gap-2">
           {canRegister && (
             <Button className="flex-1 gap-1" onClick={() => setShowRegisterDialog(true)}>
               <UserPlus className="h-4 w-4" /> 我要報名
             </Button>
           )}
-          {isRegistered && myRegistration.status !== "checked_in" && (
+          {isRegistered && myRegistration.status === "registered" &&
+            (slotData.status === "confirmed" || slotData.status === "full") && (
+            <Button
+              variant="secondary"
+              className="flex-1 gap-1"
+              onClick={() => confirmMutation.mutate(myRegistration.id)}
+              disabled={confirmMutation.isPending}
+            >
+              <CheckCircle className="h-4 w-4" /> 確認出席
+            </Button>
+          )}
+          {isRegistered && myRegistration.status !== "checked_in" && myRegistration.status !== "confirmed" && (
             <Button
               variant="destructive"
               className="flex-1 gap-1"
@@ -269,12 +303,15 @@ export default function BattleSlotDetail() {
                     <div key={reg.id} className="flex items-center justify-between py-1 text-sm">
                       <span className="flex items-center gap-2">
                         <Users className="h-3 w-3 text-muted-foreground" />
-                        {reg.userId.slice(0, 8)}...
+                        {reg.displayName ?? reg.userId.slice(0, 8)}
                         {reg.registrationType === "premade_leader" && (
                           <Badge variant="outline" className="text-xs">隊長</Badge>
                         )}
                       </span>
-                      <Badge variant="secondary" className="text-xs">{reg.skillLevel}</Badge>
+                      <span className="flex items-center gap-1">
+                        {reg.status === "confirmed" && <CheckCircle className="h-3 w-3 text-green-500" />}
+                        <Badge variant="secondary" className="text-xs">{reg.skillLevel}</Badge>
+                      </span>
                     </div>
                   ))}
               </div>
@@ -366,6 +403,31 @@ export default function BattleSlotDetail() {
   );
 }
 
+/** 時段頁面登入提示 */
+function SlotLoginPrompt() {
+  const [showLogin, setShowLogin] = useState(false);
+  const handlers = useLoginHandlers(() => setShowLogin(false), { redirectTo: null });
+
+  return (
+    <>
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="p-4 flex items-center justify-between gap-3">
+          <p className="text-sm">登入後即可報名此時段</p>
+          <Button size="sm" className="gap-1.5 shrink-0" onClick={() => setShowLogin(true)}>
+            <LogIn className="h-4 w-4" /> 登入
+          </Button>
+        </CardContent>
+      </Card>
+      <LoginDialog
+        open={showLogin}
+        onOpenChange={setShowLogin}
+        isEmbeddedBrowser={isEmbeddedBrowser()}
+        handlers={handlers}
+      />
+    </>
+  );
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
     open: { label: "開放報名", variant: "default" },
@@ -379,8 +441,8 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant={info.variant}>{info.label}</Badge>;
 }
 
-function TeamsDisplay({ registrations }: { registrations: BattleRegistration[] }) {
-  const teamMap = new Map<string, BattleRegistration[]>();
+function TeamsDisplay({ registrations }: { registrations: RegistrationWithName[] }) {
+  const teamMap = new Map<string, RegistrationWithName[]>();
   for (const reg of registrations) {
     if (reg.assignedTeam && reg.status !== "cancelled") {
       if (!teamMap.has(reg.assignedTeam)) {
@@ -417,7 +479,7 @@ function TeamsDisplay({ registrations }: { registrations: BattleRegistration[] }
               <div className="space-y-1">
                 {members.map((m) => (
                   <p key={m.id} className="text-xs text-muted-foreground">
-                    {m.userId.slice(0, 8)}...
+                    {m.displayName ?? m.userId.slice(0, 8)}
                   </p>
                 ))}
               </div>

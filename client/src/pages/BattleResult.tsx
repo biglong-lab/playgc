@@ -9,8 +9,12 @@ import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleResult as BattleResultType, BattlePlayerResult } from "@shared/schema";
 import { Trophy, Star, TrendingUp, TrendingDown, Minus, Swords } from "lucide-react";
 
+interface PlayerResultWithName extends BattlePlayerResult {
+  displayName?: string;
+}
+
 interface ResultResponse extends BattleResultType {
-  playerResults: BattlePlayerResult[];
+  playerResults: PlayerResultWithName[];
 }
 
 export default function BattleResult() {
@@ -55,7 +59,7 @@ export default function BattleResult() {
     黃隊: "text-yellow-500",
   };
 
-  const teamMap = new Map<string, BattlePlayerResult[]>();
+  const teamMap = new Map<string, PlayerResultWithName[]>();
   for (const pr of data.playerResults ?? []) {
     if (!teamMap.has(pr.team)) teamMap.set(pr.team, []);
     teamMap.get(pr.team)!.push(pr);
@@ -106,7 +110,7 @@ export default function BattleResult() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-4 gap-2 text-center text-sm mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-sm mb-3">
                 <div>
                   <p className="text-muted-foreground">得分</p>
                   <p className="text-lg font-number font-bold">{myResult.score}</p>
@@ -163,7 +167,7 @@ export default function BattleResult() {
                   .map((pr) => (
                     <div key={pr.id} className="flex items-center justify-between text-sm py-1">
                       <span className="flex items-center gap-2">
-                        {pr.userId.slice(0, 8)}...
+                        {pr.displayName ?? pr.userId.slice(0, 8)}
                         {pr.isMvp && <Badge variant="outline" className="text-xs border-tactical-orange/30">MVP</Badge>}
                       </span>
                       <span className="flex items-center gap-3 text-muted-foreground font-number">

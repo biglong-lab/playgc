@@ -74,7 +74,7 @@ export default function BattleMyProfile() {
                   <p className="text-sm text-muted-foreground">積分</p>
                 </div>
               </div>
-              <div className="grid grid-cols-5 gap-2 text-center text-sm">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 text-center text-sm">
                 <div>
                   <p className="text-muted-foreground">總場</p>
                   <p className="font-number font-semibold">{ranking.totalBattles}</p>
