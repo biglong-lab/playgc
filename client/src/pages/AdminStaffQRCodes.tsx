@@ -43,22 +43,6 @@ interface Game {
   createdAt: string;
 }
 
-async function fetchWithAdminAuth(url: string, options: RequestInit = {}) {
-  const headers = {
-    ...options.headers,
-    "Content-Type": "application/json",
-  };
-  
-  const response = await fetch(url, { ...options, headers, credentials: "include" });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message || "Request failed");
-  }
-  
-  return response.json();
-}
-
 const STATUS_LABELS: Record<string, string> = {
   draft: "草稿",
   published: "已發布",
