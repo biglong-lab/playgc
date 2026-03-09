@@ -67,9 +67,10 @@ export default function AdminSettings() {
   });
 
   const handleSaveSettings = () => {
-    toast({ 
-      title: "設定已儲存", 
-      description: "系統設定已更新" 
+    toast({
+      title: "功能開發中",
+      description: "系統設定儲存功能尚未實作",
+      variant: "destructive",
     });
   };
 
