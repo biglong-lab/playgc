@@ -92,9 +92,8 @@ export default function AdminStaffQRCodes() {
 
   const regenerateQRMutation = useMutation({
     mutationFn: async (gameId: string) => {
-      return fetchWithAdminAuth(`/api/admin/games/${gameId}/regenerate-slug`, {
-        method: "POST",
-      });
+      const res = await apiRequest("POST", `/api/admin/games/${gameId}/regenerate-slug`, {});
+      return res.json();
     },
     onSuccess: (data, gameId) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/games"] });
