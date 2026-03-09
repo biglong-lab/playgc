@@ -63,7 +63,6 @@ export default function AdminStaffQRCodes() {
 
   const { data: games = [], isLoading } = useQuery<Game[]>({
     queryKey: ["/api/admin/games"],
-    queryFn: () => fetchWithAdminAuth("/api/admin/games"),
   });
 
   const generateQRMutation = useMutation({
