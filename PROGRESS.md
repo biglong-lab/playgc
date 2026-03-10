@@ -107,6 +107,47 @@
 
 ## 工作紀錄
 
+### 2026-03-10 (管理員登入修復 + 全站功能完整性審查)
+
+#### 管理員登入修復
+- [x] 新增 Email 登入支援 — `useAdminLogin.ts` 加入 `handleEmailLogin` / `handleEmailSignup`
+- [x] 新增開發環境快速登入 — `POST /api/dev/custom-token` + `signInWithCustomToken`
+- [x] `FieldAdminLogin.tsx` — 加入 Tabs（Email / Google）+ Dev 快速登入按鈕
+- [x] Firebase UID 自動綁定 — `server/routes/auth.ts` email 匹配時自動綁定 firebaseUserId
+- [x] 修復 handleDevLogin 未觸發驗證 — 加入 `setStep("firebase")` + `firebaseLoginMutation.reset()`
+
+#### 管理端功能審查（27 個頁面 + 27 個 API）
+- [x] 全部 27 個管理端 API 端點實測回傳 200
+- [x] `AdminSettings.tsx` — 修復假儲存成功 → 改為「功能開發中」提示
+- [x] `AdminStaffQRCodes.tsx` — 移除自訂 `fetchWithAdminAuth`，改用統一 `apiRequest`（修復 Auth token 缺失）
+- [x] `AdminLeaderboard.tsx` — 評估為低優先級（server 端已保護路由）
+- [x] `admin-devices/index.tsx` — LED 類型確認無 bug
+
+#### 玩家端對戰功能審查（11 個頁面 + 30+ API）
+- [x] displayName 統一使用確認 — 11/11 頁面正確
+- [x] MyRegistrations 顯示場地名/日期/時間 — 正確
+- [x] ClanManagePanel 戰隊管理整合 — 完整
+- [x] 確認出席按鈕邏輯 — 正確
+- [x] AuthBattleRoute 路由守衛 — 6 個需登入頁面已保護
+- [x] refetchOnWindowFocus — 通知查詢已設置
+- [x] 響應式 grid — 全部修正
+- [x] API 端點回傳格式 — 全部正確（venues/rankings/slots/achievements 實測通過）
+
+#### 修改檔案清單
+
+| 檔案 | 動作 | 說明 |
+|------|------|------|
+| `client/src/hooks/useAdminLogin.ts` | 修改 | 加入 Email/Dev 登入 |
+| `client/src/pages/FieldAdminLogin.tsx` | 修改 | Email/Google Tabs + Dev 按鈕 |
+| `client/src/lib/firebase.ts` | 修改 | 加入 signInWithCustomToken |
+| `server/routes/auth.ts` | 修改 | dev/custom-token + email 自動綁定 |
+| `client/src/pages/AdminSettings.tsx` | 修改 | 假儲存 → 功能開發中提示 |
+| `client/src/pages/AdminStaffQRCodes.tsx` | 修改 | 移除自訂 fetch → 統一 apiRequest |
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vite build` 構建通過
+
+---
+
 ### 2026-03-08 (對戰系統完整功能優化 + Code Review 修復)
 
 #### Phase 1：後端 API — JOIN users 表 + 資料擴充
