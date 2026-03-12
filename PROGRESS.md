@@ -104,6 +104,24 @@
 - [x] Phase 3：戰隊系統（Schema/Storage/API/前端）
 - [x] Phase 4：通知排程系統（Schema/Storage/排程器/通知服務/API/前端）
 - [x] 功能優化：玩家名稱顯示 + 戰隊管理 UI + 響應式 + 路由守衛 + 確認出席 + Code Review 修復
+- [x] 全站功能審查：管理端 27 頁面 + 玩家端 11 頁面 + 57+ API 全部驗證通過
+
+### 待處理 / 下一步推展
+
+#### 🔴 立即處理
+- [ ] **Git 分支合併**：local 與 remote 已分叉（64 vs 75 commits），需 merge 後才能 push
+- [ ] **Google 登入修復**：本地 Google OAuth popup 無法使用，需設定 Google Cloud Console（正式環境可能正常）
+
+#### 🟡 功能完善
+- [ ] **AdminSettings 儲存功能**：目前只是 UI，後端 API 尚未實作（設定值存到 DB）
+- [ ] **系統設定 API**：`POST /api/admin/settings` — 儲存預設遊戲時間/最大玩家數/閒置超時等
+- [ ] **管理端排行榜** `useAdminAuth` 一致性：加入 `enabled: isAuthenticated` 條件
+
+#### 🟢 可選優化
+- [ ] 對戰系統：實際水彈對戰流程 E2E 測試（場地→報名→配對→開戰→記錄→排名）
+- [ ] PWA 離線功能驗證
+- [ ] 正式環境部署 + 生產資料同步
+- [ ] 測試覆蓋率提升（目前 1034 測試，可補前端元件測試）
 
 ## 工作紀錄
 
