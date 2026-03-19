@@ -38,7 +38,7 @@ export default function AdminSettings() {
   });
 
   // 表單狀態
-  const form = useForm<SystemSettings>({
+  const [formValues, setFormValues] = useState<SystemSettings>({
     defaultGameTime: 30,
     defaultMaxPlayers: 6,
     autoEndIdleSession: true,
@@ -48,10 +48,13 @@ export default function AdminSettings() {
   // API 回傳後同步表單
   useEffect(() => {
     if (settings) {
-      form.setValues(settings);
+      setFormValues(settings);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
+
+  const setField = <K extends keyof SystemSettings>(key: K, value: SystemSettings[K]) => {
+    setFormValues((prev) => ({ ...prev, [key]: value }));
+  };
 
   const { data: mqttStatus, isLoading: mqttLoading } = useQuery<MqttStatus>({
     queryKey: ["/api/mqtt/status"],
