@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -8,12 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useForm } from "@/hooks/useForm";
 import type { ArduinoDevice, Game, GameSession } from "@shared/schema";
 import {
   Settings, Wifi, Radio, Gamepad2, Users, Clock,
-  Save, RefreshCw, CheckCircle, AlertTriangle, Database
+  Save, RefreshCw, CheckCircle, AlertTriangle, Database,
 } from "lucide-react";
 
 interface MqttStatus {
@@ -21,15 +23,38 @@ interface MqttStatus {
   reconnectAttempts?: number;
 }
 
+interface SystemSettings {
+  defaultGameTime: number;
+  defaultMaxPlayers: number;
+  autoEndIdleSession: boolean;
+  sessionIdleTimeout: number;
+}
+
 export default function AdminSettings() {
   const { toast } = useToast();
-  
-  const [defaultGameTime, setDefaultGameTime] = useState("30");
-  const [maxPlayers, setMaxPlayers] = useState("6");
-  const [autoEndSession, setAutoEndSession] = useState(true);
-  const [sessionTimeout, setSessionTimeout] = useState("120");
 
-  const { data: mqttStatus, isLoading: mqttLoading, error: mqttError } = useQuery<MqttStatus>({
+  // 載入設定
+  const { data: settings, isLoading: settingsLoading } = useQuery<SystemSettings>({
+    queryKey: ["/api/admin/settings"],
+  });
+
+  // 表單狀態
+  const form = useForm<SystemSettings>({
+    defaultGameTime: 30,
+    defaultMaxPlayers: 6,
+    autoEndIdleSession: true,
+    sessionIdleTimeout: 120,
+  });
+
+  // API 回傳後同步表單
+  useEffect(() => {
+    if (settings) {
+      form.setValues(settings);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
+
+  const { data: mqttStatus, isLoading: mqttLoading } = useQuery<MqttStatus>({
     queryKey: ["/api/mqtt/status"],
     refetchInterval: 10000,
     retry: false,
@@ -51,7 +76,7 @@ export default function AdminSettings() {
     totalGames: games.length,
     totalSessions: sessions.length,
     totalDevices: devices.length,
-    totalTeams: new Set(sessions.map(s => s.teamName).filter(Boolean)).size,
+    totalTeams: new Set(sessions.map((s) => s.teamName).filter(Boolean)).size,
   };
 
   const testMqttMutation = useMutation({
@@ -66,12 +91,21 @@ export default function AdminSettings() {
     },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async (data: SystemSettings) => {
+      return apiRequest("PATCH", "/api/admin/settings", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
+      toast({ title: "設定已儲存" });
+    },
+    onError: () => {
+      toast({ title: "儲存失敗", variant: "destructive" });
+    },
+  });
+
   const handleSaveSettings = () => {
-    toast({
-      title: "功能開發中",
-      description: "系統設定儲存功能尚未實作",
-      variant: "destructive",
-    });
+    saveMutation.mutate(form.values);
   };
 
   const isMqttConnected = mqttStatus?.connected === true;
@@ -95,89 +129,113 @@ export default function AdminSettings() {
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Gamepad2 className="w-5 h-5" />
-                遊戲預設設定
-              </CardTitle>
-              <CardDescription>
-                新建遊戲時的預設參數
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="defaultTime">預設遊戲時間 (分鐘)</Label>
-                  <Input
-                    id="defaultTime"
-                    type="number"
-                    value={defaultGameTime}
-                    onChange={(e) => setDefaultGameTime(e.target.value)}
-                    data-testid="input-default-time"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxPlayers">預設最大玩家數</Label>
-                  <Input
-                    id="maxPlayers"
-                    type="number"
-                    value={maxPlayers}
-                    onChange={(e) => setMaxPlayers(e.target.value)}
-                    data-testid="input-max-players"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {settingsLoading ? (
+            <Card>
+              <CardContent className="p-6 space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Gamepad2 className="w-5 h-5" />
+                    遊戲預設設定
+                  </CardTitle>
+                  <CardDescription>新建遊戲時的預設參數</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="defaultTime">預設遊戲時間 (分鐘)</Label>
+                      <Input
+                        id="defaultTime"
+                        type="number"
+                        min={1}
+                        max={999}
+                        value={form.values.defaultGameTime}
+                        onChange={(e) =>
+                          form.setField("defaultGameTime", Number(e.target.value) || 1)
+                        }
+                        data-testid="input-default-time"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="maxPlayers">預設最大玩家數</Label>
+                      <Input
+                        id="maxPlayers"
+                        type="number"
+                        min={1}
+                        max={999}
+                        value={form.values.defaultMaxPlayers}
+                        onChange={(e) =>
+                          form.setField("defaultMaxPlayers", Number(e.target.value) || 1)
+                        }
+                        data-testid="input-max-players"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                場次管理設定
-              </CardTitle>
-              <CardDescription>
-                遊戲場次的自動化設定
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>自動結束閒置場次</Label>
-                  <p className="text-sm text-muted-foreground">
-                    超過設定時間無活動的場次將自動結束
-                  </p>
-                </div>
-                <Switch
-                  checked={autoEndSession}
-                  onCheckedChange={setAutoEndSession}
-                  data-testid="switch-auto-end"
-                />
-              </div>
-              
-              {autoEndSession && (
-                <div className="space-y-2">
-                  <Label htmlFor="timeout">閒置超時時間 (分鐘)</Label>
-                  <Input
-                    id="timeout"
-                    type="number"
-                    value={sessionTimeout}
-                    onChange={(e) => setSessionTimeout(e.target.value)}
-                    className="max-w-xs"
-                    data-testid="input-session-timeout"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Clock className="w-5 h-5" />
+                    場次管理設定
+                  </CardTitle>
+                  <CardDescription>遊戲場次的自動化設定</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>自動結束閒置場次</Label>
+                      <p className="text-sm text-muted-foreground">
+                        超過設定時間無活動的場次將自動結束
+                      </p>
+                    </div>
+                    <Switch
+                      checked={form.values.autoEndIdleSession}
+                      onCheckedChange={(v) => form.setField("autoEndIdleSession", v)}
+                      data-testid="switch-auto-end"
+                    />
+                  </div>
 
-          <div className="flex justify-end">
-            <Button onClick={handleSaveSettings} className="gap-2" data-testid="button-save-settings">
-              <Save className="w-4 h-4" />
-              儲存設定
-            </Button>
-          </div>
+                  {form.values.autoEndIdleSession && (
+                    <div className="space-y-2">
+                      <Label htmlFor="timeout">閒置超時時間 (分鐘)</Label>
+                      <Input
+                        id="timeout"
+                        type="number"
+                        min={1}
+                        max={9999}
+                        value={form.values.sessionIdleTimeout}
+                        onChange={(e) =>
+                          form.setField("sessionIdleTimeout", Number(e.target.value) || 1)
+                        }
+                        className="max-w-xs"
+                        data-testid="input-session-timeout"
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleSaveSettings}
+                  disabled={saveMutation.isPending}
+                  className="gap-2"
+                  data-testid="button-save-settings"
+                >
+                  <Save className="w-4 h-4" />
+                  {saveMutation.isPending ? "儲存中..." : "儲存設定"}
+                </Button>
+              </div>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="mqtt" className="space-y-6">
@@ -202,16 +260,14 @@ export default function AdminSettings() {
                     <p className="font-medium">
                       {mqttLoading ? "檢查中..." : isMqttConnected ? "已連線" : "未連線"}
                     </p>
-                    <p className="text-sm text-muted-foreground">
-                      HiveMQ 公共代理
-                    </p>
+                    <p className="text-sm text-muted-foreground">HiveMQ 公共代理</p>
                   </div>
                 </div>
                 <Badge variant={isMqttConnected ? "default" : "destructive"}>
                   {mqttLoading ? "..." : isMqttConnected ? "Online" : "Offline"}
                 </Badge>
               </div>
-              
+
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-lg bg-muted/30">
                   <p className="text-sm text-muted-foreground">代理位址</p>
@@ -224,14 +280,16 @@ export default function AdminSettings() {
               </div>
 
               <div className="mt-6 flex gap-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => testMqttMutation.mutate()}
                   disabled={testMqttMutation.isPending || !isMqttConnected}
                   className="gap-2"
                   data-testid="button-test-mqtt"
                 >
-                  <RefreshCw className={`w-4 h-4 ${testMqttMutation.isPending ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 ${testMqttMutation.isPending ? "animate-spin" : ""}`}
+                  />
                   測試連線
                 </Button>
               </div>
