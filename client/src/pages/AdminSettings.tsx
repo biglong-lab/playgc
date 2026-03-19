@@ -159,7 +159,7 @@ export default function AdminSettings() {
                         max={999}
                         value={formValues.defaultGameTime}
                         onChange={(e) =>
-                          form.setField("defaultGameTime", Number(e.target.value) || 1)
+                          setField("defaultGameTime", Number(e.target.value) || 1)
                         }
                         data-testid="input-default-time"
                       />
@@ -173,7 +173,7 @@ export default function AdminSettings() {
                         max={999}
                         value={formValues.defaultMaxPlayers}
                         onChange={(e) =>
-                          form.setField("defaultMaxPlayers", Number(e.target.value) || 1)
+                          setField("defaultMaxPlayers", Number(e.target.value) || 1)
                         }
                         data-testid="input-max-players"
                       />
@@ -200,7 +200,7 @@ export default function AdminSettings() {
                     </div>
                     <Switch
                       checked={formValues.autoEndIdleSession}
-                      onCheckedChange={(v) => form.setField("autoEndIdleSession", v)}
+                      onCheckedChange={(v) => setField("autoEndIdleSession", v)}
                       data-testid="switch-auto-end"
                     />
                   </div>
@@ -215,7 +215,7 @@ export default function AdminSettings() {
                         max={9999}
                         value={formValues.sessionIdleTimeout}
                         onChange={(e) =>
-                          form.setField("sessionIdleTimeout", Number(e.target.value) || 1)
+                          setField("sessionIdleTimeout", Number(e.target.value) || 1)
                         }
                         className="max-w-xs"
                         data-testid="input-session-timeout"
