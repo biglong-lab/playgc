@@ -21,6 +21,7 @@ import { registerAdminRedeemCodeRoutes } from "./admin-redeem-codes";
 import { registerAdminPurchaseRoutes } from "./admin-purchases";
 import { registerPlayerPurchaseRoutes } from "./player-purchases";
 import { registerAdminSessionRoutes } from "./admin-sessions";
+import { registerAdminSettingsRoutes } from "./admin-settings";
 import { registerRecurWebhookRoutes } from "./webhook-recur";
 import { registerAiScoringRoutes } from "./ai-scoring";
 import { registerBattleVenueRoutes } from "./battle-venues";
