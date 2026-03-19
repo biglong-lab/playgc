@@ -107,7 +107,7 @@ export default function AdminSettings() {
   });
 
   const handleSaveSettings = () => {
-    saveMutation.mutate(form.values);
+    saveMutation.mutate(formValues);
   };
 
   const isMqttConnected = mqttStatus?.connected === true;
@@ -157,7 +157,7 @@ export default function AdminSettings() {
                         type="number"
                         min={1}
                         max={999}
-                        value={form.values.defaultGameTime}
+                        value={formValues.defaultGameTime}
                         onChange={(e) =>
                           form.setField("defaultGameTime", Number(e.target.value) || 1)
                         }
@@ -171,7 +171,7 @@ export default function AdminSettings() {
                         type="number"
                         min={1}
                         max={999}
-                        value={form.values.defaultMaxPlayers}
+                        value={formValues.defaultMaxPlayers}
                         onChange={(e) =>
                           form.setField("defaultMaxPlayers", Number(e.target.value) || 1)
                         }
@@ -199,13 +199,13 @@ export default function AdminSettings() {
                       </p>
                     </div>
                     <Switch
-                      checked={form.values.autoEndIdleSession}
+                      checked={formValues.autoEndIdleSession}
                       onCheckedChange={(v) => form.setField("autoEndIdleSession", v)}
                       data-testid="switch-auto-end"
                     />
                   </div>
 
-                  {form.values.autoEndIdleSession && (
+                  {formValues.autoEndIdleSession && (
                     <div className="space-y-2">
                       <Label htmlFor="timeout">閒置超時時間 (分鐘)</Label>
                       <Input
@@ -213,7 +213,7 @@ export default function AdminSettings() {
                         type="number"
                         min={1}
                         max={9999}
-                        value={form.values.sessionIdleTimeout}
+                        value={formValues.sessionIdleTimeout}
                         onChange={(e) =>
                           form.setField("sessionIdleTimeout", Number(e.target.value) || 1)
                         }
