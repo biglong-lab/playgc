@@ -50,6 +50,14 @@ export interface FieldSettings {
   // 品牌
   primaryColor?: string;              // 主色調 hex
   welcomeMessage?: string;            // 歡迎訊息
+
+  // 遊戲預設設定
+  defaultGameTime?: number;           // 預設遊戲時間（分鐘）
+  defaultMaxPlayers?: number;         // 預設最大玩家數
+
+  // 場次管理設定
+  autoEndIdleSession?: boolean;       // 自動結束閒置場次
+  sessionIdleTimeout?: number;        // 閒置超時時間（分鐘）
 }
 
 /** 安全解析 jsonb 為 FieldSettings，無效資料回傳空物件 */
