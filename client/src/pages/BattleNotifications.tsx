@@ -28,7 +28,10 @@ export default function BattleNotifications() {
       if (!res.ok) return [];
       return res.json();
     },
+<<<<<<< HEAD
     enabled: !!user,
+=======
+>>>>>>> origin/main
     refetchOnWindowFocus: true,
   });
 
