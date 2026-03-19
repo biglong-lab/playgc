@@ -20,11 +20,7 @@ import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } from "@shared/schema";
 import {
   Swords, Clock, Users, CalendarDays, UserPlus,
-<<<<<<< HEAD
   UserMinus, Shield, Copy, Check, CheckCircle, LogIn,
-=======
-  UserMinus, Shield, Copy, Check, CheckCircle,
->>>>>>> origin/main
 } from "lucide-react";
 
 interface RegistrationWithName extends BattleRegistration {
