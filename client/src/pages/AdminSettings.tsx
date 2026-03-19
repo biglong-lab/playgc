@@ -11,7 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useForm } from "@/hooks/useForm";
 import type { ArduinoDevice, Game, GameSession } from "@shared/schema";
 import {
   Settings, Wifi, Radio, Gamepad2, Users, Clock,
