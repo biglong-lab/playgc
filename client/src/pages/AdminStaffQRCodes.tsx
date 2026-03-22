@@ -56,6 +56,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function AdminStaffQRCodes() {
+  const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
@@ -63,6 +64,7 @@ export default function AdminStaffQRCodes() {
 
   const { data: games = [], isLoading } = useQuery<Game[]>({
     queryKey: ["/api/admin/games"],
+    enabled: isAuthenticated,
   });
 
   const generateQRMutation = useMutation({
