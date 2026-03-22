@@ -31,10 +31,12 @@ export default function AdminSessions() {
   const { data: sessions = [], isLoading, refetch } = useQuery<GameSession[]>({
     queryKey: ["/api/sessions"],
     refetchInterval: 10000,
+    enabled: isAuthenticated,
   });
 
   const { data: games = [] } = useQuery<Game[]>({
     queryKey: ["/api/admin/games"],
+    enabled: isAuthenticated,
   });
 
   const endSessionMutation = useMutation({
