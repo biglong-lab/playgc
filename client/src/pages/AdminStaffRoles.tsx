@@ -70,22 +70,6 @@ interface Role {
   createdAt: string;
 }
 
-async function fetchWithAdminAuth(url: string, options: RequestInit = {}) {
-  const headers = {
-    ...options.headers,
-    "Content-Type": "application/json",
-  };
-  
-  const response = await fetch(url, { ...options, headers, credentials: "include" });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message || "Request failed");
-  }
-  
-  return response.json();
-}
-
 const SYSTEM_ROLE_ICONS: Record<string, typeof Shield> = {
   super_admin: Crown,
   field_manager: Shield,
