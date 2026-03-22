@@ -58,22 +58,6 @@ interface Field {
   updatedAt: string | null;
 }
 
-async function fetchWithAdminAuth(url: string, options: RequestInit = {}) {
-  const headers = {
-    ...options.headers,
-    "Content-Type": "application/json",
-  };
-  
-  const response = await fetch(url, { ...options, headers, credentials: "include" });
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message || "Request failed");
-  }
-  
-  return response.json();
-}
-
 export default function AdminStaffFields() {
   const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
