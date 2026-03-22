@@ -11,18 +11,22 @@ import {
   Trophy, Medal, Crown, Star, TrendingUp, Calendar,
   RefreshCw, Users
 } from "lucide-react";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 export default function AdminLeaderboard() {
+  const { isAuthenticated } = useAdminAuth();
   const [gameFilter, setGameFilter] = useState<string>("all");
   const [timeFilter, setTimeFilter] = useState<string>("all");
 
   const { data: leaderboard = [], isLoading, refetch } = useQuery<LeaderboardEntry[]>({
     queryKey: ["/api/leaderboard"],
     refetchInterval: 30000,
+    enabled: isAuthenticated,
   });
 
   const { data: games = [] } = useQuery<Game[]>({
     queryKey: ["/api/admin/games"],
+    enabled: isAuthenticated,
   });
 
   const filteredLeaderboard = leaderboard.filter(entry => {
