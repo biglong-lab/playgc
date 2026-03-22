@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Users, Search } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { fetchWithAdminAuth } from "./admin-staff/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface User {
