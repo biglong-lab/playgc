@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { FileText, User, Shield, Clock, Globe, Monitor } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { fetchWithAdminAuth } from "./admin-staff/types";
 
 interface AuditLog {
   id: string;
