@@ -86,9 +86,11 @@ const getActionColor = (action: string): string => {
 };
 
 export default function AdminStaffAuditLogs() {
+  const { isAuthenticated } = useAdminAuth();
   const { data: logs, isLoading } = useQuery<AuditLog[]>({
     queryKey: ["/api/admin/audit-logs"],
     queryFn: () => fetchWithAdminAuth("/api/admin/audit-logs"),
+    enabled: isAuthenticated,
   });
 
   const formatDate = (dateString: string) => {
