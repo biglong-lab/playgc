@@ -27,16 +27,19 @@ export default function AdminStaffAccounts() {
   const { data: accounts, isLoading: accountsLoading } = useQuery<AdminAccount[]>({
     queryKey: ["/api/admin/accounts"],
     queryFn: () => fetchWithAdminAuth("/api/admin/accounts"),
+    enabled: isAuthenticated,
   });
 
   const { data: roles } = useQuery<Role[]>({
     queryKey: ["/api/admin/roles"],
     queryFn: () => fetchWithAdminAuth("/api/admin/roles"),
+    enabled: isAuthenticated,
   });
 
   const { data: fields } = useQuery<Field[]>({
     queryKey: ["/api/admin/fields"],
     queryFn: () => fetchWithAdminAuth("/api/admin/fields"),
+    enabled: isAuthenticated,
   });
 
   // Mutations
