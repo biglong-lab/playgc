@@ -113,7 +113,8 @@
 - [x] **AdminSettings 儲存功能**：前後端完整實作（GET + PATCH /api/admin/settings，Zod 驗證，fields.settings jsonb 儲存）
 
 #### 🟡 已完成
-- [x] **管理端 useAdminAuth 一致性**：10 個管理端頁面全部加入 `enabled: isAuthenticated` 條件（AdminLeaderboard、AdminSettings、AdminStaffQRCodes、AdminStaffPlayers、AdminStaffAuditLogs、AdminStaffAccounts、AdminStaffRoles、AdminSessions、AdminStaffFields、AdminStaffDashboard）
+- [x] **管理端 useAdminAuth 一致性**：10 個管理端頁面全部加入 `enabled: isAuthenticated` 條件
+- [x] **fetchWithAdminAuth 去重**：6 個重複定義統一為從 `admin-staff/types.ts` 匯入（AdminStaffAuditLogs、AdminStaffPlayers、AdminStaffFields、AdminStaffRoles、AdminStaffDashboard、admin-staff-games/useAdminStaffGames）
 
 #### 🟡 待處理
 - [ ] **Google 登入修復**：本地 Google OAuth popup 無法使用，需設定 Google Cloud Console（正式環境可能正常，已有 Email/Dev 登入替代）
