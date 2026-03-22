@@ -74,6 +74,7 @@ async function fetchWithAdminAuth(url: string, options: RequestInit = {}) {
 }
 
 export default function AdminStaffFields() {
+  const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<Field | null>(null);
