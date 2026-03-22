@@ -122,10 +122,15 @@
 - [x] **部署腳本完善**：deploy.yml 支援 Docker SSH 和 Coolify webhook 兩種部署方式，手動觸發 + 驗證 + 部署
 - [x] **console.log 清理**：移除 `server/firebaseAuth.ts` 的 debug log
 
+#### ✅ 正式部署完成（2026-03-23）
+- [x] **正式環境部署**：`https://game.homi.cc` — Linode VPS + Docker + Nginx + SSL
+- [x] 伺服器：`172.233.89.147`，部署目錄 `/www/wwwroot/game.homi.cc`
+- [x] Docker 容器：`gamehomicc-app` (healthy) + `gamehomicc-db` (PostgreSQL 16)
+- [x] 232 個 commits 更新成功，所有頁面和 API 正常回應
+
 #### 🟡 待處理（需外部操作）
-- [ ] **Google Cloud Console 設定**：在 OAuth 2.0 Client ID 加入 `http://localhost:3333` 授權，讓本地 Google popup 可用
-- [ ] **部署 secrets 設定**：在 GitHub repo settings 設定 DEPLOY_HOST、DEPLOY_SSH_KEY 等 secrets
-- [ ] **正式環境首次部署**：選擇伺服器 + DNS 設定 + 生產資料同步
+- [ ] **Google Cloud Console 設定**：在 OAuth 2.0 Client ID 加入正式網域 `https://game.homi.cc` 和 `http://localhost:3333`
+- [ ] **GitHub Secrets 設定**：設定 DEPLOY_HOST 等 secrets 啟用 CI/CD 自動部署
 
 #### 🟢 可選優化
 - [ ] PWA 離線功能驗證
