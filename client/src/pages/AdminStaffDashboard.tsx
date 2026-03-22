@@ -20,19 +20,23 @@ async function fetchWithAdminAuth(url: string) {
 }
 
 export default function AdminStaffDashboard() {
+  const { isAuthenticated } = useAdminAuth();
   const { data: fields } = useQuery({
     queryKey: ["/api/admin/fields"],
     queryFn: () => fetchWithAdminAuth("/api/admin/fields"),
+    enabled: isAuthenticated,
   });
 
   const { data: roles } = useQuery({
     queryKey: ["/api/admin/roles"],
     queryFn: () => fetchWithAdminAuth("/api/admin/roles"),
+    enabled: isAuthenticated,
   });
 
   const { data: accounts } = useQuery({
     queryKey: ["/api/admin/accounts"],
     queryFn: () => fetchWithAdminAuth("/api/admin/accounts"),
+    enabled: isAuthenticated,
   });
 
   const stats = [
