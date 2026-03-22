@@ -116,14 +116,20 @@
 - [x] **管理端 useAdminAuth 一致性**：10 個管理端頁面全部加入 `enabled: isAuthenticated` 條件
 - [x] **fetchWithAdminAuth 去重**：6 個重複定義統一為從 `admin-staff/types.ts` 匯入（AdminStaffAuditLogs、AdminStaffPlayers、AdminStaffFields、AdminStaffRoles、AdminStaffDashboard、admin-staff-games/useAdminStaffGames）
 
-#### 🟡 待處理
-- [ ] **Google 登入修復**：本地 Google OAuth popup 無法使用，需設定 Google Cloud Console（正式環境可能正常，已有 Email/Dev 登入替代）
+#### 🟡 已完成（2026-03-23）
+- [x] **Google OAuth 改善**：localhost 自動 fallback 到 redirect 模式，改善 `auth/unauthorized-domain` 錯誤訊息引導使用 Email/Dev 登入
+- [x] **E2E 測試完整化**：新增 2 個測試檔（battle-flow + auth-flow），共 102 個 E2E 測試 Desktop+Mobile 全部通過
+- [x] **部署腳本完善**：deploy.yml 支援 Docker SSH 和 Coolify webhook 兩種部署方式，手動觸發 + 驗證 + 部署
+- [x] **console.log 清理**：移除 `server/firebaseAuth.ts` 的 debug log
+
+#### 🟡 待處理（需外部操作）
+- [ ] **Google Cloud Console 設定**：在 OAuth 2.0 Client ID 加入 `http://localhost:3333` 授權，讓本地 Google popup 可用
+- [ ] **部署 secrets 設定**：在 GitHub repo settings 設定 DEPLOY_HOST、DEPLOY_SSH_KEY 等 secrets
+- [ ] **正式環境首次部署**：選擇伺服器 + DNS 設定 + 生產資料同步
 
 #### 🟢 可選優化
-- [ ] 對戰系統：實際水彈對戰流程 E2E 測試（場地→報名→配對→開戰→記錄→排名）
 - [ ] PWA 離線功能驗證
-- [ ] 正式環境部署 + 生產資料同步
-- [ ] 測試覆蓋率提升（目前 1034 測試，可補前端元件測試）
+- [ ] 測試覆蓋率提升（可補前端元件測試）
 
 ## 工作紀錄
 
