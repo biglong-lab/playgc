@@ -63,18 +63,22 @@ export default function AdminSettings() {
     queryKey: ["/api/mqtt/status"],
     refetchInterval: 10000,
     retry: false,
+    enabled: isAuthenticated,
   });
 
   const { data: games = [] } = useQuery<Game[]>({
     queryKey: ["/api/admin/games"],
+    enabled: isAuthenticated,
   });
 
   const { data: sessions = [] } = useQuery<GameSession[]>({
     queryKey: ["/api/sessions"],
+    enabled: isAuthenticated,
   });
 
   const { data: devices = [] } = useQuery<ArduinoDevice[]>({
     queryKey: ["/api/devices"],
+    enabled: isAuthenticated,
   });
 
   const stats = {
