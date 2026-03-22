@@ -92,11 +92,13 @@ export default function AdminStaffFields() {
   const { data: adminInfo } = useQuery<AdminInfo>({
     queryKey: ["/api/admin/me"],
     queryFn: () => fetchWithAdminAuth("/api/admin/me"),
+    enabled: isAuthenticated,
   });
 
   const { data: fields, isLoading } = useQuery<Field[]>({
     queryKey: ["/api/admin/fields"],
     queryFn: () => fetchWithAdminAuth("/api/admin/fields"),
+    enabled: isAuthenticated,
   });
 
   const createMutation = useMutation({
