@@ -17,8 +17,10 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 export default function AdminSessions() {
+  const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
