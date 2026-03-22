@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { normalizeStatus, DEFAULT_FORM_DATA, type GameFormData } from "@/components/admin-games";
+import { fetchWithAdminAuth } from "../admin-staff/types";
 
 // AdminStaff 版的 Game 介面（含 field 資訊）
 interface Field {
