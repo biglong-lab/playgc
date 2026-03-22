@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Gamepad2, Activity } from "lucide-react";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 async function fetchWithAdminAuth(url: string) {
   const token = localStorage.getItem("adminToken");
