@@ -133,6 +133,52 @@
 
 ## 工作紀錄
 
+### 2026-03-23 (程式碼品質改善 + E2E 測試 + 部署準備)
+
+#### 管理端一致性修復
+- [x] 10 個管理端頁面加入 `useAdminAuth` + `enabled: isAuthenticated`
+- [x] 6 個重複 `fetchWithAdminAuth` 統一為 `admin-staff/types.ts` 單一來源
+- [x] `server/firebaseAuth.ts` 移除 3 個 debug console.log
+
+#### Google OAuth 改善
+- [x] `client/src/lib/firebase.ts` — localhost 自動使用 redirect 模式（不依賴 popup）
+- [x] `auth/unauthorized-domain` 錯誤訊息改為引導使用 Email/Dev 登入
+
+#### E2E 測試（102 個測試全部通過）
+- [x] 新增 `e2e/battle-flow.spec.ts` — 水彈對戰公開頁面 + 需登入頁面 + 管理端認證保護（15 測試）
+- [x] 新增 `e2e/auth-flow.spec.ts` — 管理員認證流程 + 玩家端公開存取（11 測試）
+- [x] 修復 `e2e/game-browsing.spec.ts` — 適應未登入時的重導向行為
+
+#### 部署準備
+- [x] `.github/workflows/deploy.yml` — 完整實作，支援 Docker SSH + Coolify webhook
+- [x] 驗證前置步驟：TypeScript 檢查 + 測試 + Build
+
+#### 修改檔案清單
+
+| 檔案 | 動作 | 說明 |
+|------|------|------|
+| `client/src/pages/AdminLeaderboard.tsx` | 修改 | 加入 useAdminAuth + enabled |
+| `client/src/pages/AdminSettings.tsx` | 修改 | 加入 useAdminAuth + enabled |
+| `client/src/pages/AdminStaffQRCodes.tsx` | 修改 | 加入 useAdminAuth + enabled |
+| `client/src/pages/AdminStaffPlayers.tsx` | 修改 | 去重 fetchWithAdminAuth + enabled |
+| `client/src/pages/AdminStaffAuditLogs.tsx` | 修改 | 去重 fetchWithAdminAuth + enabled |
+| `client/src/pages/AdminStaffAccounts.tsx` | 修改 | 加入 useAdminAuth + enabled |
+| `client/src/pages/AdminStaffRoles.tsx` | 修改 | 去重 fetchWithAdminAuth + enabled |
+| `client/src/pages/AdminSessions.tsx` | 修改 | 加入 useAdminAuth + enabled |
+| `client/src/pages/AdminStaffFields.tsx` | 修改 | 去重 fetchWithAdminAuth + enabled |
+| `client/src/pages/AdminStaffDashboard.tsx` | 修改 | 去重 fetchWithAdminAuth + enabled |
+| `client/src/pages/admin-staff-games/useAdminStaffGames.ts` | 修改 | 去重 fetchWithAdminAuth |
+| `client/src/lib/firebase.ts` | 修改 | localhost redirect + 錯誤訊息改善 |
+| `server/firebaseAuth.ts` | 修改 | 移除 debug console.log |
+| `e2e/battle-flow.spec.ts` | 新建 | 水彈對戰 E2E 測試 |
+| `e2e/auth-flow.spec.ts` | 新建 | 認證流程 E2E 測試 |
+| `e2e/game-browsing.spec.ts` | 修改 | 修復未登入重導向 |
+| `.github/workflows/deploy.yml` | 修改 | 完整部署腳本 |
+
+**驗證結果**: `npx tsc --noEmit` 零錯誤、`npx vite build` 構建通過、102 個 E2E 測試通過
+
+---
+
 ### 2026-03-10 (管理員登入修復 + 全站功能完整性審查)
 
 #### 管理員登入修復
