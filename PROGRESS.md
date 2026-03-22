@@ -16,7 +16,7 @@
 
 ## 目前狀態
 
-**最後更新**: 2026-03-12
+**最後更新**: 2026-03-23
 **分支**: main
 **Git 狀態**: 已提交，待推送（local 64 commits ahead，remote 75 commits ahead — 需 merge）
 
