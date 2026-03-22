@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { FileText, User, Shield, Clock, Globe, Monitor } from "lucide-react";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 interface AuditLog {
   id: string;
