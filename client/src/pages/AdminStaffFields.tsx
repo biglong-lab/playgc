@@ -38,6 +38,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Building2, Plus, Pencil, MapPin, Phone, Mail, Lock, Unlock, AlertTriangle } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { fetchWithAdminAuth } from "./admin-staff/types";
 
 interface AdminInfo {
   systemRole: string;
