@@ -2,6 +2,7 @@ name: Deploy
 
 # 手動觸發部署 - 配合嚴格部署控制規則
 # 指令：gh workflow run deploy.yml -f confirm=yes
+# 指定方式：gh workflow run deploy.yml -f confirm=yes -f method=coolify
 on:
   workflow_dispatch:
     inputs:
@@ -9,6 +10,14 @@ on:
         description: '確認部署（輸入 yes）'
         required: true
         type: string
+      method:
+        description: '部署方式'
+        required: false
+        type: choice
+        default: 'docker-ssh'
+        options:
+          - docker-ssh
+          - coolify
 
 permissions:
   contents: read
@@ -38,23 +47,53 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
 
-  deploy:
-    name: 部署到生產環境
+  deploy-docker-ssh:
+    name: 部署（Docker SSH）
     runs-on: ubuntu-latest
     needs: validate
+    if: ${{ github.event.inputs.method == 'docker-ssh' }}
     environment: production
     steps:
-      - uses: actions/checkout@v4
+      - name: 透過 SSH 部署到伺服器
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd ${{ secrets.DEPLOY_PATH || '/www/wwwroot/gameplatform' }}
+            echo "📦 拉取最新程式碼..."
+            git pull origin main
+            echo "🐳 重新建置並啟動容器..."
+            docker compose -f docker-compose.prod.yml up -d --build
+            echo "⏳ 等待健康檢查..."
+            sleep 10
+            echo "🔍 檢查服務狀態..."
+            curl -sf http://localhost:3333/health && echo "✅ 部署成功！" || echo "❌ 健康檢查失敗"
 
-      - name: 部署（待配置）
+  deploy-coolify:
+    name: 部署（Coolify Webhook）
+    runs-on: ubuntu-latest
+    needs: validate
+    if: ${{ github.event.inputs.method == 'coolify' }}
+    environment: production
+    steps:
+      - name: 觸發 Coolify 部署
         run: |
-          echo "✅ 驗證通過，開始部署..."
-          echo "⚠️ 部署目標尚未配置，請根據實際環境設定部署步驟"
-          echo "  建議選項："
-          echo "  - Docker 映像推送"
-          echo "  - SSH 遠端部署"
-          echo "  - 雲端平台 API 部署（Vercel / Railway / Fly.io）"
+          echo "🚀 觸發 Coolify webhook..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}")
+          if [ "$response" = "200" ] || [ "$response" = "201" ]; then
+            echo "✅ Coolify 部署已觸發"
+          else
+            echo "❌ Coolify webhook 回傳 HTTP $response"
+            exit 1
+          fi
 
   rejected:
     name: 部署已拒絕
