@@ -112,9 +112,11 @@
 - [x] **Git 分支合併**：已合併完成，main 分支同步（2026-03-20）
 - [x] **AdminSettings 儲存功能**：前後端完整實作（GET + PATCH /api/admin/settings，Zod 驗證，fields.settings jsonb 儲存）
 
+#### 🟡 已完成
+- [x] **管理端 useAdminAuth 一致性**：10 個管理端頁面全部加入 `enabled: isAuthenticated` 條件（AdminLeaderboard、AdminSettings、AdminStaffQRCodes、AdminStaffPlayers、AdminStaffAuditLogs、AdminStaffAccounts、AdminStaffRoles、AdminSessions、AdminStaffFields、AdminStaffDashboard）
+
 #### 🟡 待處理
 - [ ] **Google 登入修復**：本地 Google OAuth popup 無法使用，需設定 Google Cloud Console（正式環境可能正常，已有 Email/Dev 登入替代）
-- [ ] **管理端排行榜** `useAdminAuth` 一致性：加入 `enabled: isAuthenticated` 條件
 
 #### 🟢 可選優化
 - [ ] 對戰系統：實際水彈對戰流程 E2E 測試（場地→報名→配對→開戰→記錄→排名）
