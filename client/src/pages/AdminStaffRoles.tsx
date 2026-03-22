@@ -117,6 +117,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function AdminStaffRoles() {
+  const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -130,6 +131,7 @@ export default function AdminStaffRoles() {
   const { data: roles, isLoading: rolesLoading } = useQuery<Role[]>({
     queryKey: ["/api/admin/roles"],
     queryFn: () => fetchWithAdminAuth("/api/admin/roles"),
+    enabled: isAuthenticated,
   });
 
   const { data: permissions } = useQuery<Permission[]>({
