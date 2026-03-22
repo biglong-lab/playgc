@@ -16,6 +16,7 @@ import {
   Settings, Wifi, Radio, Gamepad2, Users, Clock,
   Save, RefreshCw, CheckCircle, AlertTriangle, Database,
 } from "lucide-react";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 interface MqttStatus {
   connected: boolean;
