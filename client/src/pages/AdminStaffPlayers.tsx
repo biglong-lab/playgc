@@ -60,11 +60,13 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 export default function AdminStaffPlayers() {
+  const { isAuthenticated } = useAdminAuth();
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
     queryFn: () => fetchWithAdminAuth("/api/admin/users"),
+    enabled: isAuthenticated,
   });
 
   const filteredUsers = users?.filter((user) => {
