@@ -31,20 +31,6 @@ export interface StaffGame {
   field?: Field | null;
 }
 
-// 帶認證的 fetch 封裝
-async function fetchWithAdminAuth(url: string, options: RequestInit = {}) {
-  const headers = {
-    ...options.headers,
-    "Content-Type": "application/json",
-  };
-  const response = await fetch(url, { ...options, headers, credentials: "include" });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message || "Request failed");
-  }
-  return response.json();
-}
-
 export interface AdminStaffGamesReturn {
   // 資料
   games: StaffGame[];
