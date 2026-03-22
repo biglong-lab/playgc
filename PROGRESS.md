@@ -108,13 +108,12 @@
 
 ### 待處理 / 下一步推展
 
-#### 🔴 立即處理
-- [ ] **Git 分支合併**：local 與 remote 已分叉（64 vs 75 commits），需 merge 後才能 push
-- [ ] **Google 登入修復**：本地 Google OAuth popup 無法使用，需設定 Google Cloud Console（正式環境可能正常）
+#### 🔴 已解決
+- [x] **Git 分支合併**：已合併完成，main 分支同步（2026-03-20）
+- [x] **AdminSettings 儲存功能**：前後端完整實作（GET + PATCH /api/admin/settings，Zod 驗證，fields.settings jsonb 儲存）
 
-#### 🟡 功能完善
-- [ ] **AdminSettings 儲存功能**：目前只是 UI，後端 API 尚未實作（設定值存到 DB）
-- [ ] **系統設定 API**：`POST /api/admin/settings` — 儲存預設遊戲時間/最大玩家數/閒置超時等
+#### 🟡 待處理
+- [ ] **Google 登入修復**：本地 Google OAuth popup 無法使用，需設定 Google Cloud Console（正式環境可能正常，已有 Email/Dev 登入替代）
 - [ ] **管理端排行榜** `useAdminAuth` 一致性：加入 `enabled: isAuthenticated` 條件
 
 #### 🟢 可選優化
