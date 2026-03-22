@@ -31,11 +31,13 @@ interface SystemSettings {
 }
 
 export default function AdminSettings() {
+  const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
 
   // 載入設定
   const { data: settings, isLoading: settingsLoading } = useQuery<SystemSettings>({
     queryKey: ["/api/admin/settings"],
+    enabled: isAuthenticated,
   });
 
   // 表單狀態
