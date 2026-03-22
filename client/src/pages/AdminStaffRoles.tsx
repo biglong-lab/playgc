@@ -35,6 +35,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Key, Plus, Pencil, Trash2, Shield, Crown, Users, Wrench, Eye } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { fetchWithAdminAuth } from "./admin-staff/types";
 import {
   AlertDialog,
   AlertDialogAction,
