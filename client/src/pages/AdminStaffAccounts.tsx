@@ -10,8 +10,10 @@ import { fetchWithAdminAuth, createEmptyFormData } from "./admin-staff/types";
 import { AccountFormDialog } from "./admin-staff/AccountFormDialog";
 import { AccountTable } from "./admin-staff/AccountTable";
 import { ResetPasswordDialog, ApproveAccountDialog } from "./admin-staff/AccountActionDialogs";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 export default function AdminStaffAccounts() {
+  const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<AdminAccount | null>(null);
