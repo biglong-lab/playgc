@@ -79,7 +79,8 @@ function isEmbeddedBrowser(): boolean {
 }
 
 export async function signInWithGoogle() {
-  const useRedirect = isEmbeddedBrowser();
+  const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const useRedirect = isEmbeddedBrowser() || isLocalhost;
 
   try {
     if (useRedirect) {
@@ -101,7 +102,11 @@ export async function signInWithGoogle() {
     } else if (code === "auth/popup-closed-by-user") {
       throw new Error("登入視窗已關閉");
     } else if (code === "auth/unauthorized-domain") {
-      throw new Error(`此網域未授權使用 Firebase：${window.location.hostname}`);
+      throw new Error(
+        isLocalhost
+          ? "本地開發需在 Google Cloud Console 授權 localhost。建議使用 Email 登入或 Dev 快速登入。"
+          : `此網域未授權使用 Firebase：${window.location.hostname}`
+      );
     } else if (code === "auth/operation-not-allowed") {
       throw new Error("Google 登入未啟用");
     } else if (code === "auth/cancelled-popup-request") {
