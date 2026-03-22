@@ -71,18 +71,15 @@ export async function isAuthenticated(
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    console.log("[AUTH] 請求無 Authorization header:", req.path);
     return res.status(401).json({ message: "Unauthorized" });
   }
 
   const idToken = authHeader.split("Bearer ")[1];
-  console.log("[AUTH] 收到 token, 長度:", idToken.length, "路徑:", req.path);
 
   try {
     const decodedToken = await verifyFirebaseToken(idToken);
 
     if (!decodedToken) {
-      console.log("[AUTH] Token 無效, 路徑:", req.path);
       return res.status(401).json({ message: "Invalid token" });
     }
 
