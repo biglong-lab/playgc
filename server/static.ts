@@ -12,8 +12,12 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // SPA fallback — 只對非檔案路徑回傳 index.html
+  // 排除 API 路由和靜態檔案（robots.txt、sitemap.xml 等）
+  app.use("*", (req, res) => {
+    const url = req.originalUrl || req.url;
+    // API 路徑不 fallback
+    if (url.startsWith("/api/")) return res.status(404).json({ message: "Not found" });
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
