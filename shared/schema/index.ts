@@ -30,3 +30,4 @@ export * from "./platform-plans";
 export * from "./platform-features";
 export * from "./platform-billing";
 export * from "./platform-admins";
+export * from "./field-applications";

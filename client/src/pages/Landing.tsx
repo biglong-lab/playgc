@@ -158,14 +158,22 @@ export default function Landing() {
           <p className="text-sm text-muted-foreground font-chinese">
             &copy; 2024 賈村競技體驗場. All rights reserved.
           </p>
-          <Link href="/admin/login">
-            <span
-              className="text-xs text-muted-foreground/50 hover:text-muted-foreground cursor-pointer mt-4 inline-block transition-colors"
-              data-testid="link-admin-login"
-            >
-              管理員登入
-            </span>
-          </Link>
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <Link href="/apply">
+              <span className="text-xs text-muted-foreground/70 hover:text-primary cursor-pointer transition-colors">
+                🌐 申請開通場域
+              </span>
+            </Link>
+            <span className="text-muted-foreground/30">·</span>
+            <Link href="/admin/login">
+              <span
+                className="text-xs text-muted-foreground/50 hover:text-muted-foreground cursor-pointer transition-colors"
+                data-testid="link-admin-login"
+              >
+                管理員登入
+              </span>
+            </Link>
+          </div>
         </div>
       </footer>
 

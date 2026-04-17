@@ -39,6 +39,7 @@ import { registerBattleAchievementRoutes } from "./battle-achievements";
 import { registerPlatformRoutes } from "./platform";
 import { registerRevenueRoutes } from "./revenue";
 import { registerFieldRoutes } from "./field";
+import { registerApplicationRoutes } from "./applications";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -97,6 +98,9 @@ export async function registerRoutes(
 
   // 🏢 場域訂閱 / 用量 / 平台費用（Phase 6）
   registerFieldRoutes(app);
+
+  // 📋 場域申請（公開 + 平台審核 Phase 8）
+  registerApplicationRoutes(app);
 
   return httpServer;
 }

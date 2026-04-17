@@ -36,6 +36,7 @@ import {
   Activity,
   Cpu,
   QrCode,
+  Inbox,
 } from "lucide-react";
 
 interface CommandItem {
@@ -86,6 +87,7 @@ const COMMANDS: CommandItem[] = [
   // 🌐 平台層
   { label: "平台儀表板", path: "/platform", icon: Globe, group: "🌐 平台管理", keywords: ["platform"] },
   { label: "所有場域", path: "/platform/fields", icon: Building2, group: "🌐 平台管理", keywords: ["tenant", "field"] },
+  { label: "場域申請審核", path: "/platform/applications", icon: Inbox, group: "🌐 平台管理", keywords: ["application", "apply", "review"] },
   { label: "訂閱方案", path: "/platform/plans", icon: Package, group: "🌐 平台管理", keywords: ["plan", "pricing"] },
   { label: "功能開關", path: "/platform/feature-flags", icon: ToggleLeft, group: "🌐 平台管理", keywords: ["feature", "flag"] },
   { label: "平台營收", path: "/platform/revenue", icon: DollarSign, group: "🌐 平台管理", keywords: ["mrr", "revenue"] },

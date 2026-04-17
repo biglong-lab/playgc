@@ -30,6 +30,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Inbox,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -55,6 +56,7 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     label: "場域與方案",
     items: [
       { label: "場域管理", path: "/platform/fields", icon: Building2 },
+      { label: "場域申請", path: "/platform/applications", icon: Inbox },
       { label: "訂閱方案", path: "/platform/plans", icon: Package },
       { label: "功能開關", path: "/platform/feature-flags", icon: ToggleLeft },
     ],

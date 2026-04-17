@@ -81,6 +81,10 @@ const PlatformFields = lazy(() => import("@/pages/platform/PlatformFields"));
 const PlatformPlans = lazy(() => import("@/pages/platform/PlatformPlans"));
 const PlatformFeatureFlags = lazy(() => import("@/pages/platform/PlatformFeatureFlags"));
 const PlatformRevenue = lazy(() => import("@/pages/platform/PlatformRevenue"));
+const PlatformApplications = lazy(() => import("@/pages/platform/PlatformApplications"));
+
+// 📝 公開申請頁（Phase 8）
+const Apply = lazy(() => import("@/pages/Apply"));
 
 // 💰 財務中心（v4.0 Phase 3）
 const RevenueOverview = lazy(() => import("@/pages/revenue/RevenueOverview"));
@@ -179,6 +183,10 @@ function Router() {
         <Route path="/platform/plans">{() => <ProtectedAdminRoute><PlatformPlans /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/feature-flags">{() => <ProtectedAdminRoute><PlatformFeatureFlags /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/revenue">{() => <ProtectedAdminRoute><PlatformRevenue /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/applications">{() => <ProtectedAdminRoute><PlatformApplications /></ProtectedAdminRoute>}</Route>
+
+        {/* 📝 公開場域申請（Phase 8）*/}
+        <Route path="/apply" component={Apply} />
 
         {/* 🏢 場域總部 / 我的方案（Phase 6）*/}
         <Route path="/admin/field/subscription">{() => <ProtectedAdminRoute><MySubscription /></ProtectedAdminRoute>}</Route>
