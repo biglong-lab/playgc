@@ -1,6 +1,6 @@
 import { type ReactNode } from "react";
 import { useRequireAdminAuth } from "@/hooks/useAdminAuth";
-import { ShieldAlert } from "lucide-react";
+import ForbiddenPage from "./ForbiddenPage";
 
 interface ProtectedAdminRouteProps {
   children: ReactNode;
@@ -8,7 +8,10 @@ interface ProtectedAdminRouteProps {
   requiredPermission?: string;
 }
 
-export default function ProtectedAdminRoute({ children, requiredPermission }: ProtectedAdminRouteProps) {
+export default function ProtectedAdminRoute({
+  children,
+  requiredPermission,
+}: ProtectedAdminRouteProps) {
   const { isLoading, isAuthenticated, hasPermission } = useRequireAdminAuth();
 
   if (isLoading) {
@@ -25,11 +28,11 @@ export default function ProtectedAdminRoute({ children, requiredPermission }: Pr
 
   if (requiredPermission && !hasPermission(requiredPermission)) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4 text-muted-foreground">
-        <ShieldAlert className="w-12 h-12" />
-        <p className="text-lg font-medium">權限不足</p>
-        <p className="text-sm">您沒有存取此頁面的權限</p>
-      </div>
+      <ForbiddenPage
+        description={`此頁面需要「${requiredPermission}」權限`}
+        suggestedPath="/admin"
+        suggestedLabel="返回管理後台"
+      />
     );
   }
 

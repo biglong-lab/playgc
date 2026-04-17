@@ -4,6 +4,8 @@ import { Link, useLocation } from "wouter";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import CommandPalette from "@/components/CommandPalette";
+import AutoBreadcrumb from "@/components/shared/AutoBreadcrumb";
+import ForbiddenPage from "@/components/shared/ForbiddenPage";
 import {
   Sidebar,
   SidebarContent,
@@ -99,14 +101,12 @@ export default function PlatformAdminLayout({ children, title, actions }: Platfo
   const isSuperAdmin = admin.systemRole === "super_admin";
   if (!isSuperAdmin) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-muted-foreground">
-        <Globe className="w-12 h-12" />
-        <p className="text-lg font-medium">需要平台管理員權限</p>
-        <p className="text-sm">此區域僅限平台方使用</p>
-        <Link href="/admin">
-          <a className="text-sm text-blue-600 hover:underline">返回場域管理後台</a>
-        </Link>
-      </div>
+      <ForbiddenPage
+        title="平台管理員專區"
+        description="此區域僅限平台方使用，場域管理員請返回管理後台"
+        suggestedPath="/admin"
+        suggestedLabel="🏢 返回場域管理"
+      />
     );
   }
 
@@ -208,16 +208,19 @@ export default function PlatformAdminLayout({ children, title, actions }: Platfo
 
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="border-b bg-background/95 backdrop-blur sticky top-0 z-10">
-            <div className="flex items-center gap-3 px-4 h-14">
-              <SidebarTrigger />
-              <div className="flex items-center gap-2 flex-1">
-                <Badge variant="secondary" className="bg-blue-100 text-blue-900 border-blue-300">
-                  🌐 平台
-                </Badge>
-                <h1 className="text-lg font-semibold">{title}</h1>
+            <div className="flex flex-col gap-1.5 px-4 pt-2 pb-2">
+              <AutoBreadcrumb className="hidden md:flex" />
+              <div className="flex items-center gap-3 min-h-[36px]">
+                <SidebarTrigger />
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-900 border-blue-300">
+                    🌐 平台
+                  </Badge>
+                  <h1 className="text-lg font-semibold truncate">{title}</h1>
+                </div>
+                {actions}
+                <ThemeToggle />
               </div>
-              {actions}
-              <ThemeToggle />
             </div>
           </header>
           <main className="flex-1 overflow-auto bg-muted/30">

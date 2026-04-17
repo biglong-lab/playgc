@@ -7,6 +7,7 @@ import FieldSelector from "@/components/FieldSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import CommandPalette from "@/components/CommandPalette";
 import FieldOnboardingWizard from "@/components/FieldOnboardingWizard";
+import AutoBreadcrumb from "@/components/shared/AutoBreadcrumb";
 import {
   Sidebar,
   SidebarContent,
@@ -81,36 +82,38 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
         />
 
         <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="h-14 flex items-center justify-between gap-4 px-4 border-b border-border bg-background/95 backdrop-blur shrink-0">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger data-testid="button-sidebar-toggle" />
-              <FieldSelector
-                currentFieldId={admin.fieldId}
-                currentFieldName={admin.fieldName}
-                isSuperAdmin={isSuperAdmin}
-              />
-              <h1 className="font-display font-bold text-lg">{title}</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => {
-                  // 手動觸發 Cmd+K（使用 keyboard event）
-                  const event = new KeyboardEvent("keydown", {
-                    key: "k",
-                    metaKey: true,
-                    ctrlKey: true,
-                    bubbles: true,
-                  });
-                  document.dispatchEvent(event);
-                }}
-                className="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-xs text-muted-foreground bg-muted hover:bg-muted/80 rounded-md border border-border transition-colors"
-                title="快速搜尋 (⌘K)"
-              >
-                <span>🔍 快速跳轉</span>
-                <kbd className="px-1 py-0.5 bg-background rounded text-[10px] font-mono">⌘K</kbd>
-              </button>
-              {actions}
-              <ThemeToggle />
+          <header className="flex flex-col gap-1.5 px-4 pt-2 pb-2 border-b border-border bg-background/95 backdrop-blur shrink-0">
+            <AutoBreadcrumb className="hidden md:flex" />
+            <div className="flex items-center justify-between gap-4 min-h-[36px]">
+              <div className="flex items-center gap-3 min-w-0">
+                <SidebarTrigger data-testid="button-sidebar-toggle" />
+                <FieldSelector
+                  currentFieldId={admin.fieldId}
+                  currentFieldName={admin.fieldName}
+                  isSuperAdmin={isSuperAdmin}
+                />
+                <h1 className="font-display font-bold text-lg truncate">{title}</h1>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const event = new KeyboardEvent("keydown", {
+                      key: "k",
+                      metaKey: true,
+                      ctrlKey: true,
+                      bubbles: true,
+                    });
+                    document.dispatchEvent(event);
+                  }}
+                  className="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-xs text-muted-foreground bg-muted hover:bg-muted/80 rounded-md border border-border transition-colors"
+                  title="快速搜尋 (⌘K)"
+                >
+                  <span>🔍 快速跳轉</span>
+                  <kbd className="px-1 py-0.5 bg-background rounded text-[10px] font-mono">⌘K</kbd>
+                </button>
+                {actions}
+                <ThemeToggle />
+              </div>
             </div>
           </header>
 

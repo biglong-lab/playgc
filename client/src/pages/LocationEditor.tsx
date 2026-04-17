@@ -172,19 +172,32 @@ export default function LocationEditor() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 py-3 space-y-1.5">
+          {/* 🍞 麵包屑 */}
+          <nav className="flex items-center gap-1 text-xs text-muted-foreground">
+            <a href="/admin" className="hover:text-foreground">📊 儀表板</a>
+            <span className="text-muted-foreground/50">›</span>
+            <a href="/admin/games" className="hover:text-foreground">🎮 遊戲管理</a>
+            <span className="text-muted-foreground/50">›</span>
+            <a href={`/admin/games/${gameId}`} className="hover:text-foreground truncate max-w-[120px]">
+              ✏️ {game?.title || "遊戲"}
+            </a>
+            <span className="text-muted-foreground/50">›</span>
+            <span className="text-foreground font-medium">📍 地點編輯</span>
+          </nav>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setPath(`/admin`)}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setPath(`/admin/games/${gameId}`)}
                 data-testid="button-back"
+                title="返回遊戲編輯"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="font-display font-bold text-lg">現場定位設定</h1>
+                <h1 className="font-display font-bold text-lg">📍 現場定位設定</h1>
                 <p className="text-xs text-muted-foreground">{game?.title || "載入中..."}</p>
               </div>
             </div>
