@@ -146,9 +146,34 @@ function AdminSidebar({
       </SidebarHeader>
 
       <SidebarContent>
+        {/* 🌐 平台管理入口（僅 super_admin 可見）*/}
+        {isSuperAdmin && (
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === "/platform" || location.startsWith("/platform/")}
+                    className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 hover:from-blue-100 hover:to-indigo-100 text-blue-900 dark:text-blue-100 font-medium"
+                  >
+                    <Link href="/platform">
+                      <span className="text-base">🌐</span>
+                      <span>前往平台管理</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
         {filteredMenuGroups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+            <SidebarGroupLabel className="flex items-center gap-1.5 font-semibold">
+              {group.emoji && <span className="text-sm">{group.emoji}</span>}
+              <span>{group.label}</span>
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => (

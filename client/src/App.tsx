@@ -76,6 +76,12 @@ const BattleSeasonHistory = lazy(() => import("@/pages/BattleSeasonHistory"));
 // 🌐 SaaS 平台後台（v4.0）
 const PlatformDashboard = lazy(() => import("@/pages/platform/PlatformDashboard"));
 
+// 💰 財務中心（v4.0 Phase 3）
+const RevenueOverview = lazy(() => import("@/pages/revenue/RevenueOverview"));
+const RevenueProducts = lazy(() => import("@/pages/revenue/RevenueProducts"));
+const RevenueCodes = lazy(() => import("@/pages/revenue/RevenueCodes"));
+const RevenueTransactions = lazy(() => import("@/pages/revenue/RevenueTransactions"));
+
 /** 需要登入的對戰路由守衛 */
 function AuthBattleRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -150,6 +156,12 @@ function Router() {
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>
+
+        {/* 💰 財務中心（Phase 3）*/}
+        <Route path="/admin/revenue">{() => <ProtectedAdminRoute><RevenueOverview /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/revenue/products">{() => <ProtectedAdminRoute><RevenueProducts /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/revenue/codes">{() => <ProtectedAdminRoute><RevenueCodes /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/revenue/transactions">{() => <ProtectedAdminRoute><RevenueTransactions /></ProtectedAdminRoute>}</Route>
 
         {/* /admin-staff/* 向後兼容 — 重導向到 /admin/* */}
         <Route path="/admin-staff">{() => <Redirect to="/admin/login" />}</Route>

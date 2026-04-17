@@ -132,6 +132,25 @@ export default function PlatformAdminLayout({ children, title, actions }: Platfo
           </SidebarHeader>
 
           <SidebarContent>
+            {/* 🏢 返回場域管理入口 */}
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      className="bg-gradient-to-r from-violet-50 to-rose-50 dark:from-violet-950/30 dark:to-rose-950/30 hover:from-violet-100 hover:to-rose-100 text-violet-900 dark:text-violet-100 font-medium"
+                    >
+                      <Link href="/admin">
+                        <span className="text-base">🏢</span>
+                        <span>返回場域管理</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
             {PLATFORM_MENU_GROUPS.map((group) => (
               <SidebarGroup key={group.label}>
                 <SidebarGroupLabel>{group.label}</SidebarGroupLabel>

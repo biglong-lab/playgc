@@ -1,5 +1,5 @@
-// 管理端統一菜單配置
-// 所有管理頁面的菜單定義集中在此，依權限動態過濾
+// 管理端統一菜單配置 v2.0（SaaS 重構 Phase 2）
+// 五大中心分組 + 向後相容保留所有現有路徑
 import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
@@ -21,8 +21,8 @@ import {
   Swords,
   MapPin,
   Clock,
-  Medal,
   Calendar,
+  DollarSign,
 } from "lucide-react";
 
 export interface AdminMenuItem {
@@ -35,37 +35,52 @@ export interface AdminMenuItem {
 
 export interface AdminMenuGroup {
   label: string;
+  /** 視覺標記（emoji），讓不同分組一眼辨識 */
+  emoji?: string;
+  /** 主色（Tailwind 色系，影響分組 label 顏色） */
+  accentColor?: string;
   items: AdminMenuItem[];
 }
 
-/** 統一菜單定義（6 組 17 項） */
+/** 統一菜單定義 — 五大中心 + 系統記錄 */
 export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
+  // ═══════════════════════════════════════════════
+  // 📊 系統總覽
+  // ═══════════════════════════════════════════════
   {
     label: "系統總覽",
+    emoji: "📊",
+    accentColor: "slate",
     items: [
       { title: "儀表板", icon: LayoutDashboard, path: "/admin", permission: null },
-    ],
-  },
-  {
-    label: "場域營運",
-    items: [
-      { title: "遊戲管理", icon: Gamepad2, path: "/admin/games", permission: "game:view" },
-      { title: "模組庫", icon: Library, path: "/admin/templates", permission: "game:create" },
-      { title: "進行中場次", icon: Activity, path: "/admin/sessions", permission: "game:view" },
-      { title: "票券/收款", icon: Ticket, path: "/admin/tickets", permission: "game:view" },
-      { title: "設備管理", icon: Cpu, path: "/admin/devices", permission: "game:view" },
-      { title: "QR Code", icon: QrCode, path: "/admin/qrcodes", permission: "qr:generate" },
-    ],
-  },
-  {
-    label: "數據與排行",
-    items: [
       { title: "數據分析", icon: BarChart3, path: "/admin/analytics", permission: "game:view" },
       { title: "排行榜", icon: Trophy, path: "/admin/leaderboard", permission: "game:view" },
     ],
   },
+
+  // ═══════════════════════════════════════════════
+  // 🎮 遊戲中心
+  // ═══════════════════════════════════════════════
   {
-    label: "水彈對戰",
+    label: "遊戲中心",
+    emoji: "🎮",
+    accentColor: "violet",
+    items: [
+      { title: "遊戲管理", icon: Gamepad2, path: "/admin/games", permission: "game:view" },
+      { title: "模組庫", icon: Library, path: "/admin/templates", permission: "game:create" },
+      { title: "進行中場次", icon: Activity, path: "/admin/sessions", permission: "game:view" },
+      { title: "設備管理", icon: Cpu, path: "/admin/devices", permission: "game:view" },
+      { title: "QR Code 發布", icon: QrCode, path: "/admin/qrcodes", permission: "qr:generate" },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════
+  // ⚔️ 對戰中心
+  // ═══════════════════════════════════════════════
+  {
+    label: "對戰中心",
+    emoji: "⚔️",
+    accentColor: "rose",
     items: [
       { title: "對戰儀表板", icon: Swords, path: "/admin/battle/dashboard", permission: "game:view" },
       { title: "場地管理", icon: MapPin, path: "/admin/battle/venues", permission: "game:view" },
@@ -74,26 +89,38 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { title: "賽季管理", icon: Calendar, path: "/admin/battle/seasons", permission: "game:view" },
     ],
   },
+
+  // ═══════════════════════════════════════════════
+  // 💰 財務中心（Phase 3 建置中）
+  // ═══════════════════════════════════════════════
   {
-    label: "場域設定",
+    label: "財務中心",
+    emoji: "💰",
+    accentColor: "emerald",
+    items: [
+      { title: "營收總覽", icon: DollarSign, path: "/admin/revenue", permission: "game:view" },
+      { title: "商品管理", icon: Library, path: "/admin/revenue/products", permission: "game:view" },
+      { title: "兌換碼中心", icon: Ticket, path: "/admin/revenue/codes", permission: "game:view" },
+      { title: "交易記錄", icon: Activity, path: "/admin/revenue/transactions", permission: "game:view" },
+      // 退款管理、金流設定 — Phase 3 後續加入
+    ],
+  },
+
+  // ═══════════════════════════════════════════════
+  // 🏢 場域總部
+  // ═══════════════════════════════════════════════
+  {
+    label: "場域總部",
+    emoji: "🏢",
+    accentColor: "blue",
     items: [
       { title: "場域基本資料", icon: Building2, path: "/admin/fields", permission: "field:manage" },
       { title: "場域進階設定", icon: Sliders, path: "/admin/field-settings", permission: "field:manage" },
-      { title: "系統設定", icon: Settings, path: "/admin/settings", permission: "field:manage" },
-    ],
-  },
-  {
-    label: "權限管理",
-    items: [
       { title: "角色管理", icon: Key, path: "/admin/roles", permission: "user:manage_roles" },
       { title: "管理員帳號", icon: UserCog, path: "/admin/accounts", permission: "admin:manage_accounts" },
       { title: "玩家管理", icon: Users, path: "/admin/players", permission: "user:view" },
-    ],
-  },
-  {
-    label: "系統記錄",
-    items: [
       { title: "操作記錄", icon: FileText, path: "/admin/audit-logs", permission: "admin:view_audit" },
+      { title: "系統設定", icon: Settings, path: "/admin/settings", permission: "field:manage" },
     ],
   },
 ];
