@@ -16,9 +16,73 @@
 
 ## 目前狀態
 
-**最後更新**: 2026-04-13
+**最後更新**: 2026-04-18
 **分支**: main
-**Git 狀態**: 已提交，待推送（local 64 commits ahead，remote 75 commits ahead — 需 merge）
+**Git 狀態**: 已推送 + 已部署到 `game.homi.cc`
+
+---
+
+## 🎉 2026-04-18 — SaaS 多租戶重構完成（8 階段 + 導航優化）
+
+### 重構目的
+原系統三大功能（遊戲 / 對戰 / 收費）耦合混亂、收費藏在遊戲設定內、管理端側邊欄擁擠。
+重構後成為真正的 **SaaS 平台**，賈村只是第一個租戶，未來可開放給更多場域使用。
+
+### 完成階段（9 個乾淨 Commit，全部已上線）
+
+| Phase | 內容 | Commit |
+|-------|------|--------|
+| **Phase 1** | SaaS 基礎層（7 張平台表 + 認證 + 儀表板） | `136e1b5` |
+| **Phase 2** | 管理端三中心重組（五大分組 emoji） | `f3b28a0` |
+| **Phase 3** | 財務中心擴建（營收/商品/兌換碼/交易） | `f3b28a0` |
+| **Phase 4** | 玩家端三世界（會員中心 + 底部 nav + 統一結帳） | `c1576f1` |
+| **Phase 5** | 平台後台（場域/方案/旗標/營收） | `0e5f41b` |
+| **Phase 6** | SaaS 計費引擎（用量/抽成/訂閱帳單） | `880cb62` |
+| **Phase 7** | 打磨與引導（空狀態/骨架屏/Cmd+K/Onboarding） | `36efb75` |
+| **Phase 8** | 公開場域申請（/apply + 審核 + 自動開通） | `2fd87c7` |
+| **導航優化** | 麵包屑 + 返回 + 403 頁面 | `08191c7` |
+
+### 新增統計
+- **8 張 SaaS 新表**：platform_plans、field_subscriptions、platform_transactions、platform_feature_flags、field_feature_overrides、field_usage_meters、platform_admins、field_applications
+- **35+ 新 API 端點**：/api/platform/*、/api/revenue/*、/api/field/*、/api/apply
+- **18+ 新頁面**：平台後台 7 頁 + 財務中心 4 頁 + 玩家會員中心 + 我的方案 + 公開申請 + 審核 + 更多
+- **10+ 共用元件**：EmptyState、LoadingSkeleton、CommandPalette、OnboardingWizard、AutoBreadcrumb、BackButton、PageHeader、ForbiddenPage、PlatformAdminLayout、PlayerBottomNav
+
+### SaaS 商業模式上線
+- **🆓 Free**：NT$ 0／月，3 款遊戲 / 100 次結帳 / 5% 抽成
+- **💼 Pro**：NT$ 1,999／月，無限遊戲 / 1000 次結帳 / 3% 抽成 / 水彈對戰
+- **🚀 Enterprise**：NT$ 9,999／月，白牌 + 自訂網域 + API / 1% 抽成
+- **🤝 RevShare**：無月費 / 15% 抽成（戰略合作）
+- 賈村自動指派 Pro 方案
+
+### SaaS 完整閉環
+```
+公開申請 /apply → 平台審核 /platform/applications
+  → 自動建立場域 + 訂閱
+  → 場域管理員登入看到 FieldOnboardingWizard
+  → 使用五大中心（遊戲/對戰/財務/場域總部/總覽）
+  → 「我的方案」看到本月用量 + 平台費用
+  → Cmd+K 全站搜尋跳轉
+```
+
+### 導航與引導通盤優化（8 項改善）
+1. ✅ **麵包屑**：40+ 頁面中央配置 + AutoBreadcrumb 自動產生
+2. ✅ **返回按鈕**：BackButton 智慧返回（history → 父層 → 首頁）
+3. ✅ **頁面標題**：PageHeader 統一組合（麵包屑+標題+返回+動作）
+4. ✅ **403 頁面**：ForbiddenPage 統一（含兩層引導）
+5. ✅ **Cmd+K 快捷**：30+ 管理頁面分類搜尋
+6. ✅ **LocationEditor 麵包屑**：深層編輯不迷路
+7. ✅ **Platform 權限引導**：非 super_admin 返回場域後台
+8. ✅ **五大中心 Emoji**：📊🎮⚔️💰🏢 一眼分辨
+
+### 生產環境驗證
+- **正式站**：`https://game.homi.cc`
+- **SaaS 表**：7 平台表 + 1 申請表 已 apply
+- **Seed 完成**：4 方案 + 6 功能旗標 + 賈村 Pro 訂閱
+- **API 驗證**：POST /api/apply 生產測試通過
+- **所有現有功能**：100% 保留，無破壞
+
+---
 
 ### 已完成功能
 
