@@ -79,12 +79,13 @@ export function registerAuthRoutes(app: Express) {
           where: eq(adminAccounts.firebaseUserId, firebaseUserId),
         });
 
-        // 若找不到但有 email 匹配且 firebaseUserId 為空，自動綁定
+        // 若找不到但有 email 匹配，自動綁定或重新綁定（Firebase 已驗證 email）
         if (!adminAccount && firebaseEmail) {
           const emailMatch = await db.query.adminAccounts.findFirst({
             where: eq(adminAccounts.email, firebaseEmail),
           });
-          if (emailMatch && !emailMatch.firebaseUserId && emailMatch.status === "active") {
+          if (emailMatch && emailMatch.status === "active") {
+            // 即使已有 firebase_user_id 也允許更新（支援多裝置/多登入方式切換）
             await db.update(adminAccounts)
               .set({ firebaseUserId, displayName: firebaseDisplayName || emailMatch.displayName })
               .where(eq(adminAccounts.id, emailMatch.id));
@@ -130,7 +131,7 @@ export function registerAuthRoutes(app: Express) {
         });
       }
 
-      // 若找不到帳號但有 email 匹配且 firebaseUserId 為空，自動綁定
+      // 若找不到帳號但有 email 匹配，自動綁定或重新綁定（Firebase 已驗證 email）
       if (!adminAccount && firebaseEmail) {
         const emailMatch = await db.query.adminAccounts.findFirst({
           where: and(
@@ -138,7 +139,8 @@ export function registerAuthRoutes(app: Express) {
             eq(adminAccounts.fieldId, field.id),
           ),
         });
-        if (emailMatch && !emailMatch.firebaseUserId && emailMatch.status === "active") {
+        if (emailMatch && emailMatch.status === "active") {
+          // 即使已有 firebase_user_id 也允許更新（支援多裝置/多登入方式切換）
           await db.update(adminAccounts)
             .set({ firebaseUserId, displayName: firebaseDisplayName || emailMatch.displayName })
             .where(eq(adminAccounts.id, emailMatch.id));
@@ -295,6 +297,119 @@ export function registerAuthRoutes(app: Express) {
       }
     });
   }
+
+  // 🔑 平台擁有者緊急登入（生產環境可用）
+  // 用途：當 Google OAuth 網域未配置時，平台擁有者仍能登入
+  // 安全：需帶 X-Platform-Secret header（設定於環境變數 PLATFORM_OWNER_SECRET），且限定 email
+  app.post("/api/auth/platform-owner-login", async (req, res) => {
+    try {
+      const secret = req.headers["x-platform-secret"] as string | undefined;
+      const configuredSecret = process.env.PLATFORM_OWNER_SECRET;
+      const ownerEmail = process.env.PLATFORM_OWNER_EMAIL;
+
+      if (!configuredSecret || !ownerEmail) {
+        return res.status(503).json({
+          message: "平台擁有者登入未設定（需環境變數 PLATFORM_OWNER_SECRET + PLATFORM_OWNER_EMAIL）",
+        });
+      }
+      if (!secret || secret !== configuredSecret) {
+        return res.status(403).json({ message: "密鑰錯誤" });
+      }
+
+      // 找平台擁有者帳號（以 email + super_admin 為條件）
+      const ownerAccount = await db.query.adminAccounts.findFirst({
+        where: eq(adminAccounts.email, ownerEmail),
+      });
+      if (!ownerAccount) {
+        return res.status(404).json({ message: `找不到平台擁有者帳號 ${ownerEmail}` });
+      }
+
+      const ownerRole = ownerAccount.roleId
+        ? await db.query.roles.findFirst({ where: eq(roles.id, ownerAccount.roleId) })
+        : null;
+
+      if (ownerRole?.systemRole !== "super_admin") {
+        return res.status(403).json({ message: "該帳號非 super_admin" });
+      }
+
+      const field = await db.query.fields.findFirst({
+        where: eq(fields.id, ownerAccount.fieldId),
+      });
+      if (!field) {
+        return res.status(404).json({ message: "場域資料異常" });
+      }
+
+      // 取得權限（super_admin 有全權限）
+      const permissionKeys = await getAdminPermissions(ownerAccount.roleId);
+
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      const sessionSecret = process.env.SESSION_SECRET;
+      if (!sessionSecret) {
+        return res.status(500).json({ message: "伺服器設定錯誤" });
+      }
+
+      const token = jwt.sign(
+        {
+          sub: ownerAccount.id,
+          fieldId: field.id,
+          roleId: ownerAccount.roleId,
+          type: "admin",
+        },
+        sessionSecret,
+        { expiresIn: "24h" }
+      );
+
+      await db.insert(adminSessions).values({
+        adminAccountId: ownerAccount.id,
+        token,
+        ipAddress: req.ip || null,
+        userAgent: req.headers["user-agent"] || null,
+        expiresAt,
+      });
+
+      await db
+        .update(adminAccounts)
+        .set({ lastLoginAt: now, lastLoginIp: req.ip })
+        .where(eq(adminAccounts.id, ownerAccount.id));
+
+      await logAuditAction({
+        actorAdminId: ownerAccount.id,
+        action: "admin:platform_owner_login",
+        targetType: "admin",
+        targetId: ownerAccount.id,
+        fieldId: field.id,
+        metadata: { method: "owner-secret" },
+        ipAddress: req.ip || undefined,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.cookie("adminToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      res.json({
+        success: true,
+        admin: {
+          id: ownerAccount.id,
+          accountId: ownerAccount.id,
+          fieldId: field.id,
+          fieldCode: field.code,
+          fieldName: field.name,
+          displayName: ownerAccount.displayName,
+          roleId: ownerAccount.roleId,
+          systemRole: "super_admin",
+          permissions: permissionKeys,
+        },
+      });
+    } catch (error) {
+      console.error("[platform-owner-login]", error);
+      res.status(500).json({ message: "登入失敗" });
+    }
+  });
 
   app.post("/api/admin/logout", requireAdminAuth, async (req, res) => {
     try {
