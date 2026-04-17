@@ -86,6 +86,9 @@ const PlatformApplications = lazy(() => import("@/pages/platform/PlatformApplica
 // 📝 公開申請頁（Phase 8）
 const Apply = lazy(() => import("@/pages/Apply"));
 
+// 🔑 平台擁有者緊急登入
+const OwnerLogin = lazy(() => import("@/pages/OwnerLogin"));
+
 // 💰 財務中心（v4.0 Phase 3）
 const RevenueOverview = lazy(() => import("@/pages/revenue/RevenueOverview"));
 const RevenueProducts = lazy(() => import("@/pages/revenue/RevenueProducts"));
@@ -187,6 +190,9 @@ function Router() {
 
         {/* 📝 公開場域申請（Phase 8）*/}
         <Route path="/apply" component={Apply} />
+
+        {/* 🔑 平台擁有者緊急登入（OAuth 未配置時使用）*/}
+        <Route path="/owner-login" component={OwnerLogin} />
 
         {/* 🏢 場域總部 / 我的方案（Phase 6）*/}
         <Route path="/admin/field/subscription">{() => <ProtectedAdminRoute><MySubscription /></ProtectedAdminRoute>}</Route>
