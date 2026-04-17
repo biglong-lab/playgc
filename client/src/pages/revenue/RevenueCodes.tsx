@@ -4,10 +4,12 @@ import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
+import EmptyState from "@/components/shared/EmptyState";
+import { ListSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Ticket, Loader2, ExternalLink } from "lucide-react";
+import { Ticket, ExternalLink } from "lucide-react";
 
 interface CodeRow {
   code: {
@@ -48,21 +50,14 @@ export default function RevenueCodes() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
+          <ListSkeleton count={5} />
         ) : !data?.codes?.length ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Ticket className="w-12 h-12 mx-auto mb-3 opacity-40" />
-              <p className="mb-4">尚無兌換碼</p>
-              <p className="text-sm">
-                前往遊戲管理為特定遊戲建立兌換碼
-                <br />
-                Phase 3 後續會支援跨遊戲直接建立
-              </p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Ticket}
+            title="尚無兌換碼"
+            description="前往遊戲管理為特定遊戲建立兌換碼。Phase 3 後續會支援跨遊戲直接建立。"
+            actions={[{ label: "前往遊戲管理", href: "/admin/games" }]}
+          />
         ) : (
           <Card>
             <CardContent className="p-0">

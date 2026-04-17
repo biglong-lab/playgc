@@ -5,6 +5,8 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { ADMIN_MENU_GROUPS, SYSTEM_ROLE_LABELS, filterMenuByPermissions } from "@/config/admin-menu";
 import FieldSelector from "@/components/FieldSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import CommandPalette from "@/components/CommandPalette";
+import FieldOnboardingWizard from "@/components/FieldOnboardingWizard";
 import {
   Sidebar,
   SidebarContent,
@@ -90,6 +92,23 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
               <h1 className="font-display font-bold text-lg">{title}</h1>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  // 手動觸發 Cmd+K（使用 keyboard event）
+                  const event = new KeyboardEvent("keydown", {
+                    key: "k",
+                    metaKey: true,
+                    ctrlKey: true,
+                    bubbles: true,
+                  });
+                  document.dispatchEvent(event);
+                }}
+                className="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-xs text-muted-foreground bg-muted hover:bg-muted/80 rounded-md border border-border transition-colors"
+                title="快速搜尋 (⌘K)"
+              >
+                <span>🔍 快速跳轉</span>
+                <kbd className="px-1 py-0.5 bg-background rounded text-[10px] font-mono">⌘K</kbd>
+              </button>
               {actions}
               <ThemeToggle />
             </div>
@@ -100,6 +119,8 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
           </main>
         </div>
       </div>
+      <CommandPalette />
+      <FieldOnboardingWizard />
     </SidebarProvider>
   );
 }

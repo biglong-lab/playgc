@@ -3,6 +3,7 @@
 import { Link, useLocation } from "wouter";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import CommandPalette from "@/components/CommandPalette";
 import {
   Sidebar,
   SidebarContent,
@@ -222,6 +223,7 @@ export default function PlatformAdminLayout({ children, title, actions }: Platfo
           </main>
         </div>
       </div>
+      <CommandPalette />
     </SidebarProvider>
   );
 }

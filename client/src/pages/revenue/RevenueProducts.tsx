@@ -5,11 +5,13 @@ import { apiRequest } from "@/lib/queryClient";
 import { Link } from "wouter";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
+import EmptyState from "@/components/shared/EmptyState";
+import { ListSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Gamepad2, Swords, ExternalLink, Package } from "lucide-react";
+import { Gamepad2, Swords, ExternalLink, Package } from "lucide-react";
 
 interface Product {
   id: string;
@@ -66,16 +68,17 @@ export default function RevenueProducts() {
         </Tabs>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
+          <ListSkeleton count={6} />
         ) : !data?.products?.length ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Package className="w-12 h-12 mx-auto mb-3 opacity-40" />
-              <p>尚無商品</p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Package}
+            title="尚無商品"
+            description="建立第一個遊戲或對戰場地後，會自動出現在這裡"
+            actions={[
+              { label: "建立遊戲", href: "/admin/games" },
+              { label: "建立對戰場地", href: "/admin/battle/venues", variant: "outline" },
+            ]}
+          />
         ) : (
           <Card>
             <CardContent className="p-0">

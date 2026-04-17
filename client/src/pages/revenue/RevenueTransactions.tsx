@@ -4,10 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
+import EmptyState from "@/components/shared/EmptyState";
+import { ListSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Receipt, Loader2, Gamepad2, Swords } from "lucide-react";
+import { Receipt, Gamepad2, Swords } from "lucide-react";
 
 interface Transaction {
   id: string;
@@ -64,16 +66,13 @@ export default function RevenueTransactions() {
         </Tabs>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
+          <ListSkeleton count={6} />
         ) : !data?.transactions?.length ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Receipt className="w-12 h-12 mx-auto mb-3 opacity-40" />
-              <p>尚無交易記錄</p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Receipt}
+            title="尚無交易記錄"
+            description="當玩家購買遊戲或報名對戰時，交易會在這裡顯示"
+          />
         ) : (
           <Card>
             <CardContent className="p-0">
