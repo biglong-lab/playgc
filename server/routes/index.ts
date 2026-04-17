@@ -36,6 +36,7 @@ import { registerAdminBattleRoutes } from "./admin-battle";
 import { registerAdminBattleSeasonRoutes } from "./admin-battle-seasons";
 import { registerBattleSeasonRoutes } from "./battle-seasons";
 import { registerBattleAchievementRoutes } from "./battle-achievements";
+import { registerPlatformRoutes } from "./platform";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -85,6 +86,9 @@ export async function registerRoutes(
   registerAdminBattleSeasonRoutes(app);
   registerBattleSeasonRoutes(app);
   registerBattleAchievementRoutes(app);
+
+  // 🌐 SaaS 平台層（Phase 1 基礎）
+  registerPlatformRoutes(app);
 
   return httpServer;
 }

@@ -73,6 +73,9 @@ const AdminBattleSeasons = lazy(() => import("@/pages/AdminBattleSeasons"));
 const BattleAchievements = lazy(() => import("@/pages/BattleAchievements"));
 const BattleSeasonHistory = lazy(() => import("@/pages/BattleSeasonHistory"));
 
+// 🌐 SaaS 平台後台（v4.0）
+const PlatformDashboard = lazy(() => import("@/pages/platform/PlatformDashboard"));
+
 /** 需要登入的對戰路由守衛 */
 function AuthBattleRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -144,6 +147,9 @@ function Router() {
         <Route path="/admin/battle/slots">{() => <ProtectedAdminRoute><AdminBattleSlots /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/battle/rankings">{() => <ProtectedAdminRoute><AdminBattleRankings /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/battle/seasons">{() => <ProtectedAdminRoute><AdminBattleSeasons /></ProtectedAdminRoute>}</Route>
+
+        {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
+        <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>
 
         {/* /admin-staff/* 向後兼容 — 重導向到 /admin/* */}
         <Route path="/admin-staff">{() => <Redirect to="/admin/login" />}</Route>
