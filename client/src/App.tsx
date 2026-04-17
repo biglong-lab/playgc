@@ -91,6 +91,9 @@ const RevenueTransactions = lazy(() => import("@/pages/revenue/RevenueTransactio
 // 💳 玩家會員中心（v4.0 Phase 4）
 const MeCenter = lazy(() => import("@/pages/me/MeCenter"));
 
+// 🏢 場域總部 — 我的方案（v4.0 Phase 6）
+const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
+
 /** 需要登入的對戰路由守衛 */
 function AuthBattleRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -176,6 +179,9 @@ function Router() {
         <Route path="/platform/plans">{() => <ProtectedAdminRoute><PlatformPlans /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/feature-flags">{() => <ProtectedAdminRoute><PlatformFeatureFlags /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/revenue">{() => <ProtectedAdminRoute><PlatformRevenue /></ProtectedAdminRoute>}</Route>
+
+        {/* 🏢 場域總部 / 我的方案（Phase 6）*/}
+        <Route path="/admin/field/subscription">{() => <ProtectedAdminRoute><MySubscription /></ProtectedAdminRoute>}</Route>
 
         {/* 💰 財務中心（Phase 3）*/}
         <Route path="/admin/revenue">{() => <ProtectedAdminRoute><RevenueOverview /></ProtectedAdminRoute>}</Route>

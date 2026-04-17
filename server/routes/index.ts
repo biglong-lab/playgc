@@ -38,6 +38,7 @@ import { registerBattleSeasonRoutes } from "./battle-seasons";
 import { registerBattleAchievementRoutes } from "./battle-achievements";
 import { registerPlatformRoutes } from "./platform";
 import { registerRevenueRoutes } from "./revenue";
+import { registerFieldRoutes } from "./field";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -93,6 +94,9 @@ export async function registerRoutes(
 
   // 💰 財務中心 Facade（Phase 3）
   registerRevenueRoutes(app);
+
+  // 🏢 場域訂閱 / 用量 / 平台費用（Phase 6）
+  registerFieldRoutes(app);
 
   return httpServer;
 }

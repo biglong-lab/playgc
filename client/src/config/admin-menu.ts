@@ -23,6 +23,7 @@ import {
   Clock,
   Calendar,
   DollarSign,
+  Package,
 } from "lucide-react";
 
 export interface AdminMenuItem {
@@ -114,6 +115,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     emoji: "🏢",
     accentColor: "blue",
     items: [
+      { title: "我的方案", icon: Package, path: "/admin/field/subscription", permission: "field:manage" },
       { title: "場域基本資料", icon: Building2, path: "/admin/fields", permission: "field:manage" },
       { title: "場域進階設定", icon: Sliders, path: "/admin/field-settings", permission: "field:manage" },
       { title: "角色管理", icon: Key, path: "/admin/roles", permission: "user:manage_roles" },
