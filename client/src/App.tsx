@@ -10,6 +10,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedAdminRoute from "@/components/shared/ProtectedAdminRoute";
 import PageLoader from "@/components/shared/PageLoader";
 import OfflineBanner from "@/components/shared/OfflineBanner";
+import PlayerBottomNav from "@/components/PlayerBottomNav";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -29,6 +30,7 @@ const MatchLobby = lazy(() => import("@/pages/MatchLobby"));
 const PurchaseGate = lazy(() => import("@/pages/PurchaseGate"));
 const PurchaseSuccess = lazy(() => import("@/pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
+const Checkout = lazy(() => import("@/pages/Checkout"));
 
 // 水彈對戰 PK 擂台
 const BattleHome = lazy(() => import("@/pages/BattleHome"));
@@ -82,6 +84,9 @@ const RevenueProducts = lazy(() => import("@/pages/revenue/RevenueProducts"));
 const RevenueCodes = lazy(() => import("@/pages/revenue/RevenueCodes"));
 const RevenueTransactions = lazy(() => import("@/pages/revenue/RevenueTransactions"));
 
+// 💳 玩家會員中心（v4.0 Phase 4）
+const MeCenter = lazy(() => import("@/pages/me/MeCenter"));
+
 /** 需要登入的對戰路由守衛 */
 function AuthBattleRoute({ component: Component }: { component: React.ComponentType }) {
   const { user, isLoading } = useAuth();
@@ -108,6 +113,13 @@ function Router() {
         <Route path="/purchase/gate/:gameId" component={PurchaseGate} />
         <Route path="/purchase/success" component={PurchaseSuccess} />
         <Route path="/purchases" component={MyPurchases} />
+
+        {/* 💳 會員中心（v4.0 Phase 4）*/}
+        <Route path="/me" component={MeCenter} />
+        <Route path="/me/purchases">{() => <Redirect to="/purchases" />}</Route>
+
+        {/* 💳 統一結帳頁（v4.0 Phase 4）*/}
+        <Route path="/checkout/:productId" component={Checkout} />
 
         {/* 水彈對戰 PK 擂台 */}
         <Route path="/battle" component={BattleHome} />
@@ -198,6 +210,7 @@ function App() {
               <OfflineBanner isOnline={isOnline} />
               <Toaster />
               <Router />
+              <PlayerBottomNav />
             </TooltipProvider>
           </I18nProvider>
         </AuthProvider>
