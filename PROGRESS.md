@@ -16,7 +16,7 @@
 
 ## 目前狀態
 
-**最後更新**: 2026-03-23
+**最後更新**: 2026-04-13
 **分支**: main
 **Git 狀態**: 已提交，待推送（local 64 commits ahead，remote 75 commits ahead — 需 merge）
 
@@ -129,11 +129,17 @@
 - [x] 232 個 commits 更新成功，所有頁面和 API 正常回應
 
 #### 🟡 待處理（需外部操作）
-- [ ] **Google Cloud Console 設定**：在 OAuth 2.0 Client ID 加入正式網域 `https://game.homi.cc` 和 `http://localhost:3333`
-- [ ] **GitHub Secrets 設定**：設定 DEPLOY_HOST 等 secrets 啟用 CI/CD 自動部署
+- [ ] **Google Cloud Console 設定**（進行中 2026-04-13）：在 OAuth 2.0 Client ID 加入正式網域授權
+  - 專案: `game-eca24`，設定頁: https://console.cloud.google.com/apis/credentials?project=game-eca24
+  - 已授權 JavaScript 來源需加: `https://game.homi.cc` + `http://localhost:3333`
+  - 已授權重新導向 URI 需加: `https://game.homi.cc/__/auth/handler` + `http://localhost:3333/__/auth/handler`
+  - Firebase Console 授權網域需加: `game.homi.cc`
+- [ ] **GitHub Secrets 設定**：設定 DEPLOY_HOST、DEPLOY_SSH_KEY、DEPLOY_PATH 啟用 CI/CD 自動部署
+- [ ] **Google Safe Browsing 申訴**：如 `.cc` 域名仍被擋，到 safebrowsing.google.com 提交誤判
 
 #### 🟢 可選優化
 - [ ] PWA 離線功能驗證
+- [ ] Google Search Console 驗證網站所有權
 - [ ] 測試覆蓋率提升（可補前端元件測試）
 
 ## 工作紀錄
