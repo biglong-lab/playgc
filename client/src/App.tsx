@@ -75,8 +75,12 @@ const AdminBattleSeasons = lazy(() => import("@/pages/AdminBattleSeasons"));
 const BattleAchievements = lazy(() => import("@/pages/BattleAchievements"));
 const BattleSeasonHistory = lazy(() => import("@/pages/BattleSeasonHistory"));
 
-// 🌐 SaaS 平台後台（v4.0）
+// 🌐 SaaS 平台後台（v4.0 Phase 5）
 const PlatformDashboard = lazy(() => import("@/pages/platform/PlatformDashboard"));
+const PlatformFields = lazy(() => import("@/pages/platform/PlatformFields"));
+const PlatformPlans = lazy(() => import("@/pages/platform/PlatformPlans"));
+const PlatformFeatureFlags = lazy(() => import("@/pages/platform/PlatformFeatureFlags"));
+const PlatformRevenue = lazy(() => import("@/pages/platform/PlatformRevenue"));
 
 // 💰 財務中心（v4.0 Phase 3）
 const RevenueOverview = lazy(() => import("@/pages/revenue/RevenueOverview"));
@@ -168,6 +172,10 @@ function Router() {
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/fields">{() => <ProtectedAdminRoute><PlatformFields /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/plans">{() => <ProtectedAdminRoute><PlatformPlans /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/feature-flags">{() => <ProtectedAdminRoute><PlatformFeatureFlags /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/revenue">{() => <ProtectedAdminRoute><PlatformRevenue /></ProtectedAdminRoute>}</Route>
 
         {/* 💰 財務中心（Phase 3）*/}
         <Route path="/admin/revenue">{() => <ProtectedAdminRoute><RevenueOverview /></ProtectedAdminRoute>}</Route>
