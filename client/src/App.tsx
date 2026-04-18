@@ -189,6 +189,8 @@ function Router() {
         <Route path="/platform/feature-flags">{() => <ProtectedAdminRoute><PlatformFeatureFlags /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/revenue">{() => <ProtectedAdminRoute><PlatformRevenue /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/applications">{() => <ProtectedAdminRoute><PlatformApplications /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/analytics">{() => <ProtectedAdminRoute><PlatformAnalytics /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/settings">{() => <ProtectedAdminRoute><PlatformSettingsPage /></ProtectedAdminRoute>}</Route>
 
         {/* 📝 公開場域申請（Phase 8）*/}
         <Route path="/apply" component={Apply} />
