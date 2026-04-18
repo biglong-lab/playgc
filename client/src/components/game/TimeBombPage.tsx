@@ -240,6 +240,26 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
           </div>
         );
 
+      case "swipe": {
+        const dir = currentTask.swipeDirection || "right";
+        return (
+          <div className="text-center space-y-4">
+            <p className="text-lg">{currentTask.question || `快速往${directionLabel(dir)}滑動！`}</p>
+            <div
+              className="mx-auto w-64 h-64 rounded-2xl bg-primary/10 border-2 border-primary flex flex-col items-center justify-center gap-4 select-none touch-none animate-pulse"
+              onTouchStart={handleSwipeStart}
+              onTouchEnd={handleSwipeEnd}
+              onMouseDown={handleSwipeStart}
+              onMouseUp={handleSwipeEnd}
+              data-testid="area-swipe"
+            >
+              <DirectionIcon dir={dir} />
+              <span className="text-sm text-muted-foreground">在此區域往{directionLabel(dir)}滑動</span>
+            </div>
+          </div>
+        );
+      }
+
       default:
         return <p>未知任務類型</p>;
     }
