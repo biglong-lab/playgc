@@ -22,6 +22,67 @@
 
 ---
 
+## 🔓 2026-04-18 下午 — Google Popup 登入修復（COOP 問題）
+
+### 問題現象
+完成平台擁有者緊急登入後，Google OAuth popup 登入仍然失敗，錯誤訊息「登入視窗已關閉」(`auth/popup-closed-by-user`)。
+
+### 診斷過程
+1. **確認基礎設施正常**：Docker 容器 healthy、Firebase 環境變數完整、Platform Owner Secret 已設定
+2. **確認管理員帳號狀態**：`twfam4@gmail.com` 存在但 `firebase_user_id` 為空（待綁定）
+3. **確認 Firebase 授權域名**：`game.homi.cc` 已加入 Authorized domains（由使用者完成）
+4. **伺服器 log 檢查**：登入期間 server log 0 行 → popup 失敗在前端，未到後端
+5. **驗證假設**：無痕視窗測試成功 → 確認是 COOP header + 瀏覽器 cache 問題
+
+### 根因
+`server/index.ts` 的 helmet 預設 `Cross-Origin-Opener-Policy: same-origin`，會阻擋 Firebase OAuth popup 的 `window.opener.postMessage`，讓瀏覽器認為 popup「被使用者關閉」。
+
+### 修復內容（commit `22f89d6`）
+
+**`server/index.ts`**:
+```diff
+ app.use(helmet({
+   contentSecurityPolicy: false,
+   crossOriginEmbedderPolicy: false,
++  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+ }));
+```
+
+- `same-origin-allow-popups` 允許同源開啟的 popup 使用 `postMessage`
+- 主域仍受 COOP 保護，安全性幾乎不變
+- Firebase OAuth、Google Sign-In、Stripe Checkout 等都需要此設定
+
+### 診斷階段附加變更（已移除）
+- commit `cbc6d7e`：暫時加 `console.error("[signInWithGoogle] Firebase error:", ...)` 便於前端診斷
+- commit `803f011`：診斷完成後移除 debug log
+
+### 驗證結果
+| 項目 | 結果 |
+|------|------|
+| COOP header 更新 | ✅ `same-origin-allow-popups` |
+| 無痕視窗 Google 登入 | ✅ 成功 |
+| Firebase UID 綁定 | ✅ `has_firebase_uid = t` |
+| 最後登入時間 | ✅ `2026-04-18 05:04:30` |
+| Display name 自動帶入 | ✅ 「阿鬨」 |
+
+### 使用者端舊 cache 排解
+一般瀏覽器仍看舊 COOP header（HTML/header 被 cache），清除方法：
+- DevTools 右鍵重新整理 → 「清空快取並強制重新載入」
+- DevTools → Application → Storage → Clear site data
+- 或 `chrome://settings/siteData?searchSubpage=game.homi.cc` 刪除
+
+### 關鍵學習
+- **Helmet 預設 COOP 會阻擋所有 OAuth popup**，是很多新專案第一次接 Google/Apple/FB 登入踩的坑
+- 診斷優先序：server log → 瀏覽器 cache（無痕測試）→ COOP/CSP header → Firebase/OAuth 設定
+- 無痕視窗是診斷 cache 問題的最快工具
+
+### Commit 清單
+- `22f89d6` chore(auto): COOP 修復
+- `cbc6d7e` chore(auto): 加 console.error debug log（診斷用）
+- `803f011` chore(auto): 移除 debug log
+
+---
+
 ## 🔑 2026-04-18 — 登入問題修復 + 平台擁有者緊急登入
 
 ### 問題根因
