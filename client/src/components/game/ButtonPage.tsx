@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import * as LucideIcons from "lucide-react";
-import { Clock, Users } from "lucide-react";
+import { Clock, AlertTriangle, ChevronRight } from "lucide-react";
 import type { ButtonConfig } from "@shared/schema";
 
 interface ButtonPageProps {
