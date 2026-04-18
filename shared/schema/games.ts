@@ -495,6 +495,10 @@ export interface VoteConfig {
   showResults?: boolean;
   anonymousVoting?: boolean;
   votingTimeLimit?: number;
+  /** 投完票後自動前進秒數，預設 5 秒，設 0 關閉（仍可手動點繼續） */
+  autoAdvanceSeconds?: number;
+  /** 下一關用哪個 option 的 nextPageId：winner（最多票，預設）/ self（自己投的） */
+  nextPageStrategy?: "winner" | "self";
 }
 
 export interface MotionChallengeConfig {
