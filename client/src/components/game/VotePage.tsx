@@ -30,11 +30,16 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
   const [voteResults, setVoteResults] = useState<VoteResult[]>([]);
   const [totalVotes, setTotalVotes] = useState(0);
   const [timedOut, setTimedOut] = useState(false);
+  const [autoAdvanceIn, setAutoAdvanceIn] = useState<number | null>(null);
+  const autoAdvanceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const options = config.options || [];
   const votingTimeLimit = config.votingTimeLimit || 0;
-  const minVotes = config.minVotes || 1;
+  // minVotes 用 ?? 而非 || 才能區分 undefined（用預設 1）與 0（允許零票繼續）
+  const minVotes = config.minVotes ?? 1;
   const hasValidOptions = options.length > 0;
+  // 投完票後自動前進的秒數：預設 5 秒（使用者可設 autoAdvanceSeconds: 0 關閉）
+  const autoAdvanceSeconds = config.autoAdvanceSeconds ?? 5;
 
   const questionHash = config.question ? config.question.replace(/\s/g, "").slice(0, 30) : "default";
   const voteStorageKey = `vote_${sessionId}_${questionHash}`;
