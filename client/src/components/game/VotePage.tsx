@@ -23,7 +23,9 @@ interface VoteResult {
 }
 
 export default function VotePage({ config, onComplete, sessionId, variables, onVariableUpdate }: VotePageProps) {
+  const { toast } = useToast();
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
+  const [isAdvancing, setIsAdvancing] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [showResults, setShowResults] = useState(false);
