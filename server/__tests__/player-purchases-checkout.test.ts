@@ -184,6 +184,47 @@ describe("玩家購買路由 — Checkout + 交易", () => {
       }));
     });
 
+    it("SaaS 配額已滿 → 402 Payment Required", async () => {
+      mockStorage.getGame.mockResolvedValue(makeGame({ fieldId: "field-free-plan" }));
+      mockStorage.getUserGamePurchase.mockResolvedValue(null);
+      mockCheckQuota.mockResolvedValue({
+        current: 100,
+        limit: 100,
+        isOver: true,
+        percent: 100,
+      });
+
+      const app = createTestApp();
+      const res = await request(app)
+        .post("/api/games/game-1/checkout")
+        .set(AUTH_HEADER)
+        .send({});
+
+      expect(res.status).toBe(402);
+      expect(res.body.message).toContain("已達方案上限");
+      expect(res.body.quota).toEqual({ current: 100, limit: 100 });
+      // 配額擋住後不應建立交易
+      expect(mockStorage.createTransaction).not.toHaveBeenCalled();
+      expect(mockCreateCheckout).not.toHaveBeenCalled();
+    });
+
+    it("遊戲無 fieldId → 跳過配額檢查（正常 checkout）", async () => {
+      mockStorage.getGame.mockResolvedValue(makeGame({ fieldId: null }));
+      mockStorage.getUserGamePurchase.mockResolvedValue(null);
+      mockStorage.createTransaction.mockResolvedValue({ id: "tx-orphan" });
+      mockStorage.updateTransaction.mockResolvedValue(undefined);
+      mockCreateCheckout.mockResolvedValue({ id: "s", url: "https://x" });
+
+      const app = createTestApp();
+      const res = await request(app)
+        .post("/api/games/game-1/checkout")
+        .set(AUTH_HEADER)
+        .send({});
+
+      expect(res.status).toBe(200);
+      expect(mockCheckQuota).not.toHaveBeenCalled();
+    });
+
     it("未認證 → 401", async () => {
       const app = createTestApp();
       const res = await request(app)
