@@ -163,6 +163,12 @@ export interface DialogueConfig {
   showEmotionIndicator?: boolean;
   bubbleAnimation?: boolean;
   locationSettings?: LocationSettings;
+  /** 打字機效果速度（ms/字，預設 30） */
+  typingSpeed?: number;
+  /** 劇情完成後跳往的頁面 ID */
+  nextPageId?: string;
+  /** 完成本頁獎勵點數 */
+  rewardPoints?: number;
 }
 
 export interface VideoConfig {
