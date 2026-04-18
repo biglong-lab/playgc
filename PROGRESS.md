@@ -22,6 +22,98 @@
 
 ---
 
+## 🏗️ 2026-04-18 中午 — 多租戶場域隔離 + 管理員授權開關（架構重大升級）
+
+### 核心需求
+- 每個帳號基本上都是玩家（Firebase user 全域唯一）
+- 管理權限 = 場域會員身份的一個開關（`is_admin`），撤銷即降級為純玩家
+- 跨場域玩家用同一 email 無感切換，但**各場域資料完全隔離**
+- 不得跨場域資料洩漏（商業機密要求）
+
+### Phase 0：掃出 3 個隔離漏洞
+| 漏洞 | 位置 | 影響 |
+|------|------|------|
+| `GET /api/admin/users` 回全平台玩家 | `admin-roles.ts:431` | 任一場域管理員看得到他場玩家 |
+| `GET /api/analytics/overview` 跨場域 | `leaderboard.ts:32` | 全平台 KPI 混雜 |
+| `GET /api/analytics/sessions` 跨場域 | `leaderboard.ts:85` | 跨場域遊戲場次暴露 |
+
+### Phase 1：`field_memberships` 新表（場域會員卡）
+```sql
+field_memberships (
+  id, user_id → users, field_id → fields,
+  joined_at, last_active_at, player_status,
+  is_admin, admin_role_id, admin_granted_at/by, admin_revoked_at/by,
+  UNIQUE (user_id, field_id)
+)
+```
+- 本地 DB + 生產 DB 皆建表 ✅
+- 遷移腳本：從 `admin_accounts` 自動建立 membership（twfam4@gmail.com 已遷移）
+
+### Phase 2：後端服務 + API + 隔離強化
+
+**新建 `server/services/field-memberships.ts`**（核心服務）
+- `getMembershipsForUser(userId)` — 玩家看自己跨場域清單
+- `listFieldMembers(fieldId)` — 管理員看本場域成員
+- `ensureMembership(userId, fieldId)` — 首次自動加入（冪等）
+- `grantAdmin(userId, fieldId, roleId, grantedBy)` — 授權 + 同步 admin_accounts
+- `revokeAdmin(userId, fieldId, revokedBy)` — 撤銷 + **立即刪除 JWT sessions**
+- `suspendPlayer(userId, fieldId, status)` — 玩家暫停/停權
+
+**新建 `server/routes/field-memberships.ts`**（API）
+- `GET /api/me/memberships` — 玩家端跨場域清單
+- `POST /api/me/memberships/join` — 首次自動加入場域
+- `GET /api/admin/memberships` — 管理員看本場域成員（自動 WHERE field_id）
+- `POST /api/admin/memberships/grant` — 授權管理員（需 admin:manage_accounts）
+- `POST /api/admin/memberships/revoke` — 撤銷管理員（自我撤銷防呆）
+- `POST /api/admin/memberships/suspend` — 玩家狀態切換
+
+**修復隔離漏洞**：
+- `/api/admin/users` 改為 JOIN field_memberships WHERE fieldId
+- `/api/analytics/overview` + `/api/analytics/sessions` 改用 `getGamesByField` + `getSessionsByField`
+- storage 層新增 field-scoped 版本：`getGamesByField(fieldId)` + `getSessionsByField(fieldId)`
+
+### Phase 3：前端 UX
+
+**玩家會員中心（`MeCenter.tsx`）新增兩區塊**：
+- 🔑 **管理員後台入口**：有任一場域 admin 權限才顯示，一鍵跳轉
+- 🎮 **我參與的場域**：所有 memberships 清單（含場域名、角色、狀態）
+
+**管理員玩家管理（`AdminStaffPlayers.tsx`）全面改版**：
+- 只顯示本場域玩家（field_memberships JOIN）
+- 每行一個 Switch 開關授權/撤銷
+- 授權對話框：選角色後確認
+- 撤銷確認框：警示即時失效 session
+- 防呆：不能撤銷自己
+
+### 資料隔離保障（四層）
+1. **Schema**：所有業務表有 `field_id`，`field_memberships` unique(user_id, field_id)
+2. **Middleware**：`req.admin.systemRole` 非 super_admin 時強制 `req.admin.fieldId`
+3. **Query**：`getGamesByField` / `getSessionsByField` 必帶 field_id WHERE
+4. **API**：API 端點主動檢查 + 403 阻擋跨場域寫入
+
+### 撤銷授權立即生效
+```
+使用者點 toggle OFF
+  → field_memberships.is_admin = false
+  → admin_accounts.status = "inactive"
+  → DELETE admin_sessions WHERE admin_account_id = X  👈 關鍵
+  → 使用者下次 API 呼叫 401 強制登出
+```
+
+### 驗證結果
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過
+- ✅ billing + webhook 27/27 測試通過
+- ✅ 生產 DB 遷移成功（twfam4 membership 已建立）
+- ✅ 生產部署 healthy
+- ✅ `https://game.homi.cc` HTTP 200
+
+### Commits
+- `2748ee8` feat: field_memberships 場域會員系統 + 管理員授權開關 + 場域隔離
+- auto-commit: MeCenter + AdminStaffPlayers + leaderboard + storage
+
+---
+
 ## 🎯 2026-04-18 上午 — 測試擴充 + UX 收尾 + SaaS E2E
 
 ### Phase A：billing 測試大幅擴充（6 → 15 測試）
