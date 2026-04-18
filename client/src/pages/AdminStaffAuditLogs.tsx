@@ -198,10 +198,11 @@ export default function AdminStaffAuditLogs() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>尚無操作記錄</p>
-              </div>
+              <EmptyState
+                icon={FileText}
+                title="尚無操作記錄"
+                description="當管理員執行寫入動作時（建立、編輯、刪除），系統會自動記錄"
+              />
             )}
           </CardContent>
         </Card>
