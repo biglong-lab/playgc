@@ -81,6 +81,8 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
     }
   }, [currentMessageIndex, useBubbleAnimation]);
 
+  const autoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (!currentMessage || !bubbleVisible) {
       return;
@@ -88,10 +90,10 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
 
     setDisplayedText("");
     setIsTyping(true);
-    
+
     let charIndex = 0;
     const text = currentMessage.text || "";
-    const typingSpeed = 30;
+    const typingSpeed = config?.typingSpeed ?? 30;
 
     const intervalId = setInterval(() => {
       if (charIndex < text.length) {
@@ -100,17 +102,25 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
       } else {
         setIsTyping(false);
         clearInterval(intervalId);
-        
+
         if (config?.autoAdvance && !isLastMessage) {
-          setTimeout(() => {
+          autoAdvanceRef.current = setTimeout(() => {
             setCurrentMessageIndex(prev => prev + 1);
+            autoAdvanceRef.current = null;
           }, currentMessage.delay || 2000);
         }
       }
     }, typingSpeed);
 
-    return () => clearInterval(intervalId);
-  }, [currentMessageIndex, currentMessage, config?.autoAdvance, isLastMessage, bubbleVisible]);
+    return () => {
+      clearInterval(intervalId);
+      // cleanup：玩家手動按「下一句」時 currentMessageIndex 變，effect 重跑前清掉 pending autoAdvance
+      if (autoAdvanceRef.current) {
+        clearTimeout(autoAdvanceRef.current);
+        autoAdvanceRef.current = null;
+      }
+    };
+  }, [currentMessageIndex, currentMessage, config?.autoAdvance, config?.typingSpeed, isLastMessage, bubbleVisible]);
 
   const finishDialogue = () => {
     onComplete(
