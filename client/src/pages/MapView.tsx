@@ -338,9 +338,9 @@ export default function MapView() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* 頂部 */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+    <div className="min-h-screen-dynamic bg-background flex flex-col">
+      {/* 頂部 — safe-top 支援 iPhone 瀏海 */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="px-4 py-3 flex items-center justify-between">
           <Button
             variant="ghost" size="sm"
