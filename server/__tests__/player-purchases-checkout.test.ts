@@ -106,6 +106,12 @@ describe("玩家購買路由 — Checkout + 交易", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsRecurConfigured.mockReturnValue(true);
+    mockCheckQuota.mockResolvedValue({
+      current: 0,
+      limit: null,
+      isOver: false,
+      percent: 0,
+    });
   });
 
   // ======================================================================
