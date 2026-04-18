@@ -425,11 +425,17 @@ export default function AdminStaffFields() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Building2 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>尚無場域資料</p>
-                <p className="text-sm">點擊「新增場域」開始建立</p>
-              </div>
+              <EmptyState
+                icon={Building2}
+                title="尚無場域資料"
+                description="點擊右上角「新增場域」開始建立第一個場域"
+                actions={[
+                  {
+                    label: "新增場域",
+                    onClick: () => setIsDialogOpen(true),
+                  },
+                ]}
+              />
             )}
           </CardContent>
         </Card>
