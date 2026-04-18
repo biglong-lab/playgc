@@ -83,26 +83,43 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
         const data = JSON.parse(event.data);
         
         if (data.type === "shooting_hit" && isStarted && !isCompleted) {
-          const record = data.record;
-          
-          const zoneScore = calculateZoneScore(record.hitZone || "outer");
+          const record = data.record ?? {};
+          // 相容前後端欄位名稱（DB schema: targetZone / hitPosition 字串 / hitScore/score）
+          // 前端原期望: hitZone / hitPosition.x/y / points
+          const zone: string =
+            record.hitZone ||
+            record.targetZone ||
+            (typeof record.hitPosition === "string" ? record.hitPosition : "outer");
+          const zoneScore = calculateZoneScore(zone);
+          const points: number =
+            record.points ??
+            record.hitScore ??
+            record.score ??
+            zoneScore;
+          // 若 hitPosition 是 {x,y} 物件用之，字串則用隨機散佈
+          const posX =
+            record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.x === "number"
+              ? record.hitPosition.x
+              : Math.random() * 100;
+          const posY =
+            record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.y === "number"
+              ? record.hitPosition.y
+              : Math.random() * 100;
+
           const hit: HitRecord = {
-            position: {
-              x: record.hitPosition?.x ?? Math.random() * 100,
-              y: record.hitPosition?.y ?? Math.random() * 100,
-            },
-            score: record.points || zoneScore,
-            zone: record.hitZone || "outer",
+            position: { x: posX, y: posY },
+            score: points,
+            zone,
             deviceId: record.deviceId,
-            timestamp: record.timestamp,
+            timestamp: record.timestamp ?? record.hitTimestamp,
           };
 
           setHits((prev) => [...prev, hit]);
-          setTotalScore((prev) => prev + hit.score);
+          setTotalScore((prev) => prev + points);
 
           toast({
-            title: getZoneMessage(hit.zone),
-            description: `+${hit.score} 分`,
+            title: getZoneMessage(zone),
+            description: `+${points} 分`,
           });
         }
       } catch {
