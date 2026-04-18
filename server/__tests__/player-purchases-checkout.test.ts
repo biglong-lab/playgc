@@ -79,6 +79,7 @@ type MockFn = ReturnType<typeof vi.fn>;
 const mockStorage = storage as unknown as Record<string, MockFn>;
 const mockCreateCheckout = createCheckoutSession as MockFn;
 const mockIsRecurConfigured = isRecurConfigured as MockFn;
+const mockCheckQuota = checkQuota as unknown as MockFn;
 
 const AUTH_HEADER = { Authorization: "Bearer valid-token" };
 
