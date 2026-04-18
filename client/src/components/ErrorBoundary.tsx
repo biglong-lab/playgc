@@ -145,13 +145,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </div>
             )}
 
-            <div className="flex gap-4 justify-center">
-              <Button variant="outline" onClick={this.handleReset}>
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Button variant="outline" onClick={this.handleReset} data-testid="button-err-retry">
                 重試
               </Button>
-              <Button onClick={this.handleReload}>
+              <Button variant="outline" onClick={this.handleReload} data-testid="button-err-reload">
                 <RefreshCw className="w-4 h-4 mr-2" />
                 重新整理
+              </Button>
+              <Button onClick={this.handleForceReload} data-testid="button-err-force-reload">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                清除快取重新載入
               </Button>
             </div>
           </div>
