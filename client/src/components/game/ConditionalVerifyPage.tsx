@@ -14,14 +14,13 @@ interface FragmentConfig {
   order?: number;
 }
 
+// 對齊 shared/schema/games.ts 的 FragmentCollectionConfig.conditions 型別
 interface Condition {
-  type: "has_item" | "visited_location" | "score_above" | "variable_equals";
-  itemId?: number;
-  locationId?: number;
-  scoreThreshold?: number;
-  variableName?: string;
-  variableValue?: unknown;
-  description: string;
+  type: "has_item" | "has_points" | "visited_location";
+  itemId?: string;
+  minPoints?: number;
+  locationId?: string;
+  description?: string;
 }
 
 interface ConditionalVerifyConfig {
@@ -40,8 +39,9 @@ interface ConditionalVerifyConfig {
   successMessage?: string;
   failureMessage?: string;
   onSuccess?: {
-    grantItem?: number;
+    grantItem?: string;
     message?: string;
+    points?: number;
     unlockContent?: string;
   };
   nextPageId?: string;
@@ -56,7 +56,7 @@ interface ConditionalVerifyPageProps {
   onVariableUpdate: (key: string, value: unknown) => void;
   inventory?: string[];
   score?: number;
-  visitedLocations?: number[];
+  visitedLocations?: string[];
 }
 
 export default function ConditionalVerifyPage({ 
