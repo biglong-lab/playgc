@@ -256,4 +256,69 @@ describe("Recur Webhook 路由", () => {
     expect(res.status).toBe(200);
     expect(res.body.error).toBe("processing_failed");
   });
+
+  // ======================================================================
+  // SaaS 計費 hook（Phase 6 實作驗證）
+  // ======================================================================
+  it("付款成功 → 觸發 incrementUsage + recordTransactionFee", async () => {
+    mockStorage.getTransaction.mockResolvedValue(makeTx());
+    mockStorage.updateTransaction.mockResolvedValue(undefined);
+    mockStorage.createPurchase.mockResolvedValue(undefined);
+    mockStorage.getGame.mockResolvedValue({
+      id: "game-1",
+      fieldId: "field-jiachun",
+      title: "賈村大冒險",
+    });
+
+    const app = createTestApp();
+    const res = await request(app)
+      .post("/api/webhooks/recur")
+      .set("x-recur-signature", "valid-sig")
+      .send(makeEvent({ id: "evt-billing-1" }));
+
+    expect(res.status).toBe(200);
+    // 用量 +1
+    expect(mockIncrementUsage).toHaveBeenCalledWith("field-jiachun", "checkouts", 1);
+    // 平台抽成
+    expect(mockRecordFee).toHaveBeenCalledWith(expect.objectContaining({
+      fieldId: "field-jiachun",
+      sourceTransactionId: "tx-001",
+      sourceAmount: 100,
+    }));
+  });
+
+  it("game 無 fieldId → 跳過 billing hook", async () => {
+    mockStorage.getTransaction.mockResolvedValue(makeTx());
+    mockStorage.updateTransaction.mockResolvedValue(undefined);
+    mockStorage.createPurchase.mockResolvedValue(undefined);
+    mockStorage.getGame.mockResolvedValue({ id: "game-orphan", fieldId: null });
+
+    const app = createTestApp();
+    const res = await request(app)
+      .post("/api/webhooks/recur")
+      .set("x-recur-signature", "valid-sig")
+      .send(makeEvent({ id: "evt-billing-2" }));
+
+    expect(res.status).toBe(200);
+    expect(mockIncrementUsage).not.toHaveBeenCalled();
+    expect(mockRecordFee).not.toHaveBeenCalled();
+  });
+
+  it("billing 失敗不影響主流程（購買仍完成）", async () => {
+    mockStorage.getTransaction.mockResolvedValue(makeTx());
+    mockStorage.updateTransaction.mockResolvedValue(undefined);
+    mockStorage.createPurchase.mockResolvedValue(undefined);
+    mockStorage.getGame.mockResolvedValue({ id: "game-1", fieldId: "field-1" });
+    mockIncrementUsage.mockRejectedValueOnce(new Error("billing DB down"));
+
+    const app = createTestApp();
+    const res = await request(app)
+      .post("/api/webhooks/recur")
+      .set("x-recur-signature", "valid-sig")
+      .send(makeEvent({ id: "evt-billing-3" }));
+
+    // 主流程仍成功（webhook 本來就要回 200）
+    expect(res.status).toBe(200);
+    expect(mockStorage.createPurchase).toHaveBeenCalled();
+  });
 });
