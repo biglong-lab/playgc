@@ -100,7 +100,9 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
       video.pause();
       setIsPlaying(false);
     } else {
-      video.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      Promise.resolve(video.play())
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     }
   };
 
