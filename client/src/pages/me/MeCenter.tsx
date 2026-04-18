@@ -37,6 +37,18 @@ export default function MeCenter() {
   const { user, firebaseUser, isSignedIn, isLoading } = useAuth();
   const [, setLocation] = useLocation();
 
+  // 🎫 我的場域會員身份（跨場域整合）
+  const { data: membershipsData } = useQuery<{ memberships: MembershipSummary[] }>({
+    queryKey: ["/api/me/memberships"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/me/memberships");
+      return res.json();
+    },
+    enabled: isSignedIn,
+  });
+  const memberships = membershipsData?.memberships ?? [];
+  const adminMemberships = memberships.filter((m) => m.isAdmin);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
