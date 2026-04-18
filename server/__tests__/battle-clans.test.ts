@@ -105,12 +105,11 @@ describe("戰隊 API", () => {
   it("成功取得戰隊詳情含成員", async () => {
     const app = createApp();
     const fakeClan = { id: "clan-1", name: "火焰隊", fieldId: "field-1" };
-    const fakeMembers = [
-      { userId: "user-1", role: "leader" },
-      { userId: "user-2", role: "member" },
-    ];
     mockStorage.getClan.mockResolvedValue(fakeClan);
-    mockStorage.getClanMembers.mockResolvedValue(fakeMembers);
+    mockGetClanMembersWithNames.mockResolvedValueOnce([
+      { member: { userId: "user-1", role: "leader" }, firstName: "隊", lastName: "長" },
+      { member: { userId: "user-2", role: "member" }, firstName: "隊", lastName: "員" },
+    ]);
 
     const res = await request(app).get("/api/battle/clans/clan-1");
 
