@@ -51,7 +51,6 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     label: "平台總覽",
     items: [
       { label: "儀表板", path: "/platform", icon: LayoutDashboard },
-      { label: "跨場域數據", path: "/platform/analytics", icon: BarChart3 },
     ],
   },
   {
@@ -67,12 +66,6 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     label: "財務",
     items: [
       { label: "平台營收", path: "/platform/revenue", icon: DollarSign },
-    ],
-  },
-  {
-    label: "系統",
-    items: [
-      { label: "平台設定", path: "/platform/settings", icon: Settings },
     ],
   },
 ];
