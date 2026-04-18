@@ -275,6 +275,7 @@ export default function GamePlay() {
             variables={variables}
             inventory={inventory}
             score={score}
+            visitedLocations={visitedLocations}
           />
         )}
       </main>
