@@ -42,6 +42,11 @@ vi.mock("@shared/schema", () => ({
   insertBattleSlotSchema: { parse: vi.fn((d: unknown) => d) },
 }));
 
+// Mock billing（避免載入 db.ts）
+vi.mock("../services/billing", () => ({
+  incrementUsage: vi.fn().mockResolvedValue(1),
+}));
+
 import express from "express";
 import request from "supertest";
 import { registerBattleSlotRoutes } from "../routes/battle-slots";
