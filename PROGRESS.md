@@ -22,6 +22,65 @@
 
 ---
 
+## 🧪 2026-04-18 凌晨 — 測試覆蓋 + EmptyState 全面推廣
+
+### Phase A：Billing/SaaS 測試補齊（commit `fa4a9ef`）
+
+#### 新建 `server/__tests__/billing.test.ts`（6 個單元測試）
+- 無用量記錄 → isOver=false
+- 用量未達配額 → percent 正確
+- 用量超過配額 → isOver=true + percent cap 100
+- 配額邊界（等於）→ 不算 isOver
+- 配額為 null（無限）→ 永不 over
+- 多 meter key 分別計量（checkouts / battle_slots 互不干擾）
+
+#### 擴充 `webhook-recur.test.ts`（+3 測試 → 12/12 過）
+- 付款成功 → 觸發 incrementUsage + recordTransactionFee（驗證參數正確）
+- game 無 fieldId → 跳過 billing hook（防止 null field 崩潰）
+- billing 失敗不影響主流程（購買仍完成）
+
+#### 擴充 `player-purchases-checkout.test.ts`（+2 測試）
+- SaaS 配額已滿 → 402 Payment Required + quota 資訊回傳
+- 遊戲無 fieldId → 跳過配額檢查（向後相容）
+
+#### 修復 `battle-slots.test.ts`（pre-existing 問題）
+- 補 mock `getRegistrationsBySlotWithNames`（2026-03-08 route 改動後測試未同步）
+- 新增 billing mock 避免 db.ts 載入
+- 17/17 測試通過
+
+### Phase B：EmptyState / LoadingSkeleton 擴大推廣（+5 頁面）
+
+本輪新增：
+- ✅ `AdminBattleVenues` — 場地管理（GridSkeleton）
+- ✅ `AdminBattleSlots` — 時段管理（ListSkeleton）
+- ✅ `AdminSessions` — 進行中場次（GridSkeleton）
+- ✅ `AdminStaffRoles` — 角色管理（ListSkeleton）
+- ✅ `AdminStaffAuditLogs` — 操作記錄（ListSkeleton）
+
+累計已套用（9 頁面）：
+- Revenue 3 頁 + Platform 4 頁 + Admin 5 頁 = **12 頁**
+
+### 測試結果總計
+```
+✅ 新增測試：11 個全過（billing 6 + webhook billing hook 3 + checkout quota 2）
+✅ 修復測試：battle-slots 17/17（pre-existing 問題）
+✅ 總通過率：999/1006（pre-existing 失敗 7 個不在本輪範圍）
+```
+
+### 預存 pre-existing 測試失敗（留給後續）
+- `battle-clans.test.ts` — 2026-03-08 route 改 JOIN query 後未同步
+- `battle-rankings.test.ts` — 同上
+- `GameEditor.test.tsx` / `page-sync.test.ts` — firebase mock 問題
+- 這些不是本輪造成，優先級較低
+
+### 驗證結果
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過
+- ✅ 生產部署 healthy
+- ✅ `https://game.homi.cc` HTTP 200
+
+---
+
 ## 🚀 2026-04-18 深夜 — 全棧優化全推進（重要功能 + UX 一致化 + 工程改進）
 
 ### Phase 1：重要功能補齊（4 項全完成）
