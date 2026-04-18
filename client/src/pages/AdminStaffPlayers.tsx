@@ -313,29 +313,75 @@ export default function AdminStaffPlayers() {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          {m.membership.isAdmin ? (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              disabled={isSelf}
-                              onClick={() => setRevokeTarget(m)}
-                            >
-                              <ShieldOff className="w-3.5 h-3.5 mr-1" />
-                              撤銷
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setGrantTarget(m);
-                                setSelectedRoleId("");
-                              }}
-                            >
-                              <Shield className="w-3.5 h-3.5 mr-1" />
-                              授權
-                            </Button>
-                          )}
+                          <div className="flex items-center justify-end gap-1">
+                            {m.membership.isAdmin ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                disabled={isSelf}
+                                onClick={() => setRevokeTarget(m)}
+                              >
+                                <ShieldOff className="w-3.5 h-3.5 mr-1" />
+                                撤銷
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setGrantTarget(m);
+                                  setSelectedRoleId("");
+                                }}
+                              >
+                                <Shield className="w-3.5 h-3.5 mr-1" />
+                                授權
+                              </Button>
+                            )}
+                            {!isSelf && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="ghost" className="px-2">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {m.membership.playerStatus === "active" ? (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setSuspendTarget({ member: m, status: "suspended" });
+                                          setSuspendReason("");
+                                        }}
+                                      >
+                                        <Ban className="w-3.5 h-3.5 mr-2 text-amber-600" />
+                                        暫停玩家
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setSuspendTarget({ member: m, status: "banned" });
+                                          setSuspendReason("");
+                                        }}
+                                        className="text-destructive"
+                                      >
+                                        <Ban className="w-3.5 h-3.5 mr-2" />
+                                        永久停權
+                                      </DropdownMenuItem>
+                                    </>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setSuspendTarget({ member: m, status: "active" });
+                                        setSuspendReason("");
+                                      }}
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5 mr-2 text-emerald-600" />
+                                      恢復玩家
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
