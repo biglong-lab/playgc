@@ -98,6 +98,7 @@ export interface IStorage {
   deleteEvent(id: string): Promise<void>;
 
   getSessions(): Promise<GameSession[]>;
+  getSessionsByField(fieldId: string): Promise<GameSession[]>;
   getSession(id: string): Promise<GameSession | undefined>;
   getActiveSessionsByGame(gameId: string): Promise<GameSession[]>;
   getActiveSessionByUserAndGame(userId: string, gameId: string): Promise<{ session: GameSession; progress: PlayerProgress } | null>;
