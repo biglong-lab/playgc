@@ -433,6 +433,8 @@ export interface GpsMissionConfig {
   showMap?: boolean;
   qrFallback?: boolean; // allow QR scan if GPS unavailable
   fallbackQrCode?: string;
+  /** 完成後跳往的頁面 ID */
+  nextPageId?: string;
   // GPS任務自動啟用地圖顯示，但也支持統一設置
   locationSettings?: LocationSettings;
 }
