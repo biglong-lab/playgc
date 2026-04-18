@@ -88,6 +88,7 @@ export default function GamePageRenderer({
             {...commonProps}
             inventory={inventory}
             score={score}
+            visitedLocations={visitedLocations}
           />
         );
       case "shooting_mission":
