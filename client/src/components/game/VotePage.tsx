@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 import * as LucideIcons from "lucide-react";
 import { Vote, Clock, Users, CheckCircle, Timer, Eye, EyeOff, AlertCircle, Trophy } from "lucide-react";
 import type { VoteConfig } from "@shared/schema";
