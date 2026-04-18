@@ -112,7 +112,7 @@ export default function AdminStaffPlayers() {
             </div>
 
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">載入中...</div>
+              <ListSkeleton count={5} />
             ) : filteredUsers && filteredUsers.length > 0 ? (
               <Table>
                 <TableHeader>
