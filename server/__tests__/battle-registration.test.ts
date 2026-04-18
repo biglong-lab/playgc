@@ -19,8 +19,11 @@ const mockStorage = vi.hoisted(() => ({
   updateSlotConfirmedCount: vi.fn(),
 }));
 
+const mockGetUpcomingRegistrationsWithDetails = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+
 vi.mock("../storage/battle-storage", () => ({
   battleStorageMethods: mockStorage,
+  getUpcomingRegistrationsWithDetails: mockGetUpcomingRegistrationsWithDetails,
 }));
 
 // ── Mock: Firebase 認證 ──
