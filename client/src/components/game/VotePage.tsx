@@ -361,12 +361,6 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                 </div>
                 <span className="font-bold">{totalVotes} 票</span>
               </div>
-              {minVotes > 1 && totalVotes < minVotes && (
-                <div className="flex items-center gap-2 text-xs text-amber-500">
-                  <AlertCircle className="w-3 h-3" />
-                  <span>需要至少 {minVotes} 票才能確認結果</span>
-                </div>
-              )}
             </div>
           )}
 
