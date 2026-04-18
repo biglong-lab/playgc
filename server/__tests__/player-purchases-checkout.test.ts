@@ -61,8 +61,18 @@ vi.mock("../services/recur-client", () => ({
   verifyWebhookSignature: vi.fn(),
 }));
 
+vi.mock("../services/billing", () => ({
+  checkQuota: vi.fn().mockResolvedValue({
+    current: 0,
+    limit: null,
+    isOver: false,
+    percent: 0,
+  }),
+}));
+
 import { storage } from "../storage";
 import { createCheckoutSession, isRecurConfigured } from "../services/recur-client";
+import { checkQuota } from "../services/billing";
 import { registerPlayerPurchaseRoutes } from "../routes/player-purchases";
 
 type MockFn = ReturnType<typeof vi.fn>;
