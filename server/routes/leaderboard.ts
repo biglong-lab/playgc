@@ -29,8 +29,17 @@ export function registerLeaderboardRoutes(app: Express) {
         return res.status(403).json({ message: auth.message });
       }
 
-      const games = await storage.getGames();
-      const sessions = await storage.getSessions();
+      // 🔒 場域隔離：必須指定 fieldId（或從 admin context 讀取）
+      const fieldId =
+        (req.query.fieldId as string) ||
+        req.admin?.fieldId ||
+        auth.fieldId;
+      if (!fieldId) {
+        return res.status(400).json({ message: "需指定 fieldId（場域隔離必要）" });
+      }
+
+      const games = await storage.getGamesByField(fieldId);
+      const sessions = await storage.getSessionsByField(fieldId);
 
       const completedSessions = sessions.filter(s => s.status === "completed");
       const activeSessions = sessions.filter(s => s.status === "playing");
