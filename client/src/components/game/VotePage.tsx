@@ -179,11 +179,6 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
 
   const isUrgent = timeLeft !== null && timeLeft <= 10;
 
-  const getWinningOption = () => {
-    if (voteResults.length === 0) return null;
-    return voteResults.reduce((max, r) => r.count > max.count ? r : max, voteResults[0]);
-  };
-
   if (!hasValidOptions) {
     return (
       <div className="min-h-full flex flex-col items-center justify-center p-6">
