@@ -53,6 +53,7 @@ export default function GamePageRenderer({
   variables,
   inventory,
   score,
+  visitedLocations = [],
 }: GamePageRendererProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 動態分發器，config 從 DB JSON 傳給各元件
   const config = page.config as any;
