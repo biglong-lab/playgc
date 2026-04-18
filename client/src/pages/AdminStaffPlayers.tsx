@@ -495,7 +495,9 @@ export default function AdminStaffPlayers() {
                     );
                   })}
                 </TableBody>
-              </Table>
+                </Table>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
