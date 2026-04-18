@@ -199,7 +199,24 @@ function FieldRowItem({
         )}
       </div>
 
-      <div className="md:col-span-2 flex gap-1 justify-end">
+      <div className="md:col-span-2 flex gap-1 justify-end flex-wrap">
+        {/* 🔍 super_admin 進入此場域後台檢視 */}
+        <Button
+          size="sm"
+          variant="secondary"
+          onClick={() => {
+            // 寫入 localStorage（FieldSelector 使用相同 key）
+            try {
+              localStorage.setItem("current-field-id", field.id);
+            } catch {
+              // ignore
+            }
+            window.location.href = "/admin";
+          }}
+          title="以此場域身份進入後台"
+        >
+          🏢 進入後台
+        </Button>
         {field.status !== "suspended" ? (
           <Button
             size="sm"
