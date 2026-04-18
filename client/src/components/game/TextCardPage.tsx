@@ -99,9 +99,16 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
       return displayedText;
     }
     let result = displayedText;
+    // 關鍵：escape regex 元字符，避免 keyword 含 .*+?()[]|\ 等被當正則解析
+    const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     config.highlightKeywords.forEach((keyword) => {
-      const regex = new RegExp(`(${keyword})`, "gi");
-      result = result.replace(regex, "%%HIGHLIGHT_START%%$1%%HIGHLIGHT_END%%");
+      if (!keyword) return;
+      try {
+        const regex = new RegExp(`(${escapeRegex(keyword)})`, "gi");
+        result = result.replace(regex, "%%HIGHLIGHT_START%%$1%%HIGHLIGHT_END%%");
+      } catch {
+        // 防禦性：若 escape 後仍異常就跳過此 keyword
+      }
     });
     return result;
   }, [displayedText, config.highlightKeywords]);
