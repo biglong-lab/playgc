@@ -195,12 +195,15 @@ describe("對戰結果 API", () => {
   it("成功取得對戰結果", async () => {
     const app = createApp();
     const fakeResult = { id: "result-1", slotId: "slot-1", winningTeam: "A" };
-    const fakePlayerResults = [
-      { id: "pr-1", userId: "u1", team: "A", ratingChange: 50 },
-    ];
 
     mockStorage.getResultBySlot.mockResolvedValue(fakeResult);
-    mockStorage.getPlayerResultsByResult.mockResolvedValue(fakePlayerResults);
+    mockGetPlayerResultsByResultWithNames.mockResolvedValue([
+      {
+        playerResult: { id: "pr-1", userId: "u1", team: "A", ratingChange: 50 },
+        firstName: "玩",
+        lastName: "家",
+      },
+    ]);
 
     const res = await request(app).get("/api/battle/slots/slot-1/result");
 
