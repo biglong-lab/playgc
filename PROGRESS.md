@@ -500,17 +500,23 @@ PLATFORM_OWNER_SECRET=3f435b3364acc20d049a00fc682fc526a1b418b92686c57c3f6b8935f5
 - [x] **COOP popup 修復**：helmet `crossOriginOpenerPolicy: same-origin-allow-popups`
 - [x] **Google 登入驗證通過**：twfam4@gmail.com Firebase UID 已綁定
 - [x] **平台擁有者緊急登入**：/owner-login 後備路徑已上線
+- [x] **SaaS 計費引擎接入業務流程**：checkQuota + incrementUsage + recordTransactionFee
+- [x] **/platform/analytics + /platform/settings**：跨場域分析 + 全域設定完整實作
+- [x] **games meter 同步**：syncGamesMeter on create/delete
+- [x] **CSP header 收緊**：helmet production CSP 完整配置
+- [x] **GitHub Secrets 部分設定**：DEPLOY_HOST、DEPLOY_USER、DEPLOY_PATH、VITE_FIREBASE_*
+- [x] **EmptyState / LoadingSkeleton 推廣**：4 個核心管理頁統一
 
 #### 🟡 待處理（需外部操作）
-- [ ] **GitHub Secrets 設定**：設定 DEPLOY_HOST、DEPLOY_SSH_KEY、DEPLOY_PATH 啟用 CI/CD 自動部署（目前靠手動 SSH 部署）
+- [ ] **DEPLOY_SSH_KEY 手動設定**：`gh secret set DEPLOY_SSH_KEY --repo biglong-lab/playgc < ~/.ssh/id_rsa`（設完才能自動部署）
 - [ ] **Google Safe Browsing 申訴**：如 `.cc` 域名仍被擋，到 safebrowsing.google.com 提交誤判
 - [ ] **Firebase Email/Password provider**（可選）：為 twfam4@gmail.com 補 password provider，讓 Email 登入也能用
 
 #### 🟢 可選優化
 - [ ] PWA 離線功能驗證
 - [ ] Google Search Console 驗證網站所有權
-- [ ] 測試覆蓋率提升（可補前端元件測試）
-- [ ] CSP header 收緊（目前 helmet contentSecurityPolicy 為 false）
+- [ ] 測試覆蓋率提升（billing hook integration test、SaaS 配額邊界測試）
+- [ ] EmptyState 推廣到剩餘 30+ 管理頁（本輪完成 4 個核心）
 
 ## 工作紀錄
 
