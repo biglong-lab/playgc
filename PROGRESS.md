@@ -22,6 +22,56 @@
 
 ---
 
+## 🎯 2026-04-18 上午 — 測試擴充 + UX 收尾 + SaaS E2E
+
+### Phase A：billing 測試大幅擴充（6 → 15 測試）
+
+新增 9 個測試案例涵蓋 3 個核心函式：
+
+**recordTransactionFee（5 測試）**
+- 無訂閱 → 回傳 null
+- 費率為 0（免費方案）→ 不建立交易
+- 5% 抽成 → 正確計算 + 插入 platform_transactions
+- 場域自訂費率優先於方案費率（戰略合作 15%）
+- 四捨五入邏輯（5.5% × 100 → 6 NT$）
+
+**incrementUsage（4 測試）**
+- 首次計量 → 建立新 meter 記錄 + 正確 limitValue
+- 已有 meter → 累加 currentValue
+- 無限方案（limit=-1）→ limitValue 存 null，不計 overage
+- 自訂 limits 覆蓋方案 limits（VIP 場域）
+
+### Phase B：EmptyState 推廣持續（17 → 19 頁）
+
+本輪新增：
+- ✅ `AdminStaffGames` — 跨場域遊戲管理
+- ✅ `AdminAnalytics` — GridSkeleton 骨架屏
+- ✅ `admin-staff/AccountTable` — 共用元件（影響 AdminStaffAccounts）
+
+小型 inline 空狀態（Card 內）保留原樣，避免嵌套 Card 樣式破壞。
+
+### Phase C：SaaS E2E 測試補齊（新建 saas-flow.spec.ts）
+
+9 個 E2E 案例：
+- `/apply` 公開申請頁（載入、表單欄位、空提交驗證）
+- `/owner-login` 緊急登入（載入、無密鑰阻擋、URL query 預填）
+- `/platform/*` 路徑保護（analytics / settings / 根路徑）
+
+**注意**：SaaS 配額阻擋的業務邏輯由 Vitest integration test 覆蓋
+（`player-purchases-checkout.test.ts` 已含 402 案例），E2E 專注於頁面層級。
+
+### 驗證結果
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過
+- ✅ billing + battle 系列測試 110/110 通過
+- ✅ 生產部署 healthy
+- ✅ `https://game.homi.cc` HTTP 200
+
+### Commit
+- `7f7a090` test: 新增 /apply + /owner-login + /platform 路徑保護 E2E
+
+---
+
 ## 🟢 2026-04-18 清晨 — 全部測試綠燈 + UX 全面套用
 
 ### Phase A：修復 6 個 pre-existing 測試失敗
