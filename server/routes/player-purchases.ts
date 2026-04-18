@@ -12,6 +12,7 @@ import {
   createCheckoutSession,
   isRecurConfigured,
 } from "../services/recur-client";
+import { checkQuota } from "../services/billing";
 
 // 兌換碼輸入驗證
 const redeemSchema = z.object({
