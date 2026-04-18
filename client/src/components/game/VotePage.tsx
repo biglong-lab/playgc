@@ -413,7 +413,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                   onClick={handleContinue}
                   disabled={!canContinue}
                   size="lg"
-                  className="w-full"
+                  className={`w-full ${canContinue && autoAdvanceIn !== null && autoAdvanceIn > 0 ? "animate-pulse" : ""}`}
                   data-testid="button-continue"
                 >
                   {!canContinue ? (
@@ -421,18 +421,36 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                       <AlertCircle className="w-4 h-4" />
                       等待更多投票 ({totalVotes}/{minVotes})
                     </span>
-                  ) : timedOut ? (
+                  ) : timedOut && totalVotes === 0 ? (
                     <>
                       跳過此頁
                       <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
                     </>
+                  ) : autoAdvanceIn !== null && autoAdvanceIn > 0 ? (
+                    <>
+                      {autoAdvanceIn} 秒後自動進入下一關（立即繼續）
+                      <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
+                    </>
                   ) : (
                     <>
-                      繼續
+                      繼續下一關
                       <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
                     </>
                   )}
                 </Button>
+
+                {/* 顯示勝選選項提示 */}
+                {canContinue && (() => {
+                  const winner = getWinningOption();
+                  const winnerText = winner ? options[winner.optionIndex]?.text : null;
+                  if (!winnerText) return null;
+                  return (
+                    <div className="flex items-center gap-2 justify-center text-xs text-muted-foreground">
+                      <Trophy className="w-3 h-3 text-primary" />
+                      <span>最多票：<b className="text-foreground">{winnerText}</b>（{winner?.count} 票）</span>
+                    </div>
+                  );
+                })()}
               </>
             )}
           </div>
