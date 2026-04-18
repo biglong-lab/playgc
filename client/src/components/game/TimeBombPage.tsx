@@ -1,11 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { Bomb, Check, X, Clock, Zap } from "lucide-react";
+import { Bomb, Check, X, Clock, Zap, ArrowLeft, ArrowRight, ArrowUp, ArrowDown } from "lucide-react";
 import type { TimeBombConfig } from "@shared/schema";
+
+function directionLabel(dir: "left" | "right" | "up" | "down"): string {
+  return { left: "左", right: "右", up: "上", down: "下" }[dir];
+}
+
+function DirectionIcon({ dir }: { dir: "left" | "right" | "up" | "down" }) {
+  const Icon = { left: ArrowLeft, right: ArrowRight, up: ArrowUp, down: ArrowDown }[dir];
+  return <Icon className="w-16 h-16" />;
+}
 
 interface TimeBombPageProps {
   config: TimeBombConfig;
