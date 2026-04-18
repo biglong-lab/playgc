@@ -492,12 +492,16 @@ export interface TimeBombConfig {
     options?: string[];
     correctIndex?: number;
     targetCount?: number; // for tap type
+    /** swipe 類型的方向 */
+    swipeDirection?: "left" | "right" | "up" | "down";
   }>;
   successMessage?: string;
   failureMessage?: string;
   successNextPageId?: string;
   failureNextPageId?: string;
   rewardPoints?: number;
+  /** 答錯扣除的秒數（預設 0，不扣） */
+  penaltySeconds?: number;
 }
 
 export interface LockConfig {
