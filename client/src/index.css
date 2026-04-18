@@ -149,10 +149,15 @@
 @layer base {
   * {
     @apply border-border;
+    /* 📱 消除手機點擊時的灰色高亮閃現 */
+    -webkit-tap-highlight-color: transparent;
   }
 
   html {
     @apply scroll-smooth;
+    /* 📱 避免橫向滾動 + 文字不隨手機方向被自動放大 */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -160,6 +165,20 @@
     touch-action: manipulation;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* 📱 避免 iOS Safari 橡皮筋拖動露出背景 */
+    overscroll-behavior-y: none;
+    /* 📱 iPhone 瀏海 / Home Indicator 安全區域 */
+    min-height: 100vh;
+    min-height: 100dvh; /* dynamic viewport height — 避開手機瀏覽器 UI */
+  }
+
+  /* 📱 iOS 輸入欄位字體 16px 以上才不會自動 zoom in */
+  @media (max-width: 768px) {
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
   }
 
   /* Custom scrollbar for dark theme */
