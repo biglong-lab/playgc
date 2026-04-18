@@ -15,6 +15,42 @@ interface ErrorBoundaryState {
   errorInfo: React.ErrorInfo | null;
 }
 
+const AUTO_RECOVERY_FLAG = "pwa-auto-recovery-attempted";
+
+/** 偵測是否為「PWA 舊 bundle / SW 快取」造成的錯誤 */
+function isChunkLoadError(error: Error): boolean {
+  const msg = `${error.name} ${error.message}`;
+  return (
+    /is not a valid JavaScript MIME type/i.test(msg) ||
+    /Failed to fetch dynamically imported module/i.test(msg) ||
+    /ChunkLoadError/i.test(msg) ||
+    /Loading chunk .* failed/i.test(msg) ||
+    /error loading dynamically imported module/i.test(msg)
+  );
+}
+
+/** 清除 Service Worker 與所有 cache，然後重新載入頁面 */
+async function clearPwaCachesAndReload(): Promise<void> {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+  } catch {
+    // 清理失敗不阻止 reload
+  }
+  try {
+    if (typeof caches !== "undefined") {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {
+    // 清理失敗不阻止 reload
+  }
+  // 強制從 server 拉新版
+  window.location.reload();
+}
+
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -29,10 +65,23 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     return { hasError: true, error };
   }
 
-  componentDidCatch(_error: Error, errorInfo: React.ErrorInfo): void {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     this.setState({ errorInfo });
-    // 錯誤資訊已儲存在 state 中，開發模式下會在 UI 上顯示
-    // 正式環境可整合 Sentry 等服務進行回報
+
+    // 若是 chunk / MIME 載入錯誤且尚未嘗試過自動恢復 → 清 SW + cache + reload
+    // 用 sessionStorage 避免無限迴圈（若 reload 後還是錯就停止自動恢復，改顯示給使用者）
+    if (isChunkLoadError(error)) {
+      try {
+        const attempted = sessionStorage.getItem(AUTO_RECOVERY_FLAG);
+        if (!attempted) {
+          sessionStorage.setItem(AUTO_RECOVERY_FLAG, String(Date.now()));
+          void clearPwaCachesAndReload();
+        }
+      } catch {
+        // sessionStorage 不可用時直接嘗試恢復
+        void clearPwaCachesAndReload();
+      }
+    }
   }
 
   handleReset = (): void => {
@@ -45,6 +94,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   handleReload = (): void => {
     window.location.reload();
+  };
+
+  handleForceReload = (): void => {
+    void clearPwaCachesAndReload();
   };
 
   render(): ReactNode {
