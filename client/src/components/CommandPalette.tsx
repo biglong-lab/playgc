@@ -91,6 +91,8 @@ const COMMANDS: CommandItem[] = [
   { label: "訂閱方案", path: "/platform/plans", icon: Package, group: "🌐 平台管理", keywords: ["plan", "pricing"] },
   { label: "功能開關", path: "/platform/feature-flags", icon: ToggleLeft, group: "🌐 平台管理", keywords: ["feature", "flag"] },
   { label: "平台營收", path: "/platform/revenue", icon: DollarSign, group: "🌐 平台管理", keywords: ["mrr", "revenue"] },
+  { label: "跨場域數據分析", path: "/platform/analytics", icon: BarChart3, group: "🌐 平台管理", keywords: ["analytics", "stats", "compare"] },
+  { label: "平台設定", path: "/platform/settings", icon: Settings, group: "🌐 平台管理", keywords: ["config", "maintenance"] },
 ];
 
 export default function CommandPalette() {
