@@ -22,9 +22,18 @@ import {
 export const gameStorageMethods = {
   // ===== 遊戲 =====
 
-  /** 取得所有遊戲（依建立時間倒序） */
+  /** 取得所有遊戲（依建立時間倒序，⚠️ 跨場域，僅限 super_admin 使用） */
   async getGames(): Promise<Game[]> {
     return db.select().from(games).orderBy(desc(games.createdAt));
+  },
+
+  /** 取得指定場域的遊戲（🔒 場域隔離版本） */
+  async getGamesByField(fieldId: string): Promise<Game[]> {
+    return db
+      .select()
+      .from(games)
+      .where(eq(games.fieldId, fieldId))
+      .orderBy(desc(games.createdAt));
   },
 
   /** 取得已發布的遊戲 */
