@@ -81,14 +81,24 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
     }
   };
 
+  const applyPenalty = () => {
+    const penalty = config.penaltySeconds ?? 0;
+    if (penalty > 0) {
+      setTimeLeft((t) => Math.max(0, t - penalty));
+    }
+  };
+
   const handleInputSubmit = () => {
     if (!currentTask || currentTask.type !== "input") return;
     if (inputValue.toLowerCase().trim() === (currentTask.answer || "").toLowerCase().trim()) {
       completeTask();
     } else {
+      applyPenalty();
       toast({
         title: "答案錯誤",
-        description: "快點再試一次!",
+        description: (config.penaltySeconds ?? 0) > 0
+          ? `扣除 ${config.penaltySeconds} 秒！快點再試！`
+          : "快點再試一次!",
         variant: "destructive",
       });
       setInputValue("");
@@ -101,13 +111,55 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
     if (index === currentTask.correctIndex) {
       completeTask();
     } else {
+      applyPenalty();
       toast({
         title: "選錯了!",
-        description: "快點再選一次!",
+        description: (config.penaltySeconds ?? 0) > 0
+          ? `扣除 ${config.penaltySeconds} 秒！快點再選！`
+          : "快點再選一次!",
         variant: "destructive",
       });
-      setSelectedChoice(null);
+      setTimeout(() => setSelectedChoice(null), 300);
     }
+  };
+
+  // Swipe 任務：記錄觸控起點和終點
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+  const handleSwipeStart = (e: React.TouchEvent | React.MouseEvent) => {
+    const point = "touches" in e ? e.touches[0] : e;
+    swipeStartRef.current = { x: point.clientX, y: point.clientY };
+  };
+  const handleSwipeEnd = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!currentTask || currentTask.type !== "swipe") return;
+    const start = swipeStartRef.current;
+    if (!start) return;
+    const point = "changedTouches" in e ? e.changedTouches[0] : e;
+    const dx = point.clientX - start.x;
+    const dy = point.clientY - start.y;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    // 最小滑動距離門檻 50px
+    if (absX < 50 && absY < 50) return;
+
+    let direction: "left" | "right" | "up" | "down";
+    if (absX > absY) {
+      direction = dx > 0 ? "right" : "left";
+    } else {
+      direction = dy > 0 ? "down" : "up";
+    }
+
+    const expected = currentTask.swipeDirection || "right";
+    if (direction === expected) {
+      completeTask();
+    } else {
+      applyPenalty();
+      toast({
+        title: "方向錯誤",
+        description: `請往${directionLabel(expected)}滑動！`,
+        variant: "destructive",
+      });
+    }
+    swipeStartRef.current = null;
   };
 
   const getTimeColor = () => {
