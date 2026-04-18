@@ -150,6 +150,72 @@ export async function checkQuota(
 }
 
 /**
+ * 同步場域的遊戲總數 meter（games 是 total 不是 monthly，直接覆寫 currentValue）
+ * 在建立/刪除遊戲後呼叫
+ */
+export async function syncGamesMeter(fieldId: string): Promise<number> {
+  const { start, end } = getCurrentMonthPeriod();
+
+  // 計算當前場域的總遊戲數
+  const [{ count }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(games)
+    .where(eq(games.fieldId, fieldId));
+
+  // 取配額
+  const subRow = await db
+    .select({ sub: fieldSubscriptions, plan: platformPlans })
+    .from(fieldSubscriptions)
+    .leftJoin(platformPlans, eq(platformPlans.id, fieldSubscriptions.planId))
+    .where(eq(fieldSubscriptions.fieldId, fieldId))
+    .limit(1);
+
+  const plan = subRow[0]?.plan;
+  const sub = subRow[0]?.sub;
+  const planLimits = plan ? parsePlanLimits(plan.limits) : {};
+  const customLimits = sub?.customLimits ? (sub.customLimits as PlanLimits) : {};
+  const effectiveLimits = { ...planLimits, ...customLimits };
+  const limit = effectiveLimits.maxGames;
+
+  // UPSERT
+  const existing = await db.query.fieldUsageMeters.findFirst({
+    where: and(
+      eq(fieldUsageMeters.fieldId, fieldId),
+      eq(fieldUsageMeters.meterKey, "games"),
+      gte(fieldUsageMeters.periodStart, start),
+      lt(fieldUsageMeters.periodStart, end)
+    ),
+  });
+
+  if (existing) {
+    const isOverage = limit !== undefined && limit !== -1 && count > limit;
+    await db
+      .update(fieldUsageMeters)
+      .set({
+        currentValue: count,
+        limitValue: limit === -1 ? null : limit ?? null,
+        overageCount: isOverage
+          ? (existing.overageCount ?? 0) + 1
+          : existing.overageCount,
+        lastOverageAt: isOverage ? new Date() : existing.lastOverageAt,
+        updatedAt: new Date(),
+      })
+      .where(eq(fieldUsageMeters.id, existing.id));
+  } else {
+    await db.insert(fieldUsageMeters).values({
+      fieldId,
+      meterKey: "games",
+      periodStart: start,
+      periodEnd: end,
+      currentValue: count,
+      limitValue: limit === -1 ? null : limit ?? null,
+    });
+  }
+
+  return count;
+}
+
+/**
  * 取得場域所有用量（本月）
  */
 export async function getFieldUsage(fieldId: string) {
