@@ -292,10 +292,11 @@ export default function AdminLeaderboard() {
             )}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <Trophy className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">尚無排行榜記錄</p>
-          </div>
+          <EmptyState
+            icon={Trophy}
+            title="尚無排行榜記錄"
+            description="當玩家完成遊戲後，分數會自動顯示於此"
+          />
         )}
       </div>
     </UnifiedAdminLayout>
