@@ -161,8 +161,8 @@ describe("戰隊 API", () => {
     const fakeClan = { id: "clan-new", name: "新隊", fieldId: "field-1", leaderId: "user-1" };
 
     mockStorage.getUserClan.mockResolvedValue(null);
-    mockStorage.createClan.mockResolvedValue(fakeClan);
-    mockStorage.addClanMember.mockResolvedValue({ clanId: "clan-new", userId: "user-1", role: "leader" });
+    // 現在 route 用的是 createClanWithLeader 單一事務方法
+    mockStorage.createClanWithLeader.mockResolvedValue(fakeClan);
 
     const res = await request(app)
       .post("/api/battle/clans?fieldId=field-1")
@@ -171,8 +171,8 @@ describe("戰隊 API", () => {
 
     expect(res.status).toBe(201);
     expect(res.body.id).toBe("clan-new");
-    expect(mockStorage.addClanMember).toHaveBeenCalledWith(
-      expect.objectContaining({ clanId: "clan-new", role: "leader" }),
+    expect(mockStorage.createClanWithLeader).toHaveBeenCalledWith(
+      expect.objectContaining({ fieldId: "field-1", leaderId: "user-1" }),
     );
   });
 
