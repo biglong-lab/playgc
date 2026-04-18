@@ -33,20 +33,16 @@ export function AccountTable({
   onApprove,
 }: AccountTableProps) {
   if (isLoading) {
-    return (
-      <div className="flex justify-center py-8">
-        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-      </div>
-    );
+    return <ListSkeleton count={5} />;
   }
 
   if (!accounts || accounts.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <UserCog className="w-12 h-12 mx-auto mb-4 opacity-50" />
-        <p>尚無帳號資料</p>
-        <p className="text-sm">點擊「新增帳號」開始建立</p>
-      </div>
+      <EmptyState
+        icon={UserCog}
+        title="尚無管理員帳號"
+        description="新帳號可由上方「新增帳號」建立，或待玩家申請管理權限後於此審核"
+      />
     );
   }
 
