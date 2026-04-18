@@ -67,11 +67,16 @@ describe("對戰場地 API", () => {
   // GET /api/battle/venues
   // =========================================================================
   describe("GET /api/battle/venues", () => {
-    it("缺少 fieldId 回傳 400", async () => {
+    it("無 fieldId 時回傳所有活躍場地", async () => {
+      const allVenues = [{ id: "v0", name: "公開場地", fieldId: null }];
+      mockStorage.getAllActiveVenues.mockResolvedValue(allVenues);
+
       const app = createApp();
       const res = await request(app).get("/api/battle/venues");
-      expect(res.status).toBe(400);
-      expect(res.body.error).toMatch(/fieldId/);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveLength(1);
+      expect(mockStorage.getAllActiveVenues).toHaveBeenCalled();
     });
 
     it("成功回傳場地列表", async () => {
