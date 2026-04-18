@@ -41,6 +41,7 @@ interface GamePageRendererProps {
   readonly variables: Record<string, unknown>;
   readonly inventory: string[];
   readonly score: number;
+  readonly visitedLocations?: string[];
 }
 
 export default function GamePageRenderer({
