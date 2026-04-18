@@ -115,6 +115,12 @@ export function registerBattleSlotRoutes(app: Express) {
         insertBattleSlotSchema.parse(s as Record<string, unknown>)
       );
       const slots = await battleStorageMethods.createSlotsBatch(parsed);
+
+      // SaaS 用量計量：批次建立時段，依數量 +N
+      incrementUsage(venue.fieldId, "battle_slots", slots.length).catch((err) =>
+        console.error("[billing] incrementUsage battle_slots batch 失敗:", err),
+      );
+
       res.status(201).json(slots);
     } catch (error) {
       if (error instanceof z.ZodError) {
