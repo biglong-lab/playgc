@@ -99,9 +99,7 @@ export default function AdminAnalytics() {
   return (
     <UnifiedAdminLayout title="數據分析">
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
+        <GridSkeleton count={4} cols={4} />
       ) : (
         <>
           <AnalyticsStatCards overview={overview} />
