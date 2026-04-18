@@ -238,10 +238,14 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
             </div>
             <span className="text-sm text-muted-foreground">投票倒數</span>
           </div>
-          <Progress 
-            value={getTimeProgress()} 
+          <Progress
+            value={getTimeProgress()}
             className={`h-2 ${isUrgent ? "[&>div]:bg-destructive" : ""}`}
           />
+          <div className="flex items-start gap-2 mt-2 text-xs text-muted-foreground">
+            <Trophy className="w-3 h-3 mt-0.5 shrink-0" />
+            <span>請於時限內投票，以<b className="text-foreground">最多票的選項</b>決定下一關，團隊快速取得共識</span>
+          </div>
         </div>
       )}
 
