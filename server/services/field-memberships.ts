@@ -291,6 +291,19 @@ export async function revokeAdmin(
     revokedSessions = deleted.length;
   }
 
+  // 📧 發撤銷通知
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (user?.email && !user.email.endsWith("@firebase.local")) {
+    const field = await db.query.fields.findFirst({ where: eq(fields.id, fieldId) });
+    const revoker = await db.query.users.findFirst({ where: eq(users.id, revokedBy) });
+    sendAdminRevokedEmail({
+      to: user.email,
+      recipientName: formatUserName(user),
+      fieldName: field?.name ?? "場域",
+      revokedByName: formatUserName(revoker ?? null),
+    }).catch((err) => console.error("[email] sendAdminRevokedEmail 失敗:", err));
+  }
+
   return { success: true, revokedSessions };
 }
 
