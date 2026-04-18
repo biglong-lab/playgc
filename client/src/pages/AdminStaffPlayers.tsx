@@ -239,7 +239,115 @@ export default function AdminStaffPlayers() {
                 }
               />
             ) : (
-              <Table>
+              <>
+                {/* 手機：Card 版本 */}
+                <div className="space-y-3 md:hidden">
+                  {filtered.map((m) => {
+                    const isSelf = m.user?.id === selfAccountId;
+                    return (
+                      <Card key={`m-${m.membership.id}`} data-testid={`card-player-${m.membership.id}`}>
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-start gap-3">
+                            <Avatar className="w-10 h-10 shrink-0">
+                              <AvatarImage src={m.user?.profileImageUrl || undefined} />
+                              <AvatarFallback className="text-sm">{getInitials(m.user)}</AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium flex items-center gap-1">
+                                <span className="truncate">{getDisplayName(m.user)}</span>
+                                {isSelf && (
+                                  <Badge variant="outline" className="text-[10px] shrink-0">自己</Badge>
+                                )}
+                              </div>
+                              <div className="text-sm text-muted-foreground truncate">{m.user?.email || "-"}</div>
+                            </div>
+                            {m.membership.playerStatus === "active" ? (
+                              <Badge variant="outline" className="text-[10px] shrink-0">正常</Badge>
+                            ) : (
+                              <Badge variant="destructive" className="text-[10px] shrink-0">
+                                {m.membership.playerStatus === "suspended" ? "暫停" : "停權"}
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="text-xs text-muted-foreground">
+                            加入：{formatDate(m.membership.joinedAt)}
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t">
+                            <div className="flex items-center gap-2">
+                              <Switch
+                                checked={m.membership.isAdmin}
+                                disabled={isSelf}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setGrantTarget(m);
+                                    setSelectedRoleId(m.membership.adminRoleId ?? "");
+                                  } else {
+                                    setRevokeTarget(m);
+                                  }
+                                }}
+                              />
+                              <span className="text-sm">
+                                {m.membership.isAdmin ? (
+                                  m.role ? <Badge className="bg-blue-600 text-[10px]">{m.role.name}</Badge> : "管理員"
+                                ) : (
+                                  <span className="text-muted-foreground">未授權</span>
+                                )}
+                              </span>
+                            </div>
+
+                            {!isSelf && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button size="sm" variant="ghost" className="px-2">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  {m.membership.playerStatus === "active" ? (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setSuspendTarget({ member: m, status: "suspended" });
+                                          setSuspendReason("");
+                                        }}
+                                      >
+                                        <Ban className="w-3.5 h-3.5 mr-2 text-amber-600" />暫停玩家
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setSuspendTarget({ member: m, status: "banned" });
+                                          setSuspendReason("");
+                                        }}
+                                        className="text-destructive"
+                                      >
+                                        <Ban className="w-3.5 h-3.5 mr-2" />永久停權
+                                      </DropdownMenuItem>
+                                    </>
+                                  ) : (
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        setSuspendTarget({ member: m, status: "active" });
+                                        setSuspendReason("");
+                                      }}
+                                    >
+                                      <CheckCircle2 className="w-3.5 h-3.5 mr-2 text-emerald-600" />恢復玩家
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                {/* 桌面：Table 版本 */}
+                <div className="hidden md:block">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>玩家</TableHead>
