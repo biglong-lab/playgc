@@ -62,6 +62,19 @@ export const ROUTE_META: Record<string, RouteMeta> = {
     emoji: "💵",
     section: "platform",
   },
+  "/platform/analytics": {
+    title: "跨場域數據分析",
+    parent: "/platform",
+    emoji: "📊",
+    section: "platform",
+    description: "比較所有場域的遊戲數 / 結帳 / 對戰 / 平台費",
+  },
+  "/platform/settings": {
+    title: "平台設定",
+    parent: "/platform",
+    emoji: "⚙️",
+    section: "platform",
+  },
 
   // ═══════════════════════════════════════════════
   // 📊 場域管理 - 系統總覽
