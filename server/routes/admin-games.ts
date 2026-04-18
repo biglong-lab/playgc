@@ -18,6 +18,7 @@ import { games } from "@shared/schema";
 import { z } from "zod";
 import { eq, desc, count } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { syncGamesMeter } from "../services/billing";
 
 export function registerAdminGameRoutes(app: Express) {
   // ============================================================================
