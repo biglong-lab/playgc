@@ -89,10 +89,24 @@ export function registerLeaderboardRoutes(app: Express) {
     }
   });
 
-  app.get("/api/analytics/sessions", isAuthenticated, async (req, res) => {
+  app.get("/api/analytics/sessions", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
-      const sessions = await storage.getSessions();
-      const games = await storage.getGames();
+      const auth = await requireAdminRole(req);
+      if (!auth.authorized) {
+        return res.status(403).json({ message: auth.message });
+      }
+
+      // 🔒 場域隔離
+      const fieldId =
+        (req.query.fieldId as string) ||
+        req.admin?.fieldId ||
+        auth.fieldId;
+      if (!fieldId) {
+        return res.status(400).json({ message: "需指定 fieldId（場域隔離必要）" });
+      }
+
+      const sessions = await storage.getSessionsByField(fieldId);
+      const games = await storage.getGamesByField(fieldId);
 
       const last7Days = [];
       for (let i = 6; i >= 0; i--) {
