@@ -177,7 +177,7 @@ export async function grantAdmin(
   userId: string,
   fieldId: string,
   roleId: string,
-  grantedBy: string
+  grantedByAccountId: string
 ): Promise<{ success: boolean; error?: string }> {
   // 確保有 membership（無則建立）
   await ensureMembership(userId, fieldId);
@@ -193,13 +193,16 @@ export async function grantAdmin(
     return { success: false, error: "無法指派其他場域的角色" };
   }
 
+  // 把 admin_accounts.id 轉成 users.id（FK 限制）
+  const grantedByUserId = await adminAccountIdToUserId(grantedByAccountId);
+
   await db
     .update(fieldMemberships)
     .set({
       isAdmin: true,
       adminRoleId: roleId,
       adminGrantedAt: new Date(),
-      adminGrantedBy: grantedBy,
+      adminGrantedBy: grantedByUserId, // null-safe（若 admin 未綁 Firebase 則存 null）
       adminRevokedAt: null,
       adminRevokedBy: null,
       updatedAt: new Date(),
