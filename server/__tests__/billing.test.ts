@@ -159,3 +159,195 @@ describe("SaaS 計費 — checkQuota", () => {
     expect(battles.isOver).toBe(true);
   });
 });
+
+describe("SaaS 計費 — recordTransactionFee", () => {
+  beforeEach(() => {
+    mockFindFirst.mockReset();
+    mockSelectLimit.mockReset();
+    mockInsertValues.mockReset();
+  });
+
+  it("無訂閱 → 回傳 null", async () => {
+    mockSelectLimit.mockResolvedValueOnce([]);
+
+    const result = await recordTransactionFee({
+      fieldId: "field-1",
+      sourceTransactionId: "tx-1",
+      sourceAmount: 100,
+    });
+
+    expect(result).toBeNull();
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it("費率為 0 → 不建立交易（免費方案）", async () => {
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customFeePercent: null },
+        plan: { id: "plan-free", transactionFeePercent: "0" },
+      },
+    ]);
+
+    const result = await recordTransactionFee({
+      fieldId: "field-1",
+      sourceTransactionId: "tx-1",
+      sourceAmount: 100,
+    });
+
+    expect(result).toBeNull();
+    expect(mockInsertValues).not.toHaveBeenCalled();
+  });
+
+  it("5% 抽成 → 回傳 feeAmount + 插入交易", async () => {
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customFeePercent: null },
+        plan: { id: "plan-free", transactionFeePercent: "5" },
+      },
+    ]);
+    mockInsertValues.mockResolvedValueOnce([{ id: "pt-1" }]);
+
+    const result = await recordTransactionFee({
+      fieldId: "field-1",
+      sourceTransactionId: "tx-100",
+      sourceAmount: 200,
+    });
+
+    expect(result).toEqual({ feeAmount: 10, feePercent: 5 });
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fieldId: "field-1",
+        type: "transaction_fee",
+        amount: 10,
+        status: "pending",
+        sourceTransactionId: "tx-100",
+      }),
+    );
+  });
+
+  it("場域自訂費率優先於方案費率", async () => {
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customFeePercent: "15" }, // 戰略合作自訂 15%
+        plan: { id: "plan-pro", transactionFeePercent: "3" },
+      },
+    ]);
+    mockInsertValues.mockResolvedValueOnce([{ id: "pt-2" }]);
+
+    const result = await recordTransactionFee({
+      fieldId: "field-revshare",
+      sourceTransactionId: "tx-200",
+      sourceAmount: 1000,
+    });
+
+    expect(result).toEqual({ feeAmount: 150, feePercent: 15 });
+  });
+
+  it("四捨五入到整數（5.5% × 100 = 5.5 → 6）", async () => {
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customFeePercent: null },
+        plan: { id: "plan", transactionFeePercent: "5.5" },
+      },
+    ]);
+    mockInsertValues.mockResolvedValueOnce([{ id: "pt-3" }]);
+
+    const result = await recordTransactionFee({
+      fieldId: "field-1",
+      sourceTransactionId: "tx-r",
+      sourceAmount: 100,
+    });
+
+    expect(result?.feeAmount).toBe(6); // Math.round(5.5) = 6
+  });
+});
+
+describe("SaaS 計費 — incrementUsage", () => {
+  beforeEach(() => {
+    mockFindFirst.mockReset();
+    mockSelectLimit.mockReset();
+    mockInsertValues.mockReset();
+    mockUpdateReturning.mockReset();
+  });
+
+  it("首次計量 → 建立新 meter 記錄", async () => {
+    // 取配額（回傳 pro 方案）
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customLimits: null },
+        plan: { id: "plan-pro", limits: { maxCheckoutsPerMonth: 1000 } },
+      },
+    ]);
+    // 找現有 meter → null
+    mockFindFirst.mockResolvedValueOnce(undefined);
+    mockInsertValues.mockResolvedValueOnce([{ currentValue: 1 }]);
+
+    const result = await incrementUsage("field-1", "checkouts", 1);
+
+    expect(result).toBe(1);
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({
+        fieldId: "field-1",
+        meterKey: "checkouts",
+        currentValue: 1,
+        limitValue: 1000,
+      }),
+    );
+  });
+
+  it("已有 meter → 累加 currentValue", async () => {
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customLimits: null },
+        plan: { id: "plan-free", limits: { maxCheckoutsPerMonth: 100 } },
+      },
+    ]);
+    mockFindFirst.mockResolvedValueOnce({
+      id: "meter-1",
+      currentValue: 50,
+      overageCount: 0,
+    });
+    mockUpdateReturning.mockResolvedValueOnce([{ currentValue: 51 }]);
+
+    const result = await incrementUsage("field-1", "checkouts", 1);
+
+    expect(result).toBe(51);
+  });
+
+  it("無限方案（limit=-1）→ 不計 overage", async () => {
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customLimits: null },
+        plan: { id: "plan-enterprise", limits: { maxCheckoutsPerMonth: -1 } },
+      },
+    ]);
+    mockFindFirst.mockResolvedValueOnce(undefined);
+    mockInsertValues.mockResolvedValueOnce([{ currentValue: 99999 }]);
+
+    const result = await incrementUsage("field-1", "checkouts", 99999);
+
+    expect(result).toBe(99999);
+    // limitValue 應存 null（-1 → 無限）
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ limitValue: null }),
+    );
+  });
+
+  it("自訂 limits 覆蓋方案 limits", async () => {
+    mockSelectLimit.mockResolvedValueOnce([
+      {
+        sub: { id: "sub-1", customLimits: { maxCheckoutsPerMonth: 500 } },
+        plan: { id: "plan-free", limits: { maxCheckoutsPerMonth: 100 } },
+      },
+    ]);
+    mockFindFirst.mockResolvedValueOnce(undefined);
+    mockInsertValues.mockResolvedValueOnce([{ currentValue: 1 }]);
+
+    await incrementUsage("field-vip", "checkouts", 1);
+
+    // 應使用自訂的 500（不是方案的 100）
+    expect(mockInsertValues).toHaveBeenCalledWith(
+      expect.objectContaining({ limitValue: 500 }),
+    );
+  });
+});
