@@ -333,10 +333,16 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder={inputType === "number" ? "輸入數字..." : "輸入你的答案..."}
-              onKeyDown={(e) => e.key === "Enter" && !isChecking && checkAnswer()}
+              // IME composing 中不觸發（中日韓輸入法確認選字時按 Enter）
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                if ((e.nativeEvent as KeyboardEvent).isComposing) return;
+                if (!isChecking) checkAnswer();
+              }}
               disabled={isCorrect !== null || isChecking}
               className="text-center text-lg h-12"
               inputMode={inputType === "number" ? "numeric" : "text"}
+              {...NO_AUTO_INPUT_PROPS}
               data-testid="input-answer"
             />
 
