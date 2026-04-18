@@ -115,12 +115,12 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
       setShowExplanation(true);
       setTimeout(() => {
         const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-        onComplete({ points: 10, items }, config.nextPageId);
+        onComplete({ points: config.rewardPoints ?? 10, items }, config.nextPageId);
       }, 3000);
     } else {
       setTimeout(() => {
         const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-        onComplete({ points: 10, items }, config.nextPageId);
+        onComplete({ points: config.rewardPoints ?? 10, items }, config.nextPageId);
       }, 1500);
     }
   };
