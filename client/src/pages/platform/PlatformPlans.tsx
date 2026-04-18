@@ -58,15 +58,13 @@ export default function PlatformPlans() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
+          <GridSkeleton count={4} cols={4} />
         ) : !plans?.length ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              尚無方案
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Package}
+            title="尚無訂閱方案"
+            description="執行 seed 腳本初始化預設方案（Free / Pro / Enterprise / RevShare）"
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {plans.map((plan) => (
