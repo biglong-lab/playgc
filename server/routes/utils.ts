@@ -77,21 +77,7 @@ export async function checkGameOwnership(req: AuthenticatedRequest, gameId: stri
   }
 
   // 新邏輯：SaaS 多租戶 — 查 admin_accounts 確認是否為 super_admin 或場域管理員
-  const adminRows = await db
-    .select({
-      fieldId: adminAccounts.fieldId,
-      systemRole: roles.systemRole,
-      status: adminAccounts.status,
-    })
-    .from(adminAccounts)
-    .leftJoin(roles, eq(roles.id, adminAccounts.roleId))
-    .where(
-      and(
-        eq(adminAccounts.firebaseUserId, userId),
-        eq(adminAccounts.status, "active"),
-      ),
-    )
-    .limit(5);
+  const adminRows = await getAdminAccountsByFirebaseUid(userId);
 
   for (const admin of adminRows) {
     // super_admin 可修改任何遊戲
