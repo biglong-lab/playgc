@@ -145,13 +145,14 @@ export default function AdminBattleVenues() {
         </div>
 
         {isLoading ? (
-          <p className="text-muted-foreground">載入中...</p>
+          <GridSkeleton count={3} cols={3} />
         ) : venues.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center text-muted-foreground">
-              尚未建立任何對戰場地，請點擊「新增場地」開始設定
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Swords}
+            title="尚未建立任何對戰場地"
+            description="場地定義水彈對戰的地點、最低/最高人數與每人費用"
+            actions={[{ label: "新增場地", onClick: () => setShowCreateDialog(true) }]}
+          />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {venues.map((venue) => (
