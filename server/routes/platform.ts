@@ -496,8 +496,8 @@ export function registerPlatformRoutes(app: Express): void {
         code: PLATFORM_CONFIG_CODE,
         name: "【系統設定 - 勿刪】",
         description: "內部用於儲存平台全域設定，非實際方案",
-        price: 0,
-        isActive: false,
+        monthlyPrice: 0,
+        status: "archived",
         sortOrder: 9999,
         limits: merged,
       })
