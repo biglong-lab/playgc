@@ -63,7 +63,9 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
         });
         setTimeout(() => {
           const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-          onComplete({ points: correctCount * 10, items });
+          const rewardPerQ = config.rewardPerQuestion ?? 10;
+          const totalPoints = config.onSuccess?.points ?? correctCount * rewardPerQ;
+          onComplete({ points: totalPoints, items }, config.nextPageId);
         }, 2000);
       } else {
         toast({
