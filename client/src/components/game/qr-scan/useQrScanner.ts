@@ -79,7 +79,7 @@ export function useQrScanner(
     return () => { stopScanning(); };
   }, [stopScanning]);
 
-  // 容器就緒後初始化
+  // 容器就緒後初始化（用 ref 而非 id 避免 React 生命週期競態）
   useEffect(() => {
     if (mode === "initializing" && containerReady && !initAttemptedRef.current) {
       initAttemptedRef.current = true;
@@ -94,49 +94,37 @@ export function useQrScanner(
     }
   }, [mode]);
 
-  // 檢查相機權限
-  const checkCameraPermission = async (): Promise<boolean> => {
-    try {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        setCameraError("您的瀏覽器不支援相機功能，請使用手動輸入方式");
-        return false;
-      }
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      stream.getTracks().forEach(track => track.stop());
-      return true;
-    } catch (err: unknown) {
-      setCameraError(parseCameraError(err));
-      return false;
-    }
-  };
-
-  // 開始掃描
+  // 開始掃描（不預檢 getUserMedia，避免 iOS 相機鎖釋放/再取的時序衝突）
   const startScanning = () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("您的瀏覽器不支援相機功能，請使用手動輸入方式");
+      return;
+    }
     setCameraError(null);
     initAttemptedRef.current = false;
     setMode("initializing");
     setContainerReady(false);
 
-    const checkInterval = setInterval(() => {
-      const container = document.getElementById("qr-reader");
+    // 用 requestAnimationFrame 等 React commit 完成後再檢查 container
+    let cancelled = false;
+    const check = () => {
+      if (cancelled) return;
+      const container = scannerContainerRef.current || document.getElementById("qr-reader");
       if (container && container.offsetWidth > 0) {
-        clearInterval(checkInterval);
         setContainerReady(true);
+        return;
       }
-    }, 50);
+      requestAnimationFrame(check);
+    };
+    requestAnimationFrame(check);
 
-    setTimeout(() => {
-      clearInterval(checkInterval);
-      if (!containerReady) setContainerReady(true);
-    }, 3000);
+    // 3 秒保險
+    setTimeout(() => { cancelled = true; setContainerReady(true); }, 3000);
   };
 
   // 初始化掃描器
   const initializeScanner = async () => {
-    const hasPermission = await checkCameraPermission();
-    if (!hasPermission) { setMode("instruction"); return; }
-
-    const container = document.getElementById("qr-reader");
+    const container = scannerContainerRef.current || document.getElementById("qr-reader");
     if (!container) {
       setCameraError("掃描器初始化失敗，請重試");
       setMode("instruction");
@@ -149,11 +137,20 @@ export function useQrScanner(
       html5QrCodeRef.current = html5QrCode;
 
       await html5QrCode.start(
-        { facingMode: "environment" },
+        { facingMode: { ideal: "environment" } },
         { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1, disableFlip: false },
         (decodedText) => { verifyCode(decodedText); },
         () => {},
       );
+
+      // iOS Safari 保險：補上 playsInline（html5-qrcode 沒全部處理）
+      const video = container.querySelector("video");
+      if (video) {
+        video.setAttribute("playsinline", "true");
+        video.setAttribute("muted", "true");
+        video.setAttribute("autoplay", "true");
+      }
+
       setMode("scanning");
     } catch (err: unknown) {
       const errorMessage = parseScannerError(err);
@@ -219,34 +216,27 @@ export function useQrScanner(
 
 // ==================== 工具函式 ====================
 
-/** 解析相機權限錯誤 */
-function parseCameraError(err: unknown): string {
-  const error = err as { name?: string; message?: string };
-  switch (error.name) {
-    case "NotAllowedError":
-    case "PermissionDeniedError":
-      return "相機權限被拒絕。請在瀏覽器設定中允許相機權限，然後重試";
-    case "NotFoundError":
-    case "DevicesNotFoundError":
-      return "找不到相機設備。請確認您的設備有相機功能";
-    case "NotReadableError":
-    case "TrackStartError":
-      return "相機正在被其他應用程式使用中。請關閉其他使用相機的應用程式後重試";
-    case "OverconstrainedError":
-      return "相機設定不支援。請嘗試使用其他設備";
-    case "SecurityError":
-      return "需要 HTTPS 連線才能使用相機功能";
-    default:
-      return `無法存取相機: ${error.message || "未知錯誤"}`;
-  }
-}
-
-/** 解析掃描器啟動錯誤 */
+/** 解析掃描器啟動錯誤（合併 name 和 message 兩種判斷）*/
 function parseScannerError(err: unknown): string {
-  const message = (err as { message?: string }).message || "";
-  if (message.includes("Permission")) return "相機權限被拒絕，請允許相機權限後重試";
-  if (message.includes("NotFound") || message.includes("no cameras")) return "找不到可用的相機設備";
-  if (message.includes("NotReadable")) return "相機正在被其他程式使用中";
+  const error = err as { name?: string; message?: string };
+  const name = error.name || "";
+  const message = error.message || "";
+
+  if (name === "NotAllowedError" || name === "PermissionDeniedError" || message.includes("Permission")) {
+    return "相機權限被拒絕。請在瀏覽器或系統設定中允許相機權限，重新整理頁面後再試";
+  }
+  if (name === "NotFoundError" || name === "DevicesNotFoundError" || message.includes("NotFound") || message.includes("no cameras")) {
+    return "找不到可用的相機設備";
+  }
+  if (name === "NotReadableError" || name === "TrackStartError" || message.includes("NotReadable")) {
+    return "相機正在被其他應用程式使用中，請關閉後重試";
+  }
+  if (name === "OverconstrainedError") {
+    return "相機設定不支援，請嘗試其他設備";
+  }
+  if (name === "SecurityError") {
+    return "需要 HTTPS 連線才能使用相機功能";
+  }
   if (message) return `掃描器錯誤: ${message}`;
   return "無法啟動掃描器";
 }

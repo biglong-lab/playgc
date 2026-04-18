@@ -1,7 +1,7 @@
 import type { QrScanConfig } from "@shared/schema";
 import { useQrScanner } from "./qr-scan/useQrScanner";
 import {
-  InstructionView, InitializingView, ScanningView,
+  InstructionView, CameraView,
   ManualInputView, SuccessView, ErrorView,
 } from "./qr-scan/QrScanViews";
 
@@ -22,11 +22,12 @@ export default function QrScanPage({ config, onComplete, sessionId }: QrScanPage
       {mode === "instruction" && (
         <InstructionView config={config} state={state} actions={actions} />
       )}
-      {mode === "initializing" && (
-        <InitializingView actions={actions} scannerContainerRef={scannerContainerRef} />
-      )}
-      {mode === "scanning" && (
-        <ScanningView actions={actions} scannerContainerRef={scannerContainerRef} />
+      {(mode === "initializing" || mode === "scanning") && (
+        <CameraView
+          actions={actions}
+          scannerContainerRef={scannerContainerRef}
+          isInitializing={mode === "initializing"}
+        />
       )}
       {mode === "manual" && (
         <ManualInputView config={config} state={state} actions={actions} />

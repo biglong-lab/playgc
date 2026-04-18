@@ -56,54 +56,55 @@ export function InstructionView({ config, state, actions }: Omit<ViewProps, "sca
   );
 }
 
-// ==================== 初始化中 ====================
+// ==================== 相機畫面（初始化 + 掃描中共用）====================
+// 注意：initializing 和 scanning 必須共用同一個 #qr-reader DOM，否則
+// html5-qrcode 插入的 <video> 元素會在 mode 切換時被 React 卸載，導致黑屏
 
-export function InitializingView({ actions, scannerContainerRef }: Pick<ViewProps, "actions" | "scannerContainerRef">) {
-  return (
-    <div className="w-full max-w-md">
-      <div
-        id="qr-reader"
-        ref={scannerContainerRef}
-        className="relative bg-black rounded-lg overflow-hidden aspect-square mb-4 flex items-center justify-center"
-      >
-        <div className="text-center text-white">
-          <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
-          <p className="text-lg">正在啟動相機...</p>
-          <p className="text-sm text-white/60 mt-2">請允許相機權限</p>
-        </div>
-      </div>
-      <Button variant="outline" onClick={actions.handleCancelScan} className="w-full" data-testid="button-cancel-init">
-        取消
-      </Button>
-    </div>
-  );
-}
-
-// ==================== 掃描中 ====================
-
-export function ScanningView({ actions, scannerContainerRef }: Pick<ViewProps, "actions" | "scannerContainerRef">) {
+export function CameraView({
+  actions,
+  scannerContainerRef,
+  isInitializing,
+}: Pick<ViewProps, "actions" | "scannerContainerRef"> & { isInitializing: boolean }) {
   return (
     <div className="w-full max-w-md">
       <div
         id="qr-reader"
         ref={scannerContainerRef}
         className="relative bg-black rounded-lg overflow-hidden aspect-square mb-4"
-      />
-      <p className="text-center text-sm text-muted-foreground mb-4">將 QR Code 對準掃描框內</p>
-      <div className="flex gap-3">
-        <Button variant="outline" onClick={actions.handleCancelScan} className="flex-1" data-testid="button-cancel-scan">
+      >
+        {isInitializing && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+            <div className="text-center text-white">
+              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
+              <p className="text-lg">正在啟動相機...</p>
+              <p className="text-sm text-white/60 mt-2">請允許相機權限</p>
+            </div>
+          </div>
+        )}
+      </div>
+      {isInitializing ? (
+        <Button variant="outline" onClick={actions.handleCancelScan} className="w-full" data-testid="button-cancel-init">
           取消
         </Button>
-        <Button
-          variant="outline"
-          onClick={async () => { await actions.stopScanning(); actions.setMode("manual"); }}
-          className="flex-1 gap-2"
-          data-testid="button-switch-manual"
-        >
-          <Keyboard className="w-4 h-4" />
-          手動輸入
-        </Button>
-      </div>
+      ) : (
+        <>
+          <p className="text-center text-sm text-muted-foreground mb-4">將 QR Code 對準掃描框內</p>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={actions.handleCancelScan} className="flex-1" data-testid="button-cancel-scan">
+              取消
+            </Button>
+            <Button
+              variant="outline"
+              onClick={async () => { await actions.stopScanning(); actions.setMode("manual"); }}
+              className="flex-1 gap-2"
+              data-testid="button-switch-manual"
+            >
+              <Keyboard className="w-4 h-4" />
+              手動輸入
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
