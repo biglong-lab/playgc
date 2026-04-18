@@ -37,7 +37,7 @@ export default function GameHeader({
   }, [score]);
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border safe-top">
       <div className="px-4 py-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Button
