@@ -436,7 +436,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                 </Button>
 
                 {/* 顯示勝選選項提示 */}
-                {canContinue && (() => {
+                {hasVoted && (() => {
                   const winner = getWinningOption();
                   const winnerText = winner ? options[winner.optionIndex]?.text : null;
                   if (!winnerText) return null;
