@@ -268,6 +268,17 @@ export function registerPlayerPurchaseRoutes(app: Express) {
         return res.status(400).json({ message: "此遊戲為免費遊戲" });
       }
 
+      // SaaS 配額檢查：場域本月結帳次數
+      if (game.fieldId) {
+        const quota = await checkQuota(game.fieldId, "checkouts");
+        if (quota.isOver) {
+          return res.status(402).json({
+            message: "此場域本月結帳次數已達方案上限，請聯繫場域管理員升級方案",
+            quota: { current: quota.current, limit: quota.limit },
+          });
+        }
+      }
+
       let amount: number;
       let productId: string;
 
