@@ -16,9 +16,89 @@
 
 ## 目前狀態
 
-**最後更新**: 2026-04-18 深夜
+**最後更新**: 2026-04-18 晚間（v5 優化輪）
 **分支**: main
-**Git 狀態**: 已推送 + 已部署到 `game.homi.cc`
+**Git 狀態**: 已部署到 `game.homi.cc`；本 session 改動待 push
+
+---
+
+## 🚀 2026-04-18 晚間 — v5 優化輪（遊戲模組 ×10 + Admin 手機化 + PWA 安裝）
+
+### 背景
+依「下一步建議」依序推進：遊戲模組盤點 → Admin 手機化 → PWA 深化 → Recur/CI/CD 收尾。
+
+### 第一項：遊戲模組擴充 5 → 15（commit `6a71f4c`）
+
+既有遊戲模組庫只有 5 套，透過 16 種 pageType 自由組合擴充 10 套新玩法，
+**零 schema / DB 變動**，`GET /api/admin/modules` 自動吐出新模組。
+
+- 新目錄：`shared/schema/modules/`（按分類拆 5 檔，最大 <300 行）
+  - `outdoor.ts`：廟宇文化巡禮、夜市美食偵探、都市定向越野賽
+  - `indoor.ts`：生日派對逃脫趣、魔法學院入學試
+  - `education.ts`：科學探險小隊、歷史穿越大冒險
+  - `team.ts`：企業年會挑戰賽、戶外求生極限賽
+  - `digital.ts`：都市怪談調查員
+- `shared/schema/game-modules.ts` 底部 import + spread 合併
+- 單元測試：`toHaveLength(5)` → `toHaveLength(15)`
+- 24 測試全過、TypeScript 零錯誤、build 125 PWA entries
+
+### 第二項：PR2 Admin 手機化（4 個核心頁面）
+
+傳統 `<Table>` 在手機橫向滑動體驗差。採用「雙視圖並存」策略：
+- `<div className="md:hidden">` 渲染 Card 卡片
+- `<div className="hidden md:block">` 保留 Table
+
+**改造範圍**：
+| 檔案 | 說明 | 手機 Card 重點 |
+|------|------|--------------|
+| `AdminStaffGames.tsx` | 跨場域遊戲管理 | 名稱+場域+狀態徽章 + 多按鈕操作列 |
+| `admin-games/GamesTable.tsx` | 單場域遊戲列表 | 難度/時長/狀態 + 分隔線下操作列 |
+| `admin-staff/AccountTable.tsx` | 員工帳號 | 顯示名稱+username + 場域/角色/狀態徽章 |
+| `AdminStaffPlayers.tsx` | 玩家管理 | Avatar + 狀態 + Switch + DropdownMenu |
+
+行數變化：AdminStaffPlayers 561 → 671（仍在 800 行限制內）。
+
+### 第三項：PR4 PWA 安裝提示
+
+新增 `client/src/components/PWAInstallPrompt.tsx`（147 行）：
+- 攔截 `beforeinstallprompt` 事件 + 客製化底部浮動卡片
+- 自動偵測 standalone 模式 → 已安裝不顯示
+- `localStorage` 記錄使用者 dismiss，7 天 cooldown
+- iOS Safari `navigator.standalone` 相容
+- 支援 `safe-bottom` 避開手機 home indicator
+- 整合到 `App.tsx` 根部
+
+### 第四項：Recur.tw + CI/CD 確認（無需實作）
+
+盤點後確認**實作面已完整**，剩下純配置：
+
+**Recur.tw 金流**（後端 110 + 151 行已完成）：
+- `server/services/recur-client.ts` — API Client + Webhook 驗簽
+- `server/routes/webhook-recur.ts` — Webhook 處理 + 交易更新 + 計費 hook
+- `server/routes/player-purchases.ts` — `POST /api/games/:gameId/checkout`
+- `client/src/pages/PurchaseGate.tsx` — 前端呼叫 API → `window.location.href` 跳轉
+- **待配置**：生產環境 `RECUR_API_KEY` + `RECUR_WEBHOOK_SECRET` + Recur 後台建立對應商品
+
+**CI/CD 部署**（`.github/workflows/deploy.yml` 已完成）：
+- Manual dispatch + `confirm=yes` 防誤觸
+- 三階段：validate（型別/測試/build） → deploy-docker-ssh 或 deploy-coolify
+- **待配置**：GitHub Secrets（`DEPLOY_HOST`、`DEPLOY_USER`、`DEPLOY_SSH_KEY`、`DEPLOY_PATH`、`VITE_FIREBASE_*`）
+
+### 驗證
+- ✅ TypeScript 零錯誤
+- ✅ 24 單元測試全過（game-modules）
+- ✅ Vite build 通過（125 PWA entries）
+- ✅ adminModules route 測試 10/10 通過
+
+### Commits
+- `6a71f4c` feat: 新增 10 個遊戲模組（模組庫從 5 → 15）
+- 其餘 PR2/PR4 改動透過 auto-commit hook 捕獲（chore(auto) 系列）
+
+### 後續待配置（交付使用者）
+1. 🟡 Recur 後台建立產品並回填 productId 對應遊戲
+2. 🟡 生產環境設定 Recur 環境變數
+3. 🟡 GitHub repo 設定 CI/CD secrets 啟用自動部署
+4. 🟢 PWA 進階：離線 IndexedDB 暫存 + 長列表虛擬化（react-window）
 
 ---
 
