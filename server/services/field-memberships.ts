@@ -229,6 +229,19 @@ export async function grantAdmin(
     }
   }
 
+  // 📧 發通知信（真實 email 才寄；fallback user 不打擾）
+  if (user?.email && !user.email.endsWith("@firebase.local")) {
+    const field = await db.query.fields.findFirst({ where: eq(fields.id, fieldId) });
+    const grantor = await db.query.users.findFirst({ where: eq(users.id, grantedBy) });
+    sendAdminGrantedEmail({
+      to: user.email,
+      recipientName: formatUserName(user),
+      fieldName: field?.name ?? "場域",
+      roleName: role.name,
+      grantedByName: formatUserName(grantor ?? null),
+    }).catch((err) => console.error("[email] sendAdminGrantedEmail 失敗:", err));
+  }
+
   return { success: true };
 }
 
