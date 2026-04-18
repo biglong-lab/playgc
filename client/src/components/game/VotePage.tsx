@@ -163,7 +163,8 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
     }, 500);
   };
 
-  const canContinue = hasVoted && (totalVotes >= minVotes || timedOut || minVotes <= 1);
+  // 簡化：投完票或時限到即可繼續（單機模式無多人同步，不卡 minVotes）
+  const canContinue = hasVoted;
 
   const getWinningOption = (): VoteResult | null => {
     if (voteResults.length === 0) return null;
