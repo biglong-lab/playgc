@@ -212,11 +212,26 @@ export default function ConditionalVerifyPage({
     }
   };
 
+  // 條件 mode：初次檢查
   useEffect(() => {
     if (!isFragmentMode && config.conditions && config.conditions.length > 0) {
       verifyConditions(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 條件 mode：玩家取得道具 / 點數 / 造訪地點後重新檢查條件（不彈 toast）
+  useEffect(() => {
+    if (!isFragmentMode && config.conditions && config.conditions.length > 0) {
+      const results = config.conditions.map(checkCondition);
+      setConditionResults(results);
+      const passed = config.allRequired !== false
+        ? results.every(r => r)
+        : results.some(r => r);
+      setAllPassed(passed);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inventory, score, visitedLocations]);
 
   if (isFragmentMode) {
     return (
