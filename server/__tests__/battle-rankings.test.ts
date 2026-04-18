@@ -7,8 +7,13 @@ const mockStorage = vi.hoisted(() => ({
   getPlayerHistory: vi.fn(),
 }));
 
+const mockGetRankingsByFieldWithNames = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+const mockGetPlayerHistoryWithDetails = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+
 vi.mock("../storage/battle-storage", () => ({
   battleStorageMethods: mockStorage,
+  getRankingsByFieldWithNames: mockGetRankingsByFieldWithNames,
+  getPlayerHistoryWithDetails: mockGetPlayerHistoryWithDetails,
 }));
 
 vi.mock("../firebaseAuth", () => ({
