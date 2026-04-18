@@ -96,17 +96,37 @@ export function evaluateFlowRouter(
   inventory: string[],
   score: number,
 ): string | null {
+  const isDev = typeof import.meta !== "undefined" && (import.meta as any).env?.DEV;
+
   if (config.mode === 'random') {
-    return pickRandomRoute(config.routes);
+    const result = pickRandomRoute(config.routes);
+    if (isDev) {
+      // eslint-disable-next-line no-console
+      console.log("[flow-router] random →", result, { routes: config.routes });
+    }
+    return result;
   }
 
   // conditional 模式：按順序評估，第一個滿足的立即回傳
-  for (const route of config.routes) {
+  for (let i = 0; i < config.routes.length; i++) {
+    const route = config.routes[i];
     if (evaluateRoute(route, variables, inventory, score)) {
+      if (isDev) {
+        // eslint-disable-next-line no-console
+        console.log(`[flow-router] matched route #${i} →`, route.nextPageId, {
+          conditions: route.conditions,
+          variables, inventory, score,
+        });
+      }
       return route.nextPageId;
     }
   }
-  return config.defaultNextPageId ?? null;
+  const fallback = config.defaultNextPageId ?? null;
+  if (isDev) {
+    // eslint-disable-next-line no-console
+    console.warn("[flow-router] no route matched, fallback →", fallback, { variables, inventory, score });
+  }
+  return fallback;
 }
 
 /** 解析連續的 flow_router 頁面，回傳最終目標 index（-1 表示遊戲結束） */
