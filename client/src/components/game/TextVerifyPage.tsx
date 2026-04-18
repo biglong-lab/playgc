@@ -201,9 +201,13 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
 
         setIsAnimating(false);
 
-        // AI fallback（服務不可用）→ 使用原始邏輯
+        // AI fallback（服務不可用）→ 視為需重試，不算玩家答錯
         if (result.fallback) {
-          handleIncorrect();
+          toast({
+            title: "評分服務暫時無法使用",
+            description: "請稍後再試，本次不扣除嘗試次數",
+            variant: "destructive",
+          });
           return;
         }
 
@@ -213,9 +217,13 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
           handleIncorrect(result.feedback);
         }
       } catch {
-        // API 錯誤 → fallback 到原始精確匹配邏輯
+        // API 錯誤 → 不扣次數、提示玩家重試（原本會呼叫 handleIncorrect 扣次數，不合理）
         setIsAnimating(false);
-        handleIncorrect();
+        toast({
+          title: "評分服務連線失敗",
+          description: "請稍後再試，本次不扣除嘗試次數",
+          variant: "destructive",
+        });
       }
       return;
     }
