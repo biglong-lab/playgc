@@ -34,6 +34,7 @@ const allowedOrigins: string[] = process.env.CORS_ORIGIN
 app.use(helmet({
   contentSecurityPolicy: false, // 由 Vite 開發伺服器處理
   crossOriginEmbedderPolicy: false, // 允許載入外部資源（Cloudinary、Leaflet）
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }, // 允許 Firebase OAuth popup 回傳 postMessage
 }));
 
 app.use(cors({
