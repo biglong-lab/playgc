@@ -376,19 +376,49 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
             </Button>
 
             {(showQrFallback || config.qrFallback) && (
-              <Button 
+              <Button
                 variant="secondary"
                 onClick={() => {
-                  toast({
-                    title: "QR 掃描確認",
-                    description: "請掃描現場的 QR Code 來確認到達",
-                  });
+                  // 真正的 QR fallback：要求玩家手動輸入 config.fallbackQrCode
+                  const expected = (config.fallbackQrCode || "").trim();
+                  if (!expected) {
+                    toast({
+                      title: "QR Fallback 未設定",
+                      description: "管理員尚未設定備用 QR 代碼，請稍後再試",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  const input = prompt("請輸入現場 QR Code 代碼：")?.trim();
+                  if (!input) return;
+                  if (input.toUpperCase() === expected.toUpperCase()) {
+                    toast({
+                      title: "QR 確認成功!",
+                      description: "已通過備用驗證",
+                    });
+                    stopWatching();
+                    setTimeout(() => {
+                      const reward: { points?: number; items?: string[] } = {
+                        points: config.onSuccess?.points || 15,
+                      };
+                      if (config.onSuccess?.grantItem) {
+                        reward.items = [config.onSuccess.grantItem];
+                      }
+                      onComplete(reward, config.nextPageId);
+                    }, 800);
+                  } else {
+                    toast({
+                      title: "QR 代碼錯誤",
+                      description: "請確認代碼是否正確",
+                      variant: "destructive",
+                    });
+                  }
                 }}
                 className="w-full gap-2"
                 data-testid="button-qr-fallback"
               >
                 <QrCode className="w-4 h-4" />
-                無法定位？掃描 QR 確認
+                無法定位？輸入現場 QR 代碼
               </Button>
             )}
           </div>
