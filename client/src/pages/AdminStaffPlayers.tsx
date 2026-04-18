@@ -151,11 +151,11 @@ export default function AdminStaffPlayers() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>尚無玩家資料</p>
-                {searchTerm && <p className="text-sm">請嘗試不同的搜尋條件</p>}
-              </div>
+              <EmptyState
+                icon={Users}
+                title={searchTerm ? "找不到符合條件的玩家" : "尚無玩家資料"}
+                description={searchTerm ? "請嘗試不同的搜尋條件" : "當玩家首次登入遊戲時，帳號會自動建立"}
+              />
             )}
           </CardContent>
         </Card>
