@@ -96,37 +96,44 @@ export function registerFieldMembershipRoutes(app: Express) {
     requireAdminAuth,
     requirePermission("admin:manage_accounts"),
     async (req, res) => {
-      if (!req.admin) return res.status(401).json({ error: "未認證" });
-      const parsed = grantSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res
-          .status(400)
-          .json({ error: "格式錯誤", details: parsed.error.errors });
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+        const parsed = grantSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res
+            .status(400)
+            .json({ error: "格式錯誤", details: parsed.error.errors });
+        }
+
+        const fieldId = req.admin.fieldId;
+        const result = await grantAdmin(
+          parsed.data.userId,
+          fieldId,
+          parsed.data.roleId,
+          req.admin.accountId
+        );
+        if (!result.success) {
+          return res.status(400).json({ error: result.error });
+        }
+
+        await logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "membership:grant_admin",
+          targetType: "user",
+          targetId: parsed.data.userId,
+          fieldId,
+          metadata: { roleId: parsed.data.roleId },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
+        res.json({ success: true });
+      } catch (err) {
+        console.error("[grant] 授權失敗:", err);
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "授權失敗",
+        });
       }
-
-      const fieldId = req.admin.fieldId;
-      const result = await grantAdmin(
-        parsed.data.userId,
-        fieldId,
-        parsed.data.roleId,
-        req.admin.accountId
-      );
-      if (!result.success) {
-        return res.status(400).json({ error: result.error });
-      }
-
-      await logAuditAction({
-        actorAdminId: req.admin.id,
-        action: "membership:grant_admin",
-        targetType: "user",
-        targetId: parsed.data.userId,
-        fieldId,
-        metadata: { roleId: parsed.data.roleId },
-        ipAddress: req.ip,
-        userAgent: req.headers["user-agent"],
-      });
-
-      res.json({ success: true });
     }
   );
 
