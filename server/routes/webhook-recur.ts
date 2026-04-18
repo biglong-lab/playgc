@@ -6,6 +6,7 @@ import {
   verifyWebhookSignature,
   type RecurWebhookEvent,
 } from "../services/recur-client";
+import { incrementUsage, recordTransactionFee } from "../services/billing";
 
 /** 已處理事件 ID 快取（冪等性） */
 const processedEvents = new Set<string>();
