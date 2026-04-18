@@ -6,7 +6,10 @@ import type { DialogueConfig, DialogueMessage } from "@shared/schema";
 
 interface DialoguePageProps {
   config: DialogueConfig;
-  onComplete: (reward?: { points?: number; items?: string[] }) => void;
+  onComplete: (
+    reward?: { points?: number; items?: string[] },
+    nextPageId?: string,
+  ) => void;
   sessionId: string;
   variables: Record<string, any>;
   onVariableUpdate: (key: string, value: unknown) => void;
