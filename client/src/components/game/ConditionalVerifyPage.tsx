@@ -196,11 +196,11 @@ export default function ConditionalVerifyPage({
 
   const handleContinue = () => {
     if (allPassed) {
-      const reward: { points?: number; items?: string[] } = { 
-        points: config.rewardPoints || 10 
+      const reward: { points?: number; items?: string[] } = {
+        points: config.onSuccess?.points ?? config.rewardPoints ?? 10,
       };
       if (config.onSuccess?.grantItem) {
-        reward.items = [String(config.onSuccess.grantItem)];
+        reward.items = [config.onSuccess.grantItem];
       }
       onComplete(reward, config.nextPageId);
     } else {
