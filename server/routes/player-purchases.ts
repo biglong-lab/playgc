@@ -174,6 +174,14 @@ export function registerPlayerPurchaseRoutes(app: Express) {
         return res.status(404).json({ message: "遊戲不存在" });
       }
 
+      // 🎫 自動加入場域會員（玩家進入遊戲時）
+      if (game.fieldId) {
+        const { ensureMembership } = await import("../services/field-memberships");
+        ensureMembership(userId, game.fieldId).catch((err) =>
+          console.error("[field-memberships] ensure 失敗:", err),
+        );
+      }
+
       // 免費遊戲：全部存取
       if (game.pricingType === "free" || !game.pricingType) {
         return res.json({
