@@ -12,9 +12,11 @@ const mockStorage = vi.hoisted(() => ({
   getPremadeGroupsBySlot: vi.fn(),
 }));
 
+const mockGetRegistrationsBySlotWithNames = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+
 vi.mock("../storage/battle-storage", () => ({
   battleStorageMethods: mockStorage,
-  getRegistrationsBySlotWithNames: vi.fn().mockResolvedValue([]),
+  getRegistrationsBySlotWithNames: mockGetRegistrationsBySlotWithNames,
 }));
 
 vi.mock("../adminAuth", () => ({
