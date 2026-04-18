@@ -146,7 +146,7 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
     return (
       <div className="min-h-full flex flex-col items-center justify-center p-4">
         <p className="text-muted-foreground mb-4">沒有對話內容</p>
-        <Button onClick={() => onComplete()} data-testid="button-continue">
+        <Button onClick={finishDialogue} data-testid="button-continue">
           繼續
         </Button>
       </div>
