@@ -123,13 +123,12 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
       });
       
       onVariableUpdate(voteStorageKey, { results: newResults, total: newTotal });
-      
+
       setVoteResults(newResults);
       setTotalVotes(newTotal);
-      
-      if (config.showResults) {
-        setShowResults(true);
-      }
+
+      // 投完票後一律顯示結果（原本只有 config.showResults 才顯示，導致使用者不知道投了什麼）
+      setShowResults(true);
     }, 500);
   };
 
