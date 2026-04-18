@@ -1,10 +1,11 @@
 // 遊戲工作階段、玩家進度、聊天訊息相關的資料庫儲存方法
-import { eq, desc, and, lt, sql } from "drizzle-orm";
+import { eq, desc, and, lt, sql, inArray } from "drizzle-orm";
 import { db } from "../db";
 import {
   gameSessions,
   playerProgress,
   chatMessages,
+  games,
   type GameSession,
   type InsertGameSession,
   type PlayerProgress,
@@ -17,9 +18,31 @@ import {
 export const sessionStorageMethods = {
   // ===== 工作階段 =====
 
-  /** 取得所有工作階段（依開始時間倒序） */
+  /** 取得所有工作階段（⚠️ 跨場域，僅限 super_admin 使用） */
   async getSessions(): Promise<GameSession[]> {
     return db.select().from(gameSessions).orderBy(desc(gameSessions.startedAt));
+  },
+
+  /** 取得指定場域的所有工作階段（🔒 場域隔離版本，JOIN games.fieldId） */
+  async getSessionsByField(fieldId: string): Promise<GameSession[]> {
+    return db
+      .select({
+        id: gameSessions.id,
+        gameId: gameSessions.gameId,
+        teamId: gameSessions.teamId,
+        hostId: gameSessions.hostId,
+        accessCode: gameSessions.accessCode,
+        status: gameSessions.status,
+        startedAt: gameSessions.startedAt,
+        completedAt: gameSessions.completedAt,
+        playerCount: gameSessions.playerCount,
+        score: gameSessions.score,
+        metadata: gameSessions.metadata,
+      })
+      .from(gameSessions)
+      .innerJoin(games, eq(games.id, gameSessions.gameId))
+      .where(eq(games.fieldId, fieldId))
+      .orderBy(desc(gameSessions.startedAt));
   },
 
   /** 根據 ID 取得工作階段 */
