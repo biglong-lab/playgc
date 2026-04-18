@@ -244,6 +244,7 @@ function App() {
               <Toaster />
               <Router />
               <PlayerBottomNav />
+              <PWAInstallPrompt />
             </TooltipProvider>
           </I18nProvider>
         </AuthProvider>
