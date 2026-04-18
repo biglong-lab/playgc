@@ -30,9 +30,71 @@ const allowedOrigins: string[] = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
   : ["http://localhost:3333", "http://localhost:3000"];
 
-// 安全標頭
+// 安全標頭 — CSP 在 production 才啟用，dev 由 Vite 處理
+const isProd = process.env.NODE_ENV === "production";
+
 app.use(helmet({
-  contentSecurityPolicy: false, // 由 Vite 開發伺服器處理
+  contentSecurityPolicy: isProd
+    ? {
+        useDefaults: true,
+        directives: {
+          // 預設：僅同源
+          defaultSrc: ["'self'"],
+          // Script：同源 + Firebase/Google OAuth + Recur
+          scriptSrc: [
+            "'self'",
+            "'unsafe-inline'", // Vite 產生的 inline script（未來可移除）
+            "https://apis.google.com",
+            "https://*.firebaseapp.com",
+            "https://*.googleapis.com",
+            "https://accounts.google.com",
+          ],
+          // Style：同源 + Google Fonts
+          styleSrc: [
+            "'self'",
+            "'unsafe-inline'", // Tailwind + Radix UI
+            "https://fonts.googleapis.com",
+          ],
+          fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+          // 圖片：同源 + Cloudinary + Leaflet tiles + data:/blob:
+          imgSrc: [
+            "'self'",
+            "data:",
+            "blob:",
+            "https://res.cloudinary.com",
+            "https://*.tile.openstreetmap.org",
+            "https://unpkg.com",
+            "https://*.googleusercontent.com",
+          ],
+          // XHR/WebSocket：同源 + Firebase + Recur + WebSocket
+          connectSrc: [
+            "'self'",
+            "https://*.firebaseapp.com",
+            "https://*.googleapis.com",
+            "https://identitytoolkit.googleapis.com",
+            "https://securetoken.googleapis.com",
+            "https://www.googleapis.com",
+            "https://api.recur.tw",
+            "wss://game.homi.cc",
+            "ws://localhost:*",
+          ],
+          // iframe：Firebase OAuth 需要
+          frameSrc: [
+            "'self'",
+            "https://*.firebaseapp.com",
+            "https://accounts.google.com",
+          ],
+          // Worker：PWA service worker
+          workerSrc: ["'self'", "blob:"],
+          // 禁止物件（Flash 等）
+          objectSrc: ["'none'"],
+          // 禁止被 iframe 嵌入（已由 X-Frame-Options 覆蓋）
+          frameAncestors: ["'self'"],
+          // 升級到 HTTPS
+          upgradeInsecureRequests: [],
+        },
+      }
+    : false, // dev 關閉 CSP（Vite HMR）
   crossOriginEmbedderPolicy: false, // 允許載入外部資源（Cloudinary、Leaflet）
   crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }, // 允許 Firebase OAuth popup 回傳 postMessage
 }));
