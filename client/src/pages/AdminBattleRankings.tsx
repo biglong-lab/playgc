@@ -118,11 +118,13 @@ export default function AdminBattleRankings() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <p className="text-center py-8 text-muted-foreground">載入中...</p>
+              <ListSkeleton count={5} />
             ) : rankings.length === 0 ? (
-              <p className="text-center py-8 text-muted-foreground">
-                {search ? "無符合的搜尋結果" : "尚無排名資料"}
-              </p>
+              <EmptyState
+                icon={Trophy}
+                title={search ? "無符合的搜尋結果" : "尚無對戰排名資料"}
+                description={search ? "改變搜尋條件" : "玩家完成對戰後，ELO 積分與段位會自動計算"}
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
