@@ -73,6 +73,17 @@ export default function GamePlay() {
   const totalPages = activePages.length;
   const progressPercent = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
 
+  // 玩家已造訪的位置（供 ConditionalVerifyPage 的 visited_location 條件判定）
+  const { data: visitsData } = useQuery<Array<{ locationId: string | number }>>({
+    queryKey: [`/api/sessions/${sessionId}/visits`],
+    enabled: !!sessionId,
+  });
+
+  const visitedLocations: string[] = useMemo(() => {
+    if (!Array.isArray(visitsData)) return [];
+    return visitsData.map((v) => String(v.locationId));
+  }, [visitsData]);
+
   // === 遊戲/章節完成處理 ===
   const handleCompletion = useCallback((finalScore: number) => {
     const sid = stateRef.current.sessionId;
