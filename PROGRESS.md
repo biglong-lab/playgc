@@ -16,9 +16,82 @@
 
 ## 目前狀態
 
-**最後更新**: 2026-04-18
+**最後更新**: 2026-04-18 深夜
 **分支**: main
 **Git 狀態**: 已推送 + 已部署到 `game.homi.cc`
+
+---
+
+## 🎯 2026-04-18 深夜 — P0 修復：QR 掃描相機黑屏 + NotFoundError
+
+### 背景
+玩家回報 QR 掃描進入相機後**畫面全黑**無法掃描。修復經歷三輪迭代才抓到真正根因。
+
+### 迭代一：黑屏根因（39d94c2）
+**症狀**：點「開啟掃描器」→ loading → 直接黑屏
+
+**根因**：`InitializingView` 和 `ScanningView` 是兩個獨立的 JSX 元素，mode 從
+`initializing` 切換到 `scanning` 時，React unmount 舊元件（含 html5-qrcode 插入的
+`<video>`），新 `#qr-reader` 是空 div → 黑屏。
+
+**修復**：合併為單一 `CameraView`，`#qr-reader` 只 mount 一次，loading 用 overlay。
+
+### 迭代二：字串型錯誤處理（8f68d49）
+**症狀**：第二次測試看到「相機問題 — 無法啟動掃描器」（沒具體原因）
+
+**根因**：html5-qrcode 2.3.8 有時拋**字串**而非 Error 物件（如 "HTML Element with
+id=qr-reader not found"、"cameraIdOrConfig is required"），原本的 `parseScannerError`
+只看 `err.message` 導致走到 default 分支。
+
+**修復**：
+- `parseScannerError` 用 `typeof err === "string"` 分支處理字串型錯誤
+- `matchErrorKeyword` 用 regex 同時匹配 name + message
+- `facingMode` 改回字串形式（2.3.8 相容）
+- 後鏡頭失敗 fallback 前鏡頭
+- 加 `console.error/warn` 方便 devtools 診斷
+
+### 迭代三：真正根因 — NotFoundError（7b2cdae）✅
+**症狀**：ErrorBoundary 顯示「發生錯誤」
+
+**關鍵突破**：先讓 ErrorBoundary 在 production 也顯示具體錯誤訊息（2ed1f0d），
+使用者截圖回報 `NotFoundError: The object can not be found here` + stack 指向
+`<div>`。
+
+**真正根因**：html5-qrcode `start()` 會呼叫 `innerHTML = ""` 清空 `#qr-reader`，
+然後插入自己的 `<video>`。我之前把 loading overlay 放在 `#qr-reader` **內部**
+（React 管的 children）。mode 切換時 React 嘗試移除 overlay，但 DOM 已被外部
+修改 → **`removeChild` 拋 NotFoundError** → ErrorBoundary 攔截。
+
+**修復**：overlay 移到 `#qr-reader` 的**外層兄弟位置**（absolute 疊加），
+`#qr-reader` 的 children 完全讓 html5-qrcode 管，React 絕對不碰。約束寫在
+`CameraView` 的 block comment 避免再犯。
+
+### 相關改動
+| 檔案 | 修改 |
+|------|------|
+| `client/src/components/game/qr-scan/QrScanViews.tsx` | 合併 Init/Scanning view；overlay 移到外層 |
+| `client/src/components/game/qr-scan/useQrScanner.ts` | 移除 pre-check getUserMedia、rAF 替代 setInterval、每次 tryStart 用新實例、字串錯誤處理、前後鏡頭 fallback、加 playsinline |
+| `client/src/components/game/QrScanPage.tsx` | 改用 `CameraView` + `isInitializing` prop |
+| `client/src/components/ErrorBoundary.tsx` | Production 也顯示具體錯誤訊息 + 摺疊式 componentStack |
+
+### Commits
+- `39d94c2` fix: 修復 QR 掃描相機黑屏 bug
+- `8f68d49` fix: QR 掃描錯誤處理補強 + 前後鏡頭 fallback
+- `2ed1f0d` fix: QR 掃描 + 生產環境錯誤資訊顯示
+- `7b2cdae` fix: 修復 QR 掃描 NotFoundError（真正根因）
+
+### 教訓
+1. **第三方 library 會直接操作 DOM 的元件**（html5-qrcode / Leaflet / Cesium 等），
+   絕對不能讓 React 管理它內部的 children，否則會有 reconcile 衝突
+2. **ErrorBoundary 在 production 也該顯示錯誤訊息**（至少 Error.name + message），
+   否則使用者回報「發生錯誤」時完全無法除錯
+3. **多方 fallback 要用新實例**，舊實例內部 state 可能已污染
+
+### 驗證
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過（125 PWA entries）
+- ✅ 生產站 healthy
+- ✅ **玩家實機測試通過** — 相機正常顯示，可掃描 QR Code
 
 ---
 
