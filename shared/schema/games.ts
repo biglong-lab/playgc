@@ -133,6 +133,10 @@ export interface TextCardConfig {
   timeLimit?: number; // seconds, auto-advance after time
   highlightKeywords?: string[]; // words to highlight in content
   locationSettings?: LocationSettings;
+  /** 完成本頁後跳往的頁面 ID（若未設，依遊戲預設順序） */
+  nextPageId?: string;
+  /** 完成本頁獎勵點數（預設 0） */
+  rewardPoints?: number;
 }
 
 export interface DialogueMessage {
