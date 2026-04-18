@@ -29,8 +29,6 @@ import {
   Package,
   DollarSign,
   ToggleLeft,
-  BarChart3,
-  Settings,
   LogOut,
   Inbox,
 } from "lucide-react";
