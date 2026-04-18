@@ -12,8 +12,8 @@ import {
 } from "../game-modules";
 
 describe("GAME_MODULES 常數", () => {
-  it("包含 5 套模組", () => {
-    expect(GAME_MODULES).toHaveLength(5);
+  it("包含 15 套模組", () => {
+    expect(GAME_MODULES).toHaveLength(15);
   });
 
   it("每個模組都有唯一 ID", () => {
