@@ -78,7 +78,8 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
     video.addEventListener("volumechange", handleVolumeChange);
 
     if (config.autoPlay !== false) {
-      video.play().catch(() => setIsPlaying(false));
+      // Promise.resolve 包裹避免 video.play() 在舊環境 / test 環境回 undefined 導致 .catch 爆
+      Promise.resolve(video.play()).catch(() => setIsPlaying(false));
     }
 
     return () => {
