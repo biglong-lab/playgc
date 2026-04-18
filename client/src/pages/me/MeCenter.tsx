@@ -109,6 +109,87 @@ export default function MeCenter() {
 
       {/* 內容區 — 拉起來蓋住 Hero 底部 */}
       <div className="container mx-auto max-w-2xl px-4 -mt-6 space-y-4">
+        {/* 🏢 管理員後台入口（僅授權管理員顯示）*/}
+        {adminMemberships.length > 0 && (
+          <Card className="border-blue-200 shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">🔑 管理員後台</p>
+                  <p className="text-xs text-muted-foreground">
+                    您有 {adminMemberships.length} 個場域的管理權限
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-1.5 mt-3">
+                {adminMemberships.map((m) => (
+                  <Link key={m.fieldId} href="/admin">
+                    <a className="flex items-center justify-between p-2 rounded hover:bg-white/60 transition-colors">
+                      <span className="flex items-center gap-2 text-sm">
+                        <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="font-medium">{m.fieldName}</span>
+                        {m.adminRoleName && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {m.adminRoleName}
+                          </Badge>
+                        )}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                    </a>
+                  </Link>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 🎮 我參與的場域 */}
+        {memberships.length > 0 && (
+          <Card>
+            <CardContent className="p-0">
+              <div className="p-4 border-b bg-muted/30">
+                <p className="text-sm font-medium flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  我參與的場域（{memberships.length}）
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  每個場域的資料獨立管理
+                </p>
+              </div>
+              <div className="divide-y">
+                {memberships.map((m) => (
+                  <div key={m.fieldId} className="p-3 flex items-center gap-3">
+                    <div className="w-9 h-9 rounded bg-emerald-100 flex items-center justify-center text-emerald-700">
+                      🏛️
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{m.fieldName}</p>
+                      <p className="text-xs text-muted-foreground font-mono">
+                        {m.fieldCode}
+                      </p>
+                    </div>
+                    <div className="flex gap-1">
+                      {m.isAdmin && (
+                        <Badge className="text-[10px] bg-blue-600">👑 管理員</Badge>
+                      )}
+                      {m.playerStatus === "active" ? (
+                        <Badge variant="outline" className="text-[10px]">玩家</Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-[10px]">
+                          {m.playerStatus === "suspended" ? "暫停" : "停權"}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 兌換碼快速輸入 */}
         <Card className="border-emerald-200 shadow-sm">
           <CardContent className="p-4">
