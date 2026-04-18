@@ -211,10 +211,37 @@ export function usePhotoCamera(): PhotoCameraState {
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
-      if (result) {
+      if (!result) return;
+      // 相簿選來的圖片也要壓縮到 1920px 最大邊
+      const img = new Image();
+      img.onload = () => {
+        const MAX_DIMENSION = 1920;
+        const scale = Math.min(1, MAX_DIMENSION / Math.max(img.width, img.height));
+        if (scale === 1) {
+          // 已夠小，直接使用
+          setCapturedImage(result);
+          setMode("preview");
+          return;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          setCapturedImage(result);
+          setMode("preview");
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressed = canvas.toDataURL("image/jpeg", 0.85);
+        setCapturedImage(compressed || result);
+        setMode("preview");
+      };
+      img.onerror = () => {
         setCapturedImage(result);
         setMode("preview");
-      }
+      };
+      img.src = result;
     };
     reader.onerror = () => {
       toast({ title: "讀取檔案失敗", description: "請重試", variant: "destructive" });
