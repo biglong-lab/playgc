@@ -5,6 +5,7 @@ import { battleStorageMethods, getRegistrationsBySlotWithNames } from "../storag
 import { insertBattleSlotSchema } from "@shared/schema";
 import { z } from "zod";
 import { buildDisplayName } from "../utils/display-name";
+import { incrementUsage } from "../services/billing";
 
 export function registerBattleSlotRoutes(app: Express) {
   // ============================================================================
