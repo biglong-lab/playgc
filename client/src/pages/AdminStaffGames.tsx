@@ -146,23 +146,97 @@ function StaffGamesTableContent({ ctx }: { ctx: ReturnType<typeof useAdminStaffG
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>遊戲名稱</TableHead>
-          <TableHead>場域</TableHead>
-          <TableHead>難度</TableHead>
-          <TableHead>狀態</TableHead>
-          <TableHead>QR Code</TableHead>
-          <TableHead className="text-right">操作</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <>
+      {/* 手機：Card 版本 */}
+      <div className="space-y-3 md:hidden">
         {ctx.filteredGames.map((game) => (
-          <StaffGameRow key={game.id} game={game} ctx={ctx} />
+          <StaffGameMobileCard key={game.id} game={game} ctx={ctx} />
         ))}
-      </TableBody>
-    </Table>
+      </div>
+
+      {/* 桌面：Table 版本 */}
+      <div className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>遊戲名稱</TableHead>
+              <TableHead>場域</TableHead>
+              <TableHead>難度</TableHead>
+              <TableHead>狀態</TableHead>
+              <TableHead>QR Code</TableHead>
+              <TableHead className="text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ctx.filteredGames.map((game) => (
+              <StaffGameRow key={game.id} game={game} ctx={ctx} />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
+  );
+}
+
+// 手機版遊戲卡片（md 以下顯示）
+function StaffGameMobileCard({ game, ctx }: { game: StaffGame; ctx: ReturnType<typeof useAdminStaffGames> }) {
+  const status = normalizeStatus(game.status);
+
+  return (
+    <Card data-testid={`card-game-${game.id}`}>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="font-medium truncate">{game.title}</div>
+            {game.description && (
+              <div className="text-sm text-muted-foreground line-clamp-2">{game.description}</div>
+            )}
+          </div>
+          <Badge className={STATUS_COLORS[status]} variant="secondary">{STATUS_LABELS[status]}</Badge>
+        </div>
+
+        <div className="flex flex-wrap gap-2 text-sm">
+          {game.field && <Badge variant="outline">{game.field.name}</Badge>}
+          {game.difficulty && (
+            <span className="text-muted-foreground">難度：{DIFFICULTY_LABELS[game.difficulty]}</span>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-2 border-t">
+          <Button variant="outline" size="sm" onClick={() => ctx.navigate(`/admin/games/${game.id}`)} data-testid={`button-edit-flow-m-${game.id}`}>
+            <Workflow className="h-4 w-4 mr-1" /> 流程
+          </Button>
+          {game.publicSlug ? (
+            <Button variant="ghost" size="sm" onClick={() => { ctx.setSelectedGame(game); ctx.setIsQRDialogOpen(true); }} data-testid={`button-view-qr-m-${game.id}`}>
+              <QrCode className="h-4 w-4 mr-1" /> QR
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => ctx.onGenerateQR(game.id)} disabled={ctx.generateQRPending} data-testid={`button-generate-qr-m-${game.id}`}>
+              <QrCode className="h-4 w-4 mr-1" /> 產生 QR
+            </Button>
+          )}
+          {status === "draft" && (
+            <Button variant="outline" size="sm" onClick={() => ctx.onPublish(game.id, "published")} disabled={ctx.publishPending} data-testid={`button-publish-m-${game.id}`}>
+              <Check className="h-4 w-4 mr-1" /> 發布
+            </Button>
+          )}
+          {status === "published" && (
+            <Button variant="outline" size="sm" onClick={() => ctx.onPublish(game.id, "draft")} disabled={ctx.publishPending} data-testid={`button-unpublish-m-${game.id}`}>
+              <X className="h-4 w-4 mr-1" /> 取消
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" onClick={() => { ctx.setCoverUploadGame(game); ctx.setIsCoverDialogOpen(true); }} aria-label="上傳封面" data-testid={`button-cover-m-${game.id}`}>
+            <ImageIcon className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => ctx.handleEdit(game)} aria-label="編輯設定" data-testid={`button-edit-m-${game.id}`}>
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => ctx.setDeleteGame(game)} aria-label="刪除" data-testid={`button-delete-m-${game.id}`}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
