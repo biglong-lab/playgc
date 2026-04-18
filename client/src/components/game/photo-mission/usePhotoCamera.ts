@@ -252,6 +252,8 @@ export function usePhotoCamera(): PhotoCameraState {
   const cancelCamera = () => {
     stopCamera();
     setCameraError(null);
+    // 清空之前拍過的照片，避免再次開啟相機時舊 preview 仍殘留
+    setCapturedImage(null);
     setMode("instruction");
   };
 
