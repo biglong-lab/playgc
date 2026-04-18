@@ -69,6 +69,12 @@ export function registerBattleSlotRoutes(app: Express) {
       }
 
       const slot = await battleStorageMethods.createSlot(data);
+
+      // SaaS 用量計量：每建立一個對戰時段 +1
+      incrementUsage(venue.fieldId, "battle_slots", 1).catch((err) =>
+        console.error("[billing] incrementUsage battle_slots 失敗:", err),
+      );
+
       res.status(201).json(slot);
     } catch (error) {
       if (error instanceof z.ZodError) {
