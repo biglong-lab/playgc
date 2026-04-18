@@ -176,34 +176,44 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
   };
 
   const handleContinue = () => {
+    // 防守：若已觸發過，避免重複呼叫 onComplete
+    if (isAdvancing) return;
+    setIsAdvancing(true);
+
     // 清除自動前進倒數
     if (autoAdvanceTimerRef.current) {
       clearInterval(autoAdvanceTimerRef.current);
       autoAdvanceTimerRef.current = null;
     }
 
-    // 完全沒人投票 + 時限到 → 直接跳過（走遊戲預設流程）
-    if (timedOut && totalVotes === 0) {
-      onComplete();
-      return;
-    }
+    // 給玩家立即視覺反饋
+    toast({ title: "進入下一關..." });
 
-    const strategy = config.nextPageStrategy ?? "winner";
+    // 決定 nextPage
     let nextPage: string | undefined;
-
-    if (strategy === "self" && selectedOption !== null) {
-      nextPage = options[selectedOption]?.nextPageId;
+    if (timedOut && totalVotes === 0) {
+      nextPage = undefined;
     } else {
-      // 預設：最多票決定（團隊共識）
-      const winner = getWinningOption();
-      if (winner && winner.count > 0) {
-        nextPage = options[winner.optionIndex]?.nextPageId;
-      } else if (selectedOption !== null) {
-        // 沒票或平票都 0 → 用自己投的那個作為 fallback
+      const strategy = config.nextPageStrategy ?? "winner";
+      if (strategy === "self" && selectedOption !== null) {
         nextPage = options[selectedOption]?.nextPageId;
+      } else {
+        const winner = getWinningOption();
+        if (winner && winner.count > 0) {
+          nextPage = options[winner.optionIndex]?.nextPageId;
+        } else if (selectedOption !== null) {
+          nextPage = options[selectedOption]?.nextPageId;
+        }
       }
     }
 
+    // DEV mode log 供除錯
+    if (typeof import.meta !== "undefined" && (import.meta as any).env?.DEV) {
+      // eslint-disable-next-line no-console
+      console.log("[VotePage] handleContinue →", { nextPage, selectedOption, voteResults, timedOut });
+    }
+
+    // 一律呼叫 onComplete（nextPage 為 undefined 時走遊戲預設 currentPageIndex+1）
     onComplete(undefined, nextPage || undefined);
   };
 
