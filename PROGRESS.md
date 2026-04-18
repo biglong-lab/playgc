@@ -22,6 +22,59 @@
 
 ---
 
+## 🔑 2026-04-18 — 登入問題修復 + 平台擁有者緊急登入
+
+### 問題根因
+1. 生產端 DB 只有預設 `admin@jiachun.com`，**沒有 twfam4@gmail.com 帳號**
+2. Firebase 端 twfam4@gmail.com 已用 Google 登入過，email/password provider 未啟用
+3. Google OAuth 網域（game.homi.cc）未在 Google Cloud Console 授權
+4. 三條登入路徑全部卡住（Google: OAuth 擋、Email 登入: 無密碼、Email 註冊: email 已存在衝突）
+
+### 修復內容（commit `d43a900`）
+
+#### 1. 生產 DB 手動調整
+```sql
+UPDATE admin_accounts
+SET email = 'twfam4@gmail.com',
+    display_name = 'Hung (Platform Owner)',
+    firebase_user_id = NULL
+WHERE email = 'admin@jiachun.com';
+```
+- 保留 super_admin role + JIACHUN 場域
+- firebase_user_id 清空允許重新綁定
+
+#### 2. Email rebind 邏輯強化（server/routes/auth.ts）
+- 原本：只在 `firebase_user_id` 為空時 rebind
+- 現在：email 匹配 + active → 直接 rebind
+- Firebase 已驗證 email 所有權，安全無虞
+- 支援多裝置切換登入方式
+
+#### 3. 平台擁有者緊急登入（新增）
+- API：`POST /api/auth/platform-owner-login`
+- UI：`GET /owner-login`（含密鑰輸入框，支援 `?secret=xxx` 自動帶入）
+- 安全：需帶 `X-Platform-Secret` header，對應環境變數 `PLATFORM_OWNER_SECRET`
+- 限制：僅對 `PLATFORM_OWNER_EMAIL` 生效且必須為 super_admin
+- 日誌：auditLog 記錄 `method=owner-secret`
+
+### 生產環境變數（已設定）
+```
+PLATFORM_OWNER_EMAIL=twfam4@gmail.com
+PLATFORM_OWNER_SECRET=3f435b3364acc20d049a00fc682fc526a1b418b92686c57c3f6b8935f5697052
+```
+密鑰需保存於密碼管理器。
+
+### 登入可用路徑
+1. ✅ **擁有者緊急登入**：`/owner-login?secret=xxx` 一鍵登入（已實測）
+2. 🟡 **Google 登入**：需先在 Google Cloud Console 加入 `game.homi.cc` 授權網域
+3. 🟡 **Email 登入**：需先在 Firebase Console 為該 email 加入 password provider
+
+### 後續待辦（可擇期執行）
+- [ ] Google Cloud Console 加入 `game.homi.cc` 授權來源 + 重新導向 URI
+- [ ] Firebase Console 授權網域加入 `game.homi.cc`
+- [ ] （可選）Firebase 為 twfam4@gmail.com 補 password provider，之後可用 Email 登入
+
+---
+
 ## 🎉 2026-04-18 — SaaS 多租戶重構完成（8 階段 + 導航優化）
 
 ### 重構目的
