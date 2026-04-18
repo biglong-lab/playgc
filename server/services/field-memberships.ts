@@ -25,6 +25,22 @@ function formatUserName(
   return user.email ?? "使用者";
 }
 
+/**
+ * 從 admin_accounts.id 換到 users.id（Firebase UID）
+ * FK 限制：field_memberships.admin_granted_by → users.id
+ * 若 admin 沒綁 Firebase（legacy）則回 null
+ */
+async function adminAccountIdToUserId(
+  adminAccountId: string | undefined | null
+): Promise<string | null> {
+  if (!adminAccountId) return null;
+  const account = await db.query.adminAccounts.findFirst({
+    where: eq(adminAccounts.id, adminAccountId),
+    columns: { firebaseUserId: true },
+  });
+  return account?.firebaseUserId ?? null;
+}
+
 export interface MembershipSummary {
   fieldId: string;
   fieldCode: string;
