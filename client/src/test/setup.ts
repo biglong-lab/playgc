@@ -9,14 +9,18 @@ vi.mock("firebase/app", () => ({
 }));
 vi.mock("firebase/auth", () => {
   function MockOAuthProvider() {
-    return { addScope: vi.fn() };
+    return { addScope: vi.fn(), setCustomParameters: vi.fn() };
+  }
+  function MockGoogleAuthProvider() {
+    return { addScope: vi.fn(), setCustomParameters: vi.fn() };
   }
   return {
     getAuth: vi.fn(() => ({ currentUser: null })),
-    GoogleAuthProvider: vi.fn(),
+    GoogleAuthProvider: MockGoogleAuthProvider,
     OAuthProvider: MockOAuthProvider,
     signInWithPopup: vi.fn(),
     signInWithRedirect: vi.fn(),
+    signInWithCustomToken: vi.fn(),
     getRedirectResult: vi.fn(),
     signOut: vi.fn(),
     onAuthStateChanged: vi.fn(),
