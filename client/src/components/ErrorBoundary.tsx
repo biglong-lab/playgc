@@ -106,6 +106,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         return this.props.fallback;
       }
 
+      const isChunkError = this.state.error && isChunkLoadError(this.state.error);
+
       return (
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center space-y-6">
@@ -117,10 +119,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
             <div className="space-y-2">
               <h1 className="text-xl font-semibold text-foreground">
-                發生錯誤
+                {isChunkError ? "需要更新版本" : "發生錯誤"}
               </h1>
               <p className="text-muted-foreground">
-                應用程式遇到了一個問題，請嘗試重新整理頁面。
+                {isChunkError
+                  ? "偵測到版本已更新，請點下方「清除快取重新載入」以取得最新版本。"
+                  : "應用程式遇到了一個問題，請嘗試重新整理頁面。"}
               </p>
             </div>
 
