@@ -10,6 +10,20 @@ import {
   adminSessions,
 } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
+import {
+  sendAdminGrantedEmail,
+  sendAdminRevokedEmail,
+  sendPlayerSuspendedEmail,
+} from "./email";
+
+function formatUserName(
+  user: { firstName: string | null; lastName: string | null; email: string | null } | null | undefined
+): string {
+  if (!user) return "使用者";
+  if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
+  if (user.firstName) return user.firstName;
+  return user.email ?? "使用者";
+}
 
 export interface MembershipSummary {
   fieldId: string;
