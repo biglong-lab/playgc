@@ -57,8 +57,12 @@ export function InstructionView({ config, state, actions }: Omit<ViewProps, "sca
 }
 
 // ==================== 相機畫面（初始化 + 掃描中共用）====================
-// 注意：initializing 和 scanning 必須共用同一個 #qr-reader DOM，否則
-// html5-qrcode 插入的 <video> 元素會在 mode 切換時被 React 卸載，導致黑屏
+// 重要約束：
+// 1. initializing 和 scanning 必須共用同一個 #qr-reader DOM，否則
+//    html5-qrcode 插入的 <video> 會在 mode 切換時被 React 卸載，導致黑屏
+// 2. #qr-reader 內部不能有任何 React 管理的 children（html5-qrcode 會清空並
+//    插入自己的 DOM，React 若嘗試移除原本的 children 會拋 NotFoundError）
+// 3. 所有 loading overlay 必須放在 #qr-reader 的外層兄弟位置（absolute 疊加）
 
 export function CameraView({
   actions,
@@ -67,13 +71,15 @@ export function CameraView({
 }: Pick<ViewProps, "actions" | "scannerContainerRef"> & { isInitializing: boolean }) {
   return (
     <div className="w-full max-w-md">
-      <div
-        id="qr-reader"
-        ref={scannerContainerRef}
-        className="relative bg-black rounded-lg overflow-hidden aspect-square mb-4"
-      >
+      {/* 相機容器 + 疊加層（用 wrapper 把 overlay 放在 #qr-reader 外）*/}
+      <div className="relative aspect-square mb-4">
+        <div
+          id="qr-reader"
+          ref={scannerContainerRef}
+          className="absolute inset-0 bg-black rounded-lg overflow-hidden"
+        />
         {isInitializing && (
-          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none rounded-lg overflow-hidden">
             <div className="text-center text-white">
               <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
               <p className="text-lg">正在啟動相機...</p>
