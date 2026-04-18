@@ -1,11 +1,41 @@
 import { storage } from "../storage";
 import type { AuthenticatedRequest } from "./types";
 import type { User } from "@shared/schema";
-import { adminAccounts, roles } from "@shared/schema";
-import { db } from "../db";
-import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Response } from "express";
+
+/**
+ * 查詢 Firebase UID 對應的 admin_accounts（lazy import db 避免測試環境 eager load）。
+ * 回傳可能的多筆（使用者可能在多個場域有 admin 身份）。
+ */
+async function getAdminAccountsByFirebaseUid(
+  firebaseUid: string,
+): Promise<Array<{ fieldId: string | null; systemRole: string | null }>> {
+  try {
+    const { db } = await import("../db");
+    const { adminAccounts, roles } = await import("@shared/schema");
+    const { and, eq } = await import("drizzle-orm");
+
+    const rows = await db
+      .select({
+        fieldId: adminAccounts.fieldId,
+        systemRole: roles.systemRole,
+      })
+      .from(adminAccounts)
+      .leftJoin(roles, eq(roles.id, adminAccounts.roleId))
+      .where(
+        and(
+          eq(adminAccounts.firebaseUserId, firebaseUid),
+          eq(adminAccounts.status, "active"),
+        ),
+      )
+      .limit(5);
+
+    return rows;
+  } catch {
+    return [];
+  }
+}
 
 // UUID v4 格式驗證
 const uuidSchema = z.string().uuid("無效的 ID 格式");
