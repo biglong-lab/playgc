@@ -363,4 +363,145 @@ export function registerPlatformRoutes(app: Express): void {
       .limit(limit);
     res.json(rows);
   });
+
+  // ============================================================================
+  // 📊 跨場域分析（Phase A-1.3）
+  // ============================================================================
+  app.get("/api/platform/analytics", requirePlatformAdmin, async (_req, res) => {
+    // 每個場域的遊戲數 + 本月結帳數 + 本月對戰時段數 + 本月平台費
+    const fieldStats = await db.execute<{
+      field_id: string;
+      field_code: string;
+      field_name: string;
+      plan_code: string | null;
+      games_count: number;
+      checkouts_this_month: number;
+      battle_slots_this_month: number;
+      platform_fees_this_month: number;
+      created_at: string;
+    }>(sql`
+      SELECT
+        f.id AS field_id,
+        f.code AS field_code,
+        f.name AS field_name,
+        pp.code AS plan_code,
+        COALESCE((SELECT COUNT(*)::int FROM games g WHERE g.field_id = f.id), 0) AS games_count,
+        COALESCE(meter_checkouts.current_value, 0) AS checkouts_this_month,
+        COALESCE(meter_battles.current_value, 0) AS battle_slots_this_month,
+        COALESCE((
+          SELECT SUM(amount)::int FROM platform_transactions pt
+          WHERE pt.field_id = f.id
+            AND pt.type = 'transaction_fee'
+            AND pt.created_at >= date_trunc('month', NOW())
+        ), 0) AS platform_fees_this_month,
+        to_char(f.created_at, 'YYYY-MM-DD') AS created_at
+      FROM fields f
+      LEFT JOIN field_subscriptions fs ON fs.field_id = f.id
+      LEFT JOIN platform_plans pp ON pp.id = fs.plan_id
+      LEFT JOIN field_usage_meters meter_checkouts ON meter_checkouts.field_id = f.id
+        AND meter_checkouts.meter_key = 'checkouts'
+        AND meter_checkouts.period_start >= date_trunc('month', NOW())
+        AND meter_checkouts.period_start < date_trunc('month', NOW()) + INTERVAL '1 month'
+      LEFT JOIN field_usage_meters meter_battles ON meter_battles.field_id = f.id
+        AND meter_battles.meter_key = 'battle_slots'
+        AND meter_battles.period_start >= date_trunc('month', NOW())
+        AND meter_battles.period_start < date_trunc('month', NOW()) + INTERVAL '1 month'
+      ORDER BY platform_fees_this_month DESC NULLS LAST, games_count DESC
+    `);
+
+    // 全平台總計
+    const [totals] = await db
+      .select({
+        fieldsCount: sql<number>`COUNT(DISTINCT ${fields.id})::int`,
+      })
+      .from(fields);
+
+    const [monthlyTotals] = await db
+      .select({
+        totalFees: sql<number>`COALESCE(SUM(CASE WHEN ${platformTransactions.type} = 'transaction_fee' AND ${platformTransactions.status} = 'paid' THEN ${platformTransactions.amount} ELSE 0 END), 0)::int`,
+        pendingFees: sql<number>`COALESCE(SUM(CASE WHEN ${platformTransactions.type} = 'transaction_fee' AND ${platformTransactions.status} = 'pending' THEN ${platformTransactions.amount} ELSE 0 END), 0)::int`,
+      })
+      .from(platformTransactions)
+      .where(sql`${platformTransactions.createdAt} >= date_trunc('month', NOW())`);
+
+    res.json({
+      fields: fieldStats.rows,
+      summary: {
+        fieldsCount: totals?.fieldsCount ?? 0,
+        monthlyTotalFees: monthlyTotals?.totalFees ?? 0,
+        monthlyPendingFees: monthlyTotals?.pendingFees ?? 0,
+      },
+    });
+  });
+
+  // ============================================================================
+  // ⚙️ 平台全域設定（Phase A-1.4）
+  // 儲存於 platform_plans[code='__platform_config__'] 的 limits 欄位（hack 但可用）
+  // 或用獨立表；這裡用 JSON 儲存於特殊 plan 記錄
+  // ============================================================================
+  const PLATFORM_CONFIG_CODE = "__platform_config__";
+
+  app.get("/api/platform/settings", requirePlatformAdmin, async (_req, res) => {
+    const existing = await db.query.platformPlans.findFirst({
+      where: eq(platformPlans.code, PLATFORM_CONFIG_CODE),
+    });
+    const config = existing?.limits ? (existing.limits as Record<string, unknown>) : {};
+    res.json({
+      platformName: config.platformName ?? "賈村競技場",
+      supportEmail: config.supportEmail ?? "",
+      defaultPlanCode: config.defaultPlanCode ?? "free",
+      maintenanceMode: config.maintenanceMode ?? false,
+      applicationsOpen: config.applicationsOpen ?? true,
+      customMessage: config.customMessage ?? "",
+    });
+  });
+
+  app.patch("/api/platform/settings", requirePlatformAdmin, async (req, res) => {
+    const parsed = z
+      .object({
+        platformName: z.string().min(1).max(100).optional(),
+        supportEmail: z.string().email().or(z.literal("")).optional(),
+        defaultPlanCode: z.string().optional(),
+        maintenanceMode: z.boolean().optional(),
+        applicationsOpen: z.boolean().optional(),
+        customMessage: z.string().max(500).optional(),
+      })
+      .safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: "格式錯誤", details: parsed.error.errors });
+    }
+
+    const existing = await db.query.platformPlans.findFirst({
+      where: eq(platformPlans.code, PLATFORM_CONFIG_CODE),
+    });
+
+    const merged = {
+      ...(existing?.limits as Record<string, unknown> ?? {}),
+      ...parsed.data,
+    };
+
+    if (existing) {
+      const [updated] = await db
+        .update(platformPlans)
+        .set({ limits: merged })
+        .where(eq(platformPlans.id, existing.id))
+        .returning();
+      return res.json({ success: true, settings: updated.limits });
+    }
+
+    // 首次建立 — 用特殊 code 當設定儲存
+    const [created] = await db
+      .insert(platformPlans)
+      .values({
+        code: PLATFORM_CONFIG_CODE,
+        name: "【系統設定 - 勿刪】",
+        description: "內部用於儲存平台全域設定，非實際方案",
+        price: 0,
+        isActive: false,
+        sortOrder: 9999,
+        limits: merged,
+      })
+      .returning();
+    res.json({ success: true, settings: created.limits });
+  });
 }
