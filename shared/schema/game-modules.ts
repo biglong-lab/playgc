@@ -542,12 +542,23 @@ const onlineDetectiveClub: GameModule = {
 // 匯出模組列表
 // ============================================================================
 
+import { OUTDOOR_MODULES } from "./modules/outdoor";
+import { INDOOR_MODULES } from "./modules/indoor";
+import { EDUCATION_MODULES } from "./modules/education";
+import { TEAM_MODULES } from "./modules/team";
+import { DIGITAL_MODULES } from "./modules/digital";
+
 export const GAME_MODULES: GameModule[] = [
   outdoorTreasureHunt,
   escapeRoomCountdown,
   campusQuizBattle,
   wildSurvivalChallenge,
   onlineDetectiveClub,
+  ...OUTDOOR_MODULES,
+  ...INDOOR_MODULES,
+  ...EDUCATION_MODULES,
+  ...TEAM_MODULES,
+  ...DIGITAL_MODULES,
 ];
 
 /** 根據模組 ID 取得模組 */
