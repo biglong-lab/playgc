@@ -171,13 +171,19 @@ export function usePhotoCamera(): PhotoCameraState {
     }
 
     try {
+      // 壓縮：最大邊限制 1920px（避免 iPhone 4K 產生 5MB+ dataURL 上傳慢、AI 分析貴）
+      const MAX_DIMENSION = 1920;
+      const scale = Math.min(1, MAX_DIMENSION / Math.max(video.videoWidth, video.videoHeight));
+      const width = Math.round(video.videoWidth * scale);
+      const height = Math.round(video.videoHeight * scale);
+
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = width;
+      canvas.height = height;
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("無法建立繪圖環境");
 
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(video, 0, 0, width, height);
       const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
       if (!dataUrl || dataUrl.length <= 100) throw new Error("圖片資料無效");
 
