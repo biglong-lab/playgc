@@ -266,24 +266,29 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
         description: `總分: ${totalScore}`,
       });
       setTimeout(() => {
-        const grantItems = config.onSuccess?.grantItem 
-          ? [config.onSuccess.grantItem] 
+        const grantItems = config.onSuccess?.grantItem
+          ? [config.onSuccess.grantItem]
           : config.successReward?.items;
-        onComplete({ 
-          points: totalScore, 
-          items: grantItems 
-        });
+        // 優先順序：onSuccess.points（admin 指定） > successReward.points > 累積 totalScore
+        const rewardPoints =
+          config.onSuccess?.points ??
+          config.successReward?.points ??
+          totalScore;
+        onComplete(
+          { points: rewardPoints, items: grantItems },
+          config.nextPageId,
+        );
       }, 2000);
     } else {
       toast({
         title: "任務失敗",
-        description: hits.length < requiredHits 
-          ? `需要 ${requiredHits} 次命中` 
+        description: hits.length < requiredHits
+          ? `需要 ${requiredHits} 次命中`
           : `需要 ${scoreTarget} 分以上`,
         variant: "destructive",
       });
       setTimeout(() => {
-        onComplete({ points: 0 });
+        onComplete({ points: 0 }, config.nextPageId);
       }, 2000);
     }
   };
