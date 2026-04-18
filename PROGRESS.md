@@ -22,6 +22,72 @@
 
 ---
 
+## 🔧 2026-04-18 傍晚 — 授權 Bug 修復 + 完整回填 + 測試
+
+### 🐛 授權失敗 Bug（關鍵）
+
+**症狀**：點「授權為管理員」→ 前端報錯「授權管理失敗」，實際是 server 502。
+
+**根因**：
+- `field_memberships.admin_granted_by` FK 指向 `users.id`（Firebase UID）
+- 但我在 route 傳入 `req.admin.accountId`（實際是 `admin_accounts.id`）
+- 兩者 UUID 都存在但指向不同表 → FK violation → Node process crash
+
+**修復**（`server/services/field-memberships.ts`）：
+1. 新增 `adminAccountIdToUserId()` helper，把 `admin_accounts.id` 轉為 `firebase_user_id`
+2. `grantAdmin` / `revokeAdmin` 第 4 參數改名 `grantedByAccountId`（更清楚）
+3. 若 admin 未綁 Firebase（legacy）則存 `null`（FK 接受 null）
+4. Email 通知的發信人查詢同步跟著轉換
+
+**Route 加 try/catch**（避免類似 crash 擊垮整個 server）：
+- `/api/admin/memberships/grant`
+- `/api/admin/memberships/revoke`
+
+**驗證**：
+```bash
+POST /api/admin/memberships/grant
+→ {"success":true}  ✅
+POST /api/admin/memberships/revoke
+→ {"success":true,"revokedSessions":0}  ✅
+```
+
+### 🔄 完整 Migration（`scripts/backfill-memberships.sql`）
+
+從 7 個歷史來源挖掘玩家與場域的關係（冪等，可重複執行）：
+1. `player_progress` → `game_sessions` → `games.fieldId`
+2. `purchases` → `games.fieldId`
+3. `leaderboard` → `games.fieldId`
+4. ~~`team_members`~~（無直接 gameSession FK，略過）
+5. `battle_registrations` → `battle_slots` → `battle_venues.fieldId`
+6. `battle_clan_members` → `battle_clans.fieldId`
+7. `chat_messages` → `game_sessions` → `games.fieldId`
+
+**結果**：JIACHUN 場域 5 成員（涵蓋所有歷史玩家）
+
+### 🧪 field-memberships 單元測試（11 個全過）
+
+`server/__tests__/field-memberships.test.ts`：
+- **ensureMembership**（2 案例）：首次建立 / 已存在更新 lastActiveAt
+- **grantAdmin**（4 案例）：
+  - 角色不存在 → error
+  - 跨場域角色 → 阻擋
+  - 成功授權 → 轉換 accountId
+  - fallback email 玩家 → 不寄信
+- **revokeAdmin**（2 案例）：成員不存在 / 成功撤銷
+- **suspendPlayer**（3 案例）：成員不存在 / 暫停含理由 / 恢復
+
+### 驗證
+- ✅ TypeScript 零錯誤
+- ✅ 11 個新測試全過
+- ✅ 生產授權 + 撤銷流程實測成功
+- ✅ 生產 DB 回填完整（5 位成員）
+
+### Commits
+- `fa67207` 授權 FK bug 修復
+- `130eb13` test+fix: 11 單元測試 + 回填腳本
+
+---
+
 ## 📧 2026-04-18 下午 — SaaS 治理深化 + Bug 修復
 
 ### 🐛 Bug：玩家登入後在管理後台看不到（已修復）
