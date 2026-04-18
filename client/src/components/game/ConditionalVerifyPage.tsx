@@ -83,12 +83,10 @@ export default function ConditionalVerifyPage({
 
   const collectedFragments = useMemo(() => {
     if (!isFragmentMode) return [];
-    return fragments.filter(fragment => {
-      if (fragment.sourceItemId) {
-        return inventory.includes(String(fragment.sourceItemId));
-      }
-      return true;
-    });
+    // 關鍵修正：sourceItemId 未設時預設「未收集」，避免管理員漏填就裸破關
+    return fragments.filter(fragment =>
+      !!fragment.sourceItemId && inventory.includes(fragment.sourceItemId)
+    );
   }, [fragments, inventory, isFragmentMode]);
 
   const allFragmentsCollected = collectedFragments.length === fragments.length;
