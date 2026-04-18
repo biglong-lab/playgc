@@ -11,6 +11,11 @@ export default defineConfig({
       injectRegister: "auto",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
+        // 新 SW 立即接管：避免使用者卡在舊 JS bundle 導致 MIME / chunk load 錯誤
+        skipWaiting: true,
+        clientsClaim: true,
+        // 清除舊的 precache，防止 /assets/*-hash.js 過時後 404 被 navigateFallback 接走
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           // 遊戲核心 API — NetworkFirst（5 秒逾時後回傳快取）
           {
