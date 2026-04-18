@@ -38,36 +38,96 @@ export function GamesTable({
   onPublish, onGenerateQR, onViewQR, onCoverUpload,
   publishPending, generateQRPending,
 }: GamesTableProps) {
+  const actionProps = {
+    onNavigate, onEdit, onDelete, onPublish, onGenerateQR,
+    onViewQR, onCoverUpload, publishPending, generateQRPending,
+  };
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>遊戲名稱</TableHead>
-          <TableHead>難度</TableHead>
-          <TableHead>時長</TableHead>
-          <TableHead>狀態</TableHead>
-          <TableHead>QR Code</TableHead>
-          <TableHead className="text-right">操作</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
+    <>
+      {/* 手機：Card 版本 */}
+      <div className="space-y-3 md:hidden">
         {games.map((game) => (
-          <GameRow
-            key={game.id}
-            game={game}
-            onNavigate={onNavigate}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            onPublish={onPublish}
-            onGenerateQR={onGenerateQR}
-            onViewQR={onViewQR}
-            onCoverUpload={onCoverUpload}
-            publishPending={publishPending}
-            generateQRPending={generateQRPending}
-          />
+          <GameMobileCard key={game.id} game={game} {...actionProps} />
         ))}
-      </TableBody>
-    </Table>
+      </div>
+
+      {/* 桌面：Table 版本 */}
+      <div className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>遊戲名稱</TableHead>
+              <TableHead>難度</TableHead>
+              <TableHead>時長</TableHead>
+              <TableHead>狀態</TableHead>
+              <TableHead>QR Code</TableHead>
+              <TableHead className="text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {games.map((game) => (
+              <GameRow key={game.id} game={game} {...actionProps} />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
+  );
+}
+
+// 手機版遊戲卡片
+function GameMobileCard({
+  game, onNavigate, onEdit, onDelete,
+  onPublish, onGenerateQR, onViewQR, onCoverUpload,
+  publishPending, generateQRPending,
+}: GameActionProps & { game: Game }) {
+  const status = normalizeStatus(game.status);
+
+  return (
+    <Card data-testid={`card-game-${game.id}`}>
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="font-medium truncate">{game.title}</div>
+            {game.description && (
+              <div className="text-sm text-muted-foreground line-clamp-2">{game.description}</div>
+            )}
+          </div>
+          <Badge className={STATUS_COLORS[status]} variant="secondary">{STATUS_LABELS[status]}</Badge>
+        </div>
+
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          {game.difficulty && <span>難度：{DIFFICULTY_LABELS[game.difficulty]}</span>}
+          {game.estimatedTime && <span>時長：{game.estimatedTime} 分鐘</span>}
+        </div>
+
+        <div className="flex flex-wrap gap-2 pt-2 border-t">
+          <Button variant="outline" size="sm" onClick={() => onNavigate(`/admin/games/${game.id}`)} data-testid={`button-edit-flow-m-${game.id}`}>
+            <Workflow className="h-4 w-4 mr-1" /> 流程
+          </Button>
+          {game.publicSlug ? (
+            <Button variant="ghost" size="sm" onClick={() => onViewQR(game)} data-testid={`button-view-qr-m-${game.id}`}>
+              <QrCode className="h-4 w-4 mr-1" /> QR
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={() => onGenerateQR(game.id)} disabled={generateQRPending} data-testid={`button-generate-qr-m-${game.id}`}>
+              <QrCode className="h-4 w-4 mr-1" /> 產生 QR
+            </Button>
+          )}
+          <PublishButton gameId={game.id} status={status} onPublish={onPublish} publishPending={publishPending} />
+          <Button variant="ghost" size="icon" onClick={() => onCoverUpload(game)} aria-label="上傳封面" data-testid={`button-cover-m-${game.id}`}>
+            <ImageIcon className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => onEdit(game)} aria-label="編輯設定" data-testid={`button-edit-m-${game.id}`}>
+            <Settings className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => onDelete(game)} aria-label="刪除" data-testid={`button-delete-m-${game.id}`}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
