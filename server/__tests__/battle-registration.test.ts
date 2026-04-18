@@ -225,11 +225,24 @@ describe("對戰報名 API", () => {
 
   it("成功取得我的報名列表", async () => {
     const app = createApp();
-    const fakeList = [
-      { id: "reg-1", slotId: "slot-1", status: "registered" },
-      { id: "reg-2", slotId: "slot-2", status: "confirmed" },
-    ];
-    mockStorage.getUpcomingRegistrations.mockResolvedValue(fakeList);
+    mockGetUpcomingRegistrationsWithDetails.mockResolvedValue([
+      {
+        registration: { id: "reg-1", slotId: "slot-1", status: "registered" },
+        slotDate: "2026-05-01",
+        startTime: "10:00",
+        endTime: "12:00",
+        slotStatus: "open",
+        venueName: "場地A",
+      },
+      {
+        registration: { id: "reg-2", slotId: "slot-2", status: "confirmed" },
+        slotDate: "2026-05-02",
+        startTime: "14:00",
+        endTime: "16:00",
+        slotStatus: "confirmed",
+        venueName: "場地B",
+      },
+    ]);
 
     const res = await request(app)
       .get("/api/battle/my-registrations")
@@ -237,6 +250,6 @@ describe("對戰報名 API", () => {
 
     expect(res.status).toBe(200);
     expect(res.body).toHaveLength(2);
-    expect(mockStorage.getUpcomingRegistrations).toHaveBeenCalledWith("user-1");
+    expect(mockGetUpcomingRegistrationsWithDetails).toHaveBeenCalledWith("user-1");
   });
 });
