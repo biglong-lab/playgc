@@ -237,6 +237,8 @@ export interface TextVerifyConfig {
   aiScoring?: boolean;        // 是否啟用 AI 語意評分
   aiPassingScore?: number;    // AI 通過分數（0-100，預設 70）
   aiContext?: string;         // AI 評分額外上下文（場景描述）
+  /** 答對獎勵點數（預設 10） */
+  rewardPoints?: number;
   locationSettings?: LocationSettings;
 }
 
