@@ -6,7 +6,10 @@ import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface TextCardPageProps {
   config: TextCardConfig;
-  onComplete: (reward?: { points?: number; items?: string[] }) => void;
+  onComplete: (
+    reward?: { points?: number; items?: string[] },
+    nextPageId?: string,
+  ) => void;
   sessionId: string;
   variables: Record<string, any>;
   onVariableUpdate: (key: string, value: unknown) => void;
