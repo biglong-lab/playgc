@@ -159,9 +159,22 @@ export function resolveFlowRouter(
       }
     }
 
-    // 無匹配也無 default → 跳到下一頁
+    // 無匹配也無 default → 跳到下一頁（並在 DEV 模式警告）
+    if (typeof import.meta !== "undefined" && (import.meta as any).env?.DEV) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[flow-router] resolveFlowRouter fallthrough at index",
+        index,
+        "— 無匹配路由且無 defaultNextPageId，將跳至下一頁",
+      );
+    }
     index++;
     break;
+  }
+
+  if (hops >= maxHops && typeof import.meta !== "undefined" && (import.meta as any).env?.DEV) {
+    // eslint-disable-next-line no-console
+    console.error("[flow-router] maxHops (10) reached — 檢查是否有 flow_router 迴圈");
   }
 
   return index;
