@@ -336,3 +336,24 @@ function extractLocationId(code: string): number | null {
   const match = code.match(/^JC-LOC-(\d+)$/i);
   return match ? parseInt(match[1], 10) : null;
 }
+
+/**
+ * 從掃到的原始字串抽出要比對的 code。
+ * 支援兩種來源：
+ *   1. 管理員 QRCodeGenerator 產生的 JSON QR：`{"type":"game_qr","qrCodeId":"XXX",...}` → 回傳 qrCodeId
+ *   2. 純字串 QR / 手動輸入 / 舊外部貼紙 → 直接回傳 trim 後字串
+ */
+export function extractScanCode(raw: string): string {
+  const trimmed = (raw ?? "").trim();
+  if (trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed) as { type?: unknown; qrCodeId?: unknown };
+      if (parsed && parsed.type === "game_qr" && typeof parsed.qrCodeId === "string") {
+        return parsed.qrCodeId.trim();
+      }
+    } catch {
+      // 非合法 JSON，維持原始字串
+    }
+  }
+  return trimmed;
+}
