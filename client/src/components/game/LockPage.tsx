@@ -61,11 +61,11 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
     const step = direction === "cw" ? 36 : -36;
     setDialRotation((prev) => prev + step);
 
-    const currentValue = parseInt(code[activeIndex] || "0");
-    const newValue = direction === "cw" 
-      ? (currentValue + 1) % 10 
+    const currentValue = parseDigit(code[activeIndex]);
+    const newValue = direction === "cw"
+      ? (currentValue + 1) % 10
       : (currentValue - 1 + 10) % 10;
-    
+
     const newCode = [...code];
     newCode[activeIndex] = newValue.toString();
     setCode(newCode);
