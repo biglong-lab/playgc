@@ -168,15 +168,42 @@ export default function GameEditor() {
         setLocation(`${basePath}/${result.game.id}`);
       }
     },
-    onError: () => {
-      toast({ title: "儲存失敗", description: "請重試", variant: "destructive" });
+    onError: (error: unknown) => {
+      // 顯示具體錯誤訊息而不是吞掉，方便排查 400 schema 驗證失敗等
+      const message = error instanceof Error ? error.message : "請重試";
+      // 若後端回傳 JSON 字串，嘗試抽出 message 欄位讓訊息更可讀
+      let friendly = message;
+      try {
+        const match = message.match(/^\d+:\s*(.+)$/);
+        if (match) {
+          const body = JSON.parse(match[1]);
+          if (body?.message) {
+            friendly = body.message;
+            if (Array.isArray(body.errors) && body.errors[0]?.path) {
+              const field = body.errors[0].path.join(".");
+              friendly = `${body.message}（欄位: ${field}）`;
+            }
+          }
+        }
+      } catch {
+        // 非 JSON 就用原訊息
+      }
+      toast({
+        title: "儲存失敗",
+        description: friendly,
+        variant: "destructive",
+      });
     },
   });
 
   const handleSave = () => {
-    saveGameMutation.mutate({
-      title, description, difficulty, estimatedTime, maxPlayers, status: "draft",
-    });
+    // 儲存不強制改 status（保留當前狀態，避免已發布遊戲意外降級為 draft）
+    // 新建遊戲時才預設為 draft
+    const payload: Record<string, unknown> = {
+      title, description, difficulty, estimatedTime, maxPlayers,
+    };
+    if (isNew) payload.status = "draft";
+    saveGameMutation.mutate(payload);
   };
 
   const handlePublish = () => {
