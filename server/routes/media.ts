@@ -129,9 +129,13 @@ export function registerMediaRoutes(app: Express) {
     }
   });
 
+  // 大小上限：15MB base64 字串（約 11MB 原始圖片），防止大圖 OOM / 502
+  const MAX_PHOTO_BASE64_SIZE = 15_000_000;
+
   const playerPhotoSchema = z.object({
     imageData: z.string()
       .min(1, "缺少圖片資料")
+      .max(MAX_PHOTO_BASE64_SIZE, "圖片過大（超過 15MB base64 / 約 11MB 原始），請在前端先壓縮")
       .refine(
         (data) => data.startsWith("data:image/"),
         "無效的圖片格式"
