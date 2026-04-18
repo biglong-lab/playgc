@@ -112,7 +112,13 @@ describe("對戰排名 API", () => {
           draws: 0,
         },
       ];
-      mockStorage.getRankingsByField.mockResolvedValue(rankings);
+      mockGetRankingsByFieldWithNames.mockResolvedValue(
+        rankings.map((r) => ({
+          ranking: r,
+          firstName: r.displayName,
+          lastName: "",
+        })),
+      );
 
       const app = createApp();
       const res = await request(app)
