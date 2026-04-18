@@ -169,13 +169,13 @@ export default function AdminBattleSlots() {
             </CardContent>
           </Card>
         ) : isLoading ? (
-          <p className="text-muted-foreground">載入中...</p>
+          <ListSkeleton count={3} />
         ) : slots.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center text-muted-foreground">
-              此場地尚無時段
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={CalendarDays}
+            title="此場地尚無時段"
+            description="建立對戰時段供玩家報名"
+          />
         ) : (
           <div className="space-y-3">
             {slots.map((slot) => (
