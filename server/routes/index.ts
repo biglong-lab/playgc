@@ -103,5 +103,8 @@ export async function registerRoutes(
   // 📋 場域申請（公開 + 平台審核 Phase 8）
   registerApplicationRoutes(app);
 
+  // 🎫 場域會員（玩家身份 + 管理員授權開關）
+  registerFieldMembershipRoutes(app);
+
   return httpServer;
 }
