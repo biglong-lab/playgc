@@ -89,6 +89,12 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
   useEffect(() => {
     if (!isStarted || isCompleted || isFailed) return;
 
+    // 初次事件標記：避免第一次 motion 的 delta 含重力造成誤計數
+    let isFirstMotion = true;
+    // jump 偵測用：z 軸過零次數
+    let lastZSign: number | null = null;
+    let jumpCount = 0;
+
     const handleMotion = (event: DeviceMotionEvent) => {
       const accel = event.accelerationIncludingGravity;
       if (!accel) return;
@@ -97,6 +103,13 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
       const y = accel.y ?? 0;
       const z = accel.z ?? 0;
       const last = lastAccelRef.current;
+
+      // 第一次事件僅記錄 lastAccel，不計算 delta（避免重力干擾）
+      if (isFirstMotion) {
+        lastAccelRef.current = { x, y, z };
+        isFirstMotion = false;
+        return;
+      }
 
       if (challengeType === "shake") {
         const deltaX = Math.abs(x - last.x);
@@ -113,17 +126,35 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
             handleComplete();
           }
         }
+      } else if (challengeType === "jump") {
+        // jump：純加速度 z 軸（去除重力）過零偵測
+        const pureAccel = event.acceleration;
+        const az = pureAccel?.z ?? (z - 9.8);
+        // 明顯跳動才計入（閾值 3 m/s²）
+        if (Math.abs(az) > 3) {
+          const sign = az > 0 ? 1 : -1;
+          if (lastZSign !== null && lastZSign !== sign) {
+            jumpCount += 1;
+            shakeCountRef.current = jumpCount; // 共用 ref
+            const newProgress = Math.min(100, (jumpCount / targetValue) * 100);
+            setProgress(newProgress);
+            if (jumpCount >= targetValue) {
+              handleComplete();
+            }
+          }
+          lastZSign = sign;
+        }
       }
 
       lastAccelRef.current = { x, y, z };
     };
 
     const handleOrientation = (event: DeviceOrientationEvent) => {
-      if (challengeType === "tilt" || challengeType === "rotate") {
+      if (challengeType === "tilt") {
         const beta = event.beta ?? 0;
         const gamma = event.gamma ?? 0;
         const angle = Math.max(Math.abs(beta), Math.abs(gamma));
-        
+
         if (angle > tiltAngleRef.current) {
           tiltAngleRef.current = angle;
           const newProgress = Math.min(100, (angle / targetValue) * 100);
@@ -133,30 +164,32 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
             handleComplete();
           }
         }
+      } else if (challengeType === "rotate") {
+        // rotate：用 alpha（z 軸羅盤方向），累積角度變化
+        const alpha = event.alpha ?? 0;
+        if (tiltAngleRef.current === 0) {
+          // 初始化基準
+          tiltAngleRef.current = alpha;
+          return;
+        }
+        // 計算角度差（處理 0/360 邊界）
+        let delta = Math.abs(alpha - tiltAngleRef.current);
+        if (delta > 180) delta = 360 - delta;
+        if (delta > 5) {
+          // 視為一次明顯轉動，累積
+          shakeCountRef.current += delta;
+          tiltAngleRef.current = alpha;
+          const newProgress = Math.min(100, (shakeCountRef.current / targetValue) * 100);
+          setProgress(newProgress);
+          if (shakeCountRef.current >= targetValue) {
+            handleComplete();
+          }
+        }
       }
     };
 
-    if (typeof DeviceMotionEvent !== "undefined") {
-      if (typeof (DeviceMotionEvent as any).requestPermission === "function") {
-        (DeviceMotionEvent as any).requestPermission()
-          .then((response: string) => {
-            if (response === "granted") {
-              window.addEventListener("devicemotion", handleMotion);
-              window.addEventListener("deviceorientation", handleOrientation);
-            } else {
-              setError("需要動作感測器權限");
-            }
-          })
-          .catch(() => {
-            setError("無法取得動作感測器權限");
-          });
-      } else {
-        window.addEventListener("devicemotion", handleMotion);
-        window.addEventListener("deviceorientation", handleOrientation);
-      }
-    } else {
-      setError("您的裝置不支援動作感測器");
-    }
+    window.addEventListener("devicemotion", handleMotion);
+    window.addEventListener("deviceorientation", handleOrientation);
 
     return () => {
       window.removeEventListener("devicemotion", handleMotion);
@@ -164,13 +197,43 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
     };
   }, [isStarted, isCompleted, isFailed, challengeType, targetValue, handleComplete]);
 
+  // iOS 13+ 權限請求必須在 user gesture 同步堆疊中觸發
   const startChallenge = async () => {
-    shakeCountRef.current = 0;
-    tiltAngleRef.current = 0;
-    setProgress(0);
-    setTimeLeft(config.timeLimit || 30);
-    setIsStarted(true);
-    setError(null);
+    try {
+      // Motion 權限（iOS 13+）
+      const MotionEventAny = DeviceMotionEvent as any;
+      if (typeof MotionEventAny?.requestPermission === "function") {
+        const motionRes = await MotionEventAny.requestPermission();
+        if (motionRes !== "granted") {
+          setError("需要動作感測器權限，請重新嘗試並允許");
+          return;
+        }
+      }
+      // Orientation 權限（iOS 13+，tilt/rotate 必需）
+      const OrientEventAny = DeviceOrientationEvent as any;
+      if (typeof OrientEventAny?.requestPermission === "function") {
+        const orientRes = await OrientEventAny.requestPermission();
+        if (orientRes !== "granted" && (challengeType === "tilt" || challengeType === "rotate")) {
+          setError("需要方向感測器權限，請重新嘗試並允許");
+          return;
+        }
+      }
+
+      // 桌機 / 不支援動作感測器的裝置 fallback
+      if (typeof DeviceMotionEvent === "undefined" && challengeType !== "tilt" && challengeType !== "rotate") {
+        setError("您的裝置不支援動作感測器，請改用手機遊玩");
+        return;
+      }
+
+      shakeCountRef.current = 0;
+      tiltAngleRef.current = 0;
+      setProgress(0);
+      setTimeLeft(config.timeLimit || 30);
+      setIsStarted(true);
+      setError(null);
+    } catch {
+      setError("無法取得動作感測器權限，請重新嘗試");
+    }
   };
 
   const simulateProgress = () => {
