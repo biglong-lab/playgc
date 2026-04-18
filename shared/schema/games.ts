@@ -262,12 +262,17 @@ export interface ChoiceVerifyConfig {
   onSuccess?: {
     message?: string;
     grantItem?: string;
+    points?: number;
   };
   // Enhanced features
   timeLimit?: number;
   randomizeOptions?: boolean;
   showExplanation?: boolean;
   partialCredit?: boolean;
+  /** Quiz 模式（questions 陣列）通關後跳往的頁面 ID */
+  nextPageId?: string;
+  /** 每題答對獎勵點數（預設 10） */
+  rewardPerQuestion?: number;
 }
 
 // ============================================================================
