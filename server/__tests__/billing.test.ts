@@ -1,10 +1,42 @@
-// SaaS 計費引擎 — checkQuota 純邏輯單元測試
-// 驗證配額判定規則（不依賴 DB，只測純邏輯分支）
+// SaaS 計費引擎 — 純邏輯單元測試
+// 驗證 checkQuota / recordTransactionFee / incrementUsage 的分支（不依賴 DB）
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock DB（避免載入 drizzle + 真實連線）
 const mockFindFirst = vi.fn();
-const mockSelect = vi.fn();
+const mockSelectLimit = vi.fn();
+const mockInsertValues = vi.fn();
+const mockUpdateReturning = vi.fn();
+
+function makeSelect() {
+  const builder: any = {
+    from: () => builder,
+    leftJoin: () => builder,
+    where: () => builder,
+    limit: (...args: unknown[]) => mockSelectLimit(...args),
+  };
+  return builder;
+}
+
+function makeInsert() {
+  const builder: any = {
+    values: (v: unknown) => ({
+      returning: () => mockInsertValues(v),
+    }),
+  };
+  return builder;
+}
+
+function makeUpdate() {
+  const builder: any = {
+    set: () => ({
+      where: () => ({
+        returning: () => mockUpdateReturning(),
+      }),
+    }),
+  };
+  return builder;
+}
 
 vi.mock("../db", () => ({
   db: {
@@ -15,20 +47,20 @@ vi.mock("../db", () => ({
         },
       },
     },
-    get select() {
-      return mockSelect;
-    },
+    select: () => makeSelect(),
+    insert: () => makeInsert(),
+    update: () => makeUpdate(),
   },
 }));
 
 // Mock schema exports（簡化為 identity）
 vi.mock("@shared/schema", () => ({
-  fieldUsageMeters: { fieldId: "fieldId", meterKey: "meterKey", periodStart: "periodStart" },
+  fieldUsageMeters: { fieldId: "fieldId", meterKey: "meterKey", periodStart: "periodStart", id: "id" },
   fieldSubscriptions: {},
   platformPlans: {},
   platformTransactions: {},
   fields: {},
-  games: {},
+  games: { fieldId: "fieldId" },
   parsePlanLimits: (l: unknown) => l ?? {},
 }));
 
@@ -40,7 +72,7 @@ vi.mock("drizzle-orm", () => ({
   lt: vi.fn(() => ({})),
 }));
 
-import { checkQuota } from "../services/billing";
+import { checkQuota, recordTransactionFee, incrementUsage } from "../services/billing";
 
 describe("SaaS 計費 — checkQuota", () => {
   beforeEach(() => {
