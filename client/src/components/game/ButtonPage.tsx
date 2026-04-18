@@ -92,6 +92,26 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
 
   const isUrgent = timeLeft !== null && timeLeft <= 10;
 
+  // 空 buttons 陣列 fallback：避免玩家卡死
+  if (buttons.length === 0) {
+    return (
+      <div className="min-h-full flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+          <AlertTriangle className="w-8 h-8 text-destructive" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold mb-1">本頁無可用選項</h2>
+          <p className="text-sm text-muted-foreground">
+            管理員尚未設定按鈕選項，請先繼續下一頁
+          </p>
+        </div>
+        <Button onClick={() => onComplete()} data-testid="button-empty-fallback">
+          繼續遊戲 <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-6">
       {config.timeLimit && timeLeft !== null && (
