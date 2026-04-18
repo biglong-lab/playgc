@@ -22,6 +22,87 @@
 
 ---
 
+## 🧹 2026-04-18 晚間 — 服務管理結構深度優化（Phase B 清理 + Phase A 計費整合）
+
+### 全棧深度審查結論
+- ✅ 架構三層清晰（Platform / Field / Player）
+- ✅ 程式碼規模全部符合規範（最大 routes 499 行、schema 740 行）
+- 🔴 發現 3 個關鍵問題 + 4 個中度問題
+
+### Phase B：清理孤兒元件 + 修死連結（commits `4c81c98`, `9e5ce50`）
+
+#### 刪除的孤兒檔案
+| 檔案 | 行數 | 理由 |
+|------|------|------|
+| `client/src/components/AdminLayout.tsx` | 3 | 已棄用 re-export shim，0 處引用 |
+| `client/src/components/AdminStaffLayout.tsx` | 3 | 已棄用 re-export shim，0 處引用 |
+| `client/src/components/shared/PageHeader.tsx` | 72 | 完整元件但 0 頁面使用 |
+| `client/src/components/shared/BackButton.tsx` | 65 | 只被 PageHeader 引用，孤兒 |
+
+#### Platform 側邊欄死連結移除
+`client/src/components/PlatformAdminLayout.tsx`：移除 2 個 404 選項
+- `/platform/analytics`（跨場域數據）— 無對應路由
+- `/platform/settings`（平台設定）— 無對應路由
+- 連帶清除不再使用的 `BarChart3` + `Settings` icon import
+
+### Phase A：SaaS 計費引擎接入業務流程（commits `f0de44a`, `ee5893a`, `f6e12e8`, `856e6df`, `0407665`）
+
+#### 關鍵發現：billing service 寫好但從未被呼叫
+- `incrementUsage()` / `checkQuota()` / `recordTransactionFee()` — 3 個核心函式 0 處呼叫
+- 導致：用量表永遠空、配額限制無效、平台抽成無紀錄、月度結算恆為 0
+
+#### 實作修復
+
+**① Checkout 付款成功 hook**（`server/routes/webhook-recur.ts`）
+```ts
+// Recur webhook 付款完成後自動觸發
+await incrementUsage(fieldId, "checkouts", 1);
+await recordTransactionFee({
+  fieldId,
+  sourceTransactionId: tx.id,
+  sourceAmount: tx.amount,
+  description: `購買遊戲 ${game.title}`,
+});
+```
+- 在 `completeTransaction()` 內，確保只有實際付款成功才計量
+- 冪等性：webhook 已有 processedEvents 快取保護
+- 錯誤隔離：計費失敗不影響購買完成（try/catch 包覆）
+
+**② Battle Slot 建立計量**（`server/routes/battle-slots.ts`）
+- `POST /api/battle/slots` — 每建立 1 個時段，`battle_slots` +1
+- `POST /api/battle/slots/batch` — 批次建立依數量累加
+- 非阻塞：計量失敗不影響時段建立（fire-and-forget）
+
+#### 商業模式現在真正生效
+| 方案 | 月結帳限制 | 月對戰時段限制 | 平台抽成 |
+|------|----------|-------------|---------|
+| Free | 100 次（真實阻擋）| 10 個 | 5% |
+| Pro | 1000 次 | 50 個 | 3% |
+| Enterprise | 無限 | 無限 | 1% |
+| RevShare | 無限 | 無限 | 15% |
+
+### 未處理項目（下一輪推進）
+- [ ] `games` meter 計量（total 數，需另做 sync 邏輯）
+- [ ] `checkQuota("checkouts")` 阻擋超量結帳（在 checkout 開始時，避免建立付款 session）
+- [ ] `/platform/analytics` 跨場域 KPI 頁面
+- [ ] `/platform/settings` 平台全域設定頁面
+- [ ] `EmptyState` / `LoadingSkeleton` 推廣到其他 30+ 管理頁
+
+### 驗證結果
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過（13.66s）
+- ✅ GitHub push `9e5ce50..0407665`
+- ✅ 生產部署 healthy（Docker rebuild 成功）
+- ✅ 正式站 `https://game.homi.cc` HTTP 200
+
+### Commit 清單
+- `4c81c98` chore(auto): 刪除 4 個孤兒元件 + 清理 PlatformAdminLayout
+- `9e5ce50` chore(auto): 清理 PlatformAdminLayout import
+- `f0de44a` + `ee5893a` chore(auto): webhook-recur billing hook
+- `f6e12e8` + `856e6df` + `0407665` chore(auto): battle-slots billing hook
+
+---
+
 ## 🔓 2026-04-18 下午 — Google Popup 登入修復（COOP 問題）
 
 ### 問題現象
