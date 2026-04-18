@@ -37,8 +37,14 @@ vi.mock("../firebaseAuth", () => ({
 
 // ── Mock: schema ──
 vi.mock("@shared/schema", () => ({
-  insertBattleClanSchema: { parse: vi.fn((d: any) => d) },
-  updateBattleClanSchema: { parse: vi.fn((d: any) => d) },
+  insertBattleClanSchema: {
+    parse: vi.fn((d: any) => d),
+    safeParse: vi.fn((d: any) => ({ success: true, data: d })),
+  },
+  updateBattleClanSchema: {
+    parse: vi.fn((d: any) => d),
+    safeParse: vi.fn((d: any) => ({ success: true, data: d })),
+  },
   clanRoleEnum: ["leader", "officer", "member"],
 }));
 
