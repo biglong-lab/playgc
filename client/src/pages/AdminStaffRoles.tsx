@@ -410,11 +410,11 @@ export default function AdminStaffRoles() {
                 </TableBody>
               </Table>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Key className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>尚無角色資料</p>
-                <p className="text-sm">點擊「新增角色」開始建立</p>
-              </div>
+              <EmptyState
+                icon={Key}
+                title="尚無角色資料"
+                description="為管理員帳號定義不同的權限集合，例如「場域主管」、「活動執行者」"
+              />
             )}
           </CardContent>
         </Card>
