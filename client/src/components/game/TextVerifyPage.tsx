@@ -160,23 +160,26 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
   };
 
   const checkAnswer = async () => {
-    if (!answer.trim()) return;
+    // 空答案不靜默 return，給提示
+    if (!answer.trim()) {
+      toast({
+        title: "請輸入答案",
+        description: "答案不能為空",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setIsAnimating(true);
 
-    const normalizedAnswer = config.caseSensitive
-      ? answer.trim()
-      : answer.trim().toLowerCase();
+    const normalizedAnswer = normalizeAnswer(answer, !!config.caseSensitive);
 
     const answersArray = buildAnswersArray();
 
-    // 精確匹配檢查（所有模式都先做）
-    const isExactMatch = answersArray.some((validAnswer) => {
-      const normalizedValid = config.caseSensitive
-        ? validAnswer
-        : validAnswer.toLowerCase();
-      return normalizedAnswer === normalizedValid;
-    });
+    // 精確匹配檢查（所有模式都先做）— 用統一的 normalizeAnswer
+    const isExactMatch = answersArray.some((validAnswer) =>
+      normalizedAnswer === normalizeAnswer(validAnswer, !!config.caseSensitive),
+    );
 
     if (config.showAttemptHistory) {
       setAttemptHistory((prev) => [...prev, answer]);
