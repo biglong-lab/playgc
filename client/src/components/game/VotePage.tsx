@@ -62,6 +62,34 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
     }
   }, [hasValidOptions, options.length, voteStorageKey]);
 
+  // 投完票後自動前進倒數（預設 5 秒，可設 0 關閉）
+  useEffect(() => {
+    if (!hasVoted || autoAdvanceSeconds <= 0 || !canContinue) return;
+
+    setAutoAdvanceIn(autoAdvanceSeconds);
+    autoAdvanceTimerRef.current = setInterval(() => {
+      setAutoAdvanceIn((prev) => {
+        if (prev === null || prev <= 1) {
+          if (autoAdvanceTimerRef.current) {
+            clearInterval(autoAdvanceTimerRef.current);
+            autoAdvanceTimerRef.current = null;
+          }
+          handleContinue();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (autoAdvanceTimerRef.current) {
+        clearInterval(autoAdvanceTimerRef.current);
+        autoAdvanceTimerRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasVoted, autoAdvanceSeconds]);
+
   useEffect(() => {
     if (votingTimeLimit > 0 && hasValidOptions) {
       setTimeLeft(votingTimeLimit);
