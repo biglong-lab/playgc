@@ -108,6 +108,17 @@ export function registerPlayerSessionRoutes(app: Express) {
             inventory: [],
             variables: {},
           });
+
+          // 🎫 自動加入場域會員（首次遊玩此場域）
+          if (data.gameId) {
+            const game = await storage.getGame(data.gameId);
+            if (game?.fieldId) {
+              const { ensureMembership } = await import("../services/field-memberships");
+              ensureMembership(userId, game.fieldId).catch((err) =>
+                console.error("[field-memberships] ensure 失敗:", err),
+              );
+            }
+          }
         }
 
         res.status(201).json(session);
