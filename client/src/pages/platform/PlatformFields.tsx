@@ -205,9 +205,9 @@ function FieldRowItem({
           size="sm"
           variant="secondary"
           onClick={() => {
-            // 寫入 localStorage（FieldSelector 使用相同 key）
+            // 寫入 localStorage（與 FieldSelector 使用相同 key）
             try {
-              localStorage.setItem("current-field-id", field.id);
+              localStorage.setItem("admin_selected_field_id", field.id);
             } catch {
               // ignore
             }
