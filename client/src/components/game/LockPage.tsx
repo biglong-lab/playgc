@@ -90,9 +90,13 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
     setDialRotation(0);
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = () => {
+    if (isSubmitting || isUnlocked || isFailed) return;
+
     const enteredCode = code.join("");
-    
+
     if (enteredCode.length !== digits) {
       toast({
         title: "請輸入完整密碼",
@@ -101,7 +105,12 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
       return;
     }
 
-    if (enteredCode.toUpperCase() === config.combination.toUpperCase()) {
+    // Rate limit：每次 submit 鎖 1.2 秒防暴力破解
+    setIsSubmitting(true);
+    setTimeout(() => setIsSubmitting(false), 1200);
+
+    // 比對前同時 trim + toUpperCase（原本只 toUpperCase，combination 有前後空白會永遠失敗）
+    if (normalizeAnswer(enteredCode, false) === normalizeAnswer(config.combination, false)) {
       setIsUnlocked(true);
       toast({
         title: config.successMessage || "解鎖成功!",
@@ -111,9 +120,11 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
         onComplete({ points: config.rewardPoints || 20 }, config.nextPageId);
       }, 2000);
     } else {
-      setAttempts((prev) => prev + 1);
-      
-      if (attempts + 1 >= maxAttempts) {
+      // 用本地變數取代 attempts closure（原本 attempts+1 >= maxAttempts 靠 setState 巧合）
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+
+      if (newAttempts >= maxAttempts) {
         setIsFailed(true);
         toast({
           title: config.failureMessage || "解鎖失敗",
@@ -126,7 +137,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
       } else {
         toast({
           title: "密碼錯誤",
-          description: `還剩 ${maxAttempts - attempts - 1} 次機會`,
+          description: `還剩 ${maxAttempts - newAttempts} 次機會`,
           variant: "destructive",
         });
         handleClear();
