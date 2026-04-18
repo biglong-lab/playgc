@@ -129,11 +129,16 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
       }
     }
 
-    if (config.proximitySound) {
+    // 使用 soundEnabled state（玩家可切換），而非 config.proximitySound（一次性設定）
+    if (soundEnabled) {
       playProximityBeep(dist);
     }
 
-    if (dist <= targetRadius) {
+    // accuracy 加權：若 GPS 精度差（大於 30m），寬鬆判定到達
+    const accuracy = position.coords.accuracy ?? 0;
+    const effectiveRadius = targetRadius + Math.min(accuracy * 0.5, 50);
+
+    if (dist <= effectiveRadius) {
       toast({
         title: "到達目標位置!",
         description: config.onSuccess?.message || "任務完成!",
@@ -142,16 +147,16 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
         navigator.geolocation.clearWatch(watchId);
       }
       setTimeout(() => {
-        const reward: { points?: number; items?: string[] } = { 
-          points: config.onSuccess?.points || 15 
+        const reward: { points?: number; items?: string[] } = {
+          points: config.onSuccess?.points || 15,
         };
         if (config.onSuccess?.grantItem) {
           reward.items = [config.onSuccess.grantItem];
         }
-        onComplete(reward);
+        onComplete(reward, config.nextPageId);
       }, 1500);
     }
-  }, [calculateDistance, targetLat, targetLng, targetRadius, watchId, toast, onComplete, config, getDirectionHint, playProximityBeep]);
+  }, [calculateDistance, targetLat, targetLng, targetRadius, watchId, toast, onComplete, config, getDirectionHint, playProximityBeep, soundEnabled]);
 
   const handleLocationError = useCallback((err: GeolocationPositionError) => {
     setIsLocating(false);
@@ -162,15 +167,16 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
         break;
       case err.POSITION_UNAVAILABLE:
         message = "無法取得位置資訊";
-        if (config.qrFallback) {
-          setShowQrFallback(true);
-        }
         break;
       case err.TIMEOUT:
         message = "定位請求超時";
         break;
     }
     setError(message);
+    // 所有錯誤分支都顯示 QR fallback（原本只有 POSITION_UNAVAILABLE 顯示）
+    if (config.qrFallback) {
+      setShowQrFallback(true);
+    }
   }, [config.qrFallback]);
 
   const startWatching = () => {
