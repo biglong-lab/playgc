@@ -37,8 +37,14 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
   const [showExplanation, setShowExplanation] = useState(false);
 
   const maxAttempts = config.maxAttempts || 5;
-  const hasHints = config.hints && config.hints.length > 0;
-  const currentHint = showHint && hasHints ? config.hints![Math.min(attempts, config.hints!.length - 1)] : null;
+  // 支援 hints（複數）和 hint（單數，schema 有這個欄位但原本沒讀）
+  const hintList: string[] = (config.hints && config.hints.length > 0)
+    ? config.hints
+    : (config.hint ? [config.hint] : []);
+  const hasHints = hintList.length > 0;
+  const currentHint = showHint && hasHints
+    ? hintList[Math.min(attempts, hintList.length - 1)]
+    : null;
   const inputType = config.inputType || "text";
 
   // AI 語意評分 mutation
