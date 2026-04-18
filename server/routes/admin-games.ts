@@ -166,6 +166,13 @@ export function registerAdminGameRoutes(app: Express) {
         userAgent: req.headers["user-agent"],
       });
 
+      // SaaS 用量同步：games meter（total）
+      if (fieldId) {
+        syncGamesMeter(fieldId).catch((err) =>
+          console.error("[billing] syncGamesMeter 失敗:", err),
+        );
+      }
+
       res.status(201).json({ ...game, qrCodeUrl: qrCodeDataUrl });
     } catch (error) {
       if (error instanceof z.ZodError) {
