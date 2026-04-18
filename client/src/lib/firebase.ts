@@ -92,7 +92,6 @@ export async function signInWithGoogle() {
     }
   } catch (error: unknown) {
     const code = getFirebaseErrorCode(error);
-    console.error("[signInWithGoogle] Firebase error:", code, error);
     if (code === "auth/popup-blocked" || code === "auth/operation-not-supported-in-this-environment") {
       try {
         await signInWithRedirect(auth, googleProvider);
