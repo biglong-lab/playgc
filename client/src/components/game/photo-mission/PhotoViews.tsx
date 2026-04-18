@@ -232,25 +232,33 @@ export function CameraView({
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-4">
-        <Button variant="outline" onClick={onCancel} data-testid="button-cancel-camera">
+      <div className="mt-4 flex items-center justify-center gap-6">
+        <Button
+          variant="outline"
+          onClick={onCancel}
+          data-testid="button-cancel-camera"
+          className="min-h-12 px-5"
+        >
           取消
         </Button>
+        {/* 📱 快門 80px 大圓形（超過 44px 最低要求，拍照核心體驗）*/}
         <Button
           size="lg"
           onClick={onCapture}
           disabled={!cameraReady}
-          className="w-20 h-20 rounded-full"
+          className="w-20 h-20 md:w-20 md:h-20 rounded-full shadow-lg active:scale-95 transition-transform"
           data-testid="button-capture"
         >
-          <Camera className="w-8 h-8" />
+          <Camera className="w-9 h-9" />
         </Button>
         <Button
           variant="outline"
           onClick={() => fileInputRef.current?.click()}
           data-testid="button-gallery"
+          className="min-h-12 w-12"
+          aria-label="從相簿選擇"
         >
-          <Image className="w-4 h-4" />
+          <Image className="w-5 h-5" />
         </Button>
       </div>
 
