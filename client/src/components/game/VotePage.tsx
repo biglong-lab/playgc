@@ -135,14 +135,41 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
 
   const canContinue = hasVoted && (totalVotes >= minVotes || timedOut || minVotes <= 1);
 
+  const getWinningOption = (): VoteResult | null => {
+    if (voteResults.length === 0) return null;
+    // 取最多票的選項；平票時取第一個出現的
+    return voteResults.reduce((max, r) => r.count > max.count ? r : max, voteResults[0]);
+  };
+
   const handleContinue = () => {
-    if (timedOut || selectedOption === null) {
+    // 清除自動前進倒數
+    if (autoAdvanceTimerRef.current) {
+      clearInterval(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
+    }
+
+    // 完全沒人投票 + 時限到 → 直接跳過（走遊戲預設流程）
+    if (timedOut && totalVotes === 0) {
       onComplete();
       return;
     }
-    const selectedOpt = options[selectedOption];
-    const nextPage = selectedOpt?.nextPageId || undefined;
-    onComplete(undefined, nextPage);
+
+    const strategy = config.nextPageStrategy ?? "winner";
+    let nextPage: string | undefined;
+
+    if (strategy === "self" && selectedOption !== null) {
+      nextPage = options[selectedOption]?.nextPageId;
+    } else {
+      // 預設：最多票決定（團隊共識）
+      const winner = getWinningOption();
+      if (winner) {
+        nextPage = options[winner.optionIndex]?.nextPageId;
+      } else if (selectedOption !== null) {
+        nextPage = options[selectedOption]?.nextPageId;
+      }
+    }
+
+    onComplete(undefined, nextPage || undefined);
   };
 
   const getTimeProgress = () => {
