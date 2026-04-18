@@ -71,15 +71,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               </p>
             </div>
 
-            {process.env.NODE_ENV === "development" && this.state.error && (
+            {this.state.error && (
               <div className="p-4 bg-muted rounded-lg text-left">
+                <p className="text-xs text-muted-foreground mb-2">錯誤訊息（請截圖回報）：</p>
                 <p className="text-sm font-mono text-destructive break-all">
-                  {this.state.error.message}
+                  {this.state.error.name}: {this.state.error.message}
                 </p>
                 {this.state.errorInfo && (
-                  <pre className="mt-2 text-xs text-muted-foreground overflow-auto max-h-40">
-                    {this.state.errorInfo.componentStack}
-                  </pre>
+                  <details className="mt-2">
+                    <summary className="text-xs text-muted-foreground cursor-pointer">技術詳情</summary>
+                    <pre className="mt-2 text-xs text-muted-foreground overflow-auto max-h-40">
+                      {this.state.errorInfo.componentStack}
+                    </pre>
+                  </details>
                 )}
               </div>
             )}

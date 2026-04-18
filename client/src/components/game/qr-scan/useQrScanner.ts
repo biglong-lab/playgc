@@ -132,8 +132,6 @@ export function useQrScanner(
     }
 
     await stopScanning();
-    const html5QrCode = new Html5Qrcode("qr-reader");
-    html5QrCodeRef.current = html5QrCode;
 
     const startConfig = {
       fps: 10,
@@ -142,14 +140,22 @@ export function useQrScanner(
       disableFlip: false,
     };
 
-    // 先試後鏡頭，失敗再 fallback 前鏡頭
+    // 每次嘗試都用新的 Html5Qrcode 實例，避免內部 state 污染
     const tryStart = async (facingMode: "environment" | "user") => {
-      await html5QrCode.start(
-        { facingMode },
-        startConfig,
-        (decodedText) => { verifyCode(decodedText); },
-        () => {},
-      );
+      const instance = new Html5Qrcode("qr-reader");
+      try {
+        await instance.start(
+          { facingMode },
+          startConfig,
+          (decodedText) => { verifyCode(decodedText); },
+          () => {},
+        );
+        html5QrCodeRef.current = instance;
+      } catch (err) {
+        // 失敗時清理實例再向上拋
+        try { await instance.clear(); } catch { /* ignore */ }
+        throw err;
+      }
     };
 
     try {
