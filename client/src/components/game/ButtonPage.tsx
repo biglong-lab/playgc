@@ -18,33 +18,31 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 洗牌時保留 originalIndex 對應，讓 defaultChoice 仍指向 admin 設定的那顆
   const buttons = useMemo(() => {
-    const originalButtons = config.buttons || [];
+    const originalButtons = (config.buttons || []).map((b, i) => ({ ...b, _originalIndex: i }));
     if (config.randomizeOrder) {
       return [...originalButtons].sort(() => Math.random() - 0.5);
     }
     return originalButtons;
   }, [config.buttons, config.randomizeOrder]);
 
-  const mockStatistics = useMemo(() => {
-    if (!config.showStatistics) return null;
-    const total = 100;
-    const percentages = buttons.map(() => Math.floor(Math.random() * 40) + 10);
-    const sum = percentages.reduce((a, b) => a + b, 0);
-    return percentages.map(p => Math.round((p / sum) * 100));
-  }, [config.showStatistics, buttons.length]);
+  // 不再產生 mock statistics（原本是每次 render 隨機假資料欺騙玩家）
+  // 如需真實統計，應由後端 API 提供
 
   useEffect(() => {
-    if (config.timeLimit && config.timeLimit > 0) {
+    if (config.timeLimit && config.timeLimit > 0 && buttons.length > 0) {
       setTimeLeft(config.timeLimit);
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev === null || prev <= 1) {
             clearInterval(timer);
             const defaultIdx = config.defaultChoice ?? 0;
-            const defaultButton = buttons[defaultIdx] || buttons[0];
+            // 找回原本設定的按鈕（解決 randomizeOrder 後 buttons[defaultIdx] 對不上的 bug）
+            const defaultButton = buttons.find((b) => b._originalIndex === defaultIdx) || buttons[0];
             if (defaultButton) {
-              handleButtonClick(defaultButton, defaultIdx);
+              const actualIdx = buttons.indexOf(defaultButton);
+              handleButtonClick(defaultButton, actualIdx);
             }
             return 0;
           }
@@ -53,6 +51,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
       }, 1000);
       return () => clearInterval(timer);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.timeLimit, config.defaultChoice, buttons]);
 
   const getIcon = (iconName?: string) => {
