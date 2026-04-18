@@ -112,12 +112,19 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
     return () => clearInterval(intervalId);
   }, [currentMessageIndex, currentMessage, config?.autoAdvance, isLastMessage, bubbleVisible]);
 
+  const finishDialogue = () => {
+    onComplete(
+      config.rewardPoints ? { points: config.rewardPoints } : undefined,
+      config.nextPageId,
+    );
+  };
+
   const handleNext = () => {
     if (!currentMessage) {
-      onComplete();
+      finishDialogue();
       return;
     }
-    
+
     if (isTyping) {
       setDisplayedText(currentMessage.text || "");
       setIsTyping(false);
@@ -125,14 +132,14 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
     }
 
     if (isLastMessage) {
-      onComplete();
+      finishDialogue();
     } else {
       setCurrentMessageIndex(prev => prev + 1);
     }
   };
 
   const handleSkip = () => {
-    onComplete();
+    finishDialogue();
   };
 
   if (!messages.length) {
