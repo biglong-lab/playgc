@@ -306,19 +306,22 @@ PLATFORM_OWNER_SECRET=3f435b3364acc20d049a00fc682fc526a1b418b92686c57c3f6b8935f5
 - [x] Docker 容器：`gamehomicc-app` (healthy) + `gamehomicc-db` (PostgreSQL 16)
 - [x] 232 個 commits 更新成功，所有頁面和 API 正常回應
 
+#### ✅ 已解決（2026-04-18）
+- [x] **Google Cloud Console 授權**：Firebase Authorized domains 已加入 `game.homi.cc`
+- [x] **COOP popup 修復**：helmet `crossOriginOpenerPolicy: same-origin-allow-popups`
+- [x] **Google 登入驗證通過**：twfam4@gmail.com Firebase UID 已綁定
+- [x] **平台擁有者緊急登入**：/owner-login 後備路徑已上線
+
 #### 🟡 待處理（需外部操作）
-- [ ] **Google Cloud Console 設定**（進行中 2026-04-13）：在 OAuth 2.0 Client ID 加入正式網域授權
-  - 專案: `game-eca24`，設定頁: https://console.cloud.google.com/apis/credentials?project=game-eca24
-  - 已授權 JavaScript 來源需加: `https://game.homi.cc` + `http://localhost:3333`
-  - 已授權重新導向 URI 需加: `https://game.homi.cc/__/auth/handler` + `http://localhost:3333/__/auth/handler`
-  - Firebase Console 授權網域需加: `game.homi.cc`
-- [ ] **GitHub Secrets 設定**：設定 DEPLOY_HOST、DEPLOY_SSH_KEY、DEPLOY_PATH 啟用 CI/CD 自動部署
+- [ ] **GitHub Secrets 設定**：設定 DEPLOY_HOST、DEPLOY_SSH_KEY、DEPLOY_PATH 啟用 CI/CD 自動部署（目前靠手動 SSH 部署）
 - [ ] **Google Safe Browsing 申訴**：如 `.cc` 域名仍被擋，到 safebrowsing.google.com 提交誤判
+- [ ] **Firebase Email/Password provider**（可選）：為 twfam4@gmail.com 補 password provider，讓 Email 登入也能用
 
 #### 🟢 可選優化
 - [ ] PWA 離線功能驗證
 - [ ] Google Search Console 驗證網站所有權
 - [ ] 測試覆蓋率提升（可補前端元件測試）
+- [ ] CSP header 收緊（目前 helmet contentSecurityPolicy 為 false）
 
 ## 工作紀錄
 
