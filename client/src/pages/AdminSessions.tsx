@@ -290,10 +290,11 @@ export default function AdminSessions() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">沒有符合條件的場次</p>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="沒有符合條件的場次"
+            description="改變上方篩選條件或等玩家開始新場次"
+          />
         )}
       </div>
 
