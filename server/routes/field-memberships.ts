@@ -175,6 +175,7 @@ export function registerFieldMembershipRoutes(app: Express) {
   const suspendSchema = z.object({
     userId: z.string().min(1),
     status: z.enum(["active", "suspended", "banned"]),
+    reason: z.string().max(500).optional(),
   });
 
   app.post(
@@ -187,10 +188,19 @@ export function registerFieldMembershipRoutes(app: Express) {
       if (!parsed.success)
         return res.status(400).json({ error: "格式錯誤" });
 
+      // 暫停/停權時強制要求理由
+      if (
+        (parsed.data.status === "suspended" || parsed.data.status === "banned") &&
+        !parsed.data.reason?.trim()
+      ) {
+        return res.status(400).json({ error: "暫停/停權時必須填寫理由" });
+      }
+
       const result = await suspendPlayer(
         parsed.data.userId,
         req.admin.fieldId,
-        parsed.data.status
+        parsed.data.status,
+        parsed.data.reason
       );
       if (!result.success) return res.status(400).json({ error: result.error });
 
@@ -200,7 +210,7 @@ export function registerFieldMembershipRoutes(app: Express) {
         targetType: "user",
         targetId: parsed.data.userId,
         fieldId: req.admin.fieldId,
-        metadata: { status: parsed.data.status },
+        metadata: { status: parsed.data.status, reason: parsed.data.reason },
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"],
       });
