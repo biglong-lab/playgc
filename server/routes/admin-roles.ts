@@ -434,11 +434,37 @@ export function registerAdminRoleRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      const allUsers = await db.query.users.findMany({
-        orderBy: [desc(users.createdAt)],
-      });
+      // 🔒 場域隔離：只回傳「在本場域有 membership」的玩家
+      // super_admin 可透過 query 指定場域，否則強制自己的 fieldId
+      const targetFieldId =
+        req.admin.systemRole === "super_admin"
+          ? (req.query.fieldId as string) || req.admin.fieldId
+          : req.admin.fieldId;
 
-      res.json(allUsers);
+      const { fieldMemberships } = await import("@shared/schema");
+      const rows = await db
+        .select({
+          user: users,
+          membership: fieldMemberships,
+        })
+        .from(fieldMemberships)
+        .leftJoin(users, eq(users.id, fieldMemberships.userId))
+        .where(eq(fieldMemberships.fieldId, targetFieldId))
+        .orderBy(desc(fieldMemberships.joinedAt));
+
+      // 僅回傳 user 物件 + membership 關鍵欄位（保持向後相容）
+      const result = rows
+        .filter((r) => r.user !== null)
+        .map((r) => ({
+          ...r.user!,
+          membership: {
+            joinedAt: r.membership.joinedAt,
+            isAdmin: r.membership.isAdmin,
+            playerStatus: r.membership.playerStatus,
+          },
+        }));
+
+      res.json(result);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users" });
     }
