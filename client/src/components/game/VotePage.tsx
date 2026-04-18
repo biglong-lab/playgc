@@ -67,7 +67,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
 
   // 投完票後自動前進倒數（預設 5 秒，可設 0 關閉）
   useEffect(() => {
-    if (!hasVoted || autoAdvanceSeconds <= 0 || !canContinue) return;
+    if (!hasVoted || autoAdvanceSeconds <= 0) return;
 
     setAutoAdvanceIn(autoAdvanceSeconds);
     autoAdvanceTimerRef.current = setInterval(() => {
@@ -77,7 +77,8 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
             clearInterval(autoAdvanceTimerRef.current);
             autoAdvanceTimerRef.current = null;
           }
-          handleContinue();
+          // 用 ref 呼叫最新版本的 handleContinue，避免 stale closure
+          handleContinueRef.current();
           return 0;
         }
         return prev - 1;
@@ -90,7 +91,6 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
         autoAdvanceTimerRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasVoted, autoAdvanceSeconds]);
 
   useEffect(() => {
