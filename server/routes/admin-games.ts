@@ -288,6 +288,13 @@ export function registerAdminGameRoutes(app: Express) {
         userAgent: req.headers["user-agent"],
       });
 
+      // SaaS 用量同步：games meter（total）
+      if (existingGame.fieldId) {
+        syncGamesMeter(existingGame.fieldId).catch((err) =>
+          console.error("[billing] syncGamesMeter 失敗:", err),
+        );
+      }
+
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: "Failed to delete game" });
