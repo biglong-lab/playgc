@@ -5,6 +5,24 @@ import type { FlowCondition, FlowRoute, FlowRouterConfig, OnCompleteAction } fro
 // 條件評估
 // ============================================================================
 
+/**
+ * 寬鬆相等比對：處理字串 vs 數字的型別差異。
+ * 管理員在 JSON 編輯器常把數字存成字串（"5"），但執行時變數是 number（5），
+ * 直接 === 會永遠不等於。coerceEquals 先做型別一致化。
+ */
+function coerceEquals(a: unknown, b: unknown): boolean {
+  // null/undefined 直接嚴格比
+  if (a == null || b == null) return a === b;
+  // 兩邊都是原始值就轉字串比（包含 boolean/number/string）
+  const ta = typeof a;
+  const tb = typeof b;
+  if ((ta === "number" || ta === "string" || ta === "boolean") &&
+      (tb === "number" || tb === "string" || tb === "boolean")) {
+    return String(a) === String(b);
+  }
+  return a === b;
+}
+
 /** 評估單一條件 */
 export function evaluateCondition(
   condition: FlowCondition,
@@ -14,7 +32,7 @@ export function evaluateCondition(
 ): boolean {
   switch (condition.type) {
     case 'variable_equals':
-      return variables[condition.variableName || ''] === condition.variableValue;
+      return coerceEquals(variables[condition.variableName || ''], condition.variableValue);
     case 'variable_gt':
       return Number(variables[condition.variableName || ''] ?? 0) > Number(condition.variableValue ?? 0);
     case 'variable_lt':
