@@ -11,6 +11,7 @@ import ProtectedAdminRoute from "@/components/shared/ProtectedAdminRoute";
 import PageLoader from "@/components/shared/PageLoader";
 import OfflineBanner from "@/components/shared/OfflineBanner";
 import PlayerBottomNav from "@/components/PlayerBottomNav";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useAuth } from "@/hooks/useAuth";
 
