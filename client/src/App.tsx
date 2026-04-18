@@ -82,6 +82,8 @@ const PlatformPlans = lazy(() => import("@/pages/platform/PlatformPlans"));
 const PlatformFeatureFlags = lazy(() => import("@/pages/platform/PlatformFeatureFlags"));
 const PlatformRevenue = lazy(() => import("@/pages/platform/PlatformRevenue"));
 const PlatformApplications = lazy(() => import("@/pages/platform/PlatformApplications"));
+const PlatformAnalytics = lazy(() => import("@/pages/platform/PlatformAnalytics"));
+const PlatformSettingsPage = lazy(() => import("@/pages/platform/PlatformSettings"));
 
 // 📝 公開申請頁（Phase 8）
 const Apply = lazy(() => import("@/pages/Apply"));
