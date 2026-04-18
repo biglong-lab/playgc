@@ -413,17 +413,11 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                 
                 <Button
                   onClick={handleContinue}
-                  disabled={!canContinue}
                   size="lg"
-                  className={`w-full ${canContinue && autoAdvanceIn !== null && autoAdvanceIn > 0 ? "animate-pulse" : ""}`}
+                  className={`w-full ${autoAdvanceIn !== null && autoAdvanceIn > 0 ? "animate-pulse" : ""}`}
                   data-testid="button-continue"
                 >
-                  {!canContinue ? (
-                    <span className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4" />
-                      等待更多投票 ({totalVotes}/{minVotes})
-                    </span>
-                  ) : timedOut && totalVotes === 0 ? (
+                  {timedOut && totalVotes === 0 ? (
                     <>
                       跳過此頁
                       <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
