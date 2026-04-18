@@ -1,8 +1,10 @@
 // 💳 會員中心 — 整合玩家所有個人資料的單一入口
-// 整合：購買記錄 / 對戰戰績 / 成就 / 通知 / 兌換碼
+// 整合：購買記錄 / 對戰戰績 / 成就 / 通知 / 兌換碼 / 我的場域
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +19,19 @@ import {
   ChevronRight,
   Gift,
   Gamepad2,
+  Building2,
+  Shield,
 } from "lucide-react";
+
+interface MembershipSummary {
+  fieldId: string;
+  fieldCode: string;
+  fieldName: string;
+  joinedAt: string;
+  isAdmin: boolean;
+  adminRoleName: string | null;
+  playerStatus: string;
+}
 
 export default function MeCenter() {
   const { user, firebaseUser, isSignedIn, isLoading } = useAuth();
