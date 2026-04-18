@@ -159,18 +159,12 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
               </div>
             </Button>
             
-            {config.showStatistics && mockStatistics && (
-              <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                <Users className="w-3 h-3" />
-                <span>{mockStatistics[index]}% 的人選了這個</span>
-              </div>
-            )}
           </div>
         ))}
 
-        {config.timeLimit && config.defaultChoice !== undefined && (
+        {config.timeLimit && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            時間到將自動選擇第 {config.defaultChoice + 1} 個選項
+            時間到將自動選擇第 {(config.defaultChoice ?? 0) + 1} 個選項
           </p>
         )}
       </div>
