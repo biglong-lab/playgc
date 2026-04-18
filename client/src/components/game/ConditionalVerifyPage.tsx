@@ -96,13 +96,11 @@ export default function ConditionalVerifyPage({
   const checkCondition = (condition: Condition): boolean => {
     switch (condition.type) {
       case "has_item":
-        return inventory.includes(String(condition.itemId));
+        return !!condition.itemId && inventory.includes(condition.itemId);
+      case "has_points":
+        return score >= (condition.minPoints ?? 0);
       case "visited_location":
-        return visitedLocations.includes(condition.locationId || 0);
-      case "score_above":
-        return score >= (condition.scoreThreshold || 0);
-      case "variable_equals":
-        return variables[condition.variableName || ""] === condition.variableValue;
+        return !!condition.locationId && visitedLocations.includes(condition.locationId);
       default:
         return false;
     }
