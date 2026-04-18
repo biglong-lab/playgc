@@ -190,8 +190,11 @@ export function useQrScanner(
     setIsProcessing(true);
     await stopScanning();
 
-    const isValid = validateQrCode(code, config);
-    const locationId = extractLocationId(code);
+    // 管理員端 QRCodeGenerator 會把 qrCodeId 包在 JSON 內（含 gameId/pageId/timestamp 防偽），
+    // 這裡先解 JSON 抽 qrCodeId；若不是 JSON 就視為純字串（手動輸入 / 外部貼紙）
+    const normalizedCode = extractScanCode(code);
+    const isValid = validateQrCode(normalizedCode, config);
+    const locationId = extractLocationId(normalizedCode);
 
     if (isValid) {
       if (locationId && sessionId) {
