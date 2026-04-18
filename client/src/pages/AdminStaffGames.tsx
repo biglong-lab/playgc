@@ -128,14 +128,20 @@ function StatusTabs({
 // 表格內容（含載入/空狀態）- 包含場域欄位
 function StaffGamesTableContent({ ctx }: { ctx: ReturnType<typeof useAdminStaffGames> }) {
   if (ctx.gamesLoading) {
-    return <div className="text-center py-8 text-muted-foreground">載入中...</div>;
+    return <ListSkeleton count={5} />;
   }
 
   if (ctx.filteredGames.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        {ctx.games.length === 0 ? "尚無遊戲，點擊「新增遊戲」開始建立" : "沒有符合條件的遊戲"}
-      </div>
+      <EmptyState
+        icon={Gamepad2}
+        title={ctx.games.length === 0 ? "尚無遊戲" : "沒有符合條件的遊戲"}
+        description={
+          ctx.games.length === 0
+            ? "跨場域的遊戲一覽，點「新增遊戲」開始"
+            : "改變篩選條件"
+        }
+      />
     );
   }
 
