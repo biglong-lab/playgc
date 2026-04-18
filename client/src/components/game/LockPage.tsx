@@ -1,10 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Lock, Unlock, RotateCcw, HelpCircle, Check, X } from "lucide-react";
+import { Lock, Unlock, RotateCcw, HelpCircle, Check, X, Delete } from "lucide-react";
 import type { LockConfig } from "@shared/schema";
+import { normalizeAnswer } from "@/lib/gameVerification";
+
+/** 安全的 dial 值解析：NaN → 0 */
+function parseDigit(s: string | undefined): number {
+  const n = parseInt(s ?? "0", 10);
+  return Number.isFinite(n) ? n : 0;
+}
 
 interface LockPageProps {
   config: LockConfig;
