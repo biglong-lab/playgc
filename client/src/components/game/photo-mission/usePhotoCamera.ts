@@ -92,15 +92,13 @@ export function usePhotoCamera(): PhotoCameraState {
       videoRef.current.onerror = null;
       videoRef.current.srcObject = mediaStream;
 
-      // Safari/iOS fallback: 3 秒後嘗試直接播放
-      const metadataTimeout = setTimeout(() => {
-        if (videoRef.current && !cameraReady) {
-          attemptPlay();
-        }
-      }, 3000);
+      // 雙重 play guard：metadata 和 timeout 兩條路徑只能觸發一次 play()，
+      // 避免 iOS Safari double-play 造成 AbortError
+      let playAttempted = false;
 
       const attemptPlay = () => {
-        if (!videoRef.current) return;
+        if (playAttempted || !videoRef.current) return;
+        playAttempted = true;
         videoRef.current
           .play()
           .then(() => {
@@ -124,20 +122,16 @@ export function usePhotoCamera(): PhotoCameraState {
           });
       };
 
+      // Safari/iOS fallback: 3 秒後嘗試直接播放
+      const metadataTimeout = setTimeout(() => {
+        if (videoRef.current && !cameraReady) {
+          attemptPlay();
+        }
+      }, 3000);
+
       videoRef.current.onloadedmetadata = () => {
         clearTimeout(metadataTimeout);
-        if (!videoRef.current) return;
-        videoRef.current
-          .play()
-          .then(() => {
-            setCameraReady(true);
-            setMode("camera");
-          })
-          .catch(() => {
-            setCameraError("無法播放相機畫面，請重試");
-            stopCamera();
-            setMode("instruction");
-          });
+        attemptPlay();
       };
 
       videoRef.current.onerror = () => {
