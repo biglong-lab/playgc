@@ -22,6 +22,114 @@
 
 ---
 
+## 🚀 2026-04-18 深夜 — 全棧優化全推進（重要功能 + UX 一致化 + 工程改進）
+
+### Phase 1：重要功能補齊（4 項全完成）
+
+#### 1.1 checkQuota 結帳配額阻擋
+`server/routes/player-purchases.ts` — `/api/games/:gameId/checkout` 在建立付款 session 前檢查配額
+- 場域本月結帳次數超限（Free 100 / Pro 1000）→ 回傳 402
+- 回傳包含 `current` + `limit`，前端可顯示升級提示
+
+#### 1.2 games meter 同步
+新增 `syncGamesMeter(fieldId)` — games 是 total 不是 monthly，直接覆寫 `currentValue`
+- `POST /api/admin/games` 建立後觸發同步
+- `DELETE /api/admin/games/:id` 刪除後觸發同步
+- fire-and-forget 不阻塞主流程
+
+#### 1.3 /platform/analytics 跨場域分析
+**後端**：`GET /api/platform/analytics`
+- SQL JOIN：每個場域的遊戲數 + 本月結帳 + 本月對戰 + 本月平台費
+- 排序：按本月平台費降序（找出貢獻最高的租戶）
+- 總覽：場域總數 + 本月已收 / 待收平台費
+
+**前端**：`client/src/pages/platform/PlatformAnalytics.tsx`
+- 3 個統計卡（場域數、已收費、待收費）
+- 場域排行表格（遊戲/結帳/對戰/平台費）
+- 整合麵包屑 + Cmd+K + sidebar
+
+#### 1.4 /platform/settings 平台全域設定
+**後端**：`GET/PATCH /api/platform/settings`
+- 儲存於 `platform_plans[code='__platform_config__']` 的 limits JSON（巧用現有表）
+- 欄位：`platformName` / `supportEmail` / `defaultPlanCode` / `maintenanceMode` / `applicationsOpen` / `customMessage`
+- Zod 驗證 + PATCH 部分更新
+
+**前端**：`client/src/pages/platform/PlatformSettings.tsx`
+- 3 張表單卡（品牌聯絡 / 場域預設 / 維護）
+- Switch + Textarea + Input 完整表單
+
+### Phase 2：UX 一致化（4 個核心管理頁）
+使用 `EmptyState` + `ListSkeleton` / `GridSkeleton` 統一空狀態與載入狀態：
+- ✅ `AdminStaffFields` — 場域管理（有 action 按鈕指引）
+- ✅ `AdminStaffPlayers` — 玩家管理（搜尋狀態區分空訊息）
+- ✅ `PlatformFields` — 平台場域（action 連結到場域申請）
+- ✅ `PlatformPlans` — 訂閱方案（GridSkeleton 更合適）
+
+### Phase 3：工程改進
+
+#### 3.1 CSP Content-Security-Policy（僅 production 啟用）
+`server/index.ts` — helmet CSP 完整配置：
+- `defaultSrc 'self'` + 明確列出所有外部白名單
+- 涵蓋：Firebase Auth / Google OAuth / Cloudinary / Leaflet tiles / Recur.tw
+- WebSocket：`wss://game.homi.cc` + dev `ws://localhost:*`
+- 禁止：`object-src 'none'` + `frame-ancestors 'self'`
+- 強制：`upgrade-insecure-requests`
+
+**線上驗證通過**：
+```
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline' 
+  https://apis.google.com https://*.firebaseapp.com ...
+```
+
+#### 3.2 GitHub Actions CI/CD Secrets
+**已設定（6 個）**：
+- `DEPLOY_HOST` = 172.233.89.147
+- `DEPLOY_USER` = root
+- `DEPLOY_PATH` = /www/wwwroot/game.homi.cc
+- `VITE_FIREBASE_API_KEY` / `APP_ID` / `PROJECT_ID`
+
+**待使用者手動設定（1 個機密）**：
+- `DEPLOY_SSH_KEY` — 需貼入 `~/.ssh/id_rsa` 或專用部署 key 內容
+- 設定方式：`gh secret set DEPLOY_SSH_KEY --repo biglong-lab/playgc < ~/.ssh/id_rsa`
+- 設完即可 `gh workflow run deploy.yml -f confirm=yes` 自動部署
+
+#### 3.3 測試覆蓋率（暫維持現狀）
+- 既有 102 個 E2E + 部分單元測試通過
+- 下一輪可補：billing hook 的 integration test、SaaS 配額邊界測試
+
+### 驗證結果
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過（16.71s，124 entries PWA）
+- ✅ CSP header 線上生效
+- ✅ 生產部署 healthy
+- ✅ `https://game.homi.cc` HTTP 200
+
+### 總 Commit 清單
+- `4c81c98` Phase B 刪 4 孤兒元件
+- `9e5ce50` Phase B 清理 PlatformAdminLayout imports
+- `f0de44a` Phase A 計費 hook（webhook billing）
+- `0407665` Phase A 計費 hook（battle slots）
+- `e7ac4b8` docs PROGRESS.md
+- **`5d1603f` feat: /platform/analytics + /platform/settings 頁面**
+- 期間多個 auto-commit（checkQuota / syncGamesMeter / CSP / EmptyState 推廣）
+
+### SaaS 計費引擎現況（完整閉環）
+```
+玩家結帳 ─ checkQuota ─┐
+                      │
+Admin 建遊戲 ─ syncGames ─┼→ field_usage_meters（自動累積）
+                      │
+Admin 建時段 ─ increment ─┘
+                      │
+Webhook 付款完成 ─────┼→ record → platform_transactions (pending)
+                      │
+每月 cron ────────────┴→ runMonthlyBilling → settled
+                      
+Platform Admin 看板 ──→ /platform/analytics 即時排行
+```
+
+---
+
 ## 🧹 2026-04-18 晚間 — 服務管理結構深度優化（Phase B 清理 + Phase A 計費整合）
 
 ### 全棧深度審查結論
