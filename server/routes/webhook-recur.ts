@@ -130,4 +130,22 @@ async function completeTransaction(
     transactionId: tx.id,
     completedAt: new Date(),
   });
+
+  // SaaS 計費 hook：用量計量 + 平台抽成（付款成功後才觸發）
+  try {
+    const game = await storage.getGame(tx.gameId);
+    const fieldId = game?.fieldId;
+    if (fieldId) {
+      await incrementUsage(fieldId, "checkouts", 1);
+      await recordTransactionFee({
+        fieldId,
+        sourceTransactionId: tx.id,
+        sourceAmount: tx.amount,
+        description: `購買遊戲 ${game?.title ?? tx.gameId}${tx.chapterId ? ` 章節 ${tx.chapterId}` : ""}`,
+      });
+    }
+  } catch (err) {
+    // 計費失敗不影響主流程（購買已完成）
+    console.error("[billing hook] incrementUsage/recordTransactionFee 失敗:", err);
+  }
 }
