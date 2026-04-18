@@ -40,6 +40,7 @@ import { registerPlatformRoutes } from "./platform";
 import { registerRevenueRoutes } from "./revenue";
 import { registerFieldRoutes } from "./field";
 import { registerApplicationRoutes } from "./applications";
+import { registerFieldMembershipRoutes } from "./field-memberships";
 
 export async function registerRoutes(
   httpServer: Server,
