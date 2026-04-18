@@ -22,6 +22,77 @@
 
 ---
 
+## 📧 2026-04-18 下午 — SaaS 治理深化 + Bug 修復
+
+### 🐛 Bug：玩家登入後在管理後台看不到（已修復）
+
+**根因**：Firebase 登入只 upsert `users` 表，未自動建立 `field_memberships`。管理員查詢成員列表時自然看不到這些玩家。
+
+**修復**：在玩家關鍵接觸點自動呼叫 `ensureMembership`：
+- `GET /api/games/:gameId/access` — 玩家進入遊戲查存取權時
+- `POST /api/sessions` — 玩家開始遊戲場次時
+
+**回填腳本**：
+```sql
+-- 從 player_progress + game_sessions + games 反推場域
+INSERT INTO field_memberships (user_id, field_id, joined_at, is_admin, player_status)
+SELECT DISTINCT pp.user_id, g.field_id, MIN(gs.started_at), false, 'active'
+FROM player_progress pp
+JOIN game_sessions gs ON gs.id = pp.session_id
+JOIN games g ON g.id = gs.game_id
+WHERE g.field_id IS NOT NULL AND pp.user_id IS NOT NULL
+GROUP BY pp.user_id, g.field_id
+ON CONFLICT (user_id, field_id) DO NOTHING;
+```
+
+**驗證**：生產 DB 從 1 筆 → 5 筆（1 管理員 + 4 玩家）
+
+### 📧 輕量 Email 服務（`server/services/email.ts`）
+
+- Resend REST API（無 SDK 依賴，用 fetch 直呼）
+- 無 `RESEND_API_KEY` 時 fallback 到 console log（不阻塞功能）
+- 3 種模板：
+  - `sendAdminGrantedEmail` — 授權通知（含登入連結）
+  - `sendAdminRevokedEmail` — 撤銷通知（說明玩家身份不受影響）
+  - `sendPlayerSuspendedEmail` — 暫停/停權/恢復通知（含理由）
+
+### 授權／撤銷／暫停全流程 Email
+
+| 動作 | 觸發 | 收件人 |
+|------|------|--------|
+| 授權管理員 | `grantAdmin()` 成功 | 被授權者 |
+| 撤銷管理員 | `revokeAdmin()` 成功 | 被撤銷者 |
+| 暫停玩家 | `suspendPlayer()` 成功 | 被暫停者 |
+| 永久停權 | 同上 | 同上 |
+| 恢復狀態 | 同上 | 同上 |
+
+**隱私考量**：`@firebase.local` fallback email 不寄信（避免打擾）
+
+### 暫停玩家強制填理由
+
+- 後端 `POST /api/admin/memberships/suspend` 強制檢查 `reason`（暫停/停權必填）
+- Zod schema 最長 500 字
+- 理由存入 `field_memberships.notes` + 寄 email 通知
+- 前端：下拉菜單（正常/暫停/停權切換）+ Textarea 理由輸入對話框
+
+### platform_admins 跨場域檢視
+
+- `/platform/fields` 每列新增「🏢 進入後台」按鈕
+- 點擊 → 寫入 localStorage (`admin_selected_field_id`) → 跳轉 `/admin`
+- 與既有 `FieldSelector` 共用機制，super_admin 切場域後重整套用
+
+### 驗證
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過
+- ✅ 生產 5 位玩家已可見
+- ✅ `https://game.homi.cc` HTTP 200
+
+### Commits
+- `a3c81ed` feat: 輕量 Email 服務 + 3 通知模板
+- auto-commits: ensureMembership hooks + 暫停 UI + 跨場域入口
+
+---
+
 ## 🏗️ 2026-04-18 中午 — 多租戶場域隔離 + 管理員授權開關（架構重大升級）
 
 ### 核心需求
