@@ -379,7 +379,12 @@ export interface ShootingMissionConfig {
   onSuccess?: {
     message?: string;
     grantItem?: string;
+    points?: number;
   };
+  /** 允許玩家手動模擬命中（無硬體場地 / 開發測試用） */
+  allowSimulation?: boolean;
+  /** 完成後跳往的頁面 ID */
+  nextPageId?: string;
   locationSettings?: LocationSettings;
 }
 
