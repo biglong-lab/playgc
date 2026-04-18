@@ -35,6 +35,8 @@ import { registerRecurWebhookRoutes } from "../routes/webhook-recur";
 type MockFn = ReturnType<typeof vi.fn>;
 const mockStorage = storage as unknown as Record<string, MockFn>;
 const mockVerify = verifyWebhookSignature as MockFn;
+const mockIncrementUsage = incrementUsage as unknown as MockFn;
+const mockRecordFee = recordTransactionFee as unknown as MockFn;
 
 function createTestApp() {
   const app = express();
