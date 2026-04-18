@@ -168,7 +168,7 @@ export default function AdminStaffPlayers() {
     onSuccess: (data) => {
       toast({
         title: "✅ 已撤銷管理權限",
-        description: `已失效 ${data.revokedSessions ?? 0} 個登入 Session`,
+        description: `已失效 ${data.revokedSessions ?? 0} 個登入 Session，已 email 通知當事人`,
       });
       qc.invalidateQueries({ queryKey: ["/api/admin/memberships"] });
       setRevokeTarget(null);
@@ -176,6 +176,27 @@ export default function AdminStaffPlayers() {
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : "撤銷失敗";
       toast({ title: "撤銷失敗", description: msg, variant: "destructive" });
+    },
+  });
+
+  const suspendMutation = useMutation({
+    mutationFn: async (payload: {
+      userId: string;
+      status: "suspended" | "banned" | "active";
+      reason?: string;
+    }) => {
+      const res = await apiRequest("POST", "/api/admin/memberships/suspend", payload);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "✅ 已更新玩家狀態", description: "已 email 通知當事人" });
+      qc.invalidateQueries({ queryKey: ["/api/admin/memberships"] });
+      setSuspendTarget(null);
+      setSuspendReason("");
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "操作失敗";
+      toast({ title: "操作失敗", description: msg, variant: "destructive" });
     },
   });
 
