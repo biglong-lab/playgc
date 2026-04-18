@@ -22,6 +22,77 @@
 
 ---
 
+## 📱 2026-04-18 晚間 — 手機體驗全面優化（PR1 快贏 + PR3 遊戲端）
+
+### 背景
+玩家主要在手機上遊玩。審查發現 10 個關鍵問題（3 致命：按鈕太小 / 瀏海被擋 / 無障礙違規）。
+
+### PR1 基礎建設（全站受益）
+
+**1. Button 觸控放大到 44px（Apple HIG 標準）**
+`client/src/components/ui/button.tsx`：
+- `default`: `min-h-9` (36px) → `min-h-11 md:min-h-9`（手機 44px，桌面保留）
+- `sm` / `lg` / `icon` 同樣區分手機/桌面大小
+
+**2. Viewport 修正 + 無障礙**
+`client/index.html`：
+- 移除 `maximum-scale=1, user-scalable=no`（違反無障礙規範）
+- 加 `viewport-fit=cover`（支援 iPhone 瀏海）
+- 加 `interactive-widget=resizes-content`（鍵盤不推擠內容）
+- 加 `mobile-web-app-capable` / `format-detection: telephone=no`
+
+**3. 全域手機 CSS**（`client/src/index.css`）
+- `-webkit-tap-highlight-color: transparent`（消除點擊灰閃）
+- `-webkit-text-size-adjust: 100%`（方向切換不放大字）
+- `overscroll-behavior-y: none`（禁 iOS 橡皮筋）
+- `min-height: 100dvh`（動態視口高度）
+- `@media (max-width: 768px) input { font-size: 16px }`（防 autozoom）
+
+**4. 新增工具類**
+- `.safe-top/bottom/x` — iPhone 瀏海/指示器避開
+- `.h-screen-dynamic` / `.min-h-screen-dynamic`
+- `.no-select`（沉浸遊戲）
+- `.touch-target`（強制 44px）
+
+### PR3 遊戲端專屬
+
+**5. 遊戲沉浸模式**
+- `GamePlay` / `MapView` / `FieldAdminLogin`: `min-h-screen` → `min-h-screen-dynamic`
+- `GameHeader` / MapView header / Login 加 `safe-top`
+
+**6. 拍照任務觸控**（`PhotoViews.tsx`）
+- 快門 80×80px 大圓 + `active:scale-95` 觸感回饋
+- 取消/相簿按鈕 `min-h-12`
+- 無障礙 `aria-label`
+
+**7. Input 元件手機化**
+- `h-9 text-base md:h-9 md:text-sm` → `h-11 md:h-9` + `text-base md:text-sm`
+- 44px 觸控目標 + 16px 字體（避 autozoom）
+
+### 效益
+| 項目 | 改善 |
+|------|------|
+| 全站按鈕 | 立刻好按（+8~12px 高度）|
+| iPhone 瀏海機型 | Header 自動避開 |
+| iOS 表單輸入 | 不再自動 zoom |
+| 遊戲頁面 | 全螢幕 dvh 避開手機 UI |
+| 無障礙 | 允許縮放，符合 WCAG |
+
+### 驗證
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過（125 PWA entries）
+- ✅ 生產部署 healthy
+- ✅ `https://game.homi.cc` HTTP 200
+
+### Commit
+- `5ba12d1` feat: 手機體驗全面優化
+
+### 後續可推進（PR2 + PR4）
+- PR2：Admin 表格手機版（Table → Card）
+- PR4：PWA 安裝提示 + 離線 IndexedDB + 虛擬化
+
+---
+
 ## 🔧 2026-04-18 傍晚 — 授權 Bug 修復 + 完整回填 + 測試
 
 ### 🐛 授權失敗 Bug（關鍵）
