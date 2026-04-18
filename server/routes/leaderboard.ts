@@ -23,21 +23,17 @@ export function registerLeaderboardRoutes(app: Express) {
     }
   });
 
-  app.get("/api/analytics/overview", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/analytics/overview", requireAdminAuth, async (req, res) => {
     try {
-      const auth = await requireAdminRole(req);
-      if (!auth.authorized) {
-        return res.status(403).json({ message: auth.message });
+      if (!req.admin) {
+        return res.status(401).json({ message: "未認證" });
       }
 
-      // 🔒 場域隔離：必須指定 fieldId（或從 admin context 讀取）
+      // 🔒 場域隔離：super_admin 可指定場域，其他人強制自己的場域
       const fieldId =
-        (req.query.fieldId as string) ||
-        req.admin?.fieldId ||
-        auth.fieldId;
-      if (!fieldId) {
-        return res.status(400).json({ message: "需指定 fieldId（場域隔離必要）" });
-      }
+        req.admin.systemRole === "super_admin"
+          ? (req.query.fieldId as string) || req.admin.fieldId
+          : req.admin.fieldId;
 
       const games = await storage.getGamesByField(fieldId);
       const sessions = await storage.getSessionsByField(fieldId);
