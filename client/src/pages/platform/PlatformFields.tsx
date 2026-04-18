@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Loader2 } from "lucide-react";
+import { Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface FieldRow {
