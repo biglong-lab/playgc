@@ -77,6 +77,9 @@ import { checkQuota, recordTransactionFee, incrementUsage } from "../services/bi
 describe("SaaS 計費 — checkQuota", () => {
   beforeEach(() => {
     mockFindFirst.mockReset();
+    mockSelectLimit.mockReset();
+    mockInsertValues.mockReset();
+    mockUpdateReturning.mockReset();
   });
 
   it("無用量記錄 → current=0, limit=null, 不 over", async () => {
