@@ -309,19 +309,38 @@ export async function revokeAdmin(
 
 /**
  * 暫停玩家（不撤銷管理身份，只凍結玩家端存取）
+ * @param reason 變更理由（存 notes + 寄給玩家）
  */
 export async function suspendPlayer(
   userId: string,
   fieldId: string,
-  status: "suspended" | "banned" | "active"
+  status: "suspended" | "banned" | "active",
+  reason?: string
 ) {
   const membership = await getMembership(userId, fieldId);
   if (!membership) return { success: false, error: "該玩家並非此場域成員" };
 
   await db
     .update(fieldMemberships)
-    .set({ playerStatus: status, updatedAt: new Date() })
+    .set({
+      playerStatus: status,
+      notes: reason ?? membership.notes,
+      updatedAt: new Date(),
+    })
     .where(eq(fieldMemberships.id, membership.id));
+
+  // 📧 發狀態變更通知
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (user?.email && !user.email.endsWith("@firebase.local")) {
+    const field = await db.query.fields.findFirst({ where: eq(fields.id, fieldId) });
+    sendPlayerSuspendedEmail({
+      to: user.email,
+      recipientName: formatUserName(user),
+      fieldName: field?.name ?? "場域",
+      status,
+      reason,
+    }).catch((err) => console.error("[email] sendPlayerSuspendedEmail 失敗:", err));
+  }
 
   return { success: true };
 }
