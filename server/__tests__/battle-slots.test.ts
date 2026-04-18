@@ -14,6 +14,7 @@ const mockStorage = vi.hoisted(() => ({
 
 vi.mock("../storage/battle-storage", () => ({
   battleStorageMethods: mockStorage,
+  getRegistrationsBySlotWithNames: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock("../adminAuth", () => ({
