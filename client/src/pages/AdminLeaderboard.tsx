@@ -208,9 +208,7 @@ export default function AdminLeaderboard() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
+          <GridSkeleton count={3} cols={3} />
         ) : filteredLeaderboard.length > 0 ? (
           <div className="space-y-6">
             {topThree.length > 0 && (
