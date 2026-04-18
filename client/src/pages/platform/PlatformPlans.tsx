@@ -3,10 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import PlatformAdminLayout from "@/components/PlatformAdminLayout";
+import EmptyState from "@/components/shared/EmptyState";
+import { GridSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, Loader2, Plus, Check } from "lucide-react";
+import { Package, Plus, Check } from "lucide-react";
 
 interface Plan {
   id: string;
