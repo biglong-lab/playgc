@@ -20,9 +20,13 @@ function makeSelect() {
 
 function makeInsert() {
   const builder: any = {
-    values: (v: unknown) => ({
-      returning: () => mockInsertValues(v),
-    }),
+    values: (v: unknown) => {
+      const result = mockInsertValues(v);
+      // 同時支援 .returning() 和直接 await
+      return Object.assign(Promise.resolve(result), {
+        returning: () => Promise.resolve(result ?? [{}]),
+      });
+    },
   };
   return builder;
 }
