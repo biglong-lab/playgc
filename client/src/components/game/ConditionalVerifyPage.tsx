@@ -308,7 +308,7 @@ export default function ConditionalVerifyPage({
                   }}
                   placeholder={config.fragmentType === 'numbers' ? "輸入數字密碼" : "輸入密碼"}
                   className={`text-center font-mono text-xl tracking-widest ${codeError ? 'border-destructive' : ''}`}
-                  maxLength={fragments.length * (config.fragmentType === 'custom' ? 10 : 1)}
+                  maxLength={fragments.reduce((sum, f) => sum + (f.value?.length || 1), 0)}
                   data-testid="input-fragment-code"
                 />
                 {verificationMode === 'order_independent' && (
