@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
+import { requireAdminAuth } from "../adminAuth";
 import { requireAdminRole, validateId } from "./utils";
 import type { AuthenticatedRequest } from "./types";
 
