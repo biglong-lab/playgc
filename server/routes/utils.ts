@@ -1,6 +1,9 @@
 import { storage } from "../storage";
 import type { AuthenticatedRequest } from "./types";
 import type { User } from "@shared/schema";
+import { adminAccounts, roles } from "@shared/schema";
+import { db } from "../db";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import type { Response } from "express";
 
@@ -33,12 +36,42 @@ export async function checkGameOwnership(req: AuthenticatedRequest, gameId: stri
     return { authorized: false, message: "Game not found", status: 404 };
   }
 
+  // 舊邏輯：users.role === "admin"（legacy 全域管理員）
   if (user.role === "admin") {
     return { authorized: true, user };
   }
 
+  // 舊邏輯：遊戲建立者
   if (game.creatorId === userId) {
     return { authorized: true, user };
+  }
+
+  // 新邏輯：SaaS 多租戶 — 查 admin_accounts 確認是否為 super_admin 或場域管理員
+  const adminRows = await db
+    .select({
+      fieldId: adminAccounts.fieldId,
+      systemRole: roles.systemRole,
+      status: adminAccounts.status,
+    })
+    .from(adminAccounts)
+    .leftJoin(roles, eq(roles.id, adminAccounts.roleId))
+    .where(
+      and(
+        eq(adminAccounts.firebaseUserId, userId),
+        eq(adminAccounts.status, "active"),
+      ),
+    )
+    .limit(5);
+
+  for (const admin of adminRows) {
+    // super_admin 可修改任何遊戲
+    if (admin.systemRole === "super_admin") {
+      return { authorized: true, user };
+    }
+    // 場域管理員 / 執行者可修改同場域的遊戲
+    if (game.fieldId && admin.fieldId === game.fieldId) {
+      return { authorized: true, user };
+    }
   }
 
   return { authorized: false, message: "Unauthorized: You can only modify your own games", status: 403 };
