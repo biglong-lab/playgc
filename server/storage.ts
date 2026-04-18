@@ -256,6 +256,7 @@ export class DatabaseStorage implements IStorage {
 
   // ===== 工作階段方法 =====
   getSessions = sessionStorageMethods.getSessions;
+  getSessionsByField = sessionStorageMethods.getSessionsByField;
   getSession = sessionStorageMethods.getSession;
   getActiveSessionsByGame = sessionStorageMethods.getActiveSessionsByGame;
   getActiveSessionByUserAndGame = sessionStorageMethods.getActiveSessionByUserAndGame;
