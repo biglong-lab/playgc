@@ -124,7 +124,11 @@ describe("對戰時段 API", () => {
         status: "open",
       });
       mockGetRegistrationsBySlotWithNames.mockResolvedValueOnce([
-        { id: "r1", userId: "u1", displayName: "測試玩家" },
+        {
+          registration: { id: "r1", userId: "u1" },
+          firstName: "測試",
+          lastName: "玩家",
+        },
       ]);
       mockStorage.getPremadeGroupsBySlot.mockResolvedValue([]);
 
