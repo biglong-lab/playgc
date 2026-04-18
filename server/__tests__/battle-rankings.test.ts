@@ -206,11 +206,20 @@ describe("對戰排名 API", () => {
     });
 
     it("成功回傳對戰歷史", async () => {
-      const history = [
-        { id: "r1", result: "win", ratingChange: 25 },
-        { id: "r2", result: "loss", ratingChange: -20 },
-      ];
-      mockStorage.getPlayerHistory.mockResolvedValue(history);
+      mockGetPlayerHistoryWithDetails.mockResolvedValue([
+        {
+          playerResult: { id: "r1", result: "win", ratingChange: 25 },
+          battleResult: { id: "br1" },
+          slot: { id: "s1" },
+          venue: { id: "v1", name: "場地1" },
+        },
+        {
+          playerResult: { id: "r2", result: "loss", ratingChange: -20 },
+          battleResult: { id: "br2" },
+          slot: { id: "s2" },
+          venue: { id: "v2", name: "場地2" },
+        },
+      ]);
 
       const app = createApp();
       const res = await request(app)
@@ -219,7 +228,7 @@ describe("對戰排名 API", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toHaveLength(2);
-      expect(mockStorage.getPlayerHistory).toHaveBeenCalledWith("user-1", 20);
+      expect(mockGetPlayerHistoryWithDetails).toHaveBeenCalledWith("user-1", 20);
     });
   });
 });
