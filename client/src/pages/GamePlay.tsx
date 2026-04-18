@@ -42,6 +42,27 @@ export default function GamePlay() {
     queryKey: ["/api/games", gameId],
   });
 
+  // 玩家已造訪的位置（供 ConditionalVerifyPage 的 visited_location 條件判定）
+  const { data: visitsData } = useQuery<Array<{ locationId: string | number }>>({
+    queryKey: ["/api/sessions", "visits-for-conditional"],
+    queryFn: async () => {
+      const sid = stateRef.current.sessionId;
+      if (!sid) return [];
+      try {
+        const res = await apiRequest("GET", `/api/sessions/${sid}/visits`);
+        return res.json();
+      } catch {
+        return [];
+      }
+    },
+    enabled: false, // 由 useEffect 按需 refetch
+  });
+
+  const visitedLocations: string[] = useMemo(() => {
+    if (!Array.isArray(visitsData)) return [];
+    return visitsData.map((v) => String(v.locationId));
+  }, [visitsData]);
+
   // 章節模式：載入章節頁面
   const { data: chapterData } = useQuery<GameChapterWithPages>({
     queryKey: ["/api/games", gameId, "chapters", chapterId],
