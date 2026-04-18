@@ -111,16 +111,14 @@ export default function PlatformFields() {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-          </div>
+          <ListSkeleton count={3} />
         ) : !rows?.length ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              <Building2 className="w-12 h-12 mx-auto mb-3 opacity-40" />
-              <p>尚無場域</p>
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={Building2}
+            title="尚無場域"
+            description="目前沒有任何已註冊的場域，等待新場域申請或從「場域申請」審核新的租戶"
+            actions={[{ label: "查看場域申請", href: "/platform/applications" }]}
+          />
         ) : (
           <Card>
             <CardContent className="p-0">
