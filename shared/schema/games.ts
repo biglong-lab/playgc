@@ -175,6 +175,20 @@ export interface VideoConfig {
   videoUrl: string;
   autoPlay?: boolean;
   skipEnabled?: boolean;
+  /** 標題（顯示在影片上方） */
+  title?: string;
+  /** 影片描述 */
+  description?: string;
+  /** 封面圖（影片未播放時顯示） */
+  poster?: string;
+  /** 影片結束後是否自動 complete（預設 false，需手動點繼續） */
+  autoCompleteOnEnd?: boolean;
+  /** 強制看完才能繼續（禁用 skip 且強制 autoCompleteOnEnd=false） */
+  forceWatch?: boolean;
+  /** 完成獎勵點數 */
+  rewardPoints?: number;
+  /** 完成後跳往的頁面 ID */
+  nextPageId?: string;
   locationSettings?: LocationSettings;
 }
 
