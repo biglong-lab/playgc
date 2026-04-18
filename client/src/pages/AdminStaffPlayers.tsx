@@ -448,6 +448,89 @@ export default function AdminStaffPlayers() {
         </DialogContent>
       </Dialog>
 
+      {/* 暫停玩家對話框（必填理由） */}
+      <Dialog
+        open={!!suspendTarget}
+        onOpenChange={(o) => {
+          if (!o) {
+            setSuspendTarget(null);
+            setSuspendReason("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {suspendTarget?.status === "active"
+                ? "恢復玩家"
+                : suspendTarget?.status === "banned"
+                  ? "永久停權"
+                  : "暫停玩家"}
+            </DialogTitle>
+            <DialogDescription>
+              {suspendTarget?.status === "active"
+                ? `將恢復「${getDisplayName(suspendTarget.member.user)}」的會員狀態，玩家可再次參與活動。`
+                : suspendTarget?.status === "banned"
+                  ? `「${getDisplayName(suspendTarget?.member.user ?? null)}」將被永久停權。此操作會保留歷史資料但禁止繼續參與。`
+                  : `「${getDisplayName(suspendTarget?.member.user ?? null)}」將被暫時禁止參與活動，之後可恢復。`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Textarea
+              placeholder={
+                suspendTarget?.status === "active"
+                  ? "（選填）恢復說明"
+                  : "必填：說明理由，將 email 通知當事人"
+              }
+              value={suspendReason}
+              onChange={(e) => setSuspendReason(e.target.value)}
+              rows={3}
+              maxLength={500}
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              {suspendReason.length} / 500
+            </p>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSuspendTarget(null);
+                setSuspendReason("");
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                if (!suspendTarget) return;
+                if (
+                  (suspendTarget.status === "suspended" ||
+                    suspendTarget.status === "banned") &&
+                  !suspendReason.trim()
+                ) {
+                  toast({
+                    title: "請填寫理由",
+                    description: "暫停或停權時必須說明理由",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                suspendMutation.mutate({
+                  userId: suspendTarget.member.user!.id,
+                  status: suspendTarget.status,
+                  reason: suspendReason.trim() || undefined,
+                });
+              }}
+              variant={suspendTarget?.status === "active" ? "default" : "destructive"}
+              disabled={suspendMutation.isPending}
+            >
+              {suspendTarget?.status === "active" ? "確認恢復" : "確認執行"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 撤銷確認 */}
       <AlertDialog open={!!revokeTarget} onOpenChange={(o) => !o && setRevokeTarget(null)}>
         <AlertDialogContent>
