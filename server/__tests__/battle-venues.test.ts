@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 // Mock battleStorageMethods
 const mockStorage = vi.hoisted(() => ({
   getVenuesByField: vi.fn(),
+  getAllActiveVenues: vi.fn(),
   getVenue: vi.fn(),
   createVenue: vi.fn(),
   updateVenue: vi.fn(),
