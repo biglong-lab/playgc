@@ -31,6 +31,8 @@ import {
   ToggleLeft,
   LogOut,
   Inbox,
+  BarChart3,
+  Settings,
 } from "lucide-react";
 
 interface PlatformMenuItem {
