@@ -272,19 +272,21 @@ export async function grantAdmin(
 export async function revokeAdmin(
   userId: string,
   fieldId: string,
-  revokedBy: string
+  revokedByAccountId: string
 ): Promise<{ success: boolean; error?: string; revokedSessions: number }> {
   const membership = await getMembership(userId, fieldId);
   if (!membership) {
     return { success: false, error: "該玩家並非此場域成員", revokedSessions: 0 };
   }
 
+  const revokedByUserId = await adminAccountIdToUserId(revokedByAccountId);
+
   await db
     .update(fieldMemberships)
     .set({
       isAdmin: false,
       adminRevokedAt: new Date(),
-      adminRevokedBy: revokedBy,
+      adminRevokedBy: revokedByUserId,
       updatedAt: new Date(),
     })
     .where(eq(fieldMemberships.id, membership.id));
