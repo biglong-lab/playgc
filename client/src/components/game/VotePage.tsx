@@ -426,6 +426,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                 
                 <Button
                   onClick={handleContinue}
+                  disabled={isAdvancing}
                   size="lg"
                   className={`w-full ${autoAdvanceIn !== null && autoAdvanceIn > 0 ? "animate-pulse" : ""}`}
                   data-testid="button-continue"
