@@ -81,7 +81,9 @@ export default defineConfig({
           },
         ],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api\//, /^\/objects\//],
+        // /assets/ 必須排除：當 hash 過時的 JS/CSS chunk 404 時，若 fallback 回 index.html
+        // 瀏覽器載入會拋 "text/html is not a valid JavaScript MIME type"
+        navigateFallbackDenylist: [/^\/api\//, /^\/objects\//, /^\/assets\//, /^\/icons\//, /\/sw\.js$/, /\/workbox-.*\.js$/],
       },
       manifest: {
         name: "賈村競技場",
