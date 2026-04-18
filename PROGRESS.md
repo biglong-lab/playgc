@@ -16,9 +16,117 @@
 
 ## 目前狀態
 
-**最後更新**: 2026-04-18 晚間（v5 優化輪）
+**最後更新**: 2026-04-19 凌晨（遊戲元件全面優化完成）
 **分支**: main
-**Git 狀態**: 已部署到 `game.homi.cc`；本 session 改動待 push
+**Git 狀態**: 已部署到 `game.homi.cc`
+
+---
+
+## 🎮 2026-04-19 凌晨 — 16 遊戲元件全面優化（8 個 PR 連續部署）
+
+### 背景
+使用者回報「遊戲元件不完整，根本遊戲很難順利走完」。先用 4 個 agent 平行
+盤點所有元件（產出 `docs/GAME_COMPONENTS_AUDIT.md`），找出 30 個 P0 / 45
+個 P1 / 40 個 P2 bug，然後依優先序拆 8 個 PR 逐一修復，每個 PR 獨立驗證
+與部署。
+
+### 8 個 PR 修復範圍
+
+**PR1 — 通用 onComplete 簽名修復（最大根因）**
+TextCard / Dialogue / Video 的 onComplete 缺 nextPageId 參數 → 三類頁
+面分支路由全失效，玩家只能線性前進。已修正簽名 + schema 加 nextPageId /
+rewardPoints 欄位。
+
+**PR2 — ConditionalVerifyPage schema drift 清理**
+- local Condition type 對齊 schema（has_item / has_points / visited_location）
+- fragment.sourceItemId 未設時預設未收集（防裸破關）
+- useEffect deps 加 [inventory, score, visitedLocations]
+- maxLength 計算公式修正
+- GamePlay 新增 visits query，傳遞 visitedLocations 給 GamePageRenderer
+
+**PR3 — 硬體任務修復（Shooting/Gps/Motion/TimeBomb）**
+- Shooting：WS record 欄位對齊 DB（hitZone↔targetZone、points↔hitScore）
+- Shooting：新增 allowSimulation 模式（無硬體場地可測試通關）
+- Gps：fallbackQrCode 實作 prompt 輸入驗證（原本按鈕只彈 toast 無效）
+- Gps：soundEnabled state 修復、accuracy 加權、所有錯誤分支都顯示 fallback
+- Motion：iOS 權限請求移到 startChallenge 同步堆疊（原本 useEffect 內必失敗）
+- Motion：jump 類型實作（z 軸加速度過零）、rotate 用 alpha 累積角度
+- Motion：shake 第一次事件僅記錄不計數（避免重力誤觸發）
+- TimeBomb：swipe 類型實作（touch + mouse + 方向判定）
+- TimeBomb：penaltySeconds 答錯扣時間機制
+
+**PR4 — 驗證類（Lock/TextVerify/ChoiceVerify）+ 共用 helper**
+- 新增 `client/src/lib/gameVerification.ts`（normalizeAnswer /
+  extractAnswerText / NO_AUTO_INPUT_PROPS）
+- Lock：比對前 trim + 全形轉半形、rate limit 1.2 秒、attempts closure 修復
+- Lock：Dial parseDigit NaN guard、數字鍵盤加 Backspace + Clear 鍵
+- TextVerify：hints 與 hint 都支援、rewardPoints 讀取、IME isComposing
+  保護、AI 錯誤不扣次數、Input 加 NO_AUTO_INPUT_PROPS
+- ChoiceVerify：Quiz 模式補傳 nextPageId、rewardPerQuestion 可自訂
+
+**PR5 — 靜態頁體驗（TextCard/Dialogue/Button）**
+- TextCard：highlightKeywords 正則 escape、fade_in 動畫補實作
+- Dialogue：autoAdvance setTimeout 改用 ref 可 cleanup、typingSpeed 可配置
+- Button：移除 mockStatistics 假資料、空陣列 fallback UI、randomizeOrder
+  + defaultChoice 用 _originalIndex 對應修復（原本洗牌後選錯按鈕）
+
+**PR6 — Photo 後端大小限制 + iOS race**
+- 後端 playerPhotoSchema 加 15MB base64 上限（防 OOM / 502）
+- 相機拍照 & 相簿選圖自動壓縮到最大邊 1920px
+- usePhotoCamera iOS `playAttempted` 雙重 guard 防 AbortError
+- cancelCamera 清 capturedImage 避免下次開啟殘留
+
+**PR7 — FlowRouter 型別 coercion + DEV debug**
+- variable_equals 用 coerceEquals（字串 "5" vs 數字 5 視為相等）
+- DEV mode console.log / warn / error 顯示路由決策過程
+- 補 15 個單元測試（`flow-router.test.ts`）
+
+**PR8 — 單元測試補齊（44 個新測試）**
+- gameVerification.test.ts（15 案例）
+- TextCardPage / DialoguePage / VideoPage / ButtonPage 測試檔
+- VideoPage `video.play()` 用 Promise.resolve 包裹防舊環境 undefined
+- 合計 flow-router 15 + gameVerification 15 + 4 元件 14 = 44 新測試
+
+### Schema 擴充
+- `TextCardConfig` / `DialogueConfig` / `VideoConfig`：加 nextPageId +
+  rewardPoints
+- `VideoConfig`：加 title / description / poster / forceWatch /
+  autoCompleteOnEnd
+- `DialogueConfig`：加 typingSpeed
+- `TextVerifyConfig`：加 rewardPoints
+- `ChoiceVerifyConfig`：加 nextPageId + rewardPerQuestion + onSuccess.points
+- `ShootingMissionConfig`：加 allowSimulation + nextPageId + onSuccess.points
+- `GpsMissionConfig`：加 nextPageId
+- `TimeBombConfig`：加 swipeDirection + penaltySeconds
+
+### 部署驗證
+每個 PR 完成後獨立：TypeScript 零錯誤 → Vite build → git push → SSH
+docker 重建 → `game.homi.cc/health` 回 `{"status":"ok"}`
+
+### 新檔案清單
+- `client/src/lib/gameVerification.ts`
+- `client/src/lib/__tests__/flow-router.test.ts`
+- `client/src/lib/__tests__/gameVerification.test.ts`
+- `client/src/components/game/__tests__/TextCardPage.test.tsx`
+- `client/src/components/game/__tests__/DialoguePage.test.tsx`
+- `client/src/components/game/__tests__/VideoPage.test.tsx`
+- `client/src/components/game/__tests__/ButtonPage.test.tsx`
+- `docs/GAME_COMPONENTS_AUDIT.md`
+
+### Commits
+- `ca2e1a3` PR1+PR2
+- `d1e00c8` PR3
+- `3b5251e` + `0dd862a` PR4
+- `0bf7afc` PR5
+- `d4b8769` PR6
+- `2994fb5` PR7
+- `82384b2` PR8
+
+### 後續（可選）
+- TextVerify / ChoiceVerify / ConditionalVerify / Lock 元件級測試
+- 遊戲狀態持久化（任務進行到一半關閉 → 恢復）
+- 管理員端 ConditionalVerify 編輯器強制 sourceItemId 必填
+- Shooting WS record 後端 device 簽章驗證（作弊防護）
 
 ---
 
