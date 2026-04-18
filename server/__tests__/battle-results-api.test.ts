@@ -13,8 +13,11 @@ const mockStorage = vi.hoisted(() => ({
   updateSlot: vi.fn(),
 }));
 
+const mockGetPlayerResultsByResultWithNames = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+
 vi.mock("../storage/battle-storage", () => ({
   battleStorageMethods: mockStorage,
+  getPlayerResultsByResultWithNames: mockGetPlayerResultsByResultWithNames,
 }));
 
 // ── Mock: 管理員認證 ──
