@@ -193,15 +193,19 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
     } else {
       // 預設：最多票決定（團隊共識）
       const winner = getWinningOption();
-      if (winner) {
+      if (winner && winner.count > 0) {
         nextPage = options[winner.optionIndex]?.nextPageId;
       } else if (selectedOption !== null) {
+        // 沒票或平票都 0 → 用自己投的那個作為 fallback
         nextPage = options[selectedOption]?.nextPageId;
       }
     }
 
     onComplete(undefined, nextPage || undefined);
   };
+
+  // 同步最新 handleContinue 到 ref，避免 setInterval 閉包 stale
+  handleContinueRef.current = handleContinue;
 
   const getTimeProgress = () => {
     if (!votingTimeLimit || timeLeft === null) return 100;
