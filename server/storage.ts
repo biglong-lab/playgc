@@ -70,6 +70,7 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
 
   getGames(): Promise<Game[]>;
+  getGamesByField(fieldId: string): Promise<Game[]>;
   getPublishedGames(): Promise<Game[]>;
   getGame(id: string): Promise<Game | undefined>;
   getGameWithPages(id: string): Promise<GameWithPages | undefined>;
