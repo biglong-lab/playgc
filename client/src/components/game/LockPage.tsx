@@ -147,18 +147,50 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
 
   const renderNumberPad = () => (
     <div className="grid grid-cols-3 gap-2">
-      {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", ""].map((num, i) => (
+      {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
         <Button
-          key={i}
+          key={num}
           variant="outline"
           className="h-14 text-xl font-mono"
-          onClick={() => num && handleInput(num)}
-          disabled={!num || isUnlocked || isFailed}
+          onClick={() => handleInput(num)}
+          disabled={isUnlocked || isFailed}
           data-testid={`button-num-${num}`}
         >
           {num}
         </Button>
       ))}
+      {/* 左：刪除 */}
+      <Button
+        variant="outline"
+        className="h-14"
+        onClick={handleDelete}
+        disabled={isUnlocked || isFailed}
+        data-testid="button-num-backspace"
+        aria-label="刪除"
+      >
+        <Delete className="w-5 h-5" />
+      </Button>
+      {/* 中：0 */}
+      <Button
+        variant="outline"
+        className="h-14 text-xl font-mono"
+        onClick={() => handleInput("0")}
+        disabled={isUnlocked || isFailed}
+        data-testid="button-num-0"
+      >
+        0
+      </Button>
+      {/* 右：清除 */}
+      <Button
+        variant="outline"
+        className="h-14"
+        onClick={handleClear}
+        disabled={isUnlocked || isFailed}
+        data-testid="button-num-clear"
+        aria-label="清除"
+      >
+        <RotateCcw className="w-5 h-5" />
+      </Button>
     </div>
   );
 
