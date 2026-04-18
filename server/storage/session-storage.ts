@@ -25,24 +25,13 @@ export const sessionStorageMethods = {
 
   /** 取得指定場域的所有工作階段（🔒 場域隔離版本，JOIN games.fieldId） */
   async getSessionsByField(fieldId: string): Promise<GameSession[]> {
-    return db
-      .select({
-        id: gameSessions.id,
-        gameId: gameSessions.gameId,
-        teamId: gameSessions.teamId,
-        hostId: gameSessions.hostId,
-        accessCode: gameSessions.accessCode,
-        status: gameSessions.status,
-        startedAt: gameSessions.startedAt,
-        completedAt: gameSessions.completedAt,
-        playerCount: gameSessions.playerCount,
-        score: gameSessions.score,
-        metadata: gameSessions.metadata,
-      })
+    const rows = await db
+      .select({ session: gameSessions })
       .from(gameSessions)
       .innerJoin(games, eq(games.id, gameSessions.gameId))
       .where(eq(games.fieldId, fieldId))
       .orderBy(desc(gameSessions.startedAt));
+    return rows.map((r) => r.session);
   },
 
   /** 根據 ID 取得工作階段 */
