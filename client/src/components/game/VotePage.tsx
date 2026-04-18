@@ -32,11 +32,14 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
   const [timedOut, setTimedOut] = useState(false);
   const [autoAdvanceIn, setAutoAdvanceIn] = useState<number | null>(null);
   const autoAdvanceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // ref 存最新 handleContinue 避免 setInterval 閉包 stale
+  const handleContinueRef = useRef<() => void>(() => {});
 
   const options = config.options || [];
   const votingTimeLimit = config.votingTimeLimit || 0;
-  // minVotes 用 ?? 而非 || 才能區分 undefined（用預設 1）與 0（允許零票繼續）
-  const minVotes = config.minVotes ?? 1;
+  // minVotes 僅為「團隊同步（多人後端投票）」保留；單機模式下無意義
+  // 目前 VotePage 是 per-player 模式（variables 本地儲存，無多人同步），
+  // 投完票即可繼續，不卡在「等其他人投票」
   const hasValidOptions = options.length > 0;
   // 投完票後自動前進的秒數：預設 5 秒（使用者可設 autoAdvanceSeconds: 0 關閉）
   const autoAdvanceSeconds = config.autoAdvanceSeconds ?? 5;
