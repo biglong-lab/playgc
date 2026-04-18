@@ -168,7 +168,10 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
       setDisplayedText(content);
       setIsTyping(false);
     } else {
-      onComplete();
+      onComplete(
+        config.rewardPoints ? { points: config.rewardPoints } : undefined,
+        config.nextPageId,
+      );
     }
   };
 
