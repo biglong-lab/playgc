@@ -7,14 +7,18 @@ const mockStorage = vi.hoisted(() => ({
   getClanMembers: vi.fn(),
   getUserClan: vi.fn(),
   createClan: vi.fn(),
+  createClanWithLeader: vi.fn(),
   addClanMember: vi.fn(),
   updateClan: vi.fn(),
   removeClanMember: vi.fn(),
   updateClanMemberRole: vi.fn(),
 }));
 
+const mockGetClanMembersWithNames = vi.hoisted(() => vi.fn().mockResolvedValue([]));
+
 vi.mock("../storage/battle-storage", () => ({
   battleStorageMethods: mockStorage,
+  getClanMembersWithNames: mockGetClanMembersWithNames,
 }));
 
 // ── Mock: Firebase 認證 ──
