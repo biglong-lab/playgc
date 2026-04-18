@@ -183,11 +183,14 @@ export default function AdminStaffQRCodes() {
             </div>
 
             {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">載入中...</div>
+              <ListSkeleton count={4} />
             ) : filteredGames.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {searchTerm ? "找不到符合的遊戲" : "尚無遊戲"}
-              </div>
+              <EmptyState
+                icon={QrCode}
+                title={searchTerm ? "找不到符合的遊戲" : "尚無遊戲"}
+                description={searchTerm ? "改變搜尋條件" : "先到「遊戲管理」建立遊戲後，才能生成 QR Code"}
+                actions={searchTerm ? undefined : [{ label: "前往遊戲管理", href: "/admin/games" }]}
+              />
             ) : (
               <div className="rounded-md border overflow-x-auto">
                 <Table>
