@@ -163,6 +163,8 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
     switch (config.animation) {
       case "slide_in":
         return "animate-slideInUp";
+      case "fade_in":
+        return "animate-fadeIn";
       case "none":
         return "";
       default:
