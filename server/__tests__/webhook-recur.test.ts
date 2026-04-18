@@ -11,6 +11,7 @@ vi.mock("../storage", () => ({
     getTransactionByRecurSession: vi.fn(),
     updateTransaction: vi.fn(),
     createPurchase: vi.fn(),
+    getGame: vi.fn(),
   },
 }));
 
@@ -20,8 +21,15 @@ vi.mock("../services/recur-client", () => ({
   isRecurConfigured: vi.fn(() => true),
 }));
 
+// Mock billing service（避免載入 db.ts）
+vi.mock("../services/billing", () => ({
+  incrementUsage: vi.fn().mockResolvedValue(1),
+  recordTransactionFee: vi.fn().mockResolvedValue({ feeAmount: 5, feePercent: 5 }),
+}));
+
 import { storage } from "../storage";
 import { verifyWebhookSignature } from "../services/recur-client";
+import { incrementUsage, recordTransactionFee } from "../services/billing";
 import { registerRecurWebhookRoutes } from "../routes/webhook-recur";
 
 type MockFn = ReturnType<typeof vi.fn>;
