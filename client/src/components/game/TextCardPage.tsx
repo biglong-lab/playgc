@@ -56,7 +56,10 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
         setTimeLeft((prev) => {
           if (prev === null || prev <= 1) {
             clearInterval(timer);
-            onComplete();
+            onComplete(
+              config.rewardPoints ? { points: config.rewardPoints } : undefined,
+              config.nextPageId,
+            );
             return 0;
           }
           return prev - 1;
@@ -64,7 +67,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [config.timeLimit, onComplete]);
+  }, [config.timeLimit, config.rewardPoints, config.nextPageId, onComplete]);
 
   useEffect(() => {
     if (config.backgroundAudio) {
