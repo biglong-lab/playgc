@@ -22,6 +22,48 @@
 
 ---
 
+## 🟢 2026-04-18 清晨 — 全部測試綠燈 + UX 全面套用
+
+### Phase A：修復 6 個 pre-existing 測試失敗
+
+#### 核心問題：2026-03-08 route 改成 JOIN query，測試未同步更新
+
+| 測試檔 | 原因 | 修復方式 |
+|--------|------|---------|
+| `battle-clans.test.ts` | `createClan` → `createClanWithLeader` 單一事務；`parse` → `safeParse` | 補 mock 方法 + 新增 safeParse mock |
+| `battle-rankings.test.ts` | `getRankingsByField` → `getRankingsByFieldWithNames`（頂層 JOIN 函式）| 補 vi.hoisted mock + 改測試案例 |
+| `battle-venues.test.ts` | route 允許無 fieldId 時回所有活躍場地 | 測試案例改成驗證 getAllActiveVenues |
+| `battle-registration.test.ts` | `getUpcomingRegistrations` → `getUpcomingRegistrationsWithDetails` | 補 JOIN mock + 更新假資料結構 |
+| `battle-results-api.test.ts` | `getPlayerResultsByResult` → `getPlayerResultsByResultWithNames` | 補 JOIN mock |
+| `GameEditor.test.tsx` / `page-sync.test.ts` | `googleProvider.setCustomParameters` 在 test setup mock 缺失 | 更新 `client/src/test/setup.ts` 回傳完整 Provider 物件 + 加 `signInWithCustomToken` mock |
+
+### Phase B：EmptyState 繼續推廣（+5 頁面 → 累計 17 頁）
+
+本輪新增：
+- ✅ `AdminGames` — 遊戲管理（含搜尋空狀態）
+- ✅ `AdminStaffQRCodes` — QR Code 發布（引導至遊戲管理）
+- ✅ `AdminLeaderboard` — 玩家排行榜
+- ✅ `AdminBattleRankings` — 對戰排名
+
+累計已套用（17 頁）：
+- Revenue 3 + Platform 4 + Admin 10
+- 剩餘待推廣：~10 個次要管理頁（BattleDashboard / BattleSeasons / Dashboard 等）
+
+### 測試現況（完全綠燈）
+```
+✅ 1045/1045 全部通過
+✅ 76 個測試檔全綠
+✅ 零 pre-existing 失敗
+```
+
+### 驗證結果
+- ✅ TypeScript 零錯誤
+- ✅ Vite build 通過
+- ✅ 生產部署 healthy
+- ✅ `https://game.homi.cc` HTTP 200
+
+---
+
 ## 🧪 2026-04-18 凌晨 — 測試覆蓋 + EmptyState 全面推廣
 
 ### Phase A：Billing/SaaS 測試補齊（commit `fa4a9ef`）
