@@ -123,8 +123,8 @@ describe("對戰時段 API", () => {
         venueId: "v1",
         status: "open",
       });
-      mockStorage.getRegistrationsBySlot.mockResolvedValue([
-        { id: "r1", userId: "u1" },
+      mockGetRegistrationsBySlotWithNames.mockResolvedValueOnce([
+        { id: "r1", userId: "u1", displayName: "測試玩家" },
       ]);
       mockStorage.getPremadeGroupsBySlot.mockResolvedValue([]);
 
