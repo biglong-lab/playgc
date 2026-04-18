@@ -146,10 +146,15 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
 
   const calculateZoneScore = (zone: string): number => {
     switch (zone) {
-      case "bullseye": return 100;
-      case "inner": return 50;
-      case "outer": return 25;
-      default: return 10;
+      case "bullseye":
+      case "center":
+        return 100;
+      case "inner":
+        return 50;
+      case "outer":
+        return 25;
+      default:
+        return 10;
     }
   };
 
