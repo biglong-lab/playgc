@@ -112,6 +112,11 @@ export default function AdminStaffPlayers() {
   const [grantTarget, setGrantTarget] = useState<MemberRow | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<MemberRow | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  const [suspendTarget, setSuspendTarget] = useState<{
+    member: MemberRow;
+    status: "suspended" | "banned" | "active";
+  } | null>(null);
+  const [suspendReason, setSuspendReason] = useState("");
 
   // 本場域成員清單（嚴格隔離：只回傳 field_memberships WHERE fieldId = 本場域）
   const { data: membersData, isLoading } = useQuery<{ members: MemberRow[] }>({
