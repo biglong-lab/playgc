@@ -102,9 +102,9 @@ describe("getModuleById", () => {
 });
 
 describe("getAllModules", () => {
-  it("回傳所有 5 套模組", () => {
+  it("回傳所有 15 套模組", () => {
     const modules = getAllModules();
-    expect(modules).toHaveLength(5);
+    expect(modules).toHaveLength(15);
   });
 
   it("回傳的是 GAME_MODULES 的引用", () => {
