@@ -145,34 +145,41 @@ export function registerFieldMembershipRoutes(app: Express) {
     requireAdminAuth,
     requirePermission("admin:manage_accounts"),
     async (req, res) => {
-      if (!req.admin) return res.status(401).json({ error: "未認證" });
-      const { userId } = req.body as { userId?: string };
-      if (!userId) return res.status(400).json({ error: "需指定 userId" });
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+        const { userId } = req.body as { userId?: string };
+        if (!userId) return res.status(400).json({ error: "需指定 userId" });
 
-      const fieldId = req.admin.fieldId;
+        const fieldId = req.admin.fieldId;
 
-      // 🛡️ 防呆：不可撤銷自己（避免鎖自己出局）
-      if (userId === req.admin.accountId) {
-        return res.status(400).json({ error: "不能撤銷自己的管理權限" });
+        // 🛡️ 防呆：不可撤銷自己（避免鎖自己出局）
+        if (userId === req.admin.accountId) {
+          return res.status(400).json({ error: "不能撤銷自己的管理權限" });
+        }
+
+        const result = await revokeAdmin(userId, fieldId, req.admin.accountId);
+        if (!result.success) {
+          return res.status(400).json({ error: result.error });
+        }
+
+        await logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "membership:revoke_admin",
+          targetType: "user",
+          targetId: userId,
+          fieldId,
+          metadata: { revokedSessions: result.revokedSessions },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
+        res.json({ success: true, revokedSessions: result.revokedSessions });
+      } catch (err) {
+        console.error("[revoke] 撤銷失敗:", err);
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "撤銷失敗",
+        });
       }
-
-      const result = await revokeAdmin(userId, fieldId, req.admin.accountId);
-      if (!result.success) {
-        return res.status(400).json({ error: result.error });
-      }
-
-      await logAuditAction({
-        actorAdminId: req.admin.id,
-        action: "membership:revoke_admin",
-        targetType: "user",
-        targetId: userId,
-        fieldId,
-        metadata: { revokedSessions: result.revokedSessions },
-        ipAddress: req.ip,
-        userAgent: req.headers["user-agent"],
-      });
-
-      res.json({ success: true, revokedSessions: result.revokedSessions });
     }
   );
 
