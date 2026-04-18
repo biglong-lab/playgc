@@ -318,7 +318,9 @@ export async function revokeAdmin(
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   if (user?.email && !user.email.endsWith("@firebase.local")) {
     const field = await db.query.fields.findFirst({ where: eq(fields.id, fieldId) });
-    const revoker = await db.query.users.findFirst({ where: eq(users.id, revokedBy) });
+    const revoker = revokedByUserId
+      ? await db.query.users.findFirst({ where: eq(users.id, revokedByUserId) })
+      : null;
     sendAdminRevokedEmail({
       to: user.email,
       recipientName: formatUserName(user),
