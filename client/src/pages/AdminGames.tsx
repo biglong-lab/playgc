@@ -1,5 +1,7 @@
 // 遊戲管理主頁面
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
+import EmptyState from "@/components/shared/EmptyState";
+import { ListSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
