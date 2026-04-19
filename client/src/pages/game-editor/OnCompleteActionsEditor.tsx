@@ -17,6 +17,7 @@ interface ActionData {
   type: string;
   variableName?: string;
   value?: unknown;
+  valueType?: "string" | "number" | "boolean";
   itemId?: string;
   points?: number;
 }
