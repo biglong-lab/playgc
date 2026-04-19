@@ -108,6 +108,7 @@ export interface IStorage {
   abandonStaleSessions(thresholdHours: number): Promise<GameSession[]>;
 
   getPlayerProgress(sessionId: string): Promise<PlayerProgress[]>;
+  getPlayerProgressByUser(sessionId: string, userId: string): Promise<PlayerProgress | undefined>;
   createPlayerProgress(progress: InsertPlayerProgress): Promise<PlayerProgress>;
   updatePlayerProgress(id: string, progress: Partial<InsertPlayerProgress>): Promise<PlayerProgress | undefined>;
 
