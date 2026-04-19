@@ -35,13 +35,27 @@ function buildTransformString(options: CloudinaryTransformOptions): string {
   return parts.join(",");
 }
 
-/** 在 Cloudinary URL 的 /upload/ 後插入變換參數 */
+/** 偵測 Cloudinary URL 是否已含 transformation（形如 /upload/w_800,h_600/...） */
+function hasExistingTransform(url: string): boolean {
+  // /upload/ 緊跟著的 segment 若含 transformation 字母前綴（w_/h_/c_/q_/f_/g_/l_/e_）即視為已有
+  const match = url.match(/\/upload\/([^/]+)\//);
+  if (!match) return false;
+  const segment = match[1];
+  // version segment 格式是 v123456789，不是 transformation
+  if (/^v\d+$/.test(segment)) return false;
+  return /(^|,)(w_|h_|c_|q_|f_|g_|l_|e_|dpr_|ar_|r_|o_|b_)/i.test(segment);
+}
+
+/** 在 Cloudinary URL 的 /upload/ 後插入變換參數（已有 transformation 則跳過避免疊加） */
 export function addCloudinaryTransform(
   url: string,
   options: CloudinaryTransformOptions,
 ): string {
   const transformStr = buildTransformString(options);
   if (!transformStr) return url;
+
+  // 若原 URL 已有 transformation segment，不再疊加（避免雙層變換 400 破圖）
+  if (hasExistingTransform(url)) return url;
 
   // 在 /upload/ 後面插入變換參數
   const uploadIndex = url.indexOf("/upload/");
