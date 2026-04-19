@@ -38,6 +38,11 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
   const MAX_AUTO_RECONNECT = 5;
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // stale-closure 防護：ws.onclose 透過 ref 讀取最新 isStarted/isCompleted
+  const isStartedRef = useRef(isStarted);
+  const isCompletedRef = useRef(isCompleted);
+  useEffect(() => { isStartedRef.current = isStarted; }, [isStarted]);
+  useEffect(() => { isCompletedRef.current = isCompleted; }, [isCompleted]);
 
   const requiredHits = config.requiredHits || 5;
   const targetScore = config.targetScore || config.minScore || 60;
