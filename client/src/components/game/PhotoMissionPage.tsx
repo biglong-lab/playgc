@@ -45,13 +45,6 @@ export default function PhotoMissionPage({
 
   const maxRetries = config.maxAiRetries ?? 3;
   const canRetry = (config.allowRetryOnAiFail !== false) && aiRetryCount < maxRetries;
-  // 防重複 onComplete：AI onError / onSuccess / skip 按鈕連點可能都呼叫 onComplete
-  const finishedRef = useRef(false);
-  const safeOnComplete = (reward: ReturnType<typeof buildReward>) => {
-    if (finishedRef.current) return;
-    finishedRef.current = true;
-    onComplete(reward);
-  };
 
   const buildReward = (aiVerified: boolean) => {
     const basePoints = config.onSuccess?.points ?? (config.aiVerify ? 20 : 10);
@@ -62,6 +55,14 @@ export default function PhotoMissionPage({
       reward.items = [config.onSuccess.grantItem];
     }
     return reward;
+  };
+
+  // 防重複 onComplete：AI onError / onSuccess / skip 按鈕連點可能都呼叫 onComplete
+  const finishedRef = useRef(false);
+  const safeOnComplete = (reward: ReturnType<typeof buildReward>) => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    onComplete(reward);
   };
 
   // AI 照片驗證
