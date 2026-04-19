@@ -193,8 +193,15 @@ const historyTimeTravel: GameModule = {
       title: "收集三件文物",
       config: {
         instruction: "返回現代前，請收集 3 件重要文物",
-        requiredFragments: 3,
-        fragments: ["青瓷瓶", "竹簡書卷", "古代銅錢"],
+        demoMode: true,
+        verificationMode: "all_collected",
+        fragmentType: "custom",
+        fragmentCount: 3,
+        fragments: [
+          { id: "r1", label: "青瓷瓶", value: "1", order: 1 },
+          { id: "r2", label: "竹簡書卷", value: "2", order: 2 },
+          { id: "r3", label: "古代銅錢", value: "3", order: 3 },
+        ],
       },
     },
     {
