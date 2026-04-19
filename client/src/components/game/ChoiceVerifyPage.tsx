@@ -125,6 +125,8 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
         description: "做得好!",
       });
       setTimeout(() => {
+        if (finishedRef.current) return;
+        finishedRef.current = true;
         const selected = legacyOptions[selectedOption];
         onComplete({ points: 10 }, selected?.nextPageId);
       }, 1500);
