@@ -39,6 +39,13 @@ export default function ChapterConfigEditor({
     String(chapter.estimatedTime ?? "")
   );
   const [status, setStatus] = useState(chapter.status ?? "draft");
+  // 解鎖條件設定（依 unlockType 使用不同欄位）
+  const initialConfig = (chapter.unlockConfig ?? {}) as ChapterUnlockConfig;
+  const [requiredScore, setRequiredScore] = useState(
+    String(initialConfig.requiredScore ?? "")
+  );
+  const [price, setPrice] = useState(String(initialConfig.price ?? ""));
+  const [currency, setCurrency] = useState(initialConfig.currency ?? "TWD");
 
   const updateMutation = useMutation({
     mutationFn: async (data: Partial<GameChapter>) => {
