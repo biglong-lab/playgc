@@ -165,7 +165,7 @@ export default function PhotoMissionPage({
       title: "已跳過驗證",
       description: "下次拍攝更符合要求的照片吧！",
     });
-    onComplete(buildReward(false));
+    safeOnComplete(buildReward(false));
   };
 
   return (
