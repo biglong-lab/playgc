@@ -29,6 +29,7 @@ import PageConfigEditor from "./PageConfigEditor";
 import EventsEditor from "./EventsEditor";
 import ChapterManager from "./ChapterManager";
 import { syncPages } from "./lib/page-sync";
+import { validateAllPages, formatIssue } from "./lib/validate-page-config";
 import ToolboxSidebar from "./components/ToolboxSidebar";
 import PageListSidebar from "./components/PageListSidebar";
 
