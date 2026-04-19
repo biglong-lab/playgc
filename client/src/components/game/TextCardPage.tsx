@@ -49,21 +49,28 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
     }
   }, [content, useTypewriter, typeSpeed]);
 
+  // isTyping ref 避免 deps 變動觸發 effect 重跑時，cleanup 把 finishTimeoutId 清掉
+  const isTypingRef = useRef(isTyping);
+  useEffect(() => {
+    isTypingRef.current = isTyping;
+  }, [isTyping]);
+
   useEffect(() => {
     if (config.timeLimit && config.timeLimit > 0) {
       setTimeLeft(config.timeLimit);
-      let finishTimeoutId: ReturnType<typeof setTimeout> | null = null;
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev === null || prev <= 1) {
             clearInterval(timer);
             // 若仍在打字，先補完並延遲 2 秒讓玩家至少讀完整內文才跳
-            const delay = useTypewriter && isTyping ? 2000 : 0;
-            if (useTypewriter && isTyping) {
+            const stillTyping = useTypewriter && isTypingRef.current;
+            const delay = stillTyping ? 2000 : 0;
+            if (stillTyping) {
               setDisplayedText(content);
               setIsTyping(false);
             }
-            finishTimeoutId = setTimeout(() => {
+            // 注意：不存 ref 也不 clearTimeout，避免 re-render 時被清掉
+            setTimeout(() => {
               onComplete(
                 config.rewardPoints ? { points: config.rewardPoints } : undefined,
                 config.nextPageId,
@@ -74,12 +81,10 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
           return prev - 1;
         });
       }, 1000);
-      return () => {
-        clearInterval(timer);
-        if (finishTimeoutId) clearTimeout(finishTimeoutId);
-      };
+      return () => clearInterval(timer);
     }
-  }, [config.timeLimit, config.rewardPoints, config.nextPageId, onComplete, content, useTypewriter, isTyping]);
+    // deps 不放 isTyping（改走 ref）避免打字過程 effect 反覆重跑
+  }, [config.timeLimit, config.rewardPoints, config.nextPageId, onComplete, content, useTypewriter]);
 
   useEffect(() => {
     if (config.backgroundAudio) {
