@@ -386,9 +386,17 @@ export default function ConditionalVerifyPage({
 
             {!allPassed ? (
               <Button
-                onClick={verificationMode === 'all_collected' ? handleSuccess : verifyFragmentCode}
+                onClick={
+                  isDemoMode || verificationMode === 'all_collected'
+                    ? handleSuccess
+                    : verifyFragmentCode
+                }
                 className="w-full gap-2"
-                disabled={verificationMode !== 'all_collected' && !inputCode.trim()}
+                disabled={
+                  !isDemoMode &&
+                  verificationMode !== 'all_collected' &&
+                  !inputCode.trim()
+                }
                 data-testid="button-verify-code"
               >
                 <Puzzle className="w-4 h-4" />
