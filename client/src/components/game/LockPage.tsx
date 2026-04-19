@@ -23,7 +23,9 @@ interface LockPageProps {
 
 export default function LockPage({ config, onComplete }: LockPageProps) {
   const { toast } = useToast();
-  const digits = config.digits || config.combination.length;
+  // 向下相容舊 schema：correctCode → combination, codeLength → digits
+  const combination = config.combination ?? (config as any).correctCode ?? "";
+  const digits = config.digits || (config as any).codeLength || combination.length || 4;
   const [code, setCode] = useState<string[]>(Array(digits).fill(""));
   const [attempts, setAttempts] = useState(0);
   const [isUnlocked, setIsUnlocked] = useState(false);
