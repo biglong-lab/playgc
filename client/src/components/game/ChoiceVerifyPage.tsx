@@ -15,17 +15,25 @@ interface ChoiceVerifyPageProps {
 
 export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPageProps) {
   const { toast } = useToast();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const isQuizMode = !!(config?.questions && config.questions.length > 0);
+  const questions = config?.questions ?? [];
+  // questionOrder：本輪要做的題目「原始 index」清單
+  // 首次是 0..n-1；未過關重考時只剩答錯題
+  const [questionOrder, setQuestionOrder] = useState<number[]>(() =>
+    isQuizMode ? questions.map((_, i) => i) : [],
+  );
+  const [orderCursor, setOrderCursor] = useState(0);
   const [answers, setAnswers] = useState<Map<number, number>>(new Map());
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [retryRound, setRetryRound] = useState(0);
 
-  const isQuizMode = config?.questions && config.questions.length > 0;
-  const questions = config?.questions ?? [];
+  const currentQuestionIndex = questionOrder[orderCursor] ?? 0;
   const currentQuestion = isQuizMode ? questions[currentQuestionIndex] : null;
   const passingScore = config?.passingScore ?? 0.6;
   const legacyOptions = config?.options ?? [];
+  const isLastInOrder = orderCursor >= questionOrder.length - 1;
 
   const handleOptionClick = (index: number) => {
     if (isSubmitted || showResult) return;
