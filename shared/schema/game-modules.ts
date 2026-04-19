@@ -107,8 +107,11 @@ const outdoorTreasureHunt: GameModule = {
       title: "古井知識問答",
       config: {
         question: "關於這口古井，以下哪個說法是正確的？",
-        options: ["建於清朝年間", "建於日治時期", "建於民國初年"],
-        correctIndex: 0,
+        options: [
+          { text: "建於清朝年間", correct: true },
+          { text: "建於日治時期", correct: false },
+          { text: "建於民國初年", correct: false },
+        ],
       },
     },
     {
@@ -188,8 +191,8 @@ const escapeRoomCountdown: GameModule = {
       title: "保險箱密碼",
       config: {
         instruction: "根據房間裡的線索，輸入 4 位數密碼打開保險箱",
-        correctCode: "2580",
-        codeLength: 4,
+        combination: "2580",
+        digits: 4,
       },
     },
     {
@@ -222,8 +225,11 @@ const escapeRoomCountdown: GameModule = {
       title: "最終問答",
       config: {
         question: "根據你收集到的所有線索，神秘人的真實身份是？",
-        options: ["前任屋主", "未來的你", "AI 管家"],
-        correctIndex: 2,
+        options: [
+          { text: "前任屋主", correct: false },
+          { text: "未來的你", correct: false },
+          { text: "AI 管家", correct: true },
+        ],
       },
     },
     {
@@ -231,8 +237,8 @@ const escapeRoomCountdown: GameModule = {
       title: "最終大門密碼",
       config: {
         instruction: "輸入最終密碼打開逃生門",
-        correctCode: "1234",
-        codeLength: 4,
+        combination: "1234",
+        digits: 4,
       },
     },
     {
@@ -283,8 +289,12 @@ const campusQuizBattle: GameModule = {
       title: "暖身題：常識",
       config: {
         question: "以下哪個是台灣最高的山？",
-        options: ["玉山", "雪山", "南湖大山", "秀姑巒山"],
-        correctIndex: 0,
+        options: [
+          { text: "玉山", correct: true },
+          { text: "雪山", correct: false },
+          { text: "南湖大山", correct: false },
+          { text: "秀姑巒山", correct: false },
+        ],
       },
     },
     {
@@ -292,8 +302,12 @@ const campusQuizBattle: GameModule = {
       title: "進階題：歷史",
       config: {
         question: "台灣在哪一年正式實施全民健保？",
-        options: ["1990 年", "1993 年", "1995 年", "1998 年"],
-        correctIndex: 2,
+        options: [
+          { text: "1990 年", correct: false },
+          { text: "1993 年", correct: false },
+          { text: "1995 年", correct: true },
+          { text: "1998 年", correct: false },
+        ],
       },
     },
     {
@@ -417,8 +431,12 @@ const wildSurvivalChallenge: GameModule = {
       title: "生存知識測驗",
       config: {
         question: "在野外迷路時，以下哪個做法最正確？",
-        options: ["隨意找方向走", "留在原地等待救援", "大聲呼喊求救", "爬到最高處觀察"],
-        correctIndex: 1,
+        options: [
+          { text: "隨意找方向走", correct: false },
+          { text: "留在原地等待救援", correct: true },
+          { text: "大聲呼喊求救", correct: false },
+          { text: "爬到最高處觀察", correct: false },
+        ],
       },
     },
     {
@@ -507,8 +525,11 @@ const onlineDetectiveClub: GameModule = {
       title: "審問嫌疑人",
       config: {
         question: "根據目前的證據，以下哪位嫌疑人的說詞有矛盾？",
-        options: ["嫌疑人 A：管家", "嫌疑人 B：鄰居", "嫌疑人 C：同事"],
-        correctIndex: 1,
+        options: [
+          { text: "嫌疑人 A：管家", correct: false },
+          { text: "嫌疑人 B：鄰居", correct: true },
+          { text: "嫌疑人 C：同事", correct: false },
+        ],
       },
     },
     {
@@ -537,8 +558,11 @@ const onlineDetectiveClub: GameModule = {
       title: "指認真兇",
       config: {
         question: "綜合所有證據，你認為真兇是誰？",
-        options: ["管家（動機：財產糾紛）", "鄰居（動機：長年不和）", "同事（動機：商業競爭）"],
-        correctIndex: 2,
+        options: [
+          { text: "管家（動機：財產糾紛）", correct: false },
+          { text: "鄰居（動機：長年不和）", correct: false },
+          { text: "同事（動機：商業競爭）", correct: true },
+        ],
       },
     },
     {
