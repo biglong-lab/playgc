@@ -184,15 +184,15 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
   return (
     <div className="min-h-full flex flex-col p-4">
       <div className="flex justify-end mb-4">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant={isConfirmingSkip ? "destructive" : "ghost"}
+          size="sm"
           onClick={handleSkip}
-          className="gap-1 text-muted-foreground"
+          className={`gap-1 ${isConfirmingSkip ? "" : "text-muted-foreground"}`}
           data-testid="button-skip-dialogue"
         >
           <SkipForward className="w-4 h-4" />
-          跳過
+          {isConfirmingSkip ? "再按一次確認跳過" : "跳過"}
         </Button>
       </div>
 
