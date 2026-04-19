@@ -102,26 +102,64 @@ export default function PageConfigEditor({
     case "shooting_mission":
       return (
         <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">需要命中次數</label>
-            <Input
-              type="number"
-              value={(config.requiredHits as number) || 5}
-              onChange={(e) => updateField("requiredHits", parseInt(e.target.value) || 5)}
-              min={1}
-              max={100}
-              data-testid="config-hits"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium mb-2 block">需要命中次數</label>
+              <Input
+                type="number"
+                value={(config.requiredHits as number) || 5}
+                onChange={(e) => updateField("requiredHits", parseInt(e.target.value) || 5)}
+                min={1}
+                max={100}
+                data-testid="config-hits"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">時間限制 (秒)</label>
+              <Input
+                type="number"
+                value={(config.timeLimit as number) || 60}
+                onChange={(e) => updateField("timeLimit", parseInt(e.target.value) || 60)}
+                min={10}
+                max={300}
+                data-testid="config-timelimit"
+              />
+            </div>
           </div>
-          <div>
-            <label className="text-sm font-medium mb-2 block">時間限制 (秒)</label>
-            <Input
-              type="number"
-              value={(config.timeLimit as number) || 60}
-              onChange={(e) => updateField("timeLimit", parseInt(e.target.value) || 60)}
-              min={10}
-              max={300}
-              data-testid="config-timelimit"
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-medium mb-2 block">目標分數（選填）</label>
+              <Input
+                type="number"
+                value={(config.targetScore as number | undefined) ?? ""}
+                onChange={(e) => {
+                  const n = parseInt(e.target.value, 10);
+                  updateField("targetScore", Number.isFinite(n) ? n : undefined);
+                }}
+                min={0}
+                placeholder="不限制"
+                data-testid="config-target-score"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">硬體設備 ID（選填）</label>
+              <Input
+                value={(config.deviceId as string) || ""}
+                onChange={(e) => updateField("deviceId", e.target.value)}
+                placeholder="特定靶機 ID"
+                data-testid="config-device-id"
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between border rounded p-2">
+            <div>
+              <span className="text-sm font-medium">啟用模擬命中</span>
+              <p className="text-xs text-muted-foreground">無硬體場地/開發測試用；開啟後玩家可手動點按鈕模擬</p>
+            </div>
+            <Switch
+              checked={config.allowSimulation === true}
+              onCheckedChange={(v) => updateField("allowSimulation", v)}
+              data-testid="config-allow-simulation"
             />
           </div>
           <RewardsSection config={config} updateField={updateField} gameId={gameId} />
