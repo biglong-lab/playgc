@@ -79,6 +79,18 @@ export function TriggerConfigEditor({
           />
         </div>
       );
+    case "photo":
+      return (
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">拍照任務頁面 ID（選填）</label>
+          <Input
+            value={(config.missionId as string) || ""}
+            onChange={(e) => onChange({ ...config, missionId: e.target.value })}
+            placeholder="留空=任何拍照任務完成都觸發"
+            data-testid="trigger-photo-mission"
+          />
+        </div>
+      );
     case "timer":
       return (
         <div>
