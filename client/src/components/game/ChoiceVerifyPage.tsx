@@ -240,7 +240,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
               className="w-full gap-2"
               data-testid="button-next-question"
             >
-              {currentQuestionIndex < questions.length - 1 ? (
+              {!isLastInOrder ? (
                 <>下一題 <ChevronRight className="w-4 h-4" /></>
               ) : (
                 "提交答案"
