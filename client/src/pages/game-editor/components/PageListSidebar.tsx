@@ -35,13 +35,33 @@ export default function PageListSidebar({
   onDrop,
   onDropZoneDrop,
 }: PageListSidebarProps) {
+  // 計算每頁有多少錯誤 / 警告
+  const issuesByPageId = useMemo(() => {
+    const map = new Map<string, { errors: number; warnings: number }>();
+    for (const page of pages) {
+      const issues = validatePageConfig(page);
+      map.set(page.id, {
+        errors: issues.filter((i) => i.severity === "error").length,
+        warnings: issues.filter((i) => i.severity === "warning").length,
+      });
+    }
+    return map;
+  }, [pages]);
+
+  const totalErrors = Array.from(issuesByPageId.values()).reduce(
+    (sum, v) => sum + v.errors,
+    0,
+  );
+
   return (
     <aside className="w-72 border-r border-border bg-card/30 flex flex-col">
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div>
           <h3 className="font-medium text-sm">頁面流程</h3>
           <p className="text-xs text-muted-foreground">
-            {pages.length} 個頁面
+            {pages.length} 個頁面{totalErrors > 0 && (
+              <span className="text-destructive ml-1">· {totalErrors} 項需修</span>
+            )}
           </p>
         </div>
         <Badge variant="outline" className="text-xs">
