@@ -122,7 +122,11 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
     };
   }, [currentMessageIndex, currentMessage, config?.autoAdvance, config?.typingSpeed, isLastMessage, bubbleVisible]);
 
+  // 防 rage-click「結束對話」/ handleSkip 多次觸發 onComplete
+  const finishedRef = useRef(false);
   const finishDialogue = () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
     onComplete(
       config.rewardPoints ? { points: config.rewardPoints } : undefined,
       config.nextPageId,
