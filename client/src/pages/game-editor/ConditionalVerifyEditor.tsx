@@ -280,7 +280,7 @@ export default function ConditionalVerifyEditor({
                         </SelectContent>
                       </Select>
                     </div>
-                    {!fragment.sourceItemId && (
+                    {!fragment.sourceItemId && config.demoMode !== true && (
                       <p className="text-[11px] text-destructive flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
                         未綁定道具，玩家將無法收集此碎片
