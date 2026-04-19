@@ -9,6 +9,7 @@
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
     "db:push": "node --env-file=.env node_modules/.bin/drizzle-kit push",
+    "sync:db": "bash scripts/sync-prod-to-local.sh",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
