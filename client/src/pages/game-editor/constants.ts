@@ -93,6 +93,7 @@ export const EVENT_TYPES = [
   { value: "qrcode", label: "QR Code 掃描", icon: QrCode, description: "掃描特定 QR Code 時觸發" },
   { value: "gps", label: "GPS 抵達", icon: MapPin, description: "抵達指定地點時觸發" },
   { value: "shooting", label: "射擊達標", icon: Target, description: "射擊任務完成時觸發" },
+  { value: "photo", label: "拍照完成", icon: Camera, description: "完成特定拍照任務時觸發" },
   { value: "timer", label: "計時器", icon: Clock, description: "經過指定時間後觸發" },
 ] as const;
 
