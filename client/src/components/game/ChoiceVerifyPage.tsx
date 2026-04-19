@@ -28,6 +28,8 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [retryRound, setRetryRound] = useState(0);
+  // 防 rage-click：submit 連點或 option + submit 的 race → 避免多次 onComplete
+  const finishedRef = useRef(false);
 
   const currentQuestionIndex = questionOrder[orderCursor] ?? 0;
   const currentQuestion = isQuizMode ? questions[currentQuestionIndex] : null;
