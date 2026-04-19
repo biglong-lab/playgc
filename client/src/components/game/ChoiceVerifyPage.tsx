@@ -47,48 +47,60 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
     newAnswers.set(currentQuestionIndex, selectedOption);
     setAnswers(newAnswers);
 
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    if (!isLastInOrder) {
+      setOrderCursor((c) => c + 1);
       setSelectedOption(null);
+      return;
+    }
+
+    // 走到 order 最後一題 → 計分（以全部 questions 為分母）
+    let correctCount = 0;
+    newAnswers.forEach((answer, qIndex) => {
+      if (questions[qIndex] && answer === questions[qIndex].correctAnswer) {
+        correctCount++;
+      }
+    });
+
+    const score = correctCount / questions.length;
+    const passed = score >= passingScore;
+
+    setShowResult(true);
+    setIsSubmitted(true);
+
+    if (passed) {
+      toast({
+        title: "測驗通過!",
+        description: config.onSuccess?.message || `答對 ${correctCount}/${questions.length} 題`,
+      });
+      setTimeout(() => {
+        const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
+        const rewardPerQ = config.rewardPerQuestion ?? 10;
+        const totalPoints = config.onSuccess?.points ?? correctCount * rewardPerQ;
+        onComplete({ points: totalPoints, items }, config.nextPageId);
+      }, 2000);
     } else {
-      let correctCount = 0;
-      newAnswers.forEach((answer, qIndex) => {
-        if (questions[qIndex] && answer === questions[qIndex].correctAnswer) {
-          correctCount++;
-        }
+      // 找出答錯題原始 index（保留答對題的答案，避免重做）
+      const wrongIndices: number[] = [];
+      questions.forEach((q, idx) => {
+        if (newAnswers.get(idx) !== q.correctAnswer) wrongIndices.push(idx);
       });
 
-      const score = correctCount / questions.length;
-      const passed = score >= passingScore;
-
-      setShowResult(true);
-      setIsSubmitted(true);
-
-      if (passed) {
-        toast({
-          title: "測驗通過!",
-          description: config.onSuccess?.message || `答對 ${correctCount}/${questions.length} 題`,
-        });
-        setTimeout(() => {
-          const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-          const rewardPerQ = config.rewardPerQuestion ?? 10;
-          const totalPoints = config.onSuccess?.points ?? correctCount * rewardPerQ;
-          onComplete({ points: totalPoints, items }, config.nextPageId);
-        }, 2000);
-      } else {
-        toast({
-          title: "測驗未通過",
-          description: `答對 ${correctCount}/${questions.length} 題，需要 ${Math.ceil(passingScore * 100)}% 通過`,
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          setCurrentQuestionIndex(0);
-          setAnswers(new Map());
-          setSelectedOption(null);
-          setIsSubmitted(false);
-          setShowResult(false);
-        }, 2500);
+      toast({
+        title: "測驗未通過",
+        description: `答對 ${correctCount}/${questions.length} 題，將只重考答錯的 ${wrongIndices.length} 題`,
+        variant: "destructive",
+      });
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        try { navigator.vibrate([40, 60, 40]); } catch { /* noop */ }
       }
+      setTimeout(() => {
+        setQuestionOrder(wrongIndices);
+        setOrderCursor(0);
+        setSelectedOption(null);
+        setIsSubmitted(false);
+        setShowResult(false);
+        setRetryRound((r) => r + 1);
+      }, 2500);
     }
   };
 
