@@ -76,8 +76,15 @@ const birthdayPartyEscape: GameModule = {
       title: "收集與壽星的合照",
       config: {
         instruction: "收集 3 張與壽星不同年份的合照",
-        requiredFragments: 3,
-        fragments: ["童年合照", "學生時期合照", "出社會後合照"],
+        demoMode: true,
+        verificationMode: "all_collected",
+        fragmentType: "custom",
+        fragmentCount: 3,
+        fragments: [
+          { id: "p1", label: "童年合照", value: "1", order: 1 },
+          { id: "p2", label: "學生時期合照", value: "2", order: 2 },
+          { id: "p3", label: "出社會後合照", value: "3", order: 3 },
+        ],
       },
     },
     {
