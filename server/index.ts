@@ -10,6 +10,13 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import { startBattleScheduler } from "./services/battle-scheduler";
 
+// 型別擴充：Express 需要訪問 raw body（Stripe webhook 等）
+declare module "http" {
+  interface IncomingMessage {
+    rawBody: unknown;
+  }
+}
+
 // =============================================================================
 // Cluster 模式（多核心利用）
 // =============================================================================
