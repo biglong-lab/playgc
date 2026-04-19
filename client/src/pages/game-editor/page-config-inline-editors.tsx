@@ -634,6 +634,15 @@ export function QrScanEditor({ config, updateField, gameId, page }: BaseEditorPr
           data-testid="config-location-hint"
         />
       </div>
+      <div>
+        <label className="text-sm font-medium mb-2 block">驗證成功訊息（可選）</label>
+        <Input
+          value={(config.successMessage as string) || ""}
+          onChange={(e) => updateField("successMessage", e.target.value)}
+          placeholder="QR Code 驗證成功！"
+          data-testid="config-qr-success-message"
+        />
+      </div>
       <QRCodeGenerator
         qrCodeId={(config.primaryCode as string) || (config.qrCodeId as string) || ""}
         gameId={gameId}
