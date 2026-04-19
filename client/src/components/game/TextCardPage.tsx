@@ -52,22 +52,34 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   useEffect(() => {
     if (config.timeLimit && config.timeLimit > 0) {
       setTimeLeft(config.timeLimit);
+      let finishTimeoutId: ReturnType<typeof setTimeout> | null = null;
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev === null || prev <= 1) {
             clearInterval(timer);
-            onComplete(
-              config.rewardPoints ? { points: config.rewardPoints } : undefined,
-              config.nextPageId,
-            );
+            // 若仍在打字，先補完並延遲 2 秒讓玩家至少讀完整內文才跳
+            const delay = useTypewriter && isTyping ? 2000 : 0;
+            if (useTypewriter && isTyping) {
+              setDisplayedText(content);
+              setIsTyping(false);
+            }
+            finishTimeoutId = setTimeout(() => {
+              onComplete(
+                config.rewardPoints ? { points: config.rewardPoints } : undefined,
+                config.nextPageId,
+              );
+            }, delay);
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-      return () => clearInterval(timer);
+      return () => {
+        clearInterval(timer);
+        if (finishTimeoutId) clearTimeout(finishTimeoutId);
+      };
     }
-  }, [config.timeLimit, config.rewardPoints, config.nextPageId, onComplete]);
+  }, [config.timeLimit, config.rewardPoints, config.nextPageId, onComplete, content, useTypewriter, isTyping]);
 
   useEffect(() => {
     if (config.backgroundAudio) {
