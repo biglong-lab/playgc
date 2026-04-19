@@ -148,7 +148,25 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
     }
   };
 
+  const [isConfirmingSkip, setIsConfirmingSkip] = useState(false);
+  const skipConfirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleSkip = () => {
+    // 防止誤觸：第一次點僅進入「確認狀態」，3 秒內再點一次才真跳過
+    if (!isConfirmingSkip) {
+      setIsConfirmingSkip(true);
+      if (skipConfirmTimerRef.current) clearTimeout(skipConfirmTimerRef.current);
+      skipConfirmTimerRef.current = setTimeout(() => {
+        setIsConfirmingSkip(false);
+        skipConfirmTimerRef.current = null;
+      }, 3000);
+      return;
+    }
+    // 已在確認狀態 → 真跳過
+    if (skipConfirmTimerRef.current) {
+      clearTimeout(skipConfirmTimerRef.current);
+      skipConfirmTimerRef.current = null;
+    }
     finishDialogue();
   };
 
