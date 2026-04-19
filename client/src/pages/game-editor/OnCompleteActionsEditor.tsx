@@ -84,17 +84,83 @@ function ActionItem({
             placeholder="變數名"
             className="w-28 h-8"
           />
-          {!isToggle && (
-            <Input
-              value={String(action.value ?? "")}
-              onChange={(e) => {
-                const num = Number(e.target.value);
-                onChange({ ...action, value: isNaN(num) ? e.target.value : num });
-              }}
-              placeholder={action.type.includes('increment') || action.type.includes('decrement') ? "步長(預設1)" : "值"}
-              className="w-24 h-8"
-            />
-          )}
+          {!isToggle && (() => {
+            // increment/decrement 一律走數字；set_variable 讓 admin 選型別
+            const isNumericAction = action.type.includes("increment") || action.type.includes("decrement");
+            if (isNumericAction) {
+              return (
+                <Input
+                  type="number"
+                  value={Number.isFinite(action.value as number) ? (action.value as number) : 1}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    onChange({ ...action, value: Number.isFinite(n) ? n : 1 });
+                  }}
+                  placeholder="步長(預設1)"
+                  className="w-24 h-8"
+                />
+              );
+            }
+            const valueType =
+              action.valueType ||
+              (typeof action.value === "boolean" ? "boolean" :
+               typeof action.value === "number" ? "number" : "string");
+            return (
+              <>
+                <Select
+                  value={valueType}
+                  onValueChange={(v) => {
+                    let newValue: unknown = action.value;
+                    if (v === "number") newValue = Number(action.value) || 0;
+                    else if (v === "boolean") newValue = !!action.value && action.value !== "false";
+                    else newValue = action.value == null ? "" : String(action.value);
+                    onChange({ ...action, value: newValue, valueType: v as "string" | "number" | "boolean" });
+                  }}
+                >
+                  <SelectTrigger className="w-20 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="string">文字</SelectItem>
+                    <SelectItem value="number">數字</SelectItem>
+                    <SelectItem value="boolean">布林</SelectItem>
+                  </SelectContent>
+                </Select>
+                {valueType === "boolean" ? (
+                  <Select
+                    value={String(!!action.value)}
+                    onValueChange={(v) => onChange({ ...action, value: v === "true", valueType })}
+                  >
+                    <SelectTrigger className="w-20 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">true</SelectItem>
+                      <SelectItem value="false">false</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : valueType === "number" ? (
+                  <Input
+                    type="number"
+                    value={Number.isFinite(action.value as number) ? (action.value as number) : 0}
+                    onChange={(e) => {
+                      const n = Number(e.target.value);
+                      onChange({ ...action, value: Number.isFinite(n) ? n : 0, valueType });
+                    }}
+                    placeholder="值"
+                    className="w-24 h-8"
+                  />
+                ) : (
+                  <Input
+                    value={String(action.value ?? "")}
+                    onChange={(e) => onChange({ ...action, value: e.target.value, valueType })}
+                    placeholder="值"
+                    className="w-24 h-8"
+                  />
+                )}
+              </>
+            );
+          })()}
         </>
       )}
 
