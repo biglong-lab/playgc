@@ -592,17 +592,79 @@ export function VideoEditor({ config, updateField, MediaUploadButton }: BaseEdit
           data-testid="config-video-title"
         />
       </div>
+      <div>
+        <label className="text-sm font-medium mb-2 block">描述（可選）</label>
+        <Textarea
+          value={(config.description as string) || ""}
+          onChange={(e) => updateField("description", e.target.value)}
+          placeholder="簡短說明影片內容"
+          rows={2}
+          data-testid="config-video-description"
+        />
+      </div>
+      <div>
+        <label className="text-sm font-medium mb-2 block">封面圖 URL（可選）</label>
+        <div className="flex gap-2">
+          <Input
+            value={(config.poster as string) || ""}
+            onChange={(e) => updateField("poster", e.target.value)}
+            placeholder="影片未播放時顯示的圖片"
+            className="flex-1"
+            data-testid="config-video-poster"
+          />
+          <MediaUploadButton
+            id="video-poster-upload"
+            accept="image/*"
+            onUploaded={(url) => updateField("poster", url)}
+          />
+        </div>
+      </div>
       {Boolean(config.videoUrl) && (
         <div>
           <label className="text-sm font-medium mb-2 block">預覽</label>
           <video
             src={config.videoUrl as string}
+            poster={(config.poster as string) || undefined}
             controls
             className="w-full rounded-lg max-h-48"
             data-testid="video-preview"
           />
         </div>
       )}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">自動播放</span>
+          <Switch
+            checked={config.autoPlay !== false}
+            onCheckedChange={(v) => updateField("autoPlay", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">允許跳過</span>
+          <Switch
+            checked={config.skipEnabled !== false && config.forceWatch !== true}
+            onCheckedChange={(v) => updateField("skipEnabled", v)}
+            disabled={config.forceWatch === true}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">強制看完</span>
+          <Switch
+            checked={config.forceWatch === true}
+            onCheckedChange={(v) => {
+              updateField("forceWatch", v);
+              if (v) updateField("skipEnabled", false);
+            }}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">結束自動前進</span>
+          <Switch
+            checked={config.autoCompleteOnEnd === true}
+            onCheckedChange={(v) => updateField("autoCompleteOnEnd", v)}
+          />
+        </div>
+      </div>
       <LocationSettingsSection config={config} updateField={updateField} />
     </div>
   );
