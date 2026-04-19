@@ -216,9 +216,11 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   };
 
   const stopWatching = () => {
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
+    const id = watchIdRef.current ?? watchId;
+    if (id !== null) {
+      navigator.geolocation.clearWatch(id);
       setWatchId(null);
+      watchIdRef.current = null;
     }
     setIsWatching(false);
   };
