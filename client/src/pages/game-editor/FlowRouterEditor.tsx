@@ -150,7 +150,7 @@ function ConditionEditor({
                     if (v === "number") newValue = Number(current) || 0;
                     else if (v === "boolean") newValue = !!current && current !== "false";
                     else newValue = current == null ? "" : String(current);
-                    onChange({ ...condition, variableValue: newValue, valueType: v });
+                    onChange({ ...condition, variableValue: newValue, valueType: v as "string" | "number" | "boolean" });
                   }}
                 >
                   <SelectTrigger className="w-20 h-8 text-xs">
