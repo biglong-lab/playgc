@@ -135,8 +135,8 @@ function ConditionEditor({
           {(() => {
             // 依 variableValue 現值推測型別，或使用 condition.valueType 欄位
             const current = condition.variableValue;
-            const valueType =
-              (condition as { valueType?: string }).valueType ||
+            const valueType: "string" | "number" | "boolean" =
+              condition.valueType ||
               (typeof current === "boolean" ? "boolean" :
                typeof current === "number" ? "number" : "string");
 
