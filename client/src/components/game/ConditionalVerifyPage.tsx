@@ -318,11 +318,12 @@ export default function ConditionalVerifyPage({
               
               <div className="grid grid-cols-4 gap-2">
                 {fragments.map((fragment, index) => {
-                  // 關鍵修正：sourceItemId 未設時視為未收集（防裸破關）+ 型別相容
-                  const isCollected =
-                    fragment.sourceItemId != null &&
-                    fragment.sourceItemId !== "" &&
-                    inventorySet.has(String(fragment.sourceItemId));
+                  // 示範模式全部已收集；正式模式需綁 sourceItemId 且 inventory 有此道具
+                  const isCollected = isDemoMode
+                    ? true
+                    : fragment.sourceItemId != null &&
+                      fragment.sourceItemId !== "" &&
+                      inventorySet.has(String(fragment.sourceItemId));
                   return (
                     <div
                       key={fragment.id || index}
