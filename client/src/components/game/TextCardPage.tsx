@@ -84,14 +84,27 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   }, [config.backgroundAudio]);
 
   const toggleAudio = () => {
-    if (audioRef.current) {
-      if (audioPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setAudioPlaying(!audioPlaying);
+    if (!audioRef.current) return;
+    if (audioPlaying) {
+      audioRef.current.pause();
+      setAudioPlaying(false);
+    } else {
+      Promise.resolve(audioRef.current.play())
+        .then(() => setAudioPlaying(true))
+        .catch(() => setAudioPlaying(false));
     }
+  };
+
+  /** 首次任何 user gesture（點擊頁面、按繼續等）嘗試自動播放背景音樂。
+   * 瀏覽器政策：autoplay audio 必須在 user gesture 同步堆疊中觸發。
+   * 無 backgroundAudio 或已播放則 no-op。 */
+  const tryAutoPlayAudio = () => {
+    if (!audioRef.current || audioPlaying) return;
+    Promise.resolve(audioRef.current.play())
+      .then(() => setAudioPlaying(true))
+      .catch(() => {
+        /* 瀏覽器拒絕或被靜音，保持靜音狀態不干擾玩家 */
+      });
   };
 
   const highlightedContent = useMemo(() => {
