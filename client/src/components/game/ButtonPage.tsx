@@ -17,6 +17,8 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // ref 防連點 + 防 timer 與點擊競態（closure isSubmitting 可能 stale）
+  const isSubmittingRef = useRef(false);
 
   // 洗牌時保留 originalIndex 對應，讓 defaultChoice 仍指向 admin 設定的那顆
   const buttons = useMemo(() => {
