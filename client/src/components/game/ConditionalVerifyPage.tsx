@@ -10,7 +10,8 @@ interface FragmentConfig {
   id: string;
   label: string;
   value: string;
-  sourceItemId?: string;
+  /** 可能為 number（舊 seed 資料）或 string（新 schema） */
+  sourceItemId?: string | number;
   order?: number;
 }
 
