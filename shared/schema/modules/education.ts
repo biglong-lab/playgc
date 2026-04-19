@@ -64,8 +64,12 @@ const scienceExplorerSquad: GameModule = {
       title: "科學原理問答",
       config: {
         question: "水的沸點在一大氣壓下是幾度？",
-        options: ["50°C", "75°C", "100°C", "150°C"],
-        correctIndex: 2,
+        options: [
+          { text: "50°C", correct: false },
+          { text: "75°C", correct: false },
+          { text: "100°C", correct: true },
+          { text: "150°C", correct: false },
+        ],
       },
     },
     {
@@ -156,8 +160,12 @@ const historyTimeTravel: GameModule = {
       title: "歷史事件年份",
       config: {
         question: "中華民國成立於哪一年？",
-        options: ["1909 年", "1911 年", "1912 年", "1919 年"],
-        correctIndex: 2,
+        options: [
+          { text: "1909 年", correct: false },
+          { text: "1911 年", correct: false },
+          { text: "1912 年", correct: true },
+          { text: "1919 年", correct: false },
+        ],
       },
     },
     {

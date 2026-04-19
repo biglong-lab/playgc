@@ -75,8 +75,12 @@ const urbanLegendInvestigator: GameModule = {
       title: "辨認嫌疑人",
       config: {
         question: "綜合監視器與證人證詞，以下哪個說法最可能是真的？",
-        options: ["電梯真的鬧鬼", "失蹤者自導自演", "大樓管理員涉案", "對面鄰居惡作劇"],
-        correctIndex: 1,
+        options: [
+          { text: "電梯真的鬧鬼", correct: false },
+          { text: "失蹤者自導自演", correct: true },
+          { text: "大樓管理員涉案", correct: false },
+          { text: "對面鄰居惡作劇", correct: false },
+        ],
       },
     },
     {

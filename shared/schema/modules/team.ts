@@ -181,8 +181,12 @@ const outdoorSurvivalExtreme: GameModule = {
       title: "求生知識試煉",
       config: {
         question: "在野外取得飲用水最安全的做法是？",
-        options: ["直接喝溪水", "以濾網過濾即喝", "煮沸後再飲用", "用衣服過濾就好"],
-        correctIndex: 2,
+        options: [
+          { text: "直接喝溪水", correct: false },
+          { text: "以濾網過濾即喝", correct: false },
+          { text: "煮沸後再飲用", correct: true },
+          { text: "用衣服過濾就好", correct: false },
+        ],
       },
     },
     {

@@ -62,8 +62,12 @@ const templeCultureTour: GameModule = {
       title: "神明小知識",
       config: {
         question: "以下哪位神明常被稱為「媽祖」？",
-        options: ["天上聖母", "玄天上帝", "關聖帝君", "王爺"],
-        correctIndex: 0,
+        options: [
+          { text: "天上聖母", correct: true },
+          { text: "玄天上帝", correct: false },
+          { text: "關聖帝君", correct: false },
+          { text: "王爺", correct: false },
+        ],
       },
     },
     {
@@ -162,8 +166,12 @@ const nightMarketFoodDetective: GameModule = {
       title: "夜市美食小知識",
       config: {
         question: "以下哪一道是台灣夜市常見的經典小吃？",
-        options: ["蚵仔煎", "披薩", "可頌", "壽司卷"],
-        correctIndex: 0,
+        options: [
+          { text: "蚵仔煎", correct: true },
+          { text: "披薩", correct: false },
+          { text: "可頌", correct: false },
+          { text: "壽司卷", correct: false },
+        ],
       },
     },
     {

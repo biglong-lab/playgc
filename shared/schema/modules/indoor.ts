@@ -58,8 +58,8 @@ const birthdayPartyEscape: GameModule = {
       title: "生日密碼鎖",
       config: {
         instruction: "線索提示：壽星的生日月日（例 0315）",
-        correctCode: "0315",
-        codeLength: 4,
+        combination: "0315",
+        digits: 4,
       },
     },
     {
@@ -147,8 +147,12 @@ const magicAcademyEntrance: GameModule = {
       title: "分院測驗",
       config: {
         question: "你在森林中迷路，會先做什麼？",
-        options: ["尋找高處觀察地形", "召喚生物求助", "點亮魔杖找路", "沉著冷靜就地休息"],
-        correctIndex: 3,
+        options: [
+          { text: "尋找高處觀察地形", correct: false },
+          { text: "召喚生物求助", correct: false },
+          { text: "點亮魔杖找路", correct: false },
+          { text: "沉著冷靜就地休息", correct: true },
+        ],
       },
     },
     {
@@ -165,8 +169,8 @@ const magicAcademyEntrance: GameModule = {
       title: "符文密碼鎖",
       config: {
         instruction: "觀察牆上四個符文排列，對應數字為 7、3、1、4",
-        correctCode: "7314",
-        codeLength: 4,
+        combination: "7314",
+        digits: 4,
       },
     },
     {
@@ -201,8 +205,12 @@ const magicAcademyEntrance: GameModule = {
       title: "道德試煉",
       config: {
         question: "你發現同學違反禁咒規定，你會？",
-        options: ["裝作沒看到", "向院長報告", "私下勸阻同學", "加入他一起違規"],
-        correctIndex: 2,
+        options: [
+          { text: "裝作沒看到", correct: false },
+          { text: "向院長報告", correct: false },
+          { text: "私下勸阻同學", correct: true },
+          { text: "加入他一起違規", correct: false },
+        ],
       },
     },
     {
