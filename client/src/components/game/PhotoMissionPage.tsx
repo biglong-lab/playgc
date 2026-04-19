@@ -127,7 +127,7 @@ export default function PhotoMissionPage({
           title: "照片已上傳",
           description: config.onSuccess?.message || "任務完成！",
         });
-        onComplete(buildReward(false));
+        safeOnComplete(buildReward(false));
       }
     },
     onError: (error: Error) => {
