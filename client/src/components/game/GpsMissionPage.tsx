@@ -304,11 +304,24 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
 
           {hotZoneMessage && (
             <div className={`text-center mb-4 p-3 rounded-lg animate-pulse ${
-              distance && distance <= targetRadius * 2 
-                ? "bg-success/20 text-success border border-success/30" 
+              distance && distance <= targetRadius * 2
+                ? "bg-success/20 text-success border border-success/30"
                 : "bg-primary/20 text-primary border border-primary/30"
             }`}>
               <p className="font-bold text-lg">{hotZoneMessage}</p>
+            </div>
+          )}
+
+          {/* showMap 開啟時顯示地圖（目標點 + 觸發半徑 + 玩家位置） */}
+          {config.showMap && (
+            <div className="mb-4">
+              <GpsMissionMap
+                targetLat={targetLat}
+                targetLng={targetLng}
+                radius={targetRadius}
+                userLat={userLocation?.lat ?? null}
+                userLng={userLocation?.lng ?? null}
+              />
             </div>
           )}
 
