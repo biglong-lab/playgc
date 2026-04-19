@@ -75,6 +75,8 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
         description: config.onSuccess?.message || `答對 ${correctCount}/${questions.length} 題`,
       });
       setTimeout(() => {
+        if (finishedRef.current) return;
+        finishedRef.current = true;
         const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
         const rewardPerQ = config.rewardPerQuestion ?? 10;
         const totalPoints = config.onSuccess?.points ?? correctCount * rewardPerQ;
