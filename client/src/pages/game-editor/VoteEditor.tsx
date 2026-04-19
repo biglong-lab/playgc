@@ -64,6 +64,15 @@ export default function VoteEditor({ config, updateField, allPages = [] }: VoteE
                 <SelectContent>
                   <SelectItem value="_continue">繼續下一頁</SelectItem>
                   <SelectItem value="_end">結束遊戲</SelectItem>
+                  {allPages.map((p, i) => {
+                    const cfg = p.config as Record<string, unknown> | null | undefined;
+                    const title = (cfg?.title as string) || (cfg?.question as string) || `#${i + 1} ${p.pageType}`;
+                    return (
+                      <SelectItem key={p.id} value={p.id}>
+                        <span className="truncate">#{p.pageOrder}. {title.slice(0, 30)}</span>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
               <Button
