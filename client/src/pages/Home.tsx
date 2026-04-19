@@ -78,7 +78,21 @@ export default function Home() {
     setLocation("/");
   };
 
-  if (authLoading) {
+  // 🔥 改用 useEffect 確保跳轉在 render 之後執行
+  // 避免「Login Dialog 剛關閉 → Firebase onAuthStateChanged 還沒跑 → isSignedIn=false → 立刻跳回首頁」
+  // 的時序 bug。給 Firebase 一個 buffer 時間讓 auth state 同步。
+  useEffect(() => {
+    if (!authLoading && !isSignedIn) {
+      // 延遲 200ms 再決定，確保 Firebase auth state 完全同步
+      const timer = setTimeout(() => {
+        if (!isSignedIn) setLocation("/");
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [authLoading, isSignedIn, setLocation]);
+
+  // Loading 狀態：Firebase 還在 init、或剛登入等 auth state 同步
+  if (authLoading || !isSignedIn) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -87,11 +101,6 @@ export default function Home() {
         </div>
       </div>
     );
-  }
-
-  if (!isSignedIn) {
-    setLocation("/");
-    return null;
   }
 
   if (!user) {
