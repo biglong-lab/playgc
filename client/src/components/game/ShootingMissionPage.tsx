@@ -66,7 +66,8 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     ws.onopen = () => {
       setConnectionStatus("connected");
       setIsConnected(true);
-      
+      setReconnectAttempts(0);
+
       ws.send(JSON.stringify({
         type: "join",
         sessionId: sessionId,
