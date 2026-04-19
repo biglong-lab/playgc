@@ -36,10 +36,27 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
   const [progress, setProgress] = useState(0);
   const [timeLeft, setTimeLeft] = useState(config.timeLimit || 30);
   const [error, setError] = useState<string | null>(null);
-  
+  const [hitCount, setHitCount] = useState(0);
+  const [hitPulseKey, setHitPulseKey] = useState(0);
+
   const lastAccelRef = useRef({ x: 0, y: 0, z: 0 });
   const shakeCountRef = useRef(0);
   const tiltAngleRef = useRef(0);
+  const lastHitTimeRef = useRef(0);
+
+  // 命中回饋（每次成功震動/跳動/轉動時觸發視覺脈動）
+  const triggerHitFeedback = useCallback(() => {
+    const now = Date.now();
+    // 節流：避免一秒內多次動畫卡頓（最短 100ms 一次）
+    if (now - lastHitTimeRef.current < 100) return;
+    lastHitTimeRef.current = now;
+    setHitCount((c) => c + 1);
+    setHitPulseKey((k) => k + 1);
+    // 觸覺回饋（支援的裝置）
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate(30); } catch { /* noop */ }
+    }
+  }, []);
 
   const challengeType = config.challengeType || "shake";
   const targetValue = config.targetValue || 20;
