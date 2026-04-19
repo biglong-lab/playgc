@@ -128,11 +128,16 @@ app.use(cookieParser());
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: Number(process.env.RATE_LIMIT_MAX) || 50000, // 放寬以支援同場域多人共 IP
+  // 全域 IP 限制 — 僅防 DDoS / 爬蟲，業務邏輯防刷交給 per-user rate limit
+  // 壓測實測：500 人 × 每人 200 次/15min = 100,000 次 → 上限 200,000 預留 2x 邊際
+  max: Number(process.env.RATE_LIMIT_MAX) || 200000,
   standardHeaders: true,
   legacyHeaders: false,
   // 健康檢查 / admin 不計入
-  skip: (req) => req.path === "/api/health" || req.path.startsWith("/api/admin/"),
+  skip: (req) =>
+    req.path === "/api/health" ||
+    req.path === "/api/health/detail" ||
+    req.path.startsWith("/api/admin/"),
   message: { message: "請求次數過多，請稍後再試（若為場域多人同時使用，請聯繫管理員）" },
 });
 
