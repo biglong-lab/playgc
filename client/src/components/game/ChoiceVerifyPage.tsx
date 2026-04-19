@@ -34,7 +34,20 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
   const currentQuestionIndex = questionOrder[orderCursor] ?? 0;
   const currentQuestion = isQuizMode ? questions[currentQuestionIndex] : null;
   const passingScore = config?.passingScore ?? 0.6;
-  const legacyOptions = config?.options ?? [];
+  // 向下相容：舊資料是 options:["a","b"] + correctIndex:0，新資料是 [{text, correct}]
+  // 自動將舊格式轉成新格式給渲染層用
+  const legacyOptions = (() => {
+    const raw = config?.options ?? [];
+    const legacyCorrectIndex = (config as any)?.correctIndex;
+    return raw.map((opt: any, idx: number) => {
+      if (typeof opt === "string") {
+        // 舊 schema: 字串陣列 + correctIndex
+        return { text: opt, correct: idx === legacyCorrectIndex };
+      }
+      // 新 schema: 物件已包含 text + correct
+      return opt;
+    });
+  })();
   const isLastInOrder = orderCursor >= questionOrder.length - 1;
 
   const handleOptionClick = (index: number) => {
