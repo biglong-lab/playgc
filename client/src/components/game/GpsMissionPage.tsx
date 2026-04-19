@@ -35,6 +35,11 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   const [hotZoneMessage, setHotZoneMessage] = useState<string | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const lastBeepTimeRef = useRef<number>(0);
+  // 到達鎖：避免 watchPosition 連發多次成功 toast + onComplete
+  const hasArrivedRef = useRef(false);
+  // watchId ref：updateLocation 初次註冊時 watchId 還是 null（stale closure），
+  // 改透過 ref 取用最新值
+  const watchIdRef = useRef<number | null>(null);
 
   const targetLat = config.targetLocation?.lat ?? config.targetLatitude ?? 0;
   const targetLng = config.targetLocation?.lng ?? config.targetLongitude ?? 0;
