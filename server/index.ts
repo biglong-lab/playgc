@@ -149,6 +149,29 @@ app.use("/api/", apiLimiter);
 app.use("/api/admin/login", authLimiter);
 app.use("/api/admin/firebase-login", authLimiter);
 
+// 公開健康檢查（壓力測試 / 監控工具用）—— 不經過 rate limit
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "ok", timestamp: Date.now() });
+});
+
+// 詳細健康檢查（DB pool 狀態，幫助壓測觀察瓶頸）
+app.get("/api/health/detail", async (_req, res) => {
+  // 動態載入避免循環依賴
+  const { pool } = await import("./db");
+  res.json({
+    status: "ok",
+    timestamp: Date.now(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    dbPool: {
+      total: pool.totalCount,      // 連線池目前連線數
+      idle: pool.idleCount,        // 閒置可用連線
+      waiting: pool.waitingCount,  // 等待連線的 request 數（若 > 0 代表 pool 吃緊）
+      max: pool.options.max,       // pool 上限
+    },
+  });
+});
+
 app.use(
   express.json({
     limit: '50mb',
