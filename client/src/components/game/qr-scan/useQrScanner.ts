@@ -49,6 +49,9 @@ export function useQrScanner(
   const [isProcessing, setIsProcessing] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [containerReady, setContainerReady] = useState(false);
+  // ref 防掃描器連續偵測同一 QR / 手動輸入 rage-click 造成多次 verifyCode
+  const isProcessingRef = useRef(false);
+  const finishedRef = useRef(false);
 
   const visitLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
