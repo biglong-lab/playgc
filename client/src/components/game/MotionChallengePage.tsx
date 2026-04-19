@@ -156,6 +156,7 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
             shakeCountRef.current = jumpCount; // 共用 ref
             const newProgress = Math.min(100, (jumpCount / targetValue) * 100);
             setProgress(newProgress);
+            triggerHitFeedback();
             if (jumpCount >= targetValue) {
               handleComplete();
             }
