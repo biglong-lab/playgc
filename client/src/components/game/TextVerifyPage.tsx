@@ -370,10 +370,10 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
 
             <div className="flex gap-2">
               <Button
-                onClick={() => setAnswer("")}
+                onClick={() => { setAnswer(""); if (isCorrect === false) setIsCorrect(null); }}
                 variant="outline"
                 className="flex-1 gap-2"
-                disabled={isCorrect !== null || isChecking}
+                disabled={isCorrect === true || isChecking}
                 data-testid="button-clear"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -382,7 +382,7 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
               <Button
                 onClick={checkAnswer}
                 className="flex-1 gap-2"
-                disabled={!answer.trim() || isCorrect !== null || isChecking}
+                disabled={!answer.trim() || isCorrect === true || isChecking}
                 data-testid="button-submit-answer"
               >
                 {isChecking ? (
