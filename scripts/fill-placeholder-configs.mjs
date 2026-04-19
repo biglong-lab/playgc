@@ -29,7 +29,8 @@ for (const row of gpsRows) {
   const lng = 118.3010 + i * 0.001;
   const newConfig = {
     ...row.config,
-    targetLocation: { lat, lng, radius: 50 },
+    targetLocation: { lat, lng },
+    radius: 50, // ← config.radius（editor 與元件都讀這個）
     qrFallback: true,
     fallbackQrCode: `MISSION_${row.page_order}_BACKUP`,
     hotZoneHints: true,
