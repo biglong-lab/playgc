@@ -105,14 +105,20 @@ export function validatePageConfig(page: Page): ValidationIssue[] {
     case "conditional_verify": {
       const fragments = (cfg.fragments as Array<{ sourceItemId?: string; value?: string }>) || [];
       const conditions = (cfg.conditions as Array<unknown>) || [];
+      const demoMode = cfg.demoMode === true;
       if (fragments.length === 0 && conditions.length === 0) {
         push("fragments", "需要設定碎片或條件其中一個（否則玩家永遠無法通過）");
       }
-      fragments.forEach((f, i) => {
-        if (!f.sourceItemId) {
-          push(`fragments[${i}].sourceItemId`, `碎片 ${i + 1} 未綁定道具，玩家將永遠無法收集`);
-        }
-      });
+      if (!demoMode) {
+        fragments.forEach((f, i) => {
+          if (!f.sourceItemId) {
+            push(
+              `fragments[${i}].sourceItemId`,
+              `碎片 ${i + 1} 未綁定道具，玩家將永遠無法收集（或開啟示範模式）`,
+            );
+          }
+        });
+      }
       break;
     }
 
