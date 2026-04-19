@@ -77,10 +77,10 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
       return { level: "far", message: "答案不正確" };
     }
 
-    const normalizedUser = userAnswer.toLowerCase().trim();
+    const normalizedUser = normalizeAnswer(userAnswer, !!config.caseSensitive);
 
     for (const correct of correctAnswers) {
-      const normalizedCorrect = correct.toLowerCase().trim();
+      const normalizedCorrect = normalizeAnswer(correct, !!config.caseSensitive);
 
       if (normalizedUser.length === normalizedCorrect.length) {
         let matchCount = 0;
