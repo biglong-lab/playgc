@@ -76,12 +76,6 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
-declare module "http" {
-  interface IncomingMessage {
-    rawBody: unknown;
-  }
-}
-
 const allowedOrigins: string[] = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
   : ["http://localhost:3333", "http://localhost:3000"];
