@@ -1,7 +1,7 @@
 /**
  * ButtonPage 測試 — 驗證 PR5 修復：空陣列 fallback + 按鈕分支
  */
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ButtonPage from "../ButtonPage";
 import type { ButtonConfig } from "@shared/schema";
