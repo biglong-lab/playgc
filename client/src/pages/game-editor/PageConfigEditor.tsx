@@ -296,6 +296,96 @@ export default function PageConfigEditor({
             />
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">輸入類型</label>
+              <select
+                value={(config.inputType as string) || "text"}
+                onChange={(e) => updateField("inputType", e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                data-testid="config-input-type"
+              >
+                <option value="text">文字</option>
+                <option value="number">數字</option>
+                <option value="password">密碼</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">最大嘗試次數</label>
+              <Input
+                type="number"
+                value={(config.maxAttempts as number | undefined) ?? 5}
+                onChange={(e) => {
+                  const n = parseInt(e.target.value, 10);
+                  updateField("maxAttempts", Number.isFinite(n) && n > 0 ? n : 5);
+                }}
+                min={1}
+                max={20}
+                className="h-9"
+                data-testid="config-max-attempts"
+              />
+            </div>
+            <div className="flex items-center justify-between border rounded p-2">
+              <span className="text-xs">大小寫敏感</span>
+              <Switch
+                checked={config.caseSensitive === true}
+                onCheckedChange={(v) => updateField("caseSensitive", v)}
+              />
+            </div>
+            <div className="flex items-center justify-between border rounded p-2">
+              <span className="text-xs">漸進式回饋</span>
+              <Switch
+                checked={config.gradedFeedback === true}
+                onCheckedChange={(v) => updateField("gradedFeedback", v)}
+              />
+            </div>
+            <div className="flex items-center justify-between border rounded p-2">
+              <span className="text-xs">顯示嘗試紀錄</span>
+              <Switch
+                checked={config.showAttemptHistory === true}
+                onCheckedChange={(v) => updateField("showAttemptHistory", v)}
+              />
+            </div>
+            <div className="flex items-center justify-between border rounded p-2">
+              <span className="text-xs">答題後顯示解釋</span>
+              <Switch
+                checked={config.showExplanation === true}
+                onCheckedChange={(v) => updateField("showExplanation", v)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">提示（答錯時顯示，多個用逗號分隔）</label>
+            <Input
+              value={((config.hints as string[] | undefined) || []).join(", ")}
+              onChange={(e) => {
+                const hints = e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
+                updateField("hints", hints.length > 0 ? hints : undefined);
+                // 同步寫入 hint（單數）保持向後相容
+                if (hints.length > 0) updateField("hint", hints[0]);
+              }}
+              placeholder="第一次提示, 第二次提示, 第三次提示"
+              data-testid="config-hints"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              依答錯次數逐步顯示；也可只填一個提示
+            </p>
+          </div>
+
+          {config.showExplanation === true && (
+            <div>
+              <label className="text-sm font-medium mb-2 block">答題後的解釋</label>
+              <Textarea
+                value={(config.explanation as string) || ""}
+                onChange={(e) => updateField("explanation", e.target.value)}
+                placeholder="說明正確答案的由來"
+                rows={2}
+                data-testid="config-explanation"
+              />
+            </div>
+          )}
+
           {/* AI 語意評分設定 */}
           <div className="border border-border rounded-lg p-4 space-y-4">
             <div className="flex items-center justify-between">
