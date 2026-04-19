@@ -151,6 +151,27 @@ export const sessionStorageMethods = {
     return db.select().from(playerProgress).where(eq(playerProgress.sessionId, sessionId));
   },
 
+  /**
+   * 取得單一玩家在指定工作階段的進度（多人併發熱路徑）
+   * 用 idx_player_progress_session_user 複合 index 直接定位，避免撈整個 session 的全部玩家
+   */
+  async getPlayerProgressByUser(
+    sessionId: string,
+    userId: string,
+  ): Promise<PlayerProgress | undefined> {
+    const rows = await db
+      .select()
+      .from(playerProgress)
+      .where(
+        and(
+          eq(playerProgress.sessionId, sessionId),
+          eq(playerProgress.userId, userId),
+        ),
+      )
+      .limit(1);
+    return rows[0];
+  },
+
   /** 建立玩家進度記錄 */
   async createPlayerProgress(progress: InsertPlayerProgress): Promise<PlayerProgress> {
     const [newProgress] = await db.insert(playerProgress).values(progress).returning();
