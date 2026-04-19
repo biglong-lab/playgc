@@ -197,6 +197,52 @@ export default function ButtonConfigEditor({
           </Button>
         </div>
       </div>
+
+      {/* 進階選項 */}
+      <div className="border rounded-lg p-3 space-y-3 bg-accent/5">
+        <h4 className="text-sm font-medium flex items-center gap-2">
+          <Clock className="w-4 h-4" /> 時限與排序
+        </h4>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">時限（秒，0=無）</label>
+            <Input
+              type="number"
+              value={(config.timeLimit as number | undefined) ?? 0}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10);
+                updateField("timeLimit", Number.isFinite(n) && n >= 0 ? n : 0);
+              }}
+              min={0}
+              className="h-9"
+              data-testid="config-button-time-limit"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">時間到預設選項</label>
+            <Input
+              type="number"
+              value={(config.defaultChoice as number | undefined) ?? 0}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10);
+                updateField("defaultChoice", Number.isFinite(n) && n >= 0 ? n : 0);
+              }}
+              min={0}
+              max={(((config.buttons as ButtonItem[]) || []).length || 1) - 1}
+              className="h-9"
+              data-testid="config-button-default-choice"
+            />
+            <p className="text-[10px] text-muted-foreground mt-0.5">第 0 個為第一顆</p>
+          </div>
+          <div className="flex items-center justify-between border rounded p-2 col-span-2">
+            <span className="text-xs">隨機按鈕順序</span>
+            <Switch
+              checked={config.randomizeOrder === true}
+              onCheckedChange={(v) => updateField("randomizeOrder", v)}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
