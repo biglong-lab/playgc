@@ -83,6 +83,7 @@ export default function TimeBombEditor({ config, updateField }: EditorProps) {
                   <SelectItem value="tap">快速點擊</SelectItem>
                   <SelectItem value="input">輸入答案</SelectItem>
                   <SelectItem value="choice">選擇題</SelectItem>
+                  <SelectItem value="swipe">方向滑動</SelectItem>
                 </SelectContent>
               </Select>
               <Input
