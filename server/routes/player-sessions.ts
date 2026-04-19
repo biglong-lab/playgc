@@ -193,6 +193,7 @@ export function registerPlayerSessionRoutes(app: Express) {
   app.patch(
     "/api/sessions/:id/progress",
     isAuthenticated,
+    hotPathLimiter,
     async (req: AuthenticatedRequest, res) => {
       try {
         const sessionId = req.params.id;
