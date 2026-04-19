@@ -249,8 +249,20 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
         isAnimating ? "scale-95" : ""
       } ${
         isCorrect === true ? "ring-2 ring-success" :
-        isCorrect === false ? "ring-2 ring-destructive" : ""
+        isCorrect === false ? "ring-2 ring-destructive tv-shake" : ""
       }`}>
+        <style>{`
+          @keyframes tv-shake-kf {
+            0%, 100% { transform: translateX(0); }
+            15% { transform: translateX(-8px); }
+            30% { transform: translateX(8px); }
+            45% { transform: translateX(-6px); }
+            60% { transform: translateX(6px); }
+            75% { transform: translateX(-3px); }
+            90% { transform: translateX(3px); }
+          }
+          .tv-shake { animation: tv-shake-kf 0.4s ease-in-out; }
+        `}</style>
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <Badge variant="outline" className="font-number">
