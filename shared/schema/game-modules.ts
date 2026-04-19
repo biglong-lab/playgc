@@ -206,8 +206,15 @@ const escapeRoomCountdown: GameModule = {
       title: "收集逃脫碎片",
       config: {
         instruction: "收集分散在房間各處的 3 塊鑰匙碎片",
-        requiredFragments: 3,
-        fragments: ["鑰匙碎片A", "鑰匙碎片B", "鑰匙碎片C"],
+        demoMode: true,
+        verificationMode: "all_collected",
+        fragmentType: "custom",
+        fragmentCount: 3,
+        fragments: [
+          { id: "f1", label: "鑰匙碎片A", value: "A", order: 1 },
+          { id: "f2", label: "鑰匙碎片B", value: "B", order: 2 },
+          { id: "f3", label: "鑰匙碎片C", value: "C", order: 3 },
+        ],
       },
     },
     {
