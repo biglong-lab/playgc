@@ -546,6 +546,25 @@ export function QrScanEditor({ config, updateField, gameId, page }: BaseEditorPr
   return (
     <div className="space-y-4">
       <div>
+        <label className="text-sm font-medium mb-2 block">標題</label>
+        <Input
+          value={(config.title as string) || ""}
+          onChange={(e) => updateField("title", e.target.value)}
+          placeholder="掃描 QR Code"
+          data-testid="config-qr-title"
+        />
+      </div>
+      <div>
+        <label className="text-sm font-medium mb-2 block">描述（可選）</label>
+        <Textarea
+          value={(config.description as string) || ""}
+          onChange={(e) => updateField("description", e.target.value)}
+          placeholder="此 QR 的故事背景或提示"
+          rows={2}
+          data-testid="config-qr-description"
+        />
+      </div>
+      <div>
         <label className="text-sm font-medium mb-2 block">驗證代碼 (主要)</label>
         <Input
           value={(config.primaryCode as string) || (config.qrCodeId as string) || ""}
