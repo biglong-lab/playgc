@@ -335,6 +335,13 @@ export interface FragmentCollectionConfig {
     points?: number;
     unlockContent?: string;
   };
+  /**
+   * 示範模式（demo mode）：純劇情展示，不要求玩家實際持有道具。
+   * - 所有 fragment 預設已收集
+   * - UI 隱藏密碼輸入框，按一下直接通過
+   * - 供模組範本 / 劇情 demo 使用，上線正式遊戲應關閉此模式
+   */
+  demoMode?: boolean;
 }
 
 // Legacy support - 保留舊版接口兼容
