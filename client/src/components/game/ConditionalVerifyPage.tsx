@@ -61,8 +61,36 @@ interface ConditionalVerifyPageProps {
   visitedLocations?: string[];
 }
 
-export default function ConditionalVerifyPage({ 
-  config, 
+/**
+ * 相容舊版 fragments 為字串陣列 `["碎片A", "碎片B"]` 的模組範本。
+ * 自動轉為 FragmentConfig 物件陣列（無 sourceItemId → 示範模式，不要求真實道具）。
+ */
+function normalizeFragments(raw: unknown): FragmentConfig[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((item, i) => {
+    if (typeof item === "string") {
+      return {
+        id: `demo-${i + 1}`,
+        label: item,
+        value: String(i + 1),
+        order: i + 1,
+        // 無 sourceItemId → 示範模式（見下方 isDemoMode）
+      };
+    }
+    // 物件格式直接用，補齊缺少的欄位
+    const obj = item as Partial<FragmentConfig>;
+    return {
+      id: obj.id || `f-${i + 1}`,
+      label: obj.label || `碎片 ${i + 1}`,
+      value: obj.value ?? String(i + 1),
+      sourceItemId: obj.sourceItemId,
+      order: obj.order ?? i + 1,
+    };
+  });
+}
+
+export default function ConditionalVerifyPage({
+  config,
   onComplete,
   variables,
   inventory = [],
@@ -74,12 +102,15 @@ export default function ConditionalVerifyPage({
   const [isChecking, setIsChecking] = useState(false);
   const [allPassed, setAllPassed] = useState(false);
   const [hasShownToast, setHasShownToast] = useState(false);
-  
+
   const [inputCode, setInputCode] = useState("");
   const [codeError, setCodeError] = useState(false);
 
-  const isFragmentMode = config.fragments && config.fragments.length > 0;
-  const fragments = config.fragments || [];
+  const fragments = useMemo(() => normalizeFragments(config.fragments), [config.fragments]);
+  const isFragmentMode = fragments.length > 0;
+  // 示範模式：所有 fragment 都沒綁 sourceItemId（模組範本使用字串陣列的情境）
+  // 此時視為「劇情展示」，所有碎片預設已收集，讓玩家能順利通關
+  const isDemoMode = isFragmentMode && fragments.every((f) => !f.sourceItemId);
   const targetCode = config.targetCode || fragments.map(f => f.value).join('');
   const verificationMode = config.verificationMode || 'order_matters';
 
