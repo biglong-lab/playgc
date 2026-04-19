@@ -186,15 +186,22 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
               <h2 className="text-lg font-display font-bold">
                 {config?.title || "知識測驗"}
               </h2>
-              <span className="text-sm text-muted-foreground">
-                {currentQuestionIndex + 1} / {questions.length}
-              </span>
+              <div className="flex items-center gap-2">
+                {retryRound > 0 && (
+                  <span className="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-600 font-medium">
+                    重考 #{retryRound}
+                  </span>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  第 {currentQuestionIndex + 1} 題（本輪 {orderCursor + 1}/{questionOrder.length}）
+                </span>
+              </div>
             </div>
 
             <div className="w-full bg-muted rounded-full h-2 mb-6">
-              <div 
+              <div
                 className="bg-primary h-2 rounded-full transition-all"
-                style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+                style={{ width: `${((orderCursor + 1) / Math.max(1, questionOrder.length)) * 100}%` }}
               />
             </div>
 
