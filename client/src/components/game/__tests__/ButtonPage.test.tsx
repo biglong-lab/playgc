@@ -59,4 +59,70 @@ describe("ButtonPage — 分支路由（nextPageId）", () => {
       "page-B",
     );
   });
+
+  it("按鈕 items 會以 reward.items 傳遞", async () => {
+    const { onComplete } = renderWith({
+      prompt: "領取物品",
+      buttons: [
+        { text: "拿鑰匙", items: ["key-1"], nextPageId: "next" },
+      ],
+    });
+    fireEvent.click(screen.getByText("拿鑰匙"));
+    await new Promise((r) => setTimeout(r, 350));
+    expect(onComplete).toHaveBeenCalledWith(
+      { items: ["key-1"] },
+      "next",
+    );
+  });
+});
+
+describe("ButtonPage — PR6 randomizeOrder + defaultChoice", () => {
+  beforeEach(() => {
+    // 固定 Math.random 讓測試可重現（洗牌結果固定）
+    vi.spyOn(Math, "random").mockReturnValue(0.1);
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("randomizeOrder 不改變 defaultChoice 指向的按鈕內容（_originalIndex 對應）", async () => {
+    const { onComplete } = renderWith({
+      prompt: "選擇",
+      buttons: [
+        { text: "A（admin 設為預設）", nextPageId: "page-A", rewardPoints: 5 },
+        { text: "B", nextPageId: "page-B", rewardPoints: 10 },
+        { text: "C", nextPageId: "page-C", rewardPoints: 15 },
+      ],
+      randomizeOrder: true,
+      defaultChoice: 0, // admin 原意：時間到選第 0 個（A）
+      timeLimit: 1,
+    });
+
+    // 等 timer 過期 + setTimeout(300) 動畫
+    await new Promise((r) => setTimeout(r, 1600));
+
+    // 即使洗牌後 A 位置不一，仍應走 A 的 nextPageId/rewardPoints
+    expect(onComplete).toHaveBeenCalledWith(
+      { points: 5 },
+      "page-A",
+    );
+  });
+
+  it("defaultChoice 未設時預設第 0 個原按鈕", async () => {
+    const { onComplete } = renderWith({
+      prompt: "選擇",
+      buttons: [
+        { text: "第一個（預設）", nextPageId: "p1" },
+        { text: "第二個", nextPageId: "p2" },
+      ],
+      timeLimit: 1,
+    });
+
+    await new Promise((r) => setTimeout(r, 1600));
+
+    expect(onComplete).toHaveBeenCalledWith(
+      undefined,
+      "p1",
+    );
+  });
 });
