@@ -117,35 +117,26 @@ app.use(cookieParser());
 
 // === 多人併發 Rate Limit 策略（目標：撐住 500 人同時玩）===
 //
-// 關鍵設計：
-// 1. 同場域 500 人共用一個公網 IP → 不能純用 IP 限速
-//    - keyGenerator 優先用 user ID（已登入），再 fallback IP
-// 2. 健康檢查 / 靜態資源不套用 rate limit
-// 3. 玩遊戲熱路徑（progress、session、chat）特別寬鬆
+// 分層設計：
+// 1. 全域（本層）：IP-based 僅防 DDoS / 爬蟲，限制放寬
+//    - 同場域 Wi-Fi 500 人共用一個公網 IP → 必須放得很寬
+//    - 假設每人每 15 分鐘約 200 次 API（遊戲中 progress/chat 等）
+//    - 500 人 × 200 次 = 100,000 次 → 上限設 50000 留安全邊際
+//    - 真正的業務邏輯防刷改到 route 層用 user ID 限速
+// 2. auth endpoints（下面單獨設定）：防密碼爆破，嚴格
+// 3. 未來在 route 層補 per-user limit（progress / chat 等熱路徑）
 
-// 已登入玩家：每 15 分鐘 1500 次（夠一場遊戲用）
-// 未登入 / 未知：每 15 分鐘 150 次（防爬蟲）
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: (req) => {
-    // 已登入 user 給寬鬆額度
-    const userId = (req as any).user?.claims?.sub || (req as any).user?.id;
-    return userId ? 1500 : 150;
-  },
+  max: Number(process.env.RATE_LIMIT_MAX) || 50000, // 放寬以支援同場域多人共 IP
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => {
-    // 優先用 userId 當 key（避免同網路 500 人共用 IP 時互相擠爆）
-    const userId = (req as any).user?.claims?.sub || (req as any).user?.id;
-    return userId ? `u:${userId}` : `ip:${req.ip}`;
-  },
   // 健康檢查 / admin 不計入
   skip: (req) => req.path === "/api/health" || req.path.startsWith("/api/admin/"),
-  message: { message: "請求次數過多，請稍後再試" },
+  message: { message: "請求次數過多，請稍後再試（若為場域多人同時使用，請聯繫管理員）" },
 });
 
-// 登入端點嚴格速率限制：每個 IP 每 15 分鐘最多 30 次（放寬自 10）
-// 原因：同場域多玩家可能一起首次登入，10 次會卡
+// 登入端點：每 IP 每 15 分鐘 30 次（放寬自 10，同場域多人首次登入）
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 30,
