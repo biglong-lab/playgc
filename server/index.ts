@@ -3,10 +3,66 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+import cluster from "cluster";
+import os from "os";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { startBattleScheduler } from "./services/battle-scheduler";
+
+// =============================================================================
+// Cluster 模式（多核心利用）
+// =============================================================================
+// 啟用方式：設定環境變數 CLUSTER_WORKERS
+//   CLUSTER_WORKERS=0       預設，單 process（現況）
+//   CLUSTER_WORKERS=4       fork 4 個 worker（4 核心主機全榨）
+//   CLUSTER_WORKERS=auto    依 os.cpus() 自動決定
+// =============================================================================
+function resolveWorkerCount(): number {
+  const raw = process.env.CLUSTER_WORKERS;
+  if (!raw || raw === "0") return 0;
+  if (raw === "auto") return os.cpus().length;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+const CLUSTER_WORKERS = resolveWorkerCount();
+
+// Primary process：fork workers 後就結束（不跑 Express）
+// 注意：WebSocket 連線由 Node cluster 自動分配到不同 worker，
+// 同一條 WS connection 會固定在同一 worker（TCP 層 round-robin）
+// 所以 session/team/match 房間廣播在單 worker 內仍可運作，無需 Redis
+if (CLUSTER_WORKERS > 0 && cluster.isPrimary) {
+  console.log(`[cluster] Primary ${process.pid} 啟動，fork ${CLUSTER_WORKERS} 個 worker`);
+
+  // 排程器只在 primary 跑一份（避免每個 worker 都重複執行）
+  startBattleScheduler();
+
+  for (let i = 0; i < CLUSTER_WORKERS; i++) {
+    cluster.fork();
+  }
+
+  // Worker 異常退出 → 自動重啟
+  cluster.on("exit", (worker, code, signal) => {
+    console.log(
+      `[cluster] Worker ${worker.process.pid} 退出 (code=${code}, signal=${signal})，重新 fork`,
+    );
+    cluster.fork();
+  });
+
+  // Primary 不進入 Express 流程
+  // 使用 process.exit 會導致 worker 一起死，所以用阻塞式等待
+  // cluster module 會自動保持 primary alive
+} else {
+  // 以下是 worker（或單 process 模式）跑的程式碼
+  startApp();
+}
+
+function startApp() {
+  const workerId = cluster.worker?.id ?? "single";
+  if (CLUSTER_WORKERS > 0) {
+    console.log(`[cluster] Worker ${process.pid} (id=${workerId}) 啟動`);
+  }
 
 const app = express();
 
