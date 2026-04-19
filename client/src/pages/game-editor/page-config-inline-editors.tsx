@@ -399,6 +399,54 @@ export function GpsMissionEditor({ config, updateField, gameId }: BaseEditorProp
           data-testid="config-gps-instruction"
         />
       </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">接近提示</span>
+          <Switch
+            checked={config.hotZoneHints !== false}
+            onCheckedChange={(v) => updateField("hotZoneHints", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">接近音效</span>
+          <Switch
+            checked={config.proximitySound === true}
+            onCheckedChange={(v) => updateField("proximitySound", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">顯示地圖</span>
+          <Switch
+            checked={config.showMap === true}
+            onCheckedChange={(v) => updateField("showMap", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">啟用 QR Fallback</span>
+          <Switch
+            checked={config.qrFallback === true}
+            onCheckedChange={(v) => updateField("qrFallback", v)}
+          />
+        </div>
+      </div>
+
+      {config.qrFallback === true && (
+        <div>
+          <label className="text-sm font-medium mb-2 block">備用 QR 代碼</label>
+          <Input
+            value={(config.fallbackQrCode as string) || ""}
+            onChange={(e) => updateField("fallbackQrCode", e.target.value)}
+            placeholder="GPS 不可用時玩家輸入此代碼通關"
+            className="font-mono"
+            data-testid="config-gps-fallback"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            玩家訊號差時可改用此代碼手動通關（建議貼在現場）
+          </p>
+        </div>
+      )}
+
       <RewardsSection config={config} updateField={updateField} gameId={gameId} />
     </div>
   );
