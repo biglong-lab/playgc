@@ -66,9 +66,12 @@ const birthdayPartyEscape: GameModule = {
       pageType: "time_bomb",
       title: "吹蠟燭倒數",
       config: {
-        instruction: "剪斷正確的線，讓蠟燭同時熄滅（代表一起吹熄）",
+        instruction: "時間內完成吹蠟燭挑戰，一起把蠟燭熄滅！",
         timeLimit: 30,
-        correctSequence: ["pink", "blue", "yellow"],
+        tasks: [
+          { type: "tap", targetCount: 20, question: "用力吹氣（快速點擊 20 下）" },
+          { type: "swipe", question: "往左滑動熄滅最後一根蠟燭", swipeDirection: "left" },
+        ],
       },
     },
     {
