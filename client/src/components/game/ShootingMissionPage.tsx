@@ -409,18 +409,42 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
           
           <div className="absolute inset-[45%] rounded-full bg-destructive border-2 border-white shadow-lg" />
 
-          {hits.slice(-5).map((hit, index) => (
-            <div
-              key={index}
-              className="absolute w-3 h-3 rounded-full bg-yellow-400 border-2 border-white shadow-lg animate-pulse"
-              style={{
-                left: `${hit.position.x}%`,
-                top: `${hit.position.y}%`,
-                transform: "translate(-50%, -50%)",
-              }}
-              data-testid={`hit-marker-${index}`}
-            />
-          ))}
+          {hits.map((hit, index) => {
+            // 依區域上色：靶心紅、內圈橙、外圈黃
+            const color =
+              hit.zone === "bullseye" || hit.zone === "center"
+                ? "bg-red-500"
+                : hit.zone === "inner"
+                  ? "bg-orange-400"
+                  : "bg-yellow-400";
+            const isLatest = index === hits.length - 1;
+            return (
+              <div
+                key={index}
+                className={`absolute w-4 h-4 rounded-full ${color} border-2 border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white ${
+                  isLatest ? "animate-ping-once" : ""
+                }`}
+                style={{
+                  left: `${hit.position.x}%`,
+                  top: `${hit.position.y}%`,
+                  transform: "translate(-50%, -50%)",
+                  zIndex: index,
+                }}
+                data-testid={`hit-marker-${index}`}
+                title={`第 ${index + 1} 發 · ${hit.score} 分`}
+              >
+                {index + 1}
+              </div>
+            );
+          })}
+          <style>{`
+            @keyframes ping-once-kf {
+              0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.7); transform: translate(-50%, -50%) scale(1); }
+              60% { box-shadow: 0 0 0 18px rgba(255,255,255,0); transform: translate(-50%, -50%) scale(1.4); }
+              100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); transform: translate(-50%, -50%) scale(1); }
+            }
+            .animate-ping-once { animation: ping-once-kf 0.7s ease-out; }
+          `}</style>
         </div>
       </div>
 
