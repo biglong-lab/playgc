@@ -110,11 +110,16 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
     }
 
     // Rate limit：每次 submit 鎖 1.2 秒防暴力破解
+    submittingRef.current = true;
     setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 1200);
+    setTimeout(() => {
+      submittingRef.current = false;
+      setIsSubmitting(false);
+    }, 1200);
 
     // 比對前同時 trim + toUpperCase（原本只 toUpperCase，combination 有前後空白會永遠失敗）
     if (normalizeAnswer(enteredCode, false) === normalizeAnswer(config.combination, false)) {
+      resolvedRef.current = true;
       setIsUnlocked(true);
       toast({
         title: config.successMessage || "解鎖成功!",
