@@ -106,7 +106,10 @@ export default function MotionChallengeEditor({ config, updateField }: EditorPro
         <Input
           type="number"
           value={config.rewardPoints || 15}
-          onChange={(e) => updateField("rewardPoints", parseInt(e.target.value) || 15)}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            updateField("rewardPoints", Number.isFinite(n) ? n : 15);
+          }}
           min={0}
           data-testid="config-motion-points"
         />
