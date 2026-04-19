@@ -9,6 +9,7 @@ import {
 import { ObjectPermission } from "../objectAcl";
 import { insertGameSessionSchema } from "@shared/schema";
 import { z } from "zod";
+import { hotPathLimiter, chatLimiter } from "../utils/rate-limiters";
 
 export function registerPlayerSessionRoutes(app: Express) {
   // ==========================================================================
