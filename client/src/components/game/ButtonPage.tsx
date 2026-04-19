@@ -63,7 +63,9 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
   };
 
   const handleButtonClick = (button: ButtonConfig["buttons"][0], index: number) => {
-    if (isSubmitting) return;
+    // ref 讀最新值，避免 stale closure（連點同顆按鈕 / timer 與點擊競態）
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     setSelectedIndex(index);
 
@@ -75,7 +77,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
       if (button.items && button.items.length > 0) {
         reward.items = button.items;
       }
-      
+
       const nextPage = button.nextPageId === "_end" ? "_end" : button.nextPageId;
       onComplete(Object.keys(reward).length > 0 ? reward : undefined, nextPage);
     }, 300);
