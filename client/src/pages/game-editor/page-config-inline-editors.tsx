@@ -651,29 +651,52 @@ export function ChoiceVerifyEditor({ config, updateField }: BaseEditorProps) {
         <label className="text-sm font-medium mb-2 block">選項設定</label>
         <div className="space-y-2">
           {options.map((opt, i) => (
-            <div key={i} className="flex gap-2 items-center">
+            <div key={i} className="space-y-1 border rounded p-2">
+              <div className="flex gap-2 items-center">
+                <Input
+                  value={opt.text || ""}
+                  onChange={(e) => {
+                    const newOptions = [...options];
+                    newOptions[i] = { ...newOptions[i], text: e.target.value };
+                    updateField("options", newOptions);
+                  }}
+                  placeholder={`選項 ${i + 1}`}
+                  className="flex-1"
+                  data-testid={`config-option-${i}`}
+                />
+                <Badge
+                  variant={opt.correct ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    const newOptions = [...options];
+                    newOptions[i] = { ...newOptions[i], correct: !newOptions[i].correct };
+                    updateField("options", newOptions);
+                  }}
+                >
+                  {opt.correct ? "正確" : "錯誤"}
+                </Badge>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7"
+                  onClick={() => {
+                    const newOptions = options.filter((_, idx) => idx !== i);
+                    updateField("options", newOptions);
+                  }}
+                >
+                  <XIcon className="w-3 h-3" />
+                </Button>
+              </div>
               <Input
-                value={opt.text || ""}
+                value={(opt as ChoiceOption & { explanation?: string }).explanation || ""}
                 onChange={(e) => {
                   const newOptions = [...options];
-                  newOptions[i] = { ...newOptions[i], text: e.target.value };
+                  newOptions[i] = { ...newOptions[i], explanation: e.target.value };
                   updateField("options", newOptions);
                 }}
-                placeholder={`選項 ${i + 1}`}
-                className="flex-1"
-                data-testid={`config-option-${i}`}
+                placeholder="選項解釋（玩家選中時顯示，可選）"
+                className="h-8 text-xs"
               />
-              <Badge
-                variant={opt.correct ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => {
-                  const newOptions = [...options];
-                  newOptions[i] = { ...newOptions[i], correct: !newOptions[i].correct };
-                  updateField("options", newOptions);
-                }}
-              >
-                {opt.correct ? "正確" : "錯誤"}
-              </Badge>
             </div>
           ))}
           <Button
@@ -689,6 +712,45 @@ export function ChoiceVerifyEditor({ config, updateField }: BaseEditorProps) {
           </Button>
         </div>
       </div>
+
+      {/* 進階選項 */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">選項隨機順序</span>
+          <Switch
+            checked={config.randomizeOptions === true}
+            onCheckedChange={(v) => updateField("randomizeOptions", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">多選模式</span>
+          <Switch
+            checked={config.multiple === true}
+            onCheckedChange={(v) => updateField("multiple", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">顯示解釋</span>
+          <Switch
+            checked={config.showExplanation === true}
+            onCheckedChange={(v) => updateField("showExplanation", v)}
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">時限（秒，0=無）</label>
+          <Input
+            type="number"
+            value={(config.timeLimit as number | undefined) ?? 0}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("timeLimit", Number.isFinite(n) && n >= 0 ? n : 0);
+            }}
+            min={0}
+            className="h-8"
+          />
+        </div>
+      </div>
+
       <LocationSettingsSection config={config} updateField={updateField} />
     </div>
   );
