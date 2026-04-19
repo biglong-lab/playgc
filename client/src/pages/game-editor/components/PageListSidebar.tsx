@@ -121,9 +121,17 @@ export default function PageListSidebar({
                       <typeInfo.icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {typeInfo.label}
-                      </p>
+                      <div className="flex items-center gap-1">
+                        <p className="text-sm font-medium truncate">
+                          {typeInfo.label}
+                        </p>
+                        {(issuesByPageId.get(page.id)?.errors ?? 0) > 0 && (
+                          <AlertTriangle
+                            className="w-3 h-3 text-destructive shrink-0"
+                            aria-label={`${issuesByPageId.get(page.id)?.errors} 個設定錯誤`}
+                          />
+                        )}
+                      </div>
                       <p className="text-xs text-muted-foreground font-mono">
                         #{index + 1}
                       </p>
