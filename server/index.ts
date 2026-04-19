@@ -312,8 +312,11 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
-      // 啟動水彈對戰通知排程器
-      startBattleScheduler();
+      // 排程器：cluster 模式已由 primary 執行，此處只在單 process 模式啟動
+      if (CLUSTER_WORKERS === 0) {
+        startBattleScheduler();
+      }
     },
   );
 })();
+} // ← startApp() 結尾
