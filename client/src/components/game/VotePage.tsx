@@ -169,6 +169,9 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
 
       // 投完票後一律顯示結果（原本只有 config.showResults 才顯示，導致使用者不知道投了什麼）
       setShowResults(true);
+
+      // 結果浮現後將焦點移至繼續鈕（讓鍵盤/輔助技術使用者可直接 Enter 前進）
+      setTimeout(() => continueButtonRef.current?.focus(), 100);
     }, 500);
   };
 
