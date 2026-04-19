@@ -348,7 +348,11 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
             <Input
               type={inputType}
               value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
+              onChange={(e) => {
+                setAnswer(e.target.value);
+                // 使用者一開始修改 → 立即清錯誤狀態，讓重試不被 disabled 卡住
+                if (isCorrect === false) setIsCorrect(null);
+              }}
               placeholder={inputType === "number" ? "輸入數字..." : "輸入你的答案..."}
               // IME composing 中不觸發（中日韓輸入法確認選字時按 Enter）
               onKeyDown={(e) => {
@@ -356,7 +360,8 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
                 if ((e.nativeEvent as KeyboardEvent).isComposing) return;
                 if (!isChecking) checkAnswer();
               }}
-              disabled={isCorrect !== null || isChecking}
+              // 答對或評分中才 disabled；答錯不 disabled，允許立即重試
+              disabled={isCorrect === true || isChecking}
               className="text-center text-lg h-12"
               inputMode={inputType === "number" ? "numeric" : "text"}
               {...NO_AUTO_INPUT_PROPS}
