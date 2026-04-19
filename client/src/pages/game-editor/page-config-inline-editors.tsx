@@ -126,6 +126,92 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
           </div>
         )}
       </div>
+
+      {/* 視覺 & 效果 */}
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">字體大小</label>
+          <Select
+            value={(config.fontSize as string) || "medium"}
+            onValueChange={(v) => updateField("fontSize", v)}
+          >
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="small">小</SelectItem>
+              <SelectItem value="medium">中</SelectItem>
+              <SelectItem value="large">大</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">進場動畫</label>
+          <Select
+            value={(config.animation as string) || "fade_in"}
+            onValueChange={(v) => updateField("animation", v)}
+          >
+            <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="fade_in">淡入</SelectItem>
+              <SelectItem value="slide_in">滑入</SelectItem>
+              <SelectItem value="none">無動畫</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">時限（秒，0=無）</label>
+          <Input
+            type="number"
+            value={(config.timeLimit as number | undefined) ?? 0}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("timeLimit", Number.isFinite(n) && n >= 0 ? n : 0);
+            }}
+            min={0}
+            className="h-9"
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">打字機效果</span>
+          <Switch
+            checked={config.typewriterEffect === true}
+            onCheckedChange={(v) => updateField("typewriterEffect", v)}
+          />
+        </div>
+      </div>
+      {config.typewriterEffect === true && (
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">打字速度 (ms/字)</label>
+          <Input
+            type="number"
+            value={(config.typewriterSpeed as number | undefined) ?? 30}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("typewriterSpeed", Number.isFinite(n) && n > 0 ? n : 30);
+            }}
+            min={5}
+            max={500}
+            className="h-9"
+          />
+        </div>
+      )}
+      <div>
+        <label className="text-xs text-muted-foreground mb-1 block">
+          高亮關鍵字（用逗號分隔）
+        </label>
+        <Input
+          value={((config.highlightKeywords as string[] | undefined) || []).join(", ")}
+          onChange={(e) => {
+            const kws = e.target.value
+              .split(/[,，]/)
+              .map((s) => s.trim())
+              .filter(Boolean);
+            updateField("highlightKeywords", kws.length > 0 ? kws : undefined);
+          }}
+          placeholder="例：任務, 賈村, 競技"
+          className="h-9"
+        />
+      </div>
+
       <LocationSettingsSection config={config} updateField={updateField} />
     </div>
   );
