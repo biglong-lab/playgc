@@ -213,6 +213,8 @@ export function useQrScanner(
         : (config.rewardItems || config.reward?.items);
 
       setTimeout(() => {
+        if (finishedRef.current) return;
+        finishedRef.current = true;
         onComplete({ points: config.rewardPoints || config.reward?.points || 10, items: grantItems }, config.nextPageId);
       }, 1500);
     } else {
@@ -220,7 +222,11 @@ export function useQrScanner(
       const primaryCode = config.primaryCode || config.expectedCode || config.qrCodeId || "";
       const debugHint = primaryCode ? `（提示：代碼格式類似 "${primaryCode.substring(0, 3)}..."）` : "";
       toast({ title: "驗證失敗", description: `輸入的代碼不正確${debugHint}，請確認後重試`, variant: "destructive" });
-      setTimeout(() => { setMode("instruction"); setIsProcessing(false); }, 2000);
+      setTimeout(() => {
+        setMode("instruction");
+        isProcessingRef.current = false;
+        setIsProcessing(false);
+      }, 2000);
     }
   };
 
