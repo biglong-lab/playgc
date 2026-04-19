@@ -184,8 +184,16 @@ const magicAcademyEntrance: GameModule = {
       title: "收集四元素",
       config: {
         instruction: "在學院各處收集火、風、水、土四大元素碎片",
-        requiredFragments: 4,
-        fragments: ["火之結晶", "風之羽毛", "水之淚滴", "土之礦石"],
+        demoMode: true,
+        verificationMode: "all_collected",
+        fragmentType: "custom",
+        fragmentCount: 4,
+        fragments: [
+          { id: "fire", label: "火之結晶", value: "1", order: 1 },
+          { id: "wind", label: "風之羽毛", value: "2", order: 2 },
+          { id: "water", label: "水之淚滴", value: "3", order: 3 },
+          { id: "earth", label: "土之礦石", value: "4", order: 4 },
+        ],
       },
     },
     {
