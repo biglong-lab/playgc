@@ -349,7 +349,7 @@ export default function PageConfigEditor({
       return <MotionChallengeEditor config={config} updateField={updateField} />;
 
     case "vote":
-      return <VoteEditor config={config} updateField={updateField} />;
+      return <VoteEditor config={config} updateField={updateField} allPages={allPages} />;
 
     case "flow_router":
       return (
