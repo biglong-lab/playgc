@@ -216,7 +216,7 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
       window.removeEventListener("devicemotion", handleMotion);
       window.removeEventListener("deviceorientation", handleOrientation);
     };
-  }, [isStarted, isCompleted, isFailed, challengeType, targetValue, handleComplete]);
+  }, [isStarted, isCompleted, isFailed, challengeType, targetValue, handleComplete, triggerHitFeedback]);
 
   // iOS 13+ 權限請求必須在 user gesture 同步堆疊中觸發
   const startChallenge = async () => {
