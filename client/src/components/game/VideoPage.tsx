@@ -31,7 +31,11 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
   // forceWatch 時預設 autoCompleteOnEnd=true（看完自動前進）
   const autoCompleteOnEnd = config.autoCompleteOnEnd ?? !!config.forceWatch;
 
+  // 防重複 onComplete：rage-click 跳過 / ended + skip 競態
+  const finishedRef = useRef(false);
   const finish = () => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
     onComplete(
       config.rewardPoints ? { points: config.rewardPoints } : undefined,
       config.nextPageId,
