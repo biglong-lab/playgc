@@ -108,9 +108,11 @@ export default function ConditionalVerifyPage({
 
   const fragments = useMemo(() => normalizeFragments(config.fragments), [config.fragments]);
   const isFragmentMode = fragments.length > 0;
-  // 示範模式：所有 fragment 都沒綁 sourceItemId（模組範本使用字串陣列的情境）
-  // 此時視為「劇情展示」，所有碎片預設已收集，讓玩家能順利通關
-  const isDemoMode = isFragmentMode && fragments.every((f) => !f.sourceItemId);
+  // 示範模式：由 admin 明確設定 config.demoMode，或向後相容
+  // 「所有 fragment 都沒綁 sourceItemId」舊資料（模組範本字串陣列）
+  const isDemoMode =
+    isFragmentMode &&
+    (config.demoMode === true || fragments.every((f) => !f.sourceItemId));
   const targetCode = config.targetCode || fragments.map(f => f.value).join('');
   const verificationMode = config.verificationMode || 'order_matters';
 
