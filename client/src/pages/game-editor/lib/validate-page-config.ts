@@ -198,10 +198,113 @@ export function validatePageConfig(page: Page): ValidationIssue[] {
 }
 
 /**
- * 批次驗證遊戲的所有頁面
+ * 跨頁流程完整性檢查：
+ * conditional_verify 要求的 item/score 若在先前 pages 沒被發放，回報 warning。
+ * 這類問題 jiachun-defense-battle 踩過（碎片 2-5 沒 page 發 → 100% 卡關）。
+ */
+export function validateCrossPageFlow(pages: Page[]): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  // 累積「先前 pages 會發的 item ids」set
+  const grantedItems = new Set<string>();
+  let maxScoreBefore = 0;
+
+  // 依 pageOrder 排序
+  const sorted = [...pages].sort((a, b) => a.pageOrder - b.pageOrder);
+
+  for (const page of sorted) {
+    const cfg = (page.config ?? {}) as Record<string, unknown>;
+
+    // 先檢查：若此頁是 conditional_verify，條件要求的 items/score 是否有先前 page 發
+    if (page.pageType === "conditional_verify") {
+      const conditions = (cfg.conditions as Array<{ type?: string; itemId?: unknown; minPoints?: number }>) || [];
+      for (const cond of conditions) {
+        if (cond.type === "has_item" && cond.itemId != null && cond.itemId !== "") {
+          const needed = String(cond.itemId);
+          if (!grantedItems.has(needed)) {
+            issues.push({
+              pageId: page.id,
+              pageOrder: page.pageOrder,
+              pageType: page.pageType,
+              field: `conditions.has_item.${needed}`,
+              message: `要求道具 ID "${needed}" 但先前頁面未發放此道具 → 玩家永遠無法通過此檢查`,
+              severity: "error",
+            });
+          }
+        }
+        if (cond.type === "has_points" && (cond.minPoints ?? 0) > maxScoreBefore) {
+          issues.push({
+            pageId: page.id,
+            pageOrder: page.pageOrder,
+            pageType: page.pageType,
+            field: `conditions.has_points`,
+            message: `要求分數 ≥ ${cond.minPoints} 但先前頁面累積最多只能拿到 ${maxScoreBefore} 分`,
+            severity: "warning",
+          });
+        }
+      }
+      const fragments = (cfg.fragments as Array<{ sourceItemId?: unknown }>) || [];
+      for (const frag of fragments) {
+        if (frag.sourceItemId != null && frag.sourceItemId !== "") {
+          const needed = String(frag.sourceItemId);
+          if (!grantedItems.has(needed)) {
+            issues.push({
+              pageId: page.id,
+              pageOrder: page.pageOrder,
+              pageType: page.pageType,
+              field: `fragments.sourceItemId.${needed}`,
+              message: `碎片綁定的道具 ID "${needed}" 先前頁面未發放 → 玩家永遠無法收集此碎片`,
+              severity: "error",
+            });
+          }
+        }
+      }
+    }
+
+    // 再累積此頁可能發出的道具 / 分數
+    // 1. onSuccess.grantItem（TextVerify / ConditionalVerify / ChoiceVerify 等）
+    const onSuccess = cfg.onSuccess as { grantItem?: unknown } | undefined;
+    if (onSuccess?.grantItem != null && onSuccess.grantItem !== "") {
+      grantedItems.add(String(onSuccess.grantItem));
+    }
+    // 2. onCompleteActions.add_item（通用）
+    const actions = (cfg.onCompleteActions as Array<{ type?: string; itemId?: unknown; points?: number }>) || [];
+    for (const a of actions) {
+      if (a.type === "add_item" && a.itemId != null && a.itemId !== "") {
+        grantedItems.add(String(a.itemId));
+      }
+      if (a.type === "add_score" && typeof a.points === "number") {
+        maxScoreBefore += a.points;
+      }
+    }
+    // 3. Button.buttons[].items / rewardPoints（button 頁面每個按鈕可發）
+    if (page.pageType === "button") {
+      const buttons = (cfg.buttons as Array<{ items?: unknown[]; rewardPoints?: number }>) || [];
+      for (const btn of buttons) {
+        (btn.items || []).forEach((id) => {
+          if (id != null && id !== "") grantedItems.add(String(id));
+        });
+        if (typeof btn.rewardPoints === "number" && btn.rewardPoints > 0) {
+          maxScoreBefore += btn.rewardPoints;
+        }
+      }
+    }
+    // 4. rewardPoints（頁面級）
+    if (typeof cfg.rewardPoints === "number" && cfg.rewardPoints > 0) {
+      maxScoreBefore += cfg.rewardPoints;
+    }
+  }
+
+  return issues;
+}
+
+/**
+ * 批次驗證遊戲的所有頁面（含單頁檢查 + 跨頁完整性）
  */
 export function validateAllPages(pages: Page[]): ValidationIssue[] {
-  return pages.flatMap((p) => validatePageConfig(p));
+  return [
+    ...pages.flatMap((p) => validatePageConfig(p)),
+    ...validateCrossPageFlow(pages),
+  ];
 }
 
 /** 將 issue 陣列轉為一行可讀訊息 */
