@@ -491,8 +491,15 @@ const onlineDetectiveClub: GameModule = {
       title: "收集關鍵證據",
       config: {
         instruction: "在案件資料中找出 3 件關鍵證據",
-        requiredFragments: 3,
-        fragments: ["監視器截圖", "目擊者證詞", "手機通話紀錄"],
+        demoMode: true,
+        verificationMode: "all_collected",
+        fragmentType: "custom",
+        fragmentCount: 3,
+        fragments: [
+          { id: "e1", label: "監視器截圖", value: "1", order: 1 },
+          { id: "e2", label: "目擊者證詞", value: "2", order: 2 },
+          { id: "e3", label: "手機通話紀錄", value: "3", order: 3 },
+        ],
       },
     },
     {
