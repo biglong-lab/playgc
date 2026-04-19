@@ -39,19 +39,22 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
   const progress = tasks.length > 0 ? ((currentTaskIndex) / tasks.length) * 100 : 0;
 
   // 空 tasks fallback — 避免玩家卡在「未知任務類型」
+  // 注意：此 effect 的 cleanup 不 clearTimeout（否則 setIsDefused 觸發 re-render 時
+  // cleanup 會先執行取消 onComplete），改用 ref 保險防止重複排程
+  const fallbackFiredRef = useRef(false);
   useEffect(() => {
-    if (tasks.length === 0 && !isExploded && !isDefused) {
+    if (tasks.length === 0 && !fallbackFiredRef.current) {
+      fallbackFiredRef.current = true;
       setIsDefused(true);
       toast({
         title: "此拆彈任務尚未設定關卡",
         description: "自動標記為通過",
       });
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         onComplete({ points: 0 }, config.successNextPageId);
       }, 1500);
-      return () => clearTimeout(timer);
     }
-  }, [tasks.length, isExploded, isDefused, onComplete, config.successNextPageId, toast]);
+  }, [tasks.length, onComplete, config.successNextPageId, toast]);
 
   // 最後 10 秒心跳震動（支援裝置）
   useEffect(() => {
