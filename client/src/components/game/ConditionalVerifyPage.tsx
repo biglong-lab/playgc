@@ -15,11 +15,12 @@ interface FragmentConfig {
 }
 
 // 對齊 shared/schema/games.ts 的 FragmentCollectionConfig.conditions 型別
+// itemId / locationId 用 string | number 相容舊 seed 資料
 interface Condition {
   type: "has_item" | "has_points" | "visited_location";
-  itemId?: string;
+  itemId?: string | number;
   minPoints?: number;
-  locationId?: string;
+  locationId?: string | number;
   description?: string;
 }
 
