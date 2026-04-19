@@ -15,6 +15,7 @@ interface FlowConditionData {
   type: string;
   variableName?: string;
   variableValue?: unknown;
+  valueType?: "string" | "number" | "boolean";
   itemId?: string;
   scoreThreshold?: number;
   weight?: number;
