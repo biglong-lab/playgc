@@ -248,7 +248,10 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
 
       shakeCountRef.current = 0;
       tiltAngleRef.current = 0;
+      lastHitTimeRef.current = 0;
       setProgress(0);
+      setHitCount(0);
+      setHitPulseKey(0);
       setTimeLeft(config.timeLimit || 30);
       setIsStarted(true);
       setError(null);
