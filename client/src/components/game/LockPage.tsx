@@ -91,9 +91,13 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // ref 讀最新值避免 closure stale（連點 submit 可能雙 onComplete）
+  const submittingRef = useRef(false);
+  const resolvedRef = useRef(false);
 
   const handleSubmit = () => {
-    if (isSubmitting || isUnlocked || isFailed) return;
+    if (submittingRef.current || resolvedRef.current) return;
+    if (isUnlocked || isFailed) return;
 
     const enteredCode = code.join("");
 
