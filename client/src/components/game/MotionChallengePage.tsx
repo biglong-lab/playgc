@@ -300,10 +300,27 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
       <Card className="w-full max-w-md">
         <CardContent className="p-6">
           <div className="text-center mb-6">
-            <div className={`w-20 h-20 rounded-full mx-auto mb-4 flex items-center justify-center ${
-              isStarted ? "bg-primary/20 animate-pulse" : "bg-muted"
-            }`}>
-              <ChallengeIcon className={`w-10 h-10 ${isStarted ? "text-primary" : "text-muted-foreground"}`} />
+            <div className="relative w-20 h-20 mx-auto mb-4">
+              <div
+                key={hitPulseKey}
+                className={`absolute inset-0 rounded-full flex items-center justify-center transition-colors ${
+                  isStarted ? "bg-primary/20" : "bg-muted"
+                } ${hitPulseKey > 0 ? "motion-hit-pulse" : ""}`}
+              >
+                <ChallengeIcon
+                  className={`w-10 h-10 ${isStarted ? "text-primary" : "text-muted-foreground"}`}
+                />
+              </div>
+              {/* 每次命中浮動 +1 */}
+              {hitPulseKey > 0 && (
+                <span
+                  key={`plus-${hitPulseKey}`}
+                  className="motion-plus-one absolute top-0 left-1/2 -translate-x-1/2 text-primary font-bold text-xl pointer-events-none select-none"
+                  aria-hidden="true"
+                >
+                  +1
+                </span>
+              )}
             </div>
             <h2 className="text-2xl font-display font-bold mb-2">
               {config.title || CHALLENGE_LABELS[challengeType]}
@@ -311,7 +328,27 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
             <p className="text-muted-foreground">
               {config.instruction || `請${CHALLENGE_LABELS[challengeType]}來完成挑戰`}
             </p>
+            {isStarted && hitCount > 0 && (
+              <p className="text-xs text-primary mt-2 font-mono" data-testid="text-hit-count">
+                已偵測 {hitCount} 次
+              </p>
+            )}
           </div>
+
+          <style>{`
+            @keyframes motion-hit-pulse-kf {
+              0% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+              60% { transform: scale(1.15); box-shadow: 0 0 0 18px hsl(var(--primary) / 0); }
+              100% { transform: scale(1); box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+            }
+            .motion-hit-pulse { animation: motion-hit-pulse-kf 0.5s ease-out; }
+            @keyframes motion-plus-one-kf {
+              0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+              20% { opacity: 1; }
+              100% { opacity: 0; transform: translate(-50%, -40px) scale(1.1); }
+            }
+            .motion-plus-one { animation: motion-plus-one-kf 0.8s ease-out forwards; }
+          `}</style>
 
           {error && (
             <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 mb-4 flex items-center gap-2">
