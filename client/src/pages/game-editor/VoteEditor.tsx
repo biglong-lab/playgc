@@ -149,6 +149,43 @@ export default function VoteEditor({ config, updateField, allPages = [] }: VoteE
           <p className="text-xs text-muted-foreground mt-1">達到此數量才顯示結果</p>
         </div>
       </div>
+      {/* 本 session 新增的欄位 */}
+      <div className="border rounded-lg p-3 space-y-3 bg-accent/5">
+        <h4 className="text-sm font-medium flex items-center gap-2">
+          <Trophy className="w-4 h-4" /> 投票行為
+        </h4>
+        <div>
+          <label className="text-sm font-medium mb-2 block">下一關決定策略</label>
+          <Select
+            value={(config.nextPageStrategy as string) || "winner"}
+            onValueChange={(v) => updateField("nextPageStrategy", v)}
+          >
+            <SelectTrigger data-testid="config-vote-strategy">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="winner">最多票選項勝出（團隊共識，推薦）</SelectItem>
+              <SelectItem value="self">各玩家走自己投的選項</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-2 block">投完自動前進秒數</label>
+          <Input
+            type="number"
+            value={(config.autoAdvanceSeconds as number | undefined) ?? 5}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("autoAdvanceSeconds", Number.isFinite(n) && n >= 0 ? n : 5);
+            }}
+            min={0}
+            max={30}
+            data-testid="config-vote-auto-advance"
+          />
+          <p className="text-xs text-muted-foreground mt-1">投完票後 N 秒自動進入下一關，設 0 關閉（玩家手動點繼續）</p>
+        </div>
+      </div>
+
       <LocationSettingsSection config={config} updateField={updateField} />
     </div>
   );
