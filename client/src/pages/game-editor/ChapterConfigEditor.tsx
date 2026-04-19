@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { GameChapter } from "@shared/schema";
-import { Save, X } from "lucide-react";
+import type { GameChapter, ChapterUnlockConfig } from "@shared/schema";
+import { Save, X, Lock } from "lucide-react";
 
 interface ChapterConfigEditorProps {
   chapter: GameChapter;
