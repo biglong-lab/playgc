@@ -178,6 +178,7 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
           tiltAngleRef.current = angle;
           const newProgress = Math.min(100, (angle / targetValue) * 100);
           setProgress(newProgress);
+          triggerHitFeedback();
 
           if (angle >= targetValue) {
             handleComplete();
