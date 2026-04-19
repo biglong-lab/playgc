@@ -448,6 +448,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                 )}
                 
                 <Button
+                  ref={continueButtonRef}
                   onClick={handleContinue}
                   disabled={isAdvancing}
                   size="lg"
