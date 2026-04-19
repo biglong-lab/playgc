@@ -635,11 +635,252 @@ interface ChoiceOption {
   nextPageId?: string;
 }
 
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation?: string;
+}
+
 export function ChoiceVerifyEditor({ config, updateField }: BaseEditorProps) {
   const options = (config.options || []) as ChoiceOption[];
+  const questions = (config.questions || []) as QuizQuestion[];
+  // 有 questions 陣列 → Quiz 模式；否則 legacy 單題
+  const isQuizMode = questions.length > 0;
+
+  const updateQuestion = (i: number, patch: Partial<QuizQuestion>) => {
+    const next = [...questions];
+    next[i] = { ...next[i], ...patch };
+    updateField("questions", next);
+  };
+
+  const addQuestion = () => {
+    updateField("questions", [
+      ...questions,
+      { question: "", options: ["", ""], correctAnswer: 0 },
+    ]);
+  };
+
+  const removeQuestion = (i: number) => {
+    updateField("questions", questions.filter((_, idx) => idx !== i));
+  };
+
+  const switchToQuizMode = () => {
+    // 若原本 legacy 有 options，轉換為第一題
+    const seeded: QuizQuestion[] = options.length > 0
+      ? [{
+          question: (config.question as string) || "題目 1",
+          options: options.map((o) => o.text || ""),
+          correctAnswer: Math.max(0, options.findIndex((o) => o.correct)),
+        }]
+      : [{ question: "題目 1", options: ["選項 A", "選項 B"], correctAnswer: 0 }];
+    updateField("questions", seeded);
+    updateField("options", []);
+  };
+
+  const switchToLegacyMode = () => {
+    updateField("questions", []);
+  };
 
   return (
     <div className="space-y-4">
+      {/* 模式切換 */}
+      <div className="border rounded-lg p-3 bg-accent/5 flex items-center justify-between">
+        <div>
+          <div className="text-sm font-medium">
+            {isQuizMode ? "Quiz 測驗模式（多題連續）" : "Legacy 單題模式"}
+          </div>
+          <div className="text-xs text-muted-foreground mt-0.5">
+            {isQuizMode
+              ? `${questions.length} 題，通過率 ${Math.round((config.passingScore as number ?? 0.6) * 100)}% 通關`
+              : "一題多選項，每選項可有自己的 nextPageId 分支"}
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={isQuizMode ? switchToLegacyMode : switchToQuizMode}
+        >
+          切換至 {isQuizMode ? "單題" : "Quiz"} 模式
+        </Button>
+      </div>
+
+      {isQuizMode ? (
+        <QuizQuestionsEditor
+          questions={questions}
+          onUpdate={updateQuestion}
+          onAdd={addQuestion}
+          onRemove={removeQuestion}
+          passingScore={(config.passingScore as number) ?? 0.6}
+          onPassingScoreChange={(v) => updateField("passingScore", v)}
+        />
+      ) : (
+        <LegacyOptionsEditor config={config} updateField={updateField} options={options} />
+      )}
+
+      {/* 進階選項 */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">選項隨機順序</span>
+          <Switch
+            checked={config.randomizeOptions === true}
+            onCheckedChange={(v) => updateField("randomizeOptions", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">顯示解釋</span>
+          <Switch
+            checked={config.showExplanation === true}
+            onCheckedChange={(v) => updateField("showExplanation", v)}
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">時限（秒，0=無）</label>
+          <Input
+            type="number"
+            value={(config.timeLimit as number | undefined) ?? 0}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("timeLimit", Number.isFinite(n) && n >= 0 ? n : 0);
+            }}
+            min={0}
+            className="h-8"
+          />
+        </div>
+      </div>
+
+      <LocationSettingsSection config={config} updateField={updateField} />
+    </div>
+  );
+}
+
+// Quiz 模式（questions 陣列）編輯子元件
+function QuizQuestionsEditor({
+  questions,
+  onUpdate,
+  onAdd,
+  onRemove,
+  passingScore,
+  onPassingScoreChange,
+}: {
+  questions: QuizQuestion[];
+  onUpdate: (i: number, patch: Partial<QuizQuestion>) => void;
+  onAdd: () => void;
+  onRemove: (i: number) => void;
+  passingScore: number;
+  onPassingScoreChange: (v: number) => void;
+}) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium">題目列表</label>
+        <Button size="sm" variant="outline" onClick={onAdd}>
+          <Plus className="w-3 h-3 mr-1" />新增題目
+        </Button>
+      </div>
+
+      {questions.map((q, qi) => (
+        <div key={qi} className="border rounded p-3 space-y-2 bg-background">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs shrink-0">第 {qi + 1} 題</Badge>
+            <Input
+              value={q.question}
+              onChange={(e) => onUpdate(qi, { question: e.target.value })}
+              placeholder="輸入題目"
+              className="flex-1 h-8"
+            />
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onRemove(qi)}>
+              <XIcon className="w-3 h-3" />
+            </Button>
+          </div>
+
+          <div className="space-y-1 pl-6">
+            {q.options.map((opt, oi) => (
+              <div key={oi} className="flex gap-2 items-center">
+                <input
+                  type="radio"
+                  checked={q.correctAnswer === oi}
+                  onChange={() => onUpdate(qi, { correctAnswer: oi })}
+                  className="shrink-0"
+                />
+                <Input
+                  value={opt}
+                  onChange={(e) => {
+                    const nextOpts = [...q.options];
+                    nextOpts[oi] = e.target.value;
+                    onUpdate(qi, { options: nextOpts });
+                  }}
+                  placeholder={`選項 ${oi + 1}`}
+                  className="flex-1 h-8 text-xs"
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7"
+                  onClick={() => {
+                    const nextOpts = q.options.filter((_, i) => i !== oi);
+                    const nextCorrect = q.correctAnswer > oi ? q.correctAnswer - 1
+                      : q.correctAnswer === oi ? 0 : q.correctAnswer;
+                    onUpdate(qi, { options: nextOpts, correctAnswer: nextCorrect });
+                  }}
+                  disabled={q.options.length <= 2}
+                >
+                  <XIcon className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs"
+              onClick={() => onUpdate(qi, { options: [...q.options, ""] })}
+            >
+              <Plus className="w-3 h-3 mr-1" />新增選項
+            </Button>
+          </div>
+
+          <Input
+            value={q.explanation || ""}
+            onChange={(e) => onUpdate(qi, { explanation: e.target.value })}
+            placeholder="題目解釋（可選）"
+            className="h-8 text-xs"
+          />
+        </div>
+      ))}
+
+      <div className="flex items-center gap-2 border rounded p-2">
+        <label className="text-xs text-muted-foreground shrink-0">通過率</label>
+        <Input
+          type="number"
+          value={Math.round(passingScore * 100)}
+          onChange={(e) => {
+            const pct = parseInt(e.target.value, 10);
+            if (Number.isFinite(pct) && pct >= 0 && pct <= 100) {
+              onPassingScoreChange(pct / 100);
+            }
+          }}
+          min={0}
+          max={100}
+          className="h-8 w-20"
+        />
+        <span className="text-xs text-muted-foreground">% 的題目答對才算通過</span>
+      </div>
+    </div>
+  );
+}
+
+// Legacy 單題模式編輯子元件
+function LegacyOptionsEditor({
+  config,
+  updateField,
+  options,
+}: {
+  config: Record<string, unknown>;
+  updateField: (field: string, value: unknown) => void;
+  options: ChoiceOption[];
+}) {
+  return (
+    <>
       <div>
         <label className="text-sm font-medium mb-2 block">問題</label>
         <Input
