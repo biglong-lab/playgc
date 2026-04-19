@@ -135,7 +135,12 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
 
   const handleVoteSubmit = () => {
     if (selectedOption === null || hasVoted || !hasValidOptions) return;
-    
+
+    // 觸覺回饋（支援裝置）
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate(40); } catch { /* noop */ }
+    }
+
     setIsAnimating(true);
     setHasVoted(true);
 
