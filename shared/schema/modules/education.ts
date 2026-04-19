@@ -38,7 +38,8 @@ const scienceExplorerSquad: GameModule = {
       title: "科學家的話",
       config: {
         title: "館長開場",
-        videoUrl: "",
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // TODO: 管理員請改成實際影片
+        skipEnabled: true,
         description: "先來聽聽館長介紹今日的探險路線",
       },
     },

@@ -30,7 +30,8 @@ const corporateAnnualChallenge: GameModule = {
       title: "年度回顧",
       config: {
         title: "這一年我們一起走過",
-        videoUrl: "",
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // TODO: 管理員請改成實際影片
+        skipEnabled: true,
         description: "讓我們一起回顧過去一年的點點滴滴",
       },
     },

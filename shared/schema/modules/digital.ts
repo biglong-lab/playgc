@@ -38,7 +38,8 @@ const urbanLegendInvestigator: GameModule = {
       title: "目擊者證言",
       config: {
         title: "監視器畫面",
-        videoUrl: "",
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // TODO: 管理員請改成實際影片
+        skipEnabled: true,
         description: "觀看大樓監視器畫面，注意電梯內的異狀",
       },
     },

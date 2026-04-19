@@ -199,9 +199,13 @@ const escapeRoomCountdown: GameModule = {
       pageType: "time_bomb",
       title: "拆除炸彈",
       config: {
-        instruction: "剪斷正確的線路來拆除炸彈！選錯會加速倒數",
+        instruction: "依序完成拆彈任務！時間到會爆炸",
         timeLimit: 60,
-        correctSequence: ["red", "blue", "green"],
+        tasks: [
+          { type: "tap", targetCount: 15, question: "快速剪斷引信（連點 15 下）" },
+          { type: "choice", question: "選擇正確的紅線位置", options: ["左側", "中間", "右側"], correctIndex: 0 },
+          { type: "input", question: "輸入保險箱密碼（提示：線索中的日期）", answer: "0315" },
+        ],
       },
     },
     {
@@ -488,7 +492,8 @@ const onlineDetectiveClub: GameModule = {
       title: "案件現場影片",
       config: {
         title: "離奇失蹤案",
-        videoUrl: "",
+        videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // TODO: 管理員請改成實際影片
+        skipEnabled: true,
         description: "觀看案件現場的監視器畫面，注意每個細節",
       },
     },
