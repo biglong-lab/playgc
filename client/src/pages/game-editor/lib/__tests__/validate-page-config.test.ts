@@ -121,3 +121,165 @@ describe("validateAllPages", () => {
     expect(issues[0].pageOrder).toBe(2);
   });
 });
+
+describe("validateCrossPageFlow — 跨頁流程完整性（jiachun-defense-battle 根因）", () => {
+  it("conditional_verify 要的 has_item 若先前沒 page 發 → error", () => {
+    const pages: Page[] = [
+      makePage("text_card", { title: "T", content: "C" }, { id: "p1", pageOrder: 1 }),
+      makePage(
+        "conditional_verify",
+        { conditions: [{ type: "has_item", itemId: "13" }] },
+        { id: "p2", pageOrder: 2 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    expect(issues).toHaveLength(1);
+    expect(issues[0].severity).toBe("error");
+    expect(issues[0].message).toContain("13");
+  });
+
+  it("先前 page 透過 onCompleteActions 發過道具 → 通過", () => {
+    const pages: Page[] = [
+      makePage(
+        "text_card",
+        {
+          title: "T",
+          content: "C",
+          onCompleteActions: [{ type: "add_item", itemId: "13" }],
+        },
+        { id: "p1", pageOrder: 1 },
+      ),
+      makePage(
+        "conditional_verify",
+        { conditions: [{ type: "has_item", itemId: "13" }] },
+        { id: "p2", pageOrder: 2 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    expect(issues).toHaveLength(0);
+  });
+
+  it("先前 page 透過 onSuccess.grantItem 發過 → 通過（向後相容 TextVerify 機制）", () => {
+    const pages: Page[] = [
+      makePage(
+        "text_verify",
+        { question: "Q", answers: ["A"], onSuccess: { grantItem: 13 } },
+        { id: "p1", pageOrder: 1 },
+      ),
+      makePage(
+        "conditional_verify",
+        { conditions: [{ type: "has_item", itemId: "13" }] },
+        { id: "p2", pageOrder: 2 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    expect(issues).toHaveLength(0);
+  });
+
+  it("number itemId 和 string itemId 都能對上（相容舊 seed）", () => {
+    const pages: Page[] = [
+      makePage(
+        "text_card",
+        {
+          title: "T",
+          content: "C",
+          onCompleteActions: [{ type: "add_item", itemId: 13 }], // number
+        },
+        { id: "p1", pageOrder: 1 },
+      ),
+      makePage(
+        "conditional_verify",
+        { conditions: [{ type: "has_item", itemId: "13" }] }, // string
+        { id: "p2", pageOrder: 2 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    expect(issues).toHaveLength(0);
+  });
+
+  it("fragment.sourceItemId 也一樣檢查", () => {
+    const pages: Page[] = [
+      makePage(
+        "conditional_verify",
+        {
+          fragments: [{ sourceItemId: "99", value: "X" }],
+        },
+        { id: "p1", pageOrder: 1 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    expect(issues.some((i) => i.message.includes("99"))).toBe(true);
+  });
+
+  it("has_points 要求超過累積上限 → warning", () => {
+    const pages: Page[] = [
+      makePage(
+        "text_card",
+        { title: "T", content: "C", rewardPoints: 50 },
+        { id: "p1", pageOrder: 1 },
+      ),
+      makePage(
+        "conditional_verify",
+        { conditions: [{ type: "has_points", minPoints: 100 }] },
+        { id: "p2", pageOrder: 2 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    expect(issues.some((i) => i.severity === "warning" && i.message.includes("100"))).toBe(true);
+  });
+
+  it("button 頁面每顆按鈕的 items / rewardPoints 都會計入", () => {
+    const pages: Page[] = [
+      makePage(
+        "button",
+        {
+          buttons: [
+            { text: "A", items: ["5", "7"], rewardPoints: 30 },
+            { text: "B", items: ["9"] },
+          ],
+        },
+        { id: "p1", pageOrder: 1 },
+      ),
+      makePage(
+        "conditional_verify",
+        {
+          conditions: [
+            { type: "has_item", itemId: "5" },
+            { type: "has_item", itemId: "9" },
+            { type: "has_points", minPoints: 20 },
+          ],
+        },
+        { id: "p2", pageOrder: 2 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    expect(issues).toHaveLength(0);
+  });
+
+  it("重現 jiachun-defense-battle 原始 bug：只發 1 個碎片但要 5 個 → 4 個 error", () => {
+    const pages: Page[] = [
+      makePage(
+        "text_verify",
+        { question: "Q", answers: ["A"], onSuccess: { grantItem: 13 } },
+        { id: "p1", pageOrder: 1 },
+      ),
+      makePage(
+        "conditional_verify",
+        {
+          conditions: [
+            { type: "has_item", itemId: 13 },
+            { type: "has_item", itemId: 14 },
+            { type: "has_item", itemId: 15 },
+            { type: "has_item", itemId: 16 },
+            { type: "has_item", itemId: 17 },
+          ],
+        },
+        { id: "p2", pageOrder: 2 },
+      ),
+    ];
+    const issues = validateCrossPageFlow(pages);
+    const errors = issues.filter((i) => i.severity === "error");
+    expect(errors).toHaveLength(4);
+    expect(errors.every((e) => e.message.includes("未發放"))).toBe(true);
+  });
+});
