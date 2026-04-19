@@ -464,20 +464,49 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-2">
-        <Badge 
-          variant={connectionStatus === "connected" ? "default" : connectionStatus === "connecting" ? "secondary" : "destructive"} 
-          className="gap-1"
-        >
-          {getConnectionIcon()}
-          {getConnectionLabel()}
-        </Badge>
-        
-        {config.deviceId && (
-          <Badge variant="outline" className="gap-1">
-            <Radio className="w-3 h-3" />
-            設備: {config.deviceId}
+      <div className="mt-6 flex flex-col items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
+          <Badge
+            variant={connectionStatus === "connected" ? "default" : connectionStatus === "connecting" ? "secondary" : "destructive"}
+            className="gap-1"
+          >
+            {getConnectionIcon()}
+            {getConnectionLabel()}
           </Badge>
+
+          {config.deviceId && (
+            <Badge variant="outline" className="gap-1">
+              <Radio className="w-3 h-3" />
+              設備: {config.deviceId}
+            </Badge>
+          )}
+
+          {connectionStatus === "disconnected" && reconnectAttempts > 0 && (
+            <Badge variant="outline" className="text-xs">
+              已重試 {Math.min(reconnectAttempts, MAX_AUTO_RECONNECT)}/{MAX_AUTO_RECONNECT} 次
+            </Badge>
+          )}
+        </div>
+
+        {/* 手動重連按鈕（連線中或連上後隱藏）*/}
+        {connectionStatus === "disconnected" && isStarted && !isCompleted && (
+          <Button
+            size="sm"
+            variant={reconnectAttempts > MAX_AUTO_RECONNECT ? "default" : "outline"}
+            onClick={() => {
+              if (reconnectTimeoutRef.current) {
+                clearTimeout(reconnectTimeoutRef.current);
+                reconnectTimeoutRef.current = null;
+              }
+              setReconnectAttempts(0);
+              connectWebSocket();
+            }}
+            data-testid="button-manual-reconnect"
+            className="gap-1"
+          >
+            <Radio className="w-3 h-3" />
+            手動重連
+          </Button>
         )}
       </div>
 
