@@ -374,6 +374,14 @@ export default function PageConfigEditor({
   return (
     <div className="space-y-4">
       {renderPageConfig()}
+      {/* 通用：下一頁導向 + 完成獎勵（依 pageType 自動判斷是否顯示） */}
+      <CommonNavigationEditor
+        config={config}
+        updateField={updateField}
+        allPages={allPages}
+        pageType={page.pageType}
+        currentPageId={page.id}
+      />
       {/* 通用完成動作（flow_router 除外，它是純邏輯節點，不需要完成動作） */}
       {page.pageType !== "flow_router" && (
         <OnCompleteActionsEditor config={config} updateField={updateField} />
