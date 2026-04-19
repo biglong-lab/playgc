@@ -209,10 +209,10 @@ export default function ConditionalVerifyEditor({
                 碎片配置
                 <Badge variant="secondary" className="text-xs">{fragments.length} 個碎片</Badge>
               </label>
-              {!hasItemsList && (
+              {!hasItemsList && config.demoMode !== true && (
                 <div className="flex items-start gap-2 p-2 mb-2 rounded bg-amber-500/10 text-amber-700 text-xs">
                   <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-                  <span>尚未建立道具。玩家需透過本遊戲的道具系統取得碎片，請先到「道具管理」建立道具後回來綁定。</span>
+                  <span>尚未建立道具。玩家需透過本遊戲的道具系統取得碎片，請先到「道具管理」建立道具後回來綁定（或暫時開啟「示範模式」）。</span>
                 </div>
               )}
               <div className="space-y-2">
