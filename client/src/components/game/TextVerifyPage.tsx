@@ -105,28 +105,34 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
     return { level: "far", message: "答案不正確，再試試！" };
   };
 
+  // 防重複 onComplete（AI 評分 race / 使用者在動畫中 mash Enter）
+  const finishedRef = useRef(false);
+
   const handleCorrect = (feedbackMessage?: string) => {
+    if (finishedRef.current) return;
     setIsCorrect(true);
     toast({
       title: feedbackMessage || config.onSuccess?.message || config.successMessage || "答對了！",
       description: "做得好！",
     });
 
+    const fireOnComplete = () => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
+      onComplete({ points: config.rewardPoints ?? 10, items }, config.nextPageId);
+    };
+
     if (config.showExplanation && config.explanation) {
       setShowExplanation(true);
-      setTimeout(() => {
-        const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-        onComplete({ points: config.rewardPoints ?? 10, items }, config.nextPageId);
-      }, 3000);
+      setTimeout(fireOnComplete, 3000);
     } else {
-      setTimeout(() => {
-        const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-        onComplete({ points: config.rewardPoints ?? 10, items }, config.nextPageId);
-      }, 1500);
+      setTimeout(fireOnComplete, 1500);
     }
   };
 
   const handleIncorrect = (feedbackMessage?: string) => {
+    if (finishedRef.current) return;
     setIsCorrect(false);
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
@@ -138,15 +144,17 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
         variant: "destructive",
       });
 
+      const fireOnComplete = () => {
+        if (finishedRef.current) return;
+        finishedRef.current = true;
+        onComplete({ points: 0 }, config.nextPageId);
+      };
+
       if (config.showExplanation && config.explanation) {
         setShowExplanation(true);
-        setTimeout(() => {
-          onComplete({ points: 0 }, config.nextPageId);
-        }, 3000);
+        setTimeout(fireOnComplete, 3000);
       } else {
-        setTimeout(() => {
-          onComplete({ points: 0 }, config.nextPageId);
-        }, 2000);
+        setTimeout(fireOnComplete, 2000);
       }
     } else {
       const answersArray = buildAnswersArray();
