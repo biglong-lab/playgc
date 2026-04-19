@@ -21,9 +21,10 @@ import {
 } from "lucide-react";
 import type { Location, LocationVisit, Page } from "@shared/schema";
 
-// Leaflet 從 CDN 全域載入，無 @types/leaflet
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- 全域 Leaflet CDN 物件
-declare const L: any;
+// 使用 npm 套件 leaflet（已裝），避免 CDN 載入時序問題
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- leaflet 沒裝 @types，用 any 取代
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface PageLocationSettings {
   enabled?: boolean;
