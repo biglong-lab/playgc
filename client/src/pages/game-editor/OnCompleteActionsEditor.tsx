@@ -178,7 +178,10 @@ function ActionItem({
           <Input
             type="number"
             value={action.points ?? 0}
-            onChange={(e) => onChange({ ...action, points: parseInt(e.target.value) || 0 })}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              onChange({ ...action, points: Number.isFinite(n) ? n : 0 });
+            }}
             placeholder="分數"
             className="w-20 h-8"
           />
