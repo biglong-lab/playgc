@@ -104,7 +104,21 @@ export default function GamePlay() {
   }, [isChapterMode, toast, stateRef, setState]);
 
   // === 頁面完成 → 更新分數/道具/變數 → 導航 ===
+  // 防線：若子元件仍漏網雙觸發，GamePlay 用 ref 做 window-based 節流（150ms）
+  // 避免玩家跳過一頁或重複加分。正常單次呼叫不受影響。
+  const lastCompleteAtRef = useRef(0);
   const handlePageComplete = useCallback((reward?: { points?: number; items?: string[] }, nextPageId?: string) => {
+    const now = Date.now();
+    if (now - lastCompleteAtRef.current < 150) {
+      // DEV 模式警示：雙觸發屬於 bug，不應該正常發生
+      if ((import.meta as any).env?.DEV) {
+        // eslint-disable-next-line no-console
+        console.warn("[GamePlay] handlePageComplete 雙觸發已被節流", { reward, nextPageId });
+      }
+      return;
+    }
+    lastCompleteAtRef.current = now;
+
     const currentState = stateRef.current;
     const pages = activePagesRef.current;
     let newScore = currentState.score;
