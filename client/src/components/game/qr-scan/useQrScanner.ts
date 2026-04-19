@@ -189,7 +189,9 @@ export function useQrScanner(
 
   // 驗證 QR Code
   const verifyCode = async (code: string) => {
-    if (isProcessing) return;
+    // ref 讀最新值，避免 closure stale（掃描器連續 decode 同一 QR / 手動連點）
+    if (isProcessingRef.current || finishedRef.current) return;
+    isProcessingRef.current = true;
     setIsProcessing(true);
     await stopScanning();
 
