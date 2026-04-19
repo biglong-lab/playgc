@@ -64,11 +64,21 @@ export default function ChapterConfigEditor({
   });
 
   const handleSave = () => {
+    // 依 unlockType 組裝 unlockConfig
+    const unlockConfig: ChapterUnlockConfig = {};
+    if (unlockType === "score_threshold" && requiredScore) {
+      unlockConfig.requiredScore = parseInt(requiredScore, 10);
+    }
+    if (unlockType === "paid") {
+      if (price) unlockConfig.price = parseFloat(price);
+      if (currency) unlockConfig.currency = currency;
+    }
     updateMutation.mutate({
       title,
       description: description || null,
       coverImageUrl: coverImageUrl || null,
       unlockType,
+      unlockConfig: Object.keys(unlockConfig).length > 0 ? unlockConfig : {},
       estimatedTime: estimatedTime ? parseInt(estimatedTime) : null,
       status,
     });
