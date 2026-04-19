@@ -234,15 +234,35 @@ export default function TimeBombEditor({ config, updateField }: EditorProps) {
           />
         </div>
       </div>
-      <div>
-        <label className="text-sm font-medium mb-2 block">獎勵分數</label>
-        <Input
-          type="number"
-          value={config.rewardPoints || 50}
-          onChange={(e) => updateField("rewardPoints", parseInt(e.target.value) || 50)}
-          min={0}
-          data-testid="config-bomb-points"
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm font-medium mb-2 block">獎勵分數</label>
+          <Input
+            type="number"
+            value={config.rewardPoints ?? 50}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("rewardPoints", Number.isFinite(n) ? n : 50);
+            }}
+            min={0}
+            data-testid="config-bomb-points"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-2 block">答錯扣除秒數</label>
+          <Input
+            type="number"
+            value={(config.penaltySeconds as number | undefined) ?? 0}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("penaltySeconds", Number.isFinite(n) && n >= 0 ? n : 0);
+            }}
+            min={0}
+            max={30}
+            data-testid="config-bomb-penalty"
+          />
+          <p className="text-xs text-muted-foreground mt-1">答錯時扣時間（0 = 不扣）</p>
+        </div>
       </div>
       <LocationSettingsSection config={config} updateField={updateField} />
     </div>
