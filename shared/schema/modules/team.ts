@@ -164,8 +164,16 @@ const outdoorSurvivalExtreme: GameModule = {
       title: "收集求生物資",
       config: {
         instruction: "在場地各處收集 4 件關鍵求生物資",
-        requiredFragments: 4,
-        fragments: ["淨水瓶", "火種盒", "繩索", "求生刀"],
+        demoMode: true,
+        verificationMode: "all_collected",
+        fragmentType: "custom",
+        fragmentCount: 4,
+        fragments: [
+          { id: "s1", label: "淨水瓶", value: "1", order: 1 },
+          { id: "s2", label: "火種盒", value: "2", order: 2 },
+          { id: "s3", label: "繩索", value: "3", order: 3 },
+          { id: "s4", label: "求生刀", value: "4", order: 4 },
+        ],
       },
     },
     {
