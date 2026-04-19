@@ -134,6 +134,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
       setAttempts(newAttempts);
 
       if (newAttempts >= maxAttempts) {
+        resolvedRef.current = true;
         setIsFailed(true);
         toast({
           title: config.failureMessage || "解鎖失敗",
