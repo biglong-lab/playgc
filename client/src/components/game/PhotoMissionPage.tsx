@@ -84,7 +84,7 @@ export default function PhotoMissionPage({
           title: result.fallback ? "照片已上傳" : "照片驗證通過！",
           description: result.feedback || config.onSuccess?.message || "任務完成！",
         });
-        onComplete(buildReward(true));
+        safeOnComplete(buildReward(true));
       } else {
         // AI 驗證失敗
         setAiFeedback(result.feedback || config.aiFailMessage || "照片不符合要求");
