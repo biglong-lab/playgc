@@ -34,6 +34,8 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
   const [isConnected, setIsConnected] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "disconnected">("disconnected");
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const MAX_AUTO_RECONNECT = 5;
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
