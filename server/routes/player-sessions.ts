@@ -201,13 +201,11 @@ export function registerPlayerSessionRoutes(app: Express) {
           return res.status(401).json({ message: "Unauthorized" });
         }
 
-        const session = await storage.getSession(sessionId);
-        if (!session) {
-          return res.status(404).json({ message: "Session not found" });
-        }
-
-        const progressList = await storage.getPlayerProgress(sessionId);
-        let progress = progressList.find((p) => p.userId === userId);
+        // 多人併發優化：
+        // 原本：getSession + getPlayerProgress(整個 session 全部玩家) + update/create = 3 次 DB query
+        // 優化：getPlayerProgressByUser（用 session_id+user_id 複合 index）+ update/create = 2 次
+        // 省去 session 存在檢查（若 sessionId 無效，update 會回 undefined → 404）
+        let progress = await storage.getPlayerProgressByUser(sessionId, userId);
 
         if (!progress) {
           progress = await storage.createPlayerProgress({
