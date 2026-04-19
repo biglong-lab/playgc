@@ -126,13 +126,15 @@ export default function ConditionalVerifyPage({
 
   const collectedFragments = useMemo(() => {
     if (!isFragmentMode) return [];
-    // 關鍵：sourceItemId 未設時預設未收集；比對時 String() 轉以相容數字 / 字串 itemId
+    // 示範模式（模組範本字串陣列）：所有 fragment 都預設已收集
+    if (isDemoMode) return fragments;
+    // 正式模式：sourceItemId 未設時預設未收集；比對 String() 轉相容 number/string
     return fragments.filter((fragment) =>
       fragment.sourceItemId != null &&
       fragment.sourceItemId !== "" &&
       inventorySet.has(String(fragment.sourceItemId))
     );
-  }, [fragments, inventorySet, isFragmentMode]);
+  }, [fragments, inventorySet, isFragmentMode, isDemoMode]);
 
   const allFragmentsCollected = collectedFragments.length === fragments.length;
 
