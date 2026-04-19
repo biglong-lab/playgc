@@ -106,11 +106,14 @@ export default function ConditionalVerifyPage({
   const checkCondition = (condition: Condition): boolean => {
     switch (condition.type) {
       case "has_item":
-        return !!condition.itemId && inventory.includes(condition.itemId);
+        // 相容舊資料 itemId 為 number 的情況，雙方 String() 後比對
+        return condition.itemId != null && condition.itemId !== "" &&
+          inventorySet.has(String(condition.itemId));
       case "has_points":
         return score >= (condition.minPoints ?? 0);
       case "visited_location":
-        return !!condition.locationId && visitedLocations.includes(condition.locationId);
+        return condition.locationId != null && condition.locationId !== "" &&
+          visitedSet.has(String(condition.locationId));
       default:
         return false;
     }
