@@ -17,6 +17,18 @@ declare module "http" {
   }
 }
 
+// 頂層日誌工具（cluster primary / worker 都可用）
+export function log(message: string, source = "express") {
+  const formattedTime = new Date().toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  });
+  const workerTag = cluster.worker ? `[w${cluster.worker.id}]` : "";
+  console.log(`${formattedTime} [${source}]${workerTag} ${message}`);
+}
+
 // =============================================================================
 // Cluster 模式（多核心利用）
 // =============================================================================
