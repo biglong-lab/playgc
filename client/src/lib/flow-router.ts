@@ -219,16 +219,24 @@ export function processOnCompleteActions(
           newVars = { ...newVars, [action.variableName]: !newVars[action.variableName] };
         }
         break;
-      case 'add_item':
-        if (action.itemId && !newInv.includes(action.itemId)) {
-          newInv = [...newInv, action.itemId];
+      case 'add_item': {
+        // 型別相容：舊資料 itemId 可能是 number；統一用 String 比對避免重複加
+        if (action.itemId != null && action.itemId !== '') {
+          const targetId = String(action.itemId);
+          const alreadyHas = newInv.some((id) => String(id) === targetId);
+          if (!alreadyHas) {
+            newInv = [...newInv, action.itemId as string];
+          }
         }
         break;
-      case 'remove_item':
-        if (action.itemId) {
-          newInv = newInv.filter(id => id !== action.itemId);
+      }
+      case 'remove_item': {
+        if (action.itemId != null && action.itemId !== '') {
+          const targetId = String(action.itemId);
+          newInv = newInv.filter((id) => String(id) !== targetId);
         }
         break;
+      }
       case 'add_score':
         newScore += (action.points ?? 0);
         break;
