@@ -690,7 +690,7 @@ export function ChoiceVerifyEditor({ config, updateField }: BaseEditorProps) {
                 </Button>
               </div>
               <Input
-                value={(opt as ChoiceOption & { explanation?: string }).explanation || ""}
+                value={opt.explanation || ""}
                 onChange={(e) => {
                   const newOptions = [...options];
                   newOptions[i] = { ...newOptions[i], explanation: e.target.value };
