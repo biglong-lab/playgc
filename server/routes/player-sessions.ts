@@ -260,6 +260,7 @@ export function registerPlayerSessionRoutes(app: Express) {
   app.post(
     "/api/chat/:sessionId",
     isAuthenticated,
+    chatLimiter,
     async (req: AuthenticatedRequest, res) => {
       try {
         const userId = req.user?.claims?.sub;
