@@ -195,13 +195,13 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
   );
 
   const renderLetterPad = () => (
-    <div className="grid grid-cols-6 gap-1">
+    <div className="grid grid-cols-6 gap-1.5">
       {characterSet.split("").map((char) => (
         <Button
           key={char}
           variant="outline"
           size="sm"
-          className="h-10 text-sm font-mono"
+          className="h-11 text-sm font-mono"
           onClick={() => handleInput(char)}
           disabled={isUnlocked || isFailed}
           data-testid={`button-letter-${char}`}
