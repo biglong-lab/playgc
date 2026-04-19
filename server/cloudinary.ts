@@ -91,13 +91,11 @@ export class CloudinaryService {
     base64Data: string,
     gameId: string
   ): Promise<CloudinaryUploadResult> {
+    // 不做伺服器端 transformation，讓前端 OptimizedImage 的 preset 統一套用
+    // 原本伺服器做 fill+quality 導致前端再套 preset 變成雙層 transformation → 破圖
     return this.uploadImage(base64Data, {
       folder: `jiachun-game/covers`,
       publicId: `game-${gameId}`,
-      transformation: [
-        { width: 800, height: 600, crop: "fill", gravity: "auto" },
-        { quality: "auto", fetch_format: "auto" },
-      ],
     });
   }
 
