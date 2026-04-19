@@ -98,6 +98,26 @@ export default function ConditionalVerifyEditor({
 
   return (
     <div className="space-y-4">
+      {/* 示範模式開關（最上方顯著位置） */}
+      <div className="border rounded-lg p-3 bg-blue-500/5 border-blue-500/20">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <label className="text-sm font-medium flex items-center gap-2">
+              示範模式（Demo Mode）
+            </label>
+            <p className="text-xs text-muted-foreground mt-1">
+              開啟後：<b>純劇情展示</b>，玩家按繼續即可通過，不要求實際持有道具。
+              適合模組範本 / 劇情 demo。正式遊戲請關閉並為每個碎片綁定 <b>sourceItemId</b>。
+            </p>
+          </div>
+          <Switch
+            checked={config.demoMode === true}
+            onCheckedChange={(v) => updateField("demoMode", v)}
+            data-testid="switch-demo-mode"
+          />
+        </div>
+      </div>
+
       <div>
         <label className="text-sm font-medium mb-2 block">標題</label>
         <Input
