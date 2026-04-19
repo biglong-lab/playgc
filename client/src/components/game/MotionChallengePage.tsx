@@ -62,7 +62,13 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
   const targetValue = config.targetValue || 20;
   const ChallengeIcon = CHALLENGE_ICONS[challengeType];
 
+  // 防重複觸發：目標達成後，玩家若繼續搖晃，handleMotion 會在 React 批次前多次呼叫 handleComplete
+  // 同時 handleFail 也可能與 handleComplete 競爭（時間到剛好目標達成）
+  const isResolvedRef = useRef(false);
+
   const handleComplete = useCallback(() => {
+    if (isResolvedRef.current) return;
+    isResolvedRef.current = true;
     setIsCompleted(true);
     toast({
       title: config.successMessage || "挑戰成功!",
@@ -74,6 +80,8 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
   }, [config, onComplete, toast]);
 
   const handleFail = useCallback(() => {
+    if (isResolvedRef.current) return;
+    isResolvedRef.current = true;
     setIsFailed(true);
     toast({
       title: config.failureMessage || "挑戰失敗",
