@@ -197,9 +197,34 @@ export default function GameEditor() {
     },
   });
 
+  /** 檢查所有頁面 config 是否有 error 等級的問題，阻擋存檔；warning 只提示。 */
+  const runValidation = (blockOnError: boolean): boolean => {
+    const issues = validateAllPages(pages);
+    const errors = issues.filter((i) => i.severity === "error");
+    const warnings = issues.filter((i) => i.severity === "warning");
+
+    if (errors.length > 0 && blockOnError) {
+      toast({
+        title: `有 ${errors.length} 個頁面設定錯誤`,
+        description: errors.slice(0, 3).map(formatIssue).join("；") + (errors.length > 3 ? "…" : ""),
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (warnings.length > 0) {
+      toast({
+        title: `提醒：${warnings.length} 個警告`,
+        description: warnings.slice(0, 2).map(formatIssue).join("；"),
+      });
+    }
+    return true;
+  };
+
   const handleSave = () => {
     // 儲存不強制改 status（保留當前狀態，避免已發布遊戲意外降級為 draft）
     // 新建遊戲時才預設為 draft
+    if (!runValidation(false)) return;
     const payload: Record<string, unknown> = {
       title, description, difficulty, estimatedTime, maxPlayers,
     };
@@ -208,6 +233,8 @@ export default function GameEditor() {
   };
 
   const handlePublish = () => {
+    // 發布時嚴格驗證，有任何 error 等級問題就擋下來
+    if (!runValidation(true)) return;
     saveGameMutation.mutate({
       title, description, difficulty, estimatedTime, maxPlayers, status: "published",
     });
