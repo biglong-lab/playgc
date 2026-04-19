@@ -186,6 +186,9 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   };
 
   const handleContinue = () => {
+    // 首次點擊繼續即 user gesture → 嘗試自動開始背景音樂（瀏覽器 autoplay 政策）
+    tryAutoPlayAudio();
+
     if (isTyping) {
       setDisplayedText(content);
       setIsTyping(false);
