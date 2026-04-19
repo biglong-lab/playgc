@@ -85,12 +85,35 @@ export default function LockEditor({ config, updateField }: EditorProps) {
           data-testid="config-lock-instruction"
         />
       </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm font-medium mb-2 block">成功訊息</label>
+          <Input
+            value={config.successMessage || ""}
+            onChange={(e) => updateField("successMessage", e.target.value)}
+            placeholder="解鎖成功！"
+            data-testid="config-lock-success"
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-2 block">失敗訊息</label>
+          <Input
+            value={config.failureMessage || ""}
+            onChange={(e) => updateField("failureMessage", e.target.value)}
+            placeholder="密碼錯誤，請再試一次"
+            data-testid="config-lock-failure"
+          />
+        </div>
+      </div>
       <div>
         <label className="text-sm font-medium mb-2 block">獎勵分數</label>
         <Input
           type="number"
-          value={config.rewardPoints || 20}
-          onChange={(e) => updateField("rewardPoints", parseInt(e.target.value) || 20)}
+          value={config.rewardPoints ?? 20}
+          onChange={(e) => {
+            const n = parseInt(e.target.value, 10);
+            updateField("rewardPoints", Number.isFinite(n) ? n : 20);
+          }}
           min={0}
           data-testid="config-lock-points"
         />
