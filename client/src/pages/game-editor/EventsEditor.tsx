@@ -274,6 +274,9 @@ function EventDetailEditor({
                 case "shooting":
                   triggerConfig = { minScore: 100 };
                   break;
+                case "photo":
+                  triggerConfig = { missionId: "" };
+                  break;
                 case "timer":
                   triggerConfig = { delaySeconds: 60 };
                   break;
