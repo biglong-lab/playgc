@@ -90,7 +90,7 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       try {
         const data = JSON.parse(event.data);
         
-        if (data.type === "shooting_hit" && isStarted && !isCompleted) {
+        if (data.type === "shooting_hit" && isStartedRef.current && !isCompletedRef.current) {
           const record = data.record ?? {};
           // 相容前後端欄位名稱（DB schema: targetZone / hitPosition 字串 / hitScore/score）
           // 前端原期望: hitZone / hitPosition.x/y / points
