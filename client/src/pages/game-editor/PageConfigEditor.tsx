@@ -15,6 +15,7 @@ import MotionChallengeEditor from "./MotionChallengeEditor";
 import VoteEditor from "./VoteEditor";
 import FlowRouterEditor from "./FlowRouterEditor";
 import OnCompleteActionsEditor from "./OnCompleteActionsEditor";
+import CommonNavigationEditor from "./CommonNavigationEditor";
 import { RewardsSection, LocationSettingsSection } from "./page-config-shared";
 import {
   TextCardEditor,
