@@ -133,11 +133,24 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     ws.onclose = () => {
       setConnectionStatus("disconnected");
       setIsConnected(false);
-      
+
       if (isStarted && !isCompleted) {
-        reconnectTimeoutRef.current = setTimeout(() => {
-          connectWebSocket();
-        }, 3000);
+        setReconnectAttempts((prev) => {
+          const next = prev + 1;
+          // 超過自動重連上限 → 停止，交給使用者手動觸發
+          if (next > MAX_AUTO_RECONNECT) {
+            toast({
+              title: "自動重連失敗",
+              description: "請點擊「手動重連」或檢查靶機網路",
+              variant: "destructive",
+            });
+            return next;
+          }
+          reconnectTimeoutRef.current = setTimeout(() => {
+            connectWebSocket();
+          }, 3000);
+          return next;
+        });
       }
     };
 
