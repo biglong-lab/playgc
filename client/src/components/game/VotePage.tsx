@@ -133,6 +133,20 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
     setSelectedOption(index);
   };
 
+  // 鍵盤 Enter 送出投票（需先選擇選項）
+  useEffect(() => {
+    if (hasVoted || selectedOption === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !e.isComposing) {
+        e.preventDefault();
+        handleVoteSubmit();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasVoted, selectedOption]);
+
   const handleVoteSubmit = () => {
     if (selectedOption === null || hasVoted || !hasValidOptions) return;
 
