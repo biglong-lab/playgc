@@ -48,6 +48,8 @@ interface ConditionalVerifyConfig {
   };
   nextPageId?: string;
   rewardPoints?: number;
+  /** 示範模式：純劇情展示，不要求實際持有道具 */
+  demoMode?: boolean;
 }
 
 interface ConditionalVerifyPageProps {
