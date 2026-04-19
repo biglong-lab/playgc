@@ -121,6 +121,84 @@ export default function TimeBombEditor({ config, updateField }: EditorProps) {
                   data-testid={`config-task-answer-${i}`}
                 />
               )}
+              {task.type === "choice" && (
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    {((task.options as string[]) || []).map((opt: string, oi: number) => (
+                      <div key={oi} className="flex gap-1 items-center">
+                        <input
+                          type="radio"
+                          checked={task.correctIndex === oi}
+                          onChange={() => {
+                            const newTasks = [...config.tasks];
+                            newTasks[i] = { ...newTasks[i], correctIndex: oi };
+                            updateField("tasks", newTasks);
+                          }}
+                          data-testid={`config-task-choice-correct-${i}-${oi}`}
+                        />
+                        <Input
+                          value={opt}
+                          onChange={(e) => {
+                            const newTasks = [...config.tasks];
+                            const newOpts = [...((task.options as string[]) || [])];
+                            newOpts[oi] = e.target.value;
+                            newTasks[i] = { ...newTasks[i], options: newOpts };
+                            updateField("tasks", newTasks);
+                          }}
+                          placeholder={`選項 ${oi + 1}`}
+                          className="flex-1 h-8 text-xs"
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            const newTasks = [...config.tasks];
+                            const newOpts = ((task.options as string[]) || []).filter((_, idx) => idx !== oi);
+                            newTasks[i] = { ...newTasks[i], options: newOpts };
+                            updateField("tasks", newTasks);
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const newTasks = [...config.tasks];
+                      const newOpts = [...((task.options as string[]) || []), ""];
+                      newTasks[i] = { ...newTasks[i], options: newOpts };
+                      updateField("tasks", newTasks);
+                    }}
+                    className="text-xs h-7"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />新增選項
+                  </Button>
+                </div>
+              )}
+              {task.type === "swipe" && (
+                <Select
+                  value={(task.swipeDirection as string) || "right"}
+                  onValueChange={(value) => {
+                    const newTasks = [...config.tasks];
+                    newTasks[i] = { ...newTasks[i], swipeDirection: value };
+                    updateField("tasks", newTasks);
+                  }}
+                >
+                  <SelectTrigger data-testid={`config-task-swipe-dir-${i}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="left">向左滑</SelectItem>
+                    <SelectItem value="right">向右滑</SelectItem>
+                    <SelectItem value="up">向上滑</SelectItem>
+                    <SelectItem value="down">向下滑</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           ))}
           <Button
