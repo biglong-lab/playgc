@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus, ChevronDown, Play } from "lucide-react";
+import { Trash2, Plus, ChevronDown, Play, Clock } from "lucide-react";
 import type { Page } from "@shared/schema";
 import { getPageTypeInfo } from "./constants";
 import type { PageConfig, PageConfigValue } from "./page-config-shared";
@@ -13,6 +14,9 @@ interface ButtonItem {
   text: string;
   nextPageId?: string;
   rewardPoints?: number;
+  icon?: string;
+  color?: string;
+  items?: string[];
 }
 
 export default function ButtonConfigEditor({
