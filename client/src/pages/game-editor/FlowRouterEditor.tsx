@@ -131,15 +131,71 @@ function ConditionEditor({
             placeholder="變數名"
             className="w-28 h-8"
           />
-          <Input
-            value={String(condition.variableValue ?? "")}
-            onChange={(e) => {
-              const num = Number(e.target.value);
-              onChange({ ...condition, variableValue: isNaN(num) ? e.target.value : num });
-            }}
-            placeholder="值"
-            className="w-20 h-8"
-          />
+          {(() => {
+            // 依 variableValue 現值推測型別，或使用 condition.valueType 欄位
+            const current = condition.variableValue;
+            const valueType =
+              (condition as { valueType?: string }).valueType ||
+              (typeof current === "boolean" ? "boolean" :
+               typeof current === "number" ? "number" : "string");
+
+            return (
+              <>
+                <Select
+                  value={valueType}
+                  onValueChange={(v) => {
+                    // 切換型別時同步轉換當前值（避免歧義）
+                    let newValue: unknown = current;
+                    if (v === "number") newValue = Number(current) || 0;
+                    else if (v === "boolean") newValue = !!current && current !== "false";
+                    else newValue = current == null ? "" : String(current);
+                    onChange({ ...condition, variableValue: newValue, valueType: v });
+                  }}
+                >
+                  <SelectTrigger className="w-20 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="string">文字</SelectItem>
+                    <SelectItem value="number">數字</SelectItem>
+                    <SelectItem value="boolean">布林</SelectItem>
+                  </SelectContent>
+                </Select>
+                {valueType === "boolean" ? (
+                  <Select
+                    value={String(!!current)}
+                    onValueChange={(v) => onChange({ ...condition, variableValue: v === "true", valueType })}
+                  >
+                    <SelectTrigger className="w-20 h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">true</SelectItem>
+                      <SelectItem value="false">false</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : valueType === "number" ? (
+                  <Input
+                    type="number"
+                    value={Number.isFinite(current as number) ? (current as number) : 0}
+                    onChange={(e) => {
+                      const n = Number(e.target.value);
+                      onChange({ ...condition, variableValue: Number.isFinite(n) ? n : 0, valueType });
+                    }}
+                    placeholder="值"
+                    className="w-24 h-8"
+                  />
+                ) : (
+                  <Input
+                    value={String(current ?? "")}
+                    onChange={(e) => onChange({ ...condition, variableValue: e.target.value, valueType })}
+                    placeholder="值"
+                    className="w-24 h-8"
+                  />
+                )}
+              </>
+            );
+          })()}
         </>
       )}
 
