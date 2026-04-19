@@ -119,21 +119,66 @@ export default function ButtonConfigEditor({
                   </Select>
                 </div>
 
-                <div className="flex gap-2 items-center">
-                  <label className="text-xs text-muted-foreground shrink-0 w-16">獎勵分數:</label>
-                  <Input
-                    type="number"
-                    value={btn.rewardPoints || 0}
-                    onChange={(e) => {
-                      const newButtons = [...config.buttons];
-                      newButtons[i] = { ...newButtons[i], rewardPoints: parseInt(e.target.value) || 0 };
-                      updateField("buttons", newButtons);
-                    }}
-                    placeholder="0"
-                    className="w-24"
-                    data-testid={`config-button-points-${i}`}
-                  />
-                  <span className="text-xs text-muted-foreground">分</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">獎勵分數</label>
+                    <Input
+                      type="number"
+                      value={btn.rewardPoints ?? 0}
+                      onChange={(e) => {
+                        const newButtons = [...config.buttons];
+                        const n = parseInt(e.target.value, 10);
+                        newButtons[i] = { ...newButtons[i], rewardPoints: Number.isFinite(n) ? n : 0 };
+                        updateField("buttons", newButtons);
+                      }}
+                      placeholder="0"
+                      className="h-9"
+                      data-testid={`config-button-points-${i}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">圖示（lucide 名稱）</label>
+                    <Input
+                      value={btn.icon || ""}
+                      onChange={(e) => {
+                        const newButtons = [...config.buttons];
+                        newButtons[i] = { ...newButtons[i], icon: e.target.value || undefined };
+                        updateField("buttons", newButtons);
+                      }}
+                      placeholder="例：Sword / Heart"
+                      className="h-9"
+                      data-testid={`config-button-icon-${i}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">按鈕顏色</label>
+                    <Input
+                      type="color"
+                      value={btn.color || "#3b82f6"}
+                      onChange={(e) => {
+                        const newButtons = [...config.buttons];
+                        newButtons[i] = { ...newButtons[i], color: e.target.value };
+                        updateField("buttons", newButtons);
+                      }}
+                      className="h-9"
+                      data-testid={`config-button-color-${i}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">發送道具 ID（逗號）</label>
+                    <Input
+                      value={(btn.items || []).join(", ")}
+                      onChange={(e) => {
+                        const items = e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
+                        const newButtons = [...config.buttons];
+                        newButtons[i] = { ...newButtons[i], items: items.length > 0 ? items : undefined };
+                        updateField("buttons", newButtons);
+                      }}
+                      placeholder="itemId1, itemId2"
+                      className="h-9 text-xs"
+                      data-testid={`config-button-items-${i}`}
+                    />
+                  </div>
                 </div>
               </div>
             </Card>
