@@ -3,10 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Trophy } from "lucide-react";
 import { LocationSettingsSection, type EditorProps } from "./page-config-shared";
+import type { Page } from "@shared/schema";
 
-export default function VoteEditor({ config, updateField }: EditorProps) {
+interface VoteEditorProps extends EditorProps {
+  allPages?: Page[];
+}
+
+export default function VoteEditor({ config, updateField, allPages = [] }: VoteEditorProps) {
   const voteOptions = config.options || [{ text: "選項一" }, { text: "選項二" }];
 
   return (
