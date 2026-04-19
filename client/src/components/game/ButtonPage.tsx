@@ -160,7 +160,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
                 borderColor: button.color,
                 color: selectedIndex === index ? "white" : button.color
               } : undefined}
-              disabled={isSubmitting && selectedIndex !== index}
+              disabled={isSubmitting}
               data-testid={`button-choice-${index}`}
             >
               <div className="flex items-center gap-3 flex-1">
