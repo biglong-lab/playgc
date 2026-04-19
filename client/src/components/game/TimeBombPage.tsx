@@ -38,6 +38,29 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
   const currentTask = tasks[currentTaskIndex];
   const progress = tasks.length > 0 ? ((currentTaskIndex) / tasks.length) * 100 : 0;
 
+  // 空 tasks fallback — 避免玩家卡在「未知任務類型」
+  useEffect(() => {
+    if (tasks.length === 0 && !isExploded && !isDefused) {
+      setIsDefused(true);
+      toast({
+        title: "此拆彈任務尚未設定關卡",
+        description: "自動標記為通過",
+      });
+      const timer = setTimeout(() => {
+        onComplete({ points: 0 }, config.successNextPageId);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [tasks.length, isExploded, isDefused, onComplete, config.successNextPageId, toast]);
+
+  // 最後 10 秒心跳震動（支援裝置）
+  useEffect(() => {
+    if (isExploded || isDefused) return;
+    if (timeLeft > 0 && timeLeft <= 10 && typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate(80); } catch { /* noop */ }
+    }
+  }, [timeLeft, isExploded, isDefused]);
+
   useEffect(() => {
     if (isExploded || isDefused) return;
 
