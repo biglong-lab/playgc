@@ -245,16 +245,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-export function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-
-  console.log(`${formattedTime} [${source}] ${message}`);
-}
+  // log 使用頂層宣告的 _log（同名避免 refactor 影響）
 
 app.use((req, res, next) => {
   const start = Date.now();
