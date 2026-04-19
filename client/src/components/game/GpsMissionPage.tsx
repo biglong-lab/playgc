@@ -200,6 +200,8 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
     setError(null);
     setIsWatching(true);
 
+    // 每次重啟 watching 前重置到達鎖
+    hasArrivedRef.current = false;
     const id = navigator.geolocation.watchPosition(
       updateLocation,
       handleLocationError,
@@ -210,6 +212,7 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
       }
     );
     setWatchId(id);
+    watchIdRef.current = id;
   };
 
   const stopWatching = () => {
