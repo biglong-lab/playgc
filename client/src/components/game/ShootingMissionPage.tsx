@@ -139,7 +139,8 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       setConnectionStatus("disconnected");
       setIsConnected(false);
 
-      if (isStarted && !isCompleted) {
+      // 讀 ref 而不是 closure 的 isStarted/isCompleted（handleStart 呼叫時 isStarted 尚未生效）
+      if (isStartedRef.current && !isCompletedRef.current) {
         setReconnectAttempts((prev) => {
           const next = prev + 1;
           // 超過自動重連上限 → 停止，交給使用者手動觸發
