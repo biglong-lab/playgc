@@ -269,6 +269,7 @@ export class DatabaseStorage implements IStorage {
 
   // ===== 玩家進度方法 =====
   getPlayerProgress = sessionStorageMethods.getPlayerProgress;
+  getPlayerProgressByUser = sessionStorageMethods.getPlayerProgressByUser;
   createPlayerProgress = sessionStorageMethods.createPlayerProgress;
   updatePlayerProgress = sessionStorageMethods.updatePlayerProgress;
 
