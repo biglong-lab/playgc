@@ -59,8 +59,15 @@ const urbanLegendInvestigator: GameModule = {
       title: "收集關鍵線索",
       config: {
         instruction: "在案件資料中找出 3 件關鍵線索",
-        requiredFragments: 3,
-        fragments: ["大樓門禁紀錄", "電梯維修紀錄", "當晚社群貼文"],
+        demoMode: true,
+        verificationMode: "all_collected",
+        fragmentType: "custom",
+        fragmentCount: 3,
+        fragments: [
+          { id: "c1", label: "大樓門禁紀錄", value: "1", order: 1 },
+          { id: "c2", label: "電梯維修紀錄", value: "2", order: 2 },
+          { id: "c3", label: "當晚社群貼文", value: "3", order: 3 },
+        ],
       },
     },
     {
