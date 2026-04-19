@@ -157,6 +157,64 @@ export default function ChapterConfigEditor({
         </div>
       </div>
 
+      {/* 依 unlockType 顯示對應的設定欄位 */}
+      {unlockType === "score_threshold" && (
+        <div className="border rounded-lg p-3 bg-accent/5">
+          <Label className="flex items-center gap-1 mb-2">
+            <Lock className="w-3 h-3" /> 需要分數
+          </Label>
+          <Input
+            type="number"
+            value={requiredScore}
+            onChange={(e) => setRequiredScore(e.target.value)}
+            placeholder="例：500"
+            min={0}
+            data-testid="input-required-score"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            玩家在前一章取得的分數達到此值才能解鎖本章
+          </p>
+        </div>
+      )}
+
+      {unlockType === "paid" && (
+        <div className="border rounded-lg p-3 bg-accent/5 space-y-3">
+          <Label className="flex items-center gap-1">
+            <Lock className="w-3 h-3" /> 付費解鎖設定
+          </Label>
+          <div className="grid grid-cols-3 gap-2">
+            <div className="col-span-2">
+              <Label className="text-xs text-muted-foreground mb-1 block">金額</Label>
+              <Input
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="99"
+                min={0}
+                step="0.01"
+                data-testid="input-chapter-price"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground mb-1 block">幣別</Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger data-testid="select-currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TWD">TWD</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="JPY">JPY</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            玩家購買此章節後永久解鎖。需搭配遊戲的付款整合（Recur.tw）才能實際收費。
+          </p>
+        </div>
+      )}
+
       <div className="flex gap-2 pt-2">
         <Button
           onClick={handleSave}
