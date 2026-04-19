@@ -104,11 +104,11 @@ export function InstructionView({
               從相簿選擇
             </Button>
 
+            {/* 從相簿選擇：不加 capture 屬性，iOS Safari 才會顯示「相簿 / 拍照」選單 */}
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={onFileUpload}
               className="hidden"
             />
