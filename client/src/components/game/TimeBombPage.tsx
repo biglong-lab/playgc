@@ -104,10 +104,15 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
     }
   }, [currentTaskIndex, tasks.length, config, onComplete, toast]);
 
+  const [tapPulseKey, setTapPulseKey] = useState(0);
   const handleTap = () => {
     if (!currentTask || currentTask.type !== "tap") return;
     const newCount = tapCount + 1;
     setTapCount(newCount);
+    setTapPulseKey((k) => k + 1);
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+      try { navigator.vibrate(15); } catch { /* noop */ }
+    }
     if (newCount >= (currentTask.targetCount || 10)) {
       completeTask();
     }
