@@ -39,18 +39,25 @@ export const gameSessions = pgTable(
 // ============================================================================
 // Player Progress table - Individual player state in a session
 // ============================================================================
-export const playerProgress = pgTable("player_progress", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  sessionId: varchar("session_id")
-    .references(() => gameSessions.id, { onDelete: "cascade" })
-    .notNull(),
-  userId: varchar("user_id").references(() => users.id),
-  currentPageId: varchar("current_page_id").references(() => pages.id),
-  score: integer("score").default(0), // Player's individual score
-  inventory: jsonb("inventory").default([]), // Array of item IDs
-  variables: jsonb("variables").default({}), // Game variables
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export const playerProgress = pgTable(
+  "player_progress",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    sessionId: varchar("session_id")
+      .references(() => gameSessions.id, { onDelete: "cascade" })
+      .notNull(),
+    userId: varchar("user_id").references(() => users.id),
+    currentPageId: varchar("current_page_id").references(() => pages.id),
+    score: integer("score").default(0), // Player's individual score
+    inventory: jsonb("inventory").default([]), // Array of item IDs
+    variables: jsonb("variables").default({}), // Game variables
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    // 多人併發優化：按 session + user 直接定位玩家進度（避免全 session 掃描）
+    index("idx_player_progress_session_user").on(table.sessionId, table.userId),
+  ],
+);
 
 // ============================================================================
 // Chat Messages table - Real-time team chat
