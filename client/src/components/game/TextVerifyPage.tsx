@@ -156,7 +156,12 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
         description: `還剩 ${maxAttempts - newAttempts} 次機會`,
         variant: "destructive",
       });
-      setTimeout(() => setIsCorrect(null), 1000);
+      // 觸覺回饋 + 震動動畫（提升錯誤感知）
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        try { navigator.vibrate([40, 60, 40]); } catch { /* noop */ }
+      }
+      // 縮短重試等待（1s → 400ms），並保留 isAnimating 結束
+      setTimeout(() => setIsCorrect(null), 400);
     }
   };
 
