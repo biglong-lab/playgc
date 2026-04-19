@@ -351,7 +351,7 @@ export default function ConditionalVerifyPage({
               </div>
             </div>
 
-            {verificationMode !== 'all_collected' && (
+            {verificationMode !== 'all_collected' && !isDemoMode && (
               <div className="mb-6">
                 <label className="text-sm font-medium mb-2 block">輸入密碼組合</label>
                 <Input
