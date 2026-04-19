@@ -955,47 +955,7 @@ function LegacyOptionsEditor({
           </Button>
         </div>
       </div>
-
-      {/* 進階選項 */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="flex items-center justify-between border rounded p-2">
-          <span className="text-xs">選項隨機順序</span>
-          <Switch
-            checked={config.randomizeOptions === true}
-            onCheckedChange={(v) => updateField("randomizeOptions", v)}
-          />
-        </div>
-        <div className="flex items-center justify-between border rounded p-2">
-          <span className="text-xs">多選模式</span>
-          <Switch
-            checked={config.multiple === true}
-            onCheckedChange={(v) => updateField("multiple", v)}
-          />
-        </div>
-        <div className="flex items-center justify-between border rounded p-2">
-          <span className="text-xs">顯示解釋</span>
-          <Switch
-            checked={config.showExplanation === true}
-            onCheckedChange={(v) => updateField("showExplanation", v)}
-          />
-        </div>
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">時限（秒，0=無）</label>
-          <Input
-            type="number"
-            value={(config.timeLimit as number | undefined) ?? 0}
-            onChange={(e) => {
-              const n = parseInt(e.target.value, 10);
-              updateField("timeLimit", Number.isFinite(n) && n >= 0 ? n : 0);
-            }}
-            min={0}
-            className="h-8"
-          />
-        </div>
-      </div>
-
-      <LocationSettingsSection config={config} updateField={updateField} />
-    </div>
+    </>
   );
 }
 
