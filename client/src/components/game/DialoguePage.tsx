@@ -254,14 +254,22 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
           ))}
         </div>
         
-        <Button 
-          onClick={handleNext} 
-          className="gap-2"
-          data-testid="button-next-dialogue"
-        >
-          {isTyping ? "顯示全部" : isLastMessage ? "繼續" : "下一句"}
-          <ChevronRight className="w-4 h-4" />
-        </Button>
+        <div className="flex flex-col items-end gap-1">
+          <Button
+            onClick={handleNext}
+            className={`gap-2 ${isLastMessage && !isTyping ? "animate-pulse" : ""}`}
+            data-testid="button-next-dialogue"
+          >
+            {isTyping ? "顯示全部" : isLastMessage ? "結束對話" : "下一句"}
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+          {/* autoAdvance 到最後一則不會自動結束，提示玩家需要點擊 */}
+          {config?.autoAdvance && isLastMessage && !isTyping && (
+            <span className="text-[10px] text-muted-foreground">
+              劇情結束，點擊按鈕進入下一關
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
