@@ -213,17 +213,42 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
         return (
           <div className="text-center">
             <p className="text-lg mb-4">{currentTask.question || "快速點擊按鈕!"}</p>
-            <Button
-              size="lg"
-              className="w-32 h-32 rounded-full text-2xl animate-pulse"
-              onClick={handleTap}
-              data-testid="button-tap"
-            >
-              <Zap className="w-12 h-12" />
-            </Button>
+            <div className="relative inline-block">
+              <Button
+                key={tapPulseKey}
+                size="lg"
+                className="w-32 h-32 rounded-full text-2xl animate-pulse active:scale-90 transition-transform bomb-tap-hit"
+                onClick={handleTap}
+                data-testid="button-tap"
+              >
+                <Zap className="w-12 h-12" />
+              </Button>
+              {tapPulseKey > 0 && (
+                <span
+                  key={`tap-plus-${tapPulseKey}`}
+                  className="bomb-plus-one absolute -top-2 left-1/2 -translate-x-1/2 text-primary font-bold text-xl pointer-events-none select-none"
+                >
+                  +1
+                </span>
+              )}
+            </div>
             <p className="mt-4 text-2xl font-mono font-bold">
               {tapCount} / {currentTask.targetCount || 10}
             </p>
+            <style>{`
+              @keyframes bomb-plus-one-kf {
+                0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+                20% { opacity: 1; }
+                100% { opacity: 0; transform: translate(-50%, -36px) scale(1.15); }
+              }
+              .bomb-plus-one { animation: bomb-plus-one-kf 0.7s ease-out forwards; }
+              @keyframes bomb-tap-hit-kf {
+                0% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.6); }
+                60% { box-shadow: 0 0 0 16px hsl(var(--primary) / 0); }
+                100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0); }
+              }
+              .bomb-tap-hit:active { animation: bomb-tap-hit-kf 0.3s ease-out; }
+            `}</style>
           </div>
         );
 
