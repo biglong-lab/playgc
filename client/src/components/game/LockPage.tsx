@@ -120,7 +120,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
     }, 1200);
 
     // 比對前同時 trim + toUpperCase（原本只 toUpperCase，combination 有前後空白會永遠失敗）
-    if (normalizeAnswer(enteredCode, false) === normalizeAnswer(config.combination, false)) {
+    if (normalizeAnswer(enteredCode, false) === normalizeAnswer(combination, false)) {
       resolvedRef.current = true;
       setIsUnlocked(true);
       toast({
