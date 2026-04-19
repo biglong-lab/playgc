@@ -144,13 +144,17 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
     const accuracy = position.coords.accuracy ?? 0;
     const effectiveRadius = targetRadius + Math.min(accuracy * 0.5, 50);
 
-    if (dist <= effectiveRadius) {
+    if (dist <= effectiveRadius && !hasArrivedRef.current) {
+      hasArrivedRef.current = true;
       toast({
         title: "到達目標位置!",
         description: config.onSuccess?.message || "任務完成!",
       });
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
+      // 優先用 ref（避免 stale closure）
+      const id = watchIdRef.current;
+      if (id !== null) {
+        navigator.geolocation.clearWatch(id);
+        watchIdRef.current = null;
       }
       setTimeout(() => {
         const reward: { points?: number; items?: string[] } = {
@@ -162,7 +166,7 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
         onComplete(reward, config.nextPageId);
       }, 1500);
     }
-  }, [calculateDistance, targetLat, targetLng, targetRadius, watchId, toast, onComplete, config, getDirectionHint, playProximityBeep, soundEnabled]);
+  }, [calculateDistance, targetLat, targetLng, targetRadius, toast, onComplete, config, getDirectionHint, playProximityBeep, soundEnabled]);
 
   const handleLocationError = useCallback((err: GeolocationPositionError) => {
     setIsLocating(false);
