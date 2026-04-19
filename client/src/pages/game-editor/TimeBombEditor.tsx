@@ -12,6 +12,9 @@ interface BombTask {
   question: string;
   targetCount?: number;
   answer?: string;
+  options?: string[];
+  correctIndex?: number;
+  swipeDirection?: "left" | "right" | "up" | "down";
 }
 
 export default function TimeBombEditor({ config, updateField }: EditorProps) {
