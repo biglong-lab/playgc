@@ -66,6 +66,55 @@
 | 4 | TimeBomb | 空 tasks fallback + 最後 10s 心跳震動 + Tap 即時回饋 | `036b64b` |
 | 5 | Vote | Enter 鍵送出 + 觸覺 + 投票後焦點移到繼續鈕 | `7de728b` |
 | 6 | TextVerify | 答錯立即可重試 + 卡片 shake + normalizeAnswer 一致化 | `77d295d` |
+| 7 | ChoiceVerify | 重考只重做答錯題（P1.6）+ retry 徽章 | `8caef5a` |
+| 8 | ShootingMission | WS 自動重連上限 5 次 + 手動重連按鈕 | `4ec9cf2` |
+
+### 🧪 單元測試新增（第 2 波 5 檔案）
+
+| 元件 | 測試數 | 重點 |
+|------|--------|------|
+| ChoiceVerifyPage | 6 | 重考只做答錯題、quiz/legacy 雙模式 |
+| LockPage | 6 | 解鎖/失敗/rate-limit/字母大小寫 |
+| TextVerifyPage | 6 | 精確匹配/AI fallback/立即重試/maxAttempts |
+| VotePage | 7 | winner/self 策略/autoAdvance/isAdvancing 防重複 |
+| TimeBombPage | 7 | 空 tasks fallback/4 種任務類型/爆炸出場 |
+| **小計** | **32 測試** | 10 檔案 / 66 測試全部通過 ✅ |
+
+### 🐛 真 bug 修復（第 3 波 12 個 production bug）
+
+`/loop` 迭代過程中透過反向分析 useEffect cleanup 競態 / setState 非同步 / closure stale
+抓到的 **生產環境邏輯 bug**（非新功能需求，是現有邏輯有問題）：
+
+| # | 元件 | Bug 類型 | 影響 | Commit |
+|---|------|---------|------|--------|
+| 1 | TimeBomb | useEffect cleanup 清掉 onComplete timer | 空 tasks 永遠卡死 | `007c0cd` |
+| 2 | TextCard | isTyping deps 觸發 cleanup 清 timer | typewriter + timeLimit 卡死 | `2c2f82c` |
+| 3 | Shooting | WebSocket stale closure（handleStart 時 isStarted 尚未生效）| 靶機斷線永不重連 + 命中不記分 | `1d45682` |
+| 4 | GPS | watchPosition stale closure + 到達無鎖 | watchPosition 永不停止 + 到達多次 onComplete | `d76e6d6` |
+| 5 | Motion | handleComplete/handleFail 無防重複 | 達標繼續搖 → 多次 onComplete | `b74e5e6` |
+| 6 | Button | isSubmitting stale closure + timer 競態 | 連點同按鈕或 timer 雙觸發 | `64cda56` |
+| 7 | Video | finish 無鎖 | skip rage-click 或 ended+skip 雙觸發 | `22fdf10` |
+| 8 | Dialogue | finishDialogue 無鎖 | 「結束對話」rage-click 雙觸發 | `22fdf10` |
+| 9 | Lock | submit 連點無鎖 | 解鎖成功連點 → 雙 onComplete | `22fdf10` |
+| 10 | ConditionalVerify | handleContinue 無鎖 | 「繼續」連點雙觸發 | `47a20ca` |
+| 11 | ChoiceVerify | quiz + legacy submit 無鎖 | submit 連點雙觸發 | `47a20ca` |
+| 12 | TextVerify | handleCorrect/Incorrect 無鎖 | AI race 或 mash Enter 雙觸發 | `b537c49` |
+
+**共通修法模板**：
+```tsx
+const finishedRef = useRef(false);
+const handleDone = () => {
+  if (finishedRef.current) return;
+  finishedRef.current = true;
+  onComplete(...);
+};
+```
+
+**根因模式**（給未來 review 者當 checklist）：
+1. `setState(newValue)` 後立刻用舊 closure 中的變數 → **用 ref**
+2. `useEffect(...)` 的 cleanup 含 `clearTimeout/clearInterval`，若 deps 頻繁變動會取消合法 timer → **把 deps 收窄或搬 timer 到 ref**
+3. WebSocket / 感測器 / geolocation callback 的 closure 只綁一次，後續 state 變化讀不到 → **用 ref**
+4. 任何會呼叫 `onComplete` 的終局路徑都要有 **一次性鎖**（`finishedRef` / `isResolvedRef`）
 
 ---
 
