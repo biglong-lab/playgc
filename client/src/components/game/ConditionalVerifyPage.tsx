@@ -81,13 +81,25 @@ export default function ConditionalVerifyPage({
   const targetCode = config.targetCode || fragments.map(f => f.value).join('');
   const verificationMode = config.verificationMode || 'order_matters';
 
+  // inventory 可能混有 string / number（舊 seed 資料），統一轉字串集合做比對
+  const inventorySet = useMemo(
+    () => new Set(inventory.map((id) => String(id))),
+    [inventory],
+  );
+  const visitedSet = useMemo(
+    () => new Set(visitedLocations.map((id) => String(id))),
+    [visitedLocations],
+  );
+
   const collectedFragments = useMemo(() => {
     if (!isFragmentMode) return [];
-    // 關鍵修正：sourceItemId 未設時預設「未收集」，避免管理員漏填就裸破關
-    return fragments.filter(fragment =>
-      !!fragment.sourceItemId && inventory.includes(fragment.sourceItemId)
+    // 關鍵：sourceItemId 未設時預設未收集；比對時 String() 轉以相容數字 / 字串 itemId
+    return fragments.filter((fragment) =>
+      fragment.sourceItemId != null &&
+      fragment.sourceItemId !== "" &&
+      inventorySet.has(String(fragment.sourceItemId))
     );
-  }, [fragments, inventory, isFragmentMode]);
+  }, [fragments, inventorySet, isFragmentMode]);
 
   const allFragmentsCollected = collectedFragments.length === fragments.length;
 
