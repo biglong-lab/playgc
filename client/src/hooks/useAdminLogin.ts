@@ -86,6 +86,16 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
         return;
       }
 
+      // 🔥 重要：登入成功後必須 invalidate session cache
+      // 否則 ProtectedAdminRoute 會讀到之前的 {authenticated:false} cached 值，
+      // 立刻再跳回登入頁造成無限迴圈
+      queryClient.setQueryData(["/api/admin/session"], {
+        authenticated: true,
+        admin: data.admin,
+      });
+      // 背景 refetch 確保資料最新
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/session"] });
+
       toast({
         title: "登入成功",
         description: `歡迎回來，${data.admin.displayName || firebaseUser?.displayName || "管理員"}`,
