@@ -91,13 +91,16 @@ function normalizeFragments(raw: unknown): FragmentConfig[] {
   });
 }
 
+// 穩定空陣列參考，避免預設值每次 render 產生新陣列觸發 useEffect 無窮迴圈
+const EMPTY_STRING_ARRAY: readonly string[] = Object.freeze([]);
+
 export default function ConditionalVerifyPage({
   config,
   onComplete,
   variables,
-  inventory = [],
+  inventory = EMPTY_STRING_ARRAY as string[],
   score = 0,
-  visitedLocations = [],
+  visitedLocations = EMPTY_STRING_ARRAY as string[],
 }: ConditionalVerifyPageProps) {
   const { toast } = useToast();
   const [conditionResults, setConditionResults] = useState<boolean[]>([]);
