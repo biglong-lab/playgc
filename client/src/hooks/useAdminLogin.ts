@@ -34,6 +34,7 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { firebaseUser, isAuthenticated } = useAuthContext();
+  const queryClient = useQueryClient();
 
   // 表單狀態
   const [fieldCode, setFieldCode] = useState("");
