@@ -98,7 +98,7 @@ export default function PhotoMissionPage({
         title: "照片已上傳",
         description: "AI 服務暫時無法使用，已自動通過",
       });
-      onComplete(buildReward(true));
+      safeOnComplete(buildReward(true));
     },
   });
 
