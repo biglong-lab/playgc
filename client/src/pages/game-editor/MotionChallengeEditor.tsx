@@ -44,9 +44,21 @@ export default function MotionChallengeEditor({ config, updateField }: EditorPro
           data-testid="config-motion-target"
         />
         <p className="text-xs text-muted-foreground mt-1">
-          {config.challengeType === "shake" ? "搖晃次數" :
-           config.challengeType === "tilt" || config.challengeType === "rotate" ? "傾斜角度" : "移動次數"}
+          {config.challengeType === "shake" && "搖晃手機的次數"}
+          {config.challengeType === "tilt" && "傾斜角度（度，建議 30-60）"}
+          {config.challengeType === "rotate" && "累積旋轉角度（度，建議 180-720）"}
+          {config.challengeType === "jump" && "跳躍次數（z 軸加速度過零）"}
         </p>
+        {config.challengeType === "jump" && (
+          <p className="text-[11px] text-amber-600 mt-1">
+            ⚠️ 跳躍偵測需要使用者確實做垂直動作，iOS 需確認動作感測器權限已開
+          </p>
+        )}
+        {(config.challengeType === "tilt" || config.challengeType === "rotate") && (
+          <p className="text-[11px] text-muted-foreground mt-1">
+            💡 iOS 需額外請求 DeviceOrientationEvent 權限（元件已自動處理）
+          </p>
+        )}
       </div>
       <div>
         <label className="text-sm font-medium mb-2 block">時間限制 (秒)</label>
