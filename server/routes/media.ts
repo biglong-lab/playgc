@@ -160,8 +160,11 @@ export function registerMediaRoutes(app: Express) {
         url: result.secure_url,
         publicId: result.public_id,
       });
-    } catch {
-      res.status(500).json({ error: "上傳失敗" });
+    } catch (error) {
+      console.error("[media] player-photo 上傳失敗:", error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "上傳失敗",
+      });
     }
   });
 
