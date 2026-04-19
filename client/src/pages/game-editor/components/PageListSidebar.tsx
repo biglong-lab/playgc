@@ -1,10 +1,12 @@
 // 頁面列表側邊欄 - 拖曳排序、頁面操作
+import { useMemo } from "react";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, Trash2, Copy, Plus } from "lucide-react";
+import { GripVertical, Trash2, Copy, Plus, AlertTriangle } from "lucide-react";
 import type { Page } from "@shared/schema";
 import { getPageTypeInfo } from "../constants";
+import { validatePageConfig } from "../lib/validate-page-config";
 
 interface PageListSidebarProps {
   readonly pages: Page[];
