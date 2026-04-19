@@ -221,7 +221,8 @@ export function validateCrossPageFlow(pages: Page[]): ValidationIssue[] {
     const cfg = (page.config ?? {}) as Record<string, unknown>;
 
     // 先檢查：若此頁是 conditional_verify，條件要求的 items/score 是否有先前 page 發
-    if (page.pageType === "conditional_verify") {
+    // 示範模式下跳過 item 檢查（demoMode 明確表示玩家不需實際持有道具）
+    if (page.pageType === "conditional_verify" && cfg.demoMode !== true) {
       const conditions = (cfg.conditions as Array<{ type?: string; itemId?: unknown; minPoints?: number }>) || [];
       for (const cond of conditions) {
         if (cond.type === "has_item" && cond.itemId != null && cond.itemId !== "") {
