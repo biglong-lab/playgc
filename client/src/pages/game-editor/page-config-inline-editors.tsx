@@ -132,9 +132,41 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
 
 // ====== 對話編輯器 ======
 
+const DIALOGUE_EMOTIONS = ["neutral", "happy", "angry", "surprised", "sad", "thinking"] as const;
+const EMOTION_LABELS: Record<string, string> = {
+  neutral: "中性", happy: "開心", angry: "憤怒", surprised: "驚訝", sad: "難過", thinking: "思考",
+};
+
 export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseEditorProps & WithMediaUpload) {
   const character = (config.character || {}) as Record<string, unknown>;
   const messages = (config.messages || []) as Array<Record<string, unknown>>;
+  const emotionAvatars = (character.emotionAvatars || {}) as Record<string, string>;
+
+  const updateMessages = (next: Array<Record<string, unknown>>) => {
+    updateField("messages", next);
+  };
+
+  const addMessage = () => {
+    updateMessages([...messages, { text: "", emotion: "neutral" }]);
+  };
+
+  const updateMessage = (i: number, patch: Record<string, unknown>) => {
+    const next = [...messages];
+    next[i] = { ...next[i], ...patch };
+    updateMessages(next);
+  };
+
+  const removeMessage = (i: number) => {
+    updateMessages(messages.filter((_, idx) => idx !== i));
+  };
+
+  const moveMessage = (i: number, dir: -1 | 1) => {
+    const next = [...messages];
+    const target = i + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[i], next[target]] = [next[target], next[i]];
+    updateMessages(next);
+  };
 
   return (
     <div className="space-y-4">
@@ -148,7 +180,7 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
         />
       </div>
       <div>
-        <label className="text-sm font-medium mb-2 block">角色頭像 (可選)</label>
+        <label className="text-sm font-medium mb-2 block">角色頭像（預設）</label>
         <div className="flex gap-2 items-center">
           {Boolean(character.avatar) && (
             <img
@@ -171,16 +203,131 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
           />
         </div>
       </div>
-      <div>
-        <label className="text-sm font-medium mb-2 block">對話內容</label>
-        <Textarea
-          value={(messages[0]?.text as string) || ""}
-          onChange={(e) => updateField("messages", [{ text: e.target.value }])}
-          placeholder="對話內容..."
-          rows={4}
-          data-testid="config-dialogue"
-        />
+
+      {/* 情緒頭像（可選） */}
+      <details className="border rounded-lg p-3 bg-accent/5">
+        <summary className="text-sm font-medium cursor-pointer">情緒頭像（可選）</summary>
+        <div className="grid grid-cols-2 gap-2 mt-3">
+          {DIALOGUE_EMOTIONS.slice(1).map((emotion) => (
+            <div key={emotion} className="flex items-center gap-2">
+              {emotionAvatars[emotion] && (
+                <img src={emotionAvatars[emotion]} alt={emotion} className="w-8 h-8 rounded-full object-cover" />
+              )}
+              <span className="text-xs w-8 shrink-0">{EMOTION_LABELS[emotion]}</span>
+              <Input
+                value={emotionAvatars[emotion] || ""}
+                onChange={(e) => updateField("character", {
+                  ...character,
+                  emotionAvatars: { ...emotionAvatars, [emotion]: e.target.value },
+                })}
+                placeholder="URL"
+                className="text-xs h-8"
+              />
+            </div>
+          ))}
+        </div>
+      </details>
+
+      {/* 訊息列表 */}
+      <div className="border rounded-lg p-3 bg-accent/5">
+        <div className="flex items-center justify-between mb-3">
+          <label className="text-sm font-medium">對話訊息 ({messages.length} 則)</label>
+          <Button size="sm" variant="outline" onClick={addMessage}>
+            <Plus className="w-3 h-3 mr-1" />新增訊息
+          </Button>
+        </div>
+
+        {messages.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center py-3">
+            還沒有對話內容。點「新增訊息」開始編寫劇情。
+          </p>
+        )}
+
+        <div className="space-y-2">
+          {messages.map((msg, i) => (
+            <div key={i} className="bg-background border rounded p-2 space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs shrink-0">#{i + 1}</Badge>
+                <Select
+                  value={(msg.emotion as string) || "neutral"}
+                  onValueChange={(v) => updateMessage(i, { emotion: v })}
+                >
+                  <SelectTrigger className="h-8 flex-1 max-w-28 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DIALOGUE_EMOTIONS.map((e) => (
+                      <SelectItem key={e} value={e}>{EMOTION_LABELS[e]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  value={(msg.delay as number | undefined) ?? ""}
+                  onChange={(e) => {
+                    const n = parseInt(e.target.value, 10);
+                    updateMessage(i, { delay: Number.isFinite(n) ? n : undefined });
+                  }}
+                  placeholder="延遲(ms)"
+                  className="h-8 w-24 text-xs"
+                />
+                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => moveMessage(i, -1)} disabled={i === 0}>↑</Button>
+                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => moveMessage(i, 1)} disabled={i === messages.length - 1}>↓</Button>
+                <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => removeMessage(i)}>
+                  <XIcon className="w-3 h-3" />
+                </Button>
+              </div>
+              <Textarea
+                value={(msg.text as string) || ""}
+                onChange={(e) => updateMessage(i, { text: e.target.value })}
+                placeholder="對話文字..."
+                rows={2}
+                className="text-sm"
+              />
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* 進階設定 */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">自動前進</span>
+          <Switch
+            checked={config.autoAdvance === true}
+            onCheckedChange={(v) => updateField("autoAdvance", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">氣泡動畫</span>
+          <Switch
+            checked={config.bubbleAnimation !== false}
+            onCheckedChange={(v) => updateField("bubbleAnimation", v)}
+          />
+        </div>
+        <div className="flex items-center justify-between border rounded p-2">
+          <span className="text-xs">情緒指示</span>
+          <Switch
+            checked={config.showEmotionIndicator === true}
+            onCheckedChange={(v) => updateField("showEmotionIndicator", v)}
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground mb-1 block">打字速度 (ms/字)</label>
+          <Input
+            type="number"
+            value={(config.typingSpeed as number | undefined) ?? 30}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("typingSpeed", Number.isFinite(n) && n > 0 ? n : 30);
+            }}
+            min={5}
+            max={500}
+            className="h-8"
+          />
+        </div>
+      </div>
+
       <LocationSettingsSection config={config} updateField={updateField} />
     </div>
   );
