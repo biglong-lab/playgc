@@ -631,6 +631,8 @@ export function QrScanEditor({ config, updateField, gameId, page }: BaseEditorPr
 interface ChoiceOption {
   text: string;
   correct: boolean;
+  explanation?: string;
+  nextPageId?: string;
 }
 
 export function ChoiceVerifyEditor({ config, updateField }: BaseEditorProps) {
