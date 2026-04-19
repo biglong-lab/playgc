@@ -167,7 +167,7 @@ app.get("/api/health/detail", async (_req, res) => {
       total: pool.totalCount,      // 連線池目前連線數
       idle: pool.idleCount,        // 閒置可用連線
       waiting: pool.waitingCount,  // 等待連線的 request 數（若 > 0 代表 pool 吃緊）
-      max: pool.options.max,       // pool 上限
+      max: Number(process.env.DB_POOL_MAX) || 80, // pool 上限（與 db.ts 對齊）
     },
   });
 });
