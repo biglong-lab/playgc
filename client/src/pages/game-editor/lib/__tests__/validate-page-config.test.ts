@@ -1,6 +1,6 @@
 // validate-page-config 單元測試
 import { describe, it, expect } from "vitest";
-import { validatePageConfig, validateAllPages } from "../validate-page-config";
+import { validatePageConfig, validateAllPages, validateCrossPageFlow } from "../validate-page-config";
 import type { Page } from "@shared/schema";
 
 function makePage(pageType: string, config: Record<string, unknown>, overrides: Partial<Page> = {}): Page {
