@@ -37,6 +37,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
   const autoAdvanceTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // ref 存最新 handleContinue 避免 setInterval 閉包 stale
   const handleContinueRef = useRef<() => void>(() => {});
+  const continueButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const options = config.options || [];
   const votingTimeLimit = config.votingTimeLimit || 0;
