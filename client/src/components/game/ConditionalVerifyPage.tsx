@@ -248,8 +248,12 @@ export default function ConditionalVerifyPage({
     });
   };
 
+  // 防 rage-click 「繼續」觸發多次 onComplete
+  const finishedRef = useRef(false);
   const handleContinue = () => {
     if (allPassed) {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
       const reward: { points?: number; items?: string[] } = {
         points: config.onSuccess?.points ?? config.rewardPoints ?? 10,
       };
