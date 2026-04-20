@@ -179,6 +179,23 @@ export async function grantAdmin(
   roleId: string,
   grantedByAccountId: string
 ): Promise<{ success: boolean; error?: string }> {
+  // 🛡️ 安全防線：禁止匿名帳號（Firebase anonymous 登入）成為管理員
+  // 匿名帳號 email 格式為 user-<uid>@firebase.local，其 uid 來自 Firebase
+  // anonymousSignin，無 email 驗證，無法歸屬真實自然人，不應持有管理權限
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { email: true },
+  });
+  if (!user) {
+    return { success: false, error: "使用者不存在" };
+  }
+  if (user.email && user.email.endsWith("@firebase.local")) {
+    return {
+      success: false,
+      error: "匿名帳號不可授予管理員權限，請先綁定真實 Email",
+    };
+  }
+
   // 確保有 membership（無則建立）
   await ensureMembership(userId, fieldId);
 
