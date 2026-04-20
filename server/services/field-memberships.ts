@@ -264,6 +264,22 @@ export async function grantAdmin(
     }
   }
 
+  // 🔄 權限變更 → 使該使用者現有 admin session 失效
+  // 這樣被升級/降級的人下次打 API 會 401 → 前端提示重新登入 → 取得新權限
+  try {
+    const affectedAccounts = await db
+      .select({ id: adminAccounts.id })
+      .from(adminAccounts)
+      .where(eq(adminAccounts.firebaseUserId, userId));
+    if (affectedAccounts.length > 0) {
+      for (const acc of affectedAccounts) {
+        await db.delete(adminSessions).where(eq(adminSessions.adminAccountId, acc.id));
+      }
+    }
+  } catch (err) {
+    console.error("[auth] 失效舊 session 失敗:", err);
+  }
+
   // 📧 發通知信（真實 email 才寄；fallback user 不打擾）
   if (user?.email && !user.email.endsWith("@firebase.local")) {
     const field = await db.query.fields.findFirst({ where: eq(fields.id, fieldId) });
