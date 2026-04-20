@@ -85,7 +85,8 @@ export async function isAuthenticated(
 
     const userId = decodedToken.uid;
     let user = await storage.getUser(userId);
-    
+    const isNewUser = !user;
+
     if (!user) {
       user = await storage.upsertUser({
         id: userId,
@@ -94,6 +95,23 @@ export async function isAuthenticated(
         lastName: decodedToken.name?.split(" ").slice(1).join(" ") || null,
         profileImageUrl: decodedToken.picture || null,
       });
+    }
+
+    // 🎫 新玩家：自動加入預設場域，讓管理後台看得到
+    // （未來支援多場域時可改為從 subdomain 或 URL 判斷）
+    if (isNewUser) {
+      try {
+        const { db } = await import("./db");
+        const { fields } = await import("@shared/schema");
+        const allFields = await db.select().from(fields).limit(1);
+        if (allFields.length === 1) {
+          const { ensureMembership } = await import("./services/field-memberships");
+          await ensureMembership(user.id, allFields[0].id);
+        }
+      } catch (err) {
+        // 不影響登入流程
+        console.error("[auth] 自動加入場域失敗:", err);
+      }
     }
 
     req.user = {
