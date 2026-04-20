@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useGamePermissions } from "@/hooks/useGamePermissions";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Game, User } from "@shared/schema";
 
