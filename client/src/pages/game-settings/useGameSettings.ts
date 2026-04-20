@@ -135,22 +135,9 @@ export function useGameSettings(): GameSettingsReturn {
     enabled: !!gameId,
   });
 
-  // 🔒 canEdit 判斷 — SaaS 多角色權限
-  // - super_admin：所有遊戲
-  // - field_manager：同場域所有遊戲（不限建立者）
-  // - field_executor：不可編輯（執行角色）
-  // - legacy users.role=admin（舊資料相容）
-  // - 遊戲建立者（舊資料相容）
-  const adminSessionQuery = useQuery<{ authenticated: boolean; admin?: { systemRole: string; fieldId: string } }>({
-    queryKey: ["/api/admin/session"],
-  });
-  const adminInfo = adminSessionQuery.data?.admin;
-  const canEdit = !!user && !!game && (
-    user.role === "admin" ||
-    game.creatorId === user.id ||
-    adminInfo?.systemRole === "super_admin" ||
-    (adminInfo?.systemRole === "field_manager" && adminInfo?.fieldId === game.fieldId)
-  );
+  // 🔒 統一使用 useGamePermissions hook（避免各頁面各自組合邏輯）
+  const perms = useGamePermissions(game);
+  const canEdit = perms.canEdit;
 
   // 載入遊戲資料到 state
   useEffect(() => {
