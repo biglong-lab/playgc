@@ -4,6 +4,18 @@ import { getIdToken } from "./firebase";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    // 🟠 403 友善訊息：告訴使用者需要什麼權限（從 response 取或預設）
+    if (res.status === 403) {
+      let friendly = "此操作需要更高權限，請聯絡場域管理員升級您的角色";
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed.message) friendly = parsed.message + "（如需更多權限，請聯絡場域管理員）";
+      } catch { /* 非 JSON 用預設 */ }
+      throw new Error(friendly);
+    }
+    if (res.status === 401) {
+      throw new Error("登入已失效，請重新登入");
+    }
     throw new Error(`${res.status}: ${text}`);
   }
 }
