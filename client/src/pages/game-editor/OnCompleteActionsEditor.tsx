@@ -165,11 +165,13 @@ function ActionItem({
       )}
 
       {isItem && (
-        <Input
+        <ItemSelect
+          gameId={gameId}
           value={(action.itemId as string) || ""}
-          onChange={(e) => onChange({ ...action, itemId: e.target.value })}
-          placeholder="道具 ID"
-          className="w-36 h-8"
+          onChange={(itemId) => onChange({ ...action, itemId })}
+          placeholder="選擇道具..."
+          className="w-44 h-8"
+          testId="select-action-item"
         />
       )}
 
