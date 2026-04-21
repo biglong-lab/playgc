@@ -98,6 +98,25 @@ export function registerPlayerAchievementRoutes(app: Express) {
         }
 
         const data = insertAchievementSchema.partial().parse(req.body);
+
+        // slug 處理（若有傳入）
+        if (data.slug !== undefined) {
+          const userSlug = normalizeSlugInput(data.slug as string | null | undefined);
+          if (userSlug && userSlug === achievement.slug) {
+            data.slug = userSlug;
+          } else {
+            const baseSlug = userSlug || (data.name as string | undefined) || achievement.name;
+            data.slug = await ensureUniqueSlug(
+              achievements,
+              achievements.slug,
+              achievements.gameId,
+              achievement.gameId,
+              baseSlug,
+              { column: achievements.id, value: achievement.id },
+            );
+          }
+        }
+
         const updated = await storage.updateAchievement(
           parseInt(req.params.id),
           data,
@@ -112,6 +131,7 @@ export function registerPlayerAchievementRoutes(app: Express) {
             .status(400)
             .json({ message: "Invalid data", errors: error.errors });
         }
+        console.error("[achievements] update failed:", error);
         res.status(500).json({ message: "Failed to update achievement" });
       }
     },
