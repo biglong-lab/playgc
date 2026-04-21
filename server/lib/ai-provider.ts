@@ -38,10 +38,11 @@ export async function verifyPhoto(
   targetKeywords: string[],
   instruction: string | undefined,
   apiKey?: string,
+  model?: string,
 ): Promise<PhotoVerifyResult> {
   const provider = detectProvider(apiKey);
   if (provider === "openrouter" && apiKey) {
-    return verifyPhotoOpenRouter(imageUrl, targetKeywords, instruction, apiKey);
+    return verifyPhotoOpenRouter(imageUrl, targetKeywords, instruction, apiKey, model);
   }
   return verifyPhotoGemini(imageUrl, targetKeywords, instruction, apiKey);
 }
@@ -53,6 +54,7 @@ export async function scoreTextAnswer(
   context: string | undefined,
   passingScore: number,
   apiKey?: string,
+  model?: string,
 ): Promise<TextScoreResult> {
   const provider = detectProvider(apiKey);
   if (provider === "openrouter" && apiKey) {
@@ -63,6 +65,7 @@ export async function scoreTextAnswer(
       context,
       passingScore,
       apiKey,
+      model,
     );
   }
   return scoreTextAnswerGemini(
