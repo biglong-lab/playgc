@@ -1,8 +1,11 @@
 import { db } from "../db";
-import { games, locations, items, pages, achievements } from "@shared/schema";
-import { sql } from "drizzle-orm";
+import { games, locations, items, pages, achievements, fields } from "@shared/schema";
+import { sql, eq } from "drizzle-orm";
 
 const GAME_ID = "jiachun-defense-battle";
+// 🔒 必要：seed 匯入必須指派 fieldId，否則後台依 fieldId 過濾會看不見
+// 預設用第一個場域（若環境僅一個場域）；未來可用 env 變數指定
+const DEFAULT_FIELD_CODE = "JIACHUN";
 
 async function importJiachunGame() {
   console.log("Starting Jiachun Defense Battle game import...");
@@ -14,9 +17,24 @@ async function importJiachunGame() {
       return;
     }
 
-    console.log("Creating game...");
+    // 🔒 解析 fieldId（優先找指定 code，否則用第一個可用場域）
+    const [targetField] = await db
+      .select()
+      .from(fields)
+      .where(eq(fields.code, DEFAULT_FIELD_CODE));
+    if (!targetField) {
+      const [anyField] = await db.select().from(fields).limit(1);
+      if (!anyField) {
+        throw new Error("❌ 無可用場域，請先建立至少一個 field 才能匯入遊戲");
+      }
+      console.warn(`⚠️ 未找到 code=${DEFAULT_FIELD_CODE} 的場域，改用第一個可用場域：${anyField.name}`);
+    }
+    const fieldId = targetField?.id ?? (await db.select().from(fields).limit(1))[0]!.id;
+
+    console.log(`Creating game (field: ${fieldId})...`);
     await db.insert(games).values({
       id: GAME_ID,
+      fieldId, // 🔒 一定要有 fieldId，否則後台看不到
       title: "賈村保衛戰:民兵特訓計畫",
       description: "1958年8月23日前夕,金門前線情勢緊張。玩家扮演新進民兵,必須完成15項特訓任務,學習戰地技能、探索基地設施、破解軍事密碼,最終取得「合格民兵」資格。",
       difficulty: "medium",
