@@ -171,7 +171,7 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
             locations.gameId,
             existingLocation.gameId,
             baseSlug,
-            { column: locations.id, value: String(existingLocation.id) },
+            { column: locations.id, value: existingLocation.id },
           );
         }
       }
