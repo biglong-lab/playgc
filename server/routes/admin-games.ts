@@ -137,6 +137,13 @@ export function registerAdminGameRoutes(app: Express) {
         ? (data.fieldId || req.admin.fieldId)
         : req.admin.fieldId;
 
+      // 🔒 強制 fieldId：若無法決定場域就 reject，避免產生「後台看不到」的孤兒遊戲
+      if (!fieldId) {
+        return res.status(400).json({
+          message: "無法決定遊戲所屬場域，請先指派管理員場域或在建立時指定 fieldId",
+        });
+      }
+
       // 配額檢查：場域最大遊戲數
       if (fieldId) {
         const [field] = await db.select({ settings: fields.settings })
