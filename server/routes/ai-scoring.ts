@@ -3,7 +3,7 @@ import type { Express } from "express";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { isAuthenticated } from "../firebaseAuth";
-import { isGeminiConfigured, verifyPhoto, scoreTextAnswer } from "../lib/gemini";
+import { isAIConfigured as isGeminiConfigured, verifyPhoto, scoreTextAnswer } from "../lib/ai-provider";
 import { decryptApiKey } from "../lib/crypto";
 import { db } from "../db";
 import { games, fields, parseFieldSettings } from "@shared/schema";
