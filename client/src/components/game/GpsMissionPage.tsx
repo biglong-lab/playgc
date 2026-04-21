@@ -31,6 +31,7 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   const [isWatching, setIsWatching] = useState(false);
   const [watchId, setWatchId] = useState<number | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(config.proximitySound ?? false);
+  // 若無有效座標，預設進入 QR fallback UI（元件自適應，不需資料預先補 placeholder）
   const [showQrFallback, setShowQrFallback] = useState(false);
   const [hotZoneMessage, setHotZoneMessage] = useState<string | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
