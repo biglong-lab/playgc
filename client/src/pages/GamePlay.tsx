@@ -213,7 +213,34 @@ export default function GamePlay() {
               score: newScore,
               inventory: newInventory,
               variables: newVariables,
-            }).catch(() => queueProgressUpdate(progressData));
+            })
+              .then(async (res) => {
+                // 後端回傳即時解鎖的成就 → 用 RewardFeedback 推播
+                try {
+                  const data = await res.json();
+                  const unlocked = (data?.unlockedAchievements || []) as Array<{
+                    id: number;
+                    name: string;
+                    iconUrl?: string | null;
+                    rarity?: string | null;
+                  }>;
+                  if (unlocked.length > 0) {
+                    // 延遲 1s 讓 points/items 反饋先顯示，再推播成就（避免重疊）
+                    setTimeout(() => {
+                      fireReward({
+                        achievements: unlocked.map((a) => ({
+                          name: a.name,
+                          iconUrl: a.iconUrl ?? undefined,
+                          rarity: a.rarity ?? undefined,
+                        })),
+                      });
+                    }, 1000);
+                  }
+                } catch {
+                  /* 舊版 API 無 unlockedAchievements，跳過 */
+                }
+              })
+              .catch(() => queueProgressUpdate(progressData));
           } else {
             queueProgressUpdate(progressData);
           }
