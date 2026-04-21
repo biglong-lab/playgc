@@ -104,9 +104,9 @@ export const chapterTemplates = pgTable(
     // 來源章節（做溯源用；若來源章節被刪除，模板仍保留）
     sourceChapterId: varchar("source_chapter_id"),
     sourceGameId: varchar("source_game_id"),
+    // 建立者 = admin_accounts.id（因為模板由管理員建立，不是玩家）
     createdBy: varchar("created_by")
-      .references(() => users.id)
-      .notNull(),
+      .references(() => adminAccounts.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
