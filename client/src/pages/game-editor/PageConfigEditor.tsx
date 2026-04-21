@@ -35,11 +35,18 @@ export default function PageConfigEditor({
   handleMediaUpload,
   isUploading,
   onUpdate,
+  onUpdatePageMeta,
 }: PageConfigEditorProps) {
   const config = page.config as Record<string, unknown>;
+  const pageWithName = page as typeof page & { customName?: string | null };
 
   const updateField = (field: string, value: unknown) => {
     onUpdate({ ...config, [field]: value });
+  };
+
+  const updateCustomName = (name: string) => {
+    // 傳回給父元件做 page-level 更新（非 config 內）
+    onUpdatePageMeta?.({ customName: name || null });
   };
 
   // 共用的媒體上傳按鈕
