@@ -88,28 +88,48 @@ function detectReferences(config: Record<string, unknown>): ChapterTemplatePageS
 }
 
 /**
- * 幫 references 加上 slug（從 items 表查）— 用於匯入時比對
+ * 幫 references 加上 slug（從對應表查）— 用於匯入時比對
+ * 支援：items / locations / achievements
  */
 async function enrichReferencesWithSlug(
   references: NonNullable<ChapterTemplatePageSnapshot["references"]>,
   gameId: string,
 ): Promise<NonNullable<ChapterTemplatePageSnapshot["references"]>> {
-  const itemRefs = references.filter((r) => r.type === "item");
-  if (itemRefs.length === 0) return references;
+  // 並行撈三個表的 slug 對應
+  const [gameItems, gameLocations, gameAchievements] = await Promise.all([
+    references.some((r) => r.type === "item")
+      ? db.select().from(items).where(eq(items.gameId, gameId))
+      : Promise.resolve([] as Array<{ id: string; slug: string | null }>),
+    references.some((r) => r.type === "location")
+      ? db.select().from(locations).where(eq(locations.gameId, gameId))
+      : Promise.resolve([] as Array<{ id: number; slug: string | null }>),
+    references.some((r) => r.type === "achievement")
+      ? db.select().from(achievements).where(eq(achievements.gameId, gameId))
+      : Promise.resolve([] as Array<{ id: number; slug: string | null }>),
+  ]);
 
-  const gameItems = await db
-    .select()
-    .from(items)
-    .where(eq(items.gameId, gameId));
-
-  const idToSlug = new Map<string, string>();
+  const itemIdToSlug = new Map<string, string>();
   for (const it of gameItems) {
-    if (it.slug) idToSlug.set(it.id, it.slug);
+    if (it.slug) itemIdToSlug.set(String(it.id), it.slug);
+  }
+  const locationIdToSlug = new Map<string, string>();
+  for (const loc of gameLocations) {
+    if (loc.slug) locationIdToSlug.set(String(loc.id), loc.slug);
+  }
+  const achievementIdToSlug = new Map<string, string>();
+  for (const ach of gameAchievements) {
+    if (ach.slug) achievementIdToSlug.set(String(ach.id), ach.slug);
   }
 
   return references.map((r) => {
-    if (r.type === "item" && idToSlug.has(r.id)) {
-      return { ...r, slug: idToSlug.get(r.id) };
+    if (r.type === "item" && itemIdToSlug.has(r.id)) {
+      return { ...r, slug: itemIdToSlug.get(r.id) };
+    }
+    if (r.type === "location" && locationIdToSlug.has(r.id)) {
+      return { ...r, slug: locationIdToSlug.get(r.id) };
+    }
+    if (r.type === "achievement" && achievementIdToSlug.has(r.id)) {
+      return { ...r, slug: achievementIdToSlug.get(r.id) };
     }
     return r;
   });
