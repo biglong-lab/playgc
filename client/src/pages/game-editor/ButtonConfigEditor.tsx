@@ -23,11 +23,13 @@ interface ButtonItem {
 export default function ButtonConfigEditor({
   config,
   updateField,
-  allPages
+  allPages,
+  gameId,
 }: {
   config: PageConfig;
   updateField: (field: string, value: PageConfigValue) => void;
   allPages: Page[];
+  gameId?: string;
 }) {
   return (
     <div className="space-y-4">
