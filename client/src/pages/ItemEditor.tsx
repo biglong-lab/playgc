@@ -333,6 +333,21 @@ export default function ItemEditor() {
               </div>
 
               <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  道具代碼 (slug)
+                  <span className="text-xs text-muted-foreground font-normal">
+                    選填，英數字建議（例：intel_fragment_1），方便其他元件引用
+                  </span>
+                </label>
+                <Input
+                  value={formData.slug}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  placeholder="留空將自動依名稱生成"
+                  data-testid="input-item-slug"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm font-medium">描述</label>
                 <Textarea
                   value={formData.description}
