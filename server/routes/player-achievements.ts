@@ -3,9 +3,10 @@ import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
 import type { AuthenticatedRequest } from "./types";
-import { insertAchievementSchema } from "@shared/schema";
+import { insertAchievementSchema, achievements } from "@shared/schema";
 import { z } from "zod";
 import { checkGameOwnership } from "./utils";
+import { ensureUniqueSlug, normalizeSlugInput } from "../lib/slug";
 
 export function registerPlayerAchievementRoutes(app: Express) {
   // ==========================================================================
