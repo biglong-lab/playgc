@@ -165,7 +165,7 @@ function AiSettingsTab({ fieldId, settings }: { fieldId: string; settings?: Fiel
         <div className="space-y-3">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-green-600" />
-            <p className="font-medium">Gemini API Key</p>
+            <p className="font-medium">AI API Key <span className="text-xs text-muted-foreground">(Gemini 或 OpenRouter)</span></p>
           </div>
 
           {settings?.hasGeminiApiKey ? (
