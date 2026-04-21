@@ -16,6 +16,10 @@ import InventoryPanel from "@/components/shared/InventoryPanel";
 import GamePageRenderer from "@/components/game/GamePageRenderer";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import { useSessionManager } from "./hooks/useSessionManager";
+import {
+  RewardFeedbackOverlay,
+  fireReward,
+} from "@/components/feedback/RewardFeedback";
 
 import {
   ChevronLeft, ChevronRight, MessageCircle, Backpack,
