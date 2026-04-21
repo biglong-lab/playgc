@@ -23,7 +23,7 @@ import {
 
 import {
   ChevronLeft, ChevronRight, MessageCircle, Backpack,
-  Map, AlertTriangle, Home
+  Map as MapIcon, AlertTriangle, Home
 } from "lucide-react";
 
 export default function GamePlay() {
