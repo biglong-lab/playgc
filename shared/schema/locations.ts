@@ -150,6 +150,8 @@ export const achievements = pgTable(
       .references(() => games.id, { onDelete: "cascade" })
       .notNull(),
     name: varchar("name", { length: 100 }).notNull(),
+    // 🏷️ slug — 人類可讀 ID（同遊戲唯一），跨遊戲章節模板對應用
+    slug: varchar("slug", { length: 100 }),
     description: text("description"),
     iconUrl: text("icon_url"),
     achievementType: varchar("achievement_type", { length: 50 }).default("location"), // location, special, legendary, collection, speed, exploration
@@ -162,6 +164,7 @@ export const achievements = pgTable(
   (table) => [
     index("idx_game_achievements").on(table.gameId),
     index("idx_achievement_type").on(table.achievementType),
+    uniqueIndex("uniq_achievements_game_slug").on(table.gameId, table.slug),
   ]
 );
 
