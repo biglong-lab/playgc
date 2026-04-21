@@ -32,6 +32,11 @@ export default function ChapterManager({ gameId }: ChapterManagerProps) {
   const [editingChapterId, setEditingChapterId] = useState<string | null>(
     null
   );
+  const [templateDialogMode, setTemplateDialogMode] = useState<
+    | { mode: "save"; chapterId: string; chapterTitle: string }
+    | { mode: "import" }
+    | null
+  >(null);
 
   const { data: chapters = [], isLoading } = useQuery<GameChapter[]>({
     queryKey: ["/api/admin/games", gameId, "chapters"],
