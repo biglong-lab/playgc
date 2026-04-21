@@ -192,7 +192,7 @@ function AiSettingsTab({ fieldId, settings }: { fieldId: string; settings?: Fiel
                 type={showKey ? "text" : "password"}
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="貼上新的 Gemini API Key..."
+                placeholder="AIzaSy...（Gemini）或 sk-or-v1-...（OpenRouter）"
                 className="pr-10"
                 data-testid="input-api-key"
               />
