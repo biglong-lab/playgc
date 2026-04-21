@@ -95,6 +95,7 @@ export default function AchievementEditor() {
     mutationFn: async (achievement: Achievement) => {
       const response = await apiRequest("POST", `${apiBasePath}/${gameId}/achievements`, {
         name: `${achievement.name} (複製)`,
+        slug: "", // 留空讓後端自動生成，避免 slug 衝突
         description: achievement.description,
         achievementType: achievement.achievementType,
         rarity: achievement.rarity,
