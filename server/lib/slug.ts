@@ -53,7 +53,7 @@ export function normalizeSlugInput(input?: string | null): string | null {
  * @param scopeColumn scope 欄位（例 gameId）
  * @param scopeValue scope 值
  * @param baseSlug 候選 slug（會自動 normalize）
- * @param excludeId 更新時排除自己的 ID
+ * @param excludeId 更新時排除自己的 ID（支援 string 或 number 主鍵）
  */
 export async function ensureUniqueSlug(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- drizzle generic 複雜
@@ -62,7 +62,7 @@ export async function ensureUniqueSlug(
   scopeColumn: PgColumn,
   scopeValue: string,
   baseSlug: string,
-  excludeId?: { column: PgColumn; value: string },
+  excludeId?: { column: PgColumn; value: string | number },
 ): Promise<string> {
   const base = nameToSlug(baseSlug);
   let candidate = base;
