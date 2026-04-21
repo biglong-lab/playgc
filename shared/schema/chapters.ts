@@ -1,4 +1,4 @@
-// 章節系統 (Chapters) - 遊戲章節定義、玩家章節進度
+// 章節系統 (Chapters) - 遊戲章節定義、玩家章節進度、跨遊戲章節模板
 import { sql } from "drizzle-orm";
 import {
   pgTable,
@@ -14,6 +14,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { users } from "./users";
 import { games } from "./games";
+import { fields } from "./fields";
 
 // ============================================================================
 // Game Chapters 表 - 遊戲章節定義
