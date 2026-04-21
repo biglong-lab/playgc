@@ -512,7 +512,7 @@ export default function PageConfigEditor({
       />
       {/* 通用完成動作（flow_router 除外，它是純邏輯節點，不需要完成動作） */}
       {page.pageType !== "flow_router" && (
-        <OnCompleteActionsEditor config={config} updateField={updateField} />
+        <OnCompleteActionsEditor config={config} updateField={updateField} gameId={gameId} />
       )}
     </div>
   );
