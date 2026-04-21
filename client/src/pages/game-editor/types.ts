@@ -23,4 +23,6 @@ export interface PageConfigEditorProps {
   handleMediaUpload: (file: File, type: 'video' | 'audio' | 'image') => Promise<string | null>;
   isUploading: boolean;
   onUpdate: (config: Record<string, unknown>) => void;
+  /** 更新頁面 metadata（非 config 內的，例如 customName） */
+  onUpdatePageMeta?: (partial: Partial<Page>) => void;
 }
