@@ -118,12 +118,24 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
         gameId,
       });
 
+      // slug 自動處理
+      const userSlug = normalizeSlugInput(locationData.slug as string | undefined);
+      const baseSlug = userSlug || locationData.name;
+      locationData.slug = await ensureUniqueSlug(
+        locations,
+        locations.slug,
+        locations.gameId,
+        gameId,
+        baseSlug,
+      );
+
       const newLocation = await storage.createLocation(locationData);
       res.status(201).json(newLocation);
     } catch (error: unknown) {
       if (typeof error === 'object' && error !== null && 'errors' in error) {
         return res.status(400).json({ message: "Validation error", errors: (error as { errors: unknown }).errors });
       }
+      console.error("[locations] create failed:", error);
       res.status(500).json({ message: "Failed to create location" });
     }
   });
@@ -145,9 +157,29 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
         return res.status(ownershipCheck.status || 403).json({ message: ownershipCheck.message });
       }
 
-      const updated = await storage.updateLocation(id, req.body);
+      // slug 處理（若有傳入）
+      const body = { ...req.body };
+      if (body.slug !== undefined) {
+        const userSlug = normalizeSlugInput(body.slug);
+        if (userSlug && userSlug === existingLocation.slug) {
+          body.slug = userSlug;
+        } else {
+          const baseSlug = userSlug || body.name || existingLocation.name;
+          body.slug = await ensureUniqueSlug(
+            locations,
+            locations.slug,
+            locations.gameId,
+            existingLocation.gameId,
+            baseSlug,
+            { column: locations.id, value: String(existingLocation.id) },
+          );
+        }
+      }
+
+      const updated = await storage.updateLocation(id, body);
       res.json(updated);
-    } catch (_error) {
+    } catch (error) {
+      console.error("[locations] update failed:", error);
       res.status(500).json({ message: "Failed to update location" });
     }
   });
