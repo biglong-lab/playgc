@@ -1,6 +1,8 @@
-// 遊戲/章節完成畫面
+// 🎉 遊戲/章節完成畫面 — 含煙火、星星、動畫分數遞增
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Trophy, Home, RefreshCw } from "lucide-react";
+import { Trophy, Home, RefreshCw, Star, Sparkles } from "lucide-react";
 
 interface GameCompletionScreenProps {
   readonly score: number;
@@ -12,6 +14,68 @@ interface GameCompletionScreenProps {
   readonly onNavigate: (path: string) => void;
 }
 
+// 依分數決定星數（1-3 顆）— 提供視覺化的「表現評等」
+function starsByScore(score: number): number {
+  if (score >= 100) return 3;
+  if (score >= 50) return 2;
+  if (score > 0) return 1;
+  return 0;
+}
+
+// 分數從 0 遞增到 target 的動畫 hook
+function useCountUp(target: number, duration = 1200): number {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (target === 0) {
+      setValue(0);
+      return;
+    }
+    const startTime = performance.now();
+    let rafId = 0;
+    const step = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(target * eased));
+      if (progress < 1) {
+        rafId = requestAnimationFrame(step);
+      }
+    };
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [target, duration]);
+  return value;
+}
+
+/**
+ * 煙火粒子 — 從中心向外發散
+ */
+function Firework({ delay = 0 }: { delay?: number }) {
+  const particles = Array.from({ length: 12 });
+  return (
+    <>
+      {particles.map((_, i) => {
+        const angle = (i / particles.length) * Math.PI * 2;
+        const radius = 120 + Math.random() * 80;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+        const hue = Math.floor(Math.random() * 60) + 30; // 暖色系
+        return (
+          <motion.div
+            key={i}
+            className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full pointer-events-none"
+            style={{ backgroundColor: `hsl(${hue}, 95%, 65%)` }}
+            initial={{ x: 0, y: 0, opacity: 1, scale: 1.5 }}
+            animate={{ x, y, opacity: 0, scale: 0.2 }}
+            transition={{ duration: 1.4, delay, ease: "easeOut" }}
+          />
+        );
+      })}
+    </>
+  );
+}
+
 export default function GameCompletionScreen({
   score,
   gameTitle,
@@ -21,58 +85,121 @@ export default function GameCompletionScreen({
   onPlayAgain,
   onNavigate,
 }: GameCompletionScreenProps) {
-  if (isChapterMode) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center max-w-md px-4">
-          <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6 animate-glow">
-            <Trophy className="w-12 h-12 text-primary" />
-          </div>
-          <h2 className="text-3xl font-display font-bold mb-2 text-glow">
-            章節完成!
-          </h2>
-          <p className="text-muted-foreground mb-2">
-            恭喜完成{chapterTitle ? ` ${chapterTitle}` : "此章節"}
-          </p>
-          <p className="text-4xl font-number font-bold text-primary mb-8">
-            {score} 分
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={onPlayAgain}
-              variant="outline"
-              className="gap-2"
-            >
-              <RefreshCw className="w-4 h-4" />
-              重玩本章
-            </Button>
-            <Button
-              onClick={() => onNavigate(`/game/${gameId}/chapters`)}
-              className="gap-2"
-            >
-              <Home className="w-4 h-4" />
-              返回章節列表
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const animatedScore = useCountUp(score);
+  const starCount = starsByScore(score);
+
+  const heading = isChapterMode ? "章節完成!" : "任務完成!";
+  const subtitle = isChapterMode
+    ? `恭喜完成 ${chapterTitle ?? "此章節"}`
+    : `恭喜完成 ${gameTitle}`;
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center max-w-md px-4">
-        <div className="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6 animate-glow">
-          <Trophy className="w-12 h-12 text-primary" />
-        </div>
-        <h2 className="text-3xl font-display font-bold mb-2 text-glow">
-          任務完成!
-        </h2>
-        <p className="text-muted-foreground mb-2">恭喜完成 {gameTitle}</p>
-        <p className="text-4xl font-number font-bold text-primary mb-8">
-          {score} 分
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
+      {/* 背景煙火層 */}
+      <div className="absolute inset-0 pointer-events-none">
+        <Firework delay={0.1} />
+        <Firework delay={0.5} />
+        <Firework delay={0.9} />
+      </div>
+
+      <motion.div
+        className="text-center max-w-md px-4 relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {/* 🏆 Trophy 圖示 + 發光光環 */}
+        <motion.div
+          className="relative mx-auto mb-6 w-28 h-28"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 18, delay: 0.2 }}
+        >
+          {/* 光環 */}
+          <motion.div
+            className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 blur-xl opacity-60"
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-2xl">
+            <Trophy className="w-14 h-14 text-white drop-shadow" />
+          </div>
+          {/* 周圍閃爍 */}
+          <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-yellow-300 animate-pulse" />
+          <Sparkles className="absolute -bottom-2 -left-2 w-5 h-5 text-yellow-200 animate-pulse" />
+        </motion.div>
+
+        <motion.h2
+          className="text-4xl font-display font-bold mb-2 bg-gradient-to-br from-primary to-orange-500 bg-clip-text text-transparent"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
+          {heading}
+        </motion.h2>
+
+        <motion.p
+          className="text-muted-foreground mb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          {subtitle}
+        </motion.p>
+
+        {/* ⭐ 星評等 */}
+        <motion.div
+          className="flex items-center justify-center gap-2 mb-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+        >
+          {[1, 2, 3].map((i) => (
+            <motion.div
+              key={i}
+              initial={{ scale: 0, rotate: -90 }}
+              animate={{
+                scale: i <= starCount ? 1 : 0.7,
+                rotate: 0,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 20,
+                delay: 0.8 + i * 0.18,
+              }}
+            >
+              <Star
+                className={`w-10 h-10 ${
+                  i <= starCount
+                    ? "fill-yellow-400 text-yellow-400 drop-shadow-lg"
+                    : "text-muted-foreground/30"
+                }`}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* 💯 分數 — 遞增動畫 */}
+        <motion.div
+          className="mb-8"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.0 }}
+        >
+          <p className="text-6xl font-number font-bold bg-gradient-to-br from-primary to-orange-500 bg-clip-text text-transparent tabular-nums">
+            {animatedScore}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">分</p>
+        </motion.div>
+
+        {/* 按鈕群 */}
+        <motion.div
+          className="flex flex-col sm:flex-row gap-3 justify-center"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.3 }}
+        >
           <Button
             onClick={onPlayAgain}
             variant="outline"
@@ -80,27 +207,39 @@ export default function GameCompletionScreen({
             data-testid="button-play-again"
           >
             <RefreshCw className="w-4 h-4" />
-            再玩一次
+            {isChapterMode ? "重玩本章" : "再玩一次"}
           </Button>
-          <Button
-            onClick={() => onNavigate("/home")}
-            variant="outline"
-            className="gap-2"
-            data-testid="button-return-home"
-          >
-            <Home className="w-4 h-4" />
-            返回大廳
-          </Button>
-          <Button
-            onClick={() => onNavigate("/leaderboard")}
-            className="gap-2"
-            data-testid="button-view-leaderboard"
-          >
-            <Trophy className="w-4 h-4" />
-            查看排行榜
-          </Button>
-        </div>
-      </div>
+          {isChapterMode ? (
+            <Button
+              onClick={() => onNavigate(`/game/${gameId}/chapters`)}
+              className="gap-2"
+            >
+              <Home className="w-4 h-4" />
+              返回章節列表
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={() => onNavigate("/home")}
+                variant="outline"
+                className="gap-2"
+                data-testid="button-return-home"
+              >
+                <Home className="w-4 h-4" />
+                返回大廳
+              </Button>
+              <Button
+                onClick={() => onNavigate("/leaderboard")}
+                className="gap-2"
+                data-testid="button-view-leaderboard"
+              >
+                <Trophy className="w-4 h-4" />
+                排行榜
+              </Button>
+            </>
+          )}
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
