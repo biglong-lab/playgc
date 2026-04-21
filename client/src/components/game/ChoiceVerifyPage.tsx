@@ -34,20 +34,35 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
   const currentQuestionIndex = questionOrder[orderCursor] ?? 0;
   const currentQuestion = isQuizMode ? questions[currentQuestionIndex] : null;
   const passingScore = config?.passingScore ?? 0.6;
+
+  // 🎲 隨機化：config.randomizeOptions 或 config.randomizeOrder 任一為 true 就洗牌
+  // 洗牌 seed 用 useMemo 固定，同一題不會每次 render 都重洗
+  const shouldRandomize = !!(config as any)?.randomizeOptions || !!(config as any)?.randomizeOrder;
+
   // 向下相容：舊資料是 options:["a","b"] + correctIndex:0，新資料是 [{text, correct}]
   // 自動將舊格式轉成新格式給渲染層用
-  const legacyOptions = (() => {
+  const legacyOptions = useMemo(() => {
     const raw = config?.options ?? [];
     const legacyCorrectIndex = (config as any)?.correctIndex;
-    return raw.map((opt: any, idx: number) => {
+    const normalized = raw.map((opt: any, idx: number) => {
       if (typeof opt === "string") {
-        // 舊 schema: 字串陣列 + correctIndex
         return { text: opt, correct: idx === legacyCorrectIndex };
       }
-      // 新 schema: 物件已包含 text + correct
       return opt;
     });
-  })();
+    if (shouldRandomize && normalized.length > 1) {
+      // Fisher-Yates 洗牌（建立 shallow copy 避免影響原 config）
+      const arr = [...normalized];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+    return normalized;
+    // 僅在 config.options / 隨機開關變化時重新計算
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config?.options, shouldRandomize]);
   const isLastInOrder = orderCursor >= questionOrder.length - 1;
 
   const handleOptionClick = (index: number) => {
