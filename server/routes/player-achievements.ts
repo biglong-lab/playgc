@@ -52,6 +52,18 @@ export function registerPlayerAchievementRoutes(app: Express) {
           ...req.body,
           gameId: req.params.gameId,
         });
+
+        // slug 自動處理
+        const userSlug = normalizeSlugInput(data.slug as string | undefined);
+        const baseSlug = userSlug || data.name;
+        data.slug = await ensureUniqueSlug(
+          achievements,
+          achievements.slug,
+          achievements.gameId,
+          req.params.gameId,
+          baseSlug,
+        );
+
         const achievement = await storage.createAchievement(data);
         res.status(201).json(achievement);
       } catch (error) {
@@ -60,6 +72,7 @@ export function registerPlayerAchievementRoutes(app: Express) {
             .status(400)
             .json({ message: "Invalid data", errors: error.errors });
         }
+        console.error("[achievements] create failed:", error);
         res.status(500).json({ message: "Failed to create achievement" });
       }
     },
