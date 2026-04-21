@@ -199,6 +199,12 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   }, [config.qrFallback]);
 
   const startWatching = () => {
+    // 🛡️ 元件級 graceful：config 沒設有效座標 → 不啟動 GPS，改提示 + 優先 QR fallback
+    if (!hasValidTarget) {
+      setError("此任務尚未設定目標位置，請使用下方代碼手動通關或聯絡管理員");
+      setShowQrFallback(true);
+      return;
+    }
     if (!navigator.geolocation) {
       setError("你的瀏覽器不支援定位功能");
       if (config.qrFallback) setShowQrFallback(true);
