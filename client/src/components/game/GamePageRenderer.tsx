@@ -136,9 +136,15 @@ export default function GamePageRenderer({
   // 🔑 key={page.id} 強制每次換頁都 unmount + remount
   // 避免連續同型 page（如兩題 choice_verify）時 React reconciler
   // 復用 component 實例，導致前一題的 selectedOption / answer 殘留
+  // 🎬 用 AnimatePresence + PageTransition 包裹，消除切頁白閃
+  // - flow_router 用 flow variant（極短淡入，不干擾玩家）
+  // - 其他頁面用 default variant（0.28s fade + 位移）
+  const variant = page.pageType === "flow_router" ? "flow" : "default";
   return (
-    <Suspense key={page.id} fallback={<PageLoadingFallback />}>
-      {renderPage()}
-    </Suspense>
+    <AnimatePresence mode="wait" initial={false}>
+      <PageTransition key={page.id} variant={variant} className="h-full">
+        <Suspense fallback={<PageLoadingFallback />}>{renderPage()}</Suspense>
+      </PageTransition>
+    </AnimatePresence>
   );
 }
