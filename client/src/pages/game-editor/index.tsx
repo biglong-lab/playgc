@@ -275,6 +275,7 @@ export default function GameEditor() {
       gameId: gameId || "",
       pageOrder: pages.length + idx + 1,
       pageType: p.pageType,
+      customName: null,
       config: p.config,
       chapterId: null,
       createdAt: new Date(),
