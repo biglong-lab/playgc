@@ -1,4 +1,4 @@
-// 章節管理元件 - 章節列表、新增、刪除、排序
+// 章節管理元件 - 章節列表、新增、刪除、排序、模板存取與匯入
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,11 @@ import {
   ChevronUp,
   BookOpen,
   Settings,
+  BookmarkPlus,
+  Download,
 } from "lucide-react";
 import ChapterConfigEditor from "./ChapterConfigEditor";
+import { ChapterTemplatesDialog } from "./ChapterTemplatesDialog";
 
 interface ChapterManagerProps {
   gameId: string;
