@@ -118,7 +118,18 @@ export default function ChapterManager({ gameId }: ChapterManagerProps) {
           <BookOpen className="w-5 h-5" />
           章節管理
         </h3>
-        <Badge variant="secondary">{chapters.length} 個章節</Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setTemplateDialogMode({ mode: "import" })}
+            data-testid="button-import-chapter-template"
+          >
+            <Download className="w-4 h-4 mr-1" />
+            從模板匯入
+          </Button>
+          <Badge variant="secondary">{chapters.length} 個章節</Badge>
+        </div>
       </div>
 
       {/* 章節列表 */}
