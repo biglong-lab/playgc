@@ -176,6 +176,29 @@ export function registerPlayerSessionRoutes(app: Express) {
                   )
                 : undefined,
           });
+
+          // 🏆 成就自動解鎖（本次完成遊戲時檢查所有 condition）
+          try {
+            const { checkAndUnlockAchievements } = await import(
+              "../services/achievement-unlock"
+            );
+            const userId = (req as AuthenticatedRequest).user?.claims?.sub;
+            if (userId) {
+              // 撈 player_progress 拿 inventory
+              const progressList = await storage.getPlayerProgress(session.id);
+              const userProgress = progressList.find((p) => p.userId === userId);
+              await checkAndUnlockAchievements({
+                userId,
+                gameId: session.gameId,
+                sessionId: session.id,
+                score: session.score ?? 0,
+                inventory: (userProgress?.inventory as string[]) || [],
+                gameCompleted: true,
+              });
+            }
+          } catch (err) {
+            console.error("[achievement] 解鎖檢查失敗:", err);
+          }
         }
 
         res.json(session);
