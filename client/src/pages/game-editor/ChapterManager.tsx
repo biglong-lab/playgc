@@ -171,6 +171,22 @@ export default function ChapterManager({ gameId }: ChapterManagerProps) {
                     size="icon"
                     className="h-7 w-7"
                     onClick={() =>
+                      setTemplateDialogMode({
+                        mode: "save",
+                        chapterId: chapter.id,
+                        chapterTitle: chapter.title,
+                      })
+                    }
+                    title="存成模板"
+                    data-testid={`button-save-chapter-template-${chapter.id}`}
+                  >
+                    <BookmarkPlus className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() =>
                       setEditingChapterId(
                         editingChapterId === chapter.id
                           ? null
