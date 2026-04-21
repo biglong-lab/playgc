@@ -77,6 +77,9 @@ export const pages = pgTable(
       .notNull(),
     pageOrder: integer("page_order").notNull(),
     pageType: varchar("page_type", { length: 50 }).notNull(), // text_card, dialogue, video, button, text_verify, choice_verify, conditional_verify, shooting_mission, photo_mission, gps_mission, qr_scan, arduino_sensor
+    // 🏷️ 自訂名稱（選填）— 讓管理員為每頁命名（例如「開場白」「第一關驗證」）
+    // 顯示時作為主標題，副標題顯示 pageType 類別，方便辨識
+    customName: varchar("custom_name", { length: 200 }),
     config: jsonb("config").notNull(), // Page-specific configuration
     chapterId: varchar("chapter_id").references(() => gameChapters.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at").defaultNow(),
