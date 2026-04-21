@@ -117,8 +117,13 @@ function AiSettingsTab({ fieldId, settings }: { fieldId: string; settings?: Fiel
       toast({ title: "已儲存 AI 設定" });
       setApiKey("");
     },
-    onError: () => {
-      toast({ title: "儲存失敗", variant: "destructive" });
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "未知錯誤";
+      toast({
+        title: "儲存失敗",
+        description: msg,
+        variant: "destructive",
+      });
     },
   });
 
