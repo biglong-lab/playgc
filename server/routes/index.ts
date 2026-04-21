@@ -15,6 +15,7 @@ import { registerLocationRoutes } from "./locations";
 import { registerTeamRoutes } from "./teams";
 import { registerPlayerChapterRoutes } from "./player-chapters";
 import { registerAdminChapterRoutes } from "./admin-chapters";
+import { registerAdminChapterTemplateRoutes } from "./admin-chapter-templates";
 import { registerAdminModuleRoutes } from "./admin-modules";
 import { registerMatchRoutes } from "./matches";
 import { registerAdminRedeemCodeRoutes } from "./admin-redeem-codes";
