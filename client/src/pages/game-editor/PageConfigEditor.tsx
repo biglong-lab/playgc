@@ -508,6 +508,23 @@ export default function PageConfigEditor({
 
   return (
     <div className="space-y-4">
+      {/* 🏷️ 頁面名稱（通用）— 自訂識別名稱，會顯示為左側清單的主標題 */}
+      <div className="space-y-2 pb-3 border-b border-border/50">
+        <label className="text-sm font-medium flex items-center gap-2">
+          頁面名稱
+          <span className="text-xs text-muted-foreground font-normal">
+            選填，例如「開場白」「第一關驗證」；留空則顯示模組類別
+          </span>
+        </label>
+        <Input
+          value={pageWithName.customName || ""}
+          onChange={(e) => updateCustomName(e.target.value)}
+          placeholder="留空則顯示模組預設名稱"
+          maxLength={200}
+          data-testid="input-page-custom-name"
+        />
+      </div>
+
       {renderPageConfig()}
       {/* 通用：下一頁導向 + 完成獎勵（依 pageType 自動判斷是否顯示） */}
       <CommonNavigationEditor
