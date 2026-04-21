@@ -94,6 +94,25 @@ export function registerPlayerItemRoutes(app: Express) {
         }
 
         const data = insertItemSchema.partial().parse(req.body);
+
+        // slug 處理（有傳入時）：空 → 從 name 生成；有值 → 標準化 + 唯一性檢查
+        if (data.slug !== undefined) {
+          const userSlug = normalizeSlugInput(data.slug as string | null | undefined);
+          if (userSlug && userSlug === item.slug) {
+            data.slug = userSlug; // 沒變，跳過
+          } else {
+            const baseSlug = userSlug || (data.name as string | undefined) || item.name;
+            data.slug = await ensureUniqueSlug(
+              items,
+              items.slug,
+              items.gameId,
+              item.gameId,
+              baseSlug,
+              { column: items.id, value: item.id },
+            );
+          }
+        }
+
         const updated = await storage.updateItem(req.params.id, data);
         if (!updated) {
           return res.status(404).json({ message: "Item not found" });
@@ -105,6 +124,7 @@ export function registerPlayerItemRoutes(app: Express) {
             .status(400)
             .json({ message: "Invalid data", errors: error.errors });
         }
+        console.error("[items] update failed:", error);
         res.status(500).json({ message: "Failed to update item" });
       }
     },
