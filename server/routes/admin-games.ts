@@ -31,6 +31,9 @@ export function registerAdminGameRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
+      // 🔒 Super admin 看全部（含無場域孤兒）；其他角色看自己場域
+      // 注意：eq(column, NULL) 在 SQL 永遠回 false，所以 fieldId=NULL 的遊戲
+      // 對非 super_admin 永遠查不到。這是設計上的權限邊界，但孤兒遊戲應該要修復。
       const whereClause = req.admin.systemRole === "super_admin"
         ? undefined
         : eq(games.fieldId, req.admin.fieldId);
@@ -49,6 +52,42 @@ export function registerAdminGameRoutes(app: Express) {
       res.status(500).json({ message: "Failed to fetch games" });
     }
   });
+
+  // 🩺 健康檢查：列出無場域孤兒遊戲（僅 super_admin 可見）
+  // 目的：讓管理員主動發現 `field_id IS NULL` 的異常資料，避免「前端看得到、後台看不到」情境
+  app.get(
+    "/api/admin/games/health/orphans",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        if (req.admin.systemRole !== "super_admin") {
+          return res.status(403).json({ message: "僅限超級管理員" });
+        }
+
+        const orphans = await db.query.games.findMany({
+          where: sql`${games.fieldId} IS NULL`,
+          orderBy: [desc(games.createdAt)],
+        });
+
+        res.json({
+          count: orphans.length,
+          orphans: orphans.map((g) => ({
+            id: g.id,
+            title: g.title,
+            status: g.status,
+            createdAt: g.createdAt,
+          })),
+          recommendation: orphans.length > 0
+            ? "使用 PATCH /api/admin/games/:id 的 fieldId 欄位把它們指派給適當場域"
+            : "無異常",
+        });
+      } catch (error) {
+        res.status(500).json({ message: "Failed to check orphan games" });
+      }
+    },
+  );
 
   app.get("/api/admin/games/:id", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
     try {
