@@ -151,6 +151,8 @@ export default function ItemEditor() {
     mutationFn: async (item: Item) => {
       const response = await apiRequest("POST", `${apiBasePath}/${gameId}/items`, {
         name: `${item.name} (複製)`,
+        // slug 留空，讓後端自動生成避免衝突（slug 在 game_id 下必須唯一）
+        slug: "",
         description: item.description,
         itemType: item.itemType,
         iconUrl: item.iconUrl,
