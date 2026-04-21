@@ -50,6 +50,18 @@ export function registerPlayerItemRoutes(app: Express) {
           ...req.body,
           gameId: req.params.gameId,
         });
+
+        // slug 處理：使用者填的 → 標準化；空 → 從 name 自動生成
+        const userSlug = normalizeSlugInput(data.slug as string | undefined);
+        const baseSlug = userSlug || data.name;
+        data.slug = await ensureUniqueSlug(
+          items,
+          items.slug,
+          items.gameId,
+          req.params.gameId,
+          baseSlug,
+        );
+
         const item = await storage.createItem(data);
         res.status(201).json(item);
       } catch (error) {
@@ -58,6 +70,7 @@ export function registerPlayerItemRoutes(app: Express) {
             .status(400)
             .json({ message: "Invalid data", errors: error.errors });
         }
+        console.error("[items] create failed:", error);
         res.status(500).json({ message: "Failed to create item" });
       }
     },
