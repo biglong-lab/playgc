@@ -126,8 +126,11 @@ export default function GamePageRenderer({
     }
   };
 
+  // 🔑 key={page.id} 強制每次換頁都 unmount + remount
+  // 避免連續同型 page（如兩題 choice_verify）時 React reconciler
+  // 復用 component 實例，導致前一題的 selectedOption / answer 殘留
   return (
-    <Suspense fallback={<PageLoadingFallback />}>
+    <Suspense key={page.id} fallback={<PageLoadingFallback />}>
       {renderPage()}
     </Suspense>
   );
