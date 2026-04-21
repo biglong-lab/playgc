@@ -389,7 +389,7 @@ export default function GamePlay() {
             )}
           </Button>
           <Button variant="ghost" size="icon" onClick={goToMap} data-testid="button-open-map">
-            <Map className="w-5 h-5" />
+            <MapIcon className="w-5 h-5" />
           </Button>
         </div>
 
