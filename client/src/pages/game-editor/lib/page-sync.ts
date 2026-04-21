@@ -90,6 +90,8 @@ export async function syncPages(
       pageType: page.pageType,
       pageOrder: page.pageOrder,
       config: updatedConfig,
+      // 🏷️ customName 一同更新（null/"" 會清空，字串會設定）
+      customName: (page as Page & { customName?: string | null }).customName ?? null,
     });
   }
 
