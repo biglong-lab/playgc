@@ -132,7 +132,7 @@ export async function scoreTextAnswerOpenRouter(
 
 isCorrect 必須與 (score >= ${passingScore}) 一致。`;
 
-  const content = await callOpenRouter(apiKey, MODEL_TEXT, [
+  const content = await callOpenRouter(apiKey, textModel, [
     { role: "user", content: prompt },
   ]);
 
