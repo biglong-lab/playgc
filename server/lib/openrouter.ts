@@ -108,7 +108,9 @@ export async function scoreTextAnswerOpenRouter(
   context: string | undefined,
   passingScore: number,
   apiKey: string,
+  model?: string,
 ): Promise<TextScoreResult> {
+  const textModel = model || DEFAULT_MODEL_TEXT;
   const expectedText = expectedAnswers.join(" / ");
   const contextText = context ? `\n場景說明：${context}` : "";
 
