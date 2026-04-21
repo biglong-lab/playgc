@@ -187,14 +187,16 @@ export function registerPlayerSessionRoutes(app: Express) {
               // 撈 player_progress 拿 inventory
               const progressList = await storage.getPlayerProgress(session.id);
               const userProgress = progressList.find((p) => p.userId === userId);
-              await checkAndUnlockAchievements({
-                userId,
-                gameId: session.gameId,
-                sessionId: session.id,
-                score: session.score ?? 0,
-                inventory: (userProgress?.inventory as string[]) || [],
-                gameCompleted: true,
-              });
+              if (session.gameId) {
+                await checkAndUnlockAchievements({
+                  userId,
+                  gameId: session.gameId,
+                  sessionId: session.id,
+                  score: session.score ?? 0,
+                  inventory: (userProgress?.inventory as string[]) || [],
+                  gameCompleted: true,
+                });
+              }
             }
           } catch (err) {
             console.error("[achievement] 解鎖檢查失敗:", err);
