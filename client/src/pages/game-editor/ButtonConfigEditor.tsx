@@ -9,6 +9,7 @@ import { Trash2, Plus, ChevronDown, Play, Clock } from "lucide-react";
 import type { Page } from "@shared/schema";
 import { getPageTypeInfo } from "./constants";
 import type { PageConfig, PageConfigValue } from "./page-config-shared";
+import { ItemMultiSelect } from "@/components/shared/ItemMultiSelect";
 
 interface ButtonItem {
   text: string;
