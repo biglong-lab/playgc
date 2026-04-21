@@ -258,7 +258,37 @@ export function registerPlayerSessionRoutes(app: Express) {
           updateData,
         );
 
-        res.json(updated);
+        // 🏆 即時成就檢查 — 當 inventory 或 score 更新時檢查是否有新成就解鎖
+        // 避免 breaking client：只在 body 實際變更這些欄位時跑（跟章節完成的 end-of-game 檢查互不衝突，靠 unique constraint 去重）
+        let unlockedAchievements: Array<{ id: number; name: string; iconUrl?: string | null; rarity?: string | null }> = [];
+        if (req.body.inventory !== undefined || req.body.score !== undefined) {
+          try {
+            const session = await storage.getSession(sessionId);
+            if (session?.gameId) {
+              const { checkAndUnlockAchievements } = await import(
+                "../services/achievement-unlock"
+              );
+              const newly = await checkAndUnlockAchievements({
+                userId,
+                gameId: session.gameId,
+                sessionId,
+                score: typeof req.body.score === "number" ? req.body.score : (updated?.score ?? 0),
+                inventory: (req.body.inventory || (updated?.inventory as string[]) || []).map(String),
+              });
+              unlockedAchievements = newly.map((a) => ({
+                id: a.id,
+                name: a.name,
+                iconUrl: a.iconUrl,
+                rarity: a.rarity,
+              }));
+            }
+          } catch (err) {
+            // 成就檢查失敗不應該讓 progress update 也失敗
+            console.error("[progress] achievement check failed:", err);
+          }
+        }
+
+        res.json({ ...updated, unlockedAchievements });
       } catch (error) {
         res.status(500).json({ message: "Failed to update progress" });
       }
