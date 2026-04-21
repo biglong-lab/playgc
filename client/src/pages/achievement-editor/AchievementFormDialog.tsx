@@ -51,6 +51,22 @@ export function AchievementFormDialog({
             />
           </div>
 
+          {/* Slug */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              成就代碼 (slug)
+              <span className="text-xs text-muted-foreground font-normal">
+                選填，英數字建議（例：sniper_reserve），方便跨遊戲模板對應
+              </span>
+            </label>
+            <Input
+              value={formData.slug}
+              onChange={(e) => onFormDataChange({ ...formData, slug: e.target.value })}
+              placeholder="留空將自動依名稱生成"
+              data-testid="input-achievement-slug"
+            />
+          </div>
+
           {/* 描述 */}
           <div className="space-y-2">
             <label className="text-sm font-medium">描述</label>
