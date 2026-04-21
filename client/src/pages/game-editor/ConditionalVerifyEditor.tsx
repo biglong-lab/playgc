@@ -389,11 +389,13 @@ export default function ConditionalVerifyEditor({
               )}
 
               {cond.type === "visited_location" && (
-                <Input
+                <LocationSelect
+                  gameId={gameId}
                   value={cond.locationId || ""}
-                  onChange={(e) => updateCondition(i, { locationId: e.target.value })}
-                  placeholder="地點 ID（例：location-uuid）"
-                  data-testid={`condition-location-${i}`}
+                  onChange={(id) => updateCondition(i, { locationId: id })}
+                  allowEmpty
+                  placeholder="選擇地點..."
+                  testId={`condition-location-${i}`}
                 />
               )}
 
