@@ -223,7 +223,7 @@ export default function GamePlay() {
       handleCompletion(newScore);
       return { ...prev, score: newScore, inventory: newInventory, variables: newVariables };
     });
-  }, [stateRef, activePagesRef, setState, handleCompletion]);
+  }, [stateRef, activePagesRef, setState, handleCompletion, itemIdToInfo]);
 
   const handleVariableUpdate = useCallback((key: string, value: unknown) => {
     setState(prev => ({ ...prev, variables: { ...prev.variables, [key]: value } }));
