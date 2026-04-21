@@ -20,6 +20,7 @@ import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 interface Item {
   id: string;
   name: string;
+  slug?: string | null;
   description?: string | null;
   itemType?: string | null;
   iconUrl?: string | null;
