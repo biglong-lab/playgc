@@ -16,7 +16,7 @@ import { insertGameSchema, getTemplateById, pages, fields, parseFieldSettings } 
 import { db } from "../db";
 import { games } from "@shared/schema";
 import { z } from "zod";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { syncGamesMeter } from "../services/billing";
 
