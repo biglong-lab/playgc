@@ -19,6 +19,8 @@ import {
   gameChapters,
   pages,
   items,
+  locations,
+  achievements,
   type ChapterTemplate,
   type InsertChapterTemplate,
   type ChapterTemplatePageSnapshot,
