@@ -453,7 +453,7 @@ export default function PageConfigEditor({
     case "button":
       return (
         <div className="space-y-4">
-          <ButtonConfigEditor config={config} updateField={updateField} allPages={allPages} />
+          <ButtonConfigEditor config={config} updateField={updateField} allPages={allPages} gameId={gameId} />
           <LocationSettingsSection config={config} updateField={updateField} />
         </div>
       );
