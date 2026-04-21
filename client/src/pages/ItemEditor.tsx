@@ -41,6 +41,7 @@ const ITEM_ICONS = [
 
 interface ItemFormData {
   name: string;
+  slug: string;
   description: string;
   itemType: string;
   iconUrl: string;
@@ -53,6 +54,7 @@ interface ItemFormData {
 
 const defaultFormData: ItemFormData = {
   name: "",
+  slug: "",
   description: "",
   itemType: "consumable",
   iconUrl: "package",
