@@ -95,12 +95,19 @@ export const items = pgTable("items", {
     .references(() => games.id, { onDelete: "cascade" })
     .notNull(),
   name: varchar("name", { length: 100 }).notNull(),
+  // 🏷️ slug — 人類可讀 ID，在同一遊戲內 unique（例：intel_fragment_1）
+  // 作用：Pages config 引用 item 時可用 slug 取代 UUID，匯入/匯出模組更友善
+  // 可選填；若未填則查詢時以 UUID 為主
+  slug: varchar("slug", { length: 100 }),
   description: text("description"),
   iconUrl: text("icon_url"),
   itemType: varchar("item_type", { length: 50 }), // consumable, equipment, quest_item, collectible
   effect: jsonb("effect"), // Item effect configuration
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => [
+  // 同一遊戲內 slug unique（不同遊戲可重名）
+  uniqueIndex("uniq_items_game_slug").on(table.gameId, table.slug),
+]);
 
 // ============================================================================
 // Events table - Search/trigger events
