@@ -64,7 +64,9 @@ export async function verifyPhotoOpenRouter(
   targetKeywords: string[],
   instruction: string | undefined,
   apiKey: string,
+  model?: string,
 ): Promise<PhotoVerifyResult> {
+  const visionModel = model || DEFAULT_MODEL_VISION;
   const keywordsText = targetKeywords.join("、");
   const instructionText = instruction ? `\n任務說明：${instruction}` : "";
   const prompt = `你是實境遊戲的照片驗證 AI。玩家拍了一張照片，請分析照片內容。
