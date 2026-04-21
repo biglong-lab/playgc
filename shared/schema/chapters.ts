@@ -198,3 +198,15 @@ export type InsertPlayerChapterProgress = z.infer<
 >;
 export type PlayerChapterProgress =
   typeof playerChapterProgress.$inferSelect;
+
+// ============================================================================
+// Chapter Templates schemas
+// ============================================================================
+
+export const insertChapterTemplateSchema = createInsertSchema(chapterTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertChapterTemplate = z.infer<typeof insertChapterTemplateSchema>;
+export type ChapterTemplate = typeof chapterTemplates.$inferSelect;
