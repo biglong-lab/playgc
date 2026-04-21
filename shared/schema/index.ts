@@ -32,3 +32,4 @@ export * from "./platform-billing";
 export * from "./platform-admins";
 export * from "./field-applications";
 export * from "./field-memberships";
+export * from "./ai-models";
