@@ -69,6 +69,7 @@ export async function registerRoutes(
   registerTeamRoutes(app, ctx);
   registerPlayerChapterRoutes(app);
   registerAdminChapterRoutes(app);
+  registerAdminChapterTemplateRoutes(app);
   registerAdminModuleRoutes(app);
   registerMatchRoutes(app, ctx);
   registerAdminRedeemCodeRoutes(app);
