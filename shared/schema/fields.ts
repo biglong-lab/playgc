@@ -35,8 +35,10 @@ export const fields = pgTable("fields", {
 
 export interface FieldSettings {
   // AI 設定
-  geminiApiKey?: string;              // AES-256-GCM 加密後的密文
+  geminiApiKey?: string;              // AES-256-GCM 加密後的密文（支援 Gemini AIza... 或 OpenRouter sk-or-...）
   enableAI?: boolean;                 // AI 功能總開關
+  aiVisionModel?: string;             // 照片驗證模型（OpenRouter 時用）
+  aiTextModel?: string;               // 文字評分模型（OpenRouter 時用）
 
   // 配額
   maxGames?: number;                  // 最大遊戲數（0 或 undefined = 無限）
