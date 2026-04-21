@@ -82,6 +82,9 @@ export function ItemSelect({
               <span className="flex items-center gap-2">
                 <Package className="w-3 h-3" />
                 {item.name}
+                {item.slug && (
+                  <code className="text-xs text-muted-foreground">({item.slug})</code>
+                )}
                 {item.itemType && (
                   <Badge variant="outline" className="text-xs">
                     {item.itemType}
