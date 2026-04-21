@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Puzzle, Package, Plus, X as XIcon, ShieldCheck, AlertCircle } from "lucide-react";
 import { LocationSettingsSection, type EditorProps } from "./page-config-shared";
 import type { Item } from "@shared/schema";
+import { LocationSelect } from "@/components/shared/LocationSelect";
 
 interface Fragment {
   id: string;
