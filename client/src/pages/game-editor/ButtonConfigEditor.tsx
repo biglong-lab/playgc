@@ -168,18 +168,20 @@ export default function ButtonConfigEditor({
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">發送道具 ID（逗號）</label>
-                    <Input
-                      value={(btn.items || []).join(", ")}
-                      onChange={(e) => {
-                        const items = e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
+                    <label className="text-xs text-muted-foreground mb-1 block">發送道具</label>
+                    <ItemMultiSelect
+                      gameId={gameId}
+                      value={btn.items || []}
+                      onChange={(items) => {
                         const newButtons = [...config.buttons];
                         newButtons[i] = { ...newButtons[i], items: items.length > 0 ? items : undefined };
                         updateField("buttons", newButtons);
                       }}
-                      placeholder="itemId1, itemId2"
-                      className="h-9 text-xs"
-                      data-testid={`config-button-items-${i}`}
+                      testId={`config-button-items-${i}`}
+                    />
+                    {/* @ts-expect-error fall-through — 為了維持以下 Input 被移除 */}
+                    <Input
+                      className="hidden"
                     />
                   </div>
                 </div>
