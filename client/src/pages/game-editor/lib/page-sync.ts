@@ -66,6 +66,8 @@ export async function syncPages(
         pageType: page.pageType,
         pageOrder: page.pageOrder,
         config: page.config,
+        // 🏷️ customName 需一併送，否則新增頁面的自訂名會遺失
+        customName: (page as Page & { customName?: string | null }).customName ?? null,
       }
     );
     const createdPage = await response.json();
