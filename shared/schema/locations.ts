@@ -30,6 +30,8 @@ export const locations = pgTable(
       .references(() => games.id, { onDelete: "cascade" })
       .notNull(),
     name: varchar("name", { length: 100 }).notNull(),
+    // 🏷️ slug — 人類可讀 ID（同遊戲唯一），用於跨遊戲章節模板匯入時自動對應
+    slug: varchar("slug", { length: 100 }),
     description: text("description"),
     latitude: decimal("latitude", { precision: 10, scale: 8 }),
     longitude: decimal("longitude", { precision: 11, scale: 8 }),
@@ -52,6 +54,8 @@ export const locations = pgTable(
     index("idx_location_status").on(table.status),
     index("idx_location_coords").on(table.latitude, table.longitude),
     index("idx_location_order").on(table.gameId, table.orderIndex),
+    // 同遊戲內 slug unique（跨遊戲可重名）
+    uniqueIndex("uniq_locations_game_slug").on(table.gameId, table.slug),
   ]
 );
 
