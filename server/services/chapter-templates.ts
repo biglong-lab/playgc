@@ -315,12 +315,12 @@ export async function importChapterFromTemplate(
     let stillNeedsReconfigure = false;
     const missingRefs: Array<{ type: string; id: string; slug?: string }> = [];
 
-    // 嘗試對應 item 引用（若有 slug）
+    // 嘗試對應 引用（若有 slug 且目標遊戲有對應）
     if (remap && snap.references) {
       for (const ref of snap.references) {
-        if (ref.type === "item" && ref.slug && slugToId.has(ref.slug)) {
-          const newItemId = slugToId.get(ref.slug)!;
-          // 替換 config 裡的 itemId / itemIds / buttons[].items
+        // --- item ---
+        if (ref.type === "item" && ref.slug && itemSlugToId.has(ref.slug)) {
+          const newItemId = itemSlugToId.get(ref.slug)!;
           if (newConfig.itemId === ref.id) newConfig.itemId = newItemId;
           if (newConfig.item_id === ref.id) newConfig.item_id = newItemId;
           if (Array.isArray(newConfig.itemIds)) {
@@ -343,12 +343,26 @@ export async function importChapterFromTemplate(
               },
             );
           }
-        } else if (ref.type === "location" || ref.type === "chapter") {
-          // location 和 chapter 跨遊戲無法自動對應 → 標記
+        }
+        // --- location ---
+        else if (ref.type === "location" && ref.slug && locationSlugToId.has(ref.slug)) {
+          const newLocId = locationSlugToId.get(ref.slug)!;
+          if (String(newConfig.locationId) === ref.id) newConfig.locationId = newLocId;
+          if (String(newConfig.location_id) === ref.id) newConfig.location_id = newLocId;
+        }
+        // --- achievement ---
+        else if (ref.type === "achievement" && ref.slug && achievementSlugToId.has(ref.slug)) {
+          const newAchId = achievementSlugToId.get(ref.slug)!;
+          if (String(newConfig.achievementId) === ref.id) newConfig.achievementId = newAchId;
+          if (String(newConfig.achievement_id) === ref.id) newConfig.achievement_id = newAchId;
+        }
+        // --- chapter 跨遊戲不對應（不同故事線）---
+        else if (ref.type === "chapter") {
           stillNeedsReconfigure = true;
           missingRefs.push(ref);
-        } else if (ref.type === "item" && !ref.slug) {
-          // item 沒有 slug 無法對應 → 標記
+        }
+        // --- 沒 slug 或目標遊戲沒對應 → 標記 ---
+        else {
           stillNeedsReconfigure = true;
           missingRefs.push(ref);
         }
