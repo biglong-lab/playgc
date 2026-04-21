@@ -57,6 +57,7 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
                     id: 10000 + index,
                     gameId,
                     name: String(config.title || config.locationName || `GPS任務 ${index + 1}`),
+                    slug: null,
                     description: String(config.instruction || config.description || ''),
                     latitude: String(lat),
                     longitude: String(lng),
