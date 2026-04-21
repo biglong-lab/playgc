@@ -269,6 +269,7 @@ export default function OnCompleteActionsEditor({
               index={i}
               onChange={(updated) => updateAction(i, updated)}
               onRemove={() => removeAction(i)}
+              gameId={gameId}
             />
           ))}
 
