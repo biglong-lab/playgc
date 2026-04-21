@@ -44,11 +44,13 @@ function ActionItem({
   index,
   onChange,
   onRemove,
+  gameId,
 }: {
   action: ActionData;
   index: number;
   onChange: (a: ActionData) => void;
   onRemove: () => void;
+  gameId?: string;
 }) {
   const isVariable = action.type.includes('variable');
   const isItem = action.type === 'add_item' || action.type === 'remove_item';
