@@ -87,6 +87,38 @@ export function registerAdminContentRoutes(app: Express) {
       }
 
       const data = insertItemSchema.partial().parse(req.body);
+
+      // slug 有傳入時處理：空值 → 從 name 生成；有值 → 標準化 + 唯一性檢查
+      if (data.slug !== undefined) {
+        const userSlug = normalizeSlugInput(data.slug as string | null | undefined);
+        if (userSlug) {
+          // 若 slug 沒變則不重算（避免沒必要的 DB 查詢）
+          if (userSlug === item.slug) {
+            data.slug = userSlug;
+          } else {
+            data.slug = await ensureUniqueSlug(
+              items,
+              items.slug,
+              items.gameId,
+              item.gameId,
+              userSlug,
+              { column: items.id, value: item.id },
+            );
+          }
+        } else {
+          // 留空 → 從目前 name（或新傳入的 name）重新生成
+          const name = (data.name as string | undefined) || item.name;
+          data.slug = await ensureUniqueSlug(
+            items,
+            items.slug,
+            items.gameId,
+            item.gameId,
+            name,
+            { column: items.id, value: item.id },
+          );
+        }
+      }
+
       const updated = await storage.updateItem(req.params.id, data);
       if (!updated) {
         return res.status(404).json({ message: "Item not found" });
@@ -96,6 +128,7 @@ export function registerAdminContentRoutes(app: Express) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
+      console.error("[items] update failed:", error);
       res.status(500).json({ message: "Failed to update item" });
     }
   });
