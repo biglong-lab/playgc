@@ -59,6 +59,7 @@ export const ACHIEVEMENT_ICONS: AchievementIconInfo[] = [
 // 表單資料介面
 export interface AchievementFormData {
   name: string;
+  slug: string;
   description: string;
   achievementType: string;
   rarity: string;
@@ -74,6 +75,7 @@ export interface AchievementFormData {
 
 export const defaultFormData: AchievementFormData = {
   name: "",
+  slug: "",
   description: "",
   achievementType: "location",
   rarity: "common",
