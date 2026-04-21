@@ -10,6 +10,7 @@ import {
   insertEventSchema,
   insertAchievementSchema,
   items,
+  achievements,
 } from "@shared/schema";
 import { z } from "zod";
 import { ensureUniqueSlug, normalizeSlugInput } from "../lib/slug";
