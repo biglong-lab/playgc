@@ -207,9 +207,11 @@ function ActionItem({
 export default function OnCompleteActionsEditor({
   config,
   updateField,
+  gameId,
 }: {
   config: Record<string, unknown>;
   updateField: (field: string, value: unknown) => void;
+  gameId?: string;
 }) {
   const actions = (config.onCompleteActions || []) as ActionData[];
   const [expanded, setExpanded] = useState(actions.length > 0);
