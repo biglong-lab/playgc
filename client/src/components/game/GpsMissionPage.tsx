@@ -41,8 +41,16 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   // 改透過 ref 取用最新值
   const watchIdRef = useRef<number | null>(null);
 
-  const targetLat = config.targetLocation?.lat ?? config.targetLatitude ?? 0;
-  const targetLng = config.targetLocation?.lng ?? config.targetLongitude ?? 0;
+  // 🎯 座標容錯：config 缺座標或填 0/null → 元件自動辨識為「未設定」
+  // 不依賴資料預先填 placeholder；元件自己 graceful degradation
+  const rawLat = config.targetLocation?.lat ?? config.targetLatitude;
+  const rawLng = config.targetLocation?.lng ?? config.targetLongitude;
+  const hasValidTarget =
+    typeof rawLat === "number" && typeof rawLng === "number"
+      && !Number.isNaN(rawLat) && !Number.isNaN(rawLng)
+      && !(rawLat === 0 && rawLng === 0); // (0,0) 視為未設定
+  const targetLat = hasValidTarget ? (rawLat as number) : 0;
+  const targetLng = hasValidTarget ? (rawLng as number) : 0;
   const targetRadius = config.radius || 50;
 
   const calculateDistance = useCallback((lat1: number, lng1: number, lat2: number, lng2: number): number => {
