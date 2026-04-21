@@ -3,15 +3,15 @@
 // Docs: https://openrouter.ai/docs
 
 import type { PhotoVerifyResult, TextScoreResult } from "./gemini";
+import { DEFAULT_VISION_MODEL, DEFAULT_TEXT_MODEL } from "@shared/schema";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
-// 模型選擇 — 平衡 cost 與品質
-// 可用 env 覆寫
-const MODEL_VISION =
-  process.env.OPENROUTER_VISION_MODEL || "openai/gpt-4o-mini"; // 便宜 + vision
-const MODEL_TEXT =
-  process.env.OPENROUTER_TEXT_MODEL || "anthropic/claude-3.5-haiku"; // 便宜 + 中文好
+// 預設模型（若場域未指定）
+const DEFAULT_MODEL_VISION =
+  process.env.OPENROUTER_VISION_MODEL || DEFAULT_VISION_MODEL;
+const DEFAULT_MODEL_TEXT =
+  process.env.OPENROUTER_TEXT_MODEL || DEFAULT_TEXT_MODEL;
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
