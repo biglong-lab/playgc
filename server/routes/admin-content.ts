@@ -9,8 +9,10 @@ import {
   insertPageSchema,
   insertEventSchema,
   insertAchievementSchema,
+  items,
 } from "@shared/schema";
 import { z } from "zod";
+import { ensureUniqueSlug, normalizeSlugInput } from "../lib/slug";
 
 export function registerAdminContentRoutes(app: Express) {
   // ============================================================================
