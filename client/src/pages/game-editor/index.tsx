@@ -471,6 +471,14 @@ export default function GameEditor() {
                         setPages(newPages);
                         setSelectedPage({ ...selectedPage, config });
                       }}
+                      onUpdatePageMeta={(partial) => {
+                        // 更新頁面層級 metadata（如 customName），合併到 page 物件
+                        const newPages = pages.map((p) =>
+                          p.id === selectedPage.id ? { ...p, ...partial } : p
+                        );
+                        setPages(newPages);
+                        setSelectedPage({ ...selectedPage, ...partial });
+                      }}
                     />
                   </CardContent>
                 </Card>
