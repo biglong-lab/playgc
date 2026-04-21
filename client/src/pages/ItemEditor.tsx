@@ -93,6 +93,7 @@ export default function ItemEditor() {
       const effect = (selectedItem.effect as any) || { type: "none", value: 0, description: "" };
       setFormData({
         name: selectedItem.name,
+        slug: (selectedItem as any).slug || "",
         description: selectedItem.description || "",
         itemType: selectedItem.itemType || "consumable",
         iconUrl: selectedItem.iconUrl || "package",
