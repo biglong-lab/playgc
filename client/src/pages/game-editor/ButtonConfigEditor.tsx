@@ -179,10 +179,6 @@ export default function ButtonConfigEditor({
                       }}
                       testId={`config-button-items-${i}`}
                     />
-                    {/* @ts-expect-error fall-through — 為了維持以下 Input 被移除 */}
-                    <Input
-                      className="hidden"
-                    />
                   </div>
                 </div>
               </div>
