@@ -142,7 +142,8 @@ function AiSettingsTab({ fieldId, settings }: { fieldId: string; settings?: Fiel
           <Bot className="w-5 h-5" /> AI 功能設定
         </CardTitle>
         <CardDescription>
-          設定場域專屬的 Gemini API Key，用於照片驗證和文字語意評分
+          設定場域專屬的 AI API Key，用於照片驗證和文字語意評分。
+          支援 <b>Google Gemini</b>（AIza 開頭）或 <b>OpenRouter</b>（sk-or- 開頭）。
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
