@@ -71,7 +71,10 @@ export default function PageListSidebar({
 
       <div
         className="flex-1 overflow-auto p-2"
-        onDragOver={(e) => e.preventDefault()}
+        onDragOver={(e) => {
+          // 確保容器本身也是 drop target（覆蓋 Reorder.Group 可能吞掉事件的狀況）
+          e.preventDefault();
+        }}
         onDrop={onDropZoneDrop}
       >
         <Reorder.Group
@@ -83,13 +86,39 @@ export default function PageListSidebar({
           <AnimatePresence>
             {pages.map((page, index) => {
               const typeInfo = getPageTypeInfo(page.pageType);
+              // 🏷️ 主標題：customName（若有）；副標題：模組類別
+              // 這個排版平衡了「自訂識別」和「類別辨識」
+              const pageWithName = page as Page & { customName?: string | null };
+              const hasCustomName = !!pageWithName.customName?.trim();
+              const primaryLabel = hasCustomName
+                ? pageWithName.customName!
+                : typeInfo.label;
+
               return (
-                <div key={page.id}>
+                // 外層包裹 div 承接拖放 events（Reorder.Item 會吃掉 pointer events）
+                <div
+                  key={page.id}
+                  // 原生 HTML5 drag events 綁在外層 div，不受 framer-motion Reorder.Item 的 pointer events 影響
+                  onDragOver={(e) => onDragOver(e, index)}
+                  onDrop={(e) => onDrop(e, index)}
+                >
+                  {/* 🎯 「放置於此」虛線框 — 必須自己處理 drop，
+                      否則拖到虛線上方放開時 drop target 是這個 div，
+                      沒有 onDrop 就什麼都不會發生 */}
                   {dragOverIndex === index && isDraggingFromToolbox && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 40 }}
                       className="border-2 border-dashed border-primary/50 rounded-lg bg-primary/10 flex items-center justify-center text-xs text-primary mb-1"
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onDrop(e, index);
+                      }}
                     >
                       放置於此
                     </motion.div>
@@ -102,12 +131,6 @@ export default function PageListSidebar({
                         : "bg-background/50 hover:bg-accent border border-transparent"
                     }`}
                     onClick={() => onSelectPage(page)}
-                    onDragOver={(e) =>
-                      onDragOver(e as unknown as React.DragEvent, index)
-                    }
-                    onDrop={(e) =>
-                      onDrop(e as unknown as React.DragEvent, index)
-                    }
                     whileDrag={{
                       scale: 1.02,
                       boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
@@ -116,14 +139,17 @@ export default function PageListSidebar({
                   >
                     <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab active:cursor-grabbing" />
                     <div
-                      className={`w-8 h-8 rounded flex items-center justify-center ${typeInfo.color}`}
+                      className={`w-8 h-8 rounded flex items-center justify-center ${typeInfo.color} shrink-0`}
                     >
                       <typeInfo.icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
-                        <p className="text-sm font-medium truncate">
-                          {typeInfo.label}
+                        <p
+                          className="text-sm font-medium truncate"
+                          title={hasCustomName ? pageWithName.customName! : undefined}
+                        >
+                          {primaryLabel}
                         </p>
                         {(issuesByPageId.get(page.id)?.errors ?? 0) > 0 && (
                           <AlertTriangle
@@ -132,8 +158,16 @@ export default function PageListSidebar({
                           />
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        #{index + 1}
+                      <p className="text-xs text-muted-foreground truncate">
+                        {hasCustomName ? (
+                          <>
+                            <span className="font-mono mr-1">#{index + 1}</span>
+                            <span>·</span>
+                            <span className="ml-1">{typeInfo.label}</span>
+                          </>
+                        ) : (
+                          <span className="font-mono">#{index + 1}</span>
+                        )}
                       </p>
                     </div>
                     <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -177,6 +211,9 @@ export default function PageListSidebar({
                 : "border-border"
             }`}
             animate={{ scale: isDraggingFromToolbox ? 1.02 : 1 }}
+            // 空清單時也要能接 drop
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={onDropZoneDrop}
           >
             <Plus className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
@@ -190,7 +227,16 @@ export default function PageListSidebar({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 60 }}
             className="border-2 border-dashed border-primary/50 rounded-lg bg-primary/10 flex items-center justify-center text-sm text-primary mt-2"
-            onDragOver={(e) => e.preventDefault()}
+            // 「放置於最後」也要自己處理 drop
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDropZoneDrop(e);
+            }}
           >
             放置於最後
           </motion.div>
