@@ -244,6 +244,16 @@ export default function ChapterManager({ gameId }: ChapterManagerProps) {
           新增章節
         </Button>
       </div>
+
+      {/* 模板 dialog */}
+      {templateDialogMode && (
+        <ChapterTemplatesDialog
+          gameId={gameId}
+          mode={templateDialogMode}
+          open={true}
+          onClose={() => setTemplateDialogMode(null)}
+        />
+      )}
     </div>
   );
 }
