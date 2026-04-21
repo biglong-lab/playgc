@@ -160,6 +160,21 @@ export default function GamePlay() {
       }
     }
 
+    // 2.5 觸發獎勵反饋 — 讓玩家看到「剛剛發生了什麼」
+    const pointsDelta = newScore - currentState.score;
+    const newItemIds = newInventory.filter(
+      (id) => !currentState.inventory.includes(id),
+    );
+    if (pointsDelta > 0 || newItemIds.length > 0) {
+      fireReward({
+        points: pointsDelta > 0 ? pointsDelta : undefined,
+        items: newItemIds.map((id) => ({
+          name: itemIdToInfo.get(id)?.name || id,
+          iconUrl: itemIdToInfo.get(id)?.iconUrl ?? undefined,
+        })),
+      });
+    }
+
     // 3. 遊戲結束特殊指令
     if (nextPageId === "_end") {
       setState(prev => ({ ...prev, score: newScore, inventory: newInventory, variables: newVariables }));
