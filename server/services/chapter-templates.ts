@@ -282,14 +282,27 @@ export async function importChapterFromTemplate(
     })
     .returning();
 
-  // 預先抓目標遊戲的 items slug → id 對應（用來 remap item 引用）
+  // 預先抓目標遊戲的 slug → id 對應（用來 remap 引用）
   const remap = input.remapItemsBySlug ?? true;
-  const targetItems = remap
-    ? await db.select().from(items).where(eq(items.gameId, input.targetGameId))
-    : [];
-  const slugToId = new Map<string, string>();
+  const [targetItems, targetLocations, targetAchievements] = remap
+    ? await Promise.all([
+        db.select().from(items).where(eq(items.gameId, input.targetGameId)),
+        db.select().from(locations).where(eq(locations.gameId, input.targetGameId)),
+        db.select().from(achievements).where(eq(achievements.gameId, input.targetGameId)),
+      ])
+    : [[], [], []] as const;
+
+  const itemSlugToId = new Map<string, string>();
   for (const it of targetItems) {
-    if (it.slug) slugToId.set(it.slug, it.id);
+    if (it.slug) itemSlugToId.set(it.slug, it.id);
+  }
+  const locationSlugToId = new Map<string, number>();
+  for (const loc of targetLocations) {
+    if (loc.slug) locationSlugToId.set(loc.slug, loc.id);
+  }
+  const achievementSlugToId = new Map<string, number>();
+  for (const ach of targetAchievements) {
+    if (ach.slug) achievementSlugToId.set(ach.slug, ach.id);
   }
 
   // 匯入 pages
