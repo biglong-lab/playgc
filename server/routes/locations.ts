@@ -5,8 +5,10 @@ import { isAuthenticated } from "../firebaseAuth";
 import {
   insertLocationSchema,
   insertNavigationPathSchema,
+  locations,
 } from "@shared/schema";
 import { checkGameOwnership } from "./utils";
+import { ensureUniqueSlug, normalizeSlugInput } from "../lib/slug";
 import type { RouteContext } from "./types";
 import { registerLocationTrackingRoutes } from "./location-tracking";
 
