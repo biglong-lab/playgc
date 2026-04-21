@@ -41,6 +41,7 @@ export default function AchievementEditor() {
     const condition = (selectedAchievement.condition as AchievementFormData["condition"]) || { type: "visit_location" };
     setFormData({
       name: selectedAchievement.name,
+      slug: (selectedAchievement as Achievement & { slug?: string | null }).slug || "",
       description: selectedAchievement.description || "",
       achievementType: selectedAchievement.achievementType || "location",
       rarity: selectedAchievement.rarity || "common",
