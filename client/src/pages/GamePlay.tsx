@@ -88,6 +88,20 @@ export default function GamePlay() {
     return visitsData.map((v) => String(v.locationId));
   }, [visitsData]);
 
+  // 道具 name lookup（給 RewardFeedback 顯示用）
+  const { data: gameItems } = useQuery<Array<{ id: string; name: string; iconUrl?: string | null }>>({
+    queryKey: [`/api/games/${gameId}/items`],
+    enabled: !!gameId,
+    staleTime: 60_000,
+  });
+  const itemIdToInfo = useMemo(() => {
+    const map = new Map<string, { name: string; iconUrl?: string | null }>();
+    for (const it of gameItems ?? []) {
+      map.set(it.id, { name: it.name, iconUrl: it.iconUrl });
+    }
+    return map;
+  }, [gameItems]);
+
   // === 遊戲/章節完成處理 ===
   const handleCompletion = useCallback((finalScore: number) => {
     const sid = stateRef.current.sessionId;
