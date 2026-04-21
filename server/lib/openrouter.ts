@@ -82,7 +82,7 @@ export async function verifyPhotoOpenRouter(
 請嚴謹但合理地判斷，回傳 JSON 格式：
 { "verified": boolean, "confidence": number, "feedback": string, "detectedObjects": string[] }`;
 
-  const content = await callOpenRouter(apiKey, MODEL_VISION, [
+  const content = await callOpenRouter(apiKey, visionModel, [
     {
       role: "user",
       content: [
