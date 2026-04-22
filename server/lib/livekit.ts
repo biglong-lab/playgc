@@ -84,7 +84,7 @@ export async function createBroadcasterToken(options: {
     canPublish: true,
     canSubscribe: false,                      // 🔒 關鍵：不允許訂閱（不聽玩家對話）
     canPublishData: false,
-    canPublishSources: ["microphone"] as never,
+    canPublishSources: [TrackSource.MICROPHONE],
   };
   at.addGrant(grant);
 
