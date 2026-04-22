@@ -36,9 +36,18 @@ const joinGroupSchema = z.object({
   accessCode: z.string().min(1, "請輸入語音群組代碼"),
 });
 
-/** 生成 6 碼 accessCode（排除易混字 0 O I L 1） */
+/** 生成 6 碼 accessCode
+ * 排除易混字：
+ *   - 0/O（零/歐）
+ *   - 1/I/L（一/艾/L）
+ *   - M/N（某些字型下難分辨）← 保留 M
+ *   - 2/Z（保留 2）
+ *   - 5/S（保留 5）
+ *   - B/8（保留 8）
+ * 留下 26 字：A,C,D,E,F,G,H,J,K,P,Q,R,T,U,V,W,X,Y,3,4,6,7,8,9,M,2
+ */
 function generateAccessCode(): string {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const chars = "ACDEFGHJKMPQRTUVWXY234679";
   let code = "";
   for (let i = 0; i < 6; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
