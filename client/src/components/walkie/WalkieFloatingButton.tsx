@@ -193,42 +193,86 @@ export function WalkieFloatingButton({
     setTimeout(() => setCopied(false), 1500);
   };
 
-  /** 分享連結（Web Share API，Safari/Chrome 都支援）*/
-  const handleShare = async () => {
-    if (!myGroup) return;
-    const shareUrl = buildWalkieShareUrl(myGroup.accessCode);
-    const shareData = {
-      title: "對講機邀請",
-      text: `來加入我的語音群組一起玩！代碼 ${myGroup.accessCode}`,
-      url: shareUrl,
-    };
-    // 優先 Web Share API（iOS / Android 原生 share sheet）
-    if (typeof navigator.share === "function") {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        // 使用者取消或其他錯誤 → silent
-        if (err instanceof Error && err.name !== "AbortError") {
-          console.warn("[walkie] share failed:", err);
+  /** 實際觸發分享動作（原生 share sheet + 複製 fallback）*/
+  const shareGroupLink = useCallback(
+    async (accessCode: string) => {
+      const shareUrl = buildWalkieShareUrl(accessCode);
+      const shareData = {
+        title: "對講機邀請",
+        text: `來加入我的語音群組一起玩！代碼 ${accessCode}`,
+        url: shareUrl,
+      };
+      // 優先 Web Share API（iOS / Android 原生 share sheet）
+      if (typeof navigator.share === "function") {
+        try {
+          await navigator.share(shareData);
+        } catch (err) {
+          // 使用者取消 → silent；其他錯誤 → 印 log
+          if (err instanceof Error && err.name !== "AbortError") {
+            console.warn("[walkie] share failed:", err);
+          }
         }
+        return;
       }
+      // Fallback：複製連結
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "已複製邀請連結",
+          description: "貼給朋友就能加入",
+        });
+      } catch {
+        toast({
+          title: "無法分享",
+          description: "請手動複製代碼",
+          variant: "destructive",
+        });
+      }
+    },
+    [toast],
+  );
+
+  /** 分享現有群組（in-group 時用）*/
+  const handleShare = useCallback(() => {
+    if (!myGroup) return;
+    shareGroupLink(myGroup.accessCode);
+  }, [myGroup, shareGroupLink]);
+
+  /**
+   * 🌟 Stage 3 核心：一鍵「邀請朋友」
+   * 若未在群組：自動建組 → 立刻跳分享 sheet
+   * 若已在群組：直接分享
+   */
+  const handleInviteFriends = useCallback(async () => {
+    if (myGroup) {
+      // 已有群組 → 直接分享
+      await shareGroupLink(myGroup.accessCode);
       return;
     }
-    // Fallback：複製連結
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      const res = await apiRequest("POST", "/api/walkie/groups", { gameId });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "建立群組失敗");
+      }
+      const newGroup = (await res.json()) as WalkieGroup;
+      queryClient.invalidateQueries({ queryKey: ["/api/walkie/groups/my"] });
+      refetchMyGroup();
+      setView("in-group");
+      // ⚠️ 關鍵：建組成功「立刻」呼叫 share（仍在 user gesture 內，iOS Safari 允許）
+      await shareGroupLink(newGroup.accessCode);
       toast({
-        title: "已複製邀請連結",
-        description: "貼給朋友就能加入",
+        title: "✅ 已建立並分享",
+        description: `代碼 ${newGroup.accessCode}`,
       });
-    } catch {
+    } catch (err) {
       toast({
-        title: "無法分享",
-        description: "請手動複製代碼",
+        title: "邀請失敗",
+        description: err instanceof Error ? err.message : "未知錯誤",
         variant: "destructive",
       });
     }
-  };
+  }, [myGroup, gameId, shareGroupLink, refetchMyGroup, toast]);
 
   useEffect(() => {
     const handleLeave = () => stopTalking();
