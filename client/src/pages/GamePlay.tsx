@@ -358,6 +358,11 @@ export default function GamePlay() {
       {/* 🎉 獎勵反饋覆蓋層 — 每當 handlePageComplete 偵測到分數/道具增加時顯示 */}
       <RewardFeedbackOverlay />
 
+      {/* 📻 對講機浮動按鈕（玩家可跟隊友語音） */}
+      {sessionId && !isCompleted && (
+        <WalkieFloatingButton sessionId={sessionId} enabled />
+      )}
+
       <nav className="sticky bottom-0 bg-card/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between gap-4">
         <Button
           variant="ghost"
