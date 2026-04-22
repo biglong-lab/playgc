@@ -116,10 +116,27 @@ export async function verifyPhoto(
 
 請嚴謹但合理地判斷，只要照片明顯包含關鍵字描述的主題即可通過。`;
 
-  const result = await model.generateContent([
-    prompt,
-    { inlineData: { mimeType, data: base64Image } },
-  ]);
+  // 🕒 Gemini 生成加 45s timeout（AI 可能因 prompt 複雜或 API 擁塞卡住）
+  const aiAbort = new AbortController();
+  const aiTimer = setTimeout(() => aiAbort.abort(), 45_000);
+  let result;
+  try {
+    result = await model.generateContent(
+      [prompt, { inlineData: { mimeType, data: base64Image } }],
+      // @ts-expect-error - Gemini SDK 的 RequestOptions 支援 signal 但型別未暴露
+      { signal: aiAbort.signal },
+    );
+  } catch (err) {
+    clearTimeout(aiTimer);
+    throw new Error(
+      err instanceof Error && err.name === "AbortError"
+        ? "AI 驗證超時（45 秒），請稍後再試"
+        : err instanceof Error
+          ? `AI 驗證失敗：${err.message}`
+          : "AI 驗證失敗",
+    );
+  }
+  clearTimeout(aiTimer);
 
   const text = result.response.text();
   const parsed = JSON.parse(text) as PhotoVerifyResult;
