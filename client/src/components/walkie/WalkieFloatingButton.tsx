@@ -436,9 +436,20 @@ export function WalkieFloatingButton({
                 {/* 群組資訊（只有 in-group 顯示）*/}
                 {view === "in-group" && myGroup && (
                   <div className="px-3 py-3 bg-primary/5 border-b space-y-2">
+                    {/* 🆕 主動分享按鈕（原生 share sheet：LINE/iMessage/AirDrop）*/}
+                    <Button
+                      onClick={handleShare}
+                      className="w-full gap-2"
+                      size="sm"
+                      data-testid="walkie-share-btn"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      分享邀請連結給朋友
+                    </Button>
+
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
-                        {showQR ? "讓朋友掃這個 QR 加入 👇" : "群組代碼"}
+                        {showQR ? "或讓朋友掃 QR 加入 👇" : "或給代碼"}
                       </span>
                       <div className="flex gap-1 text-[10px]">
                         <button
