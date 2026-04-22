@@ -15,11 +15,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Radio, Mic, MicOff, X, Users, AlertTriangle,
-  Plus, UserPlus, Copy, LogOut, Check,
+  Plus, UserPlus, Copy, LogOut, Check, QrCode, Camera,
 } from "lucide-react";
 import { useWalkieRoom } from "@/hooks/useWalkieRoom";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { WalkieQRCode } from "./WalkieQRCode";
+import { WalkieQRScanner } from "./WalkieQRScanner";
 
 interface WalkieFloatingButtonProps {
   /** 當前遊戲 session（可選，沒有就只能用群組模式）*/
