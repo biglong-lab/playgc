@@ -42,6 +42,8 @@ import { registerRevenueRoutes } from "./revenue";
 import { registerFieldRoutes } from "./field";
 import { registerApplicationRoutes } from "./applications";
 import { registerFieldMembershipRoutes } from "./field-memberships";
+import { registerWalkieRoutes } from "./walkie";
+import { registerAdminWalkieRoutes } from "./admin-walkie";
 
 export async function registerRoutes(
   httpServer: Server,
