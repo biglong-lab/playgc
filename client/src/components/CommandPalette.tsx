@@ -59,6 +59,7 @@ const COMMANDS: CommandItem[] = [
   { label: "遊戲管理", path: "/admin/games", icon: Gamepad2, group: "🎮 遊戲中心", keywords: ["game", "task"] },
   { label: "模組庫", path: "/admin/templates", icon: Library, group: "🎮 遊戲中心", keywords: ["template", "module"] },
   { label: "進行中場次", path: "/admin/sessions", icon: Activity, group: "🎮 遊戲中心", keywords: ["session", "live"] },
+  { label: "即時遊戲 + 對講機廣播", path: "/admin/live", icon: Radio, group: "🎮 遊戲中心", keywords: ["live", "walkie", "broadcast", "對講機"] },
   { label: "設備管理", path: "/admin/devices", icon: Cpu, group: "🎮 遊戲中心", keywords: ["device", "led"] },
   { label: "QR Code 發布", path: "/admin/qrcodes", icon: QrCode, group: "🎮 遊戲中心" },
 
