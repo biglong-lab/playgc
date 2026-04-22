@@ -166,9 +166,11 @@ export function WalkieFloatingButton({
   const onPressStart = useCallback(
     (e: React.MouseEvent | React.TouchEvent) => {
       e.preventDefault();
+      // 🔊 每次 PTT 按下也順手 startAudio（iOS Safari 音訊啟用保險）
+      startAudio();
       startTalking();
     },
-    [startTalking],
+    [startAudio, startTalking],
   );
 
   const onPressEnd = useCallback(
