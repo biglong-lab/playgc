@@ -33,9 +33,41 @@ services:
       NODE_ENV: production
       PORT: 3333
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/gameplatform
+      # LiveKit 對講機（內部呼叫 http://livekit:7880）
+      LIVEKIT_URL: ws://livekit:7880
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - internal
+
+  # 📻 LiveKit Server — 對講機 SFU
+  # 資源硬限：1 core / 512MB（避免影響同主機其他 20+ container）
+  # 對於賈村場域（同時 50 人以下）綽綽有餘
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: gamehomicc-livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml --keys "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      # API + WebSocket signaling（由 Nginx 反代到 wss://game.homi.cc/livekit）
+      - "7880:7880"
+      # TCP fallback 給 NAT 穿透失敗時
+      - "7881:7881"
+      # UDP RTP（實際音訊流）
+      - "50000-50100:50000-50100/udp"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
     networks:
       - internal
 
