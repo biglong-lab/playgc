@@ -349,58 +349,54 @@ export function WalkieFloatingButton({
             {/* === View: MENU（選擇入口）=== */}
             {view === "menu" && (
               <div className="p-3 space-y-2">
-                <p className="text-xs text-muted-foreground mb-2">
-                  選擇語音模式 👇
-                </p>
-
+                {/* 🌟 Stage 3 主按鈕：邀請朋友（自動建組 + 立刻分享）*/}
                 <button
-                  onClick={() => createMutation.mutate()}
+                  onClick={handleInviteFriends}
                   disabled={createMutation.isPending}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 border-primary/20 hover:bg-primary/5 transition-colors text-left"
-                  data-testid="walkie-create-group"
+                  className="w-full flex items-center gap-3 px-3 py-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-left shadow-sm"
+                  data-testid="walkie-invite"
                 >
-                  <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
-                    <Plus className="w-5 h-5 text-primary" />
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                    <Share2 className="w-5 h-5" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-sm">建立語音群組</div>
-                    <div className="text-xs text-muted-foreground">
-                      產生代碼邀請朋友加入
+                    <div className="font-semibold">📤 邀請朋友一起玩</div>
+                    <div className="text-xs opacity-90">
+                      一鍵分享 LINE / Messages，朋友點連結就加入
                     </div>
                   </div>
                 </button>
 
-                {/* 🆕 主入口：掃 QR（最快，零輸入） */}
+                <div className="flex items-center gap-2 py-1">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-[10px] text-muted-foreground">
+                    或加入朋友的群組
+                  </span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+
+                {/* 📷 掃碼加入（次要）*/}
                 <button
                   onClick={() => setScanning(true)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 border-emerald-500/30 hover:bg-emerald-500/5 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border hover:bg-accent transition-colors text-left"
                   data-testid="walkie-scan-qr"
                 >
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
-                    <Camera className="w-5 h-5 text-emerald-600" />
+                  <div className="w-9 h-9 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                    <Camera className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-sm">📷 掃碼加入朋友的群組</div>
-                    <div className="text-xs text-muted-foreground">
-                      對著朋友螢幕掃一下就加入
-                    </div>
+                    <div className="font-medium text-sm">📷 掃朋友的 QR</div>
                   </div>
                 </button>
 
+                {/* 輸入代碼（收合為小選項）*/}
                 <button
                   onClick={() => setView("join")}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border hover:bg-accent transition-colors text-left"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-left text-xs text-muted-foreground"
                   data-testid="walkie-join-group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <UserPlus className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">輸入代碼加入</div>
-                    <div className="text-xs text-muted-foreground">
-                      若無法掃碼，手動輸入 6 碼
-                    </div>
-                  </div>
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>或手動輸入 6 碼</span>
                 </button>
 
                 {sessionId && (
@@ -409,21 +405,14 @@ export function WalkieFloatingButton({
                       setUseSessionMode(true);
                       setView("in-session");
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border hover:bg-accent transition-colors text-left"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-left text-xs text-muted-foreground"
                   >
-                    <div className="w-10 h-10 rounded-full bg-blue-500/15 flex items-center justify-center shrink-0">
-                      <Users className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">跟遊戲隊友對講</div>
-                      <div className="text-xs text-muted-foreground">
-                        若有組隊，跟同隊玩家溝通
-                      </div>
-                    </div>
+                    <Users className="w-3.5 h-3.5" />
+                    <span>跟遊戲隊友對講（若有組隊）</span>
                   </button>
                 )}
 
-                <p className="text-[10px] text-muted-foreground text-center mt-2">
+                <p className="text-[10px] text-muted-foreground text-center mt-1">
                   本對話不儲存
                 </p>
               </div>
