@@ -55,7 +55,12 @@ services:
     image: livekit/livekit-server:latest
     container_name: gamehomicc-livekit
     restart: unless-stopped
-    command: --config /etc/livekit.yaml --keys "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
+    # 用 list 形式避免 ${KEY}:${SECRET} 中的冒號被 YAML 誤解為 key
+    command:
+      - "--config"
+      - "/etc/livekit.yaml"
+      - "--keys"
+      - "${LIVEKIT_API_KEY}: ${LIVEKIT_API_SECRET}"
     volumes:
       - ./livekit.yaml:/etc/livekit.yaml:ro
     ports:
