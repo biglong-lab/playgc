@@ -211,9 +211,9 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
     }
   }, []);
 
-  /** enabled 切換或 sessionId 改變時重新連線 */
+  /** enabled 切換或 sessionId/groupId 改變時重新連線 */
   useEffect(() => {
-    if (enabled && (sessionId || manualToken)) {
+    if (enabled && (sessionId || groupId || manualToken)) {
       connect();
     } else {
       disconnect();
@@ -225,7 +225,7 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
     };
     // 故意忽略 connect/disconnect 的 deps（它們 useCallback 已穩定）
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, sessionId, manualToken]);
+  }, [enabled, sessionId, groupId, manualToken]);
 
   return {
     connectionState,
