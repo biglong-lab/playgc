@@ -51,7 +51,8 @@ export async function createPlayerToken(options: {
     canPublish: true,
     canSubscribe: true,
     canPublishData: false,         // 純語音，不開 data channel
-    canPublishSources: ["microphone"] as never, // 只能開麥，不能開鏡頭/螢幕分享
+    // 只允許麥克風 publish（不能開鏡頭/螢幕分享）
+    canPublishSources: [TrackSource.MICROPHONE],
   };
   at.addGrant(grant);
 
