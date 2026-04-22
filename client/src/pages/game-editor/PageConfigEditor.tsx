@@ -28,6 +28,8 @@ import {
 import type { MediaUploadButtonProps } from "./page-config-inline-editors";
 import type { PageConfigEditorProps } from "./types";
 import { DeviceSelect } from "@/components/shared/DeviceSelect";
+import { AIModelSelect } from "@/components/shared/AIModelSelect";
+import { AIPhotoTester } from "@/components/shared/AIPhotoTester";
 
 export default function PageConfigEditor({
   page,
