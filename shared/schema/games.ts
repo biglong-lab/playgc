@@ -425,6 +425,8 @@ export interface PhotoMissionConfig {
   aiFailMessage?: string;         // AI 驗證失敗時的提示訊息
   allowRetryOnAiFail?: boolean;   // AI 失敗是否允許重拍（預設 true）
   maxAiRetries?: number;          // 最多重拍次數（預設 3）
+  /** 🆕 AI 模型選擇（OpenRouter model id，空值則用場域預設） */
+  aiModelId?: string;
   manualVerify?: boolean;
   onSuccess?: {
     message?: string;
