@@ -500,6 +500,7 @@ export default function PageConfigEditor({
           config={config}
           updateField={updateField}
           allPages={allPages}
+          gameId={gameId}
         />
       );
 
