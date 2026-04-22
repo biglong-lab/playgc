@@ -160,11 +160,13 @@ export function registerAiScoringRoutes(app: Express): void {
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
         return apiError(res, 503, "此場域的 AI 功能已停用");
       }
-      // AI 失敗不應阻斷遊戲，回傳 fallback
+      console.error("[ai-scoring] verify-photo 失敗:", error);
+      // 🛡️ AI 失敗不阻斷遊戲，但 verified=false（不自動通過）
+      // 前端會偵測 fallback 旗標，讓玩家繼續但不給 points（避免被濫用）
       return res.json({
-        verified: true,
+        verified: false,
         confidence: 0,
-        feedback: "AI 服務暫時無法使用，已自動通過",
+        feedback: "AI 暫時無法驗證，可繼續遊戲但不計分",
         detectedObjects: [],
         fallback: true,
       });
