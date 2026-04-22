@@ -232,10 +232,35 @@ export default function AdminLive() {
           </Card>
         )}
 
-        {/* 隊伍清單 */}
+        {/* 隊伍清單 — 支援勾選多隊 + 單隊廣播 */}
         <Card>
           <CardHeader>
-            <CardTitle>隊伍清單</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>隊伍清單</CardTitle>
+              {/* 🆕 勾選模式的快速動作 */}
+              {selectedTeamIds.length > 0 && stats?.liveKitEnabled && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">
+                    已選 {selectedTeamIds.length} 隊（{selectedMemberCount} 人）
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedTeamIds([])}
+                  >
+                    清除
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleBroadcastSelected}
+                    className="gap-1"
+                  >
+                    <Megaphone className="w-3.5 h-3.5" />
+                    廣播給已選隊伍
+                  </Button>
+                </div>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {!stats?.teams || stats.teams.length === 0 ? (
@@ -244,11 +269,29 @@ export default function AdminLive() {
               </p>
             ) : (
               <div className="space-y-2">
-                {stats.teams.map((team) => (
+                {stats.teams.map((team) => {
+                  const checkboxId = team.teamId;
+                  const isChecked =
+                    !!checkboxId && selectedTeamIds.includes(checkboxId);
+                  return (
                   <div
                     key={team.teamId || team.sessionIds[0]}
-                    className="flex items-center gap-3 px-3 py-2.5 border rounded-lg hover:bg-accent/50 transition-colors"
+                    className={`flex items-center gap-3 px-3 py-2.5 border rounded-lg hover:bg-accent/50 transition-colors ${
+                      isChecked ? "ring-1 ring-primary bg-primary/5" : ""
+                    }`}
                   >
+                    {/* 🆕 checkbox（無 teamId 的不可勾，如個人模式 session） */}
+                    {checkboxId ? (
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggleTeamSelection(checkboxId)}
+                        className="shrink-0 w-4 h-4"
+                        data-testid={`team-checkbox-${checkboxId}`}
+                      />
+                    ) : (
+                      <span className="w-4 h-4 shrink-0" />
+                    )}
                     <Users className="w-4 h-4 text-muted-foreground shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">
