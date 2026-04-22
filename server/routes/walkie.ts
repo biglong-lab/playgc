@@ -21,9 +21,10 @@ import {
 } from "../lib/livekit";
 
 const tokenRequestSchema = z.object({
-  sessionId: z.string().optional(),
+  // nullable：前端若沒值會傳 null（不是 undefined），zod optional 不接 null
+  sessionId: z.string().nullable().optional(),
   /** 若帶此，優先用 walkie group room（個人模式/跨遊戲都可用） */
-  groupId: z.string().optional(),
+  groupId: z.string().nullable().optional(),
 });
 
 const createGroupSchema = z.object({
