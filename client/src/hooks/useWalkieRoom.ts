@@ -70,6 +70,7 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
   const { sessionId, groupId, manualToken, enabled = true, startMuted = true } = options;
 
   const roomRef = useRef<Room | null>(null);
+  const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
   const [connectionState, setConnectionState] = useState<ConnectionState>(
     ConnectionState.Disconnected,
   );
@@ -77,6 +78,7 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
   const [roomName, setRoomName] = useState<string | null>(null);
   const [participants, setParticipants] = useState<WalkieParticipant[]>([]);
   const [isTransmitting, setIsTransmitting] = useState(false);
+  const [canPlaybackAudio, setCanPlaybackAudio] = useState(true);
 
   /** 把 LiveKit Participant 轉成 UI 友善格式 */
   const toWalkieParticipant = useCallback(
