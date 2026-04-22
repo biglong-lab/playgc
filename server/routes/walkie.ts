@@ -272,7 +272,8 @@ export function registerWalkieRoutes(app: Express) {
             }
           }
           variants.delete(rawCode); // 已試過
-          for (const v of variants) {
+          const variantsArray = Array.from(variants);
+          for (const v of variantsArray) {
             const [g] = await db
               .select()
               .from(walkieGroups)
