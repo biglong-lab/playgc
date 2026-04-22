@@ -78,27 +78,34 @@ export default function PhotoMissionPage({
       return response.json();
     },
     onSuccess: (result) => {
-      if (result.verified || result.fallback) {
-        // AI 驗證通過（或 fallback 自動通過）
+      if (result.verified) {
+        // AI 真的驗證通過 → 給滿分
         toast({
-          title: result.fallback ? "照片已上傳" : "照片驗證通過！",
+          title: "照片驗證通過！",
           description: result.feedback || config.onSuccess?.message || "任務完成！",
         });
         safeOnComplete(buildReward(true));
+      } else if (result.fallback) {
+        // 🛡️ AI 服務不可用：讓玩家繼續，但「不計分」（不自動送滿分避免作弊）
+        toast({
+          title: "照片已上傳",
+          description: result.feedback || "AI 暫時無法驗證，可繼續但本題不計分",
+        });
+        safeOnComplete(buildReward(false));
       } else {
-        // AI 驗證失敗
+        // AI 確定驗證失敗
         setAiFeedback(result.feedback || config.aiFailMessage || "照片不符合要求");
         setAiDetectedObjects(result.detectedObjects || []);
         camera.setMode("ai_fail");
       }
     },
     onError: () => {
-      // API 錯誤 → graceful fallback：直接通過
+      // API 端點錯誤 → 讓玩家通過但不計分（跟 fallback 行為一致）
       toast({
         title: "照片已上傳",
-        description: "AI 服務暫時無法使用，已自動通過",
+        description: "AI 服務暫時無法使用，本題不計分",
       });
-      safeOnComplete(buildReward(true));
+      safeOnComplete(buildReward(false));
     },
   });
 
