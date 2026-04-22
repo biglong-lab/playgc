@@ -129,7 +129,7 @@ export function registerAiScoringRoutes(app: Express): void {
         return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
       }
 
-      const { imageUrl, targetKeywords, instruction, confidenceThreshold, gameId } = parsed.data;
+      const { imageUrl, targetKeywords, instruction, confidenceThreshold, gameId, modelId } = parsed.data;
 
       // 解析場域 API Key（有場域 Key 就用場域的，否則 fallback 全域）
       const fieldApiKey = await resolveAiApiKey(gameId);
@@ -146,7 +146,8 @@ export function registerAiScoringRoutes(app: Express): void {
       }
 
       const threshold = confidenceThreshold ?? 0.6;
-      const result = await verifyPhoto(imageUrl, targetKeywords, instruction, fieldApiKey);
+      // 🆕 若 page config 指定了 modelId 就傳下去（OpenRouter 會用指定模型，Gemini 會忽略）
+      const result = await verifyPhoto(imageUrl, targetKeywords, instruction, fieldApiKey, modelId);
 
       // 根據閾值判斷是否通過
       const verified = result.confidence >= threshold;
