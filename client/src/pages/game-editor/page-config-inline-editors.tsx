@@ -951,10 +951,12 @@ function LegacyOptionsEditor({
   config,
   updateField,
   options,
+  allPages,
 }: {
   config: Record<string, unknown>;
   updateField: (field: string, value: unknown) => void;
   options: ChoiceOption[];
+  allPages?: Array<{ id: string; pageType: string; customName?: string | null }>;
 }) {
   return (
     <>
