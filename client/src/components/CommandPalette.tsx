@@ -37,6 +37,7 @@ import {
   Cpu,
   QrCode,
   Inbox,
+  Radio,
 } from "lucide-react";
 
 interface CommandItem {
