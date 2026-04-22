@@ -120,6 +120,7 @@ function Router() {
       <Switch>
         {/* 玩家端 */}
         <Route path="/" component={Landing} />
+        <Route path="/j/:code" component={JoinWalkie} />
         <Route path="/home" component={Home} />
         <Route path="/game/:gameId/chapters/:chapterId" component={GamePlay} />
         <Route path="/game/:gameId/chapters" component={ChapterSelect} />
