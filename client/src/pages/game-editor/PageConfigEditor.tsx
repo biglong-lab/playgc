@@ -27,6 +27,7 @@ import {
 } from "./page-config-inline-editors";
 import type { MediaUploadButtonProps } from "./page-config-inline-editors";
 import type { PageConfigEditorProps } from "./types";
+import { DeviceSelect } from "@/components/shared/DeviceSelect";
 
 export default function PageConfigEditor({
   page,
