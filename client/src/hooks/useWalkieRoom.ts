@@ -183,7 +183,7 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
       room.on(
         RoomEvent.TrackUnsubscribed,
         (track: RemoteTrack) => {
-          if (track.kind === Track.Kind.Audio) {
+          if (track.kind === Track.Kind.Audio && track.sid) {
             const el = audioElementsRef.current.get(track.sid);
             if (el) {
               track.detach(el);
