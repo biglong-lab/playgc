@@ -68,8 +68,11 @@ export function registerMediaRoutes(app: Express) {
         width: result.width,
         height: result.height,
       });
-    } catch {
-      res.status(500).json({ error: "上傳失敗" });
+    } catch (error) {
+      console.error("[media] cloudinary/upload 失敗:", error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "上傳失敗",
+      });
     }
   });
 
