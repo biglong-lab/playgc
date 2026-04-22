@@ -1,0 +1,44 @@
+# LiveKit Server 設定（自託管於 Linode 8GB/4core）
+# 限制：1 core / 512MB（docker-compose resources.limits）
+# 用途：賈村競技場對講機 + 管理者廣播
+# 絕不啟用 egress（錄音），維持「不存檔」承諾
+
+port: 7880
+
+bind_addresses:
+  - ""
+
+rtc:
+  tcp_port: 7881
+  # UDP 範圍限縮到 100 port，配合硬體限制避免耗光 port
+  # 每參與者約 2-4 個 track，100 port 可支援約 300-500 併發玩家
+  port_range_start: 50000
+  port_range_end: 50100
+  use_external_ip: true
+
+# 🔒 房間安全限制
+room:
+  # 任何 room 最多 20 人（玩家 6 人 team、管理者 1 人廣播場景綽綽有餘）
+  # 物理層防止有人刷 API 塞爆 room
+  max_participants: 20
+  # 空 room 保留 5 分鐘（等玩家重連）
+  empty_timeout: 300
+  # 總 room 數上限（避免 memory 爆）
+  max_rooms: 500
+
+# API 金鑰（從環境變數讀取）
+keys:
+  # format: {key}: {secret}
+  # 啟動時由 entrypoint script 注入，見 docker-entrypoint.sh
+  # 這裡留空用環境變數 LIVEKIT_KEYS 覆蓋
+
+logging:
+  level: info
+  sample: false
+  json: false
+  # 減少 log 量，遊戲用不到 debug
+  pion_level: warn
+
+# 明確關閉所有 egress（錄音/推流），確保「不存檔」承諾
+# 若未來要開，需修改此設定並通知使用者
+# 預設就是關閉，這裡為 defensive config
