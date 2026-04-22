@@ -73,6 +73,9 @@ export async function registerRoutes(
   registerAdminChapterRoutes(app);
   registerAdminChapterTemplateRoutes(app);
   registerAdminModuleRoutes(app);
+  // 📻 對講機（LiveKit）
+  registerWalkieRoutes(app);
+  registerAdminWalkieRoutes(app);
   registerMatchRoutes(app, ctx);
   registerAdminRedeemCodeRoutes(app);
   registerAdminPurchaseRoutes(app);
