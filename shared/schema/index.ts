@@ -7,6 +7,7 @@ export * from "./roles";
 export * from "./games";
 export * from "./sessions";
 export * from "./teams";
+export * from "./walkie-groups";
 export * from "./devices";
 export * from "./locations";
 export * from "./leaderboard";
