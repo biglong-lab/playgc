@@ -141,17 +141,20 @@ export default function ButtonConfigEditor({
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">圖示（lucide 名稱）</label>
-                    <Input
-                      value={btn.icon || ""}
-                      onChange={(e) => {
+                    <label className="text-xs text-muted-foreground mb-1 block">圖示</label>
+                    <IconPicker
+                      value={btn.icon}
+                      onChange={(iconName) => {
                         const newButtons = [...config.buttons];
-                        newButtons[i] = { ...newButtons[i], icon: e.target.value || undefined };
+                        newButtons[i] = {
+                          ...newButtons[i],
+                          icon: iconName || undefined,
+                        };
                         updateField("buttons", newButtons);
                       }}
-                      placeholder="例：Sword / Heart"
-                      className="h-9"
-                      data-testid={`config-button-icon-${i}`}
+                      allowEmpty
+                      size="sm"
+                      testId={`config-button-icon-${i}`}
                     />
                   </div>
                   <div>
