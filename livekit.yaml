@@ -23,8 +23,7 @@ room:
   max_participants: 20
   # 空 room 保留 5 分鐘（等玩家重連）
   empty_timeout: 300
-  # 總 room 數上限（避免 memory 爆）
-  max_rooms: 500
+  # 注意：LiveKit 目前無 max_rooms 全域設定，靠 token 發放端檢查控制
 
 # API 金鑰（從環境變數讀取）
 keys:
