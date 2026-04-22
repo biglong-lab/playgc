@@ -2,10 +2,10 @@
 // 為所有 pageType 提供統一的「下一頁」和「獎勵分數」設定
 // 排除自身已有分支邏輯的 pageType（flow_router / button / vote / conditional_verify）
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronRight, Flag, Award, Navigation } from "lucide-react";
+import { ChevronRight, Award, Navigation } from "lucide-react";
 import type { Page } from "@shared/schema";
 import type { EditorProps } from "./page-config-shared";
+import { PageSelect } from "@/components/shared/PageSelect";
 
 interface CommonNavigationEditorProps extends EditorProps {
   allPages: Page[];
