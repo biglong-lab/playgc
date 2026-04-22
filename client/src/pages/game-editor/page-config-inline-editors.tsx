@@ -626,7 +626,24 @@ export function QrScanEditor({ config, updateField, gameId, page }: BaseEditorPr
         />
       </div>
       <div>
-        <label className="text-sm font-medium mb-2 block">驗證代碼 (主要)</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-sm font-medium">驗證代碼 (主要)</label>
+          {/* 🆕 從既有 Location 引用 qrCodeData */}
+          <LocationImporter
+            gameId={gameId}
+            mode="qr"
+            buttonLabel="引用地點的 QR"
+            onSelect={(loc) => {
+              if (loc.qrCodeData) {
+                updateField("primaryCode", loc.qrCodeData);
+                updateField("qrCodeId", loc.qrCodeData);
+              }
+              if (loc.name && !config.title) {
+                updateField("title", loc.name);
+              }
+            }}
+          />
+        </div>
         <Input
           value={(config.primaryCode as string) || (config.qrCodeId as string) || ""}
           onChange={(e) => {
