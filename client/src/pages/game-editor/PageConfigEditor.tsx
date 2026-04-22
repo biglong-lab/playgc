@@ -150,12 +150,19 @@ export default function PageConfigEditor({
               />
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">硬體設備 ID（選填）</label>
-              <Input
+              <label className="text-sm font-medium mb-2 block">
+                硬體裝置
+                <span className="text-xs text-muted-foreground font-normal ml-2">
+                  選填，指定後只接受該靶機命中
+                </span>
+              </label>
+              <DeviceSelect
                 value={(config.deviceId as string) || ""}
-                onChange={(e) => updateField("deviceId", e.target.value)}
-                placeholder="特定靶機 ID"
-                data-testid="config-device-id"
+                onChange={(deviceId) => updateField("deviceId", deviceId || undefined)}
+                allowEmpty
+                filterType="shooting_target"
+                placeholder="不指定（任何裝置）"
+                testId="config-device-id"
               />
             </div>
           </div>
