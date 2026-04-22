@@ -397,37 +397,74 @@ export function WalkieFloatingButton({
 
                 {/* 群組資訊（只有 in-group 顯示）*/}
                 {view === "in-group" && myGroup && (
-                  <div className="px-3 py-2 bg-primary/5 border-b space-y-1.5">
-                    <div className="text-xs text-muted-foreground">
-                      語音群組代碼（分享給朋友加入）
-                    </div>
-                    {/* 每個字獨立顯示於獨立方格，避免 M/N 誤認 */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 flex-1">
-                        {myGroup.accessCode.split("").map((ch, i) => (
-                          <div
-                            key={i}
-                            className="flex-1 h-9 flex items-center justify-center rounded border-2 border-primary/30 bg-background font-bold text-lg font-mono text-primary"
-                          >
-                            {ch}
-                          </div>
-                        ))}
+                  <div className="px-3 py-3 bg-primary/5 border-b space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {showQR ? "讓朋友掃這個 QR 加入 👇" : "群組代碼"}
+                      </span>
+                      <div className="flex gap-1 text-[10px]">
+                        <button
+                          onClick={() => setShowQR(true)}
+                          className={`px-2 py-0.5 rounded ${
+                            showQR
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          QR
+                        </button>
+                        <button
+                          onClick={() => setShowQR(false)}
+                          className={`px-2 py-0.5 rounded ${
+                            !showQR
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          代碼
+                        </button>
                       </div>
-                      <button
-                        onClick={handleCopyCode}
-                        className="p-2 rounded hover:bg-primary/10 text-primary shrink-0"
-                        title="複製"
-                      >
-                        {copied ? (
-                          <Check className="w-4 h-4" />
-                        ) : (
-                          <Copy className="w-4 h-4" />
-                        )}
-                      </button>
                     </div>
-                    <p className="text-[10px] text-muted-foreground">
-                      建議按複製貼給朋友，避免手動輸入打錯字
-                    </p>
+
+                    {showQR ? (
+                      /* QR 顯示（預設）*/
+                      <div className="flex flex-col items-center gap-2">
+                        <WalkieQRCode code={myGroup.accessCode} size={180} />
+                        <div className="text-[11px] text-muted-foreground font-mono tracking-widest">
+                          {myGroup.accessCode}
+                        </div>
+                      </div>
+                    ) : (
+                      /* 代碼模式（每格獨立，避免 M/N 誤認）*/
+                      <>
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1 flex-1">
+                            {myGroup.accessCode.split("").map((ch, i) => (
+                              <div
+                                key={i}
+                                className="flex-1 h-9 flex items-center justify-center rounded border-2 border-primary/30 bg-background font-bold text-lg font-mono text-primary"
+                              >
+                                {ch}
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            onClick={handleCopyCode}
+                            className="p-2 rounded hover:bg-primary/10 text-primary shrink-0"
+                            title="複製"
+                          >
+                            {copied ? (
+                              <Check className="w-4 h-4" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground">
+                          複製貼給朋友，避免手動輸入打錯字
+                        </p>
+                      </>
+                    )}
                   </div>
                 )}
 
