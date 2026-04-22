@@ -62,7 +62,7 @@ export interface UseWalkieRoomResult {
 }
 
 export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResult {
-  const { sessionId, manualToken, enabled = true, startMuted = true } = options;
+  const { sessionId, groupId, manualToken, enabled = true, startMuted = true } = options;
 
   const roomRef = useRef<Room | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>(
