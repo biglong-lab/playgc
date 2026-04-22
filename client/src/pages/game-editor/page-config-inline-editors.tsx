@@ -291,25 +291,64 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
         </div>
       </div>
 
-      {/* 情緒頭像（可選） */}
+      {/* 情緒頭像（可選）— 每個情緒可貼 URL 或直接上傳圖片 */}
       <details className="border rounded-lg p-3 bg-accent/5">
         <summary className="text-sm font-medium cursor-pointer">情緒頭像（可選）</summary>
-        <div className="grid grid-cols-2 gap-2 mt-3">
+        <p className="text-xs text-muted-foreground mt-2 mb-3">
+          每個情緒可上傳不同的頭像，玩家對話時會依訊息的 emotion 欄位切換
+        </p>
+        <div className="grid grid-cols-1 gap-2 mt-3">
           {DIALOGUE_EMOTIONS.slice(1).map((emotion) => (
             <div key={emotion} className="flex items-center gap-2">
-              {emotionAvatars[emotion] && (
-                <img src={emotionAvatars[emotion]} alt={emotion} className="w-8 h-8 rounded-full object-cover" />
+              {emotionAvatars[emotion] ? (
+                <img
+                  src={emotionAvatars[emotion]}
+                  alt={emotion}
+                  className="w-10 h-10 rounded-full object-cover shrink-0 border"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full border border-dashed border-muted-foreground/30 shrink-0 flex items-center justify-center text-xs text-muted-foreground">
+                  空
+                </div>
               )}
-              <span className="text-xs w-8 shrink-0">{EMOTION_LABELS[emotion]}</span>
+              <span className="text-xs w-10 shrink-0 font-medium">
+                {EMOTION_LABELS[emotion]}
+              </span>
               <Input
                 value={emotionAvatars[emotion] || ""}
                 onChange={(e) => updateField("character", {
                   ...character,
                   emotionAvatars: { ...emotionAvatars, [emotion]: e.target.value },
                 })}
-                placeholder="URL"
-                className="text-xs h-8"
+                placeholder="貼上 URL 或用右側按鈕上傳"
+                className="text-xs h-9 flex-1"
               />
+              {/* 🆕 上傳按鈕（消除 raw URL 硬編寫） */}
+              <MediaUploadButton
+                id={`dialogue-emotion-avatar-${emotion}`}
+                accept="image/*"
+                onUploaded={(url) =>
+                  updateField("character", {
+                    ...character,
+                    emotionAvatars: { ...emotionAvatars, [emotion]: url },
+                  })
+                }
+              />
+              {emotionAvatars[emotion] && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-9 w-9 shrink-0 text-destructive"
+                  onClick={() => {
+                    const next = { ...emotionAvatars };
+                    delete next[emotion];
+                    updateField("character", { ...character, emotionAvatars: next });
+                  }}
+                  title="清除此情緒的頭像"
+                >
+                  <XIcon className="w-3 h-3" />
+                </Button>
+              )}
             </div>
           ))}
         </div>
