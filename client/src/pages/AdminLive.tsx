@@ -57,6 +57,8 @@ export default function AdminLive() {
   const [broadcasting, setBroadcasting] = useState<BroadcastTokensResponse | null>(
     null,
   );
+  // 🆕 選中的 teamId 清單（勾選廣播模式）
+  const [selectedTeamIds, setSelectedTeamIds] = useState<string[]>([]);
 
   // 即時統計（5 秒自動 refresh）
   const { data: stats, refetch } = useQuery<LiveStatsResponse>({
@@ -66,35 +68,75 @@ export default function AdminLive() {
     staleTime: 4000,
   });
 
-  const handleBroadcastAll = useCallback(async () => {
-    try {
-      const res = await apiRequest(
-        "POST",
-        "/api/admin/walkie/broadcast-tokens",
-        { target: "all" },
-      );
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.message || "取得廣播 token 失敗");
-      }
-      const data = (await res.json()) as BroadcastTokensResponse;
-      if (data.tokens.length === 0) {
+  /** 統一的廣播啟動 helper */
+  const startBroadcast = useCallback(
+    async (payload: Record<string, unknown>, label: string) => {
+      try {
+        const res = await apiRequest(
+          "POST",
+          "/api/admin/walkie/broadcast-tokens",
+          payload,
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || "取得廣播 token 失敗");
+        }
+        const data = (await res.json()) as BroadcastTokensResponse;
+        if (data.tokens.length === 0) {
+          toast({
+            title: "沒有可廣播對象",
+            description: `${label}目前沒有玩家在遊戲中`,
+            variant: "destructive",
+          });
+          return;
+        }
+        setBroadcasting(data);
+      } catch (err) {
         toast({
-          title: "沒有可廣播對象",
-          description: "目前沒有玩家在遊戲中",
+          title: "無法開始廣播",
+          description: err instanceof Error ? err.message : "未知錯誤",
           variant: "destructive",
         });
-        return;
       }
-      setBroadcasting(data);
-    } catch (err) {
-      toast({
-        title: "無法開始廣播",
-        description: err instanceof Error ? err.message : "未知錯誤",
-        variant: "destructive",
-      });
-    }
-  }, [toast]);
+    },
+    [toast],
+  );
+
+  const handleBroadcastAll = useCallback(() => {
+    startBroadcast({ target: "all" }, "全場");
+  }, [startBroadcast]);
+
+  const handleBroadcastSingle = useCallback(
+    (teamId: string, teamName: string) => {
+      startBroadcast(
+        { target: "selected", teamIds: [teamId] },
+        `${teamName} `,
+      );
+    },
+    [startBroadcast],
+  );
+
+  const handleBroadcastSelected = useCallback(() => {
+    if (selectedTeamIds.length === 0) return;
+    startBroadcast(
+      { target: "selected", teamIds: selectedTeamIds },
+      `已勾選 ${selectedTeamIds.length} 隊`,
+    );
+  }, [selectedTeamIds, startBroadcast]);
+
+  /** Checkbox toggle */
+  const toggleTeamSelection = useCallback((teamId: string) => {
+    setSelectedTeamIds((prev) =>
+      prev.includes(teamId)
+        ? prev.filter((id) => id !== teamId)
+        : [...prev, teamId],
+    );
+  }, []);
+
+  /** 勾選的隊伍人數合計 */
+  const selectedMemberCount = (stats?.teams ?? [])
+    .filter((t) => t.teamId && selectedTeamIds.includes(t.teamId))
+    .reduce((sum, t) => sum + t.memberCount, 0);
 
   return (
     <UnifiedAdminLayout
