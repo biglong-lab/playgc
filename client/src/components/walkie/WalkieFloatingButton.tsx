@@ -565,6 +565,19 @@ export function WalkieFloatingButton({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 📷 QR 掃描器（全螢幕 overlay，掃到自動加入）*/}
+      <AnimatePresence>
+        {scanning && (
+          <WalkieQRScanner
+            onDetect={(code) => {
+              setScanning(false);
+              joinMutation.mutate(code);
+            }}
+            onClose={() => setScanning(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
