@@ -1019,6 +1019,37 @@ function LegacyOptionsEditor({
                 placeholder="選項解釋（玩家選中時顯示，可選）"
                 className="h-8 text-xs"
               />
+              {/* 🆕 每選項獨立 nextPageId：讓「答對 → 主線」、「答錯 → 懲罰頁」成為可能 */}
+              {allPages && allPages.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <label className="text-[11px] text-muted-foreground shrink-0">
+                    選此項跳至:
+                  </label>
+                  <select
+                    value={opt.nextPageId || "_default"}
+                    onChange={(e) => {
+                      const newOptions = [...options];
+                      const v = e.target.value;
+                      newOptions[i] = {
+                        ...newOptions[i],
+                        nextPageId: v === "_default" ? undefined : v,
+                      };
+                      updateField("options", newOptions);
+                    }}
+                    className="flex-1 h-7 text-xs rounded border bg-background px-2"
+                  >
+                    <option value="_default">（預設 — 依全域 nextPageId）</option>
+                    {allPages.map((p, idx) => {
+                      const label = p.customName?.trim() || p.pageType;
+                      return (
+                        <option key={p.id} value={p.id}>
+                          #{idx + 1} {label}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
             </div>
           ))}
           <Button
