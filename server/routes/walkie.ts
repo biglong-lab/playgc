@@ -1,14 +1,17 @@
 // 📻 玩家端對講機路由
 //
-// POST /api/walkie/token
-//   - 玩家呼叫此端點取得 LiveKit JWT，用於加入隊伍 room
-//   - 自動依玩家當前 session 的 team 決定 room
-//   - 若玩家不在任何 active session，拒絕
+// 三種 room 來源：
+//   1. walkie_groups（獨立語音群組，個人模式/跨遊戲也能用）← 優先
+//   2. team（遊戲內組隊模式）
+//   3. session（個人模式降級 — 只有自己一人）
 import type { Express } from "express";
 import { isAuthenticated } from "../firebaseAuth";
 import type { AuthenticatedRequest } from "./types";
 import { z } from "zod";
 import { storage } from "../storage";
+import { db } from "../db";
+import { walkieGroups, walkieGroupMembers } from "@shared/schema";
+import { eq, and, isNull, sql } from "drizzle-orm";
 import {
   createPlayerToken,
   isLiveKitConfigured,
@@ -18,8 +21,36 @@ import {
 } from "../lib/livekit";
 
 const tokenRequestSchema = z.object({
-  sessionId: z.string().min(1, "缺少 sessionId"),
+  sessionId: z.string().optional(),
+  /** 若帶此，優先用 walkie group room（個人模式/跨遊戲都可用） */
+  groupId: z.string().optional(),
 });
+
+const createGroupSchema = z.object({
+  displayName: z.string().max(100).optional(),
+  gameId: z.string().optional(),
+});
+
+const joinGroupSchema = z.object({
+  accessCode: z.string().min(1, "請輸入語音群組代碼"),
+});
+
+/** 生成 6 碼 accessCode（排除易混字 0 O I L 1） */
+function generateAccessCode(): string {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+/**
+ * 取得 group 的 room name
+ */
+function getWalkieGroupRoomName(groupId: string): string {
+  return `walkie-group-${groupId}`;
+}
 
 export function registerWalkieRoutes(app: Express) {
   /**
