@@ -82,8 +82,10 @@ export function WalkieFloatingButton({
     error,
     participants,
     isTransmitting,
+    canPlaybackAudio,
     startTalking,
     stopTalking,
+    startAudio,
   } = useWalkieRoom({
     sessionId: connectParams.sessionId,
     groupId: connectParams.groupId,
