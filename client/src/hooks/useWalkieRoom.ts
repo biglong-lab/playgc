@@ -28,8 +28,10 @@ export interface WalkieParticipant {
 }
 
 export interface UseWalkieRoomOptions {
-  /** session ID（玩家模式）*/
+  /** session ID（玩家模式 fallback）*/
   sessionId?: string | null;
+  /** walkie group ID（優先，跨遊戲/個人模式也能用）*/
+  groupId?: string | null;
   /** 直接傳入 token 模式（管理員廣播）*/
   manualToken?: { token: string; wsUrl: string; roomName: string } | null;
   /** 是否啟用（關閉時不連線）*/
