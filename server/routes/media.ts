@@ -127,8 +127,11 @@ export function registerMediaRoutes(app: Express) {
         coverImageUrl: result.secure_url,
         game: updatedGame[0],
       });
-    } catch {
-      res.status(500).json({ message: "上傳封面圖片失敗" });
+    } catch (error) {
+      console.error("[media] cloudinary-cover 失敗:", error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "上傳封面圖片失敗",
+      });
     }
   });
 
