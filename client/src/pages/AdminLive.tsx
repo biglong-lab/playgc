@@ -322,8 +322,25 @@ export default function AdminLive() {
                         </>
                       )}
                     </Badge>
+                    {/* 🆕 單獨廣播此隊按鈕（僅有 teamId + 有玩家時啟用） */}
+                    {checkboxId && stats?.liveKitEnabled && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 gap-1 shrink-0"
+                        onClick={() =>
+                          handleBroadcastSingle(checkboxId, team.teamName)
+                        }
+                        disabled={team.memberCount === 0}
+                        title={`廣播給 ${team.teamName}`}
+                      >
+                        <Megaphone className="w-3.5 h-3.5" />
+                        <span className="hidden md:inline text-xs">廣播</span>
+                      </Button>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CardContent>
