@@ -16,11 +16,12 @@ import { Input } from "@/components/ui/input";
 import {
   Radio, Mic, MicOff, X, Users, AlertTriangle,
   Plus, UserPlus, Copy, LogOut, Check, QrCode, Camera,
+  Share2,
 } from "lucide-react";
 import { useWalkieRoom } from "@/hooks/useWalkieRoom";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { WalkieQRCode } from "./WalkieQRCode";
+import { WalkieQRCode, buildWalkieShareUrl } from "./WalkieQRCode";
 import { WalkieQRScanner } from "./WalkieQRScanner";
 
 interface WalkieFloatingButtonProps {
