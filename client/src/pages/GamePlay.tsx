@@ -20,6 +20,7 @@ import {
   RewardFeedbackOverlay,
   fireReward,
 } from "@/components/feedback/RewardFeedback";
+import { WalkieFloatingButton } from "@/components/walkie/WalkieFloatingButton";
 
 import {
   ChevronLeft, ChevronRight, MessageCircle, Backpack,
