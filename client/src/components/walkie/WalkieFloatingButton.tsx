@@ -193,6 +193,43 @@ export function WalkieFloatingButton({
     setTimeout(() => setCopied(false), 1500);
   };
 
+  /** 分享連結（Web Share API，Safari/Chrome 都支援）*/
+  const handleShare = async () => {
+    if (!myGroup) return;
+    const shareUrl = buildWalkieShareUrl(myGroup.accessCode);
+    const shareData = {
+      title: "對講機邀請",
+      text: `來加入我的語音群組一起玩！代碼 ${myGroup.accessCode}`,
+      url: shareUrl,
+    };
+    // 優先 Web Share API（iOS / Android 原生 share sheet）
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // 使用者取消或其他錯誤 → silent
+        if (err instanceof Error && err.name !== "AbortError") {
+          console.warn("[walkie] share failed:", err);
+        }
+      }
+      return;
+    }
+    // Fallback：複製連結
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "已複製邀請連結",
+        description: "貼給朋友就能加入",
+      });
+    } catch {
+      toast({
+        title: "無法分享",
+        description: "請手動複製代碼",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const handleLeave = () => stopTalking();
     window.addEventListener("blur", handleLeave);
