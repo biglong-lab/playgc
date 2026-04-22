@@ -747,7 +747,12 @@ export function ChoiceVerifyEditor({
           onPassingScoreChange={(v) => updateField("passingScore", v)}
         />
       ) : (
-        <LegacyOptionsEditor config={config} updateField={updateField} options={options} />
+        <LegacyOptionsEditor
+          config={config}
+          updateField={updateField}
+          options={options}
+          allPages={allPages}
+        />
       )}
 
       {/* 進階選項 */}
@@ -780,6 +785,46 @@ export function ChoiceVerifyEditor({
           />
         </div>
       </div>
+
+      {/* 🆕 Quiz 模式專屬進階選項（multiple / partialCredit / rewardPerQuestion） */}
+      {isQuizMode && (
+        <div className="grid grid-cols-2 gap-2 border-t pt-3">
+          <div className="flex items-center justify-between border rounded p-2">
+            <div className="flex flex-col">
+              <span className="text-xs">允許多選</span>
+              <span className="text-[10px] text-muted-foreground">每題可勾選多個答案</span>
+            </div>
+            <Switch
+              checked={config.multiple === true}
+              onCheckedChange={(v) => updateField("multiple", v)}
+            />
+          </div>
+          <div className="flex items-center justify-between border rounded p-2">
+            <div className="flex flex-col">
+              <span className="text-xs">部分分數</span>
+              <span className="text-[10px] text-muted-foreground">半對給 50% 分數</span>
+            </div>
+            <Switch
+              checked={config.partialCredit === true}
+              onCheckedChange={(v) => updateField("partialCredit", v)}
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">每題答對獎勵</label>
+            <Input
+              type="number"
+              value={(config.rewardPerQuestion as number | undefined) ?? 10}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10);
+                updateField("rewardPerQuestion", Number.isFinite(n) && n >= 0 ? n : 10);
+              }}
+              min={0}
+              className="h-8"
+              placeholder="10"
+            />
+          </div>
+        </div>
+      )}
 
       <LocationSettingsSection config={config} updateField={updateField} />
     </div>
