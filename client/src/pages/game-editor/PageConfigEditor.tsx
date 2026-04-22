@@ -459,6 +459,7 @@ export default function PageConfigEditor({
         <ChoiceVerifyEditor
           config={config}
           updateField={updateField}
+          allPages={allPages}
         />
       );
 
