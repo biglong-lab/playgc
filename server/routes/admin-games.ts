@@ -53,6 +53,25 @@ export function registerAdminGameRoutes(app: Express) {
     }
   });
 
+  // 🎯 列出 Arduino 裝置清單（給 ShootingMissionEditor 等地方選擇 deviceId 用）
+  // 用 admin session 認證（game-editor 是 admin session，不是 Firebase token）
+  // 回傳含 deviceId / deviceName / status / batteryLevel，前端能決定是否可用
+  app.get(
+    "/api/admin/devices",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        const devices = await storage.getArduinoDevices();
+        res.json(devices);
+      } catch (error) {
+        console.error("[admin-games] list devices failed:", error);
+        res.status(500).json({ message: "無法取得裝置清單" });
+      }
+    },
+  );
+
   // 🩺 健康檢查：列出無場域孤兒遊戲（僅 super_admin 可見）
   // 目的：讓管理員主動發現 `field_id IS NULL` 的異常資料，避免「前端看得到、後台看不到」情境
   app.get(
