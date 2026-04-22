@@ -174,10 +174,45 @@ export function registerMediaRoutes(app: Express) {
     }
   });
 
+  // 🛡️ 媒體上傳大小上限（base64 encoded；實際原始檔大小約 = base64.length * 3/4）
+  // 估算：50MB base64 ≈ 37MB 原始影片；30MB base64 ≈ 22MB 音訊
+  const MAX_MEDIA_BASE64_SIZE: Record<"image" | "video" | "audio", number> = {
+    image: 15_000_000, // ~11MB 原始（與 player-photo 一致）
+    video: 70_000_000, // ~50MB 原始（短影片教學用）
+    audio: 40_000_000, // ~30MB 原始（音訊任務）
+  };
+
+  const MEDIA_MIME_PREFIX: Record<"image" | "video" | "audio", string> = {
+    image: "data:image/",
+    video: "data:video/",
+    audio: "data:audio/",
+  };
+
   const gameMediaSchema = z.object({
     mediaData: z.string().min(1, "缺少媒體資料"),
     mediaType: z.enum(["image", "video", "audio"]),
     gameId: z.string().min(1, "缺少遊戲 ID"),
+  }).superRefine((val, ctx) => {
+    // MIME 驗證：前端可能偽造；server 端必須自己檢查 data: URI prefix
+    const expectedPrefix = MEDIA_MIME_PREFIX[val.mediaType];
+    if (!val.mediaData.startsWith(expectedPrefix)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["mediaData"],
+        message: `mediaType=${val.mediaType} 應以 ${expectedPrefix} 開頭，實際收到 ${val.mediaData.substring(0, 30)}...`,
+      });
+    }
+    // 大小驗證
+    const maxSize = MAX_MEDIA_BASE64_SIZE[val.mediaType];
+    if (val.mediaData.length > maxSize) {
+      const sizeMB = Math.round(val.mediaData.length / 1024 / 1024);
+      const maxMB = Math.round(maxSize / 1024 / 1024);
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["mediaData"],
+        message: `${val.mediaType} 檔案過大（${sizeMB}MB），上限 ${maxMB}MB（base64）`,
+      });
+    }
   });
 
   app.post("/api/admin/games/:id/cloudinary-media", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
@@ -214,8 +249,11 @@ export function registerMediaRoutes(app: Express) {
         resourceType: result.resource_type,
         duration: result.duration,
       });
-    } catch {
-      res.status(500).json({ message: "上傳媒體失敗" });
+    } catch (error) {
+      console.error("[media] cloudinary-media 失敗:", error);
+      res.status(500).json({
+        message: error instanceof Error ? error.message : "上傳媒體失敗",
+      });
     }
   });
 }
