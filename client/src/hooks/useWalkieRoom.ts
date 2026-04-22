@@ -301,8 +301,10 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
     roomName,
     participants,
     isTransmitting,
+    canPlaybackAudio,
     startTalking,
     stopTalking,
+    startAudio,
     disconnect,
   };
 }
