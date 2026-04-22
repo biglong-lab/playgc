@@ -63,6 +63,35 @@ export default function GameEditor() {
         return null;
       }
 
+      // 🛡️ 前端預檢：size / MIME，防止多餘 Base64 運算
+      const MAX_SIZES_MB: Record<typeof type, number> = {
+        image: 10, // Cloudinary 圖片
+        video: 50, // 管理員影片
+        audio: 30, // 管理員音訊
+      };
+      const MIME_PREFIXES: Record<typeof type, string> = {
+        image: "image/",
+        video: "video/",
+        audio: "audio/",
+      };
+      if (!file.type.startsWith(MIME_PREFIXES[type])) {
+        toast({
+          title: "檔案類型錯誤",
+          description: `請選擇 ${type} 檔案（偵測到 ${file.type || "unknown"}）`,
+          variant: "destructive",
+        });
+        return null;
+      }
+      const maxBytes = MAX_SIZES_MB[type] * 1024 * 1024;
+      if (file.size > maxBytes) {
+        toast({
+          title: "檔案過大",
+          description: `${type} 檔案不能超過 ${MAX_SIZES_MB[type]}MB（您的檔案 ${(file.size / 1024 / 1024).toFixed(1)}MB）`,
+          variant: "destructive",
+        });
+        return null;
+      }
+
       setIsUploading(true);
       try {
         const reader = new FileReader();
@@ -72,22 +101,23 @@ export default function GameEditor() {
           reader.readAsDataURL(file);
         });
 
-        const endpoint =
-          type === "video"
-            ? "/api/cloudinary/video"
-            : type === "audio"
-              ? "/api/cloudinary/audio"
-              : "/api/cloudinary/game-media";
-
-        const response = await apiRequest("POST", endpoint, {
-          data: base64,
-          gameId,
-          fileName: file.name,
-        });
+        // ✅ 正確端點 + 正確 payload（對應後端 registerMediaRoutes 中的 /api/admin/games/:id/cloudinary-media）
+        // 原本的 /api/cloudinary/video、/audio、/game-media 根本不存在，會 404
+        const response = await apiRequest(
+          "POST",
+          `/api/admin/games/${gameId}/cloudinary-media`,
+          {
+            mediaData: base64,
+            mediaType: type,
+            gameId,
+          },
+        );
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || "上傳失敗");
+          throw new Error(
+            errorData.message || errorData.error || `上傳失敗 (HTTP ${response.status})`,
+          );
         }
 
         const result = await response.json();
@@ -96,6 +126,7 @@ export default function GameEditor() {
         return result.url;
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "未知錯誤";
+        console.error("[handleMediaUpload] 上傳失敗:", error);
         toast({ title: "上傳失敗", description: message, variant: "destructive" });
         return null;
       } finally {
