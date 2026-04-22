@@ -298,8 +298,13 @@ export function WalkieFloatingButton({
             data-testid="walkie-open"
           >
             <Radio className="w-6 h-6" />
+            {/* 已連線群組：綠色狀態點 */}
             {showingInRoom && isConnected && (
               <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+            )}
+            {/* 未加群組但遊戲進行中：暗示可邀請朋友的小發光 */}
+            {!showingInRoom && !myGroup && sessionId && (
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-background animate-pulse" title="可邀請朋友" />
             )}
             {hasActiveSpeaker && (
               <motion.span
