@@ -288,18 +288,35 @@ export function WalkieFloatingButton({
                   </div>
                 </button>
 
+                {/* 🆕 主入口：掃 QR（最快，零輸入） */}
+                <button
+                  onClick={() => setScanning(true)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 border-emerald-500/30 hover:bg-emerald-500/5 transition-colors text-left"
+                  data-testid="walkie-scan-qr"
+                >
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                    <Camera className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">📷 掃碼加入朋友的群組</div>
+                    <div className="text-xs text-muted-foreground">
+                      對著朋友螢幕掃一下就加入
+                    </div>
+                  </div>
+                </button>
+
                 <button
                   onClick={() => setView("join")}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border hover:bg-accent transition-colors text-left"
                   data-testid="walkie-join-group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
-                    <UserPlus className="w-5 h-5 text-emerald-600" />
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <UserPlus className="w-5 h-5 text-muted-foreground" />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-sm">加入語音群組</div>
+                    <div className="font-medium text-sm">輸入代碼加入</div>
                     <div className="text-xs text-muted-foreground">
-                      輸入朋友給你的 6 碼代碼
+                      若無法掃碼，手動輸入 6 碼
                     </div>
                   </div>
                 </button>
