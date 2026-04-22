@@ -49,10 +49,7 @@ export default function CommonNavigationEditor({
 
   if (!showNextPage && !showRewards) return null;
 
-  // 過濾掉「自己」（避免設 nextPageId 指向當前頁造成無限迴圈）
-  const selectablePages = allPages.filter((p) => p.id !== currentPageId);
-
-  const currentNextPageId = (config.nextPageId as string) || "_next";
+  const currentNextPageId = (config.nextPageId as string) || "";
 
   return (
     <div className="pt-4 mt-4 border-t border-border space-y-4">
@@ -67,46 +64,17 @@ export default function CommonNavigationEditor({
             <ChevronRight className="w-4 h-4" />
             完成後前往
           </label>
-          <Select
+          <PageSelect
             value={currentNextPageId}
-            onValueChange={(value) => {
-              // "_next" → 清除 nextPageId 走遊戲預設順序
-              updateField("nextPageId", value === "_next" ? undefined : value);
+            onChange={(v) => {
+              // 空字串 or "_next" → 清除 nextPageId 走遊戲預設順序
+              updateField("nextPageId", v === "_next" || v === "" ? undefined : v);
             }}
-          >
-            <SelectTrigger data-testid="select-next-page">
-              <SelectValue placeholder="選擇完成後前往的頁面" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="_next">
-                <span className="flex items-center gap-2 text-muted-foreground">
-                  <ChevronRight className="w-3 h-3" />
-                  下一頁（依遊戲順序）
-                </span>
-              </SelectItem>
-              <SelectItem value="_end">
-                <span className="flex items-center gap-2 text-emerald-600">
-                  <Flag className="w-3 h-3" />
-                  結束遊戲
-                </span>
-              </SelectItem>
-              {selectablePages.map((p, idx) => {
-                const cfg = p.config as Record<string, unknown> | null | undefined;
-                const title =
-                  (cfg?.title as string) ||
-                  (cfg?.question as string) ||
-                  (cfg?.instruction as string) ||
-                  `#${idx + 1} ${p.pageType}`;
-                return (
-                  <SelectItem key={p.id} value={p.id}>
-                    <span className="truncate">
-                      #{p.pageOrder}. {title.slice(0, 40)}
-                    </span>
-                  </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
+            allPages={allPages}
+            currentPageId={currentPageId}
+            placeholder="選擇完成後前往的頁面"
+            testId="select-next-page"
+          />
           <p className="text-xs text-muted-foreground mt-1">
             選擇完成本頁後要前往的目標頁面。預設按遊戲頁面順序進入下一頁。
           </p>
