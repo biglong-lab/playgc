@@ -468,7 +468,28 @@ export function GpsMissionEditor({ config, updateField, gameId }: BaseEditorProp
   return (
     <div className="space-y-4">
       <div>
-        <label className="text-sm font-medium mb-2 block">目標位置</label>
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-sm font-medium">目標位置</label>
+          {/* 🆕 從既有 Location entity 快速匯入座標 */}
+          <LocationImporter
+            gameId={gameId}
+            mode="gps"
+            buttonLabel="引用已建地點"
+            onSelect={(loc) => {
+              const lat = Number(loc.latitude);
+              const lng = Number(loc.longitude);
+              if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                updateField("targetLocation", { lat, lng });
+              }
+              if (typeof loc.radius === "number" && loc.radius > 0) {
+                updateField("radius", loc.radius);
+              }
+              if (loc.name && !config.locationName) {
+                updateField("locationName", loc.name);
+              }
+            }}
+          />
+        </div>
         <LocationPicker
           lat={targetLocation.lat || 25.033}
           lng={targetLocation.lng || 121.565}
