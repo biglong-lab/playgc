@@ -362,17 +362,25 @@ export function WalkieFloatingButton({
               <>
                 {/* 群組資訊（只有 in-group 顯示）*/}
                 {view === "in-group" && myGroup && (
-                  <div className="px-3 py-2 bg-primary/5 border-b space-y-1">
+                  <div className="px-3 py-2 bg-primary/5 border-b space-y-1.5">
                     <div className="text-xs text-muted-foreground">
                       語音群組代碼（分享給朋友加入）
                     </div>
+                    {/* 每個字獨立顯示於獨立方格，避免 M/N 誤認 */}
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 text-lg font-mono font-bold tracking-widest text-primary">
-                        {myGroup.accessCode}
-                      </code>
+                      <div className="flex gap-1 flex-1">
+                        {myGroup.accessCode.split("").map((ch, i) => (
+                          <div
+                            key={i}
+                            className="flex-1 h-9 flex items-center justify-center rounded border-2 border-primary/30 bg-background font-bold text-lg font-mono text-primary"
+                          >
+                            {ch}
+                          </div>
+                        ))}
+                      </div>
                       <button
                         onClick={handleCopyCode}
-                        className="p-1.5 rounded hover:bg-primary/10 text-primary shrink-0"
+                        className="p-2 rounded hover:bg-primary/10 text-primary shrink-0"
                         title="複製"
                       >
                         {copied ? (
@@ -382,6 +390,9 @@ export function WalkieFloatingButton({
                         )}
                       </button>
                     </div>
+                    <p className="text-[10px] text-muted-foreground">
+                      建議按複製貼給朋友，避免手動輸入打錯字
+                    </p>
                   </div>
                 )}
 
