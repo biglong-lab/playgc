@@ -157,10 +157,54 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
       room.on(RoomEvent.TrackMuted, () => syncParticipants(room));
       room.on(RoomEvent.TrackUnmuted, () => syncParticipants(room));
 
+      // 🔊 關鍵：訂閱 remote audio track 時手動 attach 到 hidden audio element
+      // LiveKit SDK 預設會自動播，但 iOS Safari 有 autoplay 限制。明確 attach 更可靠。
+      room.on(
+        RoomEvent.TrackSubscribed,
+        (
+          track: RemoteTrack,
+          publication: RemoteTrackPublication,
+          participant: RemoteParticipant,
+        ) => {
+          if (track.kind === Track.Kind.Audio) {
+            const audioEl = track.attach() as HTMLAudioElement;
+            audioEl.style.display = "none";
+            audioEl.setAttribute("data-walkie-audio", participant.identity);
+            audioEl.playsInline = true; // iOS 必要
+            document.body.appendChild(audioEl);
+            audioElementsRef.current.set(track.sid, audioEl);
+            // 嘗試播放（若 iOS 擋，會在 AudioPlaybackChanged 事件收到提示）
+            audioEl.play().catch((err) => {
+              console.warn("[walkie] auto-play blocked:", err);
+            });
+          }
+        },
+      );
+      room.on(
+        RoomEvent.TrackUnsubscribed,
+        (track: RemoteTrack) => {
+          if (track.kind === Track.Kind.Audio) {
+            const el = audioElementsRef.current.get(track.sid);
+            if (el) {
+              track.detach(el);
+              el.remove();
+              audioElementsRef.current.delete(track.sid);
+            }
+          }
+        },
+      );
+      // iOS Safari 擋了自動播放時，SDK 會更新 canPlaybackAudio
+      room.on(RoomEvent.AudioPlaybackStatusChanged, () => {
+        setCanPlaybackAudio(room.canPlaybackAudio);
+      });
+
       room.on(RoomEvent.Disconnected, () => {
         setConnectionState(ConnectionState.Disconnected);
         setIsTransmitting(false);
         setParticipants([]);
+        // 清除所有 audio elements
+        audioElementsRef.current.forEach((el) => el.remove());
+        audioElementsRef.current.clear();
       });
 
       // 連線
