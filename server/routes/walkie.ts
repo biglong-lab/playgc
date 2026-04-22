@@ -244,14 +244,48 @@ export function registerWalkieRoutes(app: Express) {
             .json({ message: parsed.error.errors[0]?.message || "驗證失敗" });
         }
 
-        const code = parsed.data.accessCode.toUpperCase().trim();
+        const rawCode = parsed.data.accessCode.toUpperCase().trim().replace(/\s+/g, "");
 
-        const [group] = await db
+        // 🔍 先試精確匹配
+        let [group] = await db
           .select()
           .from(walkieGroups)
-          .where(eq(walkieGroups.accessCode, code));
+          .where(eq(walkieGroups.accessCode, rawCode));
+
+        // 🧯 fuzzy 匹配：常見易混字（M↔N, 0↔O, 1↔I↔L, 8↔B, 5↔S, 2↔Z）
         if (!group) {
-          return res.status(404).json({ message: "找不到此語音群組" });
+          const charSwaps: Record<string, string[]> = {
+            M: ["N"], N: ["M"],
+            "0": ["O"], O: ["0"],
+            "1": ["I", "L"], I: ["1", "L"], L: ["1", "I"],
+            "8": ["B"], B: ["8"],
+            "5": ["S"], S: ["5"],
+            "2": ["Z"], Z: ["2"],
+          };
+          const variants = new Set<string>([rawCode]);
+          for (let i = 0; i < rawCode.length; i++) {
+            const ch = rawCode[i];
+            const swaps = charSwaps[ch];
+            if (!swaps) continue;
+            for (const s of swaps) {
+              variants.add(rawCode.substring(0, i) + s + rawCode.substring(i + 1));
+            }
+          }
+          variants.delete(rawCode); // 已試過
+          for (const v of variants) {
+            const [g] = await db
+              .select()
+              .from(walkieGroups)
+              .where(eq(walkieGroups.accessCode, v));
+            if (g) {
+              group = g;
+              break;
+            }
+          }
+        }
+
+        if (!group) {
+          return res.status(404).json({ message: "找不到此語音群組（請確認代碼正確）" });
         }
         if (group.status !== "active") {
           return res.status(400).json({ message: "此群組已關閉" });
