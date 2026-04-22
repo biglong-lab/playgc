@@ -113,15 +113,19 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
 
       if (manualToken) {
         tokenData = manualToken;
-      } else if (sessionId) {
-        const res = await apiRequest("POST", "/api/walkie/token", { sessionId });
+      } else if (groupId || sessionId) {
+        // 優先 groupId；後端會依 groupId > sessionId.teamId > sessionId 決定 room
+        const res = await apiRequest("POST", "/api/walkie/token", {
+          sessionId,
+          groupId,
+        });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
           throw new Error(err.message || "取得對講機 token 失敗");
         }
         tokenData = await res.json();
       } else {
-        throw new Error("缺少 sessionId 或 token");
+        throw new Error("缺少 sessionId/groupId 或 token");
       }
 
       // 建立 Room 並監聽事件
