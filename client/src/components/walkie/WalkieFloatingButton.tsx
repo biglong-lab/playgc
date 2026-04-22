@@ -364,6 +364,16 @@ export function WalkieFloatingButton({
             {/* === View: IN-GROUP / IN-SESSION（連線中，共用 UI）=== */}
             {showingInRoom && (
               <>
+                {/* 🔊 iOS Safari 擋了自動播放 → 提示用戶點按啟用 */}
+                {!canPlaybackAudio && isConnected && (
+                  <button
+                    onClick={startAudio}
+                    className="w-full px-3 py-2 bg-amber-500 text-white text-sm font-medium flex items-center justify-center gap-2 hover:bg-amber-600"
+                  >
+                    🔊 點此啟用音訊播放
+                  </button>
+                )}
+
                 {/* 群組資訊（只有 in-group 顯示）*/}
                 {view === "in-group" && myGroup && (
                   <div className="px-3 py-2 bg-primary/5 border-b space-y-1.5">
