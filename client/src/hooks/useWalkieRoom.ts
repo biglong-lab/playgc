@@ -54,10 +54,14 @@ export interface UseWalkieRoomResult {
   participants: WalkieParticipant[];
   /** 是否正在傳送語音（自己開麥中） */
   isTransmitting: boolean;
+  /** 瀏覽器是否允許播放聲音（iOS Safari 需要 user gesture 才能播）*/
+  canPlaybackAudio: boolean;
   /** 按下 PTT（開麥）*/
   startTalking: () => Promise<void>;
   /** 放開 PTT（靜音）*/
   stopTalking: () => Promise<void>;
+  /** 手動啟用音訊播放（iOS Safari 必需在 user gesture 內呼叫）*/
+  startAudio: () => Promise<void>;
   /** 手動斷線 */
   disconnect: () => Promise<void>;
 }
