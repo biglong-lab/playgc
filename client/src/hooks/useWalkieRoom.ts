@@ -262,6 +262,22 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
     }
   }, []);
 
+  /** 手動啟用音訊播放（iOS Safari user gesture 內呼叫）*/
+  const startAudio = useCallback(async () => {
+    const room = roomRef.current;
+    if (!room) return;
+    try {
+      await room.startAudio();
+      setCanPlaybackAudio(true);
+      // 同時嘗試播放所有 attached audio elements
+      audioElementsRef.current.forEach((el) => {
+        el.play().catch(() => {});
+      });
+    } catch (err) {
+      console.warn("[walkie] startAudio failed:", err);
+    }
+  }, []);
+
   /** enabled 切換或 sessionId/groupId 改變時重新連線 */
   useEffect(() => {
     if (enabled && (sessionId || groupId || manualToken)) {
