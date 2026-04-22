@@ -37,16 +37,30 @@ async function callOpenRouter(
     body.response_format = { type: "json_object" };
   }
 
-  const res = await fetch(OPENROUTER_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-      "HTTP-Referer": "https://game.homi.cc",
-      "X-Title": "賈村競技場遊戲平台",
-    },
-    body: JSON.stringify(body),
-  });
+  // 🕒 加 45s timeout（跟 Gemini 對稱，避免 AI 擁塞卡住整個 request）
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), 45_000);
+  let res: Response;
+  try {
+    res = await fetch(OPENROUTER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://game.homi.cc",
+        "X-Title": "賈村競技場遊戲平台",
+      },
+      body: JSON.stringify(body),
+      signal: abort.signal,
+    });
+  } catch (err) {
+    clearTimeout(timer);
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("OpenRouter 回應超時（45 秒）");
+    }
+    throw err;
+  }
+  clearTimeout(timer);
 
   if (!res.ok) {
     const err = await res.text();
