@@ -1,13 +1,22 @@
 // 📱 對講機群組 QR Code 顯示
 //
-// QR 內容格式：`WALKIE:{accessCode}`
-// （未來 Stage 2 可改成 `https://game.homi.cc/j/{code}` 短連結而保持向下相容）
+// QR 內容格式：`https://{hostname}/j/{code}`
+// - iOS/Android 相機 app 掃到就能跳連結（不用打開遊戲 app 先）
+// - 內部 WalkieQRScanner 也識別 /j/ pattern
+// - 向下相容舊格式 WALKIE:XXX（scanner 兩種都收）
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
 interface WalkieQRCodeProps {
   code: string;
   size?: number;
+}
+
+/** 產生分享用短連結 */
+export function buildWalkieShareUrl(code: string): string {
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "https://game.homi.cc";
+  return `${origin}/j/${code}`;
 }
 
 export function WalkieQRCode({ code, size = 200 }: WalkieQRCodeProps) {
@@ -21,7 +30,7 @@ export function WalkieQRCode({ code, size = 200 }: WalkieQRCodeProps) {
         setError(null);
         setDataUrl(null);
         const QRCode = await import("qrcode");
-        const url = await QRCode.toDataURL(`WALKIE:${code}`, {
+        const url = await QRCode.toDataURL(buildWalkieShareUrl(code), {
           width: size * 2, // 2x for retina
           margin: 2,
           color: { dark: "#000000", light: "#FFFFFF" },
