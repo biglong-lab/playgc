@@ -218,10 +218,39 @@ export default function PageConfigEditor({
                   keywords={(config.targetKeywords as string[]) || []}
                   onChange={(keywords) => updateField("targetKeywords", keywords)}
                 />
+
+                {/* 🤖 AI 模型選擇 */}
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    信心度門檻: {Math.round(((config.aiConfidenceThreshold as number) ?? 0.6) * 100)}%
+                    AI 模型
+                    <span className="text-xs text-muted-foreground ml-2 font-normal">
+                      選填，不填用場域預設
+                    </span>
                   </label>
+                  <AIModelSelect
+                    value={(config.aiModelId as string) || ""}
+                    onChange={(v) => updateField("aiModelId", v || undefined)}
+                    visionOnly
+                    testId="config-ai-model"
+                  />
+                </div>
+
+                {/* 信心度門檻 + 四檔語意標籤 */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium">
+                      信心度門檻: {Math.round(((config.aiConfidenceThreshold as number) ?? 0.6) * 100)}%
+                    </label>
+                    <span className="text-xs text-muted-foreground">
+                      {(() => {
+                        const v = (config.aiConfidenceThreshold as number) ?? 0.6;
+                        if (v < 0.4) return "🟢 寬鬆";
+                        if (v < 0.6) return "🟡 普通";
+                        if (v < 0.8) return "🟠 嚴格";
+                        return "🔴 非常嚴格";
+                      })()}
+                    </span>
+                  </div>
                   <Slider
                     value={[((config.aiConfidenceThreshold as number) ?? 0.6) * 100]}
                     onValueChange={([v]) => updateField("aiConfidenceThreshold", v / 100)}
@@ -231,9 +260,10 @@ export default function PageConfigEditor({
                     data-testid="config-ai-threshold"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    越高越嚴格，建議 50-70%
+                    建議 50-70%；越高 AI 越嚴格，但容易誤判真實照片
                   </p>
                 </div>
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">驗證失敗提示</label>
                   <Input
@@ -263,6 +293,15 @@ export default function PageConfigEditor({
                     )}
                   </div>
                 </div>
+
+                {/* 🧪 AI 測試 */}
+                <AIPhotoTester
+                  gameId={gameId}
+                  targetKeywords={(config.targetKeywords as string[]) || []}
+                  instruction={(config.instruction as string) || ""}
+                  confidenceThreshold={(config.aiConfidenceThreshold as number) ?? 0.6}
+                  aiModelId={(config.aiModelId as string) || undefined}
+                />
               </div>
             )}
           </div>
