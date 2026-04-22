@@ -71,9 +71,33 @@ export async function verifyPhoto(
     },
   });
 
-  // 下載圖片轉 base64
-  const imageResponse = await fetch(imageUrl);
+  // 下載圖片轉 base64（加 30s timeout + 大小限制，避免卡住 / OOM）
+  const imageAbort = new AbortController();
+  const imageTimer = setTimeout(() => imageAbort.abort(), 30_000);
+  let imageResponse: Response;
+  try {
+    imageResponse = await fetch(imageUrl, { signal: imageAbort.signal });
+  } catch (err) {
+    clearTimeout(imageTimer);
+    throw new Error(
+      err instanceof Error && err.name === "AbortError"
+        ? "下載照片超時（30 秒）"
+        : "無法下載照片",
+    );
+  }
+  clearTimeout(imageTimer);
+
+  // 大小限制：50MB（避免超大圖 OOM）
+  const MAX_IMAGE_BYTES = 50 * 1024 * 1024;
+  const contentLength = Number(imageResponse.headers.get("content-length") || 0);
+  if (contentLength > MAX_IMAGE_BYTES) {
+    throw new Error(`照片過大（${Math.round(contentLength / 1024 / 1024)}MB > 50MB）`);
+  }
+
   const imageBuffer = await imageResponse.arrayBuffer();
+  if (imageBuffer.byteLength > MAX_IMAGE_BYTES) {
+    throw new Error(`照片過大（${Math.round(imageBuffer.byteLength / 1024 / 1024)}MB > 50MB）`);
+  }
   const base64Image = Buffer.from(imageBuffer).toString("base64");
   const mimeType = imageResponse.headers.get("content-type") || "image/jpeg";
 
