@@ -49,6 +49,7 @@ const FieldAdminLogin = lazy(() => import("@/pages/FieldAdminLogin"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AdminGames = lazy(() => import("@/pages/AdminGames"));
 const AdminLive = lazy(() => import("@/pages/AdminLive"));
+const JoinWalkie = lazy(() => import("@/pages/JoinWalkie"));
 const AdminDevices = lazy(() => import("@/pages/admin-devices"));
 const AdminAnalytics = lazy(() => import("@/pages/AdminAnalytics"));
 const AdminSessions = lazy(() => import("@/pages/AdminSessions"));
