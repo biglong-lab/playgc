@@ -166,14 +166,14 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
           publication: RemoteTrackPublication,
           participant: RemoteParticipant,
         ) => {
-          if (track.kind === Track.Kind.Audio) {
+          if (track.kind === Track.Kind.Audio && track.sid) {
             const audioEl = track.attach() as HTMLAudioElement;
             audioEl.style.display = "none";
             audioEl.setAttribute("data-walkie-audio", participant.identity);
-            audioEl.playsInline = true; // iOS 必要
+            audioEl.setAttribute("playsinline", "true"); // iOS 必要
             document.body.appendChild(audioEl);
             audioElementsRef.current.set(track.sid, audioEl);
-            // 嘗試播放（若 iOS 擋，會在 AudioPlaybackChanged 事件收到提示）
+            // 嘗試播放（若 iOS 擋，會在 AudioPlaybackStatusChanged 事件收到提示）
             audioEl.play().catch((err) => {
               console.warn("[walkie] auto-play blocked:", err);
             });
