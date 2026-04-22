@@ -10,6 +10,7 @@ import type { Page } from "@shared/schema";
 import { getPageTypeInfo } from "./constants";
 import type { PageConfig, PageConfigValue } from "./page-config-shared";
 import { ItemMultiSelect } from "@/components/shared/ItemMultiSelect";
+import { IconPicker } from "@/components/shared/IconPicker";
 
 interface ButtonItem {
   text: string;
