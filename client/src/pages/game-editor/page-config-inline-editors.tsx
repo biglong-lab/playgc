@@ -670,7 +670,11 @@ interface QuizQuestion {
   explanation?: string;
 }
 
-export function ChoiceVerifyEditor({ config, updateField }: BaseEditorProps) {
+export function ChoiceVerifyEditor({
+  config,
+  updateField,
+  allPages,
+}: BaseEditorProps & { allPages?: Array<{ id: string; pageType: string; customName?: string | null }> }) {
   const options = (config.options || []) as ChoiceOption[];
   const questions = (config.questions || []) as QuizQuestion[];
   // 有 questions 陣列 → Quiz 模式；否則 legacy 單題
