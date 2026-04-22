@@ -3,7 +3,12 @@
 // 用途：生成 access token 給前端連線 LiveKit（對講機）
 // 玩家 token：room=team-{teamId}、canPublish+canSubscribe
 // 管理者 broadcast token：指定 room、canPublish、**不給 subscribe**（避免監聽爭議）
-import { AccessToken, RoomServiceClient, type VideoGrant } from "livekit-server-sdk";
+import {
+  AccessToken,
+  RoomServiceClient,
+  TrackSource,
+  type VideoGrant,
+} from "livekit-server-sdk";
 
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
