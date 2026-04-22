@@ -54,7 +54,9 @@ const verifyPhotoSchema = z.object({
   targetKeywords: z.array(z.string()).min(1, "至少需要一個目標關鍵字"),
   instruction: z.string().optional(),
   confidenceThreshold: z.number().min(0).max(1).optional(),
-  gameId: z.string().uuid().optional(),
+  gameId: z.string().optional(), // 非 uuid 也行（seed game 用 slug-like ID）
+  /** 🆕 指定 AI 模型（若場域用 OpenRouter） */
+  modelId: z.string().optional(),
 });
 
 const scoreTextSchema = z.object({
