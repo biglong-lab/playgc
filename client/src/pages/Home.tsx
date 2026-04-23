@@ -469,7 +469,7 @@ export default function Home() {
                             data-testid={`button-replay-game-${game.id}`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setLocation(game.gameMode === "team" ? `/team/${game.id}` : `/game/${game.id}?replay=true`);
+                              setLocation(link(game.gameMode === "team" ? `/team/${game.id}` : `/game/${game.id}?replay=true`));
                             }}
                           >
                             <RotateCcw className="w-4 h-4" />
