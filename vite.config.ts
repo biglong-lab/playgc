@@ -86,9 +86,9 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/objects\//, /^\/assets\//, /^\/icons\//, /\/sw\.js$/, /\/workbox-.*\.js$/],
       },
       manifest: {
-        name: "CHITO 七逃",
+        name: "CHITO",
         short_name: "CHITO",
-        description: "CHITO 七逃 · 走踏在地的實境遊戲平台，結合射擊、拍照、GPS 的沉浸式體驗",
+        description: "CHITO — Real-world game platform for local venues. QR, GPS, photo and target missions.",
         theme_color: "#111827",
         background_color: "#111827",
         display: "standalone",
