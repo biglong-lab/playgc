@@ -99,6 +99,38 @@ export class CloudinaryService {
     });
   }
 
+  /** 🎨 場域封面圖（hero / 玩家端遊戲列表頂部） */
+  async uploadFieldCover(
+    base64Data: string,
+    fieldId: string
+  ): Promise<CloudinaryUploadResult> {
+    return this.uploadImage(base64Data, {
+      folder: `jiachun-game/fields/covers`,
+      publicId: `field-${fieldId}-cover`,
+      transformation: [
+        // 場域封面建議 16:9 landscape
+        { width: 1920, height: 1080, crop: "limit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    });
+  }
+
+  /** 🎨 場域 Logo（顯示於 header 左上） */
+  async uploadFieldLogo(
+    base64Data: string,
+    fieldId: string
+  ): Promise<CloudinaryUploadResult> {
+    return this.uploadImage(base64Data, {
+      folder: `jiachun-game/fields/logos`,
+      publicId: `field-${fieldId}-logo`,
+      transformation: [
+        // Logo 限制最大 512x512，保持透明度
+        { width: 512, height: 512, crop: "limit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    });
+  }
+
   async deleteImage(publicId: string): Promise<void> {
     if (!this.isConfigured()) {
       throw new Error("Cloudinary 尚未設定");
