@@ -230,7 +230,9 @@ export default function Home() {
                 <h1 className="font-display font-bold text-lg truncate max-w-[200px]" title={fieldName}>
                   {fieldName}
                 </h1>
-                <p className="text-xs text-muted-foreground">遊戲大廳</p>
+                <p className="text-xs text-muted-foreground flex items-center gap-1" data-testid="home-greeting">
+                  {getTimeGreeting()}
+                </p>
               </div>
             </div>
 
