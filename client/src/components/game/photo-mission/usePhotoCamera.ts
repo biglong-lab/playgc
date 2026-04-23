@@ -62,6 +62,27 @@ export function usePhotoCamera(): PhotoCameraState {
     };
   }, [stream]);
 
+  // 🛡 頁面切回前景時，若 stream 已掛（Android Chrome/Edge 切 tab 會 suspend）
+  // 自動重啟相機，避免玩家看到黑畫面卡住
+  useEffect(() => {
+    if (mode !== "camera") return;
+    const handler = () => {
+      if (document.visibilityState === "visible") {
+        const video = videoRef.current;
+        const streamActive =
+          stream?.getVideoTracks()?.[0]?.readyState === "live";
+        if (!streamActive || !video || video.videoWidth === 0) {
+          // stream 或 video 失效 → 重啟
+          stopCamera();
+          setTimeout(() => void startCamera(), 200);
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handler);
+    return () => document.removeEventListener("visibilitychange", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, stream]);
+
   const startCamera = async () => {
     setCameraError(null);
     setCameraReady(false);
