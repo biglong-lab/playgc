@@ -20,7 +20,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.login": "登入",
     "nav.logout": "登出",
     
-    "landing.hero.title": "賈村競技體驗場",
+    "landing.hero.title": "CHITO 七逃",
     "landing.hero.subtitle": "體驗全新的實境解謎冒險",
     "landing.hero.cta": "開始遊戲",
     "landing.features.shooting": "射擊挑戰",
