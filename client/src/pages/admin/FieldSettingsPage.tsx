@@ -830,6 +830,9 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             tagline={tagline}
             welcomeMessage={welcomeMessage}
             highlights={highlights}
+            announcement={announcement}
+            announcementStartAt={announcementStartAt}
+            announcementEndAt={announcementEndAt}
           />
         </CardContent>
       </Card>
