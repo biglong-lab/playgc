@@ -223,6 +223,11 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
       console.error("[walkie] connect failed:", err);
       setError(err instanceof Error ? err.message : "連線失敗");
       setConnectionState(ConnectionState.Disconnected);
+      logError("walkie", "connect_failed", err, {
+        hasSessionId: !!sessionId,
+        hasGroupId: !!groupId,
+        hasManualToken: !!manualToken,
+      });
     }
   }, [enabled, sessionId, manualToken, startMuted, syncParticipants]);
 
