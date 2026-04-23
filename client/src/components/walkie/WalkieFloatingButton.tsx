@@ -57,7 +57,6 @@ export function WalkieFloatingButton({
   const [useSessionMode, setUseSessionMode] = useState(false); // 使用者選「跟 session 隊友」時
   const [showQR, setShowQR] = useState(true);                  // in-group 時預設顯示 QR（比代碼直覺）
   const [scanning, setScanning] = useState(false);             // 掃碼模式
-  const [quickQrOpen, setQuickQrOpen] = useState(false);       // 🆕 QR 快捷浮窗
 
   // 取得目前已加入的群組
   const { data: myGroupData, refetch: refetchMyGroup } = useQuery<{ group: WalkieGroup | null }>({
