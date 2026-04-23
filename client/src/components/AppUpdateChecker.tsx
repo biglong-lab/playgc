@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { RotateCw, X } from "lucide-react";
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 分鐘
-const INITIAL_CHECK_DELAY_MS = 30 * 1000; // app 剛啟動 30 秒後做首次檢查（不干擾啟動）
+const INITIAL_CHECK_DELAY_MS = 5 * 1000; // 🆕 改為 5 秒（剛上線時快速提示使用者點更新，30s 太久）
 const BUNDLE_HASH_REGEX = /index-([A-Za-z0-9_-]+)\.js/;
 
 /** 從 HTML 字串抽出 bundle hash */
