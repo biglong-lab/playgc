@@ -235,7 +235,7 @@ export function WalkiePill({
 
   const opacity = dragging ? 1 : idle && !forceVisible ? 0.35 : 1;
 
-  // QR 按鈕事件處理 — 必須 stopPropagation 避免觸發 Pill 的 onPointerDown
+  // 設定按鈕（QR icon）事件處理 — stopPropagation 避免觸發 Pill 的 onPointerDown
   const handleQrPointerDown = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -244,9 +244,9 @@ export function WalkiePill({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       resetIdle();
-      onShowQR?.();
+      onOpenPanel?.();
     },
-    [onShowQR, resetIdle],
+    [onOpenPanel, resetIdle],
   );
 
   return (
