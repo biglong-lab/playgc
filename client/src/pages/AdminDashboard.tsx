@@ -228,3 +228,109 @@ export default function AdminDashboard() {
     </UnifiedAdminLayout>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 🆕 場域模組狀態卡片
+// ═══════════════════════════════════════════════════════════════
+
+interface ModuleDef {
+  key: keyof FieldModules;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description: string;
+}
+
+const MODULES_TO_SHOW: ModuleDef[] = [
+  { key: "shooting", label: "射擊任務", icon: Target, description: "硬體靶機" },
+  { key: "battle", label: "水彈對戰", icon: Swords, description: "PK 擂台" },
+  { key: "gps", label: "GPS 定位", icon: MapPin, description: "地點導航" },
+  { key: "photo", label: "拍照驗證", icon: Camera, description: "AI 照片" },
+  { key: "chapters", label: "章節遊戲", icon: BookOpen, description: "劇情推進" },
+  { key: "payment", label: "收費功能", icon: DollarSign, description: "兌換碼 / 付費" },
+];
+
+function FieldModulesCard() {
+  const field = useCurrentField();
+  const modules = field?.modules;
+
+  // 未載入 → 骨架（輕量）
+  if (!modules) {
+    return (
+      <Card className="mb-6">
+        <CardContent className="p-4 text-sm text-muted-foreground">
+          讀取場域模組狀態中...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const enabledCount = MODULES_TO_SHOW.filter((m) => modules[m.key]).length;
+
+  return (
+    <Card className="mb-6 border-primary/20 bg-gradient-to-br from-primary/[0.03] to-transparent">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Settings2 className="w-5 h-5 text-primary" />
+              場域模組 · {field?.name || "當前場域"}
+              <Badge variant="outline" className="ml-2 font-mono text-xs">
+                {enabledCount}/{MODULES_TO_SHOW.length} 啟用
+              </Badge>
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-1">
+              啟用的模組會顯示於玩家端 + 後台；未啟用的自動隱藏
+            </p>
+          </div>
+          <Link href="/admin/field-settings">
+            <Button variant="outline" size="sm" className="gap-1" data-testid="btn-field-settings">
+              前往設定 <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </Link>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          {MODULES_TO_SHOW.map((m) => {
+            const enabled = modules[m.key];
+            const Icon = m.icon;
+            return (
+              <div
+                key={m.key}
+                className={`rounded-lg border-2 p-3 transition-all ${
+                  enabled
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-dashed border-muted-foreground/20 bg-muted/30 opacity-60"
+                }`}
+                data-testid={`module-badge-${m.key}`}
+              >
+                <div className="flex items-start justify-between mb-1.5">
+                  <Icon
+                    className={`w-5 h-5 ${
+                      enabled ? "text-primary" : "text-muted-foreground"
+                    }`}
+                  />
+                  {enabled && (
+                    <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
+                      <Check className="w-3 h-3 text-primary" />
+                    </div>
+                  )}
+                </div>
+                <p
+                  className={`font-semibold text-xs ${
+                    enabled ? "" : "text-muted-foreground"
+                  }`}
+                >
+                  {m.label}
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">
+                  {m.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
