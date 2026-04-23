@@ -837,6 +837,50 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
   );
 }
 
+/** 🆕 公告時效狀態預覽 — 提示此刻是否顯示中 */
+function AnnouncementSchedulePreview({
+  startAt,
+  endAt,
+}: {
+  startAt: string;
+  endAt: string;
+}) {
+  const today = new Date().toISOString().split("T")[0];
+  const notYet = startAt && today < startAt;
+  const expired = endAt && today > endAt;
+
+  if (notYet) {
+    return (
+      <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+        <Clock className="w-3.5 h-3.5" />
+        尚未開始 — 將於 {startAt} 起顯示
+      </p>
+    );
+  }
+  if (expired) {
+    return (
+      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+        <Clock className="w-3.5 h-3.5" />
+        已過期 — 結束日 {endAt}，不再顯示
+      </p>
+    );
+  }
+  if (endAt) {
+    return (
+      <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1.5">
+        <Clock className="w-3.5 h-3.5" />
+        顯示中 — 至 {endAt} 結束
+      </p>
+    );
+  }
+  return (
+    <p className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1.5">
+      <Clock className="w-3.5 h-3.5" />
+      顯示中 — 無結束日
+    </p>
+  );
+}
+
 /** 🆕 場域介紹即時預覽 — 模擬前台 Landing 的視覺（縮小版） */
 function IntroPreview({
   tagline,
