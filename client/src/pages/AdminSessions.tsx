@@ -131,7 +131,7 @@ export default function AdminSessions() {
   const filteredRows = rows.filter((r) => {
     if (!searchTerm) return true;
     const q = searchTerm.toLowerCase();
-    const playerName = getPlayerDisplayName(r.user).toLowerCase();
+    const playerName = getPlayerInfo(r).name.toLowerCase();
     return (
       r.session.id.toLowerCase().includes(q) ||
       (r.session.teamName || "").toLowerCase().includes(q) ||
