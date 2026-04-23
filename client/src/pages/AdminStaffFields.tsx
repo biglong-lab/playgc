@@ -593,14 +593,36 @@ export default function AdminStaffFields() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            data-testid={`button-edit-field-${field.id}`}
-                            onClick={() => handleEdit(field)}
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            {/* 🆕 一鍵預覽前台（新分頁開） */}
+                            {field.status === "active" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                title="新分頁預覽前台"
+                                data-testid={`button-preview-${field.code}`}
+                              >
+                                <a
+                                  href={`/f/${field.code}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  aria-label={`預覽 ${field.name} 前台`}
+                                >
+                                  <ExternalLink className="w-4 h-4" />
+                                </a>
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              title="編輯場域"
+                              data-testid={`button-edit-field-${field.id}`}
+                              onClick={() => handleEdit(field)}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
