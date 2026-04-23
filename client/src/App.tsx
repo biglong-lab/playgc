@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { FieldThemeProvider } from "@/providers/FieldThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedAdminRoute from "@/components/shared/ProtectedAdminRoute";
 import PageLoader from "@/components/shared/PageLoader";
