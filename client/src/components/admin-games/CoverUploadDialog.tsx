@@ -61,11 +61,13 @@ export default function CoverUploadDialog({
         </DialogHeader>
         <div className="space-y-4 py-4">
           {game?.coverImageUrl && (
-            <div className="flex justify-center">
-              <img
+            <div className="flex justify-center w-32 h-32 rounded-lg border overflow-hidden">
+              <OptimizedImage
                 src={game.coverImageUrl}
                 alt="Current cover"
-                className="w-32 h-32 object-cover rounded-lg border"
+                preset="thumbnail"
+                className="w-full h-full object-cover"
+                loading="eager"
               />
             </div>
           )}
