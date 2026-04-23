@@ -95,7 +95,7 @@ export default function OptimizedImage({
       setIsLoaded(false);
       setTimeout(() => {
         setRetryCount((c) => c + 1);
-      }, RETRY_DELAYS[retryCount] ?? 2500);
+      }, RETRY_DELAYS[retryCount] ?? 5000);
       return;
     }
     setHasError(true);
