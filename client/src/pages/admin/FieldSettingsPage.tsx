@@ -361,20 +361,54 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
 }
 
 // ============================================================================
-// 品牌 Tab
+// 品牌 / 視覺主題 Tab
 // ============================================================================
+
+const LAYOUT_OPTIONS: { value: NonNullable<FieldTheme["layoutTemplate"]>; label: string; desc: string }[] = [
+  { value: "classic", label: "經典版", desc: "header + 卡片網格（目前預設）" },
+  { value: "card", label: "大尺寸卡片", desc: "大圖卡片滑動瀏覽" },
+  { value: "fullscreen", label: "滿版沉浸", desc: "每個遊戲佔整螢幕，滑動切換" },
+  { value: "minimal", label: "極簡列表", desc: "純列表、單色、極簡" },
+];
+
+const FONT_OPTIONS: { value: NonNullable<FieldTheme["fontFamily"]>; label: string }[] = [
+  { value: "default", label: "預設字體（系統）" },
+  { value: "serif", label: "襯線（文藝）" },
+  { value: "mono", label: "等寬（科技感）" },
+  { value: "display", label: "展示字體（遊戲感）" },
+];
 
 function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSettingsResponse }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [primaryColor, setPrimaryColor] = useState(settings?.primaryColor ?? "#6366f1");
-  const [welcomeMessage, setWelcomeMessage] = useState(settings?.welcomeMessage ?? "");
 
+  const [welcomeMessage, setWelcomeMessage] = useState(settings?.welcomeMessage ?? "");
+  const [theme, setTheme] = useState<FieldTheme>({});
+  const [previewOn, setPreviewOn] = useState(false);
+
+  // settings 載入後同步到 state（取 theme 或 legacy primaryColor）
   useEffect(() => {
     if (!settings) return;
-    setPrimaryColor(settings.primaryColor ?? "#6366f1");
     setWelcomeMessage(settings.welcomeMessage ?? "");
+    const t = settings.theme || {};
+    setTheme({
+      primaryColor: t.primaryColor || settings.primaryColor || "#f97316",
+      accentColor: t.accentColor || "",
+      backgroundColor: t.backgroundColor || "",
+      textColor: t.textColor || "",
+      layoutTemplate: t.layoutTemplate || "classic",
+      coverImageUrl: t.coverImageUrl || "",
+      brandingLogoUrl: t.brandingLogoUrl || "",
+      fontFamily: t.fontFamily || "default",
+    });
   }, [settings]);
+
+  // 即時預覽：套到 document，切換關閉時還原
+  useEffect(() => {
+    if (!previewOn) return;
+    const revert = applyTheme(theme);
+    return revert;
+  }, [previewOn, theme]);
 
   const saveMutation = useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
@@ -383,68 +417,305 @@ function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/fields", fieldId, "settings"] });
-      toast({ title: "已儲存品牌設定" });
+      queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
+      toast({ title: "已儲存視覺主題" });
     },
-    onError: () => {
-      toast({ title: "儲存失敗", variant: "destructive" });
+    onError: (err: unknown) => {
+      toast({
+        title: "儲存失敗",
+        description: err instanceof Error ? err.message : "未知錯誤",
+        variant: "destructive",
+      });
     },
   });
 
   const handleSave = () => {
-    saveMutation.mutate({ primaryColor, welcomeMessage });
+    // 只傳有值的欄位（空字串 URL 視為清除）
+    const cleanedTheme: FieldTheme = {};
+    if (theme.primaryColor) cleanedTheme.primaryColor = theme.primaryColor;
+    if (theme.accentColor) cleanedTheme.accentColor = theme.accentColor;
+    if (theme.backgroundColor) cleanedTheme.backgroundColor = theme.backgroundColor;
+    if (theme.textColor) cleanedTheme.textColor = theme.textColor;
+    if (theme.layoutTemplate) cleanedTheme.layoutTemplate = theme.layoutTemplate;
+    if (theme.fontFamily) cleanedTheme.fontFamily = theme.fontFamily;
+    if (theme.coverImageUrl) cleanedTheme.coverImageUrl = theme.coverImageUrl;
+    if (theme.brandingLogoUrl) cleanedTheme.brandingLogoUrl = theme.brandingLogoUrl;
+
+    saveMutation.mutate({
+      // legacy 同時也寫以保相容
+      primaryColor: theme.primaryColor,
+      welcomeMessage,
+      theme: cleanedTheme,
+    });
   };
 
+  const updateTheme = (patch: Partial<FieldTheme>) =>
+    setTheme((prev) => ({ ...prev, ...patch }));
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Palette className="w-5 h-5" /> 品牌設定
-        </CardTitle>
-        <CardDescription>自訂場域的視覺風格</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <label className="text-sm font-medium mb-1 block">主色調</label>
-          <div className="flex items-center gap-3">
-            <input
-              type="color"
-              value={primaryColor}
-              onChange={(e) => setPrimaryColor(e.target.value)}
-              className="w-10 h-10 rounded-md border cursor-pointer"
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      {/* 左側：設定面板 */}
+      <Card className="lg:col-span-3">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Palette className="w-5 h-5" /> 視覺主題
+              </CardTitle>
+              <CardDescription>色系、版面、字體、底圖 — 打造場域獨有風格</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground">即時預覽</label>
+              <Switch checked={previewOn} onCheckedChange={setPreviewOn} data-testid="switch-preview" />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* 顏色 4 色 */}
+          <div className="grid grid-cols-2 gap-4">
+            <ColorField
+              label="主色調"
+              hint="按鈕、Link、強調"
+              value={theme.primaryColor || ""}
+              onChange={(v) => updateTheme({ primaryColor: v })}
+              testId="color-primary"
             />
-            <Input
-              value={primaryColor}
-              onChange={(e) => setPrimaryColor(e.target.value)}
-              placeholder="#6366f1"
-              className="w-32 font-mono"
-              data-testid="input-primary-color"
+            <ColorField
+              label="輔色"
+              hint="Badge、次要按鈕"
+              value={theme.accentColor || ""}
+              onChange={(v) => updateTheme({ accentColor: v })}
+              testId="color-accent"
             />
-            <div
-              className="w-10 h-10 rounded-md border"
-              style={{ backgroundColor: primaryColor }}
+            <ColorField
+              label="背景色"
+              hint="整頁底色"
+              value={theme.backgroundColor || ""}
+              onChange={(v) => updateTheme({ backgroundColor: v })}
+              testId="color-background"
+            />
+            <ColorField
+              label="文字色"
+              hint="主要文字"
+              value={theme.textColor || ""}
+              onChange={(v) => updateTheme({ textColor: v })}
+              testId="color-text"
             />
           </div>
-        </div>
-        <div>
-          <label className="text-sm font-medium mb-1 block">歡迎訊息</label>
-          <Input
-            value={welcomeMessage}
-            onChange={(e) => setWelcomeMessage(e.target.value)}
-            placeholder="歡迎來到我們的實境遊戲！"
-            data-testid="input-welcome-message"
-          />
-        </div>
-        <Button
-          onClick={handleSave}
-          disabled={saveMutation.isPending}
-          className="gap-2"
-          data-testid="button-save-brand"
+
+          {/* 版面模板 */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">版面模板</label>
+            <Select
+              value={theme.layoutTemplate || "classic"}
+              onValueChange={(v) => updateTheme({ layoutTemplate: v as NonNullable<FieldTheme["layoutTemplate"]> })}
+            >
+              <SelectTrigger data-testid="select-layout">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LAYOUT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    <div>
+                      <div className="font-medium">{o.label}</div>
+                      <div className="text-xs text-muted-foreground">{o.desc}</div>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 字體 */}
+          <div>
+            <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+              <Type className="w-4 h-4" /> 字體風格
+            </label>
+            <Select
+              value={theme.fontFamily || "default"}
+              onValueChange={(v) => updateTheme({ fontFamily: v as NonNullable<FieldTheme["fontFamily"]> })}
+            >
+              <SelectTrigger data-testid="select-font">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FONT_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 底圖 URL */}
+          <div>
+            <label className="text-sm font-medium mb-1 block flex items-center gap-2">
+              <ImageIcon className="w-4 h-4" /> 場域封面圖 URL
+            </label>
+            <Input
+              value={theme.coverImageUrl || ""}
+              onChange={(e) => updateTheme({ coverImageUrl: e.target.value })}
+              placeholder="https://res.cloudinary.com/.../cover.jpg"
+              className="font-mono text-xs"
+              data-testid="input-cover-url"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              必須是 https:// 開頭。用於玩家端遊戲列表頂部。
+            </p>
+          </div>
+
+          {/* Logo URL */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">Logo URL（覆蓋場域預設 logo）</label>
+            <Input
+              value={theme.brandingLogoUrl || ""}
+              onChange={(e) => updateTheme({ brandingLogoUrl: e.target.value })}
+              placeholder="https://res.cloudinary.com/.../logo.png"
+              className="font-mono text-xs"
+              data-testid="input-logo-url"
+            />
+          </div>
+
+          {/* 歡迎訊息 */}
+          <div>
+            <label className="text-sm font-medium mb-1 block">歡迎訊息</label>
+            <Input
+              value={welcomeMessage}
+              onChange={(e) => setWelcomeMessage(e.target.value)}
+              placeholder="歡迎來到我們的實境遊戲！"
+              data-testid="input-welcome-message"
+            />
+          </div>
+
+          <Button
+            onClick={handleSave}
+            disabled={saveMutation.isPending}
+            className="gap-2"
+            data-testid="button-save-brand"
+          >
+            {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            儲存視覺主題
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* 右側：預覽 */}
+      <Card className="lg:col-span-2 lg:sticky lg:top-6 h-fit">
+        <CardHeader>
+          <CardTitle className="text-base">預覽</CardTitle>
+          <CardDescription>
+            {previewOn ? "🟢 全站即時預覽中（儲存前全頁都會套用）" : "下方為示意卡片"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ThemePreviewCard theme={theme} />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/** 顏色輸入欄（色票 + hex 輸入） */
+function ColorField({
+  label, hint, value, onChange, testId,
+}: {
+  label: string;
+  hint?: string;
+  value: string;
+  onChange: (v: string) => void;
+  testId?: string;
+}) {
+  return (
+    <div>
+      <label className="text-sm font-medium mb-1 block">{label}</label>
+      {hint && <p className="text-xs text-muted-foreground mb-1">{hint}</p>}
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={value || "#000000"}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-9 h-9 rounded border cursor-pointer shrink-0"
+          aria-label={label}
+        />
+        <Input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="#000000"
+          className="font-mono text-xs"
+          data-testid={testId}
+        />
+      </div>
+    </div>
+  );
+}
+
+/** 主題預覽卡 — 顯示色票 + mock 元件 */
+function ThemePreviewCard({ theme }: { theme: FieldTheme }) {
+  return (
+    <div
+      className="rounded-lg p-4 border"
+      style={{
+        backgroundColor: theme.backgroundColor || undefined,
+        color: theme.textColor || undefined,
+      }}
+    >
+      {/* 色票 */}
+      <div className="flex gap-2 mb-4">
+        <Swatch color={theme.primaryColor} label="主" />
+        <Swatch color={theme.accentColor} label="輔" />
+        <Swatch color={theme.backgroundColor} label="背" />
+        <Swatch color={theme.textColor} label="字" />
+      </div>
+
+      {/* Mock 標題 */}
+      <div className="mb-3 font-bold text-lg" style={{ color: theme.textColor }}>
+        場域大廳
+      </div>
+      <div className="text-xs opacity-70 mb-3">版面：{theme.layoutTemplate || "classic"}</div>
+
+      {/* Mock 按鈕 */}
+      <div className="flex gap-2 mb-3">
+        <button
+          className="px-3 py-1 rounded text-xs font-medium text-white"
+          style={{ backgroundColor: theme.primaryColor || "#f97316" }}
         >
-          {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          儲存品牌設定
-        </Button>
-      </CardContent>
-    </Card>
+          開始遊戲
+        </button>
+        <button
+          className="px-3 py-1 rounded text-xs border"
+          style={{ borderColor: theme.accentColor || theme.primaryColor || "#999" }}
+        >
+          地圖
+        </button>
+      </div>
+
+      {/* Mock 底圖 */}
+      {theme.coverImageUrl && (
+        <div
+          className="h-24 rounded bg-cover bg-center mb-2 border"
+          style={{ backgroundImage: `url(${theme.coverImageUrl})` }}
+        />
+      )}
+      {theme.brandingLogoUrl && (
+        <div className="flex items-center gap-2 text-xs">
+          <img src={theme.brandingLogoUrl} alt="logo" className="h-6 object-contain" />
+          <span className="opacity-60">Logo 預覽</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Swatch({ color, label }: { color?: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div
+        className="w-10 h-10 rounded border shrink-0"
+        style={{ backgroundColor: color || "transparent" }}
+      />
+      <span className="text-[10px] opacity-60 mt-0.5">{label}</span>
+    </div>
   );
 }
 
