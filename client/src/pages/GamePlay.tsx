@@ -373,6 +373,38 @@ export default function GamePlay() {
         />
       )}
 
+      {(() => {
+        // 🔒 導航規則：
+        // - 上一頁：只要不是第 0 頁就能回顧（已完成或進行中都行）
+        // - 下一頁：當前頁必須已完成（在 completedPageIds 中）才能前進
+        //   → 防止玩家「什麼都沒做就拿碎片」的漏洞
+        const currentPageId = currentPage?.id;
+        const currentPageCompleted = currentPageId
+          ? completedPageIds.includes(currentPageId)
+          : false;
+        // 如果下一個 index 的頁面也已完成，代表玩家是「回顧」模式可以純導航
+        const nextPageId = activePages[currentPageIndex + 1]?.id;
+        const nextPageCompleted = nextPageId ? completedPageIds.includes(nextPageId) : false;
+        // 可前進條件：當前頁已完成，或下一頁也已完成（代表是回顧）
+        const canAdvance = currentPageCompleted || nextPageCompleted;
+
+        const goNext = () => {
+          if (!canAdvance) {
+            toast({
+              title: "請先完成當前任務",
+              description: "完成此頁任務後才能前進下一關",
+              variant: "destructive",
+            });
+            return;
+          }
+          // 已完成 → 純導航，不觸發 handlePageComplete（避免重複發獎勵）
+          setState((prev) => ({
+            ...prev,
+            currentPageIndex: Math.min(totalPages - 1, prev.currentPageIndex + 1),
+          }));
+        };
+
+        return (
       <nav className="sticky bottom-0 bg-card/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between gap-4">
         <Button
           variant="ghost"
