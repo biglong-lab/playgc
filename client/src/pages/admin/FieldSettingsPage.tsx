@@ -585,7 +585,9 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
   };
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      {/* 左側：編輯面板 */}
+      <div className="lg:col-span-3 space-y-4">
       {/* Tagline + 歡迎訊息 */}
       <Card>
         <CardHeader>
