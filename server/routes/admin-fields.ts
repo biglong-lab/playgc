@@ -242,9 +242,24 @@ export function registerAdminFieldRoutes(app: Express) {
         updatedSettings.maxConcurrentSessions = Math.max(0, Math.round(body.maxConcurrentSessions));
       }
 
-      // 品牌
+      // 品牌（legacy，仍支援舊端點）
       if (typeof body.primaryColor === "string") updatedSettings.primaryColor = body.primaryColor;
       if (typeof body.welcomeMessage === "string") updatedSettings.welcomeMessage = body.welcomeMessage;
+
+      // 🆕 視覺主題（v2）— 整塊替換／合併
+      if (body.theme && typeof body.theme === "object") {
+        const parsed = fieldThemeSchema.safeParse(body.theme);
+        if (!parsed.success) {
+          return res.status(400).json({
+            message: "主題設定格式錯誤",
+            errors: parsed.error.errors,
+          });
+        }
+        updatedSettings.theme = {
+          ...(updatedSettings.theme || {}),
+          ...(parsed.data as FieldTheme),
+        };
+      }
 
       await db.update(fields)
         .set({ settings: updatedSettings, updatedAt: new Date() })
