@@ -47,6 +47,10 @@ interface FieldItem {
   tagline?: string | null;
   coverImageUrl?: string | null;
   highlights?: Array<{ icon?: string; title: string; description?: string }>;
+  /** 🆕 公告（API 已過濾時效外），顯示於場域卡 */
+  announcement?: string | null;
+  /** 🆕 公告嚴重程度 — 決定場域卡公告指示顏色 */
+  announcementSeverity?: "info" | "urgent";
   // 🆕 stats（舊 API 可能沒回這些）
   gameCount?: number;
   topGameCovers?: Array<{ id: string; title: string; coverImageUrl: string }>;
