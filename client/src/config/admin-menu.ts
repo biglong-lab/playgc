@@ -75,7 +75,8 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { title: "遊戲管理", icon: Gamepad2, path: "/admin/games", permission: "game:view" },
       { title: "模組庫", icon: Library, path: "/admin/templates", permission: "game:create" },
       { title: "進行中場次", icon: Activity, path: "/admin/sessions", permission: "game:view" },
-      { title: "設備管理", icon: Cpu, path: "/admin/devices", permission: "game:view" },
+      // 🆕 設備管理僅 shooting 模組啟用才顯示（硬體靶機）
+      { title: "設備管理", icon: Cpu, path: "/admin/devices", permission: "game:view", requiresModule: "shooting" },
       { title: "QR Code 發布", icon: QrCode, path: "/admin/qrcodes", permission: "qr:generate" },
     ],
   },
