@@ -113,30 +113,63 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
             record.hitScore ??
             record.score ??
             zoneScore;
-          // 若 hitPosition 是 {x,y} 物件用之，字串則用隨機散佈
-          const posX =
-            record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.x === "number"
-              ? record.hitPosition.x
-              : Math.random() * 100;
-          const posY =
-            record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.y === "number"
-              ? record.hitPosition.y
-              : Math.random() * 100;
 
-          const hit: HitRecord = {
-            position: { x: posX, y: posY },
-            score: points,
-            zone,
-            deviceId: record.deviceId,
-            timestamp: record.timestamp ?? record.hitTimestamp,
-          };
+          // 🛡️ 作弊防護：每筆 hit 都經過驗證
+          setHits((prev) => {
+            const validation = validateHit({
+              score: points,
+              lastHitTime: lastHitTimeRef.current,
+              currentHitCount: prev.length,
+              requiredHits,
+            });
 
-          setHits((prev) => [...prev, hit]);
-          setTotalScore((prev) => prev + points);
+            if (!validation.valid) {
+              // 作弊/bot 嘗試 → 丟棄這筆 hit 並記錄到伺服器
+              logWarning("shooting_hit_rejected", validation.message || "hit 驗證失敗", {
+                reason: validation.reason,
+                score: points,
+                zone,
+                sessionId,
+                deviceId: record.deviceId,
+              });
+              // 若是連續太快，靜默忽略（不彈 toast 避免被知道）
+              // 若是分數異常，顯示紅色警告
+              if (validation.reason === "score_too_high" || validation.reason === "invalid_score") {
+                toast({
+                  title: "⚠️ 異常命中資料",
+                  description: "此次命中資料異常，已忽略",
+                  variant: "destructive",
+                });
+              }
+              return prev; // 不改 state
+            }
 
-          toast({
-            title: getZoneMessage(zone),
-            description: `+${points} 分`,
+            // 通過驗證 → 更新 lastHitTime 並加入
+            lastHitTimeRef.current = Date.now();
+
+            const posX =
+              record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.x === "number"
+                ? record.hitPosition.x
+                : Math.random() * 100;
+            const posY =
+              record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.y === "number"
+                ? record.hitPosition.y
+                : Math.random() * 100;
+
+            const hit: HitRecord = {
+              position: { x: posX, y: posY },
+              score: points,
+              zone,
+              deviceId: record.deviceId,
+              timestamp: record.timestamp ?? record.hitTimestamp,
+            };
+
+            setTotalScore((s) => s + points);
+            toast({
+              title: getZoneMessage(zone),
+              description: `+${points} 分`,
+            });
+            return [...prev, hit];
           });
         }
       } catch {
