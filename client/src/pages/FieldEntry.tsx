@@ -29,6 +29,8 @@ import {
   Sun,
   Sunset,
   Moon,
+  Megaphone,
+  AlertCircle,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import OptimizedImage from "@/components/shared/OptimizedImage";
