@@ -284,6 +284,43 @@ export default function MeCenter() {
           </div>
         )}
 
+        {/* 🆕 其他場域快捷（有多重會員身份時顯示） */}
+        {(() => {
+          const memberships = membershipsData?.memberships ?? [];
+          const currentCode = currentField?.code;
+          const others = memberships.filter((m) => m.fieldCode !== currentCode);
+          if (others.length === 0) return null;
+          return (
+            <Card className="mb-4" data-testid="me-other-fields">
+              <CardContent className="p-3">
+                <p className="text-[11px] text-muted-foreground mb-2 px-1">
+                  你也是以下場域的會員（{others.length}）
+                </p>
+                <div className="space-y-1">
+                  {others.map((m) => (
+                    <Link
+                      key={m.fieldId}
+                      href={`/f/${m.fieldCode}/me`}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted transition-colors text-sm"
+                      data-testid={`me-other-field-${m.fieldCode}`}
+                    >
+                      <Building2 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span className="flex-1 truncate">{m.fieldName}</span>
+                      {m.isAdmin && (
+                        <Badge variant="outline" className="h-5 text-[10px] gap-1 border-primary/40 text-primary shrink-0">
+                          <Shield className="w-2.5 h-2.5" />
+                          {m.adminRoleName || "管理員"}
+                        </Badge>
+                      )}
+                      <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* 版本資訊 */}
         <p className="text-center text-xs text-muted-foreground py-4">
           CHITO · v4.0
