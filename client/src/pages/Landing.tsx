@@ -29,6 +29,13 @@ export default function Landing() {
 
   const loginHandlers = useLoginHandlers(() => setShowLoginDialog(false));
 
+  // 🆕 當前場域資料
+  const currentField = useCurrentField();
+  const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
+  const fieldLogoUrl = currentField?.logoUrl || null;
+  const fieldName = currentField?.name;
+  const welcomeMessage = currentField?.welcomeMessage || null;
+
   const features = [
     {
       icon: Target,
