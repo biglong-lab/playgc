@@ -119,6 +119,15 @@ export default function AdminGames() {
           open={ctx.isWizardOpen}
           onOpenChange={ctx.setIsWizardOpen}
         />
+
+        {/* 🚚 搬移場域對話框（super_admin only） */}
+        {isSuperAdmin && (
+          <MoveFieldDialog
+            open={!!moveFieldGame}
+            onOpenChange={(open) => !open && setMoveFieldGame(null)}
+            game={moveFieldGame}
+          />
+        )}
       </div>
     </UnifiedAdminLayout>
   );
