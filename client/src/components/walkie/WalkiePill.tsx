@@ -274,8 +274,8 @@ export function WalkiePill({
       data-testid="walkie-pill"
       title={
         connected
-          ? "長按講話 · 點擊展開 · 拖動換位"
-          : "點擊展開"
+          ? "按住說話 · 拖動換位（點右上 QR 看設定）"
+          : "點右上 QR 看設定"
       }
     >
       {/* 麥克風 icon — 自己講話時脈動 */}
