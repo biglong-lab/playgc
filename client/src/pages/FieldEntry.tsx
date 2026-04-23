@@ -50,6 +50,37 @@ interface FieldItem {
   topGameCovers?: Array<{ id: string; title: string; coverImageUrl: string }>;
 }
 
+/** 🆕 依當前時段回傳 Hero 視覺 — 白天/黃昏/夜晚三種氛圍 */
+type TimeOfDay = "day" | "sunset" | "night";
+function getTimeOfDay(): TimeOfDay {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 17) return "day";
+  if (h >= 17 && h < 19) return "sunset";
+  return "night";
+}
+
+const TIME_THEMES: Record<TimeOfDay, {
+  overlayClass: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}> = {
+  day: {
+    overlayClass: "bg-gradient-to-br from-sky-400/10 via-transparent to-transparent",
+    label: "早安，走踏時光",
+    icon: Sun,
+  },
+  sunset: {
+    overlayClass: "bg-gradient-to-br from-orange-500/15 via-pink-500/10 to-transparent",
+    label: "黃昏好時分",
+    icon: Sunset,
+  },
+  night: {
+    overlayClass: "bg-gradient-to-br from-indigo-500/15 via-purple-500/10 to-transparent",
+    label: "夜遊尋寶",
+    icon: Moon,
+  },
+};
+
 /** 同步讀取 localStorage 的上次場域 code */
 function readLastFieldCode(): string | null {
   if (typeof window === "undefined") return null;
