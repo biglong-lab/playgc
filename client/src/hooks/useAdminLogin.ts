@@ -235,9 +235,9 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
   const handleSignOut = async () => {
     setLoginError(null);
     firebaseLoginMutation.reset();
-    // 清除 session cache 避免殘留 authenticated:true
+    // 🔥 登出也清所有 cache（下一個登入者不會看到上個人的資料）
+    queryClient.clear();
     queryClient.setQueryData(["/api/admin/session"], { authenticated: false });
-    queryClient.removeQueries({ queryKey: ["/api/admin/session"] });
     await firebaseSignOut();
   };
 
