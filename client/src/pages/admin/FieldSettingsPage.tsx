@@ -38,6 +38,9 @@ interface FieldSettingsResponse {
   highlights?: FieldHighlight[];
   /** 🆕 場域公告 banner */
   announcement?: string;
+  /** 🆕 公告時效起/訖（ISO YYYY-MM-DD）*/
+  announcementStartAt?: string;
+  announcementEndAt?: string;
   primaryColor?: string;        // legacy
   welcomeMessage?: string;
   theme?: FieldTheme;            // 🆕 視覺主題
