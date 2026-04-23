@@ -57,6 +57,7 @@ export default function Home() {
 
   // 🆕 當前場域資料（name / logo / coverImage / welcome）
   const currentField = useCurrentField();
+  const link = useFieldLink();
   const fieldName = currentField?.name || "賈村競技場";
   const fieldLogoUrl = currentField?.logoUrl || null;
   const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
