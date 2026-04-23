@@ -1,5 +1,5 @@
 // 遊戲、頁面、道具、事件相關的資料庫儲存方法
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { db } from "../db";
 import {
   games,
