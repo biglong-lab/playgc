@@ -54,6 +54,9 @@ export async function registerRoutes(
   // Webhook 路由必須在 adminAuthMiddleware 之前（外部服務呼叫，用自己的簽名驗證）
   registerRecurWebhookRoutes(app);
 
+  // 🌐 Sitemap 公開端點（搜尋引擎爬取用，無需認證）
+  registerSitemapRoute(app);
+
   app.use(adminAuthMiddleware);
 
   // WebSocket 設定
