@@ -203,6 +203,8 @@ interface CameraViewProps {
   fileInputRef: React.RefObject<HTMLInputElement>;
   onCapture: () => void;
   onCancel: () => void;
+  /** 手動重啟相機（載入失敗時救急用）*/
+  onRestart?: () => void;
 }
 
 export function CameraView({
@@ -211,6 +213,7 @@ export function CameraView({
   fileInputRef,
   onCapture,
   onCancel,
+  onRestart,
 }: CameraViewProps) {
   return (
     <div className="flex-1 flex flex-col">
@@ -223,11 +226,24 @@ export function CameraView({
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-4/5 h-3/4 border-2 border-dashed border-primary/50 rounded-lg" />
+          <div
+            className={`w-4/5 h-3/4 border-2 border-dashed rounded-lg transition-colors ${
+              cameraReady ? "border-primary/50" : "border-amber-500/70"
+            }`}
+          />
         </div>
         {!cameraReady && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <Loader2 className="w-8 h-8 text-white animate-spin" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 gap-3">
+            <Loader2 className="w-10 h-10 text-white animate-spin" />
+            <p className="text-white/90 text-sm">相機載入中...</p>
+            {onRestart && (
+              <button
+                onClick={onRestart}
+                className="mt-2 px-4 py-2 rounded-lg bg-white/10 text-white text-sm border border-white/30 hover:bg-white/20"
+              >
+                🔄 載入太久？點此重啟相機
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -241,13 +257,18 @@ export function CameraView({
         >
           取消
         </Button>
-        {/* 📱 快門 80px 大圓形（超過 44px 最低要求，拍照核心體驗）*/}
+        {/* 📱 快門 80px 大圓形 — disabled 時明顯變灰 + 縮小 */}
         <Button
           size="lg"
           onClick={onCapture}
           disabled={!cameraReady}
-          className="w-20 h-20 md:w-20 md:h-20 rounded-full shadow-lg active:scale-95 transition-transform"
+          className={`w-20 h-20 md:w-20 md:h-20 rounded-full shadow-lg active:scale-95 transition-all ${
+            !cameraReady
+              ? "opacity-30 scale-90 cursor-not-allowed"
+              : ""
+          }`}
           data-testid="button-capture"
+          title={!cameraReady ? "相機載入中，請稍候" : "按下拍照"}
         >
           <Camera className="w-9 h-9" />
         </Button>
@@ -263,7 +284,9 @@ export function CameraView({
       </div>
 
       <p className="text-center text-sm text-muted-foreground mt-2">
-        將拍攝對象對準框內，然後按下快門
+        {cameraReady
+          ? "將拍攝對象對準框內，然後按下快門"
+          : "⏳ 相機啟動中，快門暫不可用..."}
       </p>
     </div>
   );
