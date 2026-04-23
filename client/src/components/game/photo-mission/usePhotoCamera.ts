@@ -158,10 +158,25 @@ export function usePhotoCamera(): PhotoCameraState {
         if (unhealthyCount >= 3) {
           clearInterval(healthCheck);
           console.warn("[camera] video 連續不健康");
+          logWarning(
+            "camera",
+            "video_unhealthy",
+            "videoWidth 持續為 0",
+            {
+              restartCount: autoRestartCountRef.current,
+              userAgent: navigator.userAgent,
+            },
+          );
           if (!canAutoRestart()) {
             // 已達上限 → 放棄自動重啟，告知使用者
             console.warn("[camera] 停止自動恢復，請使用者手動重啟");
             setCameraError("相機畫面異常，請點下方按鈕手動重啟");
+            logError(
+              "camera",
+              "auto_restart_exhausted",
+              new Error("相機自動重啟達上限"),
+              { userAgent: navigator.userAgent },
+            );
             return;
           }
           markAutoRestart();
