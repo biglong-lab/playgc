@@ -62,6 +62,30 @@ interface Field {
   codeLastChangedAt: string | null;
   createdAt: string;
   updatedAt: string | null;
+  /** 🆕 後端回的 jsonb 原始資料，用來推出模組啟用狀態 */
+  settings?: FieldSettings | null;
+}
+
+/** 🆕 6 個模組徽章定義（對應 FieldSettings 的 enableXxx） */
+const MODULE_BADGES: Array<{
+  key: keyof FieldSettings;
+  label: string;
+  short: string;
+  Icon: React.ComponentType<{ className?: string }>;
+}> = [
+  { key: "enableShootingMission", label: "射擊", short: "射", Icon: Target },
+  { key: "enableBattleArena",     label: "對戰", short: "戰", Icon: Swords },
+  { key: "enableGpsMission",      label: "GPS",  short: "G",  Icon: MapPin },
+  { key: "enablePhotoMission",    label: "拍照", short: "照", Icon: Camera },
+  { key: "enableChapters",        label: "章節", short: "章", Icon: BookOpen },
+  { key: "enablePayment",         label: "收費", short: "費", Icon: DollarSign },
+];
+
+/** 🆕 從場域 settings 推出啟用的模組 count + badges 清單 */
+function getFieldModuleStatus(settings?: FieldSettings | null) {
+  const s = settings ?? {};
+  const enabled = MODULE_BADGES.filter((b) => s[b.key] === true);
+  return { enabled, total: MODULE_BADGES.length };
 }
 
 export default function AdminStaffFields() {
