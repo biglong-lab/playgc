@@ -48,7 +48,7 @@ async function callOpenRouter(
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
         "HTTP-Referer": "https://game.homi.cc",
-        "X-Title": "CHITO 七逃遊戲平台",
+        "X-Title": "CHITO Game Platform",
       },
       body: JSON.stringify(body),
       signal: abort.signal,
