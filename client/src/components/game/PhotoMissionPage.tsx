@@ -204,8 +204,8 @@ export default function PhotoMissionPage({
           onCapture={camera.capturePhoto}
           onCancel={camera.cancelCamera}
           onRestart={() => {
-            camera.stopCamera();
-            setTimeout(() => void camera.startCamera(), 300);
+            // 使用者主動重啟 → 用 retake（會重置 auto-restart counter）
+            camera.retake();
           }}
         />
       )}
