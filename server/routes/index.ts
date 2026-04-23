@@ -77,6 +77,9 @@ export async function registerRoutes(
   // 📻 對講機（LiveKit）
   registerWalkieRoutes(app);
   registerAdminWalkieRoutes(app);
+  // 📊 前端日誌收集
+  registerClientLogsRoutes(app);
+  startClientLogsCleanup();
   registerMatchRoutes(app, ctx);
   registerAdminRedeemCodeRoutes(app);
   registerAdminPurchaseRoutes(app);
