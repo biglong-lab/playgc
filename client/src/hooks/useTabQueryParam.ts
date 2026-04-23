@@ -44,8 +44,10 @@ export function useTabQueryParam<T extends string>(
   }, [readFromUrl]);
 
   const setTab = useCallback(
-    (tab: T) => {
-      setActiveTab(tab);
+    (tab: string) => {
+      // 白名單驗證：無效 tab 忽略（防 Tabs 傳入不合法值）
+      if (!(validTabs as readonly string[]).includes(tab)) return;
+      setActiveTab(tab as T);
       try {
         const params = new URLSearchParams(window.location.search);
         params.set(paramName, tab);
@@ -58,7 +60,7 @@ export function useTabQueryParam<T extends string>(
         /* sandbox 或不支援 history API */
       }
     },
-    [paramName],
+    [paramName, validTabs],
   );
 
   return [activeTab, setTab];
