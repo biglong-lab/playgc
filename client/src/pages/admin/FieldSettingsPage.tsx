@@ -1068,20 +1068,31 @@ function IntroPreview({
 
   return (
     <div className="rounded-lg overflow-hidden border bg-background">
-      {/* 🆕 公告 banner（有內容就顯示在預覽中；若不在時效內加灰色提示） */}
-      {announcement.trim() && (
-        <div
-          className={`border-b px-3 py-2 flex items-start gap-1.5 text-[10px] leading-snug ${
-            announcementActive
-              ? "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300"
-              : "bg-muted/50 border-muted-foreground/20 text-muted-foreground line-through opacity-60"
-          }`}
-          title={announcementActive ? "目前會顯示" : "不在時效內，不會顯示"}
-        >
-          <Megaphone className="w-3 h-3 shrink-0 mt-0.5" />
-          <span className="flex-1">{announcement}</span>
-        </div>
-      )}
+      {/* 🆕 公告 banner（依 severity 變色，時效外加灰色 line-through） */}
+      {announcement.trim() && (() => {
+        const isUrgent = announcementSeverity === "urgent";
+        const Icon = isUrgent ? AlertCircle : Megaphone;
+        let wrapperClass = "";
+        if (!announcementActive) {
+          wrapperClass =
+            "bg-muted/50 border-muted-foreground/20 text-muted-foreground line-through opacity-60";
+        } else if (isUrgent) {
+          wrapperClass =
+            "bg-red-500/10 border-red-500/40 text-red-700 dark:text-red-300 font-medium";
+        } else {
+          wrapperClass =
+            "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300";
+        }
+        return (
+          <div
+            className={`border-b px-3 py-2 flex items-start gap-1.5 text-[10px] leading-snug ${wrapperClass}`}
+            title={announcementActive ? (isUrgent ? "緊急公告，玩家端紅色不可關" : "目前會顯示") : "不在時效內，不會顯示"}
+          >
+            <Icon className="w-3 h-3 shrink-0 mt-0.5" />
+            <span className="flex-1">{announcement}</span>
+          </div>
+        );
+      })()}
 
       {/* Hero 區 */}
       <div className="relative bg-gradient-to-br from-primary/10 via-background to-background p-5 text-center">
