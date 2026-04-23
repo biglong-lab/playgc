@@ -289,4 +289,144 @@ export function registerAdminFieldRoutes(app: Express) {
       return res.status(500).json({ message: "更新設定失敗" });
     }
   });
+
+  // ============================================================================
+  // 🌐 GET /api/fields/:code/theme — 公開端點，玩家端用來套場域主題
+  // ============================================================================
+  app.get("/api/fields/:code/theme", async (req, res) => {
+    try {
+      const code = String(req.params.code || "").toUpperCase();
+      const field = await db.query.fields.findFirst({
+        where: eq(fields.code, code),
+        columns: {
+          id: true,
+          code: true,
+          name: true,
+          logoUrl: true,
+          settings: true,
+        },
+      });
+
+      if (!field || field.id === undefined) {
+        return res.status(404).json({ message: "場域不存在" });
+      }
+
+      const settings = parseFieldSettings(field.settings);
+      const theme = settings.theme || {};
+      // legacy fallback：舊的 settings.primaryColor
+      const primaryColor = theme.primaryColor || settings.primaryColor;
+
+      res.set("Cache-Control", "public, max-age=300");
+      return res.json({
+        fieldId: field.id,
+        code: field.code,
+        name: field.name,
+        logoUrl: theme.brandingLogoUrl || field.logoUrl || null,
+        theme: {
+          colorScheme: theme.colorScheme || "dark",
+          primaryColor: primaryColor || null,
+          accentColor: theme.accentColor || null,
+          backgroundColor: theme.backgroundColor || null,
+          textColor: theme.textColor || null,
+          layoutTemplate: theme.layoutTemplate || "classic",
+          coverImageUrl: theme.coverImageUrl || null,
+          brandingLogoUrl: theme.brandingLogoUrl || null,
+          fontFamily: theme.fontFamily || "default",
+        },
+      });
+    } catch (error) {
+      console.error("[fields/theme]", error);
+      return res.status(500).json({ message: "取得場域主題失敗" });
+    }
+  });
+
+  // ============================================================================
+  // 🚚 POST /api/admin/games/:gameId/move-field — super_admin 搬移遊戲到其他場域
+  // ============================================================================
+  app.post(
+    "/api/admin/games/:gameId/move-field",
+    requireAdminAuth,
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        // ⚠️ 只有 super_admin 可搬移（跨場域是平台級操作）
+        if (req.admin.systemRole !== "super_admin") {
+          return res.status(403).json({
+            message: "僅平台超級管理員可搬移遊戲到其他場域",
+          });
+        }
+
+        const bodySchema = z.object({
+          targetFieldId: z.string().min(1),
+        });
+        const { targetFieldId } = bodySchema.parse(req.body);
+
+        const gameId = req.params.gameId;
+
+        // 驗證 game 存在
+        const game = await db.query.games.findFirst({
+          where: eq(games.id, gameId),
+        });
+        if (!game) {
+          return res.status(404).json({ message: "遊戲不存在" });
+        }
+
+        // 驗證目標場域存在
+        const targetField = await db.query.fields.findFirst({
+          where: eq(fields.id, targetFieldId),
+        });
+        if (!targetField) {
+          return res.status(404).json({ message: "目標場域不存在" });
+        }
+
+        // 沒差就直接回 200（冪等）
+        if (game.fieldId === targetFieldId) {
+          return res.json({
+            message: "遊戲已在目標場域，無需搬移",
+            game,
+          });
+        }
+
+        const fromFieldId = game.fieldId;
+
+        // 執行搬移
+        const [updated] = await db
+          .update(games)
+          .set({ fieldId: targetFieldId, updatedAt: new Date() })
+          .where(eq(games.id, gameId))
+          .returning();
+
+        await logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "game:move_field",
+          targetType: "game",
+          targetId: gameId,
+          fieldId: targetFieldId,
+          metadata: {
+            fromFieldId,
+            toFieldId: targetFieldId,
+            targetFieldName: targetField.name,
+            gameTitle: game.title,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
+        return res.json({
+          message: `遊戲「${game.title}」已搬移到「${targetField.name}」`,
+          game: updated,
+          fromFieldId,
+          toFieldId: targetFieldId,
+        });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res
+            .status(400)
+            .json({ message: "參數錯誤", errors: error.errors });
+        }
+        console.error("[game:move-field]", error);
+        return res.status(500).json({ message: "搬移遊戲失敗" });
+      }
+    },
+  );
 }
