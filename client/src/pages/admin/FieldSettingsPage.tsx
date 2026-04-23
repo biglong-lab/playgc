@@ -1,4 +1,4 @@
-// 場域設定頁面 — AI Key、配額、功能開關、品牌
+// 場域設定頁面 — AI Key、配額、功能開關、品牌、視覺主題
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -8,8 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Settings2, Palette, Save, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import { Bot, Settings2, Palette, Save, Eye, EyeOff, Loader2, ShieldCheck, Image as ImageIcon, Type } from "lucide-react";
+import type { FieldTheme } from "@shared/schema";
+import { applyTheme } from "@/lib/themeUtils";
 
 interface FieldSettingsResponse {
   enableAI?: boolean;
@@ -19,8 +22,9 @@ interface FieldSettingsResponse {
   enablePayment?: boolean;
   enableTeamMode?: boolean;
   enableCompetitiveMode?: boolean;
-  primaryColor?: string;
+  primaryColor?: string;        // legacy
   welcomeMessage?: string;
+  theme?: FieldTheme;            // 🆕 視覺主題
 }
 
 export default function FieldSettingsPage() {
