@@ -126,10 +126,10 @@ export default function Landing() {
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-4 font-chinese">
-            {welcomeMessage || t("app.subtitle")}
+            {welcomeMessage || fieldTagline || t("app.subtitle")}
           </p>
 
-          {!welcomeMessage && (
+          {!welcomeMessage && !fieldTagline && (
             <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-12 font-chinese">
               {t("landing.hero.subtitle")}
             </p>
