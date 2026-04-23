@@ -123,6 +123,14 @@ export default function AdminStaffFields() {
     enabled: isAuthenticated,
   });
 
+  // 🆕 模組 filter — 只看啟用該模組的場域
+  const [moduleFilter, setModuleFilter] = useState<"all" | keyof FieldSettings>("all");
+  const filteredFields = useMemo(() => {
+    if (!fields) return [];
+    if (moduleFilter === "all") return fields;
+    return fields.filter((f) => f.settings?.[moduleFilter] === true);
+  }, [fields, moduleFilter]);
+
   const createMutation = useMutation({
     mutationFn: (data: typeof formData) => 
       fetchWithAdminAuth("/api/admin/fields", {
