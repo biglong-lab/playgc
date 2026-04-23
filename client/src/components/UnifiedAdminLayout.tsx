@@ -2,7 +2,8 @@
 // 使用 JWT/RBAC 認證，根據角色權限動態顯示菜單
 import { Link, useLocation } from "wouter";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { ADMIN_MENU_GROUPS, SYSTEM_ROLE_LABELS, filterMenuByPermissions } from "@/config/admin-menu";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
+import { ADMIN_MENU_GROUPS, SYSTEM_ROLE_LABELS, filterMenuByPermissions, filterMenuByModules } from "@/config/admin-menu";
 import FieldSelector from "@/components/FieldSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import CommandPalette from "@/components/CommandPalette";
