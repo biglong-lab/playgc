@@ -13,7 +13,7 @@
 //   - 短點擊（<300ms） → onClick 展開面板
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Mic } from "lucide-react";
+import { Mic, QrCode } from "lucide-react";
 
 interface WalkiePillProps {
   /** 是否已連到 LiveKit room */
@@ -32,6 +32,8 @@ interface WalkiePillProps {
   onStopTalk: () => void;
   /** 點擊（短按）展開完整面板 */
   onExpand: () => void;
+  /** 🆕 點擊 QR 快捷按鈕（只在已加群組時出現） */
+  onShowQR?: () => void;
 }
 
 const STORAGE_POS = "walkie_pill_pos";
