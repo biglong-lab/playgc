@@ -23,10 +23,15 @@ import type { GameSession, Game } from "@shared/schema";
 import {
   Search, Filter, Users, Clock, Play, Square, Eye,
   RefreshCw, AlertTriangle, CheckCircle, Trash2, Mail, User as UserIcon,
+  UserX,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import {
+  getPlayerDisplayName as getDisplayName,
+  isAnonymousPlayer,
+} from "@shared/lib/playerDisplay";
 
 /** /api/admin/sessions 回傳格式 */
 interface AdminSessionRow {
@@ -45,13 +50,18 @@ interface AdminSessionRow {
   } | null;
 }
 
-/** 組合玩家顯示名稱 */
-function getPlayerDisplayName(user: AdminSessionRow["user"]): string {
-  if (!user) return "匿名玩家";
-  const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
-  if (fullName) return fullName;
-  if (user.email) return user.email.split("@")[0];
-  return "玩家";
+/** 組合玩家顯示名稱 + 判斷是否為匿名 */
+function getPlayerInfo(row: AdminSessionRow): { name: string; isAnon: boolean } {
+  const source = {
+    playerName: row.session.playerName,
+    firstName: row.user?.firstName,
+    lastName: row.user?.lastName,
+    email: row.user?.email,
+  };
+  return {
+    name: getDisplayName(source),
+    isAnon: isAnonymousPlayer(source),
+  };
 }
 
 export default function AdminSessions() {
