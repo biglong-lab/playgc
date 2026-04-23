@@ -701,6 +701,109 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
           儲存場域介紹
         </Button>
       </div>
+      </div>
+
+      {/* 🆕 右側：前台即時預覽 */}
+      <Card className="lg:col-span-2 lg:sticky lg:top-6 h-fit">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Eye className="w-4 h-4" />
+            前台預覽
+          </CardTitle>
+          <CardDescription className="text-xs">
+            即時顯示編輯後的呈現樣貌（存檔後與實際前台一致）
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <IntroPreview
+            tagline={tagline}
+            welcomeMessage={welcomeMessage}
+            highlights={highlights}
+          />
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/** 🆕 場域介紹即時預覽 — 模擬前台 Landing 的視覺（縮小版） */
+function IntroPreview({
+  tagline,
+  welcomeMessage,
+  highlights,
+}: {
+  tagline: string;
+  welcomeMessage: string;
+  highlights: FieldHighlight[];
+}) {
+  return (
+    <div className="rounded-lg overflow-hidden border bg-background">
+      {/* Hero 區 */}
+      <div className="relative bg-gradient-to-br from-primary/10 via-background to-background p-5 text-center">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30 mb-3">
+          <Sparkles className="w-3 h-3 text-primary" />
+          <span className="text-[9px] font-display uppercase tracking-wider text-primary">
+            Real-world · Local · Play
+          </span>
+        </div>
+        <h1 className="font-display text-2xl font-black mb-2 tracking-tight">
+          場域名稱
+        </h1>
+        {tagline ? (
+          <p className="text-xs text-muted-foreground font-chinese">{tagline}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground/40 italic">尚未設定 Tagline</p>
+        )}
+        {welcomeMessage && (
+          <p className="text-[11px] text-muted-foreground/80 mt-2 leading-relaxed max-w-[220px] mx-auto">
+            {welcomeMessage}
+          </p>
+        )}
+      </div>
+
+      {/* Feature Section（highlights）*/}
+      <div className="border-t p-4 bg-muted/20">
+        <p className="text-[9px] uppercase tracking-wider font-display text-primary mb-2 text-center">
+          Mission Types
+        </p>
+        {highlights.length === 0 ? (
+          <p className="text-xs text-muted-foreground/50 italic text-center py-4">
+            尚未加入亮點
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-1.5">
+            {highlights.slice(0, 6).map((h, i) => {
+              const iconDef =
+                HIGHLIGHT_ICON_OPTIONS.find((o) => o.value === h.icon) ??
+                HIGHLIGHT_ICON_OPTIONS[0];
+              const Icon = iconDef.Icon;
+              return (
+                <div
+                  key={i}
+                  className="rounded-md border bg-card p-2 flex flex-col gap-1"
+                >
+                  <div className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <p className="font-semibold text-[10px] leading-tight truncate">
+                    {h.title || "（無標題）"}
+                  </p>
+                  {h.description && (
+                    <p className="text-[9px] text-muted-foreground leading-tight line-clamp-2">
+                      {h.description}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {highlights.length > 6 && (
+          <p className="text-[9px] text-muted-foreground text-center mt-2">
+            ...還有 {highlights.length - 6} 項
+          </p>
+        )}
+      </div>
     </div>
   );
 }
