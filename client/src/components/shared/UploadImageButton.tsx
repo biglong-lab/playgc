@@ -121,8 +121,15 @@ export function UploadImageButton({
       const uploadedUrl = res.url || res.coverImageUrl;
       if (!uploadedUrl) throw new Error("伺服器沒有回傳 URL");
 
+      // 🆕 等 Cloudinary CDN 同步完成才通知 UI（最多 20 秒）
+      // 避免 UI 拿到 URL 就顯示 → CDN 還沒同步 → 破圖 → 瀏覽器 cache 失敗
+      toast({ title: "上傳完成，等待 CDN 同步..." });
+      const synced = await waitForCdnSync(uploadedUrl);
+
       onUploaded(uploadedUrl);
-      toast({ title: "上傳成功" });
+      toast({
+        title: synced ? "✅ 上傳成功" : "上傳完成（CDN 同步較慢，可能延遲顯示）",
+      });
     } catch (err) {
       toast({
         title: "上傳失敗",
