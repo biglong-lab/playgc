@@ -102,6 +102,8 @@ export default function AdminStaffFields() {
   const [editingField, setEditingField] = useState<Field | null>(null);
   const [isCodeUnlocked, setIsCodeUnlocked] = useState(false);
   const [showUnlockWarning, setShowUnlockWarning] = useState(false);
+  // 🆕 新增場域時可選「從範本複製設定」
+  const [templateFieldId, setTemplateFieldId] = useState<string>("");
   const [formData, setFormData] = useState({
     code: "",
     name: "",
