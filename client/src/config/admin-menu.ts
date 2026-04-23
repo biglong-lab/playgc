@@ -97,17 +97,17 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
   },
 
   // ═══════════════════════════════════════════════
-  // 💰 財務中心（Phase 3 建置中）
+  // 💰 財務中心 — 🆕 需啟用 payment 模組才顯示
   // ═══════════════════════════════════════════════
   {
     label: "財務中心",
     emoji: "💰",
     accentColor: "emerald",
     items: [
-      { title: "營收總覽", icon: DollarSign, path: "/admin/revenue", permission: "game:view" },
-      { title: "商品管理", icon: Library, path: "/admin/revenue/products", permission: "game:view" },
-      { title: "兌換碼中心", icon: Ticket, path: "/admin/revenue/codes", permission: "game:view" },
-      { title: "交易記錄", icon: Activity, path: "/admin/revenue/transactions", permission: "game:view" },
+      { title: "營收總覽", icon: DollarSign, path: "/admin/revenue", permission: "game:view", requiresModule: "payment" },
+      { title: "商品管理", icon: Library, path: "/admin/revenue/products", permission: "game:view", requiresModule: "payment" },
+      { title: "兌換碼中心", icon: Ticket, path: "/admin/revenue/codes", permission: "game:view", requiresModule: "payment" },
+      { title: "交易記錄", icon: Activity, path: "/admin/revenue/transactions", permission: "game:view", requiresModule: "payment" },
       // 退款管理、金流設定 — Phase 3 後續加入
     ],
   },
