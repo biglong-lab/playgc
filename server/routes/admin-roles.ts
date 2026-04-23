@@ -194,10 +194,9 @@ export function registerAdminRoleRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
+      // 🔒 場域隔離：統一用 admin.fieldId
       const accounts = await db.query.adminAccounts.findMany({
-        where: req.admin.systemRole === "super_admin"
-          ? undefined
-          : eq(adminAccounts.fieldId, req.admin.fieldId),
+        where: eq(adminAccounts.fieldId, req.admin.fieldId),
         with: {
           role: true,
           field: true,
