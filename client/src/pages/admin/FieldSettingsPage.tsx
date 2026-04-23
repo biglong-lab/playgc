@@ -80,27 +80,33 @@ export default function FieldSettingsPage() {
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <Tabs defaultValue="ai" className="space-y-4">
+        <Tabs defaultValue="intro" className="space-y-4">
           <TabsList>
+            <TabsTrigger value="intro" className="gap-2">
+              <FileText className="w-4 h-4" /> 場域介紹
+            </TabsTrigger>
+            <TabsTrigger value="features" className="gap-2">
+              <Settings2 className="w-4 h-4" /> 功能模組
+            </TabsTrigger>
+            <TabsTrigger value="brand" className="gap-2">
+              <Palette className="w-4 h-4" /> 視覺主題
+            </TabsTrigger>
             <TabsTrigger value="ai" className="gap-2">
               <Bot className="w-4 h-4" /> AI 設定
             </TabsTrigger>
-            <TabsTrigger value="features" className="gap-2">
-              <Settings2 className="w-4 h-4" /> 功能與配額
-            </TabsTrigger>
-            <TabsTrigger value="brand" className="gap-2">
-              <Palette className="w-4 h-4" /> 品牌
-            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ai">
-            <AiSettingsTab fieldId={fieldId} settings={settings} />
+          <TabsContent value="intro">
+            <IntroTab fieldId={fieldId} settings={settings} />
           </TabsContent>
           <TabsContent value="features">
             <FeaturesTab fieldId={fieldId} settings={settings} />
           </TabsContent>
           <TabsContent value="brand">
             <BrandTab fieldId={fieldId} settings={settings} />
+          </TabsContent>
+          <TabsContent value="ai">
+            <AiSettingsTab fieldId={fieldId} settings={settings} />
           </TabsContent>
         </Tabs>
       )}
