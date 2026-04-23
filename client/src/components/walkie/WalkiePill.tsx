@@ -42,8 +42,8 @@ const STORAGE_POS = "walkie_pill_pos";
 const DRAG_THRESHOLD_PX = 8;
 const LONGPRESS_MS = 250;
 const IDLE_FADE_MS = 3000;
-const PILL_W = 96;
-const PILL_H = 40;
+const PILL_W = 148;  // 擴寬以容納「長按說話」引導文字
+const PILL_H = 44;   // 高度也增加以達 iOS 觸控目標（44x44）
 const MARGIN = 16;
 
 interface Pos {
