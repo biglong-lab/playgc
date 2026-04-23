@@ -149,9 +149,30 @@ export function usePreviewTheme(): FieldTheme | null {
   return theme;
 }
 
+/** 從 URL path 擷取 /f/:fieldCode 中的 code（若當前頁是場域路由） */
+function readFieldCodeFromUrl(): string | null {
+  if (typeof window === "undefined") return null;
+  const match = window.location.pathname.match(/^\/f\/([A-Z0-9_-]{2,50})(?:\/|$)/i);
+  return match ? match[1].toUpperCase() : null;
+}
+
 export function FieldThemeProvider({ children }: { children: React.ReactNode }) {
   // 0. 讀 URL preview（優先級最高，管理員即時預覽）
   const previewTheme = useMemo(() => readPreviewFromUrl(), []);
+
+  // 0.5 🆕 URL path 場域（/f/:fieldCode）優先於 admin session / localStorage
+  //    監聽 popstate 讓 SPA 導航也能觸發更新
+  const [urlFieldCode, setUrlFieldCode] = useState(() => readFieldCodeFromUrl());
+  useEffect(() => {
+    const update = () => setUrlFieldCode(readFieldCodeFromUrl());
+    window.addEventListener("popstate", update);
+    // wouter 用 pushState，監聽 location 改變需要定期重查（or 用 wouter hook 更精準）
+    const interval = setInterval(update, 500);
+    return () => {
+      window.removeEventListener("popstate", update);
+      clearInterval(interval);
+    };
+  }, []);
 
   // 1. 拿 admin session（若有）
   const { data: adminSession } = useQuery<{
@@ -168,12 +189,12 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
     },
     staleTime: 5 * 60_000,
     retry: false,
-    // 預覽模式下也要拿 session 以決定 fieldCode（例：預覽場域 Logo URL 若未帶會 fallback）
-    enabled: !previewTheme,
+    enabled: !previewTheme && !urlFieldCode,
   });
 
   const adminFieldCode = adminSession?.admin?.fieldCode;
-  const fieldCode = adminFieldCode || resolveFieldCode();
+  // 🆕 優先級：URL path > admin session > localStorage > 預設
+  const fieldCode = urlFieldCode || adminFieldCode || resolveFieldCode();
 
   // 2. 拿主題（預覽模式下跳過）
   const { data: themePayload } = useQuery<FieldThemePayload>({
