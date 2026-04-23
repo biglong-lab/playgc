@@ -343,6 +343,24 @@ export default function Home() {
                       )}
                     </div>
                   </div>
+
+                  {/* 🆕 累計遊玩次數 / 玩過人數（非即時） */}
+                  {(() => {
+                    const s = statsMap?.[game.id];
+                    if (!s || (s.totalPlays === 0 && s.uniquePlayers === 0)) return null;
+                    return (
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-3 pt-3 border-t">
+                        <div className="flex items-center gap-1" data-testid={`stats-plays-${game.id}`}>
+                          <TrendingUp className="w-3.5 h-3.5 text-primary/70" />
+                          <span>累計 <span className="font-number font-semibold text-foreground">{s.totalPlays}</span> 場</span>
+                        </div>
+                        <div className="flex items-center gap-1" data-testid={`stats-players-${game.id}`}>
+                          <Star className="w-3.5 h-3.5 text-warning/80" />
+                          <span><span className="font-number font-semibold text-foreground">{s.uniquePlayers}</span> 人玩過</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
                 
                 <CardFooter className="p-4 pt-0">
