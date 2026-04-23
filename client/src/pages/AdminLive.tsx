@@ -17,7 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import {
   Users, Radio, Mic, MicOff, AlertTriangle, Megaphone,
-  RefreshCcw, CheckCircle2, XCircle,
+  RefreshCcw, CheckCircle2, XCircle, BarChart3, TrendingUp, Trophy,
 } from "lucide-react";
 import { Room, RoomEvent, ConnectionState } from "livekit-client";
 import { motion, AnimatePresence } from "framer-motion";
