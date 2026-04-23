@@ -238,18 +238,20 @@ export default function AdminDashboard() {
 
 interface ModuleDef {
   key: keyof FieldModules;
+  /** 對應 fields.settings jsonb 中的 key（PATCH 時用） */
+  settingsKey: keyof FieldSettings;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
 }
 
 const MODULES_TO_SHOW: ModuleDef[] = [
-  { key: "shooting", label: "射擊任務", icon: Target, description: "硬體靶機" },
-  { key: "battle", label: "水彈對戰", icon: Swords, description: "PK 擂台" },
-  { key: "gps", label: "GPS 定位", icon: MapPin, description: "地點導航" },
-  { key: "photo", label: "拍照驗證", icon: Camera, description: "AI 照片" },
-  { key: "chapters", label: "章節遊戲", icon: BookOpen, description: "劇情推進" },
-  { key: "payment", label: "收費功能", icon: DollarSign, description: "兌換碼 / 付費" },
+  { key: "shooting", settingsKey: "enableShootingMission", label: "射擊任務", icon: Target, description: "硬體靶機" },
+  { key: "battle",   settingsKey: "enableBattleArena",     label: "水彈對戰", icon: Swords, description: "PK 擂台" },
+  { key: "gps",      settingsKey: "enableGpsMission",      label: "GPS 定位", icon: MapPin, description: "地點導航" },
+  { key: "photo",    settingsKey: "enablePhotoMission",    label: "拍照驗證", icon: Camera, description: "AI 照片" },
+  { key: "chapters", settingsKey: "enableChapters",        label: "章節遊戲", icon: BookOpen, description: "劇情推進" },
+  { key: "payment",  settingsKey: "enablePayment",         label: "收費功能", icon: DollarSign, description: "兌換碼 / 付費" },
 ];
 
 function FieldModulesCard() {
