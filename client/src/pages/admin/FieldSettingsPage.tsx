@@ -93,6 +93,12 @@ export default function FieldSettingsPage() {
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
+        <>
+        {/* 🆕 匯出/匯入場域設定 */}
+        <div className="flex justify-end mb-4">
+          <ExportImportButtons fieldId={fieldId} settings={settings} />
+        </div>
+
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
           <TabsList>
             <TabsTrigger value="intro" className="gap-2">
