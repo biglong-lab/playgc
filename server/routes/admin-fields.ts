@@ -406,6 +406,19 @@ export function registerAdminFieldRoutes(app: Express) {
         name: field.name,
         logoUrl: theme.brandingLogoUrl || field.logoUrl || null,
         welcomeMessage: settings.welcomeMessage || null,
+        // 🆕 場域行銷內容
+        tagline: settings.tagline || null,
+        highlights: settings.highlights || [],
+        // 🆕 模組開關（Landing / Home 用來決定要不要顯示對戰入口等）
+        modules: {
+          shooting: !!settings.enableShootingMission,
+          battle: !!settings.enableBattleArena,
+          chapters: !!settings.enableChapters,
+          photo: !!settings.enablePhotoMission,
+          gps: !!settings.enableGpsMission,
+          team: settings.enableTeamMode !== false,
+          competitive: settings.enableCompetitiveMode !== false,
+        },
         theme: {
           colorScheme: theme.colorScheme || "dark",
           primaryColor: primaryColor || null,
