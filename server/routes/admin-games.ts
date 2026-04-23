@@ -32,12 +32,11 @@ export function registerAdminGameRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      // 🔒 Super admin 看全部（含無場域孤兒）；其他角色看自己場域
-      // 注意：eq(column, NULL) 在 SQL 永遠回 false，所以 fieldId=NULL 的遊戲
-      // 對非 super_admin 永遠查不到。這是設計上的權限邊界，但孤兒遊戲應該要修復。
-      const whereClause = req.admin.systemRole === "super_admin"
-        ? undefined
-        : eq(games.fieldId, req.admin.fieldId);
+      // 🔒 場域隔離：任何 admin（含 super_admin）只看自己登入場域的遊戲
+      //   super_admin 要看其他場域 → 用目前帳號重新登入該場域，或走 /platform 後台
+      //   這樣「登入 HPSPACE 就看 HPSPACE」行為一致
+      //   孤兒遊戲（fieldId=NULL）現已全部指派場域，不再是考量
+      const whereClause = eq(games.fieldId, req.admin.fieldId);
 
       const gamesList = await db.query.games.findMany({
         where: whereClause,
