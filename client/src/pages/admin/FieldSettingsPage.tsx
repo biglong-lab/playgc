@@ -674,6 +674,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
     setAnnouncement(settings.announcement ?? "");
     setAnnouncementStartAt(settings.announcementStartAt ?? "");
     setAnnouncementEndAt(settings.announcementEndAt ?? "");
+    setAnnouncementSeverity(settings.announcementSeverity ?? "info");
   }, [settings]);
 
   // 🆕 判斷是否有未儲存變更（跟 settings 比對）
@@ -684,6 +685,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
         announcement !== (settings.announcement ?? "") ||
         announcementStartAt !== (settings.announcementStartAt ?? "") ||
         announcementEndAt !== (settings.announcementEndAt ?? "") ||
+        announcementSeverity !== (settings.announcementSeverity ?? "info") ||
         JSON.stringify(highlights) !== JSON.stringify(settings.highlights ?? [])),
   );
   useUnsavedWarning(hasUnsavedChanges);
