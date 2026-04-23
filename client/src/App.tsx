@@ -142,6 +142,8 @@ function Router() {
         {/* 玩家端（向後相容：自動讀 localStorage / 預設場域）*/}
         <Route path="/" component={Landing} />
         <Route path="/j/:code" component={JoinWalkie} />
+        {/* /home、/leaderboard 在 FieldThemeProvider 有資料時會由 Home/Leaderboard 內部保留現有行為；
+             未來若想強制導向 /f/:code/home，可在 component 內加 Redirect。目前暫保留以不破壞外部舊連結 */}
         <Route path="/home" component={Home} />
         <Route path="/game/:gameId/chapters/:chapterId" component={GamePlay} />
         <Route path="/game/:gameId/chapters" component={ChapterSelect} />
