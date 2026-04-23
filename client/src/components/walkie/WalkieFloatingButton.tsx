@@ -327,8 +327,8 @@ export function WalkieFloatingButton({
             className="fixed bottom-20 right-4 w-72 bg-card border rounded-xl shadow-xl overflow-hidden"
             style={{ zIndex: 2147483647 }}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
+            {/* Header — 關閉按鈕放大到 40×40 觸控目標 */}
+            <div className="flex items-center justify-between pl-3 pr-1 py-1 border-b bg-muted/30">
               <div className="flex items-center gap-2">
                 <Radio className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium">隊伍對講機</span>
@@ -337,10 +337,13 @@ export function WalkieFloatingButton({
                 )}
               </div>
               <button
+                type="button"
                 onClick={() => setExpanded(false)}
-                className="text-muted-foreground hover:text-foreground"
+                className="w-10 h-10 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent/80 transition-colors shrink-0"
+                aria-label="關閉面板"
+                data-testid="walkie-panel-close"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
