@@ -50,7 +50,7 @@ export default function ChapterSelect() {
 
     try {
       await startChapter(chapterId);
-      setLocation(`/game/${gameId}/chapters/${chapterId}`);
+      setLocation(link(`/game/${gameId}/chapters/${chapterId}`));
     } catch {
       // 錯誤已由 mutation 處理
     }
