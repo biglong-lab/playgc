@@ -61,8 +61,9 @@ export default function Landing() {
   const welcomeMessage = currentField?.welcomeMessage || null;
   const fieldTagline = currentField?.tagline || null;
 
-  // 🆕 場域特色：優先讀後台設定的 highlights，沒有則 fallback 到 i18n 預設（仍保留舊 4 項）
-  const fieldHighlights = currentField?.highlights || [];
+  // 🆕 場域特色：優先讀後台設定的 highlights，沒有則 fallback 到 i18n 預設
+  // 🛡️ 防禦：舊 API / PWA 快取可能沒回 highlights，保底空陣列
+  const fieldHighlights = Array.isArray(currentField?.highlights) ? currentField.highlights : [];
   const hasCustomHighlights = fieldHighlights.length > 0;
   const features = hasCustomHighlights
     ? fieldHighlights.map((h) => ({
