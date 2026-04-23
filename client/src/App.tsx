@@ -11,6 +11,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import ProtectedAdminRoute from "@/components/shared/ProtectedAdminRoute";
 import PageLoader from "@/components/shared/PageLoader";
 import OfflineBanner from "@/components/shared/OfflineBanner";
+import { ThemePreviewBanner } from "@/components/shared/ThemePreviewBanner";
 import PlayerBottomNav from "@/components/PlayerBottomNav";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
