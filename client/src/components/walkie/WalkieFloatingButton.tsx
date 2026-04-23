@@ -295,7 +295,12 @@ export function WalkieFloatingButton({
   //  fixed + z-[1100] 仍會被困住；Portal 是最穩的解法）
   return createPortal(
     <>
-      {/* 浮動 Pill（收合狀態）— 可長按 PTT + 拖動 + 自動淡出 */}
+      {/*
+        浮動 Pill（收合狀態）
+        單一功能原則：
+        - Pill 主體（長按）→ PTT 唯一功能
+        - 右上 QR 小按鈕 → 展開完整設定面板（QR / 代碼 / 成員 / 退出 / 音訊權限）
+      */}
       <AnimatePresence>
         {!expanded && (
           <WalkiePill
@@ -306,22 +311,10 @@ export function WalkieFloatingButton({
             hasInvitePulse={!showingInRoom && !myGroup && !!sessionId}
             onStartTalk={startTalking}
             onStopTalk={stopTalking}
-            onExpand={() => setExpanded(true)}
-            onShowQR={myGroup ? () => setQuickQrOpen(true) : undefined}
+            onOpenPanel={() => setExpanded(true)}
           />
         )}
       </AnimatePresence>
-
-      {/* 🆕 QR 快捷浮窗 — 不進入完整面板，快速給人掃碼 */}
-      <WalkieQuickQR
-        open={quickQrOpen}
-        accessCode={myGroup?.accessCode || null}
-        groupName={myGroup?.displayName || null}
-        onClose={() => setQuickQrOpen(false)}
-        onShare={myGroup ? () => shareGroupLink(myGroup.accessCode) : undefined}
-        copied={copied}
-        onCopy={myGroup ? handleCopyCode : undefined}
-      />
 
       {/* 展開面板 */}
       <AnimatePresence>
