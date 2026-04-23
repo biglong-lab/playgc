@@ -30,6 +30,7 @@ import {
   ArrowRight,
   HelpCircle,
   Megaphone,
+  AlertCircle,
 } from "lucide-react";
 
 export default function AdminDashboard() {
