@@ -9,12 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-import { signOut } from "@/lib/firebase";
+import { signOut, signInWithGoogle } from "@/lib/firebase";
 import type { Game, GameSession, BattleSlot } from "@shared/schema";
 import {
   Gamepad2, Clock, Users, Zap, Search, Filter,
-  Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp
+  Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp, UserCircle
 } from "lucide-react";
+import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
+import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
+import { useToast } from "@/hooks/use-toast";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface UserGameStatus {
