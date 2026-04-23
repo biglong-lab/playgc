@@ -32,8 +32,10 @@ import {
   Sparkles,
   Star,
   Clock,
+  Share2,
   type LucideIcon,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 // ═══════════ 動態 icon 對應（給後台 highlights 用）═══════════
 const ICON_MAP: Record<string, LucideIcon> = {
