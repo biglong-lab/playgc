@@ -13,7 +13,8 @@ import { signOut, signInWithGoogle } from "@/lib/firebase";
 import type { Game, GameSession, BattleSlot } from "@shared/schema";
 import {
   Gamepad2, Clock, Users, Zap, Search, Filter,
-  Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp, UserCircle
+  Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp, UserCircle,
+  Megaphone,
 } from "lucide-react";
 import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
