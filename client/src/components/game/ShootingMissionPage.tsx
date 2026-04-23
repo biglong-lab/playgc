@@ -334,29 +334,43 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
 
   const handleMissionEnd = () => {
     setIsCompleted(true);
-    
+
     if (wsRef.current) {
       wsRef.current.close();
     }
-    
+
+    // 🛡️ 提交前最終驗證：確保 totalScore 未被 devtools 改寫
+    const finalCheck = validateFinalScore({ hits, totalScore });
+    let safeTotalScore = totalScore;
+    if (!finalCheck.valid) {
+      logWarning("shooting_final_score_mismatch", finalCheck.message || "總分異常", {
+        sessionId,
+        totalScore,
+        expectedScore: finalCheck.expectedScore,
+        hitsCount: hits.length,
+      });
+      // 使用 hits 實際總和，不信任 state
+      safeTotalScore = finalCheck.expectedScore;
+    }
+
     const scoreTarget = config.targetScore || config.minScore;
-    const success = hits.length >= requiredHits && 
-      (!scoreTarget || totalScore >= scoreTarget);
+    const success = hits.length >= requiredHits &&
+      (!scoreTarget || safeTotalScore >= scoreTarget);
 
     if (success) {
       toast({
         title: config.onSuccess?.message || "任務完成!",
-        description: `總分: ${totalScore}`,
+        description: `總分: ${safeTotalScore}`,
       });
       setTimeout(() => {
         const grantItems = config.onSuccess?.grantItem
           ? [config.onSuccess.grantItem]
           : config.successReward?.items;
-        // 優先順序：onSuccess.points（admin 指定） > successReward.points > 累積 totalScore
+        // 優先順序：onSuccess.points（admin 指定） > successReward.points > 驗證過的 safeTotalScore
         const rewardPoints =
           config.onSuccess?.points ??
           config.successReward?.points ??
-          totalScore;
+          safeTotalScore;
         onComplete(
           { points: rewardPoints, items: grantItems },
           config.nextPageId,
