@@ -284,12 +284,13 @@ export async function adminAuthMiddleware(
   //    account.fieldId = 帳號原始所屬場域（JIACHUN）
   //    必須優先用 token 的 fieldId，否則中間件永遠把使用者當作 JIACHUN
   const effectiveFieldId = decoded.fieldId || account.fieldId;
-  let effectiveField = account.field;
+  let effectiveField: typeof account.field = account.field;
   if (decoded.fieldId && decoded.fieldId !== account.fieldId) {
     // 跨場域：用 token 的 fieldId 查真正的場域資料
-    effectiveField = await db.query.fields.findFirst({
+    const found = await db.query.fields.findFirst({
       where: eq(fields.id, decoded.fieldId),
     });
+    effectiveField = found ?? account.field;
   }
 
   req.admin = {
