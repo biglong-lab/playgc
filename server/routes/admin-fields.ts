@@ -270,6 +270,9 @@ export function registerAdminFieldRoutes(app: Express) {
         const v = body.announcementEndAt.trim();
         updatedSettings.announcementEndAt = isoDateRegex.test(v) ? v : undefined;
       }
+      if (body.announcementSeverity === "urgent" || body.announcementSeverity === "info") {
+        updatedSettings.announcementSeverity = body.announcementSeverity;
+      }
       if (Array.isArray(body.highlights)) {
         const highlightSchema = z.object({
           icon: z.string().max(50).optional(),
