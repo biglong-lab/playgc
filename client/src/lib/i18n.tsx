@@ -10,8 +10,8 @@ interface I18nContextType {
 
 const translations: Record<Language, Record<string, string>> = {
   "zh-TW": {
-    "app.title": "CHITO 七逃",
-    "app.subtitle": "走踏在地的實境遊戲平台",
+    "app.title": "CHITO",
+    "app.subtitle": "Play the Place",
     "nav.home": "首頁",
     "nav.games": "遊戲大廳",
     "nav.map": "地圖",
