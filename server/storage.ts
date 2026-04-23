@@ -137,7 +137,7 @@ export interface IStorage {
   getDeviceLogs(deviceId: string, limit?: number, logType?: string): Promise<DeviceLog[]>;
   createDeviceLog(log: InsertDeviceLog): Promise<DeviceLog>;
 
-  getLeaderboard(gameId?: string): Promise<import("./storage/leaderboard-storage").LeaderboardEntryExtended[]>;
+  getLeaderboard(gameId?: string, fieldId?: string): Promise<import("./storage/leaderboard-storage").LeaderboardEntryExtended[]>;
   createLeaderboardEntry(entry: InsertLeaderboard): Promise<LeaderboardEntry>;
 
   // GPS Location methods
