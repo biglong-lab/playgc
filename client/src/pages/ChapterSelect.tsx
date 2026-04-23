@@ -129,7 +129,7 @@ export default function ChapterSelect() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation("/home")}
+            onClick={() => setLocation(link("/home"))}
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
