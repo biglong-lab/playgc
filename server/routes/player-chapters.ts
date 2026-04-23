@@ -367,7 +367,15 @@ export function registerPlayerChapterRoutes(app: Express) {
           return res.status(404).json({ message: "找不到章節進度" });
         }
 
-        const finalScore = typeof score === "number" ? score : 0;
+        // 🛡️ 伺服器端分數驗證（防 Shooting 作弊 / devtools 改 state）
+        const { validateSessionScore } = await import("../lib/scoreValidation");
+        const validation = await validateSessionScore({
+          sessionId,
+          userId,
+          clientScore: typeof score === "number" ? score : 0,
+          source: "chapter-complete",
+        });
+        const finalScore = validation.safeScore;
         const bestScore = Math.max(progress.bestScore ?? 0, finalScore);
 
         await storage.updateChapterProgress(progress.id, {
