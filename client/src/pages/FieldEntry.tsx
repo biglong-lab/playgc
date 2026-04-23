@@ -419,6 +419,40 @@ export default function FieldEntry() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 🆕 回到頂部 FAB — 滾動 > 400px 時淡入顯示
+// ═══════════════════════════════════════════════════════════════
+function BackToTopButton() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      className={`fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center transition-all duration-300 ${
+        show
+          ? "opacity-100 translate-y-0 pointer-events-auto"
+          : "opacity-0 translate-y-4 pointer-events-none"
+      }`}
+      aria-label="回到頂部"
+      data-testid="btn-back-to-top"
+    >
+      <ArrowUp className="w-5 h-5" />
+    </button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // 🆕 場域 code + 分享按鈕（手機優先用 Web Share API，桌面 fallback 複製）
 // ═══════════════════════════════════════════════════════════════
 function CodeWithCopy({ code, fieldName }: { code: string; fieldName: string }) {
