@@ -148,13 +148,29 @@ export function registerPlayerGameRoutes(app: Express) {
    *
    * 公開端點，快取 60 秒，適合 home 列表一次拿
    */
-  app.get("/api/games-stats/public", async (_req, res) => {
+  app.get("/api/games-stats/public", async (req, res) => {
     try {
       const { db } = await import("../db");
-      const { gameSessions, playerProgress, games } = await import(
+      const { gameSessions, playerProgress, games, fields } = await import(
         "@shared/schema"
       );
-      const { eq, sql } = await import("drizzle-orm");
+      const { eq, sql, and } = await import("drizzle-orm");
+
+      // 🔒 場域隔離：傳 ?fieldCode=XXX 只統計該場域的遊戲
+      let fieldId: string | null = null;
+      const rawFieldCode = req.query.fieldCode;
+      if (typeof rawFieldCode === "string" && rawFieldCode.trim()) {
+        const field = await db.query.fields.findFirst({
+          where: eq(fields.code, rawFieldCode.trim().toUpperCase()),
+        });
+        if (!field) {
+          res.set("Cache-Control", "public, max-age=60");
+          return res.json({});
+        }
+        fieldId = field.id;
+      }
+
+      const whereClause = fieldId ? eq(games.fieldId, fieldId) : undefined;
 
       const rows = await db
         .select({
@@ -166,6 +182,7 @@ export function registerPlayerGameRoutes(app: Express) {
         .from(games)
         .leftJoin(gameSessions, eq(gameSessions.gameId, games.id))
         .leftJoin(playerProgress, eq(playerProgress.sessionId, gameSessions.id))
+        .where(whereClause)
         .groupBy(games.id);
 
       const map: Record<
