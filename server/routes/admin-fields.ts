@@ -310,14 +310,10 @@ export function registerAdminFieldRoutes(app: Express) {
         orderBy: [desc(fields.createdAt)],
       });
 
-      // 批次撈每個場域的遊戲（published 且同場域）—— 用於 gameCount 和 topGameCovers
-      const fieldIds = rows.map((r) => r.id);
-      const allGames = fieldIds.length
+      // 批次撈每個場域的 published 遊戲 —— 用於 gameCount 和 topGameCovers
+      const allGames = rows.length
         ? await db.query.games.findMany({
-            where: and(
-              eq(games.isPublished, true),
-              // field_id IN (...) — drizzle 沒有直接 IN，改用 eq 迴圈 or inArray
-            ),
+            where: eq(games.status, "published"),
             columns: {
               id: true,
               fieldId: true,
