@@ -461,7 +461,7 @@ function SessionCard({
   formatTime: (d: Date | string | null) => string;
 }) {
   const { session, game, user } = row;
-  const displayName = getPlayerDisplayName(user);
+  const info = getPlayerInfo(row);
 
   return (
     <Card
@@ -482,7 +482,7 @@ function SessionCard({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {/* 🆕 玩家頭像 + 名字（首要資訊） */}
+          {/* 🆕 玩家頭像 + 名字 + 匿名徽章 */}
           <div className="flex items-center gap-2 pb-2 border-b">
             {user?.profileImageUrl ? (
               <img
@@ -491,13 +491,22 @@ function SessionCard({
                 className="w-7 h-7 rounded-full object-cover shrink-0"
               />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0">
-                <UserIcon className="w-4 h-4 text-muted-foreground" />
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${info.isAnon ? "bg-amber-100 dark:bg-amber-900/30" : "bg-muted"}`}>
+                {info.isAnon ? (
+                  <UserX className="w-4 h-4 text-amber-500" />
+                ) : (
+                  <UserIcon className="w-4 h-4 text-muted-foreground" />
+                )}
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium truncate">{displayName}</div>
-              {user?.email && (
+              <div className="text-sm font-medium truncate flex items-center gap-1">
+                {info.name}
+                {info.isAnon && (
+                  <span className="text-[9px] px-1 rounded bg-amber-500/20 text-amber-600 shrink-0" title="匿名遊玩">匿</span>
+                )}
+              </div>
+              {user?.email && !user.email.endsWith("@firebase.local") && (
                 <div className="text-xs text-muted-foreground truncate">{user.email}</div>
               )}
             </div>
