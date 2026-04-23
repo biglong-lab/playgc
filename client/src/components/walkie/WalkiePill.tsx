@@ -261,7 +261,7 @@ export function WalkiePill({
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
       onPointerCancel={handlePointerCancel}
-      className={`fixed z-[9999] select-none touch-none rounded-full shadow-lg flex items-center gap-1.5 px-3 py-2 cursor-pointer transition-colors ${bgClass} ${
+      className={`fixed select-none touch-none rounded-full shadow-lg flex items-center gap-1.5 px-3 py-2 cursor-pointer transition-colors ${bgClass} ${
         dragging ? "cursor-grabbing" : ""
       }`}
       style={{
@@ -270,6 +270,8 @@ export function WalkiePill({
         width: PILL_W,
         height: PILL_H,
         touchAction: "none",
+        // 🔒 inline zIndex 最大保險：不依賴 Tailwind JIT，絕對覆蓋任何 CSS 繼承
+        zIndex: 2147483647, // int32 max — 不可能被超過
       }}
       data-testid="walkie-pill"
       title={
