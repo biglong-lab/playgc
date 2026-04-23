@@ -397,6 +397,51 @@ export default function FieldEntry() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 🆕 場域 code + 複製按鈕（點就複製分享連結文字）
+// ═══════════════════════════════════════════════════════════════
+function CodeWithCopy({ code }: { code: string }) {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const shareUrl = `${window.location.origin}/f/${code}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      toast({
+        title: `已複製分享連結`,
+        description: shareUrl,
+      });
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast({ title: "複製失敗", variant: "destructive" });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 group/code">
+      <p className="text-[11px] text-muted-foreground font-mono">{code}</p>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="text-muted-foreground/40 hover:text-primary transition-colors opacity-0 group-hover/code:opacity-100 focus:opacity-100"
+        aria-label={`複製 ${code} 場域分享連結`}
+        title="複製分享連結"
+        data-testid={`btn-share-field-${code}`}
+      >
+        {copied ? (
+          <Check className="w-3 h-3 text-green-600" />
+        ) : (
+          <Copy className="w-3 h-3" />
+        )}
+      </button>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // 子元件：步驟卡片
 // ═══════════════════════════════════════════════════════════════
 function StepCard({
