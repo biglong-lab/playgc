@@ -288,6 +288,17 @@ function ActionButtons({
       >
         <Settings className="h-4 w-4" />
       </Button>
+      {onMoveField && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onMoveField(game)}
+          title="搬移到其他場域（super_admin）"
+          data-testid={`button-move-field-${game.id}`}
+        >
+          <Move className="h-4 w-4 text-blue-500" />
+        </Button>
+      )}
       <Button
         variant="ghost"
         size="icon"
