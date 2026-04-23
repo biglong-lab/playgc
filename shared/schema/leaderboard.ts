@@ -22,6 +22,10 @@ export const leaderboard = pgTable(
     gameId: varchar("game_id").references(() => games.id),
     sessionId: varchar("session_id").references(() => gameSessions.id),
     teamName: varchar("team_name", { length: 100 }),
+    /** 🆕 顯示用玩家名稱（snapshot，建立當下決定）— 使用者帳號改名不影響歷史榜 */
+    playerName: varchar("player_name", { length: 100 }),
+    /** 🆕 匿名與否 — 影響是否可累積積分到帳號（非匿名才會累計到 users） */
+    isAnonymous: integer("is_anonymous").default(0), // 0=false, 1=true（匿名遊戲）
     totalScore: integer("total_score"),
     completionTimeSeconds: integer("completion_time_seconds"),
     rank: integer("rank"),
