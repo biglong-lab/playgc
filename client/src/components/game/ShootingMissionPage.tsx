@@ -7,6 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Target, Timer, Crosshair, Award, Zap, Radio, AlertTriangle } from "lucide-react";
 import type { ShootingMissionConfig } from "@shared/schema";
+import {
+  validateHit,
+  validateFinalScore,
+  isSimulationAllowed,
+} from "@/lib/shootingValidation";
+import { logWarning } from "@/lib/clientLogger";
 
 interface ShootingMissionPageProps {
   config: ShootingMissionConfig;
