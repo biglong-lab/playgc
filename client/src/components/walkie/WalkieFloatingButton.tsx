@@ -320,7 +320,7 @@ export function WalkieFloatingButton({
         onClose={() => setQuickQrOpen(false)}
         onShare={myGroup ? () => shareGroupLink(myGroup.accessCode) : undefined}
         copied={copied}
-        onCopy={myGroup ? copyCode : undefined}
+        onCopy={myGroup ? handleCopyCode : undefined}
       />
 
       {/* 展開面板 */}
