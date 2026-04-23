@@ -86,9 +86,9 @@ export default defineConfig({
         navigateFallbackDenylist: [/^\/api\//, /^\/objects\//, /^\/assets\//, /^\/icons\//, /\/sw\.js$/, /\/workbox-.*\.js$/],
       },
       manifest: {
-        name: "賈村競技場",
-        short_name: "賈村競技",
-        description: "結合射擊、拍照、GPS定位的沉浸式遊戲體驗",
+        name: "CHITO 七逃",
+        short_name: "CHITO",
+        description: "CHITO 七逃 · 走踏在地的實境遊戲平台，結合射擊、拍照、GPS 的沉浸式體驗",
         theme_color: "#111827",
         background_color: "#111827",
         display: "standalone",
