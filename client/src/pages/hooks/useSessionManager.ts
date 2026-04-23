@@ -215,6 +215,7 @@ export function useSessionManager({
       variables: {},
       currentPageIndex: 0,
       isCompleted: false,
+      completedPageIds: [],
     });
     setHasRestoredProgress(false);
     createSessionMutation.mutate();
