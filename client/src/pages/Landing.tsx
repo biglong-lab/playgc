@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 import { useLoginHandlers } from "@/hooks/useLoginHandlers";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import {
   EmbeddedBrowserWarning,
   isEmbeddedBrowser,
