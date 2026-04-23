@@ -88,6 +88,17 @@ export function registerPlayerSessionRoutes(app: Express) {
     async (req: AuthenticatedRequest, res) => {
       try {
         const data = insertGameSessionSchema.parse(req.body);
+
+        // 🆕 驗證 playerName（匿名玩家自訂暱稱）
+        if (data.playerName) {
+          const { validatePlayerName } = await import("@shared/lib/playerDisplay");
+          const result = validatePlayerName(data.playerName);
+          if (!result.valid) {
+            return res.status(400).json({ message: result.message });
+          }
+          data.playerName = result.value;
+        }
+
         const session = await storage.createSession(data);
 
         const userId = req.user?.claims?.sub;
