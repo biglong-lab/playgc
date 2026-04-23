@@ -215,6 +215,7 @@ export default function AdminStaffFields() {
       description: "",
     });
     setIsCodeUnlocked(false);
+    setTemplateFieldId(""); // 🆕 清空範本選擇
   };
 
   const handleEdit = (field: Field) => {
