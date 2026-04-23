@@ -36,6 +36,8 @@ interface FieldSettingsResponse {
   // 🆕 介紹內容
   tagline?: string;
   highlights?: FieldHighlight[];
+  /** 🆕 場域公告 banner */
+  announcement?: string;
   primaryColor?: string;        // legacy
   welcomeMessage?: string;
   theme?: FieldTheme;            // 🆕 視覺主題
