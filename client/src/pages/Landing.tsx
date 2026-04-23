@@ -37,6 +37,47 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+// ═══════════ 🆕 分享此場域 link（Web Share API + 複製 fallback）═══════════
+function ShareFieldLink({ fieldName, fieldCode }: { fieldName: string; fieldCode: string }) {
+  const { toast } = useToast();
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/f/${fieldCode}`;
+    const shareData: ShareData = {
+      title: `CHITO · ${fieldName}`,
+      text: `${fieldName} — 走踏在地實境遊戲`,
+      url: shareUrl,
+    };
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        if ((err as DOMException)?.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({ title: "已複製場域連結", description: shareUrl });
+    } catch {
+      toast({ title: "複製失敗", variant: "destructive" });
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleShare}
+      className="inline-flex items-center gap-1 text-xs text-muted-foreground/70 hover:text-primary cursor-pointer transition-colors"
+      data-testid="btn-share-current-field"
+      aria-label={`分享 ${fieldName}`}
+    >
+      <Share2 className="w-3 h-3" />
+      分享此場域
+    </button>
+  );
+}
+
 // ═══════════ 動態 icon 對應（給後台 highlights 用）═══════════
 const ICON_MAP: Record<string, LucideIcon> = {
   Target, MapPin, Camera, Users, Gamepad2, Trophy, Zap, Shield,
