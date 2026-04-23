@@ -272,6 +272,18 @@ export default function MeCenter() {
           </CardContent>
         </Card>
 
+        {/* 🆕 當前場域資訊（有場域時顯示） */}
+        {currentField && (
+          <div className="text-center text-xs text-muted-foreground py-2" data-testid="me-current-field">
+            <span className="inline-flex items-center gap-1.5">
+              <Building2 className="w-3 h-3" />
+              <span>目前場域：</span>
+              <span className="text-foreground font-medium">{currentField.name}</span>
+              <span className="opacity-50 font-mono">({currentField.code})</span>
+            </span>
+          </div>
+        )}
+
         {/* 版本資訊 */}
         <p className="text-center text-xs text-muted-foreground py-4">
           CHITO · v4.0
