@@ -37,13 +37,13 @@ interface FieldItem {
   description: string | null;
   logoUrl: string | null;
   status: string;
-  // 🆕 marketing
-  tagline: string | null;
-  coverImageUrl: string | null;
-  highlights: Array<{ icon?: string; title: string; description?: string }>;
-  // 🆕 stats
-  gameCount: number;
-  topGameCovers: Array<{ id: string; title: string; coverImageUrl: string }>;
+  // 🆕 marketing（舊 API 可能沒回這些，全部 optional）
+  tagline?: string | null;
+  coverImageUrl?: string | null;
+  highlights?: Array<{ icon?: string; title: string; description?: string }>;
+  // 🆕 stats（舊 API 可能沒回這些）
+  gameCount?: number;
+  topGameCovers?: Array<{ id: string; title: string; coverImageUrl: string }>;
 }
 
 /** 同步讀取 localStorage 的上次場域 code */
