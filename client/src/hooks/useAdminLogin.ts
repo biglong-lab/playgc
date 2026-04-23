@@ -86,9 +86,11 @@ export function useAdminLogin(options: UseAdminLoginOptions) {
         return;
       }
 
-      // 🔥 重要：登入成功後必須 invalidate session cache
-      // 否則 ProtectedAdminRoute 會讀到之前的 {authenticated:false} cached 值，
-      // 立刻再跳回登入頁造成無限迴圈
+      // 🔥 重要：登入成功後清所有 React Query cache
+      //   避免「先登 JIACHUN 看到資料 → 切 HPSPACE 後仍看 JIACHUN cached」的跨場域污染
+      //   clear() 會移除 /api/admin/games、/api/admin/sessions 等所有 cached query
+      queryClient.clear();
+      // 把新 session 資料塞回 cache（ProtectedAdminRoute 立刻可用，避免無限迴圈）
       queryClient.setQueryData(["/api/admin/session"], {
         authenticated: true,
         admin: data.admin,
