@@ -213,7 +213,7 @@ export default function Home() {
             </div>
 
             <div className="flex items-center gap-3">
-              <Link href="/leaderboard">
+              <Link href={link("/leaderboard")}>
                 <Button variant="ghost" size="sm" className="gap-2" data-testid="link-leaderboard">
                   <Trophy className="w-4 h-4" />
                   <span className="hidden sm:inline">排行榜</span>
