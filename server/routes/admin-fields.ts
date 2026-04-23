@@ -292,6 +292,7 @@ export function registerAdminFieldRoutes(app: Express) {
 
   // ============================================================================
   // 🌐 GET /api/fields/public — 公開：列出所有 active 場域（給 FieldEntry 選擇）
+  //     擴充回傳：tagline / coverImageUrl / highlights / gameCount / topGameCovers / 模組開關
   // ============================================================================
   app.get("/api/fields/public", async (_req, res) => {
     try {
@@ -304,11 +305,68 @@ export function registerAdminFieldRoutes(app: Express) {
           description: true,
           logoUrl: true,
           status: true,
+          settings: true,
         },
         orderBy: [desc(fields.createdAt)],
       });
+
+      // 批次撈每個場域的遊戲（published 且同場域）—— 用於 gameCount 和 topGameCovers
+      const fieldIds = rows.map((r) => r.id);
+      const allGames = fieldIds.length
+        ? await db.query.games.findMany({
+            where: and(
+              eq(games.isPublished, true),
+              // field_id IN (...) — drizzle 沒有直接 IN，改用 eq 迴圈 or inArray
+            ),
+            columns: {
+              id: true,
+              fieldId: true,
+              title: true,
+              coverImageUrl: true,
+              createdAt: true,
+            },
+          })
+        : [];
+
+      const payload = rows.map((field) => {
+        const settings = parseFieldSettings(field.settings);
+        const theme = settings.theme || {};
+        const fieldGames = allGames
+          .filter((g) => g.fieldId === field.id)
+          .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0));
+
+        return {
+          id: field.id,
+          code: field.code,
+          name: field.name,
+          description: field.description,
+          logoUrl: theme.brandingLogoUrl || field.logoUrl || null,
+          status: field.status,
+          // 🆕 marketing content
+          tagline: settings.tagline || null,
+          coverImageUrl: theme.coverImageUrl || null,
+          highlights: settings.highlights || [],
+          // 🆕 stats
+          gameCount: fieldGames.length,
+          topGameCovers: fieldGames
+            .slice(0, 3)
+            .map((g) => ({ id: g.id, title: g.title, coverImageUrl: g.coverImageUrl }))
+            .filter((g) => g.coverImageUrl),
+          // 🆕 modules（讓前端知道要不要秀對戰入口等）
+          modules: {
+            shooting: !!settings.enableShootingMission,
+            battle: !!settings.enableBattleArena,
+            chapters: !!settings.enableChapters,
+            photo: !!settings.enablePhotoMission,
+            gps: !!settings.enableGpsMission,
+            team: settings.enableTeamMode !== false, // 預設 true
+            competitive: settings.enableCompetitiveMode !== false, // 預設 true
+          },
+        };
+      });
+
       res.set("Cache-Control", "public, max-age=300");
-      res.json(rows);
+      res.json(payload);
     } catch (error) {
       console.error("[fields/public] failed:", error);
       res.status(500).json({ message: "取得場域列表失敗" });
