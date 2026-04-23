@@ -237,6 +237,20 @@ export function WalkiePill({
 
   const opacity = dragging ? 1 : idle && !forceVisible ? 0.35 : 1;
 
+  // QR 按鈕事件處理 — 必須 stopPropagation 避免觸發 Pill 的 onPointerDown
+  const handleQrPointerDown = useCallback((e: React.PointerEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  }, []);
+  const handleQrClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      resetIdle();
+      onShowQR?.();
+    },
+    [onShowQR, resetIdle],
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0 }}
