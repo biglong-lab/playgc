@@ -6,8 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useCurrentField, type FieldModules } from "@/providers/FieldThemeProvider";
 import type { Game, GameSession, ArduinoDevice } from "@shared/schema";
-import { Gamepad2, Plus, Cpu, Activity, Trophy, Zap } from "lucide-react";
+import {
+  Gamepad2,
+  Plus,
+  Cpu,
+  Activity,
+  Trophy,
+  Zap,
+  Target,
+  Swords,
+  MapPin,
+  Camera,
+  BookOpen,
+  DollarSign,
+  Settings2,
+  Check,
+  ArrowRight,
+} from "lucide-react";
 
 export default function AdminDashboard() {
   const { isAuthenticated } = useAdminAuth();
