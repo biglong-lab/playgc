@@ -3,7 +3,16 @@ import { Button } from "@/components/ui/button";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-/** 偵測是否為 App 內建瀏覽器（LINE、FB、IG 等） */
+/** 偵測是否為 App 內建瀏覽器（LINE、FB、IG、微信等）
+ *
+ * ⚠️ 過去版本的 bug：用 `.0.0.0` 判斷會誤觸發 — 因為 Chrome Android 的 reduced UA
+ * 固定格式 `Chrome/131.0.0.0`，所有正常 Chrome 都會命中這條規則，導致誤判。
+ *
+ * 正確策略：
+ * 1. 具名 App UA（LINE/FB/IG/WeChat/TikTok 等）嚴格匹配
+ * 2. Android WebView 唯一可靠信號是 `; wv)` token（必須用 word boundary）
+ * 3. iOS in-app 無 WebView 標記，只靠具名 UA 判斷
+ */
 export function isEmbeddedBrowser(): boolean {
   const userAgent =
     navigator.userAgent || navigator.vendor || (window as never as { opera: string }).opera || "";
@@ -15,7 +24,8 @@ export function isEmbeddedBrowser(): boolean {
   for (const pattern of patterns) {
     if (pattern.test(userAgent)) return true;
   }
-  if (/android/i.test(userAgent) && /wv\)|\.0\.0\.0/i.test(userAgent)) return true;
+  // Android WebView：獨立的 `; wv)` token（用 word boundary，不要誤匹配 Chrome/WebView-based 字串）
+  if (/android/i.test(userAgent) && /;\s*wv\)/i.test(userAgent)) return true;
   return false;
 }
 
