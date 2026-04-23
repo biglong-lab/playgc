@@ -38,6 +38,7 @@ import {
   QrCode,
   Inbox,
   Radio,
+  ShieldAlert,
 } from "lucide-react";
 
 interface CommandItem {
