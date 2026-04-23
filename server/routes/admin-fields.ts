@@ -236,6 +236,33 @@ export function registerAdminFieldRoutes(app: Express) {
       if (typeof body.enableTeamMode === "boolean") updatedSettings.enableTeamMode = body.enableTeamMode;
       if (typeof body.enableCompetitiveMode === "boolean") updatedSettings.enableCompetitiveMode = body.enableCompetitiveMode;
 
+      // 🆕 場域模組開關
+      if (typeof body.enableShootingMission === "boolean") updatedSettings.enableShootingMission = body.enableShootingMission;
+      if (typeof body.enableBattleArena === "boolean") updatedSettings.enableBattleArena = body.enableBattleArena;
+      if (typeof body.enableChapters === "boolean") updatedSettings.enableChapters = body.enableChapters;
+      if (typeof body.enablePhotoMission === "boolean") updatedSettings.enablePhotoMission = body.enablePhotoMission;
+      if (typeof body.enableGpsMission === "boolean") updatedSettings.enableGpsMission = body.enableGpsMission;
+
+      // 🆕 場域行銷內容
+      if (typeof body.tagline === "string") {
+        updatedSettings.tagline = body.tagline.slice(0, 200).trim() || undefined;
+      }
+      if (Array.isArray(body.highlights)) {
+        const highlightSchema = z.object({
+          icon: z.string().max(50).optional(),
+          title: z.string().min(1).max(50),
+          description: z.string().max(200).optional(),
+        });
+        const parsed = z.array(highlightSchema).max(10).safeParse(body.highlights);
+        if (!parsed.success) {
+          return res.status(400).json({
+            message: "亮點格式錯誤（最多 10 項，title 必填）",
+            errors: parsed.error.errors,
+          });
+        }
+        updatedSettings.highlights = parsed.data;
+      }
+
       // 數值
       if (typeof body.maxGames === "number") updatedSettings.maxGames = Math.max(0, Math.round(body.maxGames));
       if (typeof body.maxConcurrentSessions === "number") {
