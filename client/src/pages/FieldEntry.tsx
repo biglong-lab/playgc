@@ -26,6 +26,9 @@ import {
   Rocket,
   Compass,
   Layers,
+  Sun,
+  Sunset,
+  Moon,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import OptimizedImage from "@/components/shared/OptimizedImage";
