@@ -39,6 +39,8 @@ export interface FieldThemePayload {
   tagline?: string | null;
   /** 🆕 場域亮點列表（後台可設定 · 舊 API 可能沒回） */
   highlights?: FieldHighlight[];
+  /** 🆕 場域公告（顯示於 Landing / Home 頂部 banner） */
+  announcement?: string | null;
   /** 🆕 模組開關（舊 API 可能沒回） */
   modules?: FieldModules;
   theme: FieldTheme;
