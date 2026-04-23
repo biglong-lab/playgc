@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { logError, logMilestone, logWarning } from "@/lib/clientLogger";
 
 export type PhotoMode =
   | "instruction"
