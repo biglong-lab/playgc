@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import OptimizedImage from "@/components/shared/OptimizedImage";
+import GenericCoverFallback from "@/components/shared/GenericCoverFallback";
 
 interface FieldItem {
   id: string;
