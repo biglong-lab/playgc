@@ -988,6 +988,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             announcement={announcement}
             announcementStartAt={announcementStartAt}
             announcementEndAt={announcementEndAt}
+            announcementSeverity={announcementSeverity}
           />
         </CardContent>
       </Card>
