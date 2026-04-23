@@ -193,6 +193,7 @@ function GameRow({
           onDelete={onDelete}
           onPublish={onPublish}
           onCoverUpload={onCoverUpload}
+          onMoveField={onMoveField}
           publishPending={publishPending}
         />
       </TableCell>
