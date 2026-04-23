@@ -88,7 +88,7 @@ export const teamSessions = pgTable(
       .references(() => gameSessions.id, { onDelete: "cascade" })
       .notNull(),
     teamScore: integer("team_score").default(0), // Shared team score
-    currentPageId: varchar("current_page_id").references(() => pages.id),
+    currentPageId: varchar("current_page_id").references(() => pages.id, { onDelete: "set null" }),
     teamInventory: jsonb("team_inventory").default([]), // Shared team items
     teamVariables: jsonb("team_variables").default({}), // Shared team variables
     createdAt: timestamp("created_at").defaultNow(),
