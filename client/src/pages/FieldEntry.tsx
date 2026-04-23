@@ -136,6 +136,9 @@ export default function FieldEntry() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* 🆕 回到頂部 FAB（滾動 > 400px 時顯示） */}
+      <BackToTopButton />
+
       {/* ═══════════ Hero（時段動態背景）═══════════ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
         {/* 🆕 時段氛圍 overlay — 疊加在 primary gradient 上 */}
