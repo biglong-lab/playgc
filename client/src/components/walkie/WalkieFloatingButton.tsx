@@ -24,6 +24,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { WalkieQRCode, buildWalkieShareUrl } from "./WalkieQRCode";
 import { WalkieQRScanner } from "./WalkieQRScanner";
+import { WalkiePill } from "./WalkiePill";
 
 interface WalkieFloatingButtonProps {
   /** 當前遊戲 session（可選，沒有就只能用群組模式）*/
