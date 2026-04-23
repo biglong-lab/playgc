@@ -336,6 +336,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="🎯 射擊任務"
             description="硬體靶機射擊（僅有實體靶機的場域才啟用）"
+            helpText="需要實體 Arduino 靶機設備才能使用。啟用後：玩家端遊戲可加入射擊關卡、後台側邊欄顯示「🔌 設備管理」菜單。"
             checked={enableShooting}
             onChange={setEnableShooting}
             testId="switch-shooting"
@@ -343,6 +344,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="⚔️ 水彈對戰 PK 擂台"
             description="對戰場地預約系統（僅有水彈/漆彈場地才啟用）"
+            helpText="提供多人對戰場地預約 + 排名系統。啟用後：玩家 Home 顯示「水彈對戰 PK 擂台」快速入口、後台側邊欄顯示「⚔️ 對戰中心」5 個菜單。僅有實體水彈 / 漆彈場地的場域才需啟用。"
             checked={enableBattle}
             onChange={setEnableBattle}
             testId="switch-battle"
@@ -350,6 +352,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="📍 GPS 定位任務"
             description="地點導航與打卡"
+            helpText="啟用後：遊戲可加入地點導航關卡，玩家手機需開啟定位權限，抵達指定座標才觸發任務完成。適合景點巡禮、市集走踏類遊戲。"
             checked={enableGps}
             onChange={setEnableGps}
             testId="switch-gps"
@@ -357,6 +360,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="📷 拍照驗證任務"
             description="AI 照片識別任務"
+            helpText="啟用後：遊戲可加入拍照關卡，玩家上傳照片後透過 AI（Gemini/OpenRouter）驗證內容是否符合要求。需先在「AI 設定」Tab 設好 API Key。"
             checked={enablePhoto}
             onChange={setEnablePhoto}
             testId="switch-photo"
@@ -364,6 +368,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="📖 章節制遊戲"
             description="多章節任務結構（劇情推進）"
+            helpText="啟用後：遊戲可拆分多個章節，玩家需依序完成（或依解鎖規則），適合有劇情連貫性的主題遊戲。不啟用時遊戲只能用單一頁面模式。"
             checked={enableChapters}
             onChange={setEnableChapters}
             testId="switch-chapters"
