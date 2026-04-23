@@ -223,9 +223,8 @@ export function registerAdminRoleRoutes(app: Express) {
 
       const { username, password, displayName, email, roleId, fieldId } = req.body;
 
-      const targetFieldId = req.admin.systemRole === "super_admin"
-        ? fieldId
-        : req.admin.fieldId;
+      // 🔒 新建帳號一律歸屬登入場域
+      const targetFieldId = req.admin.fieldId;
 
       if (!targetFieldId) {
         return res.status(400).json({ message: "請指定場域" });
