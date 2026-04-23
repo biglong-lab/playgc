@@ -588,19 +588,29 @@ export default function AdminStaffFields() {
                                 {field.address}
                               </div>
                             )}
-                            {/* 🆕 公告狀態指示 */}
-                            {hasActiveAnnouncement(field.settings) && (
-                              <div
-                                className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1"
-                                title={field.settings?.announcement || ""}
-                                data-testid={`announcement-indicator-${field.code}`}
-                              >
-                                <Megaphone className="w-3 h-3" />
-                                <span className="truncate max-w-[160px]">
-                                  公告：{field.settings?.announcement}
-                                </span>
-                              </div>
-                            )}
+                            {/* 🆕 公告狀態指示（依 severity 變色） */}
+                            {hasActiveAnnouncement(field.settings) && (() => {
+                              const isUrgent = field.settings?.announcementSeverity === "urgent";
+                              const Icon = isUrgent ? AlertCircle : Megaphone;
+                              return (
+                                <div
+                                  className={`text-[10px] flex items-center gap-1 mt-1 ${
+                                    isUrgent
+                                      ? "text-red-600 dark:text-red-400 font-medium"
+                                      : "text-amber-600 dark:text-amber-400"
+                                  }`}
+                                  title={field.settings?.announcement || ""}
+                                  data-testid={`announcement-indicator-${field.code}`}
+                                  data-severity={isUrgent ? "urgent" : "info"}
+                                >
+                                  <Icon className="w-3 h-3" />
+                                  <span className="truncate max-w-[160px]">
+                                    {isUrgent ? "🚨 緊急：" : "公告："}
+                                    {field.settings?.announcement}
+                                  </span>
+                                </div>
+                              );
+                            })()}
                           </div>
                         </TableCell>
                         <TableCell>
