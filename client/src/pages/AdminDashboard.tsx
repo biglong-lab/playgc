@@ -28,6 +28,7 @@ import {
   Settings2,
   Check,
   ArrowRight,
+  HelpCircle,
 } from "lucide-react";
 
 export default function AdminDashboard() {
