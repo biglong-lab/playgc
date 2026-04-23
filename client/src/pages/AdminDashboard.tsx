@@ -255,8 +255,47 @@ const MODULES_TO_SHOW: ModuleDef[] = [
 ];
 
 function FieldModulesCard() {
+  const { admin, hasPermission } = useAdminAuth();
   const field = useCurrentField();
   const modules = field?.modules;
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const canManage = hasPermission("field:manage");
+
+  // 🆕 切換模組開關 — 直接 PATCH，成功後 invalidate cache 讓 UI 自動反映
+  const toggleMutation = useMutation({
+    mutationFn: async ({ settingsKey, enabled }: { settingsKey: keyof FieldSettings; enabled: boolean }) => {
+      if (!admin?.fieldId) throw new Error("沒有場域 ID");
+      const res = await apiRequest("PATCH", `/api/admin/fields/${admin.fieldId}/settings`, {
+        [settingsKey]: enabled,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "切換失敗");
+      }
+      return res.json();
+    },
+    onSuccess: (_data, vars) => {
+      // 清掉 field theme cache 讓菜單/玩家端立刻重新拉新 modules
+      queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
+      const mod = MODULES_TO_SHOW.find((m) => m.settingsKey === vars.settingsKey);
+      toast({
+        title: vars.enabled ? `✅ 已啟用「${mod?.label}」` : `⏸️ 已停用「${mod?.label}」`,
+        description: vars.enabled
+          ? "玩家端和後台菜單會立即顯示相關項目"
+          : "玩家端和後台菜單自動隱藏相關項目",
+      });
+    },
+    onError: (err: unknown) => {
+      toast({
+        title: "切換失敗",
+        description: err instanceof Error ? err.message : "請稍後重試",
+        variant: "destructive",
+      });
+      // 失敗也 invalidate，讓 UI 從伺服器拉回真實狀態
+      queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
+    },
+  });
 
   // 未載入 → 骨架（輕量）
   if (!modules) {
@@ -284,12 +323,14 @@ function FieldModulesCard() {
               </Badge>
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
-              啟用的模組會顯示於玩家端 + 後台；未啟用的自動隱藏
+              {canManage
+                ? "點下方開關即時啟用/停用；啟用狀態同步到玩家端和後台菜單"
+                : "啟用的模組會顯示於玩家端 + 後台；聯繫管理員修改"}
             </p>
           </div>
           <Link href="/admin/field-settings">
             <Button variant="outline" size="sm" className="gap-1" data-testid="btn-field-settings">
-              前往設定 <ArrowRight className="w-3.5 h-3.5" />
+              詳細設定 <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </Link>
         </div>
@@ -299,14 +340,15 @@ function FieldModulesCard() {
           {MODULES_TO_SHOW.map((m) => {
             const enabled = modules[m.key];
             const Icon = m.icon;
+            const pending = toggleMutation.isPending && toggleMutation.variables?.settingsKey === m.settingsKey;
             return (
               <div
                 key={m.key}
-                className={`rounded-lg border-2 p-3 transition-all ${
+                className={`rounded-lg border-2 p-3 transition-all relative ${
                   enabled
                     ? "border-primary/40 bg-primary/5"
-                    : "border-dashed border-muted-foreground/20 bg-muted/30 opacity-60"
-                }`}
+                    : "border-dashed border-muted-foreground/20 bg-muted/30"
+                } ${pending ? "opacity-70" : ""}`}
                 data-testid={`module-badge-${m.key}`}
               >
                 <div className="flex items-start justify-between mb-1.5">
@@ -315,10 +357,23 @@ function FieldModulesCard() {
                       enabled ? "text-primary" : "text-muted-foreground"
                     }`}
                   />
-                  {enabled && (
-                    <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
-                      <Check className="w-3 h-3 text-primary" />
-                    </div>
+                  {/* 🆕 內嵌 Switch：有權限的管理員可直接切換 */}
+                  {canManage ? (
+                    <Switch
+                      checked={enabled}
+                      onCheckedChange={(v) =>
+                        toggleMutation.mutate({ settingsKey: m.settingsKey, enabled: v })
+                      }
+                      disabled={toggleMutation.isPending}
+                      className="scale-75 origin-top-right"
+                      data-testid={`module-switch-${m.key}`}
+                    />
+                  ) : (
+                    enabled && (
+                      <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-primary" />
+                      </div>
+                    )
                   )}
                 </div>
                 <p
