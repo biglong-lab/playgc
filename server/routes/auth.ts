@@ -656,8 +656,13 @@ export function registerAuthRoutes(app: Express) {
         return res.json({ authenticated: false });
       }
 
+      // 🔥 關鍵修復：token.fieldId 優先於 account.fieldId
+      //    super_admin 切換場域時，token.fieldId = 目標場域（HPSPACE）
+      //    但 account.fieldId 永遠是原始場域（JIACHUN）
+      //    前端 Sidebar / Header 的 fieldName 從這個 API 讀，一定要用 token 的
+      const effectiveFieldId = decoded.fieldId || account.fieldId;
       const field = await db.query.fields.findFirst({
-        where: eq(fields.id, account.fieldId),
+        where: eq(fields.id, effectiveFieldId),
       });
 
       if (!field) {
