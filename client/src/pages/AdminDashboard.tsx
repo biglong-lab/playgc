@@ -268,26 +268,30 @@ function AnnouncementStatusCard() {
     : "🔔 當前公告顯示中（玩家端所有頁面可見）";
 
   return (
-    <Card className={cardClass} data-testid="dashboard-announcement-card" data-severity={severity}>
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-start gap-2 min-w-0 flex-1">
-            <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${iconClass}`} />
-            <div className="min-w-0">
-              <p className="text-xs text-muted-foreground mb-1">{label}</p>
-              <p className={`text-sm font-medium leading-relaxed ${textClass}`}>
-                {announcement}
-              </p>
+    <Link href="/admin/field-settings?tab=intro" className="block">
+      <Card
+        className={`${cardClass} cursor-pointer hover-elevate transition-all`}
+        data-testid="dashboard-announcement-card"
+        data-severity={severity}
+      >
+        <CardContent className="p-4">
+          <div className="flex items-start justify-between gap-3 flex-wrap">
+            <div className="flex items-start gap-2 min-w-0 flex-1">
+              <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${iconClass}`} />
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                <p className={`text-sm font-medium leading-relaxed ${textClass}`}>
+                  {announcement}
+                </p>
+              </div>
             </div>
-          </div>
-          <Link href="/admin/field-settings?tab=intro">
-            <Button variant="outline" size="sm" className="gap-1 shrink-0" data-testid="btn-edit-announcement">
+            <Button variant="outline" size="sm" className="gap-1 shrink-0 pointer-events-none" data-testid="btn-edit-announcement">
               編輯 <ArrowRight className="w-3.5 h-3.5" />
             </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
