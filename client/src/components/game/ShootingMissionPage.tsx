@@ -273,21 +273,40 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     }
 
     if (selectedZone.score > 0) {
-      const hit: HitRecord = {
-        position: {
-          x: Math.random() * 100,
-          y: Math.random() * 100,
-        },
-        score: selectedZone.score,
-        zone: selectedZone.name,
-      };
+      // 🛡️ 模擬命中也走相同驗證流程（避免連點 bot）
+      setHits((prev) => {
+        const validation = validateHit({
+          score: selectedZone.score,
+          lastHitTime: lastHitTimeRef.current,
+          currentHitCount: prev.length,
+          requiredHits,
+        });
 
-      setHits((prev) => [...prev, hit]);
-      setTotalScore((prev) => prev + selectedZone.score);
+        if (!validation.valid) {
+          if (validation.reason === "too_fast") {
+            toast({
+              title: "點太快了！",
+              description: "請稍等再試（防作弊節流）",
+            });
+          }
+          return prev;
+        }
 
-      toast({
-        title: getZoneMessage(selectedZone.name),
-        description: `+${selectedZone.score} 分`,
+        lastHitTimeRef.current = Date.now();
+        const hit: HitRecord = {
+          position: {
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+          },
+          score: selectedZone.score,
+          zone: selectedZone.name,
+        };
+        setTotalScore((s) => s + selectedZone.score);
+        toast({
+          title: getZoneMessage(selectedZone.name),
+          description: `+${selectedZone.score} 分`,
+        });
+        return [...prev, hit];
       });
     } else {
       toast({
@@ -296,7 +315,7 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
         variant: "destructive",
       });
     }
-  }, [isCompleted, toast, t]);
+  }, [isCompleted, toast, t, requiredHits]);
 
   useEffect(() => {
     if (isStarted && !isCompleted && hits.length >= requiredHits) {
