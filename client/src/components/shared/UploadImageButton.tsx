@@ -36,6 +36,47 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+/**
+ * 單次圖片預載（用 Image 物件 onload/onerror，比 fetch 可靠且沒 CORS 問題）
+ */
+function preloadImage(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const timer = setTimeout(() => {
+      img.src = ""; // abort
+      resolve(false);
+    }, 4000);
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(true);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      resolve(false);
+    };
+    img.src = url;
+  });
+}
+
+/**
+ * 輪詢等 Cloudinary CDN 全球同步完成（最多 20 秒）
+ * 背景：upload API 完成時 CDN 邊緣節點可能還沒同步，如果馬上 call onUploaded
+ *      UI 拿到 URL 去載會 404，然後被瀏覽器 cache「失敗狀態」造成破圖循環
+ */
+async function waitForCdnSync(url: string, maxAttempts = 10): Promise<boolean> {
+  // 第一次 0ms 就試（上傳後偶爾 CDN 已同步）
+  // 之後每次間隔 2s，共 20 秒
+  for (let i = 0; i < maxAttempts; i++) {
+    // 用不同的 cache-bust query 避免瀏覽器重用失敗 response
+    const probeUrl = url + (url.includes("?") ? "&" : "?") + `_probe=${Date.now()}${i}`;
+    if (await preloadImage(probeUrl)) return true;
+    if (i < maxAttempts - 1) {
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+  }
+  return false;
+}
+
 export function UploadImageButton({
   endpoint,
   currentUrl,
