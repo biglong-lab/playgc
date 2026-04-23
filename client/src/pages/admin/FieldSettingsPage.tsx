@@ -656,11 +656,17 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
         </CardContent>
       </Card>
 
-      {/* 儲存 */}
-      <div className="flex justify-end sticky bottom-4 z-10">
+      {/* 儲存（有未存變更時加警示視覺） */}
+      <div className="flex justify-end sticky bottom-4 z-10 items-center gap-3">
+        {hasUnsavedChanges && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-medium shadow-lg">
+            <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            有未儲存變更
+          </div>
+        )}
         <Button
           onClick={handleSave}
-          disabled={saveMutation.isPending}
+          disabled={saveMutation.isPending || !hasUnsavedChanges}
           className="gap-2 shadow-lg"
           size="lg"
           data-testid="button-save-intro"
