@@ -25,12 +25,26 @@ interface LeaderboardEntryExtended extends LeaderboardEntry {
 export default function Leaderboard() {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
 
+  // 🔒 場域隔離：排行榜只顯示當前場域的資料
+  const currentField = useCurrentField();
+  const currentFieldCode = currentField?.code;
+
+  const gamesQueryKey = currentFieldCode
+    ? [`/api/games?fieldCode=${currentFieldCode}`]
+    : ["/api/games"];
   const { data: games } = useQuery<Game[]>({
-    queryKey: ["/api/games"],
+    queryKey: gamesQueryKey,
   });
 
+  const leaderboardQueryKey = (() => {
+    const params = new URLSearchParams();
+    if (selectedGame) params.set("gameId", selectedGame);
+    if (currentFieldCode) params.set("fieldCode", currentFieldCode);
+    const qs = params.toString();
+    return qs ? [`/api/leaderboard?${qs}`] : ["/api/leaderboard"];
+  })();
   const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntryExtended[]>({
-    queryKey: ["/api/leaderboard", selectedGame],
+    queryKey: leaderboardQueryKey,
   });
 
   const formatTime = (seconds: number): string => {
