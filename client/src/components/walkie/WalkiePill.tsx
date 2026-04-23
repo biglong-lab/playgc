@@ -173,7 +173,6 @@ export function WalkiePill({
   );
 
   const handlePointerUp = useCallback(() => {
-    const press = pressStartRef.current;
     pressStartRef.current = null;
 
     if (longPressTimerRef.current) {
@@ -181,7 +180,7 @@ export function WalkiePill({
       longPressTimerRef.current = null;
     }
 
-    // 狀態 1：拖動結束 → 存位置，不觸發 click/PTT
+    // 狀態 1：拖動結束 → 存位置
     if (draggingRef.current) {
       draggingRef.current = false;
       setDragging(false);
@@ -197,12 +196,10 @@ export function WalkiePill({
       return;
     }
 
-    // 狀態 3：短點擊（<LONGPRESS_MS）→ 展開
-    if (press && Date.now() - press.time < LONGPRESS_MS) {
-      onExpand();
-    }
+    // 狀態 3：短點擊 → 不做任何事（單一功能原則：Pill 主體只負責 PTT）
+    // 展開設定請透過右上 QR 小按鈕
     resetIdle();
-  }, [pos, stopTalkingSafe, onExpand, resetIdle]);
+  }, [pos, stopTalkingSafe, resetIdle]);
 
   const handlePointerCancel = useCallback(() => {
     // iOS 滑走 / 系統中斷 → 安全收尾
