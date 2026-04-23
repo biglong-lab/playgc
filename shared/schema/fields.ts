@@ -109,6 +109,10 @@ export interface FieldSettings {
   highlights?: FieldHighlight[];      // 場域亮點（Landing Feature Section 用）
   /** 🆕 場域公告 — 顯示於 Landing Hero 下方和 Home header 下方（空字串/undefined = 不顯示）*/
   announcement?: string;
+  /** 🆕 公告開始日期（ISO YYYY-MM-DD；未設 = 立即開始）*/
+  announcementStartAt?: string;
+  /** 🆕 公告結束日期（ISO YYYY-MM-DD；未設 = 不設期限）*/
+  announcementEndAt?: string;
 
   // 品牌（legacy — 僅 primaryColor 保留向後相容；推薦改用 theme.primaryColor）
   primaryColor?: string;              // @deprecated 改用 theme.primaryColor
