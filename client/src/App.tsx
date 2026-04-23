@@ -55,6 +55,7 @@ const JoinWalkie = lazy(() => import("@/pages/JoinWalkie"));
 const AdminDevices = lazy(() => import("@/pages/admin-devices"));
 const AdminAnalytics = lazy(() => import("@/pages/AdminAnalytics"));
 const AdminSessions = lazy(() => import("@/pages/AdminSessions"));
+const AdminSuspiciousLog = lazy(() => import("@/pages/AdminSuspiciousLog"));
 const AdminLeaderboard = lazy(() => import("@/pages/AdminLeaderboard"));
 const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
 const AdminTemplates = lazy(() => import("@/pages/AdminTemplates"));
