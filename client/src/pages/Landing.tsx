@@ -53,35 +53,29 @@ export default function Landing() {
 
   const loginHandlers = useLoginHandlers(() => setShowLoginDialog(false));
 
-  // 🆕 當前場域資料
+  // 🆕 當前場域資料（含 tagline / highlights / modules）
   const currentField = useCurrentField();
   const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
   const fieldLogoUrl = currentField?.logoUrl || null;
   const fieldName = currentField?.name;
   const welcomeMessage = currentField?.welcomeMessage || null;
+  const fieldTagline = currentField?.tagline || null;
 
-  const features = [
-    {
-      icon: Target,
-      title: t("landing.features.shooting"),
-      description: t("landing.features.shooting.desc"),
-    },
-    {
-      icon: MapPin,
-      title: t("landing.features.gps"),
-      description: t("landing.features.gps.desc"),
-    },
-    {
-      icon: Camera,
-      title: t("landing.features.photo"),
-      description: t("landing.features.photo.desc"),
-    },
-    {
-      icon: Users,
-      title: t("landing.features.team"),
-      description: t("landing.features.team.desc"),
-    },
-  ];
+  // 🆕 場域特色：優先讀後台設定的 highlights，沒有則 fallback 到 i18n 預設（仍保留舊 4 項）
+  const fieldHighlights = currentField?.highlights || [];
+  const hasCustomHighlights = fieldHighlights.length > 0;
+  const features = hasCustomHighlights
+    ? fieldHighlights.map((h) => ({
+        icon: resolveIcon(h.icon),
+        title: h.title,
+        description: h.description || "",
+      }))
+    : [
+        { icon: MapPin, title: t("landing.features.gps"), description: t("landing.features.gps.desc") },
+        { icon: Camera, title: t("landing.features.photo"), description: t("landing.features.photo.desc") },
+        { icon: Users, title: t("landing.features.team"), description: t("landing.features.team.desc") },
+        { icon: QrCode, title: "互動任務", description: "QR、地點、解謎、團隊協作等多元任務" },
+      ];
 
   return (
     <div className="min-h-screen bg-background">
