@@ -9,14 +9,30 @@ export function registerLeaderboardRoutes(app: Express) {
   app.get("/api/leaderboard", async (req, res) => {
     try {
       const rawGameId = req.query.gameId as string | undefined;
-      // 若提供了 gameId 就驗證格式，未提供則回傳全部
+      const rawFieldCode = req.query.fieldCode as string | undefined;
+
+      // 🔒 場域隔離：有 fieldCode 就先換成 fieldId 傳入 storage
+      let fieldId: string | undefined;
+      if (rawFieldCode && rawFieldCode.trim()) {
+        const { db } = await import("../db");
+        const { fields } = await import("@shared/schema");
+        const { eq } = await import("drizzle-orm");
+        const field = await db.query.fields.findFirst({
+          where: eq(fields.code, rawFieldCode.trim().toUpperCase()),
+        });
+        if (!field) {
+          return res.json([]);
+        }
+        fieldId = field.id;
+      }
+
       if (rawGameId) {
         const gameId = validateId(rawGameId, res);
         if (!gameId) return;
-        const entries = await storage.getLeaderboard(gameId);
+        const entries = await storage.getLeaderboard(gameId, fieldId);
         return res.json(entries);
       }
-      const entries = await storage.getLeaderboard(undefined);
+      const entries = await storage.getLeaderboard(undefined, fieldId);
       res.json(entries);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch leaderboard" });
