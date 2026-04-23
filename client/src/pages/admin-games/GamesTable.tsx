@@ -148,7 +148,7 @@ function GameMobileCard({
 // 單一遊戲行
 function GameRow({
   game, onNavigate, onEdit, onDelete,
-  onPublish, onGenerateQR, onViewQR, onCoverUpload,
+  onPublish, onGenerateQR, onViewQR, onCoverUpload, onMoveField,
   publishPending, generateQRPending,
 }: GameActionProps & { game: Game }) {
   const status = normalizeStatus(game.status);
