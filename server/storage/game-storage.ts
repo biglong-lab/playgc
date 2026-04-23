@@ -36,9 +36,26 @@ export const gameStorageMethods = {
       .orderBy(desc(games.createdAt));
   },
 
-  /** 取得已發布的遊戲 */
+  /** 取得已發布的遊戲（全部場域）
+   *  @deprecated 多場域情境下建議改用 getPublishedGamesByFieldCode 以保隔離
+   */
   async getPublishedGames(): Promise<Game[]> {
     return db.select().from(games).where(eq(games.status, "published")).orderBy(desc(games.createdAt));
+  },
+
+  /** 🔒 取得指定場域（by code）的已發布遊戲 — 多場域隔離用 */
+  async getPublishedGamesByFieldCode(fieldCode: string): Promise<Game[]> {
+    // 先拿 fieldId
+    const { fields } = await import("@shared/schema");
+    const field = await db.query.fields.findFirst({
+      where: eq(fields.code, fieldCode.toUpperCase()),
+    });
+    if (!field) return [];
+    return db
+      .select()
+      .from(games)
+      .where(and(eq(games.status, "published"), eq(games.fieldId, field.id)))
+      .orderBy(desc(games.createdAt));
   },
 
   /** 根據 ID 取得遊戲 */
