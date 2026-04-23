@@ -25,10 +25,8 @@ export function registerRevenueRoutes(app: Express): void {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
 
-        const fieldId =
-          req.admin.systemRole === "super_admin"
-            ? ((req.query.fieldId as string) || req.admin.fieldId)
-            : req.admin.fieldId;
+        // 🔒 場域隔離：統一用 admin.fieldId
+        const fieldId = req.admin.fieldId;
 
         // 本月起始
         const now = new Date();
@@ -103,10 +101,8 @@ export function registerRevenueRoutes(app: Express): void {
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
-        const fieldId =
-          req.admin.systemRole === "super_admin"
-            ? ((req.query.fieldId as string) || req.admin.fieldId)
-            : req.admin.fieldId;
+        // 🔒 場域隔離：統一用 admin.fieldId
+        const fieldId = req.admin.fieldId;
         const category = req.query.category as string | undefined;
 
         const products: Array<{
@@ -187,10 +183,8 @@ export function registerRevenueRoutes(app: Express): void {
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
-        const fieldId =
-          req.admin.systemRole === "super_admin"
-            ? ((req.query.fieldId as string) || req.admin.fieldId)
-            : req.admin.fieldId;
+        // 🔒 場域隔離：統一用 admin.fieldId
+        const fieldId = req.admin.fieldId;
 
         const codes = await db
           .select({
@@ -224,10 +218,8 @@ export function registerRevenueRoutes(app: Express): void {
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
-        const fieldId =
-          req.admin.systemRole === "super_admin"
-            ? ((req.query.fieldId as string) || req.admin.fieldId)
-            : req.admin.fieldId;
+        // 🔒 場域隔離：統一用 admin.fieldId
+        const fieldId = req.admin.fieldId;
 
         const type = req.query.type as string | undefined;
         const limit = Math.min(Number(req.query.limit) || 100, 500);

@@ -64,10 +64,8 @@ export function registerFieldMembershipRoutes(app: Express) {
       if (!req.admin) return res.status(401).json({ error: "未認證" });
 
       // 🔒 super_admin 可透過 query 指定場域，其他人強制自己的 fieldId
-      const fieldId =
-        req.admin.systemRole === "super_admin"
-          ? (req.query.fieldId as string) || req.admin.fieldId
-          : req.admin.fieldId;
+      // 🔒 場域隔離：統一 admin.fieldId
+      const fieldId = req.admin.fieldId;
 
       const isAdminFilter =
         req.query.isAdmin === "true"

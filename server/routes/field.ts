@@ -26,10 +26,8 @@ export function registerFieldRoutes(app: Express): void {
   app.get("/api/field/subscription", requireAdminAuth, async (req, res) => {
     if (!req.admin) return res.status(401).json({ message: "未認證" });
 
-    const fieldId =
-      req.admin.systemRole === "super_admin"
-        ? ((req.query.fieldId as string) || req.admin.fieldId)
-        : req.admin.fieldId;
+    // 🔒 場域隔離：統一 admin.fieldId
+      const fieldId = req.admin.fieldId;
 
     const row = await db
       .select({
@@ -69,10 +67,8 @@ export function registerFieldRoutes(app: Express): void {
   app.get("/api/field/platform-transactions", requireAdminAuth, async (req, res) => {
     if (!req.admin) return res.status(401).json({ message: "未認證" });
 
-    const fieldId =
-      req.admin.systemRole === "super_admin"
-        ? ((req.query.fieldId as string) || req.admin.fieldId)
-        : req.admin.fieldId;
+    // 🔒 場域隔離：統一 admin.fieldId
+      const fieldId = req.admin.fieldId;
 
     const limit = Math.min(Number(req.query.limit) || 100, 500);
     const transactions = await db

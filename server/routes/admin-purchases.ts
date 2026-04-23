@@ -27,9 +27,8 @@ export function registerAdminPurchaseRoutes(app: Express) {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
 
-        const fieldId = req.admin.systemRole === "super_admin"
-          ? (req.query.fieldId as string || req.admin.fieldId)
-          : req.admin.fieldId;
+        // 🔒 場域隔離：統一 admin.fieldId
+        const fieldId = req.admin.fieldId;
 
         // 取得場域所有遊戲的收款統計
         const gameStats = await db
