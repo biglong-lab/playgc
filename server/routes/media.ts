@@ -136,6 +136,105 @@ export function registerMediaRoutes(app: Express) {
     }
   });
 
+  // ============================================================================
+  // 🎨 場域視覺資源上傳（Phase 2）
+  // ============================================================================
+
+  /** 共用：把圖片上傳到場域主題的 cover/logo，並寫回 fields.settings.theme */
+  async function updateFieldImageAsset(
+    req: Parameters<Parameters<typeof app.post>[2]>[0],
+    res: Parameters<Parameters<typeof app.post>[2]>[1],
+    kind: "cover" | "logo",
+  ) {
+    if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+    // 權限：super_admin 或同場域
+    if (
+      req.admin.systemRole !== "super_admin" &&
+      req.params.id !== req.admin.fieldId
+    ) {
+      return res.status(403).json({ message: "無權修改此場域" });
+    }
+
+    const parsed = cloudinaryCoverSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res
+        .status(400)
+        .json({ message: parsed.error.errors[0]?.message || "驗證失敗" });
+    }
+
+    const field = await db.query.fields.findFirst({
+      where: eq(fields.id, req.params.id),
+    });
+    if (!field) return res.status(404).json({ message: "場域不存在" });
+
+    const result =
+      kind === "cover"
+        ? await cloudinaryService.uploadFieldCover(
+            parsed.data.imageData,
+            req.params.id,
+          )
+        : await cloudinaryService.uploadFieldLogo(
+            parsed.data.imageData,
+            req.params.id,
+          );
+
+    // 回寫 settings.theme
+    const settings: FieldSettings = parseFieldSettings(field.settings);
+    const updatedTheme = {
+      ...(settings.theme || {}),
+      [kind === "cover" ? "coverImageUrl" : "brandingLogoUrl"]: result.secure_url,
+    };
+
+    await db
+      .update(fields)
+      .set({
+        settings: { ...settings, theme: updatedTheme },
+        updatedAt: new Date(),
+      })
+      .where(eq(fields.id, req.params.id));
+
+    return res.json({
+      message: kind === "cover" ? "場域封面已更新" : "場域 Logo 已更新",
+      url: result.secure_url,
+      kind,
+    });
+  }
+
+  /** 📸 POST /api/admin/fields/:id/cloudinary-cover — 上傳場域封面 */
+  app.post(
+    "/api/admin/fields/:id/cloudinary-cover",
+    requireAdminAuth,
+    requirePermission("field:manage"),
+    async (req, res) => {
+      try {
+        await updateFieldImageAsset(req, res, "cover");
+      } catch (error) {
+        console.error("[media] field cover 上傳失敗:", error);
+        res.status(500).json({
+          message: error instanceof Error ? error.message : "上傳場域封面失敗",
+        });
+      }
+    },
+  );
+
+  /** 📸 POST /api/admin/fields/:id/cloudinary-logo — 上傳場域 Logo */
+  app.post(
+    "/api/admin/fields/:id/cloudinary-logo",
+    requireAdminAuth,
+    requirePermission("field:manage"),
+    async (req, res) => {
+      try {
+        await updateFieldImageAsset(req, res, "logo");
+      } catch (error) {
+        console.error("[media] field logo 上傳失敗:", error);
+        res.status(500).json({
+          message: error instanceof Error ? error.message : "上傳場域 Logo 失敗",
+        });
+      }
+    },
+  );
+
   // 大小上限：15MB base64 字串（約 11MB 原始圖片），防止大圖 OOM / 502
   const MAX_PHOTO_BASE64_SIZE = 15_000_000;
 
