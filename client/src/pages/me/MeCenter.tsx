@@ -2,6 +2,7 @@
 // 整合：購買記錄 / 對戰戰績 / 成就 / 通知 / 兌換碼 / 我的場域
 import { Link, useLocation } from "wouter";
 import { useFieldLink } from "@/hooks/useFieldLink";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/firebase";
