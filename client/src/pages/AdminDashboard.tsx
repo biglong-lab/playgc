@@ -65,6 +65,9 @@ export default function AdminDashboard() {
 
   return (
     <UnifiedAdminLayout title="管理儀表板" actions={actions}>
+      {/* 🆕 當前公告（僅有生效公告時顯示） */}
+      <AnnouncementStatusCard />
+
       {/* 🆕 場域模組狀態 — 一眼看出本場域啟用了哪些功能 */}
       <FieldModulesCard />
 
