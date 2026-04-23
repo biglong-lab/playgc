@@ -91,12 +91,9 @@ export function registerAdminSessionRoutes(app: Express) {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
 
-        const isSuperAdmin = req.admin.systemRole === "super_admin";
+        // 🔒 場域隔離：任何 admin 的儀表板只統計自己登入場域
         const fieldId = req.admin.fieldId;
-
-        const gameFilter = isSuperAdmin
-          ? sql`TRUE`
-          : sql`${games.fieldId} = ${fieldId}`;
+        const gameFilter = sql`${games.fieldId} = ${fieldId}`;
 
         const now = new Date();
         const last24h = new Date(now.getTime() - 24 * 3600 * 1000);
