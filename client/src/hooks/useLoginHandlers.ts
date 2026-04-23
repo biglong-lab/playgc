@@ -155,7 +155,7 @@ export function useLoginHandlers(
       if (user) {
         toast({
           title: "註冊成功！",
-          description: "歡迎加入賈村競技體驗場",
+          description: "歡迎加入 CHITO 七逃",
         });
         handleLoginSuccess();
       }
