@@ -394,12 +394,19 @@
 .leaflet-container {
   background: hsl(var(--background));
   font-family: inherit;
-  /* 🔒 強制 leaflet map 不超過一般 overlay（預設 z-index: 1000 會蓋住 modal/drawer）*/
-  z-index: 10 !important;
-  position: relative;
+  /* 🔒 三重保險讓 leaflet 絕對不會蓋過 Walkie 浮動元件：
+     1. z-index: 0 降到最底（Walkie fixed 元件 9999 必贏）
+     2. isolation: isolate 強制建立獨立 stacking context，
+        內部 pane / marker / popup 的 z-index 封印在容器內，絕對不 escape
+     3. contain: layout 進一步限制布局影響範圍
+  */
+  z-index: 0 !important;
+  position: relative !important;
+  isolation: isolate !important;
+  contain: layout !important;
 }
 
-/* Leaflet 內部 pane / control 都限制在 map 容器內（不往外 escape）*/
+/* Leaflet 內部 pane / control 仍限制在 map 容器內（雙保險）*/
 .leaflet-pane,
 .leaflet-top,
 .leaflet-bottom,
@@ -407,11 +414,21 @@
   z-index: auto !important;
 }
 
-/* 具體 controls 限定 50 以下 — 絕不可蓋全域 fixed overlay（walkie / modal 至少用 [60] 以上）*/
+/* 具體 controls 限定極低值 — 絕不可蓋全域 fixed overlay */
 .leaflet-control-zoom,
 .leaflet-control-attribution,
 .leaflet-control-layers {
   z-index: 5 !important;
+}
+
+/* 🔒 強制 popup / tooltip 也不能 escape 出 container（有些 Leaflet 版本 z-index 到 700）*/
+.leaflet-popup-pane,
+.leaflet-tooltip-pane,
+.leaflet-marker-pane,
+.leaflet-shadow-pane,
+.leaflet-overlay-pane,
+.leaflet-tile-pane {
+  z-index: auto !important;
 }
 
 .leaflet-popup-content-wrapper {
