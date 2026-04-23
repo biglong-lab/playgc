@@ -96,6 +96,40 @@ function getFieldModuleStatus(settings?: FieldSettings | null) {
   return { enabled, total: MODULE_BADGES.length };
 }
 
+/** 🆕 場域 code 顯示 + 複製按鈕 */
+function CodeCell({ code }: { code: string }) {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      toast({ title: `已複製：${code}` });
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast({ title: "複製失敗，請手動選取", variant: "destructive" });
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5 group">
+      <span>{code}</span>
+      <button
+        type="button"
+        onClick={handleCopy}
+        className="text-muted-foreground/50 hover:text-primary transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+        aria-label={`複製場域代碼 ${code}`}
+        title="複製"
+        data-testid={`btn-copy-code-${code}`}
+      >
+        {copied ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
+      </button>
+    </div>
+  );
+}
+
 /** 🆕 判斷場域是否有「目前生效中」的公告（與 server isAnnouncementActive 邏輯一致） */
 function hasActiveAnnouncement(settings?: FieldSettings | null): boolean {
   if (!settings?.announcement?.trim()) return false;
