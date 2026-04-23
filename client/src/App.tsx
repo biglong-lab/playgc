@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
+import FieldEntry from "@/pages/FieldEntry";
 
 // 玩家端 — lazy import
 const GamePlay = lazy(() => import("@/pages/GamePlay"));
