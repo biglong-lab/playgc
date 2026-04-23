@@ -1,5 +1,7 @@
 #!/bin/bash
 # 🚀 完整部署 + 嚴格驗證（防止 build fail 但 exit 0 偽成功）
+# pipefail：確保 pipe 中任何一步 fail 都 exit 非零（否則 | tail 會吞 exit code）
+set -eo pipefail
 #
 # 背景：docker compose up -d --build app 即使 build fail 也會用舊 image 重啟，
 #      exit 0 騙人以為成功。過去 5 輪部署因為 auto-hook 漏檔導致 build fail
