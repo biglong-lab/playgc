@@ -258,7 +258,9 @@ export function registerAdminContentRoutes(app: Express) {
       await storage.deletePage(req.params.id);
       res.status(204).send();
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete page" });
+      console.error("[admin-content] deletePage failed:", error);
+      const msg = error instanceof Error ? error.message : "Failed to delete page";
+      res.status(500).json({ message: `刪除頁面失敗: ${msg}` });
     }
   });
 
