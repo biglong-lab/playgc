@@ -520,6 +520,79 @@ function StatCard({
 }
 
 // ============================================================================
+// 熱門遊戲 Top N
+// ============================================================================
+
+function PopularGameList({
+  games,
+}: {
+  games: Array<{ gameId: string; title: string; plays: number; uniquePlayers: number }>;
+}) {
+  const max = Math.max(...games.map((g) => g.plays), 1);
+  return (
+    <div className="space-y-2">
+      {games.map((g, idx) => {
+        const pct = (g.plays / max) * 100;
+        return (
+          <div key={g.gameId} className="flex items-center gap-3 text-sm">
+            <span className="w-6 text-center font-number font-bold text-muted-foreground">
+              {idx + 1}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="truncate font-medium" title={g.title}>
+                  {g.title}
+                </span>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {g.plays} 場 · {g.uniquePlayers} 人
+                </span>
+              </div>
+              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-primary to-accent"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================================
+// 近 7 天場次趨勢（純 CSS bar chart）
+// ============================================================================
+
+function DailyTrendBars({ data }: { data: Array<{ date: string; count: number }> }) {
+  const max = Math.max(...data.map((d) => d.count), 1);
+  // 只保留 MM-DD（date 格式為 YYYY-MM-DD）
+  const formatShort = (d: string) => d.slice(5);
+
+  return (
+    <div className="flex items-end justify-between gap-2 h-32">
+      {data.map((d) => {
+        const h = Math.max((d.count / max) * 100, 4);
+        return (
+          <div key={d.date} className="flex-1 flex flex-col items-center gap-1">
+            <span className="text-xs font-number font-semibold">{d.count}</span>
+            <div
+              className="w-full bg-gradient-to-t from-primary/60 to-primary rounded-t"
+              style={{ height: `${h}%`, minHeight: 4 }}
+              title={`${d.date}: ${d.count} 場`}
+            />
+            <span className="text-[10px] text-muted-foreground">
+              {formatShort(d.date)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ============================================================================
 // Broadcast Modal — 按住 PTT 對多 room 同時 publish
 // ============================================================================
 
