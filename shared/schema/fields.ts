@@ -107,6 +107,8 @@ export interface FieldSettings {
   // 🆕 場域行銷內容 — 顯示於該場域 Landing 和 CHITO 平台首頁的場域卡
   tagline?: string;                   // 短 slogan（例：金門戰地文化沉浸體驗）
   highlights?: FieldHighlight[];      // 場域亮點（Landing Feature Section 用）
+  /** 🆕 場域公告 — 顯示於 Landing Hero 下方和 Home header 下方（空字串/undefined = 不顯示）*/
+  announcement?: string;
 
   // 品牌（legacy — 僅 primaryColor 保留向後相容；推薦改用 theme.primaryColor）
   primaryColor?: string;              // @deprecated 改用 theme.primaryColor
