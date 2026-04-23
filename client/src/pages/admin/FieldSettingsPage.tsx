@@ -582,6 +582,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
     saveMutation.mutate({
       tagline: tagline.trim(),
       welcomeMessage: welcomeMessage.trim(),
+      announcement: announcement.trim(),
       highlights: highlights.map((h) => ({
         icon: h.icon || "Sparkles",
         title: h.title.trim(),
