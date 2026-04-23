@@ -128,8 +128,141 @@ export default function FieldSettingsPage() {
             <AiSettingsTab fieldId={fieldId} settings={settings} />
           </TabsContent>
         </Tabs>
+        </>
       )}
     </UnifiedAdminLayout>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 🆕 匯出 / 匯入場域設定 JSON
+// ═══════════════════════════════════════════════════════════════
+
+function ExportImportButtons({
+  fieldId,
+  settings,
+}: {
+  fieldId: string;
+  settings?: FieldSettingsResponse;
+}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const handleExport = () => {
+    if (!settings) {
+      toast({ title: "尚未載入設定，無法匯出", variant: "destructive" });
+      return;
+    }
+    // 只匯出可移植欄位（排除 hasGeminiApiKey 這種狀態欄位）
+    const portable = {
+      tagline: settings.tagline,
+      welcomeMessage: settings.welcomeMessage,
+      announcement: settings.announcement,
+      announcementStartAt: settings.announcementStartAt,
+      announcementEndAt: settings.announcementEndAt,
+      highlights: settings.highlights,
+      theme: settings.theme,
+      enableShootingMission: settings.enableShootingMission,
+      enableBattleArena: settings.enableBattleArena,
+      enableChapters: settings.enableChapters,
+      enablePhotoMission: settings.enablePhotoMission,
+      enableGpsMission: settings.enableGpsMission,
+      enablePayment: settings.enablePayment,
+      enableTeamMode: settings.enableTeamMode,
+      enableCompetitiveMode: settings.enableCompetitiveMode,
+      maxGames: settings.maxGames,
+      maxConcurrentSessions: settings.maxConcurrentSessions,
+      _exportedAt: new Date().toISOString(),
+      _version: "1.0",
+    };
+    const blob = new Blob([JSON.stringify(portable, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `field-settings-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "✓ 已匯出場域設定",
+      description: "JSON 檔已下載，可分享或當作範本保存",
+    });
+  };
+
+  const handleImport = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json,.json";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      if (!confirm(`確定要從「${file.name}」匯入設定？\n會覆蓋當前場域的：模組開關、亮點、公告、主題、tagline 等。\nAI Key、聯絡資訊不會受影響。`)) {
+        return;
+      }
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (typeof data !== "object" || data === null) {
+          throw new Error("JSON 格式不正確");
+        }
+        // 移除元資訊 key
+        const { _exportedAt, _version, ...settingsToApply } = data;
+        void _exportedAt;
+        void _version;
+        const res = await apiRequest(
+          "PATCH",
+          `/api/admin/fields/${fieldId}/settings`,
+          settingsToApply,
+        );
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || "匯入失敗");
+        }
+        queryClient.invalidateQueries({
+          queryKey: ["/api/admin/fields", fieldId, "settings"],
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
+        toast({
+          title: "✓ 已匯入場域設定",
+          description: "設定已套用，可能需要重整頁面看到完整變化",
+        });
+      } catch (err) {
+        toast({
+          title: "匯入失敗",
+          description: err instanceof Error ? err.message : "未知錯誤",
+          variant: "destructive",
+        });
+      }
+    };
+    input.click();
+  };
+
+  return (
+    <div className="flex gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleExport}
+        className="gap-1.5"
+        data-testid="btn-export-settings"
+      >
+        <Download className="w-3.5 h-3.5" />
+        匯出 JSON
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleImport}
+        className="gap-1.5"
+        data-testid="btn-import-settings"
+      >
+        <Upload className="w-3.5 h-3.5" />
+        匯入 JSON
+      </Button>
+    </div>
   );
 }
 
