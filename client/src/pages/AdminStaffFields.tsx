@@ -447,7 +447,7 @@ export default function AdminStaffFields() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fields.map((field) => {
+                  {filteredFields.map((field) => {
                     const { enabled, total } = getFieldModuleStatus(field.settings);
                     return (
                       <TableRow key={field.id} data-testid={`row-field-${field.id}`}>
