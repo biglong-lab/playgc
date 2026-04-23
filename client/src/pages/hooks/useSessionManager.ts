@@ -54,6 +54,7 @@ export function useSessionManager({
     variables: {},
     currentPageIndex: 0,
     isCompleted: false,
+    completedPageIds: [],
   });
 
   const [forceNewSession, setForceNewSession] = useState(isReplayMode);
