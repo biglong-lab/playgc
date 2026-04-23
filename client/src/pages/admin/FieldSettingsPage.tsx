@@ -706,15 +706,37 @@ function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             />
           </div>
 
-          <Button
-            onClick={handleSave}
-            disabled={saveMutation.isPending}
-            className="gap-2"
-            data-testid="button-save-brand"
-          >
-            {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            儲存視覺主題
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={handleSave}
+              disabled={saveMutation.isPending}
+              className="gap-2"
+              data-testid="button-save-brand"
+            >
+              {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              儲存視覺主題
+            </Button>
+
+            {/* 🆕 在新分頁預覽玩家端（不需儲存也能看） */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                const encoded = encodePreviewTheme(theme);
+                const url = `/home?${PREVIEW_QUERY_KEY}=${encoded}`;
+                window.open(url, "_blank", "noopener");
+              }}
+              className="gap-2"
+              data-testid="button-preview-in-new-tab"
+            >
+              <ExternalLink className="w-4 h-4" />
+              在新分頁看玩家端
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            💡 提示：「新分頁預覽」會把目前設定編碼到網址，就算還沒儲存也能先看效果；
+            關閉分頁就消失，不影響正式場域。
+          </p>
         </CardContent>
       </Card>
 
