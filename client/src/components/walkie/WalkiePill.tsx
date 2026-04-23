@@ -77,8 +77,7 @@ export function WalkiePill({
   hasInvitePulse,
   onStartTalk,
   onStopTalk,
-  onExpand,
-  onShowQR,
+  onOpenPanel,
 }: WalkiePillProps) {
   const [pos, setPos] = useState<Pos>(loadPos);
   const [dragging, setDragging] = useState(false);
