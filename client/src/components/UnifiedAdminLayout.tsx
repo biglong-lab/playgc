@@ -57,7 +57,9 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
     return null;
   }
 
-  const filteredMenuGroups = filterMenuByPermissions(ADMIN_MENU_GROUPS, hasPermission);
+  // 先過濾權限，再根據當前場域模組開關過濾菜單
+  const byPermission = filterMenuByPermissions(ADMIN_MENU_GROUPS, hasPermission);
+  const filteredMenuGroups = filterMenuByModules(byPermission, currentField?.modules);
   const isSuperAdmin = admin.systemRole === "super_admin";
   const roleLabel = SYSTEM_ROLE_LABELS[admin.systemRole] ?? admin.systemRole;
   const displayName = admin.displayName || admin.username || "管理員";
