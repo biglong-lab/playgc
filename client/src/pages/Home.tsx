@@ -560,9 +560,25 @@ export default function Home() {
             <h3 className="text-xl font-display font-bold mb-2">
               {searchQuery || difficultyFilter ? "找不到符合的遊戲" : "目前沒有可用的遊戲"}
             </h3>
-            <p className="text-muted-foreground">
-              {searchQuery || difficultyFilter ? "嘗試調整搜尋條件" : "請稍後再回來查看"}
+            <p className="text-muted-foreground mb-4">
+              {searchQuery || difficultyFilter ? "試試清除篩選條件或調整關鍵字" : "請稍後再回來查看"}
             </p>
+            {/* 🆕 有 filter 條件時顯示「清除所有條件」按鈕 */}
+            {(searchQuery || difficultyFilter) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery("");
+                  setDifficultyFilter(null);
+                }}
+                className="gap-1.5"
+                data-testid="btn-clear-all-filters"
+              >
+                <Filter className="w-3.5 h-3.5" />
+                清除所有篩選條件
+              </Button>
+            )}
           </div>
         )}
       </main>
