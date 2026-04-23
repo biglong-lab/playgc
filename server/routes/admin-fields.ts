@@ -384,6 +384,7 @@ export function registerAdminFieldRoutes(app: Express) {
             gps: !!settings.enableGpsMission,
             team: settings.enableTeamMode !== false, // 預設 true
             competitive: settings.enableCompetitiveMode !== false, // 預設 true
+            payment: !!settings.enablePayment, // 🆕 財務中心菜單控制
           },
         };
       });
