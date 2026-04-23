@@ -1,14 +1,20 @@
-// 🏢 場域總入口頁 — 列出所有 active 場域讓玩家選擇
+// 🌐 CHITO 七逃 · 平台首頁（場域總入口）
 //
-// 網址：/f （不帶 fieldCode）
-// 當玩家第一次進入或想切換場域時看到這個畫面
-// 點擊場域卡片 → 進入 /f/:fieldCode 該場域 Landing
+// 網址：/f （不帶 fieldCode）與 /（PlatformHome 轉送來）
+// 職責：
+//   1. CHITO 品牌介紹（七逃 = 台語 tshit-thô，走踏、玩耍）
+//   2. 列出所有 active 場域讓玩家選擇
+//   3. 管理員登入 / 申請開通場域 入口
+//
+// 點場域卡片 → 進入 /f/:fieldCode 該場域 Landing
 
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, ArrowRight, Gamepad2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building2, ArrowRight, Gamepad2, MapPin, Sparkles, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface FieldItem {
   id: string;
@@ -33,80 +39,185 @@ export default function FieldEntry() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/30 p-4 flex items-center justify-center">
-      <div className="w-full max-w-4xl">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
-            <Building2 className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-background">
+      {/* ═══ CHITO 品牌 Hero ═══ */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03]" />
+        <div className="relative container mx-auto px-4 py-16 md:py-24 text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 mb-6">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-xs font-display uppercase tracking-wider text-primary">
+              Walk · Play · Local
+            </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold mb-2">
-            選擇要進入的場域
+
+          <h1 className="font-display text-5xl md:text-7xl font-black mb-4 tracking-tight">
+            CHITO
           </h1>
-          <p className="text-muted-foreground">
-            每個場域有獨立的遊戲與排行榜
+          <p className="text-lg md:text-xl text-primary font-semibold mb-3">
+            七逃 · tshit-thô
+          </p>
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
+            走踏在地的實境遊戲平台<br className="md:hidden" />
+            <span className="hidden md:inline"> · </span>
+            串聯景點、市集、文化空間的沉浸式體驗
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary/70" />
+              <span>多場域獨立營運</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Gamepad2 className="w-4 h-4 text-primary/70" />
+              <span>QR · GPS · 拍照 · 射擊任務</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-primary/70" />
+              <span>團隊 · 競賽 · 接力</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ 場域列表 ═══ */}
+      <section className="container mx-auto px-4 py-12 md:py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
+              <Building2 className="w-7 h-7 text-primary" />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">
+              選擇場域開始七逃
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground">
+              每個場域有獨立的遊戲、排行榜與主題風格
+            </p>
+          </div>
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-36 rounded-xl" />
+              ))}
+            </div>
+          ) : !fields || fields.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Gamepad2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground mb-4">目前沒有可用的場域</p>
+                <Link href="/apply">
+                  <Button variant="outline" size="sm">
+                    申請開通場域
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {fields.map((f) => (
+                <Card
+                  key={f.id}
+                  className="cursor-pointer hover-elevate transition-all group border-2"
+                  onClick={() => setLocation(`/f/${f.code}`)}
+                  data-testid={`field-card-${f.code}`}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      {f.logoUrl ? (
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-primary/10 shrink-0">
+                          <OptimizedImage
+                            src={f.logoUrl}
+                            alt={f.name}
+                            preset="thumbnail"
+                            className="w-full h-full object-contain p-1"
+                            loading="eager"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <Building2 className="w-7 h-7 text-primary" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display font-bold text-xl mb-1 truncate">
+                          {f.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground font-mono mb-2">
+                          {f.code}
+                        </p>
+                        {f.description && (
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {f.description}
+                          </p>
+                        )}
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-1" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          <p className="text-center text-xs text-muted-foreground mt-8">
+            或直接輸入場域網址：<span className="font-mono">game.homi.cc/f/YOUR_CODE</span>
           </p>
         </div>
+      </section>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2].map((i) => (
-              <Skeleton key={i} className="h-36 rounded-xl" />
-            ))}
-          </div>
-        ) : !fields || fields.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Gamepad2 className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-muted-foreground">目前沒有可用的場域</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fields.map((f) => (
-              <Card
-                key={f.id}
-                className="cursor-pointer hover-elevate transition-all group"
-                onClick={() => setLocation(`/f/${f.code}`)}
-                data-testid={`field-card-${f.code}`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    {f.logoUrl ? (
-                      <img
-                        src={f.logoUrl}
-                        alt={f.name}
-                        className="w-14 h-14 rounded-xl object-contain bg-primary/10 p-1 shrink-0"
-                      />
-                    ) : (
-                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                        <Building2 className="w-7 h-7 text-primary" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-display font-bold text-xl mb-1 truncate">
-                        {f.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground font-mono mb-2">
-                        {f.code}
-                      </p>
-                      {f.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {f.description}
-                        </p>
-                      )}
-                    </div>
-                    <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-1" />
+      {/* ═══ 次要入口：申請場域 / 管理員登入 ═══ */}
+      <section className="border-t border-border bg-muted/20">
+        <div className="container mx-auto px-4 py-10">
+          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link href="/apply">
+              <Card className="cursor-pointer hover-elevate transition-all h-full">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-5 h-5 text-primary" />
                   </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">申請開通場域</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      把你的景點 / 市集 / 空間變成 CHITO 場域
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        )}
+            </Link>
 
-        <p className="text-center text-xs text-muted-foreground mt-8">
-          或直接輸入場域網址：game.homi.cc/f/<span className="font-mono">YOUR_CODE</span>
-        </p>
-      </div>
+            <Link href="/admin/login">
+              <Card className="cursor-pointer hover-elevate transition-all h-full" data-testid="link-admin-login">
+                <CardContent className="p-5 flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm">管理員登入</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      場域 / 平台管理後台入口
+                    </p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Footer ═══ */}
+      <footer className="py-8 px-4 border-t border-border">
+        <div className="container mx-auto text-center">
+          <p className="text-sm text-muted-foreground">
+            &copy; 2024 CHITO 七逃 · 走踏在地的實境遊戲平台
+          </p>
+          <p className="text-xs text-muted-foreground/60 mt-2">
+            Powered by 大哉實業有限公司
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
