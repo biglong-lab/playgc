@@ -570,7 +570,7 @@ export default function Home() {
   );
 }
 
-/** 對戰快速入口卡片 */
+/** 對戰快速入口卡片 — 顯示即將開打的 3 場 */
 function BattleQuickEntry() {
   const { data: slots = [] } = useQuery<BattleSlot[]>({
     queryKey: ["/api/battle/slots/open"],
@@ -583,13 +583,22 @@ function BattleQuickEntry() {
     },
   });
 
+  // 🆕 排序後取前 3 場
+  const upcoming = [...slots]
+    .sort((a, b) => {
+      const aKey = `${a.slotDate}T${a.startTime}`;
+      const bKey = `${b.slotDate}T${b.startTime}`;
+      return aKey.localeCompare(bKey);
+    })
+    .slice(0, 3);
+
   return (
-    <Link href="/battle">
-      <Card className="mb-8 bg-card border-tactical-orange/30 hover-elevate cursor-pointer group">
-        <CardContent className="p-4 sm:p-6">
+    <Card className="mb-8 bg-card border-tactical-orange/30 hover-elevate group overflow-hidden">
+      <Link href="/battle" className="block">
+        <CardContent className="p-4 sm:p-6 cursor-pointer">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-tactical-orange/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-tactical-orange/20 flex items-center justify-center shrink-0">
                 <Swords className="w-5 h-5 text-tactical-orange" />
               </div>
               <div>
@@ -601,12 +610,71 @@ function BattleQuickEntry() {
                 </p>
               </div>
             </div>
-            <Button variant="outline" className="border-tactical-orange/30 text-tactical-orange hover:bg-tactical-orange/10">
+            <Button variant="outline" className="border-tactical-orange/30 text-tactical-orange hover:bg-tactical-orange/10 shrink-0">
               前往對戰 →
             </Button>
           </div>
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+
+      {/* 🆕 近期場次預覽（最多 3 場）*/}
+      {upcoming.length > 0 && (
+        <div className="border-t border-border/50 bg-muted/20 px-4 sm:px-6 py-3">
+          <p className="text-[11px] font-display uppercase tracking-wider text-muted-foreground mb-2">
+            近期場次
+          </p>
+          <div className="space-y-1.5">
+            {upcoming.map((slot) => {
+              const max = slot.maxPlayersOverride ?? 8;
+              const curr = slot.currentCount ?? 0;
+              const isFull = curr >= max;
+              return (
+                <Link
+                  key={slot.id}
+                  href={`/battle/slot/${slot.id}`}
+                  className="flex items-center justify-between gap-3 py-1.5 px-2 rounded-md hover:bg-muted/40 transition-colors"
+                  data-testid={`battle-quick-slot-${slot.id}`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-xs font-mono text-muted-foreground shrink-0">
+                      {formatSlotDate(slot.slotDate)}
+                    </span>
+                    <span className="text-xs text-foreground shrink-0">
+                      {(slot.startTime || "").slice(0, 5)}–{(slot.endTime || "").slice(0, 5)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className={`text-[10px] font-mono ${isFull ? "text-muted-foreground" : "text-tactical-orange"}`}>
+                      {curr}/{max}
+                    </span>
+                    {isFull ? (
+                      <Badge variant="secondary" className="h-5 text-[10px] px-1.5">
+                        滿員
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="h-5 text-[10px] px-1.5 border-tactical-orange/40 text-tactical-orange">
+                        開放
+                      </Badge>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </Card>
   );
+}
+
+/** 🆕 把 YYYY-MM-DD 格式化為「4/25 週五」 */
+function formatSlotDate(isoDate: string | null | undefined): string {
+  if (!isoDate) return "—";
+  try {
+    const d = new Date(isoDate);
+    const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+    return `${d.getMonth() + 1}/${d.getDate()} 週${weekdays[d.getDay()]}`;
+  } catch {
+    return isoDate;
+  }
 }
