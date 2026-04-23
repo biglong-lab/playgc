@@ -54,13 +54,14 @@ export default function Landing() {
 
   const loginHandlers = useLoginHandlers(() => setShowLoginDialog(false));
 
-  // 🆕 當前場域資料（含 tagline / highlights / modules）
+  // 🆕 當前場域資料（含 tagline / highlights / modules / announcement）
   const currentField = useCurrentField();
   const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
   const fieldLogoUrl = currentField?.logoUrl || null;
   const fieldName = currentField?.name;
   const welcomeMessage = currentField?.welcomeMessage || null;
   const fieldTagline = currentField?.tagline || null;
+  const announcement = currentField?.announcement || null;
 
   // 🆕 場域特色：優先讀後台設定的 highlights，沒有則 fallback 到 i18n 預設
   // 🛡️ 防禦：舊 API / PWA 快取可能沒回 highlights，保底空陣列
