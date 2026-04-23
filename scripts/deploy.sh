@@ -75,6 +75,22 @@ fi
 LOCAL_SHA=$(git rev-parse --short HEAD)
 log_ok "本地 HEAD: $LOCAL_SHA ($(git log -1 --format='%s' | head -c 60))"
 
+# ═══ 1.5/6 TypeScript 型別檢查 ═══
+# 背景：vite build 用 esbuild，會忽略 type 錯誤，type bug 會悄悄上線。
+#      這裡用 tsc --noEmit 擋掉，10-20 秒換無 type bug 的 deploy。
+# 跳過：SKIP_TYPECHECK=1 npm run deploy（特別急時）
+if [[ "$SKIP_TYPECHECK" != "1" ]]; then
+  log_step "1.5/6 TypeScript 型別檢查"
+  if ! npx tsc --noEmit 2>&1 | head -50; then
+    log_fail "TypeScript 有型別錯誤，deploy 中止（修完再試，或用 SKIP_TYPECHECK=1 強制）"
+    exit 1
+  fi
+  # tsc 成功時沒 output，再補 ok
+  log_ok "TypeScript 零錯誤"
+else
+  log_warn "SKIP_TYPECHECK=1 跳過型別檢查"
+fi
+
 # ═══ 2/6 push 到 GitHub ═══
 log_step "2/6 push 到 GitHub"
 git push origin main
