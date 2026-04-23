@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useParams, useLocation, useSearch } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";

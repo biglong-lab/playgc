@@ -1,6 +1,7 @@
 // 付費攔截頁面 — 遊戲需付費時顯示
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

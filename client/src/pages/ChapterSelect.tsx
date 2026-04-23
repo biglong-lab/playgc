@@ -1,5 +1,6 @@
 // 章節選擇頁面 - 顯示遊戲的所有章節及玩家解鎖狀態
 import { useParams, useLocation } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function ChapterSelect() {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
   const { toast } = useToast();
 
   const { data: game, isLoading: gameLoading } = useQuery<Game>({

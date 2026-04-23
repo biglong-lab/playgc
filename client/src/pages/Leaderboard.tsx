@@ -1,6 +1,7 @@
 // 🏆 排行榜頁 — 顯示玩家頭像、暱稱、匿名標記
 import { useState } from "react";
 import { Link } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

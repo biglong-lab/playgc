@@ -1,5 +1,6 @@
 // 我的購買記錄頁面
 import { useLocation } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";

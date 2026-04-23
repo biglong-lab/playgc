@@ -9,6 +9,7 @@
 // 朋友收到 LINE 連結 → 點擊 → 一鍵加入群組 + 進遊戲
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useLoginHandlers } from "@/hooks/useLoginHandlers";

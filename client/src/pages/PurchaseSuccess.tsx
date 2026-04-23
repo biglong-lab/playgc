@@ -1,5 +1,6 @@
 // 付款成功頁面 — Recur 付款完成後重導向到此
 import { useLocation } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

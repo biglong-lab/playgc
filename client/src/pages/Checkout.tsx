@@ -3,6 +3,7 @@
 // 格式：game:{gameId} | battle-slot:{slotId} | chapter:{chapterId}
 import { useEffect } from "react";
 import { useParams, useLocation, Redirect } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 
 export default function Checkout() {
   const params = useParams<{ productId: string }>();

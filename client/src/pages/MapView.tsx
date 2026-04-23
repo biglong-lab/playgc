@@ -1,6 +1,7 @@
 // 地圖導航頁面
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useLocation } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
