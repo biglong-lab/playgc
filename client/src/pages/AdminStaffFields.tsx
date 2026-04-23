@@ -128,11 +128,31 @@ export default function AdminStaffFields() {
 
   // 🆕 模組 filter — 只看啟用該模組的場域
   const [moduleFilter, setModuleFilter] = useState<"all" | keyof FieldSettings>("all");
+  // 🆕 排序
+  type SortKey = "created_desc" | "created_asc" | "name" | "modules_desc" | "modules_asc";
+  const [sortBy, setSortBy] = useState<SortKey>("created_desc");
+
   const filteredFields = useMemo(() => {
     if (!fields) return [];
-    if (moduleFilter === "all") return fields;
-    return fields.filter((f) => f.settings?.[moduleFilter] === true);
-  }, [fields, moduleFilter]);
+    const filtered = moduleFilter === "all"
+      ? [...fields]
+      : fields.filter((f) => f.settings?.[moduleFilter] === true);
+
+    // 依 sortBy 排序
+    filtered.sort((a, b) => {
+      if (sortBy === "name") return a.name.localeCompare(b.name, "zh-Hant");
+      if (sortBy === "created_asc") return (a.createdAt ?? "").localeCompare(b.createdAt ?? "");
+      if (sortBy === "modules_desc" || sortBy === "modules_asc") {
+        const ca = getFieldModuleStatus(a.settings).enabled.length;
+        const cb = getFieldModuleStatus(b.settings).enabled.length;
+        return sortBy === "modules_desc" ? cb - ca : ca - cb;
+      }
+      // 預設 created_desc
+      return (b.createdAt ?? "").localeCompare(a.createdAt ?? "");
+    });
+
+    return filtered;
+  }, [fields, moduleFilter, sortBy]);
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
