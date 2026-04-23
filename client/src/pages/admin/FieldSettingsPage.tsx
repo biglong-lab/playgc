@@ -1269,18 +1269,40 @@ function Swatch({ color, label }: { color?: string; label: string }) {
 // ============================================================================
 
 function ToggleRow({
-  label, description, checked, onChange, testId,
+  label, description, helpText, checked, onChange, testId,
 }: {
   label: string;
   description: string;
+  /** 🆕 hover 小問號時顯示的完整說明 */
+  helpText?: string;
   checked: boolean;
   onChange: (v: boolean) => void;
   testId: string;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="font-medium text-sm">{label}</p>
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <p className="font-medium text-sm">{label}</p>
+          {helpText && (
+            <Tooltip delayDuration={150}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="text-muted-foreground/50 hover:text-primary transition-colors cursor-help shrink-0"
+                  aria-label={`${label} 說明`}
+                  data-testid={`${testId}-help`}
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-[320px] text-xs">
+                <p className="font-semibold mb-1">{label}</p>
+                <p className="leading-relaxed">{helpText}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
       <Switch checked={checked} onCheckedChange={onChange} data-testid={testId} />
