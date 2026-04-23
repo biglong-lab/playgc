@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/useAuth";
 import { useI18n, LanguageSwitcher } from "@/lib/i18n";
 import { useLoginHandlers } from "@/hooks/useLoginHandlers";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
 import {
   EmbeddedBrowserWarning,
   isEmbeddedBrowser,
