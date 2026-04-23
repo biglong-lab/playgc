@@ -10,14 +10,34 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Building2, ChevronDown, Check, Loader2 } from "lucide-react";
+import {
+  Building2, ChevronDown, Check, Loader2,
+  Target, Swords, MapPin, Camera, BookOpen, DollarSign,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import type { FieldSettings } from "@shared/schema";
 
 interface Field {
   id: string;
   name: string;
   code: string;
+  /** 🆕 settings jsonb — 用來顯示模組啟用狀態 */
+  settings?: FieldSettings | null;
 }
+
+/** 🆕 模組徽章定義（對應 /admin/fields 表格相同 icon，保持視覺一致）*/
+const MODULES: Array<{
+  key: keyof FieldSettings;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+}> = [
+  { key: "enableShootingMission", label: "射擊", Icon: Target },
+  { key: "enableBattleArena",     label: "對戰", Icon: Swords },
+  { key: "enableGpsMission",      label: "GPS",  Icon: MapPin },
+  { key: "enablePhotoMission",    label: "拍照", Icon: Camera },
+  { key: "enableChapters",        label: "章節", Icon: BookOpen },
+  { key: "enablePayment",         label: "收費", Icon: DollarSign },
+];
 
 interface FieldSelectorProps {
   currentFieldId: string;
