@@ -83,6 +83,32 @@ export function usePhotoCamera(): PhotoCameraState {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, stream]);
 
+  // 🩺 持續健康監控：cameraReady=true 但 videoWidth 持續 0 → 視為掛掉，自動重啟
+  // 有些 Android 瀏覽器會把 stream 靜默 suspend（不觸發 error），只能靠 polling 偵測
+  useEffect(() => {
+    if (mode !== "camera" || !cameraReady) return;
+    let unhealthyCount = 0;
+    const healthCheck = setInterval(() => {
+      const video = videoRef.current;
+      if (!video) return;
+      if (video.videoWidth === 0 || video.videoHeight === 0) {
+        unhealthyCount += 1;
+        // 連續 3 次（1.5 秒）都 0 → 判定掛掉
+        if (unhealthyCount >= 3) {
+          clearInterval(healthCheck);
+          console.warn("[camera] video 連續不健康，自動重啟");
+          setCameraReady(false);
+          stopCamera();
+          setTimeout(() => void startCamera(), 300);
+        }
+      } else {
+        unhealthyCount = 0;
+      }
+    }, 500);
+    return () => clearInterval(healthCheck);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, cameraReady]);
+
   const startCamera = async () => {
     setCameraError(null);
     setCameraReady(false);
