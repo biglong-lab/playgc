@@ -59,6 +59,20 @@ function linkifyAnnouncement(text: string): ReactNode[] {
   return parts.length > 0 ? parts : [text];
 }
 
+/**
+ * 🆕 支援多行公告 + URL 連結
+ * - split \n → 每行 linkify → 行間插 <br/>
+ */
+function formatAnnouncement(text: string): ReactNode[] {
+  const lines = text.split("\n");
+  return lines.flatMap((line, i) => {
+    const lineParts = linkifyAnnouncement(line);
+    return i === lines.length - 1
+      ? lineParts
+      : [...lineParts, <br key={`br-${i}`} />];
+  });
+}
+
 export type AnnouncementSeverity = "info" | "urgent";
 
 interface AnnouncementBannerProps {
