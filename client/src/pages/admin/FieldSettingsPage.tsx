@@ -490,6 +490,15 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
     setHighlights(settings.highlights ?? []);
   }, [settings]);
 
+  // 🆕 判斷是否有未儲存變更（跟 settings 比對）
+  const hasUnsavedChanges = Boolean(
+    settings &&
+      (tagline !== (settings.tagline ?? "") ||
+        welcomeMessage !== (settings.welcomeMessage ?? "") ||
+        JSON.stringify(highlights) !== JSON.stringify(settings.highlights ?? [])),
+  );
+  useUnsavedWarning(hasUnsavedChanges);
+
   const saveMutation = useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
       const res = await apiRequest("PATCH", `/api/admin/fields/${fieldId}/settings`, data);
