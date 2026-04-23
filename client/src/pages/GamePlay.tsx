@@ -191,11 +191,17 @@ export default function GamePlay() {
         if (foundIndex !== -1) nextIndex = foundIndex;
       }
 
+      // 🆕 標記當前頁為已完成
+      const completedPage = pages[prev.currentPageIndex];
+      const newCompletedIds = completedPage
+        ? Array.from(new Set([...prev.completedPageIds, completedPage.id]))
+        : prev.completedPageIds;
+
       // 解析連續的 flow_router 頁面
       const resolvedIndex = resolveFlowRouter(pages, nextIndex, newVariables, newInventory, newScore);
       if (resolvedIndex === -1) {
         handleCompletion(newScore);
-        return { ...prev, score: newScore, inventory: newInventory, variables: newVariables };
+        return { ...prev, score: newScore, inventory: newInventory, variables: newVariables, completedPageIds: newCompletedIds };
       }
 
       if (resolvedIndex < pages.length) {
