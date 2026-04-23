@@ -1159,16 +1159,22 @@ function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             />
           </div>
 
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             <Button
               onClick={handleSave}
-              disabled={saveMutation.isPending}
+              disabled={saveMutation.isPending || !hasUnsavedChanges}
               className="gap-2"
               data-testid="button-save-brand"
             >
               {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               儲存視覺主題
             </Button>
+            {hasUnsavedChanges && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-medium">
+                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                有未儲存變更
+              </div>
+            )}
 
             {/* 🆕 在新分頁預覽玩家端（不需儲存也能看） */}
             <Button
