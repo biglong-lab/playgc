@@ -94,9 +94,18 @@ export function useSessionManager({
   // 建立新 session
   const createSessionMutation = useMutation({
     mutationFn: async () => {
+      // 🆕 匿名玩家在 Home 填的暱稱帶進來；無則 undefined（後端 schema 不會寫入）
+      let playerName: string | undefined;
+      try {
+        const stored = localStorage.getItem("anonymous_player_name");
+        if (stored && stored.trim()) playerName = stored.trim();
+      } catch { /* ignore */ }
+
       const response = await apiRequest("POST", "/api/sessions", {
         gameId,
-        teamName: `${userName}'s Team`,
+        // 若有匿名暱稱，team_name 也用它（而非 "玩家's Team"）
+        teamName: playerName ? `${playerName}'s Team` : `${userName}'s Team`,
+        playerName,
         playerCount: 1,
       });
       return response.json();
