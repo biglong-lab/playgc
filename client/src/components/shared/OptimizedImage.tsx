@@ -40,13 +40,15 @@ function LoadingPlaceholder() {
 }
 
 /**
- * Cloudinary CDN 同步延遲 retry 策略：
- * 第一次失敗 → 等 1s 再試
- * 第二次失敗 → 等 2.5s 再試
- * 第三次失敗 → 顯示 fallback
+ * Cloudinary CDN 同步延遲 retry 策略（v2 — 擴大對付 CDN 30s 同步延遲）：
+ * 1s → 2.5s → 5s → 8s → 15s（總等待 31.5s）
+ * 超過 5 次失敗才顯示 fallback
+ *
+ * 背景：Cloudinary upload 完成後，邊緣節點可能需要 10-30 秒全球同步。
+ * 使用者不該因為「前幾秒剛上傳」就看到破圖。
  */
-const MAX_RETRIES = 2;
-const RETRY_DELAYS = [1000, 2500];
+const MAX_RETRIES = 5;
+const RETRY_DELAYS = [1000, 2500, 5000, 8000, 15000];
 
 /**
  * 優化圖片元件
