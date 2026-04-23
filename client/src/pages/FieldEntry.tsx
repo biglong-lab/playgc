@@ -51,6 +51,17 @@ export default function FieldEntry() {
     },
   });
 
+  // 最近玩過的場域（從 localStorage 讀）— 快捷入口，不強制跳轉
+  const lastCode = useMemo(() => readLastFieldCode(), []);
+  const lastField = useMemo(
+    () => (lastCode && fields ? fields.find((f) => f.code === lastCode) : null),
+    [lastCode, fields],
+  );
+  const otherFields = useMemo(
+    () => (lastField && fields ? fields.filter((f) => f.code !== lastField.code) : fields),
+    [lastField, fields],
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* ═══ CHITO 品牌 Hero ═══ */}
