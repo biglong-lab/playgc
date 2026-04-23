@@ -444,8 +444,9 @@ export default function GamePlay() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => handlePageComplete()}
-          disabled={currentPageIndex >= totalPages - 1}
+          onClick={goNext}
+          disabled={currentPageIndex >= totalPages - 1 || !canAdvance}
+          title={!canAdvance ? "請先完成當前任務" : undefined}
           className="gap-1"
           data-testid="button-next-page"
         >
@@ -453,6 +454,8 @@ export default function GamePlay() {
           <ChevronRight className="w-4 h-4" />
         </Button>
       </nav>
+        );
+      })()}
 
       {showChat && sessionId && (
         <ChatPanel
