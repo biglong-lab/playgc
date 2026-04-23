@@ -282,10 +282,15 @@ export function WalkieFloatingButton({
   }, [stopTalking]);
 
   if (!enabled) return null;
+  // 🛡️ SSR 安全：document 可能未就緒
+  if (typeof document === "undefined") return null;
 
   const showingInRoom = view === "in-group" || view === "in-session";
 
-  return (
+  // 🔒 用 Portal 渲染到 document.body，徹底脫離任何 parent 的 stacking context
+  // （GamePlay 裡有 framer-motion / transform 等會建立 stacking context 的元素，
+  //  fixed + z-[1100] 仍會被困住；Portal 是最穩的解法）
+  return createPortal(
     <>
       {/* 浮動按鈕（收合） */}
       <AnimatePresence>
