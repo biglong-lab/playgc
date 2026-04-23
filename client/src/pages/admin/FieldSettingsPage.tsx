@@ -542,6 +542,8 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
   const [highlights, setHighlights] = useState<FieldHighlight[]>(settings?.highlights ?? []);
   // 🆕 場域公告
   const [announcement, setAnnouncement] = useState(settings?.announcement ?? "");
+  const [announcementStartAt, setAnnouncementStartAt] = useState(settings?.announcementStartAt ?? "");
+  const [announcementEndAt, setAnnouncementEndAt] = useState(settings?.announcementEndAt ?? "");
 
   useEffect(() => {
     if (!settings) return;
@@ -549,6 +551,8 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
     setWelcomeMessage(settings.welcomeMessage ?? "");
     setHighlights(settings.highlights ?? []);
     setAnnouncement(settings.announcement ?? "");
+    setAnnouncementStartAt(settings.announcementStartAt ?? "");
+    setAnnouncementEndAt(settings.announcementEndAt ?? "");
   }, [settings]);
 
   // 🆕 判斷是否有未儲存變更（跟 settings 比對）
@@ -557,6 +561,8 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
       (tagline !== (settings.tagline ?? "") ||
         welcomeMessage !== (settings.welcomeMessage ?? "") ||
         announcement !== (settings.announcement ?? "") ||
+        announcementStartAt !== (settings.announcementStartAt ?? "") ||
+        announcementEndAt !== (settings.announcementEndAt ?? "") ||
         JSON.stringify(highlights) !== JSON.stringify(settings.highlights ?? [])),
   );
   useUnsavedWarning(hasUnsavedChanges);
