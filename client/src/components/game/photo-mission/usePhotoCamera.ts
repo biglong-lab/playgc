@@ -95,6 +95,20 @@ export function usePhotoCamera(): PhotoCameraState {
     };
   }, [stream]);
 
+  // 🔑 關鍵修復：mode 切換會導致 <video> 元素重新 mount（CameraInitializingView → CameraView 是兩個不同 video）
+  // 每次 mode 變化後重新同步 srcObject，否則新 video 沒有 stream → videoWidth 永遠 0
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !stream) return;
+    if (video.srcObject !== stream) {
+      video.srcObject = stream;
+      // 新 video 需要重新 play
+      video.play().catch((err) => {
+        console.warn("[camera] play failed after mode switch:", err);
+      });
+    }
+  }, [mode, stream]);
+
   // 🛡 頁面切回前景時，若 stream 已掛（Android Chrome/Edge 切 tab 會 suspend）
   // 自動重啟相機；但有重啟上限 + 冷卻時間，避免無窮迴圈
   useEffect(() => {
