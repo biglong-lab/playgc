@@ -13,6 +13,7 @@ import {
   Trophy, Medal, Clock, ArrowLeft, Crown,
   Flame, Star, UserX,
 } from "lucide-react";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
 
 /** 擴充版 leaderboard entry（server 回傳） */
 interface LeaderboardEntryExtended extends LeaderboardEntry {
