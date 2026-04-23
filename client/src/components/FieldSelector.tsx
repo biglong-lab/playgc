@@ -140,29 +140,52 @@ export default function FieldSelector({
           <ChevronDown className="w-3 h-3 flex-shrink-0" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent align="start" className="w-64">
         <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
           切換場域
         </div>
         <DropdownMenuSeparator />
-        {fieldsList?.map((field) => (
-          <DropdownMenuItem
-            key={field.id}
-            onClick={() => handleSelect(field)}
-            className="gap-2"
-            disabled={switching}
-          >
-            {field.id === currentFieldId ? (
-              <Check className="w-4 h-4 text-primary" />
-            ) : (
-              <div className="w-4" />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="truncate font-medium">{field.name}</p>
-              <p className="text-xs text-muted-foreground">{field.code}</p>
-            </div>
-          </DropdownMenuItem>
-        ))}
+        {fieldsList?.map((field) => {
+          const enabledCount = MODULES.filter((m) => field.settings?.[m.key] === true).length;
+          return (
+            <DropdownMenuItem
+              key={field.id}
+              onClick={() => handleSelect(field)}
+              className="gap-2 items-start py-2.5"
+              disabled={switching}
+              data-testid={`field-select-${field.code}`}
+            >
+              {field.id === currentFieldId ? (
+                <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              ) : (
+                <div className="w-4 shrink-0" />
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="truncate font-medium">{field.name}</p>
+                  <span className="text-[10px] text-muted-foreground font-mono shrink-0">
+                    {enabledCount}/{MODULES.length}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground font-mono">{field.code}</p>
+                {/* 🆕 模組啟用迷你 icon bar */}
+                <div className="flex items-center gap-0.5 mt-1.5">
+                  {MODULES.map((m) => {
+                    const enabled = field.settings?.[m.key] === true;
+                    return (
+                      <m.Icon
+                        key={String(m.key)}
+                        className={`w-3 h-3 ${
+                          enabled ? "text-primary" : "text-muted-foreground/25"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );
