@@ -243,15 +243,17 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <I18nProvider>
-            <TooltipProvider>
-              <OfflineBanner isOnline={isOnline} />
-              <Toaster />
-              <Router />
-              <PlayerBottomNav />
-              <PWAInstallPrompt />
-            </TooltipProvider>
-          </I18nProvider>
+          <FieldThemeProvider>
+            <I18nProvider>
+              <TooltipProvider>
+                <OfflineBanner isOnline={isOnline} />
+                <Toaster />
+                <Router />
+                <PlayerBottomNav />
+                <PWAInstallPrompt />
+              </TooltipProvider>
+            </I18nProvider>
+          </FieldThemeProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
