@@ -126,15 +126,22 @@ export default function FieldEntry() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ═══════════ Hero ═══════════ */}
+      {/* ═══════════ Hero（時段動態背景）═══════════ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
+        {/* 🆕 時段氛圍 overlay — 疊加在 primary gradient 上 */}
+        <div className={`absolute inset-0 ${timeTheme.overlayClass} transition-opacity duration-1000`} />
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03]" />
         <div className="relative container mx-auto px-4 py-16 md:py-24 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 mb-3">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-xs font-display uppercase tracking-wider text-primary">
               Real-world · Local · Play
             </span>
+          </div>
+          {/* 🆕 時段問候 */}
+          <div className="inline-flex items-center gap-1.5 text-xs text-muted-foreground mb-6" data-testid={`time-greeting-${timeOfDay}`}>
+            <TimeIcon className="w-3.5 h-3.5" />
+            <span>{timeTheme.label}</span>
           </div>
 
           <h1 className="font-display text-5xl md:text-7xl font-black mb-4 tracking-tight">
