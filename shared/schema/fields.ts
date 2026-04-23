@@ -113,6 +113,8 @@ export interface FieldSettings {
   announcementStartAt?: string;
   /** 🆕 公告結束日期（ISO YYYY-MM-DD；未設 = 不設期限）*/
   announcementEndAt?: string;
+  /** 🆕 公告嚴重程度 — info = 琥珀色可關 / urgent = 紅色不可關（預設 info） */
+  announcementSeverity?: "info" | "urgent";
 
   // 品牌（legacy — 僅 primaryColor 保留向後相容；推薦改用 theme.primaryColor）
   primaryColor?: string;              // @deprecated 改用 theme.primaryColor
