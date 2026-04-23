@@ -348,12 +348,17 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     const finalCheck = validateFinalScore({ hits, totalScore });
     let safeTotalScore = totalScore;
     if (!finalCheck.valid) {
-      logWarning("shooting_final_score_mismatch", finalCheck.message || "總分異常", {
-        sessionId,
-        totalScore,
-        expectedScore: finalCheck.expectedScore,
-        hitsCount: hits.length,
-      });
+      logWarning(
+        "shooting",
+        "final_score_mismatch",
+        finalCheck.message || "總分異常",
+        {
+          sessionId,
+          totalScore,
+          expectedScore: finalCheck.expectedScore,
+          hitsCount: hits.length,
+        },
+      );
       // 使用 hits 實際總和，不信任 state
       safeTotalScore = finalCheck.expectedScore;
     }
