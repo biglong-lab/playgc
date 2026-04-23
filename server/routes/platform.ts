@@ -447,7 +447,7 @@ export function registerPlatformRoutes(app: Express): void {
     });
     const config = existing?.limits ? (existing.limits as Record<string, unknown>) : {};
     res.json({
-      platformName: config.platformName ?? "CHITO 七逃",
+      platformName: config.platformName ?? "CHITO",
       supportEmail: config.supportEmail ?? "",
       defaultPlanCode: config.defaultPlanCode ?? "free",
       maintenanceMode: config.maintenanceMode ?? false,
