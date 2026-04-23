@@ -261,7 +261,7 @@ export default function MeCenter() {
             />
             <div className="border-t" />
             <MenuRow
-              href="/leaderboard"
+              href={link("/leaderboard")}
               icon={<Gamepad2 className="w-4 h-4" />}
               label="遊戲排行榜"
               sublabel="全站遊戲排名"
