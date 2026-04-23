@@ -255,7 +255,7 @@ export default function GamePlay() {
         return { ...prev, score: newScore, inventory: newInventory, variables: newVariables, currentPageIndex: resolvedIndex, completedPageIds: newCompletedIds };
       }
       handleCompletion(newScore);
-      return { ...prev, score: newScore, inventory: newInventory, variables: newVariables };
+      return { ...prev, score: newScore, inventory: newInventory, variables: newVariables, completedPageIds: newCompletedIds };
     });
   }, [stateRef, activePagesRef, setState, handleCompletion, itemIdToInfo]);
 
