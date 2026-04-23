@@ -26,6 +26,10 @@ export const gameSessions = pgTable(
     id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
     gameId: varchar("game_id").references(() => games.id),
     teamName: varchar("team_name", { length: 100 }),
+    /** 🆕 玩家自訂暱稱（匿名 Firebase 登入無 firstName 時的替代）
+     *  顯示優先序：users.firstName/lastName > users.email(非 firebase.local) > session.playerName > "玩家"
+     */
+    playerName: varchar("player_name", { length: 50 }),
     playerCount: integer("player_count").default(1),
     status: varchar("status", { length: 20 }).default("playing"), // playing, completed, abandoned
     score: integer("score").default(0),
