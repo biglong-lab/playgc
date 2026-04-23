@@ -253,6 +253,7 @@ export function useWalkieRoom(options: UseWalkieRoomOptions): UseWalkieRoomResul
     } catch (err) {
       console.error("[walkie] start talking failed:", err);
       setError("無法開啟麥克風（請確認權限）");
+      logError("walkie", "mic_enable_failed", err);
     }
   }, []);
 
