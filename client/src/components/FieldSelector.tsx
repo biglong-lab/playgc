@@ -50,9 +50,9 @@ export default function FieldSelector({
   currentFieldName,
   isSuperAdmin,
 }: FieldSelectorProps) {
-  const [selectedFieldId, setSelectedFieldId] = useState(
-    getStoredFieldId() || currentFieldId
-  );
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [switching, setSwitching] = useState(false);
 
   // 只有 super_admin 才載入場域列表
   const { data: fieldsList } = useQuery<Field[]>({
@@ -74,14 +74,34 @@ export default function FieldSelector({
     );
   }
 
-  const selectedField = fieldsList?.find(f => f.id === selectedFieldId);
-  const displayName = selectedField?.name || currentFieldName;
+  const displayName = currentFieldName;
 
-  const handleSelect = (field: Field) => {
-    setSelectedFieldId(field.id);
-    setStoredFieldId(field.id);
-    // 重新載入頁面以套用新場域（簡單可靠）
-    window.location.reload();
+  // 🆕 真正切換：呼叫後端 switch-field 更新 session token，不再只寫 localStorage
+  const handleSelect = async (field: Field) => {
+    if (field.id === currentFieldId) return; // 同場域不切
+    setSwitching(true);
+    try {
+      const res = await apiRequest("POST", "/api/admin/switch-field", {
+        fieldCode: field.code,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || "切換失敗");
+      }
+      setStoredFieldId(field.id); // 記下選擇（輔助）
+      // 清所有 cache 避免看到舊場域資料
+      queryClient.clear();
+      toast({ title: `已切換到 ${field.name}` });
+      // 重載到 /admin 首頁套新場域主題 + 資料
+      window.location.href = "/admin";
+    } catch (err) {
+      toast({
+        title: "切換失敗",
+        description: err instanceof Error ? err.message : "請重新登入",
+        variant: "destructive",
+      });
+      setSwitching(false);
+    }
   };
 
   return (
