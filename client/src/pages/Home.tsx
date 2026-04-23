@@ -54,6 +54,13 @@ export default function Home() {
       })
     : false;
 
+  // 🆕 當前場域資料（name / logo / coverImage / welcome）
+  const currentField = useCurrentField();
+  const fieldName = currentField?.name || "賈村競技場";
+  const fieldLogoUrl = currentField?.logoUrl || null;
+  const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
+  const welcomeMessage = currentField?.welcomeMessage || null;
+
   const { data: games, isLoading: gamesLoading } = useQuery<Game[]>({
     queryKey: ["/api/games"],
   });
