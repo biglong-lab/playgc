@@ -32,6 +32,7 @@ import {
   Star,
   Clock,
   Megaphone,
+  X,
   type LucideIcon,
 } from "lucide-react";
 
