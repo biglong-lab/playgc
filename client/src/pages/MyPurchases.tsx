@@ -23,6 +23,7 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 
 export default function MyPurchases() {
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
   const { data: purchases = [], isLoading } = usePurchases();
 
   return (
@@ -32,7 +33,7 @@ export default function MyPurchases() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation("/home")}
+            onClick={() => setLocation(link("/home"))}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>

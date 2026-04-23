@@ -36,6 +36,7 @@ interface MembershipSummary {
 export default function MeCenter() {
   const { user, firebaseUser, isSignedIn, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
 
   // 🎫 我的場域會員身份（跨場域整合）
   const { data: membershipsData } = useQuery<{ memberships: MembershipSummary[] }>({

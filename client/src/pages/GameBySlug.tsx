@@ -51,6 +51,7 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 export default function GameBySlug() {
   const { slug } = useParams<{ slug: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
 
   const { data: game, isLoading, error } = useQuery<Game>({
     queryKey: ["/api/g", slug],
@@ -205,7 +206,7 @@ export default function GameBySlug() {
             <div className="pt-4">
               <Button 
                 className="w-full h-12 text-lg"
-                onClick={() => setLocation(`/game/${game.id}`)}
+                onClick={() => setLocation(link(`/game/${game.id}`))}
                 data-testid="button-start-game"
               >
                 <Play className="w-5 h-5 mr-2" />

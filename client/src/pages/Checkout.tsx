@@ -8,6 +8,7 @@ import { useFieldLink } from "@/hooks/useFieldLink";
 export default function Checkout() {
   const params = useParams<{ productId: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
   const productId = decodeURIComponent(params.productId ?? "");
 
   useEffect(() => {
@@ -16,11 +17,11 @@ export default function Checkout() {
 
     switch (type) {
       case "game":
-        setLocation(`/purchase/gate/${id}`);
+        setLocation(link(`/purchase/gate/${id}`);
         break;
       case "chapter":
         // 章節購買：走 PurchaseGate 並帶 chapter 參數
-        setLocation(`/purchase/gate/${id}?scope=chapter`);
+        setLocation(link(`/purchase/gate/${id}?scope=chapter`);
         break;
       case "battle-slot":
         // 對戰報名：直接到時段詳情頁
@@ -28,7 +29,7 @@ export default function Checkout() {
         break;
       default:
         // 未知類型：回首頁
-        setLocation("/home");
+        setLocation(link("/home"));
     }
   }, [productId, setLocation]);
 

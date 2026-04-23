@@ -97,7 +97,7 @@ export default function Leaderboard() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/home">
+              <Link href={link("/home")}>
                 <Button variant="ghost" size="icon" data-testid="button-back">
                   <ArrowLeft className="w-5 h-5" />
                 </Button>

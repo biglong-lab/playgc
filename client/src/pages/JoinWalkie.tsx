@@ -27,6 +27,7 @@ const PENDING_CODE_KEY = "pendingWalkieCode";
 export default function JoinWalkie() {
   const { code } = useParams<{ code: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
   const { toast } = useToast();
   const { user, isLoading: authLoading, isSignedIn } = useAuth();
   const [joined, setJoined] = useState(false);
@@ -186,7 +187,7 @@ export default function JoinWalkie() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => setLocation("/home")}
+              onClick={() => setLocation(link("/home"))}
             >
               回到遊戲大廳
             </Button>
@@ -217,7 +218,7 @@ export default function JoinWalkie() {
           </p>
           <Button
             className="w-full gap-2"
-            onClick={() => setLocation("/home")}
+            onClick={() => setLocation(link("/home"))}
           >
             <Gamepad2 className="w-4 h-4" />
             前往遊戲大廳

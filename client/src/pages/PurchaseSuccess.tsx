@@ -14,6 +14,7 @@ interface TransactionStatus {
 
 export default function PurchaseSuccess() {
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
 
   // 從 URL 取得交易 ID
   const params = new URLSearchParams(window.location.search);
@@ -73,7 +74,7 @@ export default function PurchaseSuccess() {
             {txStatus?.gameId ? (
               <Button
                 className="w-full gap-2"
-                onClick={() => setLocation(`/game/${txStatus.gameId}/chapters`)}
+                onClick={() => setLocation(link(`/game/${txStatus.gameId}/chapters`))}
                 disabled={isPending}
               >
                 <GamepadIcon className="w-4 h-4" />
@@ -82,7 +83,7 @@ export default function PurchaseSuccess() {
             ) : (
               <Button
                 className="w-full gap-2"
-                onClick={() => setLocation("/home")}
+                onClick={() => setLocation(link("/home"))}
               >
                 <GamepadIcon className="w-4 h-4" />
                 回到首頁

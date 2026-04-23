@@ -17,6 +17,7 @@ import type { Game } from "@shared/schema";
 export default function PurchaseGate() {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
   const { toast } = useToast();
   const redeemMutation = useRedeemCode();
   const [checkoutChapterId, setCheckoutChapterId] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export default function PurchaseGate() {
 
   // 已有存取權 → 導向遊戲
   if (access?.hasAccess) {
-    setLocation(`/game/${gameId}/chapters`);
+    setLocation(link(`/game/${gameId}/chapters`));
     return null;
   }
 
@@ -75,7 +76,7 @@ export default function PurchaseGate() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLocation("/home")}
+            onClick={() => setLocation(link("/home"))}
           >
             <ChevronLeft className="w-5 h-5" />
           </Button>

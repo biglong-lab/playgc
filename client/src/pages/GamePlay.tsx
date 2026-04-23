@@ -31,6 +31,7 @@ import {
 export default function GamePlay() {
   const { gameId, chapterId } = useParams<{ gameId: string; chapterId?: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();
   const searchString = useSearch();
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -299,7 +300,7 @@ export default function GamePlay() {
           <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
           <h2 className="text-xl font-display font-bold mb-2">找不到遊戲</h2>
           <p className="text-muted-foreground mb-6">此遊戲可能已被刪除或不存在</p>
-          <Button onClick={() => setLocation("/home")} className="gap-2">
+          <Button onClick={() => setLocation(link("/home"))} className="gap-2">
             <Home className="w-4 h-4" />
             返回大廳
           </Button>
