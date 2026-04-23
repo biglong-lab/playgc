@@ -1048,6 +1048,7 @@ function IntroPreview({
   announcement,
   announcementStartAt,
   announcementEndAt,
+  announcementSeverity,
 }: {
   tagline: string;
   welcomeMessage: string;
@@ -1055,6 +1056,7 @@ function IntroPreview({
   announcement: string;
   announcementStartAt: string;
   announcementEndAt: string;
+  announcementSeverity: "info" | "urgent";
 }) {
   // 判斷公告目前是否會顯示（跟 API isAnnouncementActive 相同邏輯）
   const today = new Date().toISOString().split("T")[0];
