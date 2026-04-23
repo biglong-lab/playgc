@@ -147,6 +147,28 @@ export function filterMenuByPermissions(
     .filter((group) => group.items.length > 0);
 }
 
+/**
+ * 🆕 根據場域模組開關過濾菜單
+ * - 沒指定 requiresModule 的項目 → 永遠顯示
+ * - 有指定 → 該模組必須啟用才顯示
+ * - modules === undefined（尚未載入）→ 暫時全顯示，避免閃爍
+ */
+export function filterMenuByModules(
+  groups: AdminMenuGroup[],
+  modules: Partial<Record<MenuModuleKey, boolean>> | undefined,
+): AdminMenuGroup[] {
+  if (!modules) return groups;
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => {
+        if (!item.requiresModule) return true;
+        return modules[item.requiresModule] === true;
+      }),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
 /** 系統角色顯示名稱 */
 export const SYSTEM_ROLE_LABELS: Record<string, string> = {
   super_admin: "超級管理員",
