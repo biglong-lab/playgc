@@ -471,3 +471,77 @@
   opacity: 0;
   transition: opacity 0.2s ease;
 }
+
+/* ============================================================================
+   🎨 場域版面模板（Phase 2）
+   由 FieldThemeProvider 透過 body[data-layout="xxx"] 觸發
+   給玩家端遊戲列表等公共元件有樣式差異
+   ============================================================================ */
+
+/* card：大尺寸卡片 — 單欄、每張卡片更大、更多內距 */
+body[data-layout="card"] .container main > div.grid {
+  grid-template-columns: 1fr !important;
+  max-width: 720px;
+  margin-inline: auto;
+  gap: 2rem !important;
+}
+
+body[data-layout="card"] .container main > div.grid .group div.relative.h-48 {
+  height: 280px;
+}
+
+/* fullscreen：滿版沉浸 — 單欄、卡片佔 90vh、強調視覺 */
+body[data-layout="fullscreen"] .container main > div.grid {
+  grid-template-columns: 1fr !important;
+  gap: 3rem !important;
+}
+
+body[data-layout="fullscreen"] .container main > div.grid > div {
+  min-height: 70vh;
+  scroll-snap-align: start;
+}
+
+body[data-layout="fullscreen"] main {
+  scroll-snap-type: y mandatory;
+}
+
+body[data-layout="fullscreen"] .container main > div.grid .group div.relative.h-48 {
+  height: 400px;
+}
+
+/* minimal：極簡列表 — 極窄、少色、隱藏大圖 */
+body[data-layout="minimal"] .container main > div.grid {
+  grid-template-columns: 1fr !important;
+  max-width: 640px;
+  margin-inline: auto;
+  gap: 0.5rem !important;
+}
+
+body[data-layout="minimal"] .container main > div.grid > div {
+  border-radius: 0.25rem;
+  box-shadow: none;
+}
+
+body[data-layout="minimal"] .container main > div.grid > div div.relative.h-48 {
+  height: 80px;
+}
+
+body[data-layout="minimal"] .container main > div.grid > div .absolute.inset-0 {
+  display: none;
+}
+
+/* classic：系統預設，不覆蓋 */
+
+/* 字體覆蓋（body class 觸發） */
+body.font-serif {
+  font-family: "Noto Serif TC", "Source Han Serif", Georgia, serif;
+}
+
+body.font-mono {
+  font-family: "JetBrains Mono", "Fira Code", Menlo, monospace;
+}
+
+body.font-display {
+  font-family: "Bungee", "Black Ops One", "Poppins", sans-serif;
+  letter-spacing: 0.02em;
+}
