@@ -107,8 +107,12 @@ export default function FieldSelector({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2 max-w-[200px]">
-          <Building2 className="w-4 h-4 flex-shrink-0" />
+        <Button variant="ghost" size="sm" className="gap-2 max-w-[200px]" disabled={switching}>
+          {switching ? (
+            <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+          ) : (
+            <Building2 className="w-4 h-4 flex-shrink-0" />
+          )}
           <span className="truncate">{displayName}</span>
           <ChevronDown className="w-3 h-3 flex-shrink-0" />
         </Button>
@@ -123,11 +127,13 @@ export default function FieldSelector({
             key={field.id}
             onClick={() => handleSelect(field)}
             className="gap-2"
+            disabled={switching}
           >
-            {field.id === selectedFieldId && (
+            {field.id === currentFieldId ? (
               <Check className="w-4 h-4 text-primary" />
+            ) : (
+              <div className="w-4" />
             )}
-            {field.id !== selectedFieldId && <div className="w-4" />}
             <div className="flex-1 min-w-0">
               <p className="truncate font-medium">{field.name}</p>
               <p className="text-xs text-muted-foreground">{field.code}</p>
