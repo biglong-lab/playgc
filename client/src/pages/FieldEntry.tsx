@@ -519,6 +519,28 @@ function FieldCard({
           </p>
         )}
 
+        {/* 🆕 公告提示（API 已過濾時效外，只會在生效中出現） */}
+        {field.announcement && (() => {
+          const isUrgent = field.announcementSeverity === "urgent";
+          const Icon = isUrgent ? AlertCircle : Megaphone;
+          return (
+            <div
+              className={`flex items-start gap-1.5 mt-2 px-2 py-1.5 rounded-md text-xs ${
+                isUrgent
+                  ? "bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/30 font-medium"
+                  : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
+              }`}
+              data-testid={`field-card-announcement-${field.code}`}
+            >
+              <Icon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+              <span className="line-clamp-2 leading-snug">
+                {isUrgent && "🚨 "}
+                {field.announcement}
+              </span>
+            </div>
+          );
+        })()}
+
         {/* 其他遊戲封面小縮圖（最多 3 個）*/}
         {topCovers.length > 1 && (
           <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
