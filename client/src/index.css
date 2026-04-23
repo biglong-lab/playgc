@@ -532,16 +532,34 @@ body[data-layout="minimal"] .container main > div.grid > div .absolute.inset-0 {
 
 /* classic：系統預設，不覆蓋 */
 
-/* 字體覆蓋（body class 觸發） */
+/* 字體覆蓋（body class 觸發）
+   - serif：文藝襯線（中英文皆支援）
+   - mono：科技等寬（中文 fallback Noto Sans TC）
+   - display：遊戲感粗體（英文 Bungee + 中文 Noto Sans TC 900 黑體）
+*/
 body.font-serif {
-  font-family: "Noto Serif TC", "Source Han Serif", Georgia, serif;
+  font-family: "Noto Serif TC", "Source Han Serif TC", "Source Han Serif", Georgia, "Times New Roman", serif;
 }
 
 body.font-mono {
-  font-family: "JetBrains Mono", "Fira Code", Menlo, monospace;
+  font-family: "JetBrains Mono", "Fira Code", "Noto Sans TC", Menlo, Consolas, monospace;
 }
 
 body.font-display {
-  font-family: "Bungee", "Black Ops One", "Poppins", sans-serif;
-  letter-spacing: 0.02em;
+  /* Bungee 只支援英文字母，中文自動 fallback 到 Noto Sans TC 的 900 黑體 */
+  font-family: "Bungee", "Noto Sans TC", "Black Ops One", "Poppins", sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+body.font-display h1,
+body.font-display h2,
+body.font-display h3,
+body.font-display .font-display,
+body.font-display .font-bold {
+  /* 遊戲感主題：標題更強烈 */
+  font-family: "Bungee", "Noto Sans TC", "Orbitron", sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
