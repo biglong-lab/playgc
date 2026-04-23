@@ -296,32 +296,49 @@ export default function AdminSessions() {
           {selectedRow && (
             <div className="space-y-4">
               {/* 玩家資訊區塊 */}
-              {selectedRow.user && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/40 border">
-                  {selectedRow.user.profileImageUrl ? (
-                    <img
-                      src={selectedRow.user.profileImageUrl}
-                      alt=""
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                      <UserIcon className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">
-                      {getPlayerDisplayName(selectedRow.user)}
-                    </div>
-                    {selectedRow.user.email && (
-                      <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                        <Mail className="w-3 h-3" />
-                        {selectedRow.user.email}
+              {(() => {
+                const info = getPlayerInfo(selectedRow);
+                return (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/40 border">
+                    {selectedRow.user?.profileImageUrl ? (
+                      <img
+                        src={selectedRow.user.profileImageUrl}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                        {info.isAnon ? (
+                          <UserX className="w-5 h-5 text-amber-500" />
+                        ) : (
+                          <UserIcon className="w-5 h-5 text-muted-foreground" />
+                        )}
                       </div>
                     )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate flex items-center gap-2">
+                        {info.name}
+                        {info.isAnon && (
+                          <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-600 shrink-0">
+                            匿名
+                          </Badge>
+                        )}
+                      </div>
+                      {selectedRow.user?.email && !selectedRow.user.email.endsWith("@firebase.local") && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
+                          <Mail className="w-3 h-3" />
+                          {selectedRow.user.email}
+                        </div>
+                      )}
+                      {info.isAnon && (
+                        <div className="text-xs text-amber-600/80 mt-0.5">
+                          ⚠️ 匿名遊玩，積分不累積到個人帳號
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">狀態</span>
