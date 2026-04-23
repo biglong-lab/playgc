@@ -142,7 +142,7 @@ export default function AnnouncementBanner({
     >
       <Icon className="w-4 h-4 shrink-0" />
       <span className="text-center leading-relaxed flex-1 max-w-3xl">
-        {linkifyAnnouncement(announcement)}
+        {formatAnnouncement(announcement)}
       </span>
       {severity === "info" && (
         <button
