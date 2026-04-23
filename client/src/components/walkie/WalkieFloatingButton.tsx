@@ -247,8 +247,9 @@ export function WalkieFloatingButton({
    */
   const handleInviteFriends = useCallback(async () => {
     if (myGroup) {
-      // 已有群組 → 直接分享
+      // 已有群組 → 直接分享 + 收合到 Pill（暗示「QR 小圖」就是再次看 QR 的地方）
       await shareGroupLink(myGroup.accessCode);
+      setExpanded(false);
       return;
     }
     try {
@@ -265,8 +266,10 @@ export function WalkieFloatingButton({
       await shareGroupLink(newGroup.accessCode);
       toast({
         title: "✅ 已建立並分享",
-        description: `代碼 ${newGroup.accessCode}`,
+        description: "點右上 QR 小圖可再次查看",
       });
+      // 🆕 自動收合到 Pill 狀態，讓使用者看到右上 QR 小按鈕的位置
+      setExpanded(false);
     } catch (err) {
       toast({
         title: "邀請失敗",
