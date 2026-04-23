@@ -42,6 +42,33 @@ export function usePhotoCamera(): PhotoCameraState {
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
 
+  // 🛡 自動重啟保護機制
+  // 避免「health check 發現不健康 → 重啟 → 又不健康 → 再重啟」無窮迴圈
+  const autoRestartCountRef = useRef(0);        // 本次 session 已自動重啟幾次
+  const lastRestartAtRef = useRef(0);           // 上次重啟 timestamp
+  const MAX_AUTO_RESTART = 2;                   // 最多自動重啟 2 次（再失敗就停，交給使用者手動）
+  const RESTART_COOLDOWN_MS = 5000;             // 兩次自動重啟最少間隔 5 秒
+
+  /** 判斷是否可以自動重啟（含上限 + 冷卻） */
+  const canAutoRestart = useCallback((): boolean => {
+    if (autoRestartCountRef.current >= MAX_AUTO_RESTART) {
+      console.warn("[camera] 已達自動重啟上限，停止 auto-recovery");
+      return false;
+    }
+    const since = Date.now() - lastRestartAtRef.current;
+    if (since < RESTART_COOLDOWN_MS) {
+      console.warn(`[camera] 重啟冷卻中（剩 ${RESTART_COOLDOWN_MS - since}ms）`);
+      return false;
+    }
+    return true;
+  }, []);
+
+  /** 標記發起一次自動重啟 */
+  const markAutoRestart = useCallback(() => {
+    autoRestartCountRef.current += 1;
+    lastRestartAtRef.current = Date.now();
+  }, []);
+
   const stopCamera = useCallback(() => {
     if (stream) {
       stream.getTracks().forEach((track) => track.stop());
