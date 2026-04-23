@@ -2,22 +2,51 @@
 //
 // 網址：/f （不帶 fieldCode）與 /（PlatformHome 轉送來）
 // 職責：
-//   1. CHITO 品牌介紹
-//   2. 列出所有 active 場域讓玩家選擇
+//   1. CHITO 品牌介紹 + 給誰用 + 如何運作
+//   2. 列出所有 active 場域（帶封面、遊戲數）
 //   3. 管理員登入 / 申請開通場域 入口
-//
-// 點場域卡片 → 進入 /f/:fieldCode 該場域 Landing
 
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
 import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, ArrowRight, Gamepad2, MapPin, Sparkles, Users, History } from "lucide-react";
+import {
+  Building2,
+  ArrowRight,
+  Gamepad2,
+  MapPin,
+  Sparkles,
+  Users,
+  History,
+  QrCode,
+  Landmark,
+  ShoppingBag,
+  Coffee,
+  Rocket,
+  Compass,
+  Layers,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 
-/** 同步讀取 localStorage 的上次場域 code（只在元件初始化時算一次） */
+interface FieldItem {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  logoUrl: string | null;
+  status: string;
+  // 🆕 marketing
+  tagline: string | null;
+  coverImageUrl: string | null;
+  highlights: Array<{ icon?: string; title: string; description?: string }>;
+  // 🆕 stats
+  gameCount: number;
+  topGameCovers: Array<{ id: string; title: string; coverImageUrl: string }>;
+}
+
+/** 同步讀取 localStorage 的上次場域 code */
 function readLastFieldCode(): string | null {
   if (typeof window === "undefined") return null;
   try {
@@ -29,19 +58,9 @@ function readLastFieldCode(): string | null {
   return null;
 }
 
-interface FieldItem {
-  id: string;
-  code: string;
-  name: string;
-  description: string | null;
-  logoUrl: string | null;
-  status: string;
-}
-
 export default function FieldEntry() {
   const [, setLocation] = useLocation();
 
-  // 公開端點：只回 active 場域（後端未來可加 visible_on_landing 欄位）
   const { data: fields, isLoading } = useQuery<FieldItem[]>({
     queryKey: ["/api/fields/public"],
     queryFn: async () => {
@@ -51,7 +70,7 @@ export default function FieldEntry() {
     },
   });
 
-  // 最近玩過的場域（從 localStorage 讀）— 快捷入口，不強制跳轉
+  // 最近玩過的場域 — 快捷入口，不強制跳轉
   const lastCode = useMemo(() => readLastFieldCode(), []);
   const lastField = useMemo(
     () => (lastCode && fields ? fields.find((f) => f.code === lastCode) : null),
@@ -64,56 +83,135 @@ export default function FieldEntry() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ═══ CHITO 品牌 Hero ═══ */}
+      {/* ═══════════ Hero ═══════════ */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-background border-b border-border">
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03]" />
         <div className="relative container mx-auto px-4 py-16 md:py-24 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30 mb-6">
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-xs font-display uppercase tracking-wider text-primary">
-              Walk · Play · Local
+              Real-world · Local · Play
             </span>
           </div>
 
           <h1 className="font-display text-5xl md:text-7xl font-black mb-4 tracking-tight">
             CHITO
           </h1>
-          <p className="text-lg md:text-xl text-primary font-semibold mb-3 tracking-wide">
+          <p className="text-lg md:text-xl text-primary font-semibold mb-4 tracking-wide">
             Play the Place
           </p>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-            在地場域的實境遊戲平台<br className="md:hidden" />
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            在地場域的實境遊戲平台
+            <br className="md:hidden" />
             <span className="hidden md:inline"> · </span>
             串聯景點、市集、文化空間的沉浸式體驗
           </p>
+        </div>
+      </section>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary/70" />
-              <span>多場域獨立營運</span>
+      {/* ═══════════ 給誰用（What is CHITO） ═══════════ */}
+      <section className="container mx-auto px-4 py-14 md:py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <p className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-2">
+              What is CHITO
+            </p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-3">
+              把實體場域變成可以玩的遊戲
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              CHITO 是一個<span className="text-foreground font-medium">多場域實境遊戲 SaaS</span>。
+              景點、市集、文化空間用 CHITO 打造專屬遊戲；玩家用手機走踏、掃 QR、解謎、拍照、完成任務，
+              讓每一次到訪都變成一段有劇情的體驗。
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="border-2">
+              <CardContent className="p-6">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <Landmark className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-display font-bold text-base mb-1.5">在地景點 · 文化觀光</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  把歷史、故事、地景變成遊戲任務，遊客不再只是「走馬看花」。
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2">
+              <CardContent className="p-6">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <ShoppingBag className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-display font-bold text-base mb-1.5">市集 · 商圈走踏</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  任務串聯店家，引流、加值、消費，讓走踏本身變成理由。
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2">
+              <CardContent className="p-6">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                  <Coffee className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-display font-bold text-base mb-1.5">活動 · 品牌體驗</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  一次性活動或常駐品牌館，快速上線、完賽即可查排行榜。
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ 如何運作（3 步驟） ═══════════ */}
+      <section className="bg-muted/30 border-y border-border">
+        <div className="container mx-auto px-4 py-14 md:py-20">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10">
+              <p className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-2">
+                How it works
+              </p>
+              <h2 className="text-2xl md:text-3xl font-display font-bold">三步驟開始走踏</h2>
             </div>
-            <div className="flex items-center gap-2">
-              <Gamepad2 className="w-4 h-4 text-primary/70" />
-              <span>QR · GPS · 拍照 · 射擊任務</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 text-primary/70" />
-              <span>團隊 · 競賽 · 接力</span>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <StepCard
+                step="1"
+                icon={<Compass className="w-6 h-6 text-primary" />}
+                title="選擇場域"
+                description="從 CHITO 首頁選擇要去的場域，或直接掃場域 QR Code 進入。"
+              />
+              <StepCard
+                step="2"
+                icon={<Gamepad2 className="w-6 h-6 text-primary" />}
+                title="選擇遊戲"
+                description="每個場域有自己的遊戲 / 章節 / 任務，挑一款開始。"
+              />
+              <StepCard
+                step="3"
+                icon={<Rocket className="w-6 h-6 text-primary" />}
+                title="走踏 · 完賽"
+                description="沿途完成 QR、拍照、解謎、團隊任務，完賽查排行榜。"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ 場域列表 ═══ */}
-      <section className="container mx-auto px-4 py-12 md:py-16">
-        <div className="max-w-4xl mx-auto">
+      {/* ═══════════ 場域列表 ═══════════ */}
+      <section className="container mx-auto px-4 py-14 md:py-20">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
               <Building2 className="w-7 h-7 text-primary" />
             </div>
-            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">
-              選擇場域
-            </h2>
+            <p className="text-xs font-display uppercase tracking-wider text-muted-foreground mb-2">
+              Active Venues
+            </p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">選擇場域</h2>
             <p className="text-sm md:text-base text-muted-foreground">
               每個場域有獨立的遊戲、排行榜與主題風格
             </p>
@@ -122,7 +220,7 @@ export default function FieldEntry() {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[1, 2].map((i) => (
-                <Skeleton key={i} className="h-36 rounded-xl" />
+                <Skeleton key={i} className="h-64 rounded-xl" />
               ))}
             </div>
           ) : !fields || fields.length === 0 ? (
@@ -139,49 +237,18 @@ export default function FieldEntry() {
             </Card>
           ) : (
             <>
-              {/* 🆕 繼續上次場域 — 快捷卡片（不強制跳轉，使用者自己點） */}
+              {/* 🆕 繼續上次場域 — 快捷卡片（不強制跳轉） */}
               {lastField && (
-                <div className="mb-5">
+                <div className="mb-6">
                   <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
                     <History className="w-3.5 h-3.5" />
                     繼續上次場域
                   </p>
-                  <Card
-                    className="cursor-pointer hover-elevate transition-all group border-2 border-primary/40 bg-primary/5"
+                  <FieldCard
+                    field={lastField}
+                    highlighted
                     onClick={() => setLocation(`/f/${lastField.code}`)}
-                    data-testid={`field-recent-${lastField.code}`}
-                  >
-                    <CardContent className="p-5">
-                      <div className="flex items-center gap-4">
-                        {lastField.logoUrl ? (
-                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-primary/10 shrink-0">
-                            <OptimizedImage
-                              src={lastField.logoUrl}
-                              alt={lastField.name}
-                              preset="thumbnail"
-                              className="w-full h-full object-contain p-1"
-                              loading="eager"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                            <Building2 className="w-7 h-7 text-primary" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-display font-bold text-lg mb-0.5 truncate">
-                            {lastField.name}
-                          </h3>
-                          <p className="text-xs text-muted-foreground font-mono">
-                            {lastField.code}
-                          </p>
-                        </div>
-                        <Button size="sm" className="gap-1.5 shrink-0">
-                          進入 <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  />
                 </div>
               )}
 
@@ -189,52 +256,15 @@ export default function FieldEntry() {
               {otherFields && otherFields.length > 0 && (
                 <>
                   {lastField && (
-                    <p className="text-xs text-muted-foreground mb-2">
-                      其他場域
-                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">其他場域</p>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {otherFields.map((f) => (
-                      <Card
+                      <FieldCard
                         key={f.id}
-                        className="cursor-pointer hover-elevate transition-all group border-2"
+                        field={f}
                         onClick={() => setLocation(`/f/${f.code}`)}
-                        data-testid={`field-card-${f.code}`}
-                      >
-                        <CardContent className="p-6">
-                          <div className="flex items-start gap-4">
-                            {f.logoUrl ? (
-                              <div className="w-14 h-14 rounded-xl overflow-hidden bg-primary/10 shrink-0">
-                                <OptimizedImage
-                                  src={f.logoUrl}
-                                  alt={f.name}
-                                  preset="thumbnail"
-                                  className="w-full h-full object-contain p-1"
-                                  loading="eager"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                                <Building2 className="w-7 h-7 text-primary" />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-display font-bold text-xl mb-1 truncate">
-                                {f.name}
-                              </h3>
-                              <p className="text-xs text-muted-foreground font-mono mb-2">
-                                {f.code}
-                              </p>
-                              {f.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                  {f.description}
-                                </p>
-                              )}
-                            </div>
-                            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-1" />
-                          </div>
-                        </CardContent>
-                      </Card>
+                      />
                     ))}
                   </div>
                 </>
@@ -248,10 +278,10 @@ export default function FieldEntry() {
         </div>
       </section>
 
-      {/* ═══ 次要入口：申請場域 / 管理員登入 ═══ */}
+      {/* ═══════════ 次要入口 ═══════════ */}
       <section className="border-t border-border bg-muted/20">
         <div className="container mx-auto px-4 py-10">
-          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4">
             <Link href="/apply">
               <Card className="cursor-pointer hover-elevate transition-all h-full">
                 <CardContent className="p-5 flex items-center gap-4">
@@ -270,7 +300,10 @@ export default function FieldEntry() {
             </Link>
 
             <Link href="/admin/login">
-              <Card className="cursor-pointer hover-elevate transition-all h-full" data-testid="link-admin-login">
+              <Card
+                className="cursor-pointer hover-elevate transition-all h-full"
+                data-testid="link-admin-login"
+              >
                 <CardContent className="p-5 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0">
                     <Users className="w-5 h-5 text-muted-foreground" />
@@ -289,7 +322,7 @@ export default function FieldEntry() {
         </div>
       </section>
 
-      {/* ═══ Footer ═══ */}
+      {/* ═══════════ Footer ═══════════ */}
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto text-center">
           <p className="text-sm text-muted-foreground">
@@ -301,5 +334,153 @@ export default function FieldEntry() {
         </div>
       </footer>
     </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 子元件：步驟卡片
+// ═══════════════════════════════════════════════════════════════
+function StepCard({
+  step,
+  icon,
+  title,
+  description,
+}: {
+  step: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Card className="relative border-2">
+      <CardContent className="p-6">
+        <span className="absolute top-3 right-4 text-4xl font-display font-black text-primary/10">
+          {step}
+        </span>
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+          {icon}
+        </div>
+        <h3 className="font-display font-bold text-lg mb-1.5">{title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 子元件：場域卡片（帶封面圖、遊戲數、tagline）
+// ═══════════════════════════════════════════════════════════════
+function FieldCard({
+  field,
+  highlighted = false,
+  onClick,
+}: {
+  field: FieldItem;
+  highlighted?: boolean;
+  onClick: () => void;
+}) {
+  // 封面優先序：coverImageUrl > 第一款遊戲封面 > null
+  const coverUrl = field.coverImageUrl || field.topGameCovers[0]?.coverImageUrl || null;
+
+  return (
+    <Card
+      className={`cursor-pointer hover-elevate transition-all group overflow-hidden border-2 ${
+        highlighted ? "border-primary/50 bg-primary/5 shadow-lg" : ""
+      }`}
+      onClick={onClick}
+      data-testid={highlighted ? `field-recent-${field.code}` : `field-card-${field.code}`}
+    >
+      {/* 封面圖 */}
+      {coverUrl ? (
+        <div className="relative w-full aspect-[16/9] bg-muted overflow-hidden">
+          <OptimizedImage
+            src={coverUrl}
+            alt={field.name}
+            preset="card"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            loading="eager"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+          {/* 遊戲數 Badge */}
+          {field.gameCount > 0 && (
+            <div className="absolute top-3 right-3 bg-background/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+              <Gamepad2 className="w-3 h-3" />
+              {field.gameCount} 款遊戲
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-primary/20 via-primary/5 to-background flex items-center justify-center">
+          <Building2 className="w-12 h-12 text-primary/40" />
+          {field.gameCount > 0 && (
+            <div className="absolute top-3 right-3 bg-background/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+              <Gamepad2 className="w-3 h-3" />
+              {field.gameCount} 款遊戲
+            </div>
+          )}
+        </div>
+      )}
+
+      <CardContent className="p-5">
+        <div className="flex items-start gap-3 mb-2">
+          {field.logoUrl && (
+            <div className="w-11 h-11 rounded-lg overflow-hidden bg-primary/10 shrink-0 -mt-10 border-4 border-background shadow-md">
+              <OptimizedImage
+                src={field.logoUrl}
+                alt={field.name}
+                preset="thumbnail"
+                className="w-full h-full object-contain p-0.5"
+                loading="eager"
+              />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display font-bold text-lg mb-0.5 truncate">
+              {field.name}
+            </h3>
+            <p className="text-[11px] text-muted-foreground font-mono">{field.code}</p>
+          </div>
+          <Button
+            size="sm"
+            variant={highlighted ? "default" : "outline"}
+            className="gap-1 shrink-0"
+          >
+            進入 <ArrowRight className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
+        {/* tagline 優先於 description */}
+        {(field.tagline || field.description) && (
+          <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
+            {field.tagline || field.description}
+          </p>
+        )}
+
+        {/* 其他遊戲封面小縮圖（最多 3 個）*/}
+        {field.topGameCovers.length > 1 && (
+          <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
+            <Layers className="w-3.5 h-3.5 text-muted-foreground" />
+            <div className="flex -space-x-2">
+              {field.topGameCovers.slice(0, 3).map((g) => (
+                <div
+                  key={g.id}
+                  className="w-8 h-8 rounded-md overflow-hidden border-2 border-background bg-muted"
+                  title={g.title}
+                >
+                  <OptimizedImage
+                    src={g.coverImageUrl}
+                    alt={g.title}
+                    preset="thumbnail"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+            <span className="text-[11px] text-muted-foreground ml-1">精選遊戲</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
