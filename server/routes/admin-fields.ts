@@ -437,6 +437,7 @@ export function registerAdminFieldRoutes(app: Express) {
         welcomeMessage: settings.welcomeMessage || null,
         // 🆕 場域行銷內容
         tagline: settings.tagline || null,
+        announcement: settings.announcement || null,
         highlights: settings.highlights || [],
         // 🆕 模組開關（Landing / Home / 後台菜單控制）
         modules: {
