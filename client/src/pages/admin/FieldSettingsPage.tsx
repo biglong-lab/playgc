@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Settings2, Palette, Save, Eye, EyeOff, Loader2, ShieldCheck, Image as ImageIcon, Type } from "lucide-react";
+import { Bot, Settings2, Palette, Save, Eye, EyeOff, Loader2, ShieldCheck, Image as ImageIcon, Type, Sparkles } from "lucide-react";
 import type { FieldTheme } from "@shared/schema";
 import { applyTheme } from "@/lib/themeUtils";
+import { THEME_PRESETS, findMatchingPreset } from "@/lib/themePresets";
 
 interface FieldSettingsResponse {
   enableAI?: boolean;
