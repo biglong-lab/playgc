@@ -592,45 +592,24 @@ export function WalkieFloatingButton({
                   ))}
                 </div>
 
-                {/* PTT 按鈕 */}
-                <div className="px-3 pb-3">
-                  <button
-                    disabled={!isConnected}
-                    onMouseDown={onPressStart}
-                    onMouseUp={onPressEnd}
-                    onMouseLeave={onPressEnd}
-                    onTouchStart={onPressStart}
-                    onTouchEnd={onPressEnd}
-                    className={`w-full py-3 rounded-lg font-medium transition-all select-none touch-none ${
-                      isTransmitting
-                        ? "bg-red-500 text-white shadow-lg scale-95"
-                        : isConnected
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                          : "bg-muted text-muted-foreground cursor-not-allowed"
-                    }`}
-                    style={{ touchAction: "manipulation" }}
-                    data-testid="walkie-ptt"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      {isTransmitting ? (
-                        <>
-                          <Mic className="w-5 h-5 animate-pulse" />
-                          <span>🔴 傳送中...</span>
-                        </>
-                      ) : isConnected ? (
-                        <>
-                          <Mic className="w-5 h-5" />
-                          <span>按住講話</span>
-                        </>
-                      ) : (
-                        <>
-                          <MicOff className="w-5 h-5" />
-                          <span>連線中...</span>
-                        </>
-                      )}
-                    </div>
-                  </button>
+                {/*
+                  ⚠️ 展開面板只負責「設定」，不再放 PTT 按鈕。
+                  使用者必須收合到 Pill 狀態才能 PTT，避免兩處都能講話造成混亂 + 遮畫面。
+                  動線：設定看完 → 按 X 收起 → 在右下 Pill 長按即可講話。
+                */}
+                <div className="px-3 py-2 border-t bg-muted/20">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <Mic className="w-3.5 h-3.5 shrink-0 text-primary" />
+                    <span>要講話請<button
+                      type="button"
+                      onClick={() => setExpanded(false)}
+                      className="font-semibold text-primary hover:underline mx-1"
+                      data-testid="walkie-collapse-to-ptt"
+                    >關閉此面板</button>，在右下 Pill 長按說話</span>
+                  </div>
+                </div>
 
+                <div className="px-3 pb-3">
                   {/* 離開按鈕 */}
                   <button
                     onClick={() => {
