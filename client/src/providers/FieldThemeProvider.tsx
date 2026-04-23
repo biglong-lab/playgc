@@ -2,11 +2,13 @@
 //
 // 職責：進入 app 時載入當前場域的主題，把色系/版面/字體注入 document
 // 來源優先序：
-//   1. URL query ?themePreview=<base64> — 管理員即時預覽，最高優先
-//   2. admin session 的 fieldCode（管理者進後台→看自己場域主題）
-//   3. localStorage 的 "lastFieldCode"（玩家上次進入的場域）
-//   4. 環境變數 VITE_DEFAULT_FIELD_CODE（fallback）
-//   5. 最後回到 "JIACHUN"（系統預設）
+//   0. URL path 是 / 或 /f → CHITO 平台頁（不套任何場域主題，用系統預設）
+//   1. URL query ?themePreview=<base64> — 管理員即時預覽
+//   2. URL path /f/:fieldCode — 場域專屬路徑
+//   3. admin session 的 fieldCode（管理者進後台→看自己場域主題）
+//   4. localStorage 的 "lastFieldCode"（玩家上次進入的場域）
+//   5. 環境變數 VITE_DEFAULT_FIELD_CODE（fallback）
+//   6. 最後回到 "JIACHUN"（系統預設）
 //
 // 不依賴 AuthProvider（因為 admin 和玩家驗證不同），自己獨立查 session
 import { useEffect, useMemo, useState } from "react";
