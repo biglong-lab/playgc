@@ -72,6 +72,7 @@ export interface IStorage {
   getGames(): Promise<Game[]>;
   getGamesByField(fieldId: string): Promise<Game[]>;
   getPublishedGames(): Promise<Game[]>;
+  getPublishedGamesByFieldCode(fieldCode: string): Promise<Game[]>;
   getGame(id: string): Promise<Game | undefined>;
   getGameWithPages(id: string): Promise<GameWithPages | undefined>;
   getGameWithDetails(id: string): Promise<GameWithDetails | undefined>;
