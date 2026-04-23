@@ -17,11 +17,11 @@ export default function Checkout() {
 
     switch (type) {
       case "game":
-        setLocation(link(`/purchase/gate/${id}`);
+        setLocation(link(`/purchase/gate/${id}`));
         break;
       case "chapter":
         // 章節購買：走 PurchaseGate 並帶 chapter 參數
-        setLocation(link(`/purchase/gate/${id}?scope=chapter`);
+        setLocation(link(`/purchase/gate/${id}?scope=chapter`));
         break;
       case "battle-slot":
         // 對戰報名：直接到時段詳情頁
@@ -31,11 +31,11 @@ export default function Checkout() {
         // 未知類型：回首頁
         setLocation(link("/home"));
     }
-  }, [productId, setLocation]);
+  }, [productId, setLocation, link]);
 
   // 如果 productId 無效，立即 redirect
   if (!productId) {
-    return <Redirect to="/home" />;
+    return <Redirect to={link("/home")} />;
   }
 
   return (
