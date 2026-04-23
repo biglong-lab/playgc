@@ -293,7 +293,7 @@ export default function FieldEntry() {
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto text-center">
           <p className="text-sm text-muted-foreground">
-            &copy; 2024 CHITO 七逃 · 走踏在地的實境遊戲平台
+            &copy; 2024 CHITO — Play the Place
           </p>
           <p className="text-xs text-muted-foreground/60 mt-2">
             Powered by 大哉實業有限公司
