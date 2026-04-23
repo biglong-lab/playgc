@@ -140,50 +140,27 @@ export function registerMediaRoutes(app: Express) {
   // 🎨 場域視覺資源上傳（Phase 2）
   // ============================================================================
 
-  /** 共用：把圖片上傳到場域主題的 cover/logo，並寫回 fields.settings.theme */
-  async function updateFieldImageAsset(
-    req: Parameters<Parameters<typeof app.post>[2]>[0],
-    res: Parameters<Parameters<typeof app.post>[2]>[1],
-    kind: "cover" | "logo",
-  ) {
-    if (!req.admin) return res.status(401).json({ message: "未認證" });
-
-    // 權限：super_admin 或同場域
-    if (
-      req.admin.systemRole !== "super_admin" &&
-      req.params.id !== req.admin.fieldId
-    ) {
-      return res.status(403).json({ message: "無權修改此場域" });
-    }
-
-    const parsed = cloudinaryCoverSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res
-        .status(400)
-        .json({ message: parsed.error.errors[0]?.message || "驗證失敗" });
-    }
-
+  /** 共用：上傳場域圖片並寫回 fields.settings.theme */
+  async function uploadFieldImageAndSaveTheme(opts: {
+    fieldId: string;
+    imageData: string;
+    kind: "cover" | "logo";
+  }): Promise<{ url: string }> {
     const field = await db.query.fields.findFirst({
-      where: eq(fields.id, req.params.id),
+      where: eq(fields.id, opts.fieldId),
     });
-    if (!field) return res.status(404).json({ message: "場域不存在" });
+    if (!field) throw new Error("場域不存在");
 
     const result =
-      kind === "cover"
-        ? await cloudinaryService.uploadFieldCover(
-            parsed.data.imageData,
-            req.params.id,
-          )
-        : await cloudinaryService.uploadFieldLogo(
-            parsed.data.imageData,
-            req.params.id,
-          );
+      opts.kind === "cover"
+        ? await cloudinaryService.uploadFieldCover(opts.imageData, opts.fieldId)
+        : await cloudinaryService.uploadFieldLogo(opts.imageData, opts.fieldId);
 
-    // 回寫 settings.theme
     const settings: FieldSettings = parseFieldSettings(field.settings);
     const updatedTheme = {
       ...(settings.theme || {}),
-      [kind === "cover" ? "coverImageUrl" : "brandingLogoUrl"]: result.secure_url,
+      [opts.kind === "cover" ? "coverImageUrl" : "brandingLogoUrl"]:
+        result.secure_url,
     };
 
     await db
@@ -192,13 +169,9 @@ export function registerMediaRoutes(app: Express) {
         settings: { ...settings, theme: updatedTheme },
         updatedAt: new Date(),
       })
-      .where(eq(fields.id, req.params.id));
+      .where(eq(fields.id, opts.fieldId));
 
-    return res.json({
-      message: kind === "cover" ? "場域封面已更新" : "場域 Logo 已更新",
-      url: result.secure_url,
-      kind,
-    });
+    return { url: result.secure_url };
   }
 
   /** 📸 POST /api/admin/fields/:id/cloudinary-cover — 上傳場域封面 */
@@ -208,7 +181,27 @@ export function registerMediaRoutes(app: Express) {
     requirePermission("field:manage"),
     async (req, res) => {
       try {
-        await updateFieldImageAsset(req, res, "cover");
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        if (
+          req.admin.systemRole !== "super_admin" &&
+          req.params.id !== req.admin.fieldId
+        ) {
+          return res.status(403).json({ message: "無權修改此場域" });
+        }
+
+        const parsed = cloudinaryCoverSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            message: parsed.error.errors[0]?.message || "驗證失敗",
+          });
+        }
+
+        const { url } = await uploadFieldImageAndSaveTheme({
+          fieldId: req.params.id,
+          imageData: parsed.data.imageData,
+          kind: "cover",
+        });
+        res.json({ message: "場域封面已更新", url, kind: "cover" });
       } catch (error) {
         console.error("[media] field cover 上傳失敗:", error);
         res.status(500).json({
@@ -225,7 +218,27 @@ export function registerMediaRoutes(app: Express) {
     requirePermission("field:manage"),
     async (req, res) => {
       try {
-        await updateFieldImageAsset(req, res, "logo");
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        if (
+          req.admin.systemRole !== "super_admin" &&
+          req.params.id !== req.admin.fieldId
+        ) {
+          return res.status(403).json({ message: "無權修改此場域" });
+        }
+
+        const parsed = cloudinaryCoverSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            message: parsed.error.errors[0]?.message || "驗證失敗",
+          });
+        }
+
+        const { url } = await uploadFieldImageAndSaveTheme({
+          fieldId: req.params.id,
+          imageData: parsed.data.imageData,
+          kind: "logo",
+        });
+        res.json({ message: "場域 Logo 已更新", url, kind: "logo" });
       } catch (error) {
         console.error("[media] field logo 上傳失敗:", error);
         res.status(500).json({
