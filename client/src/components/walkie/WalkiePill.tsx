@@ -291,15 +291,23 @@ export function WalkiePill({
         <Mic className="w-5 h-5 shrink-0" />
       )}
 
-      {/* 文字區塊 */}
-      <div className="flex items-center gap-0.5 text-xs font-medium">
+      {/* 文字區塊 — 重要的 PTT 引導不能消失 */}
+      <div className="flex flex-col items-start leading-tight min-w-0 flex-1">
         {connected ? (
           <>
-            <span className="tabular-nums font-number">{participantCount}</span>
-            <span>人</span>
+            <span className="text-[11px] font-semibold tracking-tight whitespace-nowrap">
+              {isTransmitting ? "講話中..." : "長按說話"}
+            </span>
+            <span className="text-[9px] opacity-80 whitespace-nowrap">
+              <span className="tabular-nums font-number">{participantCount}</span>
+              <span> 人在線</span>
+            </span>
           </>
         ) : (
-          <span>對講</span>
+          <>
+            <span className="text-[11px] font-semibold whitespace-nowrap">對講機</span>
+            <span className="text-[9px] opacity-80 whitespace-nowrap">點 QR 加入</span>
+          </>
         )}
       </div>
 
