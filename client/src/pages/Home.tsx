@@ -33,6 +33,16 @@ interface UserGameStatus {
   score: number;
 }
 
+/** 🆕 依當前時段產生問候（早安 / 午安 / 晚安）— 呼應 CHITO 首頁 Hero 時段氛圍 */
+function getTimeGreeting(): string {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 11) return "☀️ 早安，準備出發";
+  if (h >= 11 && h < 14) return "🌞 午安，來趟走踏";
+  if (h >= 14 && h < 18) return "⛅ 午後好時光";
+  if (h >= 18 && h < 22) return "🌅 傍晚遊歷";
+  return "🌙 夜遊尋寶";
+}
+
 /** 批次遊戲統計 map: { [gameId]: { totalPlays, uniquePlayers, completedPlays } } */
 type GameStatsMap = Record<
   string,
