@@ -80,6 +80,12 @@ export function usePhotoCamera(): PhotoCameraState {
     setCameraReady(false);
   }, [stream]);
 
+  /** 手動重置：使用者按「重新啟動相機」按鈕時呼叫；重設 counter */
+  const resetRestartCounter = useCallback(() => {
+    autoRestartCountRef.current = 0;
+    lastRestartAtRef.current = 0;
+  }, []);
+
   // 元件卸載時停止相機
   useEffect(() => {
     return () => {
