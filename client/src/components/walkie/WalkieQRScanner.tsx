@@ -162,14 +162,47 @@ export function WalkieQRScanner({
       {/* Scanner */}
       <div className="flex-1 relative bg-black">
         {error ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-white px-6">
-            <AlertTriangle className="w-10 h-10 text-amber-500" />
+          <div className="flex flex-col items-center justify-center h-full gap-4 text-white px-6">
+            <AlertTriangle className="w-12 h-12 text-amber-500" />
             <div className="text-center">
-              <div className="font-medium">相機無法啟動</div>
-              <div className="text-sm text-white/70 mt-1">{error}</div>
-              <div className="text-xs text-white/60 mt-3">
-                請在瀏覽器設定中允許此網站使用相機
+              <div className="font-semibold text-lg">相機無法啟動</div>
+              <div className="text-sm text-white/80 mt-2 whitespace-pre-line">
+                {error}
               </div>
+            </div>
+
+            <div className="w-full max-w-xs space-y-2 mt-2">
+              <button
+                onClick={() => {
+                  setError(null);
+                  setRetryKey((k) => k + 1);
+                }}
+                className="w-full py-3 rounded-lg bg-white text-black font-medium"
+              >
+                🔄 再試一次
+              </button>
+              {onSwitchToManual && (
+                <button
+                  onClick={() => {
+                    onClose();
+                    onSwitchToManual();
+                  }}
+                  className="w-full py-3 rounded-lg bg-white/10 text-white font-medium border border-white/20"
+                >
+                  ⌨️ 改用手動輸入 6 碼
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="w-full py-2 text-white/70 text-sm"
+              >
+                關閉
+              </button>
+            </div>
+
+            <div className="text-xs text-white/50 text-center mt-2 max-w-xs">
+              💡 小提示：有些瀏覽器需要到設定開啟相機權限<br />
+              或換用 Chrome / Safari 嘗試
             </div>
           </div>
         ) : (
