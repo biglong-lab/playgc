@@ -71,34 +71,9 @@ export default function FieldSettingsPage() {
     enabled: Boolean(fieldId),
   });
 
-  // 🆕 Tab 狀態同步到 URL query（?tab=xxx），刷新/分享連結可直接進對應 Tab
+  // 🆕 Tab 狀態同步到 URL query — 使用 useTabQueryParam 共用 hook
   const VALID_TABS = ["intro", "features", "brand", "ai"] as const;
-  type TabKey = (typeof VALID_TABS)[number];
-  const readTabFromUrl = useCallback((): TabKey => {
-    if (typeof window === "undefined") return "intro";
-    const params = new URLSearchParams(window.location.search);
-    const t = params.get("tab");
-    return (VALID_TABS as readonly string[]).includes(t ?? "") ? (t as TabKey) : "intro";
-  }, []);
-  const [activeTab, setActiveTab] = useState<TabKey>(readTabFromUrl);
-
-  // popstate（使用者上一頁）觸發重讀
-  useEffect(() => {
-    const handler = () => setActiveTab(readTabFromUrl());
-    window.addEventListener("popstate", handler);
-    return () => window.removeEventListener("popstate", handler);
-  }, [readTabFromUrl]);
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab as TabKey);
-    try {
-      const params = new URLSearchParams(window.location.search);
-      params.set("tab", tab);
-      window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
-    } catch {
-      /* 某些 sandbox 不讓改 URL，忽略 */
-    }
-  };
+  const [activeTab, handleTabChange] = useTabQueryParam(VALID_TABS, "intro");
 
   if (!fieldId) {
     return (
