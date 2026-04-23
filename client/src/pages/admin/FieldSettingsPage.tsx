@@ -472,6 +472,73 @@ function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* 🆕 快速套用預設主題 */}
+          <div>
+            <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              快速套用預設
+              <span className="text-xs text-muted-foreground font-normal">
+                （點一下一鍵換成該配色）
+              </span>
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {THEME_PRESETS.map((p) => {
+                const isActive = findMatchingPreset(theme) === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() =>
+                      setTheme((prev) => ({
+                        ...prev,
+                        ...p.theme,
+                      }))
+                    }
+                    className={`text-left p-3 rounded-lg border transition-all hover:shadow-md ${
+                      isActive
+                        ? "border-primary ring-1 ring-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    data-testid={`preset-${p.id}`}
+                  >
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-lg">{p.icon}</span>
+                      <span className="font-medium text-sm">{p.label}</span>
+                      {isActive && (
+                        <span className="text-[10px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded ml-auto">
+                          使用中
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-1 mb-1.5">
+                      <span
+                        className="w-4 h-4 rounded-full border border-black/10"
+                        style={{ backgroundColor: p.theme.primaryColor }}
+                      />
+                      <span
+                        className="w-4 h-4 rounded-full border border-black/10"
+                        style={{ backgroundColor: p.theme.accentColor }}
+                      />
+                      <span
+                        className="w-4 h-4 rounded-full border border-black/10"
+                        style={{ backgroundColor: p.theme.backgroundColor }}
+                      />
+                      <span
+                        className="w-4 h-4 rounded-full border border-black/10"
+                        style={{ backgroundColor: p.theme.textColor }}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {p.description}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="h-px bg-border" />
+
           {/* 顏色 4 色 */}
           <div className="grid grid-cols-2 gap-4">
             <ColorField
