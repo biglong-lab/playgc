@@ -26,12 +26,17 @@ import {
   Package,
 } from "lucide-react";
 
+/** 場域模組 key（對應 FieldSettings 的 enableXxx 開關） */
+export type MenuModuleKey = "battle" | "shooting" | "chapters" | "photo" | "gps";
+
 export interface AdminMenuItem {
   title: string;
   icon: LucideIcon;
   path: string;
   /** null 表示所有人都可見 */
   permission: string | null;
+  /** 🆕 需要此場域模組啟用才顯示（undefined = 所有場域都顯示） */
+  requiresModule?: MenuModuleKey;
 }
 
 export interface AdminMenuGroup {
