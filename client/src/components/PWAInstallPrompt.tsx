@@ -110,7 +110,7 @@ export default function PWAInstallPrompt() {
             加入主畫面
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            將賈村競技場加到手機桌面，下次直接一鍵開啟，體驗更順暢。
+            將 CHITO 加到手機桌面，下次直接一鍵開啟，體驗更順暢。
           </p>
           <div className="flex gap-2 mt-3">
             <Button
