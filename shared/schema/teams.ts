@@ -113,7 +113,7 @@ export const teamVotes = pgTable(
     teamId: varchar("team_id")
       .references(() => teams.id, { onDelete: "cascade" })
       .notNull(),
-    pageId: varchar("page_id").references(() => pages.id),
+    pageId: varchar("page_id").references(() => pages.id, { onDelete: "set null" }),
     title: varchar("title", { length: 200 }).notNull(),
     description: text("description"),
     options: jsonb("options").notNull(), // Array of {id, label, targetPageId?, points?}
