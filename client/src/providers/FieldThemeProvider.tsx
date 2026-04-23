@@ -16,7 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { applyTheme } from "@/lib/themeUtils";
 import type { FieldTheme, FieldHighlight } from "@shared/schema";
 
-/** 場域模組開關 — 決定 Landing / Home 要不要顯示對戰入口等 */
+/** 場域模組開關 — 決定 Landing / Home / 後台菜單要不要顯示對應區塊 */
 export interface FieldModules {
   shooting: boolean;
   battle: boolean;
@@ -25,6 +25,8 @@ export interface FieldModules {
   gps: boolean;
   team: boolean;
   competitive: boolean;
+  /** 🆕 付費功能（enablePayment）— 控制財務中心菜單顯示 */
+  payment: boolean;
 }
 
 export interface FieldThemePayload {
