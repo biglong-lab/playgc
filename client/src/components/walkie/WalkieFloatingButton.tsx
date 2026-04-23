@@ -676,6 +676,7 @@ export function WalkieFloatingButton({
           />
         )}
       </AnimatePresence>
-    </>
+    </>,
+    document.body,
   );
 }
