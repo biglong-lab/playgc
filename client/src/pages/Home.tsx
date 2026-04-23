@@ -366,13 +366,13 @@ export default function Home() {
                 onClick={() => {
                   const navigate = () => {
                     if (game.gameStructure === "chapters") {
-                      setLocation(`/game/${game.id}/chapters`);
+                      setLocation(link(`/game/${game.id}/chapters`));
                     } else if (game.gameMode === "competitive" || game.gameMode === "relay") {
-                      setLocation(`/match/${game.id}`);
+                      setLocation(link(`/match/${game.id}`));
                     } else if (game.gameMode === "team") {
-                      setLocation(`/team/${game.id}`);
+                      setLocation(link(`/team/${game.id}`));
                     } else {
-                      setLocation(`/game/${game.id}`);
+                      setLocation(link(`/game/${game.id}`));
                     }
                   };
                   // 🆕 匿名玩家進入遊戲前，先跳暱稱 Dialog
