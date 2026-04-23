@@ -233,6 +233,7 @@ function HeroButtons({
   t: (key: string) => string;
   onLoginClick: () => void;
 }) {
+  const link = useFieldLink();
   return (
     <div className="flex flex-col sm:flex-row gap-4 justify-center">
       {isLoading ? (
@@ -242,7 +243,7 @@ function HeroButtons({
       ) : (
         <>
           {isSignedIn ? (
-            <Link href="/home">
+            <Link href={link("/home")}>
               <Button
                 size="lg"
                 className="min-w-[200px] gap-2"
@@ -266,7 +267,7 @@ function HeroButtons({
         </>
       )}
 
-      <Link href="/leaderboard">
+      <Link href={link("/leaderboard")}>
         <Button
           size="lg"
           variant="outline"
