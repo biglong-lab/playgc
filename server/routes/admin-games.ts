@@ -152,9 +152,8 @@ export function registerAdminGameRoutes(app: Express) {
       // 如果有 templateId，取得模板配置
       const template = templateId ? getTemplateById(templateId) : null;
 
-      const fieldId = req.admin.systemRole === "super_admin"
-        ? (data.fieldId || req.admin.fieldId)
-        : req.admin.fieldId;
+      // 🔒 新建遊戲一律歸屬登入場域（super_admin 要建其他場域 → 切換場域）
+      const fieldId = req.admin.fieldId;
 
       // 🔒 強制 fieldId：若無法決定場域就 reject，避免產生「後台看不到」的孤兒遊戲
       if (!fieldId) {
