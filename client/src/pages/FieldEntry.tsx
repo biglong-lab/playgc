@@ -33,6 +33,7 @@ import {
   AlertCircle,
   Copy,
   Check,
+  ArrowUp,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
