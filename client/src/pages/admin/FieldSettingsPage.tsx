@@ -876,6 +876,14 @@ function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
     });
   }, [settings]);
 
+  // 🆕 未儲存變更警示
+  const hasUnsavedChanges = Boolean(
+    settings &&
+      (welcomeMessage !== (settings.welcomeMessage ?? "") ||
+        JSON.stringify(theme) !== JSON.stringify(settings.theme ?? {})),
+  );
+  useUnsavedWarning(hasUnsavedChanges);
+
   // 即時預覽：套到 document，切換關閉時還原
   useEffect(() => {
     if (!previewOn) return;
