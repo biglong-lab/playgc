@@ -129,6 +129,25 @@ export function registerAuthRoutes(app: Express) {
             eq(adminAccounts.firebaseUserId, firebaseUserId),
           ),
         });
+
+        // 🆕 super_admin 跨場域登入：若在 target field 找不到帳號，
+        //   檢查此 firebaseUser 是否在任何場域是 super_admin（平台級身分）
+        //   若是 → 借用 super_admin 身分，token 仍指向 target field（可看該場域資料）
+        //   這避免了「super_admin 切換場域時被當新申請者要求審核」的問題
+        if (!adminAccount) {
+          const candidate = await db.query.adminAccounts.findFirst({
+            where: eq(adminAccounts.firebaseUserId, firebaseUserId),
+          });
+          if (candidate?.roleId && candidate.status === "active") {
+            const candidateRole = await db.query.roles.findFirst({
+              where: eq(roles.id, candidate.roleId),
+            });
+            if (candidateRole?.systemRole === "super_admin") {
+              // 是 super_admin → 允許跨場域登入
+              adminAccount = candidate;
+            }
+          }
+        }
       }
 
       // 若找不到帳號但有 email 匹配，自動綁定或重新綁定（Firebase 已驗證 email）
