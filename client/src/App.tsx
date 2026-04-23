@@ -278,6 +278,7 @@ function App() {
                 <Router />
                 <PlayerBottomNav />
                 <PWAInstallPrompt />
+                <AppUpdateChecker />
               </TooltipProvider>
             </I18nProvider>
           </FieldThemeProvider>
