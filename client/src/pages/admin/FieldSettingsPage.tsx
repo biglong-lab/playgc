@@ -746,6 +746,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
       announcement: announcement.trim(),
       announcementStartAt: announcementStartAt.trim(),
       announcementEndAt: announcementEndAt.trim(),
+      announcementSeverity,
       highlights: highlights.map((h) => ({
         icon: h.icon || "Sparkles",
         title: h.title.trim(),
