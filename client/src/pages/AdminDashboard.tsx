@@ -1,13 +1,16 @@
 // 管理儀表板 — 統一使用 UnifiedAdminLayout
 import { Link } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useCurrentField, type FieldModules } from "@/providers/FieldThemeProvider";
-import type { Game, GameSession, ArduinoDevice } from "@shared/schema";
+import type { Game, GameSession, ArduinoDevice, FieldSettings } from "@shared/schema";
 import {
   Gamepad2,
   Plus,
