@@ -95,6 +95,14 @@ function readLastFieldCode(): string | null {
 
 export default function FieldEntry() {
   const [, setLocation] = useLocation();
+  // 🆕 依時段決定 Hero 氛圍（每分鐘 re-evaluate，午夜自動換）
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>(() => getTimeOfDay());
+  useEffect(() => {
+    const interval = setInterval(() => setTimeOfDay(getTimeOfDay()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+  const timeTheme = TIME_THEMES[timeOfDay];
+  const TimeIcon = timeTheme.icon;
 
   const { data: fields, isLoading } = useQuery<FieldItem[]>({
     queryKey: ["/api/fields/public"],
