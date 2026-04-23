@@ -52,7 +52,10 @@ export interface LoginHandlers {
 /**
  * 封裝所有登入方式的處理邏輯
  * @param onSuccess - 登入成功後的回呼（通常是關閉 Dialog）
- * @param options.redirectTo - 登入後重導向路徑，預設 "/home"，傳 null 表示不重導向（留在當前頁）
+ * @param options.redirectTo - 登入後重導向路徑
+ *    - 未傳 / undefined：智能 redirect → 當前場域的 /f/{code}/home，找不到場域則 /f
+ *    - 傳字串：redirect 到該路徑
+ *    - 傳 null：不 redirect（留在當前頁）
  */
 export function useLoginHandlers(
   onSuccess?: () => void,
@@ -72,10 +75,18 @@ export function useLoginHandlers(
     // 登入後強制 refetch 使用者資料，確保 UI 更新
     queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     onSuccess?.();
+
     const target = options?.redirectTo;
-    if (target !== null) {
-      setLocation(target ?? "/home");
+    if (target === null) return; // 明確不 redirect
+
+    if (typeof target === "string" && target.length > 0) {
+      setLocation(target);
+      return;
     }
+
+    // 智能 redirect：當前場域的 /home，找不到場域就去 /f 選場域
+    const code = readFieldCodeFromContext();
+    setLocation(code ? `/f/${code}/home` : "/f");
   };
 
   const handleLoginError = (error: unknown) => {
