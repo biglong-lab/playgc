@@ -25,6 +25,15 @@ interface FieldSettingsResponse {
   enablePayment?: boolean;
   enableTeamMode?: boolean;
   enableCompetitiveMode?: boolean;
+  // 🆕 模組開關
+  enableShootingMission?: boolean;
+  enableBattleArena?: boolean;
+  enableChapters?: boolean;
+  enablePhotoMission?: boolean;
+  enableGpsMission?: boolean;
+  // 🆕 介紹內容
+  tagline?: string;
+  highlights?: FieldHighlight[];
   primaryColor?: string;        // legacy
   welcomeMessage?: string;
   theme?: FieldTheme;            // 🆕 視覺主題
