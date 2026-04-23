@@ -258,7 +258,7 @@ export default function Home() {
       </header>
 
       {/* 🆕 場域公告 banner — 玩家可關當次 session */}
-      <HomeAnnouncementBanner announcement={announcement} />
+      <AnnouncementBanner announcement={announcement} />
 
 
       {/* 🆕 場域 Hero Banner（有 coverImageUrl 才顯示） */}
