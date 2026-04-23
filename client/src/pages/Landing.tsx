@@ -31,6 +31,7 @@ import {
   Sparkles,
   Star,
   Clock,
+  Megaphone,
   type LucideIcon,
 } from "lucide-react";
 
