@@ -31,8 +31,8 @@ export function registerAdminSessionRoutes(app: Express) {
         const conditions = [];
         if (status) conditions.push(eq(gameSessions.status, status));
         if (gameId) conditions.push(eq(gameSessions.gameId, gameId));
-        // 非 super_admin 只看自己場域的遊戲
-        if (req.admin.systemRole !== "super_admin" && req.admin.fieldId) {
+        // 🔒 場域隔離：任何 admin（含 super_admin）只看自己登入場域
+        if (req.admin.fieldId) {
           conditions.push(eq(games.fieldId, req.admin.fieldId));
         }
 
