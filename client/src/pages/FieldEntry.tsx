@@ -78,11 +78,11 @@ export default function FieldEntry() {
           <h1 className="font-display text-5xl md:text-7xl font-black mb-4 tracking-tight">
             CHITO
           </h1>
-          <p className="text-lg md:text-xl text-primary font-semibold mb-3">
-            七逃 · tshit-thô
+          <p className="text-lg md:text-xl text-primary font-semibold mb-3 tracking-wide">
+            Play the Place
           </p>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 leading-relaxed">
-            走踏在地的實境遊戲平台<br className="md:hidden" />
+            在地場域的實境遊戲平台<br className="md:hidden" />
             <span className="hidden md:inline"> · </span>
             串聯景點、市集、文化空間的沉浸式體驗
           </p>
