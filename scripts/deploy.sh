@@ -19,8 +19,6 @@ set -eo pipefail
 #   npm run deploy             # 正常部署
 #   VERIFY_SYMBOL=xxx npm run deploy  # 額外 grep container 確認新 symbol
 
-set -e
-
 SSH_HOST="${SSH_HOST:-root@172.233.89.147}"
 PROD_PATH="${PROD_PATH:-/www/wwwroot/game.homi.cc}"
 APP_CONTAINER="${APP_CONTAINER:-gamehomicc-app-1}"
