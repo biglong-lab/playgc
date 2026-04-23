@@ -239,6 +239,46 @@ export default function AdminDashboard() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 🆕 當前公告狀態卡片
+// ═══════════════════════════════════════════════════════════════
+
+function AnnouncementStatusCard() {
+  const field = useCurrentField();
+  const announcement = field?.announcement;
+
+  // 沒公告就不佔版面
+  if (!announcement) return null;
+
+  return (
+    <Card
+      className="mb-6 bg-amber-500/5 border-amber-500/40"
+      data-testid="dashboard-announcement-card"
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="flex items-start gap-2 min-w-0 flex-1">
+            <Megaphone className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground mb-1">
+                🔔 當前公告顯示中（玩家端所有頁面可見）
+              </p>
+              <p className="text-sm font-medium text-amber-700 dark:text-amber-300 leading-relaxed">
+                {announcement}
+              </p>
+            </div>
+          </div>
+          <Link href="/admin/field-settings?tab=intro">
+            <Button variant="outline" size="sm" className="gap-1 shrink-0" data-testid="btn-edit-announcement">
+              編輯 <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // 🆕 場域模組狀態卡片
 // ═══════════════════════════════════════════════════════════════
 
