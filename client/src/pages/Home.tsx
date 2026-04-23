@@ -300,6 +300,26 @@ export default function Home() {
                 key={game.id}
                 className="overflow-hidden group hover-elevate cursor-pointer"
                 onClick={() => {
+                  // 🆕 匿名玩家進入遊戲前，先跳暱稱 Dialog
+                  const navigate = () => {
+                    if (game.gameStructure === "chapters") {
+                      setLocation(`/game/${game.id}/chapters`);
+                    } else if (game.gameMode === "competitive" || game.gameMode === "relay") {
+                      setLocation(`/match/${game.id}`);
+                    } else if (game.gameMode === "team") {
+                      setLocation(`/team/${game.id}`);
+                    } else {
+                      setLocation(`/game/${game.id}`);
+                    }
+                  };
+                  if (isAnonymous) {
+                    setPendingGameNavigation(() => navigate);
+                    setAnonymousNameOpen(true);
+                    return;
+                  }
+                  navigate();
+                  return;
+                  // 原本的寫法保留下面，已由上面 IIFE 接手
                   if (game.gameStructure === "chapters") {
                     setLocation(`/game/${game.id}/chapters`);
                   } else if (game.gameMode === "competitive" || game.gameMode === "relay") {
