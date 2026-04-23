@@ -178,6 +178,22 @@ export function registerPlayerSessionRoutes(app: Express) {
           data.playerName = result.value;
         }
 
+        // 🛡️ 若 client 帶 status=completed + score，先做 server-side 分數驗證
+        //   防 Shooting 作弊 / devtools 改 state
+        let scoreValidationResult: { adjusted: boolean; safeScore: number } | null = null;
+        if (data.status === "completed" && typeof data.score === "number") {
+          const { validateSessionScore } = await import("../lib/scoreValidation");
+          const userIdForValidation = (req as AuthenticatedRequest).user?.claims?.sub || null;
+          scoreValidationResult = await validateSessionScore({
+            sessionId: req.params.id,
+            userId: userIdForValidation,
+            clientScore: data.score,
+            source: "session-complete",
+          });
+          // 用驗證過的安全分數覆蓋
+          data.score = scoreValidationResult.safeScore;
+        }
+
         const session = await storage.updateSession(req.params.id, data);
         if (!session) {
           return res.status(404).json({ message: "Session not found" });
