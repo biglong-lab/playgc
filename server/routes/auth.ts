@@ -167,6 +167,56 @@ export function registerAuthRoutes(app: Express) {
         }
       }
 
+      // 🆕 super_admin 跨場域守門（優先於 pending / insert 邏輯）
+      //   情境：super_admin 先前用非自己場域登入時被誤建 pending 帳號，
+      //   之後再登入就匹配到 pending 帳號被卡住。
+      //   對策：不論目前 adminAccount 是什麼，只要此 firebaseUser / email
+      //   在任何場域是 active super_admin，就切換到他的 super_admin 帳號，
+      //   並清掉殘留的 pending 紀錄。
+      const needSuperAdminRescue =
+        !adminAccount ||
+        adminAccount.status === "pending" ||
+        adminAccount.status !== "active";
+
+      if (needSuperAdminRescue) {
+        // 先用 firebaseUserId 找
+        let rescueAcct = await db.query.adminAccounts.findFirst({
+          where: eq(adminAccounts.firebaseUserId, firebaseUserId),
+          with: { role: true },
+        });
+        // 沒綁 firebase_user_id 但 email 匹配也算
+        if (!rescueAcct && firebaseEmail) {
+          rescueAcct = await db.query.adminAccounts.findFirst({
+            where: eq(adminAccounts.email, firebaseEmail),
+            with: { role: true },
+          });
+        }
+        if (
+          rescueAcct?.status === "active" &&
+          rescueAcct.role?.systemRole === "super_admin"
+        ) {
+          // 若 email 匹配到但沒綁 firebaseUserId → 順手補綁
+          if (!rescueAcct.firebaseUserId) {
+            await db.update(adminAccounts)
+              .set({ firebaseUserId })
+              .where(eq(adminAccounts.id, rescueAcct.id));
+          }
+          // 清掉誤建的 pending 殘留
+          if (
+            adminAccount &&
+            adminAccount.status === "pending" &&
+            adminAccount.id !== rescueAcct.id
+          ) {
+            try {
+              await db.delete(adminAccounts).where(eq(adminAccounts.id, adminAccount.id));
+            } catch (e) {
+              console.warn("[auth] 清除 pending 殘留失敗:", e);
+            }
+          }
+          adminAccount = rescueAcct;
+        }
+      }
+
       if (!adminAccount) {
         await db.insert(adminAccounts).values({
           id: `pending-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
