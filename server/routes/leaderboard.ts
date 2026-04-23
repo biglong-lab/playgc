@@ -105,11 +105,8 @@ export function registerLeaderboardRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      // 🔒 場域隔離
-      const fieldId =
-        req.admin.systemRole === "super_admin"
-          ? (req.query.fieldId as string) || req.admin.fieldId
-          : req.admin.fieldId;
+      // 🔒 場域隔離：統一用 admin.fieldId
+      const fieldId = req.admin.fieldId;
 
       const sessions = await storage.getSessionsByField(fieldId);
       const games = await storage.getGamesByField(fieldId);
