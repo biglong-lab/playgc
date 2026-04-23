@@ -33,6 +33,8 @@ interface SessionState {
   variables: Record<string, unknown>;
   currentPageIndex: number;
   isCompleted: boolean;
+  /** 🆕 已完成頁面 ID 清單 — 防止玩家直接按下一頁跳過任務 */
+  completedPageIds: string[];
 }
 
 export function useSessionManager({
