@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, Loader2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface UploadImageButtonProps {
   /** POST 目標，body 會是 `{ imageData: "data:image/..." }` */
