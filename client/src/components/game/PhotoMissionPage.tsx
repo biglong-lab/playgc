@@ -203,6 +203,10 @@ export default function PhotoMissionPage({
           fileInputRef={camera.fileInputRef}
           onCapture={camera.capturePhoto}
           onCancel={camera.cancelCamera}
+          onRestart={() => {
+            camera.stopCamera();
+            setTimeout(() => void camera.startCamera(), 300);
+          }}
         />
       )}
 
