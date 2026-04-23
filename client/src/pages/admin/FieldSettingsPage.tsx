@@ -817,7 +817,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
               用於臨時通知：活動、維護、特價、開放時間異動等。建議 50 字內。
             </p>
 
-            {/* 🆕 公告時效 — 兩個日期欄位 */}
+            {/* 🆕 公告時效 + 嚴重程度 */}
             {announcement.trim() && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-md bg-muted/30 border">
                 <div>
@@ -848,6 +848,37 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
                   />
                   <p className="text-[11px] text-muted-foreground/70 mt-1">
                     留空 = 永久顯示
+                  </p>
+                </div>
+                {/* 🆕 嚴重程度 */}
+                <div className="sm:col-span-2">
+                  <label className="text-xs font-medium mb-1 block text-muted-foreground">
+                    顯示樣式
+                  </label>
+                  <Select
+                    value={announcementSeverity}
+                    onValueChange={(v) => setAnnouncementSeverity(v as "info" | "urgent")}
+                  >
+                    <SelectTrigger className="text-xs" data-testid="select-announcement-severity">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="info">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-amber-500" />
+                          <span>一般通知（琥珀色 · 玩家可關閉）</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="urgent">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-red-500" />
+                          <span>緊急通知（紅色 · 玩家不可關閉）</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] text-muted-foreground/70 mt-1">
+                    緊急通知建議用在：颱風停業、場地臨時關閉、重大變更等必看訊息
                   </p>
                 </div>
                 {/* 狀態提示 */}
