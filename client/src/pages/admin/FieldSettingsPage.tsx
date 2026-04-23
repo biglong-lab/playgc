@@ -1,5 +1,5 @@
 // 場域設定頁面 — AI Key、配額、功能開關、品牌、視覺主題
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
