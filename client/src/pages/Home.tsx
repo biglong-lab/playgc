@@ -24,6 +24,12 @@ interface UserGameStatus {
   score: number;
 }
 
+/** 批次遊戲統計 map: { [gameId]: { totalPlays, uniquePlayers, completedPlays } } */
+type GameStatsMap = Record<
+  string,
+  { totalPlays: number; uniquePlayers: number; completedPlays: number }
+>;
+
 export default function Home() {
   const { user, firebaseUser, isLoading: authLoading, isSignedIn } = useAuth();
   const [, setLocation] = useLocation();
