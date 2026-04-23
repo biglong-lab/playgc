@@ -241,7 +241,7 @@ function QRCodeCell({
 // 操作按鈕群組
 function ActionButtons({
   game, status, onNavigate, onEdit, onDelete,
-  onPublish, onCoverUpload, publishPending,
+  onPublish, onCoverUpload, onMoveField, publishPending,
 }: {
   game: Game;
   status: string;
@@ -250,6 +250,7 @@ function ActionButtons({
   onDelete: (game: Game) => void;
   onPublish: (id: string, status: string) => void;
   onCoverUpload: (game: Game) => void;
+  onMoveField?: (game: Game) => void;
   publishPending: boolean;
 }) {
   return (
