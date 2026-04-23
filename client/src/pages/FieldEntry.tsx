@@ -397,21 +397,39 @@ export default function FieldEntry() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 🆕 場域 code + 複製按鈕（點就複製分享連結文字）
+// 🆕 場域 code + 分享按鈕（手機優先用 Web Share API，桌面 fallback 複製）
 // ═══════════════════════════════════════════════════════════════
-function CodeWithCopy({ code }: { code: string }) {
+function CodeWithCopy({ code, fieldName }: { code: string; fieldName: string }) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = async (e: React.MouseEvent) => {
+  const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     const shareUrl = `${window.location.origin}/f/${code}`;
+    const shareData: ShareData = {
+      title: `CHITO · ${fieldName}`,
+      text: `${fieldName} — 走踏在地實境遊戲`,
+      url: shareUrl,
+    };
+
+    // 🆕 優先用 Web Share API（手機支援較好，會叫系統分享選單：LINE、Messenger、AirDrop…）
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        return; // 成功就結束（不需 toast，系統選單本身有回饋）
+      } catch (err) {
+        // 使用者取消分享 → 不做任何事；其他錯誤 → 退回複製
+        if ((err as DOMException)?.name === "AbortError") return;
+      }
+    }
+
+    // Fallback：複製到剪貼簿
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast({
-        title: `已複製分享連結`,
+        title: "已複製分享連結",
         description: shareUrl,
       });
       setTimeout(() => setCopied(false), 1500);
@@ -425,10 +443,10 @@ function CodeWithCopy({ code }: { code: string }) {
       <p className="text-[11px] text-muted-foreground font-mono">{code}</p>
       <button
         type="button"
-        onClick={handleCopy}
+        onClick={handleShare}
         className="text-muted-foreground/40 hover:text-primary transition-colors opacity-0 group-hover/code:opacity-100 focus:opacity-100"
-        aria-label={`複製 ${code} 場域分享連結`}
-        title="複製分享連結"
+        aria-label={`分享 ${fieldName} 場域連結`}
+        title="分享場域連結"
         data-testid={`btn-share-field-${code}`}
       >
         {copied ? (
