@@ -166,7 +166,13 @@ function StatusTabs({
 }
 
 // 表格內容（含載入/空狀態）
-function GamesTableContent({ ctx }: { ctx: ReturnType<typeof useAdminGames> }) {
+function GamesTableContent({
+  ctx,
+  onMoveField,
+}: {
+  ctx: ReturnType<typeof useAdminGames>;
+  onMoveField?: (game: Game) => void;
+}) {
   if (ctx.gamesLoading) {
     return <ListSkeleton count={5} />;
   }
@@ -201,6 +207,7 @@ function GamesTableContent({ ctx }: { ctx: ReturnType<typeof useAdminGames> }) {
         ctx.setCoverUploadGame(game);
         ctx.setIsCoverDialogOpen(true);
       }}
+      onMoveField={onMoveField}
       publishPending={ctx.publishPending}
       generateQRPending={ctx.generateQRPending}
     />
