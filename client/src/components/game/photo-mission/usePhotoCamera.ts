@@ -260,15 +260,24 @@ export function usePhotoCamera(): PhotoCameraState {
 
     const video = videoRef.current;
     if (video.videoWidth === 0 || video.videoHeight === 0) {
-      // 相機 ready 但 video frame 沒資料 — 自動重啟相機（避免玩家看到錯誤卡住）
-      toast({
-        title: "相機異常重連",
-        description: "正在重啟相機，請稍候...",
-      });
-      stopCamera();
-      setTimeout(() => {
-        void startCamera();
-      }, 300);
+      // 相機 ready 但 video frame 沒資料
+      if (canAutoRestart()) {
+        toast({
+          title: "相機異常重連",
+          description: "正在重啟相機，請稍候...",
+        });
+        markAutoRestart();
+        stopCamera();
+        setTimeout(() => void startCamera(), 300);
+      } else {
+        // 已達上限，告知使用者
+        toast({
+          title: "相機畫面有問題",
+          description: "請點「重啟相機」按鈕或改用相簿上傳",
+          variant: "destructive",
+        });
+        setCameraError("相機無法正常顯示，請手動重啟");
+      }
       return;
     }
 
