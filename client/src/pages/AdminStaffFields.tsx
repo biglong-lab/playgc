@@ -96,6 +96,15 @@ function getFieldModuleStatus(settings?: FieldSettings | null) {
   return { enabled, total: MODULE_BADGES.length };
 }
 
+/** 🆕 判斷場域是否有「目前生效中」的公告（與 server isAnnouncementActive 邏輯一致） */
+function hasActiveAnnouncement(settings?: FieldSettings | null): boolean {
+  if (!settings?.announcement?.trim()) return false;
+  const today = new Date().toISOString().split("T")[0];
+  if (settings.announcementStartAt && today < settings.announcementStartAt) return false;
+  if (settings.announcementEndAt && today > settings.announcementEndAt) return false;
+  return true;
+}
+
 export default function AdminStaffFields() {
   const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
