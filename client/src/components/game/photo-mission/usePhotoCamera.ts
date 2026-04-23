@@ -96,32 +96,45 @@ export function usePhotoCamera(): PhotoCameraState {
   }, [stream]);
 
   // 🛡 頁面切回前景時，若 stream 已掛（Android Chrome/Edge 切 tab 會 suspend）
-  // 自動重啟相機，避免玩家看到黑畫面卡住
+  // 自動重啟相機；但有重啟上限 + 冷卻時間，避免無窮迴圈
   useEffect(() => {
     if (mode !== "camera") return;
     const handler = () => {
-      if (document.visibilityState === "visible") {
-        const video = videoRef.current;
-        const streamActive =
-          stream?.getVideoTracks()?.[0]?.readyState === "live";
-        if (!streamActive || !video || video.videoWidth === 0) {
-          // stream 或 video 失效 → 重啟
-          stopCamera();
-          setTimeout(() => void startCamera(), 200);
+      if (document.visibilityState !== "visible") return;
+      const video = videoRef.current;
+      const streamActive =
+        stream?.getVideoTracks()?.[0]?.readyState === "live";
+      if (!streamActive || !video || video.videoWidth === 0) {
+        if (!canAutoRestart()) {
+          // 已達上限 → 提示使用者手動重啟
+          setCameraError("相機無法自動恢復，請點下方按鈕手動重啟");
+          return;
         }
+        markAutoRestart();
+        stopCamera();
+        setTimeout(() => void startCamera(), 200);
       }
     };
     document.addEventListener("visibilitychange", handler);
     return () => document.removeEventListener("visibilitychange", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, stream]);
+  }, [mode, stream, canAutoRestart, markAutoRestart]);
 
-  // 🩺 持續健康監控：cameraReady=true 但 videoWidth 持續 0 → 視為掛掉，自動重啟
-  // 有些 Android 瀏覽器會把 stream 靜默 suspend（不觸發 error），只能靠 polling 偵測
+  // 🩺 健康監控（有 cooldown + 上限）：
+  // 關鍵防迴圈：每次檢查到不健康 → 先檢查能否自動重啟
+  // 若已重啟 2 次或在冷卻中 → 停止 auto-recover，顯示錯誤讓使用者手動處理
   useEffect(() => {
     if (mode !== "camera" || !cameraReady) return;
+
+    // 給新 stream 2 秒「緩衝時間」，避免 iOS Safari 第一秒 videoWidth 還沒 fill
+    const GRACE_PERIOD_MS = 2000;
+    const healthStartAt = Date.now();
     let unhealthyCount = 0;
+
     const healthCheck = setInterval(() => {
+      // 緩衝期內不判定（避免剛 setCameraReady(true) 就立刻觸發迴圈）
+      if (Date.now() - healthStartAt < GRACE_PERIOD_MS) return;
+
       const video = videoRef.current;
       if (!video) return;
       if (video.videoWidth === 0 || video.videoHeight === 0) {
@@ -129,7 +142,14 @@ export function usePhotoCamera(): PhotoCameraState {
         // 連續 3 次（1.5 秒）都 0 → 判定掛掉
         if (unhealthyCount >= 3) {
           clearInterval(healthCheck);
-          console.warn("[camera] video 連續不健康，自動重啟");
+          console.warn("[camera] video 連續不健康");
+          if (!canAutoRestart()) {
+            // 已達上限 → 放棄自動重啟，告知使用者
+            console.warn("[camera] 停止自動恢復，請使用者手動重啟");
+            setCameraError("相機畫面異常，請點下方按鈕手動重啟");
+            return;
+          }
+          markAutoRestart();
           setCameraReady(false);
           stopCamera();
           setTimeout(() => void startCamera(), 300);
@@ -140,7 +160,7 @@ export function usePhotoCamera(): PhotoCameraState {
     }, 500);
     return () => clearInterval(healthCheck);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, cameraReady]);
+  }, [mode, cameraReady, canAutoRestart, markAutoRestart]);
 
   const startCamera = async () => {
     setCameraError(null);
