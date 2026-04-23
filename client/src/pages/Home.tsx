@@ -19,6 +19,7 @@ import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface UserGameStatus {
