@@ -67,6 +67,19 @@ export interface FieldTheme {
   fontFamily?: "default" | "serif" | "mono" | "display";
 }
 
+/**
+ * 場域亮點 — 顯示於該場域 Landing 的 Feature Section
+ * 每個場域可自訂 3-8 項，展示該場域的特色體驗
+ */
+export interface FieldHighlight {
+  /** lucide icon name（例：Target / MapPin / Camera / Users / Swords / Puzzle / Landmark / Coffee） */
+  icon?: string;
+  /** 標題（例：射擊挑戰 / 歷史巡禮） */
+  title: string;
+  /** 描述（例：使用實體靶機進行射擊任務） */
+  description?: string;
+}
+
 export interface FieldSettings {
   // AI 設定
   geminiApiKey?: string;              // AES-256-GCM 加密後的密文（支援 Gemini AIza... 或 OpenRouter sk-or-...）
@@ -78,10 +91,22 @@ export interface FieldSettings {
   maxGames?: number;                  // 最大遊戲數（0 或 undefined = 無限）
   maxConcurrentSessions?: number;     // 最大同時場次
 
-  // 功能開關
+  // 功能開關（通用）
   enablePayment?: boolean;            // 收費功能
   enableTeamMode?: boolean;           // 團隊模式
   enableCompetitiveMode?: boolean;    // 競賽/接力模式
+
+  // 🆕 場域模組開關（決定該場域啟用哪些特殊功能模組）
+  // 預設 false — 新場域要明確啟用才有該模組，避免 CHITO 平台首頁誤推銷場域沒有的功能
+  enableShootingMission?: boolean;    // 射擊任務（硬體靶機）— 僅有硬體靶機的場域
+  enableBattleArena?: boolean;        // 水彈對戰 PK 擂台 — 僅有對戰場地的場域
+  enableChapters?: boolean;           // 章節制遊戲
+  enablePhotoMission?: boolean;       // 拍照驗證任務
+  enableGpsMission?: boolean;         // GPS 定位任務
+
+  // 🆕 場域行銷內容 — 顯示於該場域 Landing 和 CHITO 平台首頁的場域卡
+  tagline?: string;                   // 短 slogan（例：金門戰地文化沉浸體驗）
+  highlights?: FieldHighlight[];      // 場域亮點（Landing Feature Section 用）
 
   // 品牌（legacy — 僅 primaryColor 保留向後相容；推薦改用 theme.primaryColor）
   primaryColor?: string;              // @deprecated 改用 theme.primaryColor
