@@ -257,8 +257,8 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 🆕 場域公告 banner — 玩家可關當次 session */}
-      <AnnouncementBanner announcement={announcement} />
+      {/* 🆕 場域公告 banner — info 可關 / urgent 不可關 */}
+      <AnnouncementBanner announcement={announcement} severity={currentField?.announcementSeverity} />
 
 
       {/* 🆕 場域 Hero Banner（有 coverImageUrl 才顯示） */}
