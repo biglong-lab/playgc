@@ -41,8 +41,12 @@ export default function Home() {
   const { user, firebaseUser, isLoading: authLoading, isSignedIn } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
+  // 🆕 搜尋條件和 filter 存 localStorage，重整或切回頁保持使用者操作
+  const [searchQuery, setSearchQuery] = useLocalStorageState("home_search_query", "");
+  const [difficultyFilter, setDifficultyFilter] = useLocalStorageState<string | null>(
+    "home_difficulty_filter",
+    null,
+  );
 
   // 🆕 匿名命名 Dialog 狀態
   const [anonymousNameOpen, setAnonymousNameOpen] = useState(false);
