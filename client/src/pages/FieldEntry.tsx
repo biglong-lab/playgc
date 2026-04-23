@@ -112,7 +112,7 @@ export default function FieldEntry() {
               <Building2 className="w-7 h-7 text-primary" />
             </div>
             <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">
-              選擇場域開始七逃
+              選擇場域
             </h2>
             <p className="text-sm md:text-base text-muted-foreground">
               每個場域有獨立的遊戲、排行榜與主題風格
