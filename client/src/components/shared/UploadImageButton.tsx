@@ -98,11 +98,15 @@ export function UploadImageButton({
       <div className="flex items-center gap-3">
         {currentUrl && (
           <div className="relative shrink-0">
-            <img
-              src={currentUrl}
-              alt=""
-              className="w-16 h-16 object-cover rounded border"
-            />
+            <div className="w-16 h-16 rounded border overflow-hidden">
+              <OptimizedImage
+                src={currentUrl}
+                alt="預覽"
+                preset="thumbnail"
+                className="w-full h-full object-cover"
+                loading="eager"
+              />
+            </div>
             <button
               type="button"
               onClick={() => onUploaded("")}
