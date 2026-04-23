@@ -279,12 +279,25 @@ export async function adminAuthMiddleware(
   const account = session.adminAccount;
   const adminPermissions = await getAdminPermissions(account.roleId);
 
+  // 🔥 關鍵修復：super_admin 跨場域登入 / 場域切換時，token.fieldId 會與 account.fieldId 不同
+  //    token.fieldId = 登入/切換時選的目標場域（HPSPACE）
+  //    account.fieldId = 帳號原始所屬場域（JIACHUN）
+  //    必須優先用 token 的 fieldId，否則中間件永遠把使用者當作 JIACHUN
+  const effectiveFieldId = decoded.fieldId || account.fieldId;
+  let effectiveField = account.field;
+  if (decoded.fieldId && decoded.fieldId !== account.fieldId) {
+    // 跨場域：用 token 的 fieldId 查真正的場域資料
+    effectiveField = await db.query.fields.findFirst({
+      where: eq(fields.id, decoded.fieldId),
+    });
+  }
+
   req.admin = {
     id: account.id,
     accountId: account.id,
-    fieldId: account.fieldId,
-    fieldCode: account.field?.code || "",
-    fieldName: account.field?.name || "",
+    fieldId: effectiveFieldId,
+    fieldCode: effectiveField?.code || "",
+    fieldName: effectiveField?.name || "",
     username: account.username || "",
     displayName: account.displayName,
     roleId: account.roleId,
