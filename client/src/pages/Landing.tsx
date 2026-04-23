@@ -67,13 +67,35 @@ export default function Landing() {
 
       <EmbeddedBrowserWarning />
 
-      {/* Hero Section */}
+      {/* Hero Section — 場域有 coverImageUrl 時優先用，否則用預設 gradient */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-tactical-gradient" />
-        <div className="absolute inset-0 bg-radial-glow opacity-50" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
+        {fieldCoverUrl ? (
+          <>
+            <img
+              src={fieldCoverUrl}
+              alt={fieldName || "場域"}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/40" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-tactical-gradient" />
+            <div className="absolute inset-0 bg-radial-glow opacity-50" />
+            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-10" />
+          </>
+        )}
 
         <div className="relative z-10 container px-4 py-20 text-center">
+          {/* 場域 Logo（若有） */}
+          {fieldLogoUrl && (
+            <img
+              src={fieldLogoUrl}
+              alt={fieldName || ""}
+              className="w-20 h-20 mx-auto mb-6 rounded-2xl object-contain bg-white/10 backdrop-blur p-2"
+            />
+          )}
+
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-8">
             <Shield className="w-4 h-4 text-primary" />
             <span className="text-sm font-display uppercase tracking-wider text-primary">
@@ -82,16 +104,18 @@ export default function Landing() {
           </div>
 
           <h1 className="font-display text-5xl md:text-7xl font-bold mb-6 text-glow">
-            {t("landing.hero.title")}
+            {fieldName || t("landing.hero.title")}
           </h1>
 
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-4 font-chinese">
-            {t("app.subtitle")}
+            {welcomeMessage || t("app.subtitle")}
           </p>
 
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-12 font-chinese">
-            {t("landing.hero.subtitle")}
-          </p>
+          {!welcomeMessage && (
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-12 font-chinese">
+              {t("landing.hero.subtitle")}
+            </p>
+          )}
 
           <HeroButtons
             isLoading={isLoading}
