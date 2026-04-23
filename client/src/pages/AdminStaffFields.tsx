@@ -396,13 +396,45 @@ export default function AdminStaffFields() {
 
         <Card>
           <CardHeader>
-            <CardTitle>場域列表</CardTitle>
-            <CardDescription>所有可管理的遊戲場域</CardDescription>
+            <div className="flex items-start justify-between flex-wrap gap-3">
+              <div>
+                <CardTitle>場域列表</CardTitle>
+                <CardDescription>所有可管理的遊戲場域</CardDescription>
+              </div>
+              {/* 🆕 模組 filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">過濾：</span>
+                <Select
+                  value={moduleFilter}
+                  onValueChange={(v) => setModuleFilter(v as typeof moduleFilter)}
+                >
+                  <SelectTrigger className="w-[160px] h-8 text-xs" data-testid="select-module-filter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">全部場域</SelectItem>
+                    {MODULE_BADGES.map((m) => (
+                      <SelectItem key={String(m.key)} value={String(m.key)}>
+                        <div className="flex items-center gap-2">
+                          <m.Icon className="w-3.5 h-3.5" />
+                          啟用{m.label}的場域
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {fields && moduleFilter !== "all" && (
+                  <span className="text-xs text-muted-foreground font-mono">
+                    {filteredFields.length}/{fields.length}
+                  </span>
+                )}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <ListSkeleton count={5} />
-            ) : fields && fields.length > 0 ? (
+            ) : filteredFields && filteredFields.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
