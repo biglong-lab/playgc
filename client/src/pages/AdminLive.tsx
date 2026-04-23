@@ -375,6 +375,88 @@ export default function AdminLive() {
           </CardContent>
         </Card>
 
+        {/* 🆕 平台累計總覽 */}
+        {overview && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 pt-4 border-t">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-bold">平台累計總覽</h2>
+              <span className="text-xs text-muted-foreground ml-auto">
+                資料時間：{new Date(overview.generatedAt).toLocaleTimeString("zh-TW")}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <StatCard
+                icon={<Users className="w-5 h-5" />}
+                label="累計總場次"
+                value={overview.sessions.total}
+                suffix="場"
+                color="bg-indigo-500"
+              />
+              <StatCard
+                icon={<CheckCircle2 className="w-5 h-5" />}
+                label="已完成"
+                value={overview.sessions.completed}
+                suffix="場"
+                color="bg-emerald-600"
+              />
+              <StatCard
+                icon={<TrendingUp className="w-5 h-5" />}
+                label="24 小時場次"
+                value={overview.sessions.last24h}
+                suffix="場"
+                color="bg-rose-500"
+              />
+              <StatCard
+                icon={<Users className="w-5 h-5" />}
+                label="累計玩家"
+                value={overview.uniquePlayers}
+                suffix="人"
+                color="bg-cyan-500"
+              />
+            </div>
+
+            {/* 熱門遊戲 top 10 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-500" />
+                  熱門遊戲 Top 10（累計場次）
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {overview.popularGames.length === 0 ? (
+                  <p className="text-center text-sm text-muted-foreground py-6">
+                    尚無遊戲資料
+                  </p>
+                ) : (
+                  <PopularGameList games={overview.popularGames} />
+                )}
+              </CardContent>
+            </Card>
+
+            {/* 近 7 天每日場次趨勢 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-blue-500" />
+                  近 7 天每日場次
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {overview.dailyTrend.length === 0 ? (
+                  <p className="text-center text-sm text-muted-foreground py-6">
+                    尚無資料
+                  </p>
+                ) : (
+                  <DailyTrendBars data={overview.dailyTrend} />
+                )}
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
         {/* 最後刷新時間 */}
         {stats?.refreshedAt && (
           <p className="text-xs text-muted-foreground text-right">
