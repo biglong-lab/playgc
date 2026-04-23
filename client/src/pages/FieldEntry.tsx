@@ -460,11 +460,11 @@ function FieldCard({
         )}
 
         {/* 其他遊戲封面小縮圖（最多 3 個）*/}
-        {field.topGameCovers.length > 1 && (
+        {topCovers.length > 1 && (
           <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
             <Layers className="w-3.5 h-3.5 text-muted-foreground" />
             <div className="flex -space-x-2">
-              {field.topGameCovers.slice(0, 3).map((g) => (
+              {topCovers.slice(0, 3).map((g) => (
                 <div
                   key={g.id}
                   className="w-8 h-8 rounded-md overflow-hidden border-2 border-background bg-muted"
