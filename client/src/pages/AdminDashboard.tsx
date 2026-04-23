@@ -246,24 +246,36 @@ export default function AdminDashboard() {
 function AnnouncementStatusCard() {
   const field = useCurrentField();
   const announcement = field?.announcement;
+  const severity = field?.announcementSeverity ?? "info";
 
   // 沒公告就不佔版面
   if (!announcement) return null;
 
+  // 🆕 依 severity 切換視覺
+  const isUrgent = severity === "urgent";
+  const Icon = isUrgent ? AlertCircle : Megaphone;
+  const cardClass = isUrgent
+    ? "mb-6 bg-red-500/5 border-red-500/50"
+    : "mb-6 bg-amber-500/5 border-amber-500/40";
+  const iconClass = isUrgent
+    ? "text-red-600 dark:text-red-400"
+    : "text-amber-600 dark:text-amber-400";
+  const textClass = isUrgent
+    ? "text-red-700 dark:text-red-300"
+    : "text-amber-700 dark:text-amber-300";
+  const label = isUrgent
+    ? "🚨 緊急公告顯示中（玩家端紅色 banner · 不可關閉）"
+    : "🔔 當前公告顯示中（玩家端所有頁面可見）";
+
   return (
-    <Card
-      className="mb-6 bg-amber-500/5 border-amber-500/40"
-      data-testid="dashboard-announcement-card"
-    >
+    <Card className={cardClass} data-testid="dashboard-announcement-card" data-severity={severity}>
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex items-start gap-2 min-w-0 flex-1">
-            <Megaphone className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${iconClass}`} />
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground mb-1">
-                🔔 當前公告顯示中（玩家端所有頁面可見）
-              </p>
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-300 leading-relaxed">
+              <p className="text-xs text-muted-foreground mb-1">{label}</p>
+              <p className={`text-sm font-medium leading-relaxed ${textClass}`}>
                 {announcement}
               </p>
             </div>
