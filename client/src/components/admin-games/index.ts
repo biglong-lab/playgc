@@ -3,5 +3,6 @@ export { default as GameFormDialog } from "./GameFormDialog";
 export { default as QRCodeDialog } from "./QRCodeDialog";
 export { default as CoverUploadDialog } from "./CoverUploadDialog";
 export { default as DeleteGameDialog } from "./DeleteGameDialog";
+export { default as MoveFieldDialog } from "./MoveFieldDialog";
 export * from "./constants";
 export * from "./types";
