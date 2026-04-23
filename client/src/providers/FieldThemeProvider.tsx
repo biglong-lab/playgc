@@ -158,17 +158,28 @@ function readFieldCodeFromUrl(): string | null {
   return match ? match[1].toUpperCase() : null;
 }
 
+/** 判斷目前 URL 是否是 CHITO 平台頁（/ 或 /f，不屬於任何場域） */
+function isOnPlatformPath(): boolean {
+  if (typeof window === "undefined") return false;
+  const p = window.location.pathname;
+  return p === "/" || /^\/f\/?$/.test(p);
+}
+
 export function FieldThemeProvider({ children }: { children: React.ReactNode }) {
   // 0. 讀 URL preview（優先級最高，管理員即時預覽）
   const previewTheme = useMemo(() => readPreviewFromUrl(), []);
 
   // 0.5 🆕 URL path 場域（/f/:fieldCode）優先於 admin session / localStorage
-  //    監聽 popstate 讓 SPA 導航也能觸發更新
+  //     同時追蹤是否在「CHITO 平台頁」(/、/f)，這時候不套任何場域主題
+  //     監聽 popstate + 500ms polling 讓 SPA 導航也能觸發更新
   const [urlFieldCode, setUrlFieldCode] = useState(() => readFieldCodeFromUrl());
+  const [isPlatformPage, setIsPlatformPage] = useState(() => isOnPlatformPath());
   useEffect(() => {
-    const update = () => setUrlFieldCode(readFieldCodeFromUrl());
+    const update = () => {
+      setUrlFieldCode(readFieldCodeFromUrl());
+      setIsPlatformPage(isOnPlatformPath());
+    };
     window.addEventListener("popstate", update);
-    // wouter 用 pushState，監聽 location 改變需要定期重查（or 用 wouter hook 更精準）
     const interval = setInterval(update, 500);
     return () => {
       window.removeEventListener("popstate", update);
@@ -176,7 +187,7 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
     };
   }, []);
 
-  // 1. 拿 admin session（若有）
+  // 1. 拿 admin session（若有）— 平台頁不 fetch（避免干擾）
   const { data: adminSession } = useQuery<{
     authenticated: boolean;
     admin?: { fieldCode?: string };
@@ -191,26 +202,29 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
     },
     staleTime: 5 * 60_000,
     retry: false,
-    enabled: !previewTheme && !urlFieldCode,
+    enabled: !previewTheme && !urlFieldCode && !isPlatformPage,
   });
 
   const adminFieldCode = adminSession?.admin?.fieldCode;
-  // 🆕 優先級：URL path > admin session > localStorage > 預設
-  const fieldCode = urlFieldCode || adminFieldCode || resolveFieldCode();
+  // 🆕 平台頁 → null（不套任何場域主題）
+  //     其他路徑 → URL > admin session > localStorage > 預設
+  const fieldCode = isPlatformPage
+    ? null
+    : (urlFieldCode || adminFieldCode || resolveFieldCode());
 
-  // 2. 拿主題（預覽模式下跳過）
+  // 2. 拿主題（預覽模式 / 平台頁時跳過）
   const { data: themePayload } = useQuery<FieldThemePayload>({
     queryKey: ["/api/fields", fieldCode, "theme"],
     queryFn: async () => {
       const res = await fetch(
-        `/api/fields/${encodeURIComponent(fieldCode)}/theme`,
+        `/api/fields/${encodeURIComponent(fieldCode!)}/theme`,
       );
       if (!res.ok) throw new Error("field theme not found");
       return res.json();
     },
     staleTime: 5 * 60_000,
     retry: 1,
-    enabled: !previewTheme,
+    enabled: !previewTheme && !!fieldCode,
   });
 
   // 3. 套到 document
@@ -221,12 +235,18 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
       return revert;
     }
 
+    // 🆕 平台頁（/、/f）：不套任何主題，用系統預設
+    //    這個 effect 不 return cleanup，但前次 effect 的 cleanup 會把先前套的 field theme revert
+    if (isPlatformPage) {
+      return;
+    }
+
     // 正常模式
     if (!themePayload?.theme) return;
     if (themePayload.code) setCurrentFieldCode(themePayload.code);
     const revert = applyTheme(themePayload.theme);
     return revert;
-  }, [previewTheme, themePayload]);
+  }, [previewTheme, themePayload, isPlatformPage]);
 
   return <>{children}</>;
 }
