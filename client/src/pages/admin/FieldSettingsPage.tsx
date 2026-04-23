@@ -43,6 +43,8 @@ interface FieldSettingsResponse {
   /** 🆕 公告時效起/訖（ISO YYYY-MM-DD）*/
   announcementStartAt?: string;
   announcementEndAt?: string;
+  /** 🆕 公告嚴重程度 */
+  announcementSeverity?: "info" | "urgent";
   primaryColor?: string;        // legacy
   welcomeMessage?: string;
   theme?: FieldTheme;            // 🆕 視覺主題
