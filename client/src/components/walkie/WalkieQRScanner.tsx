@@ -144,7 +144,7 @@ export function WalkieQRScanner({
   }, [onDetect, retryKey]);
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black flex flex-col">
+    <div className="fixed inset-0 z-[1200] bg-black flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-background border-b">
         <div className="flex items-center gap-2">
