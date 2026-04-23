@@ -307,9 +307,21 @@ export function WalkieFloatingButton({
             onStartTalk={startTalking}
             onStopTalk={stopTalking}
             onExpand={() => setExpanded(true)}
+            onShowQR={myGroup ? () => setQuickQrOpen(true) : undefined}
           />
         )}
       </AnimatePresence>
+
+      {/* 🆕 QR 快捷浮窗 — 不進入完整面板，快速給人掃碼 */}
+      <WalkieQuickQR
+        open={quickQrOpen}
+        accessCode={myGroup?.accessCode || null}
+        groupName={myGroup?.displayName || null}
+        onClose={() => setQuickQrOpen(false)}
+        onShare={myGroup ? () => shareGroupLink(myGroup.accessCode) : undefined}
+        copied={copied}
+        onCopy={myGroup ? copyCode : undefined}
+      />
 
       {/* 展開面板 */}
       <AnimatePresence>
