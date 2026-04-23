@@ -220,10 +220,18 @@ export default function Landing() {
           <p className="text-sm text-muted-foreground font-chinese">
             &copy; 2024 CHITO — Play the Place
           </p>
-          <div className="flex items-center justify-center gap-4 mt-4">
+          <div className="flex items-center justify-center gap-4 mt-4 flex-wrap">
+            {/* 🆕 分享此場域（Web Share API + 複製 fallback） */}
+            {currentField && <ShareFieldLink fieldName={currentField.name} fieldCode={currentField.code} />}
+            <Link href="/f">
+              <span className="text-xs text-muted-foreground/70 hover:text-primary cursor-pointer transition-colors">
+                🌐 瀏覽其他場域
+              </span>
+            </Link>
+            <span className="text-muted-foreground/30">·</span>
             <Link href="/apply">
               <span className="text-xs text-muted-foreground/70 hover:text-primary cursor-pointer transition-colors">
-                🌐 申請開通場域
+                申請開通場域
               </span>
             </Link>
             <span className="text-muted-foreground/30">·</span>
