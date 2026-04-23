@@ -578,7 +578,9 @@ export default function AdminStaffFields() {
                     const { enabled, total } = getFieldModuleStatus(field.settings);
                     return (
                       <TableRow key={field.id} data-testid={`row-field-${field.id}`}>
-                        <TableCell className="font-mono font-medium">{field.code}</TableCell>
+                        <TableCell className="font-mono font-medium">
+                          <CodeCell code={field.code} />
+                        </TableCell>
                         <TableCell>
                           <div>
                             <div className="font-medium">{field.name}</div>
