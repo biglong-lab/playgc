@@ -33,7 +33,7 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    title: "歡迎使用 CHITO 七逃 SaaS",
+    title: "歡迎使用 CHITO SaaS",
     description: "讓我們用 3 步認識你的新管理後台",
     emoji: "🎉",
     items: [
