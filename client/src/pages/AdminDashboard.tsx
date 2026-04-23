@@ -59,6 +59,9 @@ export default function AdminDashboard() {
 
   return (
     <UnifiedAdminLayout title="管理儀表板" actions={actions}>
+      {/* 🆕 場域模組狀態 — 一眼看出本場域啟用了哪些功能 */}
+      <FieldModulesCard />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
