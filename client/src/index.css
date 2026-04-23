@@ -394,6 +394,24 @@
 .leaflet-container {
   background: hsl(var(--background));
   font-family: inherit;
+  /* 🔒 強制 leaflet map 不超過一般 overlay（預設 z-index: 1000 會蓋住 modal/drawer）*/
+  z-index: 10 !important;
+  position: relative;
+}
+
+/* Leaflet 內部 pane / control 都限制在 map 容器內（不往外 escape）*/
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control {
+  z-index: auto !important;
+}
+
+/* 具體 controls 限定 50 以下 — 絕不可蓋全域 fixed overlay（walkie / modal 至少用 [60] 以上）*/
+.leaflet-control-zoom,
+.leaflet-control-attribution,
+.leaflet-control-layers {
+  z-index: 5 !important;
 }
 
 .leaflet-popup-content-wrapper {
