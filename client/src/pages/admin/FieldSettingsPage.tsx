@@ -617,31 +617,46 @@ function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             </Select>
           </div>
 
-          {/* 底圖 URL */}
+          {/* 底圖（上傳或貼 URL） */}
           <div>
-            <label className="text-sm font-medium mb-1 block flex items-center gap-2">
-              <ImageIcon className="w-4 h-4" /> 場域封面圖 URL
+            <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+              <ImageIcon className="w-4 h-4" /> 場域封面圖
             </label>
+            <UploadImageButton
+              endpoint={`/api/admin/fields/${fieldId}/cloudinary-cover`}
+              currentUrl={theme.coverImageUrl}
+              onUploaded={(url) => updateTheme({ coverImageUrl: url })}
+              label="上傳封面圖"
+              hint="建議 1920×1080（16:9），最大 10MB。用於玩家端遊戲列表頂部。"
+              maxBytes={10 * 1024 * 1024}
+              testId="btn-upload-cover"
+            />
             <Input
               value={theme.coverImageUrl || ""}
               onChange={(e) => updateTheme({ coverImageUrl: e.target.value })}
-              placeholder="https://res.cloudinary.com/.../cover.jpg"
-              className="font-mono text-xs"
+              placeholder="或直接貼 https:// URL"
+              className="font-mono text-xs mt-2"
               data-testid="input-cover-url"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              必須是 https:// 開頭。用於玩家端遊戲列表頂部。
-            </p>
           </div>
 
-          {/* Logo URL */}
+          {/* Logo（上傳或貼 URL） */}
           <div>
-            <label className="text-sm font-medium mb-1 block">Logo URL（覆蓋場域預設 logo）</label>
+            <label className="text-sm font-medium mb-2 block">Logo（覆蓋場域預設 logo）</label>
+            <UploadImageButton
+              endpoint={`/api/admin/fields/${fieldId}/cloudinary-logo`}
+              currentUrl={theme.brandingLogoUrl}
+              onUploaded={(url) => updateTheme({ brandingLogoUrl: url })}
+              label="上傳 Logo"
+              hint="建議正方形或透明 PNG，最大 5MB。顯示於 header 左上角。"
+              maxBytes={5 * 1024 * 1024}
+              testId="btn-upload-logo"
+            />
             <Input
               value={theme.brandingLogoUrl || ""}
               onChange={(e) => updateTheme({ brandingLogoUrl: e.target.value })}
-              placeholder="https://res.cloudinary.com/.../logo.png"
-              className="font-mono text-xs"
+              placeholder="或直接貼 https:// URL"
+              className="font-mono text-xs mt-2"
               data-testid="input-logo-url"
             />
           </div>
