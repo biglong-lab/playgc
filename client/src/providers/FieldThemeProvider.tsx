@@ -33,12 +33,12 @@ export interface FieldThemePayload {
   name: string;
   logoUrl: string | null;
   welcomeMessage: string | null;
-  /** 🆕 場域短 slogan（後台可設定） */
-  tagline: string | null;
-  /** 🆕 場域亮點列表（後台可設定，Landing Feature Section 用） */
-  highlights: FieldHighlight[];
-  /** 🆕 模組開關（控制對戰入口、射擊任務等是否顯示） */
-  modules: FieldModules;
+  /** 🆕 場域短 slogan（後台可設定 · 舊 API 可能沒回） */
+  tagline?: string | null;
+  /** 🆕 場域亮點列表（後台可設定 · 舊 API 可能沒回） */
+  highlights?: FieldHighlight[];
+  /** 🆕 模組開關（舊 API 可能沒回） */
+  modules?: FieldModules;
   theme: FieldTheme;
 }
 
