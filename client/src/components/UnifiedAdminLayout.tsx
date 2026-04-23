@@ -157,13 +157,16 @@ function AdminSidebar({
     <Sidebar>
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
             <Shield className="w-6 h-6 text-primary" />
           </div>
-          <div>
-            <h2 className="font-bold text-sm">賈村競技場</h2>
+          <div className="min-w-0 flex-1">
+            {/* 🔒 場域隔離：主標永遠是當前場域名稱（不再硬編碼「賈村競技場」）*/}
+            <h2 className="font-bold text-sm truncate" title={fieldName}>
+              {fieldName || "管理後台"}
+            </h2>
             <p className="text-xs text-muted-foreground">
-              {isSuperAdmin ? "系統管理" : fieldName || "管理後台"}
+              {isSuperAdmin ? "超級管理員" : "場域管理員"}
             </p>
           </div>
         </div>
