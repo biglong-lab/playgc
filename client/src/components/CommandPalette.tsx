@@ -63,6 +63,7 @@ const COMMANDS: CommandItem[] = [
   { label: "即時遊戲 + 對講機廣播", path: "/admin/live", icon: Radio, group: "🎮 遊戲中心", keywords: ["live", "walkie", "broadcast", "對講機"] },
   { label: "設備管理", path: "/admin/devices", icon: Cpu, group: "🎮 遊戲中心", keywords: ["device", "led"] },
   { label: "QR Code 發布", path: "/admin/qrcodes", icon: QrCode, group: "🎮 遊戲中心" },
+  { label: "🛡️ 作弊 / 異常監控", path: "/admin/suspicious-log", icon: ShieldAlert, group: "🎮 遊戲中心", keywords: ["cheat", "suspicious", "anomaly", "作弊", "異常", "log"] },
 
   // ⚔️ 對戰中心
   { label: "對戰儀表板", path: "/admin/battle/dashboard", icon: Swords, group: "⚔️ 對戰中心", keywords: ["battle", "pk"] },
