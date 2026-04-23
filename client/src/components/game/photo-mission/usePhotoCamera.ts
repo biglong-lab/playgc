@@ -231,6 +231,10 @@ export function usePhotoCamera(): PhotoCameraState {
         description: "請允許相機權限或使用相簿上傳",
         variant: "destructive",
       });
+      // 📊 錯誤上報
+      logError("camera", "start_failed", err, {
+        userAgent: navigator.userAgent,
+      });
     }
   };
 
