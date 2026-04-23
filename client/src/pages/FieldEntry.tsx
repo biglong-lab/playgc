@@ -405,20 +405,20 @@ function FieldCard({
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
           {/* 遊戲數 Badge */}
-          {field.gameCount > 0 && (
+          {gameCount > 0 && (
             <div className="absolute top-3 right-3 bg-background/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1">
               <Gamepad2 className="w-3 h-3" />
-              {field.gameCount} 款遊戲
+              {gameCount} 款遊戲
             </div>
           )}
         </div>
       ) : (
         <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-primary/20 via-primary/5 to-background flex items-center justify-center">
           <Building2 className="w-12 h-12 text-primary/40" />
-          {field.gameCount > 0 && (
+          {gameCount > 0 && (
             <div className="absolute top-3 right-3 bg-background/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1">
               <Gamepad2 className="w-3 h-3" />
-              {field.gameCount} 款遊戲
+              {gameCount} 款遊戲
             </div>
           )}
         </div>
