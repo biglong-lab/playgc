@@ -199,61 +199,28 @@ export function usePhotoCamera(): PhotoCameraState {
         audio: false,
       });
       setStream(mediaStream);
+      // ✅ 不直接操作 videoRef（可能為 null 或 mode 會切換）
+      // srcObject 同步由 useEffect 負責（見上方 mode+stream effect）
 
-      if (!videoRef.current) return;
-
-      videoRef.current.onloadedmetadata = null;
-      videoRef.current.onerror = null;
-      videoRef.current.srcObject = mediaStream;
-
-      // 雙重 play guard：metadata 和 timeout 兩條路徑只能觸發一次 play()，
-      // 避免 iOS Safari double-play 造成 AbortError
-      let playAttempted = false;
-
-      const attemptPlay = () => {
-        if (playAttempted || !videoRef.current) return;
-        playAttempted = true;
-        videoRef.current
-          .play()
-          .then(() => {
-            const check = setInterval(() => {
-              if (
-                videoRef.current &&
-                videoRef.current.videoWidth > 0 &&
-                videoRef.current.videoHeight > 0
-              ) {
-                clearInterval(check);
-                setCameraReady(true);
-                setMode("camera");
-              }
-            }, 100);
-            setTimeout(() => clearInterval(check), 5000);
-          })
-          .catch(() => {
-            setCameraError("無法播放相機畫面，請重試");
-            stopCamera();
-            setMode("instruction");
-          });
-      };
-
-      // Safari/iOS fallback: 3 秒後嘗試直接播放
-      const metadataTimeout = setTimeout(() => {
-        if (videoRef.current && !cameraReady) {
-          attemptPlay();
+      // 接下來靠 useEffect 偵測 video 是否 ready（見下方 stream-ready effect）
+      // 若 10 秒還沒 ready → 給 error
+      const readinessCheckStart = Date.now();
+      const readinessInterval = setInterval(() => {
+        const video = videoRef.current;
+        if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+          clearInterval(readinessInterval);
+          setCameraReady(true);
+          setMode("camera");
+          return;
         }
-      }, 3000);
-
-      videoRef.current.onloadedmetadata = () => {
-        clearTimeout(metadataTimeout);
-        attemptPlay();
-      };
-
-      videoRef.current.onerror = () => {
-        clearTimeout(metadataTimeout);
-        setCameraError("相機發生錯誤，請重試");
-        stopCamera();
-        setMode("instruction");
-      };
+        // 超過 10 秒 → 失敗
+        if (Date.now() - readinessCheckStart > 10000) {
+          clearInterval(readinessInterval);
+          setCameraError("相機啟動超時，請點取消重試");
+          stopCamera();
+          setMode("instruction");
+        }
+      }, 200);
     } catch (err: unknown) {
       const errorMessage = parseCameraError(err);
       setCameraError(errorMessage);
