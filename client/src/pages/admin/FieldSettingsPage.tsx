@@ -452,15 +452,23 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           </div>
         </div>
 
-        <Button
-          onClick={handleSave}
-          disabled={saveMutation.isPending}
-          className="gap-2"
-          data-testid="button-save-features"
-        >
-          {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          儲存設定
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={handleSave}
+            disabled={saveMutation.isPending || !hasUnsavedChanges}
+            className="gap-2"
+            data-testid="button-save-features"
+          >
+            {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            儲存設定
+          </Button>
+          {hasUnsavedChanges && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs font-medium">
+              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              有未儲存變更
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
