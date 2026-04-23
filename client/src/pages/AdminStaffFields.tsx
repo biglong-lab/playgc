@@ -38,9 +38,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Plus, Pencil, MapPin, Phone, Mail, Lock, Unlock, AlertTriangle } from "lucide-react";
+import {
+  Building2, Plus, Pencil, MapPin, Phone, Mail, Lock, Unlock, AlertTriangle,
+  Target, Swords, Camera, BookOpen, DollarSign,
+} from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { fetchWithAdminAuth } from "./admin-staff/types";
+import type { FieldSettings } from "@shared/schema";
 
 interface AdminInfo {
   systemRole: string;
