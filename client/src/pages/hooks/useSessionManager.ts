@@ -170,6 +170,7 @@ export function useSessionManager({
     let pageIndex = 0;
 
     if (data.session.status === "completed") {
+      // 全部完成的 session → 所有頁面都標記為已完成（允許回顧）
       setState({
         sessionId: data.session.id,
         score: newScore,
@@ -177,6 +178,7 @@ export function useSessionManager({
         variables: newVariables,
         currentPageIndex: activePages.length - 1,
         isCompleted: true,
+        completedPageIds: activePages.map((p) => p.id),
       });
       setHasRestoredProgress(true);
       toast({ title: "遊戲已完成", description: `最終得分: ${newScore} 分` });
@@ -188,6 +190,9 @@ export function useSessionManager({
       if (foundIndex !== -1) pageIndex = foundIndex;
     }
 
+    // 恢復 session 時，currentPageIndex 之前的頁面視為已完成（允許回顧）
+    const completedIds = activePages.slice(0, pageIndex).map((p) => p.id);
+
     setState({
       sessionId: data.session.id,
       score: newScore,
@@ -195,6 +200,7 @@ export function useSessionManager({
       variables: newVariables,
       currentPageIndex: pageIndex,
       isCompleted: false,
+      completedPageIds: completedIds,
     });
     setHasRestoredProgress(true);
     toast({ title: "繼續遊戲", description: "從上次進度繼續" });
