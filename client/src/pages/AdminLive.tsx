@@ -52,6 +52,27 @@ interface BroadcastTokensResponse {
   broadcasterName: string;
 }
 
+/** /api/admin/stats/overview 回傳 */
+interface OverviewStats {
+  sessions: {
+    total: number;
+    playing: number;
+    completed: number;
+    abandoned: number;
+    last24h: number;
+    last7d: number;
+  };
+  uniquePlayers: number;
+  popularGames: Array<{
+    gameId: string;
+    title: string;
+    plays: number;
+    uniquePlayers: number;
+  }>;
+  dailyTrend: Array<{ date: string; count: number }>;
+  generatedAt: string;
+}
+
 export default function AdminLive() {
   const { toast } = useToast();
   const [broadcasting, setBroadcasting] = useState<BroadcastTokensResponse | null>(
