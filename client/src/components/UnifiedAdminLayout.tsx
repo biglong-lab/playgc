@@ -44,6 +44,7 @@ interface UnifiedAdminLayoutProps {
 export default function UnifiedAdminLayout({ children, title, actions }: UnifiedAdminLayoutProps) {
   const [location] = useLocation();
   const { admin, isLoading, isAuthenticated, hasPermission, logout } = useAdminAuth();
+  const currentField = useCurrentField();
 
   if (isLoading) {
     return (
