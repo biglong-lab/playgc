@@ -53,17 +53,23 @@ function extractCode(raw: string): string | null {
   return null;
 }
 
-export function WalkieQRScanner({ onDetect, onClose }: WalkieQRScannerProps) {
+export function WalkieQRScanner({
+  onDetect,
+  onClose,
+  onSwitchToManual,
+}: WalkieQRScannerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<unknown>(null); // Html5Qrcode instance
   const [error, setError] = useState<string | null>(null);
   const [detecting, setDetecting] = useState(false);
+  const [retryKey, setRetryKey] = useState(0); // 改變值來重啟 scanner
 
   useEffect(() => {
     let mounted = true;
     let instance: Html5QrcodeInstance = null;
+    let startTimeout: ReturnType<typeof setTimeout> | null = null;
 
-    (async () => {
+    const tryStart = async () => {
       try {
         const { Html5Qrcode } = await import("html5-qrcode");
         if (!mounted || !containerRef.current) return;
@@ -73,32 +79,59 @@ export function WalkieQRScanner({ onDetect, onClose }: WalkieQRScannerProps) {
         instance = new Html5Qrcode(divId);
         scannerRef.current = instance;
 
-        await instance.start(
+        // 先試後鏡頭，失敗再 fallback 任意可用相機
+        const configs = [
           { facingMode: "environment" },
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          (decodedText: string) => {
-            if (!mounted) return;
-            const code = extractCode(decodedText);
-            if (code) {
-              setDetecting(true);
-              onDetect(code);
-            }
-          },
-          () => {
-            // 每個 frame 沒掃到會呼叫，吃掉
-          },
-        );
+          { facingMode: "user" }, // Android Edge 某些裝置只能抓前鏡
+          true, // 完全不指定 — 讓瀏覽器挑
+        ];
+
+        let lastErr: unknown = null;
+        for (const c of configs) {
+          try {
+            await instance.start(
+              c as never,
+              { fps: 10, qrbox: { width: 220, height: 220 } },
+              (decodedText: string) => {
+                if (!mounted) return;
+                const code = extractCode(decodedText);
+                if (code) {
+                  setDetecting(true);
+                  onDetect(code);
+                }
+              },
+              () => {
+                // 每個 frame 沒掃到會呼叫，吃掉
+              },
+            );
+            lastErr = null;
+            break; // 成功啟動就跳出
+          } catch (e) {
+            lastErr = e;
+            continue; // 試下一個 config
+          }
+        }
+        if (lastErr) throw lastErr;
+
+        // 🛡 超時保險：10 秒後若還沒掃到也沒實質畫面 → 提示
+        startTimeout = setTimeout(() => {
+          if (mounted && !detecting) {
+            // 不報錯，讓用戶繼續嘗試，但記錄 log
+            console.warn("[walkie-scanner] 10s passed, still scanning");
+          }
+        }, 10000);
       } catch (err) {
         if (mounted) {
-          setError(
-            err instanceof Error ? err.message : "無法啟動相機（請允許相機權限）",
-          );
+          setError(parseScanError(err));
         }
       }
-    })();
+    };
+
+    tryStart();
 
     return () => {
       mounted = false;
+      if (startTimeout) clearTimeout(startTimeout);
       if (instance && instance.isScanning) {
         instance
           .stop()
@@ -106,7 +139,9 @@ export function WalkieQRScanner({ onDetect, onClose }: WalkieQRScannerProps) {
           .catch(() => {});
       }
     };
-  }, [onDetect]);
+    // retryKey 觸發重新啟動
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onDetect, retryKey]);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black flex flex-col">
