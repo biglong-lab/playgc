@@ -124,6 +124,18 @@ function GameMobileCard({
           <Button variant="ghost" size="icon" onClick={() => onEdit(game)} aria-label="編輯設定" data-testid={`button-edit-m-${game.id}`}>
             <Settings className="h-4 w-4" />
           </Button>
+          {onMoveField && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onMoveField(game)}
+              aria-label="搬移場域"
+              title="搬移到其他場域（super_admin）"
+              data-testid={`button-move-field-m-${game.id}`}
+            >
+              <Move className="h-4 w-4 text-blue-500" />
+            </Button>
+          )}
           <Button variant="ghost" size="icon" onClick={() => onDelete(game)} aria-label="刪除" data-testid={`button-delete-m-${game.id}`}>
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
