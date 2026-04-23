@@ -1,4 +1,5 @@
 // 遊戲管理主頁面
+import { useState } from "react";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import EmptyState from "@/components/shared/EmptyState";
 import { ListSkeleton } from "@/components/shared/LoadingSkeleton";
@@ -7,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Gamepad2, Search, FileText, Globe, Archive } from "lucide-react";
+import type { Game } from "@shared/schema";
 import {
   GameFormDialog, QRCodeDialog, CoverUploadDialog, DeleteGameDialog,
+  MoveFieldDialog,
 } from "@/components/admin-games";
 import { GameWizard } from "@/components/game-wizard";
 import { useAdminGames } from "./admin-games/useAdminGames";
@@ -16,6 +19,9 @@ import { GamesTable } from "./admin-games/GamesTable";
 
 export default function AdminGames() {
   const ctx = useAdminGames();
+  // 🚚 搬移場域 Dialog state（僅 super_admin 可用）
+  const [moveFieldGame, setMoveFieldGame] = useState<Game | null>(null);
+  const isSuperAdmin = ctx.admin?.systemRole === "super_admin";
 
   if (ctx.authLoading) {
     return (
