@@ -63,7 +63,7 @@ export default function GamePlay() {
 
   const {
     sessionId, score, inventory, variables,
-    currentPageIndex, isCompleted,
+    currentPageIndex, isCompleted, completedPageIds,
     stateRef, activePagesRef,
     setState, resetAndCreateNew,
   } = useSessionManager({
