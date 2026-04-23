@@ -29,6 +29,7 @@ import {
   Check,
   ArrowRight,
   HelpCircle,
+  Megaphone,
 } from "lucide-react";
 
 export default function AdminDashboard() {
