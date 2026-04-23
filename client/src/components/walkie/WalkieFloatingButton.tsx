@@ -662,6 +662,11 @@ export function WalkieFloatingButton({
               joinMutation.mutate(code);
             }}
             onClose={() => setScanning(false)}
+            onSwitchToManual={() => {
+              setScanning(false);
+              setExpanded(true);
+              setView("join");
+            }}
           />
         )}
       </AnimatePresence>
