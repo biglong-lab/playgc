@@ -635,7 +635,15 @@ function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
               <SelectContent>
                 {FONT_OPTIONS.map((o) => (
                   <SelectItem key={o.value} value={o.value}>
-                    {o.label}
+                    <div className="flex items-center justify-between gap-4 w-full">
+                      <span>{o.label}</span>
+                      <span
+                        className="text-sm opacity-70"
+                        style={{ fontFamily: o.previewFont }}
+                      >
+                        {o.sample}
+                      </span>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
