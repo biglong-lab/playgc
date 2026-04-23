@@ -1,25 +1,34 @@
+// 🏆 排行榜頁 — 顯示玩家頭像、暱稱、匿名標記
 import { useState } from "react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { LeaderboardEntry, Game } from "@shared/schema";
-import { 
-  Trophy, Medal, Clock, Users, ArrowLeft, Crown,
-  Flame, Star, ChevronRight
+import {
+  Trophy, Medal, Clock, ArrowLeft, Crown,
+  Flame, Star, UserX,
 } from "lucide-react";
+
+/** 擴充版 leaderboard entry（server 回傳） */
+interface LeaderboardEntryExtended extends LeaderboardEntry {
+  displayName: string;
+  isAnonymousDisplay: boolean;
+  profileImageUrl: string | null;
+}
 
 export default function Leaderboard() {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
 
-  const { data: games, isLoading: gamesLoading } = useQuery<Game[]>({
+  const { data: games } = useQuery<Game[]>({
     queryKey: ["/api/games"],
   });
 
-  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntry[]>({
+  const { data: leaderboard, isLoading: leaderboardLoading } = useQuery<LeaderboardEntryExtended[]>({
     queryKey: ["/api/leaderboard", selectedGame],
   });
 
@@ -55,6 +64,17 @@ export default function Leaderboard() {
     }
   };
 
+  const getInitials = (entry: LeaderboardEntryExtended): string => {
+    const name = entry.displayName || entry.teamName || "?";
+    return name.slice(0, 2).toUpperCase();
+  };
+
+  // 計算匿名玩家比例（提示用）
+  const anonymousCount = leaderboard?.filter((e) => e.isAnonymousDisplay).length ?? 0;
+  const anonymousRatio = leaderboard && leaderboard.length > 0
+    ? Math.round((anonymousCount / leaderboard.length) * 100)
+    : 0;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
@@ -81,50 +101,56 @@ export default function Leaderboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* 前三名大卡 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border-yellow-500/30">
-            <CardContent className="p-6 text-center">
-              <Crown className="w-10 h-10 text-yellow-500 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-1">冠軍</p>
-              <p className="font-display font-bold text-lg">
-                {leaderboard?.[0]?.teamName || "—"}
-              </p>
-              <p className="font-number text-2xl text-yellow-500">
-                {leaderboard?.[0]?.totalScore || 0}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-gray-400/10 to-gray-500/5 border-gray-400/30">
-            <CardContent className="p-6 text-center">
-              <Medal className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-1">亞軍</p>
-              <p className="font-display font-bold text-lg">
-                {leaderboard?.[1]?.teamName || "—"}
-              </p>
-              <p className="font-number text-2xl text-gray-400">
-                {leaderboard?.[1]?.totalScore || 0}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-amber-600/10 to-amber-700/5 border-amber-600/30">
-            <CardContent className="p-6 text-center">
-              <Medal className="w-10 h-10 text-amber-600 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground mb-1">季軍</p>
-              <p className="font-display font-bold text-lg">
-                {leaderboard?.[2]?.teamName || "—"}
-              </p>
-              <p className="font-number text-2xl text-amber-600">
-                {leaderboard?.[2]?.totalScore || 0}
-              </p>
-            </CardContent>
-          </Card>
+          <PodiumCard
+            rank={1}
+            entry={leaderboard?.[0]}
+            getInitials={getInitials}
+          />
+          <PodiumCard
+            rank={2}
+            entry={leaderboard?.[1]}
+            getInitials={getInitials}
+          />
+          <PodiumCard
+            rank={3}
+            entry={leaderboard?.[2]}
+            getInitials={getInitials}
+          />
         </div>
+
+        {/* 遊戲篩選 */}
+        {games && games.length > 0 && (
+          <div className="mb-6">
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={selectedGame === null ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedGame(null)}
+                data-testid="filter-game-all"
+              >
+                全部遊戲
+              </Button>
+              {games.map((g) => (
+                <Button
+                  key={g.id}
+                  variant={selectedGame === g.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedGame(g.id)}
+                  data-testid={`filter-game-${g.id}`}
+                  className="max-w-[160px] truncate"
+                >
+                  {g.title}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="all" data-testid="tab-all">全部遊戲</TabsTrigger>
+            <TabsTrigger value="all" data-testid="tab-all">全部排名</TabsTrigger>
             <TabsTrigger value="today" data-testid="tab-today">今日</TabsTrigger>
             <TabsTrigger value="week" data-testid="tab-week">本週</TabsTrigger>
           </TabsList>
@@ -132,11 +158,19 @@ export default function Leaderboard() {
           <TabsContent value="all">
             <Card>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-display">全部排名</CardTitle>
-                  <Badge variant="outline" className="font-number">
-                    {leaderboard?.length || 0} 位玩家
-                  </Badge>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <CardTitle className="text-lg font-display">排行榜</CardTitle>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {anonymousRatio > 0 && (
+                      <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-600">
+                        <UserX className="w-3 h-3" />
+                        {anonymousCount} 位匿名（{anonymousRatio}%）
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className="font-number">
+                      {leaderboard?.length || 0} 位玩家
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -145,6 +179,7 @@ export default function Leaderboard() {
                     {[1, 2, 3, 4, 5].map((i) => (
                       <div key={i} className="flex items-center gap-4 p-3">
                         <Skeleton className="w-8 h-8 rounded-full" />
+                        <Skeleton className="w-10 h-10 rounded-full" />
                         <Skeleton className="h-4 flex-1" />
                         <Skeleton className="h-4 w-16" />
                       </div>
@@ -153,32 +188,15 @@ export default function Leaderboard() {
                 ) : leaderboard && leaderboard.length > 0 ? (
                   <div className="space-y-2">
                     {leaderboard.map((entry, index) => (
-                      <div
+                      <LeaderboardRow
                         key={entry.id}
-                        className={`flex items-center gap-4 p-3 rounded-lg border transition-colors ${getRankColor(index + 1)}`}
-                        data-testid={`leaderboard-entry-${index}`}
-                      >
-                        <div className="w-8 h-8 flex items-center justify-center">
-                          {getRankIcon(index + 1)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium truncate">{entry.teamName}</p>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {entry.completionTimeSeconds ? formatTime(entry.completionTimeSeconds) : "—"}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="text-right">
-                          <p className="font-number text-lg font-bold text-primary">
-                            {entry.totalScore}
-                          </p>
-                          <p className="text-xs text-muted-foreground">分數</p>
-                        </div>
-                      </div>
+                        entry={entry}
+                        rank={index + 1}
+                        getRankIcon={getRankIcon}
+                        getRankColor={getRankColor}
+                        getInitials={getInitials}
+                        formatTime={formatTime}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -213,6 +231,138 @@ export default function Leaderboard() {
           </TabsContent>
         </Tabs>
       </main>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────────
+// 子元件
+// ──────────────────────────────────────────────────────────────
+
+/** 前三名大卡片 */
+function PodiumCard({
+  rank,
+  entry,
+  getInitials,
+}: {
+  rank: 1 | 2 | 3;
+  entry?: LeaderboardEntryExtended;
+  getInitials: (e: LeaderboardEntryExtended) => string;
+}) {
+  const styles = {
+    1: {
+      wrapper: "bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 border-yellow-500/30",
+      icon: <Crown className="w-10 h-10 text-yellow-500" />,
+      title: "冠軍",
+      scoreColor: "text-yellow-500",
+    },
+    2: {
+      wrapper: "bg-gradient-to-br from-gray-400/10 to-gray-500/5 border-gray-400/30",
+      icon: <Medal className="w-10 h-10 text-gray-400" />,
+      title: "亞軍",
+      scoreColor: "text-gray-400",
+    },
+    3: {
+      wrapper: "bg-gradient-to-br from-amber-600/10 to-amber-700/5 border-amber-600/30",
+      icon: <Medal className="w-10 h-10 text-amber-600" />,
+      title: "季軍",
+      scoreColor: "text-amber-600",
+    },
+  }[rank];
+
+  return (
+    <Card className={styles.wrapper}>
+      <CardContent className="p-6 text-center">
+        <div className="mb-2 flex items-center justify-center">{styles.icon}</div>
+        <p className="text-sm text-muted-foreground mb-2">{styles.title}</p>
+        {entry ? (
+          <>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <Avatar className="w-9 h-9">
+                {entry.profileImageUrl && <AvatarImage src={entry.profileImageUrl} />}
+                <AvatarFallback className="text-sm">{getInitials(entry)}</AvatarFallback>
+              </Avatar>
+              <p className="font-display font-bold text-lg truncate max-w-[140px]" title={entry.displayName}>
+                {entry.displayName}
+              </p>
+            </div>
+            {entry.isAnonymousDisplay && (
+              <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-600 mb-1">
+                匿名
+              </Badge>
+            )}
+            <p className={`font-number text-2xl ${styles.scoreColor}`}>{entry.totalScore || 0}</p>
+          </>
+        ) : (
+          <>
+            <p className="font-display font-bold text-lg">—</p>
+            <p className={`font-number text-2xl ${styles.scoreColor}`}>0</p>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+/** 一般排名列 */
+function LeaderboardRow({
+  entry,
+  rank,
+  getRankIcon,
+  getRankColor,
+  getInitials,
+  formatTime,
+}: {
+  entry: LeaderboardEntryExtended;
+  rank: number;
+  getRankIcon: (r: number) => React.ReactNode;
+  getRankColor: (r: number) => string;
+  getInitials: (e: LeaderboardEntryExtended) => string;
+  formatTime: (s: number) => string;
+}) {
+  return (
+    <div
+      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${getRankColor(rank)}`}
+      data-testid={`leaderboard-entry-${rank}`}
+    >
+      <div className="w-8 h-8 flex items-center justify-center shrink-0">
+        {getRankIcon(rank)}
+      </div>
+
+      {/* 頭像 */}
+      <Avatar className="w-10 h-10 shrink-0">
+        {entry.profileImageUrl && <AvatarImage src={entry.profileImageUrl} />}
+        <AvatarFallback className={entry.isAnonymousDisplay ? "bg-amber-100 dark:bg-amber-900/30" : ""}>
+          {entry.isAnonymousDisplay ? <UserX className="w-4 h-4 text-amber-500" /> : getInitials(entry)}
+        </AvatarFallback>
+      </Avatar>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="font-medium truncate">{entry.displayName}</p>
+          {entry.isAnonymousDisplay && (
+            <Badge variant="outline" className="text-[9px] h-4 px-1 border-amber-500/50 text-amber-600 shrink-0">
+              匿名
+            </Badge>
+          )}
+        </div>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5 flex-wrap">
+          {entry.teamName && entry.teamName !== entry.displayName && (
+            <span className="truncate max-w-[140px]" title={entry.teamName}>
+              {entry.teamName}
+            </span>
+          )}
+          <span className="flex items-center gap-1 shrink-0">
+            <Clock className="w-3 h-3" />
+            {entry.completionTimeSeconds ? formatTime(entry.completionTimeSeconds) : "—"}
+          </span>
+        </div>
+      </div>
+
+      <div className="text-right shrink-0">
+        <p className="font-number text-lg font-bold text-primary">{entry.totalScore}</p>
+        <p className="text-xs text-muted-foreground">分數</p>
+      </div>
     </div>
   );
 }
