@@ -5,12 +5,32 @@ import {
   logAuditAction,
 } from "../adminAuth";
 import { db } from "../db";
-import { fields, parseFieldSettings } from "@shared/schema";
-import type { FieldSettings } from "@shared/schema";
+import { fields, parseFieldSettings, games } from "@shared/schema";
+import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
 import { eq, desc } from "drizzle-orm";
+
+/** 🎨 驗證主題欄位（防 XSS） */
+const hexColorRegex = /^#[0-9a-f]{6}$/i;
+const safeUrlRegex = /^https:\/\/[\w.-]+(:\d+)?(\/[^\s]*)?$/i;
+
+const fieldThemeSchema = z
+  .object({
+    colorScheme: z.enum(["dark", "light", "custom"]).optional(),
+    primaryColor: z.string().regex(hexColorRegex).optional(),
+    accentColor: z.string().regex(hexColorRegex).optional(),
+    backgroundColor: z.string().regex(hexColorRegex).optional(),
+    textColor: z.string().regex(hexColorRegex).optional(),
+    layoutTemplate: z
+      .enum(["classic", "card", "fullscreen", "minimal"])
+      .optional(),
+    coverImageUrl: z.string().regex(safeUrlRegex).optional().or(z.literal("")),
+    brandingLogoUrl: z.string().regex(safeUrlRegex).optional().or(z.literal("")),
+    fontFamily: z.enum(["default", "serif", "mono", "display"]).optional(),
+  })
+  .strict();
 
 export function registerAdminFieldRoutes(app: Express) {
   // ============================================================================
