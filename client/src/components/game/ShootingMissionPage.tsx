@@ -596,8 +596,8 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
         <p className="text-xs mt-1">請使用場域內的射擊設備進行遊戲</p>
       </div>
 
-      {/* 開發/無硬體場地模式：提供模擬命中按鈕 */}
-      {config.allowSimulation && (
+      {/* 開發/無硬體場地模式：提供模擬命中按鈕（production build 強制禁用） */}
+      {isSimulationAllowed(config.allowSimulation) && (
         <div className="mt-4 flex justify-center">
           <Button
             variant="outline"
