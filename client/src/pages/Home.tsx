@@ -237,11 +237,39 @@ export default function Home() {
         </div>
       </header>
 
+      {/* 🆕 場域 Hero Banner（有 coverImageUrl 才顯示） */}
+      {fieldCoverUrl && (
+        <div className="relative w-full h-48 md:h-64 overflow-hidden">
+          <img
+            src={fieldCoverUrl}
+            alt={fieldName}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+          <div className="absolute inset-0 flex items-end">
+            <div className="container mx-auto px-4 pb-4">
+              <h1 className="text-2xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
+                {fieldName}
+              </h1>
+              {welcomeMessage && (
+                <p className="text-sm md:text-base text-white/90 mt-1 drop-shadow-md max-w-xl">
+                  {welcomeMessage}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">
-            歡迎回來, <span className="text-primary">{user.firstName || "玩家"}</span>
+            歡迎回來, <span className="text-primary">{user.firstName || user.playerName || "玩家"}</span>
           </h2>
+          {/* 有場域歡迎訊息且上面沒有 hero banner 顯示過 → 這裡顯示 */}
+          {welcomeMessage && !fieldCoverUrl && (
+            <p className="text-base text-muted-foreground mb-1">{welcomeMessage}</p>
+          )}
           <p className="text-muted-foreground">選擇一個任務開始你的冒險</p>
         </div>
 
