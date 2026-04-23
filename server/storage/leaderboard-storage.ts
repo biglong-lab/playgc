@@ -23,11 +23,25 @@ export interface LeaderboardEntryExtended extends LeaderboardEntry {
 
 /** 排行榜儲存方法集合 */
 export const leaderboardStorageMethods = {
-  /** 取得排行榜（可依遊戲篩選，限制 100 筆）— 含 user JOIN 以產生顯示名稱 */
-  async getLeaderboard(gameId?: string): Promise<LeaderboardEntryExtended[]> {
-    // LEFT JOIN session + player_progress + users 取得使用者資訊
-    // 舊資料可能沒 playerName/isAnonymous → 用 JOIN 到的 user 動態計算
-    const query = db
+  /** 取得排行榜 — 含 user JOIN 以產生顯示名稱
+   *  @param gameId  單一遊戲篩選
+   *  @param fieldId 🔒 場域隔離篩選（從 /api/leaderboard?fieldCode=XXX 轉換而來）
+   */
+  async getLeaderboard(
+    gameId?: string,
+    fieldId?: string,
+  ): Promise<LeaderboardEntryExtended[]> {
+    // 動態建立 where 條件（支援 game / field / 都不帶 三種情境）
+    const { and } = await import("drizzle-orm");
+    const { games } = await import("@shared/schema");
+    const conditions = [];
+    if (gameId) conditions.push(eq(leaderboard.gameId, gameId));
+    // field 過濾：需 JOIN games 表找 fieldId
+    const needGameJoin = !!fieldId;
+    if (fieldId) conditions.push(eq(games.fieldId, fieldId));
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const baseQuery = db
       .select({
         entry: leaderboard,
         session: gameSessions,
@@ -37,13 +51,17 @@ export const leaderboardStorageMethods = {
       .from(leaderboard)
       .leftJoin(gameSessions, eq(gameSessions.id, leaderboard.sessionId))
       .leftJoin(playerProgress, eq(playerProgress.sessionId, leaderboard.sessionId))
-      .leftJoin(users, eq(users.id, playerProgress.userId))
+      .leftJoin(users, eq(users.id, playerProgress.userId));
+
+    // 🔒 場域過濾需要 JOIN games 取得 fieldId
+    const withGameJoin = needGameJoin
+      ? baseQuery.leftJoin(games, eq(games.id, leaderboard.gameId))
+      : baseQuery;
+
+    const rows = await withGameJoin
+      .where(whereClause)
       .orderBy(desc(leaderboard.totalScore))
       .limit(100);
-
-    const rows = gameId
-      ? await query.where(eq(leaderboard.gameId, gameId))
-      : await query;
 
     // 同一 sessionId 可能因 playerProgress 多筆（多人 session）JOIN 重複
     // 去重：保留同 entry id 的第一筆
