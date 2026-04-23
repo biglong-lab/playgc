@@ -268,10 +268,19 @@ export function useAdminGames(): AdminGamesReturn {
         body: JSON.stringify({ imageData }),
       });
 
-      if (!response.ok) throw new Error("上傳失敗");
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || "上傳失敗");
+      }
 
+      // 🆕 invalidate 所有用到 game 的 query（管理端 + 玩家端）
       queryClient.invalidateQueries({ queryKey: ["/api/admin/games"] });
-      toast({ title: "封面圖片已更新" });
+      queryClient.invalidateQueries({ queryKey: ["/api/games"] });
+
+      toast({
+        title: "✅ 封面已更新",
+        description: "若立即看到破圖，Cloudinary CDN 會在幾秒內自動同步（已內建自動重試）",
+      });
       setIsCoverDialogOpen(false);
       setCoverUploadGame(null);
     } catch (error) {
