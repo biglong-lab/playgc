@@ -21,7 +21,30 @@ import {
   Trophy,
   Zap,
   Shield,
+  Swords,
+  Landmark,
+  ShoppingBag,
+  Coffee,
+  Puzzle,
+  QrCode,
+  Compass,
+  Sparkles,
+  Star,
+  Clock,
+  type LucideIcon,
 } from "lucide-react";
+
+// ═══════════ 動態 icon 對應（給後台 highlights 用）═══════════
+const ICON_MAP: Record<string, LucideIcon> = {
+  Target, MapPin, Camera, Users, Gamepad2, Trophy, Zap, Shield,
+  Swords, Landmark, ShoppingBag, Coffee, Puzzle, QrCode, Compass,
+  Sparkles, Star, Clock,
+};
+
+function resolveIcon(name?: string): LucideIcon {
+  if (name && ICON_MAP[name]) return ICON_MAP[name];
+  return Sparkles; // fallback
+}
 
 export default function Landing() {
   const { isLoading, isSignedIn } = useAuth();
