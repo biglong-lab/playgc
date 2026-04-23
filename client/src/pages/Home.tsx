@@ -35,9 +35,23 @@ type GameStatsMap = Record<
 
 export default function Home() {
   const { user, firebaseUser, isLoading: authLoading, isSignedIn } = useAuth();
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string | null>(null);
+
+  // 🆕 匿名命名 Dialog 狀態
+  const [anonymousNameOpen, setAnonymousNameOpen] = useState(false);
+  const [pendingGameNavigation, setPendingGameNavigation] = useState<(() => void) | null>(null);
+
+  // 使用者是否為匿名（Firebase 匿名登入 / 無名字）
+  const isAnonymous = user
+    ? isAnonymousPlayer({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+      })
+    : false;
 
   const { data: games, isLoading: gamesLoading } = useQuery<Game[]>({
     queryKey: ["/api/games"],
