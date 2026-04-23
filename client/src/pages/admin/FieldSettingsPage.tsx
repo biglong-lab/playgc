@@ -662,6 +662,9 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
   const [announcement, setAnnouncement] = useState(settings?.announcement ?? "");
   const [announcementStartAt, setAnnouncementStartAt] = useState(settings?.announcementStartAt ?? "");
   const [announcementEndAt, setAnnouncementEndAt] = useState(settings?.announcementEndAt ?? "");
+  const [announcementSeverity, setAnnouncementSeverity] = useState<"info" | "urgent">(
+    settings?.announcementSeverity ?? "info",
+  );
 
   useEffect(() => {
     if (!settings) return;
