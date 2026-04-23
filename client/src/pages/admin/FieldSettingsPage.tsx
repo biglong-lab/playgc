@@ -17,6 +17,7 @@ import { applyTheme } from "@/lib/themeUtils";
 import { THEME_PRESETS, findMatchingPreset } from "@/lib/themePresets";
 import { UploadImageButton } from "@/components/shared/UploadImageButton";
 import { encodePreviewTheme, PREVIEW_QUERY_KEY } from "@/providers/FieldThemeProvider";
+import { useUnsavedWarning } from "@/hooks/useUnsavedWarning";
 
 interface FieldSettingsResponse {
   enableAI?: boolean;
