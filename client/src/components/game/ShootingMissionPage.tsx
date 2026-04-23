@@ -50,6 +50,9 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
   useEffect(() => { isStartedRef.current = isStarted; }, [isStarted]);
   useEffect(() => { isCompletedRef.current = isCompleted; }, [isCompleted]);
 
+  // 🛡️ 作弊防護：最後一次 hit 時間（用於節流檢查）
+  const lastHitTimeRef = useRef<number | null>(null);
+
   const requiredHits = config.requiredHits || 5;
   const targetScore = config.targetScore || config.minScore || 60;
   const hitProgress = (hits.length / requiredHits) * 100;
