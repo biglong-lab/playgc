@@ -330,7 +330,8 @@ export function WalkieFloatingButton({
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            className="fixed bottom-20 right-4 z-[9999] w-72 bg-card border rounded-xl shadow-xl overflow-hidden"
+            className="fixed bottom-20 right-4 w-72 bg-card border rounded-xl shadow-xl overflow-hidden"
+            style={{ zIndex: 2147483647 }}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
