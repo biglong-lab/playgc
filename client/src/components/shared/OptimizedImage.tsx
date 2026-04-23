@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from "react";
-import { ImageOff } from "lucide-react";
+import { ImageOff, Loader2 } from "lucide-react";
 import { getOptimizedImageUrl, type ImagePreset } from "@/lib/image-utils";
 
 interface OptimizedImageProps {
@@ -21,7 +21,7 @@ interface OptimizedImageProps {
   readonly onLoad?: () => void;
 }
 
-/** 預設的圖片錯誤佔位元件 */
+/** 預設的錯誤佔位元件 */
 function DefaultFallback() {
   return (
     <div className="flex items-center justify-center w-full h-full bg-muted">
@@ -30,22 +30,30 @@ function DefaultFallback() {
   );
 }
 
+/** 載入中佔位元件（retry 中顯示，避免 broken img 可見） */
+function LoadingPlaceholder() {
+  return (
+    <div className="flex items-center justify-center w-full h-full bg-muted/50">
+      <Loader2 className="h-6 w-6 text-muted-foreground animate-spin" />
+    </div>
+  );
+}
+
 /**
- * 新上傳圖片 CDN 同步延遲的 retry 策略：
- * Cloudinary 回傳 secure_url 後，edge CDN 偶有 1-3 秒同步延遲
- * 第一次失敗 → 等 1.5s 再試
- * 第二次失敗 → 等 3s 再試
+ * Cloudinary CDN 同步延遲 retry 策略：
+ * 第一次失敗 → 等 1s 再試
+ * 第二次失敗 → 等 2.5s 再試
  * 第三次失敗 → 顯示 fallback
  */
 const MAX_RETRIES = 2;
-const RETRY_DELAYS = [1500, 3000];
+const RETRY_DELAYS = [1000, 2500];
 
 /**
  * 優化圖片元件
- * - 自動 loading="lazy"
  * - Cloudinary URL 自動附加變換參數
- * - 🆕 載入失敗自動重試 2 次（應付 Cloudinary CDN 同步延遲 / 剛上傳破圖）
- * - 統一錯誤處理（顯示 fallback）
+ * - 載入失敗自動重試 2 次（應付 Cloudinary CDN 同步延遲）
+ * - 🆕 retry 期間隱藏破圖、顯示 loading，避免使用者看到破圖 icon
+ * - 統一錯誤處理
  */
 export default function OptimizedImage({
   src,
@@ -59,49 +67,67 @@ export default function OptimizedImage({
 }: OptimizedImageProps) {
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // src 變更時重置錯誤與 retry 計數（例如重新上傳後拿到新 URL）
+  // src 變更 → 重置所有狀態
   useEffect(() => {
     setHasError(false);
     setRetryCount(0);
+    setIsLoaded(false);
   }, [src]);
 
-  // 無 src 或超過 retry 上限 → 顯示 fallback
   if (!src || hasError) {
     return <>{fallback ?? <DefaultFallback />}</>;
   }
 
-  const optimizedSrc = preset
-    ? getOptimizedImageUrl(src, preset)
-    : src;
+  const optimizedSrc = preset ? getOptimizedImageUrl(src, preset) : src;
 
-  // retry 時加 cache-bust query，繞過 browser memory cache 的 404
+  // retry 時加 cache-bust query
   const srcWithRetry = retryCount > 0
     ? `${optimizedSrc}${optimizedSrc.includes("?") ? "&" : "?"}_r=${retryCount}`
     : optimizedSrc;
 
   const handleError = () => {
     if (retryCount < MAX_RETRIES) {
-      // 🔄 CDN 可能還沒同步，延遲後再試
+      // 🆕 立刻隱藏 img（設 isLoaded=false）+ setTimeout 後 retry
+      setIsLoaded(false);
       setTimeout(() => {
         setRetryCount((c) => c + 1);
-      }, RETRY_DELAYS[retryCount] ?? 3000);
+      }, RETRY_DELAYS[retryCount] ?? 2500);
       return;
     }
     setHasError(true);
     onError?.();
   };
 
+  const handleLoad = () => {
+    setIsLoaded(true);
+    onLoad?.();
+  };
+
+  // 🆕 未載入完成時，同時 render img（hidden）和 loading placeholder
+  //   img 掛著讓瀏覽器去抓，但用 opacity:0 + absolute 把 broken 樣式蓋掉
+  //   使用者只看到 loading spinner 直到圖真的載好
   return (
-    <img
-      src={srcWithRetry}
-      alt={alt}
-      className={className}
-      loading={loading}
-      onError={handleError}
-      onLoad={onLoad}
-      // key 變化強制 React 重建 <img> 元素，避免 browser cache 卡住
-      key={`${src}-${retryCount}`}
-    />
+    <div className={`relative ${className.includes("w-") || className.includes("h-") ? "" : "w-full h-full"}`}>
+      {!isLoaded && <LoadingPlaceholder />}
+      <img
+        src={srcWithRetry}
+        alt={alt}
+        className={className}
+        loading={loading}
+        onError={handleError}
+        onLoad={handleLoad}
+        key={`${src}-${retryCount}`}
+        style={{
+          opacity: isLoaded ? 1 : 0,
+          position: isLoaded ? "static" : "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
+      />
+    </div>
   );
 }
