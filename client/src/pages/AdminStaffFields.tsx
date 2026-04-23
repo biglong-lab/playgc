@@ -588,6 +588,19 @@ export default function AdminStaffFields() {
                                 {field.address}
                               </div>
                             )}
+                            {/* 🆕 公告狀態指示 */}
+                            {hasActiveAnnouncement(field.settings) && (
+                              <div
+                                className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1"
+                                title={field.settings?.announcement || ""}
+                                data-testid={`announcement-indicator-${field.code}`}
+                              >
+                                <Megaphone className="w-3 h-3" />
+                                <span className="truncate max-w-[160px]">
+                                  公告：{field.settings?.announcement}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
