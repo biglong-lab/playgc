@@ -160,7 +160,15 @@ export function usePhotoCamera(): PhotoCameraState {
 
     const video = videoRef.current;
     if (video.videoWidth === 0 || video.videoHeight === 0) {
-      toast({ title: "拍照失敗", description: "相機畫面未載入完成，請稍候再試", variant: "destructive" });
+      // 相機 ready 但 video frame 沒資料 — 自動重啟相機（避免玩家看到錯誤卡住）
+      toast({
+        title: "相機異常重連",
+        description: "正在重啟相機，請稍候...",
+      });
+      stopCamera();
+      setTimeout(() => {
+        void startCamera();
+      }, 300);
       return;
     }
 
