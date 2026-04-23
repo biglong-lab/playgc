@@ -61,13 +61,22 @@ export default function Home() {
   const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
   const welcomeMessage = currentField?.welcomeMessage || null;
 
+  // 🔒 場域隔離：取當前場域 code 帶進 query，不讓跨場域遊戲混入
+  const currentFieldCode = currentField?.code;
+  const gamesQueryKey = currentFieldCode
+    ? [`/api/games?fieldCode=${currentFieldCode}`]
+    : ["/api/games"];
+  const statsQueryKey = currentFieldCode
+    ? [`/api/games-stats/public?fieldCode=${currentFieldCode}`]
+    : ["/api/games-stats/public"];
+
   const { data: games, isLoading: gamesLoading } = useQuery<Game[]>({
-    queryKey: ["/api/games"],
+    queryKey: gamesQueryKey,
   });
 
   /** 🆕 批次拿所有遊戲的累計統計（60s 快取，不顯示即時人數避免資料不穩） */
   const { data: statsMap } = useQuery<GameStatsMap>({
-    queryKey: ["/api/games-stats/public"],
+    queryKey: statsQueryKey,
     staleTime: 60_000,
   });
 
