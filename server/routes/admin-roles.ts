@@ -429,12 +429,8 @@ export function registerAdminRoleRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      // 🔒 場域隔離：只回傳「在本場域有 membership」的玩家
-      // super_admin 可透過 query 指定場域，否則強制自己的 fieldId
-      const targetFieldId =
-        req.admin.systemRole === "super_admin"
-          ? (req.query.fieldId as string) || req.admin.fieldId
-          : req.admin.fieldId;
+      // 🔒 場域隔離：統一只回傳本場域有 membership 的玩家
+      const targetFieldId = req.admin.fieldId;
 
       const { fieldMemberships } = await import("@shared/schema");
       const rows = await db
