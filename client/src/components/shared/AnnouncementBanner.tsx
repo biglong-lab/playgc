@@ -11,8 +11,53 @@
 // 用法：
 //   const { announcement } = useCurrentField() ?? {};
 //   <AnnouncementBanner announcement={announcement} />
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { Megaphone, AlertCircle, X } from "lucide-react";
+
+/**
+ * 🆕 將公告文字中的 https:// URL 轉為 clickable 連結
+ *
+ * 安全性：
+ *   - 只認 https://（不接受 http、javascript: 等）
+ *   - rel="noopener noreferrer" 防 tabnabbing
+ *   - 不用 dangerouslySetInnerHTML，用 React 元素組合避免 XSS
+ */
+function linkifyAnnouncement(text: string): ReactNode[] {
+  const parts: ReactNode[] = [];
+  // 匹配 https://...（到空白或字串結尾）
+  const regex = /(https:\/\/[^\s<>"']+)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    // 移除 URL 結尾可能的標點（中文常見全形 。，、！？）
+    let url = match[0];
+    const trailing = url.match(/[。，、！？,.!?]+$/)?.[0];
+    if (trailing) {
+      url = url.slice(0, -trailing.length);
+    }
+    parts.push(
+      <a
+        key={`link-${match.index}`}
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline underline-offset-2 hover:no-underline font-medium break-all"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {url}
+      </a>,
+    );
+    if (trailing) parts.push(trailing);
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts.length > 0 ? parts : [text];
+}
 
 export type AnnouncementSeverity = "info" | "urgent";
 
