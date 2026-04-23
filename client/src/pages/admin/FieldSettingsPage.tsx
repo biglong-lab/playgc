@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Settings2, Palette, Save, Eye, EyeOff, Loader2, ShieldCheck, Image as ImageIcon, Type, Sparkles, ExternalLink, FileText, Plus, Trash2, ChevronUp, ChevronDown, Target, MapPin, Camera, Users, Swords, Landmark, ShoppingBag, Coffee, Puzzle, QrCode, Compass, Star, Clock, Gamepad2, Trophy, Zap, Shield, HelpCircle, Megaphone, Download, Upload } from "lucide-react";
+import { Bot, Settings2, Palette, Save, Eye, EyeOff, Loader2, ShieldCheck, Image as ImageIcon, Type, Sparkles, ExternalLink, FileText, Plus, Trash2, ChevronUp, ChevronDown, Target, MapPin, Camera, Users, Swords, Landmark, ShoppingBag, Coffee, Puzzle, QrCode, Compass, Star, Clock, Gamepad2, Trophy, Zap, Shield, HelpCircle, Megaphone, AlertCircle, Download, Upload } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { FieldTheme, FieldHighlight } from "@shared/schema";
 import { applyTheme } from "@/lib/themeUtils";
