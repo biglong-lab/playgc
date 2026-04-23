@@ -381,6 +381,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="💰 收費功能"
             description="允許遊戲設定收費和兌換碼"
+            helpText="啟用後：遊戲可設定收費或兌換碼才能進入，後台側邊欄顯示「💰 財務中心」（4 個菜單：營收/商品/兌換碼/交易）。若場域為免費開放，不用啟用。"
             checked={enablePayment}
             onChange={setEnablePayment}
             testId="switch-payment"
@@ -388,6 +389,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="👥 團隊模式"
             description="允許遊戲使用團隊分組功能"
+            helpText="啟用後：遊戲可設定多人組隊，隊員共享進度、即時聊天、共同完成任務。適合大型團體活動。"
             checked={enableTeamMode}
             onChange={setEnableTeamMode}
             testId="switch-team"
@@ -395,6 +397,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           <ToggleRow
             label="🏆 競賽/接力模式"
             description="允許遊戲使用競賽和接力賽功能"
+            helpText="啟用後：遊戲可設定競賽模式（多人同時爭第一）或接力賽（隊員依序完成），適合比賽、賽事類活動。"
             checked={enableCompetitive}
             onChange={setEnableCompetitive}
             testId="switch-competitive"
