@@ -20,6 +20,7 @@ import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDispl
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { useFieldLink } from "@/hooks/useFieldLink";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import GenericCoverFallback from "@/components/shared/GenericCoverFallback";
 
