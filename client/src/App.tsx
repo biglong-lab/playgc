@@ -122,7 +122,13 @@ function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
-        {/* 玩家端 */}
+        {/* 🏢 場域專屬路由 /f/:fieldCode/* — 明確場域路徑，方便分享 */}
+        <Route path="/f" component={FieldEntry} />
+        <Route path="/f/:fieldCode" component={Landing} />
+        <Route path="/f/:fieldCode/home" component={Home} />
+        <Route path="/f/:fieldCode/leaderboard" component={Leaderboard} />
+
+        {/* 玩家端（向後相容：自動讀 localStorage / 預設場域）*/}
         <Route path="/" component={Landing} />
         <Route path="/j/:code" component={JoinWalkie} />
         <Route path="/home" component={Home} />
