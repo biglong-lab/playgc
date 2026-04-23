@@ -45,6 +45,7 @@ import { registerFieldMembershipRoutes } from "./field-memberships";
 import { registerWalkieRoutes } from "./walkie";
 import { registerAdminWalkieRoutes } from "./admin-walkie";
 import { registerClientLogsRoutes, startClientLogsCleanup } from "./client-logs";
+import { registerSitemapRoute } from "./sitemap";
 
 export async function registerRoutes(
   httpServer: Server,
