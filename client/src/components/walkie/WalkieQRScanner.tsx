@@ -12,6 +12,30 @@ interface WalkieQRScannerProps {
   onDetect: (code: string) => void;
   /** 關閉掃碼器 */
   onClose: () => void;
+  /** 相機啟動失敗時的替代流程（例：切到手動輸入） */
+  onSwitchToManual?: () => void;
+}
+
+/** 把 MediaError 轉成友好中文訊息 */
+function parseScanError(err: unknown): string {
+  const name = (err as { name?: string })?.name || "";
+  const message = (err as { message?: string })?.message || "";
+  if (name === "NotAllowedError" || name === "PermissionDeniedError") {
+    return "相機權限被拒絕\n請在瀏覽器設定允許此網站使用相機";
+  }
+  if (name === "NotFoundError" || name === "DevicesNotFoundError") {
+    return "此裝置找不到相機";
+  }
+  if (name === "NotReadableError" || name === "TrackStartError") {
+    return "相機被其他 App 佔用\n請先關閉 LINE/微信視訊、其他相機 app";
+  }
+  if (name === "SecurityError") {
+    return "需要 HTTPS 才能用相機";
+  }
+  if (message.toLowerCase().includes("permission")) {
+    return "請允許相機權限";
+  }
+  return message || "無法啟動相機（未知錯誤）";
 }
 
 function extractCode(raw: string): string | null {
