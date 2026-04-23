@@ -14,7 +14,7 @@ import type { Game, GameSession, BattleSlot } from "@shared/schema";
 import {
   Gamepad2, Clock, Users, Zap, Search, Filter,
   Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp, UserCircle,
-  Megaphone,
+  Megaphone, X,
 } from "lucide-react";
 import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
