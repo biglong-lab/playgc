@@ -415,7 +415,47 @@ export default function AdminStaffFields() {
                     rows={3}
                   />
                 </div>
-                
+
+                {/* 🆕 新增場域時可選「從現有場域複製設定」— 編輯模式不顯示 */}
+                {!editingField && fields && fields.length > 0 && (
+                  <div className="space-y-2 border-t pt-4">
+                    <Label htmlFor="template">
+                      套用設定範本
+                      <span className="text-xs text-muted-foreground ml-2 font-normal">
+                        （可選 · 複製模組/亮點/主題）
+                      </span>
+                    </Label>
+                    <Select value={templateFieldId} onValueChange={setTemplateFieldId}>
+                      <SelectTrigger data-testid="select-template-field">
+                        <SelectValue placeholder="從空白開始（不複製）" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">從空白開始（不複製）</SelectItem>
+                        {fields.map((f) => {
+                          const { enabled, total } = getFieldModuleStatus(f.settings);
+                          return (
+                            <SelectItem key={f.id} value={f.id}>
+                              <div className="flex items-center justify-between gap-3 min-w-[260px]">
+                                <span>{f.name}</span>
+                                <span className="text-xs text-muted-foreground font-mono">
+                                  {enabled.length}/{total} 模組
+                                </span>
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      會複製：模組開關 · 場域亮點 · 視覺主題 · Tagline · 歡迎訊息。
+                      <br />
+                      <span className="text-amber-600">
+                        不複製：AI Key、聯絡資訊、場域編號與名稱。
+                      </span>
+                    </p>
+                  </div>
+                )}
+
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={handleDialogClose}>
                     取消
