@@ -12,13 +12,44 @@
 //   const { announcement } = useCurrentField() ?? {};
 //   <AnnouncementBanner announcement={announcement} />
 import { useMemo, useState } from "react";
-import { Megaphone, X } from "lucide-react";
+import { Megaphone, AlertCircle, X } from "lucide-react";
+
+export type AnnouncementSeverity = "info" | "urgent";
 
 interface AnnouncementBannerProps {
   readonly announcement: string | null | undefined;
+  /** 🆕 嚴重程度：info 琥珀可關 / urgent 紅色不可關（預設 info） */
+  readonly severity?: AnnouncementSeverity;
 }
 
-export default function AnnouncementBanner({ announcement }: AnnouncementBannerProps) {
+/** 🆕 嚴重程度配色 + icon */
+const SEVERITY_STYLES: Record<AnnouncementSeverity, {
+  wrapper: string;
+  closeBtn: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  ariaRole: "region" | "alert";
+}> = {
+  info: {
+    wrapper:
+      "bg-amber-500/10 border-b border-amber-500/30 text-amber-700 dark:text-amber-300",
+    closeBtn:
+      "text-amber-600/70 hover:text-amber-700 dark:text-amber-400/70 dark:hover:text-amber-300",
+    Icon: Megaphone,
+    ariaRole: "region",
+  },
+  urgent: {
+    wrapper:
+      "bg-red-500/10 border-b-2 border-red-500/50 text-red-700 dark:text-red-300 font-medium",
+    closeBtn: "",
+    Icon: AlertCircle,
+    ariaRole: "alert",
+  },
+};
+
+export default function AnnouncementBanner({
+  announcement,
+  severity = "info",
+}: AnnouncementBannerProps) {
   // 依公告內容 hash 產生 sessionStorage key — 公告改了 key 變，重新顯示
   const dismissKey = useMemo(() => {
     if (!announcement) return null;
@@ -38,7 +69,12 @@ export default function AnnouncementBanner({ announcement }: AnnouncementBannerP
     }
   });
 
-  if (!announcement || dismissed) return null;
+  if (!announcement) return null;
+  // urgent 不可關，info 被關則隱藏
+  if (severity === "info" && dismissed) return null;
+
+  const style = SEVERITY_STYLES[severity];
+  const Icon = style.Icon;
 
   const handleDismiss = () => {
     setDismissed(true);
@@ -53,22 +89,25 @@ export default function AnnouncementBanner({ announcement }: AnnouncementBannerP
 
   return (
     <div
-      className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2.5 flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-300"
-      role="region"
+      className={`px-4 py-2.5 flex items-center justify-center gap-2 text-sm ${style.wrapper}`}
+      role={style.ariaRole}
       aria-label="場域公告"
       data-testid="announcement-banner"
+      data-severity={severity}
     >
-      <Megaphone className="w-4 h-4 shrink-0" />
+      <Icon className="w-4 h-4 shrink-0" />
       <span className="text-center leading-relaxed flex-1 max-w-3xl">{announcement}</span>
-      <button
-        type="button"
-        onClick={handleDismiss}
-        className="shrink-0 text-amber-600/70 hover:text-amber-700 dark:text-amber-400/70 dark:hover:text-amber-300 transition-colors"
-        aria-label="關閉公告"
-        data-testid="button-dismiss-announcement"
-      >
-        <X className="w-4 h-4" />
-      </button>
+      {severity === "info" && (
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className={`shrink-0 transition-colors ${style.closeBtn}`}
+          aria-label="關閉公告"
+          data-testid="button-dismiss-announcement"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }
