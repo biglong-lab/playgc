@@ -10,11 +10,24 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
+import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, ArrowRight, Gamepad2, MapPin, Sparkles, Users } from "lucide-react";
+import { Building2, ArrowRight, Gamepad2, MapPin, Sparkles, Users, History } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import OptimizedImage from "@/components/shared/OptimizedImage";
+
+/** 同步讀取 localStorage 的上次場域 code（只在元件初始化時算一次） */
+function readLastFieldCode(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = localStorage.getItem("lastFieldCode");
+    if (v && /^[A-Z0-9_-]{2,50}$/i.test(v)) return v.toUpperCase();
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
 
 interface FieldItem {
   id: string;
