@@ -344,41 +344,44 @@ export default function Home() {
             )}
           </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant={difficultyFilter === null ? "default" : "outline"}
               size="sm"
               onClick={() => setDifficultyFilter(null)}
               data-testid="filter-all"
             >
-              全部
+              全部 <span className="ml-1 opacity-70 font-mono text-xs">{difficultyCount.all}</span>
             </Button>
             <Button
               variant={difficultyFilter === "easy" ? "default" : "outline"}
               size="sm"
               onClick={() => setDifficultyFilter("easy")}
+              disabled={difficultyCount.easy === 0}
               className={difficultyFilter === "easy" ? "" : "text-success border-success/30"}
               data-testid="filter-easy"
             >
-              簡單
+              簡單 <span className="ml-1 opacity-70 font-mono text-xs">{difficultyCount.easy}</span>
             </Button>
             <Button
               variant={difficultyFilter === "medium" ? "default" : "outline"}
               size="sm"
               onClick={() => setDifficultyFilter("medium")}
+              disabled={difficultyCount.medium === 0}
               className={difficultyFilter === "medium" ? "" : "text-warning border-warning/30"}
               data-testid="filter-medium"
             >
-              中等
+              中等 <span className="ml-1 opacity-70 font-mono text-xs">{difficultyCount.medium}</span>
             </Button>
             <Button
               variant={difficultyFilter === "hard" ? "default" : "outline"}
               size="sm"
               onClick={() => setDifficultyFilter("hard")}
+              disabled={difficultyCount.hard === 0}
               className={difficultyFilter === "hard" ? "" : "text-destructive border-destructive/30"}
               data-testid="filter-hard"
             >
-              困難
+              困難 <span className="ml-1 opacity-70 font-mono text-xs">{difficultyCount.hard}</span>
             </Button>
           </div>
         </div>
