@@ -429,13 +429,32 @@ function FieldModulesCard() {
                     )
                   )}
                 </div>
-                <p
-                  className={`font-semibold text-xs ${
-                    enabled ? "" : "text-muted-foreground"
-                  }`}
-                >
-                  {m.label}
-                </p>
+                {/* 🆕 label 旁邊加 help tooltip */}
+                <div className="flex items-center gap-1">
+                  <p
+                    className={`font-semibold text-xs ${
+                      enabled ? "" : "text-muted-foreground"
+                    }`}
+                  >
+                    {m.label}
+                  </p>
+                  <Tooltip delayDuration={150}>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="text-muted-foreground/50 hover:text-primary transition-colors cursor-help"
+                        aria-label={`${m.label} 說明`}
+                        data-testid={`module-help-${m.key}`}
+                      >
+                        <HelpCircle className="w-3 h-3" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[260px] text-xs">
+                      <p className="font-semibold mb-1">{m.label}</p>
+                      <p className="leading-relaxed">{m.helpText}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <p className="text-[10px] text-muted-foreground mt-0.5">
                   {m.description}
                 </p>
