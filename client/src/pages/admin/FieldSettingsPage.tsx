@@ -14,6 +14,7 @@ import { Bot, Settings2, Palette, Save, Eye, EyeOff, Loader2, ShieldCheck, Image
 import type { FieldTheme } from "@shared/schema";
 import { applyTheme } from "@/lib/themeUtils";
 import { THEME_PRESETS, findMatchingPreset } from "@/lib/themePresets";
+import { UploadImageButton } from "@/components/shared/UploadImageButton";
 
 interface FieldSettingsResponse {
   enableAI?: boolean;
