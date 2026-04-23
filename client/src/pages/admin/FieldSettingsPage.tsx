@@ -262,6 +262,12 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
   const [enablePayment, setEnablePayment] = useState(settings?.enablePayment ?? false);
   const [enableTeamMode, setEnableTeamMode] = useState(settings?.enableTeamMode ?? true);
   const [enableCompetitive, setEnableCompetitive] = useState(settings?.enableCompetitiveMode ?? true);
+  // 🆕 場域模組開關
+  const [enableShooting, setEnableShooting] = useState(settings?.enableShootingMission ?? false);
+  const [enableBattle, setEnableBattle] = useState(settings?.enableBattleArena ?? false);
+  const [enableChapters, setEnableChapters] = useState(settings?.enableChapters ?? false);
+  const [enablePhoto, setEnablePhoto] = useState(settings?.enablePhotoMission ?? false);
+  const [enableGps, setEnableGps] = useState(settings?.enableGpsMission ?? false);
 
   useEffect(() => {
     if (!settings) return;
@@ -270,6 +276,11 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
     setEnablePayment(settings.enablePayment ?? false);
     setEnableTeamMode(settings.enableTeamMode ?? true);
     setEnableCompetitive(settings.enableCompetitiveMode ?? true);
+    setEnableShooting(settings.enableShootingMission ?? false);
+    setEnableBattle(settings.enableBattleArena ?? false);
+    setEnableChapters(settings.enableChapters ?? false);
+    setEnablePhoto(settings.enablePhotoMission ?? false);
+    setEnableGps(settings.enableGpsMission ?? false);
   }, [settings]);
 
   const saveMutation = useMutation({
@@ -279,6 +290,7 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/fields", fieldId, "settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
       toast({ title: "已儲存功能設定" });
     },
     onError: () => {
@@ -293,6 +305,11 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
       enablePayment,
       enableTeamMode,
       enableCompetitiveMode: enableCompetitive,
+      enableShootingMission: enableShooting,
+      enableBattleArena: enableBattle,
+      enableChapters,
+      enablePhotoMission: enablePhoto,
+      enableGpsMission: enableGps,
     });
   };
 
@@ -300,13 +317,84 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Settings2 className="w-5 h-5" /> 功能與配額
+          <Settings2 className="w-5 h-5" /> 功能模組
         </CardTitle>
         <CardDescription>
-          控制場域可用的功能和資源上限
+          控制本場域啟用哪些任務模組和配額。未啟用的模組不會顯示於玩家端。
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* 場域任務模組 */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">場域任務模組</h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              決定本場域的遊戲可以使用哪些任務類型（例：無硬體靶機就關閉射擊）
+            </p>
+          </div>
+          <ToggleRow
+            label="🎯 射擊任務"
+            description="硬體靶機射擊（僅有實體靶機的場域才啟用）"
+            checked={enableShooting}
+            onChange={setEnableShooting}
+            testId="switch-shooting"
+          />
+          <ToggleRow
+            label="⚔️ 水彈對戰 PK 擂台"
+            description="對戰場地預約系統（僅有水彈/漆彈場地才啟用）"
+            checked={enableBattle}
+            onChange={setEnableBattle}
+            testId="switch-battle"
+          />
+          <ToggleRow
+            label="📍 GPS 定位任務"
+            description="地點導航與打卡"
+            checked={enableGps}
+            onChange={setEnableGps}
+            testId="switch-gps"
+          />
+          <ToggleRow
+            label="📷 拍照驗證任務"
+            description="AI 照片識別任務"
+            checked={enablePhoto}
+            onChange={setEnablePhoto}
+            testId="switch-photo"
+          />
+          <ToggleRow
+            label="📖 章節制遊戲"
+            description="多章節任務結構（劇情推進）"
+            checked={enableChapters}
+            onChange={setEnableChapters}
+            testId="switch-chapters"
+          />
+        </div>
+
+        {/* 通用功能 */}
+        <div className="space-y-4">
+          <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">通用功能</h3>
+          <ToggleRow
+            label="💰 收費功能"
+            description="允許遊戲設定收費和兌換碼"
+            checked={enablePayment}
+            onChange={setEnablePayment}
+            testId="switch-payment"
+          />
+          <ToggleRow
+            label="👥 團隊模式"
+            description="允許遊戲使用團隊分組功能"
+            checked={enableTeamMode}
+            onChange={setEnableTeamMode}
+            testId="switch-team"
+          />
+          <ToggleRow
+            label="🏆 競賽/接力模式"
+            description="允許遊戲使用競賽和接力賽功能"
+            checked={enableCompetitive}
+            onChange={setEnableCompetitive}
+            testId="switch-competitive"
+          />
+        </div>
+
         {/* 配額 */}
         <div className="space-y-4">
           <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">配額</h3>
@@ -338,32 +426,6 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           </div>
         </div>
 
-        {/* 功能開關 */}
-        <div className="space-y-4">
-          <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">功能開關</h3>
-          <ToggleRow
-            label="收費功能"
-            description="允許遊戲設定收費和兌換碼"
-            checked={enablePayment}
-            onChange={setEnablePayment}
-            testId="switch-payment"
-          />
-          <ToggleRow
-            label="團隊模式"
-            description="允許遊戲使用團隊分組功能"
-            checked={enableTeamMode}
-            onChange={setEnableTeamMode}
-            testId="switch-team"
-          />
-          <ToggleRow
-            label="競賽/接力模式"
-            description="允許遊戲使用競賽和接力賽功能"
-            checked={enableCompetitive}
-            onChange={setEnableCompetitive}
-            testId="switch-competitive"
-          />
-        </div>
-
         <Button
           onClick={handleSave}
           disabled={saveMutation.isPending}
@@ -375,6 +437,325 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
         </Button>
       </CardContent>
     </Card>
+  );
+}
+
+// ============================================================================
+// 🆕 場域介紹 Tab — tagline + highlights 編輯
+// ============================================================================
+
+/** 常用 icon 選項（配合 Landing.tsx ICON_MAP） */
+const HIGHLIGHT_ICON_OPTIONS: Array<{ value: string; label: string; Icon: React.ComponentType<{ className?: string }> }> = [
+  { value: "Sparkles", label: "✨ 預設", Icon: Sparkles },
+  { value: "Target", label: "🎯 射擊靶", Icon: Target },
+  { value: "MapPin", label: "📍 地點", Icon: MapPin },
+  { value: "Camera", label: "📷 相機", Icon: Camera },
+  { value: "Users", label: "👥 團隊", Icon: Users },
+  { value: "Swords", label: "⚔️ 對戰", Icon: Swords },
+  { value: "Landmark", label: "🏛️ 古蹟", Icon: Landmark },
+  { value: "ShoppingBag", label: "🛍️ 市集", Icon: ShoppingBag },
+  { value: "Coffee", label: "☕ 咖啡", Icon: Coffee },
+  { value: "Puzzle", label: "🧩 解謎", Icon: Puzzle },
+  { value: "QrCode", label: "📱 QR", Icon: QrCode },
+  { value: "Compass", label: "🧭 探索", Icon: Compass },
+  { value: "Gamepad2", label: "🎮 遊戲", Icon: Gamepad2 },
+  { value: "Trophy", label: "🏆 獎盃", Icon: Trophy },
+  { value: "Star", label: "⭐ 星星", Icon: Star },
+  { value: "Clock", label: "⏰ 時間", Icon: Clock },
+  { value: "Zap", label: "⚡ 閃電", Icon: Zap },
+  { value: "Shield", label: "🛡️ 盾牌", Icon: Shield },
+];
+
+function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSettingsResponse }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [tagline, setTagline] = useState(settings?.tagline ?? "");
+  const [welcomeMessage, setWelcomeMessage] = useState(settings?.welcomeMessage ?? "");
+  const [highlights, setHighlights] = useState<FieldHighlight[]>(settings?.highlights ?? []);
+
+  useEffect(() => {
+    if (!settings) return;
+    setTagline(settings.tagline ?? "");
+    setWelcomeMessage(settings.welcomeMessage ?? "");
+    setHighlights(settings.highlights ?? []);
+  }, [settings]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: Record<string, unknown>) => {
+      const res = await apiRequest("PATCH", `/api/admin/fields/${fieldId}/settings`, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/fields", fieldId, "settings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
+      toast({ title: "已儲存場域介紹" });
+    },
+    onError: (err: unknown) => {
+      toast({
+        title: "儲存失敗",
+        description: err instanceof Error ? err.message : "未知錯誤",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddHighlight = () => {
+    if (highlights.length >= 10) {
+      toast({ title: "最多 10 項亮點", variant: "destructive" });
+      return;
+    }
+    setHighlights([...highlights, { icon: "Sparkles", title: "", description: "" }]);
+  };
+
+  const handleUpdate = (i: number, patch: Partial<FieldHighlight>) => {
+    setHighlights((prev) => prev.map((h, idx) => (idx === i ? { ...h, ...patch } : h)));
+  };
+
+  const handleRemove = (i: number) => {
+    setHighlights((prev) => prev.filter((_, idx) => idx !== i));
+  };
+
+  const handleMove = (i: number, dir: -1 | 1) => {
+    const newIdx = i + dir;
+    if (newIdx < 0 || newIdx >= highlights.length) return;
+    const next = [...highlights];
+    [next[i], next[newIdx]] = [next[newIdx], next[i]];
+    setHighlights(next);
+  };
+
+  const handleSave = () => {
+    // 驗證：每個 highlight 必須有 title
+    const invalid = highlights.find((h) => !h.title.trim());
+    if (invalid) {
+      toast({ title: "每個亮點都需要標題", variant: "destructive" });
+      return;
+    }
+    saveMutation.mutate({
+      tagline: tagline.trim(),
+      welcomeMessage: welcomeMessage.trim(),
+      highlights: highlights.map((h) => ({
+        icon: h.icon || "Sparkles",
+        title: h.title.trim(),
+        description: h.description?.trim() || undefined,
+      })),
+    });
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Tagline + 歡迎訊息 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="w-5 h-5" /> 基本介紹
+          </CardTitle>
+          <CardDescription>
+            顯示於 CHITO 平台首頁的場域卡、本場域 Landing 頁面
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">場域 Slogan（tagline）</label>
+            <Input
+              value={tagline}
+              onChange={(e) => setTagline(e.target.value)}
+              placeholder="例：金門賈村 · 戰術沉浸式體驗"
+              maxLength={200}
+              data-testid="input-tagline"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              顯示於平台首頁場域卡片 + 本場域 Landing 頁 Hero 區。建議 20-50 字。
+            </p>
+          </div>
+          <div>
+            <label className="text-sm font-medium mb-1.5 block">歡迎訊息（較長）</label>
+            <Input
+              value={welcomeMessage}
+              onChange={(e) => setWelcomeMessage(e.target.value)}
+              placeholder="例：歡迎來到賈村，準備好挑戰了嗎？"
+              maxLength={500}
+              data-testid="input-welcome-message-intro"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              顯示於玩家端 Home Banner 和 Landing Hero 下方。可與 tagline 互補。
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Highlights 列表編輯 */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5" /> 場域亮點（Feature Section）
+              </CardTitle>
+              <CardDescription>
+                顯示於本場域 Landing 頁的特色介紹區塊，建議 3-5 項。每個場域可有不同的亮點。
+              </CardDescription>
+            </div>
+            <Button
+              onClick={handleAddHighlight}
+              variant="outline"
+              size="sm"
+              disabled={highlights.length >= 10}
+              className="gap-1.5"
+              data-testid="button-add-highlight"
+            >
+              <Plus className="w-4 h-4" /> 新增亮點
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {highlights.length === 0 && (
+            <div className="text-center py-8 border-2 border-dashed rounded-lg">
+              <Sparkles className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                尚未設定亮點 — 點「新增亮點」開始編輯
+              </p>
+            </div>
+          )}
+          {highlights.map((h, i) => (
+            <HighlightEditor
+              key={i}
+              index={i}
+              highlight={h}
+              isFirst={i === 0}
+              isLast={i === highlights.length - 1}
+              onChange={(patch) => handleUpdate(i, patch)}
+              onRemove={() => handleRemove(i)}
+              onMoveUp={() => handleMove(i, -1)}
+              onMoveDown={() => handleMove(i, 1)}
+            />
+          ))}
+          {highlights.length > 0 && (
+            <p className="text-xs text-muted-foreground text-center pt-2">
+              目前 {highlights.length} 項 / 最多 10 項
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 儲存 */}
+      <div className="flex justify-end sticky bottom-4 z-10">
+        <Button
+          onClick={handleSave}
+          disabled={saveMutation.isPending}
+          className="gap-2 shadow-lg"
+          size="lg"
+          data-testid="button-save-intro"
+        >
+          {saveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          儲存場域介紹
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/** 單一亮點編輯列（icon 選擇 + title + description + 排序 + 刪除） */
+function HighlightEditor({
+  index,
+  highlight,
+  isFirst,
+  isLast,
+  onChange,
+  onRemove,
+  onMoveUp,
+  onMoveDown,
+}: {
+  index: number;
+  highlight: FieldHighlight;
+  isFirst: boolean;
+  isLast: boolean;
+  onChange: (patch: Partial<FieldHighlight>) => void;
+  onRemove: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+}) {
+  const selectedIcon =
+    HIGHLIGHT_ICON_OPTIONS.find((o) => o.value === highlight.icon) ?? HIGHLIGHT_ICON_OPTIONS[0];
+  const IconComp = selectedIcon.Icon;
+
+  return (
+    <div className="border-2 rounded-lg p-3 space-y-2.5 hover:border-primary/30 transition-colors" data-testid={`highlight-${index}`}>
+      <div className="flex items-start gap-2">
+        {/* Icon 選擇 */}
+        <div className="shrink-0">
+          <Select value={highlight.icon || "Sparkles"} onValueChange={(v) => onChange({ icon: v })}>
+            <SelectTrigger className="w-[52px] h-[52px] p-0 flex items-center justify-center" data-testid={`select-icon-${index}`}>
+              <IconComp className="w-6 h-6 text-primary" />
+            </SelectTrigger>
+            <SelectContent>
+              {HIGHLIGHT_ICON_OPTIONS.map((opt) => {
+                const IC = opt.Icon;
+                return (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    <div className="flex items-center gap-2">
+                      <IC className="w-4 h-4" />
+                      <span>{opt.label}</span>
+                    </div>
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* title + description */}
+        <div className="flex-1 space-y-2">
+          <Input
+            value={highlight.title}
+            onChange={(e) => onChange({ title: e.target.value })}
+            placeholder="亮點標題（必填）"
+            maxLength={50}
+            data-testid={`input-title-${index}`}
+          />
+          <Input
+            value={highlight.description || ""}
+            onChange={(e) => onChange({ description: e.target.value })}
+            placeholder="亮點描述（選填）"
+            maxLength={200}
+            data-testid={`input-desc-${index}`}
+          />
+        </div>
+
+        {/* 操作按鈕 */}
+        <div className="flex flex-col gap-1 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={onMoveUp}
+            disabled={isFirst}
+            title="上移"
+          >
+            <ChevronUp className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={onMoveDown}
+            disabled={isLast}
+            title="下移"
+          >
+            <ChevronDown className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 text-destructive hover:bg-destructive/10"
+            onClick={onRemove}
+            title="刪除"
+            data-testid={`btn-remove-${index}`}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 }
 
