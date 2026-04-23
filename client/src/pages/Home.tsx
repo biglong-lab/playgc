@@ -40,6 +40,12 @@ export default function Home() {
     queryKey: ["/api/games"],
   });
 
+  /** 🆕 批次拿所有遊戲的累計統計（60s 快取，不顯示即時人數避免資料不穩） */
+  const { data: statsMap } = useQuery<GameStatsMap>({
+    queryKey: ["/api/games-stats/public"],
+    staleTime: 60_000,
+  });
+
   const { data: userSessions } = useQuery<GameSession[]>({
     queryKey: ["/api/sessions"],
     queryFn: async () => {
