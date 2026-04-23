@@ -291,8 +291,8 @@ export default function Home() {
           <p className="text-muted-foreground">選擇一個任務開始你的冒險</p>
         </div>
 
-        {/* 對戰快速入口 */}
-        <BattleQuickEntry />
+        {/* 對戰快速入口 — 僅在場域啟用對戰模組時顯示（後台 FieldSettings 設定） */}
+        {currentField?.modules?.battle && <BattleQuickEntry />}
 
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1">
