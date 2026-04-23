@@ -621,6 +621,8 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
       tagline: tagline.trim(),
       welcomeMessage: welcomeMessage.trim(),
       announcement: announcement.trim(),
+      announcementStartAt: announcementStartAt.trim(),
+      announcementEndAt: announcementEndAt.trim(),
       highlights: highlights.map((h) => ({
         icon: h.icon || "Sparkles",
         title: h.title.trim(),
