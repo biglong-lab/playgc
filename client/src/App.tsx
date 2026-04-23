@@ -144,26 +144,24 @@ function Router() {
         {/* 🌐 CHITO 平台智能入口：有上次場域自動導 /f/{code}，沒有則顯示 CHITO 品牌頁 */}
         <Route path="/" component={PlatformHome} />
 
-        {/* 玩家端（向後相容：自動讀 localStorage / 預設場域）*/}
+        {/* 玩家端 — legacy 路徑自動 smart-redirect 到 /f/{code}/... 保持 URL 一致性 */}
         <Route path="/j/:code" component={JoinWalkie} />
-        {/* /home、/leaderboard 在 FieldThemeProvider 有資料時會由 Home/Leaderboard 內部保留現有行為；
-             未來若想強制導向 /f/:code/home，可在 component 內加 Redirect。目前暫保留以不破壞外部舊連結 */}
-        <Route path="/home" component={Home} />
+        <Route path="/home">{() => <SmartRedirect to="/home" />}</Route>
+        <Route path="/leaderboard">{() => <SmartRedirect to="/leaderboard" />}</Route>
+        <Route path="/me">{() => <SmartRedirect to="/me" />}</Route>
+        <Route path="/purchases">{() => <SmartRedirect to="/purchases" />}</Route>
+        <Route path="/me/purchases">{() => <SmartRedirect to="/purchases" />}</Route>
+
+        {/* 遊戲深連結 — 暫保留相容（Home/Team/Match 內部有 useCurrentField 兜底）*/}
         <Route path="/game/:gameId/chapters/:chapterId" component={GamePlay} />
         <Route path="/game/:gameId/chapters" component={ChapterSelect} />
         <Route path="/game/:gameId" component={GamePlay} />
         <Route path="/team/:gameId" component={TeamLobby} />
         <Route path="/match/:gameId" component={MatchLobby} />
         <Route path="/map/:gameId" component={MapView} />
-        <Route path="/leaderboard" component={Leaderboard} />
         <Route path="/game/:gameId/purchase" component={PurchaseGate} />
         <Route path="/purchase/gate/:gameId" component={PurchaseGate} />
         <Route path="/purchase/success" component={PurchaseSuccess} />
-        <Route path="/purchases" component={MyPurchases} />
-
-        {/* 💳 會員中心（v4.0 Phase 4）*/}
-        <Route path="/me" component={MeCenter} />
-        <Route path="/me/purchases">{() => <Redirect to="/purchases" />}</Route>
 
         {/* 💳 統一結帳頁（v4.0 Phase 4）*/}
         <Route path="/checkout/:productId" component={Checkout} />
