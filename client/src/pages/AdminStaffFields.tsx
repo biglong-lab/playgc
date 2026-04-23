@@ -134,16 +134,52 @@ export default function AdminStaffFields() {
   }, [fields, moduleFilter]);
 
   const createMutation = useMutation({
-    mutationFn: (data: typeof formData) => 
-      fetchWithAdminAuth("/api/admin/fields", {
+    mutationFn: async (data: typeof formData) => {
+      // 1. 建立新場域
+      const created = await fetchWithAdminAuth("/api/admin/fields", {
         method: "POST",
         body: JSON.stringify(data),
-      }),
+      }) as Field;
+
+      // 🆕 2. 若選了範本場域，複製其 settings（模組 / 亮點 / 主題 / tagline）
+      if (templateFieldId && fields && created?.id) {
+        const source = fields.find((f) => f.id === templateFieldId);
+        const s = source?.settings;
+        if (s) {
+          // 只複製「可複製」的設定；排除 AI key 等敏感/個別欄位
+          const settingsToApply: Partial<FieldSettings> = {
+            enableShootingMission: s.enableShootingMission,
+            enableBattleArena: s.enableBattleArena,
+            enableGpsMission: s.enableGpsMission,
+            enablePhotoMission: s.enablePhotoMission,
+            enableChapters: s.enableChapters,
+            enablePayment: s.enablePayment,
+            enableTeamMode: s.enableTeamMode,
+            enableCompetitiveMode: s.enableCompetitiveMode,
+            highlights: s.highlights,
+            tagline: s.tagline,
+            welcomeMessage: s.welcomeMessage,
+            theme: s.theme,
+          };
+          await fetchWithAdminAuth(`/api/admin/fields/${created.id}/settings`, {
+            method: "PATCH",
+            body: JSON.stringify(settingsToApply),
+          });
+        }
+      }
+      return created;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/fields"] });
       setIsDialogOpen(false);
       resetForm();
-      toast({ title: "場域新增成功" });
+      const source = fields?.find((f) => f.id === templateFieldId);
+      toast({
+        title: "場域新增成功",
+        description: source
+          ? `已從「${source.name}」複製模組/亮點/主題設定`
+          : undefined,
+      });
     },
     onError: (error: Error) => {
       toast({ title: "新增失敗", description: error.message, variant: "destructive" });
