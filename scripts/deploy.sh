@@ -72,12 +72,24 @@ BUILD_OUTPUT=$(ssh -o StrictHostKeyChecking=accept-new "$SSH_HOST" \
 echo "$BUILD_OUTPUT" | tail -12
 
 # 抓 build 錯誤（docker compose up --build fail 時仍 exit 0，要自己 parse）
-if echo "$BUILD_OUTPUT" | grep -qE "failed to solve|did not complete successfully|\[ERROR\]|Could not resolve|Error: Build failed"; then
-  log_fail "docker build 失敗！錯誤訊息："
-  echo "$BUILD_OUTPUT" | grep -B1 -A3 "ERROR\|error\|failed" | head -25
+# 只 match docker buildkit / npm / esbuild 的明確失敗訊號，避免誤中 log 裡的 "error" 單字
+BUILD_ERR_PATTERN='^#[0-9]+ ERROR|^failed to solve:|^Error: Build failed with|^npm ERR!|did not complete successfully'
+if echo "$BUILD_OUTPUT" | grep -qE "$BUILD_ERR_PATTERN"; then
+  log_fail "docker build 失敗！匹配到的錯誤行："
+  echo "$BUILD_OUTPUT" | grep -E "$BUILD_ERR_PATTERN" | head -10
+  echo ""
+  log_fail "詳細 log（末 30 行）："
+  echo "$BUILD_OUTPUT" | tail -30
   exit 1
 fi
-log_ok "docker build + container 重啟"
+
+# 另外正面確認「Container gamehomicc-app-1 Started」出現
+if ! echo "$BUILD_OUTPUT" | grep -q "Container $APP_CONTAINER Started"; then
+  log_fail "看不到 'Container $APP_CONTAINER Started'，docker 可能沒重啟 app"
+  echo "$BUILD_OUTPUT" | tail -15
+  exit 1
+fi
+log_ok "docker build + container 重啟（Image Built + Container Started 都有）"
 
 # ═══ 4/6 等 container 健康 ═══
 log_step "4/6 等 container 穩定（15 秒）"
