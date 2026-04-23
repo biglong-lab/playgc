@@ -322,6 +322,7 @@ export function registerAdminFieldRoutes(app: Express) {
         code: field.code,
         name: field.name,
         logoUrl: theme.brandingLogoUrl || field.logoUrl || null,
+        welcomeMessage: settings.welcomeMessage || null,
         theme: {
           colorScheme: theme.colorScheme || "dark",
           primaryColor: primaryColor || null,
