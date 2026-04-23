@@ -384,6 +384,24 @@ export default function FieldEntry() {
       {/* ═══════════ Footer ═══════════ */}
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto text-center">
+          {/* 🆕 場域 + 遊戲總數統計（僅有場域時顯示） */}
+          {fields && fields.length > 0 && (
+            <p className="text-xs text-muted-foreground/70 mb-2 flex items-center justify-center gap-3 flex-wrap">
+              <span className="inline-flex items-center gap-1">
+                <Building2 className="w-3 h-3" />
+                <span className="font-mono font-semibold text-foreground">{fields.length}</span>
+                <span>個場域</span>
+              </span>
+              <span className="text-muted-foreground/30">·</span>
+              <span className="inline-flex items-center gap-1">
+                <Gamepad2 className="w-3 h-3" />
+                <span className="font-mono font-semibold text-foreground">
+                  {fields.reduce((sum, f) => sum + (f.gameCount ?? 0), 0)}
+                </span>
+                <span>款遊戲</span>
+              </span>
+            </p>
+          )}
           <p className="text-sm text-muted-foreground">
             &copy; 2024 CHITO — Play the Place
           </p>
