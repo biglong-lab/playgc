@@ -81,7 +81,7 @@ export function GamesTable({
 // 手機版遊戲卡片
 function GameMobileCard({
   game, onNavigate, onEdit, onDelete,
-  onPublish, onGenerateQR, onViewQR, onCoverUpload,
+  onPublish, onGenerateQR, onViewQR, onCoverUpload, onMoveField,
   publishPending, generateQRPending,
 }: GameActionProps & { game: Game }) {
   const status = normalizeStatus(game.status);
