@@ -93,6 +93,13 @@ export function registerPlayerGameRoutes(app: Express) {
 
   app.get("/api/games", async (req, res) => {
     try {
+      // 🔒 場域隔離：傳 ?fieldCode=XXX 只回該場域；沒傳則相容舊行為回全部
+      //   為避免跨場域污染（賈村玩家看到後浦小鎮的遊戲），前端應一律帶 fieldCode
+      const rawFieldCode = req.query.fieldCode;
+      if (typeof rawFieldCode === "string" && rawFieldCode.trim()) {
+        const games = await storage.getPublishedGamesByFieldCode(rawFieldCode.trim());
+        return res.json(games);
+      }
       const allGames = await storage.getPublishedGames();
       res.json(allGames);
     } catch (error) {
