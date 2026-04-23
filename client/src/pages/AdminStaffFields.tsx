@@ -393,63 +393,91 @@ export default function AdminStaffFields() {
                   <TableRow>
                     <TableHead>場域編號</TableHead>
                     <TableHead>名稱</TableHead>
-                    <TableHead>地址</TableHead>
                     <TableHead>聯絡資訊</TableHead>
+                    <TableHead>啟用模組</TableHead>
                     <TableHead>狀態</TableHead>
                     <TableHead className="text-right">操作</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fields.map((field) => (
-                    <TableRow key={field.id} data-testid={`row-field-${field.id}`}>
-                      <TableCell className="font-mono font-medium">{field.code}</TableCell>
-                      <TableCell>{field.name}</TableCell>
-                      <TableCell>
-                        {field.address ? (
-                          <span className="flex items-center gap-1 text-sm">
-                            <MapPin className="w-3 h-3" />
-                            {field.address}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1 text-sm">
-                          {field.contactPhone && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="w-3 h-3" />
-                              {field.contactPhone}
+                  {fields.map((field) => {
+                    const { enabled, total } = getFieldModuleStatus(field.settings);
+                    return (
+                      <TableRow key={field.id} data-testid={`row-field-${field.id}`}>
+                        <TableCell className="font-mono font-medium">{field.code}</TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{field.name}</div>
+                            {field.address && (
+                              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <MapPin className="w-3 h-3" />
+                                {field.address}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1 text-sm">
+                            {field.contactPhone && (
+                              <span className="flex items-center gap-1">
+                                <Phone className="w-3 h-3" />
+                                {field.contactPhone}
+                              </span>
+                            )}
+                            {field.contactEmail && (
+                              <span className="flex items-center gap-1">
+                                <Mail className="w-3 h-3" />
+                                {field.contactEmail}
+                              </span>
+                            )}
+                            {!field.contactPhone && !field.contactEmail && (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {/* 🆕 6 個模組徽章：啟用原色 primary，未啟用灰色淡化 */}
+                          <div className="flex items-center gap-1 flex-wrap">
+                            {MODULE_BADGES.map((m) => {
+                              const isEnabled = field.settings?.[m.key] === true;
+                              return (
+                                <div
+                                  key={m.key}
+                                  className={`w-7 h-7 rounded-md flex items-center justify-center border transition-all ${
+                                    isEnabled
+                                      ? "bg-primary/10 border-primary/40 text-primary"
+                                      : "bg-muted/50 border-muted-foreground/20 text-muted-foreground/40"
+                                  }`}
+                                  title={`${m.label}：${isEnabled ? "已啟用" : "未啟用"}`}
+                                  data-testid={`field-${field.code}-module-${m.key}`}
+                                >
+                                  <m.Icon className="w-3.5 h-3.5" />
+                                </div>
+                              );
+                            })}
+                            <span className="ml-1.5 text-xs text-muted-foreground font-mono">
+                              {enabled.length}/{total}
                             </span>
-                          )}
-                          {field.contactEmail && (
-                            <span className="flex items-center gap-1">
-                              <Mail className="w-3 h-3" />
-                              {field.contactEmail}
-                            </span>
-                          )}
-                          {!field.contactPhone && !field.contactEmail && (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={field.status === "active" ? "default" : "secondary"}>
-                          {field.status === "active" ? "營運中" : "停用"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          data-testid={`button-edit-field-${field.id}`}
-                          onClick={() => handleEdit(field)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={field.status === "active" ? "default" : "secondary"}>
+                            {field.status === "active" ? "營運中" : "停用"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            data-testid={`button-edit-field-${field.id}`}
+                            onClick={() => handleEdit(field)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             ) : (
