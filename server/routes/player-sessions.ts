@@ -258,7 +258,11 @@ export function registerPlayerSessionRoutes(app: Express) {
           }
         }
 
-        res.json(session);
+        // 🆕 若分數被伺服器修正，告知 client
+        res.json({
+          ...session,
+          scoreAdjusted: scoreValidationResult?.adjusted || false,
+        });
       } catch (error) {
         if (error instanceof z.ZodError) {
           return res
