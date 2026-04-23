@@ -229,6 +229,7 @@ export class DatabaseStorage implements IStorage {
   getGames = gameStorageMethods.getGames;
   getGamesByField = gameStorageMethods.getGamesByField;
   getPublishedGames = gameStorageMethods.getPublishedGames;
+  getPublishedGamesByFieldCode = gameStorageMethods.getPublishedGamesByFieldCode;
   getGame = gameStorageMethods.getGame;
   getGameWithPages = gameStorageMethods.getGameWithPages;
   getGameWithDetails = gameStorageMethods.getGameWithDetails;
