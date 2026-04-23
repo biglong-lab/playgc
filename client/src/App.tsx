@@ -247,6 +247,7 @@ function App() {
           <FieldThemeProvider>
             <I18nProvider>
               <TooltipProvider>
+                <ThemePreviewBanner />
                 <OfflineBanner isOnline={isOnline} />
                 <Toaster />
                 <Router />
