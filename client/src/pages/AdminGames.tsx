@@ -72,7 +72,7 @@ export default function AdminGames() {
             />
           </CardHeader>
           <CardContent>
-            <GamesTableContent ctx={ctx} />
+            <GamesTableContent ctx={ctx} onMoveField={isSuperAdmin ? setMoveFieldGame : undefined} />
           </CardContent>
         </Card>
 
