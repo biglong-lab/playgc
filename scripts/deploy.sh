@@ -38,22 +38,38 @@ log_fail()  { echo -e "${RED}❌${NC} $1"; }
 
 # ═══ 1/6 檢查本地狀態 ═══
 log_step "1/6 檢查本地狀態"
-UNCOMMITTED=$(git status -s)
-if [[ -n "$UNCOMMITTED" ]]; then
-  log_warn "有未 commit 檔案："
-  echo "$UNCOMMITTED"
-  # 非互動環境（CI、background、pipe）直接退出，避免漏檔
-  if [[ ! -t 0 ]] || [[ -n "$NON_INTERACTIVE" ]]; then
-    if [[ "$DEPLOY_FORCE" == "1" ]]; then
-      log_warn "DEPLOY_FORCE=1 強制繼續（但上述檔案不會進這次 deploy）"
+
+# 🆕 主動 stage 所有變更（包含 untracked 新檔）— 防 auto-hook 延遲 commit 導致漏檔
+git add -A
+
+# 若有 staged 但沒 commit（通常是 auto-hook 還沒跑完），自己先 commit
+if ! git diff --cached --quiet; then
+  STAGED_FILES=$(git diff --cached --name-only)
+  log_warn "偵測到已 stage 但未 commit 的變更，為確保不漏檔部署，自動 commit："
+  echo "$STAGED_FILES"
+  if [[ ! -t 0 ]] || [[ -n "$NON_INTERACTIVE" ]] || [[ "$DEPLOY_FORCE" == "1" ]]; then
+    git commit -m "chore(deploy): 部署前自動 commit 未存檔變更" || {
+      log_fail "自動 commit 失敗（可能有 pre-commit hook 報錯）"
+      exit 1
+    }
+    log_ok "已自動 commit"
+  else
+    read -rp "要自動 commit 這些變更嗎？(y/N) " ans
+    if [[ "$ans" == "y" ]]; then
+      git commit -m "chore(deploy): 部署前自動 commit" || exit 1
+      log_ok "已自動 commit"
     else
-      log_fail "非互動環境中止（避免漏檔部署）。先 'git commit'，或用 DEPLOY_FORCE=1"
+      log_fail "取消部署"
       exit 1
     fi
-  else
-    read -rp "繼續 deploy？(y/N) " confirm
-    [[ "$confirm" != "y" ]] && { log_fail "取消部署"; exit 1; }
   fi
+fi
+
+# 最後一次驗證：工作區確實乾淨
+if [[ -n "$(git status -s)" ]]; then
+  log_fail "工作區仍有未處理變更（可能 .gitignore 排除或 submodule）"
+  git status -s
+  [[ "$DEPLOY_FORCE" != "1" ]] && exit 1
 fi
 
 LOCAL_SHA=$(git rev-parse --short HEAD)
