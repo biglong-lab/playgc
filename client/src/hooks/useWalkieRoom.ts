@@ -19,6 +19,7 @@ import {
   ConnectionState,
 } from "livekit-client";
 import { apiRequest } from "@/lib/queryClient";
+import { logError, logMilestone } from "@/lib/clientLogger";
 
 export interface WalkieParticipant {
   identity: string;
