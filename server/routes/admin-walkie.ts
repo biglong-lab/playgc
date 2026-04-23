@@ -138,18 +138,19 @@ export function registerAdminWalkieRoutes(app: Express) {
 
         const gameIdFilter = req.query.gameId as string | undefined;
 
-        // 1. 撈 active sessions
-        const whereClause = gameIdFilter
-          ? and(
-              eq(gameSessions.gameId, gameIdFilter),
-              eq(gameSessions.status, "playing"),
-            )
-          : eq(gameSessions.status, "playing");
+        // 1. 撈 active sessions — 🔒 只撈自己場域的遊戲對應的 session
+        const { games } = await import("@shared/schema");
+        const conditions = [eq(gameSessions.status, "playing")];
+        if (gameIdFilter) conditions.push(eq(gameSessions.gameId, gameIdFilter));
+        if (req.admin.fieldId) conditions.push(eq(games.fieldId, req.admin.fieldId));
 
-        const sessions = await db
-          .select()
+        const sessionRows = await db
+          .select({ session: gameSessions })
           .from(gameSessions)
-          .where(whereClause);
+          .innerJoin(games, eq(games.id, gameSessions.gameId))
+          .where(and(...conditions));
+
+        const sessions = sessionRows.map((r) => r.session);
 
         // 2. 撈 LiveKit room 狀態
         const liveRooms = isLiveKitConfigured() ? await listActiveRooms() : [];
