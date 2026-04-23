@@ -45,11 +45,8 @@ export function registerLeaderboardRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      // 🔒 場域隔離：super_admin 可指定場域，其他人強制自己的場域
-      const fieldId =
-        req.admin.systemRole === "super_admin"
-          ? (req.query.fieldId as string) || req.admin.fieldId
-          : req.admin.fieldId;
+      // 🔒 場域隔離：所有 admin 統一用自己登入場域（super_admin 要看別場域就切換）
+      const fieldId = req.admin.fieldId;
 
       const games = await storage.getGamesByField(fieldId);
       const sessions = await storage.getSessionsByField(fieldId);
