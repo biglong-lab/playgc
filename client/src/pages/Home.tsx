@@ -322,9 +322,21 @@ export default function Home() {
               placeholder="搜尋遊戲..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10"
               data-testid="input-search-games"
             />
+            {/* 🆕 清除按鈕 — 有輸入內容時才顯示 */}
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/60 hover:text-foreground transition-colors"
+                aria-label="清除搜尋"
+                data-testid="button-clear-search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
           
           <div className="flex gap-2">
