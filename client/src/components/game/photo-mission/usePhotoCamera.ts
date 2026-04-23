@@ -302,8 +302,10 @@ export function usePhotoCamera(): PhotoCameraState {
       setCapturedImage(dataUrl);
       stopCamera();
       setMode("preview");
-    } catch {
+      logMilestone("camera", "photo_captured", { size: dataUrl.length });
+    } catch (err) {
       toast({ title: "拍照失敗", description: "請重試", variant: "destructive" });
+      logError("camera", "capture_failed", err);
     }
   };
 
