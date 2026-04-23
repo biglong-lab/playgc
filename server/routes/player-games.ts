@@ -133,6 +133,54 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
+  /**
+   * 📊 批次遊戲統計 — 一次回傳所有已發佈遊戲的累計資料
+   *
+   * 路徑放在 /api 層而非 /api/games/* 之下，避免與 /api/games/:id 衝突
+   * 回傳格式：{ [gameId]: { totalPlays, uniquePlayers, completedPlays } }
+   *
+   * 公開端點，快取 60 秒，適合 home 列表一次拿
+   */
+  app.get("/api/games-stats/public", async (_req, res) => {
+    try {
+      const { db } = await import("../db");
+      const { gameSessions, playerProgress, games } = await import(
+        "@shared/schema"
+      );
+      const { eq, sql } = await import("drizzle-orm");
+
+      const rows = await db
+        .select({
+          gameId: games.id,
+          totalPlays: sql<number>`count(distinct ${gameSessions.id})::int`,
+          uniquePlayers: sql<number>`count(distinct ${playerProgress.userId})::int`,
+          completedPlays: sql<number>`count(distinct ${gameSessions.id}) filter (where ${gameSessions.status} = 'completed')::int`,
+        })
+        .from(games)
+        .leftJoin(gameSessions, eq(gameSessions.gameId, games.id))
+        .leftJoin(playerProgress, eq(playerProgress.sessionId, gameSessions.id))
+        .groupBy(games.id);
+
+      const map: Record<
+        string,
+        { totalPlays: number; uniquePlayers: number; completedPlays: number }
+      > = {};
+      for (const r of rows) {
+        map[r.gameId] = {
+          totalPlays: r.totalPlays ?? 0,
+          uniquePlayers: r.uniquePlayers ?? 0,
+          completedPlays: r.completedPlays ?? 0,
+        };
+      }
+
+      res.set("Cache-Control", "public, max-age=60");
+      res.json(map);
+    } catch (error) {
+      console.error("[player-games] batch stats failed:", error);
+      res.status(500).json({ message: "Failed to fetch batch game stats" });
+    }
+  });
+
   app.get("/api/games/:id", async (req, res) => {
     try {
       const game = await storage.getGameWithPages(req.params.id);
