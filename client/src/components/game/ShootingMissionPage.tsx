@@ -125,13 +125,18 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
 
             if (!validation.valid) {
               // 作弊/bot 嘗試 → 丟棄這筆 hit 並記錄到伺服器
-              logWarning("shooting_hit_rejected", validation.message || "hit 驗證失敗", {
-                reason: validation.reason,
-                score: points,
-                zone,
-                sessionId,
-                deviceId: record.deviceId,
-              });
+              logWarning(
+                "shooting",
+                "hit_rejected",
+                validation.message || "hit 驗證失敗",
+                {
+                  reason: validation.reason,
+                  score: points,
+                  zone,
+                  sessionId,
+                  deviceId: record.deviceId,
+                },
+              );
               // 若是連續太快，靜默忽略（不彈 toast 避免被知道）
               // 若是分數異常，顯示紅色警告
               if (validation.reason === "score_too_high" || validation.reason === "invalid_score") {
