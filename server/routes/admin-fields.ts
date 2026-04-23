@@ -433,7 +433,7 @@ export function registerAdminFieldRoutes(app: Express) {
         // 🆕 場域行銷內容
         tagline: settings.tagline || null,
         highlights: settings.highlights || [],
-        // 🆕 模組開關（Landing / Home 用來決定要不要顯示對戰入口等）
+        // 🆕 模組開關（Landing / Home / 後台菜單控制）
         modules: {
           shooting: !!settings.enableShootingMission,
           battle: !!settings.enableBattleArena,
@@ -442,6 +442,7 @@ export function registerAdminFieldRoutes(app: Express) {
           gps: !!settings.enableGpsMission,
           team: settings.enableTeamMode !== false,
           competitive: settings.enableCompetitiveMode !== false,
+          payment: !!settings.enablePayment,
         },
         theme: {
           colorScheme: theme.colorScheme || "dark",
