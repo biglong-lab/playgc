@@ -31,7 +31,10 @@ import {
   Moon,
   Megaphone,
   AlertCircle,
+  Copy,
+  Check,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import GenericCoverFallback from "@/components/shared/GenericCoverFallback";
