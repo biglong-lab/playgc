@@ -394,6 +394,9 @@ export function registerPlayerChapterRoutes(app: Express) {
         res.json({
           completed: true,
           bestScore,
+          // 🆕 若分數被伺服器修正，回傳實際生效的分數讓 client 同步
+          adjustedScore: validation.adjusted ? finalScore : undefined,
+          scoreAdjusted: validation.adjusted,
           nextChapterUnlocked: !!nextProgress,
           nextChapterId: nextProgress?.chapterId ?? null,
         });
