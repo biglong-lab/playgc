@@ -26,14 +26,16 @@ interface WalkiePillProps {
   isTransmitting: boolean;
   /** 是否顯示「邀請朋友」動畫（未加群組 + 遊戲中） */
   hasInvitePulse: boolean;
-  /** 長按開始（PTT 開麥） */
+  /** 長按開始（PTT 開麥） — Pill 主體唯一功能 */
   onStartTalk: () => void;
   /** 放開結束（PTT 收麥） */
   onStopTalk: () => void;
-  /** 點擊（短按）展開完整面板 */
-  onExpand: () => void;
-  /** 🆕 點擊 QR 快捷按鈕（只在已加群組時出現） */
-  onShowQR?: () => void;
+  /**
+   * 點擊 QR / 設定小按鈕 → 展開設定面板（QR + 代碼 + 成員 + 退出 + 啟用音訊）
+   * 這是「所有設定 / 次功能」的唯一入口，實踐單一功能原則
+   * 未加群組時傳 undefined（小按鈕不出現，只有 PTT 無法使用）
+   */
+  onOpenPanel?: () => void;
 }
 
 const STORAGE_POS = "walkie_pill_pos";
