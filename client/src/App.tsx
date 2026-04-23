@@ -15,6 +15,7 @@ import SmartRedirect from "@/components/shared/SmartRedirect";
 import { ThemePreviewBanner } from "@/components/shared/ThemePreviewBanner";
 import PlayerBottomNav from "@/components/PlayerBottomNav";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import AppUpdateChecker from "@/components/AppUpdateChecker";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useAuth } from "@/hooks/useAuth";
 
