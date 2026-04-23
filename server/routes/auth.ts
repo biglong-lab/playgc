@@ -340,6 +340,127 @@ export function registerAuthRoutes(app: Express) {
     }
   });
 
+  // ============================================================================
+  // 🔄 POST /api/admin/switch-field — super_admin 跨場域切換（不用重登）
+  // ============================================================================
+  // 原理：用現有 admin session 驗證身分是 super_admin + active
+  //       驗證通過後，對同一個 adminAccount 生成新 token，但 fieldId = 目標場域
+  //       前端拿到新 admin 後 queryClient.clear() + 可直接繼續使用
+  app.post("/api/admin/switch-field", async (req, res) => {
+    try {
+      // 讀既有 admin cookie
+      const cookieToken = req.cookies?.adminToken;
+      if (!cookieToken) return res.status(401).json({ message: "未登入" });
+
+      const sessionSecret = process.env.SESSION_SECRET;
+      if (!sessionSecret) {
+        return res.status(500).json({ message: "伺服器設定錯誤" });
+      }
+
+      // 驗證現有 token
+      let payload: { sub: string; firebaseUserId?: string };
+      try {
+        payload = jwt.verify(cookieToken, sessionSecret) as typeof payload;
+      } catch {
+        return res.status(401).json({ message: "登入已失效，請重登" });
+      }
+
+      // 取現有帳號
+      const currentAcct = await db.query.adminAccounts.findFirst({
+        where: eq(adminAccounts.id, payload.sub),
+        with: { role: true },
+      });
+      if (!currentAcct || currentAcct.status !== "active") {
+        return res.status(403).json({ message: "帳號已停用" });
+      }
+      if (currentAcct.role?.systemRole !== "super_admin") {
+        return res.status(403).json({ message: "僅超級管理員可跨場域切換" });
+      }
+
+      // 驗證目標場域
+      const { fieldCode } = req.body as { fieldCode?: string };
+      if (!fieldCode) return res.status(400).json({ message: "需指定 fieldCode" });
+      const targetField = await db.query.fields.findFirst({
+        where: eq(fields.code, fieldCode.toUpperCase()),
+      });
+      if (!targetField) {
+        return res.status(404).json({ message: "找不到此場域" });
+      }
+
+      // 權限確認完成：取 role / permissions
+      const rolePerms = currentAcct.roleId
+        ? await db.query.rolePermissions.findMany({
+            where: eq(rolePermissions.roleId, currentAcct.roleId),
+            with: { permission: true },
+          })
+        : [];
+      const permissionKeys = rolePerms
+        .filter((rp) => rp.allow)
+        .map((rp) => rp.permission?.key)
+        .filter((k): k is string => !!k);
+
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+
+      // 生新 token（fieldId = 目標場域）
+      const newToken = jwt.sign(
+        {
+          sub: currentAcct.id,
+          fieldId: targetField.id,
+          roleId: currentAcct.roleId,
+          firebaseUserId: payload.firebaseUserId,
+          type: "admin",
+        },
+        sessionSecret,
+        { expiresIn: "24h" },
+      );
+
+      await db.insert(adminSessions).values({
+        adminAccountId: currentAcct.id,
+        token: newToken,
+        ipAddress: req.ip || null,
+        userAgent: req.headers["user-agent"] || null,
+        expiresAt,
+      });
+
+      await logAuditAction({
+        actorAdminId: currentAcct.id,
+        action: "admin:switch_field",
+        targetType: "field",
+        targetId: targetField.id,
+        fieldId: targetField.id,
+        metadata: { fromFieldId: currentAcct.fieldId, toFieldCode: fieldCode },
+        ipAddress: req.ip || undefined,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.cookie("adminToken", newToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      res.json({
+        success: true,
+        admin: {
+          id: currentAcct.id,
+          accountId: currentAcct.id,
+          fieldId: targetField.id,
+          fieldCode: targetField.code,
+          fieldName: targetField.name,
+          displayName: currentAcct.displayName,
+          roleId: currentAcct.roleId,
+          systemRole: "super_admin",
+          permissions: permissionKeys,
+        },
+      });
+    } catch (error) {
+      console.error("[switch-field]", error);
+      res.status(500).json({ message: "切換場域失敗" });
+    }
+  });
+
   // 開發環境專用：產生 custom token 跳過 Google popup
   if (process.env.NODE_ENV !== "production") {
     app.post("/api/dev/custom-token", async (req, res) => {
