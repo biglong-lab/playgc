@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Image as ImageIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import OptimizedImage from "@/components/shared/OptimizedImage";
 
 interface CoverUploadDialogProps {
   open: boolean;
