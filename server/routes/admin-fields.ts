@@ -251,6 +251,16 @@ export function registerAdminFieldRoutes(app: Express) {
       if (typeof body.announcement === "string") {
         updatedSettings.announcement = body.announcement.slice(0, 500).trim() || undefined;
       }
+      // 🆕 公告時效（ISO YYYY-MM-DD，空字串 = 清除）
+      const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (typeof body.announcementStartAt === "string") {
+        const v = body.announcementStartAt.trim();
+        updatedSettings.announcementStartAt = isoDateRegex.test(v) ? v : undefined;
+      }
+      if (typeof body.announcementEndAt === "string") {
+        const v = body.announcementEndAt.trim();
+        updatedSettings.announcementEndAt = isoDateRegex.test(v) ? v : undefined;
+      }
       if (Array.isArray(body.highlights)) {
         const highlightSchema = z.object({
           icon: z.string().max(50).optional(),
