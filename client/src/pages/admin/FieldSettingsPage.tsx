@@ -632,6 +632,27 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
               顯示於玩家端 Home Banner 和 Landing Hero 下方。可與 tagline 互補。
             </p>
           </div>
+
+          {/* 🆕 場域公告 */}
+          <div>
+            <label className="text-sm font-medium mb-1.5 block flex items-center gap-2">
+              📢 場域公告
+              <span className="text-xs text-muted-foreground font-normal">
+                （顯示於 Landing 和 Home 頂部橫幅；空白 = 不顯示）
+              </span>
+            </label>
+            <Textarea
+              value={announcement}
+              onChange={(e) => setAnnouncement(e.target.value)}
+              placeholder="例：4/28 園區保養維護，當日遊戲暫停。"
+              maxLength={500}
+              rows={2}
+              data-testid="input-announcement"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              用於臨時通知：活動、維護、特價、開放時間異動等。顯示於所有玩家頁面頂部。建議 50 字內。
+            </p>
+          </div>
         </CardContent>
       </Card>
 
