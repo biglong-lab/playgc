@@ -414,8 +414,12 @@ function FieldCard({
           )}
         </div>
       ) : (
-        <div className="relative w-full aspect-[16/9] bg-gradient-to-br from-primary/20 via-primary/5 to-background flex items-center justify-center">
-          <Building2 className="w-12 h-12 text-primary/40" />
+        <div className="relative w-full aspect-[16/9] overflow-hidden">
+          <GenericCoverFallback
+            name={field.name}
+            badge={{ icon: <Building2 className="w-3 h-3" />, label: field.code }}
+            hideOverlay
+          />
           {gameCount > 0 && (
             <div className="absolute top-3 right-3 bg-background/90 backdrop-blur px-2.5 py-1 rounded-full text-xs font-medium flex items-center gap-1">
               <Gamepad2 className="w-3 h-3" />
