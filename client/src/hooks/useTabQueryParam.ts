@@ -20,7 +20,7 @@ export function useTabQueryParam<T extends string>(
   validTabs: readonly T[],
   defaultTab: T,
   paramName = "tab",
-): [T, (tab: T) => void] {
+): [T, (tab: string) => void] {
   const readFromUrl = useCallback((): T => {
     if (typeof window === "undefined") return defaultTab;
     try {
