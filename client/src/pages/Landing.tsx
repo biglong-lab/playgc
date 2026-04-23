@@ -88,6 +88,19 @@ export default function Landing() {
 
       <EmbeddedBrowserWarning />
 
+      {/* 🆕 場域公告 banner */}
+      {announcement && (
+        <div
+          className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2.5 flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-300"
+          role="region"
+          aria-label="場域公告"
+          data-testid="announcement-banner"
+        >
+          <Megaphone className="w-4 h-4 shrink-0" />
+          <span className="font-chinese text-center leading-relaxed">{announcement}</span>
+        </div>
+      )}
+
       {/* Hero Section — 場域有 coverImageUrl 時優先用，否則用預設 gradient */}
       <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden">
         {fieldCoverUrl ? (
