@@ -673,7 +673,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             </p>
           </div>
 
-          {/* 🆕 場域公告 */}
+          {/* 🆕 場域公告（含時效） */}
           <div>
             <label className="text-sm font-medium mb-1.5 block flex items-center gap-2">
               📢 場域公告
@@ -689,9 +689,52 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
               rows={2}
               data-testid="input-announcement"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              用於臨時通知：活動、維護、特價、開放時間異動等。顯示於所有玩家頁面頂部。建議 50 字內。
+            <p className="text-xs text-muted-foreground mt-1 mb-3">
+              用於臨時通知：活動、維護、特價、開放時間異動等。建議 50 字內。
             </p>
+
+            {/* 🆕 公告時效 — 兩個日期欄位 */}
+            {announcement.trim() && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-md bg-muted/30 border">
+                <div>
+                  <label className="text-xs font-medium mb-1 block text-muted-foreground">
+                    開始顯示日（可選）
+                  </label>
+                  <Input
+                    type="date"
+                    value={announcementStartAt}
+                    onChange={(e) => setAnnouncementStartAt(e.target.value)}
+                    data-testid="input-announcement-start"
+                    className="text-xs"
+                  />
+                  <p className="text-[11px] text-muted-foreground/70 mt-1">
+                    留空 = 即時顯示
+                  </p>
+                </div>
+                <div>
+                  <label className="text-xs font-medium mb-1 block text-muted-foreground">
+                    結束顯示日（可選）
+                  </label>
+                  <Input
+                    type="date"
+                    value={announcementEndAt}
+                    onChange={(e) => setAnnouncementEndAt(e.target.value)}
+                    data-testid="input-announcement-end"
+                    className="text-xs"
+                  />
+                  <p className="text-[11px] text-muted-foreground/70 mt-1">
+                    留空 = 永久顯示
+                  </p>
+                </div>
+                {/* 狀態提示 */}
+                <div className="sm:col-span-2">
+                  <AnnouncementSchedulePreview
+                    startAt={announcementStartAt}
+                    endAt={announcementEndAt}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
