@@ -121,6 +121,7 @@ export function useSessionManager({
         variables: {},
         currentPageIndex: 0,
         isCompleted: false,
+        completedPageIds: [],
       });
       setForceNewSession(false);
       setHasRestoredProgress(true);
