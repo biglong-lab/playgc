@@ -25,6 +25,8 @@ interface GameActionProps {
   onGenerateQR: (id: string) => void;
   onViewQR: (game: Game) => void;
   onCoverUpload: (game: Game) => void;
+  /** 🚚 搬移遊戲到其他場域（只給 super_admin，optional；未傳則隱藏按鈕） */
+  onMoveField?: (game: Game) => void;
   publishPending: boolean;
   generateQRPending: boolean;
 }
