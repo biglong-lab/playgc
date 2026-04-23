@@ -89,6 +89,14 @@ export default function AdminLive() {
     staleTime: 4000,
   });
 
+  /** 🆕 平台累計總覽（60s 快取） */
+  const { data: overview } = useQuery<OverviewStats>({
+    queryKey: ["/api/admin/stats/overview"],
+    queryFn: () => fetchWithAdminAuth("/api/admin/stats/overview"),
+    refetchInterval: 60_000,
+    staleTime: 30_000,
+  });
+
   /** 統一的廣播啟動 helper */
   const startBroadcast = useCallback(
     async (payload: Record<string, unknown>, label: string) => {
