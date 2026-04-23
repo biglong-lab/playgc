@@ -69,6 +69,7 @@ export default function Home() {
   const fieldLogoUrl = currentField?.logoUrl || null;
   const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
   const welcomeMessage = currentField?.welcomeMessage || null;
+  const announcement = currentField?.announcement || null;
 
   // 🔒 場域隔離：取當前場域 code 帶進 query，不讓跨場域遊戲混入
   const currentFieldCode = currentField?.code;
