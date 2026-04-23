@@ -244,16 +244,67 @@ interface ModuleDef {
   settingsKey: keyof FieldSettings;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** 卡片下方短說明 */
   description: string;
+  /** 🆕 hover tooltip 的完整說明（啟用條件 + 影響範圍） */
+  helpText: string;
 }
 
 const MODULES_TO_SHOW: ModuleDef[] = [
-  { key: "shooting", settingsKey: "enableShootingMission", label: "射擊任務", icon: Target, description: "硬體靶機" },
-  { key: "battle",   settingsKey: "enableBattleArena",     label: "水彈對戰", icon: Swords, description: "PK 擂台" },
-  { key: "gps",      settingsKey: "enableGpsMission",      label: "GPS 定位", icon: MapPin, description: "地點導航" },
-  { key: "photo",    settingsKey: "enablePhotoMission",    label: "拍照驗證", icon: Camera, description: "AI 照片" },
-  { key: "chapters", settingsKey: "enableChapters",        label: "章節遊戲", icon: BookOpen, description: "劇情推進" },
-  { key: "payment",  settingsKey: "enablePayment",         label: "收費功能", icon: DollarSign, description: "兌換碼 / 付費" },
+  {
+    key: "shooting",
+    settingsKey: "enableShootingMission",
+    label: "射擊任務",
+    icon: Target,
+    description: "硬體靶機",
+    helpText:
+      "需要實體 Arduino 靶機設備才能使用。啟用後：玩家端遊戲可加入射擊關卡、後台側邊欄顯示「🔌 設備管理」菜單。",
+  },
+  {
+    key: "battle",
+    settingsKey: "enableBattleArena",
+    label: "水彈對戰",
+    icon: Swords,
+    description: "PK 擂台",
+    helpText:
+      "提供多人對戰場地預約 + 排名系統。啟用後：玩家 Home 顯示「水彈對戰 PK 擂台」快速入口、後台側邊欄顯示「⚔️ 對戰中心」5 個菜單。僅有實體水彈 / 漆彈場地的場域才需啟用。",
+  },
+  {
+    key: "gps",
+    settingsKey: "enableGpsMission",
+    label: "GPS 定位",
+    icon: MapPin,
+    description: "地點導航",
+    helpText:
+      "啟用後：遊戲可加入地點導航關卡，玩家手機需開啟定位權限，抵達指定座標才觸發任務完成。適合景點巡禮、市集走踏類遊戲。",
+  },
+  {
+    key: "photo",
+    settingsKey: "enablePhotoMission",
+    label: "拍照驗證",
+    icon: Camera,
+    description: "AI 照片",
+    helpText:
+      "啟用後：遊戲可加入拍照關卡，玩家上傳照片後透過 AI（Gemini/OpenRouter）驗證內容是否符合要求。需先在「AI 設定」Tab 設好 API Key。",
+  },
+  {
+    key: "chapters",
+    settingsKey: "enableChapters",
+    label: "章節遊戲",
+    icon: BookOpen,
+    description: "劇情推進",
+    helpText:
+      "啟用後：遊戲可拆分多個章節，玩家需依序完成（或依解鎖規則），適合有劇情連貫性的主題遊戲。不啟用時遊戲只能用單一頁面模式。",
+  },
+  {
+    key: "payment",
+    settingsKey: "enablePayment",
+    label: "收費功能",
+    icon: DollarSign,
+    description: "兌換碼 / 付費",
+    helpText:
+      "啟用後：遊戲可設定收費或兌換碼才能進入，後台側邊欄顯示「💰 財務中心」（4 個菜單：營收/商品/兌換碼/交易）。若場域為免費開放，不用啟用。",
+  },
 ];
 
 function FieldModulesCard() {
