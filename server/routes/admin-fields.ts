@@ -247,6 +247,10 @@ export function registerAdminFieldRoutes(app: Express) {
       if (typeof body.tagline === "string") {
         updatedSettings.tagline = body.tagline.slice(0, 200).trim() || undefined;
       }
+      // 🆕 場域公告（最多 500 字）
+      if (typeof body.announcement === "string") {
+        updatedSettings.announcement = body.announcement.slice(0, 500).trim() || undefined;
+      }
       if (Array.isArray(body.highlights)) {
         const highlightSchema = z.object({
           icon: z.string().max(50).optional(),
