@@ -447,6 +447,46 @@ export default function Home() {
           </div>
         )}
       </main>
+
+      {/* 🆕 匿名玩家暱稱 Dialog */}
+      <AnonymousNameDialog
+        open={anonymousNameOpen}
+        onConfirm={(name) => {
+          // 把暱稱存在 localStorage，session 建立時會帶過去
+          try {
+            localStorage.setItem("anonymous_player_name", name);
+          } catch { /* ignore */ }
+          setAnonymousNameOpen(false);
+          // 執行 pending 的導航
+          const nav = pendingGameNavigation;
+          setPendingGameNavigation(null);
+          nav?.();
+        }}
+        onGoogleLogin={async () => {
+          try {
+            await signInWithGoogle();
+            setAnonymousNameOpen(false);
+            toast({ title: "切換到 Google 帳號後請重新點擊遊戲" });
+          } catch (err) {
+            toast({
+              title: "Google 登入失敗",
+              description: err instanceof Error ? err.message : "請稍後再試",
+              variant: "destructive",
+            });
+          }
+        }}
+        onClose={() => {
+          setAnonymousNameOpen(false);
+          setPendingGameNavigation(null);
+        }}
+        initialName={(() => {
+          try {
+            return localStorage.getItem("anonymous_player_name") || "";
+          } catch {
+            return "";
+          }
+        })()}
+      />
     </div>
   );
 }
