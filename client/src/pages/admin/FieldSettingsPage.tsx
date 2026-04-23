@@ -285,6 +285,22 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
     setEnableGps(settings.enableGpsMission ?? false);
   }, [settings]);
 
+  // 🆕 未儲存變更警示
+  const hasUnsavedChanges = Boolean(
+    settings &&
+      (maxGames !== (settings.maxGames ?? 0) ||
+        maxSessions !== (settings.maxConcurrentSessions ?? 0) ||
+        enablePayment !== (settings.enablePayment ?? false) ||
+        enableTeamMode !== (settings.enableTeamMode ?? true) ||
+        enableCompetitive !== (settings.enableCompetitiveMode ?? true) ||
+        enableShooting !== (settings.enableShootingMission ?? false) ||
+        enableBattle !== (settings.enableBattleArena ?? false) ||
+        enableChapters !== (settings.enableChapters ?? false) ||
+        enablePhoto !== (settings.enablePhotoMission ?? false) ||
+        enableGps !== (settings.enableGpsMission ?? false)),
+  );
+  useUnsavedWarning(hasUnsavedChanges);
+
   const saveMutation = useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
       const res = await apiRequest("PATCH", `/api/admin/fields/${fieldId}/settings`, data);
