@@ -14,7 +14,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { applyTheme } from "@/lib/themeUtils";
-import type { FieldTheme } from "@shared/schema";
+import type { FieldTheme, FieldHighlight } from "@shared/schema";
+
+/** 場域模組開關 — 決定 Landing / Home 要不要顯示對戰入口等 */
+export interface FieldModules {
+  shooting: boolean;
+  battle: boolean;
+  chapters: boolean;
+  photo: boolean;
+  gps: boolean;
+  team: boolean;
+  competitive: boolean;
+}
 
 export interface FieldThemePayload {
   fieldId: string;
@@ -22,6 +33,12 @@ export interface FieldThemePayload {
   name: string;
   logoUrl: string | null;
   welcomeMessage: string | null;
+  /** 🆕 場域短 slogan（後台可設定） */
+  tagline: string | null;
+  /** 🆕 場域亮點列表（後台可設定，Landing Feature Section 用） */
+  highlights: FieldHighlight[];
+  /** 🆕 模組開關（控制對戰入口、射擊任務等是否顯示） */
+  modules: FieldModules;
   theme: FieldTheme;
 }
 
