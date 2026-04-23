@@ -21,7 +21,7 @@ export async function sendEmail(payload: EmailPayload): Promise<SendResult> {
   const fromAddress =
     payload.from ??
     process.env.EMAIL_FROM ??
-    "CHITO 七逃 <noreply@homi.cc>";
+    "CHITO <noreply@homi.cc>";
 
   // Fallback：沒 API key 時只 log
   if (!apiKey) {
