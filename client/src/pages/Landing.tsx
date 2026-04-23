@@ -88,8 +88,11 @@ export default function Landing() {
 
       <EmbeddedBrowserWarning />
 
-      {/* 🆕 場域公告 banner — 玩家可關當次 session */}
-      <AnnouncementBanner announcement={announcement} />
+      {/* 🆕 場域公告 banner — 玩家可關當次 session (info)/不可關 (urgent) */}
+      <AnnouncementBanner
+        announcement={announcement}
+        severity={currentField?.announcementSeverity}
+      />
 
 
       {/* Hero Section — 場域有 coverImageUrl 時優先用，否則用預設 gradient */}
