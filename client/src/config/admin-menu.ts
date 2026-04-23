@@ -81,18 +81,18 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
   },
 
   // ═══════════════════════════════════════════════
-  // ⚔️ 對戰中心
+  // ⚔️ 對戰中心 — 🆕 需啟用 battle 模組才顯示
   // ═══════════════════════════════════════════════
   {
     label: "對戰中心",
     emoji: "⚔️",
     accentColor: "rose",
     items: [
-      { title: "對戰儀表板", icon: Swords, path: "/admin/battle/dashboard", permission: "game:view" },
-      { title: "場地管理", icon: MapPin, path: "/admin/battle/venues", permission: "game:view" },
-      { title: "時段管理", icon: Clock, path: "/admin/battle/slots", permission: "game:view" },
-      { title: "排名管理", icon: Trophy, path: "/admin/battle/rankings", permission: "game:view" },
-      { title: "賽季管理", icon: Calendar, path: "/admin/battle/seasons", permission: "game:view" },
+      { title: "對戰儀表板", icon: Swords, path: "/admin/battle/dashboard", permission: "game:view", requiresModule: "battle" },
+      { title: "場地管理", icon: MapPin, path: "/admin/battle/venues", permission: "game:view", requiresModule: "battle" },
+      { title: "時段管理", icon: Clock, path: "/admin/battle/slots", permission: "game:view", requiresModule: "battle" },
+      { title: "排名管理", icon: Trophy, path: "/admin/battle/rankings", permission: "game:view", requiresModule: "battle" },
+      { title: "賽季管理", icon: Calendar, path: "/admin/battle/seasons", permission: "game:view", requiresModule: "battle" },
     ],
   },
 
