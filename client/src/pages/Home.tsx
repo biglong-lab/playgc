@@ -594,6 +594,55 @@ export default function Home() {
   );
 }
 
+/** 🆕 公告 Banner — 玩家可關閉當次 session（內容改變會重新顯示） */
+function HomeAnnouncementBanner({ announcement }: { announcement: string | null }) {
+  const dismissKey = useMemo(() => {
+    if (!announcement) return null;
+    try {
+      return `ann_dismissed_${btoa(unescape(encodeURIComponent(announcement))).slice(0, 20)}`;
+    } catch {
+      return null;
+    }
+  }, [announcement]);
+
+  const [dismissed, setDismissed] = useState<boolean>(() => {
+    if (!dismissKey) return false;
+    try {
+      return sessionStorage.getItem(dismissKey) === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  if (!announcement || dismissed) return null;
+
+  return (
+    <div
+      className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2.5 flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-300"
+      role="region"
+      aria-label="場域公告"
+      data-testid="announcement-banner"
+    >
+      <Megaphone className="w-4 h-4 shrink-0" />
+      <span className="text-center leading-relaxed flex-1 max-w-3xl">{announcement}</span>
+      <button
+        type="button"
+        onClick={() => {
+          setDismissed(true);
+          if (dismissKey) {
+            try { sessionStorage.setItem(dismissKey, "1"); } catch { /* ignore */ }
+          }
+        }}
+        className="shrink-0 text-amber-600/70 hover:text-amber-700 dark:text-amber-400/70 dark:hover:text-amber-300 transition-colors"
+        aria-label="關閉公告"
+        data-testid="button-dismiss-announcement"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
 /** 對戰快速入口卡片 — 顯示即將開打的 3 場 */
 function BattleQuickEntry() {
   const { data: slots = [] } = useQuery<BattleSlot[]>({
