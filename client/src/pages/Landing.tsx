@@ -189,7 +189,7 @@ export default function Landing() {
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto text-center">
           <p className="text-sm text-muted-foreground font-chinese">
-            &copy; 2024 賈村競技體驗場. All rights reserved.
+            &copy; 2024 CHITO 七逃 · 走踏在地的實境遊戲平台
           </p>
           <div className="flex items-center justify-center gap-4 mt-4">
             <Link href="/apply">
