@@ -14,12 +14,32 @@ import { useQuery } from "@tanstack/react-query";
 import { applyTheme } from "@/lib/themeUtils";
 import type { FieldTheme } from "@shared/schema";
 
-interface FieldThemePayload {
+export interface FieldThemePayload {
   fieldId: string;
   code: string;
   name: string;
   logoUrl: string | null;
+  welcomeMessage: string | null;
   theme: FieldTheme;
+}
+
+/** 給其他元件拿當前場域 payload 用（name / logo / coverImage / welcome 訊息） */
+export function useCurrentField(): FieldThemePayload | null {
+  const fieldCode = (() => {
+    // 使用跟 Provider 同樣的 fieldCode 決策：但此 hook 在 Provider 內部，用 query 共享快取
+    try {
+      const cached = localStorage.getItem(STORAGE_KEY);
+      if (cached && /^[A-Z0-9_-]{2,50}$/i.test(cached)) return cached;
+    } catch { /* ignore */ }
+    return DEFAULT_FIELD_CODE;
+  })();
+
+  const { data } = useQuery<FieldThemePayload>({
+    queryKey: ["/api/fields", fieldCode, "theme"],
+    enabled: false, // 已由 Provider 觸發，這 hook 只讀快取
+    staleTime: 5 * 60_000,
+  });
+  return data || null;
 }
 
 const DEFAULT_FIELD_CODE =
