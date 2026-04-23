@@ -394,15 +394,29 @@ export default function Home() {
                       preset="card"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       fallback={
-                        <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                          <Gamepad2 className="w-16 h-16 text-primary/50" />
-                        </div>
+                        <GenericCoverFallback
+                          name={game.title}
+                          badge={
+                            game.gameMode === "team"
+                              ? { icon: <Users className="w-3 h-3" />, label: "團隊" }
+                              : game.gameMode === "competitive"
+                              ? { icon: <Trophy className="w-3 h-3" />, label: "競賽" }
+                              : undefined
+                          }
+                        />
                       }
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      <Gamepad2 className="w-16 h-16 text-primary/50" />
-                    </div>
+                    <GenericCoverFallback
+                      name={game.title}
+                      badge={
+                        game.gameMode === "team"
+                          ? { icon: <Users className="w-3 h-3" />, label: "團隊" }
+                          : game.gameMode === "competitive"
+                          ? { icon: <Trophy className="w-3 h-3" />, label: "競賽" }
+                          : undefined
+                      }
+                    />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
                   <Badge 
