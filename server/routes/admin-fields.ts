@@ -10,7 +10,7 @@ import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 /** 🎨 驗證主題欄位（防 XSS） */
 const hexColorRegex = /^#[0-9a-f]{6}$/i;
