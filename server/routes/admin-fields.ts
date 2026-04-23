@@ -291,6 +291,31 @@ export function registerAdminFieldRoutes(app: Express) {
   });
 
   // ============================================================================
+  // 🌐 GET /api/fields/public — 公開：列出所有 active 場域（給 FieldEntry 選擇）
+  // ============================================================================
+  app.get("/api/fields/public", async (_req, res) => {
+    try {
+      const rows = await db.query.fields.findMany({
+        where: eq(fields.status, "active"),
+        columns: {
+          id: true,
+          code: true,
+          name: true,
+          description: true,
+          logoUrl: true,
+          status: true,
+        },
+        orderBy: [desc(fields.createdAt)],
+      });
+      res.set("Cache-Control", "public, max-age=300");
+      res.json(rows);
+    } catch (error) {
+      console.error("[fields/public] failed:", error);
+      res.status(500).json({ message: "取得場域列表失敗" });
+    }
+  });
+
+  // ============================================================================
   // 🌐 GET /api/fields/:code/theme — 公開端點，玩家端用來套場域主題
   // ============================================================================
   app.get("/api/fields/:code/theme", async (req, res) => {
