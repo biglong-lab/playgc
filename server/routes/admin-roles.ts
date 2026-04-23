@@ -399,9 +399,8 @@ export function registerAdminRoleRoutes(app: Express) {
 
       const { limit = 100, offset = 0 } = req.query;
 
-      const whereClause = req.admin.systemRole === "super_admin"
-        ? undefined
-        : eq(auditLogs.fieldId, req.admin.fieldId);
+      // 🔒 場域隔離：統一只看自己場域的 audit log
+      const whereClause = eq(auditLogs.fieldId, req.admin.fieldId);
 
       const logs = await db.query.auditLogs.findMany({
         where: whereClause,
