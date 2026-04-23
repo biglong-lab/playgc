@@ -51,7 +51,7 @@ export const playerProgress = pgTable(
       .references(() => gameSessions.id, { onDelete: "cascade" })
       .notNull(),
     userId: varchar("user_id").references(() => users.id),
-    currentPageId: varchar("current_page_id").references(() => pages.id),
+    currentPageId: varchar("current_page_id").references(() => pages.id, { onDelete: "set null" }),
     score: integer("score").default(0), // Player's individual score
     inventory: jsonb("inventory").default([]), // Array of item IDs
     variables: jsonb("variables").default({}), // Game variables
