@@ -379,8 +379,11 @@ function FieldCard({
   highlighted?: boolean;
   onClick: () => void;
 }) {
+  // 🛡️ 防禦：舊 API / 快取可能沒 topGameCovers，保底空陣列
+  const topCovers = field.topGameCovers ?? [];
+  const gameCount = field.gameCount ?? 0;
   // 封面優先序：coverImageUrl > 第一款遊戲封面 > null
-  const coverUrl = field.coverImageUrl || field.topGameCovers[0]?.coverImageUrl || null;
+  const coverUrl = field.coverImageUrl || topCovers[0]?.coverImageUrl || null;
 
   return (
     <Card
