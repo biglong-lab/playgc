@@ -8,7 +8,8 @@ import {
 } from "../adminAuth";
 import { cloudinaryService } from "../cloudinary";
 import { db } from "../db";
-import { games } from "@shared/schema";
+import { games, fields, parseFieldSettings } from "@shared/schema";
+import type { FieldSettings } from "@shared/schema";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 
