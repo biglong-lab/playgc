@@ -501,33 +501,51 @@ export default function AdminStaffFields() {
                 <CardTitle>場域列表</CardTitle>
                 <CardDescription>所有可管理的遊戲場域</CardDescription>
               </div>
-              {/* 🆕 模組 filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">過濾：</span>
-                <Select
-                  value={moduleFilter}
-                  onValueChange={(v) => setModuleFilter(v as typeof moduleFilter)}
-                >
-                  <SelectTrigger className="w-[160px] h-8 text-xs" data-testid="select-module-filter">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">全部場域</SelectItem>
-                    {MODULE_BADGES.map((m) => (
-                      <SelectItem key={String(m.key)} value={String(m.key)}>
-                        <div className="flex items-center gap-2">
-                          <m.Icon className="w-3.5 h-3.5" />
-                          啟用{m.label}的場域
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fields && moduleFilter !== "all" && (
-                  <span className="text-xs text-muted-foreground font-mono">
-                    {filteredFields.length}/{fields.length}
-                  </span>
-                )}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* 🆕 模組 filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">過濾：</span>
+                  <Select
+                    value={moduleFilter}
+                    onValueChange={(v) => setModuleFilter(v as typeof moduleFilter)}
+                  >
+                    <SelectTrigger className="w-[160px] h-8 text-xs" data-testid="select-module-filter">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">全部場域</SelectItem>
+                      {MODULE_BADGES.map((m) => (
+                        <SelectItem key={String(m.key)} value={String(m.key)}>
+                          <div className="flex items-center gap-2">
+                            <m.Icon className="w-3.5 h-3.5" />
+                            啟用{m.label}的場域
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {fields && moduleFilter !== "all" && (
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {filteredFields.length}/{fields.length}
+                    </span>
+                  )}
+                </div>
+                {/* 🆕 排序 */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">排序：</span>
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+                    <SelectTrigger className="w-[140px] h-8 text-xs" data-testid="select-sort">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="created_desc">最新建立</SelectItem>
+                      <SelectItem value="created_asc">最舊優先</SelectItem>
+                      <SelectItem value="name">場域名稱 A→Z</SelectItem>
+                      <SelectItem value="modules_desc">模組數 多→少</SelectItem>
+                      <SelectItem value="modules_asc">模組數 少→多</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </CardHeader>
