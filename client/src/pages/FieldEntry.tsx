@@ -138,50 +138,108 @@ export default function FieldEntry() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {fields.map((f) => (
-                <Card
-                  key={f.id}
-                  className="cursor-pointer hover-elevate transition-all group border-2"
-                  onClick={() => setLocation(`/f/${f.code}`)}
-                  data-testid={`field-card-${f.code}`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      {f.logoUrl ? (
-                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-primary/10 shrink-0">
-                          <OptimizedImage
-                            src={f.logoUrl}
-                            alt={f.name}
-                            preset="thumbnail"
-                            className="w-full h-full object-contain p-1"
-                            loading="eager"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                          <Building2 className="w-7 h-7 text-primary" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-display font-bold text-xl mb-1 truncate">
-                          {f.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground font-mono mb-2">
-                          {f.code}
-                        </p>
-                        {f.description && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {f.description}
-                          </p>
+            <>
+              {/* 🆕 繼續上次場域 — 快捷卡片（不強制跳轉，使用者自己點） */}
+              {lastField && (
+                <div className="mb-5">
+                  <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
+                    <History className="w-3.5 h-3.5" />
+                    繼續上次場域
+                  </p>
+                  <Card
+                    className="cursor-pointer hover-elevate transition-all group border-2 border-primary/40 bg-primary/5"
+                    onClick={() => setLocation(`/f/${lastField.code}`)}
+                    data-testid={`field-recent-${lastField.code}`}
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-4">
+                        {lastField.logoUrl ? (
+                          <div className="w-14 h-14 rounded-xl overflow-hidden bg-primary/10 shrink-0">
+                            <OptimizedImage
+                              src={lastField.logoUrl}
+                              alt={lastField.name}
+                              preset="thumbnail"
+                              className="w-full h-full object-contain p-1"
+                              loading="eager"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <Building2 className="w-7 h-7 text-primary" />
+                          </div>
                         )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-display font-bold text-lg mb-0.5 truncate">
+                            {lastField.name}
+                          </h3>
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {lastField.code}
+                          </p>
+                        </div>
+                        <Button size="sm" className="gap-1.5 shrink-0">
+                          進入 <ArrowRight className="w-4 h-4" />
+                        </Button>
                       </div>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-1" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* 其他場域 */}
+              {otherFields && otherFields.length > 0 && (
+                <>
+                  {lastField && (
+                    <p className="text-xs text-muted-foreground mb-2">
+                      其他場域
+                    </p>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {otherFields.map((f) => (
+                      <Card
+                        key={f.id}
+                        className="cursor-pointer hover-elevate transition-all group border-2"
+                        onClick={() => setLocation(`/f/${f.code}`)}
+                        data-testid={`field-card-${f.code}`}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex items-start gap-4">
+                            {f.logoUrl ? (
+                              <div className="w-14 h-14 rounded-xl overflow-hidden bg-primary/10 shrink-0">
+                                <OptimizedImage
+                                  src={f.logoUrl}
+                                  alt={f.name}
+                                  preset="thumbnail"
+                                  className="w-full h-full object-contain p-1"
+                                  loading="eager"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                                <Building2 className="w-7 h-7 text-primary" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-display font-bold text-xl mb-1 truncate">
+                                {f.name}
+                              </h3>
+                              <p className="text-xs text-muted-foreground font-mono mb-2">
+                                {f.code}
+                              </p>
+                              {f.description && (
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                  {f.description}
+                                </p>
+                              )}
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all shrink-0 mt-1" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           <p className="text-center text-xs text-muted-foreground mt-8">
