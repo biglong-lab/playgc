@@ -25,6 +25,7 @@ interface LeaderboardEntryExtended extends LeaderboardEntry {
 
 export default function Leaderboard() {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const link = useFieldLink();
 
   // 🔒 場域隔離：排行榜只顯示當前場域的資料
   const currentField = useCurrentField();
