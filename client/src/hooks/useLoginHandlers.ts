@@ -11,6 +11,25 @@ import {
   resetPassword,
 } from "@/lib/firebase";
 
+/**
+ * 從當前 context（URL path 或 localStorage）推出 fieldCode
+ * 優先序：URL /f/:code > localStorage.lastFieldCode > null
+ */
+function readFieldCodeFromContext(): string | null {
+  if (typeof window === "undefined") return null;
+  // URL path
+  const m = window.location.pathname.match(/^\/f\/([A-Z0-9_-]{2,50})(?:\/|$)/i);
+  if (m) return m[1].toUpperCase();
+  // localStorage
+  try {
+    const v = localStorage.getItem("lastFieldCode");
+    if (v && /^[A-Z0-9_-]{2,50}$/i.test(v)) return v.toUpperCase();
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 /** 登入方法類型 */
 export type LoginMethod = "google" | "apple" | "guest" | "email" | null;
 
