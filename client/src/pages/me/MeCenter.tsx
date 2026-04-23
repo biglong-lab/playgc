@@ -272,7 +272,7 @@ export default function MeCenter() {
 
         {/* 版本資訊 */}
         <p className="text-center text-xs text-muted-foreground py-4">
-          CHITO 七逃 · 版本 v4.0
+          CHITO · v4.0
         </p>
       </div>
     </div>
