@@ -504,7 +504,8 @@ function FieldCard({
             <h3 className="font-display font-bold text-lg mb-0.5 truncate">
               {field.name}
             </h3>
-            <p className="text-[11px] text-muted-foreground font-mono">{field.code}</p>
+            <CodeWithCopy code={field.code} />
+
           </div>
           <Button
             size="sm"
