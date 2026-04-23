@@ -328,6 +328,25 @@ export function WalkiePill({
           transition={{ duration: 0.8, repeat: Infinity }}
         />
       )}
+
+      {/* 🆕 QR 快捷按鈕（只在已加群組 + 有 onShowQR 時顯示） */}
+      {connected && onShowQR && (
+        <motion.button
+          type="button"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.15 }}
+          onPointerDown={handleQrPointerDown}
+          onClick={handleQrClick}
+          className="absolute -right-2 -top-2 w-8 h-8 rounded-full bg-background border-2 border-primary flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+          style={{ touchAction: "manipulation" }}
+          title="顯示 QR 邀請朋友"
+          data-testid="walkie-pill-qr-btn"
+          aria-label="顯示 QR Code"
+        >
+          <QrCode className="w-4 h-4 text-primary" />
+        </motion.button>
+      )}
     </motion.div>
   );
 }
