@@ -100,6 +100,39 @@ export function registerPlayerGameRoutes(app: Express) {
     }
   });
 
+  /**
+   * 📊 遊戲統計 — 讓玩家端列表卡片顯示「XX 人玩過 · 累計 YY 場」
+   * 公開端點（快取友善，不放敏感資料）
+   */
+  app.get("/api/games/:gameId/stats/public", async (req, res) => {
+    try {
+      const { gameId } = req.params;
+      const { db } = await import("../db");
+      const { gameSessions, playerProgress } = await import("@shared/schema");
+      const { eq, sql } = await import("drizzle-orm");
+
+      const [result] = await db
+        .select({
+          totalPlays: sql<number>`count(distinct ${gameSessions.id})::int`,
+          uniquePlayers: sql<number>`count(distinct ${playerProgress.userId})::int`,
+          completedPlays: sql<number>`count(distinct ${gameSessions.id}) filter (where ${gameSessions.status} = 'completed')::int`,
+        })
+        .from(gameSessions)
+        .leftJoin(playerProgress, eq(playerProgress.sessionId, gameSessions.id))
+        .where(eq(gameSessions.gameId, gameId));
+
+      res.set("Cache-Control", "public, max-age=60");
+      res.json({
+        totalPlays: result?.totalPlays ?? 0,
+        uniquePlayers: result?.uniquePlayers ?? 0,
+        completedPlays: result?.completedPlays ?? 0,
+      });
+    } catch (error) {
+      console.error("[player-games] stats failed:", error);
+      res.status(500).json({ message: "Failed to fetch game stats" });
+    }
+  });
+
   app.get("/api/games/:id", async (req, res) => {
     try {
       const game = await storage.getGameWithPages(req.params.id);
