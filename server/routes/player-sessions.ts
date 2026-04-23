@@ -167,16 +167,44 @@ export function registerPlayerSessionRoutes(app: Express) {
     async (req, res) => {
       try {
         const data = insertGameSessionSchema.partial().parse(req.body);
+
+        // 🆕 驗證 playerName（若有更新）
+        if (data.playerName) {
+          const { validatePlayerName } = await import("@shared/lib/playerDisplay");
+          const result = validatePlayerName(data.playerName);
+          if (!result.valid) {
+            return res.status(400).json({ message: result.message });
+          }
+          data.playerName = result.value;
+        }
+
         const session = await storage.updateSession(req.params.id, data);
         if (!session) {
           return res.status(404).json({ message: "Session not found" });
         }
 
         if (data.status === "completed" && session.score) {
+          // 🆕 排行榜 snapshot：載入 user 資料 + 判斷匿名狀態
+          const { getPlayerDisplayName, isAnonymousPlayer } = await import(
+            "@shared/lib/playerDisplay"
+          );
+          const userId = (req as AuthenticatedRequest).user?.claims?.sub;
+          const user = userId ? await storage.getUser(userId) : null;
+          const displaySource = {
+            playerName: session.playerName,
+            firstName: user?.firstName,
+            lastName: user?.lastName,
+            email: user?.email,
+          };
+          const displayName = getPlayerDisplayName(displaySource);
+          const isAnon = isAnonymousPlayer(displaySource);
+
           await storage.createLeaderboardEntry({
             gameId: session.gameId,
             sessionId: session.id,
             teamName: session.teamName,
+            playerName: displayName,
+            isAnonymous: isAnon ? 1 : 0,
             totalScore: session.score,
             completionTimeSeconds:
               session.completedAt && session.startedAt
