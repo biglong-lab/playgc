@@ -16,6 +16,7 @@ import {
   Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp, UserCircle,
   Megaphone, X,
 } from "lucide-react";
+import { useMemo } from "react";
 import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
