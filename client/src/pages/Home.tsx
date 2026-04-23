@@ -14,9 +14,9 @@ import type { Game, GameSession, BattleSlot } from "@shared/schema";
 import {
   Gamepad2, Clock, Users, Zap, Search, Filter,
   Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp, UserCircle,
-  Megaphone, X,
+  X,
 } from "lucide-react";
-import { useMemo } from "react";
+import AnnouncementBanner from "@/components/shared/AnnouncementBanner";
 import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
