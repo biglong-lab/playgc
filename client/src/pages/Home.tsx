@@ -256,6 +256,19 @@ export default function Home() {
         </div>
       </header>
 
+      {/* 🆕 場域公告 banner */}
+      {announcement && (
+        <div
+          className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2.5 flex items-center justify-center gap-2 text-sm text-amber-700 dark:text-amber-300"
+          role="region"
+          aria-label="場域公告"
+          data-testid="announcement-banner"
+        >
+          <Megaphone className="w-4 h-4 shrink-0" />
+          <span className="text-center leading-relaxed">{announcement}</span>
+        </div>
+      )}
+
       {/* 🆕 場域 Hero Banner（有 coverImageUrl 才顯示） */}
       {fieldCoverUrl && (
         <div className="relative w-full h-48 md:h-64 overflow-hidden">
