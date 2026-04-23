@@ -363,12 +363,14 @@ export function usePhotoCamera(): PhotoCameraState {
   const retake = () => {
     setCapturedImage(null);
     setCameraError(null);
+    resetRestartCounter(); // 使用者主動動作 → 重置自動重啟計數
     startCamera();
   };
 
   const cancelCamera = () => {
     stopCamera();
     setCameraError(null);
+    resetRestartCounter();
     // 清空之前拍過的照片，避免再次開啟相機時舊 preview 仍殘留
     setCapturedImage(null);
     setMode("instruction");
