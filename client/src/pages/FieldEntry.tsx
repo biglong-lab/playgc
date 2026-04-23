@@ -549,7 +549,7 @@ function FieldCard({
             <h3 className="font-display font-bold text-lg mb-0.5 truncate">
               {field.name}
             </h3>
-            <CodeWithCopy code={field.code} />
+            <CodeWithCopy code={field.code} fieldName={field.name} />
 
           </div>
           <Button
