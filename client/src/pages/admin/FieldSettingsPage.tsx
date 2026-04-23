@@ -373,11 +373,36 @@ const LAYOUT_OPTIONS: { value: NonNullable<FieldTheme["layoutTemplate"]>; label:
   { value: "minimal", label: "極簡列表", desc: "純列表、單色、極簡" },
 ];
 
-const FONT_OPTIONS: { value: NonNullable<FieldTheme["fontFamily"]>; label: string }[] = [
-  { value: "default", label: "預設字體（系統）" },
-  { value: "serif", label: "襯線（文藝）" },
-  { value: "mono", label: "等寬（科技感）" },
-  { value: "display", label: "展示字體（遊戲感）" },
+const FONT_OPTIONS: {
+  value: NonNullable<FieldTheme["fontFamily"]>;
+  label: string;
+  previewFont: string;
+  sample: string;
+}[] = [
+  {
+    value: "default",
+    label: "預設字體（系統）",
+    previewFont: "Noto Sans TC, sans-serif",
+    sample: "賈村 Jiachun",
+  },
+  {
+    value: "serif",
+    label: "襯線（文藝）",
+    previewFont: "Noto Serif TC, serif",
+    sample: "后浦小鎮",
+  },
+  {
+    value: "mono",
+    label: "等寬（科技感）",
+    previewFont: "JetBrains Mono, monospace",
+    sample: "Console_Mode",
+  },
+  {
+    value: "display",
+    label: "展示字體（遊戲感）",
+    previewFont: "Bungee, Noto Sans TC, sans-serif",
+    sample: "ARCADE",
+  },
 ];
 
 function BrandTab({ fieldId, settings }: { fieldId: string; settings?: FieldSettingsResponse }) {
