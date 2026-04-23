@@ -508,12 +508,15 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
   const [tagline, setTagline] = useState(settings?.tagline ?? "");
   const [welcomeMessage, setWelcomeMessage] = useState(settings?.welcomeMessage ?? "");
   const [highlights, setHighlights] = useState<FieldHighlight[]>(settings?.highlights ?? []);
+  // 🆕 場域公告
+  const [announcement, setAnnouncement] = useState(settings?.announcement ?? "");
 
   useEffect(() => {
     if (!settings) return;
     setTagline(settings.tagline ?? "");
     setWelcomeMessage(settings.welcomeMessage ?? "");
     setHighlights(settings.highlights ?? []);
+    setAnnouncement(settings.announcement ?? "");
   }, [settings]);
 
   // 🆕 判斷是否有未儲存變更（跟 settings 比對）
@@ -521,6 +524,7 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
     settings &&
       (tagline !== (settings.tagline ?? "") ||
         welcomeMessage !== (settings.welcomeMessage ?? "") ||
+        announcement !== (settings.announcement ?? "") ||
         JSON.stringify(highlights) !== JSON.stringify(settings.highlights ?? [])),
   );
   useUnsavedWarning(hasUnsavedChanges);
