@@ -329,8 +329,12 @@ export function WalkiePill({
         />
       )}
 
-      {/* 🆕 QR 快捷按鈕（只在已加群組 + 有 onShowQR 時顯示） */}
-      {connected && onShowQR && (
+      {/*
+        右上小按鈕：展開完整設定面板（單一功能）
+        包含所有次要功能：QR / 代碼 / 成員清單 / 退出群組 / 啟用音訊權限 / 切換 session 模式...
+        讓 Pill 主體保持「只負責 PTT」的純粹性，避免動線混亂
+      */}
+      {onOpenPanel && (
         <motion.button
           type="button"
           initial={{ opacity: 0, scale: 0 }}
@@ -340,9 +344,9 @@ export function WalkiePill({
           onClick={handleQrClick}
           className="absolute -right-2 -top-2 w-8 h-8 rounded-full bg-background border-2 border-primary flex items-center justify-center shadow-md hover:scale-110 transition-transform"
           style={{ touchAction: "manipulation" }}
-          title="顯示 QR 邀請朋友"
-          data-testid="walkie-pill-qr-btn"
-          aria-label="顯示 QR Code"
+          title="設定 / QR / 成員"
+          data-testid="walkie-pill-panel-btn"
+          aria-label="開啟設定面板"
         >
           <QrCode className="w-4 h-4 text-primary" />
         </motion.button>
