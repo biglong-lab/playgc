@@ -72,10 +72,8 @@ export function registerAdminModuleRoutes(app: Express) {
         }
 
         const { title } = parseResult.data;
-        const fieldId =
-          req.admin.systemRole === "super_admin"
-            ? parseResult.data.fieldId || req.admin.fieldId
-            : req.admin.fieldId;
+        // 🔒 新建模組遊戲一律歸屬登入場域
+        const fieldId = req.admin.fieldId;
 
         const slug = generateSlug();
 
