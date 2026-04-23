@@ -12,6 +12,15 @@ import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
 import { eq, desc } from "drizzle-orm";
 
+/** 🆕 公告是否在有效期間內 — API 層決定要不要回傳 */
+function isAnnouncementActive(settings: { announcement?: string; announcementStartAt?: string; announcementEndAt?: string }): boolean {
+  if (!settings.announcement?.trim()) return false;
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD（UTC）
+  if (settings.announcementStartAt && today < settings.announcementStartAt) return false;
+  if (settings.announcementEndAt && today > settings.announcementEndAt) return false;
+  return true;
+}
+
 /** 🎨 驗證主題欄位（防 XSS） */
 const hexColorRegex = /^#[0-9a-f]{6}$/i;
 const safeUrlRegex = /^https:\/\/[\w.-]+(:\d+)?(\/[^\s]*)?$/i;
