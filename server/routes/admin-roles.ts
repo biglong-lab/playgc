@@ -63,9 +63,8 @@ export function registerAdminRoleRoutes(app: Express) {
 
       const { name, description, systemRole, permissionIds } = req.body;
 
-      const fieldId = req.admin.systemRole === "super_admin"
-        ? req.body.fieldId
-        : req.admin.fieldId;
+      // 🔒 新建角色一律歸屬登入場域
+      const fieldId = req.admin.fieldId;
 
       const [role] = await db.insert(roles).values({
         name,
