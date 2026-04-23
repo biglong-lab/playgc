@@ -92,8 +92,11 @@ export default function FieldSelector({
       // 清所有 cache 避免看到舊場域資料
       queryClient.clear();
       toast({ title: `已切換到 ${field.name}` });
-      // 重載到 /admin 首頁套新場域主題 + 資料
-      window.location.href = "/admin";
+      // 🔄 強制重載當前頁面
+      //   設 window.location.href = "/admin" 若當前就在 /admin，瀏覽器視為 no-op 不會重載
+      //   改用 reload() 確保所有 query 重取 + provider 重建（場域主題也會換）
+      //   使用者留在原本的 admin 子頁（例 /admin/games），但資料全變新場域的
+      window.location.reload();
     } catch (err) {
       toast({
         title: "切換失敗",
