@@ -293,34 +293,19 @@ export function WalkieFloatingButton({
   //  fixed + z-[1100] 仍會被困住；Portal 是最穩的解法）
   return createPortal(
     <>
-      {/* 浮動按鈕（收合） */}
+      {/* 浮動 Pill（收合狀態）— 可長按 PTT + 拖動 + 自動淡出 */}
       <AnimatePresence>
         {!expanded && (
-          <motion.button
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0 }}
-            onClick={() => setExpanded(true)}
-            className="fixed bottom-20 right-4 z-[9999] w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:scale-105 transition-transform flex items-center justify-center"
-            data-testid="walkie-open"
-          >
-            <Radio className="w-6 h-6" />
-            {/* 已連線群組：綠色狀態點 */}
-            {showingInRoom && isConnected && (
-              <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
-            )}
-            {/* 未加群組但遊戲進行中：暗示可邀請朋友的小發光 */}
-            {!showingInRoom && !myGroup && sessionId && (
-              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 border-2 border-background animate-pulse" title="可邀請朋友" />
-            )}
-            {hasActiveSpeaker && (
-              <motion.span
-                className="absolute inset-0 rounded-full border-2 border-red-500"
-                animate={{ scale: [1, 1.3, 1], opacity: [0.8, 0, 0.8] }}
-                transition={{ duration: 1.2, repeat: Infinity }}
-              />
-            )}
-          </motion.button>
+          <WalkiePill
+            connected={showingInRoom && isConnected}
+            participantCount={participants.length}
+            hasActiveSpeaker={hasActiveSpeaker}
+            isTransmitting={isTransmitting}
+            hasInvitePulse={!showingInRoom && !myGroup && !!sessionId}
+            onStartTalk={startTalking}
+            onStopTalk={stopTalking}
+            onExpand={() => setExpanded(true)}
+          />
         )}
       </AnimatePresence>
 
