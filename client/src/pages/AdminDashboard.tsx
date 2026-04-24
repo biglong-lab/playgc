@@ -662,3 +662,109 @@ function FieldModulesCard() {
     </Card>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 🆕 G2: 本週趨勢圖 — 近 7 日場次 / 完成 / 趨勢
+// ═══════════════════════════════════════════════════════════════
+interface SessionAnalytics {
+  dailyStats: {
+    date: string;
+    total: number;
+    completed: number;
+  }[];
+}
+
+function WeeklyTrendChart() {
+  const { isAuthenticated } = useAdminAuth();
+  const { data, isLoading } = useQuery<SessionAnalytics>({
+    queryKey: ["/api/analytics/sessions"],
+    enabled: isAuthenticated,
+    staleTime: 60 * 1000,
+  });
+
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const dailyStats = data?.dailyStats ?? [];
+  const hasData = dailyStats.length > 0 && dailyStats.some((d) => d.total > 0);
+
+  return (
+    <Card data-testid="dashboard-weekly-trend">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          近 7 日活動趨勢
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="h-64 flex items-center justify-center text-muted-foreground">
+            載入中...
+          </div>
+        ) : !hasData ? (
+          <div className="h-64 flex flex-col items-center justify-center text-muted-foreground gap-2">
+            <TrendingUp className="w-10 h-10 opacity-30" />
+            <p className="text-sm">尚無活動資料</p>
+            <p className="text-xs">玩家完成遊戲後即可看到趨勢</p>
+          </div>
+        ) : (
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={dailyStats} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={formatDate}
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                />
+                <YAxis
+                  stroke="hsl(var(--muted-foreground))"
+                  fontSize={12}
+                  allowDecimals={false}
+                />
+                <RechartsTooltip
+                  contentStyle={{
+                    backgroundColor: "hsl(var(--card))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                  }}
+                  labelFormatter={formatDate}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: "12px" }}
+                  iconType="line"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  name="總場次"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(var(--primary))", r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="completed"
+                  name="已完成"
+                  stroke="hsl(var(--success))"
+                  strokeWidth={2}
+                  dot={{ fill: "hsl(var(--success))", r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
