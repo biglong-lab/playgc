@@ -61,13 +61,41 @@ export default function RevenueTransactions() {
           </p>
         </div>
 
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-          <TabsList>
-            <TabsTrigger value="all">全部</TabsTrigger>
-            <TabsTrigger value="game_purchase">🎮 遊戲購買</TabsTrigger>
-            <TabsTrigger value="battle_registration">⚔️ 對戰報名</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <Tabs value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
+            <TabsList>
+              <TabsTrigger value="all">全部</TabsTrigger>
+              <TabsTrigger value="game_purchase">🎮 遊戲購買</TabsTrigger>
+              <TabsTrigger value="battle_registration">⚔️ 對戰報名</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {/* 🆕 G4: 匯出 CSV */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1"
+            disabled={!data?.transactions?.length}
+            onClick={() => {
+              const txs = data?.transactions ?? [];
+              const columns: CsvColumn<Transaction>[] = [
+                { header: "交易 ID", get: (t) => t.id },
+                { header: "類型", get: (t) => (t.type === "game_purchase" ? "遊戲購買" : "對戰報名") },
+                { header: "商品 ID", get: (t) => t.productId },
+                { header: "商品名稱", get: (t) => t.productName },
+                { header: "玩家 ID", get: (t) => t.playerId ?? "" },
+                { header: "金額 (NT$)", get: (t) => t.amount },
+                { header: "狀態", get: (t) => t.status },
+                { header: "建立時間", get: (t) => formatCsvDateTime(t.createdAt) },
+              ];
+              exportToCsv(columns, txs, "transactions");
+              toast({ title: "✅ 已開始下載", description: `共 ${txs.length} 筆交易資料` });
+            }}
+            data-testid="btn-export-csv"
+          >
+            <Download className="w-4 h-4" />
+            匯出 CSV
+          </Button>
+        </div>
 
         {isLoading ? (
           <ListSkeleton count={6} />
