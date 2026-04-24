@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
+import MetricCard from "@/components/shared/MetricCard";
 import type { ArduinoDevice, InsertArduinoDevice, DeviceLog } from "@shared/schema";
 import {
   Plus, Cpu, Radio, Wifi, WifiOff, Lightbulb, Power, RefreshCw,
