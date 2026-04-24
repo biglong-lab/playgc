@@ -373,16 +373,25 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
         description: `總分: ${safeTotalScore}`,
       });
       setTimeout(() => {
-        const grantItems = config.onSuccess?.grantItem
-          ? [config.onSuccess.grantItem]
-          : config.successReward?.items;
-        // 優先順序：onSuccess.points（admin 指定） > successReward.points > 驗證過的 safeTotalScore
+        // 🔧 修 bug：RewardsSection 存 rewardPoints/rewardItems 優先；
+        // 舊 onSuccess.* 和 successReward.* 向後相容
+        const rsPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
+        const rsItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
+
         const rewardPoints =
+          rsPoints ??
           config.onSuccess?.points ??
           config.successReward?.points ??
           safeTotalScore;
+
+        const allItems = [
+          ...rsItems.filter((x) => !!x),
+          ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
+          ...(config.successReward?.items ?? []),
+        ];
+
         onComplete(
-          { points: rewardPoints, items: grantItems },
+          { points: rewardPoints, items: allItems.length > 0 ? allItems : undefined },
           config.nextPageId,
         );
       }, 2000);
