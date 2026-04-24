@@ -110,7 +110,18 @@ export default function FieldSelector({
         throw new Error(err.message || "切換失敗");
       }
       setStoredFieldId(field.id); // 記下選擇（輔助）
-      // 清所有 cache 避免看到舊場域資料
+      // 🆕 明確 invalidate 所有場域範圍的 queryKey，保證場域切換時不殘留舊資料
+      // 即使後續 queryClient.clear() / window.location.reload() 已同步清除，
+      // 這個階段性 invalidate 是防禦：若 reload 被 popup blocker 擋下，
+      // 使用者仍會看到新場域的資料而非舊場域 cache。
+      queryClient.invalidateQueries({ queryKey: ["/api/admin"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/devices"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/games"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
+      // 清所有 cache 避免看到舊場域資料（最後手段）
       queryClient.clear();
       toast({ title: `已切換到 ${field.name}` });
       // 🔄 強制重載當前頁面
