@@ -1069,10 +1069,11 @@ function IntroPreview({
 
   return (
     <div className="rounded-lg overflow-hidden border bg-background">
-      {/* 🆕 公告 banner（依 severity 變色，時效外加灰色 line-through） */}
+      {/* 🆕 公告 banner（依 severity 變色 + 倒數，時效外加灰色 line-through） */}
       {announcement.trim() && (() => {
         const isUrgent = announcementSeverity === "urgent";
         const Icon = isUrgent ? AlertCircle : Megaphone;
+        const remaining = announcementActive ? formatCountdown(announcementEndAt) : null;
         let wrapperClass = "";
         if (!announcementActive) {
           wrapperClass =
@@ -1091,6 +1092,11 @@ function IntroPreview({
           >
             <Icon className="w-3 h-3 shrink-0 mt-0.5" />
             <span className="flex-1">{announcement}</span>
+            {remaining && (
+              <span className="opacity-70 font-mono text-[9px] shrink-0 mt-0.5">
+                {remaining}
+              </span>
+            )}
           </div>
         );
       })()}
