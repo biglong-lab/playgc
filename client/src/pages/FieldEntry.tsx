@@ -572,10 +572,13 @@ function StepCard({
 function FieldCard({
   field,
   highlighted = false,
+  eager = false,
   onClick,
 }: {
   field: FieldItem;
   highlighted?: boolean;
+  /** 🆕 是否 eager 載入封面（highlighted 或第一張視為首屏） */
+  eager?: boolean;
   onClick: () => void;
 }) {
   // 🛡️ 防禦：舊 API / 快取可能沒 topGameCovers，保底空陣列
@@ -583,13 +586,27 @@ function FieldCard({
   const gameCount = field.gameCount ?? 0;
   // 封面優先序：coverImageUrl > 第一款遊戲封面 > null
   const coverUrl = field.coverImageUrl || topCovers[0]?.coverImageUrl || null;
+  // 🆕 首屏 eager，其餘 lazy，省頻寬
+  const imgLoading: "eager" | "lazy" = highlighted || eager ? "eager" : "lazy";
+
+  // 🆕 鍵盤觸發：Enter / Space
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
 
   return (
     <Card
-      className={`cursor-pointer hover-elevate transition-all group overflow-hidden border-2 ${
+      className={`cursor-pointer hover-elevate transition-all group overflow-hidden border-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 ${
         highlighted ? "border-primary/50 bg-primary/5 shadow-lg" : ""
       }`}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`進入 ${field.name} 場域`}
       data-testid={highlighted ? `field-recent-${field.code}` : `field-card-${field.code}`}
     >
       {/* 封面圖 */}
@@ -600,7 +617,7 @@ function FieldCard({
             alt={field.name}
             preset="card"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="eager"
+            loading={imgLoading}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
           {/* 遊戲數 Badge */}
