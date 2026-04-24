@@ -1,11 +1,11 @@
 // 👤 玩家端底部導航（手機版） — 三世界切換
+// 🎨 設計原則：單一 icon（線稿）+ 文字，無重複符號，有質感
 import { Link, useLocation } from "wouter";
 import { Gamepad2, Swords, User } from "lucide-react";
 
 interface NavItem {
   path: string;
   label: string;
-  emoji: string;
   icon: React.ComponentType<{ className?: string }>;
   isActive: (loc: string) => boolean;
 }
@@ -13,8 +13,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   {
     path: "/home",
-    label: "遊戲世界",
-    emoji: "🎮",
+    label: "遊戲",
     icon: Gamepad2,
     isActive: (loc) =>
       loc === "/home" ||
@@ -24,15 +23,13 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     path: "/battle",
-    label: "競技擂台",
-    emoji: "⚔️",
+    label: "擂台",
     icon: Swords,
     isActive: (loc) => loc === "/battle" || loc.startsWith("/battle/"),
   },
   {
     path: "/me",
-    label: "會員中心",
-    emoji: "💳",
+    label: "我的",
     icon: User,
     isActive: (loc) =>
       loc === "/me" || loc.startsWith("/me/") || loc === "/purchases",
@@ -61,25 +58,35 @@ export default function PlayerBottomNav() {
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-border"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      data-testid="player-bottom-nav"
     >
-      <div className="grid grid-cols-3 h-16">
+      <div className="grid grid-cols-3 h-14">
         {NAV_ITEMS.map((item) => {
           const active = item.isActive(location);
           const Icon = item.icon;
           return (
             <Link key={item.path} href={item.path}>
               <a
-                className={`flex flex-col items-center justify-center gap-0.5 transition-colors ${
+                className={`flex flex-col items-center justify-center gap-1 transition-all ${
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
+                data-testid={`nav-${item.path.slice(1)}`}
               >
-                <div className="flex items-center gap-1">
-                  <span className="text-base leading-none">{item.emoji}</span>
-                  <Icon className={`w-4 h-4 ${active ? "scale-110" : ""}`} />
-                </div>
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <Icon
+                  className={`w-5 h-5 transition-transform ${
+                    active ? "scale-110" : ""
+                  }`}
+                  strokeWidth={active ? 2.2 : 1.6}
+                />
+                <span
+                  className={`text-[11px] tracking-wide ${
+                    active ? "font-semibold" : "font-normal"
+                  }`}
+                >
+                  {item.label}
+                </span>
               </a>
             </Link>
           );
