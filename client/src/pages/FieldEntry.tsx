@@ -429,7 +429,8 @@ export default function FieldEntry() {
             </p>
           )}
           <p className="text-sm text-muted-foreground">
-            &copy; 2024 CHITO — Play the Place
+            {/* 🆕 © 年份自動跟著系統時鐘，跨年不用改 code */}
+            &copy; {new Date().getFullYear()} CHITO — Play the Place
           </p>
           <p className="text-xs text-muted-foreground/60 mt-2">
             Powered by 大哉實業有限公司
