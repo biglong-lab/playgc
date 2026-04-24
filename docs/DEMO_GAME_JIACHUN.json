@@ -131,7 +131,7 @@
         "arStickerConfig": {
           "stickers": [
             {
-              "imageUrl": "https://res.cloudinary.com/dhczwewns/image/upload/v1761800000/chito-demo/jiachun-mask.png",
+              "imageUrl": "/demo-stickers/jiachun-mask.svg",
               "position": "center",
               "sizeRatio": 0.7
             }
