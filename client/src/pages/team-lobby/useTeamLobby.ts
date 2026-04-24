@@ -1,5 +1,5 @@
 // 隊伍大廳邏輯 Hook
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -8,6 +8,23 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import type { Game, Team, TeamMember, User } from "@shared/schema";
+
+/**
+ * 從 URL search string 解出 ?code= 邀請碼
+ * 例如 ?code=ABC123 → "ABC123"
+ *      不存在或為空 → ""
+ */
+function readInviteCodeFromUrl(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code") ?? "";
+    // 限定 6 位英數（保護用，Server 端再驗證）
+    return /^[A-Z0-9]{4,8}$/i.test(code) ? code.toUpperCase() : "";
+  } catch {
+    return "";
+  }
+}
 
 export interface TeamWithDetails extends Team {
   members: (TeamMember & { user: User })[];
