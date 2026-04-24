@@ -10,7 +10,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
-  Camera, CheckCircle2, AlertTriangle, Download, Share2, Zap,
+  Camera, CheckCircle2, AlertTriangle, Download, Share2, Zap, RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
