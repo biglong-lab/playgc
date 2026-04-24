@@ -176,6 +176,12 @@ export default function Home() {
 
   // 🆕 搜尋框鍵盤 shortcut：` / ` 或 `Cmd/Ctrl+K` focus 輸入框（桌面玩家加速）
   const searchInputRef = useRef<HTMLInputElement>(null);
+  // 🆕 偵測 macOS，決定 kbd 提示是 ⌘K 還是 Ctrl K
+  const isMac = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    // navigator.platform 已 deprecated 但仍最穩定；userAgentData 尚未廣泛支援
+    return /Mac|iPhone|iPod|iPad/i.test(navigator.platform || navigator.userAgent || "");
+  }, []);
   useEffect(() => {
     const handleShortcut = (e: KeyboardEvent) => {
       // 忽略正在輸入的狀態（已 focus input/textarea）
