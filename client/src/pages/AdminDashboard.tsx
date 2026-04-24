@@ -819,13 +819,20 @@ function CloudinaryUsageCard() {
     staleTime: 10 * 60_000,  // 10 分鐘快取
   });
 
+  /**
+   * 🔧 v2: 通用 metric renderer — 支援 credits-based 或傳統 used/limit
+   * @param usageLabel 主要用量文字（如「973.7 MB」）
+   * @param creditsUsed 該項消耗的 credits（如 0.95）
+   * @param percent 佔總 credits 的百分比（後端已算好）
+   */
   const renderMetric = (
     label: string,
     icon: React.ReactNode,
-    metric: { used: number; limit: number; percent: number } | undefined,
-    formatter: (n: number) => string,
+    usageLabel: string,
+    creditsUsed: number | undefined,
+    percent: number | undefined,
   ) => {
-    if (!metric) {
+    if (creditsUsed === undefined || percent === undefined) {
       return (
         <div className="p-3 rounded-lg border bg-muted/20">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -837,12 +844,12 @@ function CloudinaryUsageCard() {
       );
     }
     const colorClass =
-      metric.percent >= 90 ? "text-destructive"
-      : metric.percent >= 75 ? "text-amber-600 dark:text-amber-400"
+      percent >= 90 ? "text-destructive"
+      : percent >= 75 ? "text-amber-600 dark:text-amber-400"
       : "text-emerald-600 dark:text-emerald-400";
     const barColorClass =
-      metric.percent >= 90 ? "bg-destructive"
-      : metric.percent >= 75 ? "bg-amber-500"
+      percent >= 90 ? "bg-destructive"
+      : percent >= 75 ? "bg-amber-500"
       : "bg-emerald-500";
     return (
       <div className="p-3 rounded-lg border">
@@ -850,16 +857,16 @@ function CloudinaryUsageCard() {
           {icon}
           <span className="font-medium">{label}</span>
           <span className={`ml-auto text-xs font-bold ${colorClass}`} data-testid={`cloudinary-${label}-percent`}>
-            {metric.percent}%
+            {percent}%
           </span>
         </div>
         <div className="text-xs text-muted-foreground mt-1">
-          {formatter(metric.used)} / {formatter(metric.limit)}
+          {usageLabel} · <span className="text-[10px]">{creditsUsed.toFixed(2)} credits</span>
         </div>
         <div className="h-1.5 rounded-full bg-muted mt-2 overflow-hidden">
           <div
             className={`h-full ${barColorClass} transition-all`}
-            style={{ width: `${Math.min(100, metric.percent)}%` }}
+            style={{ width: `${Math.min(100, percent)}%` }}
           />
         </div>
       </div>
