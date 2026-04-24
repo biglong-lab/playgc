@@ -39,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
 export default function PlayerBottomNav() {
   const [location] = useLocation();
 
-  // 以下路徑不顯示 bottom nav（避免干擾沉浸體驗）
+  // 以下路徑不顯示 bottom nav（避免干擾沉浸體驗 + 避免遮住遊戲按鈕）
   const shouldHide =
     location === "/" ||
     location.startsWith("/game/") ||
@@ -50,7 +50,10 @@ export default function PlayerBottomNav() {
     location.startsWith("/purchase/") ||
     location.startsWith("/admin") ||
     location.startsWith("/platform") ||
-    location.startsWith("/g/");
+    location.startsWith("/g/") ||
+    // 🎯 場域遊戲路徑（/f/{code}/game/...、/f/{code}/map/..., 等）也要隱藏
+    /^\/f\/[^/]+\/(game|map|team|match|purchase)\//.test(location) ||
+    /^\/f\/[^/]+\/game\/[^/]+$/.test(location);
 
   if (shouldHide) return null;
 
