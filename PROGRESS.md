@@ -385,13 +385,14 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 ### 未做但已規劃（依 PLAN 文件 Milestone B+ 待辦）
 
 - ✅ ~~Phase 5.5 — 成就徽章卡~~（輪 8 完成）
-- ⏳ Phase 5 — 時間軸相簿 `/album/:sessionId` + `/me/photos` + PDF 匯出
+- ✅ ~~Phase 5 — 相簿 /album/:sessionId + /me/photos~~（輪 14-15 完成）
+- ✅ ~~Phase 7 — 連拍紀念 photo_burst~~（輪 17 完成，MVP 四宮格版）
+- ✅ ~~Phase 8 — 前後對比 before_after~~（輪 16 完成）
 - ⏳ Phase 5.6 — Google Drive 直傳（OAuth + Drive API）
 - ⏳ Phase 6 — 團體合影 team_photo（WebSocket 等待 + 九宮格合成）
-- ⏳ Phase 7 — 連拍 GIF burst_gif
-- ⏳ Phase 8 — 前後對比 before_after
 - ⏳ Phase 9 — AR 貼圖（固定位置 + 臉部追蹤）
 - ⏳ photo_templates 管理後台（讓場域自定義紀念照框）
+- ⏳ 相簿 PDF 匯出（long image / multi-page PDF）
 
 ### 關鍵學習
 
