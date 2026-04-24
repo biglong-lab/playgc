@@ -247,6 +247,97 @@ export class CloudinaryService {
     });
   }
 
+  /**
+   * 🆕 v2: 列出某 session 的所有玩家照片（相簿用）
+   * 用 Cloudinary Search API 依 folder 過濾
+   */
+  async listSessionPhotos(gameId: string, sessionId: string): Promise<Array<{
+    publicId: string;
+    url: string;
+    width: number;
+    height: number;
+    createdAt: string;
+  }>> {
+    if (!this.isConfigured()) {
+      throw new Error("Cloudinary 尚未設定");
+    }
+
+    const folder = `jiachun-game/games/${gameId}/player-photos/${sessionId}`;
+    try {
+      const result = await cloudinary.search
+        .expression(`folder:${folder}/*`)
+        .sort_by("created_at", "desc")
+        .max_results(200)
+        .execute();
+
+      return (result.resources || []).map((r: {
+        public_id: string;
+        secure_url: string;
+        width: number;
+        height: number;
+        created_at: string;
+      }) => ({
+        publicId: r.public_id,
+        url: r.secure_url,
+        width: r.width,
+        height: r.height,
+        createdAt: r.created_at,
+      }));
+    } catch (err) {
+      console.error("[cloudinary] listSessionPhotos 失敗:", err);
+      return [];
+    }
+  }
+
+  /**
+   * 🆕 v2: 列出某使用者所有照片（個人相簿用）
+   * 注：需 DB 知道該 user 所有 session IDs 才能查全。此方法依 folder pattern 查單一 session。
+   */
+  async listUserPhotos(sessionIds: string[]): Promise<Array<{
+    publicId: string;
+    url: string;
+    sessionId: string;
+    createdAt: string;
+  }>> {
+    if (!this.isConfigured() || sessionIds.length === 0) {
+      return [];
+    }
+
+    // Cloudinary search expression OR
+    const expressions = sessionIds
+      .slice(0, 20)   // 最多 20 個 session 避免 query 爆
+      .map((sid) => `folder:jiachun-game/games/*/player-photos/${sid}/*`)
+      .join(" OR ");
+
+    try {
+      const result = await cloudinary.search
+        .expression(expressions)
+        .sort_by("created_at", "desc")
+        .max_results(500)
+        .execute();
+
+      return (result.resources || []).map((r: {
+        public_id: string;
+        secure_url: string;
+        folder?: string;
+        created_at: string;
+      }) => {
+        // 從 folder 路徑抽 sessionId
+        const match = r.folder?.match(/player-photos\/([^/]+)/);
+        const sessionId = match ? match[1] : "";
+        return {
+          publicId: r.public_id,
+          url: r.secure_url,
+          sessionId,
+          createdAt: r.created_at,
+        };
+      });
+    } catch (err) {
+      console.error("[cloudinary] listUserPhotos 失敗:", err);
+      return [];
+    }
+  }
+
   getStatus(): { configured: boolean; cloudName?: string } {
     const configured = this.isConfigured();
     return {
