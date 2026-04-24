@@ -215,6 +215,15 @@ export function registerAdminFieldRoutes(app: Express) {
         console.error(`[admin-fields] seedDefaultRolesForField failed for field ${field.id}:`, seedErr);
       }
 
+      // 🆕 自動指派建立者為新場域的場域管理員
+      // 若建立者有 email / firebaseUserId，建一個 admin_account 綁到新場域的「場域管理員」role
+      // 讓建立者切到新場域時立刻有完整管理權限，不用再走一次授權流程
+      try {
+        await autoAssignCreatorAsFieldDirector(field.id, req.admin.accountId);
+      } catch (assignErr) {
+        console.error(`[admin-fields] auto-assign creator failed for field ${field.id}:`, assignErr);
+      }
+
       res.status(201).json(field);
     } catch (error) {
       if (error instanceof z.ZodError) {
