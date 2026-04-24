@@ -65,6 +65,7 @@ export default function AdminGames() {
                   placeholder="搜尋遊戲..."
                   value={ctx.searchQuery}
                   onChange={(e) => ctx.setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => handleEscape(e, ctx.searchQuery, ctx.setSearchQuery)}
                   className="pl-8 pr-14"
                   data-testid="input-search-games"
                 />
