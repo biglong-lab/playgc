@@ -114,6 +114,14 @@ describe("admin-fields 路由", () => {
     mockDb.update.mockReturnValue({ set: mockDb._chain.set });
     mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });
     mockDb._chain.where.mockReturnValue({ returning: mockDb._chain.returning });
+    // 🆕 select 鏈（給 seed 抓 permissions 用）
+    mockDb.select.mockReturnValue({ from: mockDb._chain.from });
+    mockDb._chain.from.mockReturnValue({ where: mockDb._chain.selectWhere });
+    mockDb._chain.selectWhere.mockResolvedValue([]);
+    // 🆕 query.roles / query.adminAccounts reset
+    mockDb.query.roles.findFirst.mockReset();
+    mockDb.query.roles.findMany.mockReset();
+    mockDb.query.adminAccounts.findFirst.mockReset();
     // 重設 insertFieldSchema mock
     (insertFieldSchema.parse as ReturnType<typeof vi.fn>).mockImplementation((data: Record<string, unknown>) => data);
     (insertFieldSchema.partial as ReturnType<typeof vi.fn>).mockReturnValue({
