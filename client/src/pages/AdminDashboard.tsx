@@ -319,7 +319,15 @@ export default function AdminDashboard() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Cpu className="w-10 h-10 mx-auto mb-2 opacity-50" />
-                <p>尚無設備</p>
+                <p className="mb-3">尚無設備</p>
+                {hasPermission("device:create") && (
+                  <Link href="/admin/devices">
+                    <Button size="sm" variant="outline" className="gap-1.5" data-testid="btn-empty-new-device">
+                      <Plus className="w-3.5 h-3.5" />
+                      登錄第一台設備
+                    </Button>
+                  </Link>
+                )}
               </div>
             )}
           </CardContent>
