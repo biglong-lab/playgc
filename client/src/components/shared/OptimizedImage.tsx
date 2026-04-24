@@ -107,6 +107,12 @@ export default function OptimizedImage({
     onLoad?.();
   };
 
+  // 🆕 跨域圖片（Cloudinary / 外部 URL）加 crossOrigin="anonymous"，讓 response 為 CORS
+  //   response（非 opaque），Service Worker 才能真正 cache 有內容的 response，
+  //   避免 CacheFirst 策略下讀到 0-byte opaque response 造成破圖。
+  const isCrossOrigin = /^https?:\/\//.test(srcWithRetry) &&
+    (typeof window === "undefined" || !srcWithRetry.startsWith(window.location.origin));
+
   // 🆕 未載入完成時，同時 render img（hidden）和 loading placeholder
   //   img 掛著讓瀏覽器去抓，但用 opacity:0 + absolute 把 broken 樣式蓋掉
   //   使用者只看到 loading spinner 直到圖真的載好
@@ -118,6 +124,7 @@ export default function OptimizedImage({
         alt={alt}
         className={className}
         loading={loading}
+        crossOrigin={isCrossOrigin ? "anonymous" : undefined}
         onError={handleError}
         onLoad={handleLoad}
         key={`${src}-${retryCount}`}
