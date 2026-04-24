@@ -1,6 +1,100 @@
+# CHITO robots.txt — SEO + AEO 優化（2026-04-24）
+# 開放搜尋引擎和 AI crawler 抓取公開內容，禁止後台和 API
+
+# 預設：所有 crawler
 User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
+Disallow: /platform/
 
+# 🤖 AI Answer Engine Optimization (AEO) — 明確放行 AI crawler
+# 讓 ChatGPT / Perplexity / Claude / Bing Copilot 等 AI 搜尋能抓取 CHITO 場域和遊戲資訊
+User-agent: GPTBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# 🔍 主要搜尋引擎
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: YandexBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# 📱 社交 crawler（分享連結用）— 明確放行 OG preview
+User-agent: facebookexternalhit
+Allow: /
+Disallow: /api/
+
+User-agent: Twitterbot
+Allow: /
+Disallow: /api/
+
+User-agent: LinkedInBot
+Allow: /
+Disallow: /api/
+
+User-agent: WhatsApp
+Allow: /
+Disallow: /api/
+
+User-agent: Discordbot
+Allow: /
+Disallow: /api/
+
+User-agent: Slackbot
+Allow: /
+Disallow: /api/
+
+# Sitemap 位置
 Sitemap: https://game.homi.cc/sitemap.xml
