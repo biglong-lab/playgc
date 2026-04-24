@@ -43,6 +43,8 @@ export interface FieldThemePayload {
   announcement?: string | null;
   /** 🆕 公告嚴重程度 — info / urgent */
   announcementSeverity?: "info" | "urgent";
+  /** 🆕 公告結束日（ISO YYYY-MM-DD）— 前端可用來顯示倒數 */
+  announcementEndAt?: string | null;
   /** 🆕 模組開關（舊 API 可能沒回） */
   modules?: FieldModules;
   theme: FieldTheme;
