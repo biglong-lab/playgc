@@ -355,6 +355,64 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - 編輯器可設：before/after 標籤、排版方向、最少間隔
 - Deploy: `45ce375` · bundle `index-DTULFbvK.js` · verify `photo-before-after-intro`
 
+#### 輪 18 — 🔒 場域隔離大 Bug 根治（使用者實測回報）
+
+**現象**：使用者開 `/f/JIACHUN/home` 首次載入時**會顯示所有場域的遊戲**（含後浦遊戲），重整才修復。
+
+**Root cause（3 層）**：
+
+| 層 | 原問題 |
+|---|-------|
+| Provider | URL 變化（如進 /f/JIACHUN）後，**要等 `themePayload` 載入才**呼叫 `setCurrentFieldCode` 寫 localStorage（line 275）—— 有延遲 |
+| useCurrentField hook | 讀的是 **localStorage**（line 62），而非 Provider 當前解析的 `fieldCode`—— 首次讀到舊場域的 code |
+| Home.tsx games query | `queryKey: [\`/api/games?fieldCode=${currentField?.code}\`]` 用的是舊 code → 拿到跨場域遊戲 |
+
+**時序**：
+```
+Step 1: URL = /f/JIACHUN/home
+Step 2: localStorage 還是 "HPSPACE"（舊）
+Step 3: useCurrentField 讀 localStorage → "HPSPACE"
+Step 4: games query key = "?fieldCode=HPSPACE" → 抓到後浦遊戲 ❌
+Step 5: 500ms 後 themePayload 載入 → 才 setCurrentFieldCode("JIACHUN")
+Step 6: 但 useCurrentField 不會自動 re-read → 需重整才正確
+```
+
+**修復（3 處）**：
+
+**1. `client/src/providers/FieldThemeProvider.tsx`** — URL 變化即時同步
+```tsx
+// 新 useEffect：監聽 urlFieldCode 變化
+useEffect(() => {
+  if (!urlFieldCode || isPlatformPage) return;
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored?.toUpperCase() === urlFieldCode.toUpperCase()) return;
+  setCurrentFieldCode(urlFieldCode.toUpperCase());      // 立即寫
+  // 清所有場域 scoped queries
+  queryClient.invalidateQueries({ queryKey: ["/api/games"] });
+  queryClient.invalidateQueries({ queryKey: ["/api/games-stats/public"] });
+  queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+  queryClient.invalidateQueries({ queryKey: ["/api/leaderboard"] });
+  queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
+}, [urlFieldCode, isPlatformPage, queryClient]);
+```
+
+**2. `client/src/pages/Home.tsx`** — URL 優先 + enabled guard
+```tsx
+// 不依賴 localStorage 同步的 useCurrentField，直接用 URL params
+const urlParams = useParams<{ fieldCode?: string }>();
+const urlFieldCode = urlParams.fieldCode?.toUpperCase();
+const currentFieldCode = urlFieldCode || currentField?.code;   // URL 優先
+const { data: games } = useQuery({
+  queryKey: gamesQueryKey,
+  enabled: !!currentFieldCode,   // 🔧 無 fieldCode 時不 fetch（避免抓到全場域）
+});
+```
+
+**3. 既有場域 scoped API 行為正確**（`server/routes/player-games.ts`）無需改動。
+
+- Deploy: `66f481a` · bundle `index-x6sHSIUd.js`
+- 影響：後浦 / 賈村 兩場域間切換不再混合遊戲；新場域切入立即顯示正確內容
+
 #### 輪 17 — 📸 連拍紀念（photo_burst）
 
 **檔**：`client/src/components/game/PhotoBurstFlow.tsx`（新 330 行）· constants / renderer / editor
