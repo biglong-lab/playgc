@@ -411,23 +411,15 @@ export default function PageConfigEditor({
             </div>
           </div>
 
-          <div>
-            <label className="text-sm font-medium mb-2 block">提示（答錯時顯示，多個用逗號分隔）</label>
-            <Input
-              value={((config.hints as string[] | undefined) || []).join(", ")}
-              onChange={(e) => {
-                const hints = e.target.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
-                updateField("hints", hints.length > 0 ? hints : undefined);
-                // 同步寫入 hint（單數）保持向後相容
-                if (hints.length > 0) updateField("hint", hints[0]);
-              }}
-              placeholder="第一次提示, 第二次提示, 第三次提示"
-              data-testid="config-hints"
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              依答錯次數逐步顯示；也可只填一個提示
-            </p>
-          </div>
+          <HintsInput
+            value={(config.hints as string[] | undefined) || []}
+            onChange={(hints) => {
+              updateField("hints", hints.length > 0 ? hints : undefined);
+              if (hints.length > 0) updateField("hint", hints[0]);
+            }}
+          />
+
+
 
           {config.showExplanation === true && (
             <div>
