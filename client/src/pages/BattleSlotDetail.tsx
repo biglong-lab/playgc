@@ -54,7 +54,7 @@ export default function BattleSlotDetail() {
   const [showCreateTeamDialog, setShowCreateTeamDialog] = useState(false);
   const [showJoinTeamDialog, setShowJoinTeamDialog] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false); // 🔴 取消報名確認
-  const [skillLevel, setSkillLevel] = useState("beginner");
+  const [skillLevel, setSkillLevel] = useState("intermediate"); // 🔧 預設「中級」更合理
   const [notes, setNotes] = useState("");
   const [teamName, setTeamName] = useState("");
   const [accessCode, setAccessCode] = useState("");
