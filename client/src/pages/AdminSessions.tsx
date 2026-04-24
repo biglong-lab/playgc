@@ -26,8 +26,9 @@ import type { GameSession, Game } from "@shared/schema";
 import {
   Search, Filter, Users, Clock, Play, Square, Eye,
   RefreshCw, AlertTriangle, CheckCircle, Trash2, Mail, User as UserIcon,
-  UserX,
+  UserX, Download,
 } from "lucide-react";
+import { exportToCsv, formatCsvDateTime, type CsvColumn } from "@/lib/csv-export";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
