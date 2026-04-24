@@ -99,6 +99,19 @@ export function useTeamLobby(): TeamLobbyReturn {
     refetchInterval: 5000,
   });
 
+  // 🔗 偵測到 ?code= 邀請碼時提示使用者「您被邀請了」
+  useEffect(() => {
+    if (initialInviteCode && !myTeam && game) {
+      toast({
+        title: `🎮 您被邀請加入隊伍`,
+        description: `邀請碼：${initialInviteCode}（已自動填入，按「加入隊伍」即可）`,
+        duration: 5000,
+      });
+    }
+    // 只在第一次載入後顯示，依賴用 game/myTeam 是否載入完成
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game?.id, myTeam?.id]);
+
   // WebSocket
   const { isConnected: wsConnected } = useTeamWebSocket({
     teamId: myTeam?.id,
