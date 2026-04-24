@@ -165,7 +165,9 @@ export default function AdminDashboard() {
               {onlineDevices}
             </div>
             <p className="text-xs text-muted-foreground">
-              共 {devices?.length || 0} 台設備
+              {offlineDevices > 0
+                ? `${offlineDevices} 台離線 · 共 ${devices?.length || 0} 台`
+                : `共 ${devices?.length || 0} 台設備`}
             </p>
           </CardContent>
         </Card>
