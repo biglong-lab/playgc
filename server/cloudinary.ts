@@ -426,6 +426,10 @@ export class CloudinaryService {
       throw new Error("Cloudinary 尚未設定");
     }
     try {
+      // 🐛 修：等 500ms 讓 Cloudinary index tag（剛 upload 完 tag 還沒 propagate）
+      //   不等的話 multi 抓不到 tag 會 hang 或回空
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // cloudinary.uploader.multi(tag, options) — 組動畫
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result: any = await (cloudinary.uploader as any).multi(tag, {
