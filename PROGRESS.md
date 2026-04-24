@@ -368,6 +368,35 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 21-22 — 🎨 場域紀念照模板自訂（後端 + 管理後台 UI）
+
+**背景**：所有紀念照合成都用系統預設模板（🏆 + {fieldName} + {gameTitle} + {score} + {date}），無法場域品牌化。
+
+**採保守架構**：不建新 table，改用 **`field.settings.photoTemplates`** JSON 欄位（**無需 DB migration**）。
+
+**輪 21（後端）** · `shared/schema/fields.ts` + `server/routes/media.ts`：
+- `FieldSettings.photoTemplates.achievement` / `.memorial` 型別擴充
+- 每個 template 含 `enabled` + `canvas` + `textLayers[]`（text / size / color / gravity / offsetY / background / bold）
+- text 支援變數插值：`{fieldName}` / `{gameTitle}` / `{score}` / `{date}` / `{playerName}`
+- 改既有 `GET /api/photo-composite/achievement-config` → 支援 `?fieldCode=XXX` — 場域有自訂就組場域 config
+- 新 `GET /api/photo-composite/memorial-config?fieldCode=XXX` — photo_spot / photo_compare 合成用
+- 前端整合：GameCompletionScreen / PhotoSpotFlow / PhotoCompareFlow 全部加帶 `fieldCode` query
+- Deploy: `e496c58` · bundle `index-DRHhe6da.js` · verify `memorial-config`
+
+**輪 22（管理後台 UI）** · `client/src/pages/admin/FieldSettingsPage.tsx`：
+- 新 Tab「📸 紀念照」 + Camera icon
+- 兩個獨立區塊：🏆 成就卡 / 📸 拍照紀念 — 各自可開關
+- textLayer 編輯器：每層可設 text / size / color / gravity / offsetY / background / bold
+- 新增/刪除 textLayer 按鈕
+- 變數提示：文字支援 `{fieldName}` 等插值
+- 儲存 `PATCH /api/admin/fields/:id/settings` 寫入 `photoTemplates.*`
+- Deploy: `dacf671` · bundle `index-C_mmZpiN.js` · verify `photo-templates-tab`
+
+**使用者體驗**：
+- 場域 admin 進「場域設定 → 紀念照」→ 編輯文字內容 + 樣式
+- 儲存後玩家下次完成遊戲 → 紀念卡立即用新樣式
+- 例：賈村可設「⚔️ {fieldName} 戰士 · 得 {score} 分」; 後浦可設「🌊 {fieldName} 文化之旅 · {date}」
+
 #### 輪 20 — 🖼️ 紀念照 UX 入口（MeCenter）
 
 **檔**：`client/src/pages/me/MeCenter.tsx`
