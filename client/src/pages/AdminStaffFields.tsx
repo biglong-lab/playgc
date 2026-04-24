@@ -648,10 +648,13 @@ export default function AdminStaffFields() {
                                 {field.address}
                               </div>
                             )}
-                            {/* 🆕 公告狀態指示（依 severity 變色） */}
+                            {/* 🆕 公告狀態指示（依 severity 變色 + 倒數） */}
                             {hasActiveAnnouncement(field.settings) && (() => {
                               const isUrgent = field.settings?.announcementSeverity === "urgent";
                               const Icon = isUrgent ? AlertCircle : Megaphone;
+                              const remaining = formatRemainingDays(
+                                daysUntilDate(field.settings?.announcementEndAt),
+                              );
                               return (
                                 <div
                                   className={`text-[10px] flex items-center gap-1 mt-1 ${
@@ -668,6 +671,11 @@ export default function AdminStaffFields() {
                                     {isUrgent ? "🚨 緊急：" : "公告："}
                                     {field.settings?.announcement}
                                   </span>
+                                  {remaining && (
+                                    <span className="opacity-60 font-mono text-[9px] shrink-0">
+                                      · {remaining}
+                                    </span>
+                                  )}
                                 </div>
                               );
                             })()}
