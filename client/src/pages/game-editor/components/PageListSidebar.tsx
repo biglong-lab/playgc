@@ -55,7 +55,8 @@ export default function PageListSidebar({
 
   return (
     <aside className="w-72 border-r border-border bg-card/30 flex flex-col min-h-0 shrink-0">
-      <div className="p-4 border-b border-border flex items-center justify-between">
+      {/* 🔧 Header shrink-0 固定，讓下方 flex-1 區塊能獨立 scroll */}
+      <div className="p-4 border-b border-border flex items-center justify-between shrink-0">
         <div>
           <h3 className="font-medium text-sm">頁面流程</h3>
           <p className="text-xs text-muted-foreground">
@@ -70,7 +71,7 @@ export default function PageListSidebar({
       </div>
 
       <div
-        className="flex-1 overflow-auto p-2"
+        className="flex-1 overflow-y-auto min-h-0 p-2"
         onDragOver={(e) => {
           // 確保容器本身也是 drop target（覆蓋 Reorder.Group 可能吞掉事件的狀況）
           e.preventDefault();
