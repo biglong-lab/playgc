@@ -49,27 +49,30 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          // Object Storage 圖片 — CacheFirst
-          // 🚨 2026-04-24: statuses: [0, 200] 會把 opaque no-cors response（0 bytes）也快取下來
-          // 下次 CacheFirst 讀到空內容就變破圖。改成只存 status=200 的正常 response。
+          // Object Storage 圖片 — NetworkFirst（v3 改）
+          // 🚨 2026-04-24: 之前用 CacheFirst 遇到壞 response 會永久破圖。
+          // 改 NetworkFirst — 每次先打 network，失敗才 fallback cache，保證自我修復。
+          // networkTimeoutSeconds=3 — 網路慢 3 秒就用 cache，不影響 UX。
           {
             urlPattern: /^\/objects\/uploads\//,
-            handler: "CacheFirst",
+            handler: "NetworkFirst",
             options: {
               cacheName: "images-local",
               expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 3600 },
+              networkTimeoutSeconds: 3,
               cacheableResponse: { statuses: [200] },
             },
           },
-          // Cloudinary 圖片 — CacheFirst
-          // 🚨 同上：不存 opaque response 避免破圖；Cloudinary 本身給 max-age=30天 的 HTTP cache
-          // 瀏覽器會自己 cache，SW 不需要強行兜底。
+          // Cloudinary 圖片 — NetworkFirst（v3 改）
+          // 🚨 CacheFirst + opaque response 曾造成持續破圖；改 NetworkFirst 根治。
+          // Cloudinary 自己有 30 天 HTTP cache header，瀏覽器 disk cache 幫忙兜底。
           {
             urlPattern: /^https:\/\/res\.cloudinary\.com\//,
-            handler: "CacheFirst",
+            handler: "NetworkFirst",
             options: {
               cacheName: "images-cloudinary",
               expiration: { maxEntries: 300, maxAgeSeconds: 30 * 24 * 3600 },
+              networkTimeoutSeconds: 3,
               cacheableResponse: { statuses: [200] },
             },
           },
