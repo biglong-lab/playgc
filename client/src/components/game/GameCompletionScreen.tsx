@@ -89,11 +89,58 @@ export default function GameCompletionScreen({
 }: GameCompletionScreenProps) {
   const animatedScore = useCountUp(score);
   const starCount = starsByScore(score);
+  const { toast } = useToast();
+  const currentField = useCurrentField();
 
   const heading = isChapterMode ? "章節完成!" : "任務完成!";
   const subtitle = isChapterMode
     ? `恭喜完成 ${chapterTitle ?? "此章節"}`
     : `恭喜完成 ${gameTitle}`;
+
+  // 🆕 F3: 分享戰績（Web Share API + clipboard fallback）
+  const handleShareScore = async () => {
+    const fieldCode = currentField?.code || "";
+    const fieldName = currentField?.name || "CHITO";
+    // 遊戲頁連結（場域格式）— OG meta 會讓 preview 顯示該遊戲封面 + 描述
+    const shareUrl = fieldCode
+      ? `https://game.homi.cc/f/${fieldCode}/game/${gameId}`
+      : `https://game.homi.cc/`;
+    const title = isChapterMode ? `我在 ${fieldName} 完成了章節「${chapterTitle}」` : `我在 ${fieldName} 完成了「${gameTitle}」`;
+    const text = `${title}，得 ${score} 分！來挑戰看看：`;
+
+    const shareData: ShareData = {
+      title,
+      text,
+      url: shareUrl,
+    };
+
+    // 優先 Web Share API（手機好用）
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err) {
+        // 使用者取消 → AbortError，忽略
+        if ((err as DOMException)?.name === "AbortError") return;
+        // 其他錯誤 → fallback 複製
+      }
+    }
+
+    // Fallback：複製到剪貼簿
+    try {
+      await navigator.clipboard.writeText(`${text}${shareUrl}`);
+      toast({
+        title: "已複製戰績連結",
+        description: "可直接貼到 LINE / FB / Twitter 分享",
+      });
+    } catch {
+      toast({
+        title: "分享失敗",
+        description: "請手動複製網址",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
