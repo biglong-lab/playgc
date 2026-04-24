@@ -226,6 +226,30 @@ export default function BattleClanDetail() {
           </CardContent>
         </Card>
       </div>
+
+      {/* 🔴 離開戰隊確認 Dialog — 防誤觸不可逆操作 */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確定要離開戰隊？</AlertDialogTitle>
+            <AlertDialogDescription>
+              離開後您的個人積分仍保留，但會失去戰隊內的歷史紀錄。若想再加入需要重新申請。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>不離開</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                leaveMutation.mutate();
+                setShowLeaveDialog(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              確認離開
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </BattleLayout>
   );
 }
