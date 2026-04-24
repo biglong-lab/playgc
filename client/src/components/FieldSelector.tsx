@@ -148,6 +148,10 @@ export default function FieldSelector({
         <DropdownMenuSeparator />
         {fieldsList?.map((field) => {
           const enabledCount = MODULES.filter((m) => field.settings?.[m.key] === true).length;
+          // 🆕 公告指示（admin 視角 — 只要有 announcement 就顯示，不過濾時效）
+          const hasAnn = !!field.settings?.announcement?.trim();
+          const isAnnUrgent = field.settings?.announcementSeverity === "urgent";
+          const AnnIcon = isAnnUrgent ? AlertCircle : Megaphone;
           return (
             <DropdownMenuItem
               key={field.id}
@@ -163,7 +167,17 @@ export default function FieldSelector({
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between gap-2">
-                  <p className="truncate font-medium">{field.name}</p>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <p className="truncate font-medium">{field.name}</p>
+                    {hasAnn && (
+                      <AnnIcon
+                        className={`w-3 h-3 shrink-0 ${
+                          isAnnUrgent ? "text-red-600" : "text-amber-600"
+                        }`}
+                        aria-label={isAnnUrgent ? "有緊急公告" : "有公告"}
+                      />
+                    )}
+                  </div>
                   <span className="text-[10px] text-muted-foreground font-mono shrink-0">
                     {enabledCount}/{MODULES.length}
                   </span>
