@@ -281,13 +281,42 @@ export default function AdminStaffPlayers() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              本場域玩家（{members.length}）
-            </CardTitle>
-            <CardDescription>
-              🔒 僅顯示在本場域有會員記錄的玩家。授權後可進入後台管理。
-            </CardDescription>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  本場域玩家（{members.length}）
+                </CardTitle>
+                <CardDescription>
+                  🔒 僅顯示在本場域有會員記錄的玩家。授權後可進入後台管理。
+                </CardDescription>
+              </div>
+              {/* 🆕 G4: 匯出 CSV */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="shrink-0 gap-1"
+                disabled={members.length === 0}
+                onClick={() => {
+                  const columns: CsvColumn<MemberRow>[] = [
+                    { header: "Email", get: (m) => m.user?.email ?? "" },
+                    { header: "姓", get: (m) => m.user?.lastName ?? "" },
+                    { header: "名", get: (m) => m.user?.firstName ?? "" },
+                    { header: "顯示名稱", get: (m) => getDisplayName(m.user) },
+                    { header: "加入時間", get: (m) => formatCsvDateTime(m.membership.joinedAt) },
+                    { header: "玩家狀態", get: (m) => m.membership.playerStatus },
+                    { header: "是否管理員", get: (m) => (m.membership.isAdmin ? "是" : "否") },
+                    { header: "管理員角色", get: (m) => m.role?.name ?? "" },
+                  ];
+                  exportToCsv(columns, members, "players");
+                  toast({ title: "✅ 已開始下載", description: `共 ${members.length} 筆玩家資料` });
+                }}
+                data-testid="btn-export-csv"
+              >
+                <Download className="w-4 h-4" />
+                匯出 CSV
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {/* 🆕 G3: 批次授權 action bar — 選取 > 0 時顯示 */}
