@@ -69,6 +69,17 @@ const scoreTextSchema = z.object({
   gameId: z.string().uuid().optional(),
 });
 
+// 🆕 OCR 招牌偵測 schema
+const ocrDetectSchema = z.object({
+  imageUrl: z.string().url("無效的圖片 URL"),
+  expectedTexts: z
+    .array(z.string().min(1))
+    .min(1, "至少需要一個目標文字"),
+  /** 模糊比對門檻（0-1，0=完全一致、0.3=寬鬆）*/
+  fuzzyThreshold: z.number().min(0).max(1).optional(),
+  gameId: z.string().optional(),
+});
+
 // 🆕 v2: 照片比對 schema（compare-photos endpoint）
 const comparePhotosSchema = z.object({
   playerImageUrl: z.string().url("無效的玩家照片 URL"),
