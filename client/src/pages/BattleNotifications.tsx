@@ -47,7 +47,7 @@ export default function BattleNotifications() {
 
   const markAllReadMutation = useMutation({
     mutationFn: async () => {
-      await authFetch("/api/battle/notifications/read-all", { method: "POST" });
+      await apiRequest("POST", "/api/battle/notifications/read-all");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/battle/notifications"] });
