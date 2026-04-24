@@ -146,6 +146,44 @@ export function registerAdminFieldRoutes(app: Express) {
     }
   });
 
+  // 🆕 為已存在但沒有角色的場域補 seed 預設角色（例如升級前建立的舊場域）
+  // 只有 super_admin 能對任一場域呼叫；一般 admin 只能呼叫自己場域
+  app.post("/api/admin/fields/:id/seed-default-roles", requireAdminAuth, async (req, res) => {
+    try {
+      if (!req.admin) {
+        return res.status(401).json({ message: "未認證" });
+      }
+
+      const fieldId = req.params.id;
+
+      // 權限：super_admin 不限、其他要是自己場域
+      if (req.admin.systemRole !== "super_admin" && req.admin.fieldId !== fieldId) {
+        return res.status(403).json({ message: "無權為此場域補建預設角色" });
+      }
+
+      // 檢查場域存在
+      const existingField = await db.query.fields.findFirst({ where: eq(fields.id, fieldId) });
+      if (!existingField) {
+        return res.status(404).json({ message: "場域不存在" });
+      }
+
+      // 已經有角色就不重複 seed，避免 duplicate
+      const existingRoles = await db.query.roles.findMany({ where: eq(roles.fieldId, fieldId) });
+      if (existingRoles.length > 0) {
+        return res.status(400).json({
+          message: "此場域已有角色，請直接在角色管理頁面編輯",
+          existingCount: existingRoles.length,
+        });
+      }
+
+      await seedDefaultRolesForField(fieldId, req.admin.id);
+      res.json({ message: "預設角色已建立", seeded: ["場域管理員", "活動執行者"] });
+    } catch (error) {
+      console.error("[admin-fields] seed-default-roles failed:", error);
+      res.status(500).json({ message: "建立預設角色失敗" });
+    }
+  });
+
   app.post("/api/admin/fields", requireAdminAuth, requirePermission("field:manage"), async (req, res) => {
     try {
       if (!req.admin) {
