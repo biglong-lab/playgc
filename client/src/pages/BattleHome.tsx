@@ -213,35 +213,6 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
   );
 }
 
-/**
- * 把 slotDate (YYYY-MM-DD) + startTime (HH:MM:SS) 算出距離當下的人類可讀文字
- * 例：「今天 14:00」「明天 09:00」「3 天後 19:00」「已開始」「已結束」
- */
-function formatTimeUntil(slotDate?: string, startTime?: string, endTime?: string): string {
-  if (!slotDate) return "";
-  try {
-    const time = startTime?.slice(0, 5) ?? "00:00";
-    const slotStart = new Date(`${slotDate}T${time}:00`);
-    const slotEnd = endTime ? new Date(`${slotDate}T${endTime.slice(0, 5)}:00`) : null;
-    const now = new Date();
-    if (slotEnd && now > slotEnd) return "已結束";
-    if (now > slotStart) return `對戰中 · ${time}`;
-    const diffMs = slotStart.getTime() - now.getTime();
-    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (diffHours < 1) {
-      const diffMins = Math.max(1, Math.round(diffMs / (1000 * 60)));
-      return `⚡ ${diffMins} 分鐘後`;
-    }
-    if (diffDays === 0) return `今天 ${time}`;
-    if (diffDays === 1) return `明天 ${time}`;
-    if (diffDays < 7) return `${diffDays} 天後 ${time}`;
-    return `${slotDate.slice(5)} ${time}`;
-  } catch {
-    return slotDate;
-  }
-}
-
 /** 我的報名紀錄 */
 function MyRegistrations() {
   const { user } = useAuth();
