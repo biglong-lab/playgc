@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
+import SearchKbdHint from "@/components/shared/SearchKbdHint";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
