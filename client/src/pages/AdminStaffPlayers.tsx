@@ -234,8 +234,17 @@ export default function AdminStaffPlayers() {
                 title={searchTerm ? "找不到符合的玩家" : "本場域尚無玩家"}
                 description={
                   searchTerm
-                    ? "改變搜尋條件"
+                    ? "改變搜尋條件或清除輸入"
                     : "當玩家掃 QR 進入本場域遊戲後，自動加入成員清單"
+                }
+                actions={
+                  searchTerm
+                    ? [{
+                        label: "清除搜尋",
+                        variant: "outline",
+                        onClick: () => setSearchTerm(""),
+                      }]
+                    : undefined
                 }
               />
             ) : (
