@@ -13,6 +13,7 @@ import {
 import {
   Building2, ChevronDown, Check, Loader2,
   Target, Swords, MapPin, Camera, BookOpen, DollarSign,
+  Megaphone, AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { FieldSettings } from "@shared/schema";
