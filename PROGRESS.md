@@ -368,6 +368,22 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 27 — 🖼️ 遊戲完成畫面「看本場相簿」快捷
+
+**背景**：玩家遊戲完成 GameCompletionScreen 顯示所有 CTA（分享、紀念卡、再玩、排行榜），但**沒有「看本場相簿」**連結 → 拍好的照片只能從 `/me/photos` 繞去找，不自然。
+
+**檔**：`client/src/pages/GamePlay.tsx` + `client/src/components/game/GameCompletionScreen.tsx`
+
+- GamePlay 傳 `sessionId` prop 到 GameCompletionScreen
+- GameCompletionScreen：
+  - `sessionId?: string` 新 optional prop
+  - `useQuery('/api/sessions/:id/album')` 查本場相簿（staleTime 60s）
+  - **「查看本場相簿（N 張）」ghost 按鈕**只在 `hasAlbumPhotos` 為 true 才顯示
+  - 位置：生成紀念卡 按鈕**下方**獨立列（不搶主 CTA 視線）
+  - `onNavigate(link(/album/${sessionId}))` — 走場域感知路徑
+- 只改 GameCompletionScreen（最終出口），不改 6 個拍照元件完成畫面（避免大改動放大風險）
+- Deploy: `78a73ce` · bundle `index-Gkfw7pnf.js` · verify `btn-view-session-album`
+
 #### 輪 26 — 👥 團體合影（photo_team，簡化版）
 
 **架構決策**：不用 WebSocket（多人同步複雜度太高），改**「隊長主控連拍」模式** — 單一裝置運作。
