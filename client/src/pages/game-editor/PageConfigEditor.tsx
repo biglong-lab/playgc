@@ -1062,6 +1062,101 @@ export default function PageConfigEditor({
         </div>
       );
 
+    // 🆕 v2 獨立 pageType：前後對比（photo_before_after）
+    case "photo_before_after":
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">拍照指示</label>
+            <Textarea
+              value={(config.instruction as string) || ""}
+              onChange={(e) => updateField("instruction", e.target.value)}
+              placeholder="請拍攝整理前 / 整理後的對比照..."
+              rows={3}
+              data-testid="config-instruction"
+            />
+          </div>
+
+          <div className="border border-border rounded-lg p-4 space-y-4" data-testid="config-ba-section">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">前後對比設定</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  前（第一張）標籤
+                </label>
+                <Input
+                  value={(config.beforeAfterConfig as any)?.beforeLabel ?? "整理前"}
+                  onChange={(e) => updateField("beforeAfterConfig", {
+                    ...(config.beforeAfterConfig as any || {}),
+                    beforeLabel: e.target.value,
+                  })}
+                  placeholder="整理前"
+                  data-testid="config-ba-before-label"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  後（第二張）標籤
+                </label>
+                <Input
+                  value={(config.beforeAfterConfig as any)?.afterLabel ?? "整理後"}
+                  onChange={(e) => updateField("beforeAfterConfig", {
+                    ...(config.beforeAfterConfig as any || {}),
+                    afterLabel: e.target.value,
+                  })}
+                  placeholder="整理後"
+                  data-testid="config-ba-after-label"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">排版</label>
+              <Select
+                value={(config.beforeAfterConfig as any)?.layoutMode ?? "horizontal"}
+                onValueChange={(v) => updateField("beforeAfterConfig", {
+                  ...(config.beforeAfterConfig as any || {}),
+                  layoutMode: v,
+                })}
+              >
+                <SelectTrigger data-testid="config-ba-layout"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="horizontal">水平拼接（左右）</SelectItem>
+                  <SelectItem value="vertical">垂直拼接（上下）</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                兩張之間最少間隔（秒）— 預設 10 秒
+              </label>
+              <Input
+                type="number"
+                value={(config.beforeAfterConfig as any)?.minGapSeconds ?? 10}
+                onChange={(e) => updateField("beforeAfterConfig", {
+                  ...(config.beforeAfterConfig as any || {}),
+                  minGapSeconds: parseInt(e.target.value) || 10,
+                })}
+                min={0}
+                max={3600}
+                data-testid="config-ba-min-gap"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                防止玩家連續兩張都拍同一狀態
+              </p>
+            </div>
+          </div>
+
+          <RewardsSection config={config} updateField={updateField} gameId={gameId} />
+          <LocationSettingsSection config={config} updateField={updateField} />
+        </div>
+      );
+
     case "gps_mission":
       return (
         <GpsMissionEditor
