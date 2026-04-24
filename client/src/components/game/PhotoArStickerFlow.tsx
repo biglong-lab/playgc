@@ -623,16 +623,23 @@ export default function PhotoArStickerFlow({
           >
             ✕ 返回
           </Button>
-          <Button
-            size="icon"
-            onClick={handleCapture}
-            disabled={!preloadDone || (useFaceTracking && !faceAnchor)}
-            className="bg-white text-black hover:bg-white/90 w-20 h-20 rounded-full ring-4 ring-white/30 shadow-2xl disabled:opacity-50"
-            data-testid="btn-ar-capture"
-            title={!faceAnchor && useFaceTracking ? "請讓臉入鏡" : "拍照"}
-          >
-            <Camera className="w-9 h-9" />
-          </Button>
+          <div className="flex flex-col items-center">
+            <Button
+              size="icon"
+              onClick={handleCapture}
+              disabled={!preloadDone || (useFaceTracking && !faceAnchor)}
+              className="bg-white text-black hover:bg-white/90 w-20 h-20 rounded-full ring-4 ring-white/30 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+              data-testid="btn-ar-capture"
+              title={!faceAnchor && useFaceTracking ? "請讓臉入鏡" : "拍照"}
+            >
+              <Camera className="w-9 h-9" />
+            </Button>
+            {useFaceTracking && !faceAnchor && (
+              <span className="text-amber-400 text-xs mt-1 bg-black/50 px-2 py-0.5 rounded">
+                等找到臉才能拍
+              </span>
+            )}
+          </div>
           <div className="w-[72px]"></div>{/* spacer 讓拍照鍵居中 */}
         </div>
       </div>
