@@ -127,14 +127,20 @@ function NotificationCard({
     notificationTypeLabels[notification.type as NotificationType] ??
     notification.type;
 
-  const timeAgo = getTimeAgo(new Date(notification.createdAt));
+  const timeAgo = formatTimeAgo(new Date(notification.createdAt));
 
   const inner = (
     <Card
-      className={`bg-card border-border transition-colors ${
-        notification.isRead ? "opacity-60" : "border-primary/30"
+      className={`transition-all relative ${
+        notification.isRead
+          ? "opacity-60 bg-card border-border hover:opacity-90"
+          : "bg-card border-primary/40 shadow-sm hover:shadow-md"
       }`}
     >
+      {/* 🔵 未讀左邊小色塊（強烈視覺對比） */}
+      {!notification.isRead && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l" />
+      )}
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -142,9 +148,14 @@ function NotificationCard({
               <Badge variant={notification.isRead ? "outline" : "default"} className="text-xs">
                 {typeLabel}
               </Badge>
+              {!notification.isRead && (
+                <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
+              )}
               <span className="text-xs text-muted-foreground">{timeAgo}</span>
             </div>
-            <h3 className="font-medium text-sm">{content.title}</h3>
+            <h3 className={`text-sm ${notification.isRead ? "font-normal" : "font-semibold"}`}>
+              {content.title}
+            </h3>
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
               {content.body}
             </p>
@@ -159,6 +170,7 @@ function NotificationCard({
                 e.stopPropagation();
                 onMarkRead();
               }}
+              title="標記為已讀"
             >
               <Check className="h-4 w-4" />
             </Button>
@@ -169,21 +181,17 @@ function NotificationCard({
   );
 
   if (content.actionUrl) {
-    return <Link href={content.actionUrl}>{inner}</Link>;
+    // 🚀 點擊有 actionUrl 的卡片自動標記為已讀（如果是未讀的話）
+    return (
+      <Link
+        href={content.actionUrl}
+        onClick={() => {
+          if (!notification.isRead) onMarkRead();
+        }}
+      >
+        {inner}
+      </Link>
+    );
   }
   return inner;
-}
-
-/** 時間距離（簡易版） */
-function getTimeAgo(date: Date): string {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "剛剛";
-  if (diffMin < 60) return `${diffMin} 分鐘前`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr} 小時前`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 30) return `${diffDay} 天前`;
-  return `${Math.floor(diffDay / 30)} 個月前`;
 }
