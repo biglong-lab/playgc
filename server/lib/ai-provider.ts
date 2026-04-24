@@ -12,13 +12,16 @@
 import {
   verifyPhoto as verifyPhotoGemini,
   scoreTextAnswer as scoreTextAnswerGemini,
+  comparePhotos as comparePhotosGemini,
   isGeminiConfigured,
   type PhotoVerifyResult,
   type TextScoreResult,
+  type PhotoCompareResult,
 } from "./gemini";
 import {
   verifyPhotoOpenRouter,
   scoreTextAnswerOpenRouter,
+  comparePhotosOpenRouter,
 } from "./openrouter";
 
 export type AIProvider = "gemini" | "openrouter";
