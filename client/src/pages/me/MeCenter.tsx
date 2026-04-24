@@ -1,6 +1,7 @@
 // 💳 會員中心 — 整合玩家所有個人資料的單一入口
 // 整合：購買記錄 / 對戰戰績 / 成就 / 通知 / 兌換碼 / 我的場域
 import { Link, useLocation } from "wouter";
+import { useMemo } from "react";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { useQuery } from "@tanstack/react-query";
