@@ -156,21 +156,31 @@ export default function BattleClanDetail() {
         {/* 加入/離開按鈕 */}
         {user && !isMember && (
           <Button
-            className="w-full"
+            className="w-full gap-2"
             onClick={() => joinMutation.mutate()}
             disabled={joinMutation.isPending || clan.memberCount >= clan.maxMembers}
           >
-            {clan.memberCount >= clan.maxMembers ? "戰隊已滿" : "加入戰隊"}
+            {joinMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {clan.memberCount >= clan.maxMembers
+              ? "戰隊已滿"
+              : joinMutation.isPending
+                ? "加入中..."
+                : "加入戰隊"}
           </Button>
         )}
         {isMember && !isLeader && (
           <Button
             variant="outline"
-            className="w-full text-destructive"
-            onClick={() => leaveMutation.mutate()}
+            className="w-full text-destructive gap-2"
+            onClick={() => setShowLeaveDialog(true)}
             disabled={leaveMutation.isPending}
           >
-            離開戰隊
+            {leaveMutation.isPending ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
+            {leaveMutation.isPending ? "離開中..." : "離開戰隊"}
           </Button>
         )}
 
