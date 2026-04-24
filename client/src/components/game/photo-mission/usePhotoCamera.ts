@@ -398,28 +398,92 @@ export function usePhotoCamera(): PhotoCameraState {
   // 🆕 切換前後鏡頭（AR 自拍必備）
   //   💡 關鍵：不改 mode，避免 UI re-mount video element（造成畫面閃爍/跳掉）
   //   只做 stop old → get new stream → 新 stream 自動掛到同一個 video
+  //
+  //   🐛 iOS Safari 特別注意：
+  //     - `facingMode: { ideal: 'user' }` 在某些版本被忽略（還是給後鏡頭）
+  //     - 要用 enumerateDevices() 取得實際 deviceId 強制指定
+  //     - 但首次呼叫 enumerateDevices 需要先取得 camera permission 才有 label
   const switchCamera = async () => {
     const next: CameraFacing = facingMode === "user" ? "environment" : "user";
+    console.log(`[camera] 切換鏡頭 ${facingMode} → ${next}`);
+
     try {
+      // 1. 先停止舊 stream（iOS 不允許同時兩個 video track）
       if (stream) {
         stream.getTracks().forEach((t) => t.stop());
       }
-      const newStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: next },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      });
+      // 短暫 delay 讓 iOS 釋放硬體（不做的話下一次 getUserMedia 可能 NotReadable）
+      await new Promise((r) => setTimeout(r, 100));
+
+      // 2. 嘗試用 facingMode（最直接）
+      let newStream: MediaStream | null = null;
+      try {
+        newStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { exact: next },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+          },
+          audio: false,
+        });
+        console.log("[camera] 用 facingMode:exact 切換成功");
+      } catch (exactErr) {
+        console.warn("[camera] facingMode:exact 失敗，改試 ideal:", exactErr);
+        // 3. Fallback: 用 ideal
+        try {
+          newStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: next },
+              width: { ideal: 1920 },
+              height: { ideal: 1080 },
+            },
+            audio: false,
+          });
+          console.log("[camera] 用 facingMode:ideal 切換成功");
+        } catch (idealErr) {
+          console.warn(
+            "[camera] facingMode:ideal 也失敗，嘗試 enumerateDevices:",
+            idealErr,
+          );
+          // 4. 最後 fallback: enumerateDevices 找 deviceId
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const videoInputs = devices.filter((d) => d.kind === "videoinput");
+          console.log("[camera] 裝置清單:", videoInputs.map((d) => d.label));
+          if (videoInputs.length < 2) {
+            throw new Error("此裝置只有一個鏡頭，無法切換");
+          }
+          // 依 label 猜測（iOS 通常 "Front Camera" / "Back Camera"）
+          const target = videoInputs.find((d) => {
+            const label = d.label.toLowerCase();
+            if (next === "user") {
+              return label.includes("front") || label.includes("前");
+            }
+            return label.includes("back") || label.includes("後") || label.includes("rear");
+          });
+          if (!target) {
+            throw new Error("找不到對應鏡頭");
+          }
+          newStream = await navigator.mediaDevices.getUserMedia({
+            video: { deviceId: { exact: target.deviceId } },
+            audio: false,
+          });
+          console.log("[camera] 用 deviceId 切換成功:", target.label);
+        }
+      }
+
+      if (!newStream) throw new Error("無法取得 stream");
       setFacingMode(next);
       setStream(newStream);
-      // mode 保持原樣（通常是 "camera"），video srcObject effect 會自動換
+      toast({
+        title: next === "user" ? "📷 已切到前鏡頭" : "📷 已切到後鏡頭",
+        duration: 1500,
+      });
     } catch (err) {
-      console.error("[camera] switch failed:", err);
+      console.error("[camera] 切換失敗（所有方法都試過）:", err);
       toast({
         title: "無法切換鏡頭",
-        description: "此裝置可能不支援該鏡頭，或被其他 App 佔用",
+        description:
+          err instanceof Error ? err.message : "此裝置可能只有一個鏡頭",
         variant: "destructive",
       });
       // 🛟 切失敗要救回原鏡頭，否則畫面會黑掉
