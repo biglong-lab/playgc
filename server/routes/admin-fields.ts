@@ -394,6 +394,7 @@ export function registerAdminFieldRoutes(app: Express) {
           // 🆕 marketing content
           tagline: settings.tagline || null,
           announcement: isAnnouncementActive(settings) ? settings.announcement : null,
+          announcementEndAt: settings.announcementEndAt ?? null,
           announcementSeverity: settings.announcementSeverity ?? "info",
           coverImageUrl: theme.coverImageUrl || null,
           highlights: settings.highlights || [],
