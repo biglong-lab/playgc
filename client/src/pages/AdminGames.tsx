@@ -11,9 +11,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Gamepad2, Search, FileText, Globe, Archive, Sparkles } from "lucide-react";
 import type { Game } from "@shared/schema";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchWithAdminAuth } from "@/hooks/useAdminAuth";
+import { useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import {
   GameFormDialog, QRCodeDialog, CoverUploadDialog, DeleteGameDialog,
   MoveFieldDialog,
