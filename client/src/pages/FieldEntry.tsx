@@ -343,10 +343,11 @@ export default function FieldEntry() {
                     <p className="text-xs text-muted-foreground mb-2">其他場域</p>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {otherFields.map((f) => (
+                    {otherFields.map((f, idx) => (
                       <FieldCard
                         key={f.id}
                         field={f}
+                        eager={!lastField && idx < 2}
                         onClick={() => setLocation(`/f/${f.code}`)}
                       />
                     ))}
