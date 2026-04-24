@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { Link, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
