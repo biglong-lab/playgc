@@ -428,14 +428,43 @@ function StatCard({
   value,
   icon,
   accent,
+  active,
+  onClick,
+  testid,
 }: {
   label: string;
   value: number;
   icon: React.ReactNode;
   accent?: string;
+  /** 🆕 是否為當前選中 filter */
+  active?: boolean;
+  /** 🆕 點擊切換 filter（給了才有 hover 互動） */
+  onClick?: () => void;
+  testid?: string;
 }) {
+  const clickable = typeof onClick === "function";
   return (
-    <Card>
+    <Card
+      className={
+        (clickable ? "cursor-pointer hover-elevate transition-all " : "") +
+        (active ? "ring-2 ring-primary bg-primary/5" : "")
+      }
+      onClick={onClick}
+      role={clickable ? "button" : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={
+        clickable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onClick?.();
+              }
+            }
+          : undefined
+      }
+      aria-pressed={clickable ? !!active : undefined}
+      data-testid={testid}
+    >
       <CardContent className="pt-6">
         <div className="flex items-center justify-between">
           <div>
