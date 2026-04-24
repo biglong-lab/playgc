@@ -21,6 +21,84 @@ function isAnnouncementActive(settings: { announcement?: string; announcementSta
   return true;
 }
 
+/**
+ * 🆕 為新場域 seed 一組預設角色，避免第一次授權管理員時卡住沒 role 可選
+ * - 場域管理員：所有系統權限（給場域初始管理員用）
+ * - 活動執行者：受限於當場運營（可看遊戲、管 session、QR 現場查驗）
+ * 可同時補舊場域（若場域 roles=0 呼叫此函式）。
+ */
+async function seedDefaultRolesForField(fieldId: string, actorAdminId: string | null) {
+  // 拉全部 permission keys
+  const allPermissions = await db.select({ id: permissions.id, key: permissions.key }).from(permissions);
+  if (allPermissions.length === 0) {
+    // 系統連 permission 都沒有 — 安全起見直接跳出（避免建立空 role 混淆）
+    return;
+  }
+
+  const permByKey = new Map(allPermissions.map((p) => [p.key, p.id]));
+  const resolveIds = (keys: string[]) =>
+    keys.map((k) => permByKey.get(k)).filter((id): id is string => !!id);
+
+  // 1) 場域管理員 — 給全部權限（第一個被授權的人通常是 owner）
+  const [adminRole] = await db.insert(roles).values({
+    name: "場域管理員",
+    description: "場域最高管理權限，可管理所有功能（建立場域時自動生成）",
+    systemRole: "field_admin",
+    fieldId,
+    isCustom: false,
+    isDefault: true,
+  }).returning();
+
+  await db.insert(rolePermissions).values(
+    allPermissions.map((p) => ({
+      roleId: adminRole.id,
+      permissionId: p.id,
+      allow: true,
+    })),
+  );
+
+  // 2) 活動執行者 — 只給現場營運權限
+  const executorPermIds = resolveIds([
+    "game:view",
+    "session:manage",
+    "qr:scan_check",
+    "qr:view",
+    "leaderboard:view",
+    "user:view",
+  ]);
+
+  if (executorPermIds.length > 0) {
+    const [executorRole] = await db.insert(roles).values({
+      name: "活動執行者",
+      description: "現場活動執行權限（檢視遊戲、管理場次、QR 查驗）",
+      systemRole: "field_staff",
+      fieldId,
+      isCustom: false,
+      isDefault: true,
+    }).returning();
+
+    await db.insert(rolePermissions).values(
+      executorPermIds.map((permissionId) => ({
+        roleId: executorRole.id,
+        permissionId,
+        allow: true,
+      })),
+    );
+  }
+
+  // 記 audit log（只在有 actor 時）
+  if (actorAdminId) {
+    await logAuditAction({
+      actorAdminId,
+      action: "role:seed_defaults",
+      targetType: "field",
+      targetId: fieldId,
+      fieldId,
+      metadata: { seeded: ["場域管理員", "活動執行者"] },
+    });
+  }
+}
+
 /** 🎨 驗證主題欄位（防 XSS） */
 const hexColorRegex = /^#[0-9a-f]{6}$/i;
 const safeUrlRegex = /^https:\/\/[\w.-]+(:\d+)?(\/[^\s]*)?$/i;
