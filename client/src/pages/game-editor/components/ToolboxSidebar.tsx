@@ -17,8 +17,9 @@ export default function ToolboxSidebar({
 }: ToolboxSidebarProps) {
   return (
     <aside className="w-56 border-r border-border bg-card/50 flex flex-col min-h-0 shrink-0">
-      <Tabs defaultValue="elements" className="flex-1 flex flex-col">
-        <TabsList className="w-full rounded-none border-b">
+      {/* 🔧 Tabs 嵌套 flex 高度鏈：Tabs / TabsContent 都要加 min-h-0 讓 overflow-auto 生效 */}
+      <Tabs defaultValue="elements" className="flex-1 flex flex-col min-h-0">
+        <TabsList className="w-full rounded-none border-b shrink-0">
           <TabsTrigger value="elements" className="flex-1 text-xs">
             <Move className="w-3 h-3 mr-1" />
             元件
@@ -31,7 +32,7 @@ export default function ToolboxSidebar({
 
         <TabsContent
           value="elements"
-          className="flex-1 overflow-auto p-2 space-y-1 m-0"
+          className="flex-1 overflow-y-auto p-2 space-y-1 m-0 min-h-0"
         >
           {PAGE_TYPES.map((type) => (
             <motion.div
