@@ -26,8 +26,7 @@ export default function BattleResult() {
   const { data, isLoading } = useQuery<ResultResponse>({
     queryKey: ["/api/battle/slots", slotId, "result"],
     queryFn: async () => {
-      const res = await fetch(`/api/battle/slots/${slotId}/result`);
-      if (!res.ok) throw new Error("取得結果失敗");
+      const res = await apiRequest("GET", `/api/battle/slots/${slotId}/result`);
       return res.json();
     },
     enabled: !!slotId,
