@@ -297,6 +297,79 @@ export const DEFAULT_COMPOSITION_CONFIG: CompositionConfig = {
 };
 
 /**
+ * 🏆 成就卡預設模板（1080×1080，偏暗漸層底 + 獎盃感文字佈局）
+ * 使用場景：GameCompletionScreen「生成紀念卡」
+ *
+ * 建議底圖：場域 logo/cover 或 Cloudinary 內建 gradient
+ * 若底圖不清楚，Cloudinary 會自動暗化（e_brightness 可加）
+ */
+export const ACHIEVEMENT_COMPOSITION_CONFIG: CompositionConfig = {
+  canvas: {
+    width: 1080,
+    height: 1080,
+    crop: 'fill',
+    gravity: 'auto',
+  },
+  layers: [
+    // 頂部場域名稱（帶背景半透明底色，像徽章）
+    {
+      type: 'text',
+      text: '🏆 {fieldName}',
+      font: 'Noto_Sans_TC',
+      size: 56,
+      weight: 'bold',
+      color: 'white',
+      background: 'rgb:00000099',
+      gravity: 'north',
+      y: 60,
+    },
+    // 中間遊戲名
+    {
+      type: 'text',
+      text: '{gameTitle}',
+      font: 'Noto_Sans_TC',
+      size: 48,
+      weight: 'bold',
+      color: 'white',
+      gravity: 'center',
+      y: -60,
+    },
+    // 分數大字
+    {
+      type: 'text',
+      text: '{score} 分',
+      font: 'Noto_Sans_TC',
+      size: 120,
+      weight: 'bold',
+      color: 'rgb:FFD700',   // 金色
+      gravity: 'center',
+      y: 40,
+    },
+    // 玩家名 + 日期
+    {
+      type: 'text',
+      text: '{playerName} · {date}',
+      font: 'Noto_Sans_TC',
+      size: 32,
+      color: 'white',
+      gravity: 'south',
+      y: 80,
+    },
+    // Footer 品牌
+    {
+      type: 'text',
+      text: 'CHITO · Play the Place',
+      font: 'Noto_Sans_TC',
+      size: 24,
+      color: 'white',
+      background: 'rgb:00000066',
+      gravity: 'south',
+      y: 30,
+    },
+  ],
+};
+
+/**
  * 取得今日日期字串（YYYY.MM.DD）供合成圖顯示
  */
 export function todayDateString(): string {
