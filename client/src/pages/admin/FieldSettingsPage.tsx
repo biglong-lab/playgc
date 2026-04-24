@@ -49,6 +49,35 @@ interface FieldSettingsResponse {
   primaryColor?: string;        // legacy
   welcomeMessage?: string;
   theme?: FieldTheme;            // 🆕 視覺主題
+  /** 🆕 v2: 場域紀念照模板（覆寫系統預設）*/
+  photoTemplates?: {
+    achievement?: {
+      enabled?: boolean;
+      canvas?: { width?: number; height?: number; crop?: string };
+      textLayers?: Array<{
+        text: string;
+        size?: number;
+        color?: string;
+        background?: string;
+        gravity?: string;
+        offsetY?: number;
+        bold?: boolean;
+      }>;
+    };
+    memorial?: {
+      enabled?: boolean;
+      canvas?: { width?: number; height?: number; crop?: string };
+      textLayers?: Array<{
+        text: string;
+        size?: number;
+        color?: string;
+        background?: string;
+        gravity?: string;
+        offsetY?: number;
+        bold?: boolean;
+      }>;
+    };
+  };
 }
 
 export default function FieldSettingsPage() {
