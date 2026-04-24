@@ -30,7 +30,8 @@ interface PhotoBurstFlowProps {
   onVariableUpdate?: (key: string, value: unknown) => void;
 }
 
-type Stage = "intro" | "shooting" | "uploading" | "compositing" | "done";
+// 🎨 加入 preview + countdown 兩個 stage，讓使用者有時間準備
+type Stage = "intro" | "preview" | "countdown" | "shooting" | "uploading" | "compositing" | "done";
 
 export default function PhotoBurstFlow({
   config,
