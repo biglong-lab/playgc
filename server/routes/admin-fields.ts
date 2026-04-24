@@ -71,7 +71,7 @@ async function seedDefaultRolesForField(fieldId: string, actorAdminId: string | 
     const [executorRole] = await db.insert(roles).values({
       name: "活動執行者",
       description: "現場活動執行權限（檢視遊戲、管理場次、QR 查驗）",
-      systemRole: "field_staff",
+      systemRole: "field_executor",
       fieldId,
       isCustom: false,
       isDefault: true,
