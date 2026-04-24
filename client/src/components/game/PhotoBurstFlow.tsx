@@ -229,7 +229,7 @@ export default function PhotoBurstFlow({
         } catch (gifErr) {
           console.warn("[Burst] GIF 失敗或超時，改用拼貼:", gifErr);
           setCompositeProgress("改用拼貼圖...");
-          // 🐛 Fallback: 拼貼合成 — 也加 8s timeout，避免 server 掛住繼續卡
+          // 🐛 拼貼合成：也加 8s timeout（原本用 compositeMutation 沒 timeout）
           try {
             const collageAbort = new AbortController();
             const collageTimer = setTimeout(() => collageAbort.abort(), 8000);
@@ -244,26 +244,24 @@ export default function PhotoBurstFlow({
               }),
               signal: collageAbort.signal,
             }).finally(() => clearTimeout(collageTimer));
-            const data = await res.json();
+            const data = await res.json().catch(() => ({} as { compositeUrl?: string }));
             if (cancelled) return;
             if (data.compositeUrl) {
               setCompositeUrl(data.compositeUrl);
-            } else {
-              // API 回空 → 用第一張 Cloudinary URL
-              const firstCloudUrl = sortedIds[0]
-                ? `https://res.cloudinary.com/${(await apiRequest("GET", "/api/cloudinary/cloud-name").then(r => r.json()).catch(() => ({}))).cloudName ?? "dhczwewns"}/image/upload/${sortedIds[0]}`
-                : burstImagesRef.current[0];
-              if (firstCloudUrl) setCompositeUrl(firstCloudUrl);
+              setStage("done");
+              return;
             }
-            setStage("done");
-            return;
+            throw new Error("拼貼回傳無 URL");
           } catch (err) {
             console.warn("[Burst] 拼貼也失敗 → 用本地第一張:", err);
-            // 🛟 最終 fallback：本地第一張 base64（不靠任何 server，保證能進 done）
-            const firstLocal = burstImagesRef.current[0];
-            if (firstLocal) setCompositeUrl(firstLocal);
-            setStage("done");
           }
+          // 🛟 最終 fallback：本地第一張 base64（不靠 server，絕對能進 done）
+          const firstLocal = burstImagesRef.current[0];
+          if (firstLocal) {
+            setCompositeProgress("合成失敗，顯示拍攝紀念");
+            setCompositeUrl(firstLocal);
+          }
+          setStage("done");
         }
       } catch (err) {
         toast({
