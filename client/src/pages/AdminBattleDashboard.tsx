@@ -132,20 +132,26 @@ export default function AdminBattleDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {tierDist.map((d) => (
-                  <div key={d.tier} className="flex items-center gap-3">
-                    <span className="text-sm w-20 truncate">{d.tierLabel}</span>
-                    <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${tierColors[d.tier] ?? "bg-gray-400"} transition-all`}
-                        style={{ width: `${(d.count / maxTierCount) * 100}%`, minWidth: d.count > 0 ? "24px" : "0" }}
-                      />
+              {tierDist.length === 0 || tierDist.every((d) => d.count === 0) ? (
+                <p className="text-sm text-muted-foreground text-center py-4" data-testid="empty-tier-distribution">
+                  尚無玩家段位資料 — 完成第一場對戰後自動計算
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {tierDist.map((d) => (
+                    <div key={d.tier} className="flex items-center gap-3">
+                      <span className="text-sm w-20 truncate">{d.tierLabel}</span>
+                      <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${tierColors[d.tier] ?? "bg-gray-400"} transition-all`}
+                          style={{ width: `${(d.count / maxTierCount) * 100}%`, minWidth: d.count > 0 ? "24px" : "0" }}
+                        />
+                      </div>
+                      <span className="text-sm font-medium w-8 text-right">{d.count}</span>
                     </div>
-                    <span className="text-sm font-medium w-8 text-right">{d.count}</span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
