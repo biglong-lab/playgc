@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import { apiRequest } from "@/lib/queryClient";
+import { tierBgClass } from "@/lib/battle-labels";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerRanking } from "@shared/schema";
 import { Crown, Flame } from "lucide-react";
@@ -15,15 +16,6 @@ interface RankingEntry extends BattlePlayerRanking {
   winRate: number;
   displayName?: string;
 }
-
-const tierBg: Record<string, string> = {
-  master: "bg-yellow-500/10 border-yellow-500/30",
-  diamond: "bg-cyan-500/10 border-cyan-500/30",
-  platinum: "bg-indigo-500/10 border-indigo-500/30",
-  gold: "bg-amber-500/10 border-amber-500/30",
-  silver: "bg-gray-500/10 border-gray-500/30",
-  bronze: "bg-orange-500/10 border-orange-500/30",
-};
 
 export default function BattleRanking() {
   const { user } = useAuth();
