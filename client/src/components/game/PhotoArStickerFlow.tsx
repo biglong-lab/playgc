@@ -520,16 +520,16 @@ export default function PhotoArStickerFlow({
           </div>
         )}
 
-        {/* 🆕 切換前後鏡頭按鈕（右上 z-10 確保在貼圖之上）*/}
+        {/* 🎨 切換鏡頭大按鈕 — 文字+icon，明顯易用 */}
         <Button
-          size="icon"
-          variant="ghost"
           onClick={() => camera.switchCamera()}
-          className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur hover:bg-black/80 text-white w-12 h-12 rounded-full shadow-lg"
+          className="absolute top-4 right-4 z-20 bg-black/75 backdrop-blur hover:bg-black/90 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/30 shadow-xl"
           data-testid="btn-ar-switch-camera"
-          title={camera.facingMode === "user" ? "切到後鏡頭" : "切到前鏡頭（自拍）"}
         >
           <RefreshCw className="w-5 h-5" />
+          <span className="text-sm font-medium">
+            {camera.facingMode === "user" ? "切後鏡頭" : "切前鏡頭"}
+          </span>
         </Button>
 
         {/* 貼圖 overlay 預覽 — 沒偵測到臉時不要顯示（避免中央大面具擋住畫面）*/}
