@@ -120,6 +120,8 @@ export default function GamePageRenderer({
         return <PhotoBurstFlow {...commonProps} />;
       case "photo_ar":
         return <PhotoArStickerFlow {...commonProps} />;
+      case "photo_team":
+        return <PhotoTeamFlow {...commonProps} />;
       case "gps_mission":
         return <GpsMissionPage {...commonProps} />;
       case "qr_scan":
