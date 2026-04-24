@@ -351,14 +351,68 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
             ))}
           </div>
 
-          <Button
-            onClick={handleLegacySubmit}
-            disabled={selectedOption === null || isSubmitted}
-            className="w-full"
-            data-testid="button-submit-choice"
-          >
-            確認選擇
-          </Button>
+          {/* 🆕 答題後解釋（showExplanation=true 時顯示，說明正確答案由來） */}
+          {isSubmitted && showExplanationEnabled && lastAnswerCorrect !== null && (
+            <div
+              className={`rounded-lg p-4 mb-4 border-2 ${
+                lastAnswerCorrect
+                  ? "bg-success/10 border-success/40"
+                  : "bg-destructive/10 border-destructive/40"
+              }`}
+              data-testid="choice-explanation-display"
+            >
+              <p className={`font-semibold text-sm mb-2 flex items-center gap-1.5 ${
+                lastAnswerCorrect ? "text-success" : "text-destructive"
+              }`}>
+                {lastAnswerCorrect ? (
+                  <><Check className="w-4 h-4" /> 答對了!</>
+                ) : (
+                  <><X className="w-4 h-4" /> 答錯了</>
+                )}
+              </p>
+              {/* 選項自己的解釋優先（per-option feedback） */}
+              {selectedOption !== null && legacyOptions[selectedOption]?.explanation && (
+                <p className="text-sm text-foreground/90 mb-2">
+                  {legacyOptions[selectedOption].explanation}
+                </p>
+              )}
+              {/* 全域解釋（正確答案的由來） */}
+              {config?.explanation && (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  💡 {config.explanation}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* 🆕 根據狀態顯示對應按鈕 */}
+          {isSubmitted && showExplanationEnabled && lastAnswerCorrect === true ? (
+            <Button
+              onClick={handleLegacyContinue}
+              className="w-full"
+              data-testid="button-continue-after-explanation"
+            >
+              繼續
+            </Button>
+          ) : isSubmitted && showExplanationEnabled && lastAnswerCorrect === false ? (
+            <Button
+              onClick={handleLegacyRetry}
+              variant="outline"
+              className="w-full"
+              data-testid="button-retry-after-explanation"
+            >
+              再試一次
+            </Button>
+          ) : (
+            <Button
+              onClick={handleLegacySubmit}
+              disabled={selectedOption === null || isSubmitted}
+              className="w-full"
+              data-testid="button-submit-choice"
+            >
+              確認選擇
+            </Button>
+          )}
         </CardContent>
       </Card>
     </div>
