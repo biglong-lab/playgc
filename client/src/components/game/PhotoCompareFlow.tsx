@@ -387,7 +387,7 @@ export default function PhotoCompareFlow({
 
   // 預設：參考照 + 開始拍照
   return (
-    <div className="min-h-screen bg-background flex flex-col p-4 gap-4" data-testid="photo-compare-instruction">
+    <div className="min-h-screen bg-background flex flex-col p-4 gap-4 pb-24" data-testid="photo-compare-instruction">
       <div className="text-center space-y-2 pt-4">
         <h2 className="text-2xl font-bold" data-testid="photo-compare-title">
           {config.title || "拍照比對任務"}
