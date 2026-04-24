@@ -306,10 +306,7 @@ export default function PhotoBurstFlow({
     camera.startCamera(facing);
   };
 
-  // 🆕 合成階段：秒數計時 + hard deadline（整合在同一個 interval，防 setTimeout 被 throttle）
-  //   🐛 根因：使用者反映「進度條跑完還一直轉」— 用 setTimeout 的話，
-  //       iOS Safari 在低電量/背景時可能 throttle 或延後
-  //   ✅ 改用 setInterval 每秒檢查 elapsed，同一條命 → 計時跑動 = deadline 必觸發
+  // 🆕 合成階段：秒數計時 + hard deadline
   useEffect(() => {
     if (stage !== "compositing") {
       setCompositeElapsed(0);
@@ -319,9 +316,8 @@ export default function PhotoBurstFlow({
     const timer = setInterval(() => {
       elapsed += 1;
       setCompositeElapsed(elapsed);
-      // 🚨 Hard deadline — 12 秒必強制結束（使用者耐心極限）
       if (elapsed >= 12) {
-        console.warn("[Burst] Hard deadline 12s → force done");
+        console.warn("[Burst] Compositing deadline 12s → force done");
         clearInterval(timer);
         const firstImage = burstImagesRef.current[0];
         if (firstImage) setCompositeUrl(firstImage);
