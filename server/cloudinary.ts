@@ -411,6 +411,79 @@ export class CloudinaryService {
   }
 
   /**
+   * 🆕 v2: 用 tag 將多張圖合成動態 GIF / WebP / MP4（Cloudinary multi API）
+   * @param tag - 這組照片共用的 tag（如 burst_{sessionId}_{ts}）
+   * @param format - 'gif' | 'webp' | 'mp4'
+   * @param delayMs - 每幀間隔毫秒（預設 500ms）
+   * @returns 合成後的 URL
+   */
+  async createAnimatedFromTag(
+    tag: string,
+    format: "gif" | "webp" | "mp4" = "gif",
+    delayMs: number = 500,
+  ): Promise<{ url: string; publicId: string }> {
+    if (!this.isConfigured()) {
+      throw new Error("Cloudinary 尚未設定");
+    }
+    try {
+      // cloudinary.uploader.multi(tag, options) — 組動畫
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result: any = await (cloudinary.uploader as any).multi(tag, {
+        format,
+        // delay 是 Cloudinary 的 delay transformation — 單位是毫秒
+        transformation: [
+          { delay: delayMs },
+        ],
+      });
+      return {
+        url: result.secure_url || result.url,
+        publicId: result.public_id,
+      };
+    } catch (err) {
+      console.error("[cloudinary] createAnimatedFromTag 失敗:", err);
+      throw new Error(
+        err instanceof Error ? err.message : "GIF 合成失敗",
+      );
+    }
+  }
+
+  /**
+   * 🆕 v2: 上傳單張圖並加指定 tag（供 multi API 後續使用）
+   */
+  async uploadImageWithTag(
+    base64Data: string,
+    gameId: string,
+    sessionId: string,
+    tag: string,
+  ): Promise<CloudinaryUploadResult> {
+    const folder = `jiachun-game/games/${gameId}/player-photos/${sessionId}`;
+    if (!this.isConfigured()) {
+      throw new Error("Cloudinary 尚未設定");
+    }
+    const timestamp = Date.now();
+    const result = await cloudinary.uploader.upload(base64Data, {
+      resource_type: "image",
+      folder,
+      public_id: `burst-${timestamp}`,
+      tags: [tag],   // 🔑 加 tag 給 multi API 用
+      transformation: [
+        { width: 800, height: 800, crop: "limit" },   // 連拍用小一點（GIF 檔案大小）
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    });
+    return {
+      public_id: result.public_id,
+      secure_url: result.secure_url,
+      url: result.url,
+      format: result.format,
+      width: result.width,
+      height: result.height,
+      bytes: result.bytes,
+      resource_type: result.resource_type,
+    };
+  }
+
+  /**
    * 🆕 v2: 取得 Cloudinary 帳號用量（Admin API usage endpoint）
    * 回傳本月使用量 + 限額 + 百分比，供管理後台儀表板
    */
