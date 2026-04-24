@@ -62,6 +62,12 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
   const byPermission = filterMenuByPermissions(ADMIN_MENU_GROUPS, hasPermission);
   const filteredMenuGroups = filterMenuByModules(byPermission, currentField?.modules);
   const isSuperAdmin = admin.systemRole === "super_admin";
+
+  // 🆕 登出前確認
+  const handleLogout = () => {
+    if (!window.confirm("確定要登出管理後台？\n\n未儲存的變更可能會遺失。")) return;
+    logout();
+  };
   const roleLabel = SYSTEM_ROLE_LABELS[admin.systemRole] ?? admin.systemRole;
   const displayName = admin.displayName || admin.username || "管理員";
   const initials = displayName[0].toUpperCase();
