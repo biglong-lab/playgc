@@ -428,7 +428,8 @@ export type PhotoMissionMode =
   | 'team'          // 🆕 團體合影：多人上傳後合成
   | 'burst'         // 🆕 連拍 GIF
   | 'before_after'  // 🆕 前後對比拍照
-  | 'ar_sticker';   // 🆕 AR 貼圖（固定位置）
+  | 'ar_sticker'    // 🆕 AR 貼圖（固定位置）
+  | 'ocr';          // 🆕 A3: OCR 招牌偵測（Google Vision）
 
 /** 指定拍照（photo_spot）子配置 */
 export interface PhotoSpotSubConfig {
