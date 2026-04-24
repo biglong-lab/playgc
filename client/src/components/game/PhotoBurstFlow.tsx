@@ -239,8 +239,9 @@ export default function PhotoBurstFlow({
     setBurstImages([]);
     setUploadedIds([]);
     setStage("preview");
-    // 預設用前鏡頭（連拍常用在自拍/表情）；使用者可在預覽時切換
-    camera.startCamera("user");
+    // 連拍預設前鏡頭（自拍/表情），管理員可在編輯器覆寫
+    const facing = config.defaultFacingMode ?? "user";
+    camera.startCamera(facing);
   };
 
   // 倒數 3-2-1 後才開始連拍
