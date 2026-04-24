@@ -414,3 +414,136 @@ function LeaderboardRow({
     </div>
   );
 }
+
+// ──────────────────────────────────────────────────────────────
+// 🆕 F4: 玩家個人紀錄 Dialog
+// ──────────────────────────────────────────────────────────────
+/**
+ * 從當前 leaderboard 資料過濾出同玩家的所有紀錄，顯示其在各遊戲的成績。
+ * 不新增 endpoint，直接用現有 data 聚合。
+ * 玩家識別：優先 userId（若有），退化用 displayName。
+ */
+function PlayerProfileDialog({
+  entry,
+  allEntries,
+  games,
+  onClose,
+  formatTime,
+  getInitials,
+}: {
+  entry: LeaderboardEntryExtended | null;
+  allEntries: LeaderboardEntryExtended[];
+  games: Game[];
+  onClose: () => void;
+  formatTime: (s: number) => string;
+  getInitials: (e: LeaderboardEntryExtended) => string;
+}) {
+  // 這個玩家的所有紀錄（最多 10 筆）
+  const playerEntries = useMemo(() => {
+    if (!entry) return [];
+    // @ts-expect-error LeaderboardEntry 可能有 userId，視 schema 而定
+    const userId = entry.userId as string | undefined;
+    return allEntries
+      .filter((e) => {
+        if (userId && (e as unknown as { userId?: string }).userId === userId) return true;
+        // fallback: displayName 完全匹配
+        return e.displayName === entry.displayName && e.displayName !== "匿名玩家";
+      })
+      .sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0))
+      .slice(0, 10);
+  }, [entry, allEntries]);
+
+  const totalScore = useMemo(
+    () => playerEntries.reduce((sum, e) => sum + (e.totalScore || 0), 0),
+    [playerEntries],
+  );
+  const uniqueGames = useMemo(() => {
+    const ids = new Set<string>();
+    for (const e of playerEntries) if (e.gameId) ids.add(e.gameId);
+    return ids.size;
+  }, [playerEntries]);
+
+  const gameTitleById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const g of games) map.set(g.id, g.title);
+    return map;
+  }, [games]);
+
+  if (!entry) return null;
+
+  return (
+    <Dialog open={!!entry} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-md" data-testid="player-profile-dialog">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            <Avatar className="w-10 h-10">
+              {entry.profileImageUrl && <AvatarImage src={entry.profileImageUrl} />}
+              <AvatarFallback className={entry.isAnonymousDisplay ? "bg-amber-100 dark:bg-amber-900/30" : ""}>
+                {entry.isAnonymousDisplay ? (
+                  <UserX className="w-5 h-5 text-amber-500" />
+                ) : (
+                  getInitials(entry)
+                )}
+              </AvatarFallback>
+            </Avatar>
+            <span className="truncate">{entry.displayName}</span>
+            {entry.isAnonymousDisplay && (
+              <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-600">
+                匿名
+              </Badge>
+            )}
+          </DialogTitle>
+          <DialogDescription>
+            累計 {playerEntries.length} 筆紀錄 · 完成 {uniqueGames} 款遊戲 ·
+            <span className="font-number font-semibold text-foreground ml-1">
+              {totalScore.toLocaleString()}
+            </span>
+            <span className="ml-1">分</span>
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-2 mt-2 max-h-[400px] overflow-y-auto">
+          {playerEntries.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              沒有其他紀錄
+            </p>
+          ) : (
+            playerEntries.map((e, idx) => (
+              <div
+                key={e.id}
+                className="flex items-center gap-3 p-2.5 rounded-lg border border-border/50 bg-card"
+                data-testid={`player-record-${idx}`}
+              >
+                <div className="w-6 h-6 rounded bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                  {idx + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {(e.gameId && gameTitleById.get(e.gameId)) || "未知遊戲"}
+                  </p>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                    {e.completionTimeSeconds && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {formatTime(e.completionTimeSeconds)}
+                      </span>
+                    )}
+                    {e.teamName && e.teamName !== e.displayName && (
+                      <span className="truncate">{e.teamName}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="font-number font-bold text-primary">
+                    {(e.totalScore || 0).toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">分</p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
