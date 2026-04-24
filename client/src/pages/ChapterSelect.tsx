@@ -118,7 +118,16 @@ export default function ChapterSelect() {
   if (!game) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">遊戲不存在</p>
+        {/* 🆕 錯誤頁加返回 CTA，避免玩家卡住 */}
+        <div className="text-center max-w-md px-4">
+          <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
+          <h2 className="text-xl font-display font-bold mb-2">找不到遊戲</h2>
+          <p className="text-muted-foreground mb-6">此遊戲可能已被刪除或不存在</p>
+          <Button onClick={() => setLocation(link("/home"))} className="gap-2" data-testid="btn-chapter-back-home">
+            <Home className="w-4 h-4" />
+            返回大廳
+          </Button>
+        </div>
       </div>
     );
   }
