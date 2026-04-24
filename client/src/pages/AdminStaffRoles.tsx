@@ -162,7 +162,6 @@ export default function AdminStaffRoles() {
   });
 
   // 🆕 一鍵補建預設角色（場域管理員 + 活動執行者）
-  const { admin } = useAdminAuth();
   const seedDefaultsMutation = useMutation({
     mutationFn: async () => {
       if (!admin?.fieldId) {
