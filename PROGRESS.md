@@ -319,16 +319,68 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 這樣 17 個遊戲元件的 reward 讀取統一，舊資料相容、新資料立即生效。
 - Deploy: `edfeeec` · bundle `index-CwZcoAkY.js`
 
-### 後續迭代統計
+### 第三階段（輪 14-17，延伸功能）
+
+#### 輪 14 — 📸 Session 相簿頁
+
+**檔**：`server/cloudinary.ts`（+ listSessionPhotos / listUserPhotos）· `server/routes/media.ts`（+ album endpoint）· `client/src/pages/SessionAlbum.tsx`（新 278 行）· `client/src/App.tsx`（路由）
+
+- 玩家可開 `/album/:sessionId` 看整 session 所有拍照
+- 用 **Cloudinary Search API folder query**，無需 DB migration
+- 頁面：session meta（分數/隊伍/時間）+ photo grid + lightbox + 下載/分享單張
+- 「分享整本相簿」按鈕：產生可分享 URL 連結
+- 路由雙版：場域感知 `/f/:fieldCode/album/:sessionId` + legacy `/album/:sessionId`
+- Deploy: `f0d1cc8` · bundle `index-B-HieKM2.js` · verify `session-album-page`
+
+#### 輪 15 — 🖼️ 個人相簿頁（跨 session 聚合）
+
+**檔**：`server/routes/media.ts`（+ `GET /api/me/photos`）· `client/src/pages/MyPhotos.tsx`（新 280 行）
+
+- 玩家個人相簿 `/me/photos`
+- 後端先抓 `storage.getSessionsByUser` → Cloudinary `listUserPhotos` 聚合
+- 照片依**日期分群**顯示（每天一個 section）
+- 隊伍名 badge 疊在照片左下
+- lightbox 底部「看這次遊戲的完整相簿 →」連到 `/album/:sessionId`
+- Deploy: `ec973dc` · bundle `index-K6nj4bZt.js` · verify `my-photos-page`
+
+#### 輪 16 — 🔀 前後對比（photo_before_after）
+
+**檔**：`client/src/components/game/PhotoBeforeAfterFlow.tsx`（新 370 行）· constants / renderer / editor
+
+- 獨立 pageType `photo_before_after`（fuchsia 配色）
+- 四階段：intro → 拍 before → gap 倒數 → 拍 after → done
+- **最少間隔倒數**（minGapSeconds，預設 10 秒）強制防止連拍同狀態
+- 合成：水平 (左右) or 垂直 (上下) 拼貼 + 前/後標籤 overlay
+- 編輯器可設：before/after 標籤、排版方向、最少間隔
+- Deploy: `45ce375` · bundle `index-DTULFbvK.js` · verify `photo-before-after-intro`
+
+#### 輪 17 — 📸 連拍紀念（photo_burst）
+
+**檔**：`client/src/components/game/PhotoBurstFlow.tsx`（新 330 行）· constants / renderer / editor
+
+- 獨立 pageType `photo_burst`（rose 配色）
+- 五階段：intro → shooting → uploading → compositing → done
+- **自動連拍**：Canvas 抓 video frame，3-9 張可設，間隔 300-3000ms 可設
+- 合成規則自動依張數：**3 張 1x3 / 4 張 2x2 / 6 張 3x2 / 9 張 3x3**
+- 使用既有 `composite-photo` endpoint（playerPhotoPublicId = 第一張 + layers 疊其餘）
+- tsc 1 次錯誤（缺 Camera icon import）→ 即時修復
+- Deploy: `3de095a` · bundle `index-9Q25YJ_6.js` · verify `photo-burst-intro`
+
+### 累計統計（全 17 輪）
 
 | 指標 | 數字 |
 |------|------|
-| 追加連續部署輪數 | 6（輪 8-13）|
-| 累計總部署輪數 | 13 |
-| 總失敗 / 回滾次數 | 0 |
+| 連續部署輪數 | **17** |
+| 總失敗 / 回滾次數 | **0** |
+| tsc 錯誤即時修復 | 3 次（不算失敗輪）|
 | 修復使用者回報 bug | 3（場域隔離 / 道具獎勵 / 元件呈現）|
 | 架構重大調整 | 1（mode discriminator → 獨立 pageType）|
-| 影響元件數 | 8 元件道具獎勵統一修復 + 2 hook 場域感知 |
+| 新增獨立 pageType | 4（photo_spot / photo_compare / photo_before_after / photo_burst）|
+| 新增檔案 | 7（composer / 4 flow 元件 / 2 相簿頁）|
+| 擴充檔案 | 20+ |
+| 新增 API endpoint | 7（composite + preview + default-config + achievement-config + compare-photos + session album + me/photos）|
+| 影響元件 reward 修復 | 8 個 |
+| 場域隔離修復位置 | 3 處 |
 
 ### 未做但已規劃（依 PLAN 文件 Milestone B+ 待辦）
 
