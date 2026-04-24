@@ -191,12 +191,13 @@ export default function PhotoArStickerFlow({
 
   const finishedRef = useRef(false);
 
-  // 預載貼圖（只做一次）
+  // 預載貼圖（只做一次）— 單張失敗不影響其他、不卡關
   useEffect(() => {
     if (stickers.length === 0) return;
-    preloadStickers(stickers)
-      .then(setPreloadedStickers)
-      .catch(() => setPreloadError("貼圖載入失敗，請檢查 URL"));
+    preloadStickers(stickers).then((arr) => {
+      setPreloadedStickers(arr);
+      setPreloadDone(true);
+    });
   }, [stickers]);
 
   // 相機就緒後啟動
