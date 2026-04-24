@@ -136,9 +136,10 @@ export default function GameCompletionScreen({
       const { config } = await cfgRes.json();
 
       const fieldName = currentField?.name || "CHITO";
+      // 🐛 Cloudinary demo 帳號 sample.jpg 偶爾 404 → 改用自家可靠 fallback
       const coverUrl = currentField?.theme?.coverImageUrl
         || currentField?.logoUrl
-        || "https://res.cloudinary.com/demo/image/upload/sample.jpg";
+        || `${window.location.origin}/demo-stickers/jiachun-mask.svg`;
 
       const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
         playerPhotoUrl: coverUrl,   // 用場域封面當底圖，fetch mode
