@@ -231,6 +231,27 @@ export default function Home() {
     }
   };
 
+  // 🆕 CTA 文案依 gameStructure / gameMode 動態化
+  const getStartLabel = (game: Game): string => {
+    if (game.gameStructure === "chapters") return "選擇章節";
+    if (game.gameMode === "team") return "創建或加入隊伍";
+    if (game.gameMode === "relay") return "開始接力賽";
+    if (game.gameMode === "competitive") return "開始競賽";
+    return "開始遊戲";
+  };
+
+  const getReplayLabel = (game: Game): string => {
+    if (game.gameStructure === "chapters") return "重新挑戰章節";
+    if (game.gameMode === "team") return "重新組隊";
+    return "再玩一次";
+  };
+
+  const getContinueLabel = (game: Game): string => {
+    if (game.gameStructure === "chapters") return "繼續章節";
+    if (game.gameMode === "team") return "返回隊伍";
+    return "返回遊戲";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
