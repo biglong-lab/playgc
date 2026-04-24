@@ -6,6 +6,26 @@ import {
 } from "../adminAuth";
 // 🆕 C2: 示範遊戲 JSON（esbuild 會把 JSON inline 進 bundle）
 import demoGameJiachun from "../../docs/DEMO_GAME_JIACHUN.json";
+// 🆕 新增兩個打卡/影像紀念為主的示範模板
+import demoGameCheckin from "../../docs/DEMO_GAME_JIACHUN_CHECKIN.json";
+import demoGameArFun from "../../docs/DEMO_GAME_JIACHUN_AR_FUN.json";
+
+type DemoGameData = {
+  game: Record<string, unknown>;
+  pages: Array<{
+    pageOrder: number;
+    pageType: string;
+    customName?: string;
+    config: unknown;
+  }>;
+};
+
+// Demo 模板註冊表
+const DEMO_TEMPLATES: Record<string, DemoGameData> = {
+  jiachun: demoGameJiachun as unknown as DemoGameData,
+  checkin: demoGameCheckin as unknown as DemoGameData,
+  "ar-fun": demoGameArFun as unknown as DemoGameData,
+};
 import {
   generateGameQRCode,
   generateGameUrl,
