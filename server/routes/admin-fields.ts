@@ -5,12 +5,12 @@ import {
   logAuditAction,
 } from "../adminAuth";
 import { db } from "../db";
-import { fields, parseFieldSettings, games } from "@shared/schema";
+import { fields, parseFieldSettings, games, roles, rolePermissions, permissions } from "@shared/schema";
 import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 
 /** 🆕 公告是否在有效期間內 — API 層決定要不要回傳 */
 function isAnnouncementActive(settings: { announcement?: string; announcementStartAt?: string; announcementEndAt?: string }): boolean {
