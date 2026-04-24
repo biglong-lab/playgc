@@ -125,9 +125,10 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
         ...rsItems.filter((x) => !!x),
         ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
       ];
+      const onSuccessPoints = (config.onSuccess as unknown as { points?: number })?.points;
       onComplete(
         {
-          points: config.rewardPoints ?? config.onSuccess?.points ?? 10,
+          points: config.rewardPoints ?? onSuccessPoints ?? 10,
           items: allItems.length > 0 ? allItems : undefined,
         },
         config.nextPageId,
