@@ -1,14 +1,16 @@
 // 水彈對戰 PK 擂台 — 玩家端賽季歷史（深色軍事風格）
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { tierLabels } from "@shared/schema";
 import { TIER_BADGE } from "@/lib/battle-labels";
 import BattleLayout from "@/components/battle/BattleLayout";
-import { Trophy, Medal } from "lucide-react";
+import { Trophy, Medal, Swords } from "lucide-react";
 
 interface SeasonHistoryEntry {
   id: string;
