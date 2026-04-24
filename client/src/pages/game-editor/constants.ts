@@ -20,6 +20,7 @@ export const PAGE_TYPES = [
   // 🆕 v2 獨立拍照類元件（2026-04-24）
   { value: "photo_spot", label: "指定拍照", icon: MapPin, color: "bg-emerald-500/20 text-emerald-400" },
   { value: "photo_compare", label: "拍照確認", icon: ScanSearch, color: "bg-sky-500/20 text-sky-400" },
+  { value: "photo_before_after", label: "前後對比", icon: ImageIcon, color: "bg-fuchsia-500/20 text-fuchsia-400" },
   { value: "gps_mission", label: "GPS 任務", icon: MapPin, color: "bg-red-500/20 text-red-400" },
   { value: "qr_scan", label: "QR 掃描", icon: QrCode, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "time_bomb", label: "拆彈任務", icon: Bomb, color: "bg-red-600/20 text-red-500" },
