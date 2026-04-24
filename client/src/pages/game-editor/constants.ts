@@ -5,6 +5,7 @@ import {
   Play, Clock, Zap, Gift, ArrowRight,
   Bomb, Lock, Smartphone, Vote, Puzzle, GitBranch,
   ImageIcon, ScanSearch, LayoutGrid, Sparkles,
+  Users as UsersIcon,
 } from "lucide-react";
 
 export const PAGE_TYPES = [
