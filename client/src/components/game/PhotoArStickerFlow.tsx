@@ -19,8 +19,17 @@ import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   Camera, CheckCircle2, AlertTriangle, Download, Share2, Sparkles, RefreshCw,
+  Shield, Lock, Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
@@ -36,6 +45,13 @@ import {
   type AnchorPoint,
   type AnchorCoordinate,
 } from "@/lib/face-landmarker";
+
+// localStorage key — 使用者同意臉部追蹤後記住
+const FACE_CONSENT_KEY = "chito-ar-face-consent-v1";
+
+// B4 效能優化：每 N 幀偵測一次（1=每幀、2=半 FPS、3=1/3 FPS）
+// 30fps → 15fps 足夠 AR 貼圖跟隨，省 50% GPU
+const FACE_DETECT_FRAME_INTERVAL = 2;
 
 interface PhotoArStickerFlowProps {
   config: PhotoMissionConfig;
