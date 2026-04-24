@@ -253,7 +253,7 @@ export default function AdminSessions() {
               className="pl-10 pr-14"
               data-testid="input-search-sessions"
             />
-            {!searchTerm && <SearchKbdHint isMac={isMac} />}
+            {!searchTerm && <SearchKbdHint mode="slash" />}
           </div>
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
