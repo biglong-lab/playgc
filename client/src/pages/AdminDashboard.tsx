@@ -201,6 +201,11 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
+      {/* 🆕 G2: 本週趨勢圖（場次 + 完成 + 最高分） */}
+      <div className="mb-8">
+        <WeeklyTrendChart />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
