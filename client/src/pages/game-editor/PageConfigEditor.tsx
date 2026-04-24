@@ -1222,6 +1222,161 @@ export default function PageConfigEditor({
         </div>
       );
 
+    // 🆕 v2 獨立 pageType：AR 貼圖拍照（photo_ar）
+    case "photo_ar":
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">拍照指示</label>
+            <Textarea
+              value={(config.instruction as string) || ""}
+              onChange={(e) => updateField("instruction", e.target.value)}
+              placeholder="擺個 pose，讓 AR 貼圖成為紀念..."
+              rows={3}
+              data-testid="config-instruction"
+            />
+          </div>
+
+          <div className="border border-border rounded-lg p-4 space-y-4" data-testid="config-ar-section">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium">AR 貼圖清單</span>
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                  updateField("arStickerConfig", {
+                    ...(config.arStickerConfig as any || {}),
+                    stickers: [
+                      ...current,
+                      { imageUrl: "", position: "center", sizeRatio: 0.3 },
+                    ],
+                  });
+                }}
+                className="gap-1"
+                data-testid="btn-ar-add-sticker"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                新增貼圖
+              </Button>
+            </div>
+
+            {((config.arStickerConfig as any)?.stickers ?? []).map((s: StickerConfigItem, idx: number) => (
+              <div key={idx} className="border rounded p-3 space-y-2 bg-muted/20" data-testid={`config-ar-sticker-${idx}`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium">貼圖 #{idx + 1}</span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => {
+                      const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                      updateField("arStickerConfig", {
+                        ...(config.arStickerConfig as any || {}),
+                        stickers: current.filter((_, i) => i !== idx),
+                      });
+                    }}
+                    data-testid={`btn-ar-remove-sticker-${idx}`}
+                  >
+                    <XIcon className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">貼圖 URL（PNG 建議透明底）</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={s.imageUrl}
+                      onChange={(e) => {
+                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        updateField("arStickerConfig", {
+                          ...(config.arStickerConfig as any || {}),
+                          stickers: current.map((x, i) => i === idx ? { ...x, imageUrl: e.target.value } : x),
+                        });
+                      }}
+                      placeholder="https://..."
+                      data-testid={`config-ar-sticker-url-${idx}`}
+                    />
+                    <MediaUploadButton
+                      id={`ar-sticker-${idx}`}
+                      accept="image/*"
+                      onUploaded={(url) => {
+                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        updateField("arStickerConfig", {
+                          ...(config.arStickerConfig as any || {}),
+                          stickers: current.map((x, i) => i === idx ? { ...x, imageUrl: url } : x),
+                        });
+                      }}
+                    />
+                  </div>
+                  {s.imageUrl && (
+                    <div className="mt-1 inline-block border rounded overflow-hidden bg-muted/50">
+                      <img src={s.imageUrl} alt="" className="w-16 h-16 object-contain" />
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">位置</label>
+                    <Select
+                      value={s.position}
+                      onValueChange={(v) => {
+                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        updateField("arStickerConfig", {
+                          ...(config.arStickerConfig as any || {}),
+                          stickers: current.map((x, i) => i === idx ? { ...x, position: v } : x),
+                        });
+                      }}
+                    >
+                      <SelectTrigger data-testid={`config-ar-sticker-pos-${idx}`}><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="top">上方中央</SelectItem>
+                        <SelectItem value="bottom">下方中央</SelectItem>
+                        <SelectItem value="center">畫面中央</SelectItem>
+                        <SelectItem value="corner_tl">左上角</SelectItem>
+                        <SelectItem value="corner_tr">右上角</SelectItem>
+                        <SelectItem value="corner_bl">左下角</SelectItem>
+                        <SelectItem value="corner_br">右下角</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">
+                      大小（佔畫面 {Math.round(s.sizeRatio * 100)}%）
+                    </label>
+                    <Slider
+                      value={[s.sizeRatio * 100]}
+                      onValueChange={([v]) => {
+                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        updateField("arStickerConfig", {
+                          ...(config.arStickerConfig as any || {}),
+                          stickers: current.map((x, i) => i === idx ? { ...x, sizeRatio: v / 100 } : x),
+                        });
+                      }}
+                      min={5} max={80} step={5}
+                      data-testid={`config-ar-sticker-size-${idx}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {(((config.arStickerConfig as any)?.stickers ?? []).length === 0) && (
+              <p className="text-xs text-muted-foreground text-center py-4">
+                尚無貼圖，請按「新增貼圖」加入
+              </p>
+            )}
+          </div>
+
+          <RewardsSection config={config} updateField={updateField} gameId={gameId} />
+          <LocationSettingsSection config={config} updateField={updateField} />
+        </div>
+      );
+
     case "gps_mission":
       return (
         <GpsMissionEditor
