@@ -54,7 +54,19 @@ export default function PhotoMissionPage({
       </Suspense>
     );
   }
-  // mode === 'compare' / 'team' / 'burst' 等後續輪次加入
+  if (config.mode === "compare") {
+    return (
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">載入中...</div>}>
+        <PhotoCompareFlow
+          config={config}
+          onComplete={onComplete}
+          sessionId={sessionId}
+          gameId={gameId}
+        />
+      </Suspense>
+    );
+  }
+  // mode === 'team' / 'burst' 等後續輪次加入
 
   const { toast } = useToast();
   const camera = usePhotoCamera();
