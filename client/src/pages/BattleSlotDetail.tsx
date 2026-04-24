@@ -37,6 +37,18 @@ interface RegistrationWithName extends BattleRegistration {
   displayName?: string;
 }
 
+/** 技能等級對應中文（避免使用者看到 beginner / intermediate / advanced 英文）*/
+const SKILL_LEVEL_LABEL: Record<string, string> = {
+  beginner: "初學者",
+  intermediate: "中級",
+  advanced: "高手",
+  expert: "高手",
+};
+function skillLevelLabel(level?: string): string {
+  if (!level) return "未填";
+  return SKILL_LEVEL_LABEL[level] ?? level;
+}
+
 interface SlotDetailResponse extends BattleSlot {
   registrations: RegistrationWithName[];
   premadeGroups: BattlePremadeGroup[];
