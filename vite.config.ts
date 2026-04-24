@@ -49,33 +49,18 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          // Object Storage 圖片 — NetworkFirst（v3 改）
-          // 🚨 2026-04-24: 之前用 CacheFirst 遇到壞 response 會永久破圖。
-          // 改 NetworkFirst — 每次先打 network，失敗才 fallback cache，保證自我修復。
-          // networkTimeoutSeconds=3 — 網路慢 3 秒就用 cache，不影響 UX。
-          {
-            urlPattern: /^\/objects\/uploads\//,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "images-local",
-              expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 3600 },
-              networkTimeoutSeconds: 3,
-              cacheableResponse: { statuses: [200] },
-            },
-          },
-          // Cloudinary 圖片 — NetworkFirst（v3 改）
-          // 🚨 CacheFirst + opaque response 曾造成持續破圖；改 NetworkFirst 根治。
-          // Cloudinary 自己有 30 天 HTTP cache header，瀏覽器 disk cache 幫忙兜底。
-          {
-            urlPattern: /^https:\/\/res\.cloudinary\.com\//,
-            handler: "NetworkFirst",
-            options: {
-              cacheName: "images-cloudinary",
-              expiration: { maxEntries: 300, maxAgeSeconds: 30 * 24 * 3600 },
-              networkTimeoutSeconds: 3,
-              cacheableResponse: { statuses: [200] },
-            },
-          },
+          // 🚨 2026-04-24 v5 根治：圖片**完全不走 SW cache**
+          // 歷史：CacheFirst 會 cache opaque response；NetworkFirst 雖自我修復，
+          // 但 iOS Safari SW update 時序不穩，使用者 Cmd+R 容易看到舊版 SW + 舊 cache。
+          // 決定：圖片交給瀏覽器原生 HTTP cache 管。
+          //   - Cloudinary 回 Cache-Control: max-age=2592000（30 天）
+          //   - 瀏覽器 disk cache 會自動用 etag 驗證
+          //   - SW 不攔截 → 沒 cache 可能壞 → 永不破圖
+          // 本地 /objects/uploads/ 也一樣，讓 nginx 的 Cache-Control 接手。
+          //
+          // 下面兩條規則以前在這裡，現在移除（沒註冊 = workbox 不攔截）
+          // 若未來要加回 offline image cache，務必用 NetworkFirst + cacheableResponse.statuses: [200]
+          // 且 img 必須加 crossOrigin="anonymous" 才不會存 opaque。
           // Google Fonts — StaleWhileRevalidate
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
