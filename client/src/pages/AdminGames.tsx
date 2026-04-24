@@ -24,8 +24,8 @@ export default function AdminGames() {
   // 🚚 搬移場域 Dialog state（僅 super_admin 可用）
   const [moveFieldGame, setMoveFieldGame] = useState<Game | null>(null);
   const isSuperAdmin = ctx.admin?.systemRole === "super_admin";
-  // 🆕 搜尋框鍵盤 shortcut（`/` / `⌘K` / `Ctrl+K` / Esc）
-  const { inputRef: searchInputRef, isMac, handleEscape } = useSearchShortcut<HTMLInputElement>();
+  // 🆕 搜尋框鍵盤 shortcut（只綁 `/` 和 Esc，⌘K 讓給 CommandPalette）
+  const { inputRef: searchInputRef, handleEscape } = useSearchShortcut<HTMLInputElement>({ disableCmdK: true });
 
   if (ctx.authLoading) {
     return (
