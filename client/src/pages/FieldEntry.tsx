@@ -658,6 +658,7 @@ function FieldCard({
                   : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30"
               }`}
               data-testid={`field-card-announcement-${field.code}`}
+              title={field.announcement || ""}
             >
               <Icon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
               <span className="line-clamp-2 leading-snug flex-1">
