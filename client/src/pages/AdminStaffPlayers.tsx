@@ -227,6 +227,7 @@ export default function AdminStaffPlayers() {
                 placeholder="搜尋 Email / 姓名..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => handleEscape(e, searchTerm, setSearchTerm)}
                 className="pl-10 pr-14"
                 data-testid="input-search-players"
               />
