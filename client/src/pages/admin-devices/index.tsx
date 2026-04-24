@@ -335,7 +335,8 @@ export default function AdminDevices() {
                     size="sm"
                     variant="outline"
                     onClick={() => broadcastLedMutation.mutate({ mode: "on", color: { r: 0, g: 255, b: 0 } })}
-                    disabled={broadcastLedMutation.isPending}
+                    disabled={broadcastLedMutation.isPending || totalCount === 0}
+                    title={totalCount === 0 ? "尚未新增任何設備" : undefined}
                     data-testid="button-all-led-on"
                   >
                     <Lightbulb className="w-3 h-3 mr-1" />
@@ -345,7 +346,8 @@ export default function AdminDevices() {
                     size="sm"
                     variant="outline"
                     onClick={() => broadcastLedMutation.mutate({ mode: "off" })}
-                    disabled={broadcastLedMutation.isPending}
+                    disabled={broadcastLedMutation.isPending || totalCount === 0}
+                    title={totalCount === 0 ? "尚未新增任何設備" : undefined}
                     data-testid="button-all-led-off"
                   >
                     <Power className="w-3 h-3 mr-1" />
