@@ -17,6 +17,7 @@ import {
   validateCompositionConfig,
   estimateUrlLength,
   DEFAULT_COMPOSITION_CONFIG,
+  ACHIEVEMENT_COMPOSITION_CONFIG,
   todayDateString,
   type CompositionConfig,
   type DynamicVars,
