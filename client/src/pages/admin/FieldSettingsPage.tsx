@@ -772,7 +772,12 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm font-medium mb-1.5 block">場域 Slogan（tagline）</label>
+            <label className="text-sm font-medium mb-1.5 block flex items-center justify-between">
+              <span>場域 Slogan（tagline）</span>
+              <span className="text-[10px] text-muted-foreground font-mono font-normal">
+                {tagline.length} / 200
+              </span>
+            </label>
             <Input
               value={tagline}
               onChange={(e) => setTagline(e.target.value)}
