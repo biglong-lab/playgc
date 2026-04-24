@@ -32,7 +32,7 @@ import { formatTimeUntil, isImminentSlot } from "@/lib/battle-time";
 import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } from "@shared/schema";
 import {
   Swords, Clock, Users, CalendarDays, UserPlus,
-  UserMinus, Shield, Copy, Check, CheckCircle, LogIn,
+  UserMinus, Shield, Copy, Check, CheckCircle, LogIn, Loader2,
 } from "lucide-react";
 
 interface RegistrationWithName extends BattleRegistration {
