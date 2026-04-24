@@ -54,7 +54,7 @@ export default function PageListSidebar({
   );
 
   return (
-    <aside className="w-72 border-r border-border bg-card/30 flex flex-col">
+    <aside className="w-72 border-r border-border bg-card/30 flex flex-col min-h-0 shrink-0">
       <div className="p-4 border-b border-border flex items-center justify-between">
         <div>
           <h3 className="font-medium text-sm">頁面流程</h3>
