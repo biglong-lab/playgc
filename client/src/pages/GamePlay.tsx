@@ -340,12 +340,49 @@ export default function GamePlay() {
       <GameHeader
         title={isChapterMode && chapterData?.title ? `${game.title} - ${chapterData.title}` : game.title}
         score={score}
-        onBack={() => setLocation(isChapterMode ? `/game/${gameId}/chapters` : "/home")}
+        onBack={() => {
+          // 🆕 F1: 玩家按返回時不直接離開，先彈 Dialog 確認（避免誤觸 + 說明進度會保留）
+          // 遊戲已完成時（isCompleted）照常走 GameCompletionScreen 流程，不會到這
+          setShowLeaveDialog(true);
+        }}
         onChat={() => setShowChat(true)}
         onMap={goToMap}
         onInventory={() => setShowInventory(true)}
         inventoryCount={inventory.length}
       />
+
+      {/* 🆕 F1: 離開遊戲確認 Dialog */}
+      <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確定要離開遊戲？</AlertDialogTitle>
+            <AlertDialogDescription>
+              你的進度和已獲得的分數 / 道具都會保留。從大廳的「進行中」就能接著玩。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-leave-game-cancel">繼續遊戲</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                // 更新 lastActiveAt（session 狀態保持 playing，不動 status）
+                const sid = stateRef.current.sessionId;
+                if (sid) {
+                  apiRequest("PATCH", `/api/sessions/${sid}`, {
+                    lastActiveAt: new Date().toISOString(),
+                  }).catch(() => {
+                    /* 離開本來就不該 block，失敗也要讓玩家離開 */
+                  });
+                }
+                setShowLeaveDialog(false);
+                setLocation(isChapterMode ? link(`/game/${gameId}/chapters`) : link("/home"));
+              }}
+              data-testid="button-leave-game"
+            >
+              離開（保留進度）
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="px-4 py-2 bg-card/50 border-b border-border">
         <div className="flex items-center justify-between mb-1">
