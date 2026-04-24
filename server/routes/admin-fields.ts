@@ -169,6 +169,14 @@ export function registerAdminFieldRoutes(app: Express) {
         userAgent: req.headers["user-agent"],
       });
 
+      // 🆕 自動 seed 預設角色（場域管理員 + 活動執行者），避免初次授權卡住
+      // 失敗不回滾場域建立，只記 log — 後續可用 /api/admin/fields/:id/seed-roles 手動補
+      try {
+        await seedDefaultRolesForField(field.id, req.admin.id);
+      } catch (seedErr) {
+        console.error(`[admin-fields] seedDefaultRolesForField failed for field ${field.id}:`, seedErr);
+      }
+
       res.status(201).json(field);
     } catch (error) {
       if (error instanceof z.ZodError) {
