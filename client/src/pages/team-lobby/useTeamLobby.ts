@@ -219,7 +219,8 @@ export function useTeamLobby(): TeamLobbyReturn {
     myMembership,
     allReady,
     hasEnoughPlayers,
-    navigate: setLocation,
+    // 🔧 場域感知 navigate — 避免後浦玩家按返回大廳跑到賈村
+    navigate: (path: string) => setLocation(link(path)),
     refetchTeam: () => refetchTeam(),
     handleCopyCode,
     handleCreateTeam,
