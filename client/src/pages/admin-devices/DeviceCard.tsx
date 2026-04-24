@@ -47,6 +47,8 @@ export default function DeviceCard({
   updatePending,
   deletePending,
 }: DeviceCardProps) {
+  // 🆕 依裝置類型切換 icon（與 Dashboard 共用）
+  const DeviceIcon = getDeviceIcon(device.deviceType);
   return (
     <Card
       className={`relative cursor-pointer transition-all ${
@@ -63,7 +65,7 @@ export default function DeviceCard({
                 ? "bg-success/10"
                 : "bg-muted"
             }`}>
-              <Cpu className={`w-5 h-5 ${
+              <DeviceIcon className={`w-5 h-5 ${
                 device.status === "online"
                   ? "text-success"
                   : "text-muted-foreground"
