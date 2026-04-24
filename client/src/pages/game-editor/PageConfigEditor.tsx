@@ -1372,6 +1372,52 @@ export default function PageConfigEditor({
                 尚無貼圖，請按「新增貼圖」加入
               </p>
             )}
+
+            {/* 🆕 B3: 臉部錨點選擇（MediaPipe Face Landmarker）*/}
+            <div className="pt-4 border-t space-y-3" data-testid="config-ar-anchor">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                貼圖錨點（Anchor Point）
+              </label>
+              <Select
+                value={(config.arStickerConfig as any)?.anchorPoint ?? "none"}
+                onValueChange={(v) =>
+                  updateField("arStickerConfig", {
+                    ...((config.arStickerConfig as any) || {}),
+                    anchorPoint: v,
+                  })
+                }
+              >
+                <SelectTrigger data-testid="config-ar-anchor-select">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">固定位置（不追蹤臉部）</SelectItem>
+                  <SelectItem value="face">整張臉中心</SelectItem>
+                  <SelectItem value="face_top">頭頂（戴帽子）</SelectItem>
+                  <SelectItem value="eyes">眼睛中間（戴眼鏡）</SelectItem>
+                  <SelectItem value="nose">鼻尖（鼻貼）</SelectItem>
+                  <SelectItem value="mouth">嘴巴（口罩）</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {((config.arStickerConfig as any)?.anchorPoint ?? "none") === "none"
+                  ? "💡 固定位置：貼圖停在畫面固定位置（原本行為）"
+                  : "🎭 臉部追蹤：貼圖隨臉部移動/旋轉（MediaPipe 瀏覽器端偵測，不傳 server）"}
+              </p>
+
+              {((config.arStickerConfig as any)?.anchorPoint ?? "none") !== "none" && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3 text-xs text-amber-600 dark:text-amber-400 space-y-1">
+                  <p>⚠️ <strong>隱私合規</strong>：</p>
+                  <ul className="list-disc pl-4 space-y-0.5">
+                    <li>僅做關鍵點偵測（landmark），不做身份辨識</li>
+                    <li>純瀏覽器處理，臉部資料不上傳伺服器</li>
+                    <li>首次載入需下載 ~10MB 模型（有快取）</li>
+                    <li>玩家端會顯示隱私同意提示（opt-in）</li>
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
 
           <RewardsSection config={config} updateField={updateField} gameId={gameId} />
