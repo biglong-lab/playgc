@@ -55,6 +55,8 @@ interface FieldItem {
   announcement?: string | null;
   /** 🆕 公告嚴重程度 — 決定場域卡公告指示顏色 */
   announcementSeverity?: "info" | "urgent";
+  /** 🆕 公告結束日 — 顯示倒數用 */
+  announcementEndAt?: string | null;
   // 🆕 stats（舊 API 可能沒回這些）
   gameCount?: number;
   topGameCovers?: Array<{ id: string; title: string; coverImageUrl: string }>;
