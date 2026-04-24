@@ -15,6 +15,7 @@ import GameHeader from "@/components/shared/GameHeader";
 import ChatPanel from "@/components/shared/ChatPanel";
 import InventoryPanel from "@/components/shared/InventoryPanel";
 import GamePageRenderer from "@/components/game/GamePageRenderer";
+import GamePageErrorBoundary from "@/components/game/GamePageErrorBoundary";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import { useSessionManager } from "./hooks/useSessionManager";
 import {
