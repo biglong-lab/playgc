@@ -209,6 +209,7 @@ export function MemberActionMenu({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showTransfer, setShowTransfer] = useState(false);
+  const [showKick, setShowKick] = useState(false); // 🔴 踢出確認
 
   if (member.userId === myUserId) return null;
   const isLeader = myRole === "leader";
