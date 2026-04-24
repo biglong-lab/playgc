@@ -249,6 +249,15 @@ export default function GameCompletionScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.3 }}
         >
+          {/* 🆕 F3: 分享戰績（主要 CTA，金色 + 寬顯眼） */}
+          <Button
+            onClick={handleShareScore}
+            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white col-span-full sm:col-span-full w-full sm:w-auto sm:min-w-[160px] font-semibold shadow-md"
+            data-testid="btn-share-score"
+          >
+            <Share2 className="w-4 h-4" />
+            分享戰績
+          </Button>
           <Button
             onClick={onPlayAgain}
             variant="outline"
