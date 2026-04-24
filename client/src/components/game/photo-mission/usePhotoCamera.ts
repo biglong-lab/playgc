@@ -396,9 +396,44 @@ export function usePhotoCamera(): PhotoCameraState {
   };
 
   // 🆕 切換前後鏡頭（AR 自拍必備）
+  //   💡 關鍵：不改 mode，避免 UI re-mount video element（造成畫面閃爍/跳掉）
+  //   只做 stop old → get new stream → 新 stream 自動掛到同一個 video
   const switchCamera = async () => {
     const next: CameraFacing = facingMode === "user" ? "environment" : "user";
-    await startCamera(next);
+    try {
+      if (stream) {
+        stream.getTracks().forEach((t) => t.stop());
+      }
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: next },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      });
+      setFacingMode(next);
+      setStream(newStream);
+      // mode 保持原樣（通常是 "camera"），video srcObject effect 會自動換
+    } catch (err) {
+      console.error("[camera] switch failed:", err);
+      toast({
+        title: "無法切換鏡頭",
+        description: "此裝置可能不支援該鏡頭，或被其他 App 佔用",
+        variant: "destructive",
+      });
+      // 🛟 切失敗要救回原鏡頭，否則畫面會黑掉
+      try {
+        const recoverStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: facingMode } },
+          audio: false,
+        });
+        setStream(recoverStream);
+      } catch {
+        setCameraError("相機中斷，請返回重新開啟");
+        setMode("instruction");
+      }
+    }
   };
 
   return {
