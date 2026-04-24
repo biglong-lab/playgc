@@ -78,12 +78,26 @@ export default function PhotoMissionPage({
   const canRetry = (config.allowRetryOnAiFail !== false) && aiRetryCount < maxRetries;
 
   const buildReward = (aiVerified: boolean) => {
-    const basePoints = config.onSuccess?.points ?? (config.aiVerify ? 20 : 10);
+    // 🔧 修：RewardsSection 存 rewardPoints / rewardItems[]，不是 onSuccess.*
+    // 兩套 schema 都讀，向後相容舊資料
+    const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
+    const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
+    const legacyPoints = config.onSuccess?.points;
+    const legacyItem = config.onSuccess?.grantItem;
+
+    const configuredPoints = rewardPoints ?? legacyPoints;
+    const basePoints = configuredPoints ?? (config.aiVerify ? 20 : 10);
+
     const reward: { points?: number; items?: string[] } = {
       points: aiVerified ? basePoints : 0,
     };
-    if (aiVerified && config.onSuccess?.grantItem) {
-      reward.items = [config.onSuccess.grantItem];
+
+    if (aiVerified) {
+      const allItems = [
+        ...rewardItems.filter((x) => !!x),
+        ...(legacyItem ? [legacyItem] : []),
+      ];
+      if (allItems.length > 0) reward.items = allItems;
     }
     return reward;
   };
