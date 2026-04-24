@@ -797,10 +797,13 @@ function BattleQuickEntry() {
     queryKey: ["/api/battle/slots/open"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
-      const res = await fetch(`/api/battle/slots?fromDate=${today}`);
-      if (!res.ok) return [];
-      const all: BattleSlot[] = await res.json();
-      return all.filter((s) => s.status === "open" || s.status === "confirmed");
+      try {
+        const res = await apiRequest("GET", `/api/battle/slots?fromDate=${today}`);
+        const all: BattleSlot[] = await res.json();
+        return all.filter((s) => s.status === "open" || s.status === "confirmed");
+      } catch {
+        return [];
+      }
     },
   });
 
