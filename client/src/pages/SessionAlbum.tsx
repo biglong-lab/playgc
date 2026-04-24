@@ -115,23 +115,37 @@ export default function SessionAlbum() {
     }
   };
 
-  // 🆕 v2: 批次下載整本相簿（逐張觸發瀏覽器原生下載，間隔 400ms 避免被擋）
+  // 🆕 v2: 下載 ZIP 壓縮檔（Cloudinary archive API — 一個檔案代替 N 張）
+  //   優先走 ZIP，失敗時 fallback 回舊的批次下載
   const handleDownloadAll = async () => {
     const photos = data?.photos ?? [];
     if (photos.length === 0) return;
     if (bulkDownloading) return;
-    // 10 張以上給個警告
-    if (photos.length > 10) {
-      const ok = window.confirm(
-        `即將下載 ${photos.length} 張照片（每張約 0.4 秒，總共約 ${Math.ceil(photos.length * 0.4)} 秒）。\n\n建議電腦操作；手機瀏覽器可能要一張張確認。繼續？`,
-      );
-      if (!ok) return;
-    }
 
     setBulkDownloading(true);
     setBulkProgress({ done: 0, total: photos.length });
 
     try {
+      // 優先嘗試：Cloudinary ZIP
+      const res = await apiRequest("GET", `/api/sessions/${sessionId}/album/zip-url`);
+      const data = await res.json() as { url?: string; error?: string };
+      if (data.url) {
+        // 直接導連下載
+        const a = document.createElement("a");
+        a.href = data.url;
+        a.download = `chito-album-${sessionId?.slice(0, 8)}.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast({ title: "✅ ZIP 下載已啟動", description: `共 ${photos.length} 張打包` });
+        return;
+      }
+      throw new Error(data.error || "產生 ZIP 失敗");
+    } catch (err) {
+      // Fallback: 逐張批次下載
+      console.warn("[SessionAlbum] ZIP fallback to batch:", err);
+      toast({ title: "改用逐張下載", description: "ZIP 服務暫不可用" });
+
       for (let i = 0; i < photos.length; i++) {
         const photo = photos[i];
         try {
@@ -146,15 +160,13 @@ export default function SessionAlbum() {
           document.body.removeChild(a);
           setTimeout(() => URL.revokeObjectURL(url), 100);
         } catch {
-          // 單張失敗不中斷整批
+          /* 單張失敗不中斷 */
         }
         setBulkProgress({ done: i + 1, total: photos.length });
-        // 間隔避免瀏覽器阻擋大量下載
         if (i < photos.length - 1) {
           await new Promise((r) => setTimeout(r, 400));
         }
       }
-      toast({ title: "✅ 全部下載完成", description: `${photos.length} 張已存` });
     } finally {
       setBulkDownloading(false);
       setBulkProgress({ done: 0, total: 0 });
