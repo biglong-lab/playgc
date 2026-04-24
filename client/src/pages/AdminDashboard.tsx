@@ -123,7 +123,9 @@ export default function AdminDashboard() {
               {publishedGames}
             </div>
             <p className="text-xs text-muted-foreground">
-              共 {games?.length || 0} 個遊戲
+              {draftGames > 0
+                ? `還有 ${draftGames} 個草稿 · 共 ${games?.length || 0} 個`
+                : `共 ${games?.length || 0} 個遊戲`}
             </p>
           </CardContent>
         </Card>
