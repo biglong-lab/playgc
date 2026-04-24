@@ -395,26 +395,13 @@ export default function PhotoBurstFlow({
   // 完成
   if (stage === "done" && compositeUrl) {
     return (
-      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-burst-done">
-        <div className="flex items-center gap-2 text-primary">
-          <CheckCircle2 className="w-6 h-6" />
-          <h2 className="text-xl font-bold">連拍完成！</h2>
-        </div>
-        <div className="max-w-md w-full bg-card rounded-lg shadow-lg overflow-hidden">
-          <img src={compositeUrl} alt="連拍紀念" className="w-full aspect-square object-cover" data-testid="photo-burst-composite" />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
-          <Button onClick={handleDownload} variant="outline" className="flex-1 gap-2" data-testid="btn-burst-download">
-            <Download className="w-4 h-4" /> 下載
-          </Button>
-          <Button onClick={handleShare} variant="outline" className="flex-1 gap-2" data-testid="btn-burst-share">
-            <Share2 className="w-4 h-4" /> 分享
-          </Button>
-          <Button onClick={handleContinue} className="flex-1 gap-2" data-testid="btn-burst-continue">
-            繼續遊戲
-          </Button>
-        </div>
-      </div>
+      <PhotoSuccessView
+        imageUrl={compositeUrl}
+        title="連拍完成！"
+        downloadPrefix="chito-burst"
+        onContinue={handleContinue}
+        testId="photo-burst-done"
+      />
     );
   }
 
