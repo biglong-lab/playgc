@@ -269,8 +269,22 @@ export default function PhotoArStickerFlow({
         const img = preloadedStickers[i];
         if (!img) continue;
         const ratio = img.naturalWidth / img.naturalHeight;
-        const rect = computeStickerRect(s.position, s.sizeRatio, canvas.width, canvas.height, ratio);
-        ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
+
+        // 🆕 B2: 若有 face anchor，用臉部座標定位；否則 fallback 固定位置
+        if (useFaceTracking && faceAnchor) {
+          const anchorW = faceAnchor.width * canvas.width * (s.sizeRatio || 1);
+          const anchorH = anchorW / ratio;
+          const cx = faceAnchor.x * canvas.width;
+          const cy = faceAnchor.y * canvas.height;
+          ctx.save();
+          ctx.translate(cx, cy);
+          if (faceAnchor.rotationY) ctx.rotate(faceAnchor.rotationY);
+          ctx.drawImage(img, -anchorW / 2, -anchorH / 2, anchorW, anchorH);
+          ctx.restore();
+        } else {
+          const rect = computeStickerRect(s.position, s.sizeRatio, canvas.width, canvas.height, ratio);
+          ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
+        }
       }
 
       const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
