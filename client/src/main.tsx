@@ -16,9 +16,7 @@ if ("serviceWorker" in navigator) {
 }
 
 createRoot(document.getElementById("root")!).render(
-  <ErrorBoundary>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </ErrorBoundary>,
+  <AuthProvider>
+    <App />
+  </AuthProvider>,
 );
