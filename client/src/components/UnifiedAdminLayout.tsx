@@ -1,6 +1,7 @@
 // 統一管理端 Layout — 合併 AdminLayout + AdminStaffLayout
 // 使用 JWT/RBAC 認證，根據角色權限動態顯示菜單
 import { Link, useLocation } from "wouter";
+import { useMemo } from "react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { ADMIN_MENU_GROUPS, SYSTEM_ROLE_LABELS, filterMenuByPermissions, filterMenuByModules } from "@/config/admin-menu";
