@@ -71,6 +71,22 @@ export default function AdminDashboard() {
   const onlineDevices = devices?.filter(d => d.status === "online").length || 0;
   const publishedGames = games?.filter(g => g.status === "published").length || 0;
 
+  // 🆕 今日完成場次（精確過濾 completedAt 為今日）
+  const todayCompleted = useMemo(() => {
+    if (!sessions) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return sessions.filter((s) => {
+      if (s.status !== "completed") return false;
+      const completed = s.completedAt;
+      if (!completed) return false;
+      const d = new Date(completed);
+      d.setHours(0, 0, 0, 0);
+      return d.getTime() === today.getTime();
+    }).length;
+  }, [sessions]);
+  const totalCompleted = sessions?.filter(s => s.status === "completed").length || 0;
+
   // 🆕 依權限決定顯示哪些操作按鈕
   const actions = canCreateGame ? (
     <Link href="/admin/games/new">
