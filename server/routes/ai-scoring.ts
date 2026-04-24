@@ -68,6 +68,17 @@ const scoreTextSchema = z.object({
   gameId: z.string().uuid().optional(),
 });
 
+// 🆕 v2: 照片比對 schema（compare-photos endpoint）
+const comparePhotosSchema = z.object({
+  playerImageUrl: z.string().url("無效的玩家照片 URL"),
+  referenceImageUrl: z.string().url("無效的參考照片 URL"),
+  referenceDescription: z.string().optional(),
+  compareMode: z.enum(["object", "scene", "composition", "color"]).optional(),
+  similarityThreshold: z.number().min(0).max(1).optional(),
+  gameId: z.string().optional(),
+  modelId: z.string().optional(),
+});
+
 // ============================================================================
 // 場域 AI Key 解析：gameId → fieldId → fieldSettings → 解密 API Key
 // ============================================================================
