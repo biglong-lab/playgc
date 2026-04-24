@@ -236,12 +236,26 @@ export default function Landing() {
       <section className="py-20 px-4 bg-card/50">
         <div className="container mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-display font-bold mb-8 text-glow">
-            準備好了嗎?
+            {isSignedIn ? "走踏準備就緒" : "準備好了嗎?"}
           </h2>
           <p className="text-muted-foreground mb-8 font-chinese max-w-xl mx-auto">
-            登入開始你的戰術體驗之旅
+            {isSignedIn
+              ? "前往遊戲大廳挑選任務，開始你的冒險"
+              : "登入開始你的戰術體驗之旅"}
           </p>
-          {!isSignedIn && (
+          {/* 🆕 未登入顯示「開始冒險」，已登入顯示「前往大廳」 — 不要讓已登入玩家看到空 CTA */}
+          {isSignedIn ? (
+            <Link href={link("/home")}>
+              <Button
+                size="lg"
+                className="gap-2"
+                data-testid="button-goto-home-lobby"
+              >
+                <Gamepad2 className="w-5 h-5" />
+                前往大廳
+              </Button>
+            </Link>
+          ) : (
             <Button
               size="lg"
               className="gap-2"
