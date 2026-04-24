@@ -571,6 +571,18 @@ export default function AdminStaffFields() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">全部場域</SelectItem>
+                      <SelectItem value="has_announcement">
+                        <div className="flex items-center gap-2">
+                          <Megaphone className="w-3.5 h-3.5 text-amber-600" />
+                          有公告中的場域
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="urgent_announcement">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                          有緊急公告的場域
+                        </div>
+                      </SelectItem>
                       {MODULE_BADGES.map((m) => (
                         <SelectItem key={String(m.key)} value={String(m.key)}>
                           <div className="flex items-center gap-2">
