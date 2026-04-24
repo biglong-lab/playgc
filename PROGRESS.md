@@ -368,6 +368,16 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 24 — 📥 MyPhotos 個人相簿批次下載（UX 一致補齊）
+
+**檔**：`client/src/pages/MyPhotos.tsx`
+
+- 同 SessionAlbum pattern 擴充：Header 加「下載全部」按鈕
+- `handleDownloadAll()` 邏輯與輪 23 一致（400ms 間隔 + >10 張 confirm + 進度顯示）
+- 檔名：`chito-{sessionId短}-{01/02/03...}.jpg`
+- 兩個相簿頁（SessionAlbum + MyPhotos）UX 一致
+- Deploy: `3d35bc4` · bundle `index-BYtj_vpy.js` · verify `btn-download-all-my-photos`
+
 #### 輪 23 — 📥 相簿「一鍵下載全部」（零依賴批次下載）
 
 **檔**：`client/src/pages/SessionAlbum.tsx`
