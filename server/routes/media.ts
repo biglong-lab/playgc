@@ -289,6 +289,79 @@ export function registerMediaRoutes(app: Express) {
     sessionId: z.string().min(1, "缺少 Session ID"),
   });
 
+  /**
+   * 🆕 v2: 上傳連拍單張（帶 burst tag）— 給 photo_burst 用
+   * 多張上傳完後呼叫 /api/cloudinary/burst-to-gif 合成動畫
+   */
+  app.post(
+    "/api/cloudinary/burst-frame",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const parsed = z.object({
+          imageData: z.string().min(1),
+          gameId: z.string().min(1),
+          sessionId: z.string().min(1),
+          tag: z.string().min(1).regex(/^burst_[a-zA-Z0-9_-]+$/, "tag 格式錯誤"),
+        }).safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ error: parsed.error.errors[0]?.message });
+        }
+        const result = await cloudinaryService.uploadImageWithTag(
+          parsed.data.imageData,
+          parsed.data.gameId,
+          parsed.data.sessionId,
+          parsed.data.tag,
+        );
+        res.status(201).json({
+          url: result.secure_url,
+          publicId: result.public_id,
+        });
+      } catch (error) {
+        console.error("[media] burst-frame 上傳失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "上傳失敗",
+        });
+      }
+    }
+  );
+
+  /**
+   * 🆕 v2: 合成 GIF/WebP/MP4 動畫（從 tag 抓多張）
+   */
+  app.post(
+    "/api/cloudinary/burst-to-gif",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const parsed = z.object({
+          tag: z.string().min(1).regex(/^burst_[a-zA-Z0-9_-]+$/),
+          format: z.enum(["gif", "webp", "mp4"]).optional(),
+          delayMs: z.number().min(100).max(3000).optional(),
+        }).safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ error: parsed.error.errors[0]?.message });
+        }
+        const result = await cloudinaryService.createAnimatedFromTag(
+          parsed.data.tag,
+          parsed.data.format ?? "gif",
+          parsed.data.delayMs ?? 500,
+        );
+        res.json({
+          success: true,
+          url: result.url,
+          publicId: result.publicId,
+          format: parsed.data.format ?? "gif",
+        });
+      } catch (error) {
+        console.error("[media] burst-to-gif 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "GIF 合成失敗",
+        });
+      }
+    }
+  );
+
   app.post("/api/cloudinary/player-photo", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const parsed = playerPhotoSchema.safeParse(req.body);
