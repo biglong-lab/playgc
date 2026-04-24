@@ -148,6 +148,9 @@ function Router() {
         {/* 🆕 v2: Session 相簿（場域感知路徑 + legacy 相容路徑） */}
         <Route path="/f/:fieldCode/album/:sessionId" component={SessionAlbum} />
         <Route path="/album/:sessionId" component={SessionAlbum} />
+        {/* 🆕 v2: 個人相簿 */}
+        <Route path="/f/:fieldCode/me/photos" component={MyPhotos} />
+        <Route path="/me/photos" component={MyPhotos} />
 
         {/* 🌐 CHITO 平台智能入口：有上次場域自動導 /f/{code}，沒有則顯示 CHITO 品牌頁 */}
         <Route path="/" component={PlatformHome} />
