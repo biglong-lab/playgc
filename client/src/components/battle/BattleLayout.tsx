@@ -51,13 +51,12 @@ function NotificationBell() {
   const { data } = useQuery<{ count: number }>({
     queryKey: ["/api/battle/notifications/unread-count"],
     queryFn: async () => {
-      const token = await getIdToken();
-      const res = await fetch("/api/battle/notifications/unread-count", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return { count: 0 };
-      return res.json();
+      try {
+        const res = await apiRequest("GET", "/api/battle/notifications/unread-count");
+        return res.json();
+      } catch {
+        return { count: 0 };
+      }
     },
     enabled: !!user,
     refetchInterval: 30000,
