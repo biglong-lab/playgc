@@ -414,6 +414,7 @@ export default function AdminStaffRoles() {
                 icon={Key}
                 title="尚無角色資料"
                 description="為管理員帳號定義不同的權限集合，例如「場域主管」、「活動執行者」"
+                actions={[{ label: "新增角色", onClick: () => setIsDialogOpen(true) }]}
               />
             )}
           </CardContent>
