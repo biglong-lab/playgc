@@ -315,8 +315,26 @@ export default function AdminLeaderboard() {
         ) : (
           <EmptyState
             icon={Trophy}
-            title="尚無排行榜記錄"
-            description="當玩家完成遊戲後，分數會自動顯示於此"
+            title={gameFilter !== "all" || timeFilter !== "all" ? "沒有符合條件的排行榜紀錄" : "尚無排行榜記錄"}
+            description={
+              gameFilter !== "all" || timeFilter !== "all"
+                ? "試著清除篩選條件或擴大時間範圍"
+                : "當玩家完成遊戲後，分數會自動顯示於此"
+            }
+            actions={
+              gameFilter !== "all" || timeFilter !== "all"
+                ? [
+                    {
+                      label: "清除所有篩選",
+                      variant: "outline",
+                      onClick: () => {
+                        setGameFilter("all");
+                        setTimeFilter("all");
+                      },
+                    },
+                  ]
+                : undefined
+            }
           />
         )}
       </div>
