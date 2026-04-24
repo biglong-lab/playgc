@@ -68,7 +68,14 @@ export interface DynamicVars {
 }
 
 export interface CompositionInput {
-  playerPhotoPublicId: string;    // 玩家照片（底層）
+  /**
+   * 底圖來源 — 二選一：
+   *   - playerPhotoPublicId：Cloudinary 上已存在的圖（走 `image/upload`）
+   *   - playerPhotoUrl：遠端任意 URL（走 `image/fetch` 由 Cloudinary 代抓）
+   * 若都給，優先用 publicId
+   */
+  playerPhotoPublicId?: string;
+  playerPhotoUrl?: string;
   config: CompositionConfig;
   dynamicVars?: DynamicVars;
 }
