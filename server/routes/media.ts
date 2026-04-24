@@ -548,4 +548,47 @@ export function registerMediaRoutes(app: Express) {
   app.get("/api/photo-composite/achievement-config", (_req, res) => {
     res.json({ config: ACHIEVEMENT_COMPOSITION_CONFIG });
   });
+
+  /**
+   * 📸 v2: Session 相簿 — 列出該 session 所有玩家照片
+   * 玩家可開 /album/:sessionId 查看自己本次遊戲的照片
+   */
+  app.get(
+    "/api/sessions/:sessionId/album",
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { sessionId } = req.params;
+
+        // 取 session 的 gameId（照片 folder 需要 gameId + sessionId）
+        const session = await storage.getGameSession(sessionId);
+        if (!session) {
+          return res.status(404).json({ error: "Session 不存在" });
+        }
+        if (!session.gameId) {
+          return res.status(400).json({ error: "Session 缺少 gameId" });
+        }
+
+        const photos = await cloudinaryService.listSessionPhotos(
+          session.gameId,
+          sessionId,
+        );
+
+        res.json({
+          sessionId,
+          gameId: session.gameId,
+          playerName: session.playerName ?? null,
+          teamName: session.teamName ?? null,
+          startedAt: session.startedAt ?? null,
+          completedAt: session.completedAt ?? null,
+          score: session.score ?? 0,
+          photos,
+        });
+      } catch (error) {
+        console.error("[media] session album 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "取得相簿失敗",
+        });
+      }
+    }
+  );
 }
