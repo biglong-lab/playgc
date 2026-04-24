@@ -304,9 +304,9 @@ export default function PhotoBurstFlow({
     const timer = setInterval(() => {
       elapsed += 1;
       setCompositeElapsed(elapsed);
-      // 🚨 Hard deadline — 20 秒內必強制結束（從 30s 縮短，使用者等不了太久）
-      if (elapsed >= 20) {
-        console.warn("[Burst] Hard deadline 20s → force done");
+      // 🚨 Hard deadline — 12 秒必強制結束（使用者耐心極限）
+      if (elapsed >= 12) {
+        console.warn("[Burst] Hard deadline 12s → force done");
         clearInterval(timer);
         const firstImage = burstImagesRef.current[0];
         if (firstImage) setCompositeUrl(firstImage);
