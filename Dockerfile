@@ -50,6 +50,9 @@ COPY --from=build /app/dist ./dist
 # 設定環境變數
 ENV NODE_ENV=production
 ENV PORT=3333
+# 🆕 傳遞 build-time 的 git SHA 給 runtime /api/version
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
 
 EXPOSE 3333
 
