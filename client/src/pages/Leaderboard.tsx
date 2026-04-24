@@ -349,6 +349,7 @@ function LeaderboardRow({
   getRankColor,
   getInitials,
   formatTime,
+  onClick,
 }: {
   entry: LeaderboardEntryExtended;
   rank: number;
@@ -356,10 +357,20 @@ function LeaderboardRow({
   getRankColor: (r: number) => string;
   getInitials: (e: LeaderboardEntryExtended) => string;
   formatTime: (s: number) => string;
+  onClick?: () => void;
 }) {
   return (
     <div
-      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${getRankColor(rank)}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      } : undefined}
+      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${getRankColor(rank)} ${onClick ? "cursor-pointer hover:bg-muted/40" : ""}`}
       data-testid={`leaderboard-entry-${rank}`}
     >
       <div className="w-8 h-8 flex items-center justify-center shrink-0">
