@@ -572,71 +572,79 @@ export default function PhotoBurstFlow({
               <p className="text-sm text-primary font-medium">{compositeProgress}</p>
             </div>
 
-            {/* 🎨 秒數進度（20s 絕對 deadline）*/}
+            {/* 🎨 秒數進度（12s 絕對 deadline）*/}
             <div className="w-full max-w-xs space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
                   已等待 <span className="font-number font-bold text-foreground">{compositeElapsed}</span> 秒
                 </span>
                 <span>
-                  {compositeElapsed >= 20
+                  {compositeElapsed >= 12
                     ? "即將完成..."
-                    : `最多還等 ${20 - compositeElapsed} 秒`}
+                    : `最多還等 ${12 - compositeElapsed} 秒`}
                 </span>
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-500 ${
-                    compositeElapsed >= 15
+                    compositeElapsed >= 10
                       ? "bg-destructive"
-                      : compositeElapsed >= 10
+                      : compositeElapsed >= 6
                       ? "bg-amber-500"
                       : "bg-primary"
                   }`}
-                  style={{ width: `${Math.min(100, (compositeElapsed / 20) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (compositeElapsed / 12) * 100)}%` }}
                 />
               </div>
             </div>
 
-            {/* 階段說明 */}
-            <div className="text-xs text-muted-foreground text-center max-w-xs space-y-1">
-              <p>
-                <span className={compositeElapsed < 10 ? "text-primary font-medium" : "line-through opacity-60"}>
-                  ① GIF 動畫（0-10s）
-                </span>
-              </p>
-              <p>
-                <span className={compositeElapsed >= 10 && compositeElapsed < 18 ? "text-amber-500 font-medium" : compositeElapsed >= 18 ? "line-through opacity-60" : "opacity-60"}>
-                  ② 拼貼圖 fallback（10-18s）
-                </span>
-              </p>
-              <p>
-                <span className={compositeElapsed >= 18 ? "text-destructive font-medium" : "opacity-60"}>
-                  ③ 顯示原圖（18-20s 保底）
-                </span>
-              </p>
-            </div>
-
-            {/* 🚀 大型「立即完成」按鈕 — 3 秒後就出現，最快 escape */}
-            {compositeElapsed >= 3 && (
-              <Button
-                size="lg"
-                onClick={() => {
-                  console.log("[Burst] 使用者手動強制完成");
-                  const first = burstImagesRef.current[0];
-                  if (first) setCompositeUrl(first);
-                  setStage("done");
-                }}
-                className="bg-primary text-primary-foreground font-bold gap-2 shadow-lg animate-pulse"
-                data-testid="btn-burst-force-done"
-              >
-                ⚡ 立即完成（跳過合成）
-              </Button>
-            )}
+            {/* 🚀 大型「立即完成」按鈕 — 立刻顯示（不等 3 秒）*/}
+            <Button
+              size="lg"
+              onClick={() => {
+                console.log("[Burst] 使用者手動強制完成");
+                const first = burstImagesRef.current[0];
+                if (first) setCompositeUrl(first);
+                setStage("done");
+              }}
+              className="bg-primary text-primary-foreground font-bold gap-2 shadow-lg h-14 px-8 text-base animate-pulse"
+              data-testid="btn-burst-force-done"
+            >
+              ⚡ 立即完成（跳過合成）
+            </Button>
 
             <p className="text-xs text-muted-foreground text-center max-w-xs">
-              不想等？按上方按鈕立刻結束
+              12 秒內會自動完成 · 不想等就按上方按鈕
             </p>
+
+            {/* 🛟 最終救命鈕 — 10 秒後出現（若連 force done 都失效）*/}
+            {compositeElapsed >= 10 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  console.warn("[Burst] 使用者觸發清快取 + reload");
+                  try {
+                    if ("serviceWorker" in navigator) {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      await Promise.all(regs.map((r) => r.unregister()));
+                    }
+                    if ("caches" in window) {
+                      const keys = await caches.keys();
+                      await Promise.all(keys.map((k) => caches.delete(k)));
+                    }
+                    localStorage.removeItem("chito_cache_purge_v6_burst_deadline_fix");
+                  } catch (e) {
+                    console.error("[Burst] 清快取失敗:", e);
+                  }
+                  window.location.reload();
+                }}
+                className="gap-1 text-xs text-destructive border-destructive/50"
+                data-testid="btn-burst-nuke-cache"
+              >
+                🔄 還是卡住？清快取重新整理
+              </Button>
+            )}
           </>
         )}
       </div>
