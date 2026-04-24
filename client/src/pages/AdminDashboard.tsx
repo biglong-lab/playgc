@@ -69,6 +69,7 @@ export default function AdminDashboard() {
 
   const activeSessions = sessions?.filter(s => s.status === "playing").length || 0;
   const onlineDevices = devices?.filter(d => d.status === "online").length || 0;
+  const offlineDevices = (devices?.length || 0) - onlineDevices;
   const publishedGames = games?.filter(g => g.status === "published").length || 0;
   const draftGames = games?.filter(g => g.status === "draft").length || 0;
 
