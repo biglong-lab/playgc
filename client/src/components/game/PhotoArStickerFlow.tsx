@@ -571,7 +571,7 @@ export default function PhotoArStickerFlow({
           <Button
             size="icon"
             onClick={handleCapture}
-            disabled={preloadedStickers.length < stickers.length}
+            disabled={!preloadDone}
             className="bg-white text-black hover:bg-white/90 w-16 h-16 rounded-full ring-4 ring-white/30"
             data-testid="btn-ar-capture"
           >
