@@ -143,6 +143,11 @@ export default function PhotoBurstFlow({
   });
 
   // 連拍主迴圈（camera 就緒後觸發）
+  //
+  // 🚀 新策略 Optimistic Completion：
+  //   拍完 5 張 → 立刻用本地 base64 第一張當紀念 → 直接進 "done" 顯示給玩家
+  //   背景非同步上傳 Cloudinary + 合成 GIF → 成功後替換成合成結果
+  //   使用者體感：拍完 3 秒內 → 看到結果頁（不用等上傳！）
   useEffect(() => {
     if (stage !== "shooting") return;
     if (!camera.cameraReady) return;
@@ -152,9 +157,22 @@ export default function PhotoBurstFlow({
     const captureNext = (index: number) => {
       if (cancelled) return;
       if (index >= frameCount) {
-        // 全拍完 → 停相機 + 進上傳階段
+        // 全拍完 → 停相機
         camera.stopCamera();
-        setStage("uploading");
+
+        // 🚀 立刻顯示本地第一張 + 進 done（使用者不用等）
+        const firstLocal = burstImagesRef.current[0];
+        if (firstLocal) {
+          setCompositeUrl(firstLocal);
+          setStage("done");
+        } else {
+          // 沒拍到任何張 → 走原流程
+          setStage("uploading");
+        }
+
+        // 🔄 背景仍去嘗試 Cloudinary GIF 合成（成功就替換更好看的結果）
+        //   若失敗使用者也不會察覺，反正本地圖已經顯示
+        backgroundUploadAndComposite();
         return;
       }
       setCountdown(index + 1);
@@ -178,6 +196,91 @@ export default function PhotoBurstFlow({
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, camera.cameraReady, frameCount, frameIntervalMs]);
+
+  // 🔄 背景上傳 + 合成（不 block UI，成功後靜默替換 URL）
+  const backgroundUploadAndComposite = async () => {
+    try {
+      const images = burstImagesRef.current;
+      if (images.length === 0) return;
+
+      // 並行上傳（10s timeout per image）
+      const ids: string[] = [];
+      const uploadPromises = images.map(async (img, idx) => {
+        try {
+          const id = await uploadSingle(img);
+          return { idx, id };
+        } catch (err) {
+          console.warn(`[Burst BG] upload #${idx} failed:`, err);
+          return null;
+        }
+      });
+      const results = await Promise.all(uploadPromises);
+      const sortedIds = results
+        .filter((r): r is { idx: number; id: string } => r !== null)
+        .sort((a, b) => a.idx - b.idx)
+        .map((r) => r.id);
+
+      if (sortedIds.length === 0) {
+        console.warn("[Burst BG] 全部上傳失敗，保持本地圖");
+        return;
+      }
+      ids.push(...sortedIds);
+      setUploadedIds(sortedIds);
+
+      // 等 tag propagate
+      await new Promise((r) => setTimeout(r, 500));
+
+      // 嘗試 GIF 合成（10s timeout）
+      try {
+        const gifAbort = new AbortController();
+        const gifTimer = setTimeout(() => gifAbort.abort(), 10000);
+        const gifRes = await fetch("/api/cloudinary/burst-to-gif", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tag: getBurstTag(),
+            format: "gif",
+            delayMs: frameIntervalMs,
+          }),
+          signal: gifAbort.signal,
+        }).finally(() => clearTimeout(gifTimer));
+        const gifData = (await gifRes.json()) as {
+          success?: boolean;
+          url?: string;
+        };
+        if (gifData.success && gifData.url) {
+          console.log("[Burst BG] ✅ GIF 合成成功，替換 URL");
+          setCompositeUrl(gifData.url);
+          return;
+        }
+      } catch (gifErr) {
+        console.warn("[Burst BG] GIF 失敗，用第一張 Cloudinary URL:", gifErr);
+      }
+
+      // GIF 失敗 → 用第一張 Cloudinary URL（比 base64 更輕）
+      try {
+        const firstPublicId = sortedIds[0];
+        if (firstPublicId) {
+          // 直接組 Cloudinary 公開 URL
+          const res = await fetch("/api/cloudinary/cloud-name").catch(
+            () => null,
+          );
+          const cloudName = res
+            ? (await res.json()).cloudName || "dhczwewns"
+            : "dhczwewns";
+          const cloudUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${firstPublicId}`;
+          console.log("[Burst BG] 用 Cloudinary URL 替換:", cloudUrl);
+          setCompositeUrl(cloudUrl);
+        }
+      } catch (err) {
+        console.warn("[Burst BG] Cloudinary URL 替換失敗:", err);
+      }
+    } catch (err) {
+      console.warn("[Burst BG] 背景處理錯誤:", err);
+      // 使用者已經看到本地圖了，靜默失敗
+    }
+  };
 
   // 上傳階段：**並行**上傳（從 sequential → parallel，速度 5 倍）→ 合成 GIF
   useEffect(() => {
