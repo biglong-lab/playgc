@@ -387,9 +387,11 @@ export default function GameEditor() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    // 🔧 改 h-screen + overflow-hidden 讓內部 flex-1 overflow-auto 真正生效
+    //    原本 min-h-screen 會讓內容超過時整頁滾動，三個 sidebar 都跟著跑
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+      <header className="shrink-0 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => setLocation(basePath)} data-testid="button-back">
