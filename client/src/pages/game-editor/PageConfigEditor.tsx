@@ -1379,6 +1379,85 @@ export default function PageConfigEditor({
         </div>
       );
 
+    // 🆕 v2 獨立 pageType：團體合影（photo_team）
+    case "photo_team":
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">拍照指示</label>
+            <Textarea
+              value={(config.instruction as string) || ""}
+              onChange={(e) => updateField("instruction", e.target.value)}
+              placeholder="隊長逐一為每位隊員拍照，最後自動合成團體照..."
+              rows={3}
+              data-testid="config-instruction"
+            />
+          </div>
+
+          <div className="border border-border rounded-lg p-4 space-y-4" data-testid="config-team-section">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">團體合影設定</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">最少隊員數</label>
+                <Input
+                  type="number"
+                  value={(config.teamConfig as any)?.minMembers ?? 2}
+                  onChange={(e) => updateField("teamConfig", {
+                    ...(config.teamConfig as any || {}),
+                    minMembers: Math.max(1, Math.min(9, parseInt(e.target.value) || 2)),
+                  })}
+                  min={1}
+                  max={9}
+                  data-testid="config-team-min"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">最多隊員數</label>
+                <Input
+                  type="number"
+                  value={(config.teamConfig as any)?.maxMembers ?? 6}
+                  onChange={(e) => updateField("teamConfig", {
+                    ...(config.teamConfig as any || {}),
+                    maxMembers: Math.max(1, Math.min(9, parseInt(e.target.value) || 6)),
+                  })}
+                  min={1}
+                  max={9}
+                  data-testid="config-team-max"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">排版</label>
+              <Select
+                value={(config.teamConfig as any)?.layoutMode ?? "grid"}
+                onValueChange={(v) => updateField("teamConfig", {
+                  ...(config.teamConfig as any || {}),
+                  layoutMode: v,
+                })}
+              >
+                <SelectTrigger data-testid="config-team-layout"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="grid">方格（2x2 / 3x2 / 3x3 自動）</SelectItem>
+                  <SelectItem value="strip">橫條（一排）</SelectItem>
+                  <SelectItem value="collage">拼貼</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                依實際人數自動排版；2 人 1x2 / 4 人 2x2 / 6 人 3x2 / 9 人 3x3
+              </p>
+            </div>
+          </div>
+
+          <RewardsSection config={config} updateField={updateField} gameId={gameId} />
+          <LocationSettingsSection config={config} updateField={updateField} />
+        </div>
+      );
+
     case "gps_mission":
       return (
         <GpsMissionEditor
