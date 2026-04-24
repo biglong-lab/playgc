@@ -16,6 +16,7 @@ import {
 
 // 🆕 v2 多模式拍照元件（lazy load，避免影響既有 free mode bundle）
 const PhotoSpotFlow = lazy(() => import("./PhotoSpotFlow"));
+const PhotoCompareFlow = lazy(() => import("./PhotoCompareFlow"));
 
 interface PhotoMissionPageProps {
   config: PhotoMissionConfig;
