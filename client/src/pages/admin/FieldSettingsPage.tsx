@@ -805,10 +805,17 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
 
           {/* 🆕 場域公告（含時效） */}
           <div>
-            <label className="text-sm font-medium mb-1.5 block flex items-center gap-2">
-              📢 場域公告
-              <span className="text-xs text-muted-foreground font-normal">
-                （顯示於 Landing 和 Home 頂部橫幅；空白 = 不顯示）
+            <label className="text-sm font-medium mb-1.5 block flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2">
+                📢 場域公告
+                <span className="text-xs text-muted-foreground font-normal">
+                  （顯示於 Landing 和 Home 頂部橫幅；空白 = 不顯示）
+                </span>
+              </span>
+              <span className={`text-[10px] font-mono font-normal ${
+                announcement.length > 450 ? "text-amber-600" : "text-muted-foreground"
+              }`}>
+                {announcement.length} / 500
               </span>
             </label>
             <Textarea
