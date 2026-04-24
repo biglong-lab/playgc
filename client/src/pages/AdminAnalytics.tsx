@@ -144,6 +144,10 @@ export default function AdminAnalytics() {
 // ============================================================================
 
 function AnalyticsStatCards({ overview }: { overview?: AnalyticsOverview }) {
+  // 🆕 無 session 時顯示破折號，避免 0 當真實數字誤導
+  const total = overview?.totalSessions ?? 0;
+  const hasData = total > 0;
+  const active = overview?.activeSessions ?? 0;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       <Card>
@@ -151,12 +155,17 @@ function AnalyticsStatCards({ overview }: { overview?: AnalyticsOverview }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">總遊戲場次</p>
-              <p className="font-number text-3xl font-bold">{overview?.totalSessions || 0}</p>
+              <p
+                className={`font-number text-3xl font-bold ${hasData ? "" : "text-muted-foreground"}`}
+                data-testid="analytics-total-sessions"
+              >
+                {total}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
-                今日: {overview?.todaySessions || 0} 場
+                今日: {overview?.todaySessions ?? 0} 場
               </p>
             </div>
-            <Users className="w-8 h-8 text-primary/50" />
+            <Users className={`w-8 h-8 ${hasData ? "text-primary/50" : "text-muted-foreground/30"}`} />
           </div>
         </CardContent>
       </Card>
@@ -166,14 +175,17 @@ function AnalyticsStatCards({ overview }: { overview?: AnalyticsOverview }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">完成率</p>
-              <p className="font-number text-3xl font-bold text-success">
-                {overview?.overallCompletionRate || 0}%
+              <p
+                className={`font-number text-3xl font-bold ${hasData ? "text-success" : "text-muted-foreground"}`}
+                data-testid="analytics-completion-rate"
+              >
+                {hasData ? `${overview?.overallCompletionRate ?? 0}%` : "—"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                完成: {overview?.completedSessions || 0} 場
+                完成: {overview?.completedSessions ?? 0} 場
               </p>
             </div>
-            <CheckCircle className="w-8 h-8 text-success/50" />
+            <CheckCircle className={`w-8 h-8 ${hasData ? "text-success/50" : "text-muted-foreground/30"}`} />
           </div>
         </CardContent>
       </Card>
@@ -182,13 +194,25 @@ function AnalyticsStatCards({ overview }: { overview?: AnalyticsOverview }) {
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">進行中場次</p>
-              <p className="font-number text-3xl font-bold text-warning">
-                {overview?.activeSessions || 0}
+              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                進行中場次
+                {/* 🆕 有 active 時加脈衝綠點 LIVE 指示 */}
+                {active > 0 && (
+                  <span className="relative flex h-2 w-2" aria-label="live">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-warning" />
+                  </span>
+                )}
+              </p>
+              <p
+                className={`font-number text-3xl font-bold ${active > 0 ? "text-warning" : "text-muted-foreground"}`}
+                data-testid="analytics-active-sessions"
+              >
+                {active}
               </p>
               <p className="text-xs text-muted-foreground mt-1">即時玩家數</p>
             </div>
-            <PlayCircle className="w-8 h-8 text-warning/50" />
+            <PlayCircle className={`w-8 h-8 ${active > 0 ? "text-warning/50" : "text-muted-foreground/30"}`} />
           </div>
         </CardContent>
       </Card>
@@ -198,8 +222,11 @@ function AnalyticsStatCards({ overview }: { overview?: AnalyticsOverview }) {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-muted-foreground">平均遊戲時間</p>
-              <p className="font-number text-3xl font-bold">
-                {overview?.averagePlayTime || 0}
+              <p
+                className={`font-number text-3xl font-bold ${hasData ? "" : "text-muted-foreground"}`}
+                data-testid="analytics-avg-play-time"
+              >
+                {hasData ? (overview?.averagePlayTime ?? 0) : "—"}
               </p>
               <p className="text-xs text-muted-foreground mt-1">分鐘/場</p>
             </div>
