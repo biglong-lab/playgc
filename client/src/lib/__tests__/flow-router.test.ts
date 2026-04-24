@@ -1,6 +1,12 @@
 // flow-router 核心邏輯測試
-import { describe, it, expect } from "vitest";
-import { evaluateCondition, evaluateRoute, evaluateFlowRouter } from "../flow-router";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import {
+  evaluateCondition,
+  evaluateRoute,
+  evaluateFlowRouter,
+  pickRandomRoute,
+  resolveFlowRouter,
+} from "../flow-router";
 import type { FlowCondition, FlowRoute, FlowRouterConfig } from "@shared/schema";
 
 describe("evaluateCondition — variable_equals 型別 coercion", () => {
