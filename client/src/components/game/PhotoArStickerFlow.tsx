@@ -521,35 +521,40 @@ export default function PhotoArStickerFlow({
           autoPlay playsInline muted
         />
 
-        {/* 🆕 B2: 臉部追蹤狀態指示（左上）*/}
+        {/* 🆕 B2: 臉部追蹤狀態（大型明顯卡片）*/}
         {useFaceTracking && (
-          <div className="absolute top-4 left-4 bg-background/80 backdrop-blur rounded-lg px-3 py-2 text-xs space-y-1 pointer-events-none">
-            {!faceReady ? (
-              <span className="text-muted-foreground" data-testid="face-tracking-loading">
-                🔄 載入臉部追蹤模型...
-              </span>
-            ) : faceError ? (
-              <span className="text-destructive" data-testid="face-tracking-error">
-                ⚠️ {faceError}
-              </span>
-            ) : faceAnchor ? (
-              <span className="text-emerald-400" data-testid="face-tracking-active">
-                👤 已追蹤臉部
-              </span>
-            ) : (
-              <span className="text-amber-400" data-testid="face-tracking-searching">
-                🔍 請讓臉部入鏡
-              </span>
-            )}
+          <div className="absolute top-4 left-4 right-16 z-10 pointer-events-none">
+            <div className="bg-black/75 backdrop-blur-md rounded-xl px-4 py-3 text-sm shadow-lg border border-white/20">
+              {!faceReady ? (
+                <div className="flex items-center gap-2" data-testid="face-tracking-loading">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <span className="text-white">載入臉部追蹤模型（約 5 秒）...</span>
+                </div>
+              ) : faceError ? (
+                <span className="text-destructive" data-testid="face-tracking-error">
+                  ⚠️ {faceError}
+                </span>
+              ) : faceAnchor ? (
+                <div data-testid="face-tracking-active">
+                  <p className="text-emerald-400 font-bold">✓ 已抓到你的臉</p>
+                  <p className="text-white/80 text-xs mt-0.5">按下方快門拍照</p>
+                </div>
+              ) : (
+                <div data-testid="face-tracking-searching">
+                  <p className="text-amber-400 font-bold">👀 找不到臉</p>
+                  <p className="text-white/80 text-xs mt-0.5">讓臉在畫面中央再試</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {/* 🆕 切換前後鏡頭按鈕（右上）*/}
+        {/* 🆕 切換前後鏡頭按鈕（右上 z-10 確保在貼圖之上）*/}
         <Button
           size="icon"
           variant="ghost"
           onClick={() => camera.switchCamera()}
-          className="absolute top-4 right-4 bg-black/50 backdrop-blur hover:bg-black/70 text-white w-11 h-11 rounded-full"
+          className="absolute top-4 right-4 z-20 bg-black/60 backdrop-blur hover:bg-black/80 text-white w-12 h-12 rounded-full shadow-lg"
           data-testid="btn-ar-switch-camera"
           title={camera.facingMode === "user" ? "切到後鏡頭" : "切到前鏡頭（自拍）"}
         >
