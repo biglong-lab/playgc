@@ -58,7 +58,7 @@ export default function AdminStaffGames() {
                   className="pl-8 pr-14"
                   data-testid="input-search-games"
                 />
-                {!ctx.searchQuery && <SearchKbdHint isMac={isMac} />}
+                {!ctx.searchQuery && <SearchKbdHint mode="slash" />}
               </div>
             </div>
             <StatusTabs filter={ctx.statusFilter} onChange={ctx.setStatusFilter} counts={ctx.gameCounts} />
