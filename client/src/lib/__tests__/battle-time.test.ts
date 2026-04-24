@@ -122,3 +122,57 @@ describe("isImminentSlot", () => {
     expect(isImminentSlot("2026-04-25", null)).toBe(false);
   });
 });
+
+describe("formatTimeAgo", () => {
+  const now = new Date("2026-04-25T12:00:00");
+
+  it("< 1 分鐘 → 剛剛", () => {
+    const recent = new Date("2026-04-25T11:59:30"); // 30 秒前
+    expect(formatTimeAgo(recent, { now })).toBe("剛剛");
+  });
+
+  it("整 1 分鐘前 → 1 分鐘前", () => {
+    const oneMin = new Date("2026-04-25T11:59:00");
+    expect(formatTimeAgo(oneMin, { now })).toBe("1 分鐘前");
+  });
+
+  it("59 分鐘前 → 59 分鐘前", () => {
+    const fiftyNineMin = new Date("2026-04-25T11:01:00");
+    expect(formatTimeAgo(fiftyNineMin, { now })).toBe("59 分鐘前");
+  });
+
+  it("1 小時前 → 1 小時前", () => {
+    const oneHour = new Date("2026-04-25T11:00:00");
+    expect(formatTimeAgo(oneHour, { now })).toBe("1 小時前");
+  });
+
+  it("23 小時前 → 23 小時前", () => {
+    const twentyThreeHr = new Date("2026-04-24T13:00:00");
+    expect(formatTimeAgo(twentyThreeHr, { now })).toBe("23 小時前");
+  });
+
+  it("1 天前 → 1 天前", () => {
+    const oneDay = new Date("2026-04-24T12:00:00");
+    expect(formatTimeAgo(oneDay, { now })).toBe("1 天前");
+  });
+
+  it("29 天前 → 29 天前", () => {
+    const twentyNineDays = new Date("2026-03-27T12:00:00");
+    expect(formatTimeAgo(twentyNineDays, { now })).toBe("29 天前");
+  });
+
+  it("2 個月前 → 2 個月前", () => {
+    const twoMonths = new Date("2026-02-15T12:00:00");
+    expect(formatTimeAgo(twoMonths, { now })).toBe("2 個月前");
+  });
+
+  it("超過 12 個月 → 顯示年", () => {
+    const oneYear = new Date("2025-04-25T12:00:00"); // 12 個月前
+    expect(formatTimeAgo(oneYear, { now })).toBe("1 年前");
+  });
+
+  it("未來時間 → 「剛剛」（不顯示負數）", () => {
+    const future = new Date("2026-04-25T13:00:00");
+    expect(formatTimeAgo(future, { now })).toBe("剛剛");
+  });
+});
