@@ -596,8 +596,25 @@ export default function PhotoBurstFlow({
               />
             </div>
             <p className="text-xs text-muted-foreground text-center max-w-xs">
-              通常 2-5 秒完成（依網路速度）
+              通常 2-5 秒完成（依網路速度）<br/>
+              每張 10 秒沒傳到會自動跳過
             </p>
+
+            {/* 🆕 上傳階段也加「立即完成」按鈕（避免 Promise.all hang 住時卡死）*/}
+            <Button
+              size="lg"
+              onClick={() => {
+                console.log("[Burst] 使用者在 uploading 階段強制完成");
+                const first = burstImagesRef.current[0];
+                if (first) setCompositeUrl(first);
+                setStage("done");
+              }}
+              variant="outline"
+              className="gap-2 mt-2"
+              data-testid="btn-burst-skip-upload"
+            >
+              ⚡ 跳過上傳，直接看紀念照
+            </Button>
           </>
         ) : (
           <>
