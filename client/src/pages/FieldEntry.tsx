@@ -94,30 +94,6 @@ const TIME_THEMES: Record<TimeOfDay, {
   },
 };
 
-/** 🆕 計算到指定日期還剩幾天（ISO YYYY-MM-DD） */
-function daysUntilDate(isoDate: string | null | undefined): number | null {
-  if (!isoDate) return null;
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const end = new Date(isoDate);
-    end.setHours(0, 0, 0, 0);
-    const diff = end.getTime() - today.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  } catch {
-    return null;
-  }
-}
-
-/** 🆕 剩餘天數 → 顯示文案 */
-function formatRemainingDays(days: number | null): string | null {
-  if (days === null) return null;
-  if (days > 1) return `剩 ${days} 天`;
-  if (days === 1) return "明天下架";
-  if (days === 0) return "今日最後";
-  return null;
-}
-
 /** 同步讀取 localStorage 的上次場域 code */
 function readLastFieldCode(): string | null {
   if (typeof window === "undefined") return null;
