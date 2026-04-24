@@ -395,7 +395,7 @@ export default function GameCompletionScreen({
           </Button>
           {isChapterMode ? (
             <Button
-              onClick={() => onNavigate(`/game/${gameId}/chapters`)}
+              onClick={() => onNavigate(link(`/game/${gameId}/chapters`))}
               className="gap-2"
             >
               <Home className="w-4 h-4" />
@@ -404,7 +404,7 @@ export default function GameCompletionScreen({
           ) : (
             <>
               <Button
-                onClick={() => onNavigate("/home")}
+                onClick={() => onNavigate(link("/home"))}
                 variant="outline"
                 className="gap-2"
                 data-testid="button-return-home"
@@ -413,7 +413,7 @@ export default function GameCompletionScreen({
                 返回大廳
               </Button>
               <Button
-                onClick={() => onNavigate("/leaderboard")}
+                onClick={() => onNavigate(link("/leaderboard"))}
                 className="gap-2"
                 data-testid="button-view-leaderboard"
               >
