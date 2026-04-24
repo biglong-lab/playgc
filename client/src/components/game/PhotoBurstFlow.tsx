@@ -213,9 +213,9 @@ export default function PhotoBurstFlow({
           } catch (err) {
             console.warn("[Burst] 拼貼也失敗:", err);
             // 最後 fallback：第一張當紀念
-            if (ids.length > 0) {
+            if (sortedIds.length > 0) {
               const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
-                playerPhotoPublicId: ids[0],
+                playerPhotoPublicId: sortedIds[0],
                 config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
                 dynamicVars: {},
               });
