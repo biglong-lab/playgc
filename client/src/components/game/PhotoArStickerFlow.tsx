@@ -529,19 +529,23 @@ export default function PhotoArStickerFlow({
           <RefreshCw className="w-5 h-5" />
         </Button>
 
-        {/* 貼圖 overlay 預覽（失敗的貼圖跳過，不顯示 broken image icon）*/}
+        {/* 貼圖 overlay 預覽 — 沒偵測到臉時不要顯示（避免中央大面具擋住畫面）*/}
         {stickers.map((s, idx) => {
           const img = preloadedStickers[idx];
           if (preloadDone && !img) return null; // 該張 URL 壞掉，跳過
           const imgRatio = img ? img.naturalWidth / img.naturalHeight : 1;
 
-          // 🆕 B2: face anchor 定位
-          if (useFaceTracking && faceAnchor) {
-            const widthPct = faceAnchor.width * 100 * (s.sizeRatio || 1);
+          // 🆕 B2: face anchor 定位 — 只在偵測到臉時顯示
+          if (useFaceTracking) {
+            if (!faceAnchor) return null; // 沒臉就不顯示（避免大面具擋住）
+            // 🎨 size 稍微縮小，避免完全擋住畫面
+            const widthPct = faceAnchor.width * 100 * (s.sizeRatio || 0.6);
             const heightPct = widthPct / imgRatio;
             const rotation = faceAnchor.rotationY
               ? `rotate(${(faceAnchor.rotationY * 180) / Math.PI}deg)`
               : "";
+            // user facing 時畫面已 scaleX(-1)，貼圖跟著翻（否則會文字反向）
+            const mirror = camera.facingMode === "user" ? " scaleX(-1)" : "";
             return (
               <img
                 key={idx}
@@ -553,7 +557,7 @@ export default function PhotoArStickerFlow({
                   top: `${faceAnchor.y * 100}%`,
                   width: `${widthPct}%`,
                   height: `${heightPct}%`,
-                  transform: `translate(-50%, -50%) ${rotation}`,
+                  transform: `translate(-50%, -50%) ${rotation}${mirror}`,
                   pointerEvents: "none",
                   transition: "top 0.08s, left 0.08s",
                 }}
@@ -562,7 +566,7 @@ export default function PhotoArStickerFlow({
             );
           }
 
-          // fallback 固定位置
+          // 非臉部追蹤 — 固定位置（原 positionToStyle）
           return (
             <img
               key={idx}
