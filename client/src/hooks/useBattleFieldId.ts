@@ -18,9 +18,12 @@ export function useBattleFieldId(): {
   const { data: venues, isLoading } = useQuery<BattleVenue[]>({
     queryKey: ["/api/battle/venues"],
     queryFn: async () => {
-      const res = await fetch("/api/battle/venues");
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", "/api/battle/venues");
+        return res.json();
+      } catch {
+        return [];
+      }
     },
     enabled: !userFieldId,
   });
