@@ -484,16 +484,19 @@ export default function PhotoArStickerFlow({
       return <CameraInitializingView videoRef={camera.videoRef} onCancel={() => { camera.cancelCamera(); setStage("intro"); }} />;
     }
     return (
-      <div className="relative h-full w-full bg-black" data-testid="photo-ar-camera">
+      // 🎨 fixed inset-0 z-50 蓋過 GamePlay header + sticky footer，沉浸式相機
+      // transform: user 鏡頭鏡像翻轉（使用者看到的和鏡子一樣）
+      <div className="fixed inset-0 z-50 bg-black" data-testid="photo-ar-camera">
         <video
           ref={camera.videoRef}
           className="w-full h-full object-cover"
+          style={{ transform: camera.facingMode === "user" ? "scaleX(-1)" : undefined }}
           autoPlay playsInline muted
         />
 
-        {/* 🆕 B2: 臉部追蹤狀態指示 */}
+        {/* 🆕 B2: 臉部追蹤狀態指示（左上）*/}
         {useFaceTracking && (
-          <div className="absolute top-4 left-4 bg-background/80 backdrop-blur rounded-lg px-3 py-2 text-xs space-y-1">
+          <div className="absolute top-4 left-4 bg-background/80 backdrop-blur rounded-lg px-3 py-2 text-xs space-y-1 pointer-events-none">
             {!faceReady ? (
               <span className="text-muted-foreground" data-testid="face-tracking-loading">
                 🔄 載入臉部追蹤模型...
@@ -504,15 +507,27 @@ export default function PhotoArStickerFlow({
               </span>
             ) : faceAnchor ? (
               <span className="text-emerald-400" data-testid="face-tracking-active">
-                👤 已追蹤臉部（{anchorPoint}）
+                👤 已追蹤臉部
               </span>
             ) : (
               <span className="text-amber-400" data-testid="face-tracking-searching">
-                🔍 尋找臉部中...
+                🔍 請讓臉部入鏡
               </span>
             )}
           </div>
         )}
+
+        {/* 🆕 切換前後鏡頭按鈕（右上）*/}
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={() => camera.switchCamera()}
+          className="absolute top-4 right-4 bg-black/50 backdrop-blur hover:bg-black/70 text-white w-11 h-11 rounded-full"
+          data-testid="btn-ar-switch-camera"
+          title={camera.facingMode === "user" ? "切到後鏡頭" : "切到前鏡頭（自拍）"}
+        >
+          <RefreshCw className="w-5 h-5" />
+        </Button>
 
         {/* 貼圖 overlay 預覽（失敗的貼圖跳過，不顯示 broken image icon）*/}
         {stickers.map((s, idx) => {
