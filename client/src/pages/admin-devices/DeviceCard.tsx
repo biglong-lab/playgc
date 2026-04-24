@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Cpu, Play, Square, Edit, Trash2, Info, Radio, Battery, FileText, Globe
+  Play, Square, Edit, Trash2, Info, Radio, Battery, FileText, Globe
 } from "lucide-react";
 import type { ArduinoDevice, InsertArduinoDevice } from "@shared/schema";
-import { DEVICE_TYPES } from "./constants";
+import { DEVICE_TYPES, getDeviceIcon } from "./constants";
 import DeviceDialog from "./DeviceDialog";
 
 interface DeviceCardProps {
