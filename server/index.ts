@@ -109,14 +109,16 @@ app.use(helmet({
         directives: {
           // 預設：僅同源
           defaultSrc: ["'self'"],
-          // Script：同源 + Firebase/Google OAuth + Recur
+          // Script：同源 + Firebase/Google OAuth + Recur + MediaPipe WASM
           scriptSrc: [
             "'self'",
             "'unsafe-inline'", // Vite 產生的 inline script（未來可移除）
+            "'wasm-unsafe-eval'", // 🆕 MediaPipe WebAssembly 需要
             "https://apis.google.com",
             "https://*.firebaseapp.com",
             "https://*.googleapis.com",
             "https://accounts.google.com",
+            "https://cdn.jsdelivr.net", // 🆕 MediaPipe tasks-vision WASM from jsdelivr
           ],
           // Style：同源 + Google Fonts
           styleSrc: [
