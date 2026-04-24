@@ -430,16 +430,73 @@ export default function PhotoArStickerFlow({
           className="w-full h-full object-cover"
           autoPlay playsInline muted
         />
-        {/* 貼圖 overlay 預覽（和合成結果一致） */}
-        {stickers.map((s, idx) => (
-          <img
-            key={idx}
-            src={s.imageUrl}
-            alt=""
-            style={positionToStyle(s.position, s.sizeRatio)}
-            data-testid={`ar-sticker-overlay-${idx}`}
-          />
-        ))}
+
+        {/* 🆕 B2: 臉部追蹤狀態指示 */}
+        {useFaceTracking && (
+          <div className="absolute top-4 left-4 bg-background/80 backdrop-blur rounded-lg px-3 py-2 text-xs space-y-1">
+            {!faceReady ? (
+              <span className="text-muted-foreground" data-testid="face-tracking-loading">
+                🔄 載入臉部追蹤模型...
+              </span>
+            ) : faceError ? (
+              <span className="text-destructive" data-testid="face-tracking-error">
+                ⚠️ {faceError}
+              </span>
+            ) : faceAnchor ? (
+              <span className="text-emerald-400" data-testid="face-tracking-active">
+                👤 已追蹤臉部（{anchorPoint}）
+              </span>
+            ) : (
+              <span className="text-amber-400" data-testid="face-tracking-searching">
+                🔍 尋找臉部中...
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* 貼圖 overlay 預覽 */}
+        {stickers.map((s, idx) => {
+          const img = preloadedStickers[idx];
+          const imgRatio = img ? img.naturalWidth / img.naturalHeight : 1;
+
+          // 🆕 B2: face anchor 定位
+          if (useFaceTracking && faceAnchor) {
+            const widthPct = faceAnchor.width * 100 * (s.sizeRatio || 1);
+            const heightPct = widthPct / imgRatio;
+            const rotation = faceAnchor.rotationY
+              ? `rotate(${(faceAnchor.rotationY * 180) / Math.PI}deg)`
+              : "";
+            return (
+              <img
+                key={idx}
+                src={s.imageUrl}
+                alt=""
+                style={{
+                  position: "absolute",
+                  left: `${faceAnchor.x * 100}%`,
+                  top: `${faceAnchor.y * 100}%`,
+                  width: `${widthPct}%`,
+                  height: `${heightPct}%`,
+                  transform: `translate(-50%, -50%) ${rotation}`,
+                  pointerEvents: "none",
+                  transition: "top 0.08s, left 0.08s",
+                }}
+                data-testid={`ar-sticker-face-${idx}`}
+              />
+            );
+          }
+
+          // fallback 固定位置
+          return (
+            <img
+              key={idx}
+              src={s.imageUrl}
+              alt=""
+              style={positionToStyle(s.position, s.sizeRatio)}
+              data-testid={`ar-sticker-overlay-${idx}`}
+            />
+          );
+        })}
 
         <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
           <Button
