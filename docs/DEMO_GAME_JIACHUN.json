@@ -1,0 +1,176 @@
+{
+  "$schema": "https://game.homi.cc/schemas/demo-game.json",
+  "name": "DEMO_GAME_JIACHUN",
+  "version": "1.0.0",
+  "description": "賈村示範遊戲 — 展示 OCR 招牌 + AR 貼圖 + GPS + QR 完整流程。管理員可用 /api/admin/games/create-from-demo 一鍵匯入。",
+  "game": {
+    "title": "賈村探險：招牌、臉譜、寶藏",
+    "description": "走訪賈村各個地標，透過招牌辨識、AR 合照、GPS 探險完成任務，體驗 CHITO 完整遊戲元件。",
+    "difficulty": "medium",
+    "estimatedTime": 30,
+    "maxPlayers": 6,
+    "status": "published",
+    "gameMode": "individual",
+    "pricingType": "free",
+    "gameStructure": "linear",
+    "isIsolated": true
+  },
+  "pages": [
+    {
+      "pageOrder": 1,
+      "pageType": "text_card",
+      "customName": "開場白",
+      "config": {
+        "title": "歡迎來到賈村",
+        "content": "勇士！你即將展開一場探險之旅。請依照指示完成五個任務，每一關都會解鎖下一個線索。準備好了嗎？",
+        "layout": "center",
+        "animation": "fade_in",
+        "fontSize": "medium",
+        "rewardPoints": 5
+      }
+    },
+    {
+      "pageOrder": 2,
+      "pageType": "dialogue",
+      "customName": "村長指引",
+      "config": {
+        "character": {
+          "name": "村長"
+        },
+        "messages": [
+          {
+            "text": "年輕人，很高興你來到賈村！",
+            "emotion": "neutral"
+          },
+          {
+            "text": "我們的村莊有五個地標，每個地標都藏著關鍵線索。",
+            "emotion": "neutral"
+          },
+          {
+            "text": "善用你的手機 — 拍照、掃碼、定位，每個功能都會派上用場。祝你好運！",
+            "emotion": "happy"
+          }
+        ],
+        "typingSpeed": 30,
+        "autoAdvance": false,
+        "bubbleAnimation": true,
+        "rewardPoints": 0
+      }
+    },
+    {
+      "pageOrder": 3,
+      "pageType": "photo_ocr",
+      "customName": "任務一：找出「慈善寺」",
+      "config": {
+        "title": "任務一：招牌辨識",
+        "description": "走到村口，找到「慈善寺」的招牌並拍下。",
+        "ocrConfig": {
+          "expectedTexts": [
+            "慈善寺",
+            "集會所",
+            "賈村"
+          ],
+          "fuzzyThreshold": 0.6,
+          "instruction": "請靠近招牌拍攝，確保文字清晰。系統會用 Google Vision 辨識。",
+          "allowRetryOnFail": true,
+          "maxRetries": 3
+        },
+        "rewardPoints": 30
+      }
+    },
+    {
+      "pageOrder": 4,
+      "pageType": "qr_scan",
+      "customName": "任務二：掃描賈村郵筒",
+      "config": {
+        "title": "任務二：找到郵筒",
+        "description": "村內有一個特殊的郵筒，上面貼有 QR 碼，掃描它即可繼續。",
+        "instruction": "走到村中央廣場，找到紅色郵筒旁的 QR 碼貼紙。",
+        "locationHint": "提示：郵筒離慈善寺約 100 公尺",
+        "primaryCode": "JIACHUN-POST-01",
+        "alternativeCodes": [
+          "JIACHUN_POST",
+          "JIACHUN-POST"
+        ],
+        "validationMode": "case_insensitive",
+        "successMessage": "找到了！繼續下一個任務。",
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 5,
+      "pageType": "gps_mission",
+      "customName": "任務三：前往秘密花園",
+      "config": {
+        "title": "任務三：GPS 導航",
+        "description": "村裡有一座秘密花園，只有到達指定座標才能觸發下一個任務。",
+        "targetLocation": {
+          "lat": 24.3175,
+          "lng": 120.6467
+        },
+        "radius": 30,
+        "instruction": "依照地圖提示前往目標位置。你會看到距離即時更新。",
+        "hotZoneHints": true,
+        "proximitySound": true,
+        "showMap": true,
+        "qrFallback": false,
+        "onSuccess": {
+          "message": "你發現了秘密花園！",
+          "points": 25
+        }
+      }
+    },
+    {
+      "pageOrder": 6,
+      "pageType": "photo_ar",
+      "customName": "任務四：AR 臉譜合照",
+      "config": {
+        "title": "任務四：戴上賈村面具",
+        "description": "賈村的傳統面具會守護勇士。請讓它戴在你的臉上。",
+        "instruction": "正面對準鏡頭，面具會自動貼到你的眼睛位置。",
+        "arStickerConfig": {
+          "stickers": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dhczwewns/image/upload/v1761800000/chito-demo/jiachun-mask.png",
+              "position": "center",
+              "sizeRatio": 0.7
+            }
+          ],
+          "anchorPoint": "eyes"
+        },
+        "enableComposite": false,
+        "rewardPoints": 30
+      }
+    },
+    {
+      "pageOrder": 7,
+      "pageType": "text_verify",
+      "customName": "任務五：密碼文字",
+      "config": {
+        "question": "面具上刻著古老的文字，你看到的是什麼？（提示：與招牌相關）",
+        "answers": [
+          "慈善寺",
+          "慈善",
+          "善"
+        ],
+        "inputType": "text",
+        "caseSensitive": false,
+        "maxAttempts": 5,
+        "rewardPoints": 15
+      }
+    },
+    {
+      "pageOrder": 8,
+      "pageType": "text_card",
+      "customName": "完賽頁",
+      "config": {
+        "title": "🏆 任務完成！",
+        "content": "恭喜你成為賈村的榮譽勇士！你剛剛體驗了 CHITO 平台五大遊戲元件：\n\n• OCR 招牌辨識（Google Vision）\n• QR 掃描\n• GPS 定位\n• AR 臉譜貼圖（MediaPipe 本地追蹤）\n• 文字驗證\n\n歡迎將此遊戲發佈到你的場域。",
+        "layout": "center",
+        "animation": "fade_in",
+        "fontSize": "large",
+        "rewardPoints": 10
+      }
+    }
+  ]
+}
