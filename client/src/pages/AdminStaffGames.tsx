@@ -57,24 +57,7 @@ export default function AdminStaffGames() {
                   className="pl-8 pr-14"
                   data-testid="input-search-games"
                 />
-                {!ctx.searchQuery && (
-                  <kbd
-                    className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-70"
-                    title="按 / 或 ⌘K/Ctrl+K 快速搜尋"
-                  >
-                    {isMac ? (
-                      <>
-                        <span className="text-sm leading-none">⌘</span>
-                        <span>K</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Ctrl</span>
-                        <span>K</span>
-                      </>
-                    )}
-                  </kbd>
-                )}
+                {!ctx.searchQuery && <SearchKbdHint isMac={isMac} />}
               </div>
             </div>
             <StatusTabs filter={ctx.statusFilter} onChange={ctx.setStatusFilter} counts={ctx.gameCounts} />
