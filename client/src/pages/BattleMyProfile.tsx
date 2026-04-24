@@ -31,14 +31,12 @@ export default function BattleMyProfile() {
   const { data: ranking } = useQuery<MyRankingResponse>({
     queryKey: ["/api/battle/rankings/me", fieldId],
     queryFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch(`/api/battle/rankings/me?fieldId=${fieldId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return null;
-      return res.json();
+      try {
+        const res = await apiRequest("GET", `/api/battle/rankings/me?fieldId=${fieldId}`);
+        return res.json();
+      } catch {
+        return null;
+      }
     },
     enabled: !!fieldId && !!user,
   });
@@ -46,14 +44,12 @@ export default function BattleMyProfile() {
   const { data: myClan } = useQuery<MyClanResponse | null>({
     queryKey: ["/api/battle/my/clan", fieldId],
     queryFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch(`/api/battle/my/clan?fieldId=${fieldId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return null;
-      return res.json();
+      try {
+        const res = await apiRequest("GET", `/api/battle/my/clan?fieldId=${fieldId}`);
+        return res.json();
+      } catch {
+        return null;
+      }
     },
     enabled: !!fieldId && !!user,
   });
