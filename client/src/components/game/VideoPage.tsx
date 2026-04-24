@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Play, Pause, SkipForward, ChevronRight, Volume2, VolumeX, AlertTriangle } from "lucide-react";
+import { Play, Pause, SkipForward, ChevronRight, Volume2, VolumeX } from "lucide-react";
 import type { VideoConfig } from "@shared/schema";
+import GameErrorView from "./photo-mission/GameErrorView";
 
 interface VideoPageProps {
   config: VideoConfig;
