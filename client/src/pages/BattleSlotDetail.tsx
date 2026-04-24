@@ -446,8 +446,10 @@ export default function BattleSlotDetail() {
             <Button
               onClick={() => joinTeamMutation.mutate()}
               disabled={joinTeamMutation.isPending || accessCode.length < 6}
+              className="gap-2"
             >
-              加入
+              {joinTeamMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {joinTeamMutation.isPending ? "加入中..." : "加入"}
             </Button>
           </DialogFooter>
         </DialogContent>
