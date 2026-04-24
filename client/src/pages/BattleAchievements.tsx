@@ -57,9 +57,12 @@ export default function BattleAchievements() {
   const { data: allDefs = [] } = useQuery<AchievementDef[]>({
     queryKey: ["/api/battle/achievements"],
     queryFn: async () => {
-      const res = await fetch("/api/battle/achievements", { credentials: "include" });
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", "/api/battle/achievements");
+        return res.json();
+      } catch {
+        return [];
+      }
     },
   });
 
