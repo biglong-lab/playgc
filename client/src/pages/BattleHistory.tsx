@@ -176,7 +176,8 @@ export default function BattleHistory() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          </>
         )}
       </div>
     </BattleLayout>
