@@ -514,9 +514,10 @@ export default function PhotoArStickerFlow({
           </div>
         )}
 
-        {/* 貼圖 overlay 預覽 */}
+        {/* 貼圖 overlay 預覽（失敗的貼圖跳過，不顯示 broken image icon）*/}
         {stickers.map((s, idx) => {
           const img = preloadedStickers[idx];
+          if (preloadDone && !img) return null; // 該張 URL 壞掉，跳過
           const imgRatio = img ? img.naturalWidth / img.naturalHeight : 1;
 
           // 🆕 B2: face anchor 定位
