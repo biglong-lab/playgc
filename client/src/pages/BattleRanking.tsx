@@ -51,6 +51,19 @@ export default function BattleRanking() {
     enabled: !!fieldId && !!user,
   });
 
+  // 🔧 找到自己在 list 中的位置（用來算上一名距離 + scrollIntoView）
+  const myEntryRef = useRef<HTMLDivElement | null>(null);
+  const myIndex = user ? rankings.findIndex((e) => e.userId === user.id) : -1;
+  const myEntry = myIndex >= 0 ? rankings[myIndex] : null;
+  const prevEntry = myIndex > 0 ? rankings[myIndex - 1] : null;
+  const ratingGap = prevEntry && myEntry ? prevEntry.rating - myEntry.rating : 0;
+
+  // 「滾到我的位置」 —— 排名在第 6 名以後才顯示
+  const showScrollToMe = myIndex >= 5;
+  const scrollToMe = () => {
+    myEntryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
   return (
     <BattleLayout title="排行榜" subtitle="全場域積分排名">
       <div className="space-y-4">
@@ -61,13 +74,32 @@ export default function BattleRanking() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">我的段位</p>
-                  <p className="text-xl font-display font-bold">{myRanking.tierLabel}</p>
+                  <p className="text-xl font-display font-bold">
+                    {myRanking.tierLabel}
+                    {/* 🚀 顯示排名 */}
+                    {myEntry && (
+                      <span className="ml-2 text-sm text-muted-foreground font-normal">
+                        #{myEntry.rank}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-number font-bold">{myRanking.rating}</p>
                   <p className="text-sm text-muted-foreground">積分</p>
                 </div>
               </div>
+              {/* 🚀 距離下一名提示（提供向上挑戰動力） */}
+              {prevEntry && ratingGap > 0 && (
+                <div className="mt-2 flex items-center justify-center gap-1.5 text-xs">
+                  <TrendingUp className="h-3 w-3 text-primary" />
+                  <span className="text-muted-foreground">距離 #{prevEntry.rank} </span>
+                  <span className="font-semibold text-primary">{prevEntry.displayName ?? "玩家"}</span>
+                  <span className="text-muted-foreground">還差</span>
+                  <span className="font-number font-bold text-primary">{ratingGap}</span>
+                  <span className="text-muted-foreground">分</span>
+                </div>
+              )}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 text-center text-sm">
                 <div>
                   <p className="text-muted-foreground">總場</p>
