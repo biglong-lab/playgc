@@ -644,10 +644,11 @@ function FieldCard({
           </p>
         )}
 
-        {/* 🆕 公告提示（API 已過濾時效外，只會在生效中出現） */}
+        {/* 🆕 公告提示（API 已過濾時效外，只會在生效中出現）+ 倒數 */}
         {field.announcement && (() => {
           const isUrgent = field.announcementSeverity === "urgent";
           const Icon = isUrgent ? AlertCircle : Megaphone;
+          const remaining = formatRemainingDays(daysUntilDate(field.announcementEndAt));
           return (
             <div
               className={`flex items-start gap-1.5 mt-2 px-2 py-1.5 rounded-md text-xs ${
@@ -658,10 +659,15 @@ function FieldCard({
               data-testid={`field-card-announcement-${field.code}`}
             >
               <Icon className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-              <span className="line-clamp-2 leading-snug">
+              <span className="line-clamp-2 leading-snug flex-1">
                 {isUrgent && "🚨 "}
                 {field.announcement}
               </span>
+              {remaining && (
+                <span className="opacity-60 font-mono text-[10px] shrink-0 mt-0.5">
+                  {remaining}
+                </span>
+              )}
             </div>
           );
         })()}
