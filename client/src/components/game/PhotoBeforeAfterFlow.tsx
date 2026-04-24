@@ -405,7 +405,7 @@ export default function PhotoBeforeAfterFlow({
         className="gap-2 mt-4"
         onClick={() => {
           setStage("before");
-          camera.startCamera();
+          camera.startCamera(config.defaultFacingMode ?? "user");
         }}
         data-testid="btn-ba-start-before"
       >
