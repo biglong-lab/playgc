@@ -16,7 +16,7 @@ export default function ToolboxSidebar({
   onAddTemplate,
 }: ToolboxSidebarProps) {
   return (
-    <aside className="w-56 border-r border-border bg-card/50 flex flex-col">
+    <aside className="w-56 border-r border-border bg-card/50 flex flex-col min-h-0 shrink-0">
       <Tabs defaultValue="elements" className="flex-1 flex flex-col">
         <TabsList className="w-full rounded-none border-b">
           <TabsTrigger value="elements" className="flex-1 text-xs">
