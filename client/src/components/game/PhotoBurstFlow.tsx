@@ -19,6 +19,7 @@ import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import {
   CameraInitializingView, CameraView, UploadingView,
 } from "./photo-mission/PhotoViews";
+import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoBurstFlowProps {
