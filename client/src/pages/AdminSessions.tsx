@@ -11,6 +11,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { GridSkeleton } from "@/components/shared/LoadingSkeleton";
 import MetricCard from "@/components/shared/MetricCard";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
+import SearchKbdHint from "@/components/shared/SearchKbdHint";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
