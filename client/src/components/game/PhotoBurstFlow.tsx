@@ -350,16 +350,17 @@ export default function PhotoBurstFlow({
       return <CameraInitializingView videoRef={camera.videoRef} onCancel={camera.cancelCamera} />;
     }
     return (
-      <div className="relative h-full w-full bg-black" data-testid="photo-burst-shooting">
+      <div className="fixed inset-0 z-50 bg-black" data-testid="photo-burst-shooting">
         <video
           ref={camera.videoRef}
           className="w-full h-full object-cover"
+          style={{ transform: camera.facingMode === "user" ? "scaleX(-1)" : undefined }}
           autoPlay playsInline muted
         />
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-6 py-3 rounded-full text-lg font-bold">
           {countdown} / {frameCount}
         </div>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-black/50 px-4 py-2 rounded-full">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-black/50 px-4 py-2 rounded-full">
           連拍中，請保持穩定
         </div>
       </div>
