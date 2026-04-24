@@ -235,7 +235,8 @@ export default function AdminDashboard() {
                       <div className="min-w-0">
                         <p className="font-medium text-sm truncate">{game.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {game.estimatedTime || 30} 分鐘
+                          {/* 🆕 沒設時長就 "—"，避免預設 30 分鐘誤導 */}
+                          {game.estimatedTime ? `約 ${game.estimatedTime} 分鐘` : "— 分鐘"}
                         </p>
                       </div>
                     </div>
