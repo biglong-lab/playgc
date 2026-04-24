@@ -70,6 +70,7 @@ export default function AdminDashboard() {
   const activeSessions = sessions?.filter(s => s.status === "playing").length || 0;
   const onlineDevices = devices?.filter(d => d.status === "online").length || 0;
   const publishedGames = games?.filter(g => g.status === "published").length || 0;
+  const draftGames = games?.filter(g => g.status === "draft").length || 0;
 
   // 🆕 今日完成場次（精確過濾 completedAt 為今日）
   const todayCompleted = useMemo(() => {
