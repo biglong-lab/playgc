@@ -113,7 +113,16 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">進行中場次</CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-1.5">
+              進行中場次
+              {/* 🆕 有進行中場次時加脈衝綠點（「LIVE」指示） */}
+              {activeSessions > 0 && (
+                <span className="relative flex h-2 w-2" aria-label="live">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                </span>
+              )}
+            </CardTitle>
             <Activity className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -121,7 +130,7 @@ export default function AdminDashboard() {
               {activeSessions}
             </div>
             <p className="text-xs text-muted-foreground">
-              目前有玩家進行中
+              {activeSessions > 0 ? "目前有玩家進行中" : "目前無進行中場次"}
             </p>
           </CardContent>
         </Card>
