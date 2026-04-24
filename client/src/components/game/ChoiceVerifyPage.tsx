@@ -136,6 +136,10 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
     }
   };
 
+  // 🆕 答題後的解釋（showExplanation=true 時才顯示）
+  const [lastAnswerCorrect, setLastAnswerCorrect] = useState<boolean | null>(null);
+  const showExplanationEnabled = config?.showExplanation === true;
+
   const handleLegacySubmit = () => {
     if (selectedOption === null) return;
 
@@ -146,12 +150,17 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
       .filter(idx => idx !== -1);
 
     const isMatch = correctIndices.includes(selectedOption);
+    setLastAnswerCorrect(isMatch);
 
     if (isMatch) {
       toast({
         title: "答對了!",
         description: "做得好!",
       });
+      // 🆕 有解釋時不自動跳，等使用者點「繼續」
+      if (showExplanationEnabled && (config?.explanation || legacyOptions[selectedOption]?.explanation)) {
+        return; // 等使用者點「繼續」按鈕
+      }
       setTimeout(() => {
         if (finishedRef.current) return;
         finishedRef.current = true;
@@ -164,11 +173,31 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
         description: "請再試一次",
         variant: "destructive",
       });
+      // 🆕 有解釋時顯示解釋（答錯也看得到由來），點「再試」才重置
+      if (showExplanationEnabled && (config?.explanation || legacyOptions[selectedOption]?.explanation)) {
+        return;
+      }
       setTimeout(() => {
         setIsSubmitted(false);
         setSelectedOption(null);
+        setLastAnswerCorrect(null);
       }, 1500);
     }
+  };
+
+  // 🆕 答對後點「繼續」完成
+  const handleLegacyContinue = () => {
+    if (selectedOption === null || finishedRef.current) return;
+    finishedRef.current = true;
+    const selected = legacyOptions[selectedOption];
+    onComplete({ points: 10 }, selected?.nextPageId);
+  };
+
+  // 🆕 答錯後點「再試一次」重置
+  const handleLegacyRetry = () => {
+    setIsSubmitted(false);
+    setSelectedOption(null);
+    setLastAnswerCorrect(null);
   };
 
   const getQuizOptionStyle = (index: number) => {
