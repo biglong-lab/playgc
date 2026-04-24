@@ -129,9 +129,9 @@ sleep 15
 
 # ═══ 5/6 驗證 git HEAD 一致 ═══
 log_step "5/6 驗證 git HEAD 一致"
-REMOTE_SHA=$(ssh "$SSH_HOST" "cd $PROD_PATH && git rev-parse --short HEAD")
+REMOTE_SHA=$(ssh "$SSH_HOST" "cd $PROD_PATH && git rev-parse HEAD")   # 🔧 同步用完整 SHA
 if [[ "$LOCAL_SHA" != "$REMOTE_SHA" ]]; then
-  log_fail "git HEAD 不一致：本地 $LOCAL_SHA != 伺服器 $REMOTE_SHA"
+  log_fail "git HEAD 不一致：本地 ${LOCAL_SHA:0:7} != 伺服器 ${REMOTE_SHA:0:7}"
   exit 1
 fi
 log_ok "git HEAD 一致: $LOCAL_SHA"
