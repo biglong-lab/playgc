@@ -464,46 +464,13 @@ export default function PhotoArStickerFlow({
 
   if (stage === "done" && finalUrl) {
     return (
-      // 🎨 修正 layout 歪斜：用 overflow-y-auto + 內層置中，不依賴 h-full（GamePlay main 可能高度不足）
-      <div
-        className="w-full min-h-full overflow-y-auto bg-background"
-        data-testid="photo-ar-done"
-      >
-        <div className="max-w-md mx-auto px-4 py-6 flex flex-col items-center gap-4">
-          <div className="flex items-center gap-2 text-primary">
-            <CheckCircle2 className="w-6 h-6" />
-            <h2 className="text-xl font-bold">AR 拍照完成！</h2>
-          </div>
-          {/* 圖片容器：明確 aspect + 寬度 */}
-          <div className="w-full rounded-lg shadow-lg overflow-hidden bg-card border">
-            <img
-              src={finalUrl}
-              alt="AR 成果"
-              className="w-full h-auto block"
-              data-testid="photo-ar-final"
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-2 w-full">
-            {/* 🎯 下載改用 <a href download>，iOS Safari 可直接存到相簿（不用 fetch blob 避 CORS）*/}
-            <a
-              href={finalUrl}
-              download={`chito-ar-${Date.now()}.jpg`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1 h-10 rounded-md border border-input bg-background text-foreground hover:bg-accent text-sm"
-              data-testid="btn-ar-download"
-            >
-              <Download className="w-4 h-4" /> 下載
-            </a>
-            <Button onClick={handleShare} variant="outline" className="gap-1" data-testid="btn-ar-share">
-              <Share2 className="w-4 h-4" /> 分享
-            </Button>
-            <Button onClick={handleContinue} className="gap-1" data-testid="btn-ar-continue">
-              繼續
-            </Button>
-          </div>
-        </div>
-      </div>
+      <PhotoSuccessView
+        imageUrl={finalUrl}
+        title="AR 拍照完成！"
+        downloadPrefix="chito-ar"
+        onContinue={handleContinue}
+        testId="photo-ar-done"
+      />
     );
   }
 
