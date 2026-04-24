@@ -25,9 +25,12 @@ export default function BattleRanking() {
     queryKey: ["/api/battle/rankings", fieldId],
     queryFn: async () => {
       if (!fieldId) return [];
-      const res = await fetch(`/api/battle/rankings?fieldId=${fieldId}`);
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", `/api/battle/rankings?fieldId=${fieldId}`);
+        return res.json();
+      } catch {
+        return [];
+      }
     },
     enabled: !!fieldId,
   });
