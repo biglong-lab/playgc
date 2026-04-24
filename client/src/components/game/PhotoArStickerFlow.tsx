@@ -161,6 +161,78 @@ export default function PhotoArStickerFlow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
+  // 🆕 B2: 臉部追蹤 RAF loop
+  useEffect(() => {
+    if (stage !== "camera") return;
+    if (!useFaceTracking) return;
+    if (!camera.cameraReady) return;
+
+    let cancelled = false;
+
+    const init = async () => {
+      try {
+        const landmarker = await getFaceLandmarker();
+        if (cancelled) return;
+        setFaceReady(true);
+        setFaceError(null);
+
+        const loop = () => {
+          if (cancelled) return;
+          const video = camera.videoRef.current;
+          if (!video || video.readyState < 2) {
+            rafIdRef.current = requestAnimationFrame(loop);
+            return;
+          }
+
+          const ts = performance.now();
+          // VIDEO mode 要求 timestamp 嚴格遞增
+          if (ts <= lastTsRef.current) {
+            rafIdRef.current = requestAnimationFrame(loop);
+            return;
+          }
+          lastTsRef.current = ts;
+
+          try {
+            const result = detectFaceForVideo(landmarker, video, ts);
+            const coord = getAnchorCoordinate(result, anchorPoint);
+            setFaceAnchor(coord);
+          } catch (e) {
+            // 偵測失敗不中斷 loop
+          }
+          rafIdRef.current = requestAnimationFrame(loop);
+        };
+        rafIdRef.current = requestAnimationFrame(loop);
+      } catch (err) {
+        if (!cancelled) {
+          setFaceError(err instanceof Error ? err.message : "臉部追蹤載入失敗");
+        }
+      }
+    };
+    init();
+
+    return () => {
+      cancelled = true;
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, camera.cameraReady, useFaceTracking, anchorPoint]);
+
+  // 離開時釋放 FaceLandmarker
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+      if (useFaceTracking) {
+        closeFaceLandmarker().catch(() => {});
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 上傳合成圖
   const uploadMutation = useMutation({
     mutationFn: async (imageData: string) => {
