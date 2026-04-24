@@ -61,46 +61,52 @@ if (typeof window !== "undefined" && !localStorage.getItem(CACHE_PURGE_FLAG)) {
 }
 
 // 🚀 持續性版本比對（取代一次性 purge flag）
-//   每次啟動 fetch /api/version，若 server commit !== client commit → 清快取 reload
-//   這樣未來不用再 bump CACHE_PURGE_FLAG，使用者永遠拿到最新版
-if (typeof window !== "undefined" && CLIENT_COMMIT !== "unknown") {
-  (async () => {
-    try {
-      // 等 1 秒讓主流程先啟動（避免阻塞首屏）
-      await new Promise((r) => setTimeout(r, 1000));
-      const res = await fetch("/api/version", { cache: "no-store" });
-      if (!res.ok) return;
-      const { commit: serverCommit } = await res.json();
-      console.log(
-        `[version-check] client=${CLIENT_COMMIT} server=${serverCommit}`,
-      );
-      if (serverCommit && serverCommit !== CLIENT_COMMIT) {
-        console.warn(
-          `[version-check] 🔄 版本不符，強制清快取 reload (${CLIENT_COMMIT} → ${serverCommit})`,
-        );
-        // 清所有 SW + cache
-        if ("serviceWorker" in navigator) {
-          const regs = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(regs.map((r) => r.unregister()));
-        }
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((k) => caches.delete(k)));
-        }
-        localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
-        // 只 reload 一次避免無限迴圈（用 session flag）
-        if (!sessionStorage.getItem("chito_version_reloaded")) {
-          sessionStorage.setItem("chito_version_reloaded", "1");
-          window.location.reload();
-        }
-      } else if (serverCommit) {
-        localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
-        sessionStorage.removeItem("chito_version_reloaded"); // 重置
-      }
-    } catch {
-      // 無網路也不阻塞
+//   3 個觸發時機確保 PWA 永遠自動更新：
+//   1. app 啟動後 1 秒
+//   2. document visible（使用者切回 app）
+//   3. 每 60 秒定期檢查
+//   任一時機偵測到 server commit 不符 → 清快取 reload
+const checkVersion = async () => {
+  if (CLIENT_COMMIT === "unknown") return;
+  try {
+    const res = await fetch("/api/version", { cache: "no-store" });
+    if (!res.ok) return;
+    const { commit: serverCommit } = await res.json();
+    if (!serverCommit || serverCommit === CLIENT_COMMIT) {
+      localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
+      sessionStorage.removeItem("chito_version_reloaded");
+      return;
     }
-  })();
+    console.warn(
+      `[version-check] 🔄 版本不符 (${CLIENT_COMMIT} → ${serverCommit})，自動清快取 reload`,
+    );
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+    localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
+    if (!sessionStorage.getItem("chito_version_reloaded")) {
+      sessionStorage.setItem("chito_version_reloaded", "1");
+      window.location.reload();
+    }
+  } catch {
+    // 無網路不阻塞
+  }
+};
+
+if (typeof window !== "undefined" && CLIENT_COMMIT !== "unknown") {
+  // 1. 啟動後 1 秒檢查
+  setTimeout(checkVersion, 1000);
+  // 2. 每 60 秒檢查一次（使用者持續用 app 也能自動更新）
+  setInterval(checkVersion, 60000);
+  // 3. visibilitychange：切回 app 時檢查（最常見場景）
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") checkVersion();
+  });
 }
 
 createRoot(document.getElementById("root")!).render(
