@@ -127,24 +127,40 @@ export default function GameCompletionScreen({
     if (cardUrl) return;
     setCardLoading(true);
     try {
-      // 🚀 新：純 client canvas 生成紀念卡，100% 成功，不靠 Cloudinary
-      //   前版本走 /api/cloudinary/composite-photo 透過 Cloudinary fetch mode
-      //   但 Cloudinary transformation URL 偶爾失敗、Free plan 超量會擋
-      //   改 client canvas 繪製 → 永遠成功 + 無 server 依賴
+      // 🚀 Progressive Enhancement：
+      //   Step 1: client canvas 立刻生成（< 100ms，100% 成功）
+      //   Step 2: 背景呼叫 Cloudinary 真正合成炫版本（成功才替換）
       const { createAchievementCard } = await import(
         "@/lib/client-achievement-card"
       );
       const fieldName = currentField?.name || "CHITO";
       const primaryColor = currentField?.theme?.primaryColor || "#ea580c";
+      const gameTitleResolved = isChapterMode ? chapterTitle ?? "章節" : gameTitle;
+      const subtitleResolved = isChapterMode ? "章節完成" : "任務完成";
+
+      // === Step 1: client canvas 立刻顯示 ===
       const dataUrl = await createAchievementCard({
         fieldName,
-        gameTitle: isChapterMode ? chapterTitle ?? "章節" : gameTitle,
+        gameTitle: gameTitleResolved,
         playerName: "挑戰者",
         score,
-        subtitle: isChapterMode ? "章節完成" : "任務完成",
+        subtitle: subtitleResolved,
         primaryColor,
       });
       setCardUrl(dataUrl);
+      setCardLoading(false); // 立刻結束 loading，使用者已看到結果
+
+      // === Step 2: 背景呼叫 Cloudinary 升級（失敗沒差，保留 canvas 版）===
+      upgradeCardToCloudinary({
+        dataUrl,
+        fieldName,
+        gameTitle: gameTitleResolved,
+        score,
+        subtitle: subtitleResolved,
+        fieldCode: currentField?.code || "chito",
+      }).catch((err) => {
+        console.warn("[AchievementCard] Cloudinary 升級失敗（保留 canvas 版）:", err);
+      });
     } catch (err) {
       console.error("[AchievementCard] client canvas 生成失敗:", err);
       toast({
@@ -153,8 +169,69 @@ export default function GameCompletionScreen({
         variant: "destructive",
       });
       setCardOpen(false);
-    } finally {
       setCardLoading(false);
+    }
+  };
+
+  // 🎨 背景升級紀念卡：上傳 canvas base64 到 Cloudinary，套用酷效果（光暈、邊框、水印）
+  const upgradeCardToCloudinary = async ({
+    dataUrl,
+    fieldName,
+    gameTitle,
+    score,
+    subtitle,
+    fieldCode,
+  }: {
+    dataUrl: string;
+    fieldName: string;
+    gameTitle: string;
+    score: number;
+    subtitle: string;
+    fieldCode: string;
+  }) => {
+    // Cloudinary transformation — 真正發揮 server 合成酷效果
+    const transformation = [
+      // 基本：限定尺寸 + 優化
+      { width: 1080, height: 1080, crop: "fill", quality: "auto:good" },
+      // 🎨 加鋒利濾鏡
+      { effect: "sharpen:30" },
+      // 🎨 邊框（漸層白框）
+      { border: "8px_solid_white", radius: 20 },
+      // 🎨 光暈（微弱陰影）
+      { effect: "shadow:30,x_0,y_0", color: "rgb:00000040" },
+      // 🎨 CHITO 水印文字（右下角）
+      {
+        overlay: {
+          font_family: "Arial",
+          font_size: 32,
+          font_weight: "bold",
+          text: `CHITO%20%E2%80%A2%20${encodeURIComponent(fieldCode)}`,
+        },
+        color: "white",
+        opacity: 70,
+        gravity: "south_east",
+        x: 40,
+        y: 40,
+      },
+      // 格式輸出
+      { fetch_format: "auto" },
+    ];
+
+    try {
+      const res = await apiRequest("POST", "/api/cloudinary/composite-upload", {
+        sourceImageUrl: dataUrl,
+        transformation,
+        folder: `achievements/${fieldCode.toLowerCase()}`,
+        publicId: `${fieldCode.toLowerCase()}_${Date.now()}`,
+      });
+      const data = (await res.json()) as { success?: boolean; url?: string };
+      if (data.success && data.url) {
+        console.log("[AchievementCard] ✨ Cloudinary 升級完成，替換");
+        setCardUrl(data.url); // 靜默替換（使用者不會察覺卡頓）
+      }
+    } catch (err) {
+      console.warn("[AchievementCard] Cloudinary 升級失敗:", err);
+      // 保留 canvas 版
     }
   };
 
