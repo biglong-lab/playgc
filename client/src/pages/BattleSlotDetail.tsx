@@ -202,6 +202,20 @@ export default function BattleSlotDetail() {
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span>{slotData.startTime?.slice(0, 5)} - {slotData.endTime?.slice(0, 5)}</span>
+                {/* 🚀 顯示距離時間（讓使用者一眼知道還有多久開戰） */}
+                {(() => {
+                  const label = formatTimeUntil(slotData.slotDate, slotData.startTime, slotData.endTime);
+                  if (!label) return null;
+                  const imminent = isImminentSlot(slotData.slotDate, slotData.startTime);
+                  return (
+                    <Badge
+                      variant={imminent ? "default" : "outline"}
+                      className={`text-xs ml-1 ${imminent ? "animate-pulse" : ""}`}
+                    >
+                      {label}
+                    </Badge>
+                  );
+                })()}
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
