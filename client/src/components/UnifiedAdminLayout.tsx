@@ -78,6 +78,12 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
     "--sidebar-width-icon": "4rem",
   };
 
+  // 🆕 偵測 macOS，決定快捷鍵按鈕顯示 ⌘K 還是 Ctrl+K
+  const isMac = useMemo(() => {
+    if (typeof navigator === "undefined") return false;
+    return /Mac|iPhone|iPod|iPad/i.test(navigator.platform || navigator.userAgent || "");
+  }, []);
+
   return (
     <SidebarProvider style={sidebarStyle as React.CSSProperties}>
       <div className="flex h-screen w-full">
