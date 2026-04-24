@@ -195,7 +195,7 @@ export function CameraInitializingView({
 }
 
 // ===========================================
-// 拍照畫面
+// 拍照畫面（沉浸式 fixed full-screen）
 // ===========================================
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -205,6 +205,9 @@ interface CameraViewProps {
   onCancel: () => void;
   /** 手動重啟相機（載入失敗時救急用）*/
   onRestart?: () => void;
+  /** 🆕 切換前後鏡頭（若提供則顯示按鈕）*/
+  onSwitchCamera?: () => void;
+  facingMode?: "user" | "environment";
 }
 
 export function CameraView({
@@ -214,16 +217,21 @@ export function CameraView({
   onCapture,
   onCancel,
   onRestart,
+  onSwitchCamera,
+  facingMode = "environment",
 }: CameraViewProps) {
+  const isMirror = facingMode === "user";
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex-1 relative bg-black rounded-lg overflow-hidden">
+    // 🎨 fixed inset-0 z-50 蓋過 GamePlay header/footer 全螢幕沉浸式
+    <div className="fixed inset-0 z-50 bg-black flex flex-col" data-testid="camera-view-fullscreen">
+      <div className="flex-1 relative bg-black overflow-hidden">
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
           className="w-full h-full object-cover"
+          style={{ transform: isMirror ? "scaleX(-1)" : undefined }}
         />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
@@ -232,6 +240,21 @@ export function CameraView({
             }`}
           />
         </div>
+
+        {/* 🆕 切換前後鏡頭（右上）*/}
+        {onSwitchCamera && (
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onSwitchCamera}
+            className="absolute top-4 right-4 bg-black/50 backdrop-blur hover:bg-black/70 text-white w-11 h-11 rounded-full"
+            data-testid="btn-camera-switch"
+            title={isMirror ? "切到後鏡頭" : "切到前鏡頭（自拍）"}
+          >
+            <RefreshCw className="w-5 h-5" />
+          </Button>
+        )}
+
         {!cameraReady && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 gap-3">
             <Loader2 className="w-10 h-10 text-white animate-spin" />
@@ -248,12 +271,15 @@ export function CameraView({
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-6">
+      <div
+        className="py-4 px-4 flex items-center justify-center gap-6 bg-black"
+        style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
+      >
         <Button
           variant="outline"
           onClick={onCancel}
           data-testid="button-cancel-camera"
-          className="min-h-12 px-5"
+          className="min-h-12 px-5 bg-white/10 border-white/30 text-white hover:bg-white/20"
         >
           取消
         </Button>
@@ -262,10 +288,8 @@ export function CameraView({
           size="lg"
           onClick={onCapture}
           disabled={!cameraReady}
-          className={`w-20 h-20 md:w-20 md:h-20 rounded-full shadow-lg active:scale-95 transition-all ${
-            !cameraReady
-              ? "opacity-30 scale-90 cursor-not-allowed"
-              : ""
+          className={`w-20 h-20 md:w-20 md:h-20 rounded-full shadow-lg active:scale-95 transition-all bg-white text-black hover:bg-white/90 ${
+            !cameraReady ? "opacity-30 scale-90 cursor-not-allowed" : ""
           }`}
           data-testid="button-capture"
           title={!cameraReady ? "相機載入中，請稍候" : "按下拍照"}
@@ -276,7 +300,7 @@ export function CameraView({
           variant="outline"
           onClick={() => fileInputRef.current?.click()}
           data-testid="button-gallery"
-          className="min-h-12 w-12"
+          className="min-h-12 w-12 bg-white/10 border-white/30 text-white hover:bg-white/20"
           aria-label="從相簿選擇"
         >
           <Image className="w-5 h-5" />
