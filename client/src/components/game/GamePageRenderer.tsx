@@ -105,6 +105,11 @@ export default function GamePageRenderer({
         return <ShootingMissionPage {...commonProps} />;
       case "photo_mission":
         return <PhotoMissionPage {...commonProps} />;
+      // 🆕 v2 獨立拍照類元件
+      case "photo_spot":
+        return <PhotoSpotFlow {...commonProps} />;
+      case "photo_compare":
+        return <PhotoCompareFlow {...commonProps} />;
       case "gps_mission":
         return <GpsMissionPage {...commonProps} />;
       case "qr_scan":
