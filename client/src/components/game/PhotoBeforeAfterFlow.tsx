@@ -50,6 +50,8 @@ export default function PhotoBeforeAfterFlow({
   const [afterPhotoUrl, setAfterPhotoUrl] = useState<string | null>(null);
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
   const [gapCountdown, setGapCountdown] = useState(0);
+  // 🆕 存本地 base64 用於 client-side 拼貼（不等 server）
+  const [beforeBase64, setBeforeBase64] = useState<string | null>(null);
 
   const finishedRef = useRef(false);
 
