@@ -8,7 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import {
   ArrowLeft, Camera, Download, Share2, X as XIcon,
-  Calendar, Trophy, Users as UsersIcon,
+  Calendar, Trophy, Users as UsersIcon, DownloadCloud, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
