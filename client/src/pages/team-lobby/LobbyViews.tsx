@@ -295,6 +295,29 @@ function CreateTeamForm({
 function AccessCodeCard({
   code, status, copied, onCopy,
 }: { code: string | null; status: string | null; copied: boolean; onCopy: () => void }) {
+  // 🚀 Web Share API：手機可直接分享到 LINE/Messenger 等
+  const handleShare = async () => {
+    if (!code) return;
+    const shareText = `加入我的隊伍！組隊碼：${code}`;
+    const shareUrl = `${window.location.origin}/team-lobby/${window.location.pathname.split("/").pop()}`;
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({ title: "加入我的隊伍", text: shareText, url: shareUrl });
+        return;
+      }
+    } catch (err) {
+      // AbortError = 使用者取消分享，不算失敗
+      if ((err as DOMException)?.name === "AbortError") return;
+    }
+    // Fallback: 複製到剪貼簿（含完整訊息）
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      onCopy();
+    } catch {
+      onCopy();
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -314,12 +337,22 @@ function AccessCodeCard({
               {code}
             </span>
           </div>
-          <Button variant="outline" size="icon" onClick={onCopy} data-testid="button-copy-code">
+          <Button variant="outline" size="icon" onClick={onCopy} data-testid="button-copy-code" title="複製組隊碼">
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          </Button>
+          {/* 🚀 分享按鈕（手機優先） */}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleShare}
+            data-testid="button-share-code"
+            title="分享組隊碼"
+          >
+            <Share2 className="w-4 h-4" />
           </Button>
         </div>
         <p className="text-xs text-muted-foreground text-center mt-2">
-          分享此組隊碼給朋友，讓他們加入隊伍
+          按 <Share2 className="inline h-3 w-3 mx-0.5" /> 分享給朋友，或複製組隊碼
         </p>
       </CardContent>
     </Card>
