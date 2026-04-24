@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { getIdToken } from "@/lib/firebase";
+import { apiRequest } from "@/lib/queryClient";
 import { useLoginHandlers } from "@/hooks/useLoginHandlers";
 import { LoginDialog } from "@/components/landing/LoginDialog";
 import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
