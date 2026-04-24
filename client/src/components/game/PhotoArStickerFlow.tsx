@@ -129,11 +129,20 @@ export default function PhotoArStickerFlow({
   const camera = usePhotoCamera();
   const ar = config.arStickerConfig;
   const stickers = (ar?.stickers ?? []) as StickerConfigItem[];
+  const anchorPoint: AnchorPoint = (ar?.anchorPoint ?? "none") as AnchorPoint;
+  const useFaceTracking = anchorPoint !== "none" && anchorPoint !== "hand";
 
   const [stage, setStage] = useState<"intro" | "camera" | "uploading" | "done">("intro");
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [preloadedStickers, setPreloadedStickers] = useState<HTMLImageElement[]>([]);
   const [preloadError, setPreloadError] = useState<string | null>(null);
+
+  // 🆕 B2: 臉部追蹤狀態
+  const [faceAnchor, setFaceAnchor] = useState<AnchorCoordinate | null>(null);
+  const [faceReady, setFaceReady] = useState(false);
+  const [faceError, setFaceError] = useState<string | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+  const lastTsRef = useRef<number>(0);
 
   const finishedRef = useRef(false);
 
