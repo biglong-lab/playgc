@@ -129,20 +129,31 @@ export default function MyPhotos() {
     setLocation(link(`/album/${sessionId}`));
   };
 
-  // 🆕 v2: 批次下載所有紀念照（同 SessionAlbum pattern）
+  // 🆕 v2: ZIP 下載（Cloudinary archive API）+ fallback 批次
   const handleDownloadAll = async () => {
     if (photos.length === 0 || bulkDownloading) return;
-    if (photos.length > 10) {
-      const ok = window.confirm(
-        `即將下載 ${photos.length} 張紀念照（每張約 0.4 秒，總共約 ${Math.ceil(photos.length * 0.4)} 秒）。\n\n建議電腦操作；手機瀏覽器可能要一張張確認。繼續？`,
-      );
-      if (!ok) return;
-    }
 
     setBulkDownloading(true);
     setBulkProgress({ done: 0, total: photos.length });
 
     try {
+      const zipRes = await apiRequest("GET", "/api/me/photos/zip-url");
+      const zipData = await zipRes.json() as { url?: string; error?: string };
+      if (zipData.url) {
+        const a = document.createElement("a");
+        a.href = zipData.url;
+        a.download = `chito-my-photos.zip`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast({ title: "✅ ZIP 下載已啟動", description: `共 ${photos.length} 張打包` });
+        return;
+      }
+      throw new Error(zipData.error || "產生 ZIP 失敗");
+    } catch (err) {
+      console.warn("[MyPhotos] ZIP fallback to batch:", err);
+      toast({ title: "改用逐張下載", description: "ZIP 服務暫不可用" });
+
       for (let i = 0; i < photos.length; i++) {
         const photo = photos[i];
         try {
@@ -156,15 +167,12 @@ export default function MyPhotos() {
           a.click();
           document.body.removeChild(a);
           setTimeout(() => URL.revokeObjectURL(url), 100);
-        } catch {
-          // 單張失敗不中斷
-        }
+        } catch { /* 單張失敗不中斷 */ }
         setBulkProgress({ done: i + 1, total: photos.length });
         if (i < photos.length - 1) {
           await new Promise((r) => setTimeout(r, 400));
         }
       }
-      toast({ title: "✅ 全部下載完成", description: `${photos.length} 張已存` });
     } finally {
       setBulkDownloading(false);
       setBulkProgress({ done: 0, total: 0 });
