@@ -94,6 +94,7 @@ export default function Landing() {
   const { isLoading, isSignedIn } = useAuth();
   const { t } = useI18n();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const link = useFieldLink();
 
   const loginHandlers = useLoginHandlers(() => setShowLoginDialog(false));
 
