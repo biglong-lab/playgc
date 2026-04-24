@@ -34,8 +34,20 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+/** 🆕 依時段產生個人化問候 */
+function getAdminGreeting(): string {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 11) return "☀️ 早安";
+  if (h >= 11 && h < 14) return "🌞 午安";
+  if (h >= 14 && h < 18) return "⛅ 午後愉快";
+  if (h >= 18 && h < 22) return "🌅 辛苦了";
+  return "🌙 夜深了";
+}
+
 export default function AdminDashboard() {
-  const { isAuthenticated } = useAdminAuth();
+  const { admin, isAuthenticated } = useAdminAuth();
+  const greeting = useMemo(() => getAdminGreeting(), []);
+  const adminName = admin?.displayName || admin?.username || "管理員";
 
   const { data: games } = useQuery<Game[]>({
     queryKey: ["/api/admin/games"],
