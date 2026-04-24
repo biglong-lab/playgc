@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useBattleFieldId } from "@/hooks/useBattleFieldId";
+import { apiRequest } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerRanking } from "@shared/schema";
 import { Crown, Flame } from "lucide-react";
