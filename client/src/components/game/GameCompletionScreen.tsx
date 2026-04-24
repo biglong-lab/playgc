@@ -303,15 +303,27 @@ export default function GameCompletionScreen({
     : `恭喜完成 ${gameTitle}`;
 
   // 🆕 F3: 分享戰績（Web Share API + clipboard fallback）
+  // 🐛 修：原本分享的是「遊戲邀請連結」(/f/xx/game/xxx)，收到者點開是玩自己的新遊戲
+  //      → 他看本場相簿時看到的是自己的照片，不是分享者的 → 隱私誤會
+  //   現在分享「本場 session 相簿 URL」(/f/xx/album/{sessionId})
+  //   → 收到者點開直接看分享者的紀念照 + 底部「挑戰看看」按鈕才進遊戲
   const handleShareScore = async () => {
     const fieldCode = currentField?.code || "";
     const fieldName = currentField?.name || "CHITO";
-    // 遊戲頁連結（場域格式）— OG meta 會讓 preview 顯示該遊戲封面 + 描述
-    const shareUrl = fieldCode
-      ? `https://game.homi.cc/f/${fieldCode}/game/${gameId}`
-      : `https://game.homi.cc/`;
+    // ✅ 優先分享本場相簿（收到者直接看分享者紀念照）
+    //    若沒 sessionId 或沒拍到照片，退回遊戲連結
+    const shareUrl = (() => {
+      if (sessionId && hasAlbumPhotos) {
+        return fieldCode
+          ? `https://game.homi.cc/f/${fieldCode}/album/${sessionId}`
+          : `https://game.homi.cc/album/${sessionId}`;
+      }
+      return fieldCode
+        ? `https://game.homi.cc/f/${fieldCode}/game/${gameId}`
+        : `https://game.homi.cc/`;
+    })();
     const title = isChapterMode ? `我在 ${fieldName} 完成了章節「${chapterTitle}」` : `我在 ${fieldName} 完成了「${gameTitle}」`;
-    const text = `${title}，得 ${score} 分！來挑戰看看：`;
+    const text = `${title}，得 ${score} 分！來看我的紀念照：`;
 
     const shareData: ShareData = {
       title,
