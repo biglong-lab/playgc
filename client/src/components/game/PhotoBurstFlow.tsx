@@ -564,10 +564,42 @@ export default function PhotoBurstFlow({
               <p className="text-2xl font-bold">合成動畫中</p>
               <p className="text-sm text-primary font-medium">{compositeProgress}</p>
             </div>
+
+            {/* 🎨 秒數進度（讓使用者看到系統有在動）*/}
+            <div className="w-full max-w-xs space-y-2">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>已等待 <span className="font-number font-bold text-foreground">{compositeElapsed}</span> 秒</span>
+                <span>超時 {Math.max(0, 15 - compositeElapsed)} 秒後自動切拼貼</span>
+              </div>
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    compositeElapsed >= 15 ? "bg-amber-500" : "bg-primary"
+                  }`}
+                  style={{ width: `${Math.min(100, (compositeElapsed / 15) * 100)}%` }}
+                />
+              </div>
+            </div>
+
             <p className="text-xs text-muted-foreground text-center max-w-xs">
-              GIF 合成約 5-15 秒<br/>
-              若超時會自動改用拼貼圖（2 秒）
+              GIF 合成通常 5-15 秒
             </p>
+
+            {/* 🆕 使用者可主動跳過 GIF 直接用拼貼圖（更快）*/}
+            {compositeElapsed >= 5 && compositeProgress === "建立動畫中..." && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  skipGifRef.current = true;
+                  setCompositeProgress("改用拼貼圖...");
+                }}
+                className="gap-1"
+                data-testid="btn-burst-skip-gif"
+              >
+                不等了，立即用拼貼圖
+              </Button>
+            )}
           </>
         )}
       </div>
