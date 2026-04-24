@@ -229,31 +229,39 @@ export default function PhotoBurstFlow({
         } catch (gifErr) {
           console.warn("[Burst] GIF 失敗或超時，改用拼貼:", gifErr);
           setCompositeProgress("改用拼貼圖...");
-          // Fallback: 拼貼合成（通常 1-2 秒）
+          // 🐛 Fallback: 拼貼合成 — 也加 8s timeout，避免 server 掛住繼續卡
           try {
-            const comp = await compositeMutation.mutateAsync(sortedIds);
+            const collageAbort = new AbortController();
+            const collageTimer = setTimeout(() => collageAbort.abort(), 8000);
+            const res = await fetch("/api/cloudinary/composite-photo", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                playerPhotoPublicId: sortedIds[0] ?? "",
+                config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
+                dynamicVars: {},
+              }),
+              signal: collageAbort.signal,
+            }).finally(() => clearTimeout(collageTimer));
+            const data = await res.json();
             if (cancelled) return;
-            setCompositeUrl(comp.compositeUrl);
+            if (data.compositeUrl) {
+              setCompositeUrl(data.compositeUrl);
+            } else {
+              // API 回空 → 用第一張 Cloudinary URL
+              const firstCloudUrl = sortedIds[0]
+                ? `https://res.cloudinary.com/${(await apiRequest("GET", "/api/cloudinary/cloud-name").then(r => r.json()).catch(() => ({}))).cloudName ?? "dhczwewns"}/image/upload/${sortedIds[0]}`
+                : burstImagesRef.current[0];
+              if (firstCloudUrl) setCompositeUrl(firstCloudUrl);
+            }
             setStage("done");
             return;
           } catch (err) {
-            console.warn("[Burst] 拼貼也失敗:", err);
-            // 最後 fallback：第一張當紀念
-            if (sortedIds.length > 0) {
-              try {
-                const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
-                  playerPhotoPublicId: sortedIds[0],
-                  config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
-                  dynamicVars: {},
-                });
-                const data = await res.json();
-                setCompositeUrl(data.compositeUrl);
-              } catch {
-                // 連第一張合成都失敗 → 只顯示第一張原圖（讓遊戲能繼續）
-                const firstUrl = burstImagesRef.current[0];
-                if (firstUrl) setCompositeUrl(firstUrl);
-              }
-            }
+            console.warn("[Burst] 拼貼也失敗 → 用本地第一張:", err);
+            // 🛟 最終 fallback：本地第一張 base64（不靠任何 server，保證能進 done）
+            const firstLocal = burstImagesRef.current[0];
+            if (firstLocal) setCompositeUrl(firstLocal);
             setStage("done");
           }
         }
