@@ -79,6 +79,12 @@ export default function AdminDashboard() {
 
   return (
     <UnifiedAdminLayout title="管理儀表板" actions={actions}>
+      {/* 🆕 時段個人化問候 */}
+      <div className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground" data-testid="admin-greeting">
+        <span>{greeting}，</span>
+        <span className="font-medium text-foreground">{adminName}</span>
+      </div>
+
       {/* 🆕 當前公告（僅有生效公告時顯示） */}
       <AnnouncementStatusCard />
 
