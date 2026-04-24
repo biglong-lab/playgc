@@ -23,6 +23,7 @@ import {
   UploadingView,
   VerifyingView,
 } from "./photo-mission/PhotoViews";
+import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoSpotFlowProps {
