@@ -4,7 +4,7 @@ import {
   HelpCircle, Target, Camera, MapPin, QrCode,
   Play, Clock, Zap, Gift, ArrowRight,
   Bomb, Lock, Smartphone, Vote, Puzzle, GitBranch,
-  ImageIcon, ScanSearch, LayoutGrid,
+  ImageIcon, ScanSearch, LayoutGrid, Sparkles,
 } from "lucide-react";
 
 export const PAGE_TYPES = [
