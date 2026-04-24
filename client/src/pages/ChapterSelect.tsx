@@ -173,7 +173,18 @@ export default function ChapterSelect() {
         {chapters.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>尚無章節</p>
+            <p className="mb-4">尚無章節</p>
+            {/* 🆕 讓玩家可以回大廳，不卡頁 */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocation(link("/home"))}
+              className="gap-1.5"
+              data-testid="btn-chapter-empty-back-home"
+            >
+              <Home className="w-3.5 h-3.5" />
+              返回大廳
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
