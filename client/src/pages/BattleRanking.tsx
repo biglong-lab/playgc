@@ -127,8 +127,15 @@ export default function BattleRanking() {
 
         {/* 排行榜列表 */}
         <Card className="bg-card border-border">
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
             <CardTitle className="text-base">全場域排行</CardTitle>
+            {/* 🚀 滾到我的位置按鈕（排名 #6 以後才顯示） */}
+            {showScrollToMe && (
+              <Button variant="outline" size="sm" onClick={scrollToMe} className="gap-1 text-xs h-7">
+                <ArrowDown className="h-3 w-3" />
+                定位到我
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             {isLoading ? (
