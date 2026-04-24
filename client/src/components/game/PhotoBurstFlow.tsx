@@ -291,32 +291,29 @@ export default function PhotoBurstFlow({
     camera.startCamera(facing);
   };
 
-  // 🆕 合成階段秒數計時（每秒 +1），讓 UI 有動態進度數字
+  // 🆕 合成階段：秒數計時 + hard deadline（整合在同一個 interval，防 setTimeout 被 throttle）
+  //   🐛 根因：使用者反映「進度條跑完還一直轉」— 用 setTimeout 的話，
+  //       iOS Safari 在低電量/背景時可能 throttle 或延後
+  //   ✅ 改用 setInterval 每秒檢查 elapsed，同一條命 → 計時跑動 = deadline 必觸發
   useEffect(() => {
     if (stage !== "compositing") {
       setCompositeElapsed(0);
       return;
     }
+    let elapsed = 0;
     const timer = setInterval(() => {
-      setCompositeElapsed((s) => s + 1);
+      elapsed += 1;
+      setCompositeElapsed(elapsed);
+      // 🚨 Hard deadline — 20 秒內必強制結束（從 30s 縮短，使用者等不了太久）
+      if (elapsed >= 20) {
+        console.warn("[Burst] Hard deadline 20s → force done");
+        clearInterval(timer);
+        const firstImage = burstImagesRef.current[0];
+        if (firstImage) setCompositeUrl(firstImage);
+        setStage("done");
+      }
     }, 1000);
     return () => clearInterval(timer);
-  }, [stage]);
-
-  // 🚨 絕對 deadline：30 秒後不管合成到哪一步，強制進 done
-  //   用本地第一張圖當紀念（burstImages[0]），不靠任何 server
-  //   保證遊戲一定能繼續
-  useEffect(() => {
-    if (stage !== "compositing") return;
-    const hardDeadline = setTimeout(() => {
-      console.warn("[Burst] 合成 hard deadline 30s，強制本地 fallback");
-      const firstImage = burstImagesRef.current[0];
-      if (firstImage) {
-        setCompositeUrl(firstImage);
-      }
-      setStage("done");
-    }, 30000);
-    return () => clearTimeout(hardDeadline);
   }, [stage]);
 
   // 倒數 3-2-1 後才開始連拍
