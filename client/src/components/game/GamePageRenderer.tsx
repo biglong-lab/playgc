@@ -15,6 +15,9 @@ const ChoiceVerifyPage = lazy(() => import("@/components/game/ChoiceVerifyPage")
 const ConditionalVerifyPage = lazy(() => import("@/components/game/ConditionalVerifyPage"));
 const ShootingMissionPage = lazy(() => import("@/components/game/ShootingMissionPage"));
 const PhotoMissionPage = lazy(() => import("@/components/game/PhotoMissionPage"));
+// 🆕 v2 獨立拍照類元件（2026-04-24）
+const PhotoSpotFlow = lazy(() => import("@/components/game/PhotoSpotFlow"));
+const PhotoCompareFlow = lazy(() => import("@/components/game/PhotoCompareFlow"));
 const GpsMissionPage = lazy(() => import("@/components/game/GpsMissionPage"));
 const QrScanPage = lazy(() => import("@/components/game/QrScanPage"));
 const TimeBombPage = lazy(() => import("@/components/game/TimeBombPage"));
