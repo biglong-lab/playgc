@@ -325,52 +325,17 @@ export default function PhotoSpotFlow({
     );
   }
 
-  // 合成完成畫面
+  // 合成完成畫面（共用 PhotoSuccessView）
   if (compositeUrl) {
     return (
-      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-spot-success">
-        <div className="flex items-center gap-2 text-primary">
-          <CheckCircle2 className="w-6 h-6" />
-          <h2 className="text-xl font-bold">拍照成功！</h2>
-        </div>
-
-        <div className="max-w-md w-full bg-card rounded-lg shadow-lg overflow-hidden">
-          <img
-            src={compositeUrl}
-            alt="紀念照"
-            className="w-full aspect-square object-cover"
-            data-testid="photo-spot-composite-image"
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
-          <Button
-            onClick={handleDownload}
-            variant="outline"
-            className="flex-1 gap-2"
-            data-testid="btn-photo-spot-download"
-          >
-            <Download className="w-4 h-4" />
-            下載
-          </Button>
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            className="flex-1 gap-2"
-            data-testid="btn-photo-spot-share"
-          >
-            <Share2 className="w-4 h-4" />
-            分享
-          </Button>
-          <Button
-            onClick={handleContinue}
-            className="flex-1 gap-2"
-            data-testid="btn-photo-spot-continue"
-          >
-            繼續遊戲
-          </Button>
-        </div>
-      </div>
+      <PhotoSuccessView
+        imageUrl={compositeUrl}
+        title="打卡成功！"
+        subtitle={spot?.sceneDescription}
+        downloadPrefix="chito-spot"
+        onContinue={handleContinue}
+        testId="photo-spot-success"
+      />
     );
   }
 
