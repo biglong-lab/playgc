@@ -60,12 +60,31 @@ export default function AdminGames() {
               <div className="relative w-full md:w-64">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
+                  ref={searchInputRef}
                   placeholder="搜尋遊戲..."
                   value={ctx.searchQuery}
                   onChange={(e) => ctx.setSearchQuery(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 pr-14"
                   data-testid="input-search-games"
                 />
+                {!ctx.searchQuery && (
+                  <kbd
+                    className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-70"
+                    title="按 / 或 ⌘K/Ctrl+K 快速搜尋"
+                  >
+                    {isMac ? (
+                      <>
+                        <span className="text-sm leading-none">⌘</span>
+                        <span>K</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Ctrl</span>
+                        <span>K</span>
+                      </>
+                    )}
+                  </kbd>
+                )}
               </div>
             </div>
             <StatusTabs
