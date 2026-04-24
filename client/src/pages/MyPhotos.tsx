@@ -8,6 +8,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import {
   ArrowLeft, Camera, Download, Share2, X as XIcon, Image as ImageIcon,
+  DownloadCloud, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
