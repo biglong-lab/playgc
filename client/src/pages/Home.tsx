@@ -608,10 +608,13 @@ export default function Home() {
                   </p>
                   
                   <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{game.estimatedTime || 30} 分鐘</span>
-                    </div>
+                    {/* 🆕 沒設時長就不顯示，而不是預設 30 分鐘誤導玩家 */}
+                    {game.estimatedTime ? (
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        <span>約 {game.estimatedTime} 分鐘</span>
+                      </div>
+                    ) : null}
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
                       {game.gameMode === "team" ? (
