@@ -25,11 +25,49 @@ import { GamesTable } from "./admin-games/GamesTable";
 
 export default function AdminGames() {
   const ctx = useAdminGames();
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
   // 🚚 搬移場域 Dialog state（僅 super_admin 可用）
   const [moveFieldGame, setMoveFieldGame] = useState<Game | null>(null);
   const isSuperAdmin = ctx.admin?.systemRole === "super_admin";
   // 🆕 搜尋框鍵盤 shortcut（只綁 `/` 和 Esc，⌘K 讓給 CommandPalette）
   const { inputRef: searchInputRef, handleEscape } = useSearchShortcut<HTMLInputElement>({ disableCmdK: true });
+
+  // 🆕 C2: 匯入賈村示範遊戲
+  const importDemoMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/admin/games/create-from-demo", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
+      return res.json() as Promise<{
+        success: boolean;
+        game: Game;
+        pagesCreated: number;
+        playerUrl: string;
+      }>;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/games"] });
+      toast({
+        title: "✅ 賈村示範遊戲已建立",
+        description: `共 ${data.pagesCreated} 頁，玩家端：${data.playerUrl}`,
+      });
+      // 跳到編輯器
+      navigate(`/admin/games/${data.game.id}/edit`);
+    },
+    onError: (err) => {
+      toast({
+        title: "匯入失敗",
+        description: err instanceof Error ? err.message : "未知錯誤",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (ctx.authLoading) {
     return (
