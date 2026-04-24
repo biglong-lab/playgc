@@ -54,12 +54,22 @@ export default function PhotoBurstFlow({
   const frameCount = burst?.frameCount ?? 4;
   const frameIntervalMs = burst?.frameIntervalMs ?? 1000;
 
-  // 上傳單張照片
+  // 🆕 v2: 每次 burst 產生唯一 tag（後續合成 GIF 用）
+  const burstTagRef = useRef<string>("");
+  const getBurstTag = (): string => {
+    if (!burstTagRef.current) {
+      burstTagRef.current = `burst_${sessionId.slice(0, 12).replace(/[^a-zA-Z0-9]/g, '')}_${Date.now()}`;
+    }
+    return burstTagRef.current;
+  };
+
+  // 上傳單張照片（帶 burst tag）
   const uploadSingle = async (imageData: string): Promise<string> => {
-    const res = await apiRequest("POST", "/api/cloudinary/player-photo", {
+    const res = await apiRequest("POST", "/api/cloudinary/burst-frame", {
       imageData,
       gameId,
       sessionId,
+      tag: getBurstTag(),
     });
     const data = await res.json() as { publicId: string };
     return data.publicId;
