@@ -368,6 +368,28 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 26 — 👥 團體合影（photo_team，簡化版）
+
+**架構決策**：不用 WebSocket（多人同步複雜度太高），改**「隊長主控連拍」模式** — 單一裝置運作。
+
+**檔**：`client/src/components/game/PhotoTeamFlow.tsx`（新 400+ 行）
+
+- 獨立 pageType `photo_team`（indigo 配色，Users icon）
+- 5 階段：intro → select_count → shooting → transition → uploading/compositing → done
+- **實際人數選擇器**：minMembers ~ maxMembers 點選按鈕 + 填第一位名字
+- 拍每位時相機頂部顯示「第 X / N 位：{名字}」進度
+- 拍完自動進 transition 預覽縮圖 + 「拍下一位」或「合成團體照」
+- **合成**：依人數自動排版（2→1x2, 4→2x2, 6→3x2, 9→3x3）
+- **隊員名字 overlay**：每張照片底部半透明黑條顯示該隊員名
+- 完成畫面：列出所有隊員名 + 合成圖 + 下載/分享
+
+**編輯器**（PageConfigEditor）：
+- minMembers / maxMembers 範圍（1-9）
+- 排版 3 選項：grid / strip / collage
+- 3 個 testid：`config-team-min` / `-max` / `-layout`
+
+- Deploy: `d65949d` · bundle `index-CDAhyVUs.js` · verify `photo-team-intro`
+
 #### 輪 25 — 📦 相簿 ZIP 一鍵下載（Cloudinary archive API，零依賴）
 
 **背景**：輪 23-24 的「批次下載」需逐張 fetch + 觸發多個瀏覽器下載，使用者要逐一點「確認」（尤其手機），UX 不佳。
