@@ -268,7 +268,7 @@ export default function Home() {
               
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium hidden sm:inline">
-                  {user.firstName || user.email?.split("@")[0] || "玩家"}
+                  {user.firstName || user.email?.split("@")[0] || displayName}
                 </span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -276,7 +276,7 @@ export default function Home() {
                       <Avatar className="w-8 h-8">
                         <AvatarImage src={firebaseUser?.photoURL || user.profileImageUrl || undefined} />
                         <AvatarFallback>
-                          {(user.firstName?.[0] || user.email?.[0] || "U").toUpperCase()}
+                          {(displayName[0] || user.email?.[0] || "U").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </Button>
