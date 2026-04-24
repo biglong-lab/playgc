@@ -1463,8 +1463,10 @@ async function resolvePhotoSetting<K extends keyof FieldPhotoSettings>(
 | 8 | before_after | 1 天 | 21.5 |
 | 9 | ar_sticker | 3-5 天 | 24.5-26.5 |
 
-**推薦 MVP 範圍**：Phase 0-4（12.5 天）= 指定拍照 + 拍照確認 + 成就卡 + 基礎設施。
-剩餘依優先序逐步推進。
+**~~推薦 MVP 範圍~~**：~~Phase 0-4（12.5 天）~~
+
+**✅ v2 使用者定案：全包（Phase 0-9 全做）**
+詳見下方「全包路線圖調整」章節。
 
 ---
 
