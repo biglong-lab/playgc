@@ -159,6 +159,19 @@ export default function PhotoArStickerFlow({
   const [faceError, setFaceError] = useState<string | null>(null);
   const rafIdRef = useRef<number | null>(null);
   const lastTsRef = useRef<number>(0);
+  // B4 效能優化：frame skip counter
+  const frameCounterRef = useRef(0);
+
+  // 🆕 B4: 隱私 opt-in Dialog
+  const [showConsent, setShowConsent] = useState(false);
+  const [hasConsent, setHasConsent] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem(FACE_CONSENT_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
 
   const finishedRef = useRef(false);
 
