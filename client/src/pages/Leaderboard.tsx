@@ -258,6 +258,16 @@ export default function Leaderboard() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* 🆕 F4: 玩家個人紀錄 Dialog */}
+      <PlayerProfileDialog
+        entry={profileEntry}
+        allEntries={leaderboard || []}
+        games={games || []}
+        onClose={() => setProfileEntry(null)}
+        formatTime={formatTime}
+        getInitials={getInitials}
+      />
     </div>
   );
 }
