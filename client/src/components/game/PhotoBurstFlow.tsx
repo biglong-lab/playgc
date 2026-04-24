@@ -573,11 +573,17 @@ export default function PhotoBurstFlow({
   // 🎨 上傳 / 合成階段 — 明確進度提示 + 預期時間
   if (stage === "uploading" || stage === "compositing") {
     const uploadPercent = Math.round((uploadedIds.length / frameCount) * 100);
+    const buildCommit = (import.meta.env.VITE_APP_COMMIT as string) || "dev";
     return (
       <div
         className="fixed inset-0 z-40 bg-background flex flex-col items-center justify-center p-6 gap-6"
         data-testid="photo-burst-processing"
       >
+        {/* 🐛 Debug info — 右上角小字讓使用者回報時能看到 bundle 版本 */}
+        <div className="absolute top-2 right-2 text-[10px] text-muted-foreground/50 font-mono">
+          v:{buildCommit.slice(0, 7)} · {stage} · {compositeElapsed}s
+        </div>
+
         <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
 
         {stage === "uploading" ? (
