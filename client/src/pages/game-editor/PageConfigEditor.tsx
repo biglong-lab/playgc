@@ -1458,6 +1458,187 @@ export default function PageConfigEditor({
         </div>
       );
 
+    // 🆕 A4: OCR 招牌辨識（photo_ocr）— Google Vision
+    case "photo_ocr":
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">任務說明</label>
+            <Textarea
+              value={(config.description as string) || ""}
+              onChange={(e) => updateField("description", e.target.value)}
+              placeholder="例：走到廟口，拍下「慈善寺」招牌..."
+              rows={2}
+              data-testid="config-ocr-description"
+            />
+          </div>
+
+          <div
+            className="border border-border rounded-lg p-4 space-y-4"
+            data-testid="config-ocr-section"
+          >
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">OCR 招牌辨識設定</span>
+              <span className="text-xs text-muted-foreground ml-auto">
+                Google Vision
+              </span>
+            </div>
+
+            {/* 目標文字（陣列 — 任一命中即通過）*/}
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                目標文字（任一命中即通過）
+              </label>
+              <Textarea
+                value={
+                  ((config.ocrConfig as any)?.expectedTexts ?? []).join("\n")
+                }
+                onChange={(e) =>
+                  updateField("ocrConfig", {
+                    ...((config.ocrConfig as any) || {}),
+                    expectedTexts: e.target.value
+                      .split("\n")
+                      .map((s) => s.trim())
+                      .filter((s) => s.length > 0),
+                  })
+                }
+                placeholder="慈善寺&#10;賈村&#10;集會所"
+                rows={4}
+                data-testid="config-ocr-expected-texts"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                一行一個目標。例：招牌可能寫「慈善寺」或「集會所」
+              </p>
+            </div>
+
+            {/* 模糊閾值 */}
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                模糊比對閾值：
+                {Math.round(
+                  ((config.ocrConfig as any)?.fuzzyThreshold ?? 0.7) * 100,
+                )}
+                %
+              </label>
+              <input
+                type="range"
+                min={0.3}
+                max={1}
+                step={0.05}
+                value={(config.ocrConfig as any)?.fuzzyThreshold ?? 0.7}
+                onChange={(e) =>
+                  updateField("ocrConfig", {
+                    ...((config.ocrConfig as any) || {}),
+                    fuzzyThreshold: parseFloat(e.target.value),
+                  })
+                }
+                className="w-full"
+                data-testid="config-ocr-fuzzy-threshold"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                0.3 = 寬鬆（招牌模糊也過）、0.7 = 適中、1.0 = 完全一致
+              </p>
+            </div>
+
+            {/* 拍攝提示 */}
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                拍攝提示（選填）
+              </label>
+              <Input
+                value={(config.ocrConfig as any)?.instruction ?? ""}
+                onChange={(e) =>
+                  updateField("ocrConfig", {
+                    ...((config.ocrConfig as any) || {}),
+                    instruction: e.target.value,
+                  })
+                }
+                placeholder="請靠近招牌拍攝，確保文字清晰"
+                data-testid="config-ocr-instruction"
+              />
+            </div>
+
+            {/* 參考照片 URL */}
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                參考照片 URL（選填）
+              </label>
+              <Input
+                value={(config.ocrConfig as any)?.referenceImageUrl ?? ""}
+                onChange={(e) =>
+                  updateField("ocrConfig", {
+                    ...((config.ocrConfig as any) || {}),
+                    referenceImageUrl: e.target.value,
+                  })
+                }
+                placeholder="https://res.cloudinary.com/..."
+                data-testid="config-ocr-reference-image"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                提供參考圖讓玩家知道招牌長怎樣
+              </p>
+            </div>
+
+            {/* 重試設定 */}
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={
+                    (config.ocrConfig as any)?.allowRetryOnFail ?? true
+                  }
+                  onChange={(e) =>
+                    updateField("ocrConfig", {
+                      ...((config.ocrConfig as any) || {}),
+                      allowRetryOnFail: e.target.checked,
+                    })
+                  }
+                  data-testid="config-ocr-allow-retry"
+                />
+                <span className="text-xs">允許重試</span>
+              </label>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">
+                  最多重試次數
+                </label>
+                <Input
+                  type="number"
+                  value={(config.ocrConfig as any)?.maxRetries ?? 3}
+                  onChange={(e) =>
+                    updateField("ocrConfig", {
+                      ...((config.ocrConfig as any) || {}),
+                      maxRetries: Math.max(
+                        1,
+                        Math.min(10, parseInt(e.target.value) || 3),
+                      ),
+                    })
+                  }
+                  min={1}
+                  max={10}
+                  data-testid="config-ocr-max-retries"
+                />
+              </div>
+            </div>
+
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded p-3 text-xs text-amber-600 dark:text-amber-400">
+              💡 <strong>成本提醒</strong>：Google Vision 免費額度每月 1000
+              次。達 80% 發 email 警告，達 95% 自動停用此功能。
+            </div>
+          </div>
+
+          <RewardsSection
+            config={config}
+            updateField={updateField}
+            gameId={gameId}
+          />
+          <LocationSettingsSection
+            config={config}
+            updateField={updateField}
+          />
+        </div>
+      );
+
     case "gps_mission":
       return (
         <GpsMissionEditor
