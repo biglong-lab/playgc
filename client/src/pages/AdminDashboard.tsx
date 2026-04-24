@@ -276,39 +276,47 @@ export default function AdminDashboard() {
           <CardContent>
             {devices && devices.length > 0 ? (
               <div className="space-y-3">
-                {devices.slice(0, 5).map((device) => (
-                  <div
-                    key={device.id}
-                    className="flex items-center justify-between p-3 rounded-lg bg-card border border-border"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded flex items-center justify-center ${
-                        device.status === "online"
-                          ? "bg-success/10"
-                          : "bg-muted"
-                      }`}>
-                        <Cpu className={`w-5 h-5 ${
-                          device.status === "online"
-                            ? "text-success"
-                            : "text-muted-foreground"
-                        }`} />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{device.deviceName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {device.deviceType || "未知類型"}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge
-                      variant={device.status === "online" ? "default" : "secondary"}
-                      className={device.status === "online" ? "bg-success" : ""}
+                {devices.slice(0, 5).map((device) => {
+                  // 🆕 依 deviceType 換 icon（射擊靶機=Target、感應器=Radio 等）
+                  const DeviceIcon = getDeviceIcon(device.deviceType);
+                  const typeLabel =
+                    DEVICE_TYPES.find((t) => t.value === device.deviceType)?.label
+                      || device.deviceType
+                      || "未知類型";
+                  return (
+                    <div
+                      key={device.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-card border border-border"
                     >
-                      <Zap className="w-3 h-3 mr-1" />
-                      {device.status === "online" ? "在線" : "離線"}
-                    </Badge>
-                  </div>
-                ))}
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded flex items-center justify-center ${
+                          device.status === "online"
+                            ? "bg-success/10"
+                            : "bg-muted"
+                        }`}>
+                          <DeviceIcon className={`w-5 h-5 ${
+                            device.status === "online"
+                              ? "text-success"
+                              : "text-muted-foreground"
+                          }`} />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{device.deviceName}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {typeLabel}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={device.status === "online" ? "default" : "secondary"}
+                        className={device.status === "online" ? "bg-success" : ""}
+                      >
+                        <Zap className="w-3 h-3 mr-1" />
+                        {device.status === "online" ? "在線" : "離線"}
+                      </Badge>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
