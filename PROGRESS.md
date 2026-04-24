@@ -355,6 +355,30 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - 編輯器可設：before/after 標籤、排版方向、最少間隔
 - Deploy: `45ce375` · bundle `index-DTULFbvK.js` · verify `photo-before-after-intro`
 
+#### 輪 19 — 🎭 AR 貼圖拍照（photo_ar，固定位置版）
+
+**檔**：`client/src/components/game/PhotoArStickerFlow.tsx`（新 360 行）· constants / renderer / editor
+
+- 獨立 pageType `photo_ar`（yellow 配色，Sparkles icon）
+- 固定位置版（**不做臉部追蹤**，避免 deepfake 合規風險）
+- **7 種位置**：top / bottom / center / 四個 corner
+- 貼圖大小 5-80% 可調（佔畫面短邊比例）
+- 實時 camera overlay 預覽 + Canvas 合成拍攝
+- 多貼圖支援（同時疊多張不同位置）
+- **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
+- Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
+
+#### 輪 20 — 🖼️ 紀念照 UX 入口（MeCenter）
+
+**檔**：`client/src/pages/me/MeCenter.tsx`
+
+**背景**：輪 14-15 做好相簿系統 `/me/photos`、`/album/:sessionId` **路由存在但無入口**，使用者找不到。
+
+**修**：MeCenter 主選單 2x2 Grid 頂部新增「我的紀念照」卡片（violet 配色）
+- `MenuCard.accent` 型別擴充 `"violet"`
+- 使用者進個人中心 → 第一個卡片就是「我的紀念照」
+- Deploy: `ace4cb6` · bundle `index-CXuWFELu.js`
+
 #### 輪 18 — 🔒 場域隔離大 Bug 根治（使用者實測回報）
 
 **現象**：使用者開 `/f/JIACHUN/home` 首次載入時**會顯示所有場域的遊戲**（含後浦遊戲），重整才修復。
