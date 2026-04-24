@@ -264,68 +264,37 @@ export default function AdminDevices() {
 
   return (
     <UnifiedAdminLayout title="設備管理" actions={headerActions}>
-      {/* 🆕 統計卡片 — 數字依狀態語義化：離線>0 警示紅、全在線 綠、無設備 muted */}
+      {/* 🆕 統計卡片 — 改用共用 MetricCard（語義化狀態色保留） */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">在線設備</p>
-                <p
-                  className={`font-number text-3xl font-bold ${
-                    totalCount === 0
-                      ? "text-muted-foreground"
-                      : offlineCount > 0
-                        ? "text-warning"
-                        : "text-success"
-                  }`}
-                  data-testid="stat-online-count"
-                >
-                  {onlineCount}
-                </p>
-              </div>
-              <Wifi className={`w-8 h-8 ${onlineCount > 0 ? "text-success/50" : "text-muted-foreground/30"}`} />
-            </div>
-          </CardContent>
-        </Card>
+        <MetricCard
+          label="在線設備"
+          value={onlineCount}
+          icon={Wifi}
+          accent={
+            totalCount === 0
+              ? "muted"
+              : offlineCount > 0
+                ? "warning"
+                : "success"
+          }
+          testid="stat-online-count"
+        />
+        <MetricCard
+          label="離線設備"
+          value={offlineCount}
+          icon={WifiOff}
+          accent={offlineCount > 0 ? "destructive" : "muted"}
+          testid="stat-offline-count"
+        />
+        <MetricCard
+          label="總設備數"
+          value={totalCount}
+          icon={Cpu}
+          accent={totalCount > 0 ? "primary" : "muted"}
+          testid="stat-total-count"
+        />
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">離線設備</p>
-                <p
-                  className={`font-number text-3xl font-bold ${
-                    offlineCount > 0 ? "text-destructive" : "text-muted-foreground"
-                  }`}
-                  data-testid="stat-offline-count"
-                >
-                  {offlineCount}
-                </p>
-              </div>
-              <WifiOff className={`w-8 h-8 ${offlineCount > 0 ? "text-destructive/50" : "text-muted-foreground/30"}`} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">總設備數</p>
-                <p
-                  className={`font-number text-3xl font-bold ${
-                    totalCount === 0 ? "text-muted-foreground" : ""
-                  }`}
-                  data-testid="stat-total-count"
-                >
-                  {totalCount}
-                </p>
-              </div>
-              <Cpu className={`w-8 h-8 ${totalCount > 0 ? "text-primary/50" : "text-muted-foreground/30"}`} />
-            </div>
-          </CardContent>
-        </Card>
+        {/* 全體 LED 卡片保留獨立 Card（含按鈕，不是純 metric） */}
 
         <Card>
           <CardContent className="pt-6">
