@@ -151,41 +151,86 @@ export default function PhotoBeforeAfterFlow({
   });
 
   // 主流程：拍完一張 → 進下一階段
+  // 🚀 Optimistic：after 拍完 → client canvas 拼貼 before+after → 立刻 done
+  //                 背景慢慢 upload + Cloudinary 合成（成功才替換 URL）
   useEffect(() => {
     const process = async () => {
       if (!camera.capturedImage) return;
       if (camera.mode !== "preview") return;
 
       try {
-        camera.setMode("uploading");
-        const uploaded = await uploadMutation.mutateAsync(camera.capturedImage);
+        const capturedLocal = camera.capturedImage;
 
         if (stage === "before") {
-          setBeforePhotoId(uploaded.publicId);
-          setBeforePhotoUrl(uploaded.url);
+          // before 存起來，繼續 gap 倒數
+          setBeforeBase64(capturedLocal);
           camera.setCapturedImage(null);
           camera.setMode("instruction");
           setStage("gap");
+          // 背景也上傳（失敗沒差，有本地 base64）
+          uploadMutation
+            .mutateAsync(capturedLocal)
+            .then((uploaded) => {
+              setBeforePhotoId(uploaded.publicId);
+              setBeforePhotoUrl(uploaded.url);
+            })
+            .catch((err) => {
+              console.warn("[BeforeAfter] before 上傳失敗:", err);
+            });
         } else if (stage === "after") {
-          setAfterPhotoId(uploaded.publicId);
-          setAfterPhotoUrl(uploaded.url);
+          // 🎯 after 拍完 — 立刻用 client-side canvas 拼貼（100% 成功）
           camera.setMode("verifying");
-
-          // 合成
-          if (beforePhotoId) {
+          if (beforeBase64) {
             try {
-              const comp = await compositeMutation.mutateAsync({
-                beforeId: beforePhotoId,
-                afterId: uploaded.publicId,
-              });
-              setCompositeUrl(comp.compositeUrl);
+              const layoutMode = ba?.layoutMode ?? "horizontal";
+              const collage = await createLocalCollage(
+                [beforeBase64, capturedLocal],
+                {
+                  layout: layoutMode === "vertical" ? "vertical" : "horizontal",
+                  maxSize: 1600,
+                  quality: 0.88,
+                },
+              );
+              setCompositeUrl(collage);
+              setStage("done");
+              console.log("[BeforeAfter] ✅ 本地拼貼完成");
             } catch (err) {
-              console.warn("[BeforeAfter] 合成失敗:", err);
-              // fallback: 顯示兩張原圖並排
-              setCompositeUrl(uploaded.url);
+              console.warn("[BeforeAfter] 本地拼貼失敗:", err);
+              // 備用 — 至少顯示 after 那張
+              setCompositeUrl(capturedLocal);
+              setStage("done");
             }
+          } else {
+            // 沒 before base64 → 只顯示 after
+            setCompositeUrl(capturedLocal);
+            setStage("done");
           }
-          setStage("done");
+
+          // 背景嘗試 Cloudinary 合成（成功替換更好的 URL）
+          uploadMutation
+            .mutateAsync(capturedLocal)
+            .then(async (uploaded) => {
+              setAfterPhotoId(uploaded.publicId);
+              setAfterPhotoUrl(uploaded.url);
+              if (beforePhotoId) {
+                try {
+                  const comp = await compositeMutation.mutateAsync({
+                    beforeId: beforePhotoId,
+                    afterId: uploaded.publicId,
+                  });
+                  if (comp.compositeUrl) {
+                    console.log("[BeforeAfter] ✅ Cloudinary 合成成功，替換");
+                    setCompositeUrl(comp.compositeUrl);
+                  }
+                } catch (err) {
+                  console.warn("[BeforeAfter] Cloudinary 合成失敗，保留本地:", err);
+                }
+              }
+            })
+            .catch((err) => {
+              console.warn("[BeforeAfter] after 上傳失敗，保留本地拼貼:", err);
+            });
+          return; // 主流程結束（後續全在背景）
         }
       } catch (err) {
         toast({
