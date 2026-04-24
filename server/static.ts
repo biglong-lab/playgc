@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import path from "path";
+import { serveIndexWithMeta } from "./middleware/og-meta";
 
 export function serveStatic(app: Express) {
   const distPath = path.resolve(__dirname, "public");
@@ -12,12 +13,8 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // SPA fallback — 只對非檔案路徑回傳 index.html
-  // 排除 API 路由和靜態檔案（robots.txt、sitemap.xml 等）
-  app.use("*", (req, res) => {
-    const url = req.originalUrl || req.url;
-    // API 路徑不 fallback
-    if (url.startsWith("/api/")) return res.status(404).json({ message: "Not found" });
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
+  // 🆕 SPA fallback 帶 OG meta 動態注入
+  // 對 /f/:code、/f/:code/game/:gameId、/g/:slug 等路徑讀 DB 注入正確的 OG tags
+  // 讓 Facebook / LINE / Twitter / ChatGPT 等 crawler 能看到動態標題、描述、縮圖
+  app.use("*", serveIndexWithMeta(distPath));
 }
