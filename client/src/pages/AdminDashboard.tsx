@@ -981,11 +981,12 @@ function CloudinaryUsageCard() {
                 <div>API 請求</div>
               </div>
             </div>
-            {data?.storage && data.storage.percent >= 75 && (
+            {data?.credits && data.credits.percent >= 75 && (
               <div className="mt-3 p-2 rounded bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2">
                 <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                 <span>
-                  儲存使用率 {data.storage.percent}%，建議清理 30 天前的舊照片或升級方案
+                  Credits 使用率 {data.credits.percent}%（{data.credits.used.toFixed(1)} / {data.credits.limit}），
+                  建議清理舊照片或升級 Plus 方案（225 credits/月）
                 </span>
               </div>
             )}
