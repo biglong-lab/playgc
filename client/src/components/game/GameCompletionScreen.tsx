@@ -349,18 +349,28 @@ export default function GameCompletionScreen({
 
         {/* 🆕 F3: 分享戰績（獨立列，主要 CTA，金色 gradient 很顯眼） */}
         <motion.div
-          className="flex justify-center mb-3"
+          className="flex flex-col sm:flex-row justify-center gap-2 mb-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2 }}
         >
           <Button
             onClick={handleShareScore}
-            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white w-full sm:min-w-[200px] font-semibold shadow-md h-11"
+            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white w-full sm:flex-1 font-semibold shadow-md h-11"
             data-testid="btn-share-score"
           >
             <Share2 className="w-4 h-4" />
             分享戰績
+          </Button>
+          {/* 🆕 v2: 生成紀念卡 */}
+          <Button
+            onClick={handleGenerateCard}
+            variant="outline"
+            className="gap-2 w-full sm:flex-1 h-11 font-semibold border-amber-400 text-amber-700 hover:bg-amber-50 dark:border-amber-500 dark:text-amber-400 dark:hover:bg-amber-950/30"
+            data-testid="btn-generate-achievement-card"
+          >
+            <ImageIcon className="w-4 h-4" />
+            生成紀念卡
           </Button>
         </motion.div>
 
