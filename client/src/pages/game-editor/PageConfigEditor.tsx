@@ -425,17 +425,39 @@ export default function PageConfigEditor({
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
-                  參考照 URL（必填）
+                  參考照（必填）
                 </label>
-                <Input
-                  value={(config.compareConfig as any)?.referenceImageUrl ?? ""}
-                  onChange={(e) => updateField("compareConfig", {
-                    ...(config.compareConfig as any || {}),
-                    referenceImageUrl: e.target.value,
-                  })}
-                  placeholder="https://..."
-                  data-testid="config-compare-ref-url"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={(config.compareConfig as any)?.referenceImageUrl ?? ""}
+                    onChange={(e) => updateField("compareConfig", {
+                      ...(config.compareConfig as any || {}),
+                      referenceImageUrl: e.target.value,
+                    })}
+                    placeholder="貼 URL 或按右側上傳"
+                    data-testid="config-compare-ref-url"
+                  />
+                  <MediaUploadButton
+                    id="compare-ref-upload"
+                    accept="image/*"
+                    onUploaded={(url) => updateField("compareConfig", {
+                      ...(config.compareConfig as any || {}),
+                      referenceImageUrl: url,
+                    })}
+                  />
+                </div>
+                {(config.compareConfig as any)?.referenceImageUrl && (
+                  <div className="mt-2 rounded border overflow-hidden max-w-xs">
+                    <img
+                      src={(config.compareConfig as any).referenceImageUrl}
+                      alt="參考照預覽"
+                      className="w-full aspect-square object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground mt-1">
                   玩家需拍出與這張照片相似的畫面
                 </p>
