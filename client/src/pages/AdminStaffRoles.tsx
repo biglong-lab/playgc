@@ -104,7 +104,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function AdminStaffRoles() {
-  const { isAuthenticated } = useAdminAuth();
+  const { isAuthenticated, admin } = useAdminAuth();
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
