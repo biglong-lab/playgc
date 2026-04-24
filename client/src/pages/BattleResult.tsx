@@ -61,6 +61,38 @@ export default function BattleResult() {
     黃隊: "text-yellow-500",
   };
 
+  // 🎯 計算 K/D ratio（淘汰/陣亡）— 0 陣亡時用 ∞
+  const kdRatio = (kills: number, deaths: number): string => {
+    if (deaths === 0) return kills > 0 ? "∞" : "0";
+    return (kills / deaths).toFixed(2);
+  };
+
+  // 🚀 分享戰績（手機 Web Share API + clipboard fallback）
+  const handleShareResult = async () => {
+    if (!myResult || !data) return;
+    const winText = data.isDraw
+      ? "平手"
+      : myResult.team === data.winningTeam
+        ? "獲勝 🏆"
+        : "戰敗";
+    const shareText = `我在水彈對戰 ${winText}！得分 ${myResult.score}，淘汰 ${myResult.eliminations}，積分 ${myResult.ratingChange >= 0 ? "+" : ""}${myResult.ratingChange}`;
+    const url = window.location.href;
+    try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({ title: "我的對戰戰績", text: shareText, url });
+        return;
+      }
+    } catch (err) {
+      if ((err as DOMException)?.name === "AbortError") return;
+    }
+    try {
+      await navigator.clipboard.writeText(`${shareText}\n${url}`);
+      toast({ title: "已複製戰績連結" });
+    } catch {
+      // ignore
+    }
+  };
+
   const teamMap = new Map<string, PlayerResultWithName[]>();
   for (const pr of data.playerResults ?? []) {
     if (!teamMap.has(pr.team)) teamMap.set(pr.team, []);
