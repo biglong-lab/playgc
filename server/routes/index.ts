@@ -46,6 +46,7 @@ import { registerWalkieRoutes } from "./walkie";
 import { registerAdminWalkieRoutes } from "./admin-walkie";
 import { registerClientLogsRoutes, startClientLogsCleanup } from "./client-logs";
 import { registerSitemapRoute } from "./sitemap";
+import { registerErrorLogRoutes } from "./error-log";
 
 export async function registerRoutes(
   httpServer: Server,
