@@ -68,8 +68,6 @@ export default function AdminAnalytics() {
     enabled: isAuthenticated,
   });
 
-  const isLoading = overviewLoading || sessionsLoading;
-
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return `${date.getMonth() + 1}/${date.getDate()}`;
@@ -96,32 +94,47 @@ export default function AdminAnalytics() {
     }
   };
 
+  // 🆕 拆開兩個 loading：overview 早回時 stat cards 先渲染，不用等 sessions
   return (
     <UnifiedAdminLayout title="數據分析">
-      {isLoading ? (
+      {overviewLoading ? (
         <GridSkeleton count={4} cols={4} />
       ) : (
-        <>
-          <AnalyticsStatCards overview={overview} />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <DailyTrendChart
-              dailyStats={sessionData?.dailyStats}
-              formatDate={formatDate}
-            />
-            <GameCompletionChart gameStats={overview?.gameStats} />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <GameStatsCard gameStats={overview?.gameStats} />
-            <RecentSessionsCard
-              recentSessions={sessionData?.recentSessions}
-              formatTime={formatTime}
-              getStatusBadge={getStatusBadge}
-            />
-          </div>
-        </>
+        <AnalyticsStatCards overview={overview} />
       )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 mt-6">
+        {sessionsLoading ? (
+          <GridSkeleton count={1} cols={2} />
+        ) : (
+          <DailyTrendChart
+            dailyStats={sessionData?.dailyStats}
+            formatDate={formatDate}
+          />
+        )}
+        {overviewLoading ? (
+          <GridSkeleton count={1} cols={2} />
+        ) : (
+          <GameCompletionChart gameStats={overview?.gameStats} />
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {overviewLoading ? (
+          <GridSkeleton count={1} cols={2} />
+        ) : (
+          <GameStatsCard gameStats={overview?.gameStats} />
+        )}
+        {sessionsLoading ? (
+          <GridSkeleton count={1} cols={2} />
+        ) : (
+          <RecentSessionsCard
+            recentSessions={sessionData?.recentSessions}
+            formatTime={formatTime}
+            getStatusBadge={getStatusBadge}
+          />
+        )}
+      </div>
     </UnifiedAdminLayout>
   );
 }
