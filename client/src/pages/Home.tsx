@@ -147,6 +147,16 @@ export default function Home() {
     setLocation("/");
   };
 
+  // 🆕 顯示名稱（優先序：firstName > localStorage anon 名 > 預設）— memoize，避免每次 render 都讀 localStorage
+  const displayName = useMemo(() => {
+    if (user?.firstName) return user.firstName;
+    try {
+      return localStorage.getItem("anonymous_player_name") || "玩家";
+    } catch {
+      return "玩家";
+    }
+  }, [user?.firstName]);
+
   // 🔥 改用 useEffect 確保跳轉在 render 之後執行
   // 避免「Login Dialog 剛關閉 → Firebase onAuthStateChanged 還沒跑 → isSignedIn=false → 立刻跳回首頁」
   // 的時序 bug。給 Firebase 一個 buffer 時間讓 auth state 同步。
