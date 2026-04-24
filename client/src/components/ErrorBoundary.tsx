@@ -68,6 +68,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     this.setState({ errorInfo });
 
+    // 🆕 上報錯誤給後端（若 useErrorReport hook 已註冊 __chitoReportError）
+    try {
+      const w = window as unknown as {
+        __chitoReportError?: (payload: { message: string; stack?: string; source: string }) => void;
+      };
+      if (typeof w.__chitoReportError === "function") {
+        w.__chitoReportError({
+          message: error.message,
+          stack: error.stack,
+          source: "ErrorBoundary",
+        });
+      }
+    } catch {
+      // 上報失敗不可 block render
+    }
+
     // 若是 chunk / MIME 載入錯誤且尚未嘗試過自動恢復 → 清 SW + cache + reload
     // 用 sessionStorage 避免無限迴圈（若 reload 後還是錯就停止自動恢復，改顯示給使用者）
     if (isChunkLoadError(error)) {
