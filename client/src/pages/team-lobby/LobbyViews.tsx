@@ -296,10 +296,13 @@ function AccessCodeCard({
   code, status, copied, onCopy,
 }: { code: string | null; status: string | null; copied: boolean; onCopy: () => void }) {
   // 🚀 Web Share API：手機可直接分享到 LINE/Messenger 等
+  //   分享 URL 內含 ?code= 參數，朋友點開直接帶入邀請碼自動填好
   const handleShare = async () => {
     if (!code) return;
     const shareText = `加入我的隊伍！組隊碼：${code}`;
-    const shareUrl = `${window.location.origin}/team-lobby/${window.location.pathname.split("/").pop()}`;
+    // 從目前 pathname 取出 /team/:gameId 或 /f/:fieldCode/team/:gameId
+    const currentPath = window.location.pathname;
+    const shareUrl = `${window.location.origin}${currentPath}?code=${code}`;
     try {
       if (typeof navigator.share === "function") {
         await navigator.share({ title: "加入我的隊伍", text: shareText, url: shareUrl });
@@ -309,7 +312,7 @@ function AccessCodeCard({
       // AbortError = 使用者取消分享，不算失敗
       if ((err as DOMException)?.name === "AbortError") return;
     }
-    // Fallback: 複製到剪貼簿（含完整訊息）
+    // Fallback: 複製到剪貼簿（含完整訊息 + URL）
     try {
       await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       onCopy();
