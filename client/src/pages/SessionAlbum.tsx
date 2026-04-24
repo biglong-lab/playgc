@@ -315,6 +315,25 @@ export default function SessionAlbum() {
             ))}
           </div>
         )}
+
+        {/* 🆕 收到分享連結的訪客可點「我也要挑戰」進遊戲 */}
+        {data?.gameId && (
+          <div className="mt-6 p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/30 text-center space-y-3">
+            <p className="text-sm text-muted-foreground">
+              喜歡這些紀念照嗎？你也來玩看看！
+            </p>
+            <Button
+              size="lg"
+              onClick={() =>
+                setLocation(link(`/game/${data.gameId}`))
+              }
+              className="gap-2 shadow-lg font-bold"
+              data-testid="btn-album-play-game"
+            >
+              🎮 我也要挑戰
+            </Button>
+          </div>
+        )}
       </main>
 
       {/* Lightbox */}
