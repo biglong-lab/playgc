@@ -52,6 +52,9 @@ export default function SessionAlbum() {
   const link = useFieldLink();
   const { toast } = useToast();
   const [lightboxPhoto, setLightboxPhoto] = useState<AlbumPhoto | null>(null);
+  // 🆕 v2: 批次下載狀態
+  const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0 });
 
   const { data, isLoading, error } = useQuery<AlbumResponse>({
     queryKey: [`/api/sessions/${sessionId}/album`],
