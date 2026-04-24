@@ -278,11 +278,33 @@ export function MemberActionMenu({
               <Crown className="h-4 w-4 mr-2" /> 轉讓隊長
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem onClick={handleKick} className="text-destructive">
+          <DropdownMenuItem onClick={() => setShowKick(true)} className="text-destructive">
             <UserMinus className="h-4 w-4 mr-2" /> 踢出
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* 🔴 踢出成員確認 Dialog — 防誤觸 */}
+      <AlertDialog open={showKick} onOpenChange={setShowKick}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確定要踢出此成員？</AlertDialogTitle>
+            <AlertDialogDescription>
+              你即將把「{member.displayName ?? member.userId.slice(0, 8)}」踢出戰隊。
+              此成員需要重新申請才能再次加入。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleKick}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              確認踢出
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={showTransfer} onOpenChange={setShowTransfer}>
         <AlertDialogContent>
