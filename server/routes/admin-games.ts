@@ -577,4 +577,127 @@ export function registerAdminGameRoutes(app: Express) {
       res.status(500).json({ message: "無法儲存封面圖片" });
     }
   });
+
+  // ============================================================================
+  // 🆕 C2: POST /api/admin/games/create-from-demo
+  //   從 docs/DEMO_GAME_JIACHUN.json 建立示範遊戲
+  //   用於 demo / onboarding，管理員一鍵匯入
+  // ============================================================================
+  app.post(
+    "/api/admin/games/create-from-demo",
+    requireAdminAuth,
+    requirePermission("game:create"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        const fieldId = req.admin.fieldId;
+        if (!fieldId) {
+          return res
+            .status(400)
+            .json({ message: "無法決定遊戲所屬場域，請先指派管理員場域" });
+        }
+
+        // 讀取 demo JSON（打包進 Docker image 時的 /app/docs/... 或 dev 時的 relative）
+        const demoPath = resolve(process.cwd(), "docs/DEMO_GAME_JIACHUN.json");
+        let demoData: {
+          game: Record<string, unknown>;
+          pages: Array<{
+            pageOrder: number;
+            pageType: string;
+            customName?: string;
+            config: unknown;
+          }>;
+        };
+        try {
+          const raw = await readFile(demoPath, "utf-8");
+          demoData = JSON.parse(raw);
+        } catch (err) {
+          return res.status(500).json({
+            message: "無法載入示範遊戲 JSON",
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+
+        // 配額檢查
+        const [field] = await db
+          .select({ settings: fields.settings })
+          .from(fields)
+          .where(eq(fields.id, fieldId))
+          .limit(1);
+        if (field) {
+          const settings = parseFieldSettings(field.settings);
+          if (settings.maxGames && settings.maxGames > 0) {
+            const [{ value: currentCount }] = await db
+              .select({ value: count() })
+              .from(games)
+              .where(eq(games.fieldId, fieldId));
+            if (currentCount >= settings.maxGames) {
+              return res.status(403).json({
+                message: `此場域已達遊戲數上限（${settings.maxGames}）`,
+              });
+            }
+          }
+        }
+
+        // 建遊戲
+        const slug = generateSlug();
+        const gameBase = insertGameSchema.parse(demoData.game);
+        const [game] = await db
+          .insert(games)
+          .values({
+            ...gameBase,
+            fieldId,
+            publicSlug: slug,
+            creatorId: null,
+          })
+          .returning();
+
+        // 建所有頁面
+        let createdPages = 0;
+        for (const p of demoData.pages) {
+          await db.insert(pages).values({
+            id: randomUUID(),
+            gameId: game.id,
+            pageOrder: p.pageOrder,
+            pageType: p.pageType,
+            customName: p.customName || null,
+            config: p.config as Record<string, unknown>,
+          });
+          createdPages += 1;
+        }
+
+        // 審計日誌
+        await logAuditAction({
+          adminId: req.admin.id,
+          action: "game:create-from-demo",
+          targetType: "game",
+          targetId: game.id,
+          fieldId,
+          metadata: {
+            title: game.title,
+            pagesCreated: createdPages,
+            source: "DEMO_GAME_JIACHUN.json",
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
+        // 同步計費 meter
+        await syncGamesMeter(fieldId).catch(() => {});
+
+        return res.json({
+          success: true,
+          game,
+          pagesCreated: createdPages,
+          playerUrl: `/g/${slug}`,
+        });
+      } catch (error) {
+        console.error("[admin-games] create-from-demo failed:", error);
+        return res.status(500).json({
+          message: "匯入示範遊戲失敗",
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  );
 }
