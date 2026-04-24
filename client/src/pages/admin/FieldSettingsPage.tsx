@@ -821,6 +821,72 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             {/* 🆕 公告時效 + 嚴重程度 */}
             {announcement.trim() && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-md bg-muted/30 border">
+                {/* 🆕 快速預設按鈕 */}
+                <div className="sm:col-span-2 flex gap-1.5 flex-wrap">
+                  <span className="text-xs text-muted-foreground mr-1 self-center">快速設定：</span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      const today = new Date();
+                      const end = new Date();
+                      end.setDate(today.getDate() + 6);
+                      setAnnouncementStartAt(today.toISOString().split("T")[0]);
+                      setAnnouncementEndAt(end.toISOString().split("T")[0]);
+                    }}
+                    data-testid="btn-quick-7days"
+                  >
+                    今天起 7 天
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      const start = new Date();
+                      start.setDate(start.getDate() + 1);
+                      const end = new Date();
+                      end.setDate(end.getDate() + 7);
+                      setAnnouncementStartAt(start.toISOString().split("T")[0]);
+                      setAnnouncementEndAt(end.toISOString().split("T")[0]);
+                    }}
+                    data-testid="btn-quick-tomorrow7"
+                  >
+                    明天起 7 天
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      const today = new Date();
+                      const end = new Date();
+                      end.setDate(today.getDate() + 29);
+                      setAnnouncementStartAt(today.toISOString().split("T")[0]);
+                      setAnnouncementEndAt(end.toISOString().split("T")[0]);
+                    }}
+                    data-testid="btn-quick-30days"
+                  >
+                    今天起 30 天
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs text-muted-foreground"
+                    onClick={() => {
+                      setAnnouncementStartAt("");
+                      setAnnouncementEndAt("");
+                    }}
+                    data-testid="btn-quick-clear"
+                  >
+                    清除時效
+                  </Button>
+                </div>
                 <div>
                   <label className="text-xs font-medium mb-1 block text-muted-foreground">
                     開始顯示日（可選）
