@@ -618,12 +618,17 @@ export default function PhotoArStickerFlow({
           }
           setStage("camera");
         }}
-        disabled={preloadedStickers.length < stickers.length}
+        disabled={!preloadDone}
         data-testid="btn-ar-start"
       >
         <Camera className="w-5 h-5" />
-        {preloadedStickers.length < stickers.length ? "貼圖載入中..." : "開始拍照"}
+        {!preloadDone ? "貼圖載入中..." : "開始拍照"}
       </Button>
+      {preloadDone && failedCount > 0 && (
+        <p className="text-xs text-amber-500 text-center">
+          ⚠️ {failedCount} 張貼圖載入失敗，其他仍可使用
+        </p>
+      )}
 
       {/* 🆕 B4: 臉部追蹤隱私 opt-in Dialog */}
       <Dialog open={showConsent} onOpenChange={setShowConsent}>
