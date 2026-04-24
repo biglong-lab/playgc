@@ -425,16 +425,7 @@ export default function Home() {
               placeholder="搜尋遊戲..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                // 🆕 Esc 清空內容並失焦（不按兩次：有內容 → 清空；空內容 → 失焦）
-                if (e.key === "Escape") {
-                  if (searchQuery) {
-                    setSearchQuery("");
-                  } else {
-                    (e.currentTarget as HTMLInputElement).blur();
-                  }
-                }
-              }}
+              onKeyDown={(e) => handleEscape(e, searchQuery, setSearchQuery)}
               className="pl-10 pr-20"
               data-testid="input-search-games"
             />
