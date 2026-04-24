@@ -289,6 +289,36 @@ export default function AdminStaffPlayers() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* 🆕 G3: 批次授權 action bar — 選取 > 0 時顯示 */}
+            {selectedCount > 0 && (
+              <div
+                className="mb-4 flex items-center gap-3 p-3 rounded-lg border border-primary/30 bg-primary/5"
+                data-testid="bulk-action-bar"
+              >
+                <div className="flex-1 text-sm">
+                  已選 <span className="font-semibold text-primary">{selectedCount}</span> 位玩家
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setBulkGrantOpen(true)}
+                  data-testid="btn-bulk-approve"
+                  className="gap-1"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  批次授權
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={clearSelection}
+                  data-testid="btn-clear-selection"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  取消選取
+                </Button>
+              </div>
+            )}
+
             <div className="mb-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
