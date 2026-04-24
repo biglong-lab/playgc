@@ -149,17 +149,26 @@ export default function PhotoBurstFlow({
         camera.stopCamera();
 
         // 🚀 立刻顯示本地第一張 + 進 done（使用者不用等）
-        const firstLocal = burstImagesRef.current[0];
+        const images = burstImagesRef.current;
+        const firstLocal = images[0];
         if (firstLocal) {
           setCompositeUrl(firstLocal);
           setStage("done");
+
+          // 🎨 1 秒內做本地拼貼（純 canvas，100% 成功），讓使用者看到 5 張都在
+          createLocalCollage(images, { maxSize: 1600, quality: 0.88 })
+            .then((collage) => {
+              console.log("[Burst] ✅ 本地拼貼完成，替換顯示");
+              setCompositeUrl(collage);
+            })
+            .catch((err) => {
+              console.warn("[Burst] 本地拼貼失敗，保留第一張:", err);
+            });
         } else {
-          // 沒拍到任何張 → 走原流程
           setStage("uploading");
         }
 
-        // 🔄 背景仍去嘗試 Cloudinary GIF 合成（成功就替換更好看的結果）
-        //   若失敗使用者也不會察覺，反正本地圖已經顯示
+        // 🔄 背景仍去嘗試 Cloudinary GIF 合成（成功就替換更好看的動態結果）
         backgroundUploadAndComposite();
         return;
       }
