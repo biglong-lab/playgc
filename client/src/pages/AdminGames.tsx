@@ -69,7 +69,7 @@ export default function AdminGames() {
                   className="pl-8 pr-14"
                   data-testid="input-search-games"
                 />
-                {!ctx.searchQuery && <SearchKbdHint isMac={isMac} />}
+                {!ctx.searchQuery && <SearchKbdHint mode="slash" />}
               </div>
             </div>
             <StatusTabs
