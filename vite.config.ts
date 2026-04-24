@@ -50,23 +50,27 @@ export default defineConfig({
             },
           },
           // Object Storage 圖片 — CacheFirst
+          // 🚨 2026-04-24: statuses: [0, 200] 會把 opaque no-cors response（0 bytes）也快取下來
+          // 下次 CacheFirst 讀到空內容就變破圖。改成只存 status=200 的正常 response。
           {
             urlPattern: /^\/objects\/uploads\//,
             handler: "CacheFirst",
             options: {
               cacheName: "images-local",
               expiration: { maxEntries: 200, maxAgeSeconds: 30 * 24 * 3600 },
-              cacheableResponse: { statuses: [0, 200] },
+              cacheableResponse: { statuses: [200] },
             },
           },
           // Cloudinary 圖片 — CacheFirst
+          // 🚨 同上：不存 opaque response 避免破圖；Cloudinary 本身給 max-age=30天 的 HTTP cache
+          // 瀏覽器會自己 cache，SW 不需要強行兜底。
           {
             urlPattern: /^https:\/\/res\.cloudinary\.com\//,
             handler: "CacheFirst",
             options: {
               cacheName: "images-cloudinary",
               expiration: { maxEntries: 300, maxAgeSeconds: 30 * 24 * 3600 },
-              cacheableResponse: { statuses: [0, 200] },
+              cacheableResponse: { statuses: [200] },
             },
           },
           // Google Fonts — StaleWhileRevalidate
