@@ -262,16 +262,27 @@ export default function AdminDevices() {
 
   return (
     <UnifiedAdminLayout title="設備管理" actions={headerActions}>
-      {/* 統計卡片 */}
+      {/* 🆕 統計卡片 — 數字依狀態語義化：離線>0 警示紅、全在線 綠、無設備 muted */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">在線設備</p>
-                <p className="font-number text-3xl font-bold text-success">{onlineCount}</p>
+                <p
+                  className={`font-number text-3xl font-bold ${
+                    totalCount === 0
+                      ? "text-muted-foreground"
+                      : offlineCount > 0
+                        ? "text-warning"
+                        : "text-success"
+                  }`}
+                  data-testid="stat-online-count"
+                >
+                  {onlineCount}
+                </p>
               </div>
-              <Wifi className="w-8 h-8 text-success/50" />
+              <Wifi className={`w-8 h-8 ${onlineCount > 0 ? "text-success/50" : "text-muted-foreground/30"}`} />
             </div>
           </CardContent>
         </Card>
@@ -281,9 +292,16 @@ export default function AdminDevices() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">離線設備</p>
-                <p className="font-number text-3xl font-bold text-muted-foreground">{offlineCount}</p>
+                <p
+                  className={`font-number text-3xl font-bold ${
+                    offlineCount > 0 ? "text-destructive" : "text-muted-foreground"
+                  }`}
+                  data-testid="stat-offline-count"
+                >
+                  {offlineCount}
+                </p>
               </div>
-              <WifiOff className="w-8 h-8 text-muted-foreground/50" />
+              <WifiOff className={`w-8 h-8 ${offlineCount > 0 ? "text-destructive/50" : "text-muted-foreground/30"}`} />
             </div>
           </CardContent>
         </Card>
@@ -293,9 +311,16 @@ export default function AdminDevices() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">總設備數</p>
-                <p className="font-number text-3xl font-bold">{devices?.length || 0}</p>
+                <p
+                  className={`font-number text-3xl font-bold ${
+                    totalCount === 0 ? "text-muted-foreground" : ""
+                  }`}
+                  data-testid="stat-total-count"
+                >
+                  {totalCount}
+                </p>
               </div>
-              <Cpu className="w-8 h-8 text-primary/50" />
+              <Cpu className={`w-8 h-8 ${totalCount > 0 ? "text-primary/50" : "text-muted-foreground/30"}`} />
             </div>
           </CardContent>
         </Card>
