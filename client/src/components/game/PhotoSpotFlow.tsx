@@ -227,11 +227,21 @@ export default function PhotoSpotFlow({
   const handleContinue = () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    const points = config.onSuccess?.points ?? 30;
+    // 🔧 修：同時讀 rewardPoints/rewardItems (RewardsSection 存的) + onSuccess.* (向後相容)
+    const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
+    const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
+    const legacyPoints = config.onSuccess?.points;
+    const legacyItem = config.onSuccess?.grantItem;
+
+    const points = rewardPoints ?? legacyPoints ?? 30;
     const reward: { points?: number; items?: string[] } = { points };
-    if (config.onSuccess?.grantItem) {
-      reward.items = [config.onSuccess.grantItem];
-    }
+
+    const allItems = [
+      ...rewardItems.filter((x) => !!x),
+      ...(legacyItem ? [legacyItem] : []),
+    ];
+    if (allItems.length > 0) reward.items = allItems;
+
     onComplete(reward);
   };
 
