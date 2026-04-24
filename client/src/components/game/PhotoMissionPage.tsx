@@ -40,6 +40,21 @@ export default function PhotoMissionPage({
   sessionId,
   gameId,
 }: PhotoMissionPageProps) {
+  // 🆕 v2: 依 mode 分派到新 flow（保持既有 free mode 不受影響）
+  if (config.mode === "spot") {
+    return (
+      <Suspense fallback={<CameraInitializingView />}>
+        <PhotoSpotFlow
+          config={config}
+          onComplete={onComplete}
+          sessionId={sessionId}
+          gameId={gameId}
+        />
+      </Suspense>
+    );
+  }
+  // mode === 'compare' / 'team' / 'burst' 等後續輪次加入
+
   const { toast } = useToast();
   const camera = usePhotoCamera();
   const [aiRetryCount, setAiRetryCount] = useState(0);
