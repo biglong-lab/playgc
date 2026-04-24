@@ -1,5 +1,5 @@
 // 🎉 場域管理員首次登入引導
-// 僅在 localStorage 無 onboarding_done 標記時顯示
+// v2: 場域級別標記 hasCompletedOnboarding — 不只吃 localStorage，換設備也不重彈
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import {
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
+import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import {
   Sparkles,
   Gamepad2,
