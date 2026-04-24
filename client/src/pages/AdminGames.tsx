@@ -92,16 +92,63 @@ export default function AdminGames() {
       title="遊戲管理"
       actions={
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => importDemoMutation.mutate()}
-            disabled={importDemoMutation.isPending}
-            data-testid="btn-import-demo-game"
-            className="gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            {importDemoMutation.isPending ? "匯入中..." : "匯入賈村示範遊戲"}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                disabled={importDemoMutation.isPending}
+                data-testid="btn-import-demo-game"
+                className="gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                {importDemoMutation.isPending ? "匯入中..." : "匯入示範遊戲"}
+                <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel>選擇示範模板</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => importDemoMutation.mutate("jiachun")}
+                data-testid="menu-import-jiachun"
+                className="flex-col items-start gap-1 py-2"
+              >
+                <div className="flex items-center gap-2 font-medium">
+                  <Sparkles className="h-4 w-4" />
+                  賈村完整示範
+                </div>
+                <div className="text-xs text-muted-foreground ml-6">
+                  8 頁 · OCR + QR + GPS + AR + 文字驗證
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => importDemoMutation.mutate("checkin")}
+                data-testid="menu-import-checkin"
+                className="flex-col items-start gap-1 py-2"
+              >
+                <div className="flex items-center gap-2 font-medium">
+                  <Map className="h-4 w-4" />
+                  賈村打卡之旅
+                </div>
+                <div className="text-xs text-muted-foreground ml-6">
+                  5 頁 · 3 個景點打卡 + 紀念照合成
+                </div>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => importDemoMutation.mutate("ar-fun")}
+                data-testid="menu-import-ar-fun"
+                className="flex-col items-start gap-1 py-2"
+              >
+                <div className="flex items-center gap-2 font-medium">
+                  <Smile className="h-4 w-4" />
+                  賈村表情秀
+                </div>
+                <div className="text-xs text-muted-foreground ml-6">
+                  6 頁 · AR 面具 + 連拍 GIF + 變裝對比
+                </div>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button
             onClick={() => ctx.setIsWizardOpen(true)}
             data-testid="button-create-game"
