@@ -28,6 +28,7 @@ import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
 import { skillLevelLabel, slotStatusBadge } from "@/lib/battle-labels";
+import { formatTimeUntil, isImminentSlot } from "@/lib/battle-time";
 import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } from "@shared/schema";
 import {
   Swords, Clock, Users, CalendarDays, UserPlus,
