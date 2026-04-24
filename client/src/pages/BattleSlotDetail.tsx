@@ -44,7 +44,7 @@ const SKILL_LEVEL_LABEL: Record<string, string> = {
   advanced: "高手",
   expert: "高手",
 };
-function skillLevelLabel(level?: string): string {
+function skillLevelLabel(level?: string | null): string {
   if (!level) return "未填";
   return SKILL_LEVEL_LABEL[level] ?? level;
 }
