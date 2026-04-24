@@ -1002,3 +1002,154 @@ function CloudinaryUsageCard() {
     </Card>
   );
 }
+
+// ============================================================================
+// 🆕 A5: AI 用量卡（Google Vision OCR）
+// ============================================================================
+
+interface AiUsageStats {
+  provider: string;
+  currentMonthCount: number;
+  successCount: number;
+  failCount: number;
+  freeQuota: number;
+  usagePercent: number;
+  shouldAlert: boolean;    // 80%
+  shouldFallback: boolean; // 95%
+}
+
+function AiUsageCard() {
+  const { isAuthenticated } = useAdminAuth();
+  const { data, isLoading, error } = useQuery<AiUsageStats>({
+    queryKey: ["/api/ai/ocr-usage"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/ai/ocr-usage");
+      return res.json();
+    },
+    enabled: isAuthenticated,
+    staleTime: 5 * 60_000,   // 5 分鐘快取
+    refetchInterval: 10 * 60_000, // 10 分鐘自動重抓
+  });
+
+  const percent = data?.usagePercent ?? 0;
+  const barColor =
+    percent >= 95
+      ? "bg-destructive"
+      : percent >= 80
+      ? "bg-amber-500"
+      : "bg-emerald-500";
+  const textColor =
+    percent >= 95
+      ? "text-destructive"
+      : percent >= 80
+      ? "text-amber-600 dark:text-amber-400"
+      : "text-emerald-600 dark:text-emerald-400";
+
+  return (
+    <Card data-testid="ai-usage-card">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <ScanText className="w-5 h-5 text-primary" />
+          AI 服務用量（本月）
+          <Badge variant="outline" className="ml-auto text-xs">
+            Google Vision 免費額度
+          </Badge>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+            載入中...
+          </div>
+        ) : error ? (
+          <div className="flex items-center gap-2 p-3 rounded bg-destructive/10 text-destructive text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>
+              無法取得用量：
+              {error instanceof Error ? error.message : "未知錯誤"}
+            </span>
+          </div>
+        ) : (
+          <>
+            {/* 主指標：OCR 招牌辨識 */}
+            <div className="mb-3 p-3 rounded-lg border-2 border-primary/30 bg-primary/5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-semibold flex items-center gap-2">
+                  <ScanText className="w-4 h-4 text-primary" />
+                  OCR 招牌辨識（Google Vision）
+                </span>
+                <span
+                  className={`text-base font-bold ${textColor}`}
+                  data-testid="ai-ocr-percent"
+                >
+                  {percent}%
+                </span>
+              </div>
+              <div className="text-xs text-muted-foreground mb-2">
+                {data?.currentMonthCount ?? 0} / {data?.freeQuota ?? 1000} 次
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full transition-all ${barColor}`}
+                  style={{ width: `${Math.min(100, percent)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* 成功/失敗統計 */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-lg border bg-emerald-500/5">
+                <div className="text-xs text-muted-foreground mb-1">成功次數</div>
+                <div
+                  className="text-lg font-bold text-emerald-600 dark:text-emerald-400"
+                  data-testid="ai-ocr-success-count"
+                >
+                  {data?.successCount ?? 0}
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border bg-destructive/5">
+                <div className="text-xs text-muted-foreground mb-1">失敗次數</div>
+                <div
+                  className="text-lg font-bold text-destructive"
+                  data-testid="ai-ocr-fail-count"
+                >
+                  {data?.failCount ?? 0}
+                </div>
+              </div>
+            </div>
+
+            {/* 警戒狀態 */}
+            {data?.shouldFallback && (
+              <div className="mt-3 p-3 rounded bg-destructive/10 border border-destructive/30 text-destructive text-sm flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <div>
+                  <strong>已達 95% 額度上限</strong>
+                  <p className="text-xs mt-1">
+                    OCR 功能已自動停用以避免超額扣款。下月 1 日重置。
+                  </p>
+                </div>
+              </div>
+            )}
+            {!data?.shouldFallback && data?.shouldAlert && (
+              <div className="mt-3 p-3 rounded bg-amber-50 dark:bg-amber-950/30 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-sm flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <div>
+                  <strong>已達 80% 預警線</strong>
+                  <p className="text-xs mt-1">
+                    當月剩餘 {(data?.freeQuota ?? 1000) - (data?.currentMonthCount ?? 0)} 次。達 95% 會自動停用。
+                  </p>
+                </div>
+              </div>
+            )}
+            {!data?.shouldAlert && (
+              <div className="mt-3 p-2 rounded bg-muted/30 text-xs text-muted-foreground flex items-center gap-2">
+                <Check className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                用量正常。達 80% 會寄 email 警告、達 95% 自動停用。
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
