@@ -491,10 +491,32 @@ export default function GameCompletionScreen({
                 alt="紀念卡"
                 className="w-full h-full object-cover"
                 data-testid="achievement-card-image"
+                onError={(e) => {
+                  // 載入失敗就把 img 藏起來顯示 fallback text
+                  (e.target as HTMLImageElement).style.display = "none";
+                  const parent = (e.target as HTMLImageElement).parentElement;
+                  if (parent && !parent.querySelector(".card-error-fallback")) {
+                    const div = document.createElement("div");
+                    div.className =
+                      "card-error-fallback absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center";
+                    div.innerHTML = `
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted-foreground/60">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <path d="M3 15l6-6 6 6 4-4 2 2"/>
+                      </svg>
+                      <p class="text-sm text-muted-foreground">紀念卡暫時無法生成</p>
+                      <p class="text-xs text-muted-foreground">你仍可下方繼續操作</p>
+                    `;
+                    parent.appendChild(div);
+                  }
+                }}
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
                 <X className="w-8 h-8 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground">
+                  紀念卡生成失敗
+                </p>
               </div>
             )}
           </div>
