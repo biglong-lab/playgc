@@ -12,6 +12,15 @@ import { games, fields, parseFieldSettings } from "@shared/schema";
 import type { FieldSettings } from "@shared/schema";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
+import {
+  buildCompositeUrl,
+  validateCompositionConfig,
+  estimateUrlLength,
+  DEFAULT_COMPOSITION_CONFIG,
+  todayDateString,
+  type CompositionConfig,
+  type DynamicVars,
+} from "../services/photo-composer";
 
 export function registerMediaRoutes(app: Express) {
   // ===========================================
