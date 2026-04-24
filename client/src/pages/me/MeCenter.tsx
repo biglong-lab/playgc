@@ -231,6 +231,14 @@ export default function MeCenter() {
 
         {/* 主要功能卡片 — 2x2 Grid */}
         <div className="grid grid-cols-2 gap-3">
+          {/* 🆕 v2: 紀念照入口（顯眼位置第一個卡片） */}
+          <MenuCard
+            href={link("/me/photos")}
+            icon={<ImageIcon className="w-5 h-5" />}
+            label="我的紀念照"
+            accent="violet"
+            description="遊戲拍照紀錄"
+          />
           <MenuCard
             href="/purchases"
             icon={<Receipt className="w-5 h-5" />}
