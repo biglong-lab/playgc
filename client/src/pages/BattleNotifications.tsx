@@ -8,7 +8,7 @@ import { Bell, Check, CheckCheck } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { authFetch } from "@/lib/authFetch";
+import { apiRequest } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
 import {
   notificationTypeLabels,
