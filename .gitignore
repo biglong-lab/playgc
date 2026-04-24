@@ -22,3 +22,8 @@ replit.md
 
 # Replit 附件資源（設計文件、截圖、備份 ZIP）
 attached_assets/backups/
+
+# 🔐 GCP Service Account 金鑰（絕不提交）
+secrets/
+*.gcp-*.json
+google-credentials*.json
