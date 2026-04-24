@@ -328,19 +328,26 @@ export default function PhotoBurstFlow({
   }, [stage]);
 
   // 🚨 全局 SUPER DEADLINE — uploading/compositing 任一階段超過 25 秒都強制 done
-  //   這是最終救命機制：不管 Promise.all 卡住、setState batch、iOS throttle
-  //   只要進入 uploading 後 25 秒還沒完成，強制用本地第一張 base64 進 done
+  //   用 Date.now() 比對 + 每秒 tick（iOS throttle 也不影響）
+  //   這是最終救命機制：不管 Promise.all 卡住、setState batch、iOS throttle 都會觸發
   useEffect(() => {
     if (stage !== "uploading" && stage !== "compositing") return;
-    console.log("[Burst] Super deadline armed (25s)");
-    const superDeadline = setInterval(() => {
-      console.warn("[Burst] ⚠️ SUPER DEADLINE 25s 觸發 → force done");
-      const firstImage = burstImagesRef.current[0];
-      if (firstImage) setCompositeUrl(firstImage);
-      setStage("done");
-      clearInterval(superDeadline);
-    }, 25000);
-    return () => clearInterval(superDeadline);
+    const startAt = Date.now();
+    console.log("[Burst] Super deadline armed at", startAt);
+    const check = setInterval(() => {
+      const elapsed = Date.now() - startAt;
+      if (elapsed >= 25000) {
+        console.warn("[Burst] ⚠️ SUPER DEADLINE 25s 觸發 → force done", {
+          stage,
+          uploaded: burstImagesRef.current.length,
+        });
+        clearInterval(check);
+        const firstImage = burstImagesRef.current[0];
+        if (firstImage) setCompositeUrl(firstImage);
+        setStage("done");
+      }
+    }, 1000);
+    return () => clearInterval(check);
   }, [stage]);
 
   // 倒數 3-2-1 後才開始連拍
