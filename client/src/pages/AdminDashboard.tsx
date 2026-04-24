@@ -36,7 +36,18 @@ import {
   HelpCircle,
   Megaphone,
   AlertCircle,
+  TrendingUp,
 } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 /** 🆕 依時段產生個人化問候 */
 function getAdminGreeting(): string {
