@@ -106,7 +106,7 @@ export default function BattleRanking() {
                   <div
                     key={entry.id}
                     className={`flex items-center justify-between p-3 rounded-lg border ${
-                      tierBg[entry.tier] ?? "bg-card"
+                      tierBgClass(entry.tier) || "bg-card"
                     } ${entry.userId === user?.id ? "ring-2 ring-primary" : ""}`}
                   >
                     <div className="flex items-center gap-3">
