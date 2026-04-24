@@ -1,5 +1,8 @@
 // 🎉 場域管理員首次登入引導
-// v2: 場域級別標記 hasCompletedOnboarding — 不只吃 localStorage，換設備也不重彈
+// ⚠️ 2026-04-24 hotfix: revert 到只用 localStorage 的版本（舊行為），
+// 場域級標記 hasCompletedOnboarding 暫時停用，懷疑跟 React error #310 有關。
+// 後端 GET /api/fields/:code/theme 仍回 hasCompletedOnboarding 欄位（無副作用），
+// schema FieldSettings.hasCompletedOnboarding 也保留（未來可重新啟用）。
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import {
@@ -12,8 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { useCurrentField } from "@/providers/FieldThemeProvider";
-import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import {
   Sparkles,
   Gamepad2,
