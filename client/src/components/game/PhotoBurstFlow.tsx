@@ -297,6 +297,22 @@ export default function PhotoBurstFlow({
     return () => clearInterval(timer);
   }, [stage]);
 
+  // 🚨 絕對 deadline：30 秒後不管合成到哪一步，強制進 done
+  //   用本地第一張圖當紀念（burstImages[0]），不靠任何 server
+  //   保證遊戲一定能繼續
+  useEffect(() => {
+    if (stage !== "compositing") return;
+    const hardDeadline = setTimeout(() => {
+      console.warn("[Burst] 合成 hard deadline 30s，強制本地 fallback");
+      const firstImage = burstImagesRef.current[0];
+      if (firstImage) {
+        setCompositeUrl(firstImage);
+      }
+      setStage("done");
+    }, 30000);
+    return () => clearTimeout(hardDeadline);
+  }, [stage]);
+
   // 倒數 3-2-1 後才開始連拍
   const [countdownToStart, setCountdownToStart] = useState(3);
   useEffect(() => {
