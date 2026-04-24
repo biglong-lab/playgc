@@ -67,6 +67,11 @@ export default function MeCenter() {
   }
 
   const handleSignOut = async () => {
+    // 🆕 登出前確認，避免誤按（尤其手機觸控）
+    const confirmed = window.confirm(
+      `確定要登出嗎？\n\n登出後需要重新登入才能查看購買紀錄、對戰戰績等個人資料。`,
+    );
+    if (!confirmed) return;
     await signOut();
     setLocation("/");
   };
