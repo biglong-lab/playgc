@@ -12,7 +12,7 @@
 //
 // 不依賴 AuthProvider（因為 admin 和玩家驗證不同），自己獨立查 session
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { applyTheme } from "@/lib/themeUtils";
 import type { FieldTheme, FieldHighlight } from "@shared/schema";
 
