@@ -211,18 +211,36 @@ export default function AdminDashboard() {
                     className="flex items-center justify-between p-3 rounded-lg bg-card border border-border hover-elevate cursor-pointer"
                     data-testid={`link-game-${game.id}`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center">
-                        <Gamepad2 className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{game.title}</p>
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* 🆕 有封面就顯示縮圖，沒則 icon fallback */}
+                      {game.coverImageUrl ? (
+                        <div className="w-10 h-10 rounded overflow-hidden shrink-0 bg-muted">
+                          <OptimizedImage
+                            src={game.coverImageUrl}
+                            alt={game.title}
+                            preset="thumbnail"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                            fallback={
+                              <div className="w-full h-full bg-primary/10 flex items-center justify-center">
+                                <Gamepad2 className="w-5 h-5 text-primary" />
+                              </div>
+                            }
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                          <Gamepad2 className="w-5 h-5 text-primary" />
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">{game.title}</p>
                         <p className="text-xs text-muted-foreground">
                           {game.estimatedTime || 30} 分鐘
                         </p>
                       </div>
                     </div>
-                    <Badge variant={game.status === "published" ? "default" : "secondary"}>
+                    <Badge variant={game.status === "published" ? "default" : "secondary"} className="shrink-0">
                       {game.status === "published" ? "已發布" : "草稿"}
                     </Badge>
                   </Link>
