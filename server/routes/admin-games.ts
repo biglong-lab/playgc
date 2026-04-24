@@ -685,7 +685,7 @@ export function registerAdminGameRoutes(app: Express) {
           metadata: {
             title: game.title,
             pagesCreated: createdPages,
-            source: "DEMO_GAME_JIACHUN.json",
+            templateKey,
           },
           ipAddress: req.ip,
           userAgent: req.headers["user-agent"],
