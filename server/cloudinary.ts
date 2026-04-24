@@ -489,6 +489,51 @@ export class CloudinaryService {
   }
 
   /**
+   * 🚀 真正的合成 + 上傳（Progressive Enhancement 用）
+   *
+   * 與 buildCompositeUrl 不同 — 這個會實際呼叫 Cloudinary uploader.upload：
+   * 1. 傳入底圖（URL 或 base64）
+   * 2. 套用 transformation（可做任何 Cloudinary 支援特效）
+   * 3. Cloudinary 合成後存成新資源
+   * 4. 回傳 CDN URL（約 100 字，可 cache，社群分享穩定）
+   *
+   * 成本：每次吃 1 transformation credit（Free plan 月 25）
+   *
+   * @param sourceUrl 底圖 URL（若是 base64 也接受）
+   * @param transformation Cloudinary transformation 陣列
+   * @param folder 合成結果存放 folder（如 achievements/JIACHUN）
+   * @param publicId 自訂 public_id（可選）
+   */
+  async compositeAndUpload(
+    sourceUrl: string,
+    transformation: Record<string, unknown>[],
+    folder: string,
+    publicId?: string,
+  ): Promise<{ url: string; publicId: string; bytes: number }> {
+    if (!this.isConfigured()) {
+      throw new Error("Cloudinary 尚未設定");
+    }
+    const result = await cloudinary.uploader.upload(sourceUrl, {
+      resource_type: "image",
+      folder,
+      public_id: publicId,
+      // 🎯 關鍵：transformation 陣列會在 upload 時執行，產生新的合成檔案
+      transformation,
+      // eager: 預先產生特定 variant（加速 CDN 首次載入）
+      eager: [
+        { quality: "auto:good", fetch_format: "auto" },
+      ],
+      eager_async: false, // 同步合成以便立刻回傳
+      overwrite: true,
+    });
+    return {
+      url: result.secure_url,
+      publicId: result.public_id,
+      bytes: result.bytes,
+    };
+  }
+
+  /**
    * 🆕 v2: 取得 Cloudinary 帳號用量（Admin API usage endpoint）
    * 回傳本月使用量 + 限額 + 百分比，供管理後台儀表板
    */
