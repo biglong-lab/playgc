@@ -394,12 +394,17 @@ export function registerMediaRoutes(app: Express) {
    *   - team_photo 全員上傳後合成九宮格
    */
   const compositePhotoSchema = z.object({
-    playerPhotoPublicId: z.string().min(1, "缺少 playerPhotoPublicId"),
+    // 二選一（至少給一個）
+    playerPhotoPublicId: z.string().optional(),
+    playerPhotoUrl: z.string().url().optional(),
     config: z.custom<CompositionConfig>((v) => !!v, {
       message: "缺少 composition config",
     }),
     dynamicVars: z.record(z.string(), z.union([z.string(), z.number(), z.undefined()])).optional(),
-  });
+  }).refine(
+    (v) => v.playerPhotoPublicId || v.playerPhotoUrl,
+    { message: "playerPhotoPublicId 或 playerPhotoUrl 至少需提供一個" },
+  );
 
   app.post(
     "/api/cloudinary/composite-photo",
