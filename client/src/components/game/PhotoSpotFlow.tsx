@@ -30,6 +30,9 @@ interface PhotoSpotFlowProps {
   onComplete: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
   sessionId: string;
   gameId: string;
+  // 🔧 v2: GamePageRenderer commonProps 會 spread 這兩個（目前未用但保留接收避免 TS excess property）
+  variables?: Record<string, unknown>;
+  onVariableUpdate?: (key: string, value: unknown) => void;
 }
 
 interface CompositeResponse {
