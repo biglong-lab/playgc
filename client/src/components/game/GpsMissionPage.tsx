@@ -452,12 +452,17 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
                     });
                     stopWatching();
                     setTimeout(() => {
+                      // 🔧 同上：RewardsSection 的 rewardPoints/rewardItems 優先
+                      const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
+                      const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
                       const reward: { points?: number; items?: string[] } = {
-                        points: config.onSuccess?.points || 15,
+                        points: rewardPoints ?? config.onSuccess?.points ?? 15,
                       };
-                      if (config.onSuccess?.grantItem) {
-                        reward.items = [config.onSuccess.grantItem];
-                      }
+                      const allItems = [
+                        ...rewardItems.filter((x) => !!x),
+                        ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
+                      ];
+                      if (allItems.length > 0) reward.items = allItems;
                       onComplete(reward, config.nextPageId);
                     }, 800);
                   } else {
