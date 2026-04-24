@@ -547,6 +547,14 @@ export interface PhotoMissionConfig {
   photoTemplateId?: string | null;
   /** 🆕 是否啟用紀念照合成（預設繼承場域設定）*/
   enableComposite?: boolean;
+  /**
+   * 🆕 預設相機鏡頭
+   *   - 'user'：前鏡頭（自拍）— 適合 AR / 連拍 / 合影
+   *   - 'environment'：後鏡頭 — 適合 OCR / GPS 定點 / 拍物
+   *   - 未設定：依元件類型自動選（AR/連拍/團體用前鏡頭，其他用後）
+   *   玩家仍可在相機畫面點右上「🔄」即時切換
+   */
+  defaultFacingMode?: 'user' | 'environment';
 
   // ——— v2 新增：各模式專屬子配置（依 mode 取用，互斥）———
   spotConfig?: PhotoSpotSubConfig;
