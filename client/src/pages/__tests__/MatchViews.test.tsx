@@ -169,6 +169,46 @@ describe("WaitingView", () => {
     const btn = screen.getByRole("button", { name: /開始對戰/ });
     expect(btn).toBeDisabled();
   });
+
+  // 新 UX：複製/分享 + 參賽者列表 + 房主標記
+  it("顯示複製按鈕與分享按鈕", () => {
+    render(<WaitingView {...defaultProps} />);
+    expect(screen.getByTestId("button-copy-match-code")).toBeInTheDocument();
+    expect(screen.getByTestId("button-share-match-code")).toBeInTheDocument();
+  });
+
+  it("非房主顯示等待提示", () => {
+    render(<WaitingView {...defaultProps} isCreator={false} />);
+    expect(screen.getByText(/等待房主開始對戰/)).toBeInTheDocument();
+  });
+
+  it("人數不足時顯示「還需 N 人」說明", () => {
+    const match = { accessCode: "X", participants: ["u1"] } as Record<string, unknown>;
+    render(<WaitingView {...defaultProps} match={match} />);
+    expect(screen.getByText(/還需 1 人/)).toBeInTheDocument();
+  });
+
+  it("顯示參賽者列表（含 displayName）", () => {
+    const match = {
+      accessCode: "X",
+      participants: [
+        { userId: "u1", displayName: "小明" },
+        { userId: "u2", displayName: "小華" },
+      ],
+    } as Record<string, unknown>;
+    render(<WaitingView {...defaultProps} match={match} />);
+    expect(screen.getByText("小明")).toBeInTheDocument();
+    expect(screen.getByText("小華")).toBeInTheDocument();
+  });
+
+  it("自己的列在會標 「我」 Badge", () => {
+    const match = {
+      accessCode: "X",
+      participants: [{ userId: "u1", displayName: "小明" }],
+    } as Record<string, unknown>;
+    render(<WaitingView {...defaultProps} match={match} userId="u1" />);
+    expect(screen.getByText("我")).toBeInTheDocument();
+  });
 });
 
 // ============================================================================
