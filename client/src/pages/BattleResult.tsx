@@ -8,7 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleResult as BattleResultType, BattlePlayerResult } from "@shared/schema";
-import { Trophy, Star, TrendingUp, TrendingDown, Minus, Swords } from "lucide-react";
+import { Trophy, Star, TrendingUp, TrendingDown, Minus, Swords, History, Home, Share2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface PlayerResultWithName extends BattlePlayerResult {
   displayName?: string;
