@@ -303,32 +303,17 @@ export default function PhotoTeamFlow({
     );
   }
 
-  // 完成
+  // 完成（共用 PhotoSuccessView）
   if (stage === "done" && compositeUrl) {
     return (
-      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-team-done">
-        <div className="flex items-center gap-2 text-primary">
-          <CheckCircle2 className="w-6 h-6" />
-          <h2 className="text-xl font-bold">團體合影完成！</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {memberCount} 位隊員：{members.map((m) => m.name).join("、")}
-        </p>
-        <div className="max-w-lg w-full bg-card rounded-lg shadow-lg overflow-hidden">
-          <img src={compositeUrl} alt="團體合影" className="w-full object-cover" data-testid="photo-team-composite" />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full max-w-lg">
-          <Button onClick={handleDownload} variant="outline" className="flex-1 gap-2" data-testid="btn-team-download">
-            <Download className="w-4 h-4" /> 下載
-          </Button>
-          <Button onClick={handleShare} variant="outline" className="flex-1 gap-2" data-testid="btn-team-share">
-            <Share2 className="w-4 h-4" /> 分享
-          </Button>
-          <Button onClick={handleContinue} className="flex-1 gap-2" data-testid="btn-team-continue">
-            繼續遊戲
-          </Button>
-        </div>
-      </div>
+      <PhotoSuccessView
+        imageUrl={compositeUrl}
+        title="團體合影完成！"
+        subtitle={`${memberCount} 位隊員：${members.map((m) => m.name).join("、")}`}
+        downloadPrefix="chito-team"
+        onContinue={handleContinue}
+        testId="photo-team-done"
+      />
     );
   }
 
