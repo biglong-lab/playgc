@@ -222,6 +222,7 @@ export default function Leaderboard() {
                         getRankColor={getRankColor}
                         getInitials={getInitials}
                         formatTime={formatTime}
+                        onClick={() => setProfileEntry(entry)}
                       />
                     ))}
                   </div>
