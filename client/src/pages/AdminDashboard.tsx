@@ -782,9 +782,10 @@ function WeeklyTrendChart() {
 interface CloudinaryUsage {
   plan?: string;
   credits?: { used: number; limit: number; percent: number };
-  storage?: { used: number; limit: number; percent: number };
-  bandwidth?: { used: number; limit: number; percent: number };
-  transformations?: { used: number; limit: number; percent: number };
+  // 🔧 新格式：各項用 credits_usage 算百分比（Cloudinary Free 用 credits 制）
+  storage?: { usedBytes: number; creditsUsed: number; percent: number };
+  bandwidth?: { usedBytes: number; creditsUsed: number; percent: number };
+  transformations?: { used: number; creditsUsed: number; percent: number };
   requests?: number;
   resources?: number;
   derivedResources?: number;
