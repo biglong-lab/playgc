@@ -327,6 +327,22 @@ export default function PhotoBurstFlow({
     return () => clearInterval(timer);
   }, [stage]);
 
+  // 🚨 全局 SUPER DEADLINE — uploading/compositing 任一階段超過 25 秒都強制 done
+  //   這是最終救命機制：不管 Promise.all 卡住、setState batch、iOS throttle
+  //   只要進入 uploading 後 25 秒還沒完成，強制用本地第一張 base64 進 done
+  useEffect(() => {
+    if (stage !== "uploading" && stage !== "compositing") return;
+    console.log("[Burst] Super deadline armed (25s)");
+    const superDeadline = setInterval(() => {
+      console.warn("[Burst] ⚠️ SUPER DEADLINE 25s 觸發 → force done");
+      const firstImage = burstImagesRef.current[0];
+      if (firstImage) setCompositeUrl(firstImage);
+      setStage("done");
+      clearInterval(superDeadline);
+    }, 25000);
+    return () => clearInterval(superDeadline);
+  }, [stage]);
+
   // 倒數 3-2-1 後才開始連拍
   const [countdownToStart, setCountdownToStart] = useState(3);
   useEffect(() => {
