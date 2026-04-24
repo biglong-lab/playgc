@@ -115,6 +115,52 @@ export default function SessionAlbum() {
     }
   };
 
+  // 🆕 v2: 批次下載整本相簿（逐張觸發瀏覽器原生下載，間隔 400ms 避免被擋）
+  const handleDownloadAll = async () => {
+    const photos = data?.photos ?? [];
+    if (photos.length === 0) return;
+    if (bulkDownloading) return;
+    // 10 張以上給個警告
+    if (photos.length > 10) {
+      const ok = window.confirm(
+        `即將下載 ${photos.length} 張照片（每張約 0.4 秒，總共約 ${Math.ceil(photos.length * 0.4)} 秒）。\n\n建議電腦操作；手機瀏覽器可能要一張張確認。繼續？`,
+      );
+      if (!ok) return;
+    }
+
+    setBulkDownloading(true);
+    setBulkProgress({ done: 0, total: photos.length });
+
+    try {
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        try {
+          const res = await fetch(photo.url);
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `chito-${sessionId?.slice(0, 8)}-${String(i + 1).padStart(2, "0")}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 100);
+        } catch {
+          // 單張失敗不中斷整批
+        }
+        setBulkProgress({ done: i + 1, total: photos.length });
+        // 間隔避免瀏覽器阻擋大量下載
+        if (i < photos.length - 1) {
+          await new Promise((r) => setTimeout(r, 400));
+        }
+      }
+      toast({ title: "✅ 全部下載完成", description: `${photos.length} 張已存` });
+    } finally {
+      setBulkDownloading(false);
+      setBulkProgress({ done: 0, total: 0 });
+    }
+  };
+
   const handleShareAlbum = async () => {
     const albumUrl = `${window.location.origin}/album/${sessionId}`;
     try {
