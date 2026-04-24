@@ -291,53 +291,24 @@ export default function PhotoCompareFlow({
     );
   }
 
-  // 合成完成
+  // 合成完成（共用 PhotoSuccessView）
   if (compositeUrl) {
+    const simText = lastResult
+      ? `相似度 ${Math.round(lastResult.similarity * 100)}%${
+          lastResult.matchedFeatures.length > 0
+            ? ` · ${lastResult.matchedFeatures.slice(0, 3).join(" / ")}`
+            : ""
+        }`
+      : undefined;
     return (
-      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-compare-success">
-        <div className="flex items-center gap-2 text-primary">
-          <CheckCircle2 className="w-6 h-6" />
-          <h2 className="text-xl font-bold">比對通過！</h2>
-        </div>
-
-        {lastResult && (
-          <div className="text-sm text-center text-muted-foreground">
-            相似度 <span className="font-bold text-primary">{Math.round(lastResult.similarity * 100)}%</span>
-            {lastResult.matchedFeatures.length > 0 && (
-              <div className="mt-1 flex flex-wrap gap-1 justify-center">
-                {lastResult.matchedFeatures.map((f, i) => (
-                  <span key={i} className="text-xs px-2 py-0.5 bg-emerald-500/10 text-emerald-700 rounded">
-                    ✓ {f}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="max-w-md w-full bg-card rounded-lg shadow-lg overflow-hidden">
-          <img
-            src={compositeUrl}
-            alt="紀念照"
-            className="w-full aspect-square object-cover"
-            data-testid="photo-compare-composite-image"
-          />
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-2 w-full max-w-md">
-          <Button onClick={handleDownload} variant="outline" className="flex-1 gap-2" data-testid="btn-photo-compare-download">
-            <Download className="w-4 h-4" />
-            下載
-          </Button>
-          <Button onClick={handleShare} variant="outline" className="flex-1 gap-2" data-testid="btn-photo-compare-share">
-            <Share2 className="w-4 h-4" />
-            分享
-          </Button>
-          <Button onClick={handleContinue} className="flex-1 gap-2" data-testid="btn-photo-compare-continue">
-            繼續遊戲
-          </Button>
-        </div>
-      </div>
+      <PhotoSuccessView
+        imageUrl={compositeUrl}
+        title="比對通過！"
+        subtitle={simText}
+        downloadPrefix="chito-compare"
+        onContinue={handleContinue}
+        testId="photo-compare-success"
+      />
     );
   }
 
