@@ -566,7 +566,9 @@ const { data: games } = useQuery({
 - ✅ ~~Phase 9a — AR 貼圖（固定位置）~~（輪 19 完成）
 - ✅ ~~photo_templates 管理後台~~（輪 21-22 完成，用 field.settings JSON 欄位實作）
 - ✅ ~~相簿批次下載~~（輪 23-24 批次 + 輪 25 ZIP 一鍵升級）
+- ✅ ~~團體合影 team_photo~~（輪 26 完成，簡化版單裝置模式）
 - ⏳ Phase 9b — AR 臉部追蹤（MediaPipe Face Landmarker，合規風險暫緩）
+- ⏳ Google Drive 直傳（需外部 OAuth Client ID 設定）
 
 ### 關鍵學習
 
