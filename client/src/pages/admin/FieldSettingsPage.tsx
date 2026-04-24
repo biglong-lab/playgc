@@ -145,6 +145,9 @@ export default function FieldSettingsPage() {
             <TabsTrigger value="ai" className="gap-2">
               <Bot className="w-4 h-4" /> AI 設定
             </TabsTrigger>
+            <TabsTrigger value="photo" className="gap-2" data-testid="tab-photo-templates">
+              <Camera className="w-4 h-4" /> 紀念照
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="intro">
@@ -158,6 +161,9 @@ export default function FieldSettingsPage() {
           </TabsContent>
           <TabsContent value="ai">
             <AiSettingsTab fieldId={fieldId} settings={settings} />
+          </TabsContent>
+          <TabsContent value="photo">
+            <PhotoTemplatesTab fieldId={fieldId} settings={settings} />
           </TabsContent>
         </Tabs>
         </>
