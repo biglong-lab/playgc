@@ -241,17 +241,18 @@ export function CameraView({
           />
         </div>
 
-        {/* 🆕 切換前後鏡頭（右上）*/}
+        {/* 🎨 切換前後鏡頭 — 大按鈕 + 文字標籤，絕對看得到 */}
         {onSwitchCamera && (
           <Button
-            size="icon"
-            variant="ghost"
             onClick={onSwitchCamera}
-            className="absolute top-4 right-4 bg-black/50 backdrop-blur hover:bg-black/70 text-white w-11 h-11 rounded-full"
+            className="absolute top-4 right-4 bg-black/75 backdrop-blur hover:bg-black/90 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/30 shadow-xl"
             data-testid="btn-camera-switch"
             title={isMirror ? "切到後鏡頭" : "切到前鏡頭（自拍）"}
           >
             <RefreshCw className="w-5 h-5" />
+            <span className="text-sm font-medium">
+              {isMirror ? "切後鏡頭" : "切前鏡頭"}
+            </span>
           </Button>
         )}
 
