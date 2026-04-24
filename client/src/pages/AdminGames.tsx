@@ -6,6 +6,7 @@ import { ListSkeleton } from "@/components/shared/LoadingSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
+import SearchKbdHint from "@/components/shared/SearchKbdHint";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Gamepad2, Search, FileText, Globe, Archive } from "lucide-react";
