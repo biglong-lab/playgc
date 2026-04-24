@@ -74,6 +74,8 @@ export default function AdminSessions() {
   const [gameFilter, setGameFilter] = useState<string>("all");
   const [selectedRow, setSelectedRow] = useState<AdminSessionRow | null>(null);
   const [showCleanupConfirm, setShowCleanupConfirm] = useState(false);
+  // 🆕 搜尋框鍵盤 shortcut
+  const { inputRef: searchInputRef, isMac } = useSearchShortcut<HTMLInputElement>();
 
   /** 🆕 改用 /api/admin/sessions 含玩家資訊 */
   const { data: rows = [], isLoading, refetch } = useQuery<AdminSessionRow[]>({
