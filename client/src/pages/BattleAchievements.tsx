@@ -88,6 +88,16 @@ export default function BattleAchievements() {
 
   const totalPoints = myAchievements.reduce((sum, a) => sum + a.points, 0);
   const maxPoints = allDefs.reduce((sum, a) => sum + a.points, 0);
+  const unlockedRatio = allDefs.length > 0 ? (myAchievements.length / allDefs.length) * 100 : 0;
+  const pointsRatio = maxPoints > 0 ? (totalPoints / maxPoints) * 100 : 0;
+
+  // 🔧 排序：已解鎖優先，再按 points 高到低（讓使用者一眼看到自己解鎖的）
+  const sortedDefs = [...filteredDefs].sort((a, b) => {
+    const aUnlocked = unlockedIds.has(a.id) ? 1 : 0;
+    const bUnlocked = unlockedIds.has(b.id) ? 1 : 0;
+    if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked;
+    return b.points - a.points;
+  });
 
   return (
     <BattleLayout
@@ -96,6 +106,32 @@ export default function BattleAchievements() {
       backHref="/battle/my"
     >
       <div className="space-y-4">
+        {/* 🚀 整體解鎖進度（讓使用者看到收集進度） */}
+        {allDefs.length > 0 && (
+          <Card className="bg-card border-border">
+            <CardContent className="p-4 space-y-3">
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs text-muted-foreground">收集進度</span>
+                  <span className="text-xs font-number font-semibold">
+                    {myAchievements.length}/{allDefs.length}（{unlockedRatio.toFixed(0)}%）
+                  </span>
+                </div>
+                <Progress value={unlockedRatio} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs text-muted-foreground">成就點數</span>
+                  <span className="text-xs font-number font-semibold">
+                    {totalPoints}/{maxPoints}（{pointsRatio.toFixed(0)}%）
+                  </span>
+                </div>
+                <Progress value={pointsRatio} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 分類 Tab */}
         <div className="flex gap-2 overflow-x-auto pb-1">
           <Button
