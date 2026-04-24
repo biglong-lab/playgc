@@ -19,9 +19,12 @@ import {
   STATUS_LABELS, STATUS_COLORS, DIFFICULTY_LABELS, normalizeStatus,
 } from "@/components/admin-games";
 import { useAdminStaffGames, type StaffGame } from "./admin-staff-games/useAdminStaffGames";
+import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 
 export default function AdminStaffGames() {
   const ctx = useAdminStaffGames();
+  // 🆕 搜尋框鍵盤 shortcut
+  const { inputRef: searchInputRef, isMac } = useSearchShortcut<HTMLInputElement>();
 
   return (
     <UnifiedAdminLayout title="遊戲管理">
