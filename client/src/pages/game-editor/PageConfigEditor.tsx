@@ -1157,6 +1157,71 @@ export default function PageConfigEditor({
         </div>
       );
 
+    // 🆕 v2 獨立 pageType：連拍紀念（photo_burst）
+    case "photo_burst":
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">拍照指示</label>
+            <Textarea
+              value={(config.instruction as string) || ""}
+              onChange={(e) => updateField("instruction", e.target.value)}
+              placeholder="擺個 pose，連拍 N 張合成紀念圖..."
+              rows={3}
+              data-testid="config-instruction"
+            />
+          </div>
+
+          <div className="border border-border rounded-lg p-4 space-y-4" data-testid="config-burst-section">
+            <div className="flex items-center gap-2">
+              <Camera className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">連拍設定</span>
+            </div>
+
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                連拍張數（3-9 張）
+              </label>
+              <Input
+                type="number"
+                value={(config.burstConfig as any)?.frameCount ?? 4}
+                onChange={(e) => updateField("burstConfig", {
+                  ...(config.burstConfig as any || {}),
+                  frameCount: Math.min(9, Math.max(3, parseInt(e.target.value) || 4)),
+                })}
+                min={3} max={9}
+                data-testid="config-burst-frame-count"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                3 張拼 1x3 / 4 張拼 2x2 / 6 張拼 3x2 / 9 張拼 3x3
+              </p>
+            </div>
+
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">
+                每張間隔（毫秒）— 預設 1000ms (1 秒)
+              </label>
+              <Input
+                type="number"
+                value={(config.burstConfig as any)?.frameIntervalMs ?? 1000}
+                onChange={(e) => updateField("burstConfig", {
+                  ...(config.burstConfig as any || {}),
+                  frameIntervalMs: Math.max(300, parseInt(e.target.value) || 1000),
+                })}
+                min={300} max={3000} step={100}
+                data-testid="config-burst-interval"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                太快玩家反應不及，建議 800-1500ms
+              </p>
+            </div>
+          </div>
+
+          <RewardsSection config={config} updateField={updateField} gameId={gameId} />
+          <LocationSettingsSection config={config} updateField={updateField} />
+        </div>
+      );
+
     case "gps_mission":
       return (
         <GpsMissionEditor
