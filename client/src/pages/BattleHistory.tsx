@@ -20,14 +20,12 @@ export default function BattleHistory() {
   const { data: history = [], isLoading } = useQuery<HistoryRecord[]>({
     queryKey: ["/api/battle/my/history"],
     queryFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch("/api/battle/my/history?limit=30", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", "/api/battle/my/history?limit=30");
+        return res.json();
+      } catch {
+        return [];
+      }
     },
     enabled: !!user,
   });
