@@ -791,6 +791,78 @@ export default function AdminStaffPlayers() {
         </DialogContent>
       </Dialog>
 
+      {/* 🆕 G3: 批次授權 Dialog */}
+      <Dialog
+        open={bulkGrantOpen}
+        onOpenChange={(o) => {
+          if (!o) {
+            setBulkGrantOpen(false);
+            setBulkSelectedRoleId("");
+          }
+        }}
+      >
+        <DialogContent data-testid="dialog-bulk-grant">
+          <DialogHeader>
+            <DialogTitle>批次授權為管理員</DialogTitle>
+            <DialogDescription>
+              將授權 <span className="font-semibold text-primary">{selectedCount}</span> 位玩家為本場域管理員。
+              所有選取玩家會套用同一個角色，請先確認選擇。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            <Select value={bulkSelectedRoleId} onValueChange={setBulkSelectedRoleId}>
+              <SelectTrigger data-testid="select-bulk-role">
+                <SelectValue placeholder="選擇角色" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles
+                  ?.filter(
+                    (r) =>
+                      r.systemRole !== "super_admin" &&
+                      r.systemRole !== "player"
+                  )
+                  .map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.name}
+                      {r.systemRole && r.systemRole !== "custom" && (
+                        <span className="text-muted-foreground text-xs ml-1">
+                          ({r.systemRole})
+                        </span>
+                      )}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setBulkGrantOpen(false);
+                setBulkSelectedRoleId("");
+              }}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                if (!bulkSelectedRoleId || selectedUserIds.size === 0) return;
+                bulkGrantMutation.mutate({
+                  userIds: Array.from(selectedUserIds),
+                  roleId: bulkSelectedRoleId,
+                });
+              }}
+              disabled={!bulkSelectedRoleId || bulkGrantMutation.isPending}
+              data-testid="btn-bulk-grant-confirm"
+            >
+              {bulkGrantMutation.isPending
+                ? "授權中..."
+                : `確認授權 ${selectedCount} 位`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* 撤銷確認 */}
       <AlertDialog open={!!revokeTarget} onOpenChange={(o) => !o && setRevokeTarget(null)}>
         <AlertDialogContent>
