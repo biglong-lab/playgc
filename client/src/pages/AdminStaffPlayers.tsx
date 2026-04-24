@@ -477,6 +477,17 @@ export default function AdminStaffPlayers() {
                 <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      {/* 🆕 G3: 全選 checkbox */}
+                      {selectableMembers.length > 0 && (
+                        <Checkbox
+                          checked={allSelectableSelected}
+                          onCheckedChange={toggleSelectAll}
+                          data-testid="checkbox-select-all"
+                          aria-label="全選可授權玩家"
+                        />
+                      )}
+                    </TableHead>
                     <TableHead>玩家</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>加入本場域</TableHead>
@@ -488,8 +499,20 @@ export default function AdminStaffPlayers() {
                 <TableBody>
                   {filtered.map((m) => {
                     const isSelf = m.user?.id === selfAccountId;
+                    const isSelectable = !isSelf && !m.membership.isAdmin && !!m.user?.id;
+                    const isSelected = !!m.user?.id && selectedUserIds.has(m.user.id);
                     return (
                       <TableRow key={m.membership.id}>
+                        <TableCell>
+                          {isSelectable && (
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => m.user && toggleSelect(m.user.id)}
+                              data-testid={`checkbox-row-${m.membership.id}`}
+                              aria-label={`選取 ${getDisplayName(m.user)}`}
+                            />
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Avatar className="w-7 h-7">
