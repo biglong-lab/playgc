@@ -351,7 +351,14 @@ export default function BattleSlotDetail() {
       </div>
 
       {/* 報名 Dialog */}
-      <Dialog open={showRegisterDialog} onOpenChange={setShowRegisterDialog}>
+      <Dialog
+        open={showRegisterDialog}
+        onOpenChange={(o) => {
+          // 🔒 報名中時禁止關閉 dialog（避免使用者中斷流程）
+          if (registerMutation.isPending) return;
+          setShowRegisterDialog(o);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>報名對戰</DialogTitle>
@@ -367,15 +374,31 @@ export default function BattleSlotDetail() {
                   <SelectItem value="advanced">高手</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                根據技能等級分配隊伍以平衡實力
+              </p>
             </div>
             <div>
               <Label>備註（選填）</Label>
-              <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} />
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                maxLength={500}
+                placeholder="例如：第一次參加、想跟朋友一隊"
+              />
+              <p className="text-xs text-muted-foreground mt-1 text-right">
+                {notes.length}/500
+              </p>
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => registerMutation.mutate()} disabled={registerMutation.isPending}>
-              確認報名
+            <Button
+              onClick={() => registerMutation.mutate()}
+              disabled={registerMutation.isPending}
+              className="gap-2"
+            >
+              {registerMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {registerMutation.isPending ? "報名中..." : "確認報名"}
             </Button>
           </DialogFooter>
         </DialogContent>
