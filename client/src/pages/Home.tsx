@@ -754,13 +754,7 @@ export default function Home() {
           setAnonymousNameOpen(false);
           setPendingGameNavigation(null);
         }}
-        initialName={(() => {
-          try {
-            return localStorage.getItem("anonymous_player_name") || "";
-          } catch {
-            return "";
-          }
-        })()}
+        initialName={savedAnonName}
       />
     </div>
   );
