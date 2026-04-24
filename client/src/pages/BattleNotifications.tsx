@@ -93,7 +93,17 @@ export default function BattleNotifications() {
           <Card className="bg-card border-border">
             <CardContent className="p-12 text-center text-muted-foreground">
               <Bell className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              <p>目前沒有通知</p>
+              <p className="mb-2">目前沒有通知</p>
+              <p className="text-xs mb-4">
+                報名對戰、戰隊邀請、賽季結算等都會通知你
+              </p>
+              {/* 🚀 Empty state CTA */}
+              <Link href="/battle">
+                <Button size="sm" className="gap-2">
+                  <Swords className="h-4 w-4" />
+                  前往對戰中心
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : (
