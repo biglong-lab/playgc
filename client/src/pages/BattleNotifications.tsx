@@ -9,6 +9,7 @@ import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
+import { formatTimeAgo } from "@/lib/battle-time";
 import BattleLayout from "@/components/battle/BattleLayout";
 import {
   notificationTypeLabels,
