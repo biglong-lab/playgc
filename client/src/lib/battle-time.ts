@@ -84,3 +84,37 @@ export function isImminentSlot(
     return false;
   }
 }
+
+/**
+ * 把時間轉為「N 分鐘前/N 小時前/N 天前」相對時間
+ *
+ * 範例：
+ *   - 「剛剛」（< 1 分鐘）
+ *   - 「5 分鐘前」
+ *   - 「3 小時前」
+ *   - 「2 天前」
+ *   - 「3 個月前」
+ *
+ * @param date 過去某時間點
+ * @param opts.now 用來測試時注入固定的「現在時間」
+ */
+export function formatTimeAgo(date: Date, opts: TimeUntilOptions = {}): string {
+  const now = opts.now ?? new Date();
+  const diffMs = now.getTime() - date.getTime();
+  if (diffMs < 0) return "剛剛"; // 未來時間視為剛剛（避免「-N 分鐘前」）
+
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "剛剛";
+  if (diffMin < 60) return `${diffMin} 分鐘前`;
+
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr} 小時前`;
+
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay < 30) return `${diffDay} 天前`;
+
+  const diffMonth = Math.floor(diffDay / 30);
+  if (diffMonth < 12) return `${diffMonth} 個月前`;
+
+  return `${Math.floor(diffMonth / 12)} 年前`;
+}
