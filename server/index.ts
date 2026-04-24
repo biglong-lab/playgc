@@ -137,7 +137,7 @@ app.use(helmet({
             "https://unpkg.com",
             "https://*.googleusercontent.com",
           ],
-          // XHR/WebSocket：同源 + Firebase + Recur + WebSocket
+          // XHR/WebSocket：同源 + Firebase + Recur + WebSocket + MediaPipe CDN
           connectSrc: [
             "'self'",
             "https://*.firebaseapp.com",
@@ -145,6 +145,8 @@ app.use(helmet({
             "https://identitytoolkit.googleapis.com",
             "https://securetoken.googleapis.com",
             "https://www.googleapis.com",
+            "https://storage.googleapis.com", // 🆕 MediaPipe face_landmarker.task model
+            "https://cdn.jsdelivr.net", // 🆕 MediaPipe WASM fetch
             "https://api.recur.tw",
             "wss://game.homi.cc",
             "ws://localhost:*",
