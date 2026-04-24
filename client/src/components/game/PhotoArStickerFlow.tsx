@@ -313,8 +313,15 @@ export default function PhotoArStickerFlow({
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("無法建立 canvas context");
 
-      // 底圖：video 畫面
+      // 底圖：video 畫面（user 鏡頭要水平翻轉讓拍出來的是鏡像，跟預覽一致）
+      const isMirror = camera.facingMode === "user";
+      if (isMirror) {
+        ctx.save();
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      if (isMirror) ctx.restore();
 
       // 疊上每個貼圖
       for (let i = 0; i < stickers.length; i++) {
@@ -324,10 +331,13 @@ export default function PhotoArStickerFlow({
         const ratio = img.naturalWidth / img.naturalHeight;
 
         // 🆕 B2: 若有 face anchor，用臉部座標定位；否則 fallback 固定位置
-        if (useFaceTracking && faceAnchor) {
-          const anchorW = faceAnchor.width * canvas.width * (s.sizeRatio || 1);
+        if (useFaceTracking) {
+          if (!faceAnchor) continue; // 沒臉就不畫
+          // size 縮小（與 DOM overlay 一致）
+          const anchorW = faceAnchor.width * canvas.width * (s.sizeRatio || 0.6);
           const anchorH = anchorW / ratio;
-          const cx = faceAnchor.x * canvas.width;
+          // 🎨 mirror 模式：MediaPipe 回傳的座標是未鏡像的，要反推到鏡像後座標
+          const cx = (isMirror ? 1 - faceAnchor.x : faceAnchor.x) * canvas.width;
           const cy = faceAnchor.y * canvas.height;
           ctx.save();
           ctx.translate(cx, cy);
