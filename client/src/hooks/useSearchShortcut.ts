@@ -18,6 +18,7 @@
 //
 // 自動忽略已在輸入中（INPUT / TEXTAREA / contentEditable）的狀態，避免干擾打字。
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { isMacOS } from "@/lib/platform";
 
 interface UseSearchShortcutOptions {
   /** 停用 Cmd/Ctrl+K shortcut（在有 CommandPalette 的 admin 頁面務必傳 true） */
@@ -31,11 +32,7 @@ export function useSearchShortcut<T extends HTMLElement = HTMLInputElement>(
   const inputRef = useRef<T>(null);
 
   // 偵測 macOS（一次性 memoize，避免每 render 重讀 navigator）
-  const isMac = useMemo(() => {
-    if (typeof navigator === "undefined") return false;
-    // navigator.platform 最穩定；userAgentData 尚未廣泛支援
-    return /Mac|iPhone|iPod|iPad/i.test(navigator.platform || navigator.userAgent || "");
-  }, []);
+  const isMac = useMemo(() => isMacOS(), []);
 
   useEffect(() => {
     const handleShortcut = (e: KeyboardEvent) => {
