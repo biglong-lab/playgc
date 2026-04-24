@@ -72,8 +72,8 @@ if [[ -n "$(git status -s)" ]]; then
   [[ "$DEPLOY_FORCE" != "1" ]] && exit 1
 fi
 
-LOCAL_SHA=$(git rev-parse --short HEAD)
-log_ok "本地 HEAD: $LOCAL_SHA ($(git log -1 --format='%s' | head -c 60))"
+LOCAL_SHA=$(git rev-parse HEAD)   # 🔧 改用完整 40 字元 SHA，避免 git 短 SHA 長度不一致的誤判
+log_ok "本地 HEAD: ${LOCAL_SHA:0:7} ($(git log -1 --format='%s' | head -c 60))"
 
 # ═══ 1.5/6 TypeScript 型別檢查 ═══
 # 背景：vite build 用 esbuild，會忽略 type 錯誤，type bug 會悄悄上線。
