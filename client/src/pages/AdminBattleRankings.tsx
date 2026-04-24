@@ -123,7 +123,16 @@ export default function AdminBattleRankings() {
               <EmptyState
                 icon={Trophy}
                 title={search ? "無符合的搜尋結果" : "尚無對戰排名資料"}
-                description={search ? "改變搜尋條件" : "玩家完成對戰後，ELO 積分與段位會自動計算"}
+                description={search ? "改變搜尋條件或清除輸入" : "玩家完成對戰後，ELO 積分與段位會自動計算"}
+                actions={
+                  search
+                    ? [{
+                        label: "清除搜尋",
+                        variant: "outline",
+                        onClick: () => setSearch(""),
+                      }]
+                    : undefined
+                }
               />
             ) : (
               <div className="overflow-x-auto">
