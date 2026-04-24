@@ -98,8 +98,9 @@ export function useMatchLobby() {
   }, [authLoading, gameLoading, currentMatchId, ws.matchStatus, currentMatch]);
 
   const handleGoBack = useCallback(() => {
-    setLocation("/home");
-  }, [setLocation]);
+    // 🔧 場域感知 — 後浦玩家按返回大廳不會跑到賈村
+    setLocation(link("/home"));
+  }, [setLocation, link]);
 
   // 使用 firebaseUser.uid 作為 userId 識別
   const currentUserId = firebaseUser?.uid ?? user?.id;
