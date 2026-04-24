@@ -226,10 +226,12 @@ function MyRegistrations() {
   const { data: registrations = [] } = useQuery({
     queryKey: ["/api/battle/my-registrations"],
     queryFn: async () => {
-      const { authFetch } = await import("@/lib/authFetch");
-      const res = await authFetch("/api/battle/my-registrations");
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", "/api/battle/my-registrations");
+        return res.json();
+      } catch {
+        return [];
+      }
     },
     enabled: !!user,
   });
