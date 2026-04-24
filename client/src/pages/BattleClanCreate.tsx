@@ -36,14 +36,11 @@ export default function BattleClanCreate() {
     mutationFn: async () => {
       if (!fieldId) throw new Error("無法取得場域資訊，請重新整理頁面");
 
-      const res = await authFetch(`/api/battle/clans?fieldId=${fieldId}`, {
-        method: "POST",
-        body: JSON.stringify({ name: name.trim(), tag: tag.trim(), description: description.trim() || undefined }),
+      const res = await apiRequest("POST", `/api/battle/clans?fieldId=${fieldId}`, {
+        name: name.trim(),
+        tag: tag.trim(),
+        description: description.trim() || undefined,
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "建立失敗" }));
-        throw new Error(err.error || `建立失敗 (${res.status})`);
-      }
       return res.json();
     },
     onSuccess: (clan) => {
