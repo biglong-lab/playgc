@@ -124,13 +124,20 @@ export default function AdminDashboard() {
               <Gamepad2 className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="font-number text-3xl font-bold text-primary">
+              {/* 🆕 沒遊戲時 muted、有遊戲時主色 */}
+              <div
+                className={`font-number text-3xl font-bold ${
+                  publishedGames > 0 ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
                 {publishedGames}
               </div>
               <p className="text-xs text-muted-foreground">
-                {draftGames > 0
-                  ? `還有 ${draftGames} 個草稿 · 共 ${games?.length || 0} 個`
-                  : `共 ${games?.length || 0} 個遊戲`}
+                {(games?.length || 0) === 0
+                  ? "尚未建立任何遊戲"
+                  : draftGames > 0
+                    ? `還有 ${draftGames} 個草稿 · 共 ${games?.length} 個`
+                    : `共 ${games?.length} 個遊戲`}
               </p>
             </CardContent>
           </Card>
