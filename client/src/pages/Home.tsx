@@ -325,14 +325,7 @@ export default function Home() {
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">
-            歡迎回來, <span className="text-primary">{(() => {
-              try {
-                const saved = localStorage.getItem("anonymous_player_name");
-                return user.firstName || saved || "玩家";
-              } catch {
-                return user.firstName || "玩家";
-              }
-            })()}</span>
+            歡迎回來, <span className="text-primary" data-testid="home-display-name">{displayName}</span>
           </h2>
           {/* 有場域歡迎訊息且上面沒有 hero banner 顯示過 → 這裡顯示 */}
           {welcomeMessage && !fieldCoverUrl && (
