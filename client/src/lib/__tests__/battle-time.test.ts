@@ -1,7 +1,7 @@
 // battle-time 單元測試
 // 用固定 now 參數注入避免測試 flaky
 import { describe, it, expect } from "vitest";
-import { formatTimeUntil, isImminentSlot } from "../battle-time";
+import { formatTimeUntil, isImminentSlot, formatTimeAgo } from "../battle-time";
 
 describe("formatTimeUntil", () => {
   // 固定參考時間：2026-04-25 12:00
