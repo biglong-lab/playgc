@@ -194,29 +194,41 @@ export default function AdminSessions() {
       }
     >
       <div className="space-y-6">
-        {/* 統計卡 */}
+        {/* 🆕 統計卡 — 點擊切換 filter，當前 filter 有 ring 高亮 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard
             label="進行中"
             value={activeSessions}
             icon={<Play className="w-8 h-8 text-success/50" />}
             accent="text-success"
+            active={statusFilter === "playing"}
+            onClick={() => setStatusFilter(statusFilter === "playing" ? "all" : "playing")}
+            testid="stat-card-playing"
           />
           <StatCard
             label="已完成"
             value={completedSessions}
             icon={<CheckCircle className="w-8 h-8 text-muted-foreground/50" />}
+            active={statusFilter === "completed"}
+            onClick={() => setStatusFilter(statusFilter === "completed" ? "all" : "completed")}
+            testid="stat-card-completed"
           />
           <StatCard
             label="已放棄"
             value={abandonedSessions}
             icon={<AlertTriangle className="w-8 h-8 text-destructive/50" />}
             accent="text-destructive"
+            active={statusFilter === "abandoned"}
+            onClick={() => setStatusFilter(statusFilter === "abandoned" ? "all" : "abandoned")}
+            testid="stat-card-abandoned"
           />
           <StatCard
             label="總場次"
             value={rows.length}
             icon={<Users className="w-8 h-8 text-primary/50" />}
+            active={statusFilter === "all"}
+            onClick={() => setStatusFilter("all")}
+            testid="stat-card-total"
           />
         </div>
 
