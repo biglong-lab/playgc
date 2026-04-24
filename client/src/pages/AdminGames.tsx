@@ -85,10 +85,25 @@ export default function AdminGames() {
     <UnifiedAdminLayout
       title="遊戲管理"
       actions={
-        <Button onClick={() => ctx.setIsWizardOpen(true)} data-testid="button-create-game">
-          <Plus className="h-4 w-4 mr-2" />
-          新增遊戲
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => importDemoMutation.mutate()}
+            disabled={importDemoMutation.isPending}
+            data-testid="btn-import-demo-game"
+            className="gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            {importDemoMutation.isPending ? "匯入中..." : "匯入賈村示範遊戲"}
+          </Button>
+          <Button
+            onClick={() => ctx.setIsWizardOpen(true)}
+            data-testid="button-create-game"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            新增遊戲
+          </Button>
+        </div>
       }
     >
       <div className="p-6 space-y-6">
