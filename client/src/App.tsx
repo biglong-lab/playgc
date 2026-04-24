@@ -266,7 +266,8 @@ function Router() {
 function App() {
   const { isOnline } = useOfflineSync();
   // 🆕 啟用前端錯誤全域上報（掛 window.error / unhandledrejection）
-  useErrorReport();
+  // ⚠️ 2026-04-24 hotfix：暫時停用，懷疑跟生產端 React error #310 有關，待根因確認後恢復
+  // useErrorReport();
 
   return (
     <ErrorBoundary>
