@@ -27,6 +27,16 @@ import {
   ChevronLeft, ChevronRight, MessageCircle, Backpack,
   Map as MapIcon, AlertTriangle, Home
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function GamePlay() {
   const { gameId, chapterId } = useParams<{ gameId: string; chapterId?: string }>();
