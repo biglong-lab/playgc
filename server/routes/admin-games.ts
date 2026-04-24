@@ -658,7 +658,7 @@ export function registerAdminGameRoutes(app: Express) {
 
         // 審計日誌
         await logAuditAction({
-          adminId: req.admin.id,
+          actorAdminId: req.admin.id,
           action: "game:create-from-demo",
           targetType: "game",
           targetId: game.id,
