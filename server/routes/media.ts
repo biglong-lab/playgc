@@ -560,7 +560,7 @@ export function registerMediaRoutes(app: Express) {
         const { sessionId } = req.params;
 
         // 取 session 的 gameId（照片 folder 需要 gameId + sessionId）
-        const session = await storage.getGameSession(sessionId);
+        const session = await storage.getSession(sessionId);
         if (!session) {
           return res.status(404).json({ error: "Session 不存在" });
         }
