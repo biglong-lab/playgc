@@ -20,6 +20,7 @@ import {
 } from "@/components/admin-games";
 import { useAdminStaffGames, type StaffGame } from "./admin-staff-games/useAdminStaffGames";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
+import SearchKbdHint from "@/components/shared/SearchKbdHint";
 
 export default function AdminStaffGames() {
   const ctx = useAdminStaffGames();
