@@ -201,16 +201,39 @@ export default function SessionAlbum() {
           </p>
         </div>
         {photos.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleShareAlbum}
-            className="gap-1"
-            data-testid="btn-share-album"
-          >
-            <Share2 className="w-4 h-4" />
-            分享相簿
-          </Button>
+          <>
+            {/* 🆕 v2: 一鍵下載整本 */}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleDownloadAll}
+              disabled={bulkDownloading}
+              className="gap-1"
+              data-testid="btn-download-all-album"
+            >
+              {bulkDownloading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {bulkProgress.done}/{bulkProgress.total}
+                </>
+              ) : (
+                <>
+                  <DownloadCloud className="w-4 h-4" />
+                  下載全部
+                </>
+              )}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleShareAlbum}
+              className="gap-1"
+              data-testid="btn-share-album"
+            >
+              <Share2 className="w-4 h-4" />
+              分享
+            </Button>
+          </>
         )}
       </header>
 
