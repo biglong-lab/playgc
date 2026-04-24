@@ -476,7 +476,7 @@ export default function PhotoSpotFlow({
         )}
 
         <Button
-          onClick={camera.startCamera}
+          onClick={() => camera.startCamera()}
           disabled={!canOpenCamera}
           size="lg"
           className="w-full gap-2 h-14"

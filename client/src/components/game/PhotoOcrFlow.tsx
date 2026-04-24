@@ -361,7 +361,7 @@ export default function PhotoOcrFlow({
       {/* 拍照按鈕 */}
       <div className="max-w-md w-full">
         <Button
-          onClick={camera.startCamera}
+          onClick={() => camera.startCamera()}
           size="lg"
           className="w-full gap-2 h-14 text-base font-semibold"
           data-testid="btn-photo-ocr-start"
