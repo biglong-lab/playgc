@@ -15,10 +15,14 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// 🚨 2026-04-25 hotfix v6：再次強制所有使用者清快取
-// 背景：使用者反映連拍合成卡住不動，經查是 PWA 舊 bundle 導致（新 code 無 20s deadline）
-// v6 bump 一次性清除所有曾經用 v5 flag 的使用者，讓他們拿到最新的連拍修復
-const CACHE_PURGE_FLAG = "chito_cache_purge_v6_burst_deadline_fix";
+// 🚀 持續性版本比對：每次啟動 fetch /api/version 比對 commit，
+//   若伺服器版本不符 localStorage 記錄的版本就強制清快取 reload
+//   （取代原本的一次性 CACHE_PURGE_FLAG，從此不再靠 bump 版本號）
+const LAST_COMMIT_KEY = "chito_last_known_commit";
+const CLIENT_COMMIT = import.meta.env.VITE_APP_COMMIT || "unknown";
+
+// 🆘 Legacy 一次性 purge flag（保留以防舊使用者還沒清過）
+const CACHE_PURGE_FLAG = "chito_cache_purge_v7_version_check";
 if (typeof window !== "undefined" && !localStorage.getItem(CACHE_PURGE_FLAG)) {
   (async () => {
     try {
