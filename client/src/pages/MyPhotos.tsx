@@ -129,6 +129,48 @@ export default function MyPhotos() {
     setLocation(link(`/album/${sessionId}`));
   };
 
+  // 🆕 v2: 批次下載所有紀念照（同 SessionAlbum pattern）
+  const handleDownloadAll = async () => {
+    if (photos.length === 0 || bulkDownloading) return;
+    if (photos.length > 10) {
+      const ok = window.confirm(
+        `即將下載 ${photos.length} 張紀念照（每張約 0.4 秒，總共約 ${Math.ceil(photos.length * 0.4)} 秒）。\n\n建議電腦操作；手機瀏覽器可能要一張張確認。繼續？`,
+      );
+      if (!ok) return;
+    }
+
+    setBulkDownloading(true);
+    setBulkProgress({ done: 0, total: photos.length });
+
+    try {
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        try {
+          const res = await fetch(photo.url);
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `chito-${photo.sessionId.slice(0, 8)}-${String(i + 1).padStart(2, "0")}.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 100);
+        } catch {
+          // 單張失敗不中斷
+        }
+        setBulkProgress({ done: i + 1, total: photos.length });
+        if (i < photos.length - 1) {
+          await new Promise((r) => setTimeout(r, 400));
+        }
+      }
+      toast({ title: "✅ 全部下載完成", description: `${photos.length} 張已存` });
+    } finally {
+      setBulkDownloading(false);
+      setBulkProgress({ done: 0, total: 0 });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background" data-testid="my-photos-page">
       {/* Header */}
