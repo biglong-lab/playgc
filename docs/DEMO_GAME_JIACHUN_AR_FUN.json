@@ -96,7 +96,7 @@
         "arStickerConfig": {
           "stickers": [
             {
-              "imageUrl": "https://res.cloudinary.com/dhczwewns/image/upload/v1761800000/chito-demo/jiachun-hat.png",
+              "imageUrl": "/demo-stickers/jiachun-hat.svg",
               "position": "top",
               "sizeRatio": 1.0
             }
