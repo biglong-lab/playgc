@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./contexts/AuthContext";
 import App from "./App";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
 import "./index.css";
 
 // Service Worker 更新時強制 reload，避免當前 tab 卡在舊 bundle
