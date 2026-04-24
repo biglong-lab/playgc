@@ -213,6 +213,13 @@ export default function PhotoArStickerFlow({
             return;
           }
 
+          // B4: frame skip — 每 N 幀才跑一次偵測（省 GPU、電量）
+          frameCounterRef.current += 1;
+          if (frameCounterRef.current % FACE_DETECT_FRAME_INTERVAL !== 0) {
+            rafIdRef.current = requestAnimationFrame(loop);
+            return;
+          }
+
           const ts = performance.now();
           // VIDEO mode 要求 timestamp 嚴格遞增
           if (ts <= lastTsRef.current) {
