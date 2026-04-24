@@ -195,38 +195,41 @@ export default function AdminSessions() {
       }
     >
       <div className="space-y-6">
-        {/* 🆕 統計卡 — 點擊切換 filter，當前 filter 有 ring 高亮 */}
+        {/* 🆕 統計卡 — 改用共用 MetricCard，點擊切換 filter、active 有 ring 高亮 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard
+          <MetricCard
             label="進行中"
             value={activeSessions}
-            icon={<Play className="w-8 h-8 text-success/50" />}
-            accent="text-success"
+            icon={Play}
+            accent="success"
+            live={activeSessions > 0}
             active={statusFilter === "playing"}
             onClick={() => setStatusFilter(statusFilter === "playing" ? "all" : "playing")}
             testid="stat-card-playing"
           />
-          <StatCard
+          <MetricCard
             label="已完成"
             value={completedSessions}
-            icon={<CheckCircle className="w-8 h-8 text-muted-foreground/50" />}
+            icon={CheckCircle}
+            accent={completedSessions > 0 ? "default" : "muted"}
             active={statusFilter === "completed"}
             onClick={() => setStatusFilter(statusFilter === "completed" ? "all" : "completed")}
             testid="stat-card-completed"
           />
-          <StatCard
+          <MetricCard
             label="已放棄"
             value={abandonedSessions}
-            icon={<AlertTriangle className="w-8 h-8 text-destructive/50" />}
-            accent="text-destructive"
+            icon={AlertTriangle}
+            accent={abandonedSessions > 0 ? "destructive" : "muted"}
             active={statusFilter === "abandoned"}
             onClick={() => setStatusFilter(statusFilter === "abandoned" ? "all" : "abandoned")}
             testid="stat-card-abandoned"
           />
-          <StatCard
+          <MetricCard
             label="總場次"
             value={rows.length}
-            icon={<Users className="w-8 h-8 text-primary/50" />}
+            icon={Users}
+            accent={rows.length > 0 ? "primary" : "muted"}
             active={statusFilter === "all"}
             onClick={() => setStatusFilter("all")}
             testid="stat-card-total"
