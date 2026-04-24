@@ -9,8 +9,11 @@ import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import SearchKbdHint from "@/components/shared/SearchKbdHint";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Gamepad2, Search, FileText, Globe, Archive } from "lucide-react";
+import { Plus, Gamepad2, Search, FileText, Globe, Archive, Sparkles } from "lucide-react";
 import type { Game } from "@shared/schema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchWithAdminAuth } from "@/hooks/useAdminAuth";
+import { useToast } from "@/hooks/use-toast";
 import {
   GameFormDialog, QRCodeDialog, CoverUploadDialog, DeleteGameDialog,
   MoveFieldDialog,
