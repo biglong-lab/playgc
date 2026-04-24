@@ -116,80 +116,89 @@ export default function AdminDashboard() {
       <FieldModulesCard />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">發布遊戲</CardTitle>
-            <Gamepad2 className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-number text-3xl font-bold text-primary">
-              {publishedGames}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {draftGames > 0
-                ? `還有 ${draftGames} 個草稿 · 共 ${games?.length || 0} 個`
-                : `共 ${games?.length || 0} 個遊戲`}
-            </p>
-          </CardContent>
-        </Card>
+        {/* 🆕 stats 卡片改成可點擊 shortcut — 直接跳到對應管理頁 */}
+        <Link href="/admin/games" data-testid="stats-published-games">
+          <Card className="hover-elevate cursor-pointer transition-all">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">發布遊戲</CardTitle>
+              <Gamepad2 className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-number text-3xl font-bold text-primary">
+                {publishedGames}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {draftGames > 0
+                  ? `還有 ${draftGames} 個草稿 · 共 ${games?.length || 0} 個`
+                  : `共 ${games?.length || 0} 個遊戲`}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-              進行中場次
-              {/* 🆕 有進行中場次時加脈衝綠點（「LIVE」指示） */}
-              {activeSessions > 0 && (
-                <span className="relative flex h-2 w-2" aria-label="live">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-                </span>
-              )}
-            </CardTitle>
-            <Activity className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-number text-3xl font-bold text-success">
-              {activeSessions}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {activeSessions > 0 ? "目前有玩家進行中" : "目前無進行中場次"}
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/admin/sessions" data-testid="stats-active-sessions">
+          <Card className="hover-elevate cursor-pointer transition-all">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-1.5">
+                進行中場次
+                {/* 🆕 有進行中場次時加脈衝綠點（「LIVE」指示） */}
+                {activeSessions > 0 && (
+                  <span className="relative flex h-2 w-2" aria-label="live">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
+                  </span>
+                )}
+              </CardTitle>
+              <Activity className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-number text-3xl font-bold text-success">
+                {activeSessions}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {activeSessions > 0 ? "目前有玩家進行中" : "目前無進行中場次"}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">在線設備</CardTitle>
-            <Cpu className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-number text-3xl font-bold text-warning">
-              {onlineDevices}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {offlineDevices > 0
-                ? `${offlineDevices} 台離線 · 共 ${devices?.length || 0} 台`
-                : `共 ${devices?.length || 0} 台設備`}
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/admin/devices" data-testid="stats-online-devices">
+          <Card className="hover-elevate cursor-pointer transition-all">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">在線設備</CardTitle>
+              <Cpu className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-number text-3xl font-bold text-warning">
+                {onlineDevices}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {offlineDevices > 0
+                  ? `${offlineDevices} 台離線 · 共 ${devices?.length || 0} 台`
+                  : `共 ${devices?.length || 0} 台設備`}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">今日完成</CardTitle>
-            <Trophy className="w-4 h-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="font-number text-3xl font-bold">
-              {todayCompleted}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {todayCompleted > 0
-                ? `場遊戲完成 · 累計 ${totalCompleted}`
-                : `累計 ${totalCompleted} 場`}
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/admin/sessions" data-testid="stats-today-completed">
+          <Card className="hover-elevate cursor-pointer transition-all">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">今日完成</CardTitle>
+              <Trophy className="w-4 h-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="font-number text-3xl font-bold">
+                {todayCompleted}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {todayCompleted > 0
+                  ? `場遊戲完成 · 累計 ${totalCompleted}`
+                  : `累計 ${totalCompleted} 場`}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
