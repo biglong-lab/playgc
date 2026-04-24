@@ -1,8 +1,9 @@
 // 對戰大廳視圖元件
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Swords, Users, Play, ArrowLeft, Trophy, Clock } from "lucide-react";
+import { Loader2, Swords, Users, Play, ArrowLeft, Trophy, Clock, Copy, Check, Share2, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LiveRanking from "@/components/match/LiveRanking";
 import MatchTimer from "@/components/match/MatchTimer";
