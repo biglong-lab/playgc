@@ -415,18 +415,104 @@ export interface ShootingMissionConfig {
   locationSettings?: LocationSettings;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 📸 Photo Mission — v2 多模式擴充（2026-04-24）
+// ═══════════════════════════════════════════════════════════════
+// 向後相容策略：`mode` 為 undefined 或 'free' 時走既有行為（targetKeywords）
+// 新模式：'spot'（指定拍照）、'compare'（拍照確認）、'team'/'burst'/'before_after'/'ar_sticker'（延伸）
+
+export type PhotoMissionMode =
+  | 'free'          // 既有：自由拍照 + AI 關鍵字驗證
+  | 'spot'          // 🆕 指定拍照：GPS + 視覺雙通道驗證
+  | 'compare'       // 🆕 拍照確認：與參考照比對相似度
+  | 'team'          // 🆕 團體合影：多人上傳後合成
+  | 'burst'         // 🆕 連拍 GIF
+  | 'before_after'  // 🆕 前後對比拍照
+  | 'ar_sticker';   // 🆕 AR 貼圖（固定位置）
+
+/** 指定拍照（photo_spot）子配置 */
+export interface PhotoSpotSubConfig {
+  // GPS 定點
+  latitude: number;
+  longitude: number;
+  radiusMeters: number;
+  gpsStrictMode?: 'hard' | 'soft'; // hard=未進圈無法拍、soft=可拍但扣分
+  // 視覺場景
+  sceneDescription: string;
+  referenceImageUrl?: string;
+  sceneKeywords?: string[];
+  // 驗證策略
+  verifyStrategy?: 'gps_only' | 'vision_only' | 'gps_and_vision' | 'gps_or_vision';
+  // 紀念照
+  enableComposite?: boolean;
+  overlayTemplateId?: string;
+  // 時間窗（可選）
+  availableFrom?: string;
+  availableUntil?: string;
+}
+
+/** 拍照確認（photo_compare）子配置 */
+export interface PhotoCompareSubConfig {
+  referenceImageUrl: string;       // 必填：管理員上傳的參考照
+  referenceDescription?: string;
+  similarityThreshold?: number;    // 預設 0.6
+  compareMode?: 'object' | 'scene' | 'composition' | 'color';
+  showReferenceToPlayer?: boolean; // 預設 true
+  showReferenceAfterFail?: boolean;
+  enableComposite?: boolean;
+  overlayTemplateId?: string;
+}
+
+/** 團體合影（team_photo）子配置 */
+export interface PhotoTeamSubConfig {
+  minMembers: number;
+  maxMembers?: number;
+  layoutMode?: 'grid' | 'circle' | 'strip' | 'collage';
+  showProgressWaiting?: boolean;
+  timeoutSeconds?: number;
+  enableComposite?: boolean;
+  overlayTemplateId?: string;
+}
+
+/** 連拍 GIF（burst_gif）子配置 */
+export interface PhotoBurstSubConfig {
+  frameCount: number;              // 3-10
+  frameIntervalMs: number;
+  outputFormat?: 'gif' | 'mp4' | 'webp';
+  loopMode?: 'forward' | 'boomerang';
+}
+
+/** 前後對比（before_after）子配置 */
+export interface PhotoBeforeAfterSubConfig {
+  beforeLabel: string;
+  afterLabel: string;
+  layoutMode?: 'horizontal' | 'vertical' | 'diagonal';
+  minGapSeconds?: number;
+}
+
+/** AR 貼圖（ar_sticker）子配置 */
+export interface PhotoArStickerSubConfig {
+  stickers: Array<{
+    imageUrl: string;
+    position: 'top' | 'bottom' | 'center' | 'corner_tl' | 'corner_tr' | 'corner_bl' | 'corner_br';
+    sizeRatio: number;             // 0-1
+  }>;
+  anchorPoint?: 'none' | 'face' | 'hand';
+}
+
 export interface PhotoMissionConfig {
+  // ——— 共用欄位（既有 + 新增）———
   title?: string;
   description?: string;
   prompt?: string;
   imageUrl?: string;
   instruction?: string;
   aiVerify?: boolean;
-  targetKeywords?: string[];
-  aiConfidenceThreshold?: number; // AI 信心度閾值（0-1，預設 0.6）
-  aiFailMessage?: string;         // AI 驗證失敗時的提示訊息
-  allowRetryOnAiFail?: boolean;   // AI 失敗是否允許重拍（預設 true）
-  maxAiRetries?: number;          // 最多重拍次數（預設 3）
+  targetKeywords?: string[];         // free 模式使用
+  aiConfidenceThreshold?: number;    // AI 信心度閾值（0-1，預設 0.6）
+  aiFailMessage?: string;
+  allowRetryOnAiFail?: boolean;
+  maxAiRetries?: number;
   /** 🆕 AI 模型選擇（OpenRouter model id，空值則用場域預設） */
   aiModelId?: string;
   manualVerify?: boolean;
@@ -436,6 +522,22 @@ export interface PhotoMissionConfig {
     points?: number;
   };
   locationSettings?: LocationSettings;
+
+  // ——— v2 新增：多模式 ———
+  /** 🆕 拍照模式（undefined/空值 = 'free' 向後相容）*/
+  mode?: PhotoMissionMode;
+  /** 🆕 紀念照模板 ID（引用 photo_templates.id）*/
+  photoTemplateId?: string | null;
+  /** 🆕 是否啟用紀念照合成（預設繼承場域設定）*/
+  enableComposite?: boolean;
+
+  // ——— v2 新增：各模式專屬子配置（依 mode 取用，互斥）———
+  spotConfig?: PhotoSpotSubConfig;
+  compareConfig?: PhotoCompareSubConfig;
+  teamConfig?: PhotoTeamSubConfig;
+  burstConfig?: PhotoBurstSubConfig;
+  beforeAfterConfig?: PhotoBeforeAfterSubConfig;
+  arStickerConfig?: PhotoArStickerSubConfig;
 }
 
 export interface GpsMissionConfig {
