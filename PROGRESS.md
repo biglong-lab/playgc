@@ -368,6 +368,26 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 28 — 📚 使用者指南 + Health Check
+
+**檔**：`docs/PHOTO_FEATURES_GUIDE.md`（新 332 行）· commit `f06562a`
+
+- 涵蓋 27 輪迭代全部成果
+- 7 大章節：6 種拍照元件、相簿系統、場域紀念照模板、管理操作、玩家流程、FAQ、API 速查
+- 包含**故障排除**指引、變數插值範例、路線圖
+- 目標讀者：場域管理員 / 遊戲設計師 / 運營人員
+
+**Health Check**（2026-04-24 深夜）：
+```
+✅ /api/photo-composite/default-config       HTTP 200
+✅ /api/photo-composite/achievement-config   HTTP 200
+✅ /api/photo-composite/achievement-config?fieldCode=JIACHUN   HTTP 200
+✅ /api/photo-composite/memorial-config?fieldCode=HPSPACE      HTTP 200
+✅ /f/JIACHUN title: 賈村競技場 · CHITO
+```
+
+所有新 API endpoint 生產端正常。
+
 #### 輪 27 — 🖼️ 遊戲完成畫面「看本場相簿」快捷
 
 **背景**：玩家遊戲完成 GameCompletionScreen 顯示所有 CTA（分享、紀念卡、再玩、排行榜），但**沒有「看本場相簿」**連結 → 拍好的照片只能從 `/me/photos` 繞去找，不自然。
