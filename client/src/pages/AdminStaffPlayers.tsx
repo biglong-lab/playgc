@@ -223,11 +223,14 @@ export default function AdminStaffPlayers() {
             <div className="mb-4 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
+                ref={searchInputRef}
                 placeholder="搜尋 Email / 姓名..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 pr-14"
+                data-testid="input-search-players"
               />
+              {!searchTerm && <SearchKbdHint isMac={isMac} />}
             </div>
 
             {isLoading ? (
