@@ -368,6 +368,22 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 25 — 📦 相簿 ZIP 一鍵下載（Cloudinary archive API，零依賴）
+
+**背景**：輪 23-24 的「批次下載」需逐張 fetch + 觸發多個瀏覽器下載，使用者要逐一點「確認」（尤其手機），UX 不佳。
+
+**檔**：`server/cloudinary.ts` + `server/routes/media.ts` + SessionAlbum + MyPhotos
+
+- 後端 `cloudinary.utils.download_zip_url()` — **既有 SDK 原生支援**，無需新增 npm 依賴
+- `createSessionArchiveUrl(gameId, sessionId)` 以 folder prefix 打包
+- `createUserArchiveUrl(sessionIds)` 以 publicIds 列表打包（跨 session）
+- 2 個新 endpoint：`GET /api/sessions/:id/album/zip-url` + `GET /api/me/photos/zip-url`
+- 前端「下載全部」**優先走 ZIP**：一個 zip 檔取代 N 張逐張觸發
+- ZIP 失敗 fallback 回原本批次逐張下載（保留可靠性）
+- 移除「>10 張 confirm」（ZIP 不會阻擋瀏覽器）
+- 測試 symbol：`zip-url`
+- Deploy: `ba37fe5` · bundle `index-BZxu4jGB.js`
+
 #### 輪 24 — 📥 MyPhotos 個人相簿批次下載（UX 一致補齊）
 
 **檔**：`client/src/pages/MyPhotos.tsx`
