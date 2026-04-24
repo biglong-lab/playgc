@@ -360,10 +360,21 @@ export default function AdminStaffPlayers() {
                 <div className="space-y-3 md:hidden">
                   {filtered.map((m) => {
                     const isSelf = m.user?.id === selfAccountId;
+                    const isSelectable = !isSelf && !m.membership.isAdmin && !!m.user?.id;
+                    const isSelected = !!m.user?.id && selectedUserIds.has(m.user.id);
                     return (
                       <Card key={`m-${m.membership.id}`} data-testid={`card-player-${m.membership.id}`}>
                         <CardContent className="p-4 space-y-3">
                           <div className="flex items-start gap-3">
+                            {/* 🆕 G3: 批次選取 checkbox（僅可授權者顯示） */}
+                            {isSelectable && (
+                              <Checkbox
+                                checked={isSelected}
+                                onCheckedChange={() => m.user && toggleSelect(m.user.id)}
+                                className="mt-1 shrink-0"
+                                data-testid={`checkbox-member-${m.membership.id}`}
+                              />
+                            )}
                             <Avatar className="w-10 h-10 shrink-0">
                               <AvatarImage src={m.user?.profileImageUrl || undefined} />
                               <AvatarFallback className="text-sm">{getInitials(m.user)}</AvatarFallback>
