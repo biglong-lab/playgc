@@ -178,14 +178,27 @@ function GamesTableContent({
   }
 
   if (ctx.filteredGames.length === 0) {
+    const isEmpty = ctx.games.length === 0;
     return (
       <EmptyState
         icon={Gamepad2}
-        title={ctx.games.length === 0 ? "尚無遊戲" : "沒有符合條件的遊戲"}
+        title={isEmpty ? "尚無遊戲" : "沒有符合條件的遊戲"}
         description={
-          ctx.games.length === 0
-            ? "從模組庫挑一個模板快速建立，或點「新增遊戲」從零開始"
-            : "改變上方搜尋/篩選條件"
+          isEmpty
+            ? "使用遊戲精靈快速建立，或從模板庫挑一個起手"
+            : "試著清除搜尋條件或切換狀態篩選"
+        }
+        actions={
+          isEmpty
+            ? [{ label: "開啟新增遊戲精靈", onClick: () => ctx.setIsWizardOpen(true) }]
+            : [{
+                label: "清除所有篩選",
+                variant: "outline",
+                onClick: () => {
+                  ctx.setSearchQuery("");
+                  ctx.setStatusFilter("all");
+                },
+              }]
         }
       />
     );
