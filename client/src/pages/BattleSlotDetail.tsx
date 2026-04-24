@@ -63,8 +63,7 @@ export default function BattleSlotDetail() {
   const { data: slotData, isLoading } = useQuery<SlotDetailResponse>({
     queryKey: ["/api/battle/slots", slotId],
     queryFn: async () => {
-      const res = await fetch(`/api/battle/slots/${slotId}`);
-      if (!res.ok) throw new Error("取得時段失敗");
+      const res = await apiRequest("GET", `/api/battle/slots/${slotId}`);
       return res.json();
     },
     enabled: !!slotId,
@@ -73,8 +72,7 @@ export default function BattleSlotDetail() {
   const { data: venue } = useQuery<BattleVenue>({
     queryKey: ["/api/battle/venues", slotData?.venueId],
     queryFn: async () => {
-      const res = await fetch(`/api/battle/venues/${slotData!.venueId}`);
-      if (!res.ok) throw new Error("取得場地失敗");
+      const res = await apiRequest("GET", `/api/battle/venues/${slotData!.venueId}`);
       return res.json();
     },
     enabled: !!slotData?.venueId,
