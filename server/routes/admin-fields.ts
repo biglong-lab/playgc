@@ -701,6 +701,8 @@ export function registerAdminFieldRoutes(app: Express) {
           brandingLogoUrl: theme.brandingLogoUrl || null,
           fontFamily: theme.fontFamily || "default",
         },
+        // 🆕 新場域首次登入引導旗標 — 給 FieldOnboardingWizard 決定要不要自動彈
+        hasCompletedOnboarding: !!settings.hasCompletedOnboarding,
       });
     } catch (error) {
       console.error("[fields/theme]", error);
