@@ -161,8 +161,35 @@ export default function AdminStaffRoles() {
     },
   });
 
+  // 🆕 一鍵補建預設角色（場域管理員 + 活動執行者）
+  const { admin } = useAdminAuth();
+  const seedDefaultsMutation = useMutation({
+    mutationFn: async () => {
+      if (!admin?.fieldId) {
+        throw new Error("場域資料未就緒");
+      }
+      return fetchWithAdminAuth(`/api/admin/fields/${admin.fieldId}/seed-default-roles`, {
+        method: "POST",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/roles"] });
+      toast({
+        title: "預設角色已建立",
+        description: "已為本場域建立「場域管理員」和「活動執行者」",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "建立預設角色失敗",
+        description: error.message || "請稍後再試",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => 
+    mutationFn: (id: string) =>
       fetchWithAdminAuth(`/api/admin/roles/${id}`, {
         method: "DELETE",
       }),
