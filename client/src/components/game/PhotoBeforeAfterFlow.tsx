@@ -359,7 +359,7 @@ export default function PhotoBeforeAfterFlow({
           disabled={gapCountdown > 0}
           onClick={() => {
             setStage("after");
-            camera.startCamera();
+            camera.startCamera(config.defaultFacingMode ?? "user");
           }}
           data-testid="btn-ba-start-after"
         >
