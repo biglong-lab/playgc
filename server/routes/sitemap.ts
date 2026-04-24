@@ -80,6 +80,24 @@ export function registerSitemapRoute(app: Express): void {
         });
       }
 
+      // 🆕 J4: 列出所有 published 遊戲 URL（/g/:slug）— 每個是獨立 SEO 入口
+      const publishedGames = await db.query.games.findMany({
+        where: eq(games.status, "published"),
+        columns: { publicSlug: true, updatedAt: true },
+      });
+      for (const g of publishedGames) {
+        if (!g.publicSlug) continue;
+        const lastmod = g.updatedAt
+          ? new Date(g.updatedAt).toISOString().split("T")[0]
+          : today;
+        urls.push({
+          loc: `${BASE_URL}/g/${g.publicSlug}`,
+          changefreq: "weekly",
+          priority: "0.8",
+          lastmod,
+        });
+      }
+
       const xml = buildSitemap(urls);
       res.set("Content-Type", "application/xml; charset=utf-8");
       res.set("Cache-Control", "public, max-age=3600"); // 1 hr 快取（新場域上線最多延遲 1 小時被抓）
@@ -92,6 +110,64 @@ export function registerSitemapRoute(app: Express): void {
       ]);
       res.set("Content-Type", "application/xml; charset=utf-8");
       res.status(500).send(fallback);
+    }
+  });
+
+  // 🆕 J4: 每個場域獨立 sitemap /sitemap-{FIELDCODE}.xml — 未來場域多時可分頁
+  app.get("/sitemap-:code.xml", async (req, res) => {
+    try {
+      const code = req.params.code?.toUpperCase();
+      if (!code) return res.status(404).send("Not found");
+
+      const field = await db.query.fields.findFirst({
+        where: and(eq(fields.code, code), eq(fields.status, "active")),
+        columns: { id: true, code: true, updatedAt: true },
+      });
+      if (!field) return res.status(404).send("Field not found");
+
+      const today = new Date().toISOString().split("T")[0];
+      const lastmod = field.updatedAt
+        ? new Date(field.updatedAt).toISOString().split("T")[0]
+        : today;
+
+      const urls: SitemapUrl[] = [
+        {
+          loc: `${BASE_URL}/f/${field.code}`,
+          changefreq: "weekly",
+          priority: "1.0",
+          lastmod,
+        },
+        {
+          loc: `${BASE_URL}/f/${field.code}/leaderboard`,
+          changefreq: "daily",
+          priority: "0.7",
+        },
+      ];
+
+      // 該場域的 published 遊戲
+      const fieldGames = await db.query.games.findMany({
+        where: and(eq(games.fieldId, field.id), eq(games.status, "published")),
+        columns: { publicSlug: true, updatedAt: true },
+      });
+      for (const g of fieldGames) {
+        if (!g.publicSlug) continue;
+        urls.push({
+          loc: `${BASE_URL}/g/${g.publicSlug}`,
+          changefreq: "weekly",
+          priority: "0.8",
+          lastmod: g.updatedAt
+            ? new Date(g.updatedAt).toISOString().split("T")[0]
+            : today,
+        });
+      }
+
+      const xml = buildSitemap(urls);
+      res.set("Content-Type", "application/xml; charset=utf-8");
+      res.set("Cache-Control", "public, max-age=3600");
+      res.send(xml);
+    } catch (error) {
+      console.error("[sitemap field] generate failed:", error);
+      res.status(500).send("");
     }
   });
 }
