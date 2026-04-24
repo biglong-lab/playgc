@@ -265,6 +265,8 @@ function Router() {
 
 function App() {
   const { isOnline } = useOfflineSync();
+  // 🆕 啟用前端錯誤全域上報（掛 window.error / unhandledrejection）
+  useErrorReport();
 
   return (
     <ErrorBoundary>
