@@ -464,19 +464,6 @@ function SlotLoginPrompt() {
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-    open: { label: "開放報名", variant: "default" },
-    confirmed: { label: "已成局", variant: "secondary" },
-    full: { label: "已額滿", variant: "destructive" },
-    in_progress: { label: "對戰中", variant: "outline" },
-    completed: { label: "已結束", variant: "outline" },
-    cancelled: { label: "已取消", variant: "destructive" },
-  };
-  const info = map[status] ?? { label: status, variant: "outline" as const };
-  return <Badge variant={info.variant}>{info.label}</Badge>;
-}
-
 function TeamsDisplay({ registrations }: { registrations: RegistrationWithName[] }) {
   const teamMap = new Map<string, RegistrationWithName[]>();
   for (const reg of registrations) {
