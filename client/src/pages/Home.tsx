@@ -85,7 +85,12 @@ export default function Home() {
   const announcement = currentField?.announcement || null;
 
   // 🔒 場域隔離：取當前場域 code 帶進 query，不讓跨場域遊戲混入
-  const currentFieldCode = currentField?.code;
+  // 🔧 bug 修 (2026-04-24)：優先從 URL :fieldCode 取值，不依賴 localStorage 同步的 useCurrentField
+  //    原本 bug：首次載入時 useCurrentField 讀 localStorage 舊值 → games query 用舊 fieldCode
+  //    → 顯示跨場域遊戲 (如賈村 URL 下顯示後浦遊戲)，重整才修復
+  const urlParams = useParams<{ fieldCode?: string }>();
+  const urlFieldCode = urlParams.fieldCode?.toUpperCase();
+  const currentFieldCode = urlFieldCode || currentField?.code;
   const gamesQueryKey = currentFieldCode
     ? [`/api/games?fieldCode=${currentFieldCode}`]
     : ["/api/games"];
@@ -95,12 +100,15 @@ export default function Home() {
 
   const { data: games, isLoading: gamesLoading } = useQuery<Game[]>({
     queryKey: gamesQueryKey,
+    // 🔧 bug 修：無 fieldCode 時不 fetch，避免抓到跨場域全部遊戲
+    enabled: !!currentFieldCode,
   });
 
   /** 🆕 批次拿所有遊戲的累計統計（60s 快取，不顯示即時人數避免資料不穩） */
   const { data: statsMap } = useQuery<GameStatsMap>({
     queryKey: statsQueryKey,
     staleTime: 60_000,
+    enabled: !!currentFieldCode,   // 🔧 bug 修同上
   });
 
   const { data: userSessions } = useQuery<GameSession[]>({
