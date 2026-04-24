@@ -37,6 +37,7 @@ import {
   Megaphone,
   AlertCircle,
   TrendingUp,
+  Cloud, HardDrive, ImageIcon, Zap as ZapIcon,
 } from "lucide-react";
 import {
   LineChart,
