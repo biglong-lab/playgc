@@ -554,14 +554,28 @@ export default function PageConfigEditor({
 
   return (
     <div className="space-y-4">
-      {/* 🏷️ 頁面名稱（通用）— 自訂識別名稱，會顯示為左側清單的主標題 */}
+      {/* 🏷️ 頁面名稱（通用）+ 🆕 G1: 預覽按鈕 */}
       <div className="space-y-2 pb-3 border-b border-border/50">
-        <label className="text-sm font-medium flex items-center gap-2">
-          頁面名稱
-          <span className="text-xs text-muted-foreground font-normal">
-            選填，例如「開場白」「第一關驗證」；留空則顯示模組類別
-          </span>
-        </label>
+        <div className="flex items-start justify-between gap-3">
+          <label className="text-sm font-medium flex items-center gap-2 flex-1">
+            頁面名稱
+            <span className="text-xs text-muted-foreground font-normal">
+              選填，例如「開場白」「第一關驗證」；留空則顯示模組預設名稱
+            </span>
+          </label>
+          {/* 🆕 G1: 預覽 — 所有 pageType 都支援，不用發布先看效果 */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setPreviewOpen(true)}
+            className="gap-1.5 shrink-0"
+            data-testid="btn-open-preview"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            預覽
+          </Button>
+        </div>
         <Input
           value={pageWithName.customName || ""}
           onChange={(e) => updateCustomName(e.target.value)}
@@ -570,6 +584,12 @@ export default function PageConfigEditor({
           data-testid="input-page-custom-name"
         />
       </div>
+
+      {/* 🆕 G1: 預覽 Dialog */}
+      <PagePreviewDialog
+        page={previewOpen ? page : null}
+        onClose={() => setPreviewOpen(false)}
+      />
 
       {renderPageConfig()}
       {/* 通用：下一頁導向 + 完成獎勵（依 pageType 自動判斷是否顯示） */}
