@@ -188,6 +188,22 @@ export default function Home() {
   // 🆕 搜尋框鍵盤 shortcut — 抽到共用 hook（`/` / `⌘K` / `Ctrl+K` / Esc 清空）
   const { inputRef: searchInputRef, isMac, handleEscape } = useSearchShortcut<HTMLInputElement>();
 
+  // 🚨 2026-04-24 hotfix for React error #310：
+  // 此 useMemo 原本在兩個 early return 之後（line 235），違反 hook 規則。
+  // 當 authLoading: true → false 時，hook 數量從 17 變 18，React throw #310。
+  // 修復：所有 hook 都必須在任何 return 之前宣告。
+  const difficultyCount = useMemo(() => {
+    const counts = { all: 0, easy: 0, medium: 0, hard: 0 };
+    (games ?? []).forEach((g) => {
+      counts.all++;
+      const d = g.difficulty;
+      if (d === "easy") counts.easy++;
+      else if (d === "medium") counts.medium++;
+      else if (d === "hard") counts.hard++;
+    });
+    return counts;
+  }, [games]);
+
   // 🔥 改用 useEffect 確保跳轉在 render 之後執行
   // 避免「Login Dialog 剛關閉 → Firebase onAuthStateChanged 還沒跑 → isSignedIn=false → 立刻跳回首頁」
   // 的時序 bug。給 Firebase 一個 buffer 時間讓 auth state 同步。
