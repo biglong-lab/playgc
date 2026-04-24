@@ -415,8 +415,13 @@ export default function BattleSlotDetail() {
             <Input value={teamName} onChange={(e) => setTeamName(e.target.value)} maxLength={100} />
           </div>
           <DialogFooter>
-            <Button onClick={() => createTeamMutation.mutate()} disabled={createTeamMutation.isPending}>
-              建立
+            <Button
+              onClick={() => createTeamMutation.mutate()}
+              disabled={createTeamMutation.isPending}
+              className="gap-2"
+            >
+              {createTeamMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              {createTeamMutation.isPending ? "建立中..." : "建立"}
             </Button>
           </DialogFooter>
         </DialogContent>
