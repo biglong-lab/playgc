@@ -200,10 +200,13 @@ export default function PhotoArStickerFlow({
     });
   }, [stickers]);
 
-  // 相機就緒後啟動（AR 預設用前鏡頭自拍）
+  // 相機就緒後啟動（AR 預設前鏡頭；管理員可在編輯器覆寫）
   useEffect(() => {
     if (stage !== "camera") return;
-    if (camera.mode === "instruction") camera.startCamera("user");
+    if (camera.mode === "instruction") {
+      const facing = config.defaultFacingMode ?? "user"; // 🆕 編輯器可覆寫
+      camera.startCamera(facing);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
