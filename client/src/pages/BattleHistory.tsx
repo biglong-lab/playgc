@@ -32,6 +32,27 @@ export default function BattleHistory() {
     enabled: !!user,
   });
 
+  // 🚀 戰績統計總覽（聚合計算）
+  const stats = history.reduce(
+    (acc, r) => ({
+      totalGames: acc.totalGames + 1,
+      totalScore: acc.totalScore + (r.score ?? 0),
+      totalEliminations: acc.totalEliminations + (r.eliminations ?? 0),
+      totalHits: acc.totalHits + (r.hits ?? 0),
+      totalDeaths: acc.totalDeaths + (r.deaths ?? 0),
+      totalRatingChange: acc.totalRatingChange + (r.ratingChange ?? 0),
+      mvpCount: acc.mvpCount + (r.isMvp ? 1 : 0),
+    }),
+    {
+      totalGames: 0, totalScore: 0, totalEliminations: 0, totalHits: 0,
+      totalDeaths: 0, totalRatingChange: 0, mvpCount: 0,
+    },
+  );
+  const avgScore = stats.totalGames > 0 ? Math.round(stats.totalScore / stats.totalGames) : 0;
+  const kdRatio = stats.totalDeaths === 0
+    ? (stats.totalEliminations > 0 ? "∞" : "0")
+    : (stats.totalEliminations / stats.totalDeaths).toFixed(2);
+
   return (
     <BattleLayout title="對戰歷史" subtitle="近期對戰紀錄">
       <div className="space-y-4">
@@ -43,7 +64,14 @@ export default function BattleHistory() {
           <Card className="bg-card border-border">
             <CardContent className="p-8 text-center text-muted-foreground">
               <History className="h-12 w-12 mx-auto mb-3 opacity-30" />
-              尚無對戰紀錄，快去報名一場吧！
+              <p className="mb-4">尚無對戰紀錄，快去報名一場吧！</p>
+              {/* 🚀 Empty state CTA */}
+              <Link href="/battle">
+                <Button className="gap-2">
+                  <Swords className="h-4 w-4" />
+                  前往對戰中心
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         ) : (
