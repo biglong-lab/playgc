@@ -43,6 +43,8 @@ export default function PageConfigEditor({
 }: PageConfigEditorProps) {
   const config = page.config as Record<string, unknown>;
   const pageWithName = page as typeof page & { customName?: string | null };
+  // 🆕 G1: 預覽 Dialog state
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const updateField = (field: string, value: unknown) => {
     onUpdate({ ...config, [field]: value });
