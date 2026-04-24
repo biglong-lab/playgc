@@ -62,10 +62,12 @@ export default function BattleNotifications() {
   return (
     <BattleLayout title="通知中心">
       <div className="space-y-3">
-        {/* 全部已讀按鈕 */}
+        {/* 全部已讀按鈕（未讀數 用顯眼 default Badge）*/}
         {unreadCount > 0 && (
-          <div className="flex items-center justify-between">
-            <Badge variant="outline">{unreadCount} 則未讀</Badge>
+          <div className="flex items-center justify-between sticky top-0 z-10 bg-background py-2 -mx-4 px-4 border-b">
+            <Badge variant="default" className="text-xs">
+              {unreadCount} 則未讀
+            </Badge>
             <Button
               variant="ghost"
               size="sm"
