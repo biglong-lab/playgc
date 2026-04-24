@@ -111,8 +111,8 @@ export default function AdminStaffPlayers() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
-  // 🆕 搜尋框鍵盤 shortcut（`/` / `⌘K` / Esc）
-  const { inputRef: searchInputRef, isMac, handleEscape } = useSearchShortcut<HTMLInputElement>();
+  // 🆕 搜尋框鍵盤 shortcut（只綁 `/` 和 Esc，⌘K 讓給 CommandPalette）
+  const { inputRef: searchInputRef, handleEscape } = useSearchShortcut<HTMLInputElement>({ disableCmdK: true });
   const [grantTarget, setGrantTarget] = useState<MemberRow | null>(null);
   const [revokeTarget, setRevokeTarget] = useState<MemberRow | null>(null);
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
