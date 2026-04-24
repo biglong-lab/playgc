@@ -164,8 +164,10 @@ export default function PhotoArStickerFlow({
 
   const [stage, setStage] = useState<"intro" | "camera" | "uploading" | "done">("intro");
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
-  const [preloadedStickers, setPreloadedStickers] = useState<HTMLImageElement[]>([]);
-  const [preloadError, setPreloadError] = useState<string | null>(null);
+  // 🎨 B4+：陣列元素可能為 null（單張載入失敗）— 不阻斷遊戲
+  const [preloadedStickers, setPreloadedStickers] = useState<(HTMLImageElement | null)[]>([]);
+  const [preloadDone, setPreloadDone] = useState(false);
+  const failedCount = preloadedStickers.filter((x) => x === null).length;
 
   // 🆕 B2: 臉部追蹤狀態
   const [faceAnchor, setFaceAnchor] = useState<AnchorCoordinate | null>(null);
