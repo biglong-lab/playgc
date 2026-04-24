@@ -174,6 +174,32 @@ export default function AdminSessions() {
       title="場次管理"
       actions={
         <div className="flex gap-2">
+          {/* 🆕 G4: 匯出 CSV — 匯出目前 filter 後的結果 */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const columns: CsvColumn<AdminSessionRow>[] = [
+                { header: "場次 ID", get: (r) => r.session.id },
+                { header: "遊戲名稱", get: (r) => r.game?.title ?? "" },
+                { header: "玩家名稱", get: (r) => getPlayerInfo(r).name },
+                { header: "玩家 Email", get: (r) => r.user?.email ?? "" },
+                { header: "隊伍名稱", get: (r) => r.session.teamName ?? "" },
+                { header: "分數", get: (r) => r.session.score ?? 0 },
+                { header: "狀態", get: (r) => r.session.status ?? "" },
+                { header: "建立時間", get: (r) => formatCsvDateTime(r.session.createdAt as string | Date | null) },
+                { header: "結束時間", get: (r) => formatCsvDateTime(r.session.endedAt as string | Date | null) },
+              ];
+              exportToCsv(columns, filteredRows, "sessions");
+              toast({ title: "✅ 已開始下載", description: `共 ${filteredRows.length} 筆場次資料` });
+            }}
+            disabled={filteredRows.length === 0}
+            className="gap-1"
+            data-testid="btn-export-csv"
+          >
+            <Download className="w-4 h-4" />
+            匯出 CSV
+          </Button>
           {activeSessions > 0 && (
             <Button
               variant="destructive"
