@@ -37,6 +37,22 @@ export function registerMediaRoutes(app: Express) {
     }
   });
 
+  /**
+   * 🆕 v2: Cloudinary 用量統計（管理員儀表板用）
+   * 回傳本月使用量 + 限額 + 百分比
+   */
+  app.get("/api/cloudinary/usage", requireAdminAuth, async (req, res) => {
+    try {
+      const usage = await cloudinaryService.getUsage();
+      res.json(usage);
+    } catch (error) {
+      console.error("[media] /api/cloudinary/usage 失敗:", error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : "取得用量失敗",
+      });
+    }
+  });
+
   const cloudinaryUploadSchema = z.object({
     imageData: z.string()
       .min(1, "缺少圖片資料")
