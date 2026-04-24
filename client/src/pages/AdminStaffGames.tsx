@@ -132,14 +132,27 @@ function StaffGamesTableContent({ ctx }: { ctx: ReturnType<typeof useAdminStaffG
   }
 
   if (ctx.filteredGames.length === 0) {
+    const isEmpty = ctx.games.length === 0;
     return (
       <EmptyState
         icon={Gamepad2}
-        title={ctx.games.length === 0 ? "尚無遊戲" : "沒有符合條件的遊戲"}
+        title={isEmpty ? "尚無遊戲" : "沒有符合條件的遊戲"}
         description={
-          ctx.games.length === 0
-            ? "跨場域的遊戲一覽，點「新增遊戲」開始"
-            : "改變篩選條件"
+          isEmpty
+            ? "跨場域的遊戲一覽，點下方新增第一個遊戲"
+            : "試著清除搜尋條件或切換狀態篩選"
+        }
+        actions={
+          isEmpty
+            ? [{ label: "新增遊戲", onClick: () => ctx.setIsDialogOpen(true) }]
+            : [{
+                label: "清除所有篩選",
+                variant: "outline",
+                onClick: () => {
+                  ctx.setSearchQuery("");
+                  ctx.setStatusFilter("all");
+                },
+              }]
         }
       />
     );
