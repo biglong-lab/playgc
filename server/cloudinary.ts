@@ -460,11 +460,12 @@ export class CloudinaryService {
     if (!this.isConfigured()) {
       throw new Error("Cloudinary 尚未設定");
     }
-    const timestamp = Date.now();
+    // 🐛 修：加 random suffix 避免同一秒多張連拍 public_id 碰撞（原本 Date.now() 會 500）
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const result = await cloudinary.uploader.upload(base64Data, {
       resource_type: "image",
       folder,
-      public_id: `burst-${timestamp}`,
+      public_id: `burst-${uniqueId}`,
       tags: [tag],   // 🔑 加 tag 給 multi API 用
       transformation: [
         { width: 800, height: 800, crop: "limit" },   // 連拍用小一點（GIF 檔案大小）
