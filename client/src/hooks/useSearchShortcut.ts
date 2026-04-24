@@ -53,5 +53,25 @@ export function useSearchShortcut<T extends HTMLElement = HTMLInputElement>() {
     return () => window.removeEventListener("keydown", handleShortcut);
   }, []);
 
-  return { inputRef, isMac };
+  /**
+   * 🆕 Esc 鍵行為：有內容 → 清空；空內容 → 失焦。
+   * 綁在 <Input onKeyDown={(e) => handleEscape(e, value, setValue)}>
+   */
+  const handleEscape = useCallback(
+    (
+      e: React.KeyboardEvent<HTMLInputElement>,
+      value: string,
+      setValue: (v: string) => void,
+    ) => {
+      if (e.key !== "Escape") return;
+      if (value) {
+        setValue("");
+      } else {
+        e.currentTarget.blur();
+      }
+    },
+    [],
+  );
+
+  return { inputRef, isMac, handleEscape };
 }
