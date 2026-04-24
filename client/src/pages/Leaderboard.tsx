@@ -32,6 +32,8 @@ interface LeaderboardEntryExtended extends LeaderboardEntry {
 
 export default function Leaderboard() {
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  // 🆕 F4: 玩家個人紀錄 Dialog state
+  const [profileEntry, setProfileEntry] = useState<LeaderboardEntryExtended | null>(null);
   const link = useFieldLink();
 
   // 🔒 場域隔離：排行榜只顯示當前場域的資料
