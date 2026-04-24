@@ -122,6 +122,10 @@ export default function AdminStaffPlayers() {
     status: "suspended" | "banned" | "active";
   } | null>(null);
   const [suspendReason, setSuspendReason] = useState("");
+  // 🆕 G3: 批次授權
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkGrantOpen, setBulkGrantOpen] = useState(false);
+  const [bulkSelectedRoleId, setBulkSelectedRoleId] = useState<string>("");
 
   // 本場域成員清單（嚴格隔離：只回傳 field_memberships WHERE fieldId = 本場域）
   const { data: membersData, isLoading } = useQuery<{ members: MemberRow[] }>({
