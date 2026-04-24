@@ -185,14 +185,26 @@ export default function PhotoBurstFlow({
           .map((r) => r.id);
 
         setStage("compositing");
+        setCompositeProgress("建立動畫中...");
 
         // 🆕 v2: 先嘗試合成真 GIF（動態）
+        // 🐛 修：Cloudinary multi API 偶爾 hang 住（tag propagation 慢）
+        //   加 15s timeout，超時自動 fallback 到拼貼（2 秒內完成）
         try {
-          const gifRes = await apiRequest("POST", "/api/cloudinary/burst-to-gif", {
-            tag: getBurstTag(),
-            format: "gif",
-            delayMs: frameIntervalMs,
-          });
+          const gifAbort = new AbortController();
+          const gifTimer = setTimeout(() => gifAbort.abort(), 15000);
+          const gifRes = await fetch("/api/cloudinary/burst-to-gif", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              tag: getBurstTag(),
+              format: "gif",
+              delayMs: frameIntervalMs,
+            }),
+            signal: gifAbort.signal,
+          }).finally(() => clearTimeout(gifTimer));
+
           const gifData = await gifRes.json() as { success?: boolean; url?: string };
           if (gifData.success && gifData.url) {
             if (cancelled) return;
@@ -202,8 +214,9 @@ export default function PhotoBurstFlow({
           }
           throw new Error("GIF 合成無輸出 URL");
         } catch (gifErr) {
-          console.warn("[Burst] GIF fallback to collage:", gifErr);
-          // Fallback: 舊拼貼合成
+          console.warn("[Burst] GIF 失敗或超時，改用拼貼:", gifErr);
+          setCompositeProgress("改用拼貼圖...");
+          // Fallback: 拼貼合成（通常 1-2 秒）
           try {
             const comp = await compositeMutation.mutateAsync(sortedIds);
             if (cancelled) return;
@@ -214,13 +227,19 @@ export default function PhotoBurstFlow({
             console.warn("[Burst] 拼貼也失敗:", err);
             // 最後 fallback：第一張當紀念
             if (sortedIds.length > 0) {
-              const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
-                playerPhotoPublicId: sortedIds[0],
-                config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
-                dynamicVars: {},
-              });
-              const data = await res.json();
-              setCompositeUrl(data.compositeUrl);
+              try {
+                const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
+                  playerPhotoPublicId: sortedIds[0],
+                  config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
+                  dynamicVars: {},
+                });
+                const data = await res.json();
+                setCompositeUrl(data.compositeUrl);
+              } catch {
+                // 連第一張合成都失敗 → 只顯示第一張原圖（讓遊戲能繼續）
+                const firstUrl = burstImagesRef.current[0];
+                if (firstUrl) setCompositeUrl(firstUrl);
+              }
             }
             setStage("done");
           }
