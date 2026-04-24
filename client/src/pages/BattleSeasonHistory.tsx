@@ -87,7 +87,7 @@ export default function BattleSeasonHistory() {
                 </div>
 
                 <div className="flex items-center gap-3 mb-3">
-                  <Badge className={`${tierColors[entry.finalTier] ?? ""}`}>
+                  <Badge className={`${TIER_BADGE[entry.finalTier] ?? ""}`}>
                     {tierLabels[entry.finalTier as keyof typeof tierLabels] ?? entry.finalTier}
                   </Badge>
                   <span className="text-lg font-number font-bold">{entry.finalRating} 分</span>
