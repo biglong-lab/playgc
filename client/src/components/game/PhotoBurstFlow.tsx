@@ -205,7 +205,7 @@ export default function PhotoBurstFlow({
           console.warn("[Burst] GIF fallback to collage:", gifErr);
           // Fallback: 舊拼貼合成
           try {
-            const comp = await compositeMutation.mutateAsync(ids);
+            const comp = await compositeMutation.mutateAsync(sortedIds);
             if (cancelled) return;
             setCompositeUrl(comp.compositeUrl);
             setStage("done");
