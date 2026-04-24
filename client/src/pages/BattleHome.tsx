@@ -225,6 +225,35 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
   );
 }
 
+/**
+ * 把 slotDate (YYYY-MM-DD) + startTime (HH:MM:SS) 算出距離當下的人類可讀文字
+ * 例：「今天 14:00」「明天 09:00」「3 天後 19:00」「已開始」「已結束」
+ */
+function formatTimeUntil(slotDate?: string, startTime?: string, endTime?: string): string {
+  if (!slotDate) return "";
+  try {
+    const time = startTime?.slice(0, 5) ?? "00:00";
+    const slotStart = new Date(`${slotDate}T${time}:00`);
+    const slotEnd = endTime ? new Date(`${slotDate}T${endTime.slice(0, 5)}:00`) : null;
+    const now = new Date();
+    if (slotEnd && now > slotEnd) return "已結束";
+    if (now > slotStart) return `對戰中 · ${time}`;
+    const diffMs = slotStart.getTime() - now.getTime();
+    const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffHours < 1) {
+      const diffMins = Math.max(1, Math.round(diffMs / (1000 * 60)));
+      return `⚡ ${diffMins} 分鐘後`;
+    }
+    if (diffDays === 0) return `今天 ${time}`;
+    if (diffDays === 1) return `明天 ${time}`;
+    if (diffDays < 7) return `${diffDays} 天後 ${time}`;
+    return `${slotDate.slice(5)} ${time}`;
+  } catch {
+    return slotDate;
+  }
+}
+
 /** 我的報名紀錄 */
 function MyRegistrations() {
   const { user } = useAuth();
@@ -241,34 +270,64 @@ function MyRegistrations() {
 
   if (registrations.length === 0) return null;
 
+  // 🔧 排序：未結束的優先，依 slotDate + startTime 由近到遠
+  type RegItem = {
+    id: string; slotId: string; status: string;
+    slotDate?: string; startTime?: string; endTime?: string; venueName?: string;
+  };
+  const sorted = ([...registrations] as RegItem[]).sort((a, b) => {
+    const aKey = `${a.slotDate ?? ""}T${a.startTime ?? "00:00:00"}`;
+    const bKey = `${b.slotDate ?? ""}T${b.startTime ?? "00:00:00"}`;
+    return aKey.localeCompare(bKey);
+  });
+  const upcoming = sorted.filter((r) => {
+    if (!r.slotDate) return false;
+    const end = r.endTime ? new Date(`${r.slotDate}T${r.endTime.slice(0, 5)}:00`) : null;
+    return !end || end > new Date();
+  });
+  const nextUp = upcoming[0];
+  const nextUpTime = nextUp ? formatTimeUntil(nextUp.slotDate, nextUp.startTime, nextUp.endTime) : "";
+
   return (
     <Card className="border-primary/30 bg-primary/5">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
           <Swords className="h-4 w-4 text-primary" />
           我的報名 ({registrations.length})
+          {/* 🚀 下一場 sticky highlight：突出最近一場時間 */}
+          {nextUp && nextUpTime && (
+            <Badge variant="default" className="ml-auto text-xs animate-pulse">
+              下一場：{nextUpTime}
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {registrations.slice(0, 3).map((reg: {
-            id: string; slotId: string; status: string;
-            slotDate?: string; startTime?: string; endTime?: string; venueName?: string;
-          }) => (
-            <Link key={reg.id} href={`/battle/slot/${reg.slotId}`}>
-              <div className="flex items-center justify-between p-2 rounded bg-card hover:bg-card/80 cursor-pointer text-sm transition-colors">
-                <div className="flex items-center gap-2 min-w-0">
-                  <CalendarDays className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                  <span className="truncate">
-                    {reg.venueName ?? "場地"}
-                    {reg.slotDate && ` · ${reg.slotDate}`}
-                    {reg.startTime && ` ${reg.startTime.slice(0, 5)}`}
-                  </span>
+          {sorted.slice(0, 3).map((reg) => {
+            const isNext = reg.id === nextUp?.id;
+            const timeLabel = formatTimeUntil(reg.slotDate, reg.startTime, reg.endTime);
+            return (
+              <Link key={reg.id} href={`/battle/slot/${reg.slotId}`}>
+                <div
+                  className={`flex items-center justify-between p-2 rounded cursor-pointer text-sm transition-colors ${
+                    isNext
+                      ? "bg-primary/10 hover:bg-primary/20 ring-1 ring-primary/40"
+                      : "bg-card hover:bg-card/80"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <CalendarDays className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="truncate">
+                      {reg.venueName ?? "場地"}
+                      {timeLabel && <span className="ml-1 text-muted-foreground">· {timeLabel}</span>}
+                    </span>
+                  </div>
+                  {slotStatusBadge(reg.status)}
                 </div>
-                {slotStatusBadge(reg.status)}
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </CardContent>
     </Card>
