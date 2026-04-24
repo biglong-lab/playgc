@@ -232,7 +232,7 @@ export default function PhotoBurstFlow({
           // 🐛 拼貼合成：也加 8s timeout（原本用 compositeMutation 沒 timeout）
           try {
             const collageAbort = new AbortController();
-            const collageTimer = setTimeout(() => collageAbort.abort(), 8000);
+            const collageTimer = setTimeout(() => collageAbort.abort(), 6000);
             const res = await fetch("/api/cloudinary/composite-photo", {
               method: "POST",
               credentials: "include",
