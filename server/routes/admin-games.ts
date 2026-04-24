@@ -597,9 +597,8 @@ export function registerAdminGameRoutes(app: Express) {
             .json({ message: "無法決定遊戲所屬場域，請先指派管理員場域" });
         }
 
-        // 讀取 demo JSON（打包進 Docker image 時的 /app/docs/... 或 dev 時的 relative）
-        const demoPath = resolve(process.cwd(), "docs/DEMO_GAME_JIACHUN.json");
-        let demoData: {
+        // esbuild 已把 JSON inline 進 bundle
+        const demoData = demoGameJiachun as unknown as {
           game: Record<string, unknown>;
           pages: Array<{
             pageOrder: number;
@@ -608,15 +607,6 @@ export function registerAdminGameRoutes(app: Express) {
             config: unknown;
           }>;
         };
-        try {
-          const raw = await readFile(demoPath, "utf-8");
-          demoData = JSON.parse(raw);
-        } catch (err) {
-          return res.status(500).json({
-            message: "無法載入示範遊戲 JSON",
-            error: err instanceof Error ? err.message : String(err),
-          });
-        }
 
         // 配額檢查
         const [field] = await db
