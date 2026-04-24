@@ -473,7 +473,8 @@ const { data: games } = useQuery({
 - ✅ ~~Phase 8 — 前後對比 before_after~~（輪 16 完成）
 - ⏳ Phase 5.6 — Google Drive 直傳（OAuth + Drive API）
 - ⏳ Phase 6 — 團體合影 team_photo（WebSocket 等待 + 九宮格合成）
-- ⏳ Phase 9 — AR 貼圖（固定位置 + 臉部追蹤）
+- ✅ ~~Phase 9a — AR 貼圖（固定位置）~~（輪 19 完成）
+- ⏳ Phase 9b — AR 臉部追蹤（MediaPipe Face Landmarker，合規風險暫緩）
 - ⏳ photo_templates 管理後台（讓場域自定義紀念照框）
 - ⏳ 相簿 PDF 匯出（long image / multi-page PDF）
 
