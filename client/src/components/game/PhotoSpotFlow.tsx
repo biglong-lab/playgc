@@ -145,8 +145,14 @@ export default function PhotoSpotFlow({
   // 合成紀念照
   const compositeMutation = useMutation({
     mutationFn: async (publicId: string): Promise<CompositeResponse> => {
-      // 取預設模板（若未來有 photoTemplateId，這裡改抓該 template）
-      const configRes = await fetch("/api/photo-composite/default-config");
+      // 🆕 v2: 優先取場域 memorial 模板（沒設則 fallback 系統預設）
+      // 嘗試從 URL 取 fieldCode（場域頁 path /f/:code）
+      const fieldCodeMatch = window.location.pathname.match(/\/f\/([A-Z0-9_-]+)/i);
+      const fieldCode = fieldCodeMatch?.[1]?.toUpperCase();
+      const memorialUrl = fieldCode
+        ? `/api/photo-composite/memorial-config?fieldCode=${encodeURIComponent(fieldCode)}`
+        : "/api/photo-composite/default-config";
+      const configRes = await fetch(memorialUrl);
       const { config: defaultConfig } = await configRes.json();
 
       const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
