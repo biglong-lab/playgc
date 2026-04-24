@@ -141,6 +141,8 @@ export default function Home() {
   }
 
   const handleSignOut = async () => {
+    // 🆕 登出前確認，避免誤按（尤其手機觸控）
+    if (!window.confirm("確定要登出嗎？")) return;
     await signOut();
     setLocation("/");
   };
