@@ -57,6 +57,7 @@ export interface TeamLobbyReturn {
 export function useTeamLobby(): TeamLobbyReturn {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();   // 🔧 場域感知 link builder
   const { toast } = useToast();
   const { user: dbUser } = useAuth();
 
