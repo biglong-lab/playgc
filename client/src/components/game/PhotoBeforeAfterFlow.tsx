@@ -321,7 +321,9 @@ export default function PhotoBeforeAfterFlow({
         fileInputRef={camera.fileInputRef}
         onCapture={camera.capturePhoto}
         onCancel={camera.cancelCamera}
-        onRestart={camera.startCamera}
+        onRestart={() => camera.startCamera()}
+        onSwitchCamera={camera.switchCamera}
+        facingMode={camera.facingMode}
       />
     );
   }
