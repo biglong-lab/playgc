@@ -263,7 +263,9 @@ export default function PhotoBurstFlow({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `chito-burst-${Date.now()}.jpg`;
+      // 🆕 依 URL 副檔名決定下載檔名（GIF / JPG 視合成結果而定）
+      const ext = compositeUrl.match(/\.(gif|webp|mp4|jpg|jpeg|png)(\?|$)/i)?.[1]?.toLowerCase() ?? "jpg";
+      a.download = `chito-burst-${Date.now()}.${ext}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
