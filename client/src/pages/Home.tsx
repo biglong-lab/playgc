@@ -247,18 +247,7 @@ export default function Home() {
     return matchesSearch && matchesDifficulty;
   });
 
-  // 🆕 各難度的遊戲數（不考慮 search filter，只算 games 本身）
-  const difficultyCount = useMemo(() => {
-    const counts = { all: 0, easy: 0, medium: 0, hard: 0 };
-    (games ?? []).forEach((g) => {
-      counts.all++;
-      const d = g.difficulty;
-      if (d === "easy") counts.easy++;
-      else if (d === "medium") counts.medium++;
-      else if (d === "hard") counts.hard++;
-    });
-    return counts;
-  }, [games]);
+  // difficultyCount 已在 early return 前宣告（React hook 規則）
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
