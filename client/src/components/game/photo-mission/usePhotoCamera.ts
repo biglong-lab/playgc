@@ -395,6 +395,12 @@ export function usePhotoCamera(): PhotoCameraState {
     setMode("instruction");
   };
 
+  // 🆕 切換前後鏡頭（AR 自拍必備）
+  const switchCamera = async () => {
+    const next: CameraFacing = facingMode === "user" ? "environment" : "user";
+    await startCamera(next);
+  };
+
   return {
     mode,
     setMode,
@@ -405,6 +411,8 @@ export function usePhotoCamera(): PhotoCameraState {
     videoRef,
     fileInputRef,
     startCamera,
+    switchCamera,
+    facingMode,
     stopCamera,
     capturePhoto,
     handleFileUpload,
