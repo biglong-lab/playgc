@@ -24,6 +24,7 @@ import {
   Gamepad2,
   Building2,
   Shield,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface MembershipSummary {
