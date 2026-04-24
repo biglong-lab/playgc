@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
 import { createLocalCollage } from "@/lib/client-collage";
+import { createClientGif } from "@/lib/client-gif";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import {
   CameraInitializingView, CameraView, UploadingView,
