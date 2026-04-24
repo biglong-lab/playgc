@@ -38,6 +38,7 @@ import {
   AlertCircle,
   TrendingUp,
   Cloud, HardDrive, ImageIcon, Zap as ZapIcon,
+  ScanText, AlertTriangle,
 } from "lucide-react";
 import {
   LineChart,
