@@ -119,8 +119,19 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
     const fireOnComplete = () => {
       if (finishedRef.current) return;
       finishedRef.current = true;
-      const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
-      onComplete({ points: config.rewardPoints ?? 10, items }, config.nextPageId);
+      // 🔧 修 bug：RewardsSection 存 rewardItems[] 優先，舊 onSuccess.grantItem 向後相容
+      const rsItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
+      const allItems = [
+        ...rsItems.filter((x) => !!x),
+        ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
+      ];
+      onComplete(
+        {
+          points: config.rewardPoints ?? config.onSuccess?.points ?? 10,
+          items: allItems.length > 0 ? allItems : undefined,
+        },
+        config.nextPageId,
+      );
     };
 
     if (config.showExplanation && config.explanation) {
