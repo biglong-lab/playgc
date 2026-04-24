@@ -125,10 +125,18 @@ export default function BattleMyProfile() {
               </Link>
             ) : (
               <div className="text-center py-4">
-                <p className="text-muted-foreground text-sm mb-3">你還沒有加入任何戰隊</p>
-                <Link href="/battle/clan/create">
-                  <Button size="sm">建立戰隊</Button>
-                </Link>
+                <p className="text-muted-foreground text-sm mb-1">你還沒有加入任何戰隊</p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  與隊友一起戰鬥、累積戰隊積分
+                </p>
+                <div className="flex gap-2 justify-center flex-wrap">
+                  <Link href="/battle/clan/create">
+                    <Button size="sm">建立戰隊</Button>
+                  </Link>
+                  <Link href="/battle/ranking">
+                    <Button size="sm" variant="outline">瀏覽排行榜</Button>
+                  </Link>
+                </div>
               </div>
             )}
           </CardContent>
