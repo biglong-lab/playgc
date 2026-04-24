@@ -275,6 +275,18 @@ export default function PhotoBurstFlow({
     camera.startCamera(facing);
   };
 
+  // 🆕 合成階段秒數計時（每秒 +1），讓 UI 有動態進度數字
+  useEffect(() => {
+    if (stage !== "compositing") {
+      setCompositeElapsed(0);
+      return;
+    }
+    const timer = setInterval(() => {
+      setCompositeElapsed((s) => s + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [stage]);
+
   // 倒數 3-2-1 後才開始連拍
   const [countdownToStart, setCountdownToStart] = useState(3);
   useEffect(() => {
