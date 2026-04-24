@@ -1,14 +1,25 @@
 // 水彈對戰 PK 擂台 — 戰隊詳情頁（深色軍事風格）
+import { useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from "@/hooks/useAuth";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleClan } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
-import { Shield, Users, Trophy, Crown, Star } from "lucide-react";
+import { Shield, Users, Trophy, Crown, Star, Loader2, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { authFetch } from "@/lib/authFetch";
 import { apiRequest } from "@/lib/queryClient";
