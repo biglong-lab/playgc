@@ -1303,22 +1303,34 @@ function HighlightEditor({
           </Select>
         </div>
 
-        {/* title + description */}
+        {/* title + description，inline 字數計數 */}
         <div className="flex-1 space-y-2">
-          <Input
-            value={highlight.title}
-            onChange={(e) => onChange({ title: e.target.value })}
-            placeholder="亮點標題（必填）"
-            maxLength={50}
-            data-testid={`input-title-${index}`}
-          />
-          <Input
-            value={highlight.description || ""}
-            onChange={(e) => onChange({ description: e.target.value })}
-            placeholder="亮點描述（選填）"
-            maxLength={200}
-            data-testid={`input-desc-${index}`}
-          />
+          <div className="relative">
+            <Input
+              value={highlight.title}
+              onChange={(e) => onChange({ title: e.target.value })}
+              placeholder="亮點標題（必填）"
+              maxLength={50}
+              className="pr-14"
+              data-testid={`input-title-${index}`}
+            />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/60 font-mono pointer-events-none">
+              {highlight.title.length}/50
+            </span>
+          </div>
+          <div className="relative">
+            <Input
+              value={highlight.description || ""}
+              onChange={(e) => onChange({ description: e.target.value })}
+              placeholder="亮點描述（選填）"
+              maxLength={200}
+              className="pr-14"
+              data-testid={`input-desc-${index}`}
+            />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground/60 font-mono pointer-events-none">
+              {(highlight.description || "").length}/200
+            </span>
+          </div>
         </div>
 
         {/* 操作按鈕 */}
