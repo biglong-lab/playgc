@@ -1,0 +1,124 @@
+{
+  "$schema": "https://game.homi.cc/schemas/demo-game.json",
+  "name": "DEMO_GAME_JIACHUN_AR_FUN",
+  "version": "1.0.0",
+  "description": "賈村表情秀 — 輕鬆有趣的 AR 造型 + 連拍 GIF + 變裝前後對比，全部都是影像紀念。純元件可組，不寫死邏輯。",
+  "game": {
+    "title": "賈村表情秀：AR 造型 × 連拍 × 變裝",
+    "description": "戴上賈村面具和帽子玩造型、連拍做成 GIF、比較變裝前後。一趟旅程留下四種影像紀念，IG 發文一次用到爽。",
+    "difficulty": "easy",
+    "estimatedTime": 15,
+    "maxPlayers": 6,
+    "status": "published",
+    "gameMode": "individual",
+    "pricingType": "free",
+    "gameStructure": "linear",
+    "isIsolated": true
+  },
+  "pages": [
+    {
+      "pageOrder": 1,
+      "pageType": "text_card",
+      "customName": "開場",
+      "config": {
+        "title": "📸 賈村表情秀",
+        "content": "這是一場輕鬆的影像派對！\n\n你會體驗四種影像玩法：\n\n🎭 AR 面具（臉部追蹤）\n👒 AR 帽子（戴在頭頂）\n🎞️ 連拍 GIF（3 秒動畫）\n🔄 變裝前後對比\n\n所有造型自動合成照片/動畫，可下載分享。每一站都是紀念！",
+        "layout": "center",
+        "animation": "fade_in",
+        "fontSize": "medium",
+        "rewardPoints": 5
+      }
+    },
+    {
+      "pageOrder": 2,
+      "pageType": "photo_ar",
+      "customName": "第一站：戴上賈村面具",
+      "config": {
+        "title": "🎭 戴上賈村面具",
+        "description": "賈村傳統面具會跟著你的眼睛移動，正面對準鏡頭試試看！",
+        "instruction": "請讓臉部在畫面中央，面具會自動貼到眼睛位置。",
+        "arStickerConfig": {
+          "stickers": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dhczwewns/image/upload/v1761800000/chito-demo/jiachun-mask.png",
+              "position": "center",
+              "sizeRatio": 0.8
+            }
+          ],
+          "anchorPoint": "eyes"
+        },
+        "enableComposite": false,
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 3,
+      "pageType": "photo_burst",
+      "customName": "第二站：連拍 GIF",
+      "config": {
+        "title": "🎞️ 3 秒連拍 GIF",
+        "description": "連拍 5 張照片，自動合成 boomerang 動畫！",
+        "instruction": "3、2、1，開始擺動作！系統會連續拍 5 張，合成來回播放的 GIF。",
+        "burstConfig": {
+          "frameCount": 5,
+          "frameIntervalMs": 600,
+          "outputFormat": "gif",
+          "loopMode": "boomerang"
+        },
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 4,
+      "pageType": "photo_before_after",
+      "customName": "第三站：變裝前後對比",
+      "config": {
+        "title": "🔄 變裝前後對比",
+        "description": "先拍一張素顏「變裝前」，再戴上裝飾品拍「變裝後」，系統會把兩張合成對比圖。",
+        "instruction": "第一張：素顏（before）\n第二張：戴帽子或墨鏡（after）\n\n系統會自動左右拼貼",
+        "beforeAfterConfig": {
+          "beforeLabel": "變裝前",
+          "afterLabel": "變裝後",
+          "layoutMode": "horizontal",
+          "minGapSeconds": 3
+        },
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 5,
+      "pageType": "photo_ar",
+      "customName": "第四站：戴上賈村帽子",
+      "config": {
+        "title": "👒 戴上賈村斗笠",
+        "description": "傳統斗笠會自動貼到你的頭頂,側臉、轉頭都沒問題!",
+        "instruction": "請讓整張臉入鏡,斗笠會固定在頭頂位置。",
+        "arStickerConfig": {
+          "stickers": [
+            {
+              "imageUrl": "https://res.cloudinary.com/dhczwewns/image/upload/v1761800000/chito-demo/jiachun-hat.png",
+              "position": "top",
+              "sizeRatio": 1.0
+            }
+          ],
+          "anchorPoint": "face_top"
+        },
+        "enableComposite": false,
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 6,
+      "pageType": "text_card",
+      "customName": "完賽",
+      "config": {
+        "title": "🎊 表情秀完成！",
+        "content": "你剛剛完成了 4 種不同的影像玩法！\n\n📸 1 張 AR 面具照\n📸 1 張 AR 斗笠照\n🎞️ 1 個連拍 GIF\n🖼️ 1 張變裝前後對比圖\n\n全部作品都在「我的相簿」裡,快下載分享給朋友!\n\n下次造訪賈村,別忘了再來玩新造型～",
+        "layout": "center",
+        "animation": "fade_in",
+        "fontSize": "large",
+        "rewardPoints": 15
+      }
+    }
+  ]
+}

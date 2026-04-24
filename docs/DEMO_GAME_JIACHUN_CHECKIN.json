@@ -1,0 +1,118 @@
+{
+  "$schema": "https://game.homi.cc/schemas/demo-game.json",
+  "name": "DEMO_GAME_JIACHUN_CHECKIN",
+  "version": "1.0.0",
+  "description": "賈村打卡之旅 — 走訪 3 個景點輕鬆打卡，每關都會留下合成紀念照。純 photo_spot 元件，不寫死邏輯。",
+  "game": {
+    "title": "賈村打卡之旅：古井・老街・廟口",
+    "description": "跟著地圖指引走訪賈村三個地標，每到一處自動拍照合成專屬紀念照，完成就擁有三張精美打卡照片。",
+    "difficulty": "easy",
+    "estimatedTime": 20,
+    "maxPlayers": 6,
+    "status": "published",
+    "gameMode": "individual",
+    "pricingType": "free",
+    "gameStructure": "linear",
+    "isIsolated": true
+  },
+  "pages": [
+    {
+      "pageOrder": 1,
+      "pageType": "text_card",
+      "customName": "開場",
+      "config": {
+        "title": "🗺️ 賈村打卡之旅",
+        "content": "歡迎！這次旅程很輕鬆 —\n\n你只需要走訪 3 個地標：\n\n📍 古井（歷史見證）\n📍 老街（懷舊風情）\n📍 廟口（熱鬧中心）\n\n每到一個點，我會自動幫你拍照、合成紀念照。旅程結束你會擁有 3 張專屬打卡照！",
+        "layout": "center",
+        "animation": "fade_in",
+        "fontSize": "medium",
+        "rewardPoints": 5
+      }
+    },
+    {
+      "pageOrder": 2,
+      "pageType": "photo_spot",
+      "customName": "打卡一：古井",
+      "config": {
+        "title": "第 1 站：古井",
+        "description": "賈村最古老的水井，已有百年歷史。",
+        "spotConfig": {
+          "latitude": 24.3180,
+          "longitude": 120.6460,
+          "radiusMeters": 25,
+          "gpsStrictMode": "soft",
+          "sceneDescription": "古井石造構造，旁邊有解說牌",
+          "sceneKeywords": ["井", "石頭", "古老"],
+          "verifyStrategy": "gps_or_vision",
+          "enableComposite": true
+        },
+        "enableComposite": true,
+        "aiConfidenceThreshold": 0.5,
+        "allowRetryOnAiFail": true,
+        "maxAiRetries": 3,
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 3,
+      "pageType": "photo_spot",
+      "customName": "打卡二：老街",
+      "config": {
+        "title": "第 2 站：老街",
+        "description": "賈村最熱鬧的老街，兩側有紅磚老厝和傳統店鋪。",
+        "spotConfig": {
+          "latitude": 24.3172,
+          "longitude": 120.6469,
+          "radiusMeters": 30,
+          "gpsStrictMode": "soft",
+          "sceneDescription": "紅磚老房、傳統商店街",
+          "sceneKeywords": ["紅磚", "老街", "店鋪"],
+          "verifyStrategy": "gps_or_vision",
+          "enableComposite": true
+        },
+        "enableComposite": true,
+        "aiConfidenceThreshold": 0.5,
+        "allowRetryOnAiFail": true,
+        "maxAiRetries": 3,
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 4,
+      "pageType": "photo_spot",
+      "customName": "打卡三：廟口",
+      "config": {
+        "title": "第 3 站：廟口",
+        "description": "村民信仰中心，門口有一對石獅子。",
+        "spotConfig": {
+          "latitude": 24.3168,
+          "longitude": 120.6475,
+          "radiusMeters": 30,
+          "gpsStrictMode": "soft",
+          "sceneDescription": "廟宇大門、石獅子、紅燈籠",
+          "sceneKeywords": ["廟", "石獅", "燈籠"],
+          "verifyStrategy": "gps_or_vision",
+          "enableComposite": true
+        },
+        "enableComposite": true,
+        "aiConfidenceThreshold": 0.5,
+        "allowRetryOnAiFail": true,
+        "maxAiRetries": 3,
+        "rewardPoints": 20
+      }
+    },
+    {
+      "pageOrder": 5,
+      "pageType": "text_card",
+      "customName": "完賽",
+      "config": {
+        "title": "🎉 打卡完成！",
+        "content": "恭喜完成賈村打卡之旅！\n\n你已經集滿 3 張專屬紀念照：\n\n📸 古井紀念照\n📸 老街紀念照\n📸 廟口紀念照\n\n可以到「我的相簿」查看並下載、分享給朋友。歡迎再次造訪賈村！",
+        "layout": "center",
+        "animation": "fade_in",
+        "fontSize": "large",
+        "rewardPoints": 15
+      }
+    }
+  ]
+}
