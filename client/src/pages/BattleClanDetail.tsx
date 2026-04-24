@@ -29,8 +29,7 @@ export default function BattleClanDetail() {
   const { data: clan, isLoading } = useQuery<ClanDetailResponse>({
     queryKey: ["/api/battle/clans", clanId],
     queryFn: async () => {
-      const res = await fetch(`/api/battle/clans/${clanId}`);
-      if (!res.ok) throw new Error("取得戰隊失敗");
+      const res = await apiRequest("GET", `/api/battle/clans/${clanId}`);
       return res.json();
     },
     enabled: !!clanId,
