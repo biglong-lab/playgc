@@ -3,7 +3,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Bot, Plus, X as XIcon, Eye, MapPin, ImageIcon, Camera } from "lucide-react";
+import { Upload, Bot, Plus, X as XIcon, Eye, MapPin, ImageIcon, Camera, Sparkles } from "lucide-react";
+// AR 貼圖設定用型別（inline 避免引入過多依賴）
+type StickerConfigItem = { imageUrl: string; position: string; sizeRatio: number };
 import {
   Select,
   SelectContent,
