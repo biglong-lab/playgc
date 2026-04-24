@@ -543,10 +543,98 @@ export function registerMediaRoutes(app: Express) {
 
   /**
    * 🏆 取得成就卡預設模板（系統內建）— GameCompletionScreen 用
-   * 場域可透過 field.settings.photo.achievementCard.templateId 覆寫
+   * 🆕 v2: 支援 ?fieldCode=XXX — 該場域有自訂 photoTemplates.achievement 就回覆場域模板
    */
-  app.get("/api/photo-composite/achievement-config", (_req, res) => {
-    res.json({ config: ACHIEVEMENT_COMPOSITION_CONFIG });
+  app.get("/api/photo-composite/achievement-config", async (req, res) => {
+    try {
+      const fieldCode = (req.query.fieldCode as string | undefined)?.toUpperCase();
+      if (fieldCode) {
+        const [field] = await db
+          .select({ settings: fields.settings })
+          .from(fields)
+          .where(eq(fields.code, fieldCode))
+          .limit(1);
+        if (field) {
+          const settings = parseFieldSettings(field.settings);
+          const custom = settings.photoTemplates?.achievement;
+          if (custom?.enabled !== false && custom?.textLayers && custom.textLayers.length > 0) {
+            // 場域自訂 → 組出 CompositionConfig
+            const config: CompositionConfig = {
+              canvas: {
+                width: custom.canvas?.width ?? 1080,
+                height: custom.canvas?.height ?? 1080,
+                crop: custom.canvas?.crop ?? "fill",
+                gravity: "auto",
+              },
+              layers: custom.textLayers.map((t) => ({
+                type: "text" as const,
+                text: t.text,
+                font: "Noto_Sans_TC",
+                size: t.size ?? 48,
+                weight: t.bold ? ("bold" as const) : ("normal" as const),
+                color: t.color ?? "white",
+                background: t.background,
+                gravity: (t.gravity as any) ?? "south",
+                y: t.offsetY ?? 80,
+              })),
+            };
+            return res.json({ config, source: "field", fieldCode });
+          }
+        }
+      }
+      // Fallback: 系統預設
+      res.json({ config: ACHIEVEMENT_COMPOSITION_CONFIG, source: "system" });
+    } catch (error) {
+      console.error("[media] achievement-config field lookup 失敗:", error);
+      res.json({ config: ACHIEVEMENT_COMPOSITION_CONFIG, source: "system_fallback" });
+    }
+  });
+
+  /**
+   * 🎞 取得場域紀念照模板（photo_spot / photo_compare 用）
+   * 支援 ?fieldCode=XXX，有場域自訂就用，沒則回系統 DEFAULT_COMPOSITION_CONFIG
+   */
+  app.get("/api/photo-composite/memorial-config", async (req, res) => {
+    try {
+      const fieldCode = (req.query.fieldCode as string | undefined)?.toUpperCase();
+      if (fieldCode) {
+        const [field] = await db
+          .select({ settings: fields.settings })
+          .from(fields)
+          .where(eq(fields.code, fieldCode))
+          .limit(1);
+        if (field) {
+          const settings = parseFieldSettings(field.settings);
+          const custom = settings.photoTemplates?.memorial;
+          if (custom?.enabled !== false && custom?.textLayers && custom.textLayers.length > 0) {
+            const config: CompositionConfig = {
+              canvas: {
+                width: custom.canvas?.width ?? 1080,
+                height: custom.canvas?.height ?? 1080,
+                crop: custom.canvas?.crop ?? "fill",
+                gravity: "auto",
+              },
+              layers: custom.textLayers.map((t) => ({
+                type: "text" as const,
+                text: t.text,
+                font: "Noto_Sans_TC",
+                size: t.size ?? 36,
+                weight: t.bold ? ("bold" as const) : ("normal" as const),
+                color: t.color ?? "white",
+                background: t.background,
+                gravity: (t.gravity as any) ?? "south",
+                y: t.offsetY ?? 40,
+              })),
+            };
+            return res.json({ config, source: "field", fieldCode });
+          }
+        }
+      }
+      res.json({ config: DEFAULT_COMPOSITION_CONFIG, source: "system" });
+    } catch (error) {
+      console.error("[media] memorial-config field lookup 失敗:", error);
+      res.json({ config: DEFAULT_COMPOSITION_CONFIG, source: "system_fallback" });
+    }
   });
 
   /**
