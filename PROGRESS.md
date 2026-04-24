@@ -210,24 +210,143 @@ $ curl -s https://game.homi.cc/api/photo-composite/default-config | head -c 100
 - ✅ 重試時顯示上次相似度 + 缺少特徵
 - ✅ `mode` 未設定時 100% 向後相容既有 photo_mission（free mode）
 
+### 後續迭代（輪 8-13，使用者回饋與 bug 修復）
+
+實機測試後使用者回報三個關鍵問題，立即修復並完成架構調整：
+
+#### 輪 8 — 🏆 成就徽章卡（achievement_card + F3 整合）
+
+**檔**：`server/services/photo-composer.ts` · `server/routes/media.ts` · `client/src/components/game/GameCompletionScreen.tsx`
+
+- 擴充 `CompositionInput` 支援 `playerPhotoUrl`（遠端 URL，走 Cloudinary `image/fetch` 自動代抓）
+- 新 `ACHIEVEMENT_COMPOSITION_CONFIG` 預設模板（1080×1080 + 🏆 場域名 / 遊戲名 / 金色 120px 分數 / 玩家名+日期 / CHITO footer）
+- 新 endpoint `GET /api/photo-composite/achievement-config`
+- `GameCompletionScreen` 加「生成紀念卡」按鈕（金色 gradient，與分享戰績並列）
+- Dialog 顯示 aspect-square 合成卡 + 下載 + Web Share API 分享
+- 底圖來源：場域 `theme.coverImageUrl` → `logoUrl` → Cloudinary sample fallback
+- Deploy: `cc5925a` · bundle `index-By6fzwP9.js` · verify `btn-generate-achievement-card`
+
+#### 輪 9 — 🔧 場域隔離 bug（問題 3，GameCompletionScreen）
+
+**背景**：使用者回報「後浦玩家按返回大廳跑到賈村」場域隔離 bug。
+
+**Root cause**：
+- `GamePlay.tsx:333` 傳給 `GameCompletionScreen` 的是原始 wouter `setLocation`，沒套 `link()`
+- GameCompletionScreen 內 `onNavigate("/home")` 直接導 `/home`（脫離 `/f/HPSPACE` scope）
+- 重新整理時 localStorage 的舊值決定回到預設場域（賈村）
+
+**修**：`client/src/components/game/GameCompletionScreen.tsx`
+- 引入 `useFieldLink()` hook
+- 3 處導航全改用 `link()` 包裝：返回章節列表 / 返回大廳 / 排行榜
+- Deploy: `d0b9242` · verify `button-return-home`
+
+#### 輪 10 — 🔧 道具獎勵 bug 第一波（拍照三元件）
+
+**背景**：使用者回報「拍照任務設定完成獎勵 - 道具獎勵 無法自動發放，需透過完成時動作手動補償」。
+
+**Root cause**：
+- 編輯器 `RewardsSection` 存的欄位是 `config.rewardPoints` / `config.rewardItems[]`
+- 但 Photo 三個元件（PhotoMissionPage / PhotoSpotFlow / PhotoCompareFlow）讀的是 `config.onSuccess.points` / `config.onSuccess.grantItem`
+- **兩套 schema 不一致** → 管理員在 RewardsSection 設的獎勵永遠讀不到
+
+**修法**：三個元件 reward 建構改為「優先讀 RewardsSection 新欄位 + fallback 舊 onSuccess.*」
+
+```typescript
+const rewardPoints = config.rewardPoints ?? config.onSuccess?.points ?? default;
+const allItems = [...rewardItems, ...(legacyItem ? [legacyItem] : [])];
+```
+
+- Deploy: `1b0b7f6` · bundle `index-BgKy4OoS.js`
+
+#### 輪 11 — 🏗️ 架構調整：獨立 pageType（問題 1，方案 C）
+
+**背景**：使用者明確要求「要獨立，因為這個元件有點複雜，坐在一起要設定的會太多，不好理解」。改放棄 discriminator 架構，採用獨立 pageType 方案。
+
+**改動**：
+- `shared/schema/games.ts` — pageType 列舉加 `photo_spot`、`photo_compare`
+- `client/src/pages/game-editor/constants.ts` — `PAGE_TYPES` 陣列新增兩項（📍指定拍照 emerald / 🔍拍照確認 sky）
+- `client/src/components/game/GamePageRenderer.tsx` — lazy import + 新 case
+- `client/src/pages/game-editor/PageConfigEditor.tsx` — 新增 **兩個獨立 case block**（無 mode selector，UI 乾淨直接）
+- `PhotoSpotFlow.tsx` / `PhotoCompareFlow.tsx` — props 加 optional `variables / onVariableUpdate`（配合 GamePageRenderer commonProps spread）
+
+**使用者感受差別**：
+- 舊：pageType picker 只看到「拍照任務」→ 進編輯才選 mode
+- **新：pageType picker 三個獨立元件「拍照任務（自由）/ 指定拍照 / 拍照確認」**
+
+既有 `photo_mission` mode dispatch 保留作向後相容。
+- Deploy: `cb3be36` · bundle `index-oPDa-GNZ.js` · verify `config-spot-section-independent`
+
+#### 輪 12 — 🔧 場域隔離 hardening（補完 Q2 遊戲中途返回大廳）
+
+**背景**：使用者澄清 Q2 是「遊戲**中途**」按返回大廳，不是完成畫面。掃查後發現還有兩處漏網：
+
+**修 1 — `client/src/pages/team-lobby/useTeamLobby.ts`**：
+- `navigate: setLocation` → `navigate: (path) => setLocation(link(path))`
+- 影響 3 處按鈕（找不到遊戲 / 加入隊伍頁 / 隊伍大廳主頁）
+
+**修 2 — `client/src/pages/match-lobby/useMatchLobby.ts`**：
+- `handleGoBack` 的 `setLocation("/home")` → `setLocation(link("/home"))`
+
+**根治原則**：專案內所有 `navigate` / `setLocation` 用路徑時都要走 `useFieldLink()` hook。
+- Deploy: `ac2b7c8` · bundle `index-DfflxOpC.js`
+
+#### 輪 13 — 🔧 道具獎勵 bug 第二波（5 個元件全面修復）
+
+**背景**：輪 10 只修了 Photo 三元件，系統性掃查發現 **另外 5 個元件也有相同 bug**。
+
+**掃查結論**：
+| 元件 | 問題 | 修法 |
+|------|------|------|
+| **GpsMissionPage**（2 處）| 只讀 `onSuccess.points/grantItem` | 加 `rewardPoints/rewardItems` 優先 |
+| **ShootingMissionPage** | 讀 `onSuccess + successReward` | 加 RewardsSection 新欄位最高優先 |
+| **ChoiceVerifyPage** | 讀 `onSuccess.*` only | 加 `rewardItems` 取聯集 |
+| **ConditionalVerifyPage** | 道具只讀舊 | 加 `rewardItems` 取聯集 |
+| **TextVerifyPage** | 道具只讀舊 | 加 `rewardItems` + 分數 fallback |
+
+**統一 pattern**（所有元件共用）：
+```typescript
+const rsPoints = config.rewardPoints;           // RewardsSection 新
+const rsItems = config.rewardItems ?? [];        // RewardsSection 新
+const points = rsPoints ?? onSuccess?.points ?? default;
+const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
+```
+
+這樣 17 個遊戲元件的 reward 讀取統一，舊資料相容、新資料立即生效。
+- Deploy: `edfeeec` · bundle `index-CwZcoAkY.js`
+
+### 後續迭代統計
+
+| 指標 | 數字 |
+|------|------|
+| 追加連續部署輪數 | 6（輪 8-13）|
+| 累計總部署輪數 | 13 |
+| 總失敗 / 回滾次數 | 0 |
+| 修復使用者回報 bug | 3（場域隔離 / 道具獎勵 / 元件呈現）|
+| 架構重大調整 | 1（mode discriminator → 獨立 pageType）|
+| 影響元件數 | 8 元件道具獎勵統一修復 + 2 hook 場域感知 |
+
 ### 未做但已規劃（依 PLAN 文件 Milestone B+ 待辦）
 
+- ✅ ~~Phase 5.5 — 成就徽章卡~~（輪 8 完成）
 - ⏳ Phase 5 — 時間軸相簿 `/album/:sessionId` + `/me/photos` + PDF 匯出
-- ⏳ Phase 5.5 — 成就徽章卡 achievement_card + F3 分享戰績整合
 - ⏳ Phase 5.6 — Google Drive 直傳（OAuth + Drive API）
 - ⏳ Phase 6 — 團體合影 team_photo（WebSocket 等待 + 九宮格合成）
 - ⏳ Phase 7 — 連拍 GIF burst_gif
 - ⏳ Phase 8 — 前後對比 before_after
 - ⏳ Phase 9 — AR 貼圖（固定位置 + 臉部追蹤）
+- ⏳ photo_templates 管理後台（讓場域自定義紀念照框）
 
 ### 關鍵學習
 
-1. **Discriminated union + 預設向後相容** — `mode?` optional 讓舊資料無痛升級
-2. **Lazy load 新 flow 元件** — 既有 free mode bundle 不膨脹，新 mode 按需載入
-3. **AI pipeline facade 早期抽** — 從第一個 AI 功能就抽 provider facade，加新 function 不改動呼叫端
+1. **Discriminated union 雖好但使用者視角更重要** — 架構漂亮 ≠ 使用者好找 → 改獨立 pageType 一次到位
+2. **Lazy load 新 flow 元件** — 既有 free mode bundle 不膨脹
+3. **AI pipeline facade 早期抽** — 從第一個 AI 功能就抽 provider facade，加新 function 不改呼叫端
 4. **合成失敗絕不阻擋遊戲** — Cloudinary 失敗 fallback 原圖是 UX 鐵則
-5. **編輯器「使用我現在的位置」按鈕** — 這個看似小功能，實地設定拍照點時省下查經緯度的 10 分鐘
-6. **參考圖 + 即時預覽** — 上傳 URL 和視覺回饋黏在一起，減少管理員「貼完 URL 不確定對不對」的焦慮
+5. **編輯器「使用我現在的位置」** — 看似小功能，實地設定省 10 分鐘查經緯度
+6. **參考圖即時預覽** — URL 和視覺黏一起減少「貼完不確定對不對」焦慮
+7. **🆕 reward schema 不一致是大 bug** — 編輯器存 A 欄位、元件讀 B 欄位 = 無感永久失效，需做「欄位聯集」統一
+8. **🆕 場域隔離要全站根治** — 所有 setLocation 都走 useFieldLink，不能單點修復漏掉隊伍/對戰大廳
+9. **🆕 使用者說「看不到新元件」是實打實回饋** — 不要辯解架構，給他能看到的 UI（獨立 pageType）
 
 ---
 
