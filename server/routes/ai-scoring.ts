@@ -412,4 +412,141 @@ export function registerAiScoringRoutes(app: Express): void {
       });
     }
   });
+
+  // 🆕 POST /api/ai/ocr-detect — Google Vision OCR 招牌偵測
+  //   - 傳入公開 imageUrl（Cloudinary）
+  //   - 做模糊比對目標文字
+  //   - 記錄用量到 ai_usage_logs
+  //   - 免費額度不足時自動 fallback
+  app.post("/api/ai/ocr-detect", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
+
+    try {
+      // 驗證輸入
+      const parsed = ocrDetectSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
+      }
+      const { imageUrl, expectedTexts, fuzzyThreshold, gameId } = parsed.data;
+
+      // 檢查 Google Vision 設定
+      if (!isGoogleVisionConfigured()) {
+        return apiError(res, 503, "OCR 服務未設定，請聯絡管理員");
+      }
+
+      // Rate limit
+      if (!checkRateLimit(userId)) {
+        return apiError(res, 429, "OCR 呼叫次數過多，請稍後再試");
+      }
+
+      // 95% 配額自動 fallback（避免透支）
+      const usage = await getMonthlyOcrUsage();
+      if (usage.shouldFallback) {
+        await logOcrUsage({
+          success: false,
+          errorCode: "QUOTA_FALLBACK",
+          errorMessage: `當月用量 ${usage.usagePercent}% 已達 95%，自動暫停`,
+          latencyMs: 0,
+          gameId,
+          userId,
+        });
+        return res.json({
+          matched: false,
+          bestMatch: null,
+          similarity: 0,
+          fullText: "",
+          feedback: `OCR 本月用量將滿（${usage.currentMonthCount}/${usage.freeQuota}），已暫停避免超額`,
+          fallback: true,
+        });
+      }
+
+      // 解析 gameId → fieldId（做分場域用量統計）
+      let fieldId: string | undefined;
+      if (gameId) {
+        try {
+          const [game] = await db
+            .select({ fieldId: games.fieldId })
+            .from(games)
+            .where(eq(games.id, gameId))
+            .limit(1);
+          fieldId = game?.fieldId || undefined;
+        } catch {
+          // gameId 查不到不阻斷
+        }
+      }
+
+      // 呼叫 Google Vision
+      const ocrResult = await detectText(imageUrl);
+
+      // 記錄用量（成功 / 失敗都記）
+      await logOcrUsage({
+        success: ocrResult.success,
+        errorCode: ocrResult.errorCode,
+        errorMessage: ocrResult.errorMessage,
+        latencyMs: ocrResult.latencyMs,
+        gameId,
+        fieldId,
+        userId,
+      });
+
+      if (!ocrResult.success) {
+        return res.json({
+          matched: false,
+          bestMatch: null,
+          similarity: 0,
+          fullText: "",
+          feedback: "OCR 暫時無法辨識",
+          fallback: true,
+          errorCode: ocrResult.errorCode,
+        });
+      }
+
+      // 模糊比對
+      const threshold = fuzzyThreshold ?? 0.7;
+      const match = matchExpectedTexts(
+        ocrResult.fullText,
+        expectedTexts,
+        threshold,
+      );
+
+      return res.json({
+        matched: match.matched,
+        bestMatch: match.bestMatch,
+        similarity: match.similarity,
+        fullText: ocrResult.fullText,
+        latencyMs: ocrResult.latencyMs,
+        feedback: match.matched
+          ? `成功辨識目標：${match.bestMatch}`
+          : `未找到目標文字（最高相似度 ${Math.round(match.similarity * 100)}%）`,
+      });
+    } catch (error) {
+      console.error("[ai-scoring] ocr-detect 失敗:", error);
+      await logOcrUsage({
+        success: false,
+        errorCode: "UNHANDLED_ERROR",
+        errorMessage: error instanceof Error ? error.message : String(error),
+        latencyMs: 0,
+        userId,
+      });
+      return res.json({
+        matched: false,
+        bestMatch: null,
+        similarity: 0,
+        fullText: "",
+        feedback: "OCR 服務暫時無法使用",
+        fallback: true,
+      });
+    }
+  });
+
+  // 🆕 GET /api/ai/ocr-usage — 查詢當月 OCR 用量（給 Admin 儀表板用）
+  app.get("/api/ai/ocr-usage", isAuthenticated, async (_req, res) => {
+    try {
+      const usage = await getMonthlyOcrUsage();
+      return res.json(usage);
+    } catch (error) {
+      console.error("[ai-scoring] ocr-usage 失敗:", error);
+      return apiError(res, 500, "查詢用量失敗");
+    }
+  });
 }
