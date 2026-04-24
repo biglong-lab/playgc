@@ -843,7 +843,13 @@ export function ChoiceVerifyEditor({
           />
         </div>
         <div className="flex items-center justify-between border rounded p-2">
-          <span className="text-xs">顯示解釋</span>
+          <div className="min-w-0">
+            <p className="text-xs">顯示解釋</p>
+            {/* 🆕 說明解釋實際填在哪裡，避免使用者以為 toggle 壞掉 */}
+            <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+              {isQuizMode ? "解釋填在每題下方" : "解釋填在每個選項下方"}
+            </p>
+          </div>
           <Switch
             checked={config.showExplanation === true}
             onCheckedChange={(v) => updateField("showExplanation", v)}

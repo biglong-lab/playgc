@@ -651,3 +651,43 @@ function PhotoAiKeywordsEditor({
     </div>
   );
 }
+
+
+// 🆕 提示輸入 — 解決「打字 normalize 卡頓」問題：
+// 原本 onChange 就 split/trim/filter，使用者打「第一,」時逗號和空白會被即時吃掉，很難繼續輸入。
+// 改用 local state 讓使用者自由打，只在 blur 時才 parse 成 string[]。
+function HintsInput({
+  value,
+  onChange,
+}: {
+  value: string[];
+  onChange: (hints: string[]) => void;
+}) {
+  const [localValue, setLocalValue] = useState(() => value.join(", "));
+
+  return (
+    <div>
+      <label className="text-sm font-medium mb-2 block">
+        提示（答錯時顯示，多個用逗號分隔）
+      </label>
+      <Input
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        onBlur={() => {
+          const hints = localValue
+            .split(/[,，]/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          onChange(hints);
+          // 正規化顯示：blur 後用標準分隔重組回 input
+          setLocalValue(hints.join(", "));
+        }}
+        placeholder="第一次提示, 第二次提示, 第三次提示"
+        data-testid="config-hints"
+      />
+      <p className="text-xs text-muted-foreground mt-1">
+        依答錯次數逐步顯示；也可只填一個提示
+      </p>
+    </div>
+  );
+}
