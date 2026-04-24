@@ -24,8 +24,8 @@ import SearchKbdHint from "@/components/shared/SearchKbdHint";
 
 export default function AdminStaffGames() {
   const ctx = useAdminStaffGames();
-  // 🆕 搜尋框鍵盤 shortcut（`/` / `⌘K` / Esc）
-  const { inputRef: searchInputRef, isMac, handleEscape } = useSearchShortcut<HTMLInputElement>();
+  // 🆕 搜尋框鍵盤 shortcut（只綁 `/` 和 Esc，⌘K 讓給 CommandPalette）
+  const { inputRef: searchInputRef, handleEscape } = useSearchShortcut<HTMLInputElement>({ disableCmdK: true });
 
   return (
     <UnifiedAdminLayout title="遊戲管理">
