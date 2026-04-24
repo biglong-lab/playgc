@@ -180,9 +180,20 @@ export default function AdminStaffFields() {
 
   const filteredFields = useMemo(() => {
     if (!fields) return [];
-    const filtered = moduleFilter === "all"
-      ? [...fields]
-      : fields.filter((f) => f.settings?.[moduleFilter] === true);
+    let filtered: Field[];
+    if (moduleFilter === "all") {
+      filtered = [...fields];
+    } else if (moduleFilter === "has_announcement") {
+      filtered = fields.filter((f) => hasActiveAnnouncement(f.settings));
+    } else if (moduleFilter === "urgent_announcement") {
+      filtered = fields.filter(
+        (f) =>
+          hasActiveAnnouncement(f.settings) &&
+          f.settings?.announcementSeverity === "urgent",
+      );
+    } else {
+      filtered = fields.filter((f) => f.settings?.[moduleFilter] === true);
+    }
 
     // 依 sortBy 排序
     filtered.sort((a, b) => {
