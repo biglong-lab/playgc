@@ -66,14 +66,12 @@ export default function BattleAchievements() {
   const { data: myAchievements = [] } = useQuery<PlayerAchievement[]>({
     queryKey: ["/api/battle/my/achievements"],
     queryFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch("/api/battle/my/achievements", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", "/api/battle/my/achievements");
+        return res.json();
+      } catch {
+        return [];
+      }
     },
     enabled: !!user,
   });
