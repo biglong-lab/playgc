@@ -1,6 +1,7 @@
 // 對戰大廳邏輯 Hook
 import { useState, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
+import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatchWebSocket } from "@/hooks/use-match-websocket";
