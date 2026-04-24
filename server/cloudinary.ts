@@ -489,10 +489,12 @@ export class CloudinaryService {
    */
   async getUsage(): Promise<{
     plan?: string;
+    /** 總 credits 配額（Free=25/月）這是**真正的上限** */
     credits?: { used: number; limit: number; percent: number };
-    storage?: { used: number; limit: number; percent: number };
-    bandwidth?: { used: number; limit: number; percent: number };
-    transformations?: { used: number; limit: number; percent: number };
+    /** 儲存用量（bytes + 佔 credits 多少 + 佔總額百分比）*/
+    storage?: { usedBytes: number; creditsUsed: number; percent: number };
+    bandwidth?: { usedBytes: number; creditsUsed: number; percent: number };
+    transformations?: { used: number; creditsUsed: number; percent: number };
     requests?: number;
     resources?: number;
     derivedResources?: number;
@@ -505,40 +507,40 @@ export class CloudinaryService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const usage: any = await cloudinary.api.usage();
 
-      // Free plan: storage 25GB / bandwidth 25GB / transformations 25k/month
-      const toPercent = (used: number, limit: number): number => {
-        if (!limit || limit === 0) return 0;
-        return Math.round((used / limit) * 100);
+      // 🔧 Cloudinary Free 方案用 credits 制（總 25/月），各項資源消耗不同 credits
+      //    正確百分比 = 該項 credits_usage / credits.limit * 100
+      const creditsLimit = usage.credits?.limit ?? 25;
+      const toPercent = (creditsUsed: number): number => {
+        if (!creditsLimit || creditsLimit === 0) return 0;
+        return Math.round((creditsUsed / creditsLimit) * 100 * 10) / 10;   // 保留 1 位小數
       };
 
       return {
         plan: usage.plan,
-        credits: usage.credits
-          ? {
-              used: usage.credits.usage ?? 0,
-              limit: usage.credits.limit ?? 0,
-              percent: toPercent(usage.credits.usage ?? 0, usage.credits.limit ?? 0),
-            }
-          : undefined,
+        credits: {
+          used: usage.credits?.usage ?? 0,
+          limit: creditsLimit,
+          percent: usage.credits?.used_percent ?? 0,
+        },
         storage: usage.storage
           ? {
-              used: usage.storage.usage ?? 0,
-              limit: usage.storage.limit ?? 0,
-              percent: toPercent(usage.storage.usage ?? 0, usage.storage.limit ?? 0),
+              usedBytes: usage.storage.usage ?? 0,
+              creditsUsed: usage.storage.credits_usage ?? 0,
+              percent: toPercent(usage.storage.credits_usage ?? 0),
             }
           : undefined,
         bandwidth: usage.bandwidth
           ? {
-              used: usage.bandwidth.usage ?? 0,
-              limit: usage.bandwidth.limit ?? 0,
-              percent: toPercent(usage.bandwidth.usage ?? 0, usage.bandwidth.limit ?? 0),
+              usedBytes: usage.bandwidth.usage ?? 0,
+              creditsUsed: usage.bandwidth.credits_usage ?? 0,
+              percent: toPercent(usage.bandwidth.credits_usage ?? 0),
             }
           : undefined,
         transformations: usage.transformations
           ? {
               used: usage.transformations.usage ?? 0,
-              limit: usage.transformations.limit ?? 0,
-              percent: toPercent(usage.transformations.usage ?? 0, usage.transformations.limit ?? 0),
+              creditsUsed: usage.transformations.credits_usage ?? 0,
+              percent: toPercent(usage.transformations.credits_usage ?? 0),
             }
           : undefined,
         requests: usage.requests,
