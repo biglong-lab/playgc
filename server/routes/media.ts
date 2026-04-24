@@ -418,7 +418,7 @@ export function registerMediaRoutes(app: Express) {
           });
         }
 
-        const { playerPhotoPublicId, config, dynamicVars } = parsed.data;
+        const { playerPhotoPublicId, playerPhotoUrl, config, dynamicVars } = parsed.data;
 
         // 驗證 config 合法性
         const [isValid, errors] = validateCompositionConfig(config);
@@ -437,12 +437,14 @@ export function registerMediaRoutes(app: Express) {
 
         const compositeUrl = buildCompositeUrl({
           playerPhotoPublicId,
+          playerPhotoUrl,
           config,
           dynamicVars: vars,
         });
 
         const urlLength = estimateUrlLength({
           playerPhotoPublicId,
+          playerPhotoUrl,
           config,
           dynamicVars: vars,
         });
