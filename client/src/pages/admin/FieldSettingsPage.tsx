@@ -105,7 +105,7 @@ export default function FieldSettingsPage() {
   });
 
   // 🆕 Tab 狀態同步到 URL query — 使用 useTabQueryParam 共用 hook
-  const VALID_TABS = ["intro", "features", "brand", "ai"] as const;
+  const VALID_TABS = ["intro", "features", "brand", "ai", "photo"] as const;
   const [activeTab, handleTabChange] = useTabQueryParam(VALID_TABS, "intro");
 
   if (!fieldId) {
