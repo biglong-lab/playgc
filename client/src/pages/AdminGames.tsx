@@ -16,6 +16,11 @@ import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, Map, Smile } from "lucide-react";
+import {
   GameFormDialog, QRCodeDialog, CoverUploadDialog, DeleteGameDialog,
   MoveFieldDialog,
 } from "@/components/admin-games";
