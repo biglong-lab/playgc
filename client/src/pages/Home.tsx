@@ -185,8 +185,8 @@ export default function Home() {
     };
   }, [userSessions]);
 
-  // 🆕 搜尋框鍵盤 shortcut — 抽到共用 hook（`/` / `⌘K` / `Ctrl+K`）
-  const { inputRef: searchInputRef, isMac } = useSearchShortcut<HTMLInputElement>();
+  // 🆕 搜尋框鍵盤 shortcut — 抽到共用 hook（`/` / `⌘K` / `Ctrl+K` / Esc 清空）
+  const { inputRef: searchInputRef, isMac, handleEscape } = useSearchShortcut<HTMLInputElement>();
 
   // 🔥 改用 useEffect 確保跳轉在 render 之後執行
   // 避免「Login Dialog 剛關閉 → Firebase onAuthStateChanged 還沒跑 → isSignedIn=false → 立刻跳回首頁」
