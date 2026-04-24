@@ -355,7 +355,9 @@ export default function PhotoTeamFlow({
             fileInputRef={camera.fileInputRef}
             onCapture={camera.capturePhoto}
             onCancel={camera.cancelCamera}
-            onRestart={camera.startCamera}
+            onRestart={() => camera.startCamera()}
+            onSwitchCamera={camera.switchCamera}
+            facingMode={camera.facingMode}
           />
           <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium">
             拍第 {currentIdx + 1} / {memberCount} 位：{currentName.trim() || `隊員 ${currentIdx + 1}`}
