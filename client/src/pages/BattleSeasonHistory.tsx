@@ -6,6 +6,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { tierLabels } from "@shared/schema";
+import { TIER_BADGE } from "@/lib/battle-labels";
 import BattleLayout from "@/components/battle/BattleLayout";
 import { Trophy, Medal } from "lucide-react";
 
