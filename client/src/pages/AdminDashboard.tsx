@@ -275,17 +275,14 @@ function AnnouncementStatusCard() {
   // 沒公告就不佔版面
   if (!announcement) return null;
 
-  // 🆕 剩餘天數（用共用 helper + 自訂 Dashboard 文案）
-  const remainingLabel = (() => {
-    const base = formatCountdown(endAt);
-    // Dashboard 版本加「下架」後綴讓語意完整
-    if (base === "剩 " + (base?.match(/剩 (\d+)/)?.[1] ?? "") + " 天") {
-      return base + "下架";
-    }
-    if (base === "明天下架") return base;
-    if (base === "今日最後") return "今日最後一天";
-    return base;
-  })();
+  // 🆕 剩餘天數 — Dashboard 版加「下架」讓語意完整
+  const days = daysUntilDate(endAt);
+  let remainingLabel: string | null = null;
+  if (days !== null) {
+    if (days > 1) remainingLabel = `剩 ${days} 天下架`;
+    else if (days === 1) remainingLabel = "明天下架";
+    else if (days === 0) remainingLabel = "今日最後一天";
+  }
 
   // 🆕 依 severity 切換視覺
   const isUrgent = severity === "urgent";
