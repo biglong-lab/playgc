@@ -400,17 +400,25 @@ export default function GamePlay() {
 
       <main className="flex-1 relative overflow-hidden">
         {currentPage && (
-          <GamePageRenderer
-            page={currentPage}
-            onComplete={handlePageComplete}
-            onVariableUpdate={handleVariableUpdate}
-            sessionId={sessionId || ""}
-            gameId={gameId || ""}
-            variables={variables}
-            inventory={inventory}
-            score={score}
-            visitedLocations={visitedLocations}
-          />
+          // 🛡️ ErrorBoundary 防止單頁 crash 導致整個遊戲白屏
+          //   page.id key 讓換頁時重新建立 ErrorBoundary（舊 error 清掉）
+          <GamePageErrorBoundary
+            key={currentPage.id}
+            pageType={currentPage.pageType}
+            onSkip={() => handlePageComplete()}
+          >
+            <GamePageRenderer
+              page={currentPage}
+              onComplete={handlePageComplete}
+              onVariableUpdate={handleVariableUpdate}
+              sessionId={sessionId || ""}
+              gameId={gameId || ""}
+              variables={variables}
+              inventory={inventory}
+              score={score}
+              visitedLocations={visitedLocations}
+            />
+          </GamePageErrorBoundary>
         )}
       </main>
 
