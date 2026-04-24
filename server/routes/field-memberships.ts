@@ -135,6 +135,91 @@ export function registerFieldMembershipRoutes(app: Express) {
   );
 
   // ============================================================================
+  // 管理員端：批次授權多名玩家為管理員
+  // ============================================================================
+  const bulkGrantSchema = z.object({
+    userIds: z.array(z.string().min(1)).min(1).max(100),
+    roleId: z.string().min(1),
+  });
+
+  app.post(
+    "/api/admin/memberships/bulk-grant",
+    requireAdminAuth,
+    requirePermission("admin:manage_accounts"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+        const parsed = bulkGrantSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res
+            .status(400)
+            .json({ error: "格式錯誤", details: parsed.error.errors });
+        }
+
+        const fieldId = req.admin.fieldId;
+        const uniqueUserIds = Array.from(new Set(parsed.data.userIds));
+        const results: {
+          userId: string;
+          success: boolean;
+          error?: string;
+        }[] = [];
+        let successCount = 0;
+
+        // 逐一處理 — grantAdmin 內部自己的異常不會影響其他人
+        for (const userId of uniqueUserIds) {
+          try {
+            const result = await grantAdmin(
+              userId,
+              fieldId,
+              parsed.data.roleId,
+              req.admin.accountId
+            );
+            results.push({
+              userId,
+              success: result.success,
+              error: result.success ? undefined : result.error,
+            });
+            if (result.success) successCount++;
+          } catch (err) {
+            results.push({
+              userId,
+              success: false,
+              error: err instanceof Error ? err.message : "未知錯誤",
+            });
+          }
+        }
+
+        await logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "membership:bulk_grant_admin",
+          targetType: "user",
+          fieldId,
+          metadata: {
+            userIds: uniqueUserIds,
+            roleId: parsed.data.roleId,
+            successCount,
+            total: uniqueUserIds.length,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
+        res.json({
+          success: true,
+          successCount,
+          total: uniqueUserIds.length,
+          results,
+        });
+      } catch (err) {
+        console.error("[bulk-grant] 批次授權失敗:", err);
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "批次授權失敗",
+        });
+      }
+    }
+  );
+
+  // ============================================================================
   // 管理員端：撤銷管理員授權（開關 OFF）— 立即失效 JWT
   // ============================================================================
   app.post(
