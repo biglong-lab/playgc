@@ -105,10 +105,19 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
       setTimeout(() => {
         if (finishedRef.current) return;
         finishedRef.current = true;
-        const items = config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : undefined;
+        // 🔧 修 bug：RewardsSection 存 rewardPoints/rewardItems 優先，舊 onSuccess.* 向後相容
+        const rsPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
+        const rsItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
         const rewardPerQ = config.rewardPerQuestion ?? 10;
-        const totalPoints = config.onSuccess?.points ?? correctCount * rewardPerQ;
-        onComplete({ points: totalPoints, items }, config.nextPageId);
+        const totalPoints = rsPoints ?? config.onSuccess?.points ?? correctCount * rewardPerQ;
+        const allItems = [
+          ...rsItems.filter((x) => !!x),
+          ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
+        ];
+        onComplete(
+          { points: totalPoints, items: allItems.length > 0 ? allItems : undefined },
+          config.nextPageId,
+        );
       }, 2000);
     } else {
       // 找出答錯題原始 index（保留答對題的答案，避免重做）
