@@ -131,75 +131,36 @@ export default function AdminLeaderboard() {
       }
     >
       <div className="space-y-6">
-        {/* 🆕 統計卡片 — 無紀錄時數字 muted，避免 0 當真實資料誤導 */}
+        {/* 🆕 統計卡片 — 改用共用 MetricCard（無紀錄時 muted + 破折號） */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">參與隊伍</p>
-                  <p
-                    className={`font-number text-3xl font-bold ${totalTeams === 0 ? "text-muted-foreground" : ""}`}
-                    data-testid="stat-total-teams"
-                  >
-                    {totalTeams}
-                  </p>
-                </div>
-                <Users className={`w-8 h-8 ${totalTeams > 0 ? "text-primary/50" : "text-muted-foreground/30"}`} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">最高分數</p>
-                  <p
-                    className={`font-number text-3xl font-bold ${leaderboard.length === 0 ? "text-muted-foreground" : "text-success"}`}
-                    data-testid="stat-highest-score"
-                  >
-                    {leaderboard.length === 0 ? "—" : highestScore}
-                  </p>
-                </div>
-                <Crown className={`w-8 h-8 ${leaderboard.length > 0 ? "text-yellow-500/50" : "text-muted-foreground/30"}`} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">平均分數</p>
-                  <p
-                    className={`font-number text-3xl font-bold ${leaderboard.length === 0 ? "text-muted-foreground" : ""}`}
-                    data-testid="stat-average-score"
-                  >
-                    {leaderboard.length === 0 ? "—" : averageScore}
-                  </p>
-                </div>
-                <TrendingUp className="w-8 h-8 text-muted-foreground/50" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">總紀錄數</p>
-                  <p
-                    className={`font-number text-3xl font-bold ${leaderboard.length === 0 ? "text-muted-foreground" : ""}`}
-                    data-testid="stat-total-entries"
-                  >
-                    {leaderboard.length}
-                  </p>
-                </div>
-                <Trophy className={`w-8 h-8 ${leaderboard.length > 0 ? "text-primary/50" : "text-muted-foreground/30"}`} />
-              </div>
-            </CardContent>
-          </Card>
+          <MetricCard
+            label="參與隊伍"
+            value={totalTeams}
+            icon={Users}
+            accent={totalTeams > 0 ? "primary" : "muted"}
+            testid="stat-total-teams"
+          />
+          <MetricCard
+            label="最高分數"
+            value={leaderboard.length === 0 ? "—" : highestScore}
+            icon={Crown}
+            accent={leaderboard.length > 0 ? "success" : "muted"}
+            testid="stat-highest-score"
+          />
+          <MetricCard
+            label="平均分數"
+            value={leaderboard.length === 0 ? "—" : averageScore}
+            icon={TrendingUp}
+            accent={leaderboard.length > 0 ? "default" : "muted"}
+            testid="stat-average-score"
+          />
+          <MetricCard
+            label="總紀錄數"
+            value={leaderboard.length}
+            icon={Trophy}
+            accent={leaderboard.length > 0 ? "primary" : "muted"}
+            testid="stat-total-entries"
+          />
         </div>
 
         <div className="flex flex-col md:flex-row gap-4">
