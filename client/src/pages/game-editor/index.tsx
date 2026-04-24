@@ -440,7 +440,8 @@ export default function GameEditor() {
         )}
       </header>
 
-      <div className="flex-1 flex">
+      {/* 🔧 min-h-0 / overflow-hidden — 關鍵：讓 flex-1 的子元素 overflow-auto 能生效 */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
         <ToolboxSidebar
           onDragStart={handleToolboxDragStart}
           onDragEnd={handleToolboxDragEnd}
@@ -461,8 +462,8 @@ export default function GameEditor() {
           onDropZoneDrop={handleDropZoneDrop}
         />
 
-        {/* 主內容區 */}
-        <main className="flex-1 overflow-auto">
+        {/* 主內容區 — 獨立 scroll */}
+        <main className="flex-1 overflow-auto min-w-0">
           <Tabs defaultValue="page" className="h-full">
             <div className="px-6 py-4 border-b border-border">
               <TabsList>
