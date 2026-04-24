@@ -117,105 +117,87 @@ export default function AdminDashboard() {
       <FieldModulesCard />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* 🆕 stats 卡片改成可點擊 shortcut — 直接跳到對應管理頁 */}
-        <Link href="/admin/games" data-testid="stats-published-games">
-          <Card className="hover-elevate cursor-pointer transition-all">
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">發布遊戲</CardTitle>
-              <Gamepad2 className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {/* 🆕 沒遊戲時 muted、有遊戲時主色 */}
-              <div
-                className={`font-number text-3xl font-bold ${
-                  publishedGames > 0 ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                {publishedGames}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {(games?.length || 0) === 0
-                  ? "尚未建立任何遊戲"
-                  : draftGames > 0
-                    ? `還有 ${draftGames} 個草稿 · 共 ${games?.length} 個`
-                    : `共 ${games?.length} 個遊戲`}
-              </p>
-            </CardContent>
-          </Card>
+        {/* 🆕 stats 卡片改用共用 MetricCard（Link-wrapped navigation shortcut） */}
+        <Link href="/admin/games" className="block">
+          <MetricCard
+            label="發布遊戲"
+            value={publishedGames}
+            sublabel={
+              (games?.length || 0) === 0
+                ? "尚未建立任何遊戲"
+                : draftGames > 0
+                  ? `還有 ${draftGames} 個草稿 · 共 ${games?.length} 個`
+                  : `共 ${games?.length} 個遊戲`
+            }
+            icon={Gamepad2}
+            accent={publishedGames > 0 ? "primary" : "muted"}
+            className="hover-elevate cursor-pointer transition-all"
+            testid="stats-published-games"
+          />
         </Link>
 
-        <Link href="/admin/sessions" data-testid="stats-active-sessions">
-          <Card className="hover-elevate cursor-pointer transition-all">
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-1.5">
-                進行中場次
-                {/* 🆕 有進行中場次時加脈衝綠點（「LIVE」指示） */}
-                {activeSessions > 0 && (
-                  <span className="relative flex h-2 w-2" aria-label="live">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-success" />
-                  </span>
-                )}
-              </CardTitle>
-              <Activity className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="font-number text-3xl font-bold text-success">
-                {activeSessions}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {activeSessions > 0 ? "目前有玩家進行中" : "目前無進行中場次"}
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/admin/sessions" className="block">
+          <MetricCard
+            label="進行中場次"
+            value={activeSessions}
+            sublabel={activeSessions > 0 ? "目前有玩家進行中" : "目前無進行中場次"}
+            icon={Activity}
+            accent={activeSessions > 0 ? "success" : "muted"}
+            live={activeSessions > 0}
+            className="hover-elevate cursor-pointer transition-all"
+            testid="stats-active-sessions"
+          />
         </Link>
 
-        <Link href="/admin/devices" data-testid="stats-online-devices">
-          <Card className="hover-elevate cursor-pointer transition-all">
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">在線設備</CardTitle>
-              <Cpu className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {/* 🆕 依設備狀態切換顏色：有離線=警示紅、全在線=安全綠、無設備=muted */}
-              <div
-                className={`font-number text-3xl font-bold ${
-                  (devices?.length || 0) === 0
-                    ? "text-muted-foreground"
-                    : offlineDevices > 0
-                      ? "text-destructive"
-                      : "text-success"
-                }`}
-              >
-                {onlineDevices}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {offlineDevices > 0
-                  ? `${offlineDevices} 台離線 · 共 ${devices?.length || 0} 台`
-                  : devices?.length
-                    ? `共 ${devices.length} 台設備 · 全部在線`
-                    : "尚未登錄任何設備"}
-              </p>
-            </CardContent>
-          </Card>
+        <Link href="/admin/devices" className="block">
+          <MetricCard
+            label="在線設備"
+            value={onlineDevices}
+            sublabel={
+              offlineDevices > 0
+                ? `${offlineDevices} 台離線 · 共 ${devices?.length || 0} 台`
+                : devices?.length
+                  ? `共 ${devices.length} 台設備 · 全部在線`
+                  : "尚未登錄任何設備"
+            }
+            icon={Cpu}
+            accent={
+              (devices?.length || 0) === 0
+                ? "muted"
+                : offlineDevices > 0
+                  ? "destructive"
+                  : "success"
+            }
+            className="hover-elevate cursor-pointer transition-all"
+            testid="stats-online-devices"
+          />
         </Link>
 
-        <Link href="/admin/sessions" data-testid="stats-today-completed">
-          <Card className="hover-elevate cursor-pointer transition-all">
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">今日完成</CardTitle>
-              <Trophy className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="font-number text-3xl font-bold">
-                {todayCompleted}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {todayCompleted > 0
-                  ? `場遊戲完成 · 累計 ${totalCompleted}`
-                  : `累計 ${totalCompleted} 場`}
-              </p>
-            </CardContent>
+        <Link href="/admin/sessions" className="block">
+          <MetricCard
+            label="今日完成"
+            value={todayCompleted}
+            sublabel={
+              todayCompleted > 0
+                ? `場遊戲完成 · 累計 ${totalCompleted}`
+                : `累計 ${totalCompleted} 場`
+            }
+            icon={Trophy}
+            accent={todayCompleted > 0 ? "default" : "muted"}
+            className="hover-elevate cursor-pointer transition-all"
+            testid="stats-today-completed"
+          />
+        </Link>
+      </div>
+
+      {/* 舊結構保留給下方 card-content 用，不再需要重新開 div（這個 marker 被下面 CardHeader 用） */}
+      {false && (
+        <Card>
+          <CardHeader>
+            <CardTitle />
+          </CardHeader>
+          <CardContent>
+            <div>
           </Card>
         </Link>
       </div>
