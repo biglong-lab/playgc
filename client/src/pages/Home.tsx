@@ -497,11 +497,41 @@ export default function Home() {
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
-                  <Badge 
+                  <Badge
                     className={`absolute top-3 right-3 ${getDifficultyColor(game.difficulty || "medium")}`}
                   >
                     {getDifficultyLabel(game.difficulty || "medium")}
                   </Badge>
+                  {/* 🆕 狀態徽章（進行中=脈動警示、已完成=綠勾） */}
+                  {(() => {
+                    const gs = gameStatusMap.get(game.id);
+                    if (gs?.status === "playing") {
+                      return (
+                        <Badge
+                          className="absolute top-3 left-3 gap-1 bg-warning text-warning-foreground border-warning shadow-md"
+                          data-testid={`badge-status-playing-${game.id}`}
+                        >
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning-foreground/70 opacity-75" />
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-warning-foreground" />
+                          </span>
+                          進行中
+                        </Badge>
+                      );
+                    }
+                    if (gs?.status === "completed") {
+                      return (
+                        <Badge
+                          className="absolute top-3 left-3 gap-1 bg-success text-white border-success shadow-md"
+                          data-testid={`badge-status-completed-${game.id}`}
+                        >
+                          <CheckCircle2 className="w-3 h-3" />
+                          已完成
+                        </Badge>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
                 
                 <CardContent className="p-4">
