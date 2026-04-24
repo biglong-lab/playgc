@@ -269,9 +269,24 @@ function AnnouncementStatusCard() {
   const field = useCurrentField();
   const announcement = field?.announcement;
   const severity = field?.announcementSeverity ?? "info";
+  const endAt = field?.announcementEndAt;
 
   // 沒公告就不佔版面
   if (!announcement) return null;
+
+  // 🆕 剩餘天數計算
+  let remainingLabel: string | null = null;
+  if (endAt) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endAt);
+    end.setHours(0, 0, 0, 0);
+    const msDiff = end.getTime() - today.getTime();
+    const days = Math.ceil(msDiff / (1000 * 60 * 60 * 24));
+    if (days > 1) remainingLabel = `剩 ${days} 天下架`;
+    else if (days === 1) remainingLabel = "明天下架";
+    else if (days === 0) remainingLabel = "今日最後一天";
+  }
 
   // 🆕 依 severity 切換視覺
   const isUrgent = severity === "urgent";
