@@ -315,7 +315,10 @@ function AnnouncementStatusCard() {
                 <div className="flex items-center gap-2 flex-wrap mb-1">
                   <p className="text-xs text-muted-foreground">{label}</p>
                   {remainingLabel && (
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
+                    <span
+                      className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground cursor-help"
+                      title={endAt ? `公告結束日：${endAt}` : ""}
+                    >
                       ⏱ {remainingLabel}
                     </span>
                   )}
