@@ -27,15 +27,6 @@ interface SeasonHistoryEntry {
   endDate: string | null;
 }
 
-const tierColors: Record<string, string> = {
-  bronze: "bg-orange-500/20 text-orange-400",
-  silver: "bg-gray-500/20 text-gray-300",
-  gold: "bg-yellow-500/20 text-yellow-400",
-  platinum: "bg-cyan-500/20 text-cyan-400",
-  diamond: "bg-blue-500/20 text-blue-400",
-  master: "bg-purple-500/20 text-purple-400",
-};
-
 export default function BattleSeasonHistory() {
   const { user } = useAuth();
   const { fieldId } = useBattleFieldId();
