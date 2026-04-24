@@ -185,7 +185,7 @@ export default function AdminStaffQRCodes() {
                   className="pl-9 pr-14"
                   data-testid="input-search-games"
                 />
-                {!searchTerm && <SearchKbdHint isMac={isMac} />}
+                {!searchTerm && <SearchKbdHint mode="slash" />}
               </div>
             </div>
 
