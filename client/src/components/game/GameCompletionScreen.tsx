@@ -242,6 +242,23 @@ export default function GameCompletionScreen({
           <p className="text-sm text-muted-foreground mt-1">分</p>
         </motion.div>
 
+        {/* 🆕 F3: 分享戰績（獨立列，主要 CTA，金色 gradient 很顯眼） */}
+        <motion.div
+          className="flex justify-center mb-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+        >
+          <Button
+            onClick={handleShareScore}
+            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white w-full sm:min-w-[200px] font-semibold shadow-md h-11"
+            data-testid="btn-share-score"
+          >
+            <Share2 className="w-4 h-4" />
+            分享戰績
+          </Button>
+        </motion.div>
+
         {/* 按鈕群 */}
         <motion.div
           className="flex flex-col sm:flex-row gap-3 justify-center"
@@ -249,15 +266,6 @@ export default function GameCompletionScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.3 }}
         >
-          {/* 🆕 F3: 分享戰績（主要 CTA，金色 + 寬顯眼） */}
-          <Button
-            onClick={handleShareScore}
-            className="gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white col-span-full sm:col-span-full w-full sm:w-auto sm:min-w-[160px] font-semibold shadow-md"
-            data-testid="btn-share-score"
-          >
-            <Share2 className="w-4 h-4" />
-            分享戰績
-          </Button>
           <Button
             onClick={onPlayAgain}
             variant="outline"
