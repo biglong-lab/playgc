@@ -409,6 +409,76 @@ export class CloudinaryService {
       cloudName: configured ? process.env.CLOUDINARY_CLOUD_NAME : undefined,
     };
   }
+
+  /**
+   * 🆕 v2: 取得 Cloudinary 帳號用量（Admin API usage endpoint）
+   * 回傳本月使用量 + 限額 + 百分比，供管理後台儀表板
+   */
+  async getUsage(): Promise<{
+    plan?: string;
+    credits?: { used: number; limit: number; percent: number };
+    storage?: { used: number; limit: number; percent: number };
+    bandwidth?: { used: number; limit: number; percent: number };
+    transformations?: { used: number; limit: number; percent: number };
+    requests?: number;
+    resources?: number;
+    derivedResources?: number;
+    error?: string;
+  }> {
+    if (!this.isConfigured()) {
+      return { error: "Cloudinary 尚未設定" };
+    }
+    try {
+      // @ts-expect-error - Cloudinary SDK types 不完整
+      const usage = await cloudinary.api.usage();
+
+      // Free plan: storage 25GB / bandwidth 25GB / transformations 25k/month
+      const toPercent = (used: number, limit: number): number => {
+        if (!limit || limit === 0) return 0;
+        return Math.round((used / limit) * 100);
+      };
+
+      return {
+        plan: usage.plan,
+        credits: usage.credits
+          ? {
+              used: usage.credits.usage ?? 0,
+              limit: usage.credits.limit ?? 0,
+              percent: toPercent(usage.credits.usage ?? 0, usage.credits.limit ?? 0),
+            }
+          : undefined,
+        storage: usage.storage
+          ? {
+              used: usage.storage.usage ?? 0,
+              limit: usage.storage.limit ?? 0,
+              percent: toPercent(usage.storage.usage ?? 0, usage.storage.limit ?? 0),
+            }
+          : undefined,
+        bandwidth: usage.bandwidth
+          ? {
+              used: usage.bandwidth.usage ?? 0,
+              limit: usage.bandwidth.limit ?? 0,
+              percent: toPercent(usage.bandwidth.usage ?? 0, usage.bandwidth.limit ?? 0),
+            }
+          : undefined,
+        transformations: usage.transformations
+          ? {
+              used: usage.transformations.usage ?? 0,
+              limit: usage.transformations.limit ?? 0,
+              percent: toPercent(usage.transformations.usage ?? 0, usage.transformations.limit ?? 0),
+            }
+          : undefined,
+        requests: usage.requests,
+        resources: usage.resources,
+        derivedResources: usage.derived_resources,
+      };
+    } catch (err) {
+      console.error("[cloudinary] getUsage 失敗:", err);
+      return {
+        error: err instanceof Error ? err.message : "取得用量失敗",
+      };
+    }
+  }
 }
 
 export const cloudinaryService = new CloudinaryService();
