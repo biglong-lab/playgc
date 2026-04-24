@@ -257,12 +257,16 @@ export default function ConditionalVerifyPage({
     if (allPassed) {
       if (finishedRef.current) return;
       finishedRef.current = true;
+      // 🔧 修 bug：RewardsSection 存 rewardItems[] 優先，舊 onSuccess.grantItem 向後相容
+      const rsItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
       const reward: { points?: number; items?: string[] } = {
-        points: config.onSuccess?.points ?? config.rewardPoints ?? 10,
+        points: config.rewardPoints ?? config.onSuccess?.points ?? 10,
       };
-      if (config.onSuccess?.grantItem) {
-        reward.items = [config.onSuccess.grantItem];
-      }
+      const allItems = [
+        ...rsItems.filter((x) => !!x),
+        ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
+      ];
+      if (allItems.length > 0) reward.items = allItems;
       onComplete(reward, config.nextPageId);
     } else {
       toast({
