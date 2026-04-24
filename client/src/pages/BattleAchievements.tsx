@@ -163,14 +163,18 @@ export default function BattleAchievements() {
               </CardContent>
             </Card>
           ) : (
-            filteredDefs.map((def) => {
+            sortedDefs.map((def) => {
               const isUnlocked = unlockedIds.has(def.id);
               const playerAch = myAchievements.find((a) => a.achievementId === def.id);
 
               return (
                 <Card
                   key={def.id}
-                  className={`bg-card border-border ${isUnlocked ? "border-l-4" : "opacity-50"}`}
+                  className={`border-border transition-all ${
+                    isUnlocked
+                      ? "border-l-4 bg-card shadow-sm hover:shadow-md"
+                      : "bg-card/40 opacity-60 hover:opacity-90"
+                  }`}
                   style={isUnlocked ? { borderLeftColor: rarityColors[def.rarity as AchievementRarity] ?? "#9CA3AF" } : {}}
                 >
                   <CardContent className="p-4 flex items-center gap-4">
@@ -181,7 +185,7 @@ export default function BattleAchievements() {
                       size="md"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <span className="font-semibold text-sm">{def.name}</span>
                         <Badge className={`text-[10px] ${rarityColorMap[def.rarity] ?? ""}`}>
                           {rarityLabels[def.rarity as AchievementRarity] ?? def.rarity}
@@ -198,15 +202,15 @@ export default function BattleAchievements() {
                         )}
                       </p>
                       {isUnlocked && playerAch && (
-                        <p className="text-[10px] text-green-500 mt-1">
-                          {new Date(playerAch.unlockedAt).toLocaleDateString("zh-TW")} 解鎖
+                        <p className="text-[10px] text-green-500 mt-1 font-medium">
+                          🎉 {new Date(playerAch.unlockedAt).toLocaleDateString("zh-TW")} 解鎖
                         </p>
                       )}
                     </div>
                     {isUnlocked ? (
-                      <span className="text-green-500 text-lg">✓</span>
+                      <Trophy className="h-5 w-5 text-yellow-500 fill-yellow-500/20 shrink-0" />
                     ) : (
-                      <span className="text-muted-foreground text-sm">—</span>
+                      <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
                     )}
                   </CardContent>
                 </Card>
