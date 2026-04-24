@@ -64,8 +64,8 @@ export default function AdminStaffQRCodes() {
   const { isAuthenticated } = useAdminAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
-  // 🆕 搜尋框鍵盤 shortcut
-  const { inputRef: searchInputRef, isMac } = useSearchShortcut<HTMLInputElement>();
+  // 🆕 搜尋框鍵盤 shortcut（`/` / `⌘K` / Esc）
+  const { inputRef: searchInputRef, isMac, handleEscape } = useSearchShortcut<HTMLInputElement>();
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
 
