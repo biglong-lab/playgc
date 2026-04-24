@@ -439,8 +439,18 @@ export default function AdminStaffRoles() {
               <EmptyState
                 icon={Key}
                 title="尚無角色資料"
-                description="為管理員帳號定義不同的權限集合，例如「場域主管」、「活動執行者」"
-                actions={[{ label: "新增角色", onClick: () => setIsDialogOpen(true) }]}
+                description="為管理員帳號定義不同的權限集合。建議先使用「一鍵建立預設角色」快速開通。"
+                actions={[
+                  {
+                    label: seedDefaultsMutation.isPending ? "建立中..." : "🚀 一鍵建立預設角色",
+                    onClick: () => seedDefaultsMutation.mutate(),
+                  },
+                  {
+                    label: "自訂新增",
+                    variant: "outline",
+                    onClick: () => setIsDialogOpen(true),
+                  },
+                ]}
               />
             )}
           </CardContent>
