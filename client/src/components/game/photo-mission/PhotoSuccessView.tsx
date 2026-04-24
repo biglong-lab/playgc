@@ -11,7 +11,8 @@
 //   - 分享優先 Web Share URL（不 fetch blob）
 //   - max-w-md + mx-auto + overflow-y-auto 確保永不歪斜
 
-import { CheckCircle2, Download, Share2 } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, Download, Share2, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { shareUrl, makeDownloadFilename } from "@/lib/share-photo";
