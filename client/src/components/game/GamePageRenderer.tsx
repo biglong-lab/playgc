@@ -20,6 +20,7 @@ const PhotoSpotFlow = lazy(() => import("@/components/game/PhotoSpotFlow"));
 const PhotoCompareFlow = lazy(() => import("@/components/game/PhotoCompareFlow"));
 const PhotoBeforeAfterFlow = lazy(() => import("@/components/game/PhotoBeforeAfterFlow"));
 const PhotoBurstFlow = lazy(() => import("@/components/game/PhotoBurstFlow"));
+const PhotoArStickerFlow = lazy(() => import("@/components/game/PhotoArStickerFlow"));
 const GpsMissionPage = lazy(() => import("@/components/game/GpsMissionPage"));
 const QrScanPage = lazy(() => import("@/components/game/QrScanPage"));
 const TimeBombPage = lazy(() => import("@/components/game/TimeBombPage"));
