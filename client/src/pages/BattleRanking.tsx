@@ -44,14 +44,12 @@ export default function BattleRanking() {
     queryKey: ["/api/battle/rankings/me", fieldId],
     queryFn: async () => {
       if (!fieldId) return null;
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch(`/api/battle/rankings/me?fieldId=${fieldId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return null;
-      return res.json();
+      try {
+        const res = await apiRequest("GET", `/api/battle/rankings/me?fieldId=${fieldId}`);
+        return res.json();
+      } catch {
+        return null;
+      }
     },
     enabled: !!fieldId && !!user,
   });
