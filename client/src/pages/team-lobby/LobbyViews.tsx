@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Users, Copy, Check, Play, LogOut, Crown, Loader2,
-  RefreshCw, ArrowLeft, UserPlus, Wifi, WifiOff,
+  RefreshCw, ArrowLeft, UserPlus, Wifi, WifiOff, Share2,
 } from "lucide-react";
 import type { Game, TeamMember, User } from "@shared/schema";
 import type { TeamWithDetails } from "./useTeamLobby";
