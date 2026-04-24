@@ -134,6 +134,49 @@ export interface FieldSettings {
   // 🆕 新場域 onboarding — 場域級別標記，避免 localStorage 只管當前設備
   // 當場域首次授權的 admin 完成 FieldOnboardingWizard 後設為 true，之後不再跳
   hasCompletedOnboarding?: boolean;
+
+  // 🆕 v2: 場域專屬紀念照模板（覆寫系統預設 ACHIEVEMENT_COMPOSITION_CONFIG）
+  // 未設定時走系統預設（GET /api/photo-composite/achievement-config 的內容）
+  // 設定後：photo_spot / photo_compare / achievement_card 等合成時優先用這個
+  photoTemplates?: {
+    /** 成就卡模板（GameCompletionScreen 用）*/
+    achievement?: {
+      enabled?: boolean;          // 預設 true
+      canvas?: {
+        width?: number;
+        height?: number;
+        crop?: "fill" | "fit" | "limit" | "scale" | "pad";
+      };
+      /** 文字圖層陣列（圖片圖層先不支援自訂以降低複雜度） */
+      textLayers?: Array<{
+        text: string;              // 支援 {fieldName} / {gameTitle} / {score} / {date} / {playerName} 插值
+        size?: number;             // 預設 48
+        color?: string;            // 預設 "white"
+        background?: string;       // 預設透明
+        gravity?: string;          // 預設 "south"
+        offsetY?: number;
+        bold?: boolean;
+      }>;
+    };
+    /** 拍照紀念照模板（photo_spot / photo_compare 用）*/
+    memorial?: {
+      enabled?: boolean;
+      canvas?: {
+        width?: number;
+        height?: number;
+        crop?: "fill" | "fit" | "limit" | "scale" | "pad";
+      };
+      textLayers?: Array<{
+        text: string;
+        size?: number;
+        color?: string;
+        background?: string;
+        gravity?: string;
+        offsetY?: number;
+        bold?: boolean;
+      }>;
+    };
+  };
 }
 
 /**
