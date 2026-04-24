@@ -119,20 +119,34 @@ function computeStickerRect(
   return { x, y, w, h };
 }
 
-// 預載所有貼圖（return HTMLImageElement[]）
-async function preloadStickers(items: StickerConfigItem[]): Promise<HTMLImageElement[]> {
-  return Promise.all(
+// 🎨 預載貼圖（單張失敗不影響其他，回傳 array，失敗位置為 null）
+// 加 timeout 避免壞 URL 永遠卡住
+async function preloadStickers(
+  items: StickerConfigItem[],
+): Promise<(HTMLImageElement | null)[]> {
+  const results = await Promise.allSettled(
     items.map(
       (s) =>
         new Promise<HTMLImageElement>((resolve, reject) => {
           const img = new Image();
           img.crossOrigin = "anonymous";
-          img.onload = () => resolve(img);
-          img.onerror = (e) => reject(e);
+          const timer = setTimeout(
+            () => reject(new Error("timeout")),
+            10000,
+          );
+          img.onload = () => {
+            clearTimeout(timer);
+            resolve(img);
+          };
+          img.onerror = () => {
+            clearTimeout(timer);
+            reject(new Error(`載入失敗: ${s.imageUrl}`));
+          };
           img.src = s.imageUrl;
         }),
     ),
   );
+  return results.map((r) => (r.status === "fulfilled" ? r.value : null));
 }
 
 export default function PhotoArStickerFlow({
