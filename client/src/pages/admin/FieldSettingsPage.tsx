@@ -1961,3 +1961,296 @@ function ToggleRow({
     </div>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 🆕 v2: 紀念照模板 Tab（photoTemplates.achievement / memorial）
+// ═══════════════════════════════════════════════════════════════
+
+type TextLayerItem = NonNullable<NonNullable<FieldSettingsResponse["photoTemplates"]>["achievement"]>["textLayers"];
+type SingleTextLayer = NonNullable<TextLayerItem>[number];
+
+function PhotoTemplatesTab({
+  fieldId,
+  settings,
+}: {
+  fieldId: string;
+  settings?: FieldSettingsResponse;
+}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const [achievementLayers, setAchievementLayers] = useState<SingleTextLayer[]>([]);
+  const [memorialLayers, setMemorialLayers] = useState<SingleTextLayer[]>([]);
+  const [achievementEnabled, setAchievementEnabled] = useState(true);
+  const [memorialEnabled, setMemorialEnabled] = useState(true);
+
+  useEffect(() => {
+    if (!settings) return;
+    setAchievementLayers(settings.photoTemplates?.achievement?.textLayers ?? []);
+    setMemorialLayers(settings.photoTemplates?.memorial?.textLayers ?? []);
+    setAchievementEnabled(settings.photoTemplates?.achievement?.enabled !== false);
+    setMemorialEnabled(settings.photoTemplates?.memorial?.enabled !== false);
+  }, [settings]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const payload = {
+        photoTemplates: {
+          achievement: {
+            enabled: achievementEnabled,
+            textLayers: achievementLayers.filter((l) => l.text.trim()),
+          },
+          memorial: {
+            enabled: memorialEnabled,
+            textLayers: memorialLayers.filter((l) => l.text.trim()),
+          },
+        },
+      };
+      const res = await apiRequest(
+        "PATCH",
+        `/api/admin/fields/${fieldId}/settings`,
+        payload,
+      );
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/fields", fieldId, "settings"] });
+      toast({ title: "✅ 紀念照模板已儲存" });
+    },
+    onError: (err: unknown) => {
+      toast({
+        title: "儲存失敗",
+        description: err instanceof Error ? err.message : "請稍後再試",
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <Card data-testid="photo-templates-tab">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Camera className="w-5 h-5" /> 紀念照模板
+        </CardTitle>
+        <CardDescription>
+          設定場域專屬的紀念照文字樣式。未設定時將使用系統預設。文字支援變數插值：
+          <code className="mx-1 text-xs bg-muted px-1">{`{fieldName}`}</code>
+          <code className="mx-1 text-xs bg-muted px-1">{`{gameTitle}`}</code>
+          <code className="mx-1 text-xs bg-muted px-1">{`{score}`}</code>
+          <code className="mx-1 text-xs bg-muted px-1">{`{date}`}</code>
+          <code className="mx-1 text-xs bg-muted px-1">{`{playerName}`}</code>
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* 🏆 成就卡模板 */}
+        <PhotoTemplateEditor
+          title="🏆 成就卡（遊戲完成畫面生成紀念卡）"
+          enabled={achievementEnabled}
+          onEnabledChange={setAchievementEnabled}
+          layers={achievementLayers}
+          onLayersChange={setAchievementLayers}
+          testIdPrefix="achievement"
+          defaultHint="預設：🏆 {fieldName} · {gameTitle} · {score} 分 · {date}"
+        />
+
+        {/* 📸 紀念照模板 */}
+        <PhotoTemplateEditor
+          title="📸 拍照紀念（photo_spot / photo_compare 完成後合成）"
+          enabled={memorialEnabled}
+          onEnabledChange={setMemorialEnabled}
+          layers={memorialLayers}
+          onLayersChange={setMemorialLayers}
+          testIdPrefix="memorial"
+          defaultHint="預設：{fieldName} · {gameTitle} · {date}"
+        />
+
+        <div className="flex justify-end pt-4 border-t">
+          <Button
+            onClick={() => saveMutation.mutate()}
+            disabled={saveMutation.isPending}
+            className="gap-2"
+            data-testid="btn-save-photo-templates"
+          >
+            <Save className="w-4 h-4" />
+            {saveMutation.isPending ? "儲存中..." : "儲存紀念照設定"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PhotoTemplateEditor({
+  title,
+  enabled,
+  onEnabledChange,
+  layers,
+  onLayersChange,
+  testIdPrefix,
+  defaultHint,
+}: {
+  title: string;
+  enabled: boolean;
+  onEnabledChange: (v: boolean) => void;
+  layers: SingleTextLayer[];
+  onLayersChange: (v: SingleTextLayer[]) => void;
+  testIdPrefix: string;
+  defaultHint: string;
+}) {
+  const updateLayer = (idx: number, patch: Partial<SingleTextLayer>) => {
+    onLayersChange(layers.map((l, i) => (i === idx ? { ...l, ...patch } : l)));
+  };
+  const addLayer = () => {
+    onLayersChange([
+      ...layers,
+      {
+        text: "",
+        size: 48,
+        color: "white",
+        gravity: "south",
+        offsetY: 80,
+        bold: false,
+      },
+    ]);
+  };
+  const removeLayer = (idx: number) => {
+    onLayersChange(layers.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="border rounded-lg p-4 space-y-3" data-testid={`template-${testIdPrefix}`}>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium">{title}</h3>
+        <Switch
+          checked={enabled}
+          onCheckedChange={onEnabledChange}
+          data-testid={`switch-${testIdPrefix}-enabled`}
+        />
+      </div>
+      {!enabled ? (
+        <p className="text-xs text-muted-foreground italic">已停用 — 此類型合成會走系統預設</p>
+      ) : (
+        <>
+          {layers.length === 0 && (
+            <p className="text-xs text-muted-foreground">
+              未自訂文字層 — 系統預設：{defaultHint}
+            </p>
+          )}
+          {layers.map((layer, idx) => (
+            <div
+              key={idx}
+              className="border rounded p-3 space-y-2 bg-muted/30"
+              data-testid={`${testIdPrefix}-layer-${idx}`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium">文字 #{idx + 1}</span>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  onClick={() => removeLayer(idx)}
+                  data-testid={`btn-remove-${testIdPrefix}-layer-${idx}`}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">文字內容</label>
+                <Input
+                  value={layer.text}
+                  onChange={(e) => updateLayer(idx, { text: e.target.value })}
+                  placeholder="如：🏆 {fieldName} - {gameTitle}"
+                  data-testid={`${testIdPrefix}-text-${idx}`}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">大小</label>
+                  <Input
+                    type="number"
+                    value={layer.size ?? 48}
+                    onChange={(e) => updateLayer(idx, { size: parseInt(e.target.value) || 48 })}
+                    min={12}
+                    max={200}
+                    data-testid={`${testIdPrefix}-size-${idx}`}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">顏色</label>
+                  <Input
+                    value={layer.color ?? "white"}
+                    onChange={(e) => updateLayer(idx, { color: e.target.value })}
+                    placeholder="white"
+                    data-testid={`${testIdPrefix}-color-${idx}`}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">位置</label>
+                  <select
+                    className="w-full h-9 rounded-md border bg-transparent px-3 text-sm"
+                    value={layer.gravity ?? "south"}
+                    onChange={(e) => updateLayer(idx, { gravity: e.target.value })}
+                    data-testid={`${testIdPrefix}-gravity-${idx}`}
+                  >
+                    <option value="north">頂部</option>
+                    <option value="center">中央</option>
+                    <option value="south">底部</option>
+                    <option value="east">右側</option>
+                    <option value="west">左側</option>
+                    <option value="north_east">右上</option>
+                    <option value="north_west">左上</option>
+                    <option value="south_east">右下</option>
+                    <option value="south_west">左下</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 items-end">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">偏移 Y</label>
+                  <Input
+                    type="number"
+                    value={layer.offsetY ?? 40}
+                    onChange={(e) => updateLayer(idx, { offsetY: parseInt(e.target.value) || 0 })}
+                    min={0}
+                    max={500}
+                    data-testid={`${testIdPrefix}-offset-${idx}`}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">背景色（選）</label>
+                  <Input
+                    value={layer.background ?? ""}
+                    onChange={(e) => updateLayer(idx, { background: e.target.value || undefined })}
+                    placeholder="如 rgb:00000099"
+                    data-testid={`${testIdPrefix}-bg-${idx}`}
+                  />
+                </div>
+                <label className="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={layer.bold ?? false}
+                    onChange={(e) => updateLayer(idx, { bold: e.target.checked })}
+                    data-testid={`${testIdPrefix}-bold-${idx}`}
+                  />
+                  粗體
+                </label>
+              </div>
+            </div>
+          ))}
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={addLayer}
+            className="gap-1 w-full"
+            data-testid={`btn-add-${testIdPrefix}-layer`}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            新增文字層
+          </Button>
+        </>
+      )}
+    </div>
+  );
+}
