@@ -303,7 +303,7 @@ export default function PhotoTeamFlow({
   // 完成
   if (stage === "done" && compositeUrl) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-team-done">
+      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-team-done">
         <div className="flex items-center gap-2 text-primary">
           <CheckCircle2 className="w-6 h-6" />
           <h2 className="text-xl font-bold">團體合影完成！</h2>
@@ -332,7 +332,7 @@ export default function PhotoTeamFlow({
   // 上傳/合成中
   if (stage === "uploading" || stage === "compositing") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-processing">
+      <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-processing">
         <UploadingView />
         <p className="text-sm text-muted-foreground">
           {stage === "uploading" ? "上傳所有隊員照片..." : "合成團體照..."}
@@ -348,7 +348,7 @@ export default function PhotoTeamFlow({
     }
     if (camera.mode === "camera") {
       return (
-        <div className="relative min-h-screen">
+        <div className="relative h-full w-full">
           <CameraView
             videoRef={camera.videoRef}
             cameraReady={camera.cameraReady}
@@ -379,7 +379,7 @@ export default function PhotoTeamFlow({
     const current = members[currentIdx];
     const isLast = currentIdx + 1 >= memberCount;
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-transition">
+      <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-transition">
         <CheckCircle2 className="w-10 h-10 text-emerald-500" />
         <h2 className="text-xl font-bold">
           {current?.name} 拍好了！
@@ -411,7 +411,7 @@ export default function PhotoTeamFlow({
   // 選擇實際隊員數（若 min < max）
   if (stage === "select_count") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-select-count">
+      <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-select-count">
         <Users className="w-12 h-12 text-primary" />
         <h2 className="text-2xl font-bold">實際幾位隊員？</h2>
         <div className="flex flex-wrap gap-2 justify-center max-w-sm">
@@ -459,7 +459,7 @@ export default function PhotoTeamFlow({
 
   // 介紹（預設）
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-intro">
+    <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-intro">
       <Users className="w-12 h-12 text-primary" />
       <h2 className="text-2xl font-bold">
         {config.title || "團體合影任務"}

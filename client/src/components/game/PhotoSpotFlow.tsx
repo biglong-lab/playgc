@@ -327,7 +327,7 @@ export default function PhotoSpotFlow({
   // 合成完成畫面
   if (compositeUrl) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-spot-success">
+      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-spot-success">
         <div className="flex items-center gap-2 text-primary">
           <CheckCircle2 className="w-6 h-6" />
           <h2 className="text-xl font-bold">拍照成功！</h2>

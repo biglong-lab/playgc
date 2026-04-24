@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" width="200" height="240">
+  <defs>
+    <radialGradient id="faceGrad" cx="50%" cy="40%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#991b1b"/>
+    </radialGradient>
+  </defs>
+  <!-- 面具主體（京劇臉譜風）-->
+  <ellipse cx="100" cy="120" rx="85" ry="115" fill="url(#faceGrad)" opacity="0.92"/>
+  <!-- 額頭金色花紋 -->
+  <path d="M 100 20 L 80 55 L 100 45 L 120 55 Z" fill="#fbbf24"/>
+  <path d="M 75 40 L 70 75 L 85 60 Z" fill="#fbbf24"/>
+  <path d="M 125 40 L 130 75 L 115 60 Z" fill="#fbbf24"/>
+  <!-- 左眼 -->
+  <ellipse cx="70" cy="110" rx="20" ry="11" fill="white"/>
+  <circle cx="70" cy="110" r="7" fill="#000"/>
+  <path d="M 48 95 Q 70 92 92 100" stroke="#000" stroke-width="4" fill="none"/>
+  <!-- 右眼 -->
+  <ellipse cx="130" cy="110" rx="20" ry="11" fill="white"/>
+  <circle cx="130" cy="110" r="7" fill="#000"/>
+  <path d="M 108 100 Q 130 92 152 95" stroke="#000" stroke-width="4" fill="none"/>
+  <!-- 鼻子金線 -->
+  <path d="M 100 125 L 95 155 L 105 155 Z" fill="#fbbf24" opacity="0.8"/>
+  <!-- 嘴（金色露齒）-->
+  <path d="M 70 180 Q 100 205 130 180" stroke="#fbbf24" stroke-width="5" fill="none"/>
+  <path d="M 80 185 L 85 195 M 95 192 L 95 200 M 110 192 L 110 200 M 120 185 L 115 195" stroke="#fbbf24" stroke-width="2"/>
+  <!-- 臉頰紅暈 -->
+  <circle cx="55" cy="145" r="14" fill="#ef4444" opacity="0.4"/>
+  <circle cx="145" cy="145" r="14" fill="#ef4444" opacity="0.4"/>
+</svg>

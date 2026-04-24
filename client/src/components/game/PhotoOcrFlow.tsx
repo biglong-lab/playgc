@@ -189,7 +189,7 @@ export default function PhotoOcrFlow({
   if (ocrResult?.matched) {
     return (
       <div
-        className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4"
+        className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4"
         data-testid="photo-ocr-success"
       >
         <div className="flex items-center gap-2 text-primary">
@@ -302,7 +302,7 @@ export default function PhotoOcrFlow({
   // 🎨 預設：三段式佈局（h-full + flex-col + justify-center）
   //   - 使用 h-full 配合 GamePlay 的 <main flex-1> 自動填滿可用空間
   //   - 內容於可用空間垂直置中
-  //   - 不使用 min-h-screen（會溢出 main 被 overflow-hidden 裁切）
+  //   - 不使用 h-full w-full（會溢出 main 被 overflow-hidden 裁切）
   return (
     <div
       className="h-full w-full flex flex-col items-center justify-center p-4 gap-4 overflow-y-auto"

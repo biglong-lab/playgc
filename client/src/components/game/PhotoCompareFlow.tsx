@@ -293,7 +293,7 @@ export default function PhotoCompareFlow({
   // 合成完成
   if (compositeUrl) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-compare-success">
+      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-compare-success">
         <div className="flex items-center gap-2 text-primary">
           <CheckCircle2 className="w-6 h-6" />
           <h2 className="text-xl font-bold">比對通過！</h2>

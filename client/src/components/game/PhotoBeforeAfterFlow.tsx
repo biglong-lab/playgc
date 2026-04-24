@@ -281,7 +281,7 @@ export default function PhotoBeforeAfterFlow({
   // 完成畫面
   if (stage === "done" && compositeUrl) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-before-after-done">
+      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-before-after-done">
         <div className="flex items-center gap-2 text-primary">
           <CheckCircle2 className="w-6 h-6" />
           <h2 className="text-xl font-bold">對比完成！</h2>
@@ -339,7 +339,7 @@ export default function PhotoBeforeAfterFlow({
   // 等待間隔
   if (stage === "gap") {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-before-after-gap">
+      <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-before-after-gap">
         <CheckCircle2 className="w-12 h-12 text-emerald-500" />
         <h2 className="text-xl font-bold">第一張 OK！</h2>
         <p className="text-sm text-muted-foreground text-center">
@@ -370,7 +370,7 @@ export default function PhotoBeforeAfterFlow({
 
   // 介紹 + 開始
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-before-after-intro">
+    <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-before-after-intro">
       <Camera className="w-12 h-12 text-primary" />
       <h2 className="text-2xl font-bold">
         {config.title || "前後對比任務"}

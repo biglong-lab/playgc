@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" width="200" height="160">
+  <defs>
+    <radialGradient id="beardGrad">
+      <stop offset="0%" stop-color="#44403c"/>
+      <stop offset="100%" stop-color="#1c1917"/>
+    </radialGradient>
+  </defs>
+  <!-- 鬍子主體 -->
+  <path d="M 100 20 Q 60 40 40 80 Q 30 120 60 140 Q 100 160 140 140 Q 170 120 160 80 Q 140 40 100 20 Z" fill="url(#beardGrad)"/>
+  <!-- 八字鬚 -->
+  <path d="M 70 50 Q 50 55 35 50 Q 45 60 70 60" fill="#1c1917"/>
+  <path d="M 130 50 Q 150 55 165 50 Q 155 60 130 60" fill="#1c1917"/>
+  <!-- 下巴鬍 -->
+  <ellipse cx="100" cy="110" rx="30" ry="35" fill="#1c1917" opacity="0.9"/>
+  <!-- 毛流細節 -->
+  <path d="M 75 80 L 70 120 M 85 85 L 82 130 M 100 88 L 100 140 M 115 85 L 118 130 M 125 80 L 130 120" stroke="#000" stroke-width="1.5" fill="none" opacity="0.4"/>
+</svg>

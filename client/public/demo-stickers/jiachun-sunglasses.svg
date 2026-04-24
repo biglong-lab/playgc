@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 100" width="260" height="100">
+  <!-- 左鏡框 -->
+  <ellipse cx="70" cy="50" rx="50" ry="35" fill="#1f2937" stroke="#000" stroke-width="3"/>
+  <!-- 右鏡框 -->
+  <ellipse cx="190" cy="50" rx="50" ry="35" fill="#1f2937" stroke="#000" stroke-width="3"/>
+  <!-- 鼻樑 -->
+  <path d="M 120 50 L 140 50" stroke="#000" stroke-width="5" fill="none"/>
+  <!-- 左鏡片反光 -->
+  <ellipse cx="55" cy="35" rx="18" ry="10" fill="white" opacity="0.3"/>
+  <!-- 右鏡片反光 -->
+  <ellipse cx="175" cy="35" rx="18" ry="10" fill="white" opacity="0.3"/>
+  <!-- 左鏡腿 -->
+  <path d="M 20 45 L 5 40" stroke="#000" stroke-width="4" fill="none"/>
+  <!-- 右鏡腿 -->
+  <path d="M 240 45 L 255 40" stroke="#000" stroke-width="4" fill="none"/>
+</svg>

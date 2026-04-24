@@ -453,7 +453,7 @@ export default function PhotoArStickerFlow({
 
   if (stage === "done" && finalUrl) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-ar-done">
+      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-ar-done">
         <div className="flex items-center gap-2 text-primary">
           <CheckCircle2 className="w-6 h-6" />
           <h2 className="text-xl font-bold">AR 拍照完成！</h2>
@@ -484,7 +484,7 @@ export default function PhotoArStickerFlow({
       return <CameraInitializingView videoRef={camera.videoRef} onCancel={() => { camera.cancelCamera(); setStage("intro"); }} />;
     }
     return (
-      <div className="relative min-h-screen bg-black" data-testid="photo-ar-camera">
+      <div className="relative h-full w-full bg-black" data-testid="photo-ar-camera">
         <video
           ref={camera.videoRef}
           className="w-full h-full object-cover"
@@ -585,7 +585,7 @@ export default function PhotoArStickerFlow({
 
   // 介紹頁
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-ar-intro">
+    <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-ar-intro">
       <Sparkles className="w-12 h-12 text-primary" />
       <h2 className="text-2xl font-bold">
         {config.title || "AR 貼圖拍照"}
