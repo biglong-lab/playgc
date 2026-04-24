@@ -459,9 +459,11 @@ export function registerAdminFieldRoutes(app: Express) {
         name: field.name,
         logoUrl: theme.brandingLogoUrl || field.logoUrl || null,
         welcomeMessage: settings.welcomeMessage || null,
-        // 🆕 場域行銷內容
+        // 🆕 場域行銷內容（公告依時效過濾；endAt + severity 前端用來顯示倒數和視覺）
         tagline: settings.tagline || null,
-        announcement: settings.announcement || null,
+        announcement: isAnnouncementActive(settings) ? settings.announcement : null,
+        announcementSeverity: settings.announcementSeverity ?? "info",
+        announcementEndAt: settings.announcementEndAt ?? null,
         highlights: settings.highlights || [],
         // 🆕 模組開關（Landing / Home / 後台菜單控制）
         modules: {
