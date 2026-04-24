@@ -10,6 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useMemo } from "react";
 import { useCurrentField, type FieldModules } from "@/providers/FieldThemeProvider";
 import type { Game, GameSession, ArduinoDevice, FieldSettings } from "@shared/schema";
 import {
