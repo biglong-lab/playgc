@@ -63,6 +63,7 @@ export default function BattleSlotDetail() {
   const [showRegisterDialog, setShowRegisterDialog] = useState(false);
   const [showCreateTeamDialog, setShowCreateTeamDialog] = useState(false);
   const [showJoinTeamDialog, setShowJoinTeamDialog] = useState(false);
+  const [showCancelDialog, setShowCancelDialog] = useState(false); // 🔴 取消報名確認
   const [skillLevel, setSkillLevel] = useState("beginner");
   const [notes, setNotes] = useState("");
   const [teamName, setTeamName] = useState("");
