@@ -1,8 +1,10 @@
-// 🎉 遊戲/章節完成畫面 — 含煙火、星星、動畫分數遞增
+// 🎉 遊戲/章節完成畫面 — 含煙火、星星、動畫分數遞增、分享戰績
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Trophy, Home, RefreshCw, Star, Sparkles } from "lucide-react";
+import { Trophy, Home, RefreshCw, Star, Sparkles, Share2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
 
 interface GameCompletionScreenProps {
   readonly score: number;
