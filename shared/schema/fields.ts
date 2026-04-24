@@ -130,6 +130,10 @@ export interface FieldSettings {
   // 場次管理設定
   autoEndIdleSession?: boolean;       // 自動結束閒置場次
   sessionIdleTimeout?: number;        // 閒置超時時間（分鐘）
+
+  // 🆕 新場域 onboarding — 場域級別標記，避免 localStorage 只管當前設備
+  // 當場域首次授權的 admin 完成 FieldOnboardingWizard 後設為 true，之後不再跳
+  hasCompletedOnboarding?: boolean;
 }
 
 /**
