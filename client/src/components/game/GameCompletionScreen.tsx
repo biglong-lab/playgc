@@ -99,6 +99,104 @@ export default function GameCompletionScreen({
   const { toast } = useToast();
   const currentField = useCurrentField();
 
+  // 🏆 成就卡 state
+  const [cardOpen, setCardOpen] = useState(false);
+  const [cardUrl, setCardUrl] = useState<string | null>(null);
+  const [cardLoading, setCardLoading] = useState(false);
+
+  const handleGenerateCard = async () => {
+    setCardOpen(true);
+    if (cardUrl) return;  // 已生成過不重複打 API
+    setCardLoading(true);
+    try {
+      const cfgRes = await fetch("/api/photo-composite/achievement-config");
+      const { config } = await cfgRes.json();
+
+      const fieldName = currentField?.name || "CHITO";
+      const coverUrl = currentField?.theme?.coverImageUrl
+        || currentField?.logoUrl
+        || "https://res.cloudinary.com/demo/image/upload/sample.jpg";
+
+      const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
+        playerPhotoUrl: coverUrl,   // 用場域封面當底圖，fetch mode
+        config,
+        dynamicVars: {
+          fieldName,
+          gameTitle: isChapterMode ? (chapterTitle ?? "章節") : gameTitle,
+          playerName: "挑戰者",
+          score,
+        },
+      });
+      const data = await res.json();
+      if (data.compositeUrl) {
+        setCardUrl(data.compositeUrl);
+      } else {
+        throw new Error("未取得紀念卡");
+      }
+    } catch (err) {
+      toast({
+        title: "紀念卡生成失敗",
+        description: err instanceof Error ? err.message : "請稍後再試",
+        variant: "destructive",
+      });
+      setCardOpen(false);
+    } finally {
+      setCardLoading(false);
+    }
+  };
+
+  const handleDownloadCard = async () => {
+    if (!cardUrl) return;
+    try {
+      const res = await fetch(cardUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `chito-achievement-${Date.now()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
+      toast({ title: "紀念卡已下載", duration: 1500 });
+    } catch {
+      toast({ title: "下載失敗", variant: "destructive" });
+    }
+  };
+
+  const handleShareCard = async () => {
+    if (!cardUrl) return;
+    try {
+      if (typeof navigator.share === "function") {
+        const res = await fetch(cardUrl);
+        const blob = await res.blob();
+        const file = new File([blob], "achievement.jpg", { type: "image/jpeg" });
+        const canShareFiles =
+          typeof navigator.canShare === "function" &&
+          navigator.canShare({ files: [file] });
+        if (canShareFiles) {
+          await navigator.share({
+            title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
+            text: `${gameTitle} — 得 ${score} 分！`,
+            files: [file],
+          });
+          return;
+        }
+        await navigator.share({
+          title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
+          text: `${gameTitle} — 得 ${score} 分！`,
+          url: cardUrl,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(cardUrl);
+      toast({ title: "已複製紀念卡連結" });
+    } catch (err) {
+      if ((err as DOMException)?.name === "AbortError") return;
+      toast({ title: "分享失敗", variant: "destructive" });
+    }
+  };
+
   const heading = isChapterMode ? "章節完成!" : "任務完成!";
   const subtitle = isChapterMode
     ? `恭喜完成 ${chapterTitle ?? "此章節"}`
