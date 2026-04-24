@@ -540,4 +540,12 @@ export function registerMediaRoutes(app: Express) {
   app.get("/api/photo-composite/default-config", (_req, res) => {
     res.json({ config: DEFAULT_COMPOSITION_CONFIG });
   });
+
+  /**
+   * 🏆 取得成就卡預設模板（系統內建）— GameCompletionScreen 用
+   * 場域可透過 field.settings.photo.achievementCard.templateId 覆寫
+   */
+  app.get("/api/photo-composite/achievement-config", (_req, res) => {
+    res.json({ config: ACHIEVEMENT_COMPOSITION_CONFIG });
+  });
 }
