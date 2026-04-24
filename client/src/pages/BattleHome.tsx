@@ -12,22 +12,9 @@ import { useLoginHandlers } from "@/hooks/useLoginHandlers";
 import { LoginDialog } from "@/components/landing/LoginDialog";
 import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
 import BattleLayout from "@/components/battle/BattleLayout";
+import { slotStatusBadge } from "@/lib/battle-labels";
 import type { BattleVenue, BattleSlot } from "@shared/schema";
 import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell, Medal, LogIn } from "lucide-react";
-
-/** 時段狀態對應中文 + Badge 樣式 */
-function slotStatusBadge(status: string) {
-  const map: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-    open: { label: "開放報名", variant: "default" },
-    confirmed: { label: "已成局", variant: "secondary" },
-    full: { label: "已額滿", variant: "destructive" },
-    in_progress: { label: "對戰中", variant: "outline" },
-    completed: { label: "已結束", variant: "outline" },
-    cancelled: { label: "已取消", variant: "destructive" },
-  };
-  const info = map[status] ?? { label: status, variant: "outline" as const };
-  return <Badge variant={info.variant}>{info.label}</Badge>;
-}
 
 export default function BattleHome() {
   const { user } = useAuth();
