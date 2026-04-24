@@ -300,12 +300,13 @@ export default function PhotoOcrFlow({
   }
 
   // 預設：instruction 畫面
+  // 🎨 UX 原則：按鈕在內容正下方即時可見，不用 mt-auto 推到底（會被 BottomNav 遮住）
   return (
     <div
-      className="min-h-screen bg-background flex flex-col p-4 gap-4"
+      className="min-h-screen bg-background flex flex-col p-4 gap-4 pb-32"
       data-testid="photo-ocr-intro"
     >
-      <div className="text-center space-y-2 pt-6">
+      <div className="text-center space-y-2 pt-4">
         <ScanText className="w-12 h-12 mx-auto text-primary" />
         <h2
           className="text-2xl font-bold"
@@ -351,12 +352,12 @@ export default function PhotoOcrFlow({
         </div>
       )}
 
-      {/* 拍照按鈕 */}
-      <div className="max-w-md mx-auto w-full mt-auto">
+      {/* 🎨 拍照按鈕 — 緊接內容下方（不用 mt-auto 避免被 BottomNav 擋到）*/}
+      <div className="max-w-md mx-auto w-full">
         <Button
           onClick={camera.startCamera}
           size="lg"
-          className="w-full gap-2"
+          className="w-full gap-2 h-14 text-base"
           data-testid="btn-photo-ocr-start"
         >
           <Camera className="w-5 h-5" />
