@@ -1,5 +1,5 @@
 // 🏆 排行榜頁 — 顯示玩家頭像、暱稱、匿名標記
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery } from "@tanstack/react-query";
@@ -9,6 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import type { LeaderboardEntry, Game } from "@shared/schema";
 import {
   Trophy, Medal, Clock, ArrowLeft, Crown,
