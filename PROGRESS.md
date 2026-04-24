@@ -368,6 +368,53 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 29 — ☁️ Cloudinary 用量儀表板 + deploy 腳本 bug 修
+
+**檔**：`server/cloudinary.ts` + `server/routes/media.ts` + `client/src/pages/AdminDashboard.tsx`
+
+- 後端 `getUsage()` 呼叫 `cloudinary.api.usage()` Admin API
+- 新 endpoint `GET /api/cloudinary/usage`（requireAdminAuth）
+- AdminDashboard 加 `<CloudinaryUsageCard />`（170+ 行）
+  - 3 個主指標進度條：儲存 / 頻寬 / Transformation
+  - 百分比色系：綠 <75% / 黃 75-90% / 紅 ≥90%
+  - 超 75% 自動顯示升級警示
+  - 3 個次統計：資源數 / 衍生資源 / API 請求
+  - 10 分鐘快取
+
+**順手修 deploy 腳本 bug**：
+- git 短 SHA 長度不一致（7 vs 8 字元）導致 verify 誤判
+- 改 `git rev-parse HEAD`（40 字元完整 SHA）解決
+- Deploy: `990cbb6` · bundle `index-Bdr3C4Xl.js`
+
+#### 輪 30 — 🎞 photo_burst 改合成真 GIF
+
+**檔**：`server/cloudinary.ts` + `server/routes/media.ts` + `client/src/components/game/PhotoBurstFlow.tsx`
+
+- 後端 `createAnimatedFromTag(tag, format, delayMs)` — 呼叫 `cloudinary.uploader.multi()` 產 GIF / WebP / MP4
+- 後端 `uploadImageWithTag()` — 上傳時加 tag 給 multi API 後續使用
+- 新 2 個 endpoint：
+  - `POST /api/cloudinary/burst-frame` — 上傳連拍單張帶 burst tag
+  - `POST /api/cloudinary/burst-to-gif` — 合成動畫
+- 前端 `PhotoBurstFlow`：
+  - `burstTagRef` 產生唯一 tag（`burst_{sessionId短}_{timestamp}`）
+  - 上傳時帶 tag
+  - **優先試 GIF 合成**（動態）→ 失敗 fallback 舊拼貼 → 再失敗 fallback 單張
+  - 下載檔名依副檔名自動（`.gif` / `.jpg`）
+- Deploy: `d1991b8` · bundle `index-BP0UGZoY.js` · verify `burst-to-gif`
+
+#### 輪 31 — ☁️ Cloudinary × CHITO 完整功能地圖（docs）
+
+**檔**：`docs/CLOUDINARY_FEATURE_MATRIX.md`（新 406 行，commit `264d254`）
+
+涵蓋：
+- 核心哲學（伺服器壓力對比）
+- 已實作 15 項功能對照表
+- 可立即加值 15 項（AI 標籤、OCR、背景移除、動態浮水印、前端直傳、社交卡等）
+- 進階延伸（影片、360/VR、Live streaming）
+- 成本分析（免費方案上限、升級時機）
+- 最佳實踐 + 4 個踩坑提醒
+- URL 組法 & SDK 方法速查
+
 #### 輪 28 — 📚 使用者指南 + Health Check
 
 **檔**：`docs/PHOTO_FEATURES_GUIDE.md`（新 332 行）· commit `f06562a`
