@@ -243,14 +243,18 @@ export default function AdminBattleDashboard() {
 
 /** 統計卡片元件 */
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
+  // 🆕 無資料時數字 muted + icon 半透明，避免 0 被誤判為真實資料
+  const isEmpty = value === 0;
   return (
     <Card>
       <CardContent className="p-4">
         <div className="flex items-center gap-3">
-          {icon}
+          <div className={isEmpty ? "opacity-40" : ""}>{icon}</div>
           <div>
             <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-2xl font-bold">{value}</p>
+            <p className={`text-2xl font-bold ${isEmpty ? "text-muted-foreground" : ""}`}>
+              {value}
+            </p>
           </div>
         </div>
       </CardContent>
