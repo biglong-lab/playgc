@@ -173,10 +173,12 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="font-number text-3xl font-bold">
-              {sessions?.filter(s => s.status === "completed").length || 0}
+              {todayCompleted}
             </div>
             <p className="text-xs text-muted-foreground">
-              場遊戲完成
+              {todayCompleted > 0
+                ? `場遊戲完成 · 累計 ${totalCompleted}`
+                : `累計 ${totalCompleted} 場`}
             </p>
           </CardContent>
         </Card>
