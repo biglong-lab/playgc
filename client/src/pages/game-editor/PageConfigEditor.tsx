@@ -667,6 +667,401 @@ export default function PageConfigEditor({
         </div>
       );
 
+    // 🆕 v2 獨立 pageType：指定拍照（photo_spot）
+    case "photo_spot":
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">拍照指示</label>
+            <Textarea
+              value={(config.instruction as string) || ""}
+              onChange={(e) => updateField("instruction", e.target.value)}
+              placeholder="請前往指定地點拍照..."
+              rows={3}
+              data-testid="config-instruction"
+            />
+          </div>
+
+          {/* 拍照點設定（必要） */}
+          <div className="border border-border rounded-lg p-4 space-y-4" data-testid="config-spot-section-independent">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">拍照點設定</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">緯度 (lat)</label>
+                <Input
+                  type="number"
+                  step="any"
+                  value={(config.spotConfig as any)?.latitude ?? ""}
+                  onChange={(e) => updateField("spotConfig", {
+                    ...(config.spotConfig as any || {}),
+                    latitude: parseFloat(e.target.value) || 0,
+                  })}
+                  placeholder="24.4319"
+                  data-testid="config-spot-lat-v2"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">經度 (lng)</label>
+                <Input
+                  type="number"
+                  step="any"
+                  value={(config.spotConfig as any)?.longitude ?? ""}
+                  onChange={(e) => updateField("spotConfig", {
+                    ...(config.spotConfig as any || {}),
+                    longitude: parseFloat(e.target.value) || 0,
+                  })}
+                  placeholder="118.3174"
+                  data-testid="config-spot-lng-v2"
+                />
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full gap-1"
+              onClick={() => {
+                if (!("geolocation" in navigator)) { alert("裝置不支援 GPS"); return; }
+                navigator.geolocation.getCurrentPosition(
+                  (pos) => updateField("spotConfig", {
+                    ...(config.spotConfig as any || {}),
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                  }),
+                  (err) => alert(`無法取得位置：${err.message}`),
+                  { enableHighAccuracy: true, timeout: 10000 }
+                );
+              }}
+              data-testid="btn-spot-use-current-location-v2"
+            >
+              <MapPin className="w-4 h-4" />
+              使用我現在的位置
+            </Button>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">半徑（公尺）— 預設 20m</label>
+              <Input
+                type="number"
+                value={(config.spotConfig as any)?.radiusMeters ?? 20}
+                onChange={(e) => updateField("spotConfig", {
+                  ...(config.spotConfig as any || {}),
+                  radiusMeters: parseInt(e.target.value) || 20,
+                })}
+                min={1} max={500}
+                data-testid="config-spot-radius-v2"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">場景描述（AI 驗證用）</label>
+              <Textarea
+                value={(config.spotConfig as any)?.sceneDescription ?? ""}
+                onChange={(e) => updateField("spotConfig", {
+                  ...(config.spotConfig as any || {}),
+                  sceneDescription: e.target.value,
+                })}
+                placeholder="例如：紅色涼亭 + 石獅子"
+                rows={2}
+                data-testid="config-spot-scene-v2"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">參考圖（選填）</label>
+              <div className="flex gap-2">
+                <Input
+                  value={(config.spotConfig as any)?.referenceImageUrl ?? ""}
+                  onChange={(e) => updateField("spotConfig", {
+                    ...(config.spotConfig as any || {}),
+                    referenceImageUrl: e.target.value,
+                  })}
+                  placeholder="貼 URL 或按右側上傳"
+                  data-testid="config-spot-ref-url-v2"
+                />
+                <MediaUploadButton
+                  id="spot-ref-upload-v2"
+                  accept="image/*"
+                  onUploaded={(url) => updateField("spotConfig", {
+                    ...(config.spotConfig as any || {}),
+                    referenceImageUrl: url,
+                  })}
+                />
+              </div>
+              {(config.spotConfig as any)?.referenceImageUrl && (
+                <div className="mt-2 rounded border overflow-hidden max-w-xs">
+                  <img src={(config.spotConfig as any).referenceImageUrl} alt="預覽"
+                    className="w-full aspect-video object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                </div>
+              )}
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">驗證策略</label>
+              <Select
+                value={(config.spotConfig as any)?.verifyStrategy ?? "gps_and_vision"}
+                onValueChange={(v) => updateField("spotConfig", {
+                  ...(config.spotConfig as any || {}),
+                  verifyStrategy: v,
+                })}
+              >
+                <SelectTrigger data-testid="config-spot-strategy-v2"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gps_and_vision">GPS + 視覺（雙通過，最嚴）</SelectItem>
+                  <SelectItem value="gps_or_vision">GPS 或 視覺（任一，寬鬆）</SelectItem>
+                  <SelectItem value="gps_only">只看 GPS（最寬）</SelectItem>
+                  <SelectItem value="vision_only">只看視覺</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">GPS 嚴格度</label>
+              <Select
+                value={(config.spotConfig as any)?.gpsStrictMode ?? "hard"}
+                onValueChange={(v) => updateField("spotConfig", {
+                  ...(config.spotConfig as any || {}),
+                  gpsStrictMode: v,
+                })}
+              >
+                <SelectTrigger data-testid="config-spot-gps-strict-v2"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hard">嚴格（未進圈無法拍照）</SelectItem>
+                  <SelectItem value="soft">寬鬆（可拍但不在圈內會扣分）</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm">生成紀念照</label>
+              <Switch
+                checked={(config.spotConfig as any)?.enableComposite !== false}
+                onCheckedChange={(checked) => updateField("spotConfig", {
+                  ...(config.spotConfig as any || {}),
+                  enableComposite: checked,
+                })}
+                data-testid="config-spot-composite-v2"
+              />
+            </div>
+          </div>
+
+          {/* AI 信心度（spot 通用，共用 aiConfidenceThreshold + 重試）*/}
+          <div className="border border-border rounded-lg p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">AI 驗證設定</span>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                AI 模型 <span className="text-xs text-muted-foreground font-normal">選填，不填用場域預設</span>
+              </label>
+              <AIModelSelect
+                value={(config.aiModelId as string) || ""}
+                onChange={(v) => updateField("aiModelId", v || undefined)}
+                visionOnly
+                testId="config-ai-model-spot"
+              />
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium">
+                  信心度門檻: {Math.round(((config.aiConfidenceThreshold as number) ?? 0.6) * 100)}%
+                </label>
+              </div>
+              <Slider
+                value={[((config.aiConfidenceThreshold as number) ?? 0.6) * 100]}
+                onValueChange={([v]) => updateField("aiConfidenceThreshold", v / 100)}
+                min={20} max={95} step={5}
+                data-testid="config-ai-threshold-spot"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">允許重拍</label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={config.allowRetryOnAiFail !== false}
+                  onCheckedChange={(checked) => updateField("allowRetryOnAiFail", checked)}
+                />
+                {config.allowRetryOnAiFail !== false && (
+                  <Input
+                    type="number"
+                    value={(config.maxAiRetries as number) ?? 3}
+                    onChange={(e) => updateField("maxAiRetries", parseInt(e.target.value) || 3)}
+                    className="w-16 h-8" min={1} max={10}
+                    data-testid="config-ai-max-retries-spot"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          <RewardsSection config={config} updateField={updateField} gameId={gameId} />
+          <LocationSettingsSection config={config} updateField={updateField} />
+        </div>
+      );
+
+    // 🆕 v2 獨立 pageType：拍照確認（photo_compare）
+    case "photo_compare":
+      return (
+        <div className="space-y-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">拍照指示</label>
+            <Textarea
+              value={(config.instruction as string) || ""}
+              onChange={(e) => updateField("instruction", e.target.value)}
+              placeholder="請拍出與參考照類似的畫面..."
+              rows={3}
+              data-testid="config-instruction"
+            />
+          </div>
+
+          {/* 參考照片設定（必要） */}
+          <div className="border border-border rounded-lg p-4 space-y-4" data-testid="config-compare-section-independent">
+            <div className="flex items-center gap-2">
+              <ImageIcon className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">參考照片設定</span>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">參考照（必填）</label>
+              <div className="flex gap-2">
+                <Input
+                  value={(config.compareConfig as any)?.referenceImageUrl ?? ""}
+                  onChange={(e) => updateField("compareConfig", {
+                    ...(config.compareConfig as any || {}),
+                    referenceImageUrl: e.target.value,
+                  })}
+                  placeholder="貼 URL 或按右側上傳"
+                  data-testid="config-compare-ref-url-v2"
+                />
+                <MediaUploadButton
+                  id="compare-ref-upload-v2"
+                  accept="image/*"
+                  onUploaded={(url) => updateField("compareConfig", {
+                    ...(config.compareConfig as any || {}),
+                    referenceImageUrl: url,
+                  })}
+                />
+              </div>
+              {(config.compareConfig as any)?.referenceImageUrl && (
+                <div className="mt-2 rounded border overflow-hidden max-w-xs">
+                  <img src={(config.compareConfig as any).referenceImageUrl} alt="參考"
+                    className="w-full aspect-square object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">玩家需拍出與這張照片相似的畫面</p>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">參考照描述（選填）</label>
+              <Textarea
+                value={(config.compareConfig as any)?.referenceDescription ?? ""}
+                onChange={(e) => updateField("compareConfig", {
+                  ...(config.compareConfig as any || {}),
+                  referenceDescription: e.target.value,
+                })}
+                placeholder="例如：請注意石獅子朝向與紅色背景"
+                rows={2}
+                data-testid="config-compare-desc-v2"
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">比對模式</label>
+              <Select
+                value={(config.compareConfig as any)?.compareMode ?? "scene"}
+                onValueChange={(v) => updateField("compareConfig", {
+                  ...(config.compareConfig as any || {}),
+                  compareMode: v,
+                })}
+              >
+                <SelectTrigger data-testid="config-compare-mode-v2"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="scene">整體場景（預設）</SelectItem>
+                  <SelectItem value="object">物件存在性</SelectItem>
+                  <SelectItem value="composition">構圖結構</SelectItem>
+                  <SelectItem value="color">色調氛圍</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium">
+                  相似度門檻: {Math.round(((config.compareConfig as any)?.similarityThreshold ?? 0.6) * 100)}%
+                </label>
+              </div>
+              <Slider
+                value={[((config.compareConfig as any)?.similarityThreshold ?? 0.6) * 100]}
+                onValueChange={([v]) => updateField("compareConfig", {
+                  ...(config.compareConfig as any || {}),
+                  similarityThreshold: v / 100,
+                })}
+                min={20} max={95} step={5}
+                data-testid="config-compare-threshold-v2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">建議 50-70%；太高玩家會挫敗</p>
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm">直接顯示參考照給玩家</label>
+              <Switch
+                checked={(config.compareConfig as any)?.showReferenceToPlayer !== false}
+                onCheckedChange={(checked) => updateField("compareConfig", {
+                  ...(config.compareConfig as any || {}),
+                  showReferenceToPlayer: checked,
+                })}
+                data-testid="config-compare-show-ref-v2"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm">生成紀念照</label>
+              <Switch
+                checked={(config.compareConfig as any)?.enableComposite !== false}
+                onCheckedChange={(checked) => updateField("compareConfig", {
+                  ...(config.compareConfig as any || {}),
+                  enableComposite: checked,
+                })}
+                data-testid="config-compare-composite-v2"
+              />
+            </div>
+          </div>
+
+          {/* AI 模型 + 重試 */}
+          <div className="border border-border rounded-lg p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium">AI 比對設定</span>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                AI 模型 <span className="text-xs text-muted-foreground font-normal">選填，不填用場域預設</span>
+              </label>
+              <AIModelSelect
+                value={(config.aiModelId as string) || ""}
+                onChange={(v) => updateField("aiModelId", v || undefined)}
+                visionOnly
+                testId="config-ai-model-compare"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">允許重拍</label>
+              <div className="flex items-center gap-2">
+                <Switch
+                  checked={config.allowRetryOnAiFail !== false}
+                  onCheckedChange={(checked) => updateField("allowRetryOnAiFail", checked)}
+                />
+                {config.allowRetryOnAiFail !== false && (
+                  <Input
+                    type="number"
+                    value={(config.maxAiRetries as number) ?? 3}
+                    onChange={(e) => updateField("maxAiRetries", parseInt(e.target.value) || 3)}
+                    className="w-16 h-8" min={1} max={10}
+                    data-testid="config-ai-max-retries-compare"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+
+          <RewardsSection config={config} updateField={updateField} gameId={gameId} />
+          <LocationSettingsSection config={config} updateField={updateField} />
+        </div>
+      );
+
     case "gps_mission":
       return (
         <GpsMissionEditor
