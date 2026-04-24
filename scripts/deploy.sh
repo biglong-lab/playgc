@@ -98,8 +98,9 @@ log_ok "已推送"
 
 # ═══ 3/6 SSH pull + docker build ═══
 log_step "3/6 生產端 pull + docker build（約 2-4 分鐘）"
+# 🆕 傳 GIT_SHA 給 docker build，讓前端能顯示 bundle 版本
 BUILD_OUTPUT=$(ssh -o StrictHostKeyChecking=accept-new "$SSH_HOST" \
-  "cd $PROD_PATH && git pull origin main 2>&1 && docker compose -f docker-compose.prod.yml up -d --build app 2>&1" || true)
+  "cd $PROD_PATH && git pull origin main 2>&1 && GIT_SHA=\$(git rev-parse --short HEAD) docker compose -f docker-compose.prod.yml up -d --build app 2>&1" || true)
 
 echo "$BUILD_OUTPUT" | tail -12
 
