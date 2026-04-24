@@ -24,9 +24,12 @@ export default function BattleNotifications() {
   const { data: notifications = [], isLoading } = useQuery<BattleNotification[]>({
     queryKey: ["/api/battle/notifications"],
     queryFn: async () => {
-      const res = await authFetch("/api/battle/notifications?limit=50");
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", "/api/battle/notifications?limit=50");
+        return res.json();
+      } catch {
+        return [];
+      }
     },
     enabled: !!user,
     refetchOnWindowFocus: true,
@@ -34,7 +37,7 @@ export default function BattleNotifications() {
 
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
-      await authFetch(`/api/battle/notifications/${id}/read`, { method: "POST" });
+      await apiRequest("POST", `/api/battle/notifications/${id}/read`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/battle/notifications"] });
