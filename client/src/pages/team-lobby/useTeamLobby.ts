@@ -78,10 +78,12 @@ export function useTeamLobby(): TeamLobbyReturn {
   const { toast } = useToast();
   const { user: dbUser } = useAuth();
 
-  const [accessCode, setAccessCode] = useState("");
+  // 🔗 從 URL ?code= 預填邀請碼（朋友點連結時自動帶入）
+  const initialInviteCode = readInviteCodeFromUrl();
+  const [accessCode, setAccessCode] = useState(initialInviteCode);
   const [teamName, setTeamName] = useState("");
   const [copied, setCopied] = useState(false);
-  const [showJoinForm, setShowJoinForm] = useState(false);
+  const [showJoinForm, setShowJoinForm] = useState(!!initialInviteCode); // 有 code 自動展開 join form
 
   const currentUserId = dbUser?.id;
 
