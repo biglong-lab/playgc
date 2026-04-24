@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut, signInWithGoogle } from "@/lib/firebase";
+import { apiRequest } from "@/lib/queryClient";
 import type { Game, GameSession, BattleSlot } from "@shared/schema";
 import {
   Gamepad2, Clock, Users, Zap, Search, Filter,
