@@ -903,24 +903,62 @@ function CloudinaryUsageCard() {
           </div>
         ) : (
           <>
+            {/* 🔧 v2: 總 Credits 主指標卡（Cloudinary Free 方案的真正上限）*/}
+            {data?.credits && (
+              <div className="mb-3 p-3 rounded-lg border-2 border-primary/30 bg-primary/5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold flex items-center gap-2">
+                    <Cloud className="w-4 h-4 text-primary" />
+                    本月 Credits 總用量
+                  </span>
+                  <span
+                    className={`text-base font-bold ${
+                      data.credits.percent >= 90 ? "text-destructive"
+                      : data.credits.percent >= 75 ? "text-amber-600 dark:text-amber-400"
+                      : "text-emerald-600 dark:text-emerald-400"
+                    }`}
+                    data-testid="cloudinary-credits-percent"
+                  >
+                    {data.credits.percent}%
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground mb-2">
+                  {data.credits.used.toFixed(2)} / {data.credits.limit} credits
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={`h-full transition-all ${
+                      data.credits.percent >= 90 ? "bg-destructive"
+                      : data.credits.percent >= 75 ? "bg-amber-500"
+                      : "bg-emerald-500"
+                    }`}
+                    style={{ width: `${Math.min(100, data.credits.percent)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
               {renderMetric(
                 "儲存",
                 <HardDrive className="w-4 h-4 text-muted-foreground" />,
-                data?.storage,
-                formatBytes,
+                formatBytes(data?.storage?.usedBytes ?? 0),
+                data?.storage?.creditsUsed,
+                data?.storage?.percent,
               )}
               {renderMetric(
                 "頻寬",
                 <ZapIcon className="w-4 h-4 text-muted-foreground" />,
-                data?.bandwidth,
-                formatBytes,
+                formatBytes(data?.bandwidth?.usedBytes ?? 0),
+                data?.bandwidth?.creditsUsed,
+                data?.bandwidth?.percent,
               )}
               {renderMetric(
                 "Transformation",
                 <ImageIcon className="w-4 h-4 text-muted-foreground" />,
-                data?.transformations,
-                formatNumber,
+                formatNumber(data?.transformations?.used ?? 0),
+                data?.transformations?.creditsUsed,
+                data?.transformations?.percent,
               )}
             </div>
             <div className="grid grid-cols-3 gap-3 text-center text-xs text-muted-foreground">
