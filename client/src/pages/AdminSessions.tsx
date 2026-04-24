@@ -249,6 +249,7 @@ export default function AdminSessions() {
               placeholder="搜尋 ID / 玩家 / email / 遊戲 / 隊伍..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => handleEscape(e, searchTerm, setSearchTerm)}
               className="pl-10 pr-14"
               data-testid="input-search-sessions"
             />
