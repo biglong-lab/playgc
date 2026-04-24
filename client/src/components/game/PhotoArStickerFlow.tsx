@@ -1,9 +1,19 @@
-// 🎭 PhotoArStickerFlow — AR 貼圖拍照（固定位置版本）
+// 🎭 PhotoArStickerFlow — AR 貼圖拍照（B2: 支援臉部錨定）
 //
-// 實作策略（固定位置，不做臉部追蹤）：
-//   1. 開啟相機 → 在 video 上疊 PNG 貼圖（HTML overlay，位置依 config）
-//   2. 按快門 → 用 canvas 把 video frame + 貼圖合成一張
-//   3. 上傳合成後照片 → 顯示結果 + 下載/分享/繼續
+// 實作策略：
+//   固定位置模式（anchorPoint=none）：
+//     1. 開啟相機 → 在 video 上疊 PNG 貼圖（HTML overlay，位置依 config）
+//     2. 按快門 → canvas 合成 video frame + sticker
+//   臉部錨定模式（anchorPoint=face/eyes/nose/mouth/face_top）：
+//     1. 開啟相機 + lazy 載入 FaceLandmarker（WASM）
+//     2. requestAnimationFrame loop：detectForVideo → getAnchorCoordinate
+//     3. sticker 位置隨 face 動態更新
+//     4. 按快門時用 face anchor 座標合成 canvas
+//
+// 合規（關鍵）：
+//   - 純瀏覽器偵測（WASM+WebGL），不傳 server、不存 face data
+//   - 只做 landmark detection，不做 face recognition
+//   - 使用者需 opt-in（B4 加 Dialog）
 
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -18,6 +28,14 @@ import {
   CameraInitializingView, UploadingView,
 } from "./photo-mission/PhotoViews";
 import type { PhotoMissionConfig } from "@shared/schema";
+import {
+  getFaceLandmarker,
+  detectFaceForVideo,
+  getAnchorCoordinate,
+  closeFaceLandmarker,
+  type AnchorPoint,
+  type AnchorCoordinate,
+} from "@/lib/face-landmarker";
 
 interface PhotoArStickerFlowProps {
   config: PhotoMissionConfig;
