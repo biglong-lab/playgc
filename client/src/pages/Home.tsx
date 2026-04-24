@@ -484,7 +484,10 @@ export default function Home() {
                   <h3 className="font-display font-bold text-lg mb-2 group-hover:text-primary transition-colors">
                     {game.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                  <p
+                    className="text-sm text-muted-foreground line-clamp-2 mb-4"
+                    title={game.description || ""}
+                  >
                     {game.description || "無描述"}
                   </p>
                   
