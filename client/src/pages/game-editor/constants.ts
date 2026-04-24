@@ -26,6 +26,8 @@ export const PAGE_TYPES = [
   { value: "photo_burst", label: "連拍紀念", icon: LayoutGrid, color: "bg-rose-500/20 text-rose-400" },
   { value: "photo_ar", label: "AR 貼圖拍照", icon: Sparkles, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "photo_team", label: "團體合影", icon: UsersIcon, color: "bg-indigo-500/20 text-indigo-400" },
+  // 🆕 A3 OCR 招牌任務（Google Vision，2026-04-25）
+  { value: "photo_ocr", label: "招牌辨識", icon: ScanText, color: "bg-cyan-500/20 text-cyan-400" },
   { value: "gps_mission", label: "GPS 任務", icon: MapPin, color: "bg-red-500/20 text-red-400" },
   { value: "qr_scan", label: "QR 掃描", icon: QrCode, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "time_bomb", label: "拆彈任務", icon: Bomb, color: "bg-red-600/20 text-red-500" },
