@@ -81,4 +81,38 @@ export async function scoreTextAnswer(
   );
 }
 
-export type { PhotoVerifyResult, TextScoreResult };
+/**
+ * 📸 Compare Photos — v2 新增：比對玩家照與參考照的相似度
+ */
+export async function comparePhotos(
+  playerImageUrl: string,
+  referenceImageUrl: string,
+  referenceDescription: string | undefined,
+  compareMode: "object" | "scene" | "composition" | "color",
+  similarityThreshold: number,
+  apiKey?: string,
+  model?: string,
+): Promise<PhotoCompareResult> {
+  const provider = detectProvider(apiKey);
+  if (provider === "openrouter" && apiKey) {
+    return comparePhotosOpenRouter(
+      playerImageUrl,
+      referenceImageUrl,
+      referenceDescription,
+      compareMode,
+      similarityThreshold,
+      apiKey,
+      model,
+    );
+  }
+  return comparePhotosGemini(
+    playerImageUrl,
+    referenceImageUrl,
+    referenceDescription,
+    compareMode,
+    similarityThreshold,
+    apiKey,
+  );
+}
+
+export type { PhotoVerifyResult, TextScoreResult, PhotoCompareResult };
