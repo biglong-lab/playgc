@@ -233,13 +233,32 @@ export default function PhotoBurstFlow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
+  // 🎨 改成三段式：intro → preview（預覽 + 準備）→ countdown（3-2-1）→ shooting
   const handleStart = () => {
     burstImagesRef.current = [];
     setBurstImages([]);
     setUploadedIds([]);
-    setStage("shooting");
-    camera.startCamera();
+    setStage("preview");
+    // 預設用前鏡頭（連拍常用在自拍/表情）；使用者可在預覽時切換
+    camera.startCamera("user");
   };
+
+  // 倒數 3-2-1 後才開始連拍
+  const [countdownToStart, setCountdownToStart] = useState(3);
+  useEffect(() => {
+    if (stage !== "countdown") return;
+    setCountdownToStart(3);
+    let n = 3;
+    const timer = setInterval(() => {
+      n -= 1;
+      setCountdownToStart(n);
+      if (n <= 0) {
+        clearInterval(timer);
+        setStage("shooting");
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [stage]);
 
   const handleContinue = () => {
     if (finishedRef.current) return;
