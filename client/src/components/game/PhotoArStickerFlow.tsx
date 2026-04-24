@@ -36,6 +36,7 @@ import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import {
   CameraInitializingView, UploadingView,
 } from "./photo-mission/PhotoViews";
+import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
 import type { PhotoMissionConfig } from "@shared/schema";
 import {
   getFaceLandmarker,
