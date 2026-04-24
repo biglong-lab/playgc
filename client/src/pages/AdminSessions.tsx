@@ -187,8 +187,8 @@ export default function AdminSessions() {
                 { header: "隊伍名稱", get: (r) => r.session.teamName ?? "" },
                 { header: "分數", get: (r) => r.session.score ?? 0 },
                 { header: "狀態", get: (r) => r.session.status ?? "" },
-                { header: "建立時間", get: (r) => formatCsvDateTime(r.session.createdAt as string | Date | null) },
-                { header: "結束時間", get: (r) => formatCsvDateTime(r.session.endedAt as string | Date | null) },
+                { header: "開始時間", get: (r) => formatCsvDateTime(r.session.startedAt) },
+                { header: "完成時間", get: (r) => formatCsvDateTime(r.session.completedAt) },
               ];
               exportToCsv(columns, filteredRows, "sessions");
               toast({ title: "✅ 已開始下載", description: `共 ${filteredRows.length} 筆場次資料` });
