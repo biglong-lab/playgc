@@ -58,6 +58,10 @@ export async function registerRoutes(
   // 🌐 Sitemap 公開端點（搜尋引擎爬取用，無需認證）
   registerSitemapRoute(app);
 
+  // 🆕 /api/error-log — 前端錯誤上報（公開、rate-limited、永遠 200）
+  // 必須在 adminAuthMiddleware 之前，避免誤擋沒登入的錯誤上報
+  registerErrorLogRoutes(app);
+
   app.use(adminAuthMiddleware);
 
   // WebSocket 設定
