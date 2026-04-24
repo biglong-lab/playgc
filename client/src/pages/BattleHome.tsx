@@ -14,6 +14,7 @@ import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
 import BattleLayout from "@/components/battle/BattleLayout";
 import { slotStatusBadge } from "@/lib/battle-labels";
 import { formatTimeUntil } from "@/lib/battle-time";
+import { apiRequest } from "@/lib/queryClient";
 import type { BattleVenue, BattleSlot } from "@shared/schema";
 import { Swords, Clock, Users, MapPin, CalendarDays, ChevronRight, Trophy, Shield, History, User, Bell, Medal, LogIn } from "lucide-react";
 
