@@ -200,7 +200,7 @@ export function usePhotoCamera(): PhotoCameraState {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, cameraReady, canAutoRestart, markAutoRestart]);
 
-  const startCamera = async () => {
+  const startCamera = async (desiredFacing?: CameraFacing) => {
     setCameraError(null);
     setCameraReady(false);
 
@@ -211,12 +211,20 @@ export function usePhotoCamera(): PhotoCameraState {
       return;
     }
 
+    // 🆕 切鏡頭前要先關舊 stream（iOS Safari 不允許同時有兩個 video track）
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop());
+      setStream(null);
+    }
+
     setMode("initializing");
+    const useFacing = desiredFacing ?? facingMode;
+    setFacingMode(useFacing);
 
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: { ideal: "environment" },
+          facingMode: { ideal: useFacing },
           width: { ideal: 1920 },
           height: { ideal: 1080 },
         },
