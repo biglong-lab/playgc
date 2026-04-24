@@ -203,6 +203,7 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
   //     監聽 popstate + 500ms polling 讓 SPA 導航也能觸發更新
   const [urlFieldCode, setUrlFieldCode] = useState(() => readFieldCodeFromUrl());
   const [isPlatformPage, setIsPlatformPage] = useState(() => isOnPlatformPath());
+  const queryClient = useQueryClient();
   useEffect(() => {
     const update = () => {
       setUrlFieldCode(readFieldCodeFromUrl());
@@ -215,6 +216,26 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
       clearInterval(interval);
     };
   }, []);
+
+  // 🔒 場域隔離 bug 修：URL 場域變化 → 立即同步 localStorage + 清場域隔離 cache
+  //    舊 bug：URL 是 JIACHUN 但 localStorage 還是 HPSPACE → useCurrentField 拿舊值
+  //    → Home 的 games query key 用舊 fieldCode → 顯示舊場域遊戲（需重整才好）
+  //    修：URL 變動當下就寫 localStorage + invalidate 所有受場域影響的 query
+  useEffect(() => {
+    if (!urlFieldCode || isPlatformPage) return;
+    const stored = (() => {
+      try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+    })();
+    const upperUrl = urlFieldCode.toUpperCase();
+    if (stored?.toUpperCase() === upperUrl) return;  // 已一致
+    setCurrentFieldCode(upperUrl);
+    // 清掉所有「會依場域回不同資料」的 queries — 強制重抓
+    queryClient.invalidateQueries({ queryKey: ["/api/games"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/games-stats/public"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/sessions"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/leaderboard"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/fields"] });   // theme
+  }, [urlFieldCode, isPlatformPage, queryClient]);
 
   // 1. 拿 admin session（若有）— 平台頁不 fetch（避免干擾）
   const { data: adminSession } = useQuery<{
