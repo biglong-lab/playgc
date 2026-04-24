@@ -290,6 +290,70 @@ export class CloudinaryService {
   }
 
   /**
+   * 🆕 v2: 產生 session 相簿 ZIP 下載 URL（Cloudinary 原生 archive 功能）
+   * @param gameId - 遊戲 ID
+   * @param sessionId - session ID
+   * @returns signed archive URL 或 null（若無照片）
+   *
+   * 優點：一個 zip 檔取代批次下載，手機桌面 UX 一致、大量照片也順
+   */
+  async createSessionArchiveUrl(
+    gameId: string,
+    sessionId: string,
+  ): Promise<string | null> {
+    if (!this.isConfigured()) {
+      throw new Error("Cloudinary 尚未設定");
+    }
+    const prefix = `jiachun-game/games/${gameId}/player-photos/${sessionId}`;
+    try {
+      // 先檢查 folder 是否有資源（避免產生空 zip）
+      const search = await cloudinary.search
+        .expression(`folder:${prefix}/*`)
+        .max_results(1)
+        .execute();
+      if (!search.resources?.length) return null;
+
+      // Cloudinary download_zip_url: 即時產生 signed URL，使用者訪問時才實際打包
+      // 無需 upload API，純簽章式 URL
+      const url = cloudinary.utils.download_zip_url({
+        resource_type: "image",
+        prefixes: [prefix],
+      });
+      return url;
+    } catch (err) {
+      console.error("[cloudinary] createSessionArchiveUrl 失敗:", err);
+      return null;
+    }
+  }
+
+  /**
+   * 🆕 v2: 產生使用者跨 session 相簿 ZIP（多 session prefix 一次打包）
+   */
+  async createUserArchiveUrl(sessionIds: string[]): Promise<string | null> {
+    if (!this.isConfigured() || sessionIds.length === 0) {
+      return null;
+    }
+    const prefixes = sessionIds
+      .slice(0, 20)   // 最多 20 個 session 避免 URL 過長
+      .map((sid) => `jiachun-game/games`)   // 需要 gameId... 但這個 helper 不知道 gameId 組合
+      // 退而求其次：用 resource search expression OR
+      ;
+    try {
+      // 用 public_ids 太冗長；改用 search 取得所有 publicIds 再丟到 archive
+      const photos = await this.listUserPhotos(sessionIds);
+      if (photos.length === 0) return null;
+      const url = cloudinary.utils.download_zip_url({
+        resource_type: "image",
+        public_ids: photos.map((p) => p.publicId),
+      });
+      return url;
+    } catch (err) {
+      console.error("[cloudinary] createUserArchiveUrl 失敗:", err);
+      return null;
+    }
+  }
+
+  /**
    * 🆕 v2: 列出某使用者所有照片（個人相簿用）
    * 注：需 DB 知道該 user 所有 session IDs 才能查全。此方法依 folder pattern 查單一 session。
    */
