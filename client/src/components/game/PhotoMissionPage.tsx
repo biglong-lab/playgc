@@ -43,7 +43,7 @@ export default function PhotoMissionPage({
   // 🆕 v2: 依 mode 分派到新 flow（保持既有 free mode 不受影響）
   if (config.mode === "spot") {
     return (
-      <Suspense fallback={<CameraInitializingView />}>
+      <Suspense fallback={<div className="p-8 text-center text-muted-foreground">載入中...</div>}>
         <PhotoSpotFlow
           config={config}
           onComplete={onComplete}
