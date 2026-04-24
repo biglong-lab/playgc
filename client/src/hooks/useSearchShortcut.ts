@@ -8,15 +8,26 @@
 //   />
 //
 // 按下：
-//   - `/`            → focus + select（global）
-//   - `Cmd+K` (Mac)  → focus + select（global）
-//   - `Ctrl+K` (其他) → focus + select（global）
+//   - `/`            → focus + select（global，永遠綁）
+//   - `Cmd+K` (Mac)  → focus + select（global，可停用）
+//   - `Ctrl+K` (其他) → focus + select（global，可停用）
 //   - `Esc`          → 有內容先清空、空內容則失焦（需在 input 上綁 onKeyDown）
+//
+// ⚠️ 當頁面已有 CommandPalette 監聽 ⌘K（例如 UnifiedAdminLayout），要傳 `{ disableCmdK: true }`
+//    避免 admin 頁面的 ⌘K 被搜尋框搶走。
 //
 // 自動忽略已在輸入中（INPUT / TEXTAREA / contentEditable）的狀態，避免干擾打字。
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
-export function useSearchShortcut<T extends HTMLElement = HTMLInputElement>() {
+interface UseSearchShortcutOptions {
+  /** 停用 Cmd/Ctrl+K shortcut（在有 CommandPalette 的 admin 頁面務必傳 true） */
+  disableCmdK?: boolean;
+}
+
+export function useSearchShortcut<T extends HTMLElement = HTMLInputElement>(
+  options: UseSearchShortcutOptions = {},
+) {
+  const { disableCmdK = false } = options;
   const inputRef = useRef<T>(null);
 
   // 偵測 macOS（一次性 memoize，避免每 render 重讀 navigator）
