@@ -397,6 +397,26 @@ export default function GameCompletionScreen({
           </Button>
         </motion.div>
 
+        {/* 🆕 v2: 看本場相簿（僅本次 session 有拍照時顯示）*/}
+        {hasAlbumPhotos && sessionId && (
+          <motion.div
+            className="flex justify-center mb-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.25 }}
+          >
+            <Button
+              onClick={() => onNavigate(link(`/album/${sessionId}`))}
+              variant="ghost"
+              className="gap-2 text-sm w-full sm:min-w-[200px]"
+              data-testid="btn-view-session-album"
+            >
+              <ImageIcon className="w-4 h-4" />
+              查看本場相簿（{albumData?.photos?.length ?? 0} 張）
+            </Button>
+          </motion.div>
+        )}
+
         {/* 按鈕群 */}
         <motion.div
           className="flex flex-col sm:flex-row gap-3 justify-center"
