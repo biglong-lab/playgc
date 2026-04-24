@@ -329,6 +329,7 @@ export default function GamePlay() {
         isChapterMode={isChapterMode}
         chapterTitle={chapterData?.title}
         gameId={gameId || ""}
+        sessionId={sessionId || undefined}   /* 🆕 傳入以便「看本場相簿」*/
         onPlayAgain={resetAndCreateNew}
         onNavigate={setLocation}
       />
