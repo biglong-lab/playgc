@@ -559,6 +559,58 @@ export function registerMediaRoutes(app: Express) {
     }
   );
 
+  // 🚀 Progressive Enhancement：真正上傳合成的 endpoint
+  //   client canvas 先顯示 → 呼叫這個背景升級成 Cloudinary 酷效果版本
+  //   成本：每次合成 1 transformation credit（Free 月 25）
+  const compositeUploadSchema = z.object({
+    sourceImageUrl: z.string().min(1), // 底圖（可以是 data: URL 或 http URL）
+    /** Cloudinary transformation 陣列（客戶端傳完整 spec）*/
+    transformation: z.array(z.record(z.string(), z.unknown())).min(1).max(20),
+    /** 存放 folder，如 'achievements' 或 'burst-gifs' */
+    folder: z.string().min(1).max(100).regex(/^[a-zA-Z0-9_/-]+$/),
+    /** 自訂 public_id，可選 */
+    publicId: z.string().max(200).regex(/^[a-zA-Z0-9_/-]+$/).optional(),
+  });
+  app.post(
+    "/api/cloudinary/composite-upload",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const parsed = compositeUploadSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            error: parsed.error.errors[0]?.message || "參數錯誤",
+          });
+        }
+        const { sourceImageUrl, transformation, folder, publicId } = parsed.data;
+
+        // 限制 folder 必須在 jiachun-game/ 底下（避免亂放）
+        const safeFolder = folder.startsWith("jiachun-game/")
+          ? folder
+          : `jiachun-game/${folder}`;
+
+        const result = await cloudinaryService.compositeAndUpload(
+          sourceImageUrl,
+          transformation as Record<string, unknown>[],
+          safeFolder,
+          publicId,
+        );
+
+        res.json({
+          success: true,
+          url: result.url,
+          publicId: result.publicId,
+          bytes: result.bytes,
+        });
+      } catch (error) {
+        console.error("[media] composite-upload 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "合成上傳失敗",
+        });
+      }
+    },
+  );
+
   /**
    * 合成預覽 — 管理員端：用測試圖預覽模板效果
    * 不需 authenticated 玩家 session，但需 admin
