@@ -181,6 +181,7 @@ export default function AdminStaffQRCodes() {
                   placeholder="搜尋遊戲..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => handleEscape(e, searchTerm, setSearchTerm)}
                   className="pl-9 pr-14"
                   data-testid="input-search-games"
                 />
