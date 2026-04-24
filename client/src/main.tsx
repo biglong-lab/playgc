@@ -20,7 +20,7 @@ if ("serviceWorker" in navigator) {
 // 光清 image cache 不夠 — 舊 SW 還會從 precache 給舊 index.html → 載舊 bundle → 破圖。
 // v4 改動：SW 圖片 cache 策略從 CacheFirst 改 NetworkFirst，即使 cache 壞也會先試 network，
 // 從根本避免「cache 永久壞」的狀況。flag bump v4 讓曾跑過 v3 的人再清一次。
-const CACHE_PURGE_FLAG = "chito_cache_purge_v4_network_first";
+const CACHE_PURGE_FLAG = "chito_cache_purge_v5_no_sw_images";
 if (typeof window !== "undefined" && !localStorage.getItem(CACHE_PURGE_FLAG)) {
   (async () => {
     try {
