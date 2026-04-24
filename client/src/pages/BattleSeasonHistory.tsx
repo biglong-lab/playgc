@@ -42,14 +42,12 @@ export default function BattleSeasonHistory() {
   const { data: history = [], isLoading } = useQuery<SeasonHistoryEntry[]>({
     queryKey: ["/api/battle/my/season-history", fieldId],
     queryFn: async () => {
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken();
-      const res = await fetch(`/api/battle/my/season-history?fieldId=${fieldId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        credentials: "include",
-      });
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", `/api/battle/my/season-history?fieldId=${fieldId}`);
+        return res.json();
+      } catch {
+        return [];
+      }
     },
     enabled: !!user && !!fieldId,
   });
