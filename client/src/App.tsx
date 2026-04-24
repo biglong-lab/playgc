@@ -39,6 +39,8 @@ const PurchaseGate = lazy(() => import("@/pages/PurchaseGate"));
 const PurchaseSuccess = lazy(() => import("@/pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
+// 🆕 v2: Session 相簿頁
+const SessionAlbum = lazy(() => import("@/pages/SessionAlbum"));
 
 // 水彈對戰 PK 擂台
 const BattleHome = lazy(() => import("@/pages/BattleHome"));
