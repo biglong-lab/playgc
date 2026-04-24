@@ -790,7 +790,12 @@ function IntroTab({ fieldId, settings }: { fieldId: string; settings?: FieldSett
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium mb-1.5 block">歡迎訊息（較長）</label>
+            <label className="text-sm font-medium mb-1.5 block flex items-center justify-between">
+              <span>歡迎訊息（較長）</span>
+              <span className="text-[10px] text-muted-foreground font-mono font-normal">
+                {welcomeMessage.length} / 500
+              </span>
+            </label>
             <Input
               value={welcomeMessage}
               onChange={(e) => setWelcomeMessage(e.target.value)}
