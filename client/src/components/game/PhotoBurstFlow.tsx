@@ -198,7 +198,7 @@ export default function PhotoBurstFlow({
         //   使用者也可點「立即改用拼貼圖」主動跳出
         try {
           const gifAbort = new AbortController();
-          const gifTimer = setTimeout(() => gifAbort.abort(), 15000);
+          const gifTimer = setTimeout(() => gifAbort.abort(), 10000);
           // 使用者主動跳過的監聽（每 500ms 檢查 skipGifRef）
           const skipCheck = setInterval(() => {
             if (skipGifRef.current) gifAbort.abort();
