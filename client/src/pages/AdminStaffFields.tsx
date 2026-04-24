@@ -53,6 +53,7 @@ import {
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { fetchWithAdminAuth } from "./admin-staff/types";
 import type { FieldSettings } from "@shared/schema";
+import { daysUntilDate, formatRemainingDays } from "@/lib/date-utils";
 
 interface AdminInfo {
   systemRole: string;
