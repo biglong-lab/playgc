@@ -5,6 +5,7 @@ import {
   Play, Clock, Zap, Gift, ArrowRight,
   Bomb, Lock, Smartphone, Vote, Puzzle, GitBranch,
   ImageIcon, ScanSearch, LayoutGrid, Sparkles,
+  ScanText,
   Users as UsersIcon,
 } from "lucide-react";
 
