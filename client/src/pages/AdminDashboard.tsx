@@ -15,6 +15,7 @@ import OptimizedImage from "@/components/shared/OptimizedImage";
 import { useCurrentField, type FieldModules } from "@/providers/FieldThemeProvider";
 import type { Game, GameSession, ArduinoDevice, FieldSettings } from "@shared/schema";
 import { daysUntilDate } from "@/lib/date-utils";
+import { getDeviceIcon, DEVICE_TYPES } from "@/pages/admin-devices/constants";
 import {
   Gamepad2,
   Plus,
