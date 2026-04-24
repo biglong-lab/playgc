@@ -1250,7 +1250,7 @@ export default function PageConfigEditor({
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                  const current = ((config.arStickerConfig as any)?.stickers as any[]) ?? [];
                   updateField("arStickerConfig", {
                     ...(config.arStickerConfig as any || {}),
                     stickers: [
@@ -1277,7 +1277,7 @@ export default function PageConfigEditor({
                     variant="ghost"
                     className="h-6 w-6"
                     onClick={() => {
-                      const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                      const current = ((config.arStickerConfig as any)?.stickers as any[]) ?? [];
                       updateField("arStickerConfig", {
                         ...(config.arStickerConfig as any || {}),
                         stickers: current.filter((_, i) => i !== idx),
@@ -1294,7 +1294,7 @@ export default function PageConfigEditor({
                     <Input
                       value={s.imageUrl}
                       onChange={(e) => {
-                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        const current = ((config.arStickerConfig as any)?.stickers as any[]) ?? [];
                         updateField("arStickerConfig", {
                           ...(config.arStickerConfig as any || {}),
                           stickers: current.map((x, i) => i === idx ? { ...x, imageUrl: e.target.value } : x),
@@ -1307,7 +1307,7 @@ export default function PageConfigEditor({
                       id={`ar-sticker-${idx}`}
                       accept="image/*"
                       onUploaded={(url) => {
-                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        const current = ((config.arStickerConfig as any)?.stickers as any[]) ?? [];
                         updateField("arStickerConfig", {
                           ...(config.arStickerConfig as any || {}),
                           stickers: current.map((x, i) => i === idx ? { ...x, imageUrl: url } : x),
@@ -1327,7 +1327,7 @@ export default function PageConfigEditor({
                     <Select
                       value={s.position}
                       onValueChange={(v) => {
-                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        const current = ((config.arStickerConfig as any)?.stickers as any[]) ?? [];
                         updateField("arStickerConfig", {
                           ...(config.arStickerConfig as any || {}),
                           stickers: current.map((x, i) => i === idx ? { ...x, position: v } : x),
@@ -1353,7 +1353,7 @@ export default function PageConfigEditor({
                     <Slider
                       value={[s.sizeRatio * 100]}
                       onValueChange={([v]) => {
-                        const current = (config.arStickerConfig?.stickers as any[]) ?? [];
+                        const current = ((config.arStickerConfig as any)?.stickers as any[]) ?? [];
                         updateField("arStickerConfig", {
                           ...(config.arStickerConfig as any || {}),
                           stickers: current.map((x, i) => i === idx ? { ...x, sizeRatio: v / 100 } : x),
