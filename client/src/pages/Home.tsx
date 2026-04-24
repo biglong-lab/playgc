@@ -389,7 +389,35 @@ export default function Home() {
           {welcomeMessage && !fieldCoverUrl && (
             <p className="text-base text-muted-foreground mb-1">{welcomeMessage}</p>
           )}
-          <p className="text-muted-foreground">選擇一個任務開始你的冒險</p>
+          {/* 🆕 玩家戰績摘要 — 有完成紀錄才顯示，給人成就感 */}
+          {playerStats.completedCount > 0 ? (
+            <p className="text-sm text-muted-foreground flex items-center gap-3 flex-wrap" data-testid="player-stats-summary">
+              <span className="inline-flex items-center gap-1">
+                <Trophy className="w-3.5 h-3.5 text-warning" />
+                已完成 <span className="font-number font-semibold text-foreground">{playerStats.completedCount}</span> 場
+              </span>
+              {playerStats.uniqueGamesCount > 1 && (
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Gamepad2 className="w-3.5 h-3.5 text-primary" />
+                    挑戰 <span className="font-number font-semibold text-foreground">{playerStats.uniqueGamesCount}</span> 款遊戲
+                  </span>
+                </>
+              )}
+              {playerStats.totalScore > 0 && (
+                <>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="w-3.5 h-3.5 text-success" />
+                    累計 <span className="font-number font-semibold text-foreground">{playerStats.totalScore.toLocaleString()}</span> 分
+                  </span>
+                </>
+              )}
+            </p>
+          ) : (
+            <p className="text-muted-foreground">選擇一個任務開始你的冒險</p>
+          )}
         </div>
 
         {/* 對戰快速入口 — 僅在場域啟用對戰模組時顯示（後台 FieldSettings 設定） */}
