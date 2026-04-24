@@ -222,45 +222,35 @@ export function MemberActionMenu({
   };
 
   const handleRole = async (role: string) => {
-    const res = await authFetch(`/api/battle/clans/${clan.id}/role`, {
-      method: "POST",
-      body: JSON.stringify({ userId: member.userId, role }),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      toast({ title: "變更失敗", description: err.error, variant: "destructive" });
-      return;
+    try {
+      await apiRequest("POST", `/api/battle/clans/${clan.id}/role`, { userId: member.userId, role });
+      toast({ title: "角色已變更" });
+      invalidate();
+    } catch (err) {
+      toast({ title: "變更失敗", description: (err as Error).message, variant: "destructive" });
     }
-    toast({ title: "角色已變更" });
-    invalidate();
   };
 
   const handleKick = async () => {
-    const res = await authFetch(`/api/battle/clans/${clan.id}/kick?targetUserId=${member.userId}`, {
-      method: "DELETE",
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      toast({ title: "踢出失敗", description: err.error, variant: "destructive" });
-      return;
+    try {
+      await apiRequest("DELETE", `/api/battle/clans/${clan.id}/kick?targetUserId=${member.userId}`);
+      toast({ title: "成員已被踢出" });
+      setShowKick(false);
+      invalidate();
+    } catch (err) {
+      toast({ title: "踢出失敗", description: (err as Error).message, variant: "destructive" });
     }
-    toast({ title: "成員已被踢出" });
-    invalidate();
   };
 
   const handleTransfer = async () => {
-    const res = await authFetch(`/api/battle/clans/${clan.id}/transfer`, {
-      method: "POST",
-      body: JSON.stringify({ newLeaderId: member.userId }),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      toast({ title: "轉讓失敗", description: err.error, variant: "destructive" });
-      return;
+    try {
+      await apiRequest("POST", `/api/battle/clans/${clan.id}/transfer`, { newLeaderId: member.userId });
+      toast({ title: "隊長已轉讓" });
+      setShowTransfer(false);
+      invalidate();
+    } catch (err) {
+      toast({ title: "轉讓失敗", description: (err as Error).message, variant: "destructive" });
     }
-    toast({ title: "隊長已轉讓" });
-    setShowTransfer(false);
-    invalidate();
   };
 
   return (
