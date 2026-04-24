@@ -1005,6 +1005,371 @@ POST /api/cloudinary/composite-photo
 
 ---
 
+## 外部分享與下載管道（v2 決策新增）
+
+### 設計目標
+
+使用者明確要求「紀念照要能走出 CHITO」— 分享到 **FB 相簿 / 下載到本地 / 上傳 Google Drive / 保留在本平台** 四種管道。
+核心哲學：**不把玩家綁在 CHITO 生態，主動協助他帶走紀念 = 他會更想分享 = CHITO 傳播 ROI 更高**。
+
+### 四管道策略矩陣
+
+| 管道 | 技術複雜度 | 使用者操作步驟 | 實作優先序 |
+|------|----------|-------------|----------|
+| **本地下載**（手機相簿）| ⭐ 簡單 | 1 鍵（按鈕 → 下載）| 🥇 Must Have |
+| **Web Share API 分享**（FB/IG/LINE 系統分享選單）| ⭐ 簡單 | 2 鍵（分享 → 選 FB）| 🥇 Must Have |
+| **本平台永久相簿**（/album/:sessionId + 個人頁）| ⭐⭐ 中 | 0 鍵（自動保留）| 🥈 Should Have |
+| **Google Drive 直傳**（Google OAuth + Drive API）| ⭐⭐⭐⭐ 高 | 2 鍵（授權 → 上傳）| 🥉 Nice to Have |
+| **FB 相簿直傳**（FB Login + Graph API + Meta App 審核）| ⭐⭐⭐⭐⭐ 很高 | 3 鍵（登入 → 授權 → 上傳）| 👀 評估 |
+
+### 建議分級實作
+
+#### Level 1（Phase 4-5 內完成）— **立即要做**
+
+**a. 本地下載按鈕**
+
+```typescript
+// 玩家端按鈕邏輯（示意）
+async function downloadToDevice(compositeUrl: string, filename: string) {
+  const res = await fetch(compositeUrl);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;  // e.g. "chito-JIACHUN-遊戲名-2026-04-24.jpg"
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+```
+
+**b. Web Share API 分享**（F3 分享戰績已做骨架，這裡擴充含圖）
+
+```typescript
+// 含圖分享（現代手機支援）
+async function shareWithImage(compositeUrl: string, title: string, text: string) {
+  // 先抓圖變成 File
+  const res = await fetch(compositeUrl);
+  const blob = await res.blob();
+  const file = new File([blob], 'memorial.jpg', { type: 'image/jpeg' });
+
+  if (navigator.canShare?.({ files: [file] })) {
+    await navigator.share({
+      title,
+      text,
+      files: [file],   // iOS Safari / Android Chrome 支援
+    });
+  } else {
+    // Fallback: 僅分享文字 + URL（讓 OG 去處理圖片預覽）
+    await navigator.share({ title, text, url: compositeUrl });
+  }
+}
+```
+
+**c. 本平台永久相簿**
+
+- 新頁面 `/album/:sessionId`（任何人持連結可看，公開）
+- 新頁面 `/me/photos`（登入玩家的所有照片匯總）
+- DB 欄位 `game_photos.is_public: boolean` — 玩家可設定公開/私密
+
+**Level 1 預期產出**：
+
+| 入口 | 位置 | 動作 |
+|------|------|------|
+| 拍照成功後 | `PhotoSpotFlow` 成功畫面 | 下載 / 分享 / 自動存入個人相簿 |
+| 遊戲完成 | `GameCompletionScreen`（成就卡）| 下載 / 分享 / 相簿連結 |
+| 個人相簿 | `/me/photos` | 批次下載 / 整本 PDF / 分享個別照片 |
+| Session 相簿 | `/album/:sessionId` | 整本下載 / 分享連結 / PDF |
+
+#### Level 2（Phase 6+）— **進階加值**
+
+**Google Drive 直傳**
+
+- 技術路徑：**Google Identity Services (GIS)** + **Drive API v3**
+- 使用者流程：
+  1. 按「上傳到 Google Drive」
+  2. 彈出 Google OAuth popup → 授權 `drive.file` scope（只能碰自己建立的檔）
+  3. 呼叫 `POST https://www.googleapis.com/upload/drive/v3/files`
+  4. 成功回傳「已上傳到你的 Google Drive」+ 檔案連結
+- **隱私良好**：`drive.file` scope 只能存取「我們上傳的檔案」，不能讀玩家其他 Drive 內容
+- 需設定：Google Cloud Console 建 OAuth Client ID
+- 整合現有 Firebase Google Auth：玩家若已用 Google 登入，可直接 re-consent 取得 Drive scope
+
+**環境變數**：
+```bash
+VITE_GOOGLE_CLIENT_ID=xxx.apps.googleusercontent.com  # 客戶端 ID
+# 注意：Drive 上傳走玩家 OAuth，不需要 server-side secret
+```
+
+#### Level 3（評估是否做）— **FB 相簿直傳**
+
+**警告**：這是**高成本低收益**的功能，建議不做或延後。
+
+**成本**：
+- 需要 **Meta App 審核**（3-6 週，要提交使用說明影片、隱私政策）
+- 需要 `publish_to_groups` 或 `publish_actions` permission（難審）
+- 2018 Cambridge Analytica 事件後 Meta 對 publish permission 大幅收緊
+
+**替代方案**（使用者體驗沒差太多）：
+- **Web Share API → 使用者選 FB**：一步到位分享到 FB 動態，不是相簿但實用
+- **顯示「貼到 FB 相簿」教學**：下載後指引「打開 FB → 建立相簿 → 上傳」
+- **專屬分享連結**：貼到 FB 動態時 OG meta 帶完整合成圖 + 連結
+
+**結論**：**做 Level 1 + Level 2 已覆蓋 95% 使用場景**，Level 3 暫緩。
+
+### DownloadShareConfig schema（場域 + 頁面層皆可設）
+
+```typescript
+// shared/schema/games.ts
+interface DownloadShareConfig {
+  // 開關
+  enableDownload: boolean;              // 預設 true：允許本地下載
+  enableWebShare: boolean;              // 預設 true：Web Share API
+  enableAlbum: boolean;                 // 預設 true：保留在本平台相簿
+  enableGoogleDrive: boolean;           // 預設 false（需 OAuth 設定）
+  enableFbAlbum: boolean;               // 預設 false（暫不實作）
+
+  // 原圖 vs 合成圖
+  allowOriginalDownload: boolean;       // 預設 false（只能下載合成版）
+  allowCompositeDownload: boolean;      // 預設 true
+  includeMetadataInExif: boolean;       // 下載時 EXIF 帶 CHITO 浮水印資訊
+
+  // 保留期
+  originalRetentionDays: number;        // 0 = 永久，預設 30
+  compositeRetentionDays: number;       // 0 = 永久（用 URL transformation 不佔空間）
+
+  // 分享文案模板
+  shareTextTemplate: string;            // 如 "我在 {fieldName} 完成了「{gameTitle}」，得 {score} 分！"
+
+  // 公開/私密預設
+  defaultPhotoVisibility: 'public' | 'private';  // 預設 'private'
+  allowPlayerChangeVisibility: boolean; // 玩家能否改公開設定，預設 true
+}
+```
+
+### 個人相簿資料模型
+
+```sql
+-- 玩家的永久相簿索引（既有 game_photos 表擴充或新 user_photos 關聯表）
+ALTER TABLE game_photos ADD COLUMN user_id uuid REFERENCES users(id);
+ALTER TABLE game_photos ADD COLUMN is_public boolean DEFAULT false;
+ALTER TABLE game_photos ADD COLUMN original_url text;
+ALTER TABLE game_photos ADD COLUMN composite_url text;
+ALTER TABLE game_photos ADD COLUMN download_count integer DEFAULT 0;
+ALTER TABLE game_photos ADD COLUMN share_count integer DEFAULT 0;
+ALTER TABLE game_photos ADD COLUMN expires_at timestamptz;  -- 過期自動刪
+
+CREATE INDEX idx_game_photos_user ON game_photos(user_id);
+CREATE INDEX idx_game_photos_public ON game_photos(is_public) WHERE is_public = true;
+CREATE INDEX idx_game_photos_expires ON game_photos(expires_at) WHERE expires_at IS NOT NULL;
+```
+
+**Cron job**：每日跑一次 `DELETE FROM game_photos WHERE expires_at < now() AND composite_url IS NOT NULL`（只刪過期原圖，合成 URL 是即時生成不佔空間）
+
+### 新 API endpoints
+
+| Endpoint | 方法 | 用途 |
+|---------|------|------|
+| `GET /api/me/photos` | GET | 我的所有照片（分頁） |
+| `GET /api/sessions/:id/album` | GET | Session 相簿 |
+| `POST /api/photos/:id/share` | POST | 記錄分享事件（統計用） |
+| `POST /api/photos/:id/download` | POST | 記錄下載事件 |
+| `PATCH /api/photos/:id/visibility` | PATCH | 改公開/私密 |
+| `POST /api/photos/:id/upload-to-drive` | POST | Google Drive 代理上傳（可選 server-side） |
+| `POST /api/photos/:id/export-pdf` | POST | 多張照片匯出 PDF |
+
+---
+
+## 多 AI 模型設定架構（v2 決策新增）
+
+### 現況盤點
+
+**✅ 已具備**：
+- `server/lib/ai-provider.ts` — 自動偵測 Gemini vs OpenRouter（看 key 前綴）
+- `server/lib/openrouter.ts` — OpenAI-compatible API，已支援 vision
+- `shared/schema/ai-models.ts` — **5 個模型已清單化**：
+  - `google/gemini-flash-1.5` ⭐ 推薦（$0.075/$0.3 per 1M，budget）
+  - `google/gemini-2.0-flash-001`（$0.1/$0.4，budget）
+  - `openai/gpt-4o-mini`（$0.15/$0.6，balanced）
+  - `anthropic/claude-3.5-haiku`（$1/$5，balanced）
+  - `anthropic/claude-3.5-sonnet`（$3/$15，premium）
+- `client/src/components/shared/AIModelSelect.tsx` — 模型選擇器 UI
+- 預設 `DEFAULT_VISION_MODEL = "google/gemini-flash-1.5"`
+
+### 使用者的問題：「OpenRouter 的 Gemini Flash 可以用嗎？」
+
+**✅ 可以，而且已經是預設**。
+使用者只需在 OpenRouter 申請 API key（`sk-or-...` 前綴），填入場域 AI 設定。
+系統會自動走 OpenRouter，並用 Gemini Flash 做視覺驗證。
+
+### 三層 AI 設定繼承（全設定化）
+
+```
+場域層（預設模型 + API key）
+  └── 遊戲層（覆寫 — optional）
+        └── 頁面層（覆寫 — 每個拍照元件可指定 aiModelId）
+```
+
+```typescript
+// 場域層
+interface FieldAiSettings {
+  aiApiKey: string;                       // OpenRouter key 或 Gemini key
+  defaultVisionModel?: string;            // 預設拍照驗證用的模型
+  defaultTextModel?: string;              // 預設文字評分用的模型
+  monthlyBudgetUsd?: number;              // 月預算上限
+  alertEmailOnBudget?: string;            // 達 80% 預算發信
+}
+
+// 遊戲層（game.settings.ai）
+interface GameAiSettings {
+  overrideVisionModel?: string;           // 這個遊戲特別用某模型
+  overrideTextModel?: string;
+}
+
+// 頁面層（已有）
+PhotoMissionBaseConfig.aiModelId?: string;
+```
+
+### 模型擴充清單（v2 建議追加）
+
+以下模型建議也加入 `AI_MODELS` 清單，給管理員更多選擇：
+
+| 模型 | 用途 | 價格 | Tier |
+|------|-----|------|------|
+| `google/gemini-2.5-flash` | 最新 Flash，多模態強 | $0.15/$0.6 | balanced |
+| `google/gemini-2.5-pro` | 最高精度 Gemini | $3.5/$10.5 | premium |
+| `meta-llama/llama-3.2-11b-vision-instruct` | 開源替代（便宜）| $0.055/$0.055 | budget |
+| `qwen/qwen2-vl-72b-instruct` | 中國模型中文強 | $0.4/$0.4 | balanced |
+
+### 模型選擇建議矩陣
+
+| 場景 | 推薦模型 | 原因 |
+|------|---------|------|
+| 一般拍照驗證（free / spot） | `google/gemini-flash-1.5` | 便宜 + 中文好 + vision 合格 |
+| 高精度比對（compare） | `google/gemini-2.5-pro` 或 `anthropic/claude-3.5-sonnet` | 需分辨細節 |
+| 場景識別（地標）| `openai/gpt-4o-mini` | 地理/地標識別強 |
+| 中文場景描述分析 | `anthropic/claude-3.5-haiku` | 中文最好 |
+| 預算優先 | `meta-llama/llama-3.2-11b-vision-instruct` | 0.055/1M 超便宜 |
+
+### 預算監控（Phase 5 加值）
+
+- 每次 AI 呼叫記 log：`ai_usage_logs(field_id, game_id, model, tokens_in, tokens_out, cost_usd, created_at)`
+- 場域 admin 頁：本月 AI 花費儀表板
+- 達 80% 預算 → 發信警告
+- 達 100% 預算 → 可選自動降級到最便宜模型 或 直接停用 AI
+
+---
+
+## 全量設定化 schema 清單（v2 決策新增）
+
+依決策「所有行為都該能設定」，以下為完整 setting 清單（三層繼承）：
+
+### 場域層（`field.settings`）
+
+```typescript
+interface FieldSettings {
+  // 既有
+  hasCompletedOnboarding?: boolean;
+  theme?: FieldTheme;
+
+  // AI 相關
+  ai?: {
+    apiKey?: string;
+    defaultVisionModel?: string;
+    defaultTextModel?: string;
+    monthlyBudgetUsd?: number;
+    alertEmailOnBudget?: string;
+  };
+
+  // 🆕 拍照相關
+  photo?: {
+    defaultTemplateId?: string | null;            // 場域預設紀念照模板
+    allowAnonymousPhoto: boolean;                 // 匿名玩家能否拍照，預設 true
+    defaultRetentionDays: number;                 // 原圖保留期，0 = 永久
+    enableComposite: boolean;                     // 預設開合成，預設 true
+    defaultPhotoVisibility: 'public' | 'private'; // 預設 private
+
+    // 分享管道開關
+    channels: {
+      enableDownload: boolean;                    // 本地下載，預設 true
+      enableWebShare: boolean;                    // Web Share API，預設 true
+      enableAlbum: boolean;                       // 本平台相簿，預設 true
+      enableGoogleDrive: boolean;                 // Google Drive，預設 false
+      enableFbAlbum: boolean;                     // FB 相簿直傳，預設 false
+    };
+
+    // 成就卡預設
+    achievementCard?: {
+      enabled: boolean;
+      templateId?: string;
+      showRank?: boolean;
+      showDuration?: boolean;
+      showQrCode?: boolean;
+      qrTarget?: 'field' | 'game';
+    };
+
+    // 分享文案模板
+    shareTextTemplate?: string;                   // "我在 {fieldName} 完成了「{gameTitle}」..."
+  };
+}
+```
+
+### 遊戲層（`game.settings`）
+
+```typescript
+interface GameSettings {
+  // 既有
+  // ...
+
+  // 🆕 覆寫場域預設（optional）
+  ai?: {
+    overrideVisionModel?: string;
+    overrideTextModel?: string;
+  };
+  photo?: {
+    overrideTemplateId?: string | null;
+    overrideRetentionDays?: number;
+    overrideEnableComposite?: boolean;
+    // 其他欄位類推，都是 optional override
+  };
+}
+```
+
+### 頁面層（`page.config`）— 最精細
+
+已在前面 SpotConfig / CompareConfig 等規劃完整，核心欄位：
+- `aiModelId`：本頁單獨用某模型
+- `photoTemplateId`：本頁特殊紀念照框
+- `aiConfidenceThreshold`：本頁精度調整
+- 其他全部可覆寫
+
+### 三層繼承解析順序
+
+```typescript
+// server/services/photo-settings.ts
+async function resolvePhotoSetting<K extends keyof FieldPhotoSettings>(
+  key: K,
+  pageConfig: any,
+  gameId: string,
+  fieldId: string,
+): Promise<FieldPhotoSettings[K] | undefined> {
+  // Priority 1: 頁面層
+  if (pageConfig?.[key] !== undefined) return pageConfig[key];
+
+  // Priority 2: 遊戲層 override
+  const game = await loadGame(gameId);
+  const override = game.settings?.photo?.[`override${capitalize(key)}`];
+  if (override !== undefined) return override;
+
+  // Priority 3: 場域層預設
+  const field = await loadField(fieldId);
+  return field.settings?.photo?.[key];
+}
+```
+
+---
+
 ## 開發階段規劃
 
 ### Phase 0: Spike / PoC（0.5 天）
