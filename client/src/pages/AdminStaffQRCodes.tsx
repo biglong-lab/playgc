@@ -177,12 +177,14 @@ export default function AdminStaffQRCodes() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
+                  ref={searchInputRef}
                   placeholder="搜尋遊戲..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 pr-14"
                   data-testid="input-search-games"
                 />
+                {!searchTerm && <SearchKbdHint isMac={isMac} />}
               </div>
             </div>
 
