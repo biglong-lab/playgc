@@ -32,6 +32,7 @@ interface TransactionsResponse {
 
 export default function RevenueTransactions() {
   const { isAuthenticated } = useAdminAuth();
+  const { toast } = useToast();
   const [filter, setFilter] = useState<"all" | "game_purchase" | "battle_registration">("all");
 
   const { data, isLoading } = useQuery<TransactionsResponse>({
