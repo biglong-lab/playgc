@@ -102,39 +102,45 @@ export default function PhotoSuccessView({
           )}
         </div>
 
-        {/* 操作按鈕（3 等寬）*/}
-        <div className="grid grid-cols-3 gap-2 w-full">
-          {/* 下載：用 <a download> 讓瀏覽器原生處理（跨瀏覽器最穩定）*/}
-          <a
-            href={imageUrl}
-            download={downloadFilename}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-1 h-10 rounded-md border border-input bg-background text-foreground hover:bg-accent text-sm transition-colors"
-            data-testid="btn-photo-success-download"
-          >
-            <Download className="w-4 h-4" /> 下載
-          </a>
-
-          {/* 分享：優先 Web Share URL，不 fetch blob */}
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            className="gap-1"
-            data-testid="btn-photo-success-share"
-          >
-            <Share2 className="w-4 h-4" /> 分享
-          </Button>
-
-          {/* 繼續遊戲 */}
+        {/* 操作按鈕 — 圖片失敗時只顯示「繼續」，免得按無效下載/分享 */}
+        {imageError ? (
           <Button
             onClick={onContinue}
-            className="gap-1 font-semibold"
+            size="lg"
+            className="w-full gap-1 font-semibold"
             data-testid="btn-photo-success-continue"
           >
-            繼續 →
+            繼續遊戲 →
           </Button>
-        </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2 w-full">
+            <a
+              href={imageUrl}
+              download={downloadFilename}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-1 h-10 rounded-md border border-input bg-background text-foreground hover:bg-accent text-sm transition-colors"
+              data-testid="btn-photo-success-download"
+            >
+              <Download className="w-4 h-4" /> 下載
+            </a>
+            <Button
+              onClick={handleShare}
+              variant="outline"
+              className="gap-1"
+              data-testid="btn-photo-success-share"
+            >
+              <Share2 className="w-4 h-4" /> 分享
+            </Button>
+            <Button
+              onClick={onContinue}
+              className="gap-1 font-semibold"
+              data-testid="btn-photo-success-continue"
+            >
+              繼續 →
+            </Button>
+          </div>
+        )}
 
         {/* iOS Safari 小提示 */}
         <p className="text-xs text-muted-foreground text-center max-w-xs pt-2">
