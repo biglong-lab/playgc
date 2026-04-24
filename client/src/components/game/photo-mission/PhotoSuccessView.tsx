@@ -41,6 +41,7 @@ export default function PhotoSuccessView({
   testId = "photo-success-view",
 }: PhotoSuccessViewProps) {
   const { toast } = useToast();
+  const [imageError, setImageError] = useState(false);
 
   const handleShare = async () => {
     try {
