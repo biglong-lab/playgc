@@ -190,18 +190,6 @@ export default function AdminDashboard() {
         </Link>
       </div>
 
-      {/* 舊結構保留給下方 card-content 用，不再需要重新開 div（這個 marker 被下面 CardHeader 用） */}
-      {false && (
-        <Card>
-          <CardHeader>
-            <CardTitle />
-          </CardHeader>
-          <CardContent>
-            <div>
-          </Card>
-        </Link>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
