@@ -15,12 +15,10 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// 🚨 2026-04-24 hotfix v4：一次性 nuke 舊 Service Worker + 所有 cache
-// 背景：workbox 曾 cache opaque response，且 precache 裡也有指向舊 bundle 的 index.html。
-// 光清 image cache 不夠 — 舊 SW 還會從 precache 給舊 index.html → 載舊 bundle → 破圖。
-// v4 改動：SW 圖片 cache 策略從 CacheFirst 改 NetworkFirst，即使 cache 壞也會先試 network，
-// 從根本避免「cache 永久壞」的狀況。flag bump v4 讓曾跑過 v3 的人再清一次。
-const CACHE_PURGE_FLAG = "chito_cache_purge_v5_no_sw_images";
+// 🚨 2026-04-25 hotfix v6：再次強制所有使用者清快取
+// 背景：使用者反映連拍合成卡住不動，經查是 PWA 舊 bundle 導致（新 code 無 20s deadline）
+// v6 bump 一次性清除所有曾經用 v5 flag 的使用者，讓他們拿到最新的連拍修復
+const CACHE_PURGE_FLAG = "chito_cache_purge_v6_burst_deadline_fix";
 if (typeof window !== "undefined" && !localStorage.getItem(CACHE_PURGE_FLAG)) {
   (async () => {
     try {
