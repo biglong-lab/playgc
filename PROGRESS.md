@@ -517,8 +517,9 @@ const { data: games } = useQuery({
 - ⏳ Phase 6 — 團體合影 team_photo（WebSocket 等待 + 九宮格合成）
 - ✅ ~~Phase 9a — AR 貼圖（固定位置）~~（輪 19 完成）
 - ✅ ~~photo_templates 管理後台~~（輪 21-22 完成，用 field.settings JSON 欄位實作）
+- ✅ ~~相簿批次下載~~（輪 23 完成，純瀏覽器 API 實作）
 - ⏳ Phase 9b — AR 臉部追蹤（MediaPipe Face Landmarker，合規風險暫緩）
-- ⏳ 相簿 PDF 匯出（long image / multi-page PDF）
+- ⏳ MyPhotos 個人相簿的批次下載（同 SessionAlbum 模式，尚未加）
 
 ### 關鍵學習
 
