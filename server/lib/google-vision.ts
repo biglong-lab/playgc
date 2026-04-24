@@ -142,7 +142,7 @@ export interface LogOcrUsageParams {
   context?: Record<string, any>;
 }
 
-/** 記錄一次 Google Vision OCR 呼叫（寫入 ai_usage_logs） */
+/** 記錄一次 Google Vision OCR 呼叫（寫入 ai_usage_logs）+ 檢查是否要發警告 */
 export async function logOcrUsage(params: LogOcrUsageParams): Promise<void> {
   try {
     await db.insert(aiUsageLogs).values({
@@ -157,9 +157,86 @@ export async function logOcrUsage(params: LogOcrUsageParams): Promise<void> {
       userId: params.userId,
       context: params.context,
     });
+
+    // 記錄後檢查是否跨過 80% → 發警告 email（只發一次／月）
+    await maybeSendUsageAlert();
   } catch (error) {
     // 日誌失敗不該阻斷主流程，只記錄到 console
     console.error("[google-vision] 用量記錄失敗:", error);
+  }
+}
+
+/**
+ * 檢查當月用量是否達 80% → 若尚未寄警告 email 則寄（每月僅寄 1 次）
+ * 透過 ai_usage_logs 的 endpoint='usage-alert-80pct' 當作「已寄過」標記
+ */
+async function maybeSendUsageAlert(): Promise<void> {
+  try {
+    const usage = await getMonthlyOcrUsage();
+    if (!usage.shouldAlert) return;
+
+    const { sql } = await import("drizzle-orm");
+
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // 查本月是否已寄過 80% 警告
+    const alreadySent = await db
+      .select({ cnt: sql<number>`count(*)::int` })
+      .from(aiUsageLogs)
+      .where(
+        sql`${aiUsageLogs.provider} = 'google-vision' and ${aiUsageLogs.endpoint} = 'usage-alert-80pct' and ${aiUsageLogs.createdAt} >= ${firstDayOfMonth}`,
+      );
+
+    if ((alreadySent[0]?.cnt ?? 0) > 0) return;
+
+    // 寄信給管理員
+    const adminEmail = process.env.ADMIN_ALERT_EMAIL || "twfam4@gmail.com";
+    const subject = `⚠️ CHITO 平台 Google Vision OCR 用量達 ${usage.usagePercent}%`;
+    const html = `
+      <div style="font-family: -apple-system, sans-serif; max-width: 600px;">
+        <h2 style="color: #ea580c;">⚠️ Google Vision OCR 用量警告</h2>
+        <p>目前用量已達 <strong>${usage.usagePercent}%</strong>（${usage.currentMonthCount} / ${usage.freeQuota} 次）。</p>
+        <ul>
+          <li>成功：${usage.successCount} 次</li>
+          <li>失敗：${usage.failCount} 次</li>
+        </ul>
+        <p><strong>當前策略</strong>：達 80% 寄此警告、達 95% 自動停用 OCR 功能。</p>
+        <p>建議動作：</p>
+        <ol>
+          <li>到 <a href="https://game.homi.cc/admin">CHITO 管理後台</a> 查看儀表板</li>
+          <li>若確認需求強烈，可考慮升級 Google Vision 付費方案（$1.50 / 1000 次）</li>
+          <li>或暫停 OCR 招牌任務，等下月 1 日重置</li>
+        </ol>
+        <hr />
+        <small>此 email 每月僅寄一次。本月不再重複寄送。</small>
+      </div>
+    `;
+    const text = `Google Vision OCR 用量警告 - 已達 ${usage.usagePercent}%（${usage.currentMonthCount}/${usage.freeQuota}）。達 95% 將自動停用。`;
+
+    await sendEmail({
+      to: adminEmail,
+      subject,
+      html,
+      text,
+    });
+
+    // 記錄「已寄警告」標記（使用 ai_usage_logs 當紀錄表）
+    await db.insert(aiUsageLogs).values({
+      provider: "google-vision",
+      endpoint: "usage-alert-80pct",
+      success: true,
+      context: {
+        percent: usage.usagePercent,
+        count: usage.currentMonthCount,
+        sentTo: adminEmail,
+      },
+    });
+
+    console.log(`[google-vision] 已寄 80% 警告 email 給 ${adminEmail}`);
+  } catch (error) {
+    // 警告流程出錯不應阻斷主業務
+    console.error("[google-vision] 警告寄送失敗:", error);
   }
 }
 
