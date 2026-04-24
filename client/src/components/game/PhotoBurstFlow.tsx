@@ -48,6 +48,7 @@ export default function PhotoBurstFlow({
   const [uploadedIds, setUploadedIds] = useState<string[]>([]);      // Cloudinary publicIds
   const [countdown, setCountdown] = useState(0);                     // 正在倒數到第 N 張
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
+  const [compositeProgress, setCompositeProgress] = useState<string>("準備中..."); // 合成階段進度文字
 
   const finishedRef = useRef(false);
   const burstImagesRef = useRef<string[]>([]);
