@@ -1,6 +1,8 @@
 // 裝置管理常數定義
 import {
   Lightbulb, Power, Zap, Activity, TrendingUp,
+  Target, Radio, MousePointerClick, Monitor, Gamepad2, Cpu,
+  type LucideIcon,
 } from "lucide-react";
 
 export const DEVICE_TYPES = [
@@ -10,6 +12,20 @@ export const DEVICE_TYPES = [
   { value: "display", label: "顯示器" },
   { value: "controller", label: "控制器" },
 ] as const;
+
+// 🆕 每種裝置類型對應的 icon（Dashboard/DeviceCard 共用）
+export const DEVICE_TYPE_ICONS: Record<string, LucideIcon> = {
+  shooting_target: Target,
+  sensor: Radio,
+  trigger: MousePointerClick,
+  display: Monitor,
+  controller: Gamepad2,
+};
+
+export function getDeviceIcon(deviceType?: string | null): LucideIcon {
+  if (!deviceType) return Cpu;
+  return DEVICE_TYPE_ICONS[deviceType] ?? Cpu;
+}
 
 export const LED_MODES = [
   { value: "solid", label: "常亮", icon: Lightbulb },
