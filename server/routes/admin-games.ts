@@ -617,16 +617,15 @@ export function registerAdminGameRoutes(app: Express) {
             .json({ message: "無法決定遊戲所屬場域，請先指派管理員場域" });
         }
 
-        // esbuild 已把 JSON inline 進 bundle
-        const demoData = demoGameJiachun as unknown as {
-          game: Record<string, unknown>;
-          pages: Array<{
-            pageOrder: number;
-            pageType: string;
-            customName?: string;
-            config: unknown;
-          }>;
-        };
+        // 🆕 支援選擇模板（預設 jiachun 向後相容）
+        const templateKey = (req.body?.templateKey || req.query?.templateKey || "jiachun") as string;
+        const demoData = DEMO_TEMPLATES[templateKey];
+        if (!demoData) {
+          return res.status(400).json({
+            message: `未知的示範模板：${templateKey}`,
+            available: Object.keys(DEMO_TEMPLATES),
+          });
+        }
 
         // 配額檢查
         const [field] = await db
