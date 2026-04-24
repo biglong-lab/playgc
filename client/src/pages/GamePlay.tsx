@@ -53,6 +53,8 @@ export default function GamePlay() {
   }, [searchString]);
 
   const [showChat, setShowChat] = useState(false);
+  // 🆕 F1: 離開遊戲確認 Dialog
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
 
   const { data: game, isLoading: gameLoading, error: gameError } = useQuery<GameWithPages>({
