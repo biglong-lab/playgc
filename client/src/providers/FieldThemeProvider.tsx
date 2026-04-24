@@ -48,6 +48,10 @@ export interface FieldThemePayload {
   /** 🆕 模組開關（舊 API 可能沒回） */
   modules?: FieldModules;
   theme: FieldTheme;
+  /** 🆕 新場域首次登入引導是否完成（場域級別，非 localStorage） */
+  hasCompletedOnboarding?: boolean;
+  /** 🆕 原始 settings — 給 FieldOnboardingWizard 合併更新用（PATCH 時才需要，其他地方不建議使用） */
+  settings?: Record<string, unknown>;
 }
 
 /** 給其他元件拿當前場域 payload 用（name / logo / coverImage / welcome 訊息） */
