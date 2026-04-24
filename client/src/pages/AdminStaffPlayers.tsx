@@ -209,7 +209,71 @@ export default function AdminStaffPlayers() {
     },
   });
 
+  // 🆕 G3: 批次授權 mutation
+  const bulkGrantMutation = useMutation({
+    mutationFn: async (payload: { userIds: string[]; roleId: string }) => {
+      const res = await apiRequest(
+        "POST",
+        "/api/admin/memberships/bulk-grant",
+        payload
+      );
+      return res.json();
+    },
+    onSuccess: (data: { successCount: number; total: number }) => {
+      toast({
+        title: "✅ 批次授權完成",
+        description: `${data.successCount}/${data.total} 位玩家已授權為管理員`,
+      });
+      qc.invalidateQueries({ queryKey: ["/api/admin/memberships"] });
+      setSelectedUserIds(new Set());
+      setBulkGrantOpen(false);
+      setBulkSelectedRoleId("");
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "批次授權失敗";
+      toast({ title: "批次授權失敗", description: msg, variant: "destructive" });
+    },
+  });
+
   const selfAccountId = admin?.accountId;
+
+  // 🆕 G3: 批次選取輔助函式
+  const toggleSelect = (userId: string) => {
+    setSelectedUserIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+  };
+  const clearSelection = () => setSelectedUserIds(new Set());
+  // 可批次授權的候選：非自己 + 尚未是管理員
+  const selectableMembers = filtered.filter(
+    (m) =>
+      m.user?.id &&
+      m.user.id !== selfAccountId &&
+      !m.membership.isAdmin
+  );
+  const selectedCount = selectedUserIds.size;
+  const allSelectableSelected =
+    selectableMembers.length > 0 &&
+    selectableMembers.every((m) => m.user?.id && selectedUserIds.has(m.user.id));
+  const toggleSelectAll = () => {
+    if (allSelectableSelected) {
+      clearSelection();
+    } else {
+      setSelectedUserIds(
+        new Set(
+          selectableMembers
+            .map((m) => m.user?.id)
+            .filter((id): id is string => !!id)
+        )
+      );
+    }
+  };
 
   return (
     <UnifiedAdminLayout title="玩家管理">
