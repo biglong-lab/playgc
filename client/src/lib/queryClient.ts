@@ -27,7 +27,7 @@ export async function apiRequest(
 ): Promise<Response> {
   const token = await getIdToken();
   const headers: Record<string, string> = {};
-  
+
   if (data) {
     headers["Content-Type"] = "application/json";
   }
@@ -44,6 +44,40 @@ export async function apiRequest(
 
   await throwIfResNotOk(res);
   return res;
+}
+
+/**
+ * 🆕 apiRequest 的 timeout 版本 — 用 AbortController 設定超時
+ *   用於長時間跑的 API（Cloudinary 上傳/合成）
+ *   會自動帶 Firebase Auth token（跟 apiRequest 一樣）
+ */
+export async function apiRequestWithTimeout(
+  method: string,
+  url: string,
+  data: unknown | undefined,
+  timeoutMs: number,
+): Promise<Response> {
+  const token = await getIdToken();
+  const headers: Record<string, string> = {};
+  if (data) headers["Content-Type"] = "application/json";
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const abort = new AbortController();
+  const timer = setTimeout(() => abort.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+      signal: abort.signal,
+    });
+    await throwIfResNotOk(res);
+    return res;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
