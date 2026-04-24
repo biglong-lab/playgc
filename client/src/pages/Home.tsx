@@ -559,17 +559,24 @@ export default function Home() {
                             <CheckCircle2 className="w-4 h-4" />
                             <span className="text-sm font-medium">遊戲已完成 - {gameStatus.score} 分</span>
                           </div>
-                          <Button 
-                            variant="outline" 
-                            className="w-full gap-2" 
+                          <Button
+                            variant="outline"
+                            className="w-full gap-2"
                             data-testid={`button-replay-game-${game.id}`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              setLocation(link(game.gameMode === "team" ? `/team/${game.id}` : `/game/${game.id}?replay=true`));
+                              // 🆕 章節遊戲再玩改回章節選擇，其他依原邏輯
+                              if (game.gameStructure === "chapters") {
+                                setLocation(link(`/game/${game.id}/chapters`));
+                              } else if (game.gameMode === "team") {
+                                setLocation(link(`/team/${game.id}`));
+                              } else {
+                                setLocation(link(`/game/${game.id}?replay=true`));
+                              }
                             }}
                           >
                             <RotateCcw className="w-4 h-4" />
-                            {game.gameMode === "team" ? "重新組隊" : "再玩一次"}
+                            {getReplayLabel(game)}
                           </Button>
                         </div>
                       );
@@ -577,14 +584,14 @@ export default function Home() {
                       return (
                         <Button className="w-full gap-2 bg-warning text-warning-foreground hover:bg-warning/90" data-testid={`button-continue-game-${game.id}`}>
                           <Play className="w-4 h-4" />
-                          {game.gameMode === "team" ? "返回隊伍" : "返回遊戲"}
+                          {getContinueLabel(game)}
                         </Button>
                       );
                     } else {
                       return (
                         <Button className="w-full gap-2" data-testid={`button-start-game-${game.id}`}>
                           {game.gameMode === "team" ? <Users className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                          {game.gameMode === "team" ? "創建或加入隊伍" : "開始遊戲"}
+                          {getStartLabel(game)}
                         </Button>
                       );
                     }
