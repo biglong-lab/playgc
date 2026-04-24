@@ -2,6 +2,7 @@
 // 優先使用 user.defaultFieldId，否則從已載入的 venues 推導
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import type { BattleVenue } from "@shared/schema";
 
 export function useBattleFieldId(): {
