@@ -75,7 +75,59 @@ export default function BattleHistory() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-2">
+          <>
+            {/* 🚀 總覽統計（在列表上方） */}
+            <Card className="bg-primary/5 border-primary/30">
+              <CardContent className="p-4">
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 text-center">
+                  <div>
+                    <p className="text-xs text-muted-foreground">場數</p>
+                    <p className="text-xl font-number font-bold">{stats.totalGames}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">平均得分</p>
+                    <p className="text-xl font-number font-bold">{avgScore}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">總淘汰</p>
+                    <p className="text-xl font-number font-bold text-green-500">{stats.totalEliminations}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">總陣亡</p>
+                    <p className="text-xl font-number font-bold text-red-500">{stats.totalDeaths}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">K/D</p>
+                    <p className="text-xl font-number font-bold">{kdRatio}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground flex items-center justify-center gap-0.5">
+                      <Star className="h-3 w-3 text-yellow-500" /> MVP
+                    </p>
+                    <p className="text-xl font-number font-bold">{stats.mvpCount}</p>
+                  </div>
+                </div>
+                {/* 累積積分變動 */}
+                <div className="mt-3 pt-3 border-t border-primary/20 flex items-center justify-center gap-2 text-sm">
+                  <span className="text-muted-foreground">累積積分變動：</span>
+                  {stats.totalRatingChange > 0 ? (
+                    <span className="flex items-center gap-1 text-green-500 font-number font-semibold">
+                      <TrendingUp className="h-4 w-4" /> +{stats.totalRatingChange}
+                    </span>
+                  ) : stats.totalRatingChange < 0 ? (
+                    <span className="flex items-center gap-1 text-red-500 font-number font-semibold">
+                      <TrendingDown className="h-4 w-4" /> {stats.totalRatingChange}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <Minus className="h-4 w-4" /> 0
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-2">
             {history.map((record) => (
               <Card key={record.id} className="bg-card border-border">
                 <CardContent className="p-4">
