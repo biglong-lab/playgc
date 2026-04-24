@@ -6,7 +6,7 @@ import { Gamepad2, Swords, User } from "lucide-react";
 interface NavItem {
   path: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   isActive: (loc: string) => boolean;
 }
 
