@@ -161,16 +161,14 @@ export default function GameCompletionScreen({
   const handleDownloadCard = async () => {
     if (!cardUrl) return;
     try {
-      const res = await fetch(cardUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      // 🚀 client canvas 產出的 data URL 可直接 <a download>
+      //   若是 base64 data: URL 不用 fetch blob，瀏覽器直接存檔
       const a = document.createElement("a");
-      a.href = url;
+      a.href = cardUrl;
       a.download = `chito-achievement-${Date.now()}.jpg`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
       toast({ title: "紀念卡已下載", duration: 1500 });
     } catch {
       toast({ title: "下載失敗", variant: "destructive" });
@@ -180,9 +178,21 @@ export default function GameCompletionScreen({
   const handleShareCard = async () => {
     if (!cardUrl) return;
     try {
+      // data URL 要轉 blob 才能 share 檔案（iOS 必要）
       if (typeof navigator.share === "function") {
-        const res = await fetch(cardUrl);
-        const blob = await res.blob();
+        let blob: Blob;
+        if (cardUrl.startsWith("data:")) {
+          // base64 → blob
+          const b64 = cardUrl.split(",")[1];
+          const binary = atob(b64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++)
+            bytes[i] = binary.charCodeAt(i);
+          blob = new Blob([bytes], { type: "image/jpeg" });
+        } else {
+          const res = await fetch(cardUrl);
+          blob = await res.blob();
+        }
         const file = new File([blob], "achievement.jpg", { type: "image/jpeg" });
         const canShareFiles =
           typeof navigator.canShare === "function" &&
