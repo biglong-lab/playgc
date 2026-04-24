@@ -550,6 +550,62 @@ export function registerMediaRoutes(app: Express) {
   });
 
   /**
+   * 📸 v2: 我的所有照片（個人相簿）
+   * 取得當前登入使用者在所有 session 的照片聚合
+   */
+  app.get(
+    "/api/me/photos",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const userId = req.user?.claims?.sub || req.user?.dbUser?.id;
+        if (!userId) {
+          return res.status(401).json({ error: "未認證" });
+        }
+
+        // 取使用者所有 session IDs
+        const userSessions = await storage.getSessionsByUser(userId);
+        const sessionIds = userSessions.map((s) => s.session.id);
+
+        if (sessionIds.length === 0) {
+          return res.json({ photos: [], total: 0 });
+        }
+
+        const photos = await cloudinaryService.listUserPhotos(sessionIds);
+
+        // 反向對應 session meta（加入遊戲名、時間方便前端顯示）
+        const sessionMap = new Map(
+          userSessions.map((s) => [
+            s.session.id,
+            {
+              gameId: s.session.gameId,
+              startedAt: s.session.startedAt,
+              teamName: s.session.teamName,
+            },
+          ])
+        );
+
+        const photosWithMeta = photos.map((p) => ({
+          ...p,
+          gameId: sessionMap.get(p.sessionId)?.gameId ?? null,
+          teamName: sessionMap.get(p.sessionId)?.teamName ?? null,
+          startedAt: sessionMap.get(p.sessionId)?.startedAt ?? null,
+        }));
+
+        res.json({
+          photos: photosWithMeta,
+          total: photosWithMeta.length,
+        });
+      } catch (error) {
+        console.error("[media] /api/me/photos 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "取得個人相簿失敗",
+        });
+      }
+    }
+  );
+
+  /**
    * 📸 v2: Session 相簿 — 列出該 session 所有玩家照片
    * 玩家可開 /album/:sessionId 查看自己本次遊戲的照片
    */
