@@ -214,12 +214,15 @@ export default function AdminDevices() {
 
   const onlineCount = devices?.filter(d => d.status === "online").length || 0;
   const offlineCount = devices?.filter(d => d.status !== "online").length || 0;
+  const totalCount = devices?.length || 0;
 
   const headerActions = (
     <div className="flex items-center gap-3">
+      {/* 🆕 MQTT 未連接時改 destructive，更醒目 */}
       <Badge
-        variant={mqttStatus?.connected ? "default" : "secondary"}
+        variant={mqttStatus?.connected ? "default" : "destructive"}
         className="gap-1"
+        data-testid="badge-mqtt-status"
       >
         <Radio className="w-3 h-3" />
         MQTT: {mqttStatus?.connected ? "已連接" : "未連接"}
