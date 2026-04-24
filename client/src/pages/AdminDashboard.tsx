@@ -70,14 +70,15 @@ export default function AdminDashboard() {
   const onlineDevices = devices?.filter(d => d.status === "online").length || 0;
   const publishedGames = games?.filter(g => g.status === "published").length || 0;
 
-  const actions = (
+  // 🆕 依權限決定顯示哪些操作按鈕
+  const actions = canCreateGame ? (
     <Link href="/admin/games/new">
       <Button className="gap-2" data-testid="button-new-game">
         <Plus className="w-4 h-4" />
         新增遊戲
       </Button>
     </Link>
-  );
+  ) : null;
 
   return (
     <UnifiedAdminLayout title="管理儀表板" actions={actions}>
