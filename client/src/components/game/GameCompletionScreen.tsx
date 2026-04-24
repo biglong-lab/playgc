@@ -93,6 +93,7 @@ export default function GameCompletionScreen({
   isChapterMode,
   chapterTitle,
   gameId,
+  sessionId,
   onPlayAgain,
   onNavigate,
 }: GameCompletionScreenProps) {
