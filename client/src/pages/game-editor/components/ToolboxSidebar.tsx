@@ -55,7 +55,7 @@ export default function ToolboxSidebar({
 
         <TabsContent
           value="templates"
-          className="flex-1 overflow-auto p-2 space-y-2 m-0"
+          className="flex-1 overflow-y-auto p-2 space-y-2 m-0 min-h-0"
         >
           {PAGE_TEMPLATES.map((template) => (
             <motion.button
