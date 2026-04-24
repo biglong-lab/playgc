@@ -159,7 +159,7 @@ export default function PhotoBurstFlow({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, camera.cameraReady, frameCount, frameIntervalMs]);
 
-  // 上傳階段：所有照片上傳 → 合成
+  // 上傳階段：所有照片上傳 → **優先合成 GIF 動畫**，失敗 fallback 到拼貼
   useEffect(() => {
     if (stage !== "uploading") return;
     let cancelled = false;
@@ -176,24 +176,44 @@ export default function PhotoBurstFlow({
         if (cancelled) return;
         setStage("compositing");
 
+        // 🆕 v2: 先嘗試合成真 GIF（動態）
         try {
-          const comp = await compositeMutation.mutateAsync(ids);
-          if (cancelled) return;
-          setCompositeUrl(comp.compositeUrl);
-          setStage("done");
-        } catch (err) {
-          console.warn("[Burst] 合成失敗:", err);
-          // fallback：拿第一張當紀念
-          if (ids.length > 0) {
-            const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
-              playerPhotoPublicId: ids[0],
-              config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
-              dynamicVars: {},
-            });
-            const data = await res.json();
-            setCompositeUrl(data.compositeUrl);
+          const gifRes = await apiRequest("POST", "/api/cloudinary/burst-to-gif", {
+            tag: getBurstTag(),
+            format: "gif",
+            delayMs: frameIntervalMs,
+          });
+          const gifData = await gifRes.json() as { success?: boolean; url?: string };
+          if (gifData.success && gifData.url) {
+            if (cancelled) return;
+            setCompositeUrl(gifData.url);
+            setStage("done");
+            return;
           }
-          setStage("done");
+          throw new Error("GIF 合成無輸出 URL");
+        } catch (gifErr) {
+          console.warn("[Burst] GIF fallback to collage:", gifErr);
+          // Fallback: 舊拼貼合成
+          try {
+            const comp = await compositeMutation.mutateAsync(ids);
+            if (cancelled) return;
+            setCompositeUrl(comp.compositeUrl);
+            setStage("done");
+            return;
+          } catch (err) {
+            console.warn("[Burst] 拼貼也失敗:", err);
+            // 最後 fallback：第一張當紀念
+            if (ids.length > 0) {
+              const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
+                playerPhotoPublicId: ids[0],
+                config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
+                dynamicVars: {},
+              });
+              const data = await res.json();
+              setCompositeUrl(data.compositeUrl);
+            }
+            setStage("done");
+          }
         }
       } catch (err) {
         toast({
@@ -205,6 +225,7 @@ export default function PhotoBurstFlow({
         burstImagesRef.current = [];
         setBurstImages([]);
         setUploadedIds([]);
+        burstTagRef.current = "";  // 重置 tag
       }
     })();
     return () => { cancelled = true; };
