@@ -172,6 +172,24 @@ export default function FieldEntry() {
             <span className="hidden md:inline"> · </span>
             串聯景點、市集、文化空間的沉浸式體驗
           </p>
+
+          {/* 🆕 Hero 下方 feature strip */}
+          <div className="flex flex-wrap items-center justify-center gap-5 md:gap-6 text-xs md:text-sm text-muted-foreground mt-8">
+            <div className="flex items-center gap-1.5 transition-colors hover:text-foreground cursor-default">
+              <MapPin className="w-4 h-4 text-primary/70" />
+              <span>多場域獨立</span>
+            </div>
+            <span className="text-muted-foreground/30">·</span>
+            <div className="flex items-center gap-1.5 transition-colors hover:text-foreground cursor-default">
+              <Gamepad2 className="w-4 h-4 text-primary/70" />
+              <span>QR · GPS · 拍照</span>
+            </div>
+            <span className="text-muted-foreground/30">·</span>
+            <div className="flex items-center gap-1.5 transition-colors hover:text-foreground cursor-default">
+              <Users className="w-4 h-4 text-primary/70" />
+              <span>團隊協作</span>
+            </div>
+          </div>
         </div>
       </section>
 
