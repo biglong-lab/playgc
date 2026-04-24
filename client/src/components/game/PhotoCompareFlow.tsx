@@ -448,7 +448,7 @@ export default function PhotoCompareFlow({
         )}
 
         <Button
-          onClick={() => camera.startCamera()}
+          onClick={() => camera.startCamera(config.defaultFacingMode ?? "environment")}
           size="lg"
           className="w-full gap-2 h-14"
           data-testid="btn-photo-compare-open-camera"
