@@ -50,13 +50,7 @@ export default function BattleClanDetail() {
   const joinMutation = useMutation({
     mutationFn: async () => {
       const joinFieldId = user?.defaultFieldId || clan?.fieldId || "";
-      const res = await authFetch(`/api/battle/clans/${clanId}/join?fieldId=${joinFieldId}`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "加入失敗");
-      }
+      const res = await apiRequest("POST", `/api/battle/clans/${clanId}/join?fieldId=${joinFieldId}`);
       return res.json();
     },
     onSuccess: () => {
@@ -71,13 +65,7 @@ export default function BattleClanDetail() {
 
   const leaveMutation = useMutation({
     mutationFn: async () => {
-      const res = await authFetch(`/api/battle/clans/${clanId}/leave`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "離開失敗");
-      }
+      await apiRequest("DELETE", `/api/battle/clans/${clanId}/leave`);
     },
     onSuccess: () => {
       toast({ title: "已離開戰隊" });
