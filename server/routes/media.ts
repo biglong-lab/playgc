@@ -378,4 +378,158 @@ export function registerMediaRoutes(app: Express) {
       });
     }
   });
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🎨 紀念照合成 API（v2 — 2026-04-24 新增）
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * 合成紀念照 — 接受玩家照片 publicId + 模板設定 + 動態變數
+   * 回傳 Cloudinary transformation URL（即時生成，無需 webhook）
+   *
+   * 使用場景：
+   *   - photo_spot / photo_compare 驗證成功後合成紀念照
+   *   - achievement_card 遊戲完成時生成成就卡
+   *   - team_photo 全員上傳後合成九宮格
+   */
+  const compositePhotoSchema = z.object({
+    playerPhotoPublicId: z.string().min(1, "缺少 playerPhotoPublicId"),
+    config: z.custom<CompositionConfig>((v) => !!v, {
+      message: "缺少 composition config",
+    }),
+    dynamicVars: z.record(z.string(), z.union([z.string(), z.number(), z.undefined()])).optional(),
+  });
+
+  app.post(
+    "/api/cloudinary/composite-photo",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const parsed = compositePhotoSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            error: parsed.error.errors[0]?.message || "參數錯誤",
+          });
+        }
+
+        const { playerPhotoPublicId, config, dynamicVars } = parsed.data;
+
+        // 驗證 config 合法性
+        const [isValid, errors] = validateCompositionConfig(config);
+        if (!isValid) {
+          return res.status(400).json({
+            error: "合成設定無效",
+            details: errors,
+          });
+        }
+
+        // 注入預設日期（若 dynamicVars 沒給）
+        const vars: DynamicVars = {
+          date: todayDateString(),
+          ...dynamicVars,
+        };
+
+        const compositeUrl = buildCompositeUrl({
+          playerPhotoPublicId,
+          config,
+          dynamicVars: vars,
+        });
+
+        const urlLength = estimateUrlLength({
+          playerPhotoPublicId,
+          config,
+          dynamicVars: vars,
+        });
+
+        // URL 太長警告（Cloudinary 限制約 1500 字元）
+        if (urlLength > 1400) {
+          console.warn(
+            `[composite-photo] URL 長度 ${urlLength} 接近上限，建議改用 named transformation`
+          );
+        }
+
+        res.json({
+          success: true,
+          compositeUrl,
+          urlLength,
+        });
+      } catch (error) {
+        console.error("[media] composite-photo 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "合成失敗",
+        });
+      }
+    }
+  );
+
+  /**
+   * 合成預覽 — 管理員端：用測試圖預覽模板效果
+   * 不需 authenticated 玩家 session，但需 admin
+   */
+  const compositePreviewSchema = z.object({
+    config: z.custom<CompositionConfig>((v) => !!v, { message: "缺少 config" }),
+    testPhotoPublicId: z.string().optional(),  // 預設用系統測試圖
+    dynamicVars: z.record(z.string(), z.union([z.string(), z.number(), z.undefined()])).optional(),
+  });
+
+  // 系統內建測試圖（Cloudinary 免費提供）
+  const DEFAULT_TEST_PHOTO = "samples/people/smiling-man";
+
+  app.post(
+    "/api/admin/photo-composite/preview",
+    requireAdminAuth,
+    async (req, res) => {
+      try {
+        const parsed = compositePreviewSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            error: parsed.error.errors[0]?.message || "參數錯誤",
+          });
+        }
+
+        const { config, testPhotoPublicId, dynamicVars } = parsed.data;
+
+        const [isValid, errors] = validateCompositionConfig(config);
+        if (!isValid) {
+          return res.status(400).json({
+            error: "合成設定無效",
+            details: errors,
+          });
+        }
+
+        const vars: DynamicVars = {
+          date: todayDateString(),
+          gameTitle: "示範遊戲",
+          fieldName: "示範場域",
+          playerName: "示範玩家",
+          score: 100,
+          ...dynamicVars,
+        };
+
+        const compositeUrl = buildCompositeUrl({
+          playerPhotoPublicId: testPhotoPublicId || DEFAULT_TEST_PHOTO,
+          config,
+          dynamicVars: vars,
+        });
+
+        res.json({
+          success: true,
+          compositeUrl,
+          urlLength: compositeUrl.length,
+        });
+      } catch (error) {
+        console.error("[media] composite-preview 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "預覽失敗",
+        });
+      }
+    }
+  );
+
+  /**
+   * 取得預設合成模板（系統內建）
+   */
+  app.get("/api/photo-composite/default-config", (_req, res) => {
+    res.json({ config: DEFAULT_COMPOSITION_CONFIG });
+  });
 }
