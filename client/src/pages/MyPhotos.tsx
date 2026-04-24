@@ -192,6 +192,29 @@ export default function MyPhotos() {
             共 {photos.length} 張照片
           </p>
         </div>
+        {/* 🆕 v2: 一鍵下載全部 */}
+        {photos.length > 0 && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleDownloadAll}
+            disabled={bulkDownloading}
+            className="gap-1"
+            data-testid="btn-download-all-my-photos"
+          >
+            {bulkDownloading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {bulkProgress.done}/{bulkProgress.total}
+              </>
+            ) : (
+              <>
+                <DownloadCloud className="w-4 h-4" />
+                下載全部
+              </>
+            )}
+          </Button>
+        )}
       </header>
 
       <main className="p-4">
