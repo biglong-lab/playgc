@@ -281,21 +281,16 @@ export default function PhotoBurstFlow({
         try {
           const gifAbort = new AbortController();
           const gifTimer = setTimeout(() => gifAbort.abort(), 10000);
-          // 使用者主動跳過的監聽（每 500ms 檢查 skipGifRef）
           const skipCheck = setInterval(() => {
             if (skipGifRef.current) gifAbort.abort();
           }, 500);
-          const gifRes = await fetch("/api/cloudinary/burst-to-gif", {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              tag: getBurstTag(),
-              format: "gif",
-              delayMs: frameIntervalMs,
-            }),
-            signal: gifAbort.signal,
-          }).finally(() => {
+          // 🐛 GIF 合成也要帶 Firebase token（apiRequestWithTimeout 會自動加）
+          const gifRes = await apiRequestWithTimeout(
+            "POST",
+            "/api/cloudinary/burst-to-gif",
+            { tag: getBurstTag(), format: "gif", delayMs: frameIntervalMs },
+            10000,
+          ).finally(() => {
             clearTimeout(gifTimer);
             clearInterval(skipCheck);
           });
@@ -311,21 +306,18 @@ export default function PhotoBurstFlow({
         } catch (gifErr) {
           console.warn("[Burst] GIF 失敗或超時，改用拼貼:", gifErr);
           setCompositeProgress("改用拼貼圖...");
-          // 🐛 拼貼合成：也加 8s timeout（原本用 compositeMutation 沒 timeout）
           try {
-            const collageAbort = new AbortController();
-            const collageTimer = setTimeout(() => collageAbort.abort(), 6000);
-            const res = await fetch("/api/cloudinary/composite-photo", {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
+            // 🐛 拼貼也要帶 token
+            const res = await apiRequestWithTimeout(
+              "POST",
+              "/api/cloudinary/composite-photo",
+              {
                 playerPhotoPublicId: sortedIds[0] ?? "",
                 config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
                 dynamicVars: {},
-              }),
-              signal: collageAbort.signal,
-            }).finally(() => clearTimeout(collageTimer));
+              },
+              6000,
+            );
             const data = await res.json().catch(() => ({} as { compositeUrl?: string }));
             if (cancelled) return;
             if (data.compositeUrl) {
