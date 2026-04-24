@@ -222,6 +222,35 @@ export default function BattleResult() {
             </CardContent>
           </Card>
         ))}
+
+        {/* 🚀 底部 CTA：分享 / 再戰一場 / 對戰歷史 */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2">
+          {myResult && (
+            <Button
+              variant="default"
+              className="gap-2"
+              onClick={handleShareResult}
+              data-testid="button-share-result"
+            >
+              <Share2 className="h-4 w-4" />
+              分享戰績
+            </Button>
+          )}
+          <Link href="/battle">
+            <Button variant="outline" className="w-full gap-2">
+              <Swords className="h-4 w-4" />
+              再戰一場
+            </Button>
+          </Link>
+          {user && (
+            <Link href="/battle/history">
+              <Button variant="outline" className="w-full gap-2">
+                <History className="h-4 w-4" />
+                對戰歷史
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
     </BattleLayout>
   );
