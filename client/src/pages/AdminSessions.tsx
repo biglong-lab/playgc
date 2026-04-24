@@ -10,6 +10,7 @@ import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import EmptyState from "@/components/shared/EmptyState";
 import { GridSkeleton } from "@/components/shared/LoadingSkeleton";
 import MetricCard from "@/components/shared/MetricCard";
+import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
