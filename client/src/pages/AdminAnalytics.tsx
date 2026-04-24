@@ -151,90 +151,39 @@ function AnalyticsStatCards({ overview }: { overview?: AnalyticsOverview }) {
   const active = overview?.activeSessions ?? 0;
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">總遊戲場次</p>
-              <p
-                className={`font-number text-3xl font-bold ${hasData ? "" : "text-muted-foreground"}`}
-                data-testid="analytics-total-sessions"
-              >
-                {total}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                今日: {overview?.todaySessions ?? 0} 場
-              </p>
-            </div>
-            <Users className={`w-8 h-8 ${hasData ? "text-primary/50" : "text-muted-foreground/30"}`} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">完成率</p>
-              <p
-                className={`font-number text-3xl font-bold ${hasData ? "text-success" : "text-muted-foreground"}`}
-                data-testid="analytics-completion-rate"
-              >
-                {hasData ? `${overview?.overallCompletionRate ?? 0}%` : "—"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                完成: {overview?.completedSessions ?? 0} 場
-              </p>
-            </div>
-            <CheckCircle className={`w-8 h-8 ${hasData ? "text-success/50" : "text-muted-foreground/30"}`} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                進行中場次
-                {/* 🆕 有 active 時加脈衝綠點 LIVE 指示 */}
-                {active > 0 && (
-                  <span className="relative flex h-2 w-2" aria-label="live">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-warning" />
-                  </span>
-                )}
-              </p>
-              <p
-                className={`font-number text-3xl font-bold ${active > 0 ? "text-warning" : "text-muted-foreground"}`}
-                data-testid="analytics-active-sessions"
-              >
-                {active}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">即時玩家數</p>
-            </div>
-            <PlayCircle className={`w-8 h-8 ${active > 0 ? "text-warning/50" : "text-muted-foreground/30"}`} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">平均遊戲時間</p>
-              <p
-                className={`font-number text-3xl font-bold ${hasData ? "" : "text-muted-foreground"}`}
-                data-testid="analytics-avg-play-time"
-              >
-                {hasData ? (overview?.averagePlayTime ?? 0) : "—"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">分鐘/場</p>
-            </div>
-            <Clock className="w-8 h-8 text-muted-foreground/50" />
-          </div>
-        </CardContent>
-      </Card>
+      <MetricCard
+        label="總遊戲場次"
+        value={total}
+        sublabel={`今日: ${overview?.todaySessions ?? 0} 場`}
+        icon={Users}
+        accent={hasData ? "primary" : "muted"}
+        testid="analytics-total-sessions"
+      />
+      <MetricCard
+        label="完成率"
+        value={hasData ? `${overview?.overallCompletionRate ?? 0}%` : "—"}
+        sublabel={`完成: ${overview?.completedSessions ?? 0} 場`}
+        icon={CheckCircle}
+        accent={hasData ? "success" : "muted"}
+        testid="analytics-completion-rate"
+      />
+      <MetricCard
+        label="進行中場次"
+        value={active}
+        sublabel="即時玩家數"
+        icon={PlayCircle}
+        accent={active > 0 ? "warning" : "muted"}
+        live={active > 0}
+        testid="analytics-active-sessions"
+      />
+      <MetricCard
+        label="平均遊戲時間"
+        value={hasData ? (overview?.averagePlayTime ?? 0) : "—"}
+        sublabel="分鐘/場"
+        icon={Clock}
+        accent={hasData ? "default" : "muted"}
+        testid="analytics-avg-play-time"
+      />
     </div>
   );
 }
