@@ -159,6 +159,15 @@ export default function Home() {
     }
   }, [user?.firstName]);
 
+  // 🆕 匿名 dialog 的初始值（讀 localStorage 一次即可）
+  const savedAnonName = useMemo(() => {
+    try {
+      return localStorage.getItem("anonymous_player_name") || "";
+    } catch {
+      return "";
+    }
+  }, []);
+
   // 🆕 玩家戰績摘要（已完成場次 + 累計分數 + 不重複遊戲數）
   const playerStats = useMemo(() => {
     if (!userSessions) return { completedCount: 0, totalScore: 0, uniqueGamesCount: 0 };
