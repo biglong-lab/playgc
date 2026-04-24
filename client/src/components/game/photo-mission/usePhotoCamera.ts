@@ -49,6 +49,7 @@ export function usePhotoCamera(): PhotoCameraState {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [cameraReady, setCameraReady] = useState(false);
+  const [facingMode, setFacingMode] = useState<CameraFacing>("environment");
 
   // 🛡 自動重啟保護機制
   // 避免「health check 發現不健康 → 重啟 → 又不健康 → 再重啟」無窮迴圈
