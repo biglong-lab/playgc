@@ -123,7 +123,13 @@ export default function PhotoCompareFlow({
   // 合成紀念照
   const compositeMutation = useMutation({
     mutationFn: async (publicId: string) => {
-      const configRes = await fetch("/api/photo-composite/default-config");
+      // 🆕 v2: 場域自訂 memorial 模板優先
+      const fieldCodeMatch = window.location.pathname.match(/\/f\/([A-Z0-9_-]+)/i);
+      const fieldCode = fieldCodeMatch?.[1]?.toUpperCase();
+      const memorialUrl = fieldCode
+        ? `/api/photo-composite/memorial-config?fieldCode=${encodeURIComponent(fieldCode)}`
+        : "/api/photo-composite/default-config";
+      const configRes = await fetch(memorialUrl);
       const { config: defaultConfig } = await configRes.json();
       const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
         playerPhotoPublicId: publicId,
