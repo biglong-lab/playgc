@@ -119,6 +119,9 @@ export function ApproveAccountDialog({
     account?.username ||
     "此帳號";
 
+  // 🆕 偵測場域還沒建立任何角色的情況（後浦初次授權就是這樣）
+  const hasNoRoles = !roles || roles.length === 0;
+
   return (
     <AlertDialog
       open={!!account}
@@ -135,24 +138,61 @@ export function ApproveAccountDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="space-y-2 py-4">
-          <Label htmlFor="approveRole">指派角色</Label>
-          <Select value={approveRoleId} onValueChange={onApproveRoleIdChange}>
-            <SelectTrigger data-testid="select-approve-role">
-              <SelectValue placeholder="選擇角色（可選）" />
-            </SelectTrigger>
-            <SelectContent>
-              {roles?.map((role) => (
-                <SelectItem key={role.id} value={role.id}>
-                  {role.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            請選擇一個角色以授權此帳號
-          </p>
-        </div>
+        {hasNoRoles ? (
+          // 🆕 場域尚未建立角色 — 引導使用者先去角色管理建立，不要卡在空下拉
+          <div className="space-y-3 py-4">
+            <div
+              className="flex items-start gap-3 p-3 rounded-lg border border-amber-500/40 bg-amber-500/10"
+              data-testid="no-roles-warning"
+            >
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                  本場域尚未建立任何角色
+                </p>
+                <p className="text-xs text-amber-800/80 dark:text-amber-200/80 mt-0.5 leading-relaxed">
+                  授權管理員前，請先到「角色管理」建立角色（例如：場域主管、活動執行者），
+                  再回到此頁選擇指派。
+                </p>
+              </div>
+            </div>
+            <Link href="/admin/roles">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2"
+                data-testid="link-goto-roles-from-approve"
+                onClick={() => {
+                  onClose();
+                  onApproveRoleIdChange("");
+                }}
+              >
+                <Key className="w-4 h-4" />
+                前往角色管理
+                <ExternalLink className="w-3 h-3 ml-auto opacity-60" />
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-2 py-4">
+            <Label htmlFor="approveRole">指派角色</Label>
+            <Select value={approveRoleId} onValueChange={onApproveRoleIdChange}>
+              <SelectTrigger data-testid="select-approve-role">
+                <SelectValue placeholder="選擇角色" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles?.map((role) => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              請選擇一個角色以授權此帳號
+            </p>
+          </div>
+        )}
 
         <AlertDialogFooter>
           <AlertDialogCancel onClick={() => onApproveRoleIdChange("")}>
@@ -161,13 +201,21 @@ export function ApproveAccountDialog({
           <AlertDialogAction
             data-testid="button-confirm-approve"
             onClick={() => {
+              if (hasNoRoles) {
+                toast({
+                  title: "本場域尚無角色",
+                  description: "請先到「角色管理」建立角色",
+                  variant: "destructive",
+                });
+                return;
+              }
               if (!approveRoleId) {
                 toast({ title: "請選擇角色", variant: "destructive" });
                 return;
               }
               onConfirm();
             }}
-            disabled={isPending || !approveRoleId}
+            disabled={isPending || hasNoRoles || !approveRoleId}
           >
             {isPending ? "處理中..." : "確認授權"}
           </AlertDialogAction>
