@@ -60,6 +60,49 @@ if (typeof window !== "undefined" && !localStorage.getItem(CACHE_PURGE_FLAG)) {
   })();
 }
 
+// 🚀 持續性版本比對（取代一次性 purge flag）
+//   每次啟動 fetch /api/version，若 server commit !== client commit → 清快取 reload
+//   這樣未來不用再 bump CACHE_PURGE_FLAG，使用者永遠拿到最新版
+if (typeof window !== "undefined" && CLIENT_COMMIT !== "unknown") {
+  (async () => {
+    try {
+      // 等 1 秒讓主流程先啟動（避免阻塞首屏）
+      await new Promise((r) => setTimeout(r, 1000));
+      const res = await fetch("/api/version", { cache: "no-store" });
+      if (!res.ok) return;
+      const { commit: serverCommit } = await res.json();
+      console.log(
+        `[version-check] client=${CLIENT_COMMIT} server=${serverCommit}`,
+      );
+      if (serverCommit && serverCommit !== CLIENT_COMMIT) {
+        console.warn(
+          `[version-check] 🔄 版本不符，強制清快取 reload (${CLIENT_COMMIT} → ${serverCommit})`,
+        );
+        // 清所有 SW + cache
+        if ("serviceWorker" in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((r) => r.unregister()));
+        }
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((k) => caches.delete(k)));
+        }
+        localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
+        // 只 reload 一次避免無限迴圈（用 session flag）
+        if (!sessionStorage.getItem("chito_version_reloaded")) {
+          sessionStorage.setItem("chito_version_reloaded", "1");
+          window.location.reload();
+        }
+      } else if (serverCommit) {
+        localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
+        sessionStorage.removeItem("chito_version_reloaded"); // 重置
+      }
+    } catch {
+      // 無網路也不阻塞
+    }
+  })();
+}
+
 createRoot(document.getElementById("root")!).render(
   <AuthProvider>
     <App />
