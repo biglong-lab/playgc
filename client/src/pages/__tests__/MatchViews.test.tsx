@@ -147,23 +147,26 @@ describe("WaitingView", () => {
 
   it("顯示參與人數", () => {
     render(<WaitingView {...defaultProps} />);
-    expect(screen.getByText("2 人已加入")).toBeInTheDocument();
+    // 新 UX：用 Badge 顯示 "2 人"，而非「2 人已加入」純文字
+    expect(screen.getByText("2 人")).toBeInTheDocument();
   });
 
   it("創建者可見開始按鈕", () => {
     render(<WaitingView {...defaultProps} />);
-    expect(screen.getByText(/開始對戰/)).toBeInTheDocument();
+    // 用 role=button 精確查詢，避免抓到 fallback 文字
+    expect(screen.getByRole("button", { name: /開始對戰/ })).toBeInTheDocument();
   });
 
   it("非創建者不顯示開始按鈕", () => {
     render(<WaitingView {...defaultProps} isCreator={false} />);
-    expect(screen.queryByText(/開始對戰/)).not.toBeInTheDocument();
+    // 用 role=button 精確查詢
+    expect(screen.queryByRole("button", { name: /開始對戰/ })).not.toBeInTheDocument();
   });
 
   it("只有 1 人時開始按鈕 disabled", () => {
     const match = { accessCode: "X", participants: ["u1"] } as Record<string, unknown>;
     render(<WaitingView {...defaultProps} match={match} />);
-    const btn = screen.getByText(/開始對戰/).closest("button");
+    const btn = screen.getByRole("button", { name: /開始對戰/ });
     expect(btn).toBeDisabled();
   });
 });
