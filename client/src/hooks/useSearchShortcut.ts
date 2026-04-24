@@ -46,6 +46,7 @@ export function useSearchShortcut<T extends HTMLElement = HTMLInputElement>(
       if (isTyping) return;
 
       const isCmdK =
+        !disableCmdK &&
         (e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K");
       const isSlash =
         e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey;
@@ -62,7 +63,7 @@ export function useSearchShortcut<T extends HTMLElement = HTMLInputElement>(
     };
     window.addEventListener("keydown", handleShortcut);
     return () => window.removeEventListener("keydown", handleShortcut);
-  }, []);
+  }, [disableCmdK]);
 
   /**
    * 🆕 Esc 鍵行為：有內容 → 清空；空內容 → 失焦。
