@@ -284,6 +284,8 @@ export interface ChoiceVerifyConfig {
   nextPageId?: string;
   /** 每題答對獎勵點數（預設 10） */
   rewardPerQuestion?: number;
+  /** 🆕 答題後顯示的全域解釋（showExplanation=true 時用，說明正確答案由來） */
+  explanation?: string;
 }
 
 // ============================================================================
