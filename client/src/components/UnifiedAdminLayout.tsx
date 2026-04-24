@@ -88,7 +88,7 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
           initials={initials}
           roleLabel={roleLabel}
           fieldName={admin.fieldName}
-          onLogout={logout}
+          onLogout={handleLogout}
         />
 
         <div className="flex flex-col flex-1 overflow-hidden">
