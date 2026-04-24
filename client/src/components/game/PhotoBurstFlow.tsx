@@ -569,16 +569,16 @@ export default function PhotoBurstFlow({
               </p>
             </div>
 
-            {/* 右上切換鏡頭 */}
+            {/* 🎨 右上切換鏡頭 — 大按鈕帶文字 */}
             <Button
-              size="icon"
-              variant="ghost"
               onClick={() => camera.switchCamera()}
-              className="absolute top-4 right-4 bg-black/60 backdrop-blur hover:bg-black/80 text-white w-12 h-12 rounded-full"
+              className="absolute top-4 right-4 bg-black/75 backdrop-blur hover:bg-black/90 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/30 shadow-xl"
               data-testid="btn-burst-switch-camera"
-              title="切換鏡頭"
             >
               <RefreshCw className="w-5 h-5" />
+              <span className="text-sm font-medium">
+                {camera.facingMode === "user" ? "切後鏡頭" : "切前鏡頭"}
+              </span>
             </Button>
 
             {/* 底部：取消 + 開始連拍 */}
