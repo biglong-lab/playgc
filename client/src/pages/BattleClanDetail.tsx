@@ -36,6 +36,7 @@ export default function BattleClanDetail() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
 
   const { data: clan, isLoading } = useQuery<ClanDetailResponse>({
     queryKey: ["/api/battle/clans", clanId],
