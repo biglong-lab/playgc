@@ -421,6 +421,63 @@ export default function GameCompletionScreen({
           )}
         </motion.div>
       </motion.div>
+
+      {/* 🏆 成就卡 Dialog */}
+      <Dialog open={cardOpen} onOpenChange={setCardOpen}>
+        <DialogContent className="max-w-md p-0 gap-0" data-testid="achievement-card-dialog">
+          <DialogHeader className="px-4 pt-4 pb-2">
+            <DialogTitle className="flex items-center gap-2 text-lg">
+              <Trophy className="w-5 h-5 text-amber-500" />
+              紀念卡
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              儲存或分享你的成就 — 可貼到 LINE / FB / IG 動態
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="relative aspect-square bg-muted">
+            {cardLoading ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">正在生成紀念卡...</p>
+              </div>
+            ) : cardUrl ? (
+              <img
+                src={cardUrl}
+                alt="紀念卡"
+                className="w-full h-full object-cover"
+                data-testid="achievement-card-image"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <X className="w-8 h-8 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2 p-4">
+            <Button
+              onClick={handleDownloadCard}
+              variant="outline"
+              className="flex-1 gap-1"
+              disabled={!cardUrl}
+              data-testid="btn-download-achievement-card"
+            >
+              <Download className="w-4 h-4" />
+              下載
+            </Button>
+            <Button
+              onClick={handleShareCard}
+              className="flex-1 gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white"
+              disabled={!cardUrl}
+              data-testid="btn-share-achievement-card"
+            >
+              <Share2 className="w-4 h-4" />
+              分享
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
