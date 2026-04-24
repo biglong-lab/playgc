@@ -140,29 +140,6 @@ function hasActiveAnnouncement(settings?: FieldSettings | null): boolean {
   return true;
 }
 
-/** 🆕 計算到指定日期還剩幾天（ISO YYYY-MM-DD），null 表示無結束日 */
-function daysUntilDate(isoDate: string | null | undefined): number | null {
-  if (!isoDate) return null;
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const end = new Date(isoDate);
-    end.setHours(0, 0, 0, 0);
-    const diff = end.getTime() - today.getTime();
-    return Math.ceil(diff / (1000 * 60 * 60 * 24));
-  } catch {
-    return null;
-  }
-}
-
-/** 🆕 把剩餘天數轉為顯示文案 */
-function formatRemainingDays(days: number | null): string | null {
-  if (days === null) return null;
-  if (days > 1) return `剩 ${days} 天`;
-  if (days === 1) return "明天下架";
-  if (days === 0) return "今日最後";
-  return null; // 負數（過期）不顯示
-}
 
 export default function AdminStaffFields() {
   const { isAuthenticated } = useAdminAuth();
