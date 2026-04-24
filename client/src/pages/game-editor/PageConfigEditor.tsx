@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Bot, Plus, X as XIcon, Eye, MapPin, ImageIcon } from "lucide-react";
+import { Upload, Bot, Plus, X as XIcon, Eye, MapPin, ImageIcon, Camera } from "lucide-react";
 import {
   Select,
   SelectContent,
