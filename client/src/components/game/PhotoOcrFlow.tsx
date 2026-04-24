@@ -299,14 +299,16 @@ export default function PhotoOcrFlow({
     );
   }
 
-  // 預設：instruction 畫面
-  // 🎨 UX 原則：按鈕在內容正下方即時可見，不用 mt-auto 推到底（會被 BottomNav 遮住）
+  // 🎨 預設：三段式佈局（h-full + flex-col + justify-center）
+  //   - 使用 h-full 配合 GamePlay 的 <main flex-1> 自動填滿可用空間
+  //   - 內容於可用空間垂直置中
+  //   - 不使用 min-h-screen（會溢出 main 被 overflow-hidden 裁切）
   return (
     <div
-      className="min-h-screen bg-background flex flex-col p-4 gap-4 pb-32"
+      className="h-full w-full flex flex-col items-center justify-center p-4 gap-4 overflow-y-auto"
       data-testid="photo-ocr-intro"
     >
-      <div className="text-center space-y-2 pt-4">
+      <div className="text-center space-y-2">
         <ScanText className="w-12 h-12 mx-auto text-primary" />
         <h2
           className="text-2xl font-bold"
@@ -315,18 +317,20 @@ export default function PhotoOcrFlow({
           {config.title || "招牌辨識任務"}
         </h2>
         {config.description && (
-          <p className="text-muted-foreground">{config.description}</p>
+          <p className="text-muted-foreground text-sm px-4">
+            {config.description}
+          </p>
         )}
       </div>
 
       {/* 目標文字列表 */}
-      <div className="max-w-md mx-auto w-full bg-card rounded-lg p-4 space-y-2 shadow">
+      <div className="max-w-md w-full bg-card rounded-lg p-4 space-y-2 shadow-md border">
         <p className="text-xs text-muted-foreground">找出以下任一文字的招牌：</p>
         <div className="flex flex-wrap gap-2">
           {ocr.expectedTexts.map((text, idx) => (
             <span
               key={idx}
-              className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+              className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium"
               data-testid={`photo-ocr-target-${idx}`}
             >
               {text}
@@ -340,24 +344,24 @@ export default function PhotoOcrFlow({
         )}
       </div>
 
-      {/* 參考照片 */}
+      {/* 參考照片（可選）*/}
       {ocr.referenceImageUrl && (
-        <div className="max-w-md mx-auto w-full">
-          <p className="text-xs text-muted-foreground mb-2">參考圖：</p>
+        <div className="max-w-md w-full">
+          <p className="text-xs text-muted-foreground mb-1">參考圖：</p>
           <img
             src={ocr.referenceImageUrl}
             alt="參考招牌"
-            className="w-full rounded-lg object-cover max-h-60"
+            className="w-full rounded-lg object-cover max-h-40"
           />
         </div>
       )}
 
-      {/* 🎨 拍照按鈕 — 緊接內容下方（不用 mt-auto 避免被 BottomNav 擋到）*/}
-      <div className="max-w-md mx-auto w-full">
+      {/* 拍照按鈕 */}
+      <div className="max-w-md w-full">
         <Button
           onClick={camera.startCamera}
           size="lg"
-          className="w-full gap-2 h-14 text-base"
+          className="w-full gap-2 h-14 text-base font-semibold"
           data-testid="btn-photo-ocr-start"
         >
           <Camera className="w-5 h-5" />
