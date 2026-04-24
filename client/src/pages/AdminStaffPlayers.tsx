@@ -51,6 +51,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "./admin-staff/types";
 import { apiRequest } from "@/lib/queryClient";
+import { exportToCsv, formatCsvDateTime, type CsvColumn } from "@/lib/csv-export";
 
 interface MemberRow {
   membership: {
