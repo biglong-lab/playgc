@@ -4,6 +4,7 @@ import {
   HelpCircle, Target, Camera, MapPin, QrCode,
   Play, Clock, Zap, Gift, ArrowRight,
   Bomb, Lock, Smartphone, Vote, Puzzle, GitBranch,
+  ImageIcon, ScanSearch,
 } from "lucide-react";
 
 export const PAGE_TYPES = [
@@ -16,6 +17,9 @@ export const PAGE_TYPES = [
   { value: "conditional_verify", label: "碎片收集", icon: Puzzle, color: "bg-lime-500/20 text-lime-400" },
   { value: "shooting_mission", label: "射擊任務", icon: Target, color: "bg-orange-500/20 text-orange-400" },
   { value: "photo_mission", label: "拍照任務", icon: Camera, color: "bg-green-500/20 text-green-400" },
+  // 🆕 v2 獨立拍照類元件（2026-04-24）
+  { value: "photo_spot", label: "指定拍照", icon: MapPin, color: "bg-emerald-500/20 text-emerald-400" },
+  { value: "photo_compare", label: "拍照確認", icon: ScanSearch, color: "bg-sky-500/20 text-sky-400" },
   { value: "gps_mission", label: "GPS 任務", icon: MapPin, color: "bg-red-500/20 text-red-400" },
   { value: "qr_scan", label: "QR 掃描", icon: QrCode, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "time_bomb", label: "拆彈任務", icon: Bomb, color: "bg-red-600/20 text-red-500" },
