@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import {
   CameraInitializingView, CameraView, UploadingView,
