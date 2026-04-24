@@ -213,6 +213,11 @@ export default function AdminDashboard() {
         <CloudinaryUsageCard />
       </div>
 
+      {/* 🆕 A5: AI 服務用量儀表板（Google Vision OCR） */}
+      <div className="mb-8">
+        <AiUsageCard />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
