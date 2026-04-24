@@ -18,6 +18,7 @@ import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import AppUpdateChecker from "@/components/AppUpdateChecker";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useAuth } from "@/hooks/useAuth";
+import { useErrorReport } from "@/hooks/useErrorReport";
 
 // 首屏路由 — 靜態 import（不需 lazy）
 import Landing from "@/pages/Landing";
