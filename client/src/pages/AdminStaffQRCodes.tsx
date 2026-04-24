@@ -6,6 +6,8 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import EmptyState from "@/components/shared/EmptyState";
 import { ListSkeleton } from "@/components/shared/LoadingSkeleton";
+import SearchKbdHint from "@/components/shared/SearchKbdHint";
+import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
