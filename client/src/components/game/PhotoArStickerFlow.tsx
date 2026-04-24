@@ -405,29 +405,26 @@ export default function PhotoArStickerFlow({
   const handleShare = async () => {
     if (!finalUrl) return;
     try {
+      // 🎯 優先用 Web Share URL（不 fetch blob，避 CORS / iOS Safari 問題）
       if (typeof navigator.share === "function") {
-        const res = await fetch(finalUrl);
-        const blob = await res.blob();
-        const file = new File([blob], "ar-photo.jpg", { type: "image/jpeg" });
-        const canShareFiles =
-          typeof navigator.canShare === "function" &&
-          navigator.canShare({ files: [file] });
-        if (canShareFiles) {
-          await navigator.share({
-            title: "CHITO AR 拍照",
-            text: "看看我的 AR 造型！",
-            files: [file],
-          });
-          return;
-        }
-        await navigator.share({ title: "CHITO AR 拍照", url: finalUrl });
+        await navigator.share({
+          title: "CHITO AR 拍照",
+          text: "看看我的 AR 造型！",
+          url: finalUrl,
+        });
         return;
       }
+      // fallback 複製連結
       await navigator.clipboard.writeText(finalUrl);
-      toast({ title: "已複製連結" });
+      toast({ title: "✅ 已複製連結", description: "可貼到 LINE / FB 分享" });
     } catch (err) {
       if ((err as DOMException)?.name === "AbortError") return;
-      toast({ title: "分享失敗", variant: "destructive" });
+      // 最後 fallback：開新 tab 讓使用者手動儲存
+      window.open(finalUrl, "_blank", "noopener,noreferrer");
+      toast({
+        title: "已開啟圖片",
+        description: "長按圖片可儲存到相簿",
+      });
     }
   };
 
