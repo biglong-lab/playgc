@@ -36,17 +36,12 @@ export function useAdminAuth(options?: { redirectTo?: string }) {
   const [, navigate] = useLocation();
   const redirectTo = options?.redirectTo ?? "/admin/login";
   
-  // 🆕 staleTime 從 5 分鐘降到 30 秒、加 refetchOnWindowFocus，確保：
-  //   1. 切場域後（FieldSelector invalidateQueries "/api/admin/*" 會觸發重取）session 的 fieldId 同步更新
-  //   2. Tab 切回時自動檢查 session 是否仍有效（避免 cookie 過期但 UI 以為還在登入）
-  //   3. 跨場域切換後 admin 物件的 fieldId / fieldCode / fieldName / permissions 都正確
-  // queryKey 保持 "/api/admin/session"（後端根據 cookie 決定回傳哪個 session），
-  // 不用把 fieldId 放進 key — fieldId 是 server 端的 token 狀態，不該當成 client key 分片。
+  // ⚠️ 2026-04-24 hotfix: revert 短 staleTime + refetchOnWindowFocus，
+  // 懷疑跟生產端 React error #310（Suspense + react-query）有關。恢復原設定。
   const { data, isLoading, error, refetch } = useQuery<AdminSessionResponse>({
     queryKey: ["/api/admin/session"],
     queryFn: fetchAdminSession,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 5,
     retry: false,
   });
   
