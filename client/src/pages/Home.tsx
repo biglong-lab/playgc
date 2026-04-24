@@ -157,6 +157,23 @@ export default function Home() {
     }
   }, [user?.firstName]);
 
+  // 🆕 玩家戰績摘要（已完成場次 + 累計分數 + 不重複遊戲數）
+  const playerStats = useMemo(() => {
+    if (!userSessions) return { completedCount: 0, totalScore: 0, uniqueGamesCount: 0 };
+    const completed = userSessions.filter((s) => s.status === "completed");
+    const uniqueGames = new Set<string>();
+    let totalScore = 0;
+    for (const s of completed) {
+      totalScore += s.score || 0;
+      if (s.gameId) uniqueGames.add(s.gameId);
+    }
+    return {
+      completedCount: completed.length,
+      totalScore,
+      uniqueGamesCount: uniqueGames.size,
+    };
+  }, [userSessions]);
+
   // 🆕 搜尋框鍵盤 shortcut：` / ` 或 `Cmd/Ctrl+K` focus 輸入框（桌面玩家加速）
   const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
