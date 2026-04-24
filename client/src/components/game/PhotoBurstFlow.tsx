@@ -217,21 +217,14 @@ export default function PhotoBurstFlow({
       // 等 tag propagate
       await new Promise((r) => setTimeout(r, 500));
 
-      // 嘗試 GIF 合成（10s timeout）
+      // 嘗試 GIF 合成（10s timeout + Firebase auth token）
       try {
-        const gifAbort = new AbortController();
-        const gifTimer = setTimeout(() => gifAbort.abort(), 10000);
-        const gifRes = await fetch("/api/cloudinary/burst-to-gif", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tag: getBurstTag(),
-            format: "gif",
-            delayMs: frameIntervalMs,
-          }),
-          signal: gifAbort.signal,
-        }).finally(() => clearTimeout(gifTimer));
+        const gifRes = await apiRequestWithTimeout(
+          "POST",
+          "/api/cloudinary/burst-to-gif",
+          { tag: getBurstTag(), format: "gif", delayMs: frameIntervalMs },
+          10000,
+        );
         const gifData = (await gifRes.json()) as {
           success?: boolean;
           url?: string;
@@ -242,27 +235,11 @@ export default function PhotoBurstFlow({
           return;
         }
       } catch (gifErr) {
-        console.warn("[Burst BG] GIF 失敗，用第一張 Cloudinary URL:", gifErr);
+        console.warn("[Burst BG] GIF 失敗，保留本地圖:", gifErr);
       }
 
-      // GIF 失敗 → 用第一張 Cloudinary URL（比 base64 更輕）
-      try {
-        const firstPublicId = sortedIds[0];
-        if (firstPublicId) {
-          // 直接組 Cloudinary 公開 URL
-          const res = await fetch("/api/cloudinary/cloud-name").catch(
-            () => null,
-          );
-          const cloudName = res
-            ? (await res.json()).cloudName || "dhczwewns"
-            : "dhczwewns";
-          const cloudUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${firstPublicId}`;
-          console.log("[Burst BG] 用 Cloudinary URL 替換:", cloudUrl);
-          setCompositeUrl(cloudUrl);
-        }
-      } catch (err) {
-        console.warn("[Burst BG] Cloudinary URL 替換失敗:", err);
-      }
+      // GIF 失敗 → 直接保留本地 base64（已經在 setCompositeUrl 了）
+      // 不再嘗試組 Cloudinary URL（需要 cloud name，複雜）
     } catch (err) {
       console.warn("[Burst BG] 背景處理錯誤:", err);
       // 使用者已經看到本地圖了，靜默失敗
