@@ -64,6 +64,12 @@ vi.mock("../adminAuth", () => ({
 
 vi.mock("@shared/schema", () => ({
   fields: { id: "fields.id", code: "fields.code", createdAt: "fields.createdAt" },
+  roles: { id: "roles.id", fieldId: "roles.fieldId", systemRole: "roles.systemRole" },
+  rolePermissions: { roleId: "rolePermissions.roleId" },
+  permissions: { id: "permissions.id", key: "permissions.key" },
+  adminAccounts: { id: "adminAccounts.id", fieldId: "adminAccounts.fieldId", email: "adminAccounts.email", firebaseUserId: "adminAccounts.firebaseUserId" },
+  games: { id: "games.id", fieldId: "games.fieldId" },
+  parseFieldSettings: vi.fn((raw: unknown) => (typeof raw === "object" && raw !== null ? raw : {})),
   insertFieldSchema: {
     parse: vi.fn((data: Record<string, unknown>) => data),
     partial: vi.fn(() => ({
