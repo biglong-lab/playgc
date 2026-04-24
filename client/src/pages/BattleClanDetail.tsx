@@ -21,7 +21,6 @@ import type { BattleClan } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
 import { Shield, Users, Trophy, Crown, Star, Loader2, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { authFetch } from "@/lib/authFetch";
 import { apiRequest } from "@/lib/queryClient";
 import ClanManagePanel, { MemberActionMenu, type ClanMemberWithName } from "@/components/battle/ClanManagePanel";
 
