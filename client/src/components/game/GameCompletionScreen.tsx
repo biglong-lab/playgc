@@ -20,6 +20,7 @@ interface GameCompletionScreenProps {
   readonly isChapterMode: boolean;
   readonly chapterTitle?: string;
   readonly gameId: string;
+  readonly sessionId?: string;   // 🆕 v2: 傳入以便顯示「看本場相簿」連結
   readonly onPlayAgain: () => void;
   readonly onNavigate: (path: string) => void;
 }
