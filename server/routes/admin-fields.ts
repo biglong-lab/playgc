@@ -5,7 +5,7 @@ import {
   logAuditAction,
 } from "../adminAuth";
 import { db } from "../db";
-import { fields, parseFieldSettings, games, roles, rolePermissions, permissions } from "@shared/schema";
+import { fields, parseFieldSettings, games, roles, rolePermissions, permissions, adminAccounts } from "@shared/schema";
 import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
