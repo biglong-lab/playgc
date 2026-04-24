@@ -171,8 +171,9 @@ export default function AdminStaffFields() {
     enabled: isAuthenticated,
   });
 
-  // 🆕 模組 filter — 只看啟用該模組的場域
-  const [moduleFilter, setModuleFilter] = useState<"all" | keyof FieldSettings>("all");
+  // 🆕 模組 filter — 只看啟用該模組的場域（加 has-announcement / urgent-announcement 特殊選項）
+  type FilterKey = "all" | "has_announcement" | "urgent_announcement" | keyof FieldSettings;
+  const [moduleFilter, setModuleFilter] = useState<FilterKey>("all");
   // 🆕 排序
   type SortKey = "created_desc" | "created_asc" | "name" | "modules_desc" | "modules_asc";
   const [sortBy, setSortBy] = useState<SortKey>("created_desc");
