@@ -171,7 +171,11 @@ export function buildCompositeUrl(input: CompositionInput): string {
     throw new Error('CLOUDINARY_CLOUD_NAME not configured');
   }
 
-  const { playerPhotoPublicId, config, dynamicVars = {} } = input;
+  const { playerPhotoPublicId, playerPhotoUrl, config, dynamicVars = {} } = input;
+  if (!playerPhotoPublicId && !playerPhotoUrl) {
+    throw new Error('playerPhotoPublicId 或 playerPhotoUrl 至少需提供一個');
+  }
+
   const parts: string[] = [];
 
   // Canvas 裁切
@@ -187,8 +191,13 @@ export function buildCompositeUrl(input: CompositionInput): string {
   }
 
   const transformStr = parts.join('/');
-  // 結尾 publicId 不轉義斜線（這是底圖路徑）
-  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transformStr}/${playerPhotoPublicId}.jpg`;
+
+  // 優先用 publicId（image/upload path），否則用遠端 URL（image/fetch path）
+  if (playerPhotoPublicId) {
+    return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/${transformStr}/${playerPhotoPublicId}.jpg`;
+  }
+  const encodedUrl = encodeURIComponent(playerPhotoUrl!);
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/fetch/${transformStr}/${encodedUrl}`;
 }
 
 /**
