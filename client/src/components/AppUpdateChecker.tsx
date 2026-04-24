@@ -98,46 +98,43 @@ export default function AppUpdateChecker() {
 
   return (
     <div
-      className="fixed bottom-4 right-4 z-[100] bg-card border-2 border-primary/40 rounded-xl shadow-2xl p-4 flex items-center gap-3 max-w-sm animate-in slide-in-from-bottom-4 fade-in"
+      className="fixed bottom-4 right-4 left-4 sm:left-auto z-[100] bg-card border-2 border-primary/40 rounded-xl shadow-2xl p-4 sm:max-w-sm animate-in slide-in-from-bottom-4 fade-in"
       role="alert"
       data-testid="app-update-toast"
     >
-      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-        <RotateCw className="w-5 h-5 text-primary" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm">有新版本可用 🎉</p>
-        <p className="text-xs text-muted-foreground mt-0.5">
-          點「立即更新」取得最新功能與修復
-        </p>
-      </div>
-      <div className="flex flex-col gap-1 shrink-0">
-        <Button
-          size="sm"
-          onClick={handleUpdate}
-          className="gap-1.5"
-          data-testid="button-app-update"
-        >
-          立即更新
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setDismissed(true)}
-          className="h-6 text-xs text-muted-foreground"
-          data-testid="button-app-update-dismiss"
-        >
-          稍後
-        </Button>
-      </div>
+      {/* 右上角關閉（小 X） */}
       <button
         type="button"
         onClick={() => setDismissed(true)}
-        className="absolute top-1 right-1 text-muted-foreground/50 hover:text-muted-foreground p-1"
-        aria-label="關閉"
+        className="absolute top-2 right-2 text-muted-foreground/50 hover:text-muted-foreground p-1.5 rounded hover:bg-muted/60"
+        aria-label="關閉（稍後再更新）"
+        data-testid="button-app-update-dismiss"
       >
-        <X className="w-3.5 h-3.5" />
+        <X className="w-4 h-4" />
       </button>
+
+      {/* 內容區（頂部 icon + 文字） */}
+      <div className="flex items-start gap-3 pr-8 mb-3">
+        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+          <RotateCw className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0 pt-0.5">
+          <p className="font-semibold text-sm">有新版本可用 🎉</p>
+          <p className="text-xs text-muted-foreground mt-0.5 leading-snug">
+            更新取得最新功能與修復
+          </p>
+        </div>
+      </div>
+
+      {/* 🆕 立即更新按鈕 — 佔滿寬度、夠大好點（iOS tap target ≥ 44px） */}
+      <Button
+        onClick={handleUpdate}
+        className="w-full gap-2 h-11 text-base font-semibold"
+        data-testid="button-app-update"
+      >
+        <RotateCw className="w-4 h-4" />
+        立即更新
+      </Button>
     </div>
   );
 }
