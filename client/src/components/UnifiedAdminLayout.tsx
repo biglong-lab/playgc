@@ -114,19 +114,24 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
+                    // 依平台 dispatch 正確的 modifier（Windows/Linux 用 ctrl 會比 meta 正確）
                     const event = new KeyboardEvent("keydown", {
                       key: "k",
-                      metaKey: true,
-                      ctrlKey: true,
+                      metaKey: isMac,
+                      ctrlKey: !isMac,
                       bubbles: true,
                     });
                     document.dispatchEvent(event);
                   }}
                   className="hidden md:flex items-center gap-1.5 px-2.5 py-1 text-xs text-muted-foreground bg-muted hover:bg-muted/80 rounded-md border border-border transition-colors"
-                  title="快速搜尋 (⌘K)"
+                  title={isMac ? "快速搜尋 (⌘K)" : "快速搜尋 (Ctrl+K)"}
+                  data-testid="btn-command-palette-trigger"
                 >
                   <span>🔍 快速跳轉</span>
-                  <kbd className="px-1 py-0.5 bg-background rounded text-[10px] font-mono">⌘K</kbd>
+                  {/* 🆕 依平台顯示 ⌘K 或 Ctrl K */}
+                  <kbd className="px-1 py-0.5 bg-background rounded text-[10px] font-mono">
+                    {isMac ? "⌘K" : "Ctrl K"}
+                  </kbd>
                 </button>
                 {actions}
                 <ThemeToggle />
