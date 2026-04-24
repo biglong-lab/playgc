@@ -22,6 +22,7 @@ export const PAGE_TYPES = [
   { value: "photo_compare", label: "拍照確認", icon: ScanSearch, color: "bg-sky-500/20 text-sky-400" },
   { value: "photo_before_after", label: "前後對比", icon: ImageIcon, color: "bg-fuchsia-500/20 text-fuchsia-400" },
   { value: "photo_burst", label: "連拍紀念", icon: LayoutGrid, color: "bg-rose-500/20 text-rose-400" },
+  { value: "photo_ar", label: "AR 貼圖拍照", icon: Sparkles, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "gps_mission", label: "GPS 任務", icon: MapPin, color: "bg-red-500/20 text-red-400" },
   { value: "qr_scan", label: "QR 掃描", icon: QrCode, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "time_bomb", label: "拆彈任務", icon: Bomb, color: "bg-red-600/20 text-red-500" },
