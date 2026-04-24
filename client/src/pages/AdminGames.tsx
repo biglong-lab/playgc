@@ -38,12 +38,14 @@ export default function AdminGames() {
   // 🆕 搜尋框鍵盤 shortcut（只綁 `/` 和 Esc，⌘K 讓給 CommandPalette）
   const { inputRef: searchInputRef, handleEscape } = useSearchShortcut<HTMLInputElement>({ disableCmdK: true });
 
-  // 🆕 C2: 匯入賈村示範遊戲
+  // 🆕 C2 + 擴充: 匯入示範遊戲（支援多模板）
   const importDemoMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (templateKey: string) => {
       const res = await fetch("/api/admin/games/create-from-demo", {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ templateKey }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -59,10 +61,9 @@ export default function AdminGames() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/games"] });
       toast({
-        title: "✅ 賈村示範遊戲已建立",
-        description: `共 ${data.pagesCreated} 頁，玩家端：${data.playerUrl}`,
+        title: "✅ 示範遊戲已建立",
+        description: `${data.game.title} · ${data.pagesCreated} 頁 · ${data.playerUrl}`,
       });
-      // 跳到編輯器
       navigate(`/admin/games/${data.game.id}/edit`);
     },
     onError: (err) => {
