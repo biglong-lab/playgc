@@ -162,3 +162,200 @@ describe("evaluateFlowRouter — 整合", () => {
     expect(evaluateFlowRouter(config, {}, [], 10)).toBe(null);
   });
 });
+
+// ============================================================================
+// 數字比較條件（之前完全沒測）
+// ============================================================================
+describe("evaluateCondition — variable_gt/lt/gte/lte 數字比較", () => {
+  it("variable_gt 嚴格大於", () => {
+    const cond: FlowCondition = { type: "variable_gt", variableName: "x", variableValue: 10 };
+    expect(evaluateCondition(cond, { x: 11 }, [], 0)).toBe(true);
+    expect(evaluateCondition(cond, { x: 10 }, [], 0)).toBe(false);
+    expect(evaluateCondition(cond, { x: 5 }, [], 0)).toBe(false);
+  });
+
+  it("variable_lt 嚴格小於", () => {
+    const cond: FlowCondition = { type: "variable_lt", variableName: "x", variableValue: 10 };
+    expect(evaluateCondition(cond, { x: 9 }, [], 0)).toBe(true);
+    expect(evaluateCondition(cond, { x: 10 }, [], 0)).toBe(false);
+    expect(evaluateCondition(cond, { x: 11 }, [], 0)).toBe(false);
+  });
+
+  it("variable_gte 大於等於", () => {
+    const cond: FlowCondition = { type: "variable_gte", variableName: "x", variableValue: 10 };
+    expect(evaluateCondition(cond, { x: 10 }, [], 0)).toBe(true);
+    expect(evaluateCondition(cond, { x: 11 }, [], 0)).toBe(true);
+    expect(evaluateCondition(cond, { x: 9 }, [], 0)).toBe(false);
+  });
+
+  it("variable_lte 小於等於", () => {
+    const cond: FlowCondition = { type: "variable_lte", variableName: "x", variableValue: 10 };
+    expect(evaluateCondition(cond, { x: 10 }, [], 0)).toBe(true);
+    expect(evaluateCondition(cond, { x: 9 }, [], 0)).toBe(true);
+    expect(evaluateCondition(cond, { x: 11 }, [], 0)).toBe(false);
+  });
+
+  it("字串數字也能比（'5' > 3）", () => {
+    const cond: FlowCondition = { type: "variable_gt", variableName: "x", variableValue: 3 };
+    expect(evaluateCondition(cond, { x: "5" }, [], 0)).toBe(true);
+  });
+
+  it("缺少變數視為 0", () => {
+    const cond: FlowCondition = { type: "variable_gt", variableName: "missing", variableValue: -1 };
+    expect(evaluateCondition(cond, {}, [], 0)).toBe(true); // 0 > -1
+  });
+});
+
+// ============================================================================
+// pickRandomRoute（加權隨機）
+// ============================================================================
+describe("pickRandomRoute — 加權隨機選擇", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("空 routes → null", () => {
+    expect(pickRandomRoute([])).toBe(null);
+  });
+
+  it("單一 route → 一定選到它", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    const routes: FlowRoute[] = [{ id: "r1", conditions: [], nextPageId: "p1" }];
+    expect(pickRandomRoute(routes)).toBe("p1");
+  });
+
+  it("Math.random=0 → 選第一個", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const routes: FlowRoute[] = [
+      { id: "r1", conditions: [{ type: "random", weight: 1 }], nextPageId: "p1" },
+      { id: "r2", conditions: [{ type: "random", weight: 1 }], nextPageId: "p2" },
+    ];
+    expect(pickRandomRoute(routes)).toBe("p1");
+  });
+
+  it("Math.random=0.99 → 選最後一個", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.99);
+    const routes: FlowRoute[] = [
+      { id: "r1", conditions: [{ type: "random", weight: 1 }], nextPageId: "p1" },
+      { id: "r2", conditions: [{ type: "random", weight: 1 }], nextPageId: "p2" },
+    ];
+    expect(pickRandomRoute(routes)).toBe("p2");
+  });
+
+  it("加權：weight=9 比 weight=1 容易被選到", () => {
+    // total weight = 10，random*10=5（落在 weight 9 範圍內）
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    const routes: FlowRoute[] = [
+      { id: "heavy", conditions: [{ type: "random", weight: 9 }], nextPageId: "common" },
+      { id: "light", conditions: [{ type: "random", weight: 1 }], nextPageId: "rare" },
+    ];
+    expect(pickRandomRoute(routes)).toBe("common");
+  });
+
+  it("總權重 0 → 回傳第一個 route", () => {
+    const routes: FlowRoute[] = [
+      { id: "r1", conditions: [{ type: "random", weight: 0 }], nextPageId: "p1" },
+      { id: "r2", conditions: [{ type: "random", weight: 0 }], nextPageId: "p2" },
+    ];
+    expect(pickRandomRoute(routes)).toBe("p1");
+  });
+});
+
+// ============================================================================
+// resolveFlowRouter — 連續 flow_router 跳轉解析
+// ============================================================================
+describe("resolveFlowRouter — 多 router 跳轉", () => {
+  it("非 flow_router 頁面 → 直接回傳 startIndex", () => {
+    const pages = [
+      { id: "p1", pageType: "text_card", config: {} },
+      { id: "p2", pageType: "vote", config: {} },
+    ];
+    expect(resolveFlowRouter(pages, 0, {}, [], 0)).toBe(0);
+  });
+
+  it("單一 flow_router 跳到目標頁", () => {
+    const pages = [
+      {
+        id: "router1",
+        pageType: "flow_router",
+        config: {
+          mode: "conditional",
+          routes: [{ id: "r1", conditions: [], nextPageId: "target" }],
+        } as FlowRouterConfig,
+      },
+      { id: "target", pageType: "text_card", config: {} },
+    ];
+    expect(resolveFlowRouter(pages, 0, {}, [], 0)).toBe(1); // 跳到 index 1
+  });
+
+  it("_end 特殊值 → 返回 -1（遊戲結束）", () => {
+    const pages = [
+      {
+        id: "router1",
+        pageType: "flow_router",
+        config: {
+          mode: "conditional",
+          routes: [{ id: "r1", conditions: [], nextPageId: "_end" }],
+        } as FlowRouterConfig,
+      },
+    ];
+    expect(resolveFlowRouter(pages, 0, {}, [], 0)).toBe(-1);
+  });
+
+  it("無匹配 + 無 default → 跳到下一頁", () => {
+    const pages = [
+      {
+        id: "router1",
+        pageType: "flow_router",
+        config: {
+          mode: "conditional",
+          routes: [
+            { id: "r1", conditions: [{ type: "score_above", scoreThreshold: 100 }], nextPageId: "winner" },
+          ],
+        } as FlowRouterConfig,
+      },
+      { id: "next", pageType: "text_card", config: {} },
+    ];
+    expect(resolveFlowRouter(pages, 0, {}, [], 10)).toBe(1);
+  });
+
+  it("連續兩個 flow_router 鏈式跳轉", () => {
+    const pages = [
+      {
+        id: "router1",
+        pageType: "flow_router",
+        config: {
+          mode: "conditional",
+          routes: [{ id: "r1", conditions: [], nextPageId: "router2" }],
+        } as FlowRouterConfig,
+      },
+      {
+        id: "router2",
+        pageType: "flow_router",
+        config: {
+          mode: "conditional",
+          routes: [{ id: "r2", conditions: [], nextPageId: "final" }],
+        } as FlowRouterConfig,
+      },
+      { id: "final", pageType: "text_card", config: {} },
+    ];
+    expect(resolveFlowRouter(pages, 0, {}, [], 0)).toBe(2);
+  });
+
+  it("找不到 nextPageId → 跳到下一頁（fallthrough）", () => {
+    const pages = [
+      {
+        id: "router1",
+        pageType: "flow_router",
+        config: {
+          mode: "conditional",
+          routes: [{ id: "r1", conditions: [], nextPageId: "ghost" }], // 不存在
+          defaultNextPageId: "ghost",
+        } as FlowRouterConfig,
+      },
+      { id: "next", pageType: "text_card", config: {} },
+    ];
+    // 不存在的目標 → 走到 fallback 路徑（index++）
+    expect(resolveFlowRouter(pages, 0, {}, [], 0)).toBe(1);
+  });
+});
