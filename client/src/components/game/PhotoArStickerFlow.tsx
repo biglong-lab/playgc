@@ -435,11 +435,18 @@ export default function PhotoArStickerFlow({
     );
   }
 
-  if (preloadError) {
+  // 🎨 B4+：所有貼圖都載入失敗才阻擋；部分失敗只靜默提示，遊戲繼續
+  if (preloadDone && failedCount === stickers.length) {
     return (
-      <div className="p-6 text-center" data-testid="photo-ar-preload-fail">
-        <AlertTriangle className="w-10 h-10 mx-auto text-destructive mb-3" />
-        <p className="text-destructive font-medium">{preloadError}</p>
+      <div className="min-h-full flex flex-col items-center justify-center p-6 text-center gap-3" data-testid="photo-ar-preload-fail">
+        <AlertTriangle className="w-12 h-12 text-amber-500" />
+        <p className="text-lg font-medium">貼圖暫時無法載入</p>
+        <p className="text-sm text-muted-foreground">
+          你仍可繼續遊戲，可以略過此關
+        </p>
+        <Button onClick={handleContinue} variant="outline" data-testid="btn-ar-skip">
+          跳過此任務
+        </Button>
       </div>
     );
   }
