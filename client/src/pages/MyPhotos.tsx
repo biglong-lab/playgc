@@ -50,6 +50,9 @@ export default function MyPhotos() {
   const link = useFieldLink();
   const { toast } = useToast();
   const [lightboxPhoto, setLightboxPhoto] = useState<UserPhoto | null>(null);
+  // 🆕 v2: 批次下載狀態
+  const [bulkDownloading, setBulkDownloading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0 });
 
   const { data, isLoading, error } = useQuery<UserPhotosResponse>({
     queryKey: ["/api/me/photos"],
