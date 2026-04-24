@@ -1,15 +1,20 @@
 // 🔍 搜尋框鍵盤快捷鍵 hook
 // 用法：
-//   const { inputRef, isMac } = useSearchShortcut();
-//   <Input ref={inputRef} ... />
+//   const { inputRef, isMac, handleEscape } = useSearchShortcut();
+//   <Input
+//     ref={inputRef}
+//     value={value}
+//     onKeyDown={(e) => handleEscape(e, value, setValue)}
+//   />
 //
 // 按下：
-//   - `/`            → focus + select
-//   - `Cmd+K` (Mac)  → focus + select
-//   - `Ctrl+K` (其他) → focus + select
+//   - `/`            → focus + select（global）
+//   - `Cmd+K` (Mac)  → focus + select（global）
+//   - `Ctrl+K` (其他) → focus + select（global）
+//   - `Esc`          → 有內容先清空、空內容則失焦（需在 input 上綁 onKeyDown）
 //
 // 自動忽略已在輸入中（INPUT / TEXTAREA / contentEditable）的狀態，避免干擾打字。
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 export function useSearchShortcut<T extends HTMLElement = HTMLInputElement>() {
   const inputRef = useRef<T>(null);
