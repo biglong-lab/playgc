@@ -105,6 +105,18 @@ export default function GameCompletionScreen({
   // 🔧 場域感知 link — 避免「後浦玩家按返回大廳跑到賈村」的隔離 bug
   const link = useFieldLink();
 
+  // 🆕 v2: 查本次 session 有無照片 — 有才顯示「看本場相簿」按鈕
+  const { data: albumData } = useQuery<{ photos?: unknown[] }>({
+    queryKey: [`/api/sessions/${sessionId}/album`],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/sessions/${sessionId}/album`);
+      return res.json();
+    },
+    enabled: !!sessionId,
+    staleTime: 60_000,
+  });
+  const hasAlbumPhotos = (albumData?.photos?.length ?? 0) > 0;
+
   // 🏆 成就卡 state
   const [cardOpen, setCardOpen] = useState(false);
   const [cardUrl, setCardUrl] = useState<string | null>(null);
