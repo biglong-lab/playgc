@@ -14,6 +14,7 @@ export type MatchLobbyView = "loading" | "browse" | "waiting" | "countdown" | "p
 export function useMatchLobby() {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
+  const link = useFieldLink();   // 🔧 場域感知 link builder
   const { user, firebaseUser, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [currentMatchId, setCurrentMatchId] = useState<string | null>(null);
