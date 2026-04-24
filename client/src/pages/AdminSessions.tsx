@@ -290,7 +290,26 @@ export default function AdminSessions() {
           <EmptyState
             icon={Users}
             title="沒有符合條件的場次"
-            description="改變上方篩選條件或等玩家開始新場次"
+            description={
+              searchTerm || statusFilter !== "all" || gameFilter !== "all"
+                ? "改變上方篩選條件或點「清除所有篩選」"
+                : "等玩家開始新場次"
+            }
+            actions={
+              searchTerm || statusFilter !== "all" || gameFilter !== "all"
+                ? [
+                    {
+                      label: "清除所有篩選",
+                      variant: "outline",
+                      onClick: () => {
+                        setSearchTerm("");
+                        setStatusFilter("all");
+                        setGameFilter("all");
+                      },
+                    },
+                  ]
+                : undefined
+            }
           />
         )}
       </div>
