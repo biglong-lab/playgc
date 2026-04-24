@@ -1537,24 +1537,176 @@ async function resolvePhotoSetting<K extends keyof FieldPhotoSettings>(
 
 ---
 
-## 下一步決策點（請決定後再進 Phase 1）
+## 決策紀錄（2026-04-24 v2 定案）
 
-1. **先做 MVP（Phase 0-4）還是全包？**
-   - 推薦 MVP，穩了再擴
-2. **紀念照是否強制合成？**
-   - 推薦：預設開啟，管理員可關
-3. **AI 預設模型？**
-   - 推薦：Gemini 1.5 Flash（成本最優）
-4. **GPS + Vision 驗證策略預設？**
-   - 推薦：`gps_and_vision`（嚴格）
-5. **原圖保留期？**
-   - 推薦：30 天自動刪
-6. **是否支援匿名玩家拍照？**
-   - 推薦：支援（匿名 session 也能拍，只是無法放個人相簿）
+| # | 問題 | 使用者決策 |
+|---|------|----------|
+| 1 | 先做 MVP 還是全包？ | ✅ **全包**（Phase 0-9 全做）|
+| 2 | 紀念照是否強制合成？ | ✅ **可設定，預設開啟** |
+| 3 | AI 預設模型？ | ✅ **OpenRouter Gemini Flash + 多模型可自選** |
+| 4 | GPS+Vision 驗證策略預設？ | ✅ **可設定（`verifyStrategy` 四選項）** |
+| 5 | 原圖保留期？ | ✅ **可設定 + 外部管道擴充**（FB / Drive / 本地 / 本平台）|
+| 6 | 是否支援匿名玩家拍照？ | ✅ **支援，可設定** |
 
 ---
 
-**Plan 結尾**：本規劃涵蓋 8 個拍照元件 mode + 6 個延伸建議 + 共用基礎設施。
-Phase 0-4 MVP 投入 12.5 天可交付核心功能，滿足使用者主需求（指定拍照 + 拍照確認 + 紀念照）。
-技術風險低（所有 API 均成熟）、成本低（月 $5 可服務 1 萬玩家）、隱私合規（不做人臉替換）。
-建議先執行 Phase 0 PoC，驗證 Cloudinary transformation chain 後進入 Phase 1 基礎設施開發。
+## 全包路線圖調整（v2 決策新增）
+
+使用者決定「全包」，原 Phase 0-9 全部排入路線圖。但我依照「**快速交付核心價值 → 逐步延伸**」重新分層，
+分成 **4 個交付里程碑（milestones）**，每個 milestone 都可獨立上線、獨立產生業務價值。
+
+### Milestone A — 核心拍照能力（~13 天）
+
+**目標**：指定拍照 + 拍照確認 + 紀念照自動合成上線，滿足使用者最核心需求。
+
+| Phase | 任務 | 估時 | 累計 |
+|-------|------|-----|------|
+| Phase 0 | Cloudinary 合成 PoC spike | 0.5 | 0.5 |
+| Phase 1 | 基礎設施（schema migration + photo_templates + composer service）| 3 | 3.5 |
+| Phase 2 | 指定拍照 `photo_spot`（編輯器 + 前端 + GPS 雙通道 AI）| 4 | 7.5 |
+| Phase 3 | 拍照確認 `photo_compare`（multi-image AI prompt）| 3 | 10.5 |
+| Phase 4 | 成就徽章卡 `achievement_card`（整合 F3 分享）| 2 | 12.5 |
+
+**Milestone A 交付物**：
+- ✅ 全設定化（三層繼承：場域 / 遊戲 / 頁面）
+- ✅ 多 AI 模型自選（沿用既有 `AIModelSelect`）
+- ✅ 紀念照自動合成 + 本地下載 + Web Share API
+- ✅ 成就卡 + 分享戰績整合
+
+### Milestone B — 社交擴散能力（~9 天）
+
+**目標**：讓紀念照更好分享，擴大傳播效應。
+
+| Phase | 任務 | 估時 | 累計 |
+|-------|------|-----|------|
+| Phase 5 | 時間軸相簿 `/album/:sessionId` + `/me/photos` + PDF 匯出 | 2 | 14.5 |
+| Phase 6 | 團體合影 `team_photo`（WebSocket 等待 + 九宮格合成）| 4 | 18.5 |
+| Phase 5.5 | **🆕 外部分享 Level 1** — 本地下載 + Web Share API（含圖）+ 個人相簿整合 | 1.5 | 20 |
+| Phase 5.6 | **🆕 外部分享 Level 2** — Google Drive 直傳（OAuth + Drive API）| 1.5 | 21.5 |
+
+**Milestone B 交付物**：
+- ✅ 整本遊戲的照片回顧
+- ✅ 團體照紀念
+- ✅ 四管道分享（下載 / Web Share / 本平台相簿 / Google Drive）
+
+### Milestone C — 進階創意元件（~5 天）
+
+**目標**：更多拍照玩法，讓遊戲更有趣。
+
+| Phase | 任務 | 估時 | 累計 |
+|-------|------|-----|------|
+| Phase 7 | 連拍 GIF `burst_gif` | 2 | 23.5 |
+| Phase 8 | 前後對比 `before_after` | 1 | 24.5 |
+| Phase 9a | AR 貼圖（固定位置版本）| 2 | 26.5 |
+
+**Milestone C 交付物**：
+- ✅ 動態紀念圖（GIF）
+- ✅ 敘事性拍照（前後對比）
+- ✅ 簡單 AR 濾鏡效果
+
+### Milestone D — 延伸加值（~5 天，optional）
+
+**目標**：進階功能（成本/效益比較低的，做與不做皆可）。
+
+| Phase | 任務 | 估時 | 累計 |
+|-------|------|-----|------|
+| Phase 9b | AR 臉部追蹤（MediaPipe Face Landmarker）| 3 | 29.5 |
+| Phase 10 | AI 用量儀表板 + 預算監控 | 1 | 30.5 |
+| Phase 11 | 管理端模板視覺編輯器（drag-and-drop）| 1 | 31.5 |
+
+**Milestone D 交付物**（選配）：
+- ⚪ 臉部追蹤 AR
+- ⚪ 預算看板
+- ⚪ 拖拉式模板編輯器
+
+### 全包總時程
+
+| 里程碑 | 估時 | 累計 | 交付核心價值 |
+|-------|-----|------|-----------|
+| A 核心能力 | 13 天 | 13 | 拍照+AI+合成 可用 |
+| B 社交擴散 | 9 天 | 22 | 社群傳播引擎啟動 |
+| C 創意元件 | 5 天 | 27 | 遊戲體驗更豐富 |
+| D 延伸加值 | 5 天 | 32 | 進階功能（選配）|
+| **全包合計** | **27-32 天** | | 以 1 人 full-time 計 |
+
+### 交付節奏建議
+
+**推薦節奏：每個 milestone 結束就部署上線 + 收集回饋**
+
+```
+Week 1-3   Milestone A（核心）   → 上線 → 使用者開始用、收集回饋
+Week 4-5   Milestone B（社交）   → 上線 → 觀察分享行為
+Week 6     Milestone C（創意）   → 上線 → 管理員嘗試新玩法
+Week 7+    Milestone D（選配）   → 依需求做
+```
+
+**為什麼分 4 個 milestone？**
+- 每階段都是**可獨立交付**的產品（避免「等全做完才上線」的風險）
+- 每階段都**產生業務價值**（A 核心功能 / B 擴散 / C 創意 / D 選配）
+- 中途可**依反饋調整**（Milestone B 可能不做 Drive 直傳，依實際需求決定）
+- **降低風險**：Milestone A 上線後若 AI 準確度有問題，有時間修正再進 B
+
+### 風險緩衝
+
+每個 milestone 預留 20% buffer，實際估時應是：
+- Milestone A：13 天 × 1.2 = **~16 天**
+- Milestone B：9 天 × 1.2 = **~11 天**
+- Milestone C：5 天 × 1.2 = **~6 天**
+- Milestone D：5 天 × 1.2 = **~6 天**
+- **含 buffer 全包合計：~39 天（約 8 週，1 人 full-time）**
+
+---
+
+## 附錄二：決策後續追蹤（v2）
+
+### 尚待 Spike 驗證的技術點
+
+- [ ] Phase 0 — Cloudinary transformation chain 在複雜合成（5+ layers + text）的 URL 長度 + 延遲
+- [ ] Phase 1.5 — Gemini Flash multi-image prompt（比對用）能否穩定輸出 JSON
+- [ ] Phase 5.6 — Google Identity Services + Drive API 在手機 WebView 內的行為（PWA 相容性）
+- [ ] Phase 6 — WebSocket 在「隊員陸續上傳」情境的可靠性（網路不穩斷線重連）
+- [ ] Phase 9a — AR 貼圖在低階手機的 canvas 效能（720p 以下）
+
+### 已完成盤點 ✅
+
+- [x] 現有 `AIModelSelect` 能直接使用 → 多模型自選免開發
+- [x] `ai-provider.ts` 自動偵測 Gemini/OpenRouter → 切換免寫 code
+- [x] Cloudinary 上傳流程既有 → 擴充合成即可
+- [x] GPS Mission 距離計算既有 → `photo_spot` 直接複用
+
+### 待管理員操作設定（系統上線前）
+
+- [ ] 場域層建立第一套 `photo_template`（至少一個合成框）
+- [ ] 場域層設定 OpenRouter API key（或 Gemini key）
+- [ ] 場域層設定預算上限（建議 $50/月起）
+- [ ] 若開 Google Drive：到 Google Cloud Console 建 OAuth Client ID
+
+---
+
+## Plan 結尾（v2 整合版）
+
+本規劃 v2 版涵蓋：
+- **8 個拍照 mode**（free / spot / compare / team / burst / before_after / achievement / ar_sticker）
+- **4 管道外部分享**（本地下載 / Web Share / 本平台相簿 / Google Drive）
+- **多層設定繼承**（場域 / 遊戲 / 頁面三層全設定化）
+- **多 AI 模型支援**（5 個現有 + 4 個建議擴充）
+- **4 個里程碑分段交付**（~27 天核心 + ~32 天全包，含 buffer 約 8 週）
+
+**技術風險**：低（所有 API 均成熟 + 現有基礎設施覆蓋 80%）
+**成本風險**：低（月 $5-75 可服務 1-10 萬玩家，可設預算上限）
+**合規風險**：已排除（不做人臉替換、不做高階臉部追蹤）
+**時程風險**：中（Milestone 分段交付緩衝）
+
+### 建議下一步
+
+1. **確認里程碑排序** — 依業務需求可調整，例如把 Phase 5 相簿前移（若分享需求最急）
+2. **啟動 Phase 0 PoC** — 0.5 天 Cloudinary 合成驗證，先有信心再投入全量開發
+3. **決定第一套 photo_template 設計** — 請設計師出 2-3 個預設框（賈村/後浦各一套）
+4. **OpenRouter API key 申請** — 如未申請，到 https://openrouter.ai/keys 申請一個（免費 $1 試用）
+5. **Buffer 規劃** — 若人力只有部分時間，可將全包時程拉長至 10-12 週
+
+---
+
+**v2 修訂紀錄**：
+- 2026-04-24 v1：初版規劃（Phase 0-9，推薦 MVP）
+- 2026-04-24 v2：使用者六大決策定案，改為全包 + 4 個 milestone + 外部分享四管道 + 全設定化 schema
