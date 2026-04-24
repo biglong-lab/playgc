@@ -52,7 +52,15 @@ export default function MeCenter() {
     enabled: isSignedIn,
   });
   const memberships = membershipsData?.memberships ?? [];
-  const adminMemberships = memberships.filter((m) => m.isAdmin);
+  const adminMemberships = useMemo(
+    () => memberships.filter((m) => m.isAdmin),
+    [memberships],
+  );
+  // 🆕 其他場域（除當前場域外的會員身份）— memoize 避免每次 render 重 filter
+  const otherMemberships = useMemo(() => {
+    const currentCode = currentField?.code;
+    return memberships.filter((m) => m.fieldCode !== currentCode);
+  }, [memberships, currentField?.code]);
 
   if (isLoading) {
     return (
