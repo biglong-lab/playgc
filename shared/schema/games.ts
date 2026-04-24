@@ -554,6 +554,8 @@ export interface PhotoMissionConfig {
   burstConfig?: PhotoBurstSubConfig;
   beforeAfterConfig?: PhotoBeforeAfterSubConfig;
   arStickerConfig?: PhotoArStickerSubConfig;
+  /** 🆕 A3: OCR 招牌（photo_ocr）子配置 */
+  ocrConfig?: PhotoOcrSubConfig;
 }
 
 export interface GpsMissionConfig {
