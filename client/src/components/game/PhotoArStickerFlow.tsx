@@ -200,10 +200,10 @@ export default function PhotoArStickerFlow({
     });
   }, [stickers]);
 
-  // 相機就緒後啟動
+  // 相機就緒後啟動（AR 預設用前鏡頭自拍）
   useEffect(() => {
     if (stage !== "camera") return;
-    if (camera.mode === "instruction") camera.startCamera();
+    if (camera.mode === "instruction") camera.startCamera("user");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
 
