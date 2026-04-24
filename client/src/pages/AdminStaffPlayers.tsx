@@ -231,7 +231,7 @@ export default function AdminStaffPlayers() {
                 className="pl-10 pr-14"
                 data-testid="input-search-players"
               />
-              {!searchTerm && <SearchKbdHint isMac={isMac} />}
+              {!searchTerm && <SearchKbdHint mode="slash" />}
             </div>
 
             {isLoading ? (
