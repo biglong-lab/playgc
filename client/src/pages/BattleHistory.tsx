@@ -1,12 +1,14 @@
 // 水彈對戰 PK 擂台 — 我的對戰歷史（深色軍事風格）
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerResult } from "@shared/schema";
-import { History, TrendingUp, TrendingDown, Minus, Star, MapPin } from "lucide-react";
+import { History, TrendingUp, TrendingDown, Minus, Star, MapPin, Swords } from "lucide-react";
 
 interface HistoryRecord extends BattlePlayerResult {
   slotDate?: string;
