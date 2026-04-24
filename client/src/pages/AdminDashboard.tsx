@@ -774,3 +774,178 @@ function WeeklyTrendChart() {
     </Card>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════
+// ☁️ v2: Cloudinary 用量儀表板卡片
+// ═══════════════════════════════════════════════════════════════
+
+interface CloudinaryUsage {
+  plan?: string;
+  credits?: { used: number; limit: number; percent: number };
+  storage?: { used: number; limit: number; percent: number };
+  bandwidth?: { used: number; limit: number; percent: number };
+  transformations?: { used: number; limit: number; percent: number };
+  requests?: number;
+  resources?: number;
+  derivedResources?: number;
+  error?: string;
+}
+
+function formatBytes(bytes: number): string {
+  if (!bytes || bytes < 0) return "0 B";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
+function formatNumber(n: number | undefined): string {
+  if (n === undefined || n === null) return "—";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+function CloudinaryUsageCard() {
+  const { isAuthenticated } = useAdminAuth();
+  const { data, isLoading, error } = useQuery<CloudinaryUsage>({
+    queryKey: ["/api/cloudinary/usage"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/cloudinary/usage");
+      return res.json();
+    },
+    enabled: isAuthenticated,
+    staleTime: 10 * 60_000,  // 10 分鐘快取
+  });
+
+  const renderMetric = (
+    label: string,
+    icon: React.ReactNode,
+    metric: { used: number; limit: number; percent: number } | undefined,
+    formatter: (n: number) => string,
+  ) => {
+    if (!metric) {
+      return (
+        <div className="p-3 rounded-lg border bg-muted/20">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {icon}
+            <span>{label}</span>
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">無資料</div>
+        </div>
+      );
+    }
+    const colorClass =
+      metric.percent >= 90 ? "text-destructive"
+      : metric.percent >= 75 ? "text-amber-600 dark:text-amber-400"
+      : "text-emerald-600 dark:text-emerald-400";
+    const barColorClass =
+      metric.percent >= 90 ? "bg-destructive"
+      : metric.percent >= 75 ? "bg-amber-500"
+      : "bg-emerald-500";
+    return (
+      <div className="p-3 rounded-lg border">
+        <div className="flex items-center gap-2 text-sm">
+          {icon}
+          <span className="font-medium">{label}</span>
+          <span className={`ml-auto text-xs font-bold ${colorClass}`} data-testid={`cloudinary-${label}-percent`}>
+            {metric.percent}%
+          </span>
+        </div>
+        <div className="text-xs text-muted-foreground mt-1">
+          {formatter(metric.used)} / {formatter(metric.limit)}
+        </div>
+        <div className="h-1.5 rounded-full bg-muted mt-2 overflow-hidden">
+          <div
+            className={`h-full ${barColorClass} transition-all`}
+            style={{ width: `${Math.min(100, metric.percent)}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <Card data-testid="cloudinary-usage-card">
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Cloud className="w-5 h-5 text-primary" />
+          Cloudinary 用量（本月）
+          {data?.plan && (
+            <Badge variant="outline" className="ml-auto text-xs">
+              {data.plan === "Free" ? "免費方案" : data.plan}
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+            載入中...
+          </div>
+        ) : error ? (
+          <div className="flex items-center gap-2 p-3 rounded bg-destructive/10 text-destructive text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>無法取得用量：{error instanceof Error ? error.message : "未知錯誤"}</span>
+          </div>
+        ) : data?.error ? (
+          <div className="flex items-center gap-2 p-3 rounded bg-destructive/10 text-destructive text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{data.error}</span>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+              {renderMetric(
+                "儲存",
+                <HardDrive className="w-4 h-4 text-muted-foreground" />,
+                data?.storage,
+                formatBytes,
+              )}
+              {renderMetric(
+                "頻寬",
+                <ZapIcon className="w-4 h-4 text-muted-foreground" />,
+                data?.bandwidth,
+                formatBytes,
+              )}
+              {renderMetric(
+                "Transformation",
+                <ImageIcon className="w-4 h-4 text-muted-foreground" />,
+                data?.transformations,
+                formatNumber,
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center text-xs text-muted-foreground">
+              <div>
+                <div className="font-bold text-base text-foreground">
+                  {formatNumber(data?.resources)}
+                </div>
+                <div>資源數</div>
+              </div>
+              <div>
+                <div className="font-bold text-base text-foreground">
+                  {formatNumber(data?.derivedResources)}
+                </div>
+                <div>衍生資源</div>
+              </div>
+              <div>
+                <div className="font-bold text-base text-foreground">
+                  {formatNumber(data?.requests)}
+                </div>
+                <div>API 請求</div>
+              </div>
+            </div>
+            {data?.storage && data.storage.percent >= 75 && (
+              <div className="mt-3 p-2 rounded bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span>
+                  儲存使用率 {data.storage.percent}%，建議清理 30 天前的舊照片或升級方案
+                </span>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

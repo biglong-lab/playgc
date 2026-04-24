@@ -429,8 +429,8 @@ export class CloudinaryService {
       return { error: "Cloudinary 尚未設定" };
     }
     try {
-      // @ts-expect-error - Cloudinary SDK types 不完整
-      const usage = await cloudinary.api.usage();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const usage: any = await cloudinary.api.usage();
 
       // Free plan: storage 25GB / bandwidth 25GB / transformations 25k/month
       const toPercent = (used: number, limit: number): number => {
