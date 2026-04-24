@@ -572,83 +572,71 @@ export default function PhotoBurstFlow({
               <p className="text-sm text-primary font-medium">{compositeProgress}</p>
             </div>
 
-            {/* 🎨 秒數進度（基於 30 秒絕對 deadline，讓使用者看得到終點）*/}
+            {/* 🎨 秒數進度（20s 絕對 deadline）*/}
             <div className="w-full max-w-xs space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>
                   已等待 <span className="font-number font-bold text-foreground">{compositeElapsed}</span> 秒
                 </span>
                 <span>
-                  {compositeElapsed >= 30
+                  {compositeElapsed >= 20
                     ? "即將完成..."
-                    : `最多還等 ${30 - compositeElapsed} 秒`}
+                    : `最多還等 ${20 - compositeElapsed} 秒`}
                 </span>
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-500 ${
-                    compositeElapsed >= 25
+                    compositeElapsed >= 15
                       ? "bg-destructive"
-                      : compositeElapsed >= 15
+                      : compositeElapsed >= 10
                       ? "bg-amber-500"
                       : "bg-primary"
                   }`}
-                  style={{ width: `${Math.min(100, (compositeElapsed / 30) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (compositeElapsed / 20) * 100)}%` }}
                 />
               </div>
             </div>
 
-            {/* 階段說明（讓使用者知道目前在做什麼）*/}
+            {/* 階段說明 */}
             <div className="text-xs text-muted-foreground text-center max-w-xs space-y-1">
               <p>
-                <span className={compositeElapsed < 15 ? "text-primary font-medium" : "line-through opacity-60"}>
-                  ① GIF 動畫（0-15s）
+                <span className={compositeElapsed < 10 ? "text-primary font-medium" : "line-through opacity-60"}>
+                  ① GIF 動畫（0-10s）
                 </span>
               </p>
               <p>
-                <span className={compositeElapsed >= 15 && compositeElapsed < 23 ? "text-amber-500 font-medium" : compositeElapsed >= 23 ? "line-through opacity-60" : "opacity-60"}>
-                  ② 拼貼圖 fallback（15-23s）
+                <span className={compositeElapsed >= 10 && compositeElapsed < 18 ? "text-amber-500 font-medium" : compositeElapsed >= 18 ? "line-through opacity-60" : "opacity-60"}>
+                  ② 拼貼圖 fallback（10-18s）
                 </span>
               </p>
               <p>
-                <span className={compositeElapsed >= 23 ? "text-destructive font-medium" : "opacity-60"}>
-                  ③ 顯示原圖（23-30s 保底）
+                <span className={compositeElapsed >= 18 ? "text-destructive font-medium" : "opacity-60"}>
+                  ③ 顯示原圖（18-20s 保底）
                 </span>
               </p>
             </div>
 
-            {/* 跳過按鈕 — 5 秒後出現 */}
-            {compositeElapsed >= 5 && compositeProgress === "建立動畫中..." && (
+            {/* 🚀 大型「立即完成」按鈕 — 3 秒後就出現，最快 escape */}
+            {compositeElapsed >= 3 && (
               <Button
-                variant="outline"
-                size="sm"
+                size="lg"
                 onClick={() => {
-                  skipGifRef.current = true;
-                  setCompositeProgress("改用拼貼圖...");
-                }}
-                className="gap-1"
-                data-testid="btn-burst-skip-gif"
-              >
-                不等了，立即用拼貼圖
-              </Button>
-            )}
-
-            {/* 最後手段：使用者還是可以強制結束 */}
-            {compositeElapsed >= 18 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
+                  console.log("[Burst] 使用者手動強制完成");
                   const first = burstImagesRef.current[0];
                   if (first) setCompositeUrl(first);
                   setStage("done");
                 }}
-                className="text-destructive gap-1"
+                className="bg-primary text-primary-foreground font-bold gap-2 shadow-lg animate-pulse"
                 data-testid="btn-burst-force-done"
               >
-                強制完成（顯示第一張）
+                ⚡ 立即完成（跳過合成）
               </Button>
             )}
+
+            <p className="text-xs text-muted-foreground text-center max-w-xs">
+              不想等？按上方按鈕立刻結束
+            </p>
           </>
         )}
       </div>
