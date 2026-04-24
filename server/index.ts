@@ -232,6 +232,17 @@ app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: Date.now() });
 });
 
+// 🆕 版本 endpoint — 讓前端比對 PWA 是否為最新 bundle，不符就強制清快取
+//   GIT_SHA 由 deploy script 從 Docker build 階段注入
+app.get("/api/version", (_req, res) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.json({
+    commit: process.env.GIT_SHA || "unknown",
+    buildTime: process.env.BUILD_TIME || "unknown",
+    timestamp: Date.now(),
+  });
+});
+
 // 詳細健康檢查（DB pool 狀態，幫助壓測觀察瓶頸）
 app.get("/api/health/detail", async (_req, res) => {
   // 動態載入避免循環依賴
