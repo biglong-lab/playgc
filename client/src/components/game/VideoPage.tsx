@@ -120,27 +120,22 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
     if (skipEnabled) finish();
   };
 
-  // 影片 URL 無效 / 載入失敗 → 不讓玩家卡死
+  // 影片 URL 無效 / 載入失敗 → 用共用 GameErrorView（讓玩家繼續）
   if (!hasValidUrl || hasError) {
     return (
-      <div className="min-h-full flex flex-col items-center justify-center p-6 gap-4 text-center">
-        <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-          <AlertTriangle className="w-8 h-8 text-destructive" />
-        </div>
-        <div>
-          <h2 className="text-lg font-semibold mb-1">
-            {!hasValidUrl ? "影片未設定" : "影片載入失敗"}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {!hasValidUrl
-              ? "本頁面尚未設定影片 URL"
-              : "無法播放影片，可能是網路或來源問題"}
-          </p>
-        </div>
-        <Button onClick={finish} data-testid="button-video-fallback-continue">
-          繼續遊戲 <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
-      </div>
+      <GameErrorView
+        title={!hasValidUrl ? "影片未設定" : "影片載入失敗"}
+        message={
+          !hasValidUrl
+            ? "管理員尚未設定影片 URL，可跳過此關繼續"
+            : "網路或來源問題，可跳過此關繼續"
+        }
+        hint={hasError ? "連 WiFi 或換個網路環境再試" : undefined}
+        onRetry={hasError ? () => setHasError(false) : undefined}
+        onSkip={finish}
+        skipLabel="繼續遊戲"
+        testId="video-error"
+      />
     );
   }
 
