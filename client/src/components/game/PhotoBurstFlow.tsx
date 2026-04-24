@@ -506,16 +506,47 @@ export default function PhotoBurstFlow({
     );
   }
 
-  // 上傳中
+  // 🎨 上傳 / 合成階段 — 明確進度提示 + 預期時間
   if (stage === "uploading" || stage === "compositing") {
+    const uploadPercent = Math.round((uploadedIds.length / frameCount) * 100);
     return (
-      <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-burst-processing">
-        <UploadingView />
-        <p className="text-sm text-muted-foreground">
-          {stage === "uploading"
-            ? `上傳中... ${uploadedIds.length} / ${frameCount}`
-            : "合成中..."}
-        </p>
+      <div
+        className="fixed inset-0 z-40 bg-background flex flex-col items-center justify-center p-6 gap-6"
+        data-testid="photo-burst-processing"
+      >
+        <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+
+        {stage === "uploading" ? (
+          <>
+            <div className="text-center space-y-2">
+              <p className="text-2xl font-bold">上傳照片中</p>
+              <p className="text-sm text-muted-foreground">
+                {uploadedIds.length} / {frameCount} 張（{uploadPercent}%）
+              </p>
+            </div>
+            {/* 進度條 */}
+            <div className="w-full max-w-xs h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${uploadPercent}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground text-center max-w-xs">
+              通常 2-5 秒完成（依網路速度）
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="text-center space-y-2">
+              <p className="text-2xl font-bold">合成動畫中</p>
+              <p className="text-sm text-primary font-medium">{compositeProgress}</p>
+            </div>
+            <p className="text-xs text-muted-foreground text-center max-w-xs">
+              GIF 合成約 5-15 秒<br/>
+              若超時會自動改用拼貼圖（2 秒）
+            </p>
+          </>
+        )}
       </div>
     );
   }
