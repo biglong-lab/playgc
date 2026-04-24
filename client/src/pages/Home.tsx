@@ -157,6 +157,26 @@ export default function Home() {
     }
   }, [user?.firstName]);
 
+  // 🆕 搜尋框鍵盤 shortcut：` / ` 或 `Cmd/Ctrl+K` focus 輸入框（桌面玩家加速）
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const handleShortcut = (e: KeyboardEvent) => {
+      // 忽略正在輸入的狀態（已 focus input/textarea）
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isTyping = tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable;
+      if (isTyping) return;
+      const isCmdK = (e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K");
+      const isSlash = e.key === "/" && !e.metaKey && !e.ctrlKey && !e.altKey;
+      if (isCmdK || isSlash) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
+
   // 🔥 改用 useEffect 確保跳轉在 render 之後執行
   // 避免「Login Dialog 剛關閉 → Firebase onAuthStateChanged 還沒跑 → isSignedIn=false → 立刻跳回首頁」
   // 的時序 bug。給 Firebase 一個 buffer 時間讓 auth state 同步。
