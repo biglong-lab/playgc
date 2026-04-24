@@ -5,10 +5,12 @@
 //
 // 解法：Server route 動態生成，每次有新場域 automatically 包含。
 //      蓋過 client/public/sitemap.xml 的靜態檔（Express route 優先於 static middleware）。
+//
+// 🆕 J4: 擴充 published 遊戲 URL（/g/:slug）+ 每個場域獨立 sitemap（規模化）
 import type { Express } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "../db";
-import { fields } from "@shared/schema";
+import { fields, games } from "@shared/schema";
 
 const BASE_URL = "https://game.homi.cc";
 
