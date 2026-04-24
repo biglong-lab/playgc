@@ -206,6 +206,11 @@ export default function AdminDashboard() {
         <WeeklyTrendChart />
       </div>
 
+      {/* 🆕 v2: Cloudinary 用量儀表板 */}
+      <div className="mb-8">
+        <CloudinaryUsageCard />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
