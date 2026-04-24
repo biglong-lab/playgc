@@ -1,12 +1,12 @@
 // 👤 玩家端底部導航（手機版） — 三世界切換
 // 🎨 設計原則：單一 icon（線稿）+ 文字，無重複符號，有質感
 import { Link, useLocation } from "wouter";
-import { Gamepad2, Swords, User } from "lucide-react";
+import { Gamepad2, Swords, User, type LucideIcon } from "lucide-react";
 
 interface NavItem {
   path: string;
   label: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: LucideIcon;
   isActive: (loc: string) => boolean;
 }
 
