@@ -55,11 +55,11 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
 
   const editMutation = useMutation({
     mutationFn: async () => {
-      const res = await authFetch(`/api/battle/clans/${clan.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ name: editName, description: editDesc || null, tag: editTag }),
+      await apiRequest("PATCH", `/api/battle/clans/${clan.id}`, {
+        name: editName,
+        description: editDesc || null,
+        tag: editTag,
       });
-      if (!res.ok) throw new Error((await res.json()).error || "更新失敗");
     },
     onSuccess: () => {
       toast({ title: "戰隊資訊已更新" });
@@ -71,11 +71,7 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
 
   const roleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      const res = await authFetch(`/api/battle/clans/${clan.id}/role`, {
-        method: "POST",
-        body: JSON.stringify({ userId, role }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error || "變更失敗");
+      await apiRequest("POST", `/api/battle/clans/${clan.id}/role`, { userId, role });
     },
     onSuccess: () => {
       toast({ title: "角色已變更" });
@@ -86,10 +82,7 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
 
   const kickMutation = useMutation({
     mutationFn: async (targetUserId: string) => {
-      const res = await authFetch(`/api/battle/clans/${clan.id}/kick?targetUserId=${targetUserId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) throw new Error((await res.json()).error || "踢出失敗");
+      await apiRequest("DELETE", `/api/battle/clans/${clan.id}/kick?targetUserId=${targetUserId}`);
     },
     onSuccess: () => {
       toast({ title: "成員已被踢出" });
@@ -100,11 +93,7 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
 
   const transferMutation = useMutation({
     mutationFn: async (newLeaderId: string) => {
-      const res = await authFetch(`/api/battle/clans/${clan.id}/transfer`, {
-        method: "POST",
-        body: JSON.stringify({ newLeaderId }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error || "轉讓失敗");
+      await apiRequest("POST", `/api/battle/clans/${clan.id}/transfer`, { newLeaderId });
     },
     onSuccess: () => {
       toast({ title: "隊長已轉讓" });
