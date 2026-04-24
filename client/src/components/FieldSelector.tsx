@@ -22,8 +22,8 @@ interface Field {
   id: string;
   name: string;
   code: string;
-  /** 🆕 settings jsonb — 用來顯示模組啟用狀態 */
-  settings?: FieldSettings | null;
+  /** 🆕 settings jsonb — 用來顯示模組啟用狀態 + 公告 */
+  settings?: (FieldSettings & { announcementSeverity?: "info" | "urgent" }) | null;
 }
 
 /** 🆕 模組徽章定義（對應 /admin/fields 表格相同 icon，保持視覺一致）*/
