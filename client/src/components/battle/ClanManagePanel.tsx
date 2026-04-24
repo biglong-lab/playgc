@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { authFetch } from "@/lib/authFetch";
+import { apiRequest } from "@/lib/queryClient";
 import type { BattleClan, BattleClanMember } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
 import { Settings, MoreVertical, Crown, ArrowUp, ArrowDown, UserMinus } from "lucide-react";
