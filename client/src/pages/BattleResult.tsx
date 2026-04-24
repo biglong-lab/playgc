@@ -23,6 +23,7 @@ export default function BattleResult() {
   const [, params] = useRoute("/battle/slot/:slotId/result");
   const slotId = params?.slotId ?? "";
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const { data, isLoading } = useQuery<ResultResponse>({
     queryKey: ["/api/battle/slots", slotId, "result"],
