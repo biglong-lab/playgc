@@ -6,8 +6,14 @@ import {
   evaluateFlowRouter,
   pickRandomRoute,
   resolveFlowRouter,
+  processOnCompleteActions,
 } from "../flow-router";
-import type { FlowCondition, FlowRoute, FlowRouterConfig } from "@shared/schema";
+import type {
+  FlowCondition,
+  FlowRoute,
+  FlowRouterConfig,
+  OnCompleteAction,
+} from "@shared/schema";
 
 describe("evaluateCondition — variable_equals 型別 coercion", () => {
   it("字串 '5' 與數字 5 應視為相等（管理員 JSON 編輯器常見情境）", () => {
