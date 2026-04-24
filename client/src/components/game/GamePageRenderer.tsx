@@ -114,6 +114,8 @@ export default function GamePageRenderer({
         return <PhotoCompareFlow {...commonProps} />;
       case "photo_before_after":
         return <PhotoBeforeAfterFlow {...commonProps} />;
+      case "photo_burst":
+        return <PhotoBurstFlow {...commonProps} />;
       case "gps_mission":
         return <GpsMissionPage {...commonProps} />;
       case "qr_scan":
