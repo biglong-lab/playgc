@@ -11,6 +11,8 @@ export type PhotoMode =
   | "verifying"
   | "ai_fail";
 
+export type CameraFacing = "user" | "environment";
+
 export interface PhotoCameraState {
   mode: PhotoMode;
   setMode: (mode: PhotoMode) => void;
@@ -20,7 +22,12 @@ export interface PhotoCameraState {
   cameraReady: boolean;
   videoRef: React.RefObject<HTMLVideoElement>;
   fileInputRef: React.RefObject<HTMLInputElement>;
-  startCamera: () => Promise<void>;
+  /** 啟動相機；可指定前後鏡頭（預設 environment 後鏡頭）*/
+  startCamera: (facingMode?: CameraFacing) => Promise<void>;
+  /** 切換前後鏡頭（會重啟 stream）*/
+  switchCamera: () => Promise<void>;
+  /** 當前使用的鏡頭 */
+  facingMode: CameraFacing;
   stopCamera: () => void;
   capturePhoto: () => void;
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
