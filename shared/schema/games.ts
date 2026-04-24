@@ -497,7 +497,23 @@ export interface PhotoArStickerSubConfig {
     position: 'top' | 'bottom' | 'center' | 'corner_tl' | 'corner_tr' | 'corner_bl' | 'corner_br';
     sizeRatio: number;             // 0-1
   }>;
-  anchorPoint?: 'none' | 'face' | 'hand';
+  /** 🆕 B1/B2/B3: 臉部錨點（mediapipe face landmarker）*/
+  anchorPoint?: 'none' | 'face' | 'face_top' | 'eyes' | 'nose' | 'mouth' | 'hand';
+}
+
+/** OCR 招牌（photo_ocr）子配置 */
+export interface PhotoOcrSubConfig {
+  /** 目標文字列表（任一命中即通過）*/
+  expectedTexts: string[];
+  /** 模糊比對門檻（0-1，預設 0.7，越高越嚴格） */
+  fuzzyThreshold?: number;
+  /** 招牌拍攝提示 */
+  instruction?: string;
+  /** 參考照片 URL（讓玩家看「要拍什麼招牌」） */
+  referenceImageUrl?: string;
+  /** 失敗時是否可重試 */
+  allowRetryOnFail?: boolean;
+  maxRetries?: number;
 }
 
 export interface PhotoMissionConfig {
