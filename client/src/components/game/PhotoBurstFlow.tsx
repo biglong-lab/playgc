@@ -49,6 +49,8 @@ export default function PhotoBurstFlow({
   const [countdown, setCountdown] = useState(0);                     // 正在倒數到第 N 張
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
   const [compositeProgress, setCompositeProgress] = useState<string>("準備中..."); // 合成階段進度文字
+  const [compositeElapsed, setCompositeElapsed] = useState(0); // compositing 已等待秒數
+  const skipGifRef = useRef(false); // 使用者主動跳過 GIF
 
   const finishedRef = useRef(false);
   const burstImagesRef = useRef<string[]>([]);
