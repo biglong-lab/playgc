@@ -124,40 +124,29 @@ export default function GameCompletionScreen({
 
   const handleGenerateCard = async () => {
     setCardOpen(true);
-    if (cardUrl) return;  // 已生成過不重複打 API
+    if (cardUrl) return;
     setCardLoading(true);
     try {
-      // 🆕 v2: 帶 fieldCode 取場域自訂模板（沒設則 fallback 系統預設）
-      const fieldCode = currentField?.code;
-      const cfgUrl = fieldCode
-        ? `/api/photo-composite/achievement-config?fieldCode=${encodeURIComponent(fieldCode)}`
-        : "/api/photo-composite/achievement-config";
-      const cfgRes = await fetch(cfgUrl);
-      const { config } = await cfgRes.json();
-
+      // 🚀 新：純 client canvas 生成紀念卡，100% 成功，不靠 Cloudinary
+      //   前版本走 /api/cloudinary/composite-photo 透過 Cloudinary fetch mode
+      //   但 Cloudinary transformation URL 偶爾失敗、Free plan 超量會擋
+      //   改 client canvas 繪製 → 永遠成功 + 無 server 依賴
+      const { createAchievementCard } = await import(
+        "@/lib/client-achievement-card"
+      );
       const fieldName = currentField?.name || "CHITO";
-      // 🐛 Cloudinary demo 帳號 sample.jpg 偶爾 404 → 改用自家可靠 fallback
-      const coverUrl = currentField?.theme?.coverImageUrl
-        || currentField?.logoUrl
-        || `${window.location.origin}/demo-stickers/jiachun-mask.svg`;
-
-      const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
-        playerPhotoUrl: coverUrl,   // 用場域封面當底圖，fetch mode
-        config,
-        dynamicVars: {
-          fieldName,
-          gameTitle: isChapterMode ? (chapterTitle ?? "章節") : gameTitle,
-          playerName: "挑戰者",
-          score,
-        },
+      const primaryColor = currentField?.theme?.primaryColor || "#ea580c";
+      const dataUrl = await createAchievementCard({
+        fieldName,
+        gameTitle: isChapterMode ? chapterTitle ?? "章節" : gameTitle,
+        playerName: "挑戰者",
+        score,
+        subtitle: isChapterMode ? "章節完成" : "任務完成",
+        primaryColor,
       });
-      const data = await res.json();
-      if (data.compositeUrl) {
-        setCardUrl(data.compositeUrl);
-      } else {
-        throw new Error("未取得紀念卡");
-      }
+      setCardUrl(dataUrl);
     } catch (err) {
+      console.error("[AchievementCard] client canvas 生成失敗:", err);
       toast({
         title: "紀念卡生成失敗",
         description: err instanceof Error ? err.message : "請稍後再試",
