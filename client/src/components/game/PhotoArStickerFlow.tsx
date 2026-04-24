@@ -586,13 +586,97 @@ export default function PhotoArStickerFlow({
       <Button
         size="lg"
         className="gap-2 mt-2"
-        onClick={() => setStage("camera")}
+        onClick={() => {
+          // 🆕 B4: 啟用臉部追蹤前先徵求同意（localStorage 快取）
+          if (useFaceTracking && !hasConsent) {
+            setShowConsent(true);
+            return;
+          }
+          setStage("camera");
+        }}
         disabled={preloadedStickers.length < stickers.length}
         data-testid="btn-ar-start"
       >
         <Camera className="w-5 h-5" />
         {preloadedStickers.length < stickers.length ? "貼圖載入中..." : "開始拍照"}
       </Button>
+
+      {/* 🆕 B4: 臉部追蹤隱私 opt-in Dialog */}
+      <Dialog open={showConsent} onOpenChange={setShowConsent}>
+        <DialogContent
+          className="max-w-md"
+          data-testid="ar-privacy-consent"
+        >
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-primary" />
+              啟用臉部追蹤功能
+            </DialogTitle>
+            <DialogDescription>
+              此貼圖會跟著你的臉部移動。開始前請先了解隱私資訊。
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 text-sm">
+            <div className="flex gap-3 items-start">
+              <Lock className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium">資料不離開你的裝置</p>
+                <p className="text-xs text-muted-foreground">
+                  所有臉部偵測在瀏覽器本地執行，不傳送到伺服器
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 items-start">
+              <Cpu className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium">只偵測位置，不做身份辨識</p>
+                <p className="text-xs text-muted-foreground">
+                  使用 MediaPipe 開源模型，僅定位五官座標，不存 face data
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 items-start">
+              <Sparkles className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium">首次載入約 10MB 模型</p>
+                <p className="text-xs text-muted-foreground">
+                  WASM + WebGL 執行，後續有快取
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowConsent(false)}
+              className="flex-1"
+              data-testid="btn-ar-consent-decline"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                try {
+                  localStorage.setItem(FACE_CONSENT_KEY, "1");
+                } catch {
+                  // localStorage 不可用也沒關係，當次 session 有用
+                }
+                setHasConsent(true);
+                setShowConsent(false);
+                setStage("camera");
+              }}
+              className="flex-1"
+              data-testid="btn-ar-consent-accept"
+            >
+              同意並開始
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
