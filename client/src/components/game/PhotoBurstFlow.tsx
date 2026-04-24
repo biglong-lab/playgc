@@ -575,27 +575,52 @@ export default function PhotoBurstFlow({
               <p className="text-sm text-primary font-medium">{compositeProgress}</p>
             </div>
 
-            {/* 🎨 秒數進度（讓使用者看到系統有在動）*/}
+            {/* 🎨 秒數進度（基於 30 秒絕對 deadline，讓使用者看得到終點）*/}
             <div className="w-full max-w-xs space-y-2">
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>已等待 <span className="font-number font-bold text-foreground">{compositeElapsed}</span> 秒</span>
-                <span>超時 {Math.max(0, 15 - compositeElapsed)} 秒後自動切拼貼</span>
+                <span>
+                  已等待 <span className="font-number font-bold text-foreground">{compositeElapsed}</span> 秒
+                </span>
+                <span>
+                  {compositeElapsed >= 30
+                    ? "即將完成..."
+                    : `最多還等 ${30 - compositeElapsed} 秒`}
+                </span>
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-500 ${
-                    compositeElapsed >= 15 ? "bg-amber-500" : "bg-primary"
+                    compositeElapsed >= 25
+                      ? "bg-destructive"
+                      : compositeElapsed >= 15
+                      ? "bg-amber-500"
+                      : "bg-primary"
                   }`}
-                  style={{ width: `${Math.min(100, (compositeElapsed / 15) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (compositeElapsed / 30) * 100)}%` }}
                 />
               </div>
             </div>
 
-            <p className="text-xs text-muted-foreground text-center max-w-xs">
-              GIF 合成通常 5-15 秒
-            </p>
+            {/* 階段說明（讓使用者知道目前在做什麼）*/}
+            <div className="text-xs text-muted-foreground text-center max-w-xs space-y-1">
+              <p>
+                <span className={compositeElapsed < 15 ? "text-primary font-medium" : "line-through opacity-60"}>
+                  ① GIF 動畫（0-15s）
+                </span>
+              </p>
+              <p>
+                <span className={compositeElapsed >= 15 && compositeElapsed < 23 ? "text-amber-500 font-medium" : compositeElapsed >= 23 ? "line-through opacity-60" : "opacity-60"}>
+                  ② 拼貼圖 fallback（15-23s）
+                </span>
+              </p>
+              <p>
+                <span className={compositeElapsed >= 23 ? "text-destructive font-medium" : "opacity-60"}>
+                  ③ 顯示原圖（23-30s 保底）
+                </span>
+              </p>
+            </div>
 
-            {/* 🆕 使用者可主動跳過 GIF 直接用拼貼圖（更快）*/}
+            {/* 跳過按鈕 — 5 秒後出現 */}
             {compositeElapsed >= 5 && compositeProgress === "建立動畫中..." && (
               <Button
                 variant="outline"
@@ -608,6 +633,23 @@ export default function PhotoBurstFlow({
                 data-testid="btn-burst-skip-gif"
               >
                 不等了，立即用拼貼圖
+              </Button>
+            )}
+
+            {/* 最後手段：使用者還是可以強制結束 */}
+            {compositeElapsed >= 18 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const first = burstImagesRef.current[0];
+                  if (first) setCompositeUrl(first);
+                  setStage("done");
+                }}
+                className="text-destructive gap-1"
+                data-testid="btn-burst-force-done"
+              >
+                強制完成（顯示第一張）
               </Button>
             )}
           </>
