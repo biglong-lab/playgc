@@ -299,17 +299,70 @@ export default function PageConfigEditor({
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">
-                  參考圖 URL（選填，給玩家看範例）
+                  參考圖（選填，給玩家看範例）
                 </label>
-                <Input
-                  value={(config.spotConfig as any)?.referenceImageUrl ?? ""}
-                  onChange={(e) => updateField("spotConfig", {
-                    ...(config.spotConfig as any || {}),
-                    referenceImageUrl: e.target.value,
-                  })}
-                  placeholder="https://..."
-                  data-testid="config-spot-ref-url"
-                />
+                <div className="flex gap-2">
+                  <Input
+                    value={(config.spotConfig as any)?.referenceImageUrl ?? ""}
+                    onChange={(e) => updateField("spotConfig", {
+                      ...(config.spotConfig as any || {}),
+                      referenceImageUrl: e.target.value,
+                    })}
+                    placeholder="貼 URL 或按右側上傳"
+                    data-testid="config-spot-ref-url"
+                  />
+                  <MediaUploadButton
+                    id="spot-ref-upload"
+                    accept="image/*"
+                    onUploaded={(url) => updateField("spotConfig", {
+                      ...(config.spotConfig as any || {}),
+                      referenceImageUrl: url,
+                    })}
+                  />
+                </div>
+                {(config.spotConfig as any)?.referenceImageUrl && (
+                  <div className="mt-2 rounded border overflow-hidden max-w-xs">
+                    <img
+                      src={(config.spotConfig as any).referenceImageUrl}
+                      alt="參考圖預覽"
+                      className="w-full aspect-video object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              <div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-1"
+                  onClick={() => {
+                    if (!("geolocation" in navigator)) {
+                      alert("裝置不支援 GPS");
+                      return;
+                    }
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        updateField("spotConfig", {
+                          ...(config.spotConfig as any || {}),
+                          latitude: pos.coords.latitude,
+                          longitude: pos.coords.longitude,
+                        });
+                      },
+                      (err) => {
+                        alert(`無法取得位置：${err.message}`);
+                      },
+                      { enableHighAccuracy: true, timeout: 10000 }
+                    );
+                  }}
+                  data-testid="btn-spot-use-current-location"
+                >
+                  <MapPin className="w-4 h-4" />
+                  使用我現在的位置
+                </Button>
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">驗證策略</label>
