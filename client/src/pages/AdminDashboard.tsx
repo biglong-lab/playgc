@@ -316,7 +316,14 @@ function AnnouncementStatusCard() {
             <div className="flex items-start gap-2 min-w-0 flex-1">
               <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${iconClass}`} />
               <div className="min-w-0">
-                <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                <div className="flex items-center gap-2 flex-wrap mb-1">
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                  {remainingLabel && (
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
+                      ⏱ {remainingLabel}
+                    </span>
+                  )}
+                </div>
                 <p className={`text-sm font-medium leading-relaxed ${textClass}`}>
                   {announcement}
                 </p>
