@@ -259,7 +259,8 @@ export default function Landing() {
       <footer className="py-8 px-4 border-t border-border">
         <div className="container mx-auto text-center">
           <p className="text-sm text-muted-foreground font-chinese">
-            &copy; 2024 CHITO — Play the Place
+            {/* 🆕 跨年自動更新 */}
+            &copy; {new Date().getFullYear()} CHITO — Play the Place
           </p>
           <div className="flex items-center justify-center gap-4 mt-4 flex-wrap">
             {/* 🆕 分享此場域（Web Share API + 複製 fallback） */}
