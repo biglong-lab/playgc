@@ -187,6 +187,72 @@ export function registerAiScoringRoutes(app: Express): void {
     }
   });
 
+  // 🆕 v2: POST /api/ai/compare-photos — AI 雙圖相似度比對
+  app.post("/api/ai/compare-photos", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      const parsed = comparePhotosSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
+      }
+
+      const {
+        playerImageUrl,
+        referenceImageUrl,
+        referenceDescription,
+        compareMode,
+        similarityThreshold,
+        gameId,
+        modelId,
+      } = parsed.data;
+
+      const fieldApiKey = await resolveAiApiKey(gameId);
+      if (!isGeminiConfigured(fieldApiKey)) {
+        return apiError(res, 503, "AI 服務未設定");
+      }
+
+      const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
+      if (!checkRateLimit(userId)) {
+        return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
+      }
+
+      const threshold = similarityThreshold ?? 0.6;
+      const mode = compareMode ?? "scene";
+
+      const result = await comparePhotos(
+        playerImageUrl,
+        referenceImageUrl,
+        referenceDescription,
+        mode,
+        threshold,
+        fieldApiKey,
+        modelId,
+      );
+
+      // 使用 AI 回傳的 verified，並以 threshold 複核
+      const verified = result.similarity >= threshold;
+      return res.json({
+        verified,
+        similarity: result.similarity,
+        matchedFeatures: result.matchedFeatures,
+        missingFeatures: result.missingFeatures,
+        feedback: result.feedback,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
+        return apiError(res, 503, "此場域的 AI 功能已停用");
+      }
+      console.error("[ai-scoring] compare-photos 失敗:", error);
+      return res.json({
+        verified: false,
+        similarity: 0,
+        matchedFeatures: [],
+        missingFeatures: [],
+        feedback: "AI 暫時無法比對，可繼續遊戲但不計分",
+        fallback: true,
+      });
+    }
+  });
+
   // POST /api/ai/score-text — AI 文字語意評分
   app.post("/api/ai/score-text", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
