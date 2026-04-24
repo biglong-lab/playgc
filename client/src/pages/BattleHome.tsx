@@ -28,9 +28,12 @@ export default function BattleHome() {
       const url = fieldId
         ? `/api/battle/venues?fieldId=${fieldId}`
         : `/api/battle/venues`;
-      const res = await fetch(url);
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", url);
+        return res.json();
+      } catch {
+        return [];
+      }
     },
   });
 
