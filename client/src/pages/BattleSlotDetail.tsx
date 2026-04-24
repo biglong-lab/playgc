@@ -225,16 +225,37 @@ export default function BattleSlotDetail() {
               </div>
             </div>
 
-            {/* 進度條 */}
+            {/* 🚀 進度條：色階變化（人數越接近滿色越深，達成局人數轉綠色）*/}
             <div className="space-y-1">
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                {/* 最低成局線（虛線標記）*/}
                 <div
-                  className="h-full bg-primary rounded-full transition-all"
+                  className="absolute top-0 bottom-0 border-l-2 border-dashed border-foreground/30 z-10"
+                  style={{ left: `${Math.min((minPlayers / maxPlayers) * 100, 100)}%` }}
+                  title={`最低成局：${minPlayers} 人`}
+                />
+                {/* 進度填充 */}
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    slotData.currentCount >= maxPlayers
+                      ? "bg-red-500" // 滿了
+                      : slotData.currentCount >= minPlayers
+                        ? "bg-green-500" // 已成局
+                        : "bg-primary" // 還沒成局
+                  }`}
                   style={{ width: `${Math.min((slotData.currentCount / maxPlayers) * 100, 100)}%` }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground text-right">
-                {slotData.currentCount >= minPlayers ? "已達成局人數" : `還需 ${minPlayers - slotData.currentCount} 人成局`}
+              <p className="text-xs text-right">
+                {slotData.currentCount >= maxPlayers ? (
+                  <span className="text-red-500 font-medium">⚠️ 已額滿</span>
+                ) : slotData.currentCount >= minPlayers ? (
+                  <span className="text-green-500 font-medium">✓ 已達成局人數</span>
+                ) : (
+                  <span className="text-muted-foreground">
+                    還需 <strong className="text-primary">{minPlayers - slotData.currentCount}</strong> 人成局
+                  </span>
+                )}
               </p>
             </div>
 
