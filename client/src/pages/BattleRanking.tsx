@@ -149,9 +149,10 @@ export default function BattleRanking() {
                 {rankings.map((entry) => (
                   <div
                     key={entry.id}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
+                    ref={entry.userId === user?.id ? myEntryRef : undefined}
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
                       tierBgClass(entry.tier) || "bg-card"
-                    } ${entry.userId === user?.id ? "ring-2 ring-primary" : ""}`}
+                    } ${entry.userId === user?.id ? "ring-2 ring-primary scroll-mt-20" : ""}`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="w-8 text-center font-bold text-lg">
