@@ -282,31 +282,14 @@ export default function PhotoBeforeAfterFlow({
   // 完成畫面
   if (stage === "done" && compositeUrl) {
     return (
-      <div className="h-full w-full bg-background flex flex-col items-center justify-center p-4 gap-4" data-testid="photo-before-after-done">
-        <div className="flex items-center gap-2 text-primary">
-          <CheckCircle2 className="w-6 h-6" />
-          <h2 className="text-xl font-bold">對比完成！</h2>
-        </div>
-        <div className="max-w-lg w-full bg-card rounded-lg shadow-lg overflow-hidden">
-          <img
-            src={compositeUrl}
-            alt="前後對比"
-            className={`w-full object-cover ${ba.layoutMode === "vertical" ? "aspect-[1/2]" : "aspect-[2/1]"}`}
-            data-testid="photo-before-after-composite"
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full max-w-lg">
-          <Button onClick={handleDownload} variant="outline" className="flex-1 gap-2" data-testid="btn-ba-download">
-            <Download className="w-4 h-4" /> 下載
-          </Button>
-          <Button onClick={handleShare} variant="outline" className="flex-1 gap-2" data-testid="btn-ba-share">
-            <Share2 className="w-4 h-4" /> 分享
-          </Button>
-          <Button onClick={handleContinue} className="flex-1 gap-2" data-testid="btn-ba-continue">
-            繼續遊戲
-          </Button>
-        </div>
-      </div>
+      <PhotoSuccessView
+        imageUrl={compositeUrl}
+        title="對比完成！"
+        subtitle={`${ba.beforeLabel || "前"} / ${ba.afterLabel || "後"}`}
+        downloadPrefix="chito-ba"
+        onContinue={handleContinue}
+        testId="photo-before-after-done"
+      />
     );
   }
 
