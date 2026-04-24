@@ -78,15 +78,28 @@ export default function PhotoSuccessView({
           <p className="text-sm text-muted-foreground text-center">{subtitle}</p>
         )}
 
-        {/* 圖片 */}
+        {/* 圖片 — 失敗時顯示 fallback 不是破圖 */}
         <div className="w-full rounded-lg shadow-lg overflow-hidden bg-card border">
-          <img
-            src={imageUrl}
-            alt="遊戲紀念照"
-            className="w-full h-auto block"
-            data-testid="photo-success-image"
-            loading="eager"
-          />
+          {imageError ? (
+            <div className="w-full aspect-square flex flex-col items-center justify-center gap-3 bg-muted/30 p-6">
+              <ImageOff className="w-16 h-16 text-muted-foreground/50" />
+              <p className="text-sm text-muted-foreground text-center">
+                紀念照載入失敗
+              </p>
+              <p className="text-xs text-muted-foreground text-center">
+                可能是網路問題，不影響遊戲進度
+              </p>
+            </div>
+          ) : (
+            <img
+              src={imageUrl}
+              alt="遊戲紀念照"
+              className="w-full h-auto block"
+              data-testid="photo-success-image"
+              loading="eager"
+              onError={() => setImageError(true)}
+            />
+          )}
         </div>
 
         {/* 操作按鈕（3 等寬）*/}
