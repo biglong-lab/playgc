@@ -87,6 +87,19 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         instruction: "請拍攝...",
         aiVerify: false,
       };
+    case "photo_ocr":
+      return {
+        title: "招牌辨識任務",
+        description: "拍下指定招牌",
+        ocrConfig: {
+          expectedTexts: [],
+          fuzzyThreshold: 0.7,
+          instruction: "請靠近招牌拍攝，確保文字清晰",
+          allowRetryOnFail: true,
+          maxRetries: 3,
+        },
+        rewardPoints: 30,
+      };
     case "gps_mission":
       return {
         targetLocation: { lat: 25.033, lng: 121.565 },
