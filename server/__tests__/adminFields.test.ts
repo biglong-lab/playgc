@@ -10,21 +10,32 @@ const { mockDb } = vi.hoisted(() => {
   const mockUpdate = vi.fn();
   const mockSet = vi.fn();
   const mockWhere = vi.fn();
+  // 🆕 為 seed-default-roles 增加 select / from / where 鏈（用於拉 permissions / roles）
+  const mockSelect = vi.fn();
+  const mockFrom = vi.fn();
+  const mockSelectWhere = vi.fn();
 
   mockInsert.mockReturnValue({ values: mockValues });
   mockValues.mockReturnValue({ returning: mockReturning });
   mockUpdate.mockReturnValue({ set: mockSet });
   mockSet.mockReturnValue({ where: mockWhere });
   mockWhere.mockReturnValue({ returning: mockReturning });
+  mockSelect.mockReturnValue({ from: mockFrom });
+  mockFrom.mockReturnValue({ where: mockSelectWhere });
+  mockSelectWhere.mockResolvedValue([]);
 
   return {
     mockDb: {
       query: {
         fields: { findMany: vi.fn(), findFirst: vi.fn() },
+        roles: { findFirst: vi.fn(), findMany: vi.fn() },
+        adminAccounts: { findFirst: vi.fn() },
       },
       insert: mockInsert,
       update: mockUpdate,
-      _chain: { values: mockValues, returning: mockReturning, set: mockSet, where: mockWhere },
+      select: mockSelect,
+      delete: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }),
+      _chain: { values: mockValues, returning: mockReturning, set: mockSet, where: mockWhere, selectWhere: mockSelectWhere, from: mockFrom },
     },
   };
 });
