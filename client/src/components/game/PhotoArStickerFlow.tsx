@@ -588,25 +588,30 @@ export default function PhotoArStickerFlow({
           );
         })}
 
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
+        {/* 🎨 底部沉浸式按鈕列（含 safe-area + 清楚的返回/快門） */}
+        <div
+          className="absolute bottom-0 left-0 right-0 py-6 px-6 flex justify-between items-center gap-4 bg-gradient-to-t from-black/80 to-transparent"
+          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+        >
           <Button
-            size="icon"
-            variant="ghost"
+            variant="outline"
             onClick={() => { camera.cancelCamera(); setStage("intro"); }}
-            className="bg-background/60 backdrop-blur w-12 h-12 rounded-full"
+            className="bg-white/15 border-white/40 text-white hover:bg-white/25 backdrop-blur px-5"
             data-testid="btn-ar-cancel"
           >
-            <RefreshCw className="w-5 h-5 rotate-180" />
+            ✕ 返回
           </Button>
           <Button
             size="icon"
             onClick={handleCapture}
-            disabled={!preloadDone}
-            className="bg-white text-black hover:bg-white/90 w-16 h-16 rounded-full ring-4 ring-white/30"
+            disabled={!preloadDone || (useFaceTracking && !faceAnchor)}
+            className="bg-white text-black hover:bg-white/90 w-20 h-20 rounded-full ring-4 ring-white/30 shadow-2xl disabled:opacity-50"
             data-testid="btn-ar-capture"
+            title={!faceAnchor && useFaceTracking ? "請讓臉入鏡" : "拍照"}
           >
-            <Camera className="w-7 h-7" />
+            <Camera className="w-9 h-9" />
           </Button>
+          <div className="w-[72px]"></div>{/* spacer 讓拍照鍵居中 */}
         </div>
       </div>
     );
