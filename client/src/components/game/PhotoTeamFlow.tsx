@@ -210,7 +210,9 @@ export default function PhotoTeamFlow({
 
   const handleStartShootingMember = () => {
     setStage("shooting");
-    camera.startCamera();
+    // 團體合影預設前鏡頭（自拍），管理員可覆寫
+    const facing = config.defaultFacingMode ?? "user";
+    camera.startCamera(facing);
   };
 
   const handleNextMember = () => {
