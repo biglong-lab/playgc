@@ -19,6 +19,8 @@ import {
   Loader2,
   Coins,
   ShoppingCart,
+  AlertTriangle,
+  Home,
 } from "lucide-react";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import { useToast } from "@/hooks/use-toast";
