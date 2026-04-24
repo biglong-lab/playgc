@@ -248,16 +248,46 @@ export default function AdminStaffFields() {
       }
       return created;
     },
-    onSuccess: () => {
+    onSuccess: (created: Field | undefined) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/fields"] });
       setIsDialogOpen(false);
       resetForm();
       const source = fields?.find((f) => f.id === templateFieldId);
+      // 🆕 切換到新場域並跳後台（使用 FieldSelector 相同的 switch-field API）
+      const handleGotoNewField = async () => {
+        if (!created?.code) return;
+        try {
+          const res = await apiRequest("POST", "/api/admin/switch-field", {
+            fieldCode: created.code,
+          });
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.message || "切換失敗");
+          }
+          queryClient.clear();
+          window.location.href = "/admin";
+        } catch (err) {
+          toast({
+            title: "切換失敗",
+            description: err instanceof Error ? err.message : "請重新登入",
+            variant: "destructive",
+          });
+        }
+      };
       toast({
-        title: "場域新增成功",
+        title: `✅ 場域「${created?.name ?? ""}」建立成功`,
         description: source
-          ? `已從「${source.name}」複製模組/亮點/主題設定`
-          : undefined,
+          ? `已自動配置兩個預設角色 + 從「${source.name}」複製設定`
+          : "已自動配置「場域管理員」+「活動執行者」兩個預設角色，您已是該場域管理員",
+        action: created?.code ? (
+          <ToastAction
+            altText="立即進入場域後台"
+            onClick={handleGotoNewField}
+            data-testid="button-goto-new-field-admin"
+          >
+            立即進入
+          </ToastAction>
+        ) : undefined,
       });
     },
     onError: (error: Error) => {
