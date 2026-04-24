@@ -12,6 +12,7 @@
 import { ImageAnnotatorClient } from "@google-cloud/vision";
 import { db } from "../db";
 import { aiUsageLogs } from "@shared/schema";
+import { sendEmail } from "../services/email";
 
 // ============================================================================
 // 初始化
