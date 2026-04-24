@@ -1,11 +1,11 @@
 import type { Express } from "express";
-import { readFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import {
   requireAdminAuth,
   requirePermission,
   logAuditAction,
 } from "../adminAuth";
+// 🆕 C2: 示範遊戲 JSON（esbuild 會把 JSON inline 進 bundle）
+import demoGameJiachun from "../../docs/DEMO_GAME_JIACHUN.json";
 import {
   generateGameQRCode,
   generateGameUrl,
