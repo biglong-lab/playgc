@@ -99,6 +99,87 @@ async function seedDefaultRolesForField(fieldId: string, actorAdminId: string | 
   }
 }
 
+/**
+ * 🆕 自動把建場域的人（req.admin）設為新場域的「場域管理員」
+ * 做法：為該 Firebase user 在新場域建立一個 admin_account，綁到剛 seed 的 director role。
+ * 前提：seedDefaultRolesForField 已先執行完成，新場域已有 director role。
+ */
+async function autoAssignCreatorAsFieldDirector(
+  newFieldId: string,
+  creatorAccountId: string | undefined,
+) {
+  if (!creatorAccountId) return;
+
+  // 找建立者在自己場域的 admin_account（取得 firebaseUserId / email / displayName）
+  const creatorAccount = await db.query.adminAccounts.findFirst({
+    where: eq(adminAccounts.id, creatorAccountId),
+  });
+  if (!creatorAccount) return;
+
+  // 沒 firebaseUserId 且沒 email → 無法綁回使用者，放棄
+  if (!creatorAccount.firebaseUserId && !creatorAccount.email) return;
+
+  // 找新場域剛 seed 的「場域管理員」role
+  const [directorRole] = await db.select().from(roles).where(
+    eq(roles.fieldId, newFieldId),
+  );
+  if (!directorRole) return; // seed 失敗時跳過
+
+  // 找同時是 isDefault + systemRole=field_director 的 role（若 select 結果含多筆）
+  const targetRole = await db.query.roles.findFirst({
+    where: (r, { and: a, eq: e }) =>
+      a(e(r.fieldId, newFieldId), e(r.systemRole, "field_director")),
+  });
+  if (!targetRole) return;
+
+  // 避免重複：若建立者已在新場域有 admin_account 就跳過
+  const existing = creatorAccount.firebaseUserId
+    ? await db.query.adminAccounts.findFirst({
+        where: (a, { and, eq: e }) =>
+          and(
+            e(a.fieldId, newFieldId),
+            e(a.firebaseUserId, creatorAccount.firebaseUserId!),
+          ),
+      })
+    : creatorAccount.email
+      ? await db.query.adminAccounts.findFirst({
+          where: (a, { and, eq: e }) =>
+            and(e(a.fieldId, newFieldId), e(a.email, creatorAccount.email!)),
+        })
+      : null;
+
+  if (existing) return;
+
+  // 建立新場域的 admin_account
+  const [newAccount] = await db
+    .insert(adminAccounts)
+    .values({
+      fieldId: newFieldId,
+      firebaseUserId: creatorAccount.firebaseUserId,
+      email: creatorAccount.email,
+      displayName: creatorAccount.displayName,
+      username: creatorAccount.username, // 若有 legacy username 也複製
+      roleId: targetRole.id,
+      status: "active",
+    })
+    .returning();
+
+  // 記 audit log
+  await logAuditAction({
+    actorAdminId: creatorAccountId,
+    action: "field:auto_assign_creator",
+    targetType: "admin_account",
+    targetId: newAccount.id,
+    fieldId: newFieldId,
+    metadata: {
+      roleId: targetRole.id,
+      roleName: targetRole.name,
+      firebaseUserId: creatorAccount.firebaseUserId,
+      email: creatorAccount.email,
+    },
+  });
+}
+
 /** 🎨 驗證主題欄位（防 XSS） */
 const hexColorRegex = /^#[0-9a-f]{6}$/i;
 const safeUrlRegex = /^https:\/\/[\w.-]+(:\d+)?(\/[^\s]*)?$/i;
