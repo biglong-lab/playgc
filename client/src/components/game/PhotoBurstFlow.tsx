@@ -68,16 +68,31 @@ export default function PhotoBurstFlow({
     return burstTagRef.current;
   };
 
-  // 上傳單張照片（帶 burst tag）
+  // 上傳單張照片（帶 burst tag + 10s timeout 避免 hang）
+  // 🐛 修：原本沒 timeout，若 Cloudinary hang 住，Promise.all 永遠不 resolve
+  //      → stage 永遠停在 "uploading"，看起來像「進度條跑完一直轉」
   const uploadSingle = async (imageData: string): Promise<string> => {
-    const res = await apiRequest("POST", "/api/cloudinary/burst-frame", {
-      imageData,
-      gameId,
-      sessionId,
-      tag: getBurstTag(),
-    });
-    const data = await res.json() as { publicId: string };
-    return data.publicId;
+    const abort = new AbortController();
+    const timer = setTimeout(() => abort.abort(), 10000);
+    try {
+      const res = await fetch("/api/cloudinary/burst-frame", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          imageData,
+          gameId,
+          sessionId,
+          tag: getBurstTag(),
+        }),
+        signal: abort.signal,
+      });
+      if (!res.ok) throw new Error(`上傳失敗: HTTP ${res.status}`);
+      const data = (await res.json()) as { publicId: string };
+      return data.publicId;
+    } finally {
+      clearTimeout(timer);
+    }
   };
 
   // 合成四宮格 / 九宮格（用既有 composite-photo endpoint）
