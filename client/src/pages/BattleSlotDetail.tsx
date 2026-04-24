@@ -267,7 +267,7 @@ export default function BattleSlotDetail() {
             <Button
               variant="destructive"
               className="flex-1 gap-1"
-              onClick={() => cancelMutation.mutate()}
+              onClick={() => setShowCancelDialog(true)}
               disabled={cancelMutation.isPending}
             >
               <UserMinus className="h-4 w-4" /> 取消報名
