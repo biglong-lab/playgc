@@ -144,7 +144,7 @@ export default function BattleResult() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-sm mb-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-sm mb-3">
                 <div>
                   <p className="text-muted-foreground">得分</p>
                   <p className="text-lg font-number font-bold">{myResult.score}</p>
@@ -155,11 +155,16 @@ export default function BattleResult() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">淘汰</p>
-                  <p className="text-lg font-number font-bold">{myResult.eliminations}</p>
+                  <p className="text-lg font-number font-bold text-green-500">{myResult.eliminations}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">陣亡</p>
-                  <p className="text-lg font-number font-bold">{myResult.deaths}</p>
+                  <p className="text-lg font-number font-bold text-red-500">{myResult.deaths}</p>
+                </div>
+                {/* 🆕 K/D ratio */}
+                <div>
+                  <p className="text-muted-foreground">K/D</p>
+                  <p className="text-lg font-number font-bold">{kdRatio(myResult.eliminations, myResult.deaths)}</p>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-2 text-sm">
