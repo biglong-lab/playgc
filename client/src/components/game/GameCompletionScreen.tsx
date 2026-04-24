@@ -112,7 +112,12 @@ export default function GameCompletionScreen({
     if (cardUrl) return;  // 已生成過不重複打 API
     setCardLoading(true);
     try {
-      const cfgRes = await fetch("/api/photo-composite/achievement-config");
+      // 🆕 v2: 帶 fieldCode 取場域自訂模板（沒設則 fallback 系統預設）
+      const fieldCode = currentField?.code;
+      const cfgUrl = fieldCode
+        ? `/api/photo-composite/achievement-config?fieldCode=${encodeURIComponent(fieldCode)}`
+        : "/api/photo-composite/achievement-config";
+      const cfgRes = await fetch(cfgUrl);
       const { config } = await cfgRes.json();
 
       const fieldName = currentField?.name || "CHITO";
