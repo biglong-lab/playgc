@@ -188,14 +188,20 @@ export default function PhotoBurstFlow({
           .map((r) => r.id);
 
         setStage("compositing");
+        skipGifRef.current = false;
         setCompositeProgress("建立動畫中...");
 
         // 🆕 v2: 先嘗試合成真 GIF（動態）
         // 🐛 修：Cloudinary multi API 偶爾 hang 住（tag propagation 慢）
         //   加 15s timeout，超時自動 fallback 到拼貼（2 秒內完成）
+        //   使用者也可點「立即改用拼貼圖」主動跳出
         try {
           const gifAbort = new AbortController();
           const gifTimer = setTimeout(() => gifAbort.abort(), 15000);
+          // 使用者主動跳過的監聽（每 500ms 檢查 skipGifRef）
+          const skipCheck = setInterval(() => {
+            if (skipGifRef.current) gifAbort.abort();
+          }, 500);
           const gifRes = await fetch("/api/cloudinary/burst-to-gif", {
             method: "POST",
             credentials: "include",
@@ -206,7 +212,10 @@ export default function PhotoBurstFlow({
               delayMs: frameIntervalMs,
             }),
             signal: gifAbort.signal,
-          }).finally(() => clearTimeout(gifTimer));
+          }).finally(() => {
+            clearTimeout(gifTimer);
+            clearInterval(skipCheck);
+          });
 
           const gifData = await gifRes.json() as { success?: boolean; url?: string };
           if (gifData.success && gifData.url) {
