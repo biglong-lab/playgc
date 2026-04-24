@@ -364,6 +364,85 @@ export default function PhotoBurstFlow({
     );
   }
 
+  // 🎨 預覽階段：相機已開啟，等使用者按「我準備好了」
+  if (stage === "preview") {
+    if (camera.mode === "initializing" || !camera.cameraReady) {
+      return <CameraInitializingView videoRef={camera.videoRef} onCancel={() => { camera.cancelCamera(); setStage("intro"); }} />;
+    }
+    return (
+      <div className="fixed inset-0 z-50 bg-black" data-testid="photo-burst-preview">
+        <video
+          ref={camera.videoRef}
+          className="w-full h-full object-cover"
+          style={{ transform: camera.facingMode === "user" ? "scaleX(-1)" : undefined }}
+          autoPlay playsInline muted
+        />
+        {/* 頂部：標題 + 說明 */}
+        <div className="absolute top-4 left-4 right-4 flex items-start gap-2">
+          <div className="flex-1 bg-black/70 backdrop-blur text-white rounded-lg px-4 py-3 text-sm">
+            <p className="font-bold">📸 請先擺好 pose</p>
+            <p className="text-xs text-white/80 mt-1">
+              按「開始連拍」後倒數 3 秒，會連續拍 {frameCount} 張
+            </p>
+          </div>
+          {/* 切換鏡頭 */}
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => camera.switchCamera()}
+            className="bg-black/50 backdrop-blur hover:bg-black/70 text-white w-11 h-11 rounded-full"
+            data-testid="btn-burst-switch-camera"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </Button>
+        </div>
+
+        {/* 底部：取消 + 開始連拍 */}
+        <div
+          className="absolute bottom-0 left-0 right-0 py-6 px-4 flex items-center justify-center gap-4 bg-gradient-to-t from-black/80 to-transparent"
+          style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
+        >
+          <Button
+            variant="outline"
+            onClick={() => { camera.cancelCamera(); setStage("intro"); }}
+            className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+            data-testid="btn-burst-cancel-preview"
+          >
+            取消
+          </Button>
+          <Button
+            size="lg"
+            onClick={() => setStage("countdown")}
+            className="bg-primary text-primary-foreground h-14 px-8 text-base font-bold rounded-full shadow-lg"
+            data-testid="btn-burst-go"
+          >
+            <Camera className="w-5 h-5 mr-2" />
+            開始連拍
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // 🎨 倒數階段：3-2-1
+  if (stage === "countdown") {
+    return (
+      <div className="fixed inset-0 z-50 bg-black" data-testid="photo-burst-countdown">
+        <video
+          ref={camera.videoRef}
+          className="w-full h-full object-cover"
+          style={{ transform: camera.facingMode === "user" ? "scaleX(-1)" : undefined }}
+          autoPlay playsInline muted
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+          <div className="text-white text-[150px] font-bold font-number animate-pulse drop-shadow-2xl">
+            {countdownToStart > 0 ? countdownToStart : "GO!"}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // 拍攝中
   if (stage === "shooting") {
     if (camera.mode === "initializing" || !camera.cameraReady) {
@@ -378,10 +457,13 @@ export default function PhotoBurstFlow({
           autoPlay playsInline muted
         />
         <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-6 py-3 rounded-full text-lg font-bold">
-          {countdown} / {frameCount}
+          📸 {countdown} / {frameCount}
         </div>
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-black/50 px-4 py-2 rounded-full">
-          連拍中，請保持穩定
+        <div
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/90 text-sm bg-black/60 px-4 py-2 rounded-full"
+          style={{ bottom: "max(2rem, env(safe-area-inset-bottom) + 1rem)" }}
+        >
+          連拍中，保持動作！
         </div>
       </div>
     );
