@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { GridSkeleton } from "@/components/shared/LoadingSkeleton";
+import MetricCard from "@/components/shared/MetricCard";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import {
   BarChart3, Users, Clock, TrendingUp, CheckCircle, PlayCircle
