@@ -47,6 +47,104 @@ setInterval(() => {
 }, 5 * 60_000);
 
 // ============================================================================
+// 模糊字串比對（Levenshtein distance，中文友善）
+// ============================================================================
+
+/** Levenshtein distance：計算兩字串最少編輯次數 */
+function levenshtein(a: string, b: string): number {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+  const matrix = Array.from({ length: a.length + 1 }, () =>
+    new Array<number>(b.length + 1).fill(0),
+  );
+  for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+  for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1, // 刪除
+        matrix[i][j - 1] + 1, // 插入
+        matrix[i - 1][j - 1] + cost, // 替換
+      );
+    }
+  }
+  return matrix[a.length][b.length];
+}
+
+/** 字串相似度（0-1，1=完全一致） */
+function stringSimilarity(a: string, b: string): number {
+  if (!a && !b) return 1;
+  if (!a || !b) return 0;
+  const maxLen = Math.max(a.length, b.length);
+  return 1 - levenshtein(a, b) / maxLen;
+}
+
+/** 正規化字串（去空白、全形轉半形、小寫） */
+function normalize(text: string): string {
+  return text
+    .replace(/[\s\n\r\t]+/g, "")
+    .replace(/[\uFF01-\uFF5E]/g, (ch) =>
+      String.fromCharCode(ch.charCodeAt(0) - 0xfee0),
+    )
+    .toLowerCase();
+}
+
+/**
+ * 檢查 OCR 偵測文字中是否包含任一目標
+ * @param ocrText 完整 OCR 文字
+ * @param expectedTexts 目標文字列表（任一命中即通過）
+ * @param threshold 模糊閾值（0-1，預設 0.7）
+ * @returns 最高命中分數 + 命中的目標
+ */
+function matchExpectedTexts(
+  ocrText: string,
+  expectedTexts: string[],
+  threshold: number,
+): { matched: boolean; bestMatch: string | null; similarity: number } {
+  const normOcr = normalize(ocrText);
+
+  let bestSim = 0;
+  let bestMatch: string | null = null;
+
+  for (const expected of expectedTexts) {
+    const normExp = normalize(expected);
+    if (!normExp) continue;
+
+    // 策略 1: 完全包含（OCR 文字含有目標）
+    if (normOcr.includes(normExp)) {
+      return { matched: true, bestMatch: expected, similarity: 1 };
+    }
+
+    // 策略 2: 滑動視窗相似度（OCR 中每段與目標比）
+    const winSize = normExp.length;
+    for (let i = 0; i <= normOcr.length - winSize; i++) {
+      const window = normOcr.slice(i, i + winSize);
+      const sim = stringSimilarity(window, normExp);
+      if (sim > bestSim) {
+        bestSim = sim;
+        bestMatch = expected;
+      }
+    }
+
+    // 策略 3: 直接全文比較（短 OCR 文字情境）
+    if (normOcr.length < winSize * 2) {
+      const sim = stringSimilarity(normOcr, normExp);
+      if (sim > bestSim) {
+        bestSim = sim;
+        bestMatch = expected;
+      }
+    }
+  }
+
+  return {
+    matched: bestSim >= threshold,
+    bestMatch,
+    similarity: bestSim,
+  };
+}
+
+// ============================================================================
 // 驗證 Schema
 // ============================================================================
 
