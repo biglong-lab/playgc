@@ -420,24 +420,7 @@ export default function Home() {
               data-testid="input-search-games"
             />
             {/* 🆕 快速鍵提示（桌面端顯示 ⌘K / Ctrl K，focus 時隱藏） */}
-            {!searchQuery && (
-              <kbd
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-70"
-                title="按 / 或 ⌘K/Ctrl+K 快速搜尋"
-              >
-                {isMac ? (
-                  <>
-                    <span className="text-sm leading-none">⌘</span>
-                    <span>K</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Ctrl</span>
-                    <span>K</span>
-                  </>
-                )}
-              </kbd>
-            )}
+            {!searchQuery && <SearchKbdHint isMac={isMac} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-70" />}
             {/* 🆕 清除按鈕 — 有輸入內容時才顯示 */}
             {searchQuery && (
               <button
