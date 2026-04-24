@@ -151,9 +151,12 @@ function VenueCard({ venue }: { venue: BattleVenue }) {
   const { data: slots = [] } = useQuery<BattleSlot[]>({
     queryKey: ["/api/battle/slots", venue.id],
     queryFn: async () => {
-      const res = await fetch(`/api/battle/slots?venueId=${venue.id}&fromDate=${today}`);
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await apiRequest("GET", `/api/battle/slots?venueId=${venue.id}&fromDate=${today}`);
+        return res.json();
+      } catch {
+        return [];
+      }
     },
   });
 
