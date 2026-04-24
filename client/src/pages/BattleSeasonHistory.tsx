@@ -188,9 +188,18 @@ export default function BattleSeasonHistory() {
                 </div>
               </CardContent>
             </Card>
-          ))
+            ))}
+          </>
         )}
       </div>
     </BattleLayout>
   );
+}
+
+/** 段位排序值（高 = 越高） */
+function tierOrder(tier: string): number {
+  const order: Record<string, number> = {
+    bronze: 1, silver: 2, gold: 3, platinum: 4, diamond: 5, master: 6,
+  };
+  return order[tier] ?? 0;
 }
