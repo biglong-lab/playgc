@@ -169,13 +169,24 @@ export default function AdminDashboard() {
               <Cpu className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="font-number text-3xl font-bold text-warning">
+              {/* 🆕 依設備狀態切換顏色：有離線=警示紅、全在線=安全綠、無設備=muted */}
+              <div
+                className={`font-number text-3xl font-bold ${
+                  (devices?.length || 0) === 0
+                    ? "text-muted-foreground"
+                    : offlineDevices > 0
+                      ? "text-destructive"
+                      : "text-success"
+                }`}
+              >
                 {onlineDevices}
               </div>
               <p className="text-xs text-muted-foreground">
                 {offlineDevices > 0
                   ? `${offlineDevices} 台離線 · 共 ${devices?.length || 0} 台`
-                  : `共 ${devices?.length || 0} 台設備`}
+                  : devices?.length
+                    ? `共 ${devices.length} 台設備 · 全部在線`
+                    : "尚未登錄任何設備"}
               </p>
             </CardContent>
           </Card>
