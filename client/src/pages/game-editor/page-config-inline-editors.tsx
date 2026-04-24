@@ -870,6 +870,24 @@ export function ChoiceVerifyEditor({
         </div>
       </div>
 
+      {/* 🆕 顯示解釋開啟時 → 全域解釋文字（答題後顯示，解釋正確答案的由來） */}
+      {config.showExplanation === true && !isQuizMode && (
+        <div className="border border-primary/30 rounded-lg p-3 bg-primary/5">
+          <label className="text-xs font-medium mb-2 block">答題後的解釋</label>
+          <Textarea
+            value={(config.explanation as string) || ""}
+            onChange={(e) => updateField("explanation", e.target.value)}
+            placeholder="說明正確答案的由來（答對 / 答錯後都會顯示給玩家看）"
+            rows={3}
+            className="text-sm"
+            data-testid="config-choice-explanation"
+          />
+          <p className="text-[10px] text-muted-foreground mt-1">
+            玩家提交答案後會看到這段解釋；個別選項也可填各自的回饋（選項下方）
+          </p>
+        </div>
+      )}
+
       {/* 🆕 Quiz 模式專屬進階選項（multiple / partialCredit / rewardPerQuestion） */}
       {isQuizMode && (
         <div className="grid grid-cols-2 gap-2 border-t pt-3">
