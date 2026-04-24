@@ -189,7 +189,7 @@ export default function BattleSlotDetail() {
                 <Swords className="h-5 w-5 text-primary" />
                 {venue?.name ?? "對戰場地"}
               </span>
-              <StatusBadge status={slotData.status} />
+              {slotStatusBadge(slotData.status)}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
