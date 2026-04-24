@@ -149,27 +149,45 @@ export default function PhotoBurstFlow({
         // 全拍完 → 停相機
         camera.stopCamera();
 
-        // 🚀 立刻顯示本地第一張 + 進 done（使用者不用等）
+        // 🚀 3 段式 Progressive Enhancement
         const images = burstImagesRef.current;
         const firstLocal = images[0];
         if (firstLocal) {
+          // Step 1: 立刻顯示第一張（0.1 秒）
           setCompositeUrl(firstLocal);
           setStage("done");
 
-          // 🎨 1 秒內做本地拼貼（純 canvas，100% 成功），讓使用者看到 5 張都在
+          // Step 2: Canvas 拼貼（1 秒）— 讓使用者看到 5 張都在
           createLocalCollage(images, { maxSize: 1600, quality: 0.88 })
             .then((collage) => {
-              console.log("[Burst] ✅ 本地拼貼完成，替換顯示");
+              console.log("[Burst] ✅ Step 2: 拼貼完成");
               setCompositeUrl(collage);
+
+              // Step 3: 🎞️ Client GIF 編碼（2-5 秒）— 真正的動畫！
+              //   在 Web Worker 跑，不 block UI
+              //   boomerang 來回播放更生動
+              createClientGif(images, {
+                frameDelayMs: frameIntervalMs,
+                width: 800,
+                quality: 10,
+                boomerang: true,
+              })
+                .then((gifUrl) => {
+                  console.log("[Burst] ✅ Step 3: Client GIF 動畫完成！");
+                  setCompositeUrl(gifUrl);
+                })
+                .catch((err) => {
+                  console.warn("[Burst] Client GIF 失敗，保留拼貼:", err);
+                });
             })
             .catch((err) => {
-              console.warn("[Burst] 本地拼貼失敗，保留第一張:", err);
+              console.warn("[Burst] 拼貼失敗，保留第一張:", err);
             });
         } else {
           setStage("uploading");
         }
 
-        // 🔄 背景仍去嘗試 Cloudinary GIF 合成（成功就替換更好看的動態結果）
+        // Step 4（可選）：背景上傳 Cloudinary（若網路有，分享 URL 更穩）
         backgroundUploadAndComposite();
         return;
       }
