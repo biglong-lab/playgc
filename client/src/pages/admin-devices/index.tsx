@@ -232,7 +232,8 @@ export default function AdminDevices() {
         variant="outline"
         size="sm"
         onClick={() => pingAllMutation.mutate()}
-        disabled={pingAllMutation.isPending}
+        disabled={pingAllMutation.isPending || totalCount === 0}
+        title={totalCount === 0 ? "尚未新增任何設備" : undefined}
         className="gap-1"
         data-testid="button-ping-all"
       >
