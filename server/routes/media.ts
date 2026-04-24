@@ -694,6 +694,73 @@ export function registerMediaRoutes(app: Express) {
   );
 
   /**
+   * 📦 v2: Session 相簿 ZIP 下載 URL（Cloudinary archive API）
+   * 回傳 signed URL，前端直接導連下載整包 zip（比批次下載 UX 好）
+   */
+  app.get(
+    "/api/sessions/:sessionId/album/zip-url",
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { sessionId } = req.params;
+        const session = await storage.getSession(sessionId);
+        if (!session) {
+          return res.status(404).json({ error: "Session 不存在" });
+        }
+        if (!session.gameId) {
+          return res.status(400).json({ error: "Session 缺少 gameId" });
+        }
+
+        const url = await cloudinaryService.createSessionArchiveUrl(
+          session.gameId,
+          sessionId,
+        );
+        if (!url) {
+          return res.status(404).json({ error: "沒有照片可下載" });
+        }
+
+        res.json({ url, sessionId });
+      } catch (error) {
+        console.error("[media] zip-url 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "產生 ZIP 失敗",
+        });
+      }
+    }
+  );
+
+  /**
+   * 📦 v2: 個人相簿 ZIP 下載 URL（跨所有 session）
+   */
+  app.get(
+    "/api/me/photos/zip-url",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const userId = req.user?.claims?.sub || req.user?.dbUser?.id;
+        if (!userId) return res.status(401).json({ error: "未認證" });
+
+        const userSessions = await storage.getSessionsByUser(userId);
+        const sessionIds = userSessions.map((s) => s.session.id);
+        if (sessionIds.length === 0) {
+          return res.status(404).json({ error: "沒有可下載的照片" });
+        }
+
+        const url = await cloudinaryService.createUserArchiveUrl(sessionIds);
+        if (!url) {
+          return res.status(404).json({ error: "沒有照片可下載" });
+        }
+
+        res.json({ url });
+      } catch (error) {
+        console.error("[media] me/photos/zip-url 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "產生 ZIP 失敗",
+        });
+      }
+    }
+  );
+
+  /**
    * 📸 v2: Session 相簿 — 列出該 session 所有玩家照片
    * 玩家可開 /album/:sessionId 查看自己本次遊戲的照片
    */
