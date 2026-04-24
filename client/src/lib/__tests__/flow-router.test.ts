@@ -365,3 +365,230 @@ describe("resolveFlowRouter — 多 router 跳轉", () => {
     expect(resolveFlowRouter(pages, 0, {}, [], 0)).toBe(1);
   });
 });
+
+// ============================================================================
+// processOnCompleteActions — 頁面完成時的變數/道具/分數操作（核心邏輯）
+// ============================================================================
+describe("processOnCompleteActions — 純函式變更狀態", () => {
+  // ----- 變數操作 -----
+  describe("set_variable", () => {
+    it("設定新變數", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "set_variable", variableName: "level", value: 5 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, [], 0);
+      expect(result.variables.level).toBe(5);
+    });
+
+    it("覆蓋已存在的變數", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "set_variable", variableName: "name", value: "new" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { name: "old" }, [], 0);
+      expect(result.variables.name).toBe("new");
+    });
+
+    it("沒給 variableName → 跳過（不破壞 state）", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "set_variable", value: 5 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { x: 1 }, [], 0);
+      expect(result.variables).toEqual({ x: 1 });
+    });
+  });
+
+  describe("increment_variable", () => {
+    it("不存在的變數從 0 開始 +1", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "increment_variable", variableName: "counter", value: 1 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, [], 0);
+      expect(result.variables.counter).toBe(1);
+    });
+
+    it("已有的數字遞增指定值", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "increment_variable", variableName: "x", value: 5 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { x: 10 }, [], 0);
+      expect(result.variables.x).toBe(15);
+    });
+
+    it("沒給 value → 預設 +1", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "increment_variable", variableName: "x" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { x: 7 }, [], 0);
+      expect(result.variables.x).toBe(8);
+    });
+
+    it("字串數字也能遞增（'10' + 5 = 15）", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "increment_variable", variableName: "x", value: 5 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { x: "10" }, [], 0);
+      expect(result.variables.x).toBe(15);
+    });
+  });
+
+  describe("decrement_variable", () => {
+    it("數字遞減", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "decrement_variable", variableName: "hp", value: 3 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { hp: 10 }, [], 0);
+      expect(result.variables.hp).toBe(7);
+    });
+
+    it("沒給 value → 預設 -1", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "decrement_variable", variableName: "hp" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { hp: 5 }, [], 0);
+      expect(result.variables.hp).toBe(4);
+    });
+  });
+
+  describe("toggle_variable", () => {
+    it("true → false", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "toggle_variable", variableName: "flag" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { flag: true }, [], 0);
+      expect(result.variables.flag).toBe(false);
+    });
+
+    it("false → true", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "toggle_variable", variableName: "flag" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { flag: false }, [], 0);
+      expect(result.variables.flag).toBe(true);
+    });
+
+    it("不存在的變數 → true（!undefined === true）", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "toggle_variable", variableName: "missing" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, [], 0);
+      expect(result.variables.missing).toBe(true);
+    });
+  });
+
+  // ----- 道具操作 -----
+  describe("add_item / remove_item", () => {
+    it("add_item 加入道具", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "add_item", itemId: "key-red" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, [], 0);
+      expect(result.inventory).toEqual(["key-red"]);
+    });
+
+    it("add_item 已有相同道具 → 不重複加", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "add_item", itemId: "key-red" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, ["key-red"], 0);
+      expect(result.inventory).toEqual(["key-red"]); // 還是 1 個
+    });
+
+    it("itemId 是 number 也能比對（型別相容）", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "add_item", itemId: 123 as unknown as string } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, ["123"], 0);
+      // 已存在（字串 "123" 與 number 123 比對視為相同）
+      expect(result.inventory.length).toBe(1);
+    });
+
+    it("沒給 itemId → 跳過", () => {
+      const actions: OnCompleteAction[] = [{ type: "add_item" } as OnCompleteAction];
+      const result = processOnCompleteActions(actions, {}, ["existing"], 0);
+      expect(result.inventory).toEqual(["existing"]);
+    });
+
+    it("remove_item 移除道具", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "remove_item", itemId: "key-red" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, ["key-red", "key-blue"], 0);
+      expect(result.inventory).toEqual(["key-blue"]);
+    });
+
+    it("remove_item 不存在的道具 → 不報錯", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "remove_item", itemId: "ghost" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, ["key-red"], 0);
+      expect(result.inventory).toEqual(["key-red"]);
+    });
+  });
+
+  // ----- 分數操作 -----
+  describe("add_score", () => {
+    it("加分", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "add_score", points: 100 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, [], 50);
+      expect(result.score).toBe(150);
+    });
+
+    it("負分（扣分）也支援", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "add_score", points: -20 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, [], 100);
+      expect(result.score).toBe(80);
+    });
+
+    it("沒給 points → +0（不影響）", () => {
+      const actions: OnCompleteAction[] = [{ type: "add_score" } as OnCompleteAction];
+      const result = processOnCompleteActions(actions, {}, [], 50);
+      expect(result.score).toBe(50);
+    });
+  });
+
+  // ----- 不可變性 + 多動作 -----
+  describe("不可變性與多動作組合", () => {
+    it("不修改原 variables 物件（immutable）", () => {
+      const original = { x: 1 };
+      const actions: OnCompleteAction[] = [
+        { type: "set_variable", variableName: "x", value: 99 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, original, [], 0);
+      expect(original.x).toBe(1); // 原物件不被修改
+      expect(result.variables.x).toBe(99);
+    });
+
+    it("不修改原 inventory 陣列（immutable）", () => {
+      const original = ["a"];
+      const actions: OnCompleteAction[] = [
+        { type: "add_item", itemId: "b" } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, {}, original, 0);
+      expect(original).toEqual(["a"]); // 原陣列不被修改
+      expect(result.inventory).toEqual(["a", "b"]);
+    });
+
+    it("多個 actions 依序執行（變數 + 道具 + 分數）", () => {
+      const actions: OnCompleteAction[] = [
+        { type: "increment_variable", variableName: "level", value: 1 } as OnCompleteAction,
+        { type: "add_item", itemId: "trophy" } as OnCompleteAction,
+        { type: "add_score", points: 50 } as OnCompleteAction,
+      ];
+      const result = processOnCompleteActions(actions, { level: 4 }, ["sword"], 100);
+      expect(result.variables.level).toBe(5);
+      expect(result.inventory).toEqual(["sword", "trophy"]);
+      expect(result.score).toBe(150);
+    });
+
+    it("空 actions → 不變", () => {
+      const result = processOnCompleteActions([], { x: 1 }, ["a"], 50);
+      expect(result.variables).toEqual({ x: 1 });
+      expect(result.inventory).toEqual(["a"]);
+      expect(result.score).toBe(50);
+    });
+  });
+});
