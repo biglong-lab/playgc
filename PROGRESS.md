@@ -368,6 +368,19 @@ const allItems = [...rsItems, ...(legacyItem ? [legacyItem] : [])];  // 聯集
 - **編輯器**：新增/移除貼圖、URL 輸入 + 上傳 + 縮圖預覽 + 位置 Select + 大小 Slider
 - Deploy: `f42ac30` · bundle `index-DjoJTVra.js` · verify `photo-ar-intro`
 
+#### 輪 23 — 📥 相簿「一鍵下載全部」（零依賴批次下載）
+
+**檔**：`client/src/pages/SessionAlbum.tsx`
+
+- 新「下載全部」按鈕（DownloadCloud icon）在 header
+- `handleDownloadAll()`：for loop 逐張 fetch + Blob + `<a download>` 觸發，**每張間隔 400ms** 避免瀏覽器擋
+- 即時進度顯示「3/10」+ Loader2 spinner
+- 超過 10 張觸發 `window.confirm` 警告（含預估時間）
+- 單張失敗不中斷整批（try/catch 包裹）
+- 檔案命名：`chito-{sessionId短}-{01/02/03...}.jpg`
+- **零依賴**：純瀏覽器 API（不用 JSZip / pdf-lib）
+- Deploy: `1c2fd35` · bundle `index-CA8Cooru.js` · verify `btn-download-all-album`
+
 #### 輪 21-22 — 🎨 場域紀念照模板自訂（後端 + 管理後台 UI）
 
 **背景**：所有紀念照合成都用系統預設模板（🏆 + {fieldName} + {gameTitle} + {score} + {date}），無法場域品牌化。
