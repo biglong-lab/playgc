@@ -422,6 +422,30 @@ export default function BattleSlotDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 🔴 取消報名確認 Dialog — 避免誤觸不可逆操作 */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>確定要取消報名？</AlertDialogTitle>
+            <AlertDialogDescription>
+              取消後若想再參加，需要重新報名。若該時段已額滿可能無法重新加入。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>不取消</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                cancelMutation.mutate();
+                setShowCancelDialog(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              確認取消
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </BattleLayout>
   );
 }
