@@ -72,42 +72,22 @@ export default function FieldOnboardingWizard() {
   const [step, setStep] = useState(0);
   const [, setLocation] = useLocation();
   const { isAuthenticated, admin } = useAdminAuth();
-  const currentField = useCurrentField();
 
   useEffect(() => {
     if (!isAuthenticated || !admin) return;
     // 平台管理員 / super_admin 跳過（有自己的上手流程）
     if (admin.systemRole === "super_admin") return;
-    // 🆕 v2: 場域級標記優先（換設備也不重彈）
-    if (currentField?.hasCompletedOnboarding === true) return;
-    // 向後相容：場域沒標記時看 localStorage
     const done = localStorage.getItem(STORAGE_KEY);
     if (!done) {
       // 略延遲 800ms 讓頁面先載入
       const timer = setTimeout(() => setOpen(true), 800);
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, admin, currentField?.hasCompletedOnboarding]);
+  }, [isAuthenticated, admin]);
 
-  const handleClose = async () => {
+  const handleClose = () => {
     localStorage.setItem(STORAGE_KEY, new Date().toISOString());
     setOpen(false);
-    // 🆕 v2: 同步寫到場域 settings，讓其他設備/使用者也不再彈
-    if (admin?.fieldId && currentField?.hasCompletedOnboarding !== true) {
-      try {
-        const nextSettings = {
-          ...(currentField?.settings ?? {}),
-          hasCompletedOnboarding: true,
-        };
-        await fetchWithAdminAuth(`/api/admin/fields/${admin.fieldId}`, {
-          method: "PATCH",
-          body: JSON.stringify({ settings: nextSettings }),
-        });
-      } catch (err) {
-        // 失敗不 block 關閉，localStorage 仍會擋再彈
-        console.warn("[FieldOnboardingWizard] persist hasCompletedOnboarding failed:", err);
-      }
-    }
   };
 
   const handleNext = () => {
