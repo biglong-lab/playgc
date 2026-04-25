@@ -286,20 +286,22 @@ export default function PhotoBurstFlow({
         // 🚀 並行上傳：5 張同時傳而非一張一張傳（速度從 10-15s → 2-3s）
         const ids: string[] = [];
         const uploadPromises = burstImagesRef.current.map(async (img, idx) => {
-          const id = await uploadSingle(img);
+          const result = await uploadSingle(img);
           if (cancelled) return null;
-          ids.push(id);
+          ids.push(result.publicId);
           setUploadedIds([...ids]); // 進度更新（注意：並行，順序不保證）
-          return { idx, id };
+          return { idx, ...result };
         });
         const results = await Promise.all(uploadPromises);
         if (cancelled) return;
 
         // 🔑 重要：依照原本拍攝順序排序（並行上傳會亂序）
-        const sortedIds = results
-          .filter((r): r is { idx: number; id: string } => r !== null)
-          .sort((a, b) => a.idx - b.idx)
-          .map((r) => r.id);
+        const sortedResults = results
+          .filter((r): r is { idx: number; publicId: string; url: string } => r !== null)
+          .sort((a, b) => a.idx - b.idx);
+        const sortedIds = sortedResults.map((r) => r.publicId);
+        const sortedUrls = sortedResults.map((r) => r.url);
+        setUploadedUrls(sortedUrls); // 🆕 記下 URLs 給「保存全部」用
 
         setStage("compositing");
         skipGifRef.current = false;
