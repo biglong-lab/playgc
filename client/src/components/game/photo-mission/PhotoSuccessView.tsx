@@ -47,6 +47,14 @@ export default function PhotoSuccessView({
 }: PhotoSuccessViewProps) {
   const { toast } = useToast();
   const [imageError, setImageError] = useState(false);
+  // 🆕 自動 retry 機制（暫時的網路波動 / Cloudinary CDN 同步延遲）
+  const [retryKey, setRetryKey] = useState(0);
+
+  // 🆕 imageUrl 變動時重置錯誤狀態（避免從失敗的 URL 切到新 URL 仍顯示破圖）
+  React.useEffect(() => {
+    setImageError(false);
+    setRetryKey(0);
+  }, [imageUrl]);
 
   // 🆕 主要動作：一鍵保存到手機相簿
   // 失敗 fallback：開全螢幕燈箱讓使用者長按存圖
