@@ -345,6 +345,7 @@ app.use((req, res, next) => {
         startDormancyScheduler();
         startAchievementScheduler();
         startLifecycleScheduler();
+        startMonthlyResetScheduler();
       }
     },
   );
