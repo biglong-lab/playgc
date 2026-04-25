@@ -49,6 +49,12 @@ export default function PhotoBurstFlow({
   const burst = config.burstConfig;
 
   const [stage, setStage] = useState<Stage>("intro");
+
+  // 🆕 拍照時隱藏 Walkie 浮動按鈕（避免擋切鏡頭等按鈕）
+  useCameraOverlayMode(
+    stage === "preview" || stage === "countdown" || stage === "shooting",
+  );
+
   const [burstImages, setBurstImages] = useState<string[]>([]);     // base64 陣列
   const [uploadedIds, setUploadedIds] = useState<string[]>([]);      // Cloudinary publicIds
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);    // 🆕 Cloudinary 個別照片 URL
