@@ -4,6 +4,7 @@ import {
   isMobileWithShare,
   getSaveToastMessage,
   savePhotoToAlbum,
+  detectExtension,
 } from "../photo-save";
 
 describe("photo-save", () => {
