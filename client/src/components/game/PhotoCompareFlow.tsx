@@ -226,56 +226,41 @@ export default function PhotoCompareFlow({
     onComplete(reward);
   };
 
+  // 🆕 一鍵保存到手機相簿
+  const handleSaveToAlbum = async () => {
+    if (!compositeUrl) return;
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-compare",
+      title: config.title || "CHITO 拍照比對",
+      text: "我成功配對這張照片！",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
+  };
+
   const handleDownload = async () => {
     if (!compositeUrl) return;
-    try {
-      const res = await fetch(compositeUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `chito-compare-${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-      toast({ title: "下載完成", duration: 1500 });
-    } catch {
-      toast({ title: "下載失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-compare",
+      forceMethod: "download",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   const handleShare = async () => {
     if (!compositeUrl) return;
-    try {
-      if (typeof navigator.share === "function") {
-        const res = await fetch(compositeUrl);
-        const blob = await res.blob();
-        const file = new File([blob], "compare.jpg", { type: "image/jpeg" });
-        const canShareFiles =
-          typeof navigator.canShare === "function" &&
-          navigator.canShare({ files: [file] });
-        if (canShareFiles) {
-          await navigator.share({
-            title: config.title || "CHITO 拍照比對",
-            text: "我成功配對這張照片！",
-            files: [file],
-          });
-          return;
-        }
-        await navigator.share({
-          title: config.title || "CHITO 拍照比對",
-          text: "我成功配對這張照片！",
-          url: compositeUrl,
-        });
-        return;
-      }
-      await navigator.clipboard.writeText(compositeUrl);
-      toast({ title: "已複製連結" });
-    } catch (err) {
-      if ((err as DOMException)?.name === "AbortError") return;
-      toast({ title: "分享失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-compare",
+      title: config.title || "CHITO 拍照比對",
+      text: "我成功配對這張照片！",
+      forceMethod: "share",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   // ═══════════════════════════════════════════════════════════════
