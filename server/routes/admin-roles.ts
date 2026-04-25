@@ -260,10 +260,44 @@ export function registerAdminRoleRoutes(app: Express) {
     }
   });
 
+  // 🔒 共用：驗證目標 admin account 屬於同場域 + 不可越級操作
+  // super_admin 可操作任何帳號；其他人只能改自己場域的、且不能改更高階的
+  async function checkAccountAccessOrThrow(
+    req: AuthenticatedRequest,
+    targetAccountId: string,
+  ): Promise<{ ok: true; target: any } | { ok: false; status: number; message: string }> {
+    const target = await db.query.adminAccounts.findFirst({
+      where: eq(adminAccounts.id, targetAccountId),
+      with: { role: true },
+    });
+    if (!target) {
+      return { ok: false, status: 404, message: "帳號不存在" };
+    }
+    if (req.admin!.systemRole === "super_admin") {
+      return { ok: true, target };
+    }
+    // 同場域檢查
+    if (target.fieldId !== req.admin!.fieldId) {
+      return { ok: false, status: 403, message: "無權限操作其他場域帳號" };
+    }
+    // 越級檢查：不可操作 super_admin / platform_admin
+    const targetSystemRole = (target as any).role?.systemRole;
+    if (targetSystemRole === "super_admin" || targetSystemRole === "platform_admin") {
+      return { ok: false, status: 403, message: "無權限操作此階級帳號" };
+    }
+    return { ok: true, target };
+  }
+
   app.patch("/api/admin/accounts/:id", requireAdminAuth, requirePermission("admin:manage_accounts"), async (req, res) => {
     try {
       if (!req.admin) {
         return res.status(401).json({ message: "未認證" });
+      }
+
+      // 🔒 跨場域 + 越級防護
+      const access = await checkAccountAccessOrThrow(req, req.params.id);
+      if (!access.ok) {
+        return res.status(access.status).json({ message: access.message });
       }
 
       const { displayName, email, roleId, status } = req.body;
@@ -300,10 +334,23 @@ export function registerAdminRoleRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
+      // 🔒 跨場域 + 越級防護（防止 field admin 重設 super_admin 密碼接管整個平台）
+      const access = await checkAccountAccessOrThrow(req, req.params.id);
+      if (!access.ok) {
+        return res.status(access.status).json({ message: access.message });
+      }
+
       const { newPassword } = req.body;
 
-      if (!newPassword || newPassword.length < 6) {
-        return res.status(400).json({ message: "密碼長度至少 6 個字元" });
+      // 🔒 強密碼要求：至少 8 字元 + 含數字 + 含字母
+      if (!newPassword || typeof newPassword !== "string") {
+        return res.status(400).json({ message: "密碼為必填" });
+      }
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "密碼長度至少 8 個字元" });
+      }
+      if (!/[0-9]/.test(newPassword) || !/[A-Za-z]/.test(newPassword)) {
+        return res.status(400).json({ message: "密碼需含至少 1 個英文字母 + 1 個數字" });
       }
 
       await updateAdminPassword(req.params.id, newPassword);
@@ -313,6 +360,7 @@ export function registerAdminRoleRoutes(app: Express) {
         action: "admin:reset_password",
         targetType: "admin_account",
         targetId: req.params.id,
+        fieldId: access.target.fieldId,
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"],
       });
