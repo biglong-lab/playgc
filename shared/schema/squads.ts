@@ -350,3 +350,57 @@ export const insertSquadInviteSchema = createInsertSchema(squadInvites).omit({
 
 export type SquadInvite = typeof squadInvites.$inferSelect;
 export type InsertSquadInvite = typeof squadInvites.$inferInsert;
+
+// ============================================================================
+// 6. squad_name_history — 隊名改名歷史
+// ============================================================================
+//
+// 詳見 docs/SQUAD_SYSTEM_DESIGN.md §17.3
+//
+// 規則：
+//   - 建立後 7 天內可改 1 次（防錯字）
+//   - 之後每次改名間隔 30 天
+//   - 歷史不可刪除（防止鑽漏洞）
+// ============================================================================
+export const squadNameHistory = pgTable("squad_name_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  squadId: varchar("squad_id").notNull(),
+  oldName: varchar("old_name", { length: 50 }).notNull(),
+  newName: varchar("new_name", { length: 50 }).notNull(),
+  oldTag: varchar("old_tag", { length: 10 }),
+  newTag: varchar("new_tag", { length: 10 }),
+  changedByUserId: varchar("changed_by_user_id").notNull(),
+  changedAt: timestamp("changed_at").defaultNow().notNull(),
+  reason: varchar("reason", { length: 200 }),
+}, (table) => [
+  index("idx_name_history_squad").on(table.squadId, table.changedAt.desc()),
+]);
+
+export type SquadNameHistory = typeof squadNameHistory.$inferSelect;
+export type InsertSquadNameHistory = typeof squadNameHistory.$inferInsert;
+
+// ============================================================================
+// 7. squad_name_locks — 解散後鎖名
+// ============================================================================
+//
+// 詳見 docs/SQUAD_SYSTEM_DESIGN.md §17.4
+//
+// 隊伍解散 → 隊名鎖 180 天
+// 防止惡意搶名 / 釣魚
+// ============================================================================
+export const squadNameLocks = pgTable("squad_name_locks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 50 }).notNull(),
+  tag: varchar("tag", { length: 10 }),
+  fieldId: varchar("field_id"),
+  lockedUntil: timestamp("locked_until").notNull(),
+  reason: varchar("reason", { length: 50 }).default("dissolved"),
+  originalSquadId: varchar("original_squad_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_name_locks_name").on(table.name, table.lockedUntil),
+  index("idx_name_locks_field").on(table.fieldId),
+]);
+
+export type SquadNameLock = typeof squadNameLocks.$inferSelect;
+export type InsertSquadNameLock = typeof squadNameLocks.$inferInsert;
