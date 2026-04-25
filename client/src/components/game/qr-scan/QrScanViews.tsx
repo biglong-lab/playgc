@@ -65,10 +65,11 @@ export function InstructionView({ config, state, actions }: Omit<ViewProps, "sca
 // 3. 所有 loading overlay 必須放在 #qr-reader 的外層兄弟位置（absolute 疊加）
 
 export function CameraView({
+  state,
   actions,
   scannerContainerRef,
   isInitializing,
-}: Pick<ViewProps, "actions" | "scannerContainerRef"> & { isInitializing: boolean }) {
+}: Pick<ViewProps, "actions" | "state" | "scannerContainerRef"> & { isInitializing: boolean }) {
   return (
     <div className="w-full max-w-md">
       {/* 相機容器 + 疊加層（用 wrapper 把 overlay 放在 #qr-reader 外）*/}
@@ -86,6 +87,19 @@ export function CameraView({
               <p className="text-sm text-white/60 mt-2">請允許相機權限</p>
             </div>
           </div>
+        )}
+        {/* 🆕 切換鏡頭按鈕（右上角）*/}
+        {!isInitializing && (
+          <Button
+            onClick={() => actions.switchCamera?.()}
+            className="absolute top-2 right-2 z-20 bg-black/75 backdrop-blur hover:bg-black/90 text-white gap-1.5 px-3 h-9 rounded-full border border-white/30 shadow-lg"
+            data-testid="btn-qr-switch-camera"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span className="text-xs font-medium">
+              {state.facingMode === "user" ? "切後鏡頭" : "切前鏡頭"}
+            </span>
+          </Button>
         )}
       </div>
       {isInitializing ? (
