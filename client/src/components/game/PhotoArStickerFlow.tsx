@@ -517,10 +517,10 @@ export default function PhotoArStickerFlow({
           </div>
         )}
 
-        {/* 🎨 切換鏡頭大按鈕 — 文字+icon，明顯易用 */}
+        {/* 🎨 切換鏡頭大按鈕 — z-[60] 確保不被 face tracking 卡片或 sticker 擋 */}
         <Button
           onClick={() => camera.switchCamera()}
-          className="absolute top-4 right-4 z-20 bg-black/75 backdrop-blur hover:bg-black/90 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/30 shadow-xl"
+          className="absolute top-4 right-4 z-[60] bg-emerald-600/90 backdrop-blur hover:bg-emerald-700 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/40 shadow-2xl"
           data-testid="btn-ar-switch-camera"
         >
           <RefreshCw className="w-5 h-5" />
