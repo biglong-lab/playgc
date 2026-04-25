@@ -48,6 +48,7 @@ import { registerClientLogsRoutes, startClientLogsCleanup } from "./client-logs"
 import { registerSitemapRoute } from "./sitemap";
 import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadRecordsRoutes } from "./squad-records";
+import { registerRewardsRoutes } from "./rewards";
 
 export async function registerRoutes(
   httpServer: Server,
