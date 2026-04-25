@@ -338,7 +338,8 @@ app.use((req, res, next) => {
       // 排程器：cluster 模式已由 primary 執行，此處只在單 process 模式啟動
       if (CLUSTER_WORKERS === 0) {
         startBattleScheduler();
-  startDormancyScheduler();
+        startDormancyScheduler();
+        startAchievementScheduler();
       }
     },
   );
