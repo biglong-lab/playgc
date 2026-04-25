@@ -252,7 +252,8 @@ async function sendLineNotify(
   const token = config.token as string | undefined;
   if (!token) throw new Error("LINE Notify token 未設定");
 
-  const message = `[${opts.payload.title}]\n${opts.payload.body}${opts.payload.deepLink ? "\n" + opts.payload.deepLink : ""}`;
+  const { buildLineNotifyMessage } = await import("./notification-payload-builder");
+  const message = buildLineNotifyMessage(opts.payload);
 
   const params = new URLSearchParams();
   params.append("message", message);
