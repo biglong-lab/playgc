@@ -221,9 +221,9 @@ async function issueReward(
       return await stageExternalReward(reward, event);
 
     case "exp_points":
-      // 內部點數直接加到 squad_stats（已在 squad-records 寫入時處理）
-      // 這裡不重複加，只記事件
-      return `exp_points_${reward.value}`;
+      // 🆕 Phase 13 修復：規則引擎觸發的 exp_points 直接加進 squad_stats
+      // (與 calcRewards 在 record 寫入時加的點數獨立 — 規則是「額外」獎勵)
+      return await issueExpPoints(reward, event);
 
     case "badge":
       return await issueBadge(reward, event, ruleId);
