@@ -21,6 +21,7 @@ import { formatTimeAgo } from "@/lib/battle-time";
 import {
   Trophy, Swords, MapPin, Star, Flame, Crown,
   Users, TrendingUp, TrendingDown, Sparkles, Share2,
+  Image as ImageIcon, Settings,
 } from "lucide-react";
 
 interface SquadStatsResponse {
