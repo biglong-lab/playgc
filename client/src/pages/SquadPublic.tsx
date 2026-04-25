@@ -298,6 +298,48 @@ export default function SquadPublic() {
         </Card>
       )}
 
+      {/* 🆕 紀念照集錦 */}
+      {photos.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ImageIcon className="h-4 w-4 text-violet-500" />
+              紀念照集錦（{photosResp?.total ?? photos.length}）
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {photos.map((p, i) => (
+                <a
+                  key={`${p.sessionId}-${i}`}
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="aspect-square rounded-lg overflow-hidden bg-muted hover:opacity-90 transition relative group"
+                >
+                  <img
+                    src={p.url}
+                    alt={`Squad photo ${i + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  {p.gameType && (
+                    <div className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition">
+                      {GAME_TYPE_LABEL[p.gameType]?.label ?? p.gameType}
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+            {(photosResp?.total ?? 0) > photos.length && (
+              <p className="text-xs text-muted-foreground text-center mt-3">
+                顯示最近 {photos.length} 張，共 {photosResp?.total} 張
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* 近期戰績 */}
       {records.length > 0 && (
         <Card>
