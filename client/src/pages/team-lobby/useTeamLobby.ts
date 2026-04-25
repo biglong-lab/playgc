@@ -145,6 +145,13 @@ export function useTeamLobby(): TeamLobbyReturn {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game?.id, myTeam?.id]);
 
+  // 🆕 Phase 1.5：成功加入/建立隊伍後記憶 squad ID（下次自動帶入）
+  useEffect(() => {
+    if (myTeam?.id) {
+      setLastUsedSquadId(myTeam.id);
+    }
+  }, [myTeam?.id]);
+
   // WebSocket
   const { isConnected: wsConnected } = useTeamWebSocket({
     teamId: myTeam?.id,
