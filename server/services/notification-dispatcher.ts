@@ -372,19 +372,76 @@ async function sendGenericWebhook(
 }
 
 // ============================================================================
-// Email（先簡化：用 console.log，未來接 Resend）
+// Email（接 Resend — Phase 15.8）
 // ============================================================================
 async function sendEmail(
   config: Record<string, unknown>,
   opts: NotifyOptions,
 ): Promise<void> {
-  // TODO: 接 Resend API（既有 server/services/email.ts 可用）
-  // 現階段先 log，避免阻擋部署
-  console.log("[email] 待實作 Resend 整合", {
-    to: config.toAddress ?? "user",
-    title: opts.payload.title,
-    body: opts.payload.body,
+  const toAddress = (config.toAddress as string) ?? null;
+  if (!toAddress) {
+    console.warn("[email] 跳過：channel config 沒有 toAddress");
+    return;
+  }
+
+  // 取使用者 email（優先用 config.toAddress；若有 userId 也可從 users 表查）
+  const html = renderEmailHtml(opts);
+  const text = `${opts.payload.title}\n\n${opts.payload.body}\n\n${
+    opts.payload.deepLink ?? ""
+  }`;
+
+  const { sendEmail: sendResendEmail } = await import("./email");
+  const result = await sendResendEmail({
+    to: toAddress,
+    subject: opts.payload.title,
+    html,
+    text,
   });
+
+  if (!result.success) {
+    throw new Error(`Email 發送失敗：${result.error ?? "unknown"}`);
+  }
+
+  // success: 'resend' 表示真送了，'console-log' 表示沒 API key
+  if (result.provider === "console-log") {
+    console.log(
+      "[email] RESEND_API_KEY 未設定，使用 fallback log（不阻擋）",
+    );
+  }
+}
+
+/** 把 payload 轉成簡單的 HTML email */
+function renderEmailHtml(opts: NotifyOptions): string {
+  const linkHtml = opts.payload.deepLink
+    ? `<p><a href="${opts.payload.deepLink}" style="display:inline-block;padding:12px 24px;background:#0f766e;color:#fff;text-decoration:none;border-radius:6px;">查看詳情</a></p>`
+    : "";
+  const imgHtml = opts.payload.imageUrl
+    ? `<img src="${opts.payload.imageUrl}" alt="" style="max-width:100%;height:auto;border-radius:8px;margin:16px 0;" />`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="zh-TW"><head><meta charset="utf-8"></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f3f4f6;padding:20px;">
+  <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;padding:32px;">
+    <h1 style="margin:0 0 16px;color:#064e3b;">${escapeHtml(opts.payload.title)}</h1>
+    ${imgHtml}
+    <p style="color:#374151;line-height:1.6;">${escapeHtml(opts.payload.body)}</p>
+    ${linkHtml}
+    <p style="margin-top:32px;color:#9ca3af;font-size:12px;">
+      此為 CHITO 平台自動寄發的通知，請勿直接回覆。<br>
+      <a href="https://game.homi.cc" style="color:#0f766e;">game.homi.cc</a>
+    </p>
+  </div>
+</body></html>`;
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 // ============================================================================
