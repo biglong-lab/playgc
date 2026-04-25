@@ -187,7 +187,7 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
               squadType: "premade_group",
               result,
               slotId,
-              fieldId: slot.fieldId ?? "default",
+              fieldId: slot.venueId, // 暫用 venueId（Phase 5 改查 venue.fieldId）
               durationSec: result.length > 0 ? 600 : 0, // 預設 10 分鐘對戰
               performance: {
                 eliminations: pr.eliminations ?? 0,
