@@ -34,6 +34,7 @@ import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } 
 import {
   Swords, Clock, Users, CalendarDays, UserPlus,
   UserMinus, Shield, Copy, Check, CheckCircle, LogIn, Loader2,
+  Trophy,
 } from "lucide-react";
 
 interface RegistrationWithName extends BattleRegistration {
