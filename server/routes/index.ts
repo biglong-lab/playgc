@@ -50,6 +50,7 @@ import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
 import { registerSquadLeaderboardsRoutes } from "./squad-leaderboards";
+import { registerWelcomeSquadsRoutes } from "./welcome-squads";
 import { registerRewardsRoutes } from "./rewards";
 import { registerAdminRewardsRoutes } from "./admin-rewards";
 import { registerAdminEngagementRoutes } from "./admin-engagement";
