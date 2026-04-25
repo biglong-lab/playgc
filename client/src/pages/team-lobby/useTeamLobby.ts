@@ -32,6 +32,33 @@ function readInviteCodeFromUrl(): string {
   return parseInviteCode(window.location.search);
 }
 
+// 🆕 Phase 1.5：localStorage 記憶上次隊伍（80% 不彈 Dialog 設計）
+const LAST_SQUAD_KEY = "chito:lastSquadId";
+
+/** 取得上次使用的隊伍 ID（用於組隊預設值） */
+export function getLastUsedSquadId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(LAST_SQUAD_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** 記憶這次使用的隊伍（每次組隊成功時呼叫） */
+export function setLastUsedSquadId(squadId: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (squadId) {
+      localStorage.setItem(LAST_SQUAD_KEY, squadId);
+    } else {
+      localStorage.removeItem(LAST_SQUAD_KEY);
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export interface TeamWithDetails extends Team {
   members: (TeamMember & { user: User })[];
   game: Game;
