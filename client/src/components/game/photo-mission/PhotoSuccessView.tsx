@@ -131,39 +131,60 @@ export default function PhotoSuccessView({
             繼續遊戲 →
           </Button>
         ) : (
-          <div className="grid grid-cols-3 gap-2 w-full">
-            <a
-              href={imageUrl}
-              download={downloadFilename}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1 h-10 rounded-md border border-input bg-background text-foreground hover:bg-accent text-sm transition-colors"
-              data-testid="btn-photo-success-download"
-            >
-              <Download className="w-4 h-4" /> 下載
-            </a>
+          <div className="w-full space-y-2">
+            {/* 🆕 主要動作：保存到相簿（最大、綠色突出）*/}
             <Button
-              onClick={handleShare}
-              variant="outline"
-              className="gap-1"
-              data-testid="btn-photo-success-share"
+              onClick={handleSaveToAlbum}
+              size="lg"
+              className="w-full gap-2 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+              data-testid="btn-photo-success-save-album"
             >
-              <Share2 className="w-4 h-4" /> 分享
+              <ImageDown className="w-5 h-5" />
+              {isMobile ? "保存到相簿" : "下載圖片"}
             </Button>
-            <Button
-              onClick={onContinue}
-              className="gap-1 font-semibold"
-              data-testid="btn-photo-success-continue"
-            >
-              繼續 →
-            </Button>
+
+            {/* 次要動作：分享 + 繼續 */}
+            <div className="grid grid-cols-2 gap-2 w-full">
+              <Button
+                onClick={handleShare}
+                variant="outline"
+                className="gap-1"
+                data-testid="btn-photo-success-share"
+              >
+                <Share2 className="w-4 h-4" /> 分享給朋友
+              </Button>
+              <Button
+                onClick={onContinue}
+                className="gap-1 font-semibold"
+                data-testid="btn-photo-success-continue"
+              >
+                繼續 →
+              </Button>
+            </div>
+
+            {/* 桌機備援：直接下載連結（隱藏在小字）*/}
+            {!isMobile && (
+              <a
+                href={imageUrl}
+                download={downloadFilename}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-xs text-muted-foreground text-center hover:text-foreground underline"
+                data-testid="btn-photo-success-download-fallback"
+              >
+                <Download className="w-3 h-3 inline mr-1" />
+                若上方按鈕無效，點此直接下載
+              </a>
+            )}
           </div>
         )}
 
-        {/* iOS Safari 小提示 */}
-        <p className="text-xs text-muted-foreground text-center max-w-xs pt-2">
-          💡 iOS 用戶：若下載無效，可長按圖片 → 儲存到相簿
-        </p>
+        {/* iOS Safari 提示 — 只在手機顯示 */}
+        {isMobile && !imageError && (
+          <p className="text-xs text-muted-foreground text-center max-w-xs pt-2">
+            💡 點「保存到相簿」會跳出系統分享 → 選「儲存圖片」
+          </p>
+        )}
       </div>
     </div>
   );
