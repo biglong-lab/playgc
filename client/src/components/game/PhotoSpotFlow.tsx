@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { calculateDistance } from "@/lib/map-utils";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import {
   CameraInitializingView,
   CameraView,
