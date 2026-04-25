@@ -65,6 +65,7 @@ if (CLUSTER_WORKERS > 0 && cluster.isPrimary) {
   startAchievementScheduler();
   startLifecycleScheduler();
   startMonthlyResetScheduler();
+  startRewardRetryWorker();
 
   for (let i = 0; i < CLUSTER_WORKERS; i++) {
     cluster.fork();
