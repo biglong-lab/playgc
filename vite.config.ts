@@ -11,6 +11,16 @@ export default defineConfig({
       injectRegister: "auto",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
+        // 🔒 安全：admin / platform / revenue chunks 不 precache 到玩家裝置
+        // 防止逆向工程（玩家從 PWA cache 看到所有 admin 邏輯）
+        // 這些頁面只有 admin 才會載入，登入後動態 fetch 即可
+        globIgnores: [
+          "**/Admin*.js",
+          "**/Platform*.js",
+          "**/Revenue*.js",
+          "**/Owner*.js",
+          "**/MySubscription*.js",
+        ],
         // 新 SW 立即接管：避免使用者卡在舊 JS bundle 導致 MIME / chunk load 錯誤
         skipWaiting: true,
         clientsClaim: true,
