@@ -218,11 +218,67 @@ describe("achievement-scheduler", () => {
         "recruiter_starter",
         "recruiter_master",
         "super_recruiter",
+        // §9.4 特殊活動
+        "party_master",
+        "family_master",
+        "carnival_king",
+        // §9.5 個人挑戰
+        "record_breaker",
+        "speedrun_master",
       ];
       const keys = ACHIEVEMENTS.map((a) => a.key);
       for (const key of required) {
         expect(keys).toContain(key);
       }
+    });
+  });
+
+  describe("§9.4 特殊活動徽章", () => {
+    it("party_master：5 場派對活動", () => {
+      const ach = ACHIEVEMENTS.find((a) => a.key === "party_master")!;
+      expect(
+        ach.check(makeCtx({ eventCategoryCounts: { party: 4 } })),
+      ).toBe(false);
+      expect(
+        ach.check(makeCtx({ eventCategoryCounts: { party: 5 } })),
+      ).toBe(true);
+      // birthday + party 都算
+      expect(
+        ach.check(
+          makeCtx({ eventCategoryCounts: { party: 3, birthday: 2 } }),
+        ),
+      ).toBe(true);
+    });
+
+    it("family_master：5 場親子活動", () => {
+      const ach = ACHIEVEMENTS.find((a) => a.key === "family_master")!;
+      expect(
+        ach.check(makeCtx({ eventCategoryCounts: { family: 5 } })),
+      ).toBe(true);
+    });
+
+    it("carnival_king：10 場嘉年華", () => {
+      const ach = ACHIEVEMENTS.find((a) => a.key === "carnival_king")!;
+      expect(
+        ach.check(makeCtx({ eventCategoryCounts: { carnival: 9 } })),
+      ).toBe(false);
+      expect(
+        ach.check(makeCtx({ eventCategoryCounts: { carnival: 10 } })),
+      ).toBe(true);
+    });
+  });
+
+  describe("§9.5 個人挑戰徽章", () => {
+    it("record_breaker：突破 5 次", () => {
+      const ach = ACHIEVEMENTS.find((a) => a.key === "record_breaker")!;
+      expect(ach.check(makeCtx({ personalBestBreaks: 4 }))).toBe(false);
+      expect(ach.check(makeCtx({ personalBestBreaks: 5 }))).toBe(true);
+    });
+
+    it("speedrun_master：10 場速通", () => {
+      const ach = ACHIEVEMENTS.find((a) => a.key === "speedrun_master")!;
+      expect(ach.check(makeCtx({ speedrunGames: 9 }))).toBe(false);
+      expect(ach.check(makeCtx({ speedrunGames: 10 }))).toBe(true);
     });
   });
 });
