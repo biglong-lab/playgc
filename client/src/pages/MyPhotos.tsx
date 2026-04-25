@@ -129,7 +129,7 @@ export default function MyPhotos() {
     setLocation(link(`/album/${sessionId}`));
   };
 
-  // 🆕 v2: ZIP 下載（Cloudinary archive API）+ fallback 批次
+  // 🆕 全部存到相簿（手機優先一鍵 share sheet 全選；桌機才 ZIP）
   const handleDownloadAll = async () => {
     if (photos.length === 0 || bulkDownloading) return;
 
@@ -137,42 +137,54 @@ export default function MyPhotos() {
     setBulkProgress({ done: 0, total: photos.length });
 
     try {
-      const zipRes = await apiRequest("GET", "/api/me/photos/zip-url");
-      const zipData = await zipRes.json() as { url?: string; error?: string };
-      if (zipData.url) {
-        const a = document.createElement("a");
-        a.href = zipData.url;
-        a.download = `chito-my-photos.zip`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        toast({ title: "✅ ZIP 下載已啟動", description: `共 ${photos.length} 張打包` });
+      const isMobile = isMobileWithShare();
+
+      // 📱 手機：navigator.share 一次傳全部，user 可一鍵全部存
+      if (isMobile) {
+        const result = await savePhotosToAlbum({
+          urls: photos.map((p) => p.url),
+          filenamePrefix: "chito-my-photos",
+          title: "我的 CHITO 紀念照",
+          text: `${photos.length} 張紀念照`,
+          onProgress: (done, total) => setBulkProgress({ done, total }),
+        });
+        const msg = getSaveToastMessage(result);
+        if (msg.title) toast(msg);
         return;
       }
-      throw new Error(zipData.error || "產生 ZIP 失敗");
-    } catch (err) {
-      console.warn("[MyPhotos] ZIP fallback to batch:", err);
-      toast({ title: "改用逐張下載", description: "ZIP 服務暫不可用" });
 
-      for (let i = 0; i < photos.length; i++) {
-        const photo = photos[i];
-        try {
-          const res = await fetch(photo.url);
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
+      // 💻 桌機：ZIP 一個檔最方便
+      try {
+        const zipRes = await apiRequest("GET", "/api/me/photos/zip-url");
+        const zipData = (await zipRes.json()) as {
+          url?: string;
+          error?: string;
+        };
+        if (zipData.url) {
           const a = document.createElement("a");
-          a.href = url;
-          a.download = `chito-${photo.sessionId.slice(0, 8)}-${String(i + 1).padStart(2, "0")}.jpg`;
+          a.href = zipData.url;
+          a.download = `chito-my-photos.zip`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
-          setTimeout(() => URL.revokeObjectURL(url), 100);
-        } catch { /* 單張失敗不中斷 */ }
-        setBulkProgress({ done: i + 1, total: photos.length });
-        if (i < photos.length - 1) {
-          await new Promise((r) => setTimeout(r, 400));
+          toast({
+            title: "✅ ZIP 下載已啟動",
+            description: `共 ${photos.length} 張打包`,
+          });
+          return;
         }
+      } catch (err) {
+        console.warn("[MyPhotos] ZIP failed, fallback batch:", err);
       }
+
+      // 桌機 ZIP 失敗 → 逐張下載
+      const result = await savePhotosToAlbum({
+        urls: photos.map((p) => p.url),
+        filenamePrefix: "chito-my-photos",
+        onProgress: (done, total) => setBulkProgress({ done, total }),
+      });
+      const msg = getSaveToastMessage(result);
+      if (msg.title) toast(msg);
     } finally {
       setBulkDownloading(false);
       setBulkProgress({ done: 0, total: 0 });
