@@ -4,6 +4,7 @@ import {
   InstructionView, CameraView,
   ManualInputView, SuccessView, ErrorView,
 } from "./qr-scan/QrScanViews";
+import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 
 interface QrScanPageProps {
   config: QrScanConfig;
