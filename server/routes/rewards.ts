@@ -182,6 +182,111 @@ export function registerRewardsRoutes(app: Express) {
   );
 
   // ============================================================================
+  // POST /api/rewards/external/callback — aihomi 等外部夥伴回傳券碼（webhook）
+  // 用 X-Provider-Secret header 驗證（不需要 isAuthenticated）
+  // ============================================================================
+  const callbackSchema = z.object({
+    request_id: z.string(),
+    status: z.enum(["issued", "failed"]),
+    user_id: z.string(),
+    coupon: z
+      .object({
+        code: z.string(),
+        display_name: z.string(),
+        value: z.string(),
+        redeem_url: z.string().url(),
+        expires_at: z.string(),
+        merchant_name: z.string().optional(),
+        merchant_address: z.string().optional(),
+      })
+      .optional(),
+    error_message: z.string().optional(),
+  });
+
+  app.post(
+    "/api/rewards/external/callback",
+    async (req, res) => {
+      try {
+        // 1. 驗證 webhook secret
+        const secret = req.headers["x-provider-secret"] as string | undefined;
+        if (!secret) {
+          return res.status(401).json({ error: "缺少 X-Provider-Secret header" });
+        }
+
+        const { verifyAihomiWebhookSecret, processAihomiCallback } = await import(
+          "../services/aihomi-adapter"
+        );
+
+        const isValid = await verifyAihomiWebhookSecret(secret);
+        if (!isValid) {
+          return res.status(403).json({ error: "webhook secret 驗證失敗" });
+        }
+
+        // 2. 驗證 payload
+        const parsed = callbackSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            error: "callback payload 格式錯誤",
+            details: parsed.error.errors,
+          });
+        }
+
+        // 3. 處理 callback
+        const result = await processAihomiCallback(parsed.data);
+        if (!result.success) {
+          return res.status(500).json({ error: result.error });
+        }
+
+        res.json({ success: true, rewardId: result.rewardId });
+      } catch (error) {
+        console.error("[rewards] external/callback 失敗:", error);
+        res.status(500).json({ error: "callback 處理失敗" });
+      }
+    },
+  );
+
+  // ============================================================================
+  // POST /api/rewards/external/redeemed — aihomi 通知券已兌換
+  // ============================================================================
+  const redeemedSchema = z.object({
+    coupon_code: z.string(),
+    redeemed_at: z.string(),
+    merchant: z.string().optional(),
+  });
+
+  app.post(
+    "/api/rewards/external/redeemed",
+    async (req, res) => {
+      try {
+        const secret = req.headers["x-provider-secret"] as string | undefined;
+        if (!secret) {
+          return res.status(401).json({ error: "缺少 X-Provider-Secret header" });
+        }
+
+        const { verifyAihomiWebhookSecret, processAihomiRedeemCallback } = await import(
+          "../services/aihomi-adapter"
+        );
+
+        const isValid = await verifyAihomiWebhookSecret(secret);
+        if (!isValid) {
+          return res.status(403).json({ error: "webhook secret 驗證失敗" });
+        }
+
+        const parsed = redeemedSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ error: "redeemed payload 格式錯誤" });
+        }
+
+        const result = await processAihomiRedeemCallback(parsed.data);
+        res.json(result);
+      } catch (error) {
+        console.error("[rewards] external/redeemed 失敗:", error);
+        res.status(500).json({ error: "redeemed 處理失敗" });
+      }
+    },
+  );
+
+  // ============================================================================
   // POST /api/rewards/:id/redeem — 取得外部券兌換 URL
   // ============================================================================
   app.post(
