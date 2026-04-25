@@ -91,9 +91,30 @@ export async function writeSquadRecordFromSession(
   // 取 fieldId（從 game 取）
   const fieldId = game.fieldId ?? "default";
 
-  // 直接寫入（不走 API，因為是 server 內部呼叫）
-  // 簡化版：先只寫 record，rating 計算先省略（Phase 4.5 會補上）
+  // 🆕 Phase 13 修復：走完整 calcRewards 路徑（PvE 也算 rating）
   try {
+    // 取/建立 rating
+    const myRating = await ensureSquadRating(squadId, squadType, gameType);
+    // 取/建立 stats（用於 totalGames 算 K 值 + 場域檢查）
+    const myStats = await ensureSquadStats(squadId, squadType);
+
+    const fieldsPlayed = (myStats.fieldsPlayed as string[]) ?? [];
+    const isFirstVisit = !fieldsPlayed.includes(fieldId);
+    const isCrossField =
+      !isFirstVisit && fieldsPlayed.length > 0 && fieldsPlayed[0] !== fieldId;
+
+    // 計算 rewards（PvE 模式，無對手）
+    const calc = calcRewards({
+      myRating: myRating.rating,
+      opponentRating: 1200,
+      result,
+      performance,
+      totalGames: myRating.gamesPlayed,
+      isCrossField,
+      isFirstVisit,
+      scoringMode: "pve",
+    });
+
     await db.insert(squadMatchRecords).values({
       squadId,
       squadType,
@@ -104,17 +125,45 @@ export async function writeSquadRecordFromSession(
       result,
       performance,
       durationSec,
-      ratingChange: 0, // PvE 完成在這版本先不算 rating（Phase 4.5 補）
-      expPoints: 0,
+      ratingBefore: myRating.rating,
+      ratingAfter: myRating.rating + calc.ratingChange,
+      ratingChange: calc.ratingChange,
+      expPoints: calc.expPoints,
+      gameCountMultiplier: calc.gameCountMultiplier,
+      isCrossField,
+      isFirstVisit,
     });
 
-    // 更新 stats（簡化）
-    await ensureSquadStats(squadId, squadType);
+    // 更新 squad_ratings
+    await db
+      .update(squadRatings)
+      .set({
+        rating: myRating.rating + calc.ratingChange,
+        gamesPlayed: sql`${squadRatings.gamesPlayed} + 1`,
+        peakRating: sql`GREATEST(${squadRatings.peakRating}, ${myRating.rating + calc.ratingChange})`,
+        tier: deriveTier(myRating.rating + calc.ratingChange),
+        lastPlayedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(squadRatings.squadId, squadId),
+          eq(squadRatings.gameType, gameType),
+        ),
+      );
+
+    // 更新 stats（含跨場域陣列）
+    const newFieldsPlayed = isFirstVisit
+      ? [...fieldsPlayed, fieldId]
+      : fieldsPlayed;
+
     await db
       .update(squadStats)
       .set({
         totalGamesRaw: sql`${squadStats.totalGamesRaw} + 1`,
-        totalGames: sql`${squadStats.totalGames} + 1`,
+        totalGames: sql`${squadStats.totalGames} + ${calc.gameCountMultiplier / 100.0}`,
+        totalExpPoints: sql`${squadStats.totalExpPoints} + ${calc.expPoints}`,
+        fieldsPlayed: newFieldsPlayed,
         monthlyGames: sql`${squadStats.monthlyGames} + 1`,
         lastActiveAt: new Date(),
         updatedAt: new Date(),
