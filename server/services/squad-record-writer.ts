@@ -72,6 +72,14 @@ export async function writeSquadRecordFromSession(
         )
       : 0;
 
+  // 🚫 Phase 9.7 防作弊 1：< 60 秒不算（避免快進快出）
+  if (durationSec < 60) {
+    console.log(
+      `[squad-record] 跳過 session ${session.id}：時長 ${durationSec}s < 60s`,
+    );
+    return;
+  }
+
   // performance（從 session 推算）
   const performance = {
     duration: durationSec,
