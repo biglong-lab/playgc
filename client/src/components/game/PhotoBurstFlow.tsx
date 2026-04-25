@@ -222,28 +222,28 @@ export default function PhotoBurstFlow({
       if (images.length === 0) return;
 
       // 並行上傳（10s timeout per image）
-      const ids: string[] = [];
       const uploadPromises = images.map(async (img, idx) => {
         try {
-          const id = await uploadSingle(img);
-          return { idx, id };
+          const result = await uploadSingle(img);
+          return { idx, ...result };
         } catch (err) {
           console.warn(`[Burst BG] upload #${idx} failed:`, err);
           return null;
         }
       });
       const results = await Promise.all(uploadPromises);
-      const sortedIds = results
-        .filter((r): r is { idx: number; id: string } => r !== null)
-        .sort((a, b) => a.idx - b.idx)
-        .map((r) => r.id);
+      const sorted = results
+        .filter((r): r is { idx: number; publicId: string; url: string } => r !== null)
+        .sort((a, b) => a.idx - b.idx);
+      const sortedIds = sorted.map((r) => r.publicId);
+      const sortedUrls = sorted.map((r) => r.url);
 
       if (sortedIds.length === 0) {
         console.warn("[Burst BG] 全部上傳失敗，保持本地圖");
         return;
       }
-      ids.push(...sortedIds);
       setUploadedIds(sortedIds);
+      setUploadedUrls(sortedUrls); // 🆕 記下個別照片 URL，給「保存全部」用
 
       // 等 tag propagate
       await new Promise((r) => setTimeout(r, 500));
