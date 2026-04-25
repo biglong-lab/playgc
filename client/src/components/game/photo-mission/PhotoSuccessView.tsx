@@ -48,7 +48,10 @@ export default function PhotoSuccessView({
   const { toast } = useToast();
   const [imageError, setImageError] = useState(false);
 
-  // 🆕 主要動作：一鍵保存到手機相簿（最順暢的 UX）
+  // 🆕 主要動作：一鍵保存到手機相簿
+  // 失敗 fallback：開全螢幕燈箱讓使用者長按存圖
+  const [showLightbox, setShowLightbox] = useState(false);
+
   const handleSaveToAlbum = async () => {
     const result = await savePhotoToAlbum({
       url: imageUrl,
@@ -57,6 +60,17 @@ export default function PhotoSuccessView({
       text: "看看我的遊戲紀念！",
     });
     const msg = getSaveToastMessage(result);
+
+    // 失敗或 share-url-only / open-tab → 開燈箱讓使用者直接長按
+    if (
+      !result.success ||
+      result.method === "share-url-only" ||
+      result.method === "open-tab"
+    ) {
+      setShowLightbox(true);
+      return;
+    }
+
     if (msg.title) toast(msg);
   };
 
