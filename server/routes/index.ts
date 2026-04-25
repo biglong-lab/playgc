@@ -108,6 +108,7 @@ export async function registerRoutes(
   registerBattleRankingRoutes(app);
   registerBattleClanRoutes(app);
   registerSquadRecordsRoutes(app);
+  registerRewardsRoutes(app);
   registerBattleNotificationRoutes(app);
   registerAdminBattleRoutes(app);
   registerAdminBattleSeasonRoutes(app);
