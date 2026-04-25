@@ -386,14 +386,57 @@ async function getPlayerRanking(userId: string, fieldId: string): Promise<Battle
 // 戰隊 (Clans)
 // ============================================================================
 
-/** 建立戰隊 */
+/** 🆕 Phase 9.8：檢查隊名唯一性（含解散後 180 天鎖名） */
+async function isClanNameAvailable(name: string, excludeClanId?: string): Promise<{
+  available: boolean;
+  reason?: string;
+}> {
+  // 1. 檢查是否有同名活躍戰隊
+  const existing = await db
+    .select()
+    .from(battleClans)
+    .where(eq(battleClans.name, name));
+
+  for (const clan of existing) {
+    if (excludeClanId && clan.id === excludeClanId) continue;
+    if (clan.isActive) {
+      return { available: false, reason: "此隊名已被使用" };
+    }
+    // 已解散戰隊：180 天內鎖定
+    if (clan.disbandedAt) {
+      const lockEnd = new Date(clan.disbandedAt);
+      lockEnd.setDate(lockEnd.getDate() + 180);
+      if (new Date() < lockEnd) {
+        return {
+          available: false,
+          reason: `此隊名於 ${lockEnd.toLocaleDateString("zh-TW")} 後解鎖`,
+        };
+      }
+    }
+  }
+
+  return { available: true };
+}
+
+/** 建立戰隊（加唯一性檢查） */
 async function createClan(data: InsertBattleClan): Promise<BattleClan> {
+  // 🚫 Phase 9.8 唯一性檢查
+  const check = await isClanNameAvailable(data.name);
+  if (!check.available) {
+    throw new Error(check.reason ?? "隊名不可用");
+  }
   const [result] = await db.insert(battleClans).values(data).returning();
   return result;
 }
 
 /** 建立戰隊 + 自動加入隊長（事務） */
 async function createClanWithLeader(data: InsertBattleClan): Promise<BattleClan> {
+  // 🚫 Phase 9.8 唯一性檢查（在 transaction 外先擋）
+  const check = await isClanNameAvailable(data.name);
+  if (!check.available) {
+    throw new Error(check.reason ?? "隊名不可用");
+  }
+
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
