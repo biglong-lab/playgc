@@ -352,6 +352,47 @@ export default function AdminRewardsRules() {
               </div>
             </div>
 
+            {/* 🆕 A/B Testing 設定 */}
+            <div className="border-t pt-3 mt-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Label className="text-sm font-medium">A/B Testing</Label>
+                <span className="text-xs text-muted-foreground">
+                  （選填）控制規則觸發流量比例
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">分組（選填）</Label>
+                  <Input
+                    value={formAbTestGroup}
+                    onChange={(e) => setFormAbTestGroup(e.target.value)}
+                    placeholder="A / B / control"
+                    maxLength={20}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">流量 % (0-100)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={formAbTestTraffic}
+                    onChange={(e) =>
+                      setFormAbTestTraffic(
+                        Math.max(
+                          0,
+                          Math.min(100, parseInt(e.target.value) || 0),
+                        ),
+                      )
+                    }
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                100% = 全量觸發；50% = 一半 squads 命中（用 sha256 deterministic bucket，同 squad 永遠在同組）
+              </p>
+            </div>
+
             <div>
               <Label className="flex items-center gap-2">
                 觸發條件（JSON）
