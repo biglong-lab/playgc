@@ -74,7 +74,7 @@ export function registerSquadRecordsRoutes(app: Express) {
           .where(eq(adminAccounts.firebaseUserId, userId))
           .limit(1);
 
-        if (!admin) {
+        if (!admin || !admin.roleId) {
           return res.status(403).json({
             error: "戰績寫入須由 server-side hook 處理，不允許 client 直接呼叫",
           });
