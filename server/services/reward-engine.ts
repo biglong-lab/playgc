@@ -270,6 +270,38 @@ async function issuePlatformCoupon(reward: RewardSpec, event: RewardEvent): Prom
   return created.id;
 }
 
+/** 寫入徽章（Phase 11.1） */
+async function issueBadge(
+  reward: RewardSpec,
+  event: RewardEvent,
+  ruleId: string,
+): Promise<string | null> {
+  if (!event.squadId) return null;
+  if (!reward.value || typeof reward.value !== "string") return null;
+
+  // unique constraint 處理：用 onConflictDoNothing 避免重複
+  try {
+    const [created] = await db
+      .insert(squadAchievements)
+      .values({
+        squadId: event.squadId,
+        achievementKey: reward.value,
+        category: (reward.metadata?.category as string) ?? null,
+        displayName: (reward.metadata?.displayName as string) ?? null,
+        description: (reward.metadata?.description as string) ?? null,
+        iconUrl: (reward.metadata?.iconUrl as string) ?? null,
+        sourceRuleId: ruleId,
+        sourceEventId: event.sourceId,
+      })
+      .onConflictDoNothing()
+      .returning();
+    return created?.id ?? null;
+  } catch (err) {
+    console.error("[reward-engine] issueBadge 失敗:", err);
+    return null;
+  }
+}
+
 /** 預備外部券（待 Phase 8 真正發送 webhook 給 aihomi）*/
 async function stageExternalReward(reward: RewardSpec, event: RewardEvent): Promise<string | null> {
   if (!reward.provider) return null;
