@@ -512,6 +512,13 @@ export default function BattleSlotDetail() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* 🆕 Mode B 玩家自評 Dialog */}
+      <SelfReportDialog
+        slotId={slotId}
+        open={showSelfReportDialog}
+        onOpenChange={setShowSelfReportDialog}
+      />
     </BattleLayout>
   );
 }
