@@ -387,49 +387,41 @@ export default function PhotoArStickerFlow({
     onComplete(reward);
   };
 
+  // 🆕 一鍵保存到手機相簿
+  const handleSaveToAlbum = async () => {
+    if (!finalUrl) return;
+    const result = await savePhotoToAlbum({
+      url: finalUrl,
+      filename: "chito-ar",
+      title: "CHITO AR 拍照",
+      text: "看看我的 AR 造型！",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
+  };
+
   const handleDownload = async () => {
     if (!finalUrl) return;
-    try {
-      const res = await fetch(finalUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `chito-ar-${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-      toast({ title: "下載完成", duration: 1200 });
-    } catch {
-      toast({ title: "下載失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: finalUrl,
+      filename: "chito-ar",
+      forceMethod: "download",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   const handleShare = async () => {
     if (!finalUrl) return;
-    try {
-      // 🎯 優先用 Web Share URL（不 fetch blob，避 CORS / iOS Safari 問題）
-      if (typeof navigator.share === "function") {
-        await navigator.share({
-          title: "CHITO AR 拍照",
-          text: "看看我的 AR 造型！",
-          url: finalUrl,
-        });
-        return;
-      }
-      // fallback 複製連結
-      await navigator.clipboard.writeText(finalUrl);
-      toast({ title: "✅ 已複製連結", description: "可貼到 LINE / FB 分享" });
-    } catch (err) {
-      if ((err as DOMException)?.name === "AbortError") return;
-      // 最後 fallback：開新 tab 讓使用者手動儲存
-      window.open(finalUrl, "_blank", "noopener,noreferrer");
-      toast({
-        title: "已開啟圖片",
-        description: "長按圖片可儲存到相簿",
-      });
-    }
+    const result = await savePhotoToAlbum({
+      url: finalUrl,
+      filename: "chito-ar",
+      title: "CHITO AR 拍照",
+      text: "看看我的 AR 造型！",
+      forceMethod: "share",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   // ═══════════════════════════════════════════════════════════════
