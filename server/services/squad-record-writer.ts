@@ -18,8 +18,9 @@ import {
   squadRatings,
   squadStats,
 } from "@shared/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc, gte } from "drizzle-orm";
 import type { GameSession } from "@shared/schema";
+import { calcRewards, deriveTier } from "./squad-rating-calc";
 
 /**
  * 從一般遊戲 session 完成事件寫入 squad record
