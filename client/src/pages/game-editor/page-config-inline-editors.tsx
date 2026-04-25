@@ -125,12 +125,32 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
             <audio
               src={ensureAudioUrl(config.backgroundAudio as string)}
               controls
-              preload="metadata"
+              preload="auto"
               className="w-full"
               data-testid="audio-preview"
+              onLoadedMetadata={(e) => {
+                console.log("[audio-preview] ✅ metadata loaded", {
+                  duration: e.currentTarget.duration,
+                  src: e.currentTarget.currentSrc,
+                });
+              }}
+              onError={(e) => {
+                const audio = e.currentTarget;
+                console.error("[audio-preview] ❌ load failed", {
+                  errorCode: audio.error?.code,
+                  errorMessage: audio.error?.message,
+                  networkState: audio.networkState,
+                  readyState: audio.readyState,
+                  src: audio.currentSrc,
+                });
+              }}
+              onCanPlay={() => {
+                console.log("[audio-preview] ▶️ can play");
+              }}
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              💡 若無法播放，請確認上傳的是音訊檔（mp3 / m4a / wav）
+              💡 若無法播放，請確認上傳的是音訊檔（mp3 / m4a / wav）—
+              開瀏覽器 DevTools Console 看 [audio-preview] 訊息
             </p>
           </div>
         )}
