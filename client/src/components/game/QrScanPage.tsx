@@ -24,6 +24,7 @@ export default function QrScanPage({ config, onComplete, sessionId }: QrScanPage
       )}
       {(mode === "initializing" || mode === "scanning") && (
         <CameraView
+          state={state}
           actions={actions}
           scannerContainerRef={scannerContainerRef}
           isInitializing={mode === "initializing"}
