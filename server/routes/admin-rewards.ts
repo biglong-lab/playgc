@@ -211,6 +211,143 @@ export function registerAdminRewardsRoutes(app: Express) {
   });
 
   // ============================================================================
+  // GET /api/admin/rewards/analytics — 獎勵總覽 dashboard（Phase 12 加值）
+  //
+  // 提供：
+  //   - 總獎勵發放次數（含過去 7 / 30 天）
+  //   - 平台券 vs 外部券分布
+  //   - Top 10 規則命中數
+  //   - 兌換率（issued vs redeemed）
+  // ============================================================================
+  app.get(
+    "/api/admin/rewards/analytics",
+    requireAdminAuth,
+    async (_req, res) => {
+      try {
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 86400_000);
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400_000);
+
+        // 1. 總事件數（過去 30 天）
+        const events30 = await db
+          .select({
+            ruleId: rewardConversionEvents.ruleId,
+            status: rewardConversionEvents.status,
+            createdAt: rewardConversionEvents.createdAt,
+          })
+          .from(rewardConversionEvents)
+          .orderBy(desc(rewardConversionEvents.createdAt))
+          .limit(5000);
+
+        const totalEvents = events30.length;
+        const events7d = events30.filter(
+          (e) => e.createdAt && e.createdAt >= sevenDaysAgo,
+        ).length;
+        const eventsToday = events30.filter(
+          (e) =>
+            e.createdAt &&
+            e.createdAt.toDateString() === now.toDateString(),
+        ).length;
+
+        // 2. Top 10 規則命中數
+        const ruleHits: Record<string, number> = {};
+        for (const e of events30) {
+          if (!e.ruleId) continue;
+          ruleHits[e.ruleId] = (ruleHits[e.ruleId] || 0) + 1;
+        }
+        const topRuleIds = Object.entries(ruleHits)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+
+        const topRulesData =
+          topRuleIds.length > 0
+            ? await db
+                .select({
+                  id: rewardConversionRules.id,
+                  name: rewardConversionRules.name,
+                  rewardType: rewardConversionRules.rewardType,
+                })
+                .from(rewardConversionRules)
+                .where(
+                  inArray(
+                    rewardConversionRules.id,
+                    topRuleIds.map(([id]) => id),
+                  ),
+                )
+            : [];
+
+        const topRules = topRuleIds.map(([id, hits]) => {
+          const rule = topRulesData.find((r) => r.id === id);
+          return {
+            ruleId: id,
+            name: rule?.name ?? "(未知規則)",
+            rewardType: rule?.rewardType,
+            hits,
+          };
+        });
+
+        // 3. 平台券狀態統計
+        const platformCouponStats = await db
+          .select({
+            status: platformCoupons.status,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(platformCoupons)
+          .groupBy(platformCoupons.status);
+
+        // 4. 外部券狀態統計
+        const externalRewardStats = await db
+          .select({
+            status: squadExternalRewards.status,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(squadExternalRewards)
+          .groupBy(squadExternalRewards.status);
+
+        // 5. 兌換率（issued / redeemed）
+        const platformIssued = platformCouponStats.reduce(
+          (sum, s) => sum + (s.count ?? 0),
+          0,
+        );
+        const platformUsed =
+          platformCouponStats.find((s) => s.status === "used")?.count ?? 0;
+        const externalIssued = externalRewardStats.reduce(
+          (sum, s) => sum + (s.count ?? 0),
+          0,
+        );
+        const externalRedeemed =
+          externalRewardStats.find((s) => s.status === "redeemed")?.count ?? 0;
+
+        res.json({
+          summary: {
+            totalEvents30d: totalEvents,
+            totalEvents7d: events7d,
+            totalEventsToday: eventsToday,
+            platformIssued,
+            platformUsed,
+            externalIssued,
+            externalRedeemed,
+            platformConversionRate:
+              platformIssued > 0
+                ? Math.round((platformUsed / platformIssued) * 100)
+                : 0,
+            externalConversionRate:
+              externalIssued > 0
+                ? Math.round((externalRedeemed / externalIssued) * 100)
+                : 0,
+          },
+          topRules,
+          platformCouponStats,
+          externalRewardStats,
+        });
+      } catch (error) {
+        console.error("[admin-rewards] GET analytics 失敗:", error);
+        res.status(500).json({ error: "取得分析失敗" });
+      }
+    },
+  );
+
+  // ============================================================================
   // GET /api/admin/coupon-templates
   // ============================================================================
   app.get("/api/admin/coupon-templates", requireAdminAuth, async (req, res) => {
