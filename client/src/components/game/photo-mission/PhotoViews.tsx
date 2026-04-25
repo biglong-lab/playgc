@@ -90,22 +90,13 @@ export function InstructionView({
               onClick={onStartCamera}
               className="w-full gap-2"
               data-testid="button-open-camera"
+              size="lg"
             >
-              <Camera className="w-4 h-4" />
+              <Camera className="w-5 h-5" />
               開啟相機
             </Button>
 
-            <Button
-              variant="outline"
-              onClick={onOpenGallery}
-              className="w-full gap-2"
-              data-testid="button-upload-photo"
-            >
-              <Image className="w-4 h-4" />
-              從相簿選擇
-            </Button>
-
-            {/* 從相簿選擇：不加 capture 屬性，iOS Safari 才會顯示「相簿 / 拍照」選單 */}
+            {/* 隱藏 file input — 仍保留給程式碼相容性（admin 預覽 / 測試用）但 UI 不顯示 */}
             <input
               ref={fileInputRef}
               type="file"
