@@ -114,6 +114,9 @@ const RevenueTransactions = lazy(() => import("@/pages/revenue/RevenueTransactio
 // 💳 玩家會員中心（v4.0 Phase 4）
 const MeCenter = lazy(() => import("@/pages/me/MeCenter"));
 
+// 🎁 我的獎勵（Squad System Phase 7）
+const MyRewards = lazy(() => import("@/pages/me/MyRewards"));
+
 // 🏢 場域總部 — 我的方案（v4.0 Phase 6）
 const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
 
