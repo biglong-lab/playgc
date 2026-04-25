@@ -256,6 +256,17 @@ export function registerPlayerSessionRoutes(app: Express) {
           } catch (err) {
             console.error("[achievement] 解鎖檢查失敗:", err);
           }
+
+          // 🆕 Phase 4.3：寫入 squad_match_records（如果 session 有隊伍）
+          // 這個 hook 是 fire-and-forget，不影響原本回應
+          try {
+            const { writeSquadRecordFromSession } = await import(
+              "../services/squad-record-writer"
+            );
+            await writeSquadRecordFromSession(session);
+          } catch (err) {
+            console.error("[squad-record] 寫入失敗（不影響 session）:", err);
+          }
         }
 
         // 🆕 若分數被伺服器修正，告知 client
