@@ -193,12 +193,32 @@ async function checkQuota(
           eq(rewardConversionEvents.status, "processed"),
         ),
       );
-    // 計算這條規則發給這隊伍幾次（搜 rewardsIssued 包含 ruleId）
     const hits = previousHits.filter((e) => {
       const rewards = e.rewardsIssued as Array<{ ruleId: string }>;
       return rewards.some((r) => r.ruleId === rule.id);
     });
     if (hits.length >= quota.perSquad) return false;
+  }
+
+  // 🆕 Phase 15.9：perDay 檢查（每日總共觸發上限）
+  if (quota.perDay !== undefined) {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayHits = await db
+      .select()
+      .from(rewardConversionEvents)
+      .where(
+        and(
+          eq(rewardConversionEvents.status, "processed"),
+          sql`${rewardConversionEvents.createdAt} >= ${todayStart}`,
+        ),
+      );
+    const ruleHitsToday = todayHits.filter((e) => {
+      const rewards = e.rewardsIssued as Array<{ ruleId: string }>;
+      return rewards.some((r) => r.ruleId === rule.id);
+    });
+    if (ruleHitsToday.length >= quota.perDay) return false;
   }
 
   return true;
