@@ -97,18 +97,29 @@ export function CameraView({
       ) : (
         <>
           <p className="text-center text-sm text-muted-foreground mb-4">將 QR Code 對準掃描框內</p>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={actions.handleCancelScan} className="flex-1" data-testid="button-cancel-scan">
+          <div className="grid grid-cols-3 gap-2">
+            <Button variant="outline" onClick={actions.handleCancelScan} data-testid="button-cancel-scan">
               取消
+            </Button>
+            {/* 🆕 切鏡頭按鈕（綠色突出）*/}
+            <Button
+              onClick={() => actions.switchCamera?.()}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              data-testid="btn-qr-switch-camera"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="text-xs">
+                {state.facingMode === "user" ? "後鏡頭" : "前鏡頭"}
+              </span>
             </Button>
             <Button
               variant="outline"
               onClick={async () => { await actions.stopScanning(); actions.setMode("manual"); }}
-              className="flex-1 gap-2"
+              className="gap-1.5"
               data-testid="button-switch-manual"
             >
               <Keyboard className="w-4 h-4" />
-              手動輸入
+              <span className="text-xs">手動</span>
             </Button>
           </div>
         </>
