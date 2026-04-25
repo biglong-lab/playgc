@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import type { AuthenticatedRequest } from "./types";
 import {
   requireAdminAuth,
   requirePermission,
