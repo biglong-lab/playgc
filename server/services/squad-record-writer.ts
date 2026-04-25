@@ -115,24 +115,37 @@ export async function writeSquadRecordFromSession(
       scoringMode: "pve",
     });
 
-    await db.insert(squadMatchRecords).values({
-      squadId,
-      squadType,
-      gameType,
-      gameId: session.gameId,
-      sessionId: session.id,
-      fieldId,
-      result,
-      performance,
-      durationSec,
-      ratingBefore: myRating.rating,
-      ratingAfter: myRating.rating + calc.ratingChange,
-      ratingChange: calc.ratingChange,
-      expPoints: calc.expPoints,
-      gameCountMultiplier: calc.gameCountMultiplier,
-      isCrossField,
-      isFirstVisit,
-    });
+    // 🔒 冪等寫入：用 onConflictDoNothing + returning() 確認是否真的插入
+    // 若 conflict（重發 / cluster 雙寫）則直接 return，不重複更新 ratings/stats
+    const inserted = await db
+      .insert(squadMatchRecords)
+      .values({
+        squadId,
+        squadType,
+        gameType,
+        gameId: session.gameId,
+        sessionId: session.id,
+        fieldId,
+        result,
+        performance,
+        durationSec,
+        ratingBefore: myRating.rating,
+        ratingAfter: myRating.rating + calc.ratingChange,
+        ratingChange: calc.ratingChange,
+        expPoints: calc.expPoints,
+        gameCountMultiplier: calc.gameCountMultiplier,
+        isCrossField,
+        isFirstVisit,
+      })
+      .onConflictDoNothing()
+      .returning({ id: squadMatchRecords.id });
+
+    if (inserted.length === 0) {
+      console.log(
+        `[squad-record-writer] session ${session.id} squad ${squadId} 已寫過，跳過重複（race / retry）`,
+      );
+      return;
+    }
 
     // 更新 squad_ratings
     await db
