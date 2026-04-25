@@ -94,6 +94,25 @@ export default function SquadPublic() {
     enabled: !!squadId,
   });
 
+  // 🆕 Phase 16.2：紀念照集錦
+  const { data: photosResp } = useQuery<{
+    photos: Array<{
+      url: string;
+      sessionId: string;
+      gameType?: string;
+      playedAt?: string;
+    }>;
+    total: number;
+  }>({
+    queryKey: ["/api/squads", squadId, "photos"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", `/api/squads/${squadId}/photos?limit=12`);
+      return res.json();
+    },
+    enabled: !!squadId,
+  });
+  const photos = photosResp?.photos ?? [];
+
   const handleShare = async () => {
     const url = window.location.href;
     const title = `來看看「${squadId}」這支隊伍的戰績！`;
