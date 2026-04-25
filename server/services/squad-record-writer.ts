@@ -185,8 +185,44 @@ export async function writeSquadRecordFromBattle(opts: {
         updatedAt: new Date(),
       })
       .where(eq(squadStats.squadId, opts.squadId));
+
+    // 🆕 Phase 6.5：觸發獎勵規則引擎
+    await triggerRewardEngine({
+      eventType: "game_complete",
+      sourceId: opts.slotId,
+      sourceType: "battle_result",
+      squadId: opts.squadId,
+      fieldId: opts.fieldId,
+      context: {
+        gameType: "battle",
+        result: opts.result,
+        isCrossField: opts.isCrossField ?? false,
+        isFirstVisit: opts.isFirstVisit ?? false,
+        isMvp: opts.performance.isMvp,
+      },
+    });
   } catch (err) {
     console.error("[squad-record-writer] writeSquadRecordFromBattle 失敗:", err);
+  }
+}
+
+/**
+ * 包裝呼叫 reward engine（fire-and-forget）
+ */
+async function triggerRewardEngine(event: {
+  eventType: string;
+  sourceId: string;
+  sourceType: string;
+  squadId?: string;
+  userId?: string;
+  fieldId?: string;
+  context: Record<string, unknown>;
+}): Promise<void> {
+  try {
+    const { evaluateRules } = await import("./reward-engine");
+    await evaluateRules(event);
+  } catch (err) {
+    console.error("[squad-record-writer] reward engine 觸發失敗:", err);
   }
 }
 
