@@ -302,10 +302,22 @@ async function issueBadge(
   }
 }
 
-/** 預備外部券（待 Phase 8 真正發送 webhook 給 aihomi）*/
+/**
+ * 預備外部券 + 即送 aihomi webhook（Phase 13 修復）
+ *
+ * 步驟：
+ *   1. 寫 squad_external_rewards 為 pending（含 requestId 做 idempotency）
+ *   2. 呼叫 sendAihomiReward 對外發 webhook
+ *   3. 失敗不阻擋規則引擎（reward 留 pending，admin 可重送）
+ */
 async function stageExternalReward(reward: RewardSpec, event: RewardEvent): Promise<string | null> {
   if (!reward.provider) return null;
+  if (!event.userId) {
+    console.warn("[reward-engine] external reward 需要 userId，跳過");
+    return null;
+  }
 
+  // 1. 寫 pending 記錄
   const [created] = await db
     .insert(squadExternalRewards)
     .values({
@@ -320,7 +332,38 @@ async function stageExternalReward(reward: RewardSpec, event: RewardEvent): Prom
     })
     .returning();
 
-  // 注意：這只是「待發送」狀態，Phase 8 會 hook webhook 真送
+  if (!created) return null;
+
+  // 2. 對 aihomi 發 webhook（fire-and-forget，失敗留 pending）
+  if (reward.provider === "aihomi_coupon") {
+    // 動態 import 避免循環依賴
+    import("./aihomi-adapter")
+      .then(({ sendAihomiReward }) =>
+        sendAihomiReward({
+          externalRewardId: created.id,
+          userId: event.userId!,
+          eventContext: {
+            eventType: event.eventType,
+            squadId: event.squadId,
+            fieldId: event.fieldId,
+            ...event.context,
+          },
+          voucherTemplate: String(reward.value ?? reward.templateId ?? ""),
+        }),
+      )
+      .then((result) => {
+        if (!result.success && !result.pending) {
+          console.warn(
+            `[reward-engine] aihomi 發送失敗 ${created.id}:`,
+            result.errorMessage,
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("[reward-engine] aihomi 發送異常:", err);
+      });
+  }
+
   return created.id;
 }
 
