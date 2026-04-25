@@ -45,6 +45,8 @@ export const battleClans = pgTable("battle_clans", {
   clanRating: integer("clan_rating").notNull().default(1000),
   maxMembers: integer("max_members").notNull().default(20),
   isActive: boolean("is_active").notNull().default(true),
+  /** 🆕 改名冷卻 — 詳見 docs/SQUAD_SYSTEM_DESIGN.md §17.3 */
+  nameChangedAt: timestamp("name_changed_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [
