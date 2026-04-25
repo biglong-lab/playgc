@@ -275,6 +275,94 @@ export function registerAdminEngagementRoutes(app: Express) {
   );
 
   // ============================================================================
+  // GET /api/admin/engagement/super-leaders/:fieldId — 取得超級隊長清單（含候選）
+  // ============================================================================
+  app.get(
+    "/api/admin/engagement/super-leaders/:fieldId",
+    requireAdminAuth,
+    async (req, res) => {
+      try {
+        const fieldId = req.params.fieldId;
+
+        const [settings] = await db
+          .select()
+          .from(fieldEngagementSettings)
+          .where(eq(fieldEngagementSettings.fieldId, fieldId));
+
+        // 取所有 squads（top 100 看夠用）
+        const allSquads = await db
+          .select()
+          .from(squadStats)
+          .orderBy(desc(squadStats.totalGames))
+          .limit(100);
+
+        const config = {
+          minGames: settings?.superLeaderMinGames ?? 100,
+          minRecruits: settings?.superLeaderMinRecruits ?? 10,
+          minFields: settings?.superLeaderMinFields ?? 2,
+          minWinRate: settings?.superLeaderMinWinRate ?? 50,
+          autoEnabled: settings?.superLeaderAutoEnabled ?? true,
+          manualIds: ((settings?.superLeaderManualIds as string[]) ?? []),
+        };
+
+        const { isSuperLeader } = await import(
+          "../services/engagement-calculator"
+        );
+
+        const result = allSquads.map((s) => {
+          const profile = {
+            squadId: s.squadId,
+            totalGames: s.totalGames,
+            totalWins: s.totalWins,
+            totalLosses: s.totalLosses,
+            recruitsCount: s.recruitsCount,
+            fieldsPlayed: (s.fieldsPlayed as string[]) ?? [],
+            lastActiveAt: s.lastActiveAt,
+          };
+          const isSuper = isSuperLeader(profile, config);
+          const totalDecisive = s.totalWins + s.totalLosses;
+          const winRate =
+            totalDecisive > 0 ? Math.round((s.totalWins / totalDecisive) * 100) : 0;
+
+          return {
+            ...s,
+            isSuperLeader: isSuper,
+            isManual: config.manualIds.includes(s.squadId),
+            winRate,
+            // 距離超級隊長還差多少（分項顯示）
+            gapToSuper: isSuper
+              ? null
+              : {
+                  gamesGap: Math.max(0, config.minGames - s.totalGames),
+                  recruitsGap: Math.max(0, config.minRecruits - s.recruitsCount),
+                  fieldsGap: Math.max(0, config.minFields - profile.fieldsPlayed.length),
+                  winRateGap: Math.max(0, config.minWinRate - winRate),
+                },
+          };
+        });
+
+        // 排序：超級隊長 → 場次降序
+        result.sort((a, b) => {
+          if (a.isSuperLeader !== b.isSuperLeader) {
+            return a.isSuperLeader ? -1 : 1;
+          }
+          return b.totalGames - a.totalGames;
+        });
+
+        res.json({
+          settings: config,
+          superLeaderCount: result.filter((r) => r.isSuperLeader).length,
+          totalSquads: result.length,
+          squads: result,
+        });
+      } catch (error) {
+        console.error("[admin-engagement] GET super-leaders 失敗:", error);
+        res.status(500).json({ error: "取得超級隊長清單失敗" });
+      }
+    },
+  );
+
+  // ============================================================================
   // GET /api/admin/engagement/welcome-squads/:fieldId — 預覽歡迎隊伍清單
   // ============================================================================
   app.get(
