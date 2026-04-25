@@ -226,7 +226,6 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
               fieldId: realFieldId,
               durationSec: realDurationSec,
               performance: {
-                duration: realDurationSec,
                 eliminations: pr.eliminations ?? 0,
                 deaths: pr.deaths ?? 0,
                 isMvp: pr.isMvp ?? false,
