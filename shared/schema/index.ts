@@ -26,6 +26,7 @@ export * from "./battle-clans";
 export * from "./battle-notifications";
 export * from "./battle-seasons";
 export * from "./battle-achievements";
+export * from "./squads";
 
 // SaaS 平台層（v4.0 新增 — 多租戶架構）
 export * from "./platform-plans";
