@@ -6,6 +6,82 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // ============================================================================
+// 0. squads — 隊伍本體（Phase 14 真正合併 Squad 主表）
+// ============================================================================
+//
+// 詳見 docs/SQUAD_SYSTEM_DESIGN.md §20.1
+//
+// 取代：teams（一般遊戲）/ battle_clans（水彈）/ battle_premade_groups
+//
+// Phase 14 過渡期：
+//   - 新建立的 Squad 走這張表
+//   - 舊資料（battle_clans）暫保留，stat 紀錄用 battle_clans.id 當 squadId
+//   - Phase 15 才做完整資料遷移
+// ============================================================================
+export const squads = pgTable("squads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name", { length: 50 }).notNull(),
+  tag: varchar("tag", { length: 10 }).notNull(),
+  description: text("description"),
+  emblemUrl: varchar("emblem_url"),
+  primaryColor: varchar("primary_color", { length: 7 }), // HEX e.g. #be723c
+  leaderId: varchar("leader_id").notNull(),       // references users.id
+  homeFieldId: varchar("home_field_id"),           // 主場域（可空，跨平台型）
+  isPublic: boolean("is_public").default(true).notNull(),
+  status: varchar("status", { length: 20 }).default("active").notNull(),
+  // 'active' / 'dormant' / 'pending_dissolve' / 'dissolved'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  dissolvedAt: timestamp("dissolved_at"),
+  /** 改名冷卻（與 battle_clans.name_changed_at 相同邏輯）*/
+  nameChangedAt: timestamp("name_changed_at"),
+}, (table) => [
+  unique("uq_squad_name").on(table.name),
+  unique("uq_squad_tag").on(table.tag),
+  index("idx_squad_leader").on(table.leaderId),
+  index("idx_squad_field").on(table.homeFieldId),
+  index("idx_squad_status").on(table.status),
+]);
+
+export const insertSquadSchema = createInsertSchema(squads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  dissolvedAt: true,
+});
+
+export type Squad = typeof squads.$inferSelect;
+export type InsertSquad = typeof squads.$inferInsert;
+
+// ============================================================================
+// 0.5. squad_members — 隊伍成員
+// ============================================================================
+//
+// 詳見 docs/SQUAD_SYSTEM_DESIGN.md §20.2
+//
+// 角色：leader / officer / member
+// soft delete via leftAt（避免 unique 衝突）
+// ============================================================================
+export const squadMembers = pgTable("squad_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  squadId: varchar("squad_id").notNull(),
+  userId: varchar("user_id").notNull(),
+  role: varchar("role", { length: 20 }).default("member").notNull(),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  leftAt: timestamp("left_at"),
+  /** 加入來源 — 區分自願加入 / 推廣連結 / admin 加入 */
+  joinSource: varchar("join_source", { length: 20 }).default("self"),
+  /** 對應的 invite token（從推廣連結進來才有）*/
+  inviteId: varchar("invite_id"),
+}, (table) => [
+  index("idx_member_squad").on(table.squadId, table.role),
+  index("idx_member_user").on(table.userId, table.leftAt),
+]);
+
+export type SquadMember = typeof squadMembers.$inferSelect;
+export type InsertSquadMember = typeof squadMembers.$inferInsert;
+
+// ============================================================================
 // 1. squad_match_records — 每場戰績紀錄（跨遊戲統一格式）
 // ============================================================================
 //
