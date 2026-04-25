@@ -118,7 +118,7 @@ export default function PhotoSuccessView({
           <p className="text-sm text-muted-foreground text-center">{subtitle}</p>
         )}
 
-        {/* 圖片 — 失敗時顯示 fallback 不是破圖 */}
+        {/* 圖片 — 失敗時顯示 fallback 但可重試 */}
         <div className="w-full rounded-lg shadow-lg overflow-hidden bg-card border">
           {imageError ? (
             <div className="w-full aspect-square flex flex-col items-center justify-center gap-3 bg-muted/30 p-6">
@@ -127,17 +127,43 @@ export default function PhotoSuccessView({
                 紀念照載入失敗
               </p>
               <p className="text-xs text-muted-foreground text-center">
-                可能是網路問題，不影響遊戲進度
+                可能是網路問題或圖片尚未同步
+              </p>
+              {/* 🆕 重新載入按鈕 — Cloudinary CDN 偶爾需要幾秒同步 */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setImageError(false);
+                  setRetryKey((k) => k + 1);
+                }}
+                className="gap-1.5 mt-2"
+                data-testid="btn-photo-success-retry"
+              >
+                <RefreshCw className="w-4 h-4" />
+                重新載入
+              </Button>
+              {/* 桌機 / 進階使用者可直接複製 URL 看 */}
+              <p className="text-[10px] text-muted-foreground/60 break-all max-w-xs">
+                {imageUrl?.slice(0, 60)}...
               </p>
             </div>
           ) : (
             <img
+              key={retryKey} // 🆕 改 key 強制重 mount 觸發新請求
               src={imageUrl}
               alt="遊戲紀念照"
               className="w-full h-auto block"
               data-testid="photo-success-image"
               loading="eager"
-              onError={() => setImageError(true)}
+              onError={() => {
+                console.error("[PhotoSuccessView] 圖片載入失敗:", {
+                  imageUrl: imageUrl?.slice(0, 80),
+                  isDataUrl: imageUrl?.startsWith("data:"),
+                  retryKey,
+                });
+                setImageError(true);
+              }}
             />
           )}
         </div>
