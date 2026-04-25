@@ -1,16 +1,18 @@
 // 水彈對戰 PK 擂台 — 排行榜（深色軍事風格）
-import { useRef } from "react";
+// 🆕 Phase 2.1：4 Tabs 架構（場次榜 / 新人榜 / 上升星 / 段位）
+import { useRef, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import { apiRequest } from "@/lib/queryClient";
 import { tierBgClass } from "@/lib/battle-labels";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattlePlayerRanking } from "@shared/schema";
-import { Crown, Flame, ArrowDown, TrendingUp } from "lucide-react";
+import { Crown, Flame, ArrowDown, TrendingUp, Sparkles, Rocket, Trophy } from "lucide-react";
 
 interface RankingEntry extends BattlePlayerRanking {
   rank: number;
