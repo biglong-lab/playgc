@@ -168,10 +168,13 @@ export function useQrScanner(
 
     try {
       try {
-        await tryStart("environment");
+        await tryStart(facingMode);
+        // 成功記下實際使用的鏡頭
       } catch (envErr) {
-        console.warn("[QR] 後鏡頭啟動失敗，嘗試前鏡頭", envErr);
-        await tryStart("user");
+        const fallback = facingMode === "environment" ? "user" : "environment";
+        console.warn(`[QR] ${facingMode} 鏡頭啟動失敗，嘗試 ${fallback}`, envErr);
+        await tryStart(fallback);
+        setFacingMode(fallback);
       }
 
       // iOS Safari 保險：補上 playsInline（html5-qrcode 沒全部處理）
@@ -190,6 +193,22 @@ export function useQrScanner(
       setMode("instruction");
       toast({ title: "無法啟動掃描器", description: "請改用手動輸入", variant: "destructive" });
     }
+  };
+
+  // 🆕 切換前後鏡頭
+  const switchCamera = async () => {
+    const next = facingMode === "environment" ? "user" : "environment";
+    console.log(`[QR] 切換鏡頭 ${facingMode} → ${next}`);
+    setFacingMode(next);
+    await stopScanning();
+    // 給 iOS 一點時間釋放硬體
+    await new Promise((r) => setTimeout(r, 200));
+    // 重啟掃描（會用新的 facingMode）
+    setTimeout(() => startScanning(), 100);
+    toast({
+      title: next === "user" ? "📷 已切到前鏡頭" : "📷 已切到後鏡頭",
+      duration: 1500,
+    });
   };
 
   // 驗證 QR Code
