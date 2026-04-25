@@ -75,15 +75,15 @@ export default function PhotoBurstFlow({
   // 上傳單張照片（帶 burst tag + 10s timeout + Firebase Auth token）
   // 🐛 關鍵修：原本用裸 fetch 沒帶 token → HTTP 401
   //   改用 apiRequestWithTimeout（會自動加 Authorization: Bearer ${firebaseToken}）
-  const uploadSingle = async (imageData: string): Promise<string> => {
+  const uploadSingle = async (imageData: string): Promise<{ publicId: string; url: string }> => {
     const res = await apiRequestWithTimeout(
       "POST",
       "/api/cloudinary/burst-frame",
       { imageData, gameId, sessionId, tag: getBurstTag() },
       10000,
     );
-    const data = (await res.json()) as { publicId: string };
-    return data.publicId;
+    const data = (await res.json()) as { publicId: string; url: string };
+    return { publicId: data.publicId, url: data.url };
   };
 
   // 合成四宮格 / 九宮格（用既有 composite-photo endpoint）
