@@ -120,6 +120,30 @@ async function urlToFile(url: string, filename: string): Promise<File> {
 }
 
 /**
+ * 從 URL 偵測副檔名（用於 multi-file save 時保留原格式）
+ * 支援 .gif / .jpg / .jpeg / .png / .webp / .mp4
+ *   - 沒副檔名 → 預設 .jpg
+ *   - data URL → 從 mime type 推
+ */
+export function detectExtension(url: string): string {
+  if (!url) return "jpg";
+  if (url.startsWith("data:")) {
+    const mime = url.match(/data:([^;]+)/)?.[1] || "";
+    if (mime.includes("gif")) return "gif";
+    if (mime.includes("png")) return "png";
+    if (mime.includes("webp")) return "webp";
+    if (mime.includes("mp4")) return "mp4";
+    return "jpg";
+  }
+  const match = url.match(/\.(gif|jpe?g|png|webp|mp4)(\?|$)/i);
+  if (match) {
+    const ext = match[1].toLowerCase();
+    return ext === "jpeg" ? "jpg" : ext;
+  }
+  return "jpg";
+}
+
+/**
  * 主入口：保存照片（預設優先存到手機相簿）
  *
  * Fallback 順序：
