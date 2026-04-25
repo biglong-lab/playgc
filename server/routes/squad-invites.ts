@@ -325,15 +325,17 @@ export function registerSquadInvitesRoutes(app: Express) {
           .where(eq(squadInvites.inviteToken, token))
           .returning();
 
-        // 更新隊伍 recruitsCount + monthlyRecruits
-        await db
-          .update(squadStats)
-          .set({
-            recruitsCount: sql`${squadStats.recruitsCount} + 1`,
-            monthlyRecruits: sql`${squadStats.monthlyRecruits} + 1`,
-            updatedAt: new Date(),
-          })
-          .where(eq(squadStats.squadId, invite.squadId));
+        // 🆕 Phase 14.4：用 recruit-rewards service 真寫獎勵（含 expPoints + recruitsCount）
+        const isSuper = await isSuperLeader(invite.squadId);
+        const { applyRecruitJoinReward } = await import(
+          "../services/recruit-rewards"
+        );
+        const recruitReward = await applyRecruitJoinReward({
+          inviterSquadId: invite.squadId,
+          inviteeUserId: userId,
+          isSuperLeader: isSuper,
+        });
+        const expBonus = recruitReward.inviterBonus;
 
         // 招募達人徽章（10 人達標）
         const [statsAfter] = await db
@@ -353,11 +355,6 @@ export function registerSquadInvitesRoutes(app: Express) {
             })
             .onConflictDoNothing();
         }
-
-        // 發放雙向招募獎勵（超級隊長 ×2）
-        const isSuper = await isSuperLeader(invite.squadId);
-        const reward = calcRecruitReward({ isSuperLeader: isSuper });
-        const expBonus = reward.expBonus;
 
         // 觸發獎勵引擎事件（reward type = 'recruit'）
         try {
