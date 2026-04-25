@@ -13,6 +13,7 @@ import { startDormancyScheduler } from "./services/dormancy-scheduler";
 import { startAchievementScheduler } from "./services/achievement-scheduler";
 import { startLifecycleScheduler } from "./services/lifecycle-scheduler";
 import { startMonthlyResetScheduler } from "./services/monthly-reset-scheduler";
+import { startRewardRetryWorker } from "./services/reward-retry-worker";
 
 // 型別擴充：Express 需要訪問 raw body（Stripe webhook 等）
 declare module "http" {
