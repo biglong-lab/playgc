@@ -140,6 +140,15 @@ export default function BattleClanDetail() {
           </Card>
         </div>
 
+        {/* 🆕 公開分享連結 */}
+        <Link href={`/squad/${clan.id}`}>
+          <Button variant="outline" className="w-full gap-2" size="sm">
+            <Share2 className="h-4 w-4" />
+            查看公開分享頁
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+        </Link>
+
         {/* 加入/離開按鈕 */}
         {user && !isMember && (
           <Button
