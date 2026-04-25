@@ -17,6 +17,9 @@ function makeCtx(overrides: Partial<AchievementContext> = {}): AchievementContex
     fieldsPlayed: [],
     homeFieldGames: 0,
     fieldGamesMap: {},
+    eventCategoryCounts: {},
+    personalBestBreaks: 0,
+    speedrunGames: 0,
     ...overrides,
   };
 }
