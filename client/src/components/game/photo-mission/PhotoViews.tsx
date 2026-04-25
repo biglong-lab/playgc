@@ -8,7 +8,6 @@ import {
   Loader2,
   AlertTriangle,
   RefreshCw,
-  Image,
   XCircle,
   SkipForward,
 } from "lucide-react";
