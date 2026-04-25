@@ -89,6 +89,9 @@ export default function AdminRewardsRules() {
     '[{"type": "platform_coupon", "templateId": "TPL_NEWBIE_50", "target": "squad"}]',
   );
   const [formQuotaJson, setFormQuotaJson] = useState('{"perSquad": 1}');
+  // 🆕 Phase 17.4：A/B Testing 欄位
+  const [formAbTestGroup, setFormAbTestGroup] = useState<string>("");
+  const [formAbTestTraffic, setFormAbTestTraffic] = useState(100);
 
   const { data: rules = [], isLoading } = useQuery<RewardRule[]>({
     queryKey: ["/api/admin/rules"],
