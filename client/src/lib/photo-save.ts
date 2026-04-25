@@ -293,7 +293,9 @@ export async function savePhotosToAlbum(opts: {
         const batch = opts.urls.slice(i, i + concurrency);
         const batchFiles = await Promise.all(
           batch.map(async (url, idx) => {
-            const filename = `${prefix}-${String(i + idx + 1).padStart(2, "0")}.jpg`;
+            // 🆕 自動偵測副檔名 — GIF 保留 .gif，個別照片保留 .jpg
+            const ext = detectExtension(url);
+            const filename = `${prefix}-${String(i + idx + 1).padStart(2, "0")}.${ext}`;
             try {
               return await urlToFile(url, filename);
             } catch (e) {
