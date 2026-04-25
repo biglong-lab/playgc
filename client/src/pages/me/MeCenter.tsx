@@ -276,7 +276,7 @@ export default function MeCenter() {
               href="/battle/my"
               icon={<Swords className="w-4 h-4" />}
               label="我的對戰檔案"
-              sublabel="ELO 排名、戰隊、報名"
+              sublabel="ELO 排名、隊伍、報名"
             />
             <div className="border-t" />
             <MenuRow
