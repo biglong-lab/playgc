@@ -255,18 +255,30 @@ export async function writeSquadRecordFromBattle(opts: {
       ? { ...opts.performance, opponentSquadId: opts.opponentSquadId }
       : opts.performance;
 
-    await db.insert(squadMatchRecords).values({
-      squadId: opts.squadId,
-      squadType: opts.squadType,
-      gameType: "battle",
-      slotId: opts.slotId,
-      fieldId: opts.fieldId,
-      result: opts.result,
-      performance: performanceWithOpponent,
-      durationSec: opts.durationSec,
-      isCrossField: opts.isCrossField ?? false,
-      isFirstVisit: opts.isFirstVisit ?? false,
-    });
+    // 🔒 冪等寫入：onConflictDoNothing + returning 防 retry / cluster 雙寫灌分
+    const battleInserted = await db
+      .insert(squadMatchRecords)
+      .values({
+        squadId: opts.squadId,
+        squadType: opts.squadType,
+        gameType: "battle",
+        slotId: opts.slotId,
+        fieldId: opts.fieldId,
+        result: opts.result,
+        performance: performanceWithOpponent,
+        durationSec: opts.durationSec,
+        isCrossField: opts.isCrossField ?? false,
+        isFirstVisit: opts.isFirstVisit ?? false,
+      })
+      .onConflictDoNothing()
+      .returning({ id: squadMatchRecords.id });
+
+    if (battleInserted.length === 0) {
+      console.log(
+        `[squad-record-writer] battle slot ${opts.slotId} squad ${opts.squadId} 已寫過，跳過重複`,
+      );
+      return;
+    }
 
     await ensureSquadStats(opts.squadId, opts.squadType);
     const isWin = opts.result === "win";
