@@ -5,6 +5,7 @@ import { mqttService } from "../mqttService";
 import { insertArduinoDeviceSchema, insertShootingRecordSchema } from "@shared/schema";
 import { z } from "zod";
 import { requireAdminRole } from "./utils";
+import { hotPathLimiter } from "../utils/rate-limiters";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 
 export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
