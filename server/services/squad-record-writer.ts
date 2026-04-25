@@ -237,6 +237,11 @@ export async function writeSquadRecordFromBattle(opts: {
       }
     }
 
+    // 🆕 Phase 13：把 opponentSquadId 寫進 performance（給 24h 同對手限制用）
+    const performanceWithOpponent = opts.opponentSquadId
+      ? { ...opts.performance, opponentSquadId: opts.opponentSquadId }
+      : opts.performance;
+
     await db.insert(squadMatchRecords).values({
       squadId: opts.squadId,
       squadType: opts.squadType,
@@ -244,7 +249,7 @@ export async function writeSquadRecordFromBattle(opts: {
       slotId: opts.slotId,
       fieldId: opts.fieldId,
       result: opts.result,
-      performance: opts.performance,
+      performance: performanceWithOpponent,
       durationSec: opts.durationSec,
       isCrossField: opts.isCrossField ?? false,
       isFirstVisit: opts.isFirstVisit ?? false,
