@@ -255,59 +255,43 @@ export default function PhotoSpotFlow({
     onComplete(reward);
   };
 
-  // 下載紀念照
-  const handleDownload = async () => {
+  // 🆕 一鍵保存到手機相簿（手機優先 share sheet，桌機 fallback 下載）
+  const handleSaveToAlbum = async () => {
     if (!compositeUrl) return;
-    try {
-      const res = await fetch(compositeUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `chito-memorial-${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-      toast({ title: "下載完成", duration: 1500 });
-    } catch {
-      toast({ title: "下載失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-memorial",
+      title: config.title || "CHITO 紀念照",
+      text: "我的 CHITO 遊戲紀念照！",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
-  // 分享紀念照（Web Share API）
+  // 桌機備援下載（保留給有需要的使用者）
+  const handleDownload = async () => {
+    if (!compositeUrl) return;
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-memorial",
+      forceMethod: "download",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
+  };
+
+  // 分享紀念照（與保存分離，給想分享給朋友的場景）
   const handleShare = async () => {
     if (!compositeUrl) return;
-    try {
-      if (typeof navigator.share === "function") {
-        const res = await fetch(compositeUrl);
-        const blob = await res.blob();
-        const file = new File([blob], "memorial.jpg", { type: "image/jpeg" });
-        const canShareFiles = typeof navigator.canShare === "function"
-          && navigator.canShare({ files: [file] });
-        if (canShareFiles) {
-          await navigator.share({
-            title: config.title || "CHITO 紀念照",
-            text: "我的 CHITO 遊戲紀念照！",
-            files: [file],
-          });
-          return;
-        }
-        await navigator.share({
-          title: config.title || "CHITO 紀念照",
-          text: "我的 CHITO 遊戲紀念照！",
-          url: compositeUrl,
-        });
-        return;
-      }
-      // Fallback: 複製連結
-      await navigator.clipboard.writeText(compositeUrl);
-      toast({ title: "已複製連結", description: "可貼到 LINE / FB 分享" });
-    } catch (err) {
-      // AbortError 是使用者取消
-      if ((err as DOMException)?.name === "AbortError") return;
-      toast({ title: "分享失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-memorial",
+      title: config.title || "CHITO 紀念照",
+      text: "我的 CHITO 遊戲紀念照！",
+      forceMethod: "share",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   // ═══════════════════════════════════════════════════════════════
