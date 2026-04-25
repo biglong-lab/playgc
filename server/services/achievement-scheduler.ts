@@ -12,7 +12,7 @@
 //
 import { db } from "../db";
 import { squadStats, squadAchievements, squadMatchRecords } from "@shared/schema";
-import { eq, sql, gte } from "drizzle-orm";
+import { eq, and, sql, gte } from "drizzle-orm";
 import {
   ACHIEVEMENTS,
   evaluateAchievements,
