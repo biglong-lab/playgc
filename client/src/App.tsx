@@ -169,6 +169,7 @@ function Router() {
         <Route path="/f/:fieldCode/me/inbox" component={MyInbox} />
         <Route path="/me/inbox" component={MyInbox} />
         <Route path="/squad/:squadId" component={SquadPublic} />
+        <Route path="/invite/squad/:token" component={SquadInvite} />
 
         {/* 🌐 CHITO 平台智能入口：有上次場域自動導 /f/{code}，沒有則顯示 CHITO 品牌頁 */}
         <Route path="/" component={PlatformHome} />
