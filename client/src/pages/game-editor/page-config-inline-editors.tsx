@@ -119,12 +119,13 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
         </div>
         {Boolean(config.backgroundAudio) && (
           <div className="mt-2">
-            {/* 🎵 用 ensureAudioUrl 處理 Cloudinary /video/upload/ → 強制 .mp3 transcode */}
+            {/* 🎵 用 ensureAudioUrl 處理 Cloudinary /video/upload/ → 強制 .mp3 transcode
+                ⚠️ 不要加 crossOrigin — Cloudinary /video/upload/ 不送 ACAO header
+                會導致 CORS 擋掉整個請求 */}
             <audio
               src={ensureAudioUrl(config.backgroundAudio as string)}
               controls
               preload="metadata"
-              crossOrigin="anonymous"
               className="w-full"
               data-testid="audio-preview"
             />
