@@ -311,14 +311,29 @@ export function usePhotoCamera(): PhotoCameraState {
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("無法建立繪圖環境");
 
+      // 🆕 前鏡頭（自拍）要水平翻轉讓拍出來的照片跟預覽鏡像一致
+      // 不翻轉的話：使用者看到自己在左，拍出來的照片自己在右 → 合成貼圖會錯位
+      const isMirror = facingMode === "user";
+      if (isMirror) {
+        ctx.save();
+        ctx.translate(width, 0);
+        ctx.scale(-1, 1);
+      }
       ctx.drawImage(video, 0, 0, width, height);
+      if (isMirror) {
+        ctx.restore();
+      }
+
       const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
       if (!dataUrl || dataUrl.length <= 100) throw new Error("圖片資料無效");
 
       setCapturedImage(dataUrl);
       stopCamera();
       setMode("preview");
-      logMilestone("camera", "photo_captured", { size: dataUrl.length });
+      logMilestone("camera", "photo_captured", {
+        size: dataUrl.length,
+        mirrored: isMirror,
+      });
     } catch (err) {
       toast({ title: "拍照失敗", description: "請重試", variant: "destructive" });
       logError("camera", "capture_failed", err);
