@@ -49,6 +49,7 @@ import { registerSitemapRoute } from "./sitemap";
 import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerRewardsRoutes } from "./rewards";
+import { registerAdminRewardsRoutes } from "./admin-rewards";
 
 export async function registerRoutes(
   httpServer: Server,
