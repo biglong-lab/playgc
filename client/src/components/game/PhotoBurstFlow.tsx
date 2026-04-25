@@ -589,27 +589,15 @@ export default function PhotoBurstFlow({
               </p>
             </div>
 
-            {/* 🎨 右上切換鏡頭 — z-[60] 確保不被擋 */}
-            <Button
-              onClick={() => camera.switchCamera()}
-              className="absolute top-4 right-4 z-[60] bg-emerald-600/90 backdrop-blur hover:bg-emerald-700 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/40 shadow-2xl"
-              data-testid="btn-burst-switch-camera"
-            >
-              <RefreshCw className="w-5 h-5" />
-              <span className="text-sm font-medium">
-                {camera.facingMode === "user" ? "切後鏡頭" : "切前鏡頭"}
-              </span>
-            </Button>
-
-            {/* 底部：取消 + 開始連拍 */}
+            {/* 底部黑色 footer：取消 / 開始連拍 / 切鏡頭（三按鈕統一位置）*/}
             <div
-              className="absolute bottom-0 left-0 right-0 py-6 px-4 flex items-center justify-center gap-4 bg-gradient-to-t from-black/90 via-black/60 to-transparent"
+              className="absolute bottom-0 left-0 right-0 py-6 px-4 flex items-center justify-center gap-3 bg-gradient-to-t from-black/95 via-black/80 to-black/40"
               style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
             >
               <Button
                 variant="outline"
                 onClick={() => { camera.cancelCamera(); setStage("intro"); }}
-                className="bg-white/15 border-white/40 text-white hover:bg-white/25 backdrop-blur px-5 h-12"
+                className="bg-white/15 border-white/40 text-white hover:bg-white/25 backdrop-blur px-4 h-12"
                 data-testid="btn-burst-cancel-preview"
               >
                 ✕ 取消
@@ -617,11 +605,24 @@ export default function PhotoBurstFlow({
               <Button
                 size="lg"
                 onClick={() => setStage("countdown")}
-                className="bg-primary text-primary-foreground h-14 px-8 text-lg font-bold rounded-full shadow-2xl animate-pulse"
+                className="bg-primary text-primary-foreground h-14 px-6 text-lg font-bold rounded-full shadow-2xl animate-pulse"
                 data-testid="btn-burst-go"
               >
                 <Camera className="w-5 h-5 mr-2" />
                 開始連拍
+              </Button>
+              {/* 🆕 切鏡頭按鈕在 footer（避開 iPhone 瀏海）*/}
+              <Button
+                variant="outline"
+                onClick={() => camera.switchCamera()}
+                className="bg-emerald-600/90 border-emerald-400/50 text-white hover:bg-emerald-700 px-3 h-12 gap-1.5"
+                data-testid="btn-burst-switch-camera"
+                title={camera.facingMode === "user" ? "切到後鏡頭" : "切到前鏡頭"}
+              >
+                <RefreshCw className="w-5 h-5" />
+                <span className="text-xs font-medium hidden sm:inline">
+                  {camera.facingMode === "user" ? "後鏡頭" : "前鏡頭"}
+                </span>
               </Button>
             </div>
           </>
