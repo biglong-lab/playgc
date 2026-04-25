@@ -267,6 +267,9 @@ export function WalkiePill({
     [onOpenPanel, resetIdle],
   );
 
+  // 🆕 拍照時不顯示，避免擋到切鏡頭等按鈕
+  if (hiddenForCamera) return null;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0 }}
