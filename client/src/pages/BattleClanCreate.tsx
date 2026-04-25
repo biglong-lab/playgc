@@ -1,4 +1,4 @@
-// 水彈對戰 PK 擂台 — 建立戰隊頁（深色軍事風格）
+// 水彈對戰 PK 擂台 — 建立隊伍頁（深色軍事風格）
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +44,7 @@ export default function BattleClanCreate() {
       return res.json();
     },
     onSuccess: (clan) => {
-      toast({ title: "戰隊建立成功！" });
+      toast({ title: "隊伍建立成功！" });
       queryClient.invalidateQueries({ queryKey: ["/api/battle/clans"] });
       queryClient.invalidateQueries({ queryKey: ["/api/battle/my/clan"] });
       navigate(`/battle/clan/${clan.id}`);
@@ -57,7 +57,7 @@ export default function BattleClanCreate() {
   const canSubmit = name.trim().length >= 2 && tag.trim().length >= 1 && !tagError && !!fieldId && !createMutation.isPending;
 
   return (
-    <BattleLayout title="建立戰隊">
+    <BattleLayout title="建立隊伍">
       <div className="max-w-md mx-auto">
         {/* 場域缺失警告 */}
         {!fieldLoading && !fieldId && (
@@ -78,12 +78,12 @@ export default function BattleClanCreate() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              建立戰隊
+              建立隊伍
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">戰隊名稱</Label>
+              <Label htmlFor="name">隊伍名稱</Label>
               <Input
                 id="name"
                 placeholder="如：王牌突擊隊（至少 2 字）"
@@ -113,10 +113,10 @@ export default function BattleClanCreate() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">戰隊描述（選填）</Label>
+              <Label htmlFor="description">隊伍描述（選填）</Label>
               <Textarea
                 id="description"
-                placeholder="介紹你的戰隊..."
+                placeholder="介紹你的隊伍..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 maxLength={500}
@@ -129,7 +129,7 @@ export default function BattleClanCreate() {
               onClick={() => createMutation.mutate()}
               disabled={!canSubmit}
             >
-              {createMutation.isPending ? "建立中..." : "建立戰隊"}
+              {createMutation.isPending ? "建立中..." : "建立隊伍"}
             </Button>
           </CardContent>
         </Card>
