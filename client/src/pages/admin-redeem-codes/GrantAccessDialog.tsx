@@ -43,9 +43,13 @@ export function GrantAccessDialog({
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
 
-  // 搜尋使用者
+  // 搜尋使用者（用既有 /api/admin/users 加 ?search= filter）
   const { data: searchResults } = useQuery<User[]>({
-    queryKey: ["/api/admin/users/search", searchEmail],
+    queryKey: ["/api/admin/users", { search: searchEmail }],
+    queryFn: () =>
+      fetchWithAdminAuth(
+        `/api/admin/users?search=${encodeURIComponent(searchEmail)}`,
+      ),
     enabled: searchEmail.length >= 3,
   });
 
