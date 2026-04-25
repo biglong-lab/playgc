@@ -344,23 +344,25 @@ async function checkRecentDuelLimit(
   const twentyFourHoursAgo = new Date();
   twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
 
-  // 查 24h 內 squadId vs opponentSquadId 的對戰場次
-  // 這裡用 raw SQL 檢查（用 jsonb performance 內的 opponentSquadId 欄位 — 暫時不可，因為現在還沒寫入）
-  // 簡化版：用 slot_id 找同 slot 內雙方都有紀錄
-  // 暫時：用 squadId 的最近 24h record 數量當代理（粗略）
-  const recentRecords = await db
+  // 🆕 Phase 13 修復：用 performance jsonb 內的 opponentSquadId 精準比對
+  // （writeSquadRecordFromBattle 已經把 opponentSquadId 寫進 performance）
+  //
+  // SQL: WHERE squad_id = X AND played_at > 24h ago
+  //      AND performance->>'opponentSquadId' = opponentSquadId
+  const recentDuels = await db
     .select()
     .from(squadMatchRecords)
     .where(
       and(
         eq(squadMatchRecords.squadId, squadId),
         sql`${squadMatchRecords.playedAt} > ${twentyFourHoursAgo}`,
+        sql`${squadMatchRecords.performance}->>'opponentSquadId' = ${opponentSquadId}`,
       ),
     );
 
-  const count = recentRecords.length;
+  const count = recentDuels.length;
   return {
-    shouldSkip: count >= 5,
+    shouldSkip: count >= 5, // 6+ 場直接跳過
     count,
   };
 }
