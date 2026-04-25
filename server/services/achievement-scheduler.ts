@@ -70,6 +70,41 @@ export async function runAchievementsCycle(): Promise<AchievementRunResult> {
           if (fg.count > homeFieldGames) homeFieldGames = fg.count;
         }
 
+        // 🆕 Phase 15.4：計算 event category 統計（從 performance jsonb）
+        const eventCategoryRows = await db
+          .select({
+            category: sql<string>`${squadMatchRecords.performance}->>'eventCategory'`,
+            count: sql<number>`COUNT(*)::int`,
+          })
+          .from(squadMatchRecords)
+          .where(
+            and(
+              eq(squadMatchRecords.squadId, squad.squadId),
+              sql`${squadMatchRecords.performance}->>'eventCategory' IS NOT NULL`,
+            ),
+          )
+          .groupBy(sql`${squadMatchRecords.performance}->>'eventCategory'`);
+
+        const eventCategoryCounts: Record<string, number> = {};
+        for (const r of eventCategoryRows) {
+          if (r.category) eventCategoryCounts[r.category] = r.count;
+        }
+
+        // 🆕 Phase 15.4：個人挑戰統計
+        const [{ recordBreaks } = { recordBreaks: 0 }] = await db
+          .select({
+            recordBreaks: sql<number>`COUNT(*) FILTER (WHERE ${squadMatchRecords.performance}->>'brokeRecord' = 'true')::int`,
+          })
+          .from(squadMatchRecords)
+          .where(eq(squadMatchRecords.squadId, squad.squadId));
+
+        const [{ speedrunGames } = { speedrunGames: 0 }] = await db
+          .select({
+            speedrunGames: sql<number>`COUNT(*) FILTER (WHERE ${squadMatchRecords.gameType} = 'speedrun' OR ${squadMatchRecords.performance}->>'isSpeedrun' = 'true')::int`,
+          })
+          .from(squadMatchRecords)
+          .where(eq(squadMatchRecords.squadId, squad.squadId));
+
         const ctx: AchievementContext = {
           squadId: squad.squadId,
           totalGames: squad.totalGames,
@@ -81,6 +116,9 @@ export async function runAchievementsCycle(): Promise<AchievementRunResult> {
           fieldsPlayed: (squad.fieldsPlayed as string[]) ?? [],
           homeFieldGames,
           fieldGamesMap,
+          eventCategoryCounts,
+          personalBestBreaks: recordBreaks,
+          speedrunGames,
         };
 
         // 3. 對每個成就 check + 嘗試插入
