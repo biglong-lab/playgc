@@ -251,6 +251,7 @@ function Router() {
         <Route path="/admin/battle/rankings">{() => <ProtectedAdminRoute><AdminBattleRankings /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/battle/seasons">{() => <ProtectedAdminRoute><AdminBattleSeasons /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/rewards/rules">{() => <ProtectedAdminRoute><AdminRewardsRules /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/engagement">{() => <ProtectedAdminRoute><AdminEngagementSettings /></ProtectedAdminRoute>}</Route>
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>
