@@ -562,6 +562,75 @@ export function registerSquadsCoreRoutes(app: Express) {
   );
 
   // ============================================================================
+  // POST /api/squads/:id/emblem — 上傳隊徽（Phase 15.10）
+  // ============================================================================
+  const uploadEmblemSchema = z.object({
+    imageData: z
+      .string()
+      .startsWith("data:image/", "必須是 data URL")
+      .max(8_000_000, "圖片過大（最多 6MB base64）"),
+  });
+
+  app.post(
+    "/api/squads/:id/emblem",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        const id = req.params.id;
+        const [squad] = await db.select().from(squads).where(eq(squads.id, id));
+        if (!squad) return res.status(404).json({ error: "Squad 不存在" });
+
+        // 權限：隊長 / officer
+        const [member] = await db
+          .select()
+          .from(squadMembers)
+          .where(
+            and(
+              eq(squadMembers.squadId, id),
+              eq(squadMembers.userId, userId),
+              isNull(squadMembers.leftAt),
+            ),
+          );
+        if (!member || (member.role !== "leader" && member.role !== "officer")) {
+          return res.status(403).json({ error: "只有隊長或 officer 可上傳" });
+        }
+
+        const parsed = uploadEmblemSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res
+            .status(400)
+            .json({ error: parsed.error.errors[0]?.message ?? "驗證失敗" });
+        }
+
+        // 上傳到 Cloudinary
+        const { uploadGenericImage } = await import("../services/cloudinary");
+        const result = await uploadGenericImage(parsed.data.imageData, {
+          folder: `squads/emblems`,
+          publicIdPrefix: `squad-${id}`,
+          maxWidth: 512,
+          maxHeight: 512,
+        });
+
+        // 更新 squad 紀錄
+        await db
+          .update(squads)
+          .set({ emblemUrl: result.secure_url, updatedAt: new Date() })
+          .where(eq(squads.id, id));
+
+        res.json({ url: result.secure_url, publicId: result.public_id });
+      } catch (err) {
+        console.error("[squads] POST emblem 失敗:", err);
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "上傳失敗",
+        });
+      }
+    },
+  );
+
+  // ============================================================================
   // GET /api/me/squads — 我所屬的所有 Squad
   // ============================================================================
   app.get(
