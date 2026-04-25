@@ -116,19 +116,20 @@ describe("getQueryFn", () => {
     global.fetch = vi.fn();
   });
 
-  it("on401: throw — 401 時拋出錯誤", async () => {
+  it("on401: throw — 401 時拋出友善訊息", async () => {
     const mockResponse = new Response("Unauthorized", { status: 401 });
     vi.mocked(global.fetch).mockResolvedValue(mockResponse);
 
     const queryFn = getQueryFn({ on401: "throw" });
 
+    // throwIfResNotOk 把 401 轉成「登入已失效，請重新登入」
     await expect(
       queryFn({
         queryKey: ["/api/test"],
         meta: undefined,
         signal: new AbortController().signal,
       })
-    ).rejects.toThrow("401");
+    ).rejects.toThrow("登入已失效");
   });
 
   it("on401: returnNull — 401 時回傳 null", async () => {
