@@ -9,6 +9,7 @@ import { Plus, X as XIcon } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 import { RewardsSection, LocationSettingsSection } from "./page-config-shared";
+import { ensureAudioUrl } from "@/lib/cloudinary-audio";
 import { LocationImporter } from "@/components/shared/LocationImporter";
 
 // ====== 共用型別 ======
