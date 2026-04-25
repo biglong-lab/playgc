@@ -236,6 +236,109 @@ async function downloadFallback(
 }
 
 /**
+ * 🆕 一次保存多張照片到相簿（手機相簿最順暢）
+ *
+ * UX 流程：
+ *   📱 iOS / Android：navigator.share({ files: [...] }) → 系統 share sheet 一鍵全部存
+ *   💻 桌機：逐張下載（瀏覽器自動觸發多次下載）
+ *
+ * 不再用 ZIP（手機極不友善 — 還要解壓縮）
+ */
+export async function savePhotosToAlbum(opts: {
+  urls: string[];
+  filenamePrefix?: string;
+  title?: string;
+  text?: string;
+  onProgress?: (done: number, total: number) => void;
+}): Promise<SaveResult & { savedCount?: number }> {
+  const total = opts.urls.length;
+  if (total === 0) {
+    return { success: false, method: "none", errorReason: "unknown" };
+  }
+  const prefix = opts.filenamePrefix ?? "chito";
+
+  // 嘗試 Web Share with ALL files
+  if (isMobileWithShare()) {
+    try {
+      // 平行 fetch 所有 blob（限制 5 個並發避免裝置卡頓）
+      const files: File[] = [];
+      const concurrency = 5;
+      for (let i = 0; i < total; i += concurrency) {
+        const batch = opts.urls.slice(i, i + concurrency);
+        const batchFiles = await Promise.all(
+          batch.map(async (url, idx) => {
+            const filename = `${prefix}-${String(i + idx + 1).padStart(2, "0")}.jpg`;
+            try {
+              return await urlToFile(url, filename);
+            } catch (e) {
+              console.warn(`[photo-save] file ${filename} 載入失敗:`, e);
+              return null;
+            }
+          }),
+        );
+        files.push(...batchFiles.filter((f): f is File => !!f));
+        opts.onProgress?.(files.length, total);
+      }
+
+      if (files.length === 0) {
+        throw new Error("所有圖片載入失敗");
+      }
+
+      const canShareFiles =
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files });
+
+      if (canShareFiles) {
+        await navigator.share({
+          title: opts.title ?? "CHITO 紀念照",
+          text: opts.text ?? `${files.length} 張紀念照`,
+          files,
+        });
+        return {
+          success: true,
+          method: "share-with-files",
+          savedCount: files.length,
+        };
+      }
+
+      // canShare 多檔不支援 → 逐張保存
+      console.warn("[photo-save] canShare files 不支援，逐張保存");
+    } catch (err) {
+      const name = (err as DOMException)?.name;
+      if (name === "AbortError") {
+        return { success: false, method: "none", errorReason: "abort" };
+      }
+      console.warn("[photo-save] 多檔分享失敗，改逐張:", err);
+    }
+  }
+
+  // Fallback: 逐張保存（手機 → 逐張 share / 桌機 → 逐張 download）
+  let savedCount = 0;
+  for (let i = 0; i < total; i++) {
+    const filename = `${prefix}-${String(i + 1).padStart(2, "0")}`;
+    const result = await savePhotoToAlbum({
+      url: opts.urls[i],
+      filename,
+      title: opts.title,
+      forceMethod: isMobileWithShare() ? "share" : "download",
+    });
+    if (result.success) savedCount++;
+    if (result.errorReason === "abort") break;
+    opts.onProgress?.(i + 1, total);
+    // 給瀏覽器喘口氣，避免一次性下載被 popup blocker 擋
+    if (i < total - 1) {
+      await new Promise((r) => setTimeout(r, 300));
+    }
+  }
+
+  return {
+    success: savedCount > 0,
+    method: "download",
+    savedCount,
+  };
+}
+
+/**
  * 給 UI 顯示對應 toast 訊息
  */
 export function getSaveToastMessage(result: SaveResult): {
