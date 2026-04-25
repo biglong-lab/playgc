@@ -50,12 +50,18 @@ test.describe("平台擁有者緊急登入 /owner-login", () => {
   test("無密鑰時無法登入", async ({ page }) => {
     await page.goto("/owner-login");
     await page.waitForTimeout(2000);
-    // 不填密鑰直接點按鈕
+    // 不填密鑰時按鈕應 disabled（防呆設計）
     const submitBtn = page.locator("button").filter({ hasText: /登入|驗證/i }).first();
     if (await submitBtn.isVisible()) {
-      await submitBtn.click();
+      const isDisabled = await submitBtn.isDisabled();
+      if (isDisabled) {
+        // 按鈕 disabled 是正確行為 → 確認仍在 /owner-login
+        await expect(page).toHaveURL(/\/owner-login/);
+        return;
+      }
+      // 按鈕未 disabled → 點擊應失敗並停留在原頁
+      await submitBtn.click({ force: true });
       await page.waitForTimeout(1500);
-      // 應仍在 owner-login 頁（非跳轉到 /admin）
       await expect(page).toHaveURL(/\/owner-login/);
     }
   });
