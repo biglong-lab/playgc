@@ -95,13 +95,22 @@ describe("photo-save", () => {
       expect(msg.title).toContain("下載完成");
     });
 
-    it("share-url-only → 提示桌機下載", () => {
+    it("share-url-only → 提示在分享頁長按存圖", () => {
       const msg = getSaveToastMessage({
         success: true,
         method: "share-url-only",
       });
       expect(msg.title).toContain("分享");
-      expect(msg.description).toContain("桌機");
+      expect(msg.description).toContain("長按");
+    });
+
+    it("open-tab → 提示長按存圖", () => {
+      const msg = getSaveToastMessage({
+        success: true,
+        method: "open-tab",
+      });
+      expect(msg.title).toContain("已開啟");
+      expect(msg.description).toContain("長按");
     });
   });
 
