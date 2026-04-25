@@ -139,6 +139,52 @@ export const ACHIEVEMENTS: AchievementDef[] = [
       ctx.recruitsCount >= 30 && ctx.fieldsPlayed.length >= 2,
   },
 
+  // 特殊活動徽章（§9.4）— 依 performance jsonb 內的 eventCategory 判斷
+  // ⚠️ 需要 squad_match_records.performance 內有 eventCategory 欄位才能觸發
+  // (目前可由 admin 結算或 session metadata 設定)
+  {
+    key: "party_master",
+    category: "event",
+    displayName: "派對達人",
+    description: "完成 5 場特殊活動（生日、聚會等）",
+    check: (ctx) =>
+      countByCategory(ctx.eventCategoryCounts, [
+        "party",
+        "birthday",
+      ]) >= 5,
+  },
+  {
+    key: "family_master",
+    category: "event",
+    displayName: "親子達人",
+    description: "完成 5 場親子家庭活動",
+    check: (ctx) => countByCategory(ctx.eventCategoryCounts, ["family"]) >= 5,
+  },
+  {
+    key: "carnival_king",
+    category: "event",
+    displayName: "嘉年華王者",
+    description: "嘉年華活動參加 10+ 場",
+    check: (ctx) =>
+      countByCategory(ctx.eventCategoryCounts, ["carnival"]) >= 10,
+  },
+
+  // 個人挑戰徽章（§9.5）
+  {
+    key: "record_breaker",
+    category: "personal",
+    displayName: "破紀錄王",
+    description: "突破個人最佳 5 次",
+    check: (ctx) => ctx.personalBestBreaks >= 5,
+  },
+  {
+    key: "speedrun_master",
+    category: "personal",
+    displayName: "速通達人",
+    description: "速通類遊戲 10+ 場",
+    check: (ctx) => ctx.speedrunGames >= 10,
+  },
+
   // 體驗點數徽章（常客榜搭配）
   {
     key: "regular_100",
