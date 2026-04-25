@@ -194,10 +194,17 @@ export default function SquadPublic() {
                 )}
               </p>
             </div>
-            <Button size="sm" variant="outline" onClick={handleShare} className="gap-1.5">
-              <Share2 className="h-4 w-4" />
-              分享
-            </Button>
+            <div className="flex gap-1">
+              <Link href={`/squad/${squadId}/settings`}>
+                <Button size="sm" variant="ghost" className="gap-1.5" data-testid="squad-settings-btn">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Button size="sm" variant="outline" onClick={handleShare} className="gap-1.5">
+                <Share2 className="h-4 w-4" />
+                分享
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
