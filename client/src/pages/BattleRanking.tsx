@@ -127,68 +127,195 @@ export default function BattleRanking() {
           </Card>
         )}
 
-        {/* 排行榜列表 */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-base">全場域排行</CardTitle>
-            {/* 🚀 滾到我的位置按鈕（排名 #6 以後才顯示） */}
-            {showScrollToMe && (
-              <Button variant="outline" size="sm" onClick={scrollToMe} className="gap-1 text-xs h-7">
-                <ArrowDown className="h-3 w-3" />
-                定位到我
-              </Button>
-            )}
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-              </div>
-            ) : rankings.length === 0 ? (
-              <p className="text-muted-foreground py-4 text-center">尚無排名資料</p>
-            ) : (
-              <div className="space-y-2">
-                {rankings.map((entry) => (
-                  <div
-                    key={entry.id}
-                    ref={entry.userId === user?.id ? myEntryRef : undefined}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                      tierBgClass(entry.tier) || "bg-card"
-                    } ${entry.userId === user?.id ? "ring-2 ring-primary scroll-mt-20" : ""}`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="w-8 text-center font-bold text-lg">
-                        {entry.rank <= 3 ? (
-                          <Crown className={`h-5 w-5 mx-auto ${
-                            entry.rank === 1 ? "text-yellow-500" :
-                            entry.rank === 2 ? "text-gray-400" :
-                            "text-orange-400"
-                          }`} />
-                        ) : (
-                          <span className="text-muted-foreground font-number">{entry.rank}</span>
-                        )}
-                      </span>
-                      <div>
-                        <p className="font-medium text-sm">
-                          {entry.displayName ?? entry.userId.slice(0, 10)}
-                          {entry.userId === user?.id && <span className="text-primary"> (你)</span>}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{entry.tierLabel}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
+        {/* 🆕 Phase 2.1：4 Tabs 排行榜（場次榜為主） */}
+        <Tabs defaultValue="games" className="w-full">
+          <TabsList className="grid grid-cols-4 w-full">
+            <TabsTrigger value="games" className="gap-1.5">
+              <Flame className="h-3.5 w-3.5" />
+              場次榜
+            </TabsTrigger>
+            <TabsTrigger value="newbie" className="gap-1.5">
+              <Sparkles className="h-3.5 w-3.5" />
+              新人榜
+            </TabsTrigger>
+            <TabsTrigger value="rising" className="gap-1.5">
+              <Rocket className="h-3.5 w-3.5" />
+              上升星
+            </TabsTrigger>
+            <TabsTrigger value="tier" className="gap-1.5">
+              <Trophy className="h-3.5 w-3.5" />
+              段位
+            </TabsTrigger>
+          </TabsList>
+
+          {/* 🔥 場次榜（主榜，預設顯示）— Phase 4 將串 squad_match_records 真實場次 */}
+          <TabsContent value="games">
+            <RankingList
+              title="🔥 場次榜（活躍隊伍）"
+              subtitle="跨遊戲統一場次，最公平的活躍度指標"
+              entries={gamesRanking}
+              isLoading={isLoading}
+              userId={user?.id}
+              myEntryRef={myEntryRef}
+              showScrollToMe={showScrollToMe}
+              onScrollToMe={scrollToMe}
+              metric="games"
+              emptyText="尚無活躍隊伍"
+            />
+          </TabsContent>
+
+          {/* 🌱 新人榜（1-9 場）— 給新隊伍上榜舞台 */}
+          <TabsContent value="newbie">
+            <RankingList
+              title="🌱 新人榜"
+              subtitle="第一次組隊就有機會上榜"
+              entries={newbieRanking}
+              isLoading={isLoading}
+              userId={user?.id}
+              myEntryRef={null}
+              showScrollToMe={false}
+              onScrollToMe={() => {}}
+              metric="newbie"
+              emptyText="目前還沒有新人隊伍 — 你可以是第一個！"
+            />
+          </TabsContent>
+
+          {/* ⚡ 上升星榜 — 30 天成長最快 */}
+          <TabsContent value="rising">
+            <RankingList
+              title="⚡ 上升星"
+              subtitle="本月成長最快的黑馬隊伍"
+              entries={risingRanking}
+              isLoading={isLoading}
+              userId={user?.id}
+              myEntryRef={null}
+              showScrollToMe={false}
+              onScrollToMe={() => {}}
+              metric="rising"
+              emptyText="尚無成長資料 — 多打幾場就會出現！"
+            />
+          </TabsContent>
+
+          {/* 🏆 段位榜 — 各遊戲類型獨立 rating */}
+          <TabsContent value="tier">
+            <RankingList
+              title="🏆 段位榜"
+              subtitle="水彈對戰 ELO rating 排序"
+              entries={rankings}
+              isLoading={isLoading}
+              userId={user?.id}
+              myEntryRef={myEntryRef}
+              showScrollToMe={showScrollToMe}
+              onScrollToMe={scrollToMe}
+              metric="tier"
+              emptyText="尚無段位資料"
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </BattleLayout>
+  );
+}
+
+// ============================================================================
+// 共用排行榜列表元件（4 個 tab 都用這個）
+// ============================================================================
+interface RankingListProps {
+  title: string;
+  subtitle: string;
+  entries: RankingEntry[];
+  isLoading: boolean;
+  userId?: string;
+  myEntryRef: React.RefObject<HTMLDivElement> | null;
+  showScrollToMe: boolean;
+  onScrollToMe: () => void;
+  metric: "games" | "newbie" | "rising" | "tier";
+  emptyText: string;
+}
+
+function RankingList({
+  title, subtitle, entries, isLoading, userId,
+  myEntryRef, showScrollToMe, onScrollToMe, metric, emptyText,
+}: RankingListProps) {
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+        <div>
+          <CardTitle className="text-base">{title}</CardTitle>
+          <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+        </div>
+        {showScrollToMe && (
+          <Button variant="outline" size="sm" onClick={onScrollToMe} className="gap-1 text-xs h-7">
+            <ArrowDown className="h-3 w-3" />
+            定位到我
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent>
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+          </div>
+        ) : entries.length === 0 ? (
+          <p className="text-muted-foreground py-8 text-center text-sm">{emptyText}</p>
+        ) : (
+          <div className="space-y-2">
+            {entries.map((entry) => (
+              <div
+                key={entry.id}
+                ref={entry.userId === userId ? myEntryRef ?? undefined : undefined}
+                className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                  tierBgClass(entry.tier) || "bg-card"
+                } ${entry.userId === userId ? "ring-2 ring-primary scroll-mt-20" : ""}`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="w-8 text-center font-bold text-lg">
+                    {entry.rank <= 3 ? (
+                      <Crown className={`h-5 w-5 mx-auto ${
+                        entry.rank === 1 ? "text-yellow-500" :
+                        entry.rank === 2 ? "text-gray-400" :
+                        "text-orange-400"
+                      }`} />
+                    ) : (
+                      <span className="text-muted-foreground font-number">{entry.rank}</span>
+                    )}
+                  </span>
+                  <div>
+                    <p className="font-medium text-sm">
+                      {entry.displayName ?? entry.userId.slice(0, 10)}
+                      {entry.userId === userId && <span className="text-primary"> (你)</span>}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {metric === "tier" && entry.tierLabel}
+                      {metric === "games" && `${entry.totalBattles ?? 0} 場 · 勝率 ${entry.winRate}%`}
+                      {metric === "newbie" && `${entry.totalBattles ?? 0}/9 場（新人區）`}
+                      {metric === "rising" && `本月成長中`}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  {metric === "tier" ? (
+                    <>
                       <p className="font-number font-bold">{entry.rating}</p>
                       <p className="text-xs text-muted-foreground font-number">
                         {entry.wins}勝 {entry.losses}負 ({entry.winRate}%)
                       </p>
-                    </div>
-                  </div>
-                ))}
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-number font-bold flex items-center gap-1">
+                        <Flame className="h-3.5 w-3.5 text-orange-500" />
+                        {entry.totalBattles ?? 0}
+                      </p>
+                      <p className="text-xs text-muted-foreground">場次</p>
+                    </>
+                  )}
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </BattleLayout>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
