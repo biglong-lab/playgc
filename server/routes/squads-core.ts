@@ -562,6 +562,62 @@ export function registerSquadsCoreRoutes(app: Express) {
   );
 
   // ============================================================================
+  // GET /api/squads/:id/photos — 隊伍紀念照集錦（Phase 16.2）
+  // 從 squad_match_records 抓 sessionId，再從 cloudinary 抓對應 photos
+  // ============================================================================
+  app.get("/api/squads/:id/photos", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const limit = Math.min(
+        parseInt((req.query.limit as string) ?? "20", 10) || 20,
+        50,
+      );
+
+      // 1. 取該隊伍最近的 records 含 sessionId
+      const { squadMatchRecords } = await import("@shared/schema");
+      const records = await db
+        .select({
+          sessionId: squadMatchRecords.sessionId,
+          gameType: squadMatchRecords.gameType,
+          gameId: squadMatchRecords.gameId,
+          playedAt: squadMatchRecords.playedAt,
+        })
+        .from(squadMatchRecords)
+        .where(eq(squadMatchRecords.squadId, id))
+        .orderBy(desc(squadMatchRecords.playedAt))
+        .limit(100);
+
+      const sessionIds = records
+        .map((r) => r.sessionId)
+        .filter((s): s is string => !!s);
+
+      if (sessionIds.length === 0) {
+        return res.json({ photos: [], total: 0 });
+      }
+
+      // 2. 從 cloudinary 拿 photos
+      const { cloudinaryService } = await import("../cloudinary");
+      const photos = await cloudinaryService.listUserPhotos(sessionIds);
+
+      // 3. 限制回傳數量
+      const limited = photos.slice(0, limit);
+
+      // 4. 補 sessionId → gameType / playedAt
+      const recordMap = new Map(records.map((r) => [r.sessionId, r]));
+      const enriched = limited.map((p) => ({
+        ...p,
+        gameType: recordMap.get(p.sessionId)?.gameType ?? null,
+        playedAt: recordMap.get(p.sessionId)?.playedAt ?? null,
+      }));
+
+      res.json({ photos: enriched, total: photos.length });
+    } catch (err) {
+      console.error("[squads] GET photos 失敗:", err);
+      res.status(500).json({ error: "取得隊伍照片失敗" });
+    }
+  });
+
+  // ============================================================================
   // POST /api/squads/:id/emblem — 上傳隊徽（Phase 15.10）
   // ============================================================================
   const uploadEmblemSchema = z.object({
