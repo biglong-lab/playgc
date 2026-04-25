@@ -1,4 +1,4 @@
-// 水彈對戰 PK 擂台 — 戰隊詳情頁（深色軍事風格）
+// 水彈對戰 PK 擂台 — 隊伍詳情頁（深色軍事風格）
 import { useState } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -53,7 +53,7 @@ export default function BattleClanDetail() {
       return res.json();
     },
     onSuccess: () => {
-      toast({ title: "已加入戰隊" });
+      toast({ title: "已加入隊伍" });
       queryClient.invalidateQueries({ queryKey: ["/api/battle/clans"] });
       queryClient.invalidateQueries({ queryKey: ["/api/battle/my/clan"] });
     },
@@ -67,7 +67,7 @@ export default function BattleClanDetail() {
       await apiRequest("DELETE", `/api/battle/clans/${clanId}/leave`);
     },
     onSuccess: () => {
-      toast({ title: "已離開戰隊" });
+      toast({ title: "已離開隊伍" });
       queryClient.invalidateQueries({ queryKey: ["/api/battle/clans"] });
       queryClient.invalidateQueries({ queryKey: ["/api/battle/my/clan"] });
     },
@@ -87,7 +87,7 @@ export default function BattleClanDetail() {
   if (!clan) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">戰隊不存在</p>
+        <p className="text-muted-foreground">隊伍不存在</p>
         <Link href="/battle">
           <Button variant="outline">返回</Button>
         </Link>
@@ -112,7 +112,7 @@ export default function BattleClanDetail() {
   return (
     <BattleLayout title={`[${clan.tag}] ${clan.name}`} subtitle={clan.description || undefined}>
       <div className="space-y-4">
-        {/* 戰隊數據 */}
+        {/* 隊伍數據 */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Card className="bg-card border-border">
             <CardContent className="p-4 text-center">
@@ -149,10 +149,10 @@ export default function BattleClanDetail() {
           >
             {joinMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             {clan.memberCount >= clan.maxMembers
-              ? "戰隊已滿"
+              ? "隊伍已滿"
               : joinMutation.isPending
                 ? "加入中..."
-                : "加入戰隊"}
+                : "加入隊伍"}
           </Button>
         )}
         {isMember && !isLeader && (
@@ -167,7 +167,7 @@ export default function BattleClanDetail() {
             ) : (
               <LogOut className="h-4 w-4" />
             )}
-            {leaveMutation.isPending ? "離開中..." : "離開戰隊"}
+            {leaveMutation.isPending ? "離開中..." : "離開隊伍"}
           </Button>
         )}
 
@@ -214,13 +214,13 @@ export default function BattleClanDetail() {
         </Card>
       </div>
 
-      {/* 🔴 離開戰隊確認 Dialog — 防誤觸不可逆操作 */}
+      {/* 🔴 離開隊伍確認 Dialog — 防誤觸不可逆操作 */}
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>確定要離開戰隊？</AlertDialogTitle>
+            <AlertDialogTitle>確定要離開隊伍？</AlertDialogTitle>
             <AlertDialogDescription>
-              離開後您的個人積分仍保留，但會失去戰隊內的歷史紀錄。若想再加入需要重新申請。
+              離開後您的個人積分仍保留，但會失去隊伍內的歷史紀錄。若想再加入需要重新申請。
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
