@@ -18,6 +18,7 @@ import {
   Swords,
   Trophy,
   Bell,
+  Gift,
   LogOut,
   ChevronRight,
   Gift,
