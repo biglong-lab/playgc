@@ -598,7 +598,19 @@ export default function PhotoArStickerFlow({
               </span>
             )}
           </div>
-          <div className="w-[72px]"></div>{/* spacer 讓拍照鍵居中 */}
+          {/* 🆕 切鏡頭按鈕（取代原本 spacer）*/}
+          <Button
+            variant="outline"
+            onClick={() => camera.switchCamera()}
+            className="bg-emerald-600/90 border-emerald-400/50 text-white hover:bg-emerald-700 px-3 h-12 gap-1.5"
+            data-testid="btn-ar-switch-camera"
+            title={camera.facingMode === "user" ? "切到後鏡頭" : "切到前鏡頭"}
+          >
+            <RefreshCw className="w-5 h-5" />
+            <span className="text-xs font-medium hidden sm:inline">
+              {camera.facingMode === "user" ? "後鏡頭" : "前鏡頭"}
+            </span>
+          </Button>
         </div>
       </div>
     );
