@@ -52,6 +52,7 @@ export function useQrScanner(
   const [manualCode, setManualCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
   const [containerReady, setContainerReady] = useState(false);
   // ref 防掃描器連續偵測同一 QR / 手動輸入 rage-click 造成多次 verifyCode
   const isProcessingRef = useRef(false);
