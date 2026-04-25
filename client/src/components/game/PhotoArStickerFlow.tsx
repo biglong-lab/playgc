@@ -517,17 +517,7 @@ export default function PhotoArStickerFlow({
           </div>
         )}
 
-        {/* 🎨 切換鏡頭大按鈕 — z-[60] 確保不被 face tracking 卡片或 sticker 擋 */}
-        <Button
-          onClick={() => camera.switchCamera()}
-          className="absolute top-4 right-4 z-[60] bg-emerald-600/90 backdrop-blur hover:bg-emerald-700 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/40 shadow-2xl"
-          data-testid="btn-ar-switch-camera"
-        >
-          <RefreshCw className="w-5 h-5" />
-          <span className="text-sm font-medium">
-            {camera.facingMode === "user" ? "切後鏡頭" : "切前鏡頭"}
-          </span>
-        </Button>
+        {/* 切鏡頭按鈕已移到下方 footer（避開 iPhone 瀏海）*/}
 
         {/* 貼圖 overlay 預覽 — 沒偵測到臉時不要顯示（避免中央大面具擋住畫面）*/}
         {stickers.map((s, idx) => {
