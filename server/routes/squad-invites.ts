@@ -572,3 +572,23 @@ export function registerSquadInvitesRoutes(app: Express) {
     },
   );
 }
+
+/** ISO 週數格式 YYYY-WW（用於 cohort 分組）*/
+function isoWeek(date: Date | string | null | undefined): string {
+  if (!date) return "unknown";
+  const d = new Date(date);
+  if (Number.isNaN(d.getTime())) return "unknown";
+
+  // ISO 8601 週數計算
+  const target = new Date(d.valueOf());
+  const dayNr = (target.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNr + 3);
+  const firstThursday = target.valueOf();
+  target.setMonth(0, 1);
+  if (target.getDay() !== 4) {
+    target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+  }
+  const week =
+    1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+  return `${d.getFullYear()}-${String(week).padStart(2, "0")}`;
+}
