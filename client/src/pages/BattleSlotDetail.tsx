@@ -429,7 +429,7 @@ export default function BattleSlotDetail() {
       <Dialog open={showCreateTeamDialog} onOpenChange={setShowCreateTeamDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>建立預組小隊</DialogTitle>
+            <DialogTitle>建立報名小隊</DialogTitle>
           </DialogHeader>
           <div>
             <Label>小隊名稱（選填）</Label>
