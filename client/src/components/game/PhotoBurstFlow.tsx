@@ -50,6 +50,7 @@ export default function PhotoBurstFlow({
   const [stage, setStage] = useState<Stage>("intro");
   const [burstImages, setBurstImages] = useState<string[]>([]);     // base64 陣列
   const [uploadedIds, setUploadedIds] = useState<string[]>([]);      // Cloudinary publicIds
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);    // 🆕 Cloudinary 個別照片 URL
   const [countdown, setCountdown] = useState(0);                     // 正在倒數到第 N 張
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
   const [compositeProgress, setCompositeProgress] = useState<string>("準備中..."); // 合成階段進度文字
