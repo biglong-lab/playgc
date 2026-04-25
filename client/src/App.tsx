@@ -181,6 +181,7 @@ function Router() {
         <Route path="/me/rewards" component={MyRewards} />
         <Route path="/f/:fieldCode/me/inbox" component={MyInbox} />
         <Route path="/me/inbox" component={MyInbox} />
+        <Route path="/squad/:squadId/settings" component={SquadSettings} />
         <Route path="/squad/:squadId" component={SquadPublic} />
         <Route path="/invite/squad/:token" component={SquadInvite} />
         <Route path="/squads/leaderboards" component={SquadLeaderboards} />
