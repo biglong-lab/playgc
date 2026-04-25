@@ -2,6 +2,15 @@ services:
   db:
     image: postgres:16-alpine
     restart: unless-stopped
+    # 🔒 資源限制：DB 限 1GB / 1 core 已綽綽有餘（賈村場域同時 50 人以下）
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1024M
+        reservations:
+          cpus: '0.2'
+          memory: 256M
     environment:
       POSTGRES_DB: gameplatform
       POSTGRES_USER: postgres
