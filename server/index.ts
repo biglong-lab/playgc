@@ -63,6 +63,7 @@ if (CLUSTER_WORKERS > 0 && cluster.isPrimary) {
   startDormancyScheduler();
   startAchievementScheduler();
   startLifecycleScheduler();
+  startMonthlyResetScheduler();
 
   for (let i = 0; i < CLUSTER_WORKERS; i++) {
     cluster.fork();
