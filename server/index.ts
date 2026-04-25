@@ -348,6 +348,7 @@ app.use((req, res, next) => {
         startAchievementScheduler();
         startLifecycleScheduler();
         startMonthlyResetScheduler();
+        startRewardRetryWorker();
       }
     },
   );
