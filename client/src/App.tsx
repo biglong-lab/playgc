@@ -86,6 +86,7 @@ const AdminBattleSlots = lazy(() => import("@/pages/AdminBattleSlots"));
 const AdminBattleDashboard = lazy(() => import("@/pages/AdminBattleDashboard"));
 const AdminBattleRankings = lazy(() => import("@/pages/AdminBattleRankings"));
 const AdminBattleSeasons = lazy(() => import("@/pages/AdminBattleSeasons"));
+const AdminRewardsRules = lazy(() => import("@/pages/AdminRewardsRules"));
 const BattleAchievements = lazy(() => import("@/pages/BattleAchievements"));
 const BattleSeasonHistory = lazy(() => import("@/pages/BattleSeasonHistory"));
 
