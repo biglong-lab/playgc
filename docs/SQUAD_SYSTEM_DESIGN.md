@@ -1505,6 +1505,859 @@ CREATE TABLE squad_invites (
 
 ---
 
+---
+
+# 26. 獎勵轉換節點（Reward Conversion Node）
+
+> **「遊戲端只送結果，轉換節點決定獎勵。」**
+
+## 26.1 核心概念
+
+**問題**：如果把「給折價券」邏輯寫進每個遊戲，會變成：
+- 每個遊戲都要懂折價券
+- 新增獎勵管道要改所有遊戲
+- 第三方系統難對接
+
+**解法**：**節點化（Node Architecture）**
+- 遊戲端只送一個 `GameResultEvent`（結果事件）
+- **轉換節點**（Reward Conversion Node）負責決定發什麼獎勵
+- 獎勵管道是**外掛式**（內部 / 外部 / 未來新加）
+
+## 26.2 節點架構圖
+
+```
+┌────────────────────────────────────────────────┐
+│  遊戲端（任何遊戲類型）                         │
+│  ├ 水彈對戰 / 一般遊戲 / 競技 / 體驗 / ...      │
+│  └ session 完成 → 產生 GameResultEvent         │
+└──────────────────┬─────────────────────────────┘
+                   │
+                   ▼
+┌────────────────────────────────────────────────┐
+│  🎯 Reward Conversion Node（轉換節點）          │
+│  ├ 1. 寫入 squad_match_record（戰績）          │
+│  ├ 2. 計算 rating + 體驗點數（內建邏輯）       │
+│  ├ 3. 評估轉換規則（規則引擎）                 │
+│  ├ 4. 觸發獎勵發放（多管道分流）               │
+│  └ 5. 寫入事件流（可重放、可追溯）             │
+└──────────────────┬─────────────────────────────┘
+                   │
+       ┌───────────┼─────────────┬──────────────┐
+       ▼           ▼              ▼              ▼
+   ┌───────┐  ┌───────┐    ┌──────────┐  ┌──────────┐
+   │ 內部  │  │ 平台  │    │ 外部對接 │  │ 未來擴充 │
+   │獎勵   │  │折價券 │    │金門好康券│  │ 商品/...│
+   │       │  │       │    │aihomi.cc │  │          │
+   │ 點數  │  │ CHITO │    │          │  │          │
+   │ rating│  │ 自有  │    │ webhook  │  │ ?        │
+   │ 徽章  │  │       │    │          │  │          │
+   └───────┘  └───────┘    └──────────┘  └──────────┘
+```
+
+## 26.3 觸發來源（誰會送結果到節點）
+
+| 來源 | 範例 |
+|-----|------|
+| 一般遊戲 session 結束 | 玩家通關「賈村冒險」 |
+| 水彈對戰結算完成 | 場域裁判按下「紅隊勝」 |
+| 競技/接力 match 結束 | 排出 1-8 名 |
+| 純體驗活動結束 | 嘉年華打卡完成 |
+| 招募達標 | 邀請第 10 人加入並完成首戰 |
+| 賽季結算 | 賽季結束自動觸發 |
+| 場域里程碑 | 第 1000 個玩家、開幕日等 |
+| 隊伍狀態升級 | 升上「活躍 / 資深 / 傳奇」 |
+| **手動觸發**（admin） | 場域 admin 主動發券給某隊 |
+
+**全部統一格式 → 節點處理**。
+
+## 26.4 獎勵類型（外掛式 Provider）
+
+| 類型 | 說明 | Provider |
+|-----|------|----------|
+| `exp_points` | 體驗點數（內部累積）| 內建 |
+| `rating_bonus` | 額外 rating（特殊活動）| 內建 |
+| `badge` | 徽章 | 內建 |
+| `platform_coupon` | CHITO 平台折價券 | 平台自有系統 |
+| `external_coupon` | 外部折價券（金門好康券）| coupon.aihomi.cc |
+| `physical_reward` | 實體獎品 | 場域自取 / 寄送 |
+| `virtual_item` | 虛擬寶物（未來）| 內建 |
+| `cash_back` | 現金回饋（未來）| 第三方支付 |
+
+**新獎勵類型 = 加 1 個 Provider，不動既有遊戲**。
+
+## 26.5 轉換規則引擎
+
+### 規則資料結構
+
+```ts
+interface RewardConversionRule {
+  id: string;
+  name: string;                       // 「跨場域首航獎」
+  description: string;
+  isActive: boolean;
+  fieldId?: string;                   // 限定場域，null = 全平台
+
+  // 觸發條件（AND 組合）
+  triggers: {
+    eventType: string;                // 'game_complete' / 'milestone' / ...
+    gameTypes?: string[];             // 限定遊戲類型
+    result?: GameResult[];            // 限定結果（win / completed / ...）
+    minTotalGames?: number;           // 累計場次門檻
+    crossField?: boolean;             // 必須跨場域
+    firstVisit?: boolean;             // 必須首航
+    minSquadTier?: string;            // 最低段位門檻
+    customExpression?: string;        // 自訂 JSON Logic
+  };
+
+  // 獎勵內容
+  rewards: Array<{
+    type: RewardType;                 // exp_points / platform_coupon / ...
+    provider?: string;                // 'aihomi_coupon' / null（內部）
+    value: number | string;           // 點數量 / 券模板 ID
+    target: 'squad' | 'leader' | 'all_members';  // 給誰
+    metadata?: Record<string, unknown>; // 額外參數（券模板、商家等）
+  }>;
+
+  // 配額
+  quota: {
+    perSquad?: number;                // 每隊伍最多領 N 次
+    perDay?: number;                  // 每日上限
+    totalCap?: number;                // 規則總上限
+    validUntil?: string;              // 規則有效期
+  };
+
+  priority: number;                   // 評估順序
+  createdBy: string;                  // 場域 admin / 平台 admin
+  createdAt: string;
+}
+```
+
+### 規則評估流程
+
+```ts
+function evaluateRules(event: GameResultEvent) {
+  // 1. 取出所有相關規則（場域 + 全平台）
+  const rules = getRulesFor(event);
+
+  // 2. 依 priority 排序
+  rules.sort((a, b) => b.priority - a.priority);
+
+  // 3. 一一評估
+  for (const rule of rules) {
+    if (matchTriggers(rule.triggers, event)) {
+      if (checkQuota(rule, event.squadId)) {
+        await issueRewards(rule.rewards, event);
+        await logRuleHit(rule.id, event);
+      }
+    }
+  }
+}
+```
+
+## 26.6 內部獎勵（CHITO 平台券）
+
+平台**自己有一套折價券系統**（與外部 coupon.aihomi.cc 並行）：
+
+### 用途
+- 平台內活動：購買 CHITO 課程、入場費、活動門票
+- 跨場域通用
+- 玩家進「我的錢包」可看到
+
+### 資料結構（簡化）
+
+```sql
+CREATE TABLE platform_coupons (
+  id varchar PRIMARY KEY,
+  code varchar UNIQUE NOT NULL,         -- 兌換碼
+  template_id varchar NOT NULL,         -- 券模板（面額、規則）
+  issued_to_squad_id varchar,           -- 發給哪個隊伍
+  issued_to_user_id varchar,            -- 發給哪個玩家
+  status varchar(20) DEFAULT 'unused',  -- unused/used/expired
+  source_event_id varchar,              -- 從哪個事件來
+  issued_at timestamp,
+  used_at timestamp,
+  expires_at timestamp
+);
+
+CREATE TABLE coupon_templates (
+  id varchar PRIMARY KEY,
+  name varchar,
+  description text,
+  discount_type varchar(20),            -- amount/percentage
+  discount_value integer,
+  min_purchase integer,
+  applicable_scope jsonb,               -- 適用範圍（場域、商品...）
+  validity_days integer DEFAULT 30
+);
+```
+
+## 26.7 外部獎勵對接（金門好康券 coupon.aihomi.cc）
+
+### 對接架構
+
+```
+CHITO 平台
+  ↓ POST /api/issue
+  ↓ Headers: Authorization, X-Provider-Source: chito
+  ↓ Body: { user_id, event_type, value, metadata }
+  ▼
+coupon.aihomi.cc 系統
+  ↓ 收到事件 → 自己決定發什麼券
+  ↓ 寫入 aihomi 自家資料庫
+  ↓ 回傳 callback：
+  ▼
+CHITO 平台 callback handler
+  ↓ POST /api/rewards/external/callback
+  ↓ Body: { user_id, coupon_code, value, expires_at, source_id }
+  ▼
+寫入 squad_external_rewards
+  ↓
+玩家在「我的錢包」看到
+```
+
+### 對接設定
+
+```sql
+CREATE TABLE external_reward_integrations (
+  id varchar PRIMARY KEY,
+  provider varchar UNIQUE NOT NULL,     -- 'aihomi_coupon' / 'other_partner'
+  display_name varchar,                  -- 「金門好康券」
+  api_endpoint varchar,
+  api_credentials_encrypted text,        -- 加密的 API key
+  webhook_secret varchar,                -- 對方 callback 用
+  is_active boolean DEFAULT false,
+  rate_limit_per_minute integer DEFAULT 60,
+  created_at timestamp
+);
+
+CREATE TABLE squad_external_rewards (
+  id varchar PRIMARY KEY,
+  squad_id varchar,
+  user_id varchar,
+  provider varchar,                      -- 'aihomi_coupon'
+  external_coupon_code varchar,          -- 對方系統的券碼
+  external_coupon_url varchar,           -- 跳轉連結
+  display_name varchar,                  -- 「奶茶買一送一」
+  value_description varchar,             -- 「免費飲料 1 杯」
+  expires_at timestamp,
+  status varchar(20) DEFAULT 'pending',  -- pending/issued/used/expired
+  source_event_id varchar,
+  issued_at timestamp,
+  redeemed_at timestamp
+);
+```
+
+### Webhook 對接協定
+
+**CHITO → coupon.aihomi.cc**（發送獎勵請求）：
+
+```http
+POST https://coupon.aihomi.cc/api/external/issue
+Authorization: Bearer <chito_api_key>
+X-Provider-Source: chito-game-platform
+Content-Type: application/json
+
+{
+  "user_id": "user_abc",
+  "external_user_ref": "abc@example.com",
+  "event": {
+    "type": "squad_milestone",
+    "subtype": "first_cross_field",
+    "squad_id": "squad_xyz",
+    "squad_name": "火焰戰士",
+    "field_id": "jiachun"
+  },
+  "context": {
+    "game_type": "battle",
+    "result": "win",
+    "exp_points_earned": 120,
+    "played_at": "2026-04-26T14:00:00+08:00"
+  },
+  "request_id": "req_uuid",
+  "callback_url": "https://game.homi.cc/api/rewards/external/callback"
+}
+```
+
+**coupon.aihomi.cc → CHITO**（callback 回傳結果）：
+
+```http
+POST https://game.homi.cc/api/rewards/external/callback
+Authorization: Bearer <aihomi_webhook_secret>
+Content-Type: application/json
+
+{
+  "request_id": "req_uuid",
+  "status": "issued",
+  "user_id": "user_abc",
+  "coupon": {
+    "code": "AIHOMI_ABC123",
+    "display_name": "金門牛肉麵 9 折",
+    "value": "10% off",
+    "redeem_url": "https://coupon.aihomi.cc/redeem/ABC123",
+    "expires_at": "2026-05-26T23:59:59+08:00",
+    "merchant_name": "阿婆牛肉麵",
+    "merchant_address": "金門縣金城鎮 ..."
+  }
+}
+```
+
+## 26.8 規則範例（10 個）
+
+### 範例 1：場次里程碑
+```yaml
+name: 「打滿 10 場新人賀禮」
+trigger:
+  eventType: game_complete
+  minTotalGames: 10
+rewards:
+  - type: platform_coupon
+    template_id: TPL_NEWBIE_50
+    target: squad
+quota:
+  perSquad: 1
+```
+
+### 範例 2：跨場域首航
+```yaml
+name: 「跨場域首航獎」
+trigger:
+  eventType: game_complete
+  firstVisit: true
+rewards:
+  - type: exp_points
+    value: 100
+    target: squad
+  - type: external_coupon
+    provider: aihomi_coupon
+    value: WELCOME_DRINK   # 金門好康券模板
+    target: leader
+quota:
+  perSquad: 5  # 每個場域 1 次，最多 5 個場域
+```
+
+### 範例 3：超級隊長月度
+```yaml
+name: 「超級隊長月度招募獎」
+trigger:
+  eventType: monthly_recruit_milestone
+  minRecruits: 5
+rewards:
+  - type: platform_coupon
+    template_id: TPL_500_CASH
+    target: leader
+quota:
+  perSquad: 1
+  perMonth: 1
+```
+
+### 範例 4：賽季結算
+```yaml
+name: 「賽季名人堂入榜獎」
+trigger:
+  eventType: season_end
+  minRank: 10
+rewards:
+  - type: external_coupon
+    provider: aihomi_coupon
+    value: SEASON_REWARD_GOLD
+    target: all_members  # 所有隊員都拿
+  - type: badge
+    value: 'season_top10_winter_2026'
+    target: squad
+```
+
+### 範例 5：場域配對行銷
+```yaml
+name: 「賈村合作店家券」
+trigger:
+  eventType: game_complete
+  fieldId: jiachun
+  minTotalGames: 5  # 在賈村打滿 5 場
+rewards:
+  - type: external_coupon
+    provider: aihomi_coupon
+    value: JIACHUN_PARTNER_VOUCHER
+    target: squad
+quota:
+  perSquad: 1
+  validUntil: 2026-12-31
+```
+
+### 範例 6：MVP 即時獎
+```yaml
+name: 「MVP 飲料券」
+trigger:
+  eventType: game_complete
+  performance.isMvp: true
+rewards:
+  - type: external_coupon
+    provider: aihomi_coupon
+    value: DRINK_FREE
+    target: leader  # 隊伍裡的 MVP
+quota:
+  perDay: 3  # 每天最多 3 個 MVP 拿
+```
+
+### 範例 7：招募達人
+```yaml
+name: 「招募達人 10 人達標」
+trigger:
+  eventType: recruit_milestone
+  totalRecruits: 10
+rewards:
+  - type: badge
+    value: 'recruiter_master'
+  - type: platform_coupon
+    template_id: TPL_RECRUIT_BONUS
+    value: 200  # 200 元
+```
+
+### 範例 8：跨場域達 3
+```yaml
+name: 「三城遠征達成」
+trigger:
+  eventType: cross_field_milestone
+  fieldsCount: 3
+rewards:
+  - type: badge
+    value: 'cross_field_3'
+  - type: exp_points
+    value: 500
+  - type: external_coupon
+    provider: aihomi_coupon
+    value: TRAVELER_BONUS
+```
+
+### 範例 9：純體驗達人
+```yaml
+name: 「嘉年華 10 場常客」
+trigger:
+  eventType: experience_milestone
+  expGameTotal: 10
+rewards:
+  - type: external_coupon
+    provider: aihomi_coupon
+    value: PARTY_MASTER_VOUCHER
+```
+
+### 範例 10：場域開幕首航
+```yaml
+name: 「後浦首航 100 名玩家獎」
+trigger:
+  eventType: field_milestone
+  fieldId: hpspace
+  visitorRank: '<=100'  # 第 100 名以前的訪客
+rewards:
+  - type: external_coupon
+    provider: aihomi_coupon
+    value: GRAND_OPENING_GIFT
+quota:
+  totalCap: 100  # 全平台只發 100 個
+```
+
+## 26.9 玩家領取流程
+
+### 我的獎勵頁面（`/me/rewards` 或 `/squad/:id/rewards`）
+
+```
+┌──────────────────────────────────────┐
+│  🎁 我的獎勵                          │
+├──────────────────────────────────────┤
+│  [🎫 平台券]  [🌍 金門好康券]  [📜 點數記錄] │
+├──────────────────────────────────────┤
+│                                       │
+│  🎫 CHITO 50 元折價券                 │
+│  ✨ 來自「跨場域首航獎」             │
+│  📅 2026-05-26 到期                  │
+│  [使用]                               │
+│                                       │
+│  🌍 金門牛肉麵 9 折                  │
+│  ✨ 來自「賈村合作店家獎」           │
+│  📅 2026-12-31 到期                  │
+│  [前往兌換]  ← 跳轉到 coupon.aihomi.cc │
+│                                       │
+└──────────────────────────────────────┘
+```
+
+### 兌換流程
+
+**平台券**：
+- 點「使用」→ 在平台內折抵（購買課程、入場費等）
+- 後端標記 status = `used`
+
+**外部券（金門好康券）**：
+- 點「前往兌換」→ 跳轉 `coupon.aihomi.cc/redeem/{code}`
+- 對方系統處理兌換邏輯
+- 兌換完成 → callback 回 CHITO 標記 status = `redeemed`
+
+### 通知
+
+```
+🎁 你獲得獎勵了！
+火焰戰士隊跨場域首航 → 金門牛肉麵 9 折券
+有效期：30 天
+[查看獎勵]
+```
+
+## 26.10 場域管理員後台
+
+### 規則設定介面
+
+場域 admin 可在後台**自己定規則**（無需工程師介入）：
+
+```
+[獎勵規則管理]
+
+[+ 新增規則]
+
+現有規則：
+┌────────────────────────────────────────┐
+│ 賈村合作店家券                          │
+│ 條件：在賈村打滿 5 場                  │
+│ 獎勵：金門好康券 JIACHUN_PARTNER       │
+│ 配額：每隊 1 張、總額 200 張            │
+│ 已發放：47 / 200                        │
+│ [編輯] [停用]                           │
+└────────────────────────────────────────┘
+
+┌────────────────────────────────────────┐
+│ 賈村開幕首航 100 名                     │
+│ 條件：第 100 名前訪客                   │
+│ ...                                     │
+└────────────────────────────────────────┘
+```
+
+### 配額追蹤
+
+```
+本月發券統計
+├ 平台券發放：125 張
+├ 外部券發放：87 張
+├ 兌換率：64%
+└ 商家回饋（未來）：來客 32 人
+```
+
+### 手動發券
+
+```
+[手動觸發]
+選擇隊伍：[火焰戰士 ▼]
+選擇獎勵：[平台券 100 元 ▼]
+原因：（選填）
+[發送]
+```
+
+## 26.11 商家對接（未來）
+
+商家**不直接接 CHITO**，而是透過 coupon.aihomi.cc：
+
+```
+場域 ←→ CHITO 平台 ←→ coupon.aihomi.cc ←→ 商家
+                          │
+                          └ 中間層（券管理、兌換、結算）
+```
+
+**好處**：
+- CHITO 不用管商家庫存
+- 商家不用學 CHITO 規則
+- coupon.aihomi.cc 當交換中心
+- 一個商家可同時服務多個遊戲平台
+
+**未來可能 API**（給商家後台用，但不是 CHITO 開）：
+- 商家在 coupon.aihomi.cc 建立優惠
+- 標記「接受 CHITO 平台用戶」
+- CHITO 規則引擎觸發 → 自動發給玩家
+- 玩家到店兌換 → 商家在 aihomi 後台核銷
+
+## 26.12 資料庫架構（新增 4 個 tables）
+
+### `reward_conversion_rules`（規則）
+
+```sql
+CREATE TABLE reward_conversion_rules (
+  id varchar PRIMARY KEY,
+  name varchar(100) NOT NULL,
+  description text,
+  field_id varchar,                     -- null = 全平台
+  is_active boolean DEFAULT true,
+  triggers jsonb NOT NULL,              -- 觸發條件（JSON Logic）
+  rewards jsonb NOT NULL,               -- 獎勵清單
+  quota jsonb,                          -- 配額限制
+  priority integer DEFAULT 0,
+  hits_count integer DEFAULT 0,         -- 已觸發次數
+  created_by varchar NOT NULL,
+  created_at timestamp DEFAULT now(),
+  valid_until timestamp,
+  INDEX idx_active_rules (is_active, field_id, priority DESC)
+);
+```
+
+### `reward_conversion_events`（事件流）
+
+```sql
+CREATE TABLE reward_conversion_events (
+  id varchar PRIMARY KEY,
+  source_type varchar NOT NULL,         -- 'game_complete' / 'milestone' / ...
+  source_id varchar NOT NULL,           -- squad_match_record_id 等
+  squad_id varchar,
+  user_id varchar,
+  event_payload jsonb NOT NULL,         -- 完整事件內容（可重放）
+  rules_evaluated jsonb,                -- 評估了哪些規則
+  rewards_issued jsonb,                 -- 實際發出哪些獎勵
+  status varchar(20) DEFAULT 'processed', -- processed/failed/retry
+  created_at timestamp DEFAULT now(),
+  INDEX idx_source (source_type, source_id),
+  INDEX idx_squad_events (squad_id, created_at DESC)
+);
+```
+
+### `platform_coupons`（平台自有券）
+
+見 [§26.6](#266-內部獎勵chito-平台券) 已有 schema。
+
+### `squad_external_rewards`（外部獎勵）
+
+見 [§26.7](#267-外部獎勵對接金門好康券-couponaihomicc) 已有 schema。
+
+### `external_reward_integrations`（外部對接設定）
+
+見 [§26.7](#267-外部獎勵對接金門好康券-couponaihomicc) 已有 schema。
+
+### `coupon_templates`（券模板）
+
+```sql
+CREATE TABLE coupon_templates (
+  id varchar PRIMARY KEY,
+  name varchar(100),
+  description text,
+  discount_type varchar(20),            -- 'amount' / 'percentage'
+  discount_value integer,
+  min_purchase integer,
+  applicable_scope jsonb,               -- 適用範圍
+  validity_days integer DEFAULT 30,
+  is_active boolean DEFAULT true,
+  created_at timestamp
+);
+```
+
+## 26.13 API 設計
+
+### 內部 API
+
+#### 觸發規則評估
+```
+POST /api/rewards/evaluate
+Body: { sourceType, sourceId, payload }
+→ 同步評估 + 發放（或 enqueue 給 worker）
+```
+
+#### 玩家查獎勵
+```
+GET /api/me/rewards?status=unused
+→ 回傳所有未使用的平台券 + 外部券
+```
+
+#### 玩家領取（如果規則設「需手動領取」）
+```
+POST /api/rewards/:id/claim
+→ 標記 status = 'issued'
+```
+
+#### 玩家使用平台券
+```
+POST /api/rewards/:id/use
+Body: { context }
+→ 標記 status = 'used'
+```
+
+### 外部對接 API
+
+#### 對外送出獎勵請求（CHITO → coupon.aihomi.cc）
+```
+POST <provider_endpoint>/api/external/issue
+Headers: Authorization, X-Provider-Source
+→ 對方非同步處理 → callback 回來
+```
+
+#### 接收 callback（coupon.aihomi.cc → CHITO）
+```
+POST /api/rewards/external/callback
+Headers: Authorization (webhook_secret 驗證)
+Body: { request_id, status, coupon: {...} }
+→ 寫入 squad_external_rewards
+```
+
+#### 兌換完成 callback（coupon.aihomi.cc → CHITO）
+```
+POST /api/rewards/external/redeemed
+Body: { coupon_code, redeemed_at, merchant }
+→ 標記 status = 'redeemed'
+```
+
+### 場域 admin API
+
+```
+GET /api/admin/fields/:fieldId/rules         # 取規則清單
+POST /api/admin/fields/:fieldId/rules        # 建規則
+PATCH /api/admin/fields/:fieldId/rules/:id   # 編輯
+DELETE /api/admin/fields/:fieldId/rules/:id  # 刪除（停用）
+
+POST /api/admin/squads/:squadId/manual-reward  # 手動發券
+
+GET /api/admin/fields/:fieldId/rewards/stats   # 配額統計
+```
+
+## 26.14 行銷閉環飛輪
+
+```
+        ┌──────────────────────────┐
+        │  玩家來玩遊戲             │
+        └─────────┬────────────────┘
+                  │
+                  ▼
+        ┌──────────────────────────┐
+        │  累積戰績 / 體驗點數      │
+        └─────────┬────────────────┘
+                  │
+                  ▼
+        ┌──────────────────────────┐
+        │  觸發轉換規則             │
+        │  ├ 跨場域 → 旅遊券       │
+        │  ├ 招募達人 → 平台券     │
+        │  └ MVP → 飲料券          │
+        └─────────┬────────────────┘
+                  │
+                  ▼
+        ┌──────────────────────────┐
+        │  獲得折價券               │
+        │  （平台 + 金門好康）      │
+        └─────────┬────────────────┘
+                  │
+                  ▼
+        ┌──────────────────────────┐
+        │  消費（線下實體）         │
+        │  ├ 商家獲得來客           │
+        │  ├ 場域獲得回頭客         │
+        │  └ 玩家獲得實際好處       │
+        └─────────┬────────────────┘
+                  │
+                  ▼
+        ┌──────────────────────────┐
+        │  分享 / 邀朋友再來        │
+        │  招募新人 → 雙向獎勵      │
+        └─────────┬────────────────┘
+                  │
+                  └──→ 回到開頭
+```
+
+### 四贏結構
+
+| 角色 | 得到什麼 |
+|-----|---------|
+| **玩家** | 玩遊戲娛樂 + 實際折價券 |
+| **平台** | 用戶活躍度 + 跨場域協同 + 數據 |
+| **場域** | 回頭客 + 行銷工具 + 商家配合 |
+| **商家** | 帶人入店 + 精準客群 + 不用管理券 |
+
+## 26.15 實作優先順序
+
+### 階段 A：純內部閉環（先做這個）
+
+**範圍**：規則引擎 + 平台自有券（不接外部）
+
+**目的**：先驗證「遊戲 → 點數 → 獎勵」邏輯通
+
+**動作**：
+- [ ] 建 `reward_conversion_rules` table
+- [ ] 建 `reward_conversion_events` table
+- [ ] 建 `platform_coupons` + `coupon_templates`
+- [ ] 規則引擎核心（評估 + 發放）
+- [ ] 玩家「我的獎勵」頁面（只顯示平台券）
+- [ ] 場域 admin 規則設定 UI（基本版）
+- [ ] 5 個範例規則（場次里程碑、跨場域、MVP 等）
+
+**估時**：2-3 週
+
+### 階段 B：外部對接金門好康券
+
+**前提**：階段 A 穩定 + coupon.aihomi.cc API 確定
+
+**動作**：
+- [ ] 建 `external_reward_integrations` + `squad_external_rewards`
+- [ ] 對外 send 獎勵請求 API
+- [ ] callback handler（接收券碼）
+- [ ] 玩家「我的獎勵」頁加金門好康券 tab
+- [ ] 跳轉到 aihomi 兌換頁
+- [ ] 兌換完成 callback
+- [ ] 場域 admin 規則 UI 增加「外部券」選項
+
+**估時**：2 週（待 aihomi API 確定）
+
+### 階段 C：進階管理工具
+
+**動作**：
+- [ ] 配額追蹤儀表板
+- [ ] 兌換率分析
+- [ ] 手動發券工具
+- [ ] 規則 A/B testing
+- [ ] 失敗事件 retry 機制
+
+**估時**：2 週
+
+## 26.16 為什麼這個設計超對
+
+### 1. 解耦徹底
+- 遊戲端不知道有獎勵
+- 規則引擎不知道有外部 API
+- 外部系統不知道有遊戲
+- **每一層獨立可改**
+
+### 2. 可重放
+- 所有事件存 `reward_conversion_events`
+- 改規則 → 可重新跑歷史事件
+- 抓 bug → 看事件流就知道發生什麼
+
+### 3. 多方擴充
+- 新獎勵類型：加 1 個 Provider
+- 新規則：場域 admin 自己加，不用工程
+- 新對接夥伴：照 webhook 協定接
+
+### 4. 商業價值最大化
+- 玩遊戲 = 帶實際消費
+- 平台、場域、商家、玩家**四贏**
+- 跨場域 + 跨商家 + 跨遊戲類型協同
+
+### 5. 預留未來
+- coupon.aihomi.cc 是第一個對接
+- 未來可接：其他第三方折價券、實體獎品物流、虛擬寶物、現金回饋
+- **協定不變，新加 Provider 就好**
+
+---
+
+# 📝 結語（更新版）
+
+> **「隊伍是長期資產，戰場是多元舞台，獎勵是商業閉環。」**
+
+這份設計的目標：
+1. ✅ 操作極簡（80% 不彈 Dialog）
+2. ✅ 概念易懂（一個隊名打天下）
+3. ✅ 推展優先（跨域加成 + 招募獎勵）
+4. ✅ 包容多元（PvP / PvE / 純體驗 / 合作 / 個人）
+5. ✅ 防作弊穩固（K 值 / 對手限制 / 重複限制）
+6. ✅ 行銷自動化（通知流 + 排行榜 + 推廣連結）
+7. ✅ 場域協同（歡迎隊伍 + 跨域加成）
+8. ✅ **商業閉環（轉換節點 + 折價券 + 外部對接）⭐**
+
+**完整生態系統**：
+- **遊戲層**：5 種計分模式
+- **隊伍層**：Squad 跨遊戲累積
+- **獎勵層**：6 個排行榜 + 徽章 + 段位
+- **轉換層**：⭐ 規則引擎 + 點數兌換
+- **變現層**：⭐ 平台券 + 外部對接（金門好康券）
+- **行銷層**：通知流 + 推廣連結 + 場域歡迎隊伍
+
+---
+
 _最後更新：2026-04-26_
 _作者：Hung（大哉實業）+ Claude Code_
 _狀態：📝 設計階段，等待最終確認_
