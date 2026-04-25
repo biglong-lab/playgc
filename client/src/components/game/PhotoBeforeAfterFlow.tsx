@@ -220,9 +220,34 @@ export default function PhotoBeforeAfterFlow({
                     beforeId: beforePhotoId,
                     afterId: uploaded.publicId,
                   });
-                  if (comp.compositeUrl) {
-                    console.log("[BeforeAfter] ✅ Cloudinary 合成成功，替換");
-                    setCompositeUrl(comp.compositeUrl);
+                  // 🆕 嚴格驗證 URL 才替換 — 避免空字串/null 把本地 collage 蓋掉造成破圖
+                  if (
+                    comp.compositeUrl &&
+                    typeof comp.compositeUrl === "string" &&
+                    comp.compositeUrl.startsWith("http")
+                  ) {
+                    // 🆕 預先驗證圖片可載入，避免直接替換造成 user 看到破圖
+                    const ok = await new Promise<boolean>((resolve) => {
+                      const img = new Image();
+                      img.onload = () => resolve(true);
+                      img.onerror = () => resolve(false);
+                      img.src = comp.compositeUrl;
+                      // 5 秒內沒 load 也視為失敗
+                      setTimeout(() => resolve(false), 5000);
+                    });
+                    if (ok) {
+                      console.log("[BeforeAfter] ✅ Cloudinary 合成驗證通過，替換");
+                      setCompositeUrl(comp.compositeUrl);
+                    } else {
+                      console.warn(
+                        "[BeforeAfter] Cloudinary URL 載入失敗，保留本地拼貼",
+                      );
+                    }
+                  } else {
+                    console.warn(
+                      "[BeforeAfter] Cloudinary 回傳無效 URL，保留本地:",
+                      comp,
+                    );
                   }
                 } catch (err) {
                   console.warn("[BeforeAfter] Cloudinary 合成失敗，保留本地:", err);
