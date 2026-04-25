@@ -1,4 +1,5 @@
 // 水彈對戰 PK 擂台 — 對戰結果頁（深色軍事風格）
+import { useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
