@@ -31,17 +31,31 @@ describe("OptimizedImage", () => {
     expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
-  it("圖片載入錯誤時顯示 fallback", () => {
-    render(
-      <OptimizedImage
-        src="https://example.com/broken.jpg"
-        alt="測試"
-        fallback={<div data-testid="err-fb">error fallback</div>}
-      />,
-    );
-    const img = screen.getByRole("img");
-    fireEvent.error(img);
-    expect(screen.getByTestId("err-fb")).toBeInTheDocument();
+  it("圖片載入錯誤時顯示 fallback（5 次 retry 用完後）", () => {
+    // OptimizedImage 有 5 次 retry 機制（用 setTimeout 延遲），
+    // 用 fake timers 推進時間直接走完所有 retry 才會 setHasError(true)
+    vi.useFakeTimers();
+    try {
+      render(
+        <OptimizedImage
+          src="https://example.com/broken.jpg"
+          alt="測試"
+          fallback={<div data-testid="err-fb">error fallback</div>}
+        />,
+      );
+      // 觸發 6 次 error（5 次 retry + 第 6 次直接 fallback）
+      for (let i = 0; i < 6; i++) {
+        const img = screen.queryByRole("img");
+        if (img) fireEvent.error(img);
+        // 推進最大 retry delay（15s 已涵蓋所有 retry interval）
+        act(() => {
+          vi.advanceTimersByTime(15000);
+        });
+      }
+      expect(screen.getByTestId("err-fb")).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("Cloudinary URL 自動附加變換參數", () => {
