@@ -431,6 +431,8 @@ export function registerAdminRoleRoutes(app: Express) {
 
       // 🔒 場域隔離：統一只回傳本場域有 membership 的玩家
       const targetFieldId = req.admin.fieldId;
+      // 🆕 search query：用於 GrantAccessDialog 等搜尋功能
+      const searchTerm = (req.query.search as string | undefined)?.trim();
 
       const { fieldMemberships } = await import("@shared/schema");
       const rows = await db
@@ -444,7 +446,7 @@ export function registerAdminRoleRoutes(app: Express) {
         .orderBy(desc(fieldMemberships.joinedAt));
 
       // 僅回傳 user 物件 + membership 關鍵欄位（保持向後相容）
-      const result = rows
+      let result = rows
         .filter((r) => r.user !== null)
         .map((r) => ({
           ...r.user!,
@@ -454,6 +456,21 @@ export function registerAdminRoleRoutes(app: Express) {
             playerStatus: r.membership.playerStatus,
           },
         }));
+
+      // 🆕 搜尋過濾（email / firstName / lastName / id）
+      if (searchTerm && searchTerm.length >= 1) {
+        const lower = searchTerm.toLowerCase();
+        result = result.filter((u) => {
+          return (
+            (u.email && u.email.toLowerCase().includes(lower)) ||
+            (u.firstName && u.firstName.toLowerCase().includes(lower)) ||
+            (u.lastName && u.lastName.toLowerCase().includes(lower)) ||
+            u.id.toLowerCase().includes(lower)
+          );
+        });
+        // 限制搜尋結果最多 50 筆
+        result = result.slice(0, 50);
+      }
 
       res.json(result);
     } catch (error) {
