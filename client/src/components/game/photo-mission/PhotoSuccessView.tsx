@@ -48,6 +48,18 @@ export default function PhotoSuccessView({
   const { toast } = useToast();
   const [imageError, setImageError] = useState(false);
 
+  // 🆕 主要動作：一鍵保存到手機相簿（最順暢的 UX）
+  const handleSaveToAlbum = async () => {
+    const result = await savePhotoToAlbum({
+      url: imageUrl,
+      filename: downloadPrefix,
+      title: "CHITO 紀念照",
+      text: "看看我的遊戲紀念！",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
+  };
+
   const handleShare = async () => {
     try {
       const result = await shareUrl({
@@ -66,6 +78,7 @@ export default function PhotoSuccessView({
   };
 
   const downloadFilename = makeDownloadFilename(imageUrl, downloadPrefix);
+  const isMobile = isMobileWithShare();
 
   return (
     <div
