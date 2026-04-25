@@ -474,14 +474,17 @@ export default function PhotoBurstFlow({
     onComplete(reward);
   };
 
-  // 🆕 一鍵保存到手機相簿
+  // 🆕 一鍵保存「動態 GIF + 全部個別照片」到手機相簿
+  // 使用者要求：除了 GIF 也要每張獨立照片
   const handleSaveToAlbum = async () => {
     if (!compositeUrl) return;
-    const result = await savePhotoToAlbum({
-      url: compositeUrl,
-      filename: "chito-burst",
+    // 組合：[GIF, frame1, frame2, ...]
+    const allUrls = [compositeUrl, ...uploadedUrls];
+    const result = await savePhotosToAlbum({
+      urls: allUrls,
+      filenamePrefix: "chito-burst",
       title: "CHITO 連拍紀念",
-      text: `${frameCount} 連拍紀念圖`,
+      text: `${frameCount} 連拍紀念圖（含動態 GIF）`,
     });
     const msg = getSaveToastMessage(result);
     if (msg.title) toast(msg);
