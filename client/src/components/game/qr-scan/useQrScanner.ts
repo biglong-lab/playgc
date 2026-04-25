@@ -12,6 +12,8 @@ export interface QrScannerState {
   manualCode: string;
   isProcessing: boolean;
   cameraError: string | null;
+  /** 🆕 當前使用的鏡頭 */
+  facingMode: "environment" | "user";
 }
 
 export interface QrScannerActions {
@@ -22,6 +24,8 @@ export interface QrScannerActions {
   setMode: (mode: ScanMode) => void;
   setManualCode: (code: string) => void;
   stopScanning: () => Promise<void>;
+  /** 🆕 切換前後鏡頭（重啟掃描器）*/
+  switchCamera: () => Promise<void>;
 }
 
 export interface UseQrScannerReturn {
