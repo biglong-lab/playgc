@@ -25,11 +25,16 @@ export const rewardConversionRules = pgTable("reward_conversion_rules", {
   priority: integer("priority").default(0),
   hitsCount: integer("hits_count").default(0).notNull(),
 
+  /** 🆕 A/B Testing — Phase 16.6 */
+  abTestGroup: varchar("ab_test_group", { length: 20 }),  // 'A' / 'B' / null
+  abTestTraffic: integer("ab_test_traffic").default(100).notNull(), // 0-100 %
+
   createdBy: varchar("created_by"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   validUntil: timestamp("valid_until"),
 }, (table) => [
   index("idx_rules_active").on(table.isActive, table.fieldId, table.priority),
+  index("idx_rules_ab_group").on(table.abTestGroup, table.isActive),
 ]);
 
 export const insertRewardConversionRuleSchema = createInsertSchema(rewardConversionRules).omit({
