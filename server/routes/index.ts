@@ -48,6 +48,7 @@ import { registerClientLogsRoutes, startClientLogsCleanup } from "./client-logs"
 import { registerSitemapRoute } from "./sitemap";
 import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadRecordsRoutes } from "./squad-records";
+import { registerSquadInvitesRoutes } from "./squad-invites";
 import { registerRewardsRoutes } from "./rewards";
 import { registerAdminRewardsRoutes } from "./admin-rewards";
 import { registerAdminEngagementRoutes } from "./admin-engagement";
