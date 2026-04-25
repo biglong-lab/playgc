@@ -725,6 +725,7 @@ export const battleStorageMethods = {
   // 戰隊
   createClan,
   createClanWithLeader,
+  isClanNameAvailable,
   getClan,
   getClansByField,
   updateClan,
