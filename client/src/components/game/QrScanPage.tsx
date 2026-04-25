@@ -18,6 +18,9 @@ export default function QrScanPage({ config, onComplete, sessionId }: QrScanPage
   const { state, actions, scannerContainerRef } = useQrScanner(config, sessionId, onComplete);
   const { mode } = state;
 
+  // 🆕 掃描相機開啟時隱藏浮動 UI（避免擋切鏡頭按鈕）
+  useCameraOverlayMode(mode === "initializing" || mode === "scanning");
+
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-6">
       {mode === "instruction" && (
