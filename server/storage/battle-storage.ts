@@ -402,9 +402,10 @@ async function isClanNameAvailable(name: string, excludeClanId?: string): Promis
     if (clan.isActive) {
       return { available: false, reason: "此隊名已被使用" };
     }
-    // 已解散戰隊：180 天內鎖定
-    if (clan.disbandedAt) {
-      const lockEnd = new Date(clan.disbandedAt);
+    // 🔒 已解散戰隊：updatedAt 後 180 天內鎖名
+    // （用 updatedAt 當解散時間代理 — 等 schema 加 disbandedAt 後可改）
+    if (clan.updatedAt) {
+      const lockEnd = new Date(clan.updatedAt);
       lockEnd.setDate(lockEnd.getDate() + 180);
       if (new Date() < lockEnd) {
         return {
