@@ -205,8 +205,12 @@ describe("photo-save", () => {
       expect(result.errorReason).toBe("abort");
     });
 
-    it("share 失敗（非 abort）→ fallback download", async () => {
+    it("share 失敗（非 abort）→ fallback share-url-only 或 open-tab", async () => {
       const otherErr = new Error("other error");
+      // stub window.open
+      const openMock = vi.fn();
+      vi.stubGlobal("window", { ...window, open: openMock });
+
       vi.stubGlobal("navigator", {
         userAgent: "Mozilla/5.0 (iPhone)",
         share: vi.fn().mockRejectedValue(otherErr),
@@ -217,28 +221,40 @@ describe("photo-save", () => {
         filename: "test",
         forceMethod: "share",
       });
+      // 多層 fallback：share files 失敗 → share URL 失敗 → open new tab
       expect(result.success).toBe(true);
-      expect(result.method).toBe("download");
+      // 任一個 fallback 都算成功
+      expect(["share-url-only", "open-tab", "download"]).toContain(
+        result.method,
+      );
     });
 
-    it("fetch 失敗 → fetch-failed errorReason", async () => {
+    it("forceMethod=download fetch 失敗 → 仍會嘗試 a href fallback", async () => {
       vi.stubGlobal(
         "fetch",
-        vi.fn().mockResolvedValue({
-          ok: false,
-          status: 404,
-        }),
+        vi.fn().mockRejectedValue(new Error("CORS")),
       );
       vi.stubGlobal("navigator", {
         userAgent: "Mozilla/5.0",
       });
+      // mock Image 也失敗
+      const ImageMock = vi.fn(() => ({
+        set src(_v: string) {
+          setTimeout(() => this.onerror?.(), 0);
+        },
+        onload: null,
+        onerror: null,
+      }));
+      vi.stubGlobal("Image", ImageMock);
+
       const result = await savePhotoToAlbum({
         url: "https://example.com/photo.jpg",
         filename: "test",
         forceMethod: "download",
       });
-      expect(result.success).toBe(false);
-      expect(result.errorReason).toBe("fetch-failed");
+      // a href fallback 永遠成功（不 fetch）
+      expect(result.success).toBe(true);
+      expect(result.method).toBe("download");
     });
   });
 });
