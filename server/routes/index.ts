@@ -53,6 +53,7 @@ import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
 import { registerSquadLeaderboardsRoutes } from "./squad-leaderboards";
 import { registerWelcomeSquadsRoutes } from "./welcome-squads";
+import { registerSquadSeoRoutes } from "./squad-seo";
 import { registerRewardsRoutes } from "./rewards";
 import { registerAdminRewardsRoutes } from "./admin-rewards";
 import { registerAdminEngagementRoutes } from "./admin-engagement";
