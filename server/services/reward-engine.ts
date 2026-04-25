@@ -225,8 +225,7 @@ async function issueReward(
       return `exp_points_${reward.value}`;
 
     case "badge":
-      // Phase 9（後續）會做 squad_achievements
-      return `badge_pending_${reward.value}`;
+      return await issueBadge(reward, event, ruleId);
 
     default:
       return null;
