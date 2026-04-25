@@ -221,6 +221,8 @@ export function CameraView({
   facingMode = "environment",
 }: CameraViewProps) {
   const isMirror = facingMode === "user";
+  // 🆕 拍照時告訴全域元件「我在拍照」→ Walkie Pill 等浮動 UI 自動隱藏
+  useCameraOverlayMode(true);
   return (
     // 🎨 fixed inset-0 z-50 蓋過 GamePlay header/footer 全螢幕沉浸式
     <div className="fixed inset-0 z-50 bg-black flex flex-col" data-testid="camera-view-fullscreen">
