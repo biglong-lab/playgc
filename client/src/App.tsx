@@ -140,6 +140,9 @@ const AdminEngagementSettings = lazy(() => import("@/pages/admin/AdminEngagement
 // 📊 獎勵分析 Dashboard（Squad System Phase 12 加值）
 const AdminRewardsAnalytics = lazy(() => import("@/pages/admin/AdminRewardsAnalytics"));
 
+// 📈 推廣連結 Cohort 分析（Phase 17.1）
+const AdminInvitesCohort = lazy(() => import("@/pages/admin/AdminInvitesCohort"));
+
 // 🏢 場域總部 — 我的方案（v4.0 Phase 6）
 const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
 
