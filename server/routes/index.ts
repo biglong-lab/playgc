@@ -50,6 +50,7 @@ import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerRewardsRoutes } from "./rewards";
 import { registerAdminRewardsRoutes } from "./admin-rewards";
+import { registerAdminEngagementRoutes } from "./admin-engagement";
 
 export async function registerRoutes(
   httpServer: Server,
