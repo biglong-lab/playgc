@@ -194,14 +194,14 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     category: "personal",
     displayName: "破紀錄王",
     description: "突破個人最佳 5 次",
-    check: (ctx) => ctx.personalBestBreaks >= 5,
+    check: (ctx) => (ctx.personalBestBreaks ?? 0) >= 5,
   },
   {
     key: "speedrun_master",
     category: "personal",
     displayName: "速通達人",
     description: "速通類遊戲 10+ 場",
-    check: (ctx) => ctx.speedrunGames >= 10,
+    check: (ctx) => (ctx.speedrunGames ?? 0) >= 10,
   },
 
   // 體驗點數徽章（常客榜搭配）
