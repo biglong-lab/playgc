@@ -20,41 +20,10 @@ import {
 } from "@shared/schema";
 import { eq, and, or, desc, isNull } from "drizzle-orm";
 import { randomBytes } from "crypto";
+import { matchTriggers, type RewardEvent, type RuleTriggers } from "./reward-rules-matcher";
 
-// ============================================================================
-// Types
-// ============================================================================
-
-/** 觸發事件 */
-export interface RewardEvent {
-  /** 事件類型（對應規則 triggers.eventType）*/
-  eventType: string;
-  /** 來源紀錄 ID（squad_match_record_id 等）*/
-  sourceId: string;
-  /** 來源類型（squad_match_record / milestone / season_end）*/
-  sourceType: string;
-  /** 哪支隊伍 */
-  squadId?: string;
-  userId?: string;
-  /** 場域 ID（用於匹配場域規則）*/
-  fieldId?: string;
-  /** 額外 context（規則 triggers 可參照） */
-  context: Record<string, unknown>;
-}
-
-/** 觸發條件（與規則的 triggers JSON 對應）*/
-interface RuleTriggers {
-  eventType: string;
-  gameTypes?: string[];
-  result?: string[];
-  minTotalGames?: number;
-  crossField?: boolean;
-  firstVisit?: boolean;
-  minSquadTier?: string;
-  minRecruits?: number;
-  fieldId?: string;
-  customExpression?: string;
-}
+// 重新匯出（保持原本 reward-engine.ts 的外部介面不變）
+export { matchTriggers, type RewardEvent };
 
 /** 獎勵描述 */
 interface RewardSpec {
