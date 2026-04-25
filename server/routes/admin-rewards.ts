@@ -90,12 +90,15 @@ export function registerAdminRewardsRoutes(app: Express) {
         });
       }
       const data = parsed.data;
+      // 🔒 場域隔離：強制使用自己的 fieldId（super_admin 才可指定其他場域）
+      const isSuperAdmin = req.admin?.systemRole === "super_admin";
+      const fieldId = isSuperAdmin && data.fieldId ? data.fieldId : req.admin?.fieldId;
       const [created] = await db
         .insert(rewardConversionRules)
         .values({
           name: data.name,
           description: data.description,
-          fieldId: data.fieldId,
+          fieldId,
           isActive: data.isActive,
           triggers: data.triggers,
           rewards: data.rewards,
