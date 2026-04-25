@@ -30,7 +30,8 @@ describe("VideoPage — videoUrl 空字串 fallback", () => {
     });
 
     expect(screen.getByText(/影片未設定/)).toBeTruthy();
-    fireEvent.click(screen.getByTestId("button-video-fallback-continue"));
+    // VideoPage 使用 GameErrorView 共用元件，按鈕 testid 為 btn-game-error-skip
+    fireEvent.click(screen.getByTestId("btn-game-error-skip"));
     expect(onComplete).toHaveBeenCalledWith({ points: 5 }, "after-video");
   });
 
