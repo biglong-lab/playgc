@@ -8,6 +8,57 @@ import {
 } from "../photo-save";
 
 describe("photo-save", () => {
+  describe("detectExtension", () => {
+    it("空值 → 預設 jpg", () => {
+      expect(detectExtension("")).toBe("jpg");
+    });
+
+    it("Cloudinary GIF → gif", () => {
+      expect(
+        detectExtension(
+          "https://res.cloudinary.com/x/image/upload/v1/burst.gif",
+        ),
+      ).toBe("gif");
+    });
+
+    it("Cloudinary JPG → jpg", () => {
+      expect(
+        detectExtension(
+          "https://res.cloudinary.com/x/image/upload/v1/photo.jpg",
+        ),
+      ).toBe("jpg");
+    });
+
+    it("JPEG → jpg（normalize）", () => {
+      expect(detectExtension("https://example.com/photo.jpeg")).toBe("jpg");
+    });
+
+    it("PNG / WebP / MP4", () => {
+      expect(detectExtension("https://x.com/a.png")).toBe("png");
+      expect(detectExtension("https://x.com/a.webp")).toBe("webp");
+      expect(detectExtension("https://x.com/a.mp4")).toBe("mp4");
+    });
+
+    it("含 query string 仍能偵測", () => {
+      expect(detectExtension("https://x.com/a.gif?v=123")).toBe("gif");
+      expect(detectExtension("https://x.com/a.jpg?t=now")).toBe("jpg");
+    });
+
+    it("data URL 從 mime type 推副檔名", () => {
+      expect(detectExtension("data:image/gif;base64,xxx")).toBe("gif");
+      expect(detectExtension("data:image/png;base64,xxx")).toBe("png");
+      expect(detectExtension("data:image/jpeg;base64,xxx")).toBe("jpg");
+    });
+
+    it("無副檔名 URL → 預設 jpg", () => {
+      expect(detectExtension("https://res.cloudinary.com/x/abc")).toBe("jpg");
+    });
+
+    it("大寫副檔名也支援", () => {
+      expect(detectExtension("https://x.com/A.GIF")).toBe("gif");
+    });
+  });
+
   describe("isMobileWithShare", () => {
     afterEach(() => {
       // 清除 stubs
