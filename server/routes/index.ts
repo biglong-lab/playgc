@@ -47,6 +47,7 @@ import { registerAdminWalkieRoutes } from "./admin-walkie";
 import { registerClientLogsRoutes, startClientLogsCleanup } from "./client-logs";
 import { registerSitemapRoute } from "./sitemap";
 import { registerErrorLogRoutes } from "./error-log";
+import { registerSquadsCoreRoutes } from "./squads-core";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
 import { registerSquadLeaderboardsRoutes } from "./squad-leaderboards";
