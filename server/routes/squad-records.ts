@@ -59,6 +59,39 @@ export function registerSquadRecordsRoutes(app: Express) {
     isAuthenticated,
     async (req: AuthenticatedRequest, res) => {
       try {
+        // 🔒 安全：戰績只應由 server-side hook 寫入（squad-record-writer.ts）
+        // 不允許 client 直接 POST，防止偽造戰績刷 ELO / 攻擊對手分數
+        // 此端點保留給 super_admin 手動修正用（測試 / debug）
+        const userId = req.user?.claims?.sub;
+        if (!userId) return res.status(401).json({ error: "未認證" });
+
+        // 檢查是否為 super_admin
+        const { adminAccounts } = await import("@shared/schema");
+        const { eq } = await import("drizzle-orm");
+        const [admin] = await db
+          .select()
+          .from(adminAccounts)
+          .where(eq(adminAccounts.firebaseUserId, userId))
+          .limit(1);
+
+        if (!admin) {
+          return res.status(403).json({
+            error: "戰績寫入須由 server-side hook 處理，不允許 client 直接呼叫",
+          });
+        }
+        const { roles } = await import("@shared/schema");
+        const [adminRole] = await db
+          .select()
+          .from(roles)
+          .where(eq(roles.id, admin.roleId))
+          .limit(1);
+
+        if (adminRole?.systemRole !== "super_admin") {
+          return res.status(403).json({
+            error: "僅平台管理員可手動寫入戰績",
+          });
+        }
+
         const parsed = reportRecordSchema.safeParse(req.body);
         if (!parsed.success) {
           return res.status(400).json({
