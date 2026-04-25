@@ -17,9 +17,10 @@ import {
   couponTemplates,
   squadExternalRewards,
   squadAchievements,
+  squadStats,
   type RewardConversionRule,
 } from "@shared/schema";
-import { eq, and, or, desc, isNull } from "drizzle-orm";
+import { eq, and, or, desc, isNull, sql } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { matchTriggers, type RewardEvent, type RuleTriggers } from "./reward-rules-matcher";
 
