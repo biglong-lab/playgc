@@ -16,6 +16,7 @@ import {
   platformCoupons,
   couponTemplates,
   squadExternalRewards,
+  squadAchievements,
   type RewardConversionRule,
 } from "@shared/schema";
 import { eq, and, or, desc, isNull } from "drizzle-orm";
