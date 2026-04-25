@@ -128,6 +128,9 @@ const SquadPublic = lazy(() => import("@/pages/SquadPublic"));
 // 🎫 推廣連結邀請頁（Squad System Phase 12.1）
 const SquadInvite = lazy(() => import("@/pages/SquadInvite"));
 
+// ⚙️ Squad 設定頁（Phase 16.1 + 16.3）
+const SquadSettings = lazy(() => import("@/pages/SquadSettings"));
+
 // 🏆 6 個排行榜（Squad System Phase 12.2）
 const SquadLeaderboards = lazy(() => import("@/pages/SquadLeaderboards"));
 
