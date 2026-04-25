@@ -35,6 +35,33 @@ export default function BattleResult() {
     enabled: !!slotId,
   });
 
+  // 🆕 Phase 2.4：第一場上榜 toast 提示（用 sessionStorage 確保只跳一次）
+  useEffect(() => {
+    if (!data || !user) return;
+    const myResult = data.playerResults?.find((r) => r.userId === user.id);
+    if (!myResult) return;
+
+    const dedupeKey = `chito:firstWinToast:${data.id}`;
+    if (typeof sessionStorage !== "undefined" && sessionStorage.getItem(dedupeKey)) return;
+
+    // 偵測是否首戰（依當前隊伍 totalBattles 判斷，這裡用 myResult 上下文判斷）
+    // 暫用「ratingBefore = 1200」當新隊伍訊號
+    const isFirstGame = myResult.ratingBefore === 1200;
+    if (isFirstGame) {
+      toast({
+        title: "🎊 上榜啦！",
+        description: "你的隊伍剛上「新人榜」— 再打一場挑戰前 10！",
+        duration: 6000,
+      });
+      try {
+        sessionStorage.setItem(dedupeKey, "1");
+      } catch {
+        // ignore
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.id, user?.id]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
