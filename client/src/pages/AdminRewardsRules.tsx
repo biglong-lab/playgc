@@ -184,6 +184,8 @@ export default function AdminRewardsRules() {
     setFormTriggersJson('{"eventType": "game_complete", "minTotalGames": 10}');
     setFormRewardsJson('[{"type": "platform_coupon", "templateId": "TPL_NEWBIE_50", "target": "squad"}]');
     setFormQuotaJson('{"perSquad": 1}');
+    setFormAbTestGroup("");
+    setFormAbTestTraffic(100);
     setEditingRule(null);
   }
 
