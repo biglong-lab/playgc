@@ -153,7 +153,9 @@ export function detectExtension(url: string): string {
 export async function savePhotoToAlbum(
   opts: SavePhotoOptions,
 ): Promise<SaveResult> {
-  const filename = `${opts.filename ?? "chito-photo"}-${Date.now()}.jpg`;
+  // 🆕 自動偵測副檔名（GIF / JPG / PNG / WebP）保留原始格式
+  const ext = detectExtension(opts.url);
+  const filename = `${opts.filename ?? "chito-photo"}-${Date.now()}.${ext}`;
 
   // 強制 download mode（debug 用）
   if (opts.forceMethod === "download") {
