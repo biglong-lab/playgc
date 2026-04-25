@@ -20,6 +20,41 @@ import { z } from "zod";
 
 export function registerRewardsRoutes(app: Express) {
   // ============================================================================
+  // GET /api/me/inbox — 玩家站內通知 inbox（Phase 11.4）
+  // ============================================================================
+  app.get(
+    "/api/me/inbox",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const userId = req.user?.claims?.sub;
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        const limit = Math.min(parseInt(req.query.limit as string) || 30, 100);
+
+        // Lazy import 避免循環依賴
+        const { notificationEvents } = await import("@shared/schema");
+        const events = await db
+          .select()
+          .from(notificationEvents)
+          .where(
+            and(
+              eq(notificationEvents.userId, userId),
+              eq(notificationEvents.channelType, "in_app"),
+            ),
+          )
+          .orderBy(desc(notificationEvents.createdAt))
+          .limit(limit);
+
+        res.json(events);
+      } catch (error) {
+        console.error("[rewards] GET inbox 失敗:", error);
+        res.status(500).json({ error: "取得通知失敗" });
+      }
+    },
+  );
+
+  // ============================================================================
   // GET /api/me/rewards — 我的獎勵清單（平台券 + 外部券）
   // ============================================================================
   app.get(
