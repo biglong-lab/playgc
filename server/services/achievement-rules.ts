@@ -14,6 +14,25 @@ export interface AchievementContext {
   homeFieldGames: number;
   /** 各場域場次數（fieldId → games count）*/
   fieldGamesMap: Record<string, number>;
+  /** 各活動類型場次（'party' / 'family' / 'carnival' 等，從 performance.eventCategory）*/
+  eventCategoryCounts?: Record<string, number>;
+  /** 個人挑戰：突破個人最佳次數（從 performance.brokeRecord = true 統計）*/
+  personalBestBreaks?: number;
+  /** 速通類遊戲場次（從 game_type = 'speedrun' 或 performance.isSpeedrun）*/
+  speedrunGames?: number;
+}
+
+/** 統計符合任一 category 的場次（純函式）*/
+export function countByCategory(
+  counts: Record<string, number> | undefined,
+  categories: string[],
+): number {
+  if (!counts) return 0;
+  let sum = 0;
+  for (const c of categories) {
+    sum += counts[c] ?? 0;
+  }
+  return sum;
 }
 
 export interface AchievementDef {
