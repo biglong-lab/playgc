@@ -303,6 +303,39 @@ async function issueBadge(
 }
 
 /**
+ * 規則觸發的體驗點數獎勵 — 直接加進 squad_stats
+ * （Phase 13 修復：之前只寫 log，沒實際加進 DB）
+ */
+async function issueExpPoints(
+  reward: RewardSpec,
+  event: RewardEvent,
+): Promise<string | null> {
+  if (!event.squadId) {
+    console.warn("[reward-engine] exp_points reward 需要 squadId，跳過");
+    return null;
+  }
+  const points = typeof reward.value === "number" ? reward.value : Number(reward.value);
+  if (!Number.isFinite(points) || points <= 0) {
+    console.warn("[reward-engine] exp_points value 無效:", reward.value);
+    return null;
+  }
+
+  try {
+    await db
+      .update(squadStats)
+      .set({
+        totalExpPoints: sql`${squadStats.totalExpPoints} + ${points}`,
+        updatedAt: new Date(),
+      })
+      .where(eq(squadStats.squadId, event.squadId));
+    return `exp_points_${points}`;
+  } catch (err) {
+    console.error("[reward-engine] issueExpPoints 失敗:", err);
+    return null;
+  }
+}
+
+/**
  * 預備外部券 + 即送 aihomi webhook（Phase 13 修復）
  *
  * 步驟：
