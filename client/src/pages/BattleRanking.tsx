@@ -60,6 +60,30 @@ export default function BattleRanking() {
   const prevEntry = myIndex > 0 ? rankings[myIndex - 1] : null;
   const ratingGap = prevEntry && myEntry ? prevEntry.rating - myEntry.rating : 0;
 
+  // 🆕 Phase 2.1：4 種榜的衍生資料（從現有 rankings 推算，Phase 4 將改為真實 squad_match_records）
+  const gamesRanking = useMemo(() => {
+    return [...rankings]
+      .sort((a, b) => (b.totalBattles ?? 0) - (a.totalBattles ?? 0))
+      .map((e, i) => ({ ...e, rank: i + 1 }));
+  }, [rankings]);
+
+  const newbieRanking = useMemo(() => {
+    return rankings
+      .filter((e) => (e.totalBattles ?? 0) >= 1 && (e.totalBattles ?? 0) <= 9)
+      .sort((a, b) => (b.totalBattles ?? 0) - (a.totalBattles ?? 0))
+      .map((e, i) => ({ ...e, rank: i + 1 }));
+  }, [rankings]);
+
+  const risingRanking = useMemo(() => {
+    // Phase 4 將改用 30 天 squad_match_records 計算成長
+    // 暫時用「最近活躍 + 中等場次」估算上升中
+    return rankings
+      .filter((e) => (e.totalBattles ?? 0) >= 5 && (e.totalBattles ?? 0) <= 50)
+      .sort((a, b) => (b.winStreak ?? 0) - (a.winStreak ?? 0))
+      .slice(0, 20)
+      .map((e, i) => ({ ...e, rank: i + 1 }));
+  }, [rankings]);
+
   // 「滾到我的位置」 —— 排名在第 6 名以後才顯示
   const showScrollToMe = myIndex >= 5;
   const scrollToMe = () => {
