@@ -88,11 +88,11 @@ export function CameraView({
             </div>
           </div>
         )}
-        {/* 🆕 切換鏡頭按鈕（右上角）*/}
+        {/* 🆕 切換鏡頭按鈕（右上角，z-[60] 不被擋）*/}
         {!isInitializing && (
           <Button
             onClick={() => actions.switchCamera?.()}
-            className="absolute top-2 right-2 z-20 bg-black/75 backdrop-blur hover:bg-black/90 text-white gap-1.5 px-3 h-9 rounded-full border border-white/30 shadow-lg"
+            className="absolute top-2 right-2 z-[60] bg-emerald-600/90 backdrop-blur hover:bg-emerald-700 text-white gap-1.5 px-3 h-10 rounded-full border-2 border-white/40 shadow-2xl"
             data-testid="btn-qr-switch-camera"
           >
             <RefreshCw className="w-4 h-4" />
