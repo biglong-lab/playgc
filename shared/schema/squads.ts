@@ -251,3 +251,48 @@ export type SquadGameType = typeof squadGameTypeEnum[number];
 // matches.scoringModeEnum 是競技類專用，這個是 Squad 系統 5 種計分模式
 export const squadScoringModeEnum = ["pvp", "pve", "experience", "coop", "personal"] as const;
 export type SquadScoringMode = typeof squadScoringModeEnum[number];
+
+// ============================================================================
+// 4. squad_achievements — 隊伍徽章（reward engine 觸發時寫入）
+// ============================================================================
+//
+// 詳見 docs/SQUAD_SYSTEM_DESIGN.md §9.2-9.5
+//
+// 觸發來源：
+//   - 規則引擎發放（reward type = 'badge'）
+//   - 自動成就（如「三城遠征」、「百戰隊伍」）
+//   - admin 手動授予
+// ============================================================================
+export const squadAchievements = pgTable("squad_achievements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  squadId: varchar("squad_id").notNull(),
+
+  achievementKey: varchar("achievement_key", { length: 50 }).notNull(),
+  // 'cross_field_3' / 'cross_field_5' / 'recruiter_master' /
+  // 'hall_of_fame' / 'season_top10_winter_2026' / 'first_win' / ...
+
+  category: varchar("category", { length: 30 }),
+  // 'cross_field' / 'recruit' / 'milestone' / 'event' / 'special'
+
+  displayName: varchar("display_name", { length: 100 }),
+  description: varchar("description", { length: 200 }),
+  iconUrl: varchar("icon_url"),
+
+  // 觸發來源（追蹤用）
+  sourceRuleId: varchar("source_rule_id"),       // 規則引擎觸發
+  sourceEventId: varchar("source_event_id"),     // 對應 reward_conversion_event
+  awardedBy: varchar("awarded_by"),              // admin 授予 → user id
+
+  unlockedAt: timestamp("unlocked_at").defaultNow().notNull(),
+}, (table) => [
+  unique("uq_squad_achievement").on(table.squadId, table.achievementKey),
+  index("idx_squad_achievements").on(table.squadId, table.unlockedAt.desc()),
+]);
+
+export const insertSquadAchievementSchema = createInsertSchema(squadAchievements).omit({
+  id: true,
+  unlockedAt: true,
+});
+
+export type SquadAchievement = typeof squadAchievements.$inferSelect;
+export type InsertSquadAchievement = typeof squadAchievements.$inferInsert;
