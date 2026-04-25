@@ -279,6 +279,42 @@ function mapGameModeToSquadType(gameMode: string | null): string {
   }
 }
 
+/**
+ * 🚫 Phase 9.7：24 小時內對同對手場次限制
+ *
+ * 規則（按 SQUAD_SYSTEM_DESIGN §19.3）：
+ *   第 1-3 場：100% 計分
+ *   第 4-5 場：50% 計分（這版本仍計入但 multiplier=0.5）
+ *   第 6 場+ ：完全不計（shouldSkip = true）
+ */
+async function checkRecentDuelLimit(
+  squadId: string,
+  opponentSquadId: string,
+): Promise<{ shouldSkip: boolean; count: number }> {
+  const twentyFourHoursAgo = new Date();
+  twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
+  // 查 24h 內 squadId vs opponentSquadId 的對戰場次
+  // 這裡用 raw SQL 檢查（用 jsonb performance 內的 opponentSquadId 欄位 — 暫時不可，因為現在還沒寫入）
+  // 簡化版：用 slot_id 找同 slot 內雙方都有紀錄
+  // 暫時：用 squadId 的最近 24h record 數量當代理（粗略）
+  const recentRecords = await db
+    .select()
+    .from(squadMatchRecords)
+    .where(
+      and(
+        eq(squadMatchRecords.squadId, squadId),
+        sql`${squadMatchRecords.playedAt} > ${twentyFourHoursAgo}`,
+      ),
+    );
+
+  const count = recentRecords.length;
+  return {
+    shouldSkip: count >= 5,
+    count,
+  };
+}
+
 /** 確保 squad_stats 有對應的 row（自動建立）*/
 async function ensureSquadStats(squadId: string, squadType: string): Promise<void> {
   const [existing] = await db
