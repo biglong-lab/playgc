@@ -605,14 +605,12 @@ export function registerSquadsCoreRoutes(app: Express) {
             .json({ error: parsed.error.errors[0]?.message ?? "驗證失敗" });
         }
 
-        // 上傳到 Cloudinary
-        const { uploadGenericImage } = await import("../services/cloudinary");
-        const result = await uploadGenericImage(parsed.data.imageData, {
-          folder: `squads/emblems`,
-          publicIdPrefix: `squad-${id}`,
-          maxWidth: 512,
-          maxHeight: 512,
-        });
+        // 上傳到 Cloudinary（用既有 uploadFieldLogo 樣板）
+        const { cloudinaryService } = await import("../cloudinary");
+        const result = await cloudinaryService.uploadFieldLogo(
+          parsed.data.imageData,
+          `squad-${id}-emblem`,
+        );
 
         // 更新 squad 紀錄
         await db
