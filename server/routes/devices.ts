@@ -212,9 +212,13 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  // 射擊記錄端點 - 需要驗證設備 ID 有效性
-  // 此端點由 IoT 設備調用，需確保只有有效的已註冊設備可以提交記錄
-  app.post("/api/shooting-records", async (req, res) => {
+  // 🔒 Critical #7 修：射擊記錄端點加 device API key 驗證 + rate limit
+  // 之前任何人取得 deviceId 都能無限 POST 假分數，現在必須帶 X-Device-Key
+  // header（device firmware 燒入），key 由 admin 端註冊時產生。
+  app.post(
+    "/api/shooting-records",
+    hotPathLimiter, // 🔒 加 rate limit 防 spam（每 IP 60 req/min）
+    async (req, res) => {
     try {
       const data = insertShootingRecordSchema.parse(req.body);
 
@@ -226,6 +230,27 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       const device = await storage.getArduinoDevice(data.deviceId);
       if (!device) {
         return res.status(403).json({ message: "無效的設備 ID，設備未註冊" });
+      }
+
+      // 🔒 Critical #7：device API key 驗證（防止任何人偽造 deviceId）
+      // 過渡期：若 device 沒設 apiKey 則允許（向後相容），但記 warning log
+      // Phase 1: 新設備強制要 apiKey
+      // Phase 2: 所有設備都必須有 apiKey
+      const providedKey = req.headers["x-device-key"] as string | undefined;
+      const deviceKey = (device as any).apiKey as string | undefined;
+      if (deviceKey) {
+        // 設備已配 key — 強制驗證
+        if (!providedKey || providedKey !== deviceKey) {
+          console.warn(
+            `[shooting-records] 拒絕：device ${data.deviceId} apiKey mismatch`,
+          );
+          return res.status(401).json({ message: "device apiKey 驗證失敗" });
+        }
+      } else {
+        // 過渡期：device 未配 key，記 warning（提醒 admin 補上）
+        console.warn(
+          `[shooting-records] ⚠️  device ${data.deviceId} 未設 apiKey（建議盡快補上）`,
+        );
       }
 
       // 驗證 sessionId 是否有效（如果提供）
