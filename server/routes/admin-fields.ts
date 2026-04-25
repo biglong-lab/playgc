@@ -265,10 +265,21 @@ export function registerAdminFieldRoutes(app: Express) {
     }
   });
 
-  app.post("/api/admin/fields", requireAdminAuth, requirePermission("field:manage"), async (req, res) => {
+  app.post("/api/admin/fields", requireAdminAuth, async (req, res) => {
     try {
       if (!req.admin) {
         return res.status(401).json({ message: "未認證" });
+      }
+
+      // 🔒 Critical #10 修：建立新場域是平台級操作，只允許 super_admin / platform_admin
+      // 防止 field-manager 無限增生場域 + 自動取得管理權（DoS DB / 攻擊面）
+      if (
+        req.admin.systemRole !== "super_admin" &&
+        req.admin.systemRole !== "platform_admin"
+      ) {
+        return res.status(403).json({
+          message: "只有平台管理員可建立新場域，請聯繫平台管理員",
+        });
       }
 
       const data = insertFieldSchema.parse(req.body);
