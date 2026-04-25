@@ -271,11 +271,5 @@ async function getOrCreateStats(squadId: string, squadType: string) {
   return created;
 }
 
-/** 根據 rating 推段位（SQUAD_SYSTEM_DESIGN §9.1）*/
-function deriveTier(rating: number): string {
-  if (rating >= 1800) return "master";
-  if (rating >= 1600) return "diamond";
-  if (rating >= 1400) return "gold";
-  if (rating >= 1200) return "silver";
-  return "bronze";
-}
+// deriveTier 已從 services/squad-rating-calc.ts import
+const deriveTier = _deriveTier;
