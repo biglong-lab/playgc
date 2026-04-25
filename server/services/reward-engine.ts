@@ -105,6 +105,23 @@ export async function evaluateRules(event: RewardEvent): Promise<EvaluationResul
 
       if (!matched) continue;
 
+      // 🆕 Phase 16.6：A/B testing traffic check
+      const trafficPct = rule.abTestTraffic ?? 100;
+      if (trafficPct < 100) {
+        const { shouldApplyRule } = await import("./ab-testing");
+        const subjectId = event.squadId ?? event.userId ?? "anonymous";
+        const inGroup = shouldApplyRule({
+          ruleId: rule.id,
+          subjectId,
+          traffic: trafficPct,
+        });
+        if (!inGroup) {
+          result.rulesEvaluated[result.rulesEvaluated.length - 1].reason =
+            `ab_test_excluded (traffic=${trafficPct}%)`;
+          continue;
+        }
+      }
+
       // 3. 配額檢查
       const quota = (rule.quota as RuleQuota) ?? {};
       const quotaOk = await checkQuota(rule, event.squadId, quota);
