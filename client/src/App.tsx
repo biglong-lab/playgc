@@ -124,6 +124,9 @@ const MyInbox = lazy(() => import("@/pages/me/MyInbox"));
 // 🌟 公開 Squad 分享頁（Squad System Phase 9.5）
 const SquadPublic = lazy(() => import("@/pages/SquadPublic"));
 
+// 🎫 推廣連結邀請頁（Squad System Phase 12.1）
+const SquadInvite = lazy(() => import("@/pages/SquadInvite"));
+
 // 🏢 場域總部 — 我的方案（v4.0 Phase 6）
 const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
 
