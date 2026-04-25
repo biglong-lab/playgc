@@ -167,6 +167,9 @@ export default function PhotoArStickerFlow({
 
   const [stage, setStage] = useState<"intro" | "camera" | "uploading" | "done">("intro");
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
+
+  // 🆕 拍照時隱藏 Walkie 等浮動 UI（避免擋切鏡頭按鈕）
+  useCameraOverlayMode(stage === "camera");
   // 🎨 B4+：陣列元素可能為 null（單張載入失敗）— 不阻斷遊戲
   const [preloadedStickers, setPreloadedStickers] = useState<(HTMLImageElement | null)[]>([]);
   const [preloadDone, setPreloadDone] = useState(false);
