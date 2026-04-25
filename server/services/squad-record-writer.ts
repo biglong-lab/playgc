@@ -161,8 +161,32 @@ export async function writeSquadRecordFromBattle(opts: {
   };
   isCrossField?: boolean;
   isFirstVisit?: boolean;
+  /** 對手 squad ID（用於 24h 重複對手限制檢查） */
+  opponentSquadId?: string;
 }): Promise<void> {
   try {
+    // 🚫 Phase 9.7 防作弊 1：< 60 秒不算
+    if (opts.durationSec < 60) {
+      console.log(
+        `[squad-record] 跳過 battle slot ${opts.slotId}：時長 ${opts.durationSec}s < 60s`,
+      );
+      return;
+    }
+
+    // 🚫 Phase 9.7 防作弊 2：24h 內 vs 同對手第 6+ 場不算
+    if (opts.opponentSquadId) {
+      const recentDuel = await checkRecentDuelLimit(
+        opts.squadId,
+        opts.opponentSquadId,
+      );
+      if (recentDuel.shouldSkip) {
+        console.log(
+          `[squad-record] 跳過 battle：vs 同對手 24h 內第 ${recentDuel.count + 1} 場（達上限 5）`,
+        );
+        return;
+      }
+    }
+
     await db.insert(squadMatchRecords).values({
       squadId: opts.squadId,
       squadType: opts.squadType,
