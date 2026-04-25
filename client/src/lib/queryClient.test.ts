@@ -98,12 +98,13 @@ describe("apiRequest", () => {
     await expect(apiRequest("GET", "/api/error")).rejects.toThrow("500");
   });
 
-  it("401 Unauthorized 拋出含狀態碼的錯誤", async () => {
+  it("401 Unauthorized 拋出友善訊息（不暴露狀態碼）", async () => {
     const mockResponse = new Response("Unauthorized", { status: 401 });
     vi.mocked(global.fetch).mockResolvedValue(mockResponse);
 
+    // throwIfResNotOk 把 401 轉成「登入已失效，請重新登入」（友善訊息）
     await expect(apiRequest("GET", "/api/auth")).rejects.toThrow(
-      "401: Unauthorized"
+      "登入已失效"
     );
   });
 });
