@@ -1,4 +1,4 @@
-// 戰隊管理面板 — 隊長/幹部操作（編輯、升降、踢人、轉讓）
+// 隊伍管理面板 — 隊長/幹部操作（編輯、升降、踢人、轉讓）
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
       });
     },
     onSuccess: () => {
-      toast({ title: "戰隊資訊已更新" });
+      toast({ title: "隊伍資訊已更新" });
       setShowEditDialog(false);
       invalidate();
     },
@@ -130,7 +130,7 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
       {/* 管理按鈕列 */}
       <div className="flex gap-2">
         <Button variant="outline" size="sm" className="gap-1" onClick={() => setShowEditDialog(true)}>
-          <Settings className="h-4 w-4" /> 編輯戰隊
+          <Settings className="h-4 w-4" /> 編輯隊伍
         </Button>
       </div>
 
@@ -149,11 +149,11 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>編輯戰隊</DialogTitle>
+            <DialogTitle>編輯隊伍</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>戰隊名稱</Label>
+              <Label>隊伍名稱</Label>
               <Input value={editName} onChange={(e) => setEditName(e.target.value)} maxLength={50} />
             </div>
             <div>
@@ -290,7 +290,7 @@ export function MemberActionMenu({
           <AlertDialogHeader>
             <AlertDialogTitle>確定要踢出此成員？</AlertDialogTitle>
             <AlertDialogDescription>
-              你即將把「{member.displayName ?? member.userId.slice(0, 8)}」踢出戰隊。
+              你即將把「{member.displayName ?? member.userId.slice(0, 8)}」踢出隊伍。
               此成員需要重新申請才能再次加入。
             </AlertDialogDescription>
           </AlertDialogHeader>
