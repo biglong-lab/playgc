@@ -252,6 +252,8 @@ export default function PhotoMissionPage({
             // 使用者主動重啟 → 用 retake（會重置 auto-restart counter）
             camera.retake();
           }}
+          onSwitchCamera={camera.switchCamera}
+          facingMode={camera.facingMode}
         />
       )}
 
