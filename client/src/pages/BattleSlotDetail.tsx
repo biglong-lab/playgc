@@ -288,6 +288,16 @@ export default function BattleSlotDetail() {
               <CheckCircle className="h-4 w-4" /> 確認出席
             </Button>
           )}
+          {/* 🆕 Mode B 玩家自評按鈕 — 對戰進行中 / 結束後可由隊長回報 */}
+          {user && isRegistered && (slotData.status === "in_progress" || slotData.status === "completed") && (
+            <Button
+              variant="default"
+              className="flex-1 gap-1 bg-amber-600 hover:bg-amber-700"
+              onClick={() => setShowSelfReportDialog(true)}
+            >
+              <Trophy className="h-4 w-4" /> 回報結果
+            </Button>
+          )}
           {isRegistered && myRegistration.status !== "checked_in" && myRegistration.status !== "confirmed" && (
             <Button
               variant="destructive"
