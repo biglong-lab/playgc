@@ -286,15 +286,24 @@ export function CameraView({
         >
           <Camera className="w-9 h-9" />
         </Button>
-        <Button
-          variant="outline"
-          onClick={() => fileInputRef.current?.click()}
-          data-testid="button-gallery"
-          className="min-h-12 w-12 bg-white/10 border-white/30 text-white hover:bg-white/20"
-          aria-label="從相簿選擇"
-        >
-          <Image className="w-5 h-5" />
-        </Button>
+        {/* 🆕 切換前後鏡頭 — 取代原本的相簿選擇（強制現場拍攝）*/}
+        {onSwitchCamera ? (
+          <Button
+            variant="outline"
+            onClick={onSwitchCamera}
+            data-testid="btn-camera-switch"
+            className="min-h-12 px-3 gap-1.5 bg-emerald-600/90 border-emerald-400/50 text-white hover:bg-emerald-700"
+            aria-label={isMirror ? "切到後鏡頭" : "切到前鏡頭"}
+            title={isMirror ? "切到後鏡頭" : "切到前鏡頭（自拍）"}
+          >
+            <RefreshCw className="w-5 h-5" />
+            <span className="text-xs font-medium hidden sm:inline">
+              {isMirror ? "後鏡頭" : "前鏡頭"}
+            </span>
+          </Button>
+        ) : (
+          <div className="min-h-12 w-12" /> // 保留版面對齊
+        )}
       </div>
 
       <p className="text-center text-sm text-muted-foreground mt-2">
