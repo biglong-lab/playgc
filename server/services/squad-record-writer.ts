@@ -365,18 +365,51 @@ async function checkRecentDuelLimit(
   };
 }
 
-/** 確保 squad_stats 有對應的 row（自動建立）*/
-async function ensureSquadStats(squadId: string, squadType: string): Promise<void> {
+/** 確保 squad_stats 有對應的 row（自動建立並回傳）*/
+async function ensureSquadStats(squadId: string, squadType: string) {
   const [existing] = await db
     .select()
     .from(squadStats)
     .where(eq(squadStats.squadId, squadId))
     .limit(1);
-  if (existing) return;
+  if (existing) return existing;
 
-  await db.insert(squadStats).values({
-    squadId,
-    squadType,
-    firstActiveAt: new Date(),
-  });
+  const [created] = await db
+    .insert(squadStats)
+    .values({
+      squadId,
+      squadType,
+      firstActiveAt: new Date(),
+    })
+    .returning();
+  return created;
+}
+
+/** 確保 squad_ratings 有對應的 row（自動建立並回傳）*/
+async function ensureSquadRating(
+  squadId: string,
+  squadType: string,
+  gameType: string,
+) {
+  const [existing] = await db
+    .select()
+    .from(squadRatings)
+    .where(
+      and(
+        eq(squadRatings.squadId, squadId),
+        eq(squadRatings.gameType, gameType),
+      ),
+    )
+    .limit(1);
+  if (existing) return existing;
+
+  const [created] = await db
+    .insert(squadRatings)
+    .values({
+      squadId,
+      squadType,
+      gameType,
+    })
+    .returning();
+  return created;
 }
