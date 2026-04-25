@@ -156,6 +156,18 @@ export function calcRewards(input: CalcInput): CalcResult {
   if (performance.isMvp) delta += 5;
   if ((performance.deaths as number) === 0) delta += 3;
   if ((performance.completionRate as number) === 1.0) delta += 2;
+  // 🆕 Phase 15.6：用時 < 平均 50% 加成
+  if (performance.duration && performance.avgDuration) {
+    const duration = performance.duration as number;
+    const avgDuration = performance.avgDuration as number;
+    if (avgDuration > 0 && duration < avgDuration * 0.5) {
+      delta += 2;
+    }
+  }
+  // 🆕 Phase 15.6：全員存活加成（無傷通關）
+  if (performance.allMembersSurvived === true) {
+    delta += 2;
+  }
 
   // 場域加成（乘法）
   if (isFirstVisit) delta *= 2.0;
