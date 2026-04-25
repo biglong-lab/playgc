@@ -168,6 +168,39 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
           timestamp: new Date().toISOString(),
         });
 
+        // 🆕 Phase 4.4：寫入 squad_match_records（fire-and-forget）
+        try {
+          const { writeSquadRecordFromBattle } = await import(
+            "../services/squad-record-writer"
+          );
+          // 對每個 player 寫一筆（依 clan / premade 分組）
+          // 這版本先簡化用 userId 當 squadId，之後 Phase 5 改用真正 clan/squad id
+          for (const pr of savedPlayerResults) {
+            const result: "win" | "loss" | "draw" = resultData.isDraw
+              ? "draw"
+              : pr.team === resultData.winningTeam
+                ? "win"
+                : "loss";
+
+            await writeSquadRecordFromBattle({
+              squadId: `player:${pr.userId}`, // 臨時：用 userId 當 squadId（Phase 5 改）
+              squadType: "premade_group",
+              result,
+              slotId,
+              fieldId: slot.fieldId ?? "default",
+              durationSec: result.length > 0 ? 600 : 0, // 預設 10 分鐘對戰
+              performance: {
+                eliminations: pr.eliminations ?? 0,
+                deaths: pr.deaths ?? 0,
+                isMvp: pr.isMvp ?? false,
+                hits: pr.hits ?? 0,
+              },
+            });
+          }
+        } catch (err) {
+          console.error("[battle-result] squad records 寫入失敗（不影響結算）:", err);
+        }
+
         res.status(201).json({
           result,
           playerResults: savedPlayerResults,
