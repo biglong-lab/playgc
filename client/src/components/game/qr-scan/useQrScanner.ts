@@ -270,8 +270,17 @@ export function useQrScanner(
   };
 
   return {
-    state: { mode, manualCode, isProcessing, cameraError },
-    actions: { startScanning, handleCancelScan, handleRetry, handleManualSubmit, setMode, setManualCode, stopScanning },
+    state: { mode, manualCode, isProcessing, cameraError, facingMode },
+    actions: {
+      startScanning,
+      handleCancelScan,
+      handleRetry,
+      handleManualSubmit,
+      setMode,
+      setManualCode,
+      stopScanning,
+      switchCamera,
+    },
     scannerContainerRef,
   };
 }
