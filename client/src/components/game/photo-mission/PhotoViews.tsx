@@ -13,6 +13,7 @@ import {
   SkipForward,
 } from "lucide-react";
 import type { PhotoMissionConfig } from "@shared/schema";
+import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 
 // ===========================================
 // 指令畫面 - 顯示任務說明 + 拍照/相簿按鈕
