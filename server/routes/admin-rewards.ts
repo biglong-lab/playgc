@@ -21,8 +21,9 @@ import {
   rewardConversionEvents,
   couponTemplates,
   platformCoupons,
+  squadExternalRewards,
 } from "@shared/schema";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, inArray } from "drizzle-orm";
 import { requireAdminAuth } from "../adminAuth";
 import { z } from "zod";
 
