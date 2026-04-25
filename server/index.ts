@@ -11,6 +11,7 @@ import { createServer } from "http";
 import { startBattleScheduler } from "./services/battle-scheduler";
 import { startDormancyScheduler } from "./services/dormancy-scheduler";
 import { startAchievementScheduler } from "./services/achievement-scheduler";
+import { startLifecycleScheduler } from "./services/lifecycle-scheduler";
 
 // 型別擴充：Express 需要訪問 raw body（Stripe webhook 等）
 declare module "http" {
