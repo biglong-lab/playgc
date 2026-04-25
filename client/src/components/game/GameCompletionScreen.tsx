@@ -235,66 +235,41 @@ export default function GameCompletionScreen({
     }
   };
 
+  // 🆕 一鍵保存紀念卡到手機相簿
+  const handleSaveCardToAlbum = async () => {
+    if (!cardUrl) return;
+    const result = await savePhotoToAlbum({
+      url: cardUrl,
+      filename: "chito-achievement",
+      title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
+      text: `${gameTitle} — 得 ${score} 分！`,
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
+  };
+
   const handleDownloadCard = async () => {
     if (!cardUrl) return;
-    try {
-      // 🚀 client canvas 產出的 data URL 可直接 <a download>
-      //   若是 base64 data: URL 不用 fetch blob，瀏覽器直接存檔
-      const a = document.createElement("a");
-      a.href = cardUrl;
-      a.download = `chito-achievement-${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      toast({ title: "紀念卡已下載", duration: 1500 });
-    } catch {
-      toast({ title: "下載失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: cardUrl,
+      filename: "chito-achievement",
+      forceMethod: "download",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   const handleShareCard = async () => {
     if (!cardUrl) return;
-    try {
-      // data URL 要轉 blob 才能 share 檔案（iOS 必要）
-      if (typeof navigator.share === "function") {
-        let blob: Blob;
-        if (cardUrl.startsWith("data:")) {
-          // base64 → blob
-          const b64 = cardUrl.split(",")[1];
-          const binary = atob(b64);
-          const bytes = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++)
-            bytes[i] = binary.charCodeAt(i);
-          blob = new Blob([bytes], { type: "image/jpeg" });
-        } else {
-          const res = await fetch(cardUrl);
-          blob = await res.blob();
-        }
-        const file = new File([blob], "achievement.jpg", { type: "image/jpeg" });
-        const canShareFiles =
-          typeof navigator.canShare === "function" &&
-          navigator.canShare({ files: [file] });
-        if (canShareFiles) {
-          await navigator.share({
-            title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
-            text: `${gameTitle} — 得 ${score} 分！`,
-            files: [file],
-          });
-          return;
-        }
-        await navigator.share({
-          title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
-          text: `${gameTitle} — 得 ${score} 分！`,
-          url: cardUrl,
-        });
-        return;
-      }
-      await navigator.clipboard.writeText(cardUrl);
-      toast({ title: "已複製紀念卡連結" });
-    } catch (err) {
-      if ((err as DOMException)?.name === "AbortError") return;
-      toast({ title: "分享失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: cardUrl,
+      filename: "chito-achievement",
+      title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
+      text: `${gameTitle} — 得 ${score} 分！`,
+      forceMethod: "share",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   const heading = isChapterMode ? "章節完成!" : "任務完成!";
