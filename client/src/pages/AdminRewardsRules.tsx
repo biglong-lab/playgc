@@ -139,6 +139,8 @@ export default function AdminRewardsRules() {
         triggers,
         rewards,
         quota,
+        abTestGroup: formAbTestGroup || null,
+        abTestTraffic: formAbTestTraffic,
       };
 
       if (editingRule) {
