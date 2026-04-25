@@ -296,3 +296,57 @@ export const insertSquadAchievementSchema = createInsertSchema(squadAchievements
 
 export type SquadAchievement = typeof squadAchievements.$inferSelect;
 export type InsertSquadAchievement = typeof squadAchievements.$inferInsert;
+
+// ============================================================================
+// 5. squad_invites — 超級隊長推廣連結追蹤
+// ============================================================================
+//
+// 詳見 docs/SQUAD_SYSTEM_DESIGN.md §13.4 §20.7
+//
+// 用途：
+//   - 超級隊長產生專屬推廣 token（URL: /invite/squad/:token）
+//   - 追蹤點擊數 / 轉換數 / 後續場次數
+//   - 隊長 Dashboard 行銷效益看板
+//   - 一般隊伍也可使用（招募獎勵 1× ；超級隊長 2×）
+// ============================================================================
+export const squadInvites = pgTable("squad_invites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+
+  squadId: varchar("squad_id").notNull(),
+  inviterUserId: varchar("inviter_user_id").notNull(), // 推薦人（隊長 / 副隊長）
+  inviteToken: varchar("invite_token", { length: 32 }).notNull().unique(), // URL token
+
+  // 被招募者資訊（加入後填入）
+  inviteeUserId: varchar("invitee_user_id"),
+  joinedAt: timestamp("joined_at"),
+  firstGamePlayedAt: timestamp("first_game_played_at"),
+  totalGamesPlayed: integer("total_games_played").default(0).notNull(),
+
+  // 點擊追蹤
+  clickCount: integer("click_count").default(0).notNull(),
+  lastClickedAt: timestamp("last_clicked_at"),
+
+  // 獎勵狀態（避免重複發放招募獎勵）
+  rewardsIssued: boolean("rewards_issued").default(false).notNull(),
+
+  // 過期時間（可選；NULL 表示不過期）
+  expiresAt: timestamp("expires_at"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_invites_inviter").on(table.inviterUserId, table.createdAt.desc()),
+  index("idx_invites_token").on(table.inviteToken),
+  index("idx_invites_squad").on(table.squadId, table.createdAt.desc()),
+  index("idx_invites_invitee").on(table.inviteeUserId),
+]);
+
+export const insertSquadInviteSchema = createInsertSchema(squadInvites).omit({
+  id: true,
+  createdAt: true,
+  clickCount: true,
+  totalGamesPlayed: true,
+  rewardsIssued: true,
+});
+
+export type SquadInvite = typeof squadInvites.$inferSelect;
+export type InsertSquadInvite = typeof squadInvites.$inferInsert;
