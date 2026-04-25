@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { apiRequest } from "@/lib/queryClient";
+import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useQuery } from "@tanstack/react-query";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
