@@ -12,6 +12,23 @@ import { buildDisplayName } from "../utils/display-name";
 
 export function registerBattleClanRoutes(app: Express) {
   // ============================================================================
+  // 🆕 Phase 9.8：GET /api/battle/clans/check-name — 檢查隊名是否可用
+  // 玩家建立隊伍時即時檢查（含解散後 180 天鎖名）
+  // ============================================================================
+  app.get("/api/battle/clans/check-name", async (req, res) => {
+    try {
+      const name = req.query.name as string | undefined;
+      if (!name || name.trim().length < 2) {
+        return res.status(400).json({ error: "隊名至少 2 字" });
+      }
+      const result = await battleStorageMethods.isClanNameAvailable(name.trim());
+      res.json(result);
+    } catch {
+      res.status(500).json({ error: "檢查失敗" });
+    }
+  });
+
+  // ============================================================================
   // GET /api/battle/clans — 場域戰隊列表
   // ============================================================================
   app.get("/api/battle/clans", async (req, res) => {
