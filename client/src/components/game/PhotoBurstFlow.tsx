@@ -589,10 +589,10 @@ export default function PhotoBurstFlow({
               </p>
             </div>
 
-            {/* 🎨 右上切換鏡頭 — 大按鈕帶文字 */}
+            {/* 🎨 右上切換鏡頭 — z-[60] 確保不被擋 */}
             <Button
               onClick={() => camera.switchCamera()}
-              className="absolute top-4 right-4 bg-black/75 backdrop-blur hover:bg-black/90 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/30 shadow-xl"
+              className="absolute top-4 right-4 z-[60] bg-emerald-600/90 backdrop-blur hover:bg-emerald-700 text-white gap-2 px-4 h-12 rounded-full border-2 border-white/40 shadow-2xl"
               data-testid="btn-burst-switch-camera"
             >
               <RefreshCw className="w-5 h-5" />
