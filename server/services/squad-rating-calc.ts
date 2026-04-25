@@ -116,7 +116,17 @@ export function calcRewards(input: CalcInput): CalcResult {
   // 計算 actual score
   let actual: number;
   if (scoringMode === "pvp") {
-    actual = result === "win" ? 1.0 : (result === "draw" ? 0.5 : 0.0);
+    // 🆕 Phase 15.5：名次型計算（接力 8 隊 rank → actual 線性插值）
+    // performance.rank：1 是第一名 / totalParticipants：總隊數
+    const rank = performance.rank as number | undefined;
+    const totalParticipants = performance.totalParticipants as number | undefined;
+    if (rank && totalParticipants && totalParticipants > 1) {
+      // rank 1 → actual 1.0；rank N → actual 0.0；中間線性插值
+      // 設計文件 §6.4：actual = (totalParticipants - rank) / (totalParticipants - 1)
+      actual = (totalParticipants - rank) / (totalParticipants - 1);
+    } else {
+      actual = result === "win" ? 1.0 : (result === "draw" ? 0.5 : 0.0);
+    }
   } else if (scoringMode === "pve") {
     // 完成度當作 actual
     actual = (performance.completionRate as number) ?? (result === "completed" ? 1.0 : 0.5);
