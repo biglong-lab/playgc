@@ -12,10 +12,15 @@
 //   - max-w-md + mx-auto + overflow-y-auto 確保永不歪斜
 
 import { useState } from "react";
-import { CheckCircle2, Download, Share2, ImageOff } from "lucide-react";
+import { CheckCircle2, Download, Share2, ImageOff, ImageDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { shareUrl, makeDownloadFilename } from "@/lib/share-photo";
+import {
+  savePhotoToAlbum,
+  getSaveToastMessage,
+  isMobileWithShare,
+} from "@/lib/photo-save";
 
 export interface PhotoSuccessViewProps {
   /** 最終照片 URL（通常是 Cloudinary URL 或合成紀念照）*/
