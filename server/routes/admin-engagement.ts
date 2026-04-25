@@ -428,6 +428,29 @@ export function registerAdminEngagementRoutes(app: Express) {
       }
     },
   );
+
+  // ============================================================================
+  // POST /api/admin/engagement/run-achievements — 手動觸發成就計算（管理員）
+  // ============================================================================
+  app.post(
+    "/api/admin/engagement/run-achievements",
+    requireAdminAuth,
+    async (_req, res) => {
+      try {
+        const { runAchievementsCycle } = await import(
+          "../services/achievement-scheduler"
+        );
+        const result = await runAchievementsCycle();
+        res.json({
+          success: true,
+          ...result,
+        });
+      } catch (error) {
+        console.error("[admin-engagement] run-achievements 失敗:", error);
+        res.status(500).json({ error: "成就計算失敗" });
+      }
+    },
+  );
 }
 
 // ============================================================================
