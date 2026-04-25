@@ -268,6 +268,14 @@ export default function MeCenter() {
             accent="blue"
             description="報名確認與提醒"
           />
+          {/* 🆕 Squad System Phase 7：我的獎勵 */}
+          <MenuCard
+            href="/me/rewards"
+            icon={<Gift className="w-5 h-5" />}
+            label="我的獎勵"
+            accent="orange"
+            description="折價券、體驗點數"
+          />
         </div>
 
         {/* 次要功能列表 */}
