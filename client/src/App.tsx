@@ -154,6 +154,8 @@ function Router() {
         {/* 🆕 v2: 個人相簿 */}
         <Route path="/f/:fieldCode/me/photos" component={MyPhotos} />
         <Route path="/me/photos" component={MyPhotos} />
+        <Route path="/f/:fieldCode/me/rewards" component={MyRewards} />
+        <Route path="/me/rewards" component={MyRewards} />
 
         {/* 🌐 CHITO 平台智能入口：有上次場域自動導 /f/{code}，沒有則顯示 CHITO 品牌頁 */}
         <Route path="/" component={PlatformHome} />
