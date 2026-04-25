@@ -157,11 +157,24 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
           return res.status(400).json({ message: "您已經投過票了" });
         }
 
-        await db.insert(teamVoteBallots).values({
-          voteId,
-          userId,
-          optionId: body.optionId,
-        });
+        // 🔒 race condition fix：用 onConflictDoNothing 雙重保險
+        // (即使應用層 hasVoted 檢查通過，DB 層 unique constraint 仍會擋第二票)
+        const insertResult = await db
+          .insert(teamVoteBallots)
+          .values({
+            voteId,
+            userId,
+            optionId: body.optionId,
+          })
+          .onConflictDoNothing({
+            target: [teamVoteBallots.voteId, teamVoteBallots.userId],
+          })
+          .returning();
+
+        if (insertResult.length === 0) {
+          // 並發情況：另一個請求先插入了
+          return res.status(400).json({ message: "您已經投過票了" });
+        }
 
         const allBallots = [
           ...vote.ballots,
