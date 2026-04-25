@@ -16,6 +16,7 @@ import {
 import { Banknote, Search } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { User, GameChapter } from "@shared/schema";
+import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 
 interface GrantAccessDialogProps {
   chapters: GameChapter[];
