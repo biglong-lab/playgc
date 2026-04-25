@@ -168,13 +168,39 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
           timestamp: new Date().toISOString(),
         });
 
-        // 🆕 Phase 4.4：寫入 squad_match_records（fire-and-forget）
+        // 🆕 Phase 13 修復：寫入 squad_match_records（用真實 clan id + venue.fieldId）
         try {
           const { writeSquadRecordFromBattle } = await import(
             "../services/squad-record-writer"
           );
-          // 對每個 player 寫一筆（依 clan / premade 分組）
-          // 這版本先簡化用 userId 當 squadId，之後 Phase 5 改用真正 clan/squad id
+
+          // 1. 取真正的 fieldId（從 venue 查）
+          const venueRecord = await battleStorageMethods.getVenue(slot.venueId);
+          const realFieldId = venueRecord?.fieldId ?? slot.venueId;
+
+          // 2. 取每個玩家所屬的戰隊（如果有）+ 對戰時長
+          const realDurationSec =
+            resultData.durationMinutes && resultData.durationMinutes > 0
+              ? resultData.durationMinutes * 60
+              : 600; // 預設 10 分鐘
+
+          // 3. 依「team + 戰隊」分組（同戰隊同 team 才視為同 squad）
+          // 規則：clan 玩家用 clan.id；無 clan 玩家用 `solo:${userId}`
+          //
+          // 注意：水彈對戰可能是 clan vs clan，也可能是 random matchmaking
+          //
+          // 取每個 user 的 clan 資訊
+          const userClansMap = new Map<string, string | null>();
+          for (const pr of savedPlayerResults) {
+            const userClan = await battleStorageMethods
+              .getUserClan(pr.userId, realFieldId)
+              .catch(() => null);
+            userClansMap.set(pr.userId, userClan?.clan?.id ?? null);
+          }
+
+          // 4. 對每個玩家寫 squad_record
+          // 同戰隊的玩家共用一個 squadId，去重
+          const writtenClans = new Set<string>();
           for (const pr of savedPlayerResults) {
             const result: "win" | "loss" | "draw" = resultData.isDraw
               ? "draw"
@@ -182,14 +208,25 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
                 ? "win"
                 : "loss";
 
+            const clanId = userClansMap.get(pr.userId);
+            const squadId = clanId ?? `solo:${pr.userId}`;
+            const squadType = clanId ? "clan" : "premade_group";
+
+            // clan 玩家：每個 clan 只寫一筆（避免 N 個玩家寫 N 筆同戰績）
+            if (clanId) {
+              if (writtenClans.has(clanId)) continue;
+              writtenClans.add(clanId);
+            }
+
             await writeSquadRecordFromBattle({
-              squadId: `player:${pr.userId}`, // 臨時：用 userId 當 squadId（Phase 5 改）
-              squadType: "premade_group",
+              squadId,
+              squadType,
               result,
               slotId,
-              fieldId: slot.venueId, // 暫用 venueId（Phase 5 改查 venue.fieldId）
-              durationSec: result.length > 0 ? 600 : 0, // 預設 10 分鐘對戰
+              fieldId: realFieldId,
+              durationSec: realDurationSec,
               performance: {
+                duration: realDurationSec,
                 eliminations: pr.eliminations ?? 0,
                 deaths: pr.deaths ?? 0,
                 isMvp: pr.isMvp ?? false,
