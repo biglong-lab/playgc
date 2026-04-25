@@ -117,6 +117,9 @@ const MeCenter = lazy(() => import("@/pages/me/MeCenter"));
 // 🎁 我的獎勵（Squad System Phase 7）
 const MyRewards = lazy(() => import("@/pages/me/MyRewards"));
 
+// 🌟 公開 Squad 分享頁（Squad System Phase 9.5）
+const SquadPublic = lazy(() => import("@/pages/SquadPublic"));
+
 // 🏢 場域總部 — 我的方案（v4.0 Phase 6）
 const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
 
