@@ -151,6 +151,7 @@ export function registerBattleClanRoutes(app: Express) {
 
   // ============================================================================
   // PATCH /api/battle/clans/:id — 更新戰隊（隊長/幹部限定）
+  // 含改名冷卻檢查（30 天，詳見 docs/SQUAD_SYSTEM_DESIGN.md §17.3）
   // ============================================================================
   app.patch(
     "/api/battle/clans/:id",
@@ -172,9 +173,70 @@ export function registerBattleClanRoutes(app: Express) {
         }
 
         const parsed = updateBattleClanSchema.parse(req.body);
+
+        // 🆕 改名冷卻 + 名稱驗證
+        const nameChanged = parsed.name && parsed.name !== clan.name;
+        const tagChanged = parsed.tag && parsed.tag !== clan.tag;
+        let willTrackNameChange = false;
+
+        if (nameChanged || tagChanged) {
+          const { validateSquadName, checkRenameCooldown } = await import(
+            "../services/squad-rename"
+          );
+
+          // 名稱驗證
+          if (nameChanged) {
+            const nameCheck = validateSquadName(parsed.name!);
+            if (!nameCheck.valid) {
+              return res.status(400).json({ error: nameCheck.reason });
+            }
+          }
+
+          // 冷卻檢查
+          const cooldown = checkRenameCooldown({
+            createdAt: clan.createdAt,
+            nameChangedAt: clan.nameChangedAt,
+          });
+          if (!cooldown.allowed) {
+            return res.status(429).json({
+              error: cooldown.reason,
+              nextAvailableAt: cooldown.nextAvailableAt?.toISOString(),
+            });
+          }
+          willTrackNameChange = true;
+        }
+
+        // 執行更新
         const updated = await battleStorageMethods.updateClan(clan.id, parsed);
+
+        // 寫改名歷史 + 更新 nameChangedAt（fire-and-forget 避免阻塞）
+        if (willTrackNameChange) {
+          try {
+            const { db } = await import("../db");
+            const { squadNameHistory, battleClans } = await import(
+              "@shared/schema"
+            );
+            const { eq } = await import("drizzle-orm");
+            await db.insert(squadNameHistory).values({
+              squadId: clan.id,
+              oldName: clan.name,
+              newName: parsed.name ?? clan.name,
+              oldTag: clan.tag,
+              newTag: parsed.tag ?? clan.tag,
+              changedByUserId: req.user.dbUser.id,
+            });
+            await db
+              .update(battleClans)
+              .set({ nameChangedAt: new Date() })
+              .where(eq(battleClans.id, clan.id));
+          } catch (err) {
+            console.warn("[battle-clans] 寫改名歷史失敗:", err);
+          }
+        }
+
         res.json(updated);
-      } catch {
+      } catch (err) {
+        console.error("[battle-clans] PATCH 失敗:", err);
         res.status(500).json({ error: "更新戰隊失敗" });
       }
     },
