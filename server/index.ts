@@ -9,6 +9,7 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { startBattleScheduler } from "./services/battle-scheduler";
+import { startDormancyScheduler } from "./services/dormancy-scheduler";
 
 // 型別擴充：Express 需要訪問 raw body（Stripe webhook 等）
 declare module "http" {
