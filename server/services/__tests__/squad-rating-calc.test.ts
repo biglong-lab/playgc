@@ -294,4 +294,80 @@ describe("calcRewards", () => {
       expect(first).toBe(baseDelta * 2);
     });
   });
+
+  describe("§15.5 名次型計算（接力 8 隊）", () => {
+    it("rank 1 / 8 → actual 1.0（最大正分）", () => {
+      const result = calcRewards(
+        makeInput({
+          scoringMode: "pvp",
+          performance: { rank: 1, totalParticipants: 8 },
+        }),
+      );
+      // expected = 0.5（同分對手），actual = 1.0
+      // delta = K × (1.0 - 0.5) = 32 × 0.5 = 16
+      expect(result.ratingChange).toBe(16);
+    });
+
+    it("rank 8 / 8 → actual 0.0（最大負分）", () => {
+      const result = calcRewards(
+        makeInput({
+          scoringMode: "pvp",
+          result: "loss",
+          performance: { rank: 8, totalParticipants: 8 },
+        }),
+      );
+      // delta = K × (0 - 0.5) = -16
+      expect(result.ratingChange).toBe(-16);
+    });
+
+    it("rank 4 / 8 → actual 0.571（中間略偏高）", () => {
+      const result = calcRewards(
+        makeInput({
+          scoringMode: "pvp",
+          performance: { rank: 4, totalParticipants: 8 },
+        }),
+      );
+      // actual = (8-4) / (8-1) = 4/7 ≈ 0.571
+      // delta = 32 × (0.571 - 0.5) ≈ 2.29 → round 2
+      expect(result.ratingChange).toBe(2);
+    });
+
+    it("無 rank/totalParticipants → fallback 用 result", () => {
+      const result = calcRewards(
+        makeInput({ scoringMode: "pvp", result: "draw" }),
+      );
+      // actual = 0.5 (draw), expected = 0.5 → delta = 0
+      expect(result.ratingChange).toBe(0);
+    });
+  });
+
+  describe("§15.6 表現加成", () => {
+    it("用時 < 平均 50% → +2", () => {
+      const baseDelta = calcRewards(makeInput()).ratingChange;
+      const fast = calcRewards(
+        makeInput({
+          performance: { duration: 200, avgDuration: 600 },
+        }),
+      ).ratingChange;
+      expect(fast - baseDelta).toBe(2);
+    });
+
+    it("用時 = 平均 50% 不算 → 不加成", () => {
+      const baseDelta = calcRewards(makeInput()).ratingChange;
+      const onTime = calcRewards(
+        makeInput({
+          performance: { duration: 300, avgDuration: 600 },
+        }),
+      ).ratingChange;
+      expect(onTime).toBe(baseDelta);
+    });
+
+    it("全員存活 → +2", () => {
+      const baseDelta = calcRewards(makeInput()).ratingChange;
+      const survived = calcRewards(
+        makeInput({ performance: { allMembersSurvived: true } }),
+      ).ratingChange;
+      expect(survived - baseDelta).toBe(2);
+    });
+  });
 });
