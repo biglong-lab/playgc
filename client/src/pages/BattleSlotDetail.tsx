@@ -27,6 +27,7 @@ import { LoginDialog } from "@/components/landing/LoginDialog";
 import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
+import SelfReportDialog from "@/components/battle/SelfReportDialog";
 import { skillLevelLabel, slotStatusBadge } from "@/lib/battle-labels";
 import { formatTimeUntil, isImminentSlot } from "@/lib/battle-time";
 import type { BattleSlot, BattleVenue, BattleRegistration, BattlePremadeGroup } from "@shared/schema";
