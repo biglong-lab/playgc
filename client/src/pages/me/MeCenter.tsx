@@ -261,11 +261,11 @@ export default function MeCenter() {
             description="徽章與里程碑"
           />
           <MenuCard
-            href="/battle/notifications"
+            href="/me/inbox"
             icon={<Bell className="w-5 h-5" />}
             label="通知中心"
             accent="blue"
-            description="報名確認與提醒"
+            description="隊伍動態、獎勵發放"
           />
           {/* 🆕 Squad System Phase 7：我的獎勵 */}
           <MenuCard
