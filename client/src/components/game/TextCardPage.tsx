@@ -89,9 +89,15 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
 
   useEffect(() => {
     if (config.backgroundAudio) {
-      audioRef.current = new Audio(config.backgroundAudio);
-      audioRef.current.loop = true;
-      audioRef.current.volume = 0.3;
+      // 🎵 用 createReliableAudio 處理 Cloudinary /video/upload/ URL
+      //   會自動加 .mp3 副檔名強制 transcode，並在失敗時 fallback 原始 URL
+      audioRef.current = createReliableAudio(config.backgroundAudio, {
+        loop: true,
+        volume: 0.3,
+        onError: (err) => {
+          console.error("[TextCard] 背景音訊載入失敗:", err);
+        },
+      });
     }
     return () => {
       if (audioRef.current) {
