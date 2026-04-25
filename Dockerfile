@@ -54,6 +54,11 @@ ENV PORT=3333
 ARG GIT_SHA
 ENV GIT_SHA=$GIT_SHA
 
+# 🔒 安全：用 non-root user 執行（避免容器逃逸 → host root）
+# node:20-alpine 已內建 'node' user (uid=1000)
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 3333
 
 # 健康檢查
