@@ -470,54 +470,41 @@ export default function PhotoBurstFlow({
     onComplete(reward);
   };
 
+  // 🆕 一鍵保存到手機相簿
+  const handleSaveToAlbum = async () => {
+    if (!compositeUrl) return;
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-burst",
+      title: "CHITO 連拍紀念",
+      text: `${frameCount} 連拍紀念圖`,
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
+  };
+
   const handleDownload = async () => {
     if (!compositeUrl) return;
-    try {
-      const res = await fetch(compositeUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      // 🆕 依 URL 副檔名決定下載檔名（GIF / JPG 視合成結果而定）
-      const ext = compositeUrl.match(/\.(gif|webp|mp4|jpg|jpeg|png)(\?|$)/i)?.[1]?.toLowerCase() ?? "jpg";
-      a.download = `chito-burst-${Date.now()}.${ext}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-      toast({ title: "下載完成", duration: 1200 });
-    } catch {
-      toast({ title: "下載失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-burst",
+      forceMethod: "download",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   const handleShare = async () => {
     if (!compositeUrl) return;
-    try {
-      if (typeof navigator.share === "function") {
-        const res = await fetch(compositeUrl);
-        const blob = await res.blob();
-        const file = new File([blob], "burst.jpg", { type: "image/jpeg" });
-        const canShareFiles =
-          typeof navigator.canShare === "function" &&
-          navigator.canShare({ files: [file] });
-        if (canShareFiles) {
-          await navigator.share({
-            title: "CHITO 連拍紀念",
-            text: `${frameCount} 連拍紀念圖`,
-            files: [file],
-          });
-          return;
-        }
-        await navigator.share({ title: "CHITO 連拍紀念", url: compositeUrl });
-        return;
-      }
-      await navigator.clipboard.writeText(compositeUrl);
-      toast({ title: "已複製連結" });
-    } catch (err) {
-      if ((err as DOMException)?.name === "AbortError") return;
-      toast({ title: "分享失敗", variant: "destructive" });
-    }
+    const result = await savePhotoToAlbum({
+      url: compositeUrl,
+      filename: "chito-burst",
+      title: "CHITO 連拍紀念",
+      text: `${frameCount} 連拍紀念圖`,
+      forceMethod: "share",
+    });
+    const msg = getSaveToastMessage(result);
+    if (msg.title) toast(msg);
   };
 
   // ═══════════════════════════════════════════════════════════════
