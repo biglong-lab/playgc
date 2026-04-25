@@ -19,6 +19,7 @@ import {
 } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { isAuthenticated } from "../firebaseAuth";
+import { requireAdminAuth } from "../adminAuth";
 import type { AuthenticatedRequest } from "./types";
 import { z } from "zod";
 import {
