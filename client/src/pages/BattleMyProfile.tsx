@@ -100,11 +100,11 @@ export default function BattleMyProfile() {
           </Card>
         )}
 
-        {/* 我的戰隊 */}
+        {/* 我的隊伍 */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <Shield className="h-4 w-4" /> 我的戰隊
+              <Shield className="h-4 w-4" /> 我的隊伍
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -125,13 +125,13 @@ export default function BattleMyProfile() {
               </Link>
             ) : (
               <div className="text-center py-4">
-                <p className="text-muted-foreground text-sm mb-1">你還沒有加入任何戰隊</p>
+                <p className="text-muted-foreground text-sm mb-1">你還沒有加入任何隊伍</p>
                 <p className="text-xs text-muted-foreground mb-3">
-                  與隊友一起戰鬥、累積戰隊積分
+                  與隊友一起戰鬥、累積隊伍積分
                 </p>
                 <div className="flex gap-2 justify-center flex-wrap">
                   <Link href="/battle/clan/create">
-                    <Button size="sm">建立戰隊</Button>
+                    <Button size="sm">建立隊伍</Button>
                   </Link>
                   <Link href="/battle/ranking">
                     <Button size="sm" variant="outline">瀏覽排行榜</Button>
