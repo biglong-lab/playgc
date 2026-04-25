@@ -28,6 +28,18 @@ services:
         # 部署時用 GIT_SHA=$(git rev-parse HEAD) docker compose up -d --build app
         GIT_SHA: ${GIT_SHA:-unknown}
     restart: unless-stopped
+    # 🔒 部署優雅停機（讓 in-flight 請求完成）
+    stop_grace_period: 30s
+    # 🔒 資源硬限：防 OOM 攻擊把同主機其他 container 一起拖垮
+    # 主機 7.7GB 共 20+ container，本 app 限 1.5GB / 2 core
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1536M
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     ports:
       - "3333:3333"
     env_file:
