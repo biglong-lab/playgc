@@ -59,6 +59,7 @@ if (CLUSTER_WORKERS > 0 && cluster.isPrimary) {
   // 排程器只在 primary 跑一份（避免每個 worker 都重複執行）
   startBattleScheduler();
   startDormancyScheduler();
+  startAchievementScheduler();
 
   for (let i = 0; i < CLUSTER_WORKERS; i++) {
     cluster.fork();
