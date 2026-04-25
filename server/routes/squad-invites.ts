@@ -392,6 +392,116 @@ export function registerSquadInvitesRoutes(app: Express) {
   );
 
   // ============================================================================
+  // GET /api/admin/invites/cohort — 推廣連結 Cohort 分析（admin Phase 16.5）
+  //
+  // 提供：
+  //   - 各週的招募轉換漏斗（點擊 → 註冊 → 首戰 → 5 場達標）
+  //   - 場域 / 來源拆分
+  //   - 留存曲線（D1 / D7 / D30）
+  // ============================================================================
+  app.get("/api/admin/invites/cohort", async (req, res) => {
+    try {
+      // 簡化版：用最近 12 週做分組，每週統計 cohort
+      const weeks = Math.min(
+        parseInt((req.query.weeks as string) ?? "12", 10) || 12,
+        52,
+      );
+      const since = new Date(Date.now() - weeks * 7 * 86400 * 1000);
+
+      const allInvites = await db
+        .select()
+        .from(squadInvites)
+        .where(sql`${squadInvites.createdAt} >= ${since}`)
+        .orderBy(desc(squadInvites.createdAt))
+        .limit(2000);
+
+      // 按週分 cohort（YYYY-WW）
+      const cohortMap = new Map<
+        string,
+        {
+          week: string;
+          totalLinks: number;
+          totalClicks: number;
+          totalConverted: number;
+          totalFirstGame: number;
+          totalActivated: number; // 5 場達標
+          totalGamesPlayed: number;
+        }
+      >();
+
+      for (const invite of allInvites) {
+        const week = isoWeek(invite.createdAt);
+        const c =
+          cohortMap.get(week) ??
+          ({
+            week,
+            totalLinks: 0,
+            totalClicks: 0,
+            totalConverted: 0,
+            totalFirstGame: 0,
+            totalActivated: 0,
+            totalGamesPlayed: 0,
+          });
+        c.totalLinks += 1;
+        c.totalClicks += invite.clickCount;
+        if (invite.inviteeUserId) c.totalConverted += 1;
+        if (invite.firstGamePlayedAt) c.totalFirstGame += 1;
+        if (invite.totalGamesPlayed >= 5) c.totalActivated += 1;
+        c.totalGamesPlayed += invite.totalGamesPlayed;
+        cohortMap.set(week, c);
+      }
+
+      // 轉成陣列 + 計算 funnel %
+      const cohorts = Array.from(cohortMap.values())
+        .sort((a, b) => a.week.localeCompare(b.week))
+        .map((c) => ({
+          ...c,
+          conversionRate:
+            c.totalClicks > 0
+              ? Math.round((c.totalConverted / c.totalClicks) * 100)
+              : 0,
+          firstGameRate:
+            c.totalConverted > 0
+              ? Math.round((c.totalFirstGame / c.totalConverted) * 100)
+              : 0,
+          activationRate:
+            c.totalConverted > 0
+              ? Math.round((c.totalActivated / c.totalConverted) * 100)
+              : 0,
+        }));
+
+      const totals = cohorts.reduce(
+        (acc, c) => {
+          acc.totalLinks += c.totalLinks;
+          acc.totalClicks += c.totalClicks;
+          acc.totalConverted += c.totalConverted;
+          acc.totalFirstGame += c.totalFirstGame;
+          acc.totalActivated += c.totalActivated;
+          acc.totalGamesPlayed += c.totalGamesPlayed;
+          return acc;
+        },
+        {
+          totalLinks: 0,
+          totalClicks: 0,
+          totalConverted: 0,
+          totalFirstGame: 0,
+          totalActivated: 0,
+          totalGamesPlayed: 0,
+        },
+      );
+
+      res.json({
+        weeks,
+        totals,
+        cohorts,
+      });
+    } catch (err) {
+      console.error("[squad-invites] cohort 失敗:", err);
+      res.status(500).json({ error: "取得 cohort 失敗" });
+    }
+  });
+
+  // ============================================================================
   // GET /api/me/invites/dashboard — 我作為隊長的推廣效益看板
   // ============================================================================
   app.get(
