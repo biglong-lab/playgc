@@ -127,11 +127,27 @@ export function registerAdminRewardsRoutes(app: Express) {
         return res.status(400).json({ error: "格式錯誤" });
       }
 
+      // 🔒 場域隔離：先確認規則屬於自己場域
+      const [existing] = await db
+        .select()
+        .from(rewardConversionRules)
+        .where(eq(rewardConversionRules.id, id))
+        .limit(1);
+      if (!existing) return res.status(404).json({ error: "規則不存在" });
+
+      const isSuperAdmin = req.admin?.systemRole === "super_admin";
+      if (!isSuperAdmin && existing.fieldId !== req.admin?.fieldId) {
+        return res.status(403).json({ error: "無權限編輯其他場域規則" });
+      }
+
       const data = parsed.data;
       const updateValue: Record<string, unknown> = {};
       if (data.name !== undefined) updateValue.name = data.name;
       if (data.description !== undefined) updateValue.description = data.description;
-      if (data.fieldId !== undefined) updateValue.fieldId = data.fieldId;
+      // 🔒 fieldId 只有 super_admin 可改（避免把規則偷到別場域）
+      if (isSuperAdmin && data.fieldId !== undefined) {
+        updateValue.fieldId = data.fieldId;
+      }
       if (data.isActive !== undefined) updateValue.isActive = data.isActive;
       if (data.triggers !== undefined) updateValue.triggers = data.triggers;
       if (data.rewards !== undefined) updateValue.rewards = data.rewards;
@@ -161,6 +177,20 @@ export function registerAdminRewardsRoutes(app: Express) {
   app.delete("/api/admin/rules/:id", requireAdminAuth, async (req, res) => {
     try {
       const id = req.params.id;
+
+      // 🔒 場域隔離
+      const [existing] = await db
+        .select()
+        .from(rewardConversionRules)
+        .where(eq(rewardConversionRules.id, id))
+        .limit(1);
+      if (!existing) return res.status(404).json({ error: "規則不存在" });
+
+      const isSuperAdmin = req.admin?.systemRole === "super_admin";
+      if (!isSuperAdmin && existing.fieldId !== req.admin?.fieldId) {
+        return res.status(403).json({ error: "無權限刪除其他場域規則" });
+      }
+
       const [updated] = await db
         .update(rewardConversionRules)
         .set({ isActive: false })
