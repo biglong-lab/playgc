@@ -272,7 +272,7 @@ export default function MeCenter() {
             href="/me/rewards"
             icon={<Gift className="w-5 h-5" />}
             label="我的獎勵"
-            accent="orange"
+            accent="amber"
             description="折價券、體驗點數"
           />
         </div>
