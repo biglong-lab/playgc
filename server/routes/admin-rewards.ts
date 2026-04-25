@@ -33,7 +33,12 @@ export function registerAdminRewardsRoutes(app: Express) {
   // ============================================================================
   app.get("/api/admin/rules", requireAdminAuth, async (req, res) => {
     try {
-      const fieldId = req.query.fieldId as string | undefined;
+      // 🔒 場域隔離：強制只看自己場域；super_admin 可指定查詢任意場域
+      const adminFieldId = req.admin?.fieldId;
+      const isSuperAdmin = req.admin?.systemRole === "super_admin";
+      const fieldId = isSuperAdmin
+        ? (req.query.fieldId as string | undefined)
+        : adminFieldId;
       const isActive = req.query.isActive === "false" ? false : undefined;
 
       let where;
