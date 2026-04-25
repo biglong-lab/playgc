@@ -317,6 +317,7 @@ function App() {
                 <PlayerBottomNav />
                 <PWAInstallPrompt />
                 <AppUpdateChecker />
+                <WelcomeSquadsTrigger />
               </TooltipProvider>
             </I18nProvider>
           </FieldThemeProvider>
