@@ -232,7 +232,7 @@ export function registerAdminRewardsRoutes(app: Express) {
         // 1. 總事件數（過去 30 天）
         const events30 = await db
           .select({
-            ruleId: rewardConversionEvents.ruleId,
+            rulesEvaluated: rewardConversionEvents.rulesEvaluated,
             status: rewardConversionEvents.status,
             createdAt: rewardConversionEvents.createdAt,
           })
@@ -250,11 +250,15 @@ export function registerAdminRewardsRoutes(app: Express) {
             e.createdAt.toDateString() === now.toDateString(),
         ).length;
 
-        // 2. Top 10 規則命中數
+        // 2. Top 10 規則命中數（從 rulesEvaluated jsonb 抽 ruleId）
         const ruleHits: Record<string, number> = {};
         for (const e of events30) {
-          if (!e.ruleId) continue;
-          ruleHits[e.ruleId] = (ruleHits[e.ruleId] || 0) + 1;
+          const rules = (e.rulesEvaluated as Array<{ ruleId?: string }>) ?? [];
+          for (const r of rules) {
+            if (r?.ruleId) {
+              ruleHits[r.ruleId] = (ruleHits[r.ruleId] || 0) + 1;
+            }
+          }
         }
         const topRuleIds = Object.entries(ruleHits)
           .sort((a, b) => b[1] - a[1])
@@ -266,7 +270,7 @@ export function registerAdminRewardsRoutes(app: Express) {
                 .select({
                   id: rewardConversionRules.id,
                   name: rewardConversionRules.name,
-                  rewardType: rewardConversionRules.rewardType,
+                  rewards: rewardConversionRules.rewards,
                 })
                 .from(rewardConversionRules)
                 .where(
@@ -279,10 +283,14 @@ export function registerAdminRewardsRoutes(app: Express) {
 
         const topRules = topRuleIds.map(([id, hits]) => {
           const rule = topRulesData.find((r) => r.id === id);
+          // rewards 是 jsonb array of { type, ... }
+          const firstReward = Array.isArray(rule?.rewards)
+            ? (rule!.rewards as Array<{ type?: string }>)[0]
+            : null;
           return {
             ruleId: id,
             name: rule?.name ?? "(未知規則)",
-            rewardType: rule?.rewardType,
+            rewardType: firstReward?.type,
             hits,
           };
         });
