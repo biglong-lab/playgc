@@ -15,6 +15,11 @@ import {
   Dialog, DialogContent, DialogClose,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import {
+  savePhotosToAlbum,
+  getSaveToastMessage,
+  isMobileWithShare,
+} from "@/lib/photo-save";
 import EmptyState from "@/components/shared/EmptyState";
 
 interface AlbumPhoto {
