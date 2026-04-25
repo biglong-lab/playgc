@@ -19,6 +19,7 @@ import { createLocalCollage } from "@/lib/client-collage";
 import { createClientGif } from "@/lib/client-gif";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, savePhotosToAlbum, getSaveToastMessage } from "@/lib/photo-save";
+import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 import {
   CameraInitializingView, CameraView, UploadingView,
 } from "./photo-mission/PhotoViews";
