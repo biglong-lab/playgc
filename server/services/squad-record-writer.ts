@@ -111,6 +111,21 @@ export async function writeSquadRecordFromSession(
         updatedAt: new Date(),
       })
       .where(eq(squadStats.squadId, squadId));
+
+    // 🆕 Phase 6.5：觸發獎勵規則引擎
+    await triggerRewardEngine({
+      eventType: "game_complete",
+      sourceId: session.id,
+      sourceType: "squad_match_record",
+      squadId,
+      fieldId,
+      context: {
+        gameType,
+        result,
+        completionRate: 1.0,
+        durationSec,
+      },
+    });
   } catch (err) {
     // fire-and-forget：失敗不影響 session 流程
     console.error("[squad-record-writer] writeSquadRecordFromSession 失敗:", err);
