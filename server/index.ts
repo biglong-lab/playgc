@@ -57,6 +57,7 @@ if (CLUSTER_WORKERS > 0 && cluster.isPrimary) {
 
   // 排程器只在 primary 跑一份（避免每個 worker 都重複執行）
   startBattleScheduler();
+  startDormancyScheduler();
 
   for (let i = 0; i < CLUSTER_WORKERS; i++) {
     cluster.fork();
@@ -335,6 +336,7 @@ app.use((req, res, next) => {
       // 排程器：cluster 模式已由 primary 執行，此處只在單 process 模式啟動
       if (CLUSTER_WORKERS === 0) {
         startBattleScheduler();
+  startDormancyScheduler();
       }
     },
   );
