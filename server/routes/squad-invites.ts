@@ -400,8 +400,9 @@ export function registerSquadInvitesRoutes(app: Express) {
   //   - 場域 / 來源拆分
   //   - 留存曲線（D1 / D7 / D30）
   // ============================================================================
-  app.get("/api/admin/invites/cohort", async (req, res) => {
+  app.get("/api/admin/invites/cohort", requireAdminAuth, async (req, res) => {
     try {
+      // 🔒 Critical #9 修：加 requireAdminAuth 防止匿名爬取 cohort 數據
       // 簡化版：用最近 12 週做分組，每週統計 cohort
       const weeks = Math.min(
         parseInt((req.query.weeks as string) ?? "12", 10) || 12,
