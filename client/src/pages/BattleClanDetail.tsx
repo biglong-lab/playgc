@@ -19,7 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import BattleLayout from "@/components/battle/BattleLayout";
 import type { BattleClan } from "@shared/schema";
 import { clanRoleLabels, type ClanRole } from "@shared/schema";
-import { Shield, Users, Trophy, Crown, Star, Loader2, LogOut } from "lucide-react";
+import { Shield, Users, Trophy, Crown, Star, Loader2, LogOut, Share2, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import ClanManagePanel, { MemberActionMenu, type ClanMemberWithName } from "@/components/battle/ClanManagePanel";
