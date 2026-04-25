@@ -118,12 +118,18 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
         </div>
         {Boolean(config.backgroundAudio) && (
           <div className="mt-2">
+            {/* 🎵 用 ensureAudioUrl 處理 Cloudinary /video/upload/ → 強制 .mp3 transcode */}
             <audio
-              src={config.backgroundAudio as string}
+              src={ensureAudioUrl(config.backgroundAudio as string)}
               controls
+              preload="metadata"
+              crossOrigin="anonymous"
               className="w-full"
               data-testid="audio-preview"
             />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              💡 若無法播放，請確認上傳的是音訊檔（mp3 / m4a / wav）
+            </p>
           </div>
         )}
       </div>
