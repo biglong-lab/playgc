@@ -65,8 +65,10 @@ export function createReliableAudio(
   audio.loop = options?.loop ?? true;
   audio.volume = options?.volume ?? 0.3;
   audio.preload = "auto";
-  // crossOrigin 讓 Cloudinary 跨域音訊可以正確播放
-  audio.crossOrigin = "anonymous";
+  // 🐛 修：Cloudinary 對 video/upload/ 的音訊不送 Access-Control-Allow-Origin
+  //     設 crossOrigin="anonymous" 反而會被 CORS 擋住而完全載入失敗
+  //     <audio> 不需要 cross-origin canvas 存取 → 拿掉
+  // audio.crossOrigin = "anonymous"; // ❌ 移除
 
   const optimizedUrl = ensureAudioUrl(url);
   let triedFallback = false;
