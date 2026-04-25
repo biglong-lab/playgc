@@ -95,7 +95,7 @@ export default function BattleNotifications() {
               <Bell className="h-12 w-12 mx-auto mb-3 opacity-30" />
               <p className="mb-2">目前沒有通知</p>
               <p className="text-xs mb-4">
-                報名對戰、戰隊邀請、賽季結算等都會通知你
+                報名對戰、隊伍邀請、賽季結算等都會通知你
               </p>
               {/* 🚀 Empty state CTA */}
               <Link href="/battle">
