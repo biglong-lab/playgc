@@ -82,6 +82,24 @@ export function WalkiePill({
   const [pos, setPos] = useState<Pos>(loadPos);
   const [dragging, setDragging] = useState(false);
   const [idle, setIdle] = useState(false);
+  // 🆕 拍照模式時隱藏自己（避免擋到切鏡頭按鈕等）
+  const [hiddenForCamera, setHiddenForCamera] = useState(false);
+
+  // 監聽 body 上的 data-camera-active 屬性 → 拍照時隱藏
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const checkCameraMode = () => {
+      const isActive = document.body.dataset.cameraActive === "true";
+      setHiddenForCamera(isActive);
+    };
+    checkCameraMode();
+    const observer = new MutationObserver(checkCameraMode);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-camera-active"],
+    });
+    return () => observer.disconnect();
+  }, []);
 
   // refs 用於區分 tap / longpress / drag
   const pressStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
