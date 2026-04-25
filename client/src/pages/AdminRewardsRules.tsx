@@ -203,6 +203,8 @@ export default function AdminRewardsRules() {
     setFormTriggersJson(JSON.stringify(rule.triggers, null, 2));
     setFormRewardsJson(JSON.stringify(rule.rewards, null, 2));
     setFormQuotaJson(rule.quota ? JSON.stringify(rule.quota, null, 2) : "");
+    setFormAbTestGroup((rule as any).abTestGroup ?? "");
+    setFormAbTestTraffic((rule as any).abTestTraffic ?? 100);
     setShowEditDialog(true);
   }
 
