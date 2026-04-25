@@ -88,19 +88,7 @@ export function CameraView({
             </div>
           </div>
         )}
-        {/* 🆕 切換鏡頭按鈕（右上角，z-[60] 不被擋）*/}
-        {!isInitializing && (
-          <Button
-            onClick={() => actions.switchCamera?.()}
-            className="absolute top-2 right-2 z-[60] bg-emerald-600/90 backdrop-blur hover:bg-emerald-700 text-white gap-1.5 px-3 h-10 rounded-full border-2 border-white/40 shadow-2xl"
-            data-testid="btn-qr-switch-camera"
-          >
-            <RefreshCw className="w-4 h-4" />
-            <span className="text-xs font-medium">
-              {state.facingMode === "user" ? "切後鏡頭" : "切前鏡頭"}
-            </span>
-          </Button>
-        )}
+        {/* 切鏡頭按鈕已移到下方按鈕列（避開 iPhone 瀏海）*/}
       </div>
       {isInitializing ? (
         <Button variant="outline" onClick={actions.handleCancelScan} className="w-full" data-testid="button-cancel-init">
