@@ -342,6 +342,7 @@ app.use((req, res, next) => {
         startBattleScheduler();
         startDormancyScheduler();
         startAchievementScheduler();
+        startLifecycleScheduler();
       }
     },
   );
