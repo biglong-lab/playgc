@@ -18,7 +18,7 @@ import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
 import { createLocalCollage } from "@/lib/client-collage";
 import { createClientGif } from "@/lib/client-gif";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
-import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
+import { savePhotoToAlbum, savePhotosToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import {
   CameraInitializingView, CameraView, UploadingView,
 } from "./photo-mission/PhotoViews";
