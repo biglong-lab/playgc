@@ -523,6 +523,17 @@ export function registerAuthRoutes(app: Express) {
   // 安全：需帶 X-Platform-Secret header（設定於環境變數 PLATFORM_OWNER_SECRET），且限定 email
   app.post("/api/auth/platform-owner-login", async (req, res) => {
     try {
+      // 🔒 暴力破解防護：per-IP 失敗計數
+      const clientIp = req.ip || req.headers["x-forwarded-for"]?.toString() || "unknown";
+      const now = Date.now();
+      const failure = ownerLoginFailures.get(clientIp);
+      if (failure && now < failure.resetAt && failure.count >= OWNER_LOGIN_MAX_FAILURES) {
+        const remainMin = Math.ceil((failure.resetAt - now) / 60_000);
+        return res.status(429).json({
+          message: `登入嘗試次數過多，請 ${remainMin} 分鐘後再試`,
+        });
+      }
+
       const secret = req.headers["x-platform-secret"] as string | undefined;
       const configuredSecret = process.env.PLATFORM_OWNER_SECRET;
       const ownerEmail = process.env.PLATFORM_OWNER_EMAIL;
@@ -532,9 +543,18 @@ export function registerAuthRoutes(app: Express) {
           message: "平台擁有者登入未設定（需環境變數 PLATFORM_OWNER_SECRET + PLATFORM_OWNER_EMAIL）",
         });
       }
-      if (!secret || secret !== configuredSecret) {
+
+      // 🔒 timing-safe 比對 + 失敗計數
+      if (!secret || !timingSafeStringEqual(secret, configuredSecret)) {
+        const next = failure && now < failure.resetAt
+          ? { count: failure.count + 1, resetAt: failure.resetAt }
+          : { count: 1, resetAt: now + OWNER_LOGIN_LOCK_MS };
+        ownerLoginFailures.set(clientIp, next);
         return res.status(403).json({ message: "密鑰錯誤" });
       }
+
+      // 成功 → 清除該 IP 的失敗計數
+      ownerLoginFailures.delete(clientIp);
 
       // 找平台擁有者帳號（以 email + super_admin 為條件）
       const ownerAccount = await db.query.adminAccounts.findFirst({
