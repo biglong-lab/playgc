@@ -23,6 +23,7 @@ import {
 import { eq, and, desc } from "drizzle-orm";
 import { requireAdminAuth } from "../adminAuth";
 import { z } from "zod";
+import { assertFieldOwnership } from "../lib/field-ownership";
 
 export function registerAdminEngagementRoutes(app: Express) {
   // ============================================================================
