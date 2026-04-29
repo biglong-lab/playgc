@@ -66,6 +66,10 @@ services:
       LIVEKIT_URL: ws://livekit:7880
       LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
       LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+    # 🔐 掛載 Google Cloud Vision Service Account（OCR 招牌辨識用）
+    # secrets/gcp-vision.json 為 GCP Service Account JSON（不進 git）
+    volumes:
+      - ./secrets:/app/secrets:ro
     depends_on:
       db:
         condition: service_healthy
