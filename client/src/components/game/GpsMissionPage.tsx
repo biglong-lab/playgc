@@ -6,6 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import { MapPin, Navigation, Locate, CheckCircle, AlertCircle, QrCode, Volume2, VolumeX } from "lucide-react";
 import type { GpsMissionConfig } from "@shared/schema";
 import GpsMissionMap from "./gps-mission/GpsMissionMap";
+import {
+  useStableGeolocation,
+  distanceMeters,
+  bearingDegrees,
+  bearingToCompass,
+  type StablePosition,
+} from "@/lib/geolocation";
+import { GpsAccuracyIndicator } from "./GpsAccuracyIndicator";
 
 interface GpsMissionPageProps {
   config: GpsMissionConfig;
