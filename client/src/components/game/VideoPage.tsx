@@ -69,6 +69,33 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
     };
 
     const handleError = () => {
+      const code = video.error?.code;
+      const msg =
+        code === 1 ? "下載中止"
+        : code === 2 ? "網路錯誤"
+        : code === 3 ? "影片解碼失敗（codec 不支援）"
+        : code === 4 ? "影片格式不支援或檔案不存在"
+        : video.error?.message || "未知錯誤";
+      console.error("[VideoPage] error event", {
+        code,
+        msg,
+        src: video.src,
+        currentSrc: video.currentSrc,
+        networkState: video.networkState,
+        readyState: video.readyState,
+      });
+
+      // 🔁 自動重試一次（避免暫時網路 hiccup 直接顯示錯誤）
+      if (retryCountRef.current < 1 && code !== 4) {
+        retryCountRef.current += 1;
+        console.log("[VideoPage] auto retry", retryCountRef.current);
+        setTimeout(() => {
+          video.load(); // 重新載入
+        }, 1000);
+        return;
+      }
+
+      setErrorDetail(msg);
       setHasError(true);
       setIsLoading(false);
       setIsPlaying(false);
