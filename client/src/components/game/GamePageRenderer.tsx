@@ -32,6 +32,29 @@ const MotionChallengePage = lazy(() => import("@/components/game/MotionChallenge
 const VotePage = lazy(() => import("@/components/game/VotePage"));
 const FlowRouterPage = lazy(() => import("@/components/game/FlowRouterPage"));
 
+// 📦 模組層級常數（避免每次 render 重新建立 Set）
+const SKIP_REWARD_WRAP_TYPES = new Set([
+  "button",       // 按鈕級獎勵，不該共享頁面級 items
+  "flow_router",  // 純路由
+]);
+
+const SKIP_MINI_MAP_TYPES = new Set([
+  "gps_mission",      // 已有 GpsMissionMap
+  "photo_spot",       // 已有 GPS 引導
+  "flow_router",      // 純路由
+  "qr_scan",          // QR 相機需要全螢幕
+  "video",            // 影片播放器需要全寬
+  "shooting_mission", // AR 預瞄全螢幕
+  "photo_mission",    // 相機介面全螢幕
+  "photo_compare",    // 左右對比 layout
+  "photo_before_after", // before/after 動畫
+  "photo_burst",      // 連拍進度條
+  "photo_ar",         // AR 視角
+  "photo_team",       // 團隊合照 layout
+  "photo_ocr",        // 文字框掃描
+  "motion_challenge", // 加速度計感應
+]);
+
 function PageLoadingFallback() {
   return (
     <div className="flex items-center justify-center h-full min-h-[200px]">
