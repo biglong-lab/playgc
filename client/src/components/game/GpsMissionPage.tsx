@@ -200,8 +200,24 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
     }
   }, [config.qrFallback]);
 
+  // 🛰️ 整合 useStableGeolocation：自動採樣 + Kalman 濾波 + 自動啟停
+  const {
+    position: stablePosition,
+    accuracy: gpsAccuracy,
+    quality: gpsQuality,
+    samples: gpsSamples,
+    active: gpsActive,
+    error: gpsError,
+  } = useStableGeolocation({
+    mode: "watch",
+    enabled: isWatching && hasValidTarget,
+    sampleSize: 5,
+    minSampleIntervalMs: 1000,
+    onUpdate: handleStableLocation,
+    onError: handleLocationError,
+  });
+
   const startWatching = () => {
-    // 🛡️ 元件級 graceful：config 沒設有效座標 → 不啟動 GPS，改提示 + 優先 QR fallback
     if (!hasValidTarget) {
       setError("此任務尚未設定目標位置，請使用下方代碼手動通關或聯絡管理員");
       setShowQrFallback(true);
@@ -215,31 +231,12 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
 
     setIsLocating(true);
     setError(null);
-    setIsWatching(true);
-
-    // 每次重啟 watching 前重置到達鎖
     hasArrivedRef.current = false;
-    const id = navigator.geolocation.watchPosition(
-      updateLocation,
-      handleLocationError,
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-    setWatchId(id);
-    watchIdRef.current = id;
+    setIsWatching(true); // hook 會自動啟動 watchPosition
   };
 
   const stopWatching = () => {
-    const id = watchIdRef.current ?? watchId;
-    if (id !== null) {
-      navigator.geolocation.clearWatch(id);
-      setWatchId(null);
-      watchIdRef.current = null;
-    }
-    setIsWatching(false);
+    setIsWatching(false); // hook 會自動 clearWatch
   };
 
   const locateOnce = () => {
