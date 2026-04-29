@@ -173,7 +173,7 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
   };
 
   // 🆕 玩家選項處理（分支跳轉）
-  const handleChoice = (choice: import("@shared/schema").DialogueChoice) => {
+  const handleChoice = (choice: DialogueChoice) => {
     // 1. 設定變數（給 conditional_verify / flow_router 用）
     if (choice.setVariable) {
       onVariableUpdate(choice.setVariable.key, choice.setVariable.value);
