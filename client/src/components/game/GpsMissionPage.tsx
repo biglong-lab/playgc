@@ -258,14 +258,12 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
 
   useEffect(() => {
     return () => {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-      }
+      // hook 自己會 clearWatch，這裡只清理音訊
       if (audioContextRef.current) {
         audioContextRef.current.close();
       }
     };
-  }, [watchId]);
+  }, []);
 
   const getProgressPercent = () => {
     if (!distance) return 0;
