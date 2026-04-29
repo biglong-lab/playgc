@@ -5,6 +5,7 @@ import type { Page } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/feedback/PageTransition";
+import { PageLocationMiniMap, shouldShowMiniMap } from "@/components/game/PageLocationMiniMap";
 
 const TextCardPage = lazy(() => import("@/components/game/TextCardPage"));
 const DialoguePage = lazy(() => import("@/components/game/DialoguePage"));
