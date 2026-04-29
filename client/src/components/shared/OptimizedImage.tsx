@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, useMemo, type ReactNode } from "react";
 import { ImageOff, Loader2 } from "lucide-react";
 import {
   getOptimizedImageUrl,
