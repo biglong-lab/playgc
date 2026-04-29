@@ -114,11 +114,8 @@ export default function GamePageRenderer({
   //
   // 例外：button 頁面有「按鈕級獎勵」（button.rewardPoints/items），
   // 不應該被頁面級 config.rewardItems 干擾 → 跳過 wrapper
-  const skipRewardWrapTypes = new Set([
-    "button",       // 按鈕級獎勵，不該共享頁面級 items
-    "flow_router",  // 純路由
-  ]);
-  const shouldSkipRewardWrap = skipRewardWrapTypes.has(page.pageType);
+  // ⚡ 用模組層級 SKIP_REWARD_WRAP_TYPES（不在 render 內建 Set）
+  const shouldSkipRewardWrap = SKIP_REWARD_WRAP_TYPES.has(page.pageType);
 
   const wrappedOnComplete = useMemo(() => {
     if (shouldSkipRewardWrap) {
