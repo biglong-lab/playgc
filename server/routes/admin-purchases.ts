@@ -211,6 +211,10 @@ export function registerAdminPurchaseRoutes(app: Express) {
           return res.status(404).json({ message: "購買記錄不存在" });
         }
 
+        // 🔒 場域隔離：先查 purchase 對應的 game.fieldId
+        const game = await storage.getGame(purchase.gameId);
+        if (game && !assertFieldOwnership(req.admin, game.fieldId, res)) return;
+
         // 標記為退款而非直接刪除
         const updated = await storage.updatePurchase(id, {
           status: "refunded",
