@@ -394,6 +394,12 @@ export function registerAiScoringRoutes(app: Express): void {
 
   // 🆕 v2: POST /api/ai/compare-photos — AI 雙圖相似度比對
   app.post("/api/ai/compare-photos", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
+    const startedAt = Date.now();
+    let resolvedFieldId: string | undefined;
+    let resolvedProvider: ReturnType<typeof detectProvider> = "gemini";
+    let bodyGameId: string | undefined;
+
     try {
       const parsed = comparePhotosSchema.safeParse(req.body);
       if (!parsed.success) {
@@ -409,14 +415,40 @@ export function registerAiScoringRoutes(app: Express): void {
         gameId,
         modelId,
       } = parsed.data;
+      bodyGameId = gameId;
 
-      const fieldApiKey = await resolveAiApiKey(gameId);
+      const ctx = await resolveAiContext(gameId);
+      const fieldApiKey = ctx.apiKey;
+      resolvedFieldId = ctx.fieldId;
+      resolvedProvider = detectProvider(fieldApiKey);
+
       if (!isGeminiConfigured(fieldApiKey)) {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "compare-photos",
+          success: false,
+          errorCode: "AI_NOT_CONFIGURED",
+          errorMessage: "AI 服務未設定",
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 503, "AI 服務未設定");
       }
 
-      const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
       if (!checkRateLimit(userId)) {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "compare-photos",
+          success: false,
+          errorCode: "RATE_LIMITED",
+          errorMessage: "AI 呼叫次數過多",
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
       }
 
@@ -435,6 +467,27 @@ export function registerAiScoringRoutes(app: Express): void {
 
       // 使用 AI 回傳的 verified，並以 threshold 複核
       const verified = result.similarity >= threshold;
+
+      // 📊 記錄成功
+      await logAiUsage({
+        provider: resolvedProvider,
+        endpoint: "compare-photos",
+        success: true,
+        latencyMs: Date.now() - startedAt,
+        gameId,
+        fieldId: resolvedFieldId,
+        userId,
+        context: {
+          verified,
+          similarity: result.similarity,
+          threshold,
+          mode,
+          modelId: modelId || null,
+          matchedCount: result.matchedFeatures?.length ?? 0,
+          missingCount: result.missingFeatures?.length ?? 0,
+        },
+      });
+
       return res.json({
         verified,
         similarity: result.similarity,
@@ -444,9 +497,39 @@ export function registerAiScoringRoutes(app: Express): void {
       });
     } catch (error) {
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "compare-photos",
+          success: false,
+          errorCode: "FIELD_AI_DISABLED",
+          errorMessage: "此場域 AI 功能已停用",
+          latencyMs: Date.now() - startedAt,
+          gameId: bodyGameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 503, "此場域的 AI 功能已停用");
       }
       console.error("[ai-scoring] compare-photos 失敗:", error);
+
+      const errMsg = error instanceof Error ? error.message : String(error);
+      let errorCode = "UNHANDLED_ERROR";
+      if (/quota|429|rate.?limit/i.test(errMsg)) errorCode = "QUOTA_EXCEEDED";
+      else if (/API.?key|invalid.?key|401/i.test(errMsg)) errorCode = "API_KEY_INVALID";
+      else if (/timeout|ECONN|fetch/i.test(errMsg)) errorCode = "NETWORK_ERROR";
+
+      await logAiUsage({
+        provider: resolvedProvider,
+        endpoint: "compare-photos",
+        success: false,
+        errorCode,
+        errorMessage: errMsg.slice(0, 500),
+        latencyMs: Date.now() - startedAt,
+        gameId: bodyGameId,
+        fieldId: resolvedFieldId,
+        userId,
+      });
+
       return res.json({
         verified: false,
         similarity: 0,
