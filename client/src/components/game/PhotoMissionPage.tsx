@@ -114,9 +114,17 @@ export default function PhotoMissionPage({
   // AI 照片驗證
   const verifyMutation = useMutation({
     mutationFn: async (imageUrl: string): Promise<AiVerifyResponse> => {
+      // 🐛 修：admin 開 aiVerify 但沒填 keywords 時，後端 schema 要求 min(1)
+      // 用 instruction 當 keyword，沒 instruction 用預設「主體清楚的照片」
+      const keywords = (config.targetKeywords && config.targetKeywords.length > 0)
+        ? config.targetKeywords
+        : config.instruction
+          ? [config.instruction]
+          : ["主體清楚的照片"];
+
       const response = await apiRequest("POST", "/api/ai/verify-photo", {
         imageUrl,
-        targetKeywords: config.targetKeywords || [],
+        targetKeywords: keywords,
         instruction: config.instruction,
         confidenceThreshold: config.aiConfidenceThreshold ?? 0.6,
         gameId,
