@@ -77,7 +77,7 @@ export default function GamePageRenderer({
   // 🎁 統一補完 rewardItems / rewardPoints — 修「道具獎勵發不出來」bug
   //
   // 背景：原本各頁面元件自己處理 rewardItems，導致 8+ 個頁面類型遺漏
-  // （TextCard / Dialogue / Video / Button / Vote / TimeBomb / Lock / MotionChallenge）
+  // （TextCard / Dialogue / Video / Vote / TimeBomb / Lock / MotionChallenge）
   // 玩家完成這些頁面後 inventory 不會增加。
   //
   // 解法：在 GamePageRenderer 統一包裝 onComplete，自動從 page.config 補上
@@ -88,7 +88,19 @@ export default function GamePageRenderer({
   //   reward = undefined / null → 不補（元件明確表示沒獎勵）
   //   reward.points === 0 且 reward.items 也空 → 視為「失敗 fallthrough」，不補
   //   其他情況（成功）→ 補 items
+  //
+  // 例外：button 頁面有「按鈕級獎勵」（button.rewardPoints/items），
+  // 不應該被頁面級 config.rewardItems 干擾 → 跳過 wrapper
+  const skipRewardWrapTypes = new Set([
+    "button",       // 按鈕級獎勵，不該共享頁面級 items
+    "flow_router",  // 純路由
+  ]);
+  const shouldSkipRewardWrap = skipRewardWrapTypes.has(page.pageType);
+
   const wrappedOnComplete = useMemo(() => {
+    if (shouldSkipRewardWrap) {
+      return onComplete; // ButtonPage / FlowRouter 直接用原 onComplete
+    }
     return ((reward, nextPageId) => {
       // 1. reward 為 undefined → 元件明確表示沒獎勵，不補
       if (!reward) {
@@ -133,7 +145,7 @@ export default function GamePageRenderer({
 
       onComplete(finalReward, nextPageId);
     }) as typeof onComplete;
-  }, [config, onComplete]);
+  }, [config, onComplete, shouldSkipRewardWrap]);
 
   // 記憶化 commonProps 避免每次渲染都建立新物件
   const commonProps = useMemo(() => ({
