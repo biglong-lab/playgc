@@ -358,6 +358,13 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
             <p className="text-muted-foreground">{config.instruction}</p>
           </div>
 
+          {/* 🧭 iOS 14+ 動作感應器授權請求（GPS 失效備援）*/}
+          {isWatching && (
+            <div className="mb-4">
+              <MotionPermissionRequest />
+            </div>
+          )}
+
           {/* 🛰️ GPS 精度即時顯示 + 多人融合徽章 + IMU fallback（玩家可見） */}
           {isWatching && (
             <div className="mb-4">
