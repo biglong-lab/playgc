@@ -190,6 +190,15 @@ export function registerAdminChapterRoutes(app: Express) {
         if (!page) {
           return res.status(404).json({ message: "頁面不存在" });
         }
+        // 🔒 場域隔離（page → game → fieldId）
+        if (!(await checkGameFieldOwnership(page.gameId, req.admin, res))) return;
+        // 若有指定 chapterId，亦驗 chapter 屬於同 game
+        if (chapterId) {
+          const newChapter = await storage.getChapter(chapterId);
+          if (!newChapter || newChapter.gameId !== page.gameId) {
+            return res.status(400).json({ message: "章節不屬於該遊戲" });
+          }
+        }
 
         // chapterId 可以為 null（取消章節歸屬）
         const [updated] = await db
