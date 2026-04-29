@@ -138,8 +138,10 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
     const effectiveRadius = targetRadius + Math.min(pos.accuracy * 0.5, 50);
 
     // 額外條件：採樣數 ≥ 3 才允許判定到達（避免暖機期誤判）
+    // 例外：locateOnce 模式（samplesUsed=1）允許直接到達
+    const requireMultipleSamples = pos.samplesUsed > 1;
     if (
-      pos.samplesUsed >= 3 &&
+      (!requireMultipleSamples || pos.samplesUsed >= 3) &&
       dist <= effectiveRadius &&
       !hasArrivedRef.current
     ) {
