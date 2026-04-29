@@ -145,12 +145,12 @@ export async function getMonthlyAiUsage(fieldId?: string): Promise<AiUsageOvervi
     }
 
     // 計算 weighted avg latency
-    for (const [provider, acc] of totalLatencyAcrossEndpoints.entries()) {
+    totalLatencyAcrossEndpoints.forEach((acc, provider) => {
       const ps = byProvider.get(provider);
       if (ps && acc.count > 0) {
         ps.avgLatencyMs = Math.round(acc.sum / acc.count);
       }
-    }
+    });
 
     return {
       fromDate: firstDayOfMonth.toISOString(),
