@@ -252,6 +252,10 @@ async function resolveAiContext(gameId?: string): Promise<AiContextResolved> {
     if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
       throw error;
     }
+    // 預覽模式錯誤要向上拋（不要 fallback）
+    if (error instanceof Error && error.message.includes("預覽模式")) {
+      throw error;
+    }
     // 其他查詢錯誤 → fallback 到全域
     return {};
   }
