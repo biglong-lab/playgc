@@ -163,10 +163,28 @@ export default function GamePageRenderer({
   // - flow_router 用 flow variant（極短淡入，不干擾玩家）
   // - 其他頁面用 default variant（0.28s fade + 位移）
   const variant = page.pageType === "flow_router" ? "flow" : "default";
+
+  // 🗺️ 自動偵測 locationSettings → 顯示頁面定位迷你地圖
+  // 適用於 text_card / dialogue / qr_scan / choice_verify / video / vote 等
+  // 已內建 GPS 任務（gps_mission）等地圖類型不重複顯示
+  const skipMiniMapTypes = new Set([
+    "gps_mission",  // 已有自己的地圖
+    "photo_spot",   // 已有 GPS 引導
+    "flow_router",  // 純路由
+  ]);
+  const showMiniMap = shouldShowMiniMap(config) && !skipMiniMapTypes.has(page.pageType);
+
   return (
     <AnimatePresence mode="wait" initial={false}>
       <PageTransition key={page.id} variant={variant} className="h-full">
-        <Suspense fallback={<PageLoadingFallback />}>{renderPage()}</Suspense>
+        <Suspense fallback={<PageLoadingFallback />}>
+          {showMiniMap && (
+            <div className="px-4 pt-4">
+              <PageLocationMiniMap settings={config.locationSettings} />
+            </div>
+          )}
+          {renderPage()}
+        </Suspense>
       </PageTransition>
     </AnimatePresence>
   );
