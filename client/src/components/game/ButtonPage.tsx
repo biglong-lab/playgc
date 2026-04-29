@@ -121,9 +121,10 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
       {config.timeLimit && timeLeft !== null && (
         <div className="w-full max-w-md mb-6">
           <div className="flex items-center justify-between mb-2">
-            <div className={`flex items-center gap-2 ${isUrgent ? "text-destructive" : "text-muted-foreground"}`}>
+            <div className={`flex items-center gap-2 transition-colors ${isUrgent ? "text-destructive" : "text-muted-foreground"}`}>
               <Clock className={`w-5 h-5 ${isUrgent ? "animate-pulse" : ""}`} />
-              <span className="font-mono font-bold text-lg">
+              {/* 🆕 tabular-nums 防數字位數變化造成抖動 */}
+              <span className="font-mono font-bold text-lg tabular-nums">
                 {timeLeft}s
               </span>
             </div>
@@ -133,9 +134,9 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
               </span>
             )}
           </div>
-          <Progress 
-            value={getTimeProgress()} 
-            className={`h-2 ${isUrgent ? "[&>div]:bg-destructive" : ""}`}
+          <Progress
+            value={getTimeProgress()}
+            className={`h-2 transition-all ${isUrgent ? "[&>div]:bg-destructive" : ""}`}
           />
         </div>
       )}
@@ -151,11 +152,11 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
           <div key={index} className="relative">
             <Button
               onClick={() => handleButtonClick(button, index)}
-              className={`w-full h-auto min-h-14 text-lg gap-3 font-display py-3 transition-all duration-200 ${
-                selectedIndex === index ? "scale-95 ring-2 ring-primary" : ""
-              } ${isUrgent && !selectedIndex ? "animate-pulse" : ""}`}
+              className={`w-full h-auto min-h-14 text-lg gap-3 font-display py-3 transition-all duration-200 active:scale-[0.97] hover:shadow-md ${
+                selectedIndex === index ? "scale-95 ring-2 ring-primary shadow-md" : ""
+              } ${isUrgent && selectedIndex === null ? "animate-pulse" : ""}`}
               variant={getButtonVariant(index, button)}
-              style={button.color ? { 
+              style={button.color ? {
                 backgroundColor: selectedIndex === index ? button.color : undefined,
                 borderColor: button.color,
                 color: selectedIndex === index ? "white" : button.color
@@ -169,14 +170,14 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
               </div>
               <div className="flex items-center gap-2">
                 {button.rewardPoints != null && button.rewardPoints !== 0 && (
-                  <span className={`text-sm opacity-70 px-2 py-0.5 rounded ${
+                  <span className={`text-sm opacity-70 px-2 py-0.5 rounded tabular-nums ${
                     button.rewardPoints > 0 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
                   }`}>
                     {button.rewardPoints > 0 ? "+" : ""}{button.rewardPoints}分
                   </span>
                 )}
                 {button.items && button.items.length > 0 && (
-                  <span className="text-sm opacity-70 bg-primary/10 px-2 py-0.5 rounded">
+                  <span className="text-sm opacity-70 bg-primary/10 px-2 py-0.5 rounded tabular-nums">
                     +{button.items.length}道具
                   </span>
                 )}
@@ -188,7 +189,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
 
         {config.timeLimit && (
           <p className="text-center text-sm text-muted-foreground mt-4">
-            時間到將自動選擇第 {(config.defaultChoice ?? 0) + 1} 個選項
+            時間到將自動選擇第 <span className="tabular-nums">{(config.defaultChoice ?? 0) + 1}</span> 個選項
           </p>
         )}
       </div>

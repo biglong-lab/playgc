@@ -326,11 +326,24 @@ export default function ConditionalVerifyPage({
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium">已收集碎片</span>
-                <Badge variant={allFragmentsCollected ? "default" : "secondary"}>
+                <Badge
+                  variant={allFragmentsCollected ? "default" : "secondary"}
+                  className={`tabular-nums ${allFragmentsCollected ? "animate-pulse" : ""}`}
+                >
                   {collectedFragments.length} / {fragments.length}
                 </Badge>
               </div>
-              
+
+              {/* 🆕 進度條（玩家直觀看到收集進度） */}
+              <div className="h-1.5 rounded-full bg-muted mb-3 overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    allFragmentsCollected ? "bg-emerald-500" : "bg-primary"
+                  }`}
+                  style={{ width: `${(collectedFragments.length / Math.max(1, fragments.length)) * 100}%` }}
+                />
+              </div>
+
               <div className="grid grid-cols-4 gap-2">
                 {fragments.map((fragment, index) => {
                   // 示範模式全部已收集；正式模式需綁 sourceItemId 且 inventory 有此道具
@@ -343,16 +356,16 @@ export default function ConditionalVerifyPage({
                     <div
                       key={fragment.id || index}
                       className={`aspect-square rounded-lg flex flex-col items-center justify-center border-2 transition-all ${
-                        isCollected 
-                          ? "bg-primary/20 border-primary text-primary" 
-                          : "bg-muted border-dashed border-muted-foreground/30 text-muted-foreground"
+                        isCollected
+                          ? "bg-primary/20 border-primary text-primary scale-100 shadow-sm"
+                          : "bg-muted border-dashed border-muted-foreground/30 text-muted-foreground scale-95"
                       }`}
                       data-testid={`fragment-slot-${index}`}
                     >
                       {isCollected ? (
                         <>
                           <span className="text-xl font-mono font-bold">{fragment.value}</span>
-                          <span className="text-[10px] mt-1 opacity-70">#{index + 1}</span>
+                          <span className="text-[10px] mt-1 opacity-70 tabular-nums">#{index + 1}</span>
                         </>
                       ) : (
                         <>
@@ -406,7 +419,7 @@ export default function ConditionalVerifyPage({
                     ? handleSuccess
                     : verifyFragmentCode
                 }
-                className="w-full gap-2"
+                className="w-full gap-2 transition-transform active:scale-[0.97]"
                 disabled={
                   !isDemoMode &&
                   verificationMode !== 'all_collected' &&
@@ -420,10 +433,10 @@ export default function ConditionalVerifyPage({
             ) : (
               <Button
                 onClick={handleContinue}
-                className="w-full gap-2"
+                className="w-full gap-2 transition-transform active:scale-[0.97]"
                 data-testid="button-continue-fragment"
               >
-                <CheckCircle2 className="w-4 h-4" />
+                <CheckCircle2 className="w-4 h-4 animate-[pulse_2s_ease-in-out_infinite]" />
                 繼續
               </Button>
             )}
