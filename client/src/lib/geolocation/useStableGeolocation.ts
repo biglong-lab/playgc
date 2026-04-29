@@ -319,11 +319,63 @@ export function useStableGeolocation(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, enabled]);
 
-  const accuracy = position?.accuracy ?? null;
+  // ============================================================================
+  // 🧭 IMU PDR Fallback：GPS 失效時用步數 + 朝向推算位置
+  // ============================================================================
+  //
+  // 觸發條件：
+  //   - imuFallback=true
+  //   - GPS 已取得過至少一次有效位置（作為 anchor）
+  //   - GPS 失效中（最近 15 秒沒新採樣 / accuracy > 100m / error）
+  //
+  // 一旦 GPS 恢復（取得新位置）→ 自動更新 anchor，IMU 從零開始累計
+
+  const lastGoodPositionRef = useRef<StablePosition | null>(null);
+  if (position && position.accuracy < 100) {
+    lastGoodPositionRef.current = position;
+  }
+
+  // 判斷 GPS 是否「正在失效」
+  const now = Date.now();
+  const lastGpsAge = position ? now - position.timestamp : Infinity;
+  const gpsLost =
+    !!error ||
+    (position && position.accuracy > 100) ||
+    (lastGoodPositionRef.current && lastGpsAge > 15_000);
+
+  // anchor：用最後一次「好的」位置
+  const anchor: ImuAnchor | null = lastGoodPositionRef.current
+    ? {
+        lat: lastGoodPositionRef.current.lat,
+        lng: lastGoodPositionRef.current.lng,
+        accuracy: lastGoodPositionRef.current.accuracy,
+        timestamp: lastGoodPositionRef.current.timestamp,
+      }
+    : null;
+
+  const imu = useImuPositioning({
+    anchor,
+    enabled: imuFallback && !!gpsLost && !!anchor,
+  });
+
+  // 若 IMU 在運作 → 用 IMU 推算位置取代 GPS
+  const finalPosition: StablePosition | null =
+    imu.position && imu.isActive
+      ? {
+          lat: imu.position.lat,
+          lng: imu.position.lng,
+          accuracy: imu.position.accuracy,
+          timestamp: Date.now(),
+          smoothed: true,
+          samplesUsed: imu.position.stepsSinceAnchor,
+        }
+      : position;
+
+  const accuracy = finalPosition?.accuracy ?? null;
   const quality = classifyAccuracy(accuracy);
 
   return {
-    position,
+    position: finalPosition,
     rawPosition,
     accuracy,
     quality,
@@ -332,5 +384,7 @@ export function useStableGeolocation(
     error,
     retry,
     reset,
+    imuActive: imu.isActive && !!gpsLost,
+    imuSteps: imu.position?.stepsSinceAnchor ?? 0,
   };
 }
