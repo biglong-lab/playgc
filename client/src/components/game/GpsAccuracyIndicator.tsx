@@ -53,6 +53,20 @@ export function GpsAccuracyIndicator({
   const isFused = !!fusion && fusion.contributors > 1 && !fusion.scattered;
   const isImu = !!imu?.active;
 
+  // 🆕 弱訊號（poor/unusable）→ 更強烈視覺：背景色 + 邊框 + 緩脈動
+  // 用模組層級判斷不依賴 useMemo（值已穩定），避免無謂依賴
+  const isUrgent = quality === "poor" || quality === "unusable";
+
+  // 🆕 容器外觀分級
+  const containerCls = isUrgent
+    ? "rounded-lg border-2 border-orange-500/40 bg-orange-50/80 dark:bg-orange-950/30 backdrop-blur-sm p-2.5 shadow-sm"
+    : "rounded-lg border bg-card/50 backdrop-blur-sm p-2.5";
+
+  // 🆕 hint 區塊外觀分級（urgent 時改用警示色塊）
+  const hintCls = isUrgent
+    ? "mt-2 pt-2 border-t border-orange-500/30 text-xs text-orange-700 dark:text-orange-300 leading-relaxed font-medium"
+    : "mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground leading-relaxed";
+
   if (!active) {
     return (
       <div className={`flex items-center gap-2 text-xs text-muted-foreground ${className}`}>
@@ -85,12 +99,14 @@ export function GpsAccuracyIndicator({
 
   return (
     <div
-      className={`rounded-lg border bg-card/50 backdrop-blur-sm p-2.5 ${className}`}
+      className={`${containerCls} ${className}`}
       data-testid="gps-accuracy-indicator"
+      data-quality={quality}
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-base">{desc.emoji}</span>
+          {/* 🆕 urgent 時 emoji 緩脈動，吸引玩家注意 */}
+          <span className={`text-base ${isUrgent ? "animate-pulse" : ""}`}>{desc.emoji}</span>
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">GPS 精度</span>
             <span className={`text-sm font-semibold ${desc.color}`}>
@@ -149,10 +165,10 @@ export function GpsAccuracyIndicator({
         </div>
       )}
 
-      {/* 弱訊號建議 */}
+      {/* 弱訊號建議（urgent 時用警示色塊強調，避免玩家忽略）*/}
       {desc.hint && (
-        <div className="mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground leading-relaxed">
-          💡 {desc.hint}
+        <div className={hintCls}>
+          {isUrgent ? "⚠️" : "💡"} {desc.hint}
         </div>
       )}
     </div>
