@@ -241,6 +241,16 @@ export function registerAdminEngagementRoutes(app: Express) {
           return res.status(400).json({ error: "驗證失敗" });
         }
 
+        // 🔒 場域隔離：先查 channel 的 fieldId
+        const [existing] = await db
+          .select()
+          .from(notificationChannels)
+          .where(eq(notificationChannels.id, id))
+          .limit(1);
+        if (!existing) return res.status(404).json({ error: "管道不存在" });
+        if (!assertFieldOwnership(req.admin, existing.fieldId, res)) return;
+
+        // 不允許改 fieldId（避免把管道偷到別場域）
         const updateValue: Record<string, unknown> = {};
         const data = parsed.data;
         if (data.channelType !== undefined) updateValue.channelType = data.channelType;
