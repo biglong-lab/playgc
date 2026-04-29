@@ -245,7 +245,16 @@ export async function writeSquadRecordFromBattle(opts: {
       return;
     }
 
-    // 🚫 Phase 9.7 防作弊 2：24h 內 vs 同對手第 6+ 場不算
+    // 🚫 §19.1 防作弊 2：每日上限 10 場
+    const battleDailyCount = await countTodayRecords(opts.squadId);
+    if (battleDailyCount >= 10) {
+      console.log(
+        `[squad-record] 跳過 battle slot ${opts.slotId}：squad ${opts.squadId} 今日已 ${battleDailyCount} 場（上限 10）`,
+      );
+      return;
+    }
+
+    // 🚫 Phase 9.7 防作弊 3：24h 內 vs 同對手第 6+ 場不算
     if (opts.opponentSquadId) {
       const recentDuel = await checkRecentDuelLimit(
         opts.squadId,
