@@ -243,6 +243,8 @@ export function registerAdminRedeemCodeRoutes(app: Express) {
         if (!existing) {
           return res.status(404).json({ message: "兌換碼不存在" });
         }
+        // 🔒 場域隔離
+        if (!assertFieldOwnership(req.admin, existing.fieldId, res)) return;
 
         const uses = await storage.getCodeUses(id);
         res.json(uses);
