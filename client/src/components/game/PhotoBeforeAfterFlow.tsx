@@ -384,31 +384,72 @@ export default function PhotoBeforeAfterFlow({
 
   // 等待間隔
   if (stage === "gap") {
+    // 🆕 倒數進度比例（0=全滿、1=完成可拍）
+    const totalGap = ba.minGapSeconds ?? 10;
+    const progress = totalGap > 0 ? 1 - gapCountdown / totalGap : 1;
+    const ready = gapCountdown === 0;
+
     return (
       <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-before-after-gap">
-        <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+        <CheckCircle2 className="w-12 h-12 text-emerald-500 animate-[pulse_1.5s_ease-in-out_infinite]" />
         <h2 className="text-xl font-bold">第一張 OK！</h2>
-        <p className="text-sm text-muted-foreground text-center">
-          請到「{ba.afterLabel || "後"}」狀態後再拍第二張
+        <p className="text-sm text-muted-foreground text-center max-w-xs">
+          請到「<span className="font-semibold text-foreground">{ba.afterLabel || "後"}</span>」狀態後再拍第二張
         </p>
-        <div className="flex items-center gap-2 text-lg font-number">
-          <Clock className="w-5 h-5" />
-          {gapCountdown > 0 ? `${gapCountdown} 秒後可拍` : "可以拍第二張了"}
+
+        {/* 🆕 倒數圓環 — SVG 視覺化進度（比純數字更直觀） */}
+        <div className="relative w-24 h-24" data-testid="ba-countdown-ring">
+          <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" stroke="currentColor" strokeWidth="6" fill="none" className="text-muted/30" />
+            <circle
+              cx="50" cy="50" r="44" fill="none"
+              stroke="currentColor" strokeWidth="6" strokeLinecap="round"
+              className={ready ? "text-emerald-500" : "text-primary"}
+              strokeDasharray={2 * Math.PI * 44}
+              strokeDashoffset={2 * Math.PI * 44 * (1 - progress)}
+              style={{ transition: "stroke-dashoffset 1s linear" }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            {ready ? (
+              <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+            ) : (
+              <span className="text-2xl font-bold tabular-nums">{gapCountdown}</span>
+            )}
+          </div>
         </div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Clock className="w-4 h-4" />
+          <span className="tabular-nums">
+            {ready ? "可以拍第二張了！" : `${gapCountdown} 秒後可拍`}
+          </span>
+        </div>
+
         {beforePhotoUrl && (
-          <img src={beforePhotoUrl} alt="前" className="max-w-xs rounded border" />
+          <div className="relative max-w-xs">
+            <img src={beforePhotoUrl} alt="前" className="w-full rounded-lg border-2 border-emerald-500/50 shadow-md" />
+            {/* 🆕 已拍標示 */}
+            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-xs font-medium flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" />
+              已拍 · {ba.beforeLabel || "前"}
+            </div>
+          </div>
         )}
+
         <Button
           size="lg"
-          disabled={gapCountdown > 0}
+          disabled={!ready}
           onClick={() => {
             setStage("after");
             camera.startCamera(config.defaultFacingMode ?? "user");
           }}
+          className="transition-transform active:scale-[0.97] disabled:opacity-50"
           data-testid="btn-ba-start-after"
         >
           <Camera className="w-5 h-5 mr-2" />
-          {gapCountdown > 0 ? `等待 ${gapCountdown} 秒` : `拍「${ba.afterLabel || "後"}」`}
+          <span className="tabular-nums">
+            {ready ? `拍「${ba.afterLabel || "後"}」` : `等待 ${gapCountdown} 秒`}
+          </span>
         </Button>
       </div>
     );
@@ -426,27 +467,34 @@ export default function PhotoBeforeAfterFlow({
           {config.instruction}
         </p>
       )}
-      <div className="flex items-center gap-4 text-sm">
+      {/* 🆕 流程步驟卡片化 — 三段視覺化更清楚 */}
+      <div className="flex items-center gap-2 sm:gap-3 text-sm" data-testid="ba-flow-steps">
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center font-bold">1</div>
-          <span className="mt-1">{ba.beforeLabel || "前"}</span>
+          <div className="w-16 h-16 rounded-lg bg-primary/15 border-2 border-primary/40 flex items-center justify-center text-2xl font-bold text-primary shadow-sm">
+            1
+          </div>
+          <span className="mt-1 font-medium">{ba.beforeLabel || "前"}</span>
         </div>
-        <div className="text-muted-foreground">→</div>
+        <div className="flex flex-col items-center text-muted-foreground/60 text-2xl">→</div>
         <div className="flex flex-col items-center">
-          <Clock className="w-6 h-6 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground mt-1">
+          <div className="w-16 h-16 rounded-lg bg-muted/50 border border-dashed border-muted-foreground/30 flex items-center justify-center">
+            <Clock className="w-6 h-6 text-muted-foreground" />
+          </div>
+          <span className="text-xs text-muted-foreground mt-1 tabular-nums">
             等 {ba.minGapSeconds ?? 10} 秒
           </span>
         </div>
-        <div className="text-muted-foreground">→</div>
+        <div className="flex flex-col items-center text-muted-foreground/60 text-2xl">→</div>
         <div className="flex flex-col items-center">
-          <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center font-bold">2</div>
-          <span className="mt-1">{ba.afterLabel || "後"}</span>
+          <div className="w-16 h-16 rounded-lg bg-emerald-500/10 border-2 border-emerald-500/40 flex items-center justify-center text-2xl font-bold text-emerald-600 dark:text-emerald-400 shadow-sm">
+            2
+          </div>
+          <span className="mt-1 font-medium">{ba.afterLabel || "後"}</span>
         </div>
       </div>
       <Button
         size="lg"
-        className="gap-2 mt-4"
+        className="gap-2 mt-4 transition-transform active:scale-[0.97]"
         onClick={() => {
           setStage("before");
           camera.startCamera(config.defaultFacingMode ?? "user");
