@@ -87,7 +87,7 @@ export function InstructionView({
           <div className="space-y-3">
             <Button
               onClick={onStartCamera}
-              className="w-full gap-2"
+              className="w-full gap-2 transition-transform active:scale-[0.97] h-12"
               data-testid="button-open-camera"
               size="lg"
             >
@@ -137,7 +137,7 @@ function CameraErrorBanner({
         variant="outline"
         size="sm"
         onClick={onRetry}
-        className="mt-3 w-full gap-2"
+        className="mt-3 w-full gap-2 transition-transform active:scale-[0.97]"
       >
         <RefreshCw className="w-4 h-4" />
         重試
@@ -425,15 +425,20 @@ export function AiFailView({
 
           <div className="space-y-3">
             {canRetry && (
-              <Button onClick={onRetry} className="w-full gap-2">
+              <Button
+                onClick={onRetry}
+                className="w-full gap-2 transition-transform active:scale-[0.97]"
+              >
                 <RotateCcw className="w-4 h-4" />
-                重新拍照（剩餘 {maxRetries - retryCount} 次）
+                <span>
+                  重新拍照（剩餘 <span className="tabular-nums">{maxRetries - retryCount}</span> 次）
+                </span>
               </Button>
             )}
             <Button
               variant={canRetry ? "outline" : "default"}
               onClick={onSkip}
-              className="w-full gap-2"
+              className="w-full gap-2 transition-transform active:scale-[0.97]"
             >
               <SkipForward className="w-4 h-4" />
               {canRetry ? "跳過此任務" : "繼續下一步"}

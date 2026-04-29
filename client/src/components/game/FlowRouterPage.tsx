@@ -2,7 +2,7 @@
 // 正常遊戲中不會被渲染（GamePlay 的 resolveFlowRouter 會跳過），
 // 但作為安全網，若玩家直接落在此頁面，自動評估路由並跳轉。
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { evaluateFlowRouter } from "@/lib/flow-router";
 import type { FlowRouterConfig } from "@shared/schema";
 
@@ -33,10 +33,21 @@ export default function FlowRouterPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 極簡過場畫面（正常不會停留超過一幀）
+  // 極簡過場畫面（正常不會停留超過一幀，但作為安全網要友善）
   return (
-    <div className="flex items-center justify-center h-full min-h-[200px]">
-      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+    <div
+      className="flex flex-col items-center justify-center h-full min-h-[200px] gap-3"
+      data-testid="flow-router-fallback"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="relative">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <ArrowRight className="absolute inset-0 m-auto h-3 w-3 text-primary/60" />
+      </div>
+      <p className="text-xs text-muted-foreground animate-pulse">
+        正在評估流程...
+      </p>
     </div>
   );
 }
