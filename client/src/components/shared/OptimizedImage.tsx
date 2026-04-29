@@ -142,6 +142,8 @@ export default function OptimizedImage({
       {!isLoaded && <LoadingPlaceholder />}
       <img
         src={srcWithRetry}
+        srcSet={srcSetStr || undefined}
+        sizes={sizesStr}
         alt={alt}
         className={className}
         loading={loading}
