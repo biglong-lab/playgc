@@ -80,6 +80,10 @@ export interface UseStableGeolocationResult {
   retry: () => void;
   /** 強制重置採樣緩衝（場景切換時呼叫）*/
   reset: () => void;
+  /** 🧭 IMU 是否正在補位（GPS 失效時 true）*/
+  imuActive: boolean;
+  /** IMU 累積步數（從 anchor 起算）*/
+  imuSteps: number;
 }
 
 /**
