@@ -123,14 +123,22 @@ export async function detectText(imageUrl: string): Promise<OcrDetectResult> {
     };
   } catch (error: any) {
     const latencyMs = Date.now() - startTime;
-    const errorCode = error?.code === 8 ? "QUOTA_EXCEEDED" : error?.code === 7 ? "PERMISSION_DENIED" : "API_ERROR";
+    // 🆕 timeout / quota / billing / 其他都用 errorCode 標記
+    const isTimeout = error?.message === "OCR_TIMEOUT";
+    const errorCode = isTimeout
+      ? "TIMEOUT"
+      : error?.code === 8 ? "QUOTA_EXCEEDED"
+      : error?.code === 7 ? "PERMISSION_DENIED"
+      : "API_ERROR";
     return {
       success: false,
       fullText: "",
       textSegments: [],
       latencyMs,
       errorCode,
-      errorMessage: error?.message || "未知錯誤",
+      errorMessage: isTimeout
+        ? "OCR 處理超時（30 秒），可能是圖片過大或 Vision API 忙碌"
+        : error?.message || "未知錯誤",
     };
   }
 }
