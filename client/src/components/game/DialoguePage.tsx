@@ -335,16 +335,18 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
           </div>
         )}
 
-        {/* 🆕 玩家選項按鈕（顯示後不能跳到下一句，等選擇）*/}
+        {/* 🆕 玩家選項按鈕（顯示後不能跳到下一句，等選擇）+ 動畫 + 鍵盤快速鍵 */}
         {hasChoices && !isTyping && currentMessage?.choices && (
-          <div className="mt-4 flex flex-col gap-2 max-w-md mx-auto w-full">
-            <p className="text-xs text-muted-foreground text-center mb-1">請選擇：</p>
+          <div className="mt-4 flex flex-col gap-2 max-w-md mx-auto w-full animate-slideIn">
+            <p className="text-xs text-muted-foreground text-center mb-1">
+              請選擇 <span className="hidden md:inline text-[10px] opacity-60">（按 1-9 快速選）</span>
+            </p>
             {currentMessage.choices.map((choice, idx) => (
               <Button
                 key={idx}
                 variant="outline"
                 onClick={() => handleChoice(choice)}
-                className="w-full justify-start text-left whitespace-normal h-auto py-3 hover:bg-primary/10 hover:border-primary"
+                className="w-full justify-start text-left whitespace-normal h-auto py-3 hover:bg-primary/10 hover:border-primary hover:scale-[1.02] active:scale-[0.98] transition-all duration-150"
                 data-testid={`button-dialogue-choice-${idx}`}
               >
                 <span className="text-primary mr-2 font-bold">{idx + 1}.</span>
