@@ -330,6 +330,18 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
             <p className="text-muted-foreground">{config.instruction}</p>
           </div>
 
+          {/* 🛰️ GPS 精度即時顯示（玩家可見） */}
+          {isWatching && (
+            <div className="mb-4">
+              <GpsAccuracyIndicator
+                accuracy={gpsAccuracy}
+                quality={gpsQuality}
+                samples={gpsSamples}
+                active={gpsActive}
+              />
+            </div>
+          )}
+
           {hotZoneMessage && (
             <div className={`text-center mb-4 p-3 rounded-lg animate-pulse ${
               distance && distance <= targetRadius * 2
