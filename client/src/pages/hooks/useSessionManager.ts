@@ -94,6 +94,26 @@ export function useSessionManager({
     enabled: !!userId && !!gameId,
   });
 
+  // 🌐 取得當前 GPS 位置（給 location_lock 用）
+  // 失敗不阻斷 — 後端會 return error 並提示玩家允許定位
+  const getCurrentGpsCoords = async (): Promise<{ lat: number; lng: number } | null> => {
+    if (!navigator.geolocation) return null;
+    return new Promise((resolve) => {
+      const timeoutId = setTimeout(() => resolve(null), 8000);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          clearTimeout(timeoutId);
+          resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        },
+        () => {
+          clearTimeout(timeoutId);
+          resolve(null);
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
+      );
+    });
+  };
+
   // 建立新 session
   const createSessionMutation = useMutation({
     mutationFn: async () => {
@@ -104,12 +124,17 @@ export function useSessionManager({
         if (stored && stored.trim()) playerName = stored.trim();
       } catch { /* ignore */ }
 
+      // 🌐 location_lock：先試取 GPS（後端會檢查是否在指定地點）
+      // 不阻塞：取不到也送出，後端會回 400 並提示玩家
+      const coords = await getCurrentGpsCoords();
+
       const response = await apiRequest("POST", "/api/sessions", {
         gameId,
-        // 若有匿名暱稱，team_name 也用它（而非 "玩家's Team"）
         teamName: playerName ? `${playerName}'s Team` : `${userName}'s Team`,
         playerName,
         playerCount: 1,
+        // 帶上 GPS（給後端 location_lock 驗證）
+        ...(coords ? { playerLat: coords.lat, playerLng: coords.lng } : {}),
       });
       return response.json();
     },
@@ -128,9 +153,19 @@ export function useSessionManager({
       queryClient.invalidateQueries({ queryKey: ["/api/sessions/active", gameId] });
       toast({ title: "遊戲開始", description: "祝你好運!" });
     },
-    onError: () => {
+    onError: (err: any) => {
       setForceNewSession(false);
-      toast({ title: "錯誤", description: "無法開始遊戲，請重試", variant: "destructive" });
+      // 🌐 location_lock 錯誤訊息（後端回 400/403 + requireLocation: true）
+      const errMsg = err?.message ?? err?.response?.data?.message ?? "";
+      if (errMsg.includes("地點") || errMsg.includes("GPS")) {
+        toast({
+          title: "需在指定地點才能開始",
+          description: errMsg,
+          variant: "destructive",
+        });
+      } else {
+        toast({ title: "錯誤", description: "無法開始遊戲，請重試", variant: "destructive" });
+      }
     },
   });
 
