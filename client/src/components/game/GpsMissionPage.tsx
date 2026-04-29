@@ -106,11 +106,11 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
     }
   }, [soundEnabled]);
 
-  const updateLocation = useCallback((position: GeolocationPosition) => {
-    const { latitude, longitude } = position.coords;
-    setUserLocation({ lat: latitude, lng: longitude });
-    
-    const dist = calculateDistance(latitude, longitude, targetLat, targetLng);
+  // 🛰️ 處理穩定後的 GPS 位置（從 useStableGeolocation 來）
+  const handleStableLocation = useCallback((pos: StablePosition) => {
+    setUserLocation({ lat: pos.lat, lng: pos.lng });
+
+    const dist = calculateDistance(pos.lat, pos.lng, targetLat, targetLng);
     setDistance(dist);
     setIsLocating(false);
     setError(null);
@@ -121,37 +121,35 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
       } else if (dist <= targetRadius * 2) {
         setHotZoneMessage("非常接近了！");
       } else if (dist <= targetRadius * 5) {
-        setHotZoneMessage(`快到了！${getDirectionHint(latitude, longitude)}`);
+        setHotZoneMessage(`快到了！${getDirectionHint(pos.lat, pos.lng)}`);
       } else if (dist <= 200) {
-        setHotZoneMessage(getDirectionHint(latitude, longitude));
+        setHotZoneMessage(getDirectionHint(pos.lat, pos.lng));
       } else {
         setHotZoneMessage(null);
       }
     }
 
-    // 使用 soundEnabled state（玩家可切換），而非 config.proximitySound（一次性設定）
     if (soundEnabled) {
       playProximityBeep(dist);
     }
 
-    // accuracy 加權：若 GPS 精度差（大於 30m），寬鬆判定到達
-    const accuracy = position.coords.accuracy ?? 0;
-    const effectiveRadius = targetRadius + Math.min(accuracy * 0.5, 50);
+    // 🎯 accuracy 加權：若 GPS 精度差，寬鬆判定（最多放寬 50m）
+    // pos.accuracy 已經是經 Kalman 濾波後的等效精度（比單次採樣更穩）
+    const effectiveRadius = targetRadius + Math.min(pos.accuracy * 0.5, 50);
 
-    if (dist <= effectiveRadius && !hasArrivedRef.current) {
+    // 額外條件：採樣數 ≥ 3 才允許判定到達（避免暖機期誤判）
+    if (
+      pos.samplesUsed >= 3 &&
+      dist <= effectiveRadius &&
+      !hasArrivedRef.current
+    ) {
       hasArrivedRef.current = true;
       toast({
         title: "到達目標位置!",
         description: config.onSuccess?.message || "任務完成!",
       });
-      // 優先用 ref（避免 stale closure）
-      const id = watchIdRef.current;
-      if (id !== null) {
-        navigator.geolocation.clearWatch(id);
-        watchIdRef.current = null;
-      }
+      setIsWatching(false); // 觸發 hook cleanup
       setTimeout(() => {
-        // 🔧 RewardsSection 存 rewardPoints/rewardItems，舊 onSuccess.* 向後相容
         const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
         const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
         const reward: { points?: number; items?: string[] } = {
@@ -166,6 +164,18 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
       }, 1500);
     }
   }, [calculateDistance, targetLat, targetLng, targetRadius, toast, onComplete, config, getDirectionHint, playProximityBeep, soundEnabled]);
+
+  // ⚠️ 向後相容：保留 updateLocation 給 locateOnce 用
+  const updateLocation = useCallback((position: GeolocationPosition) => {
+    handleStableLocation({
+      lat: position.coords.latitude,
+      lng: position.coords.longitude,
+      accuracy: position.coords.accuracy ?? 50,
+      timestamp: position.timestamp,
+      smoothed: false,
+      samplesUsed: 1,
+    });
+  }, [handleStableLocation]);
 
   const handleLocationError = useCallback((err: GeolocationPositionError) => {
     setIsLocating(false);
