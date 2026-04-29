@@ -252,63 +252,107 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
       </div>
 
       <div className="flex-1 flex flex-col justify-end pb-4">
-        <div 
-          className={`flex gap-4 ${bubbleVisible ? "animate-slideIn" : "opacity-0"}`} 
-          key={currentMessageIndex}
-        >
-          <div className="relative">
-            <Avatar className={`w-14 h-14 border-2 shadow-lg ring-2 transition-all duration-300 ${
-              currentEmotion === "angry" ? "border-red-500 ring-red-500/30" :
-              currentEmotion === "happy" ? "border-yellow-500 ring-yellow-500/30" :
-              currentEmotion === "sad" ? "border-blue-500 ring-blue-500/30" :
-              currentEmotion === "surprised" ? "border-purple-500 ring-purple-500/30" :
-              currentEmotion === "thinking" ? "border-cyan-500 ring-cyan-500/30" :
-              "border-primary ring-primary/30"
-            }`}>
-              {getCurrentAvatar() ? (
-                <AvatarImage src={getCurrentAvatar()!} alt={character.name} />
-              ) : null}
-              <AvatarFallback className="bg-primary/20 text-primary font-display font-bold">
-                {character.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            
-            {config?.showEmotionIndicator && EmotionIcon && (
-              <div className={`absolute -bottom-1 -right-1 p-1 rounded-full bg-background border-2 ${EMOTION_COLORS[currentEmotion]}`}>
-                <EmotionIcon className="w-3 h-3" />
-              </div>
-            )}
+        {/* 🆕 system 旁白：置中、無頭像、灰色文字 */}
+        {isSystemMessage ? (
+          <div
+            className={`max-w-md mx-auto text-center py-3 px-4 rounded-lg bg-muted/30 border border-border/50 ${bubbleVisible ? "animate-slideIn" : "opacity-0"}`}
+            key={currentMessageIndex}
+          >
+            <p className="font-chinese text-sm text-muted-foreground italic leading-relaxed">
+              {displayedText}
+              {isTyping && (
+                <span className="inline-block w-1 h-3 bg-muted-foreground ml-1 animate-pulse" />
+              )}
+            </p>
           </div>
-          
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <p className="font-display text-sm font-bold text-primary uppercase tracking-wider">
-                {character.name}
-              </p>
-              {config?.showEmotionIndicator && EMOTION_LABELS[currentEmotion] && (
-                <span className={`text-xs px-2 py-0.5 rounded-full bg-muted ${EMOTION_COLORS[currentEmotion]}`}>
-                  {EMOTION_LABELS[currentEmotion]}
-                </span>
+        ) : (
+          /* npc / player 氣泡：左右對齊 */
+          <div
+            className={`flex gap-4 ${isPlayerMessage ? "flex-row-reverse" : ""} ${bubbleVisible ? "animate-slideIn" : "opacity-0"}`}
+            key={currentMessageIndex}
+          >
+            <div className="relative shrink-0">
+              <Avatar className={`w-14 h-14 border-2 shadow-lg ring-2 transition-all duration-300 ${
+                isPlayerMessage ? "border-blue-400 ring-blue-400/30" :
+                currentEmotion === "angry" ? "border-red-500 ring-red-500/30" :
+                currentEmotion === "happy" ? "border-yellow-500 ring-yellow-500/30" :
+                currentEmotion === "sad" ? "border-blue-500 ring-blue-500/30" :
+                currentEmotion === "surprised" ? "border-purple-500 ring-purple-500/30" :
+                currentEmotion === "thinking" ? "border-cyan-500 ring-cyan-500/30" :
+                "border-primary ring-primary/30"
+              }`}>
+                {getCurrentAvatar() ? (
+                  <AvatarImage src={getCurrentAvatar()!} alt={getCurrentSpeakerName()} />
+                ) : null}
+                <AvatarFallback className={isPlayerMessage ? "bg-blue-400/20 text-blue-400 font-display font-bold" : "bg-primary/20 text-primary font-display font-bold"}>
+                  {getCurrentSpeakerName().charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+
+              {config?.showEmotionIndicator && EmotionIcon && !isPlayerMessage && (
+                <div className={`absolute -bottom-1 -right-1 p-1 rounded-full bg-background border-2 ${EMOTION_COLORS[currentEmotion]}`}>
+                  <EmotionIcon className="w-3 h-3" />
+                </div>
               )}
             </div>
-            <div className={`bg-card border rounded-lg rounded-tl-none p-4 relative transition-all duration-300 ${
-              currentEmotion === "angry" ? "border-red-500/50 shadow-red-500/20 shadow-lg" :
-              currentEmotion === "happy" ? "border-yellow-500/50 shadow-yellow-500/20 shadow-lg" :
-              currentEmotion === "sad" ? "border-blue-500/50 shadow-blue-500/20 shadow-lg" :
-              currentEmotion === "surprised" ? "border-purple-500/50 shadow-purple-500/20 shadow-lg" :
-              currentEmotion === "thinking" ? "border-cyan-500/50 shadow-cyan-500/20 shadow-lg" :
-              "border-border"
-            }`}>
-              <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-card border-b-8 border-b-transparent" />
-              <p className="font-chinese text-base leading-relaxed">
-                {displayedText}
-                {isTyping && (
-                  <span className="inline-block w-1 h-4 bg-primary ml-1 animate-pulse" />
+
+            <div className="flex-1">
+              <div className={`flex items-center gap-2 mb-2 ${isPlayerMessage ? "justify-end" : ""}`}>
+                <p className={`font-display text-sm font-bold uppercase tracking-wider ${isPlayerMessage ? "text-blue-400" : "text-primary"}`}>
+                  {getCurrentSpeakerName()}
+                </p>
+                {!isPlayerMessage && config?.showEmotionIndicator && EMOTION_LABELS[currentEmotion] && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full bg-muted ${EMOTION_COLORS[currentEmotion]}`}>
+                    {EMOTION_LABELS[currentEmotion]}
+                  </span>
                 )}
-              </p>
+              </div>
+              <div className={`bg-card border p-4 relative transition-all duration-300 ${
+                isPlayerMessage ? "rounded-lg rounded-tr-none border-blue-400/50 shadow-blue-400/20 shadow-lg" :
+                "rounded-lg rounded-tl-none " + (
+                  currentEmotion === "angry" ? "border-red-500/50 shadow-red-500/20 shadow-lg" :
+                  currentEmotion === "happy" ? "border-yellow-500/50 shadow-yellow-500/20 shadow-lg" :
+                  currentEmotion === "sad" ? "border-blue-500/50 shadow-blue-500/20 shadow-lg" :
+                  currentEmotion === "surprised" ? "border-purple-500/50 shadow-purple-500/20 shadow-lg" :
+                  currentEmotion === "thinking" ? "border-cyan-500/50 shadow-cyan-500/20 shadow-lg" :
+                  "border-border"
+                )
+              }`}>
+                {/* 對話泡角（左 / 右） */}
+                {isPlayerMessage ? (
+                  <div className="absolute -right-2 top-4 w-0 h-0 border-t-8 border-t-transparent border-l-8 border-l-card border-b-8 border-b-transparent" />
+                ) : (
+                  <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-card border-b-8 border-b-transparent" />
+                )}
+                <p className="font-chinese text-base leading-relaxed">
+                  {displayedText}
+                  {isTyping && (
+                    <span className="inline-block w-1 h-4 bg-primary ml-1 animate-pulse" />
+                  )}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* 🆕 玩家選項按鈕（顯示後不能跳到下一句，等選擇）*/}
+        {hasChoices && !isTyping && currentMessage?.choices && (
+          <div className="mt-4 flex flex-col gap-2 max-w-md mx-auto w-full">
+            <p className="text-xs text-muted-foreground text-center mb-1">請選擇：</p>
+            {currentMessage.choices.map((choice, idx) => (
+              <Button
+                key={idx}
+                variant="outline"
+                onClick={() => handleChoice(choice)}
+                className="w-full justify-start text-left whitespace-normal h-auto py-3 hover:bg-primary/10 hover:border-primary"
+                data-testid={`button-dialogue-choice-${idx}`}
+              >
+                <span className="text-primary mr-2 font-bold">{idx + 1}.</span>
+                {choice.text}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-border">
