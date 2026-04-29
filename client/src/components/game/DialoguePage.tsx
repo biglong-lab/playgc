@@ -57,12 +57,31 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
   const currentEmotion = currentMessage?.emotion || "neutral";
   const EmotionIcon = EMOTION_ICONS[currentEmotion];
 
+  // 🆕 speaker 邏輯（npc / player / system，預設 npc）
+  const currentSpeaker = currentMessage?.speaker || "npc";
+  const isPlayerMessage = currentSpeaker === "player";
+  const isSystemMessage = currentSpeaker === "system";
+
+  // 🆕 是否有玩家選項（有 choices → 不自動進下一句，等玩家選）
+  const hasChoices = !!(currentMessage?.choices && currentMessage.choices.length > 0);
+
   const getCurrentAvatar = () => {
+    // 🆕 訊息層級的 speakerAvatar 優先
+    if (currentMessage?.speakerAvatar) return currentMessage.speakerAvatar;
+    if (isPlayerMessage) return (config as any).playerAvatar; // 玩家頭像
     if (character.emotionAvatars && currentEmotion !== "neutral") {
       const emotionAvatar = character.emotionAvatars[currentEmotion];
       if (emotionAvatar) return emotionAvatar;
     }
     return character.avatar;
+  };
+
+  // 🆕 取得發言者名稱（訊息層級 speakerName 優先，玩家用「你」）
+  const getCurrentSpeakerName = () => {
+    if (currentMessage?.speakerName) return currentMessage.speakerName;
+    if (isPlayerMessage) return "你";
+    if (isSystemMessage) return "旁白";
+    return character.name;
   };
 
   useEffect(() => {
