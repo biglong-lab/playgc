@@ -182,10 +182,18 @@ export default function GamePlay() {
       (id) => !currentState.inventory.includes(id),
     );
     if (pointsDelta > 0 || newItemIds.length > 0) {
+      // 🔍 fallback warn：若 itemId 在 game items 中找不到（被刪 / 跨遊戲污染）
+      newItemIds.forEach((id) => {
+        if (!itemIdToInfo.get(id)) {
+          console.warn(
+            `[GamePlay] itemId ${id} 不在當前遊戲的 items 列表中，可能是孤兒 ID（item 被刪 / DB 污染）`,
+          );
+        }
+      });
       fireReward({
         points: pointsDelta > 0 ? pointsDelta : undefined,
         items: newItemIds.map((id) => ({
-          name: itemIdToInfo.get(id)?.name || id,
+          name: itemIdToInfo.get(id)?.name || `❓ 未知道具`,
           iconUrl: itemIdToInfo.get(id)?.iconUrl ?? undefined,
         })),
       });
