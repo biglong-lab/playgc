@@ -49,6 +49,33 @@ export default function ConditionalVerifyEditor({
     enabled: !!gameId && gameId !== "new",
   });
 
+  // 🐛 修：第一次進編輯器時 admin 看似已有預設值（碎片類型 + 數量）
+  // 但 fragments[] 是空陣列 → 玩家端 isFragmentMode=false → 看不到碎片 UI
+  // 自動初始化：偵測 fragmentCount > 0 但 fragments 為空 → 自動 generate
+  useEffect(() => {
+    const hasCount = (config.fragmentCount as number | undefined) ?? 0;
+    if (hasCount > 0 && fragments.length === 0) {
+      const type = (config.fragmentType as string | undefined) || "numbers";
+      const generated: Fragment[] = [];
+      for (let i = 0; i < hasCount; i++) {
+        let value = "";
+        if (type === "numbers") value = String(Math.floor(Math.random() * 10));
+        else if (type === "letters") value = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+        generated.push({
+          id: `f${i + 1}`,
+          label: `碎片 ${i + 1}/${hasCount}`,
+          value,
+          order: i + 1,
+        });
+      }
+      updateField("fragments", generated);
+      if (type !== "custom") {
+        updateField("targetCode", generated.map((f) => f.value).join(""));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const updateFragments = (newFragments: Fragment[]) => {
     updateField("fragments", newFragments);
     if (config.fragmentType !== "custom") {
