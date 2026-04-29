@@ -272,6 +272,60 @@ describe("admin-fields 路由", () => {
   });
 
   // ══════════════════════════════════════════════════════════
+  // 🆕 2026-04-30 — PATCH /api/admin/fields/:id/settings
+  //   today bug：handleSaveFieldCover 一開始打到 :id（被忽略）
+  //   實際處理 theme / coverImagePosition 的端點是 /settings
+  //   這裡補測試鎖定 zod schema 行為，避免下次再回歸
+  // ══════════════════════════════════════════════════════════
+  describe("PATCH /api/admin/fields/:id/settings — 主題與 coverImagePosition", () => {
+    it("成功更新 coverImagePosition（合法格式 'X% Y%'）", async () => {
+      const existingField = { id: "field-1", name: "場域一", settings: { theme: {} } };
+      mockDb.query.fields.findFirst.mockResolvedValue(existingField);
+      // update 鏈不需要 returning（settings 端點不回傳 row）
+      mockDb._chain.where.mockResolvedValue(undefined);
+      const app = createApp();
+      const res = await request(app)
+        .patch("/api/admin/fields/field-1/settings")
+        .set(adminHeaders)
+        .send({ theme: { coverImagePosition: "30% 70%" } });
+      expect(res.status).toBe(200);
+    });
+
+    it("super_admin 可改任何場域的 coverImagePosition", async () => {
+      const existingField = { id: "field-2", name: "其他場域", settings: { theme: {} } };
+      mockDb.query.fields.findFirst.mockResolvedValue(existingField);
+      mockDb._chain.where.mockResolvedValue(undefined);
+      const app = createApp();
+      const res = await request(app)
+        .patch("/api/admin/fields/field-2/settings")
+        .set(superAdminHeaders)
+        .send({ theme: { coverImagePosition: "50% 50%" } });
+      expect(res.status).toBe(200);
+    });
+
+    it("拒絕惡意 coverImagePosition 格式（防 CSS 注入）", async () => {
+      const existingField = { id: "field-1", name: "場域一", settings: { theme: {} } };
+      mockDb.query.fields.findFirst.mockResolvedValue(existingField);
+      const app = createApp();
+      const res = await request(app)
+        .patch("/api/admin/fields/field-1/settings")
+        .set(adminHeaders)
+        .send({ theme: { coverImagePosition: "<script>alert(1)</script>" } });
+      // zod regex 攔住惡意格式 → 400
+      expect(res.status).toBe(400);
+    });
+
+    it("非 super_admin 不能改其他場域的 settings", async () => {
+      const app = createApp();
+      const res = await request(app)
+        .patch("/api/admin/fields/field-2/settings")
+        .set(adminHeaders) // x-field-id: field-1
+        .send({ theme: { coverImagePosition: "30% 70%" } });
+      expect(res.status).toBe(403);
+    });
+  });
+
+  // ══════════════════════════════════════════════════════════
   // 🆕 TRACK B1: seed-default-roles 路由邊界測試
   // 完整 seed + auto-assign 行為由 B4/B5 E2E 覆蓋（避免 mock db 鏈過度複雜）
   // ══════════════════════════════════════════════════════════
