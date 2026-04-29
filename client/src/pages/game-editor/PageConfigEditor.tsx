@@ -1956,9 +1956,10 @@ export default function PageConfigEditor({
         />
       </div>
 
-      {/* 🆕 G1: 預覽 Dialog */}
+      {/* 🆕 G1: 預覽 Dialog（帶真 gameId 讓 AI 評分能找到場域 key）*/}
       <PagePreviewDialog
         page={previewOpen ? page : null}
+        gameId={gameId}
         onClose={() => setPreviewOpen(false)}
       />
 
