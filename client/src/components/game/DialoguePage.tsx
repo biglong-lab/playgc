@@ -203,6 +203,28 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
     }
   };
 
+  // 🆕 鍵盤快速鍵：1-9 快速選擇對話選項（桌面玩家友善）
+  useEffect(() => {
+    if (!hasChoices || isTyping) return;
+    const choices = currentMessage?.choices;
+    if (!choices || choices.length === 0) return;
+
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // 排除 input / textarea 內按鍵
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+
+      const num = parseInt(e.key, 10);
+      if (num >= 1 && num <= choices.length) {
+        e.preventDefault();
+        handleChoice(choices[num - 1]);
+      }
+    };
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasChoices, isTyping, currentMessage]);
+
   const [isConfirmingSkip, setIsConfirmingSkip] = useState(false);
   const skipConfirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
