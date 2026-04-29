@@ -22,6 +22,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import OptimizedImage from "@/components/shared/OptimizedImage";
+import {
+  DEFAULT_POSITION,
+  formatPosition,
+  parsePosition,
+  positionFromPointer,
+} from "@/lib/cover-position";
 
 interface EditableCoverImageProps {
   /** 圖片 URL（null/undefined 顯示 fallback）*/
@@ -51,25 +57,13 @@ interface EditableCoverImageProps {
   readonly testId?: string;
 }
 
-/** 把 X/Y 位置（0-100 區間）clamp 並格式化成 "X% Y%" */
-function formatPosition(x: number, y: number): string {
-  const cx = Math.max(0, Math.min(100, x));
-  const cy = Math.max(0, Math.min(100, y));
-  return `${cx.toFixed(1)}% ${cy.toFixed(1)}%`;
-}
-
-/** 解析 "X% Y%" → { x, y } */
-function parsePosition(pos: string | undefined): { x: number; y: number } {
-  if (!pos) return { x: 50, y: 50 };
-  const match = pos.match(/(\d+(?:\.\d+)?)\s*%\s+(\d+(?:\.\d+)?)\s*%/);
-  if (!match) return { x: 50, y: 50 };
-  return { x: parseFloat(match[1]), y: parseFloat(match[2]) };
-}
+// 🆕 formatPosition / parsePosition / DEFAULT_POSITION 已抽到 @/lib/cover-position
+//    並有單元測試保護（避免 toFixed / clamp / NaN 邊界 case 回歸）
 
 export default function EditableCoverImage({
   src,
   alt,
-  position = "50% 50%",
+  position = DEFAULT_POSITION,
   isAdmin,
   uploadEndpoint,
   onSave,
@@ -99,10 +93,8 @@ export default function EditableCoverImage({
     (clientX: number, clientY: number) => {
       const el = containerRef.current;
       if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const x = ((clientX - rect.left) / rect.width) * 100;
-      const y = ((clientY - rect.top) / rect.height) * 100;
-      setDraftPosition(formatPosition(x, y));
+      // 🆕 改用 lib/cover-position 的 positionFromPointer（含防除零 + clamp）
+      setDraftPosition(positionFromPointer(clientX, clientY, el.getBoundingClientRect()));
     },
     [],
   );
