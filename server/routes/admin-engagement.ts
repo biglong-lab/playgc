@@ -127,6 +127,9 @@ export function registerAdminEngagementRoutes(app: Express) {
     async (req, res) => {
       try {
         const fieldId = req.params.fieldId;
+        // 🔒 場域隔離
+        if (!assertFieldOwnership(req.admin, fieldId, res)) return;
+
         const parsed = upsertSettingsSchema.safeParse(req.body);
         if (!parsed.success) {
           return res.status(400).json({
