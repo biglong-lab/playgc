@@ -165,7 +165,7 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
       const visit = await storage.createLocationVisit(visitData);
       const earnedPoints = location.points || 0;
 
-      const progressList = await storage.getPlayerProgress(sessionId);
+      // 已於前面取得 progressList（避免重複 query）
       const playerProgressEntry = progressList.find(p => p.userId === userId);
       if (playerProgressEntry) {
         const currentScore = playerProgressEntry.score || 0;
