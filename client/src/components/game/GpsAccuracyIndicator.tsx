@@ -24,6 +24,12 @@ interface GpsAccuracyIndicatorProps {
   /** compact 模式：只顯示一行小字（給其他頁的角落用）*/
   compact?: boolean;
   className?: string;
+  /** 🤝 多人融合資訊（若提供 contributors > 1 → 顯示融合徽章）*/
+  fusion?: {
+    contributors: number;       // 融合用了幾人
+    scattered: boolean;          // 隊友是否分散
+    improvementRatio: number;    // 0-1，越接近 1 表示提升越多
+  };
 }
 
 export function GpsAccuracyIndicator({
