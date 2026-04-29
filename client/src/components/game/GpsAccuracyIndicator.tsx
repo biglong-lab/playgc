@@ -30,6 +30,11 @@ interface GpsAccuracyIndicatorProps {
     scattered: boolean;          // 隊友是否分散
     improvementRatio: number;    // 0-1，越接近 1 表示提升越多
   };
+  /** 🧭 IMU PDR 狀態（GPS 失效時切到 IMU）*/
+  imu?: {
+    active: boolean;
+    steps: number;
+  };
 }
 
 export function GpsAccuracyIndicator({
