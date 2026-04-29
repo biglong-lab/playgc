@@ -106,7 +106,7 @@ export interface IStorage {
   getSessionsByUser(userId: string): Promise<{ session: GameSession; progress: PlayerProgress }[]>;
   createSession(session: InsertGameSession): Promise<GameSession>;
   updateSession(id: string, session: Partial<InsertGameSession>): Promise<GameSession | undefined>;
-  abandonStaleSessions(thresholdHours: number): Promise<GameSession[]>;
+  abandonStaleSessions(thresholdHours: number, fieldId?: string): Promise<GameSession[]>;
 
   getPlayerProgress(sessionId: string): Promise<PlayerProgress[]>;
   getPlayerProgressByUser(sessionId: string, userId: string): Promise<PlayerProgress | undefined>;
