@@ -258,6 +258,12 @@ async function resolveAiContext(gameId?: string): Promise<AiContextResolved> {
 export function registerAiScoringRoutes(app: Express): void {
   // POST /api/ai/verify-photo — AI 照片驗證
   app.post("/api/ai/verify-photo", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
+    const startedAt = Date.now();
+    let resolvedFieldId: string | undefined;
+    let resolvedProvider: ReturnType<typeof detectProvider> = "gemini";
+    let bodyGameId: string | undefined;
+
     try {
       // 驗證輸入
       const parsed = verifyPhotoSchema.safeParse(req.body);
@@ -266,18 +272,43 @@ export function registerAiScoringRoutes(app: Express): void {
       }
 
       const { imageUrl, targetKeywords, instruction, confidenceThreshold, gameId, modelId } = parsed.data;
+      bodyGameId = gameId;
 
-      // 解析場域 API Key（有場域 Key 就用場域的，否則 fallback 全域）
-      const fieldApiKey = await resolveAiApiKey(gameId);
+      // 解析場域 API Key + fieldId（log 用）
+      const ctx = await resolveAiContext(gameId);
+      const fieldApiKey = ctx.apiKey;
+      resolvedFieldId = ctx.fieldId;
+      resolvedProvider = detectProvider(fieldApiKey);
 
       // 檢查 Gemini 是否已設定
       if (!isGeminiConfigured(fieldApiKey)) {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "verify-photo",
+          success: false,
+          errorCode: "AI_NOT_CONFIGURED",
+          errorMessage: "AI 服務未設定",
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 503, "AI 服務未設定");
       }
 
       // Rate limit 檢查
-      const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
       if (!checkRateLimit(userId)) {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "verify-photo",
+          success: false,
+          errorCode: "RATE_LIMITED",
+          errorMessage: "AI 呼叫次數過多",
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
       }
 
@@ -288,6 +319,24 @@ export function registerAiScoringRoutes(app: Express): void {
       // 根據閾值判斷是否通過
       const verified = result.confidence >= threshold;
 
+      // 📊 記錄成功
+      await logAiUsage({
+        provider: resolvedProvider,
+        endpoint: "verify-photo",
+        success: true,
+        latencyMs: Date.now() - startedAt,
+        gameId,
+        fieldId: resolvedFieldId,
+        userId,
+        context: {
+          verified,
+          confidence: result.confidence,
+          threshold,
+          modelId: modelId || null,
+          detectedCount: result.detectedObjects?.length ?? 0,
+        },
+      });
+
       return res.json({
         verified,
         confidence: result.confidence,
@@ -297,9 +346,40 @@ export function registerAiScoringRoutes(app: Express): void {
     } catch (error) {
       // 場域 AI 被停用
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "verify-photo",
+          success: false,
+          errorCode: "FIELD_AI_DISABLED",
+          errorMessage: "此場域 AI 功能已停用",
+          latencyMs: Date.now() - startedAt,
+          gameId: bodyGameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 503, "此場域的 AI 功能已停用");
       }
       console.error("[ai-scoring] verify-photo 失敗:", error);
+
+      const errMsg = error instanceof Error ? error.message : String(error);
+      // 推測 errorCode（QUOTA / API_KEY / 其他）
+      let errorCode = "UNHANDLED_ERROR";
+      if (/quota|429|rate.?limit/i.test(errMsg)) errorCode = "QUOTA_EXCEEDED";
+      else if (/API.?key|invalid.?key|401/i.test(errMsg)) errorCode = "API_KEY_INVALID";
+      else if (/timeout|ECONN|fetch/i.test(errMsg)) errorCode = "NETWORK_ERROR";
+
+      await logAiUsage({
+        provider: resolvedProvider,
+        endpoint: "verify-photo",
+        success: false,
+        errorCode,
+        errorMessage: errMsg.slice(0, 500),
+        latencyMs: Date.now() - startedAt,
+        gameId: bodyGameId,
+        fieldId: resolvedFieldId,
+        userId,
+      });
+
       // 🛡️ AI 失敗不阻斷遊戲，但 verified=false（不自動通過）
       // 前端會偵測 fallback 旗標，讓玩家繼續但不給 points（避免被濫用）
       return res.json({
