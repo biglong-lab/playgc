@@ -225,6 +225,19 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
       }
 
       const targetPlayerId = typeof playerId === 'string' ? playerId : userId;
+
+      // 🔒 §19 隱私保護：只能查自己 visits 或同隊
+      if (targetPlayerId !== userId) {
+        const progressList = await storage.getPlayerProgress(sessionId);
+        const me = progressList.find((p) => p.userId === userId);
+        const target = progressList.find((p) => p.userId === targetPlayerId);
+        const sameTeam = me && target && (me as any).teamId
+          && (me as any).teamId === (target as any).teamId;
+        if (!sameTeam) {
+          return res.status(403).json({ message: "無權查看他人 visits" });
+        }
+      }
+
       const visits = await storage.getLocationVisits(sessionId, targetPlayerId);
       res.json(visits);
     } catch (_error) {
