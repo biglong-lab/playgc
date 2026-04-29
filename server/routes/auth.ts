@@ -12,6 +12,36 @@ import { db } from "../db";
 import { fields, roles, rolePermissions, adminAccounts, adminSessions } from "@shared/schema";
 import jwt from "jsonwebtoken";
 import { eq, and, gt } from "drizzle-orm";
+import { timingSafeEqual } from "crypto";
+
+// 🔒 平台擁有者登入失敗計數（per-IP，記憶體）
+// 5 次失敗 → 30 分鐘鎖定
+const ownerLoginFailures = new Map<string, { count: number; resetAt: number }>();
+const OWNER_LOGIN_MAX_FAILURES = 5;
+const OWNER_LOGIN_LOCK_MS = 30 * 60_000; // 30 分鐘
+
+// 定期清理過期計數
+setInterval(() => {
+  const now = Date.now();
+  ownerLoginFailures.forEach((entry, ip) => {
+    if (now > entry.resetAt) ownerLoginFailures.delete(ip);
+  });
+}, 60_000);
+
+/** Timing-safe 字串比對（防止 timing attack 暴力破解 secret）*/
+function timingSafeStringEqual(a: string, b: string): boolean {
+  // 長度不同必為不等，但仍跑一次比對避免 length 洩漏
+  const maxLen = Math.max(a.length, b.length);
+  const aBuf = Buffer.alloc(maxLen, "0");
+  const bBuf = Buffer.alloc(maxLen, "0");
+  aBuf.write(a);
+  bBuf.write(b);
+  if (a.length !== b.length) {
+    timingSafeEqual(aBuf, bBuf); // 跑一次拋掉
+    return false;
+  }
+  return timingSafeEqual(aBuf, bBuf);
+}
 
 export function registerAuthRoutes(app: Express) {
   // 玩家認證
