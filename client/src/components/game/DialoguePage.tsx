@@ -42,7 +42,7 @@ const EMOTION_LABELS = {
   thinking: "思考中",
 };
 
-export default function DialoguePage({ config, onComplete }: DialoguePageProps) {
+export default function DialoguePage({ config, onComplete, onVariableUpdate }: DialoguePageProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [displayedText, setDisplayedText] = useState("");
   const [isTyping, setIsTyping] = useState(true);
