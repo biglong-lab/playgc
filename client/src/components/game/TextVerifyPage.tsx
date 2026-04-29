@@ -109,6 +109,16 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
   // 防重複 onComplete（AI 評分 race / 使用者在動畫中 mash Enter）
   const finishedRef = useRef(false);
 
+  // 🆕 input ref + 答錯後 auto-focus（鍵盤友善，桌面玩家不需點 input）
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (isCorrect === false && inputRef.current && !isAnimating) {
+      // 動畫結束後 focus（避免動畫中焦點搶走滾動）
+      const t = setTimeout(() => inputRef.current?.focus(), 600);
+      return () => clearTimeout(t);
+    }
+  }, [isCorrect, isAnimating]);
+
   const handleCorrect = (feedbackMessage?: string) => {
     if (finishedRef.current) return;
     setIsCorrect(true);
