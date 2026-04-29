@@ -116,8 +116,11 @@ export default function OptimizedImage({
   // 🆕 未載入完成時，同時 render img（hidden）和 loading placeholder
   //   img 掛著讓瀏覽器去抓，但用 opacity:0 + absolute 把 broken 樣式蓋掉
   //   使用者只看到 loading spinner 直到圖真的載好
+  //
+  // 🐛 修復：wrapper div 永遠 w-full h-full，避免 className 含 h- 時 wrapper 沒設高度
+  // 造成圖片只佔自然尺寸（下方留白）— 影響 text_card 圖片在上模式
   return (
-    <div className={`relative ${className.includes("w-") || className.includes("h-") ? "" : "w-full h-full"}`}>
+    <div className="relative w-full h-full">
       {!isLoaded && <LoadingPlaceholder />}
       <img
         src={srcWithRetry}
