@@ -1,6 +1,11 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { ImageOff, Loader2 } from "lucide-react";
-import { getOptimizedImageUrl, type ImagePreset } from "@/lib/image-utils";
+import {
+  getOptimizedImageUrl,
+  buildSrcSet,
+  SIZES_PRESETS,
+  type ImagePreset,
+} from "@/lib/image-utils";
 
 interface OptimizedImageProps {
   /** 圖片 URL（支援 Cloudinary 自動優化） */
@@ -19,6 +24,13 @@ interface OptimizedImageProps {
   readonly onError?: () => void;
   /** 額外的載入完成回呼 */
   readonly onLoad?: () => void;
+  /**
+   * 🆕 自訂 sizes attribute（不傳 = 用 preset 預設）
+   * 例：sizes="(max-width: 768px) 100vw, 600px"
+   */
+  readonly sizes?: string;
+  /** 🆕 是否停用 srcSet（預設 false，啟用多解析度）*/
+  readonly disableSrcSet?: boolean;
 }
 
 /** 預設的錯誤佔位元件 */
