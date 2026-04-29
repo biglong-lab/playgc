@@ -41,11 +41,20 @@ export function InstructionView({ config, state, actions }: Omit<ViewProps, "sca
         {state.cameraError && <CameraErrorBanner error={state.cameraError} onRetry={actions.handleRetry} />}
 
         <div className="space-y-3">
-          <Button onClick={actions.startScanning} className="w-full gap-2" data-testid="button-start-scan">
+          <Button
+            onClick={actions.startScanning}
+            className="w-full gap-2 transition-transform active:scale-[0.97]"
+            data-testid="button-start-scan"
+          >
             <Camera className="w-4 h-4" />
             開啟掃描器
           </Button>
-          <Button variant="outline" onClick={() => actions.setMode("manual")} className="w-full gap-2" data-testid="button-manual-input">
+          <Button
+            variant="outline"
+            onClick={() => actions.setMode("manual")}
+            className="w-full gap-2 transition-transform active:scale-[0.97]"
+            data-testid="button-manual-input"
+          >
             <Keyboard className="w-4 h-4" />
             手動輸入代碼
           </Button>
@@ -91,20 +100,32 @@ export function CameraView({
         {/* 切鏡頭按鈕已移到下方按鈕列（避開 iPhone 瀏海）*/}
       </div>
       {isInitializing ? (
-        <Button variant="outline" onClick={actions.handleCancelScan} className="w-full" data-testid="button-cancel-init">
+        <Button
+          variant="outline"
+          onClick={actions.handleCancelScan}
+          className="w-full transition-transform active:scale-[0.97]"
+          data-testid="button-cancel-init"
+        >
           取消
         </Button>
       ) : (
         <>
-          <p className="text-center text-sm text-muted-foreground mb-4">將 QR Code 對準掃描框內</p>
+          <p className="text-center text-sm text-muted-foreground mb-4 animate-pulse">
+            將 QR Code 對準掃描框內
+          </p>
           <div className="grid grid-cols-3 gap-2">
-            <Button variant="outline" onClick={actions.handleCancelScan} data-testid="button-cancel-scan">
+            <Button
+              variant="outline"
+              onClick={actions.handleCancelScan}
+              className="transition-transform active:scale-[0.95]"
+              data-testid="button-cancel-scan"
+            >
               取消
             </Button>
-            {/* 🆕 切鏡頭按鈕（綠色突出）*/}
+            {/* 🆕 切鏡頭按鈕（綠色突出 + 觸感）*/}
             <Button
               onClick={() => actions.switchCamera?.()}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 transition-transform active:scale-[0.95]"
               data-testid="btn-qr-switch-camera"
             >
               <RefreshCw className="w-4 h-4" />
@@ -115,7 +136,7 @@ export function CameraView({
             <Button
               variant="outline"
               onClick={async () => { await actions.stopScanning(); actions.setMode("manual"); }}
-              className="gap-1.5"
+              className="gap-1.5 transition-transform active:scale-[0.95]"
               data-testid="button-switch-manual"
             >
               <Keyboard className="w-4 h-4" />
@@ -147,19 +168,23 @@ export function ManualInputView({ config, state, actions }: Omit<ViewProps, "sca
           value={state.manualCode}
           onChange={(e) => actions.setManualCode(e.target.value.toUpperCase())}
           placeholder={placeholder}
-          className="text-center font-mono mb-4"
+          className="text-center font-mono mb-4 tracking-widest text-base"
           onKeyDown={(e) => e.key === "Enter" && actions.handleManualSubmit()}
           data-testid="input-manual-code"
         />
 
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => { actions.setMode("instruction"); actions.setManualCode(""); }} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={() => { actions.setMode("instruction"); actions.setManualCode(""); }}
+            className="flex-1 transition-transform active:scale-[0.97]"
+          >
             取消
           </Button>
           <Button
             onClick={actions.handleManualSubmit}
             disabled={!state.manualCode.trim() || state.isProcessing}
-            className="flex-1"
+            className="flex-1 transition-transform active:scale-[0.97]"
             data-testid="button-submit-code"
           >
             {state.isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : "確認"}

@@ -484,24 +484,33 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       <div className="grid grid-cols-3 gap-3 mb-6">
         <Card className="bg-card/80">
           <CardContent className="p-3 text-center">
-            <Timer className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-            <p className="font-number text-2xl text-warning">{formatTime(timeLeft)}</p>
+            <Timer className={`w-5 h-5 mx-auto mb-1 transition-colors ${
+              timeLeft <= 10 ? "text-destructive animate-pulse" :
+              timeLeft <= 30 ? "text-amber-500" :
+              "text-muted-foreground"
+            }`} />
+            {/* 🆕 ≤10s 紅閃 + ≤30s 黃 + tabular-nums 防抖動 */}
+            <p className={`font-number text-2xl tabular-nums transition-colors ${
+              timeLeft <= 10 ? "text-destructive animate-pulse" :
+              timeLeft <= 30 ? "text-amber-500" :
+              "text-warning"
+            }`}>{formatTime(timeLeft)}</p>
             <p className="text-xs text-muted-foreground">剩餘時間</p>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-card/80">
           <CardContent className="p-3 text-center">
             <Target className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-            <p className="font-number text-2xl text-success">{hits.length}</p>
+            <p className="font-number text-2xl text-success tabular-nums">{hits.length}</p>
             <p className="text-xs text-muted-foreground">命中數</p>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-card/80">
           <CardContent className="p-3 text-center">
             <Award className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-            <p className="font-number text-2xl text-primary">{totalScore}</p>
+            <p className="font-number text-2xl text-primary tabular-nums">{totalScore}</p>
             <p className="text-xs text-muted-foreground">總分</p>
           </CardContent>
         </Card>
@@ -510,9 +519,9 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-muted-foreground">任務進度</span>
-          <span className="text-sm font-number text-primary">{hits.length}/{requiredHits}</span>
+          <span className="text-sm font-number text-primary tabular-nums">{hits.length}/{requiredHits}</span>
         </div>
-        <Progress value={Math.min(hitProgress, 100)} className="h-2" />
+        <Progress value={Math.min(hitProgress, 100)} className="h-2 transition-all" />
       </div>
 
       <div className="flex-1 flex items-center justify-center">
