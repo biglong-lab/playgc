@@ -183,7 +183,7 @@ export function registerAdminSessionRoutes(app: Express) {
     },
   );
 
-  /** 批次放棄超時場次 */
+  /** 批次放棄超時場次（🔒 場域隔離：field admin 只能清自己場域）*/
   app.post(
     "/api/admin/sessions/cleanup",
     requireAdminAuth,
@@ -191,10 +191,24 @@ export function registerAdminSessionRoutes(app: Express) {
     async (req, res) => {
       try {
         const { thresholdHours } = cleanupSchema.parse(req.body);
-        const abandoned = await storage.abandonStaleSessions(thresholdHours);
+
+        // 🔒 場域隔離
+        const isPlatformAdmin = req.admin?.systemRole === "super_admin"
+          || req.admin?.systemRole === "platform_admin";
+        // field admin 強制傳自己 fieldId；platform admin 不限制（可清全平台）
+        const fieldFilter = isPlatformAdmin ? undefined : req.admin?.fieldId;
+
+        if (!isPlatformAdmin && !fieldFilter) {
+          return res.status(403).json({
+            message: "場域管理員需綁定場域才能清理 sessions",
+          });
+        }
+
+        const abandoned = await storage.abandonStaleSessions(thresholdHours, fieldFilter);
 
         res.json({
-          message: `已清理 ${abandoned.length} 個卡住的場次`,
+          message: `已清理 ${abandoned.length} 個卡住的場次` +
+            (fieldFilter ? `（場域：${fieldFilter}）` : "（全平台）"),
           count: abandoned.length,
           sessions: abandoned.map((s) => ({
             id: s.id,
