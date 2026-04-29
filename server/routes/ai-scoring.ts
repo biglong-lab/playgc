@@ -809,4 +809,19 @@ export function registerAiScoringRoutes(app: Express): void {
       return apiError(res, 500, "查詢用量失敗");
     }
   });
+
+  // 🆕 GET /api/ai/usage-stats — 查詢跨 provider AI 用量統計
+  //   - gemini / openrouter / google-vision / mediapipe
+  //   - 可選 ?fieldId=xxx 過濾單一場域
+  //   - 給管理端 dashboard 用
+  app.get("/api/ai/usage-stats", isAuthenticated, async (req, res) => {
+    try {
+      const fieldId = typeof req.query.fieldId === "string" ? req.query.fieldId : undefined;
+      const overview = await getMonthlyAiUsage(fieldId);
+      return res.json(overview);
+    } catch (error) {
+      console.error("[ai-scoring] usage-stats 失敗:", error);
+      return apiError(res, 500, "查詢 AI 用量統計失敗");
+    }
+  });
 }
