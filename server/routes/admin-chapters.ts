@@ -1,5 +1,5 @@
 // 管理端章節路由 - 章節 CRUD、排序、頁面分配
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import { storage } from "../storage";
 import {
   requireAdminAuth,
@@ -10,6 +10,38 @@ import { z } from "zod";
 import { db } from "../db";
 import { pages } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { assertFieldOwnership, type AdminLike } from "../lib/field-ownership";
+
+// 🔒 helper：驗證 admin 對指定 gameId 有權限（透過 game.fieldId 比對）
+async function checkGameFieldOwnership(
+  gameId: string,
+  admin: AdminLike | undefined | null,
+  res: Response,
+): Promise<{ game: any } | null> {
+  const game = await storage.getGame(gameId);
+  if (!game) {
+    res.status(404).json({ message: "遊戲不存在" });
+    return null;
+  }
+  if (!assertFieldOwnership(admin, game.fieldId, res)) return null;
+  return { game };
+}
+
+// 🔒 helper：驗證 admin 對指定 chapterId 有權限（chapter → game → fieldId）
+async function checkChapterFieldOwnership(
+  chapterId: string,
+  admin: AdminLike | undefined | null,
+  res: Response,
+): Promise<{ chapter: any; game: any } | null> {
+  const chapter = await storage.getChapter(chapterId);
+  if (!chapter) {
+    res.status(404).json({ message: "章節不存在" });
+    return null;
+  }
+  const result = await checkGameFieldOwnership(chapter.gameId, admin, res);
+  if (!result) return null;
+  return { chapter, game: result.game };
+}
 
 export function registerAdminChapterRoutes(app: Express) {
   // ========================================================================
