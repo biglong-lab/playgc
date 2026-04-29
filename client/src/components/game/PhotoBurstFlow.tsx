@@ -628,13 +628,18 @@ export default function PhotoBurstFlow({
           </>
         )}
 
-        {/* ─── Stage: countdown ─── 大字 3-2-1 */}
+        {/* ─── Stage: countdown ─── 大字 3-2-1（🆕 色彩戲劇性：綠→黃→紅 GO!） */}
         {stage === "countdown" && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
             <p className="text-white/80 text-xl mb-4">即將開始連拍...</p>
             <div
               key={countdownToStart}
-              className="text-white text-[180px] font-bold font-number drop-shadow-2xl leading-none"
+              className={`text-[180px] font-bold font-number drop-shadow-2xl leading-none tabular-nums ${
+                countdownToStart === 3 ? "text-emerald-400" :
+                countdownToStart === 2 ? "text-amber-400" :
+                countdownToStart === 1 ? "text-red-400" :
+                "text-emerald-300"
+              }`}
               style={{ animation: "countdownPulse 1s ease-out" }}
             >
               {countdownToStart > 0 ? countdownToStart : "GO!"}
@@ -642,11 +647,33 @@ export default function PhotoBurstFlow({
           </div>
         )}
 
-        {/* ─── Stage: shooting ─── 顯示進度 */}
+        {/* ─── Stage: shooting ─── 顯示進度（🆕 加進度點視覺化「拍了幾張」） */}
         {stage === "shooting" && (
           <>
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-lg font-bold shadow-2xl">
+            <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-lg font-bold shadow-2xl tabular-nums">
               📸 第 {countdown} / {frameCount} 張
+            </div>
+            {/* 🆕 進度點 — 已拍 = 實心綠、目前 = 脈動白、待拍 = 空圈 */}
+            <div
+              className="absolute top-36 left-1/2 -translate-x-1/2 flex gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-sm"
+              data-testid="burst-shot-dots"
+            >
+              {Array.from({ length: frameCount }).map((_, i) => {
+                const shot = i < countdown - 1 || (countdown === 0 && i < 0);
+                const current = i === countdown - 1;
+                return (
+                  <span
+                    key={i}
+                    className={`w-3 h-3 rounded-full transition-all ${
+                      shot
+                        ? "bg-emerald-400 scale-100"
+                        : current
+                          ? "bg-white animate-pulse scale-125"
+                          : "bg-white/30 scale-90"
+                    }`}
+                  />
+                );
+              })}
             </div>
             <div
               className="absolute left-1/2 -translate-x-1/2 text-white text-base bg-black/70 px-5 py-2 rounded-full"
@@ -812,13 +839,27 @@ export default function PhotoBurstFlow({
       )}
       <div className="text-center space-y-1">
         <p className="text-sm text-muted-foreground">
-          將自動連拍 <span className="font-bold text-primary">{frameCount}</span> 張
+          將自動連拍 <span className="font-bold text-primary tabular-nums">{frameCount}</span> 張
         </p>
-        <p className="text-xs text-muted-foreground">
-          每張間隔 {frameIntervalMs / 1000} 秒
+        <p className="text-xs text-muted-foreground tabular-nums">
+          每張間隔 {frameIntervalMs / 1000} 秒（總長約 {Math.round((frameCount * frameIntervalMs) / 1000) + 3} 秒）
         </p>
       </div>
-      <Button size="lg" className="gap-2" onClick={handleStart} data-testid="btn-burst-start">
+      {/* 🆕 預覽連拍張數的點點，跟拍照階段視覺一致 */}
+      <div className="flex gap-2" aria-hidden="true">
+        {Array.from({ length: frameCount }).map((_, i) => (
+          <span
+            key={i}
+            className="w-2.5 h-2.5 rounded-full bg-primary/40"
+          />
+        ))}
+      </div>
+      <Button
+        size="lg"
+        className="gap-2 transition-transform active:scale-[0.97]"
+        onClick={handleStart}
+        data-testid="btn-burst-start"
+      >
         <Camera className="w-5 h-5" />
         開始連拍
       </Button>
