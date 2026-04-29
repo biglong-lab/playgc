@@ -444,23 +444,43 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
         )}
 
         <div className="space-y-2">
-          {messages.map((msg, i) => (
+          {messages.map((msg, i) => {
+            const speaker = (msg.speaker as string) || "npc";
+            const choices = (msg.choices as Array<{ text: string; jumpToMessageIndex?: number; nextPageId?: string }>) || [];
+            return (
             <div key={i} className="bg-background border rounded p-2 space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="outline" className="text-xs shrink-0">#{i + 1}</Badge>
+                {/* 🆕 發言者下拉 */}
                 <Select
-                  value={(msg.emotion as string) || "neutral"}
-                  onValueChange={(v) => updateMessage(i, { emotion: v })}
+                  value={speaker}
+                  onValueChange={(v) => updateMessage(i, { speaker: v })}
                 >
-                  <SelectTrigger className="h-8 flex-1 max-w-28 text-xs">
+                  <SelectTrigger className="h-8 w-24 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {DIALOGUE_EMOTIONS.map((e) => (
-                      <SelectItem key={e} value={e}>{EMOTION_LABELS[e]}</SelectItem>
-                    ))}
+                    <SelectItem value="npc">🧑 NPC</SelectItem>
+                    <SelectItem value="player">👤 玩家</SelectItem>
+                    <SelectItem value="system">📢 旁白</SelectItem>
                   </SelectContent>
                 </Select>
+                {/* 情緒下拉（system / player 隱藏）*/}
+                {speaker === "npc" && (
+                  <Select
+                    value={(msg.emotion as string) || "neutral"}
+                    onValueChange={(v) => updateMessage(i, { emotion: v })}
+                  >
+                    <SelectTrigger className="h-8 w-24 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DIALOGUE_EMOTIONS.map((e) => (
+                        <SelectItem key={e} value={e}>{EMOTION_LABELS[e]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <Input
                   type="number"
                   value={(msg.delay as number | undefined) ?? ""}
@@ -469,7 +489,7 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
                     updateMessage(i, { delay: Number.isFinite(n) ? n : undefined });
                   }}
                   placeholder="延遲(ms)"
-                  className="h-8 w-24 text-xs"
+                  className="h-8 w-20 text-xs"
                 />
                 <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => moveMessage(i, -1)} disabled={i === 0}>↑</Button>
                 <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => moveMessage(i, 1)} disabled={i === messages.length - 1}>↓</Button>
@@ -477,15 +497,102 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
                   <XIcon className="w-3 h-3" />
                 </Button>
               </div>
+
+              {/* 🆕 自訂發言者名稱（多角色支援，覆蓋 character.name）*/}
+              {speaker === "npc" && (
+                <Input
+                  value={(msg.speakerName as string) || ""}
+                  onChange={(e) => updateMessage(i, { speakerName: e.target.value })}
+                  placeholder={`發言者名稱（留空 = 用角色名「${(config.character as { name?: string })?.name || "???"}」）`}
+                  className="h-8 text-xs"
+                />
+              )}
+
               <Textarea
                 value={(msg.text as string) || ""}
                 onChange={(e) => updateMessage(i, { text: e.target.value })}
-                placeholder="對話文字..."
+                placeholder={speaker === "system" ? "旁白文字..." : speaker === "player" ? "玩家對白..." : "NPC 對話..."}
                 rows={2}
                 className="text-sm"
               />
+
+              {/* 🆕 玩家選項（分支跳轉）*/}
+              <details className="border rounded p-2 bg-muted/20">
+                <summary className="text-xs font-medium cursor-pointer">
+                  玩家選項（{choices.length} 個）— 顯示按鈕讓玩家選擇分支
+                </summary>
+                <div className="mt-2 space-y-2">
+                  {choices.map((choice, ci) => (
+                    <div key={ci} className="border rounded p-2 bg-background space-y-1.5">
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground w-6">{ci + 1}.</span>
+                        <Input
+                          value={choice.text || ""}
+                          onChange={(e) => {
+                            const next = [...choices];
+                            next[ci] = { ...next[ci], text: e.target.value };
+                            updateMessage(i, { choices: next });
+                          }}
+                          placeholder="選項文字（玩家看到的按鈕）"
+                          className="h-7 text-xs flex-1"
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7"
+                          onClick={() => {
+                            const next = choices.filter((_, idx) => idx !== ci);
+                            updateMessage(i, { choices: next.length > 0 ? next : undefined });
+                          }}
+                        >
+                          <XIcon className="w-3 h-3" />
+                        </Button>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-muted-foreground w-12 shrink-0">跳到訊息#</span>
+                        <Input
+                          type="number"
+                          value={choice.jumpToMessageIndex ?? ""}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            const next = [...choices];
+                            next[ci] = { ...next[ci], jumpToMessageIndex: Number.isFinite(v) ? v : undefined };
+                            updateMessage(i, { choices: next });
+                          }}
+                          placeholder="留空 = 進下一則"
+                          className="h-7 text-xs flex-1"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-muted-foreground w-12 shrink-0">跳到頁面</span>
+                        <Input
+                          value={choice.nextPageId || ""}
+                          onChange={(e) => {
+                            const next = [...choices];
+                            next[ci] = { ...next[ci], nextPageId: e.target.value || undefined };
+                            updateMessage(i, { choices: next });
+                          }}
+                          placeholder="留空 = 留在此頁"
+                          className="h-7 text-xs flex-1"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 text-xs w-full"
+                    onClick={() => {
+                      const next = [...choices, { text: "", jumpToMessageIndex: undefined, nextPageId: undefined }];
+                      updateMessage(i, { choices: next });
+                    }}
+                  >
+                    <Plus className="w-3 h-3 mr-1" />新增選項
+                  </Button>
+                </div>
+              </details>
             </div>
-          ))}
+          )})}
         </div>
       </div>
 
