@@ -273,8 +273,8 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
-  // 更新分數（觸發 WebSocket 即時排名）
-  app.patch("/api/matches/:matchId/score", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  // 更新分數（觸發 WebSocket 即時排名）— per-user rate limit 防爆刷
+  app.patch("/api/matches/:matchId/score", isAuthenticated, hotPathLimiter, async (req: AuthenticatedRequest, res) => {
     try {
       const { matchId } = req.params;
       const userId = req.user?.claims.sub;
