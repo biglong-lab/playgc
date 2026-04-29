@@ -75,8 +75,10 @@ export function registerRecurWebhookRoutes(app: Express) {
       // 2. 解析事件（express.json() 已解析 body）
       const event: RecurWebhookEvent = req.body;
 
-      // 3. 冪等性檢查
-      if (processedEvents.has(event.id)) {
+      // 3. 🔒 跨 container 冪等性檢查（DB INSERT ... ON CONFLICT）
+      // 在處理前 mark，確保多個 container 同時收到同一 event 時，只有一個會處理
+      const isFirstProcess = await markEventProcessed(event.id);
+      if (!isFirstProcess) {
         return res.json({ received: true, duplicate: true });
       }
 
@@ -91,15 +93,6 @@ export function registerRecurWebhookRoutes(app: Express) {
         default:
           // 不處理的事件類型，直接回 200
           break;
-      }
-
-      // 5. 記錄已處理
-      processedEvents.add(event.id);
-
-      // 防止記憶體洩漏：只保留最近 1000 筆
-      if (processedEvents.size > 1000) {
-        const first = processedEvents.values().next().value;
-        if (first) processedEvents.delete(first);
       }
 
       res.json({ received: true });
