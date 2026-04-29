@@ -73,13 +73,21 @@ export function startMonthlyResetScheduler(): void {
 
   console.log("[monthly-reset-scheduler] 已啟動（每小時檢查一次月初）");
 
+  // 🔒 cluster lock 包裹（多 container 安全）
+  const tick = async () => {
+    const { withClusterLock } = await import("../lib/cluster-lock");
+    return withClusterLock("scheduler:monthly-reset", async () => {
+      await checkAndReset();
+    });
+  };
+
   // 啟動延遲，避免和其他 scheduler 同時跑
   setTimeout(async () => {
-    await checkAndReset();
+    await tick();
 
     // 之後每小時檢查一次
     schedulerInterval = setInterval(async () => {
-      await checkAndReset();
+      await tick();
     }, ONE_HOUR_MS);
   }, INITIAL_DELAY_MS);
 }
