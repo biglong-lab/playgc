@@ -53,6 +53,12 @@ export interface UseStableGeolocationOptions {
   onError?: (err: GeolocationPositionError) => void;
   /** 是否啟用（預設 true；可動態關閉避免電量消耗）*/
   enabled?: boolean;
+  /**
+   * 🧭 IMU PDR fallback（預設 false）
+   * 啟用後：GPS 失效（accuracy > 100m 或 timeout）時自動用步數+朝向推算位置
+   * 注意：iOS 14+ 需要使用者點按鈕授權 DeviceMotion，請呼叫 requestMotionPermission()
+   */
+  imuFallback?: boolean;
 }
 
 export interface UseStableGeolocationResult {
