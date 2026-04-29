@@ -6,6 +6,7 @@ import { db } from "../db";
 import { games, purchases, redeemCodes, redeemCodeUses } from "@shared/schema";
 import { eq, sql, and } from "drizzle-orm";
 import { z } from "zod";
+import { assertFieldOwnership } from "../lib/field-ownership";
 
 // 現金收款授權的驗證 schema
 const grantAccessSchema = z.object({
