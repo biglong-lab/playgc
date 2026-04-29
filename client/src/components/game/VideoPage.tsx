@@ -150,29 +150,41 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
     if (skipEnabled) finish();
   };
 
-  // 影片 URL 無效 / 載入失敗 → 用共用 GameErrorView（讓玩家繼續）
+  // 影片 URL 無效 / 載入失敗 → 顯示錯誤但保留 title/description（讓玩家知道這是哪一段）
   if (!hasValidUrl || hasError) {
     return (
-      <GameErrorView
-        title={!hasValidUrl ? "影片未設定" : "影片載入失敗"}
-        message={
-          !hasValidUrl
-            ? "管理員尚未設定影片 URL，可跳過此關繼續"
-            : errorDetail || "網路或來源問題，可跳過此關繼續"
-        }
-        hint={hasError ? "連 WiFi 或換個網路環境再試" : undefined}
-        onRetry={hasError ? () => {
-          retryCountRef.current = 0;
-          setErrorDetail("");
-          setHasError(false);
-          setIsLoading(true);
-          // 強制 reload video element
-          videoRef.current?.load();
-        } : undefined}
-        onSkip={finish}
-        skipLabel="繼續遊戲"
-        testId="video-error"
-      />
+      <div className="min-h-full flex flex-col">
+        {(config.title || config.description) && (
+          <div className="bg-card/95 backdrop-blur border-b border-border p-4">
+            {config.title && <h2 className="font-semibold">{config.title}</h2>}
+            {config.description && (
+              <p className="text-sm text-muted-foreground mt-1">{config.description}</p>
+            )}
+          </div>
+        )}
+        <div className="flex-1">
+          <GameErrorView
+            title={!hasValidUrl ? "影片未設定" : "影片載入失敗"}
+            message={
+              !hasValidUrl
+                ? "管理員尚未設定影片 URL，可跳過此關繼續"
+                : errorDetail || "網路或來源問題，可跳過此關繼續"
+            }
+            hint={hasError ? "連 WiFi 或換個網路環境再試" : undefined}
+            onRetry={hasError ? () => {
+              retryCountRef.current = 0;
+              setErrorDetail("");
+              setHasError(false);
+              setIsLoading(true);
+              // 強制 reload video element
+              videoRef.current?.load();
+            } : undefined}
+            onSkip={finish}
+            skipLabel="繼續遊戲"
+            testId="video-error"
+          />
+        </div>
+      </div>
     );
   }
 
