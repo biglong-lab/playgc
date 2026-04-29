@@ -122,7 +122,8 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
         setIsTyping(false);
         clearInterval(intervalId);
 
-        if (config?.autoAdvance && !isLastMessage) {
+        // 🆕 有 choices 不自動進下一則（等玩家選）
+        if (config?.autoAdvance && !isLastMessage && !hasChoices) {
           autoAdvanceRef.current = setTimeout(() => {
             setCurrentMessageIndex(prev => prev + 1);
             autoAdvanceRef.current = null;
