@@ -193,11 +193,19 @@ export default function PhotoCompareFlow({
           setCompositeUrl(uploaded.url);
         }
       } catch (err) {
-        toast({
-          title: "處理失敗",
-          description: err instanceof Error ? err.message : "請檢查網路",
-          variant: "destructive",
-        });
+        // 🤖 統一 AI 錯誤訊息
+        const errMsg = err instanceof Error ? err.message : String(err);
+        const isAiError = /\/api\/ai\//.test(errMsg) || /AI/i.test(errMsg) || /503|429/.test(errMsg);
+        if (isAiError) {
+          const { title, description } = formatAiError(err);
+          toast({ title, description, variant: "destructive" });
+        } else {
+          toast({
+            title: "處理失敗",
+            description: err instanceof Error ? err.message : "請檢查網路",
+            variant: "destructive",
+          });
+        }
         camera.setMode("instruction");
         camera.setCapturedImage(null);
       }
