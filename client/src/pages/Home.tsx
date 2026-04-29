@@ -119,15 +119,11 @@ export default function Home() {
     if (src !== undefined) body.coverImageUrl = src;
     if (position !== undefined) body.coverImagePosition = position;
 
-    const res = await fetchWithAdminAuth(`/api/admin/games/${gameId}`, {
+    // 🐛 fetchWithAdminAuth 已自動 parse + throw on !ok，不要再操作 .ok / .json
+    await fetchWithAdminAuth(`/api/admin/games/${gameId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    if (!res.ok) {
-      const err = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(err.message || "儲存失敗");
-    }
     // 重新拉遊戲列表
     await queryClient.invalidateQueries({
       predicate: (q) => {
@@ -144,15 +140,11 @@ export default function Home() {
     if (src !== undefined) themeUpdate.coverImageUrl = src;
     if (position !== undefined) themeUpdate.coverImagePosition = position;
 
-    const res = await fetchWithAdminAuth(`/api/admin/fields/${currentField.fieldId}`, {
+    // 🐛 fetchWithAdminAuth 已自動 parse + throw on !ok
+    await fetchWithAdminAuth(`/api/admin/fields/${currentField.fieldId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ theme: themeUpdate }),
     });
-    if (!res.ok) {
-      const err = (await res.json().catch(() => ({}))) as { message?: string };
-      throw new Error(err.message || "儲存失敗");
-    }
     // 重新拉場域資料 → 玩家端會看到更新
     await queryClient.invalidateQueries({
       predicate: (q) => {

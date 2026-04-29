@@ -151,16 +151,12 @@ export default function EditableCoverImage({
         reader.readAsDataURL(file);
       });
 
-      const res = await fetchWithAdminAuth(uploadEndpoint, {
+      // 🐛 fetchWithAdminAuth 已自動 parse JSON 並 throw on !ok
+      // 不要再呼叫 .json() 或檢查 .ok，否則會炸 "res.json is not a function"
+      const data = (await fetchWithAdminAuth(uploadEndpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ imageData }),
-      });
-      if (!res.ok) {
-        const err = (await res.json().catch(() => ({}))) as { message?: string };
-        throw new Error(err.message || "上傳失敗");
-      }
-      const data = (await res.json()) as { url?: string; secure_url?: string };
+      })) as { url?: string; secure_url?: string };
       const url = data.url || data.secure_url;
       if (!url) throw new Error("伺服器未回傳圖片 URL");
       setDraftSrc(url);
