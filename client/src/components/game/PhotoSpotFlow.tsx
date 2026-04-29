@@ -378,6 +378,16 @@ export default function PhotoSpotFlow({
 
       {/* GPS 狀態卡片 */}
       <div className="max-w-md mx-auto w-full space-y-3">
+        {/* 🛰️ GPS 精度即時提示（弱訊號時引導玩家移動）*/}
+        {!gpsError && gpsActive && (
+          <GpsAccuracyIndicator
+            accuracy={gpsAccuracy}
+            quality={gpsQuality}
+            samples={gpsSamples}
+            active={gpsActive}
+          />
+        )}
+
         <div className="rounded-lg border bg-card p-4" data-testid="photo-spot-gps-card">
           {gpsError ? (
             <div className="flex items-start gap-2 text-destructive">
