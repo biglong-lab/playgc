@@ -88,14 +88,32 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
     }
   });
 
-  app.get("/api/sessions/:sessionId/players/:playerId/location-history", isAuthenticated, async (req, res) => {
+  app.get("/api/sessions/:sessionId/players/:playerId/location-history", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const { sessionId, playerId } = req.params;
       const { startTime, endTime, limit } = req.query;
+      const userId = req.user?.claims?.sub;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
 
       const session = await storage.getSession(sessionId);
       if (!session) {
         return res.status(404).json({ message: "Session not found" });
+      }
+
+      // 🔒 §19 隱私保護：只能查自己軌跡，或同隊隊友軌跡
+      if (playerId !== userId) {
+        // 看是否同隊：取雙方 progress，比對 teamId
+        const progressList = await storage.getPlayerProgress(sessionId);
+        const me = progressList.find((p) => p.userId === userId);
+        const target = progressList.find((p) => p.userId === playerId);
+        const sameTeam = me && target && (me as any).teamId
+          && (me as any).teamId === (target as any).teamId;
+        if (!sameTeam) {
+          return res.status(403).json({ message: "無權查看他人軌跡" });
+        }
       }
 
       const options: { startTime?: Date; endTime?: Date; limit?: number } = {};
