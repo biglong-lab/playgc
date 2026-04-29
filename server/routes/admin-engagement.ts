@@ -213,6 +213,9 @@ export function registerAdminEngagementRoutes(app: Express) {
           error: parsed.error.errors[0]?.message ?? "驗證失敗",
         });
       }
+      // 🔒 場域隔離（不能在別場域建管道）
+      if (!assertFieldOwnership(req.admin, parsed.data.fieldId, res)) return;
+
       const [created] = await db
         .insert(notificationChannels)
         .values(parsed.data)
