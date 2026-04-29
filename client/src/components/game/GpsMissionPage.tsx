@@ -37,7 +37,6 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   const [isLocating, setIsLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isWatching, setIsWatching] = useState(false);
-  const [watchId, setWatchId] = useState<number | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(config.proximitySound ?? false);
   // 若無有效座標，預設進入 QR fallback UI（元件自適應，不需資料預先補 placeholder）
   const [showQrFallback, setShowQrFallback] = useState(false);
@@ -46,9 +45,7 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   const lastBeepTimeRef = useRef<number>(0);
   // 到達鎖：避免 watchPosition 連發多次成功 toast + onComplete
   const hasArrivedRef = useRef(false);
-  // watchId ref：updateLocation 初次註冊時 watchId 還是 null（stale closure），
-  // 改透過 ref 取用最新值
-  const watchIdRef = useRef<number | null>(null);
+  // ⚠️ watchId 由 useStableGeolocation 內部管理，這邊不需 state
 
   // 🎯 座標容錯：config 缺座標或填 0/null → 元件自動辨識為「未設定」
   // 不依賴資料預先填 placeholder；元件自己 graceful degradation
