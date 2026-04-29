@@ -69,7 +69,7 @@ export function registerMediaRoutes(app: Express) {
     sessionId: z.union([z.string(), z.number()]).optional(),
   });
 
-  app.post("/api/cloudinary/upload", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/cloudinary/upload", isAuthenticated, uploadLimiter, async (req: AuthenticatedRequest, res) => {
     try {
       const parsed = cloudinaryUploadSchema.safeParse(req.body);
       if (!parsed.success) {
