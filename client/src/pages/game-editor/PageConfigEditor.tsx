@@ -1364,6 +1364,24 @@ export default function PageConfigEditor({
                     />
                   </div>
                 </div>
+                {/* 🆕 透明度滑桿 */}
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    透明度（{Math.round(((s as any).opacity ?? 1) * 100)}%）— 100% 不透明，往左拉變淡
+                  </label>
+                  <Slider
+                    value={[((s as any).opacity ?? 1) * 100]}
+                    onValueChange={([v]) => {
+                      const current = ((config.arStickerConfig as any)?.stickers as any[]) ?? [];
+                      updateField("arStickerConfig", {
+                        ...(config.arStickerConfig as any || {}),
+                        stickers: current.map((x, i) => i === idx ? { ...x, opacity: v / 100 } : x),
+                      });
+                    }}
+                    min={10} max={100} step={5}
+                    data-testid={`config-ar-sticker-opacity-${idx}`}
+                  />
+                </div>
               </div>
             ))}
 
