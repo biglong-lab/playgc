@@ -282,6 +282,15 @@ export function registerAdminEngagementRoutes(app: Express) {
     async (req, res) => {
       try {
         const id = req.params.id;
+        // 🔒 場域隔離：先查 channel 的 fieldId
+        const [existing] = await db
+          .select()
+          .from(notificationChannels)
+          .where(eq(notificationChannels.id, id))
+          .limit(1);
+        if (!existing) return res.status(404).json({ error: "管道不存在" });
+        if (!assertFieldOwnership(req.admin, existing.fieldId, res)) return;
+
         const [updated] = await db
           .update(notificationChannels)
           .set({ isActive: false })
