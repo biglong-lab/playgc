@@ -624,13 +624,17 @@ export function registerAiScoringRoutes(app: Express): void {
       }
 
       const passing = passingScore ?? 70;
-      const result = await scoreTextAnswer(
-        question,
-        userAnswer,
-        expectedAnswers,
-        context,
-        passing,
-        fieldApiKey,
+      // 🛡️ 加 timeout 防 nginx 上游 502
+      const result = await withAiTimeout(
+        () => scoreTextAnswer(
+          question,
+          userAnswer,
+          expectedAnswers,
+          context,
+          passing,
+          fieldApiKey,
+        ),
+        { endpoint: "score-text", timeoutMs: 50_000 },
       );
 
       // 📊 記錄成功
