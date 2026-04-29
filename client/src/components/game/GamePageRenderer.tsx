@@ -257,7 +257,7 @@ export default function GamePageRenderer({
       <PageTransition key={page.id} variant={variant} className="h-full">
         <Suspense fallback={<PageLoadingFallback />}>
           {showMiniMap && (
-            <div className="px-4 pt-4">
+            <div className="px-4 pt-2 pb-1 bg-card/30 max-h-[35vh] overflow-hidden">
               <PageLocationMiniMap settings={config.locationSettings} />
             </div>
           )}
