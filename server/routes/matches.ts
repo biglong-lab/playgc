@@ -24,9 +24,14 @@ const createMatchBodySchema = z.object({
 });
 
 // 更新分數的請求驗證
+// 🔒 §19 防作弊：限制 score 範圍 [0, 100000]，避免異常極大值
 const updateScoreBodySchema = z.object({
-  score: z.number().int(),
+  score: z.number().int().min(0).max(100000),
 });
+
+// 🔒 §19 防作弊：單次 delta 上限 + 最短間隔（防快速灌分）
+const MAX_SCORE_DELTA_PER_TICK = 500;
+const MIN_SCORE_TICK_MS = 1000; // 1 秒一次
 
 // 6 碼存取碼產生（避免易混淆字元）
 function generateAccessCode(): string {
