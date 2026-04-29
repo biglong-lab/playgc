@@ -15,6 +15,7 @@ import {
   type StablePosition,
 } from "@/lib/geolocation";
 import { GpsAccuracyIndicator } from "./GpsAccuracyIndicator";
+import { MotionPermissionRequest } from "./MotionPermissionRequest";
 import { useAuth } from "@/hooks/useAuth";
 
 interface GpsMissionPageProps {
