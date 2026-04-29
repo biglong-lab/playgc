@@ -164,7 +164,9 @@ export function PageLocationMiniMap({
     );
   }
 
-  const mapHeight = expanded ? "400px" : "200px";
+  // 🎯 高度優化：mobile 友善（佔螢幕 15-30%）
+  // 原 200/400 對 800px viewport 佔 25-50%，太多
+  const mapHeight = expanded ? "260px" : "120px";
 
   return (
     <div
