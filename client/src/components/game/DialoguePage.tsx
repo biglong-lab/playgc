@@ -65,6 +65,14 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
   // 🆕 是否有玩家選項（有 choices → 不自動進下一句，等玩家選）
   const hasChoices = !!(currentMessage?.choices && currentMessage.choices.length > 0);
 
+  // 🆕 頭像顯示模式：circle（小圓圈）/ portrait（大圖人像）
+  // 從 config 讀取，預設 circle 維持向後相容
+  const avatarDisplay = ((config as any)?.avatarDisplay ?? "circle") as
+    | "circle"
+    | "portrait";
+  const usePortrait =
+    avatarDisplay === "portrait" && !isPlayerMessage && !isSystemMessage;
+
   const getCurrentAvatar = () => {
     // 🆕 訊息層級的 speakerAvatar 優先
     if (currentMessage?.speakerAvatar) return currentMessage.speakerAvatar;
@@ -286,6 +294,73 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
                 <span className="inline-block w-1 h-3 bg-muted-foreground ml-1 animate-pulse" />
               )}
             </p>
+          </div>
+        ) : usePortrait ? (
+          /* 🆕 portrait 大圖模式：上方人像 + 下方對話框（電影感） */
+          <div
+            className={`flex flex-col gap-3 ${bubbleVisible ? "animate-slideIn" : "opacity-0"}`}
+            key={currentMessageIndex}
+            data-display="portrait"
+          >
+            {/* 大圖人像區（max-h 40vh，避免遮蓋對話）*/}
+            <div className="relative w-full max-w-md mx-auto rounded-lg overflow-hidden bg-card/30 border shadow-2xl">
+              <div
+                className={`relative aspect-square w-full transition-all duration-300 ${
+                  currentEmotion === "angry" ? "ring-2 ring-red-500/50" :
+                  currentEmotion === "happy" ? "ring-2 ring-yellow-500/50" :
+                  currentEmotion === "sad" ? "ring-2 ring-blue-500/50" :
+                  currentEmotion === "surprised" ? "ring-2 ring-purple-500/50" :
+                  currentEmotion === "thinking" ? "ring-2 ring-cyan-500/50" :
+                  "ring-1 ring-primary/30"
+                }`}
+                style={{ maxHeight: "40vh" }}
+              >
+                {getCurrentAvatar() ? (
+                  <img
+                    src={getCurrentAvatar()!}
+                    alt={getCurrentSpeakerName()}
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                    <span className="font-display text-6xl font-bold text-primary">
+                      {getCurrentSpeakerName().charAt(0)}
+                    </span>
+                  </div>
+                )}
+                {/* 底部漸層融入背景 */}
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+                {/* 角色名片（左下角） */}
+                <div className="absolute left-3 bottom-3 flex items-center gap-2">
+                  <p className="font-display text-base font-bold uppercase tracking-wider text-primary drop-shadow-lg">
+                    {getCurrentSpeakerName()}
+                  </p>
+                  {config?.showEmotionIndicator && EMOTION_LABELS[currentEmotion] && (
+                    <span className={`text-xs px-2 py-0.5 rounded-full bg-background/80 backdrop-blur-sm ${EMOTION_COLORS[currentEmotion]}`}>
+                      {EMOTION_LABELS[currentEmotion]}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* 對話框 */}
+            <div className={`max-w-md mx-auto w-full bg-card border rounded-lg p-4 shadow-lg transition-all duration-300 ${
+              currentEmotion === "angry" ? "border-red-500/50 shadow-red-500/20" :
+              currentEmotion === "happy" ? "border-yellow-500/50 shadow-yellow-500/20" :
+              currentEmotion === "sad" ? "border-blue-500/50 shadow-blue-500/20" :
+              currentEmotion === "surprised" ? "border-purple-500/50 shadow-purple-500/20" :
+              currentEmotion === "thinking" ? "border-cyan-500/50 shadow-cyan-500/20" :
+              "border-border"
+            }`}>
+              <p className="font-chinese text-base leading-relaxed">
+                {displayedText}
+                {isTyping && (
+                  <span className="inline-block w-1 h-4 bg-primary ml-1 animate-pulse" />
+                )}
+              </p>
+            </div>
           </div>
         ) : (
           /* npc / player 氣泡：左右對齊 */

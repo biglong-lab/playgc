@@ -329,6 +329,10 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
     updateMessages(next);
   };
 
+  // 🆕 頭像顯示模式：circle（小圓圈）/ portrait（大圖人像）
+  const avatarDisplay = ((config as Record<string, unknown>).avatarDisplay as string) || "circle";
+  const isPortrait = avatarDisplay === "portrait";
+
   return (
     <div className="space-y-4">
       <div>
@@ -340,14 +344,88 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
           data-testid="config-character"
         />
       </div>
+
+      {/* 🆕 頭像顯示模式選擇 */}
       <div>
-        <label className="text-sm font-medium mb-2 block">角色頭像（預設）</label>
+        <label className="text-sm font-medium mb-2 block">頭像顯示方式</label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => updateField("avatarDisplay", "circle")}
+            className={`p-3 rounded-lg border-2 text-left transition-all ${
+              !isPortrait
+                ? "border-primary bg-primary/5 shadow-sm"
+                : "border-border hover:border-primary/50"
+            }`}
+            data-testid="btn-avatar-circle"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-primary/30 border-2 border-primary shrink-0" />
+              <div>
+                <div className="text-sm font-medium">小圓圈</div>
+                <div className="text-[10px] text-muted-foreground">經典氣泡對話</div>
+              </div>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => updateField("avatarDisplay", "portrait")}
+            className={`p-3 rounded-lg border-2 text-left transition-all ${
+              isPortrait
+                ? "border-primary bg-primary/5 shadow-sm"
+                : "border-border hover:border-primary/50"
+            }`}
+            data-testid="btn-avatar-portrait"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-10 rounded bg-primary/30 border-2 border-primary shrink-0" />
+              <div>
+                <div className="text-sm font-medium">大圖人像</div>
+                <div className="text-[10px] text-muted-foreground">電影感視覺</div>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label className="text-sm font-medium mb-2 block">
+          角色頭像（預設）
+        </label>
+        {/* 🆕 建議尺寸提示（讓設定者依循）*/}
+        <div className="text-[11px] text-muted-foreground mb-2 leading-relaxed bg-accent/30 rounded p-2">
+          📐 <strong>建議尺寸：</strong>
+          {isPortrait ? (
+            <>
+              <span className="text-primary font-medium"> 大圖模式</span> →{" "}
+              <strong>1024×1024</strong> 正方形（人物半身置中）
+              <span className="block opacity-80 mt-0.5">
+                · 最低 512×512、檔案 &lt; 500KB · 中央留白少、避免重要元素貼邊
+              </span>
+              <span className="block opacity-80">
+                · 深色背景 + 主體聚焦最佳（會做底部漸層融入）
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-primary font-medium"> 圓圈模式</span> →{" "}
+              <strong>256×256</strong> 正方形（會自動裁圓）
+              <span className="block opacity-80 mt-0.5">
+                · 最低 128×128、檔案 &lt; 200KB · 主體置中、避免重要細節在邊角
+              </span>
+            </>
+          )}
+        </div>
         <div className="flex gap-2 items-center">
           {Boolean(character.avatar) && (
             <img
               src={character.avatar as string}
               alt="頭像"
-              className="w-12 h-12 rounded-full object-cover"
+              className={
+                isPortrait
+                  ? "w-12 h-16 rounded object-cover border"
+                  : "w-12 h-12 rounded-full object-cover"
+              }
             />
           )}
           <Input
