@@ -222,7 +222,7 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
             className="absolute inset-0 flex items-center justify-center bg-black/30"
             data-testid="button-play-overlay"
           >
-            <div className="w-20 h-20 rounded-full bg-primary/80 flex items-center justify-center hover:bg-primary transition-colors">
+            <div className="w-20 h-20 rounded-full bg-primary/80 flex items-center justify-center hover:bg-primary transition-colors active:scale-95 shadow-2xl ring-4 ring-white/10">
               <Play className="w-10 h-10 text-primary-foreground ml-1" />
             </div>
           </button>
@@ -233,7 +233,7 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
             variant="ghost"
             size="sm"
             onClick={handleSkip}
-            className="absolute top-4 right-4 gap-1 bg-black/50 hover:bg-black/70 text-white"
+            className="absolute top-4 right-4 gap-1 bg-black/50 hover:bg-black/70 text-white transition-transform active:scale-[0.95]"
             data-testid="button-skip-video"
           >
             <SkipForward className="w-4 h-4" />
@@ -243,7 +243,11 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
       </div>
 
       <div className="bg-card/95 backdrop-blur border-t border-border p-4">
-        <Progress value={Number.isFinite(progress) ? progress : 0} className="h-2 mb-4" />
+        {/* 🆕 Progress 加 transition-all 平滑播放進度（避免每秒跳動感）*/}
+        <Progress
+          value={Number.isFinite(progress) ? progress : 0}
+          className="h-2 mb-4 transition-all"
+        />
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -251,7 +255,9 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
               variant="ghost"
               size="icon"
               onClick={togglePlay}
+              className="transition-transform active:scale-[0.92] hover:bg-primary/10"
               data-testid="button-toggle-play"
+              aria-label={isPlaying ? "暫停" : "播放"}
             >
               {isPlaying ? (
                 <Pause className="w-5 h-5" />
@@ -264,7 +270,9 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
               variant="ghost"
               size="icon"
               onClick={toggleMute}
+              className="transition-transform active:scale-[0.92] hover:bg-primary/10"
               data-testid="button-toggle-mute"
+              aria-label={isMuted ? "取消靜音" : "靜音"}
             >
               {isMuted ? (
                 <VolumeX className="w-5 h-5" />
@@ -272,12 +280,17 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
                 <Volume2 className="w-5 h-5" />
               )}
             </Button>
+
+            {/* 🆕 加上播放進度時間顯示（X% / 100%）— tabular-nums 不抖動 */}
+            <span className="text-xs text-muted-foreground tabular-nums ml-1">
+              {Math.round(Number.isFinite(progress) ? progress : 0)}%
+            </span>
           </div>
 
           {isEnded && !autoCompleteOnEnd && (
             <Button
               onClick={finish}
-              className="gap-2"
+              className="gap-2 transition-transform active:scale-[0.97] animate-in fade-in slide-in-from-right-2"
               data-testid="button-video-continue"
             >
               繼續
