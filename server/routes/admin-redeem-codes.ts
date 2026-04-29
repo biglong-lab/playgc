@@ -7,6 +7,7 @@ import {
   generateRedeemCode,
   generateRedeemCodes,
 } from "../utils/redeem-code-generator";
+import { assertFieldOwnership } from "../lib/field-ownership";
 
 // 建立兌換碼的驗證 schema
 const createCodeSchema = z.object({
