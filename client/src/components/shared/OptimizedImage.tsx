@@ -98,6 +98,10 @@ export default function OptimizedImage({
 
   const optimizedSrc = preset ? getOptimizedImageUrl(src, preset) : src;
 
+  // 🆕 多解析度 srcSet（給 retina / 高 DPR 螢幕用更大版本）
+  const srcSetStr = preset && !disableSrcSet ? buildSrcSet(src, preset) : "";
+  const sizesStr = sizes ?? (preset && !disableSrcSet ? SIZES_PRESETS[preset] : undefined);
+
   // retry 時加 cache-bust query
   const srcWithRetry = retryCount > 0
     ? `${optimizedSrc}${optimizedSrc.includes("?") ? "&" : "?"}_r=${retryCount}`
