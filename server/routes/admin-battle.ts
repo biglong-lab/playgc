@@ -204,6 +204,17 @@ export function registerAdminBattleRoutes(app: Express) {
       const { id } = req.params;
       const data = adjustRatingSchema.parse(req.body);
 
+      // 🔒 場域隔離：先查 ranking 的 fieldId
+      const [existing] = await db
+        .select()
+        .from(battlePlayerRankings)
+        .where(eq(battlePlayerRankings.id, id))
+        .limit(1);
+      if (!existing) {
+        return res.status(404).json({ error: "排名紀錄不存在" });
+      }
+      if (!assertFieldOwnership(req.admin, existing.fieldId, res)) return;
+
       const [updated] = await db
         .update(battlePlayerRankings)
         .set({
