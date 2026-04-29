@@ -58,7 +58,7 @@ describe("OptimizedImage", () => {
     }
   });
 
-  it("Cloudinary URL 自動附加變換參數", () => {
+  it("Cloudinary URL 自動附加變換參數（card preset = 800px）", () => {
     render(
       <OptimizedImage
         src="https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
@@ -67,7 +67,38 @@ describe("OptimizedImage", () => {
       />,
     );
     const img = screen.getByRole("img");
-    expect(img.getAttribute("src")).toContain("w_400");
+    // card preset 已升級為 800x500（桌面 retina 友善）
+    expect(img.getAttribute("src")).toContain("w_800");
+  });
+
+  it("preset 自動產生 srcSet 多解析度", () => {
+    render(
+      <OptimizedImage
+        src="https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
+        alt="測試"
+        preset="card"
+      />,
+    );
+    const img = screen.getByRole("img");
+    const srcSet = img.getAttribute("srcset");
+    expect(srcSet).toBeTruthy();
+    // srcSet 應包含 1x / 2x 版本
+    expect(srcSet).toContain("400w");
+    expect(srcSet).toContain("800w");
+    expect(srcSet).toContain("1600w");
+  });
+
+  it("disableSrcSet=true 時不產生 srcSet", () => {
+    render(
+      <OptimizedImage
+        src="https://res.cloudinary.com/demo/image/upload/v1/sample.jpg"
+        alt="測試"
+        preset="card"
+        disableSrcSet={true}
+      />,
+    );
+    const img = screen.getByRole("img");
+    expect(img.getAttribute("srcset")).toBeFalsy();
   });
 
   it("非 Cloudinary URL 不附加變換", () => {
