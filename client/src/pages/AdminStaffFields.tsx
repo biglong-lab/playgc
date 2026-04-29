@@ -534,12 +534,16 @@ export default function AdminStaffFields() {
                         （可選 · 複製模組/亮點/主題）
                       </span>
                     </Label>
-                    <Select value={templateFieldId} onValueChange={setTemplateFieldId}>
+                    {/* 🐛 修：Radix Select 不允許 value=""，用 "_blank" 當 sentinel */}
+                    <Select
+                      value={templateFieldId || "_blank"}
+                      onValueChange={(v) => setTemplateFieldId(v === "_blank" ? "" : v)}
+                    >
                       <SelectTrigger data-testid="select-template-field">
                         <SelectValue placeholder="從空白開始（不複製）" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">從空白開始（不複製）</SelectItem>
+                        <SelectItem value="_blank">從空白開始（不複製）</SelectItem>
                         {fields.map((f) => {
                           const { enabled, total } = getFieldModuleStatus(f.settings);
                           return (
