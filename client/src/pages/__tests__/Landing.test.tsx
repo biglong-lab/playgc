@@ -88,10 +88,12 @@ describe("Landing 頁面", () => {
 
   it("渲染 4 個功能特色區塊", () => {
     render(<Landing />);
-    expect(screen.getByText("射擊挑戰")).toBeInTheDocument();
+    // 🆕 元件 fallback features 改成 GPS/photo/team/互動任務（移除射擊）
+    // 場域有自訂 highlights 時則用場域版本，沒有時用這 4 個 fallback
     expect(screen.getByText("GPS 導航")).toBeInTheDocument();
     expect(screen.getByText("拍照任務")).toBeInTheDocument();
     expect(screen.getByText("團隊協作")).toBeInTheDocument();
+    expect(screen.getByText("互動任務")).toBeInTheDocument();
   });
 
   it("渲染語言切換器", () => {
@@ -129,10 +131,11 @@ describe("Landing 頁面", () => {
 
   it("功能特色描述文字正確", () => {
     render(<Landing />);
-    expect(screen.getByText("使用實體靶機進行射擊任務")).toBeInTheDocument();
+    // 🆕 元件移除射擊挑戰，新增 QR 互動任務
     expect(screen.getByText("跟隨地圖指引探索場域")).toBeInTheDocument();
     expect(screen.getByText("用相機記錄你的發現")).toBeInTheDocument();
     expect(screen.getByText("與隊友即時溝通完成任務")).toBeInTheDocument();
+    expect(screen.getByText("QR、地點、解謎、團隊協作等多元任務")).toBeInTheDocument();
   });
 
   it("頁面包含 Tactical Experience 標籤", () => {

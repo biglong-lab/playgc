@@ -142,15 +142,22 @@ describe("AdminGames", () => {
     expect(mockCtx.setIsWizardOpen).toHaveBeenCalledWith(true);
   });
 
-  it("gamesLoading 顯示載入文字", () => {
+  it("gamesLoading 顯示骨架載入動畫", () => {
     mockCtx.gamesLoading = true;
-    render(<AdminGames />);
-    expect(screen.getByText("載入中...")).toBeInTheDocument();
+    const { container } = render(<AdminGames />);
+    // 🆕 元件改用 ListSkeleton 元件（pulse 骨架），不再顯示「載入中...」文字
+    // 驗證 skeleton 動畫存在（class 含 animate-pulse）
+    const skeletons = container.querySelectorAll(".animate-pulse");
+    expect(skeletons.length).toBeGreaterThan(0);
   });
 
-  it("空 games 顯示提示文字", () => {
+  it("空 games 顯示 EmptyState 提示", () => {
     render(<AdminGames />);
-    expect(screen.getByText("尚無遊戲，點擊「新增遊戲」開始建立")).toBeInTheDocument();
+    // 🆕 元件改用 EmptyState（title=「尚無遊戲」+ description）
+    expect(screen.getByText("尚無遊戲")).toBeInTheDocument();
+    // description 包含「遊戲精靈」字樣（多個元素 → 用 getAllByText）
+    const matches = screen.getAllByText(/遊戲精靈/);
+    expect(matches.length).toBeGreaterThan(0);
   });
 
   it("有 games 但 filteredGames 為空顯示篩選提示", () => {
