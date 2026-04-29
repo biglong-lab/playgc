@@ -357,7 +357,7 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
             <p className="text-muted-foreground">{config.instruction}</p>
           </div>
 
-          {/* 🛰️ GPS 精度即時顯示 + 多人融合徽章（玩家可見） */}
+          {/* 🛰️ GPS 精度即時顯示 + 多人融合徽章 + IMU fallback（玩家可見） */}
           {isWatching && (
             <div className="mb-4">
               <GpsAccuracyIndicator
@@ -370,6 +370,10 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
                   scattered: gpsScattered,
                   improvementRatio: gpsImprovementRatio,
                 } : undefined}
+                imu={{
+                  active: gpsImuActive,
+                  steps: gpsImuSteps,
+                }}
               />
             </div>
           )}
