@@ -1,16 +1,95 @@
 // 頁面設定編輯器 — 內嵌子元件（TextCard、Dialogue、GPS、QR、Choice、Video）
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Plus, X as XIcon } from "lucide-react";
+import { Plus, X as XIcon, AlertTriangle, CheckCircle2 } from "lucide-react";
 import LocationPicker from "@/components/LocationPicker";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 import { RewardsSection, LocationSettingsSection } from "./page-config-shared";
 import { ensureAudioUrl } from "@/lib/cloudinary-audio";
 import { LocationImporter } from "@/components/shared/LocationImporter";
+
+// 🎵 編輯器音訊預覽（含載入狀態 + 錯誤提示）
+function AudioPreviewWithStatus({ url }: { url: string }) {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [errorDetail, setErrorDetail] = useState<string>("");
+  const optimizedUrl = ensureAudioUrl(url);
+
+  return (
+    <div className="mt-2 space-y-2">
+      {/* 🎵 ensureAudioUrl 處理 Cloudinary /video/upload/ → 強制 .mp3 transcode
+          ⚠️ 不加 crossOrigin — Cloudinary /video/upload/ 不送 ACAO header
+          會導致 CORS 擋掉整個請求 */}
+      <audio
+        src={optimizedUrl}
+        controls
+        preload="auto"
+        className="w-full"
+        data-testid="audio-preview"
+        onLoadedMetadata={(e) => {
+          setStatus("ready");
+          setErrorDetail("");
+          console.log("[audio-preview] ✅ metadata loaded", {
+            duration: e.currentTarget.duration,
+            src: e.currentTarget.currentSrc,
+          });
+        }}
+        onError={(e) => {
+          const audio = e.currentTarget;
+          const code = audio.error?.code;
+          const msg =
+            code === 1 ? "下載中止"
+            : code === 2 ? "網路錯誤"
+            : code === 3 ? "解碼失敗（檔案格式問題）"
+            : code === 4 ? "格式不支援或檔案不存在"
+            : audio.error?.message || "未知錯誤";
+          setStatus("error");
+          setErrorDetail(msg);
+          console.error("[audio-preview] ❌ load failed", {
+            errorCode: code,
+            errorMessage: msg,
+            networkState: audio.networkState,
+            readyState: audio.readyState,
+            src: audio.currentSrc,
+          });
+        }}
+        onCanPlay={() => {
+          setStatus("ready");
+          console.log("[audio-preview] ▶️ can play");
+        }}
+      />
+
+      {/* 🚦 狀態指示 */}
+      {status === "ready" && (
+        <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>音訊載入成功</span>
+        </div>
+      )}
+      {status === "error" && (
+        <div className="flex items-start gap-2 p-2 rounded bg-destructive/10 border border-destructive/30 text-xs text-destructive">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <div className="font-medium">音訊載入失敗：{errorDetail}</div>
+            <div className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+              💡 解決方法：
+              <br />• 確認上傳的是音訊檔（建議 mp3 / m4a / wav）
+              <br />• 重新上傳檔案（避免 Cloudinary transcode 失敗）
+              <br />• 開 DevTools Console 查 [audio-preview] 詳細錯誤
+            </div>
+          </div>
+        </div>
+      )}
+      {status === "loading" && (
+        <p className="text-[11px] text-muted-foreground">載入中...</p>
+      )}
+    </div>
+  );
+}
 
 // ====== 共用型別 ======
 
