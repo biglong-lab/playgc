@@ -172,6 +172,37 @@ export default function DialoguePage({ config, onComplete }: DialoguePageProps) 
     }
   };
 
+  // 🆕 玩家選項處理（分支跳轉）
+  const handleChoice = (choice: import("@shared/schema").DialogueChoice) => {
+    // 1. 設定變數（給 conditional_verify / flow_router 用）
+    if (choice.setVariable) {
+      onVariableUpdate(choice.setVariable.key, choice.setVariable.value);
+    }
+    // 2. 跳轉
+    if (choice.nextPageId) {
+      // 跳到指定 page → 觸發 onComplete + 帶 nextPageId
+      finishedRef.current = true;
+      onComplete(
+        config.rewardPoints ? { points: config.rewardPoints } : undefined,
+        choice.nextPageId,
+      );
+      return;
+    }
+    if (typeof choice.jumpToMessageIndex === "number") {
+      const targetIndex = choice.jumpToMessageIndex;
+      if (targetIndex >= 0 && targetIndex < messages.length) {
+        setCurrentMessageIndex(targetIndex);
+        return;
+      }
+    }
+    // 3. 沒指定跳轉 → 進下一則訊息
+    if (isLastMessage) {
+      finishDialogue();
+    } else {
+      setCurrentMessageIndex((prev) => prev + 1);
+    }
+  };
+
   const [isConfirmingSkip, setIsConfirmingSkip] = useState(false);
   const skipConfirmTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
