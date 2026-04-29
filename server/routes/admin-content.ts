@@ -99,11 +99,10 @@ export function registerAdminContentRoutes(app: Express) {
       if (!req.admin) {
         return res.status(401).json({ message: "未認證" });
       }
-      const item = await storage.getItem(req.params.id);
-      if (!item) {
-        return res.status(404).json({ message: "Item not found" });
-      }
-      res.json(item);
+      // 🔒 場域隔離
+      const owned = await checkItemFieldOwnership(req.params.id, req.admin, res);
+      if (!owned) return;
+      res.json(owned.item);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch item" });
     }
@@ -115,10 +114,10 @@ export function registerAdminContentRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      const item = await storage.getItem(req.params.id);
-      if (!item) {
-        return res.status(404).json({ message: "Item not found" });
-      }
+      // 🔒 場域隔離
+      const owned = await checkItemFieldOwnership(req.params.id, req.admin, res);
+      if (!owned) return;
+      const item = owned.item;
 
       const data = insertItemSchema.partial().parse(req.body);
 
