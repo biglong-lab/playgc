@@ -92,13 +92,10 @@ export default function OptimizedImage({
     setIsLoaded(false);
   }, [src]);
 
-  if (!src || hasError) {
-    return <>{fallback ?? <DefaultFallback />}</>;
-  }
-
   // ⚡ useMemo：避免每次 render 都重算 URL（高頻 re-render 場景，如圖片列表）
+  // ⚠️ 必須在 early return 之前（React hooks rules）
   const optimizedSrc = useMemo(
-    () => (preset ? getOptimizedImageUrl(src, preset) : src),
+    () => (preset && src ? getOptimizedImageUrl(src, preset) : src ?? ""),
     [src, preset],
   );
 
@@ -106,9 +103,15 @@ export default function OptimizedImage({
   // retry > 0 時不用 srcSet（避免 cache-bust 跟 srcSet 衝突）
   const enableSrcSet = preset && !disableSrcSet && retryCount === 0;
   const srcSetStr = useMemo(
-    () => (enableSrcSet ? buildSrcSet(src, preset) : ""),
+    () => (enableSrcSet && src ? buildSrcSet(src, preset) : ""),
     [enableSrcSet, src, preset],
   );
+
+  // 🚫 hooks 後才能 early return
+  if (!src || hasError) {
+    return <>{fallback ?? <DefaultFallback />}</>;
+  }
+
   const sizesStr = sizes ?? (enableSrcSet ? SIZES_PRESETS[preset] : undefined);
 
   // 🆕 width/height attribute 防 CLS（瀏覽器預先保留圖片空間）
