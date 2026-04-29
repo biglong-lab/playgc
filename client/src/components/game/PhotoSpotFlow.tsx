@@ -46,8 +46,10 @@ interface CompositeResponse {
   urlLength: number;
 }
 
-// 地球圓周的 per-meter 近似（km → m 轉換需要 ×1000）
-const KM_TO_M = 1000;
+// 🐛 已修：calculateDistance 已回傳公尺（map-utils.ts R = 6371e3），
+// 之前誤乘 1000 導致顯示假公尺（138 m → 138512 m）
+// 保留常數註記，避免未來再出現同樣錯誤
+// const KM_TO_M = 1000; // ← 廢除：已不需要
 
 export default function PhotoSpotFlow({
   config,
