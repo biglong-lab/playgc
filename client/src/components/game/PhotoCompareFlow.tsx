@@ -194,16 +194,24 @@ export default function PhotoCompareFlow({
           setCompositeUrl(uploaded.url);
         }
       } catch (err) {
-        // 🤖 統一 AI 錯誤訊息
+        // 🤖 統一 AI 錯誤訊息（涵蓋 502/503/504/429/timeout）
         const errMsg = err instanceof Error ? err.message : String(err);
-        const isAiError = /\/api\/ai\//.test(errMsg) || /AI/i.test(errMsg) || /503|429/.test(errMsg);
+        const isAiError =
+          /\/api\/ai\//.test(errMsg) ||
+          /AI/i.test(errMsg) ||
+          /50[0-9]|429/.test(errMsg) ||
+          /TIMEOUT|超時/.test(errMsg);
         if (isAiError) {
           const { title, description } = formatAiError(err);
           toast({ title, description, variant: "destructive" });
         } else {
+          // 截掉 HTML 避免顯示整段 nginx 錯誤頁
+          const cleanMsg = errMsg.includes("<html")
+            ? "請檢查網路連線"
+            : (err instanceof Error ? err.message : "請檢查網路");
           toast({
             title: "處理失敗",
-            description: err instanceof Error ? err.message : "請檢查網路",
+            description: cleanMsg,
             variant: "destructive",
           });
         }
