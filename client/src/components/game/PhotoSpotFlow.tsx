@@ -19,6 +19,7 @@ import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useStableGeolocation } from "@/lib/geolocation";
 import { GpsAccuracyIndicator } from "./GpsAccuracyIndicator";
+import { formatAiError } from "@/lib/ai-error";
 import {
   CameraInitializingView,
   CameraView,
