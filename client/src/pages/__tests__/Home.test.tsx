@@ -25,7 +25,20 @@ vi.mock("wouter", () => ({
     <a href={href}>{children}</a>
   ),
   useLocation: () => ["/home", mockSetLocation],
+  // 🆕 Home.tsx 用 useParams<{ fieldCode?: string }>() 解析 URL 參數
+  useParams: () => ({}),
+  // useQuery from wouter 是 typo（應為 react-query），保留以防其他 import
   useQuery: () => ({}),
+}));
+
+// 🆕 Mock useAdminAuth（Home.tsx 用它判斷 admin 身分顯示「編輯封面」）
+vi.mock("@/hooks/useAdminAuth", () => ({
+  useAdminAuth: () => ({
+    admin: null,
+    isAuthenticated: false,
+    isLoading: false,
+    hasPermission: () => false,
+  }),
 }));
 
 // Mock i18n

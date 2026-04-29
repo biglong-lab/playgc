@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
+// 🆕 改用 customRender 自動包 QueryClientProvider（AdminGames 用 useMutation 需要）
+import { customRender as render } from "@/test/test-utils";
 
 // --- Mock useAdminGames ---
 const mockCtx = {

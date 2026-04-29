@@ -2,7 +2,9 @@
  * Landing 頁面測試 — 首頁渲染、登入按鈕、已登入跳轉
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+// 🆕 改用 customRender 自動包 QueryClientProvider（Landing 內 useFieldLink 用 useQuery）
+import { customRender as render } from "@/test/test-utils";
 import { type ReactNode } from "react";
 
 // Mock useAuth
