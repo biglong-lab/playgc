@@ -58,11 +58,6 @@ export default function PhotoSpotFlow({
   const camera = usePhotoCamera();
   const spot = config.spotConfig;
 
-  // GPS 相關狀態
-  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [gpsError, setGpsError] = useState<string | null>(null);
-  const watchIdRef = useRef<number | null>(null);
-
   // 合成結果
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
   const [originalUrl, setOriginalUrl] = useState<string | null>(null);
@@ -71,35 +66,31 @@ export default function PhotoSpotFlow({
   // 防重複完成
   const finishedRef = useRef(false);
 
-  // 監測 GPS
-  useEffect(() => {
-    if (!spot) return;
-    if (!("geolocation" in navigator)) {
-      setGpsError("裝置不支援 GPS 定位");
-      return;
-    }
+  // 🛰️ 用 useStableGeolocation 取代直接 watchPosition
+  // 修復原本 maximumAge: 10000 的 bug（會回舊位置）
+  // 加上多採樣 + Kalman 濾波，定位更穩
+  const {
+    position: stablePos,
+    accuracy: gpsAccuracy,
+    quality: gpsQuality,
+    samples: gpsSamples,
+    active: gpsActive,
+    error: gpsErrorObj,
+  } = useStableGeolocation({
+    mode: "watch",
+    enabled: !!spot,
+    sampleSize: 5,
+    minSampleIntervalMs: 1000,
+  });
 
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      (pos) => {
-        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setGpsError(null);
-      },
-      (err) => {
-        setGpsError(
-          err.code === err.PERMISSION_DENIED
-            ? "請允許 GPS 定位權限"
-            : "無法取得定位"
-        );
-      },
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
-    );
-
-    return () => {
-      if (watchIdRef.current !== null) {
-        navigator.geolocation.clearWatch(watchIdRef.current);
-      }
-    };
-  }, [spot]);
+  const userCoords = stablePos ? { lat: stablePos.lat, lng: stablePos.lng } : null;
+  const gpsError = gpsErrorObj
+    ? gpsErrorObj.code === gpsErrorObj.PERMISSION_DENIED
+      ? "請允許 GPS 定位權限"
+      : "無法取得定位"
+    : !("geolocation" in navigator)
+    ? "裝置不支援 GPS 定位"
+    : null;
 
   // 計算距離（公尺）
   const distanceMeters = userCoords && spot
