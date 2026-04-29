@@ -164,6 +164,9 @@ export function registerAdminEngagementRoutes(app: Express) {
       if (!fieldId) {
         return res.status(400).json({ error: "缺少 fieldId" });
       }
+      // 🔒 場域隔離
+      if (!assertFieldOwnership(req.admin, fieldId, res)) return;
+
       const channels = await db
         .select()
         .from(notificationChannels)
