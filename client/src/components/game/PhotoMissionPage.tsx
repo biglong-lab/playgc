@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { PhotoMissionConfig } from "@shared/schema";
+import { formatAiError } from "@/lib/ai-error";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import {
   InstructionView,
