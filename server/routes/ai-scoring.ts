@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { isAuthenticated } from "../firebaseAuth";
 import { isAIConfigured as isGeminiConfigured, verifyPhoto, scoreTextAnswer, comparePhotos, detectProvider } from "../lib/ai-provider";
 import { detectText, isGoogleVisionConfigured, logOcrUsage, getMonthlyOcrUsage } from "../lib/google-vision";
-import { logAiUsage, getMonthlyAiUsage } from "../lib/ai-usage-logger";
+import { logAiUsage, getMonthlyAiUsage, withAiTimeout } from "../lib/ai-usage-logger";
 import { decryptApiKey } from "../lib/crypto";
 import { db } from "../db";
 import { games, fields, parseFieldSettings } from "@shared/schema";
