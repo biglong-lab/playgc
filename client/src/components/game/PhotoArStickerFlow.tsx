@@ -557,27 +557,40 @@ export default function PhotoArStickerFlow({
           autoPlay playsInline muted
         />
 
-        {/* 🆕 B2: 臉部追蹤狀態（大型明顯卡片）*/}
+        {/* 🆕 B2: 臉部追蹤狀態（大型明顯卡片）— 邊框依狀態變色（綠/橘/紅）*/}
         {useFaceTracking && (
           <div className="absolute top-4 left-4 right-16 z-10 pointer-events-none">
-            <div className="bg-black/75 backdrop-blur-md rounded-xl px-4 py-3 text-sm shadow-lg border border-white/20">
+            <div
+              className={`bg-black/75 backdrop-blur-md rounded-xl px-4 py-3 text-sm shadow-lg border-2 transition-colors ${
+                faceError
+                  ? "border-red-500/60"
+                  : faceAnchor
+                    ? "border-emerald-400/60"
+                    : !faceReady
+                      ? "border-white/20"
+                      : "border-amber-400/60"
+              }`}
+            >
               {!faceReady ? (
                 <div className="flex items-center gap-2" data-testid="face-tracking-loading">
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span className="text-white">載入臉部追蹤模型（約 5 秒）...</span>
                 </div>
               ) : faceError ? (
-                <span className="text-destructive" data-testid="face-tracking-error">
+                <span className="text-red-300" data-testid="face-tracking-error">
                   ⚠️ {faceError}
                 </span>
               ) : faceAnchor ? (
                 <div data-testid="face-tracking-active">
-                  <p className="text-emerald-400 font-bold">✓ 已抓到你的臉</p>
+                  <p className="text-emerald-400 font-bold flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    ✓ 已抓到你的臉
+                  </p>
                   <p className="text-white/80 text-xs mt-0.5">按下方快門拍照</p>
                 </div>
               ) : (
                 <div data-testid="face-tracking-searching">
-                  <p className="text-amber-400 font-bold">👀 找不到臉</p>
+                  <p className="text-amber-400 font-bold animate-pulse">👀 找不到臉</p>
                   <p className="text-white/80 text-xs mt-0.5">讓臉在畫面中央再試</p>
                 </div>
               )}
@@ -632,14 +645,20 @@ export default function PhotoArStickerFlow({
               size="icon"
               onClick={handleCapture}
               disabled={!preloadDone || (useFaceTracking && !faceAnchor)}
-              className="bg-white text-black hover:bg-white/90 w-20 h-20 rounded-full ring-4 ring-white/30 shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className={`bg-white text-black hover:bg-white/90 w-20 h-20 rounded-full shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.92] ${
+                useFaceTracking && !faceAnchor
+                  ? "ring-4 ring-amber-400/50"
+                  : useFaceTracking && faceAnchor
+                    ? "ring-4 ring-emerald-400/60 ring-offset-2 ring-offset-transparent"
+                    : "ring-4 ring-white/30"
+              }`}
               data-testid="btn-ar-capture"
               title={!faceAnchor && useFaceTracking ? "請讓臉入鏡" : "拍照"}
             >
               <Camera className="w-9 h-9" />
             </Button>
             {useFaceTracking && !faceAnchor && (
-              <span className="text-amber-400 text-xs mt-1 bg-black/50 px-2 py-0.5 rounded">
+              <span className="text-amber-400 text-xs mt-1 bg-black/50 px-2 py-0.5 rounded animate-pulse">
                 等找到臉才能拍
               </span>
             )}
@@ -674,22 +693,37 @@ export default function PhotoArStickerFlow({
           {config.instruction}
         </p>
       )}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-muted-foreground tabular-nums">
         將在畫面疊上 {stickers.length} 個 AR 貼圖
       </p>
 
-      {/* 貼圖預覽縮圖 */}
+      {/* 貼圖預覽縮圖（🆕 hover 微放大、未載入時 skeleton 提示） */}
       <div className="flex gap-2 flex-wrap justify-center max-w-md">
         {stickers.map((s, idx) => (
-          <div key={idx} className="w-16 h-16 border rounded overflow-hidden bg-muted">
-            <img src={s.imageUrl} alt="" className="w-full h-full object-contain" />
+          <div
+            key={idx}
+            className="relative w-16 h-16 border rounded overflow-hidden bg-muted hover:scale-105 transition-transform"
+            title={`貼圖 ${idx + 1}`}
+          >
+            <img
+              src={s.imageUrl}
+              alt=""
+              className="w-full h-full object-contain"
+              loading="lazy"
+              decoding="async"
+            />
+            {!preloadDone && (
+              <div className="absolute inset-0 bg-muted/60 flex items-center justify-center">
+                <div className="w-3 h-3 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+              </div>
+            )}
           </div>
         ))}
       </div>
 
       <Button
         size="lg"
-        className="gap-2 mt-2"
+        className="gap-2 mt-2 transition-transform active:scale-[0.97]"
         onClick={() => {
           // 🆕 B4: 啟用臉部追蹤前先徵求同意（localStorage 快取）
           if (useFaceTracking && !hasConsent) {
