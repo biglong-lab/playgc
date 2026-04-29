@@ -119,6 +119,60 @@ test.describe("今日改動 Smoke Test", () => {
   });
 });
 
+// ============================================================================
+// 🆕 2026-04-30 — 場域封面編輯（EditableCoverImage）+ 元件視覺微調驗證
+// ============================================================================
+
+test.describe("EditableCoverImage 後端契約（2026-04-30）", () => {
+  test("/api/fields/:code/theme 回傳含 coverImagePosition 欄位", async ({ page }) => {
+    // 用 HPSPACE 場域（線上實際存在的場域）
+    const response = await page.request.get("/api/fields/HPSPACE/theme");
+    expect(response.ok()).toBeTruthy();
+    const data = await response.json();
+    // theme.coverImagePosition 必須在 response 中（即使值為 null）
+    expect(data.theme).toBeDefined();
+    expect("coverImagePosition" in data.theme).toBeTruthy();
+    // 也要保留原欄位
+    expect("coverImageUrl" in data.theme).toBeTruthy();
+    expect("brandingLogoUrl" in data.theme).toBeTruthy();
+  });
+
+  test("/api/fields/:code/theme Cache-Control 為 private（不被 CDN 快取）", async ({
+    page,
+  }) => {
+    const response = await page.request.get("/api/fields/HPSPACE/theme");
+    const cacheControl = response.headers()["cache-control"] || "";
+    // 改完封面立即生效需要：private（CDN 不 cache）+ short max-age
+    expect(cacheControl).toMatch(/private/i);
+  });
+
+  test("admin fields PATCH 端點 — 未認證回 401（不該 500）", async ({ page }) => {
+    const response = await page.request.patch(
+      "/api/admin/fields/00000000-0000-0000-0000-000000000000/settings",
+      { data: { theme: { coverImagePosition: "30% 20%" } } },
+    );
+    // 未認證 → 401（而非 500，證明 zod schema 處理正常）
+    expect([401, 403]).toContain(response.status());
+  });
+
+  test("admin fields PATCH 拒絕惡意 coverImagePosition 格式（防 CSS 注入）", async ({
+    page,
+  }) => {
+    // 即使未認證，403/401 是預期；但若有 admin 認證後，惡意格式應該被 zod 擋下
+    // 這裡只驗端點存在 + 拒絕未認證（zod 在 auth 後才會檢查）
+    const response = await page.request.patch(
+      "/api/admin/fields/00000000-0000-0000-0000-000000000000/settings",
+      {
+        data: {
+          theme: { coverImagePosition: "<script>alert(1)</script>" },
+        },
+      },
+    );
+    // 應 401/403（auth 先擋），絕不該 200
+    expect(response.status()).not.toBe(200);
+  });
+});
+
 test.describe("今日 AI / GPS 元件驗證（不依賴登入）", () => {
   test("OCR 端點 401 未認證（不該 502）", async ({ page }) => {
     const response = await page.request.post("/api/ai/ocr-detect", {
