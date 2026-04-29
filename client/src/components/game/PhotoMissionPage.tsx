@@ -144,12 +144,10 @@ export default function PhotoMissionPage({
         camera.setMode("ai_fail");
       }
     },
-    onError: () => {
-      // API 端點錯誤 → 讓玩家通過但不計分（跟 fallback 行為一致）
-      toast({
-        title: "照片已上傳",
-        description: "AI 服務暫時無法使用，本題不計分",
-      });
+    onError: (err: unknown) => {
+      // API 端點錯誤 → 用共用 helper 給精準訊息，仍讓玩家通過但不計分
+      const { title, description } = formatAiError(err);
+      toast({ title, description, variant: "destructive" });
       safeOnComplete(buildReward(false));
     },
   });
