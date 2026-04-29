@@ -194,8 +194,19 @@ const comparePhotosSchema = z.object({
 // 場域 AI Key 解析：gameId → fieldId → fieldSettings → 解密 API Key
 // ============================================================================
 
+interface AiContextResolved {
+  apiKey?: string;
+  fieldId?: string;
+}
+
 async function resolveAiApiKey(gameId?: string): Promise<string | undefined> {
-  if (!gameId) return undefined;
+  const ctx = await resolveAiContext(gameId);
+  return ctx.apiKey;
+}
+
+/** 同時取得 apiKey + fieldId（給 logger 用）*/
+async function resolveAiContext(gameId?: string): Promise<AiContextResolved> {
+  if (!gameId) return {};
 
   try {
     // 查 game → fieldId
@@ -204,7 +215,7 @@ async function resolveAiApiKey(gameId?: string): Promise<string | undefined> {
       .where(eq(games.id, gameId))
       .limit(1);
 
-    if (!game?.fieldId) return undefined;
+    if (!game?.fieldId) return {};
 
     // 查 field → settings
     const [field] = await db.select({ settings: fields.settings })
@@ -212,7 +223,7 @@ async function resolveAiApiKey(gameId?: string): Promise<string | undefined> {
       .where(eq(fields.id, game.fieldId))
       .limit(1);
 
-    if (!field) return undefined;
+    if (!field) return { fieldId: game.fieldId };
 
     const settings = parseFieldSettings(field.settings);
 
@@ -223,17 +234,20 @@ async function resolveAiApiKey(gameId?: string): Promise<string | undefined> {
 
     // 有加密 Key 就解密回傳
     if (settings.geminiApiKey) {
-      return decryptApiKey(settings.geminiApiKey);
+      return {
+        apiKey: decryptApiKey(settings.geminiApiKey),
+        fieldId: game.fieldId,
+      };
     }
 
-    return undefined; // fallback 到全域
+    return { fieldId: game.fieldId }; // fallback 到全域
   } catch (error) {
     // FIELD_AI_DISABLED 需要向上拋
     if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
       throw error;
     }
     // 其他查詢錯誤 → fallback 到全域
-    return undefined;
+    return {};
   }
 }
 
