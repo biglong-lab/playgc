@@ -338,7 +338,7 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
               {config.instruction || `請${CHALLENGE_LABELS[challengeType]}來完成挑戰`}
             </p>
             {isStarted && hitCount > 0 && (
-              <p className="text-xs text-primary mt-2 font-mono" data-testid="text-hit-count">
+              <p className="text-xs text-primary mt-2 font-mono tabular-nums" data-testid="text-hit-count">
                 已偵測 {hitCount} 次
               </p>
             )}
@@ -368,8 +368,17 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
 
           {isStarted && config.timeLimit && (
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Clock className={`w-5 h-5 ${timeLeft <= 10 ? "text-destructive" : "text-muted-foreground"}`} />
-              <span className={`font-mono text-2xl font-bold ${timeLeft <= 10 ? "text-destructive animate-pulse" : ""}`}>
+              {/* 🆕 ≤10s 紅閃 + 兩段警示 + tabular-nums */}
+              <Clock className={`w-5 h-5 transition-colors ${
+                timeLeft <= 10 ? "text-destructive animate-pulse" :
+                timeLeft <= 30 ? "text-amber-500" :
+                "text-muted-foreground"
+              }`} />
+              <span className={`font-mono text-2xl font-bold tabular-nums transition-colors ${
+                timeLeft <= 10 ? "text-destructive animate-pulse" :
+                timeLeft <= 30 ? "text-amber-500" :
+                ""
+              }`}>
                 {timeLeft}s
               </span>
             </div>
@@ -379,9 +388,9 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
             <div className="mb-6">
               <div className="flex justify-between text-sm text-muted-foreground mb-2">
                 <span>進度</span>
-                <span>{Math.round(progress)}%</span>
+                <span className="tabular-nums">{Math.round(progress)}%</span>
               </div>
-              <Progress value={progress} className="h-3" />
+              <Progress value={progress} className="h-3 transition-all" />
             </div>
           )}
 
@@ -389,7 +398,7 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
             {!isStarted ? (
               <Button
                 onClick={startChallenge}
-                className="w-full gap-2"
+                className="w-full gap-2 transition-transform active:scale-[0.97]"
                 size="lg"
                 data-testid="button-start-challenge"
               >
@@ -400,7 +409,7 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
               <Button
                 variant="outline"
                 onClick={() => setIsStarted(false)}
-                className="w-full gap-2"
+                className="w-full gap-2 transition-transform active:scale-[0.97]"
                 data-testid="button-pause-challenge"
               >
                 <Pause className="w-5 h-5" />

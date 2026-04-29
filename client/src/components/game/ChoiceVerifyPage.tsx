@@ -285,7 +285,9 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
                   key={index}
                   onClick={() => handleOptionClick(index)}
                   disabled={showResult}
-                  className={`w-full p-4 rounded-lg border-2 transition-all text-left flex items-center gap-3 ${getQuizOptionStyle(index)}`}
+                  className={`w-full p-4 rounded-lg border-2 transition-all text-left flex items-center gap-3 ${
+                    showResult ? "" : "active:scale-[0.99] hover:shadow-sm"
+                  } ${getQuizOptionStyle(index)}`}
                   data-testid={`option-${index}`}
                 >
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
@@ -309,7 +311,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
             <Button
               onClick={handleNextQuestion}
               disabled={selectedOption === null || showResult}
-              className="w-full gap-2"
+              className="w-full gap-2 transition-transform active:scale-[0.97]"
               data-testid="button-next-question"
             >
               {!isLastInOrder ? (
@@ -338,7 +340,9 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
                 key={index}
                 onClick={() => handleOptionClick(index)}
                 disabled={isSubmitted}
-                className={`w-full p-4 rounded-lg border-2 transition-all text-left flex items-center gap-3 ${getLegacyOptionStyle(index)}`}
+                className={`w-full p-4 rounded-lg border-2 transition-all text-left flex items-center gap-3 ${
+                  isSubmitted ? "" : "active:scale-[0.99] hover:shadow-sm"
+                } ${getLegacyOptionStyle(index)}`}
                 data-testid={`option-${index}`}
               >
                 <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
@@ -398,7 +402,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
           {isSubmitted && showExplanationEnabled && lastAnswerCorrect === true ? (
             <Button
               onClick={handleLegacyContinue}
-              className="w-full"
+              className="w-full transition-transform active:scale-[0.97]"
               data-testid="button-continue-after-explanation"
             >
               繼續
@@ -407,7 +411,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
             <Button
               onClick={handleLegacyRetry}
               variant="outline"
-              className="w-full"
+              className="w-full transition-transform active:scale-[0.97]"
               data-testid="button-retry-after-explanation"
             >
               再試一次
@@ -416,7 +420,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
             <Button
               onClick={handleLegacySubmit}
               disabled={selectedOption === null || isSubmitted}
-              className="w-full"
+              className="w-full transition-transform active:scale-[0.97]"
               data-testid="button-submit-choice"
             >
               確認選擇
