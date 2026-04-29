@@ -473,14 +473,18 @@ export function registerAiScoringRoutes(app: Express): void {
       const threshold = similarityThreshold ?? 0.6;
       const mode = compareMode ?? "scene";
 
-      const result = await comparePhotos(
-        playerImageUrl,
-        referenceImageUrl,
-        referenceDescription,
-        mode,
-        threshold,
-        fieldApiKey,
-        modelId,
+      // 🛡️ 加 timeout 防 nginx 上游 502
+      const result = await withAiTimeout(
+        () => comparePhotos(
+          playerImageUrl,
+          referenceImageUrl,
+          referenceDescription,
+          mode,
+          threshold,
+          fieldApiKey,
+          modelId,
+        ),
+        { endpoint: "compare-photos", timeoutMs: 50_000 },
       );
 
       // 使用 AI 回傳的 verified，並以 threshold 複核
