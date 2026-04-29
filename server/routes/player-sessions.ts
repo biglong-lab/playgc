@@ -338,6 +338,27 @@ export function registerPlayerSessionRoutes(app: Express) {
         // 省去 session 存在檢查（若 sessionId 無效，update 會回 undefined → 404）
         let progress = await storage.getPlayerProgressByUser(sessionId, userId);
 
+        // 🛡️ 防作弊：驗證 inventory 中的 itemId 都屬於該 game
+        // 避免玩家透過離線改 request 注入其他遊戲的 itemId
+        // 也避免 admin 刪掉 item 後舊 session 還用孤兒 ID
+        if (Array.isArray(req.body.inventory) && req.body.inventory.length > 0) {
+          const session = await storage.getSession(sessionId);
+          if (session?.gameId) {
+            const allItems = await storage.getItems(session.gameId);
+            const validIds = new Set(allItems.map((i) => i.id));
+            const filteredInventory = req.body.inventory.filter((id: unknown) =>
+              typeof id === "string" && validIds.has(id),
+            );
+            const droppedCount = req.body.inventory.length - filteredInventory.length;
+            if (droppedCount > 0) {
+              console.warn(
+                `[player-sessions] 玩家 ${userId} session ${sessionId} 過濾掉 ${droppedCount} 個無效 itemId`,
+              );
+            }
+            req.body.inventory = filteredInventory;
+          }
+        }
+
         if (!progress) {
           progress = await storage.createPlayerProgress({
             sessionId: sessionId,
