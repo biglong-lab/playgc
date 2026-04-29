@@ -227,12 +227,28 @@ export default function GamePageRenderer({
   const variant = page.pageType === "flow_router" ? "flow" : "default";
 
   // 🗺️ 自動偵測 locationSettings → 顯示頁面定位迷你地圖
-  // 適用於 text_card / dialogue / qr_scan / choice_verify / video / vote 等
-  // 已內建 GPS 任務（gps_mission）等地圖類型不重複顯示
+  // 適用於 text_card / dialogue / choice_verify / vote 等以文字為主的頁面
+  //
+  // 排除清單：
+  //  - 已有自己地圖：gps_mission, photo_spot
+  //  - 純路由：flow_router
+  //  - 全螢幕互動類（注入 MiniMap 會擠壓核心 UI）：
+  //    QR 相機、所有拍照流程、射擊任務、影片播放
   const skipMiniMapTypes = new Set([
-    "gps_mission",  // 已有自己的地圖
-    "photo_spot",   // 已有 GPS 引導
-    "flow_router",  // 純路由
+    "gps_mission",      // 已有 GpsMissionMap
+    "photo_spot",       // 已有 GPS 引導
+    "flow_router",      // 純路由
+    "qr_scan",          // QR 相機需要全螢幕
+    "video",            // 影片播放器需要全寬
+    "shooting_mission", // AR 預瞄全螢幕
+    "photo_mission",    // 相機介面全螢幕
+    "photo_compare",    // 左右對比 layout
+    "photo_before_after", // before/after 動畫
+    "photo_burst",      // 連拍進度條
+    "photo_ar",         // AR 視角
+    "photo_team",       // 團隊合照 layout
+    "photo_ocr",        // 文字框掃描
+    "motion_challenge", // 加速度計感應
   ]);
   const showMiniMap = shouldShowMiniMap(config) && !skipMiniMapTypes.has(page.pageType);
 
