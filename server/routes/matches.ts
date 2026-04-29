@@ -295,7 +295,7 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
         return res.status(404).json({ error: "未加入此對戰" });
       }
 
-      // 🔒 §19 防作弊：score delta + 時間間隔檢查
+      // 🔒 §19 防作弊：score delta 檢查
       const newScore = parseResult.data.score;
       const oldScore = participant.currentScore ?? 0;
       const delta = newScore - oldScore;
@@ -306,17 +306,9 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
         });
       }
 
-      // 拒絕分數倒退（除非 admin 修正）
+      // 拒絕分數倒退（除非 admin 修正，client 不應送負 delta）
       if (delta < 0) {
         return res.status(400).json({ error: "分數不可倒退" });
-      }
-
-      // 時間間隔檢查（防快速灌分）
-      const lastUpdate = (participant as any).updatedAt
-        ? new Date((participant as any).updatedAt as string).getTime()
-        : 0;
-      if (lastUpdate > 0 && Date.now() - lastUpdate < MIN_SCORE_TICK_MS) {
-        return res.status(429).json({ error: "分數更新太頻繁" });
       }
 
       const [updated] = await db.update(matchParticipants)
