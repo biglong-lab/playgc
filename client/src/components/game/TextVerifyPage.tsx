@@ -375,6 +375,7 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
           <div className="space-y-4">
             <Input
               type={inputType}
+              ref={inputRef}
               value={answer}
               onChange={(e) => {
                 setAnswer(e.target.value);
