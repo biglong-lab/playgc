@@ -99,6 +99,31 @@ export function GpsAccuracyIndicator({
         )}
       </div>
 
+      {/* 🤝 多人融合徽章（contributors > 1 + 沒分散時）*/}
+      {isFused && fusion && (
+        <div className="mt-2 pt-2 border-t border-border/50">
+          <div className="flex items-center justify-between text-xs">
+            <span className="flex items-center gap-1 text-blue-500">
+              <span>🤝</span>
+              <span className="font-medium">隊伍融合</span>
+              <span className="text-muted-foreground">
+                ({fusion.contributors} 人)
+              </span>
+            </span>
+            <span className="text-muted-foreground">
+              精度提升 {Math.round(fusion.improvementRatio * 100)}%
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 隊友分散時提示（已退化為單機）*/}
+      {fusion?.scattered && (
+        <div className="mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground">
+          ⚠️ 隊友距離過遠，已切換為個人定位
+        </div>
+      )}
+
       {/* 弱訊號建議 */}
       {desc.hint && (
         <div className="mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground leading-relaxed">
