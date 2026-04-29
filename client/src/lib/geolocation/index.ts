@@ -33,3 +33,19 @@ export {
   type FusionResult,
   GPS_BROADCAST_INTERVAL_MS,
 } from "./fusion-utils";
+
+export {
+  usePedometer,
+  requestMotionPermission,
+  hasMotionPermission,
+  type UsePedometerOptions,
+  type UsePedometerResult,
+} from "./usePedometer";
+
+export {
+  useImuPositioning,
+  type UseImuPositioningOptions,
+  type UseImuPositioningResult,
+  type ImuAnchor,
+  type ImuPosition,
+} from "./useImuPositioning";
