@@ -150,10 +150,46 @@ export interface TextCardConfig {
   rewardPoints?: number;
 }
 
+/**
+ * 玩家選項（分支跳轉）— 對話訊息可附帶選項按鈕
+ */
+export interface DialogueChoice {
+  /** 按鈕文字 */
+  text: string;
+  /** 跳轉到第幾則訊息（index，0-based）。undefined = 直接結束此頁 */
+  jumpToMessageIndex?: number;
+  /** 跳轉到指定 page（覆蓋預設 nextPageId） */
+  nextPageId?: string;
+  /** 選擇後設定變數（給 conditional_verify / flow_router 用）*/
+  setVariable?: { key: string; value: string | number | boolean };
+}
+
 export interface DialogueMessage {
   text: string;
   delay?: number;
   emotion?: "neutral" | "happy" | "angry" | "surprised" | "sad" | "thinking";
+  /**
+   * 🆕 發言者：
+   *   - "npc"（預設）：NPC 說話，左側氣泡 + 角色頭像
+   *   - "player"：玩家說話，右側氣泡 + 「你」標示
+   *   - "system"：系統旁白，置中顯示（無頭像）
+   */
+  speaker?: "npc" | "player" | "system";
+  /**
+   * 🆕 玩家選項（分支跳轉）— 顯示按鈕讓玩家選
+   * 有 choices 時不會自動進入下一則，等玩家選完才跳
+   */
+  choices?: DialogueChoice[];
+  /**
+   * 🆕 NPC 名稱覆蓋 — 多角色對話時，每則訊息可指定不同 NPC
+   * （未填 = 用 character.name）
+   */
+  speakerName?: string;
+  /**
+   * 🆕 NPC 頭像覆蓋 — 多角色對話時可以指定不同頭像
+   * （未填 = 用 character.avatar / emotionAvatars）
+   */
+  speakerAvatar?: string;
 }
 
 export interface DialogueConfig {
@@ -180,6 +216,11 @@ export interface DialogueConfig {
   nextPageId?: string;
   /** 完成本頁獎勵點數 */
   rewardPoints?: number;
+  /**
+   * 🆕 玩家頭像（對話用，speaker="player" 訊息會用）
+   * 未設則用「你」文字標示
+   */
+  playerAvatar?: string;
 }
 
 export interface VideoConfig {
