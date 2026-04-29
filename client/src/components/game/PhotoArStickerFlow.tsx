@@ -587,62 +587,32 @@ export default function PhotoArStickerFlow({
 
         {/* 切鏡頭按鈕已移到下方 footer（避開 iPhone 瀏海）*/}
 
-        {/* 貼圖 overlay 預覽 — 沒偵測到臉時不要顯示（避免中央大面具擋住畫面）*/}
-        {stickers.map((s, idx) => {
-          const img = preloadedStickers[idx];
-          if (preloadDone && !img) return null; // 該張 URL 壞掉，跳過
-          const imgRatio = img ? img.naturalWidth / img.naturalHeight : 1;
-
-          // 🆕 B2: face anchor 定位 — 只在偵測到臉時顯示
-          if (useFaceTracking) {
-            if (!faceAnchor) return null; // 沒臉就不顯示（避免大面具擋住）
-            // 🎨 size 稍微縮小，避免完全擋住畫面
-            const widthPct = faceAnchor.width * 100 * (s.sizeRatio || 0.6);
-            const heightPct = widthPct / imgRatio;
-            const rotation = faceAnchor.rotationY
-              ? `rotate(${(faceAnchor.rotationY * 180) / Math.PI}deg)`
-              : "";
-            // 🐛 修：MediaPipe 回傳的 x 是「未鏡像」座標（raw video 像素）
-            // video 元素被 scaleX(-1) 鏡像了 → 玩家看到的「左/右」跟 raw 相反
-            // DOM overlay 不在 video transform 下，要手動把 x 也鏡像才會跟視覺一致
-            const isMirror = camera.facingMode === "user";
-            const visualX = isMirror ? 1 - faceAnchor.x : faceAnchor.x;
-            // 🆕 sticker 內容（圖案／文字）也要鏡像，否則文字會反向
-            const mirror = isMirror ? " scaleX(-1)" : "";
-            // 🆕 透明度設定（admin 可在編輯器設 stickerOpacity，預設 1.0）
-            const opacity = (s as any).opacity ?? (config as any).stickerOpacity ?? 1;
+        {/* 🎯 face tracking 模式：用獨立 memo'd 子元件，避免高頻 setFaceAnchor 連帶 re-render 整個 flow */}
+        {useFaceTracking ? (
+          <FaceStickersOverlay
+            stickers={stickers}
+            preloadedStickers={preloadedStickers}
+            preloadDone={preloadDone}
+            faceAnchor={faceAnchor}
+            isMirror={camera.facingMode === "user"}
+            pageOpacity={(config as any).stickerOpacity ?? 1}
+          />
+        ) : (
+          /* 非臉部追蹤 — 固定位置（不需 face tracking，無頻率問題）*/
+          stickers.map((s, idx) => {
+            const img = preloadedStickers[idx];
+            if (preloadDone && !img) return null;
             return (
               <img
                 key={idx}
                 src={s.imageUrl}
                 alt=""
-                style={{
-                  position: "absolute",
-                  left: `${visualX * 100}%`,
-                  top: `${faceAnchor.y * 100}%`,
-                  width: `${widthPct}%`,
-                  height: `${heightPct}%`,
-                  transform: `translate(-50%, -50%) ${rotation}${mirror}`,
-                  opacity,
-                  pointerEvents: "none",
-                  transition: "top 0.08s, left 0.08s",
-                }}
-                data-testid={`ar-sticker-face-${idx}`}
+                style={positionToStyle(s.position, s.sizeRatio)}
+                data-testid={`ar-sticker-overlay-${idx}`}
               />
             );
-          }
-
-          // 非臉部追蹤 — 固定位置（原 positionToStyle）
-          return (
-            <img
-              key={idx}
-              src={s.imageUrl}
-              alt=""
-              style={positionToStyle(s.position, s.sizeRatio)}
-              data-testid={`ar-sticker-overlay-${idx}`}
-            />
-          );
-        })}
+          })
+        )}
 
         {/* 🎨 底部沉浸式按鈕列（含 safe-area + 清楚的返回/快門） */}
         <div
