@@ -124,6 +124,8 @@ export function registerAdminRedeemCodeRoutes(app: Express) {
         if (!game) {
           return res.status(404).json({ message: "遊戲不存在" });
         }
+        // 🔒 場域隔離
+        if (!assertFieldOwnership(req.admin, game.fieldId, res)) return;
 
         const parsed = batchCreateSchema.parse(req.body);
 
