@@ -106,15 +106,16 @@ describe("PAGE_TEMPLATES", () => {
 });
 
 describe("EVENT_TYPES", () => {
-  it("定義 4 種事件類型", () => {
-    expect(EVENT_TYPES).toHaveLength(4);
+  it("定義 5 種事件類型", () => {
+    expect(EVENT_TYPES).toHaveLength(5);
   });
 
-  it("包含 qrcode、gps、shooting、timer", () => {
+  it("包含 qrcode、gps、shooting、photo、timer", () => {
     const values = EVENT_TYPES.map((e) => e.value);
     expect(values).toContain("qrcode");
     expect(values).toContain("gps");
     expect(values).toContain("shooting");
+    expect(values).toContain("photo");
     expect(values).toContain("timer");
   });
 
