@@ -390,28 +390,43 @@ export default function PhotoTeamFlow({
     const isLast = currentIdx + 1 >= memberCount;
     return (
       <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-transition">
-        <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+        <CheckCircle2 className="w-10 h-10 text-emerald-500 animate-[pulse_1.5s_ease-in-out_infinite]" />
         <h2 className="text-xl font-bold">
           {current?.name} 拍好了！
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground tabular-nums">
           {isLast ? `已拍完 ${memberCount} 位，準備合成...` : `還剩 ${memberCount - currentIdx - 1} 位`}
         </p>
+
+        {/* 🆕 進度點 — 與 BurstFlow 一致的視覺語言 */}
+        <div className="flex gap-2" data-testid="team-progress-dots" role="status" aria-label="團體拍照進度">
+          {Array.from({ length: memberCount }).map((_, i) => (
+            <span
+              key={i}
+              className={`w-3 h-3 rounded-full transition-all ${
+                i <= currentIdx
+                  ? "bg-emerald-500 scale-100"
+                  : "bg-muted-foreground/30 scale-90"
+              }`}
+            />
+          ))}
+        </div>
+
         {current?.imageData && (
-          <div className="max-w-xs rounded-lg overflow-hidden border">
+          <div className="max-w-xs rounded-lg overflow-hidden border-2 border-emerald-500/40 shadow-md">
             <img src={current.imageData} alt="" className="w-full aspect-square object-cover" />
           </div>
         )}
         <Button
           size="lg"
-          className="gap-2 mt-2"
+          className="gap-2 mt-2 transition-transform active:scale-[0.97]"
           onClick={handleNextMember}
           data-testid="btn-team-next"
         >
           {isLast ? (
             <>合成團體照 <ArrowRight className="w-5 h-5" /></>
           ) : (
-            <>拍下一位 <ArrowRight className="w-5 h-5" /></>
+            <>拍下一位（第 {currentIdx + 2} 位）<ArrowRight className="w-5 h-5" /></>
           )}
         </Button>
       </div>
@@ -424,16 +439,20 @@ export default function PhotoTeamFlow({
       <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-select-count">
         <Users className="w-12 h-12 text-primary" />
         <h2 className="text-2xl font-bold">實際幾位隊員？</h2>
+        {/* 🆕 數字按鈕加強視覺 + 觸感 */}
         <div className="flex flex-wrap gap-2 justify-center max-w-sm">
           {Array.from({ length: maxMembers - minMembers + 1 }, (_, i) => {
             const n = minMembers + i;
+            const selected = memberCount === n;
             return (
               <Button
                 key={n}
                 size="lg"
-                variant={memberCount === n ? "default" : "outline"}
+                variant={selected ? "default" : "outline"}
                 onClick={() => setMemberCount(n)}
-                className="w-14 h-14"
+                className={`w-14 h-14 text-lg font-bold tabular-nums transition-all active:scale-[0.95] ${
+                  selected ? "ring-2 ring-primary/40 shadow-md" : ""
+                }`}
                 data-testid={`btn-team-count-${n}`}
               >
                 {n}
@@ -453,7 +472,7 @@ export default function PhotoTeamFlow({
         </div>
         <Button
           size="lg"
-          className="gap-2 mt-2"
+          className="gap-2 mt-2 transition-transform active:scale-[0.97]"
           onClick={() => {
             setCurrentIdx(0);
             handleStartShootingMember();
