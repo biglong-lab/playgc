@@ -407,7 +407,15 @@ export default function PhotoSpotFlow({
           />
         )}
 
-        <div className="rounded-lg border bg-card p-4" data-testid="photo-spot-gps-card">
+        <div
+          className={`rounded-lg border p-4 transition-colors ${
+            inRange
+              ? "border-emerald-500/40 bg-emerald-50/50 dark:bg-emerald-950/20"
+              : "border-border bg-card"
+          }`}
+          data-testid="photo-spot-gps-card"
+          data-in-range={inRange}
+        >
           {gpsError ? (
             <div className="flex items-start gap-2 text-destructive">
               <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5" />
@@ -422,19 +430,48 @@ export default function PhotoSpotFlow({
               <p className="text-sm">正在取得你的位置...</p>
             </div>
           ) : inRange ? (
-            <div className="flex items-center gap-2 text-emerald-600">
-              <CheckCircle2 className="w-5 h-5" />
-              <p className="font-medium">已進入拍照點範圍</p>
+            // 🆕 進入範圍 → 慶祝感（icon 緩脈動 + ✨）
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="w-5 h-5 animate-[pulse_1.5s_ease-in-out_infinite]" />
+              <p className="font-medium">✨ 已進入拍照點範圍！</p>
             </div>
           ) : (
-            <div className="space-y-1">
+            // 🆕 距離視覺化進度條（越近越短，色階：紅 → 黃 → 綠）
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">距離拍照點</span>
-                <span className="font-bold font-number text-primary" data-testid="photo-spot-distance">
+                <span
+                  className="font-bold font-number text-primary tabular-nums"
+                  data-testid="photo-spot-distance"
+                >
                   {distanceMeters !== null ? Math.round(distanceMeters) : "--"} m
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">
+              {/* 🆕 距離進度條：clamp 0~3*radius，越接近半徑越綠 */}
+              {distanceMeters !== null && (() => {
+                const maxRange = Math.max(radius * 3, 100);
+                const ratio = Math.min(distanceMeters / maxRange, 1);
+                const closeness = 1 - ratio; // 1 = 在原點、0 = 邊緣
+                const barColor =
+                  closeness > 0.7
+                    ? "bg-emerald-500"
+                    : closeness > 0.4
+                      ? "bg-amber-500"
+                      : "bg-red-500";
+                return (
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      className={`h-full transition-all duration-500 ${barColor}`}
+                      style={{ width: `${closeness * 100}%` }}
+                      role="progressbar"
+                      aria-valuenow={Math.round(closeness * 100)}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                    />
+                  </div>
+                );
+              })()}
+              <p className="text-xs text-muted-foreground tabular-nums">
                 請靠近目標 {radius} 公尺內才能拍照
               </p>
             </div>
@@ -452,17 +489,18 @@ export default function PhotoSpotFlow({
           onClick={() => camera.startCamera(config.defaultFacingMode ?? "environment")}
           disabled={!canOpenCamera}
           size="lg"
-          className="w-full gap-2 h-14"
+          className="w-full gap-2 h-14 transition-transform active:scale-[0.97] disabled:opacity-50"
           data-testid="btn-photo-spot-open-camera"
         >
           <Camera className="w-5 h-5" />
           {canOpenCamera ? "開啟相機拍照" : "請靠近拍照點"}
         </Button>
 
-        {strictMode === "soft" && !inRange && (
-          <p className="text-xs text-center text-amber-600">
+        {/* 🆕 soft mode 警告強化 — bg + icon 不易被忽略 */}
+        {strictMode === "soft" && !inRange && userCoords && (
+          <div className="rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-500/40 px-3 py-2 text-xs text-amber-700 dark:text-amber-300 leading-relaxed text-center">
             ⚠️ 不在範圍內拍照可能無法取得完整分數
-          </p>
+          </div>
         )}
 
         <input
