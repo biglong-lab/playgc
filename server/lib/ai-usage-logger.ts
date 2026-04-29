@@ -14,6 +14,37 @@ import { db } from "../db";
 import { aiUsageLogs } from "@shared/schema";
 import type { AiProvider } from "@shared/schema";
 
+/**
+ * 🛡️ 通用 timeout wrapper — 把任何 AI 呼叫包上 timeout
+ * 預設 50 秒（nginx 上游 timeout 60 秒，留 10 秒緩衝給 logger 寫入）
+ *
+ * 用法：
+ *   const result = await withAiTimeout(
+ *     () => verifyPhoto(imageUrl, keywords),
+ *     { endpoint: "verify-photo", timeoutMs: 50000 }
+ *   );
+ */
+export async function withAiTimeout<T>(
+  fn: () => Promise<T>,
+  options?: { endpoint?: string; timeoutMs?: number },
+): Promise<T> {
+  const timeoutMs = options?.timeoutMs ?? 50_000;
+  const endpoint = options?.endpoint ?? "ai";
+
+  return Promise.race([
+    fn(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => {
+        reject(
+          new Error(
+            `AI_TIMEOUT: ${endpoint} 處理超時（${timeoutMs / 1000} 秒），請稍候再試`,
+          ),
+        );
+      }, timeoutMs),
+    ),
+  ]);
+}
+
 export interface LogAiUsageParams {
   provider: AiProvider;
   /** 端點識別：verify-photo / compare-photos / score-text / ocr-detect 等 */
