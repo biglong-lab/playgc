@@ -166,6 +166,11 @@ export default function OptimizedImage({
         alt={alt}
         className={className}
         loading={loading}
+        // 🆕 預設 decoding=async 讓主執行緒不被解碼阻塞
+        decoding="async"
+        // 🆕 width/height attribute 防 CLS（即使 CSS 蓋掉，aspect-ratio 仍預先計算）
+        width={dims?.w}
+        height={dims?.h}
         crossOrigin={isCrossOrigin ? "anonymous" : undefined}
         onError={handleError}
         onLoad={handleLoad}
