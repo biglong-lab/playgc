@@ -27,6 +27,9 @@ export const games = pgTable("games", {
   title: varchar("title", { length: 200 }).notNull(),
   description: text("description"),
   coverImageUrl: text("cover_image_url"),
+  // 🆕 封面焦點位置（CSS object-position "X% Y%"）
+  // admin 在前台首頁拖拉調整，預設 "50% 50%" 置中
+  coverImagePosition: varchar("cover_image_position", { length: 20 }),
   difficulty: varchar("difficulty", { length: 20 }).default("medium"), // easy, medium, hard
   estimatedTime: integer("estimated_time"), // minutes
   maxPlayers: integer("max_players").default(6),

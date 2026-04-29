@@ -273,6 +273,14 @@ export function registerAdminGameRoutes(app: Express) {
     title: z.string().min(1).max(200).optional(),
     description: z.string().nullable().optional(),
     coverImageUrl: z.string().nullable().optional(),
+    // 🆕 封面焦點位置 — 限定 "X% Y%" 格式（防 CSS 注入）
+    coverImagePosition: z
+      .string()
+      .regex(/^\s*\d{1,3}(\.\d+)?%\s+\d{1,3}(\.\d+)?%\s*$/, {
+        message: "格式必須為 'X% Y%'（百分比）",
+      })
+      .nullable()
+      .optional(),
     difficulty: z.enum(["easy", "medium", "hard"]).optional(),
     estimatedTime: z.number().int().positive().nullable().optional(),
     maxPlayers: z.number().int().min(1).max(100).optional(),

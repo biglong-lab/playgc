@@ -110,6 +110,33 @@ export default function Home() {
     admin.fieldCode === currentFieldCode
   );
 
+  // 🆕 儲存遊戲封面（圖 URL + 焦點位置）→ PATCH 遊戲
+  const handleSaveGameCover = async (
+    gameId: string,
+    { src, position }: { src?: string; position?: string },
+  ) => {
+    const body: Record<string, string> = {};
+    if (src !== undefined) body.coverImageUrl = src;
+    if (position !== undefined) body.coverImagePosition = position;
+
+    const res = await fetchWithAdminAuth(`/api/admin/games/${gameId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(err.message || "儲存失敗");
+    }
+    // 重新拉遊戲列表
+    await queryClient.invalidateQueries({
+      predicate: (q) => {
+        const key = String(q.queryKey[0] ?? "");
+        return key.includes("/api/games");
+      },
+    });
+  };
+
   // 🆕 儲存封面（圖 URL + 焦點位置）→ PATCH 場域 settings
   const handleSaveFieldCover = async ({ src, position }: { src?: string; position?: string }) => {
     if (!currentField?.fieldId) throw new Error("找不到場域 ID");
@@ -613,13 +640,31 @@ export default function Home() {
                 }}
                 data-testid={`card-game-${game.id}`}
               >
-                <div className="relative h-48 bg-card overflow-hidden">
-                  {game.coverImageUrl ? (
-                    <OptimizedImage
+                <div
+                  className="relative h-48 bg-card overflow-hidden"
+                  onClick={(e) => {
+                    // 🆕 admin 點到「編輯封面」相關按鈕時不該觸發進入遊戲
+                    const target = e.target as HTMLElement;
+                    if (target.closest('[data-testid^="game-cover-"]')) {
+                      const isEditTrigger = !!target.closest('[data-edit-mode="true"]');
+                      const isControlBtn = !!target.closest('button');
+                      if (isEditTrigger || isControlBtn) e.stopPropagation();
+                    }
+                  }}
+                >
+                  {/* 🆕 admin 可拖拉調焦點 + 快速換封面（v2 2026-04-30） */}
+                  {(game.coverImageUrl || canEditField) ? (
+                    <EditableCoverImage
                       src={game.coverImageUrl}
                       alt={game.title}
+                      position={
+                        (game as { coverImagePosition?: string }).coverImagePosition || "50% 50%"
+                      }
+                      isAdmin={canEditField}
+                      uploadEndpoint={`/api/admin/games/${game.id}/cloudinary-cover`}
+                      onSave={(data) => handleSaveGameCover(game.id, data)}
                       preset="card"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      testId={`game-cover-${game.id}`}
                       fallback={
                         <GenericCoverFallback
                           name={game.title}
@@ -645,7 +690,7 @@ export default function Home() {
                       }
                     />
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
                   <Badge
                     className={`absolute top-3 right-3 ${getDifficultyColor(game.difficulty || "medium")}`}
                   >
