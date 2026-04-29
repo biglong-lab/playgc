@@ -345,17 +345,27 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
 
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-6 relative">
-      <div className={`absolute inset-0 ${timeLeft <= 10 ? "bg-destructive/5 animate-pulse" : ""}`} />
-      
+      {/* 🆕 ≤10s 紅色閃爍 + ≤30s 黃色微閃避（兩段警示提升緊張感）*/}
+      <div
+        className={`absolute inset-0 transition-colors ${
+          timeLeft <= 10
+            ? "bg-destructive/5 animate-pulse"
+            : timeLeft <= 30
+              ? "bg-yellow-500/5"
+              : ""
+        }`}
+      />
+
       <Card className="w-full max-w-md relative z-10">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Bomb className={`w-6 h-6 ${timeLeft <= 10 ? "text-destructive animate-pulse" : "text-primary"}`} />
+              <Bomb className={`w-6 h-6 transition-colors ${timeLeft <= 10 ? "text-destructive animate-pulse" : "text-primary"}`} />
               <span className="font-display font-bold">{config.title || "拆彈任務"}</span>
             </div>
-            <div className={`flex items-center gap-1 font-mono text-2xl font-bold ${getTimeColor()}`}>
-              <Clock className="w-5 h-5" />
+            {/* 🆕 tabular-nums 防秒數位數變化抖動 */}
+            <div className={`flex items-center gap-1 font-mono text-2xl font-bold tabular-nums transition-colors ${getTimeColor()}`}>
+              <Clock className={`w-5 h-5 ${timeLeft <= 10 ? "animate-pulse" : ""}`} />
               {timeLeft}s
             </div>
           </div>
@@ -363,9 +373,9 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
           <div className="mb-4">
             <div className="flex justify-between text-sm text-muted-foreground mb-1">
               <span>進度</span>
-              <span>{currentTaskIndex + 1} / {tasks.length}</span>
+              <span className="tabular-nums">{currentTaskIndex + 1} / {tasks.length}</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-2 transition-all" />
           </div>
 
           {config.instruction && (

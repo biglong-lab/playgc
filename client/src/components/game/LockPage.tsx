@@ -163,7 +163,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
         <Button
           key={num}
           variant="outline"
-          className="h-14 text-xl font-mono"
+          className="h-14 text-xl font-mono transition-transform active:scale-[0.92] hover:bg-primary/10"
           onClick={() => handleInput(num)}
           disabled={isUnlocked || isFailed}
           data-testid={`button-num-${num}`}
@@ -174,7 +174,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
       {/* 左：刪除 */}
       <Button
         variant="outline"
-        className="h-14"
+        className="h-14 transition-transform active:scale-[0.92] hover:bg-amber-500/10"
         onClick={handleDelete}
         disabled={isUnlocked || isFailed}
         data-testid="button-num-backspace"
@@ -185,7 +185,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
       {/* 中：0 */}
       <Button
         variant="outline"
-        className="h-14 text-xl font-mono"
+        className="h-14 text-xl font-mono transition-transform active:scale-[0.92] hover:bg-primary/10"
         onClick={() => handleInput("0")}
         disabled={isUnlocked || isFailed}
         data-testid="button-num-0"
@@ -195,7 +195,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
       {/* 右：清除 */}
       <Button
         variant="outline"
-        className="h-14"
+        className="h-14 transition-transform active:scale-[0.92] hover:bg-destructive/10"
         onClick={handleClear}
         disabled={isUnlocked || isFailed}
         data-testid="button-num-clear"
@@ -302,7 +302,13 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
               <Lock className="w-6 h-6 text-primary" />
               <span className="font-display font-bold">{config.title || "密碼鎖"}</span>
             </div>
-            <Badge variant="outline" className="font-number">
+            {/* 🆕 剩餘次數依危險度變色：>2 預設、=2 amber、=1 red 並脈動 */}
+            <Badge
+              variant={maxAttempts - attempts <= 1 ? "destructive" : "outline"}
+              className={`font-number tabular-nums ${
+                maxAttempts - attempts === 1 ? "animate-pulse" : ""
+              } ${maxAttempts - attempts === 2 ? "border-amber-500 text-amber-600" : ""}`}
+            >
               剩餘次數: {maxAttempts - attempts}
             </Badge>
           </div>
@@ -315,12 +321,12 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
             {code.map((digit, index) => (
               <div
                 key={index}
-                className={`w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-mono font-bold transition-all ${
+                className={`w-12 h-14 border-2 rounded-lg flex items-center justify-center text-2xl font-mono font-bold transition-all cursor-pointer ${
                   index === activeIndex
-                    ? "border-primary bg-primary/10"
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/30 animate-[pulse_2s_ease-in-out_infinite] scale-105"
                     : digit
                     ? "border-border bg-muted"
-                    : "border-border"
+                    : "border-border hover:border-primary/40"
                 }`}
                 onClick={() => setActiveIndex(index)}
                 data-testid={`digit-slot-${index}`}
@@ -356,7 +362,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
               <Button
                 variant="outline"
                 onClick={handleClear}
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 transition-transform active:scale-[0.97]"
                 disabled={isUnlocked || isFailed}
                 data-testid="button-clear"
               >
@@ -365,7 +371,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
               </Button>
               <Button
                 onClick={handleSubmit}
-                className="flex-1 gap-2"
+                className="flex-1 gap-2 transition-transform active:scale-[0.97]"
                 disabled={isUnlocked || isFailed}
                 data-testid="button-submit-code"
               >
