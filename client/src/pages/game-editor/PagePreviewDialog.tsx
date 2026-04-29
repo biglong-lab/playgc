@@ -9,9 +9,11 @@ import GamePageRenderer from "@/components/game/GamePageRenderer";
 interface PagePreviewDialogProps {
   page: Page | null;
   onClose: () => void;
+  /** 🆕 真實 gameId（讓 AI 評分等 API 能找到對應場域的 API key）*/
+  gameId?: string;
 }
 
-export default function PagePreviewDialog({ page, onClose }: PagePreviewDialogProps) {
+export default function PagePreviewDialog({ page, onClose, gameId }: PagePreviewDialogProps) {
   if (!page) return null;
 
   // 預覽模式的 mock props — 提供安全的預設值讓元件能渲染
