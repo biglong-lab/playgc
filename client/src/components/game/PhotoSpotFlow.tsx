@@ -95,9 +95,9 @@ export default function PhotoSpotFlow({
     ? "裝置不支援 GPS 定位"
     : null;
 
-  // 計算距離（公尺）
+  // 計算距離（公尺）— calculateDistance 已直接回傳公尺，不需 × 1000
   const distanceMeters = userCoords && spot
-    ? calculateDistance(userCoords.lat, userCoords.lng, spot.latitude, spot.longitude) * KM_TO_M
+    ? calculateDistance(userCoords.lat, userCoords.lng, spot.latitude, spot.longitude)
     : null;
   const radius = spot?.radiusMeters ?? 20;
   const inRange = distanceMeters !== null && distanceMeters <= radius;
