@@ -28,6 +28,10 @@ import { useFieldLink } from "@/hooks/useFieldLink";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import GenericCoverFallback from "@/components/shared/GenericCoverFallback";
+import EditableCoverImage from "@/components/shared/EditableCoverImage";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 
 interface UserGameStatus {
   gameId: string;
@@ -82,8 +86,15 @@ export default function Home() {
   const fieldName = currentField?.name || "CHITO";
   const fieldLogoUrl = currentField?.logoUrl || null;
   const fieldCoverUrl = currentField?.theme?.coverImageUrl || null;
+  // 🆕 封面焦點位置（admin 拖拉調整、預設置中）
+  const fieldCoverPosition = currentField?.theme?.coverImagePosition || "50% 50%";
   const welcomeMessage = currentField?.welcomeMessage || null;
   const announcement = currentField?.announcement || null;
+
+  // 🆕 admin 偵測（不強制登入）— 拿來顯示「編輯封面」按鈕
+  // 注意 redirectTo: "" 避免未登入時被導去 /admin/login
+  const { admin } = useAdminAuth({ redirectTo: "" });
+  const queryClient = useQueryClient();
 
   // 🔒 場域隔離：取當前場域 code 帶進 query，不讓跨場域遊戲混入
   // 🔧 bug 修 (2026-04-24)：優先從 URL :fieldCode 取值，不依賴 localStorage 同步的 useCurrentField
@@ -92,6 +103,37 @@ export default function Home() {
   const urlParams = useParams<{ fieldCode?: string }>();
   const urlFieldCode = urlParams.fieldCode?.toUpperCase();
   const currentFieldCode = urlFieldCode || currentField?.code;
+
+  // 🆕 admin 是否能編輯這個場域（super_admin 或當前場域 admin）
+  const canEditField = !!admin && (
+    admin.systemRole === "super_admin" ||
+    admin.fieldCode === currentFieldCode
+  );
+
+  // 🆕 儲存封面（圖 URL + 焦點位置）→ PATCH 場域 settings
+  const handleSaveFieldCover = async ({ src, position }: { src?: string; position?: string }) => {
+    if (!currentField?.fieldId) throw new Error("找不到場域 ID");
+    const themeUpdate: Record<string, string> = {};
+    if (src !== undefined) themeUpdate.coverImageUrl = src;
+    if (position !== undefined) themeUpdate.coverImagePosition = position;
+
+    const res = await fetchWithAdminAuth(`/api/admin/fields/${currentField.fieldId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ theme: themeUpdate }),
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(err.message || "儲存失敗");
+    }
+    // 重新拉場域資料 → 玩家端會看到更新
+    await queryClient.invalidateQueries({
+      predicate: (q) => {
+        const key = String(q.queryKey[0] ?? "");
+        return key.includes("/api/fields/") || key.includes("/api/admin/fields");
+      },
+    });
+  };
   const gamesQueryKey = currentFieldCode
     ? [`/api/games?fieldCode=${currentFieldCode}`]
     : ["/api/games"];
@@ -364,27 +406,44 @@ export default function Home() {
       <AnnouncementBanner announcement={announcement} severity={currentField?.announcementSeverity} />
 
 
-      {/* 🆕 場域 Hero Banner（有 coverImageUrl 才顯示） */}
-      {fieldCoverUrl && (
-        <div className="relative w-full h-48 md:h-64 overflow-hidden">
-          <img
+      {/* 🆕 場域 Hero Banner — admin 可拖拉調焦點 + 快速換封面（v2 2026-04-30） */}
+      {/* admin 即使沒設 cover 也顯示空容器 → 可直接上傳 */}
+      {(fieldCoverUrl || canEditField) && (
+        <div className="relative w-full h-48 md:h-64 overflow-hidden bg-muted">
+          <EditableCoverImage
             src={fieldCoverUrl}
             alt={fieldName}
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          <div className="absolute inset-0 flex items-end">
-            <div className="container mx-auto px-4 pb-4">
-              <h1 className="text-2xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
-                {fieldName}
-              </h1>
-              {welcomeMessage && (
-                <p className="text-sm md:text-base text-white/90 mt-1 drop-shadow-md max-w-xl">
-                  {welcomeMessage}
-                </p>
-              )}
+            position={fieldCoverPosition}
+            isAdmin={canEditField}
+            uploadEndpoint={
+              currentField?.fieldId
+                ? `/api/admin/fields/${currentField.fieldId}/cloudinary-cover`
+                : undefined
+            }
+            onSave={handleSaveFieldCover}
+            preset="cover"
+            testId="field-hero-cover"
+            fallback={
+              <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+                <span className="text-sm">尚未設定封面圖片</span>
+              </div>
+            }
+          >
+            {/* 漸層 + 標題覆蓋層（編輯模式時自動隱藏，避免擋拖拉）*/}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 flex items-end pointer-events-none">
+              <div className="container mx-auto px-4 pb-4">
+                <h1 className="text-2xl md:text-4xl font-display font-bold text-white drop-shadow-lg">
+                  {fieldName}
+                </h1>
+                {welcomeMessage && (
+                  <p className="text-sm md:text-base text-white/90 mt-1 drop-shadow-md max-w-xl">
+                    {welcomeMessage}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          </EditableCoverImage>
         </div>
       )}
 

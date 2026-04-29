@@ -61,6 +61,12 @@ export interface FieldTheme {
   layoutTemplate?: "classic" | "card" | "fullscreen" | "minimal";
   /** 場域封面圖片（hero/登入頁/遊戲列表頂部） */
   coverImageUrl?: string;
+  /**
+   * 場域封面圖片焦點位置（CSS object-position 格式）
+   * 範例："50% 50%"（置中，預設）/ "30% 20%"（偏左上）
+   * 由 admin 在前端拖拉調整 → 玩家端按此焦點顯示，避免重要元素被裁切
+   */
+  coverImagePosition?: string;
   /** 場域 Logo（覆蓋 fields.logoUrl，顯示於 header 左上） */
   brandingLogoUrl?: string;
   /** 字體風格 */

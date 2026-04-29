@@ -195,6 +195,15 @@ const fieldThemeSchema = z
       .enum(["classic", "card", "fullscreen", "minimal"])
       .optional(),
     coverImageUrl: z.string().regex(safeUrlRegex).optional().or(z.literal("")),
+    // 🆕 封面焦點位置（拖拉調整、CSS object-position 格式 "X% Y%"）
+    // 限制：只允許百分比（0-100）+ 空白，避免任意 CSS 注入
+    coverImagePosition: z
+      .string()
+      .regex(/^\s*\d{1,3}(\.\d+)?%\s+\d{1,3}(\.\d+)?%\s*$/, {
+        message: "格式必須為 'X% Y%'（百分比）",
+      })
+      .optional()
+      .or(z.literal("")),
     brandingLogoUrl: z.string().regex(safeUrlRegex).optional().or(z.literal("")),
     fontFamily: z.enum(["default", "serif", "mono", "display"]).optional(),
   })
