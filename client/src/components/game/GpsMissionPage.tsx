@@ -32,8 +32,17 @@ const PROXIMITY_SOUNDS = {
   veryClose: 200,
 };
 
-export default function GpsMissionPage({ config, onComplete }: GpsMissionPageProps) {
+export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMissionPageProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // 🤝 取得當前 session 的 teamId（若有，啟用多人融合）
+  const { data: sessionData } = useQuery<{ teamId: string | null; teamName: string | null }>({
+    queryKey: ["/api/sessions", sessionId],
+    enabled: !!sessionId,
+    staleTime: 60_000, // 1 分鐘快取
+  });
+  const teamId = sessionData?.teamId ?? null;
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [isLocating, setIsLocating] = useState(false);
