@@ -7,9 +7,49 @@ import {
   type RecurWebhookEvent,
 } from "../services/recur-client";
 import { incrementUsage, recordTransactionFee } from "../services/billing";
+import { db } from "../db";
+import { sql } from "drizzle-orm";
 
-/** 已處理事件 ID 快取（冪等性） */
-const processedEvents = new Set<string>();
+// 🔒 跨 container 冪等性：用 PostgreSQL 的 unique constraint 保證每個 event_id 只處理一次
+// 表會自動建立（idempotent CREATE TABLE IF NOT EXISTS）
+let webhookTableEnsured = false;
+async function ensureWebhookEventsTable(): Promise<void> {
+  if (webhookTableEnsured) return;
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS webhook_processed_events (
+      event_id varchar PRIMARY KEY,
+      source varchar(20) NOT NULL DEFAULT 'recur',
+      processed_at timestamp DEFAULT now()
+    )
+  `);
+  // 自動清理 30 天前的舊紀錄（防止表無限長大）
+  await db.execute(sql`
+    DELETE FROM webhook_processed_events
+    WHERE processed_at < now() - interval '30 days'
+  `).catch(() => {/* 清理失敗不影響主流程 */});
+  webhookTableEnsured = true;
+}
+
+/**
+ * 嘗試標記 event 為「已處理」
+ * 回傳 true = 首次處理（可繼續）；false = 已處理過（duplicate）
+ */
+async function markEventProcessed(eventId: string): Promise<boolean> {
+  await ensureWebhookEventsTable();
+  try {
+    const result = await db.execute(sql`
+      INSERT INTO webhook_processed_events (event_id, source)
+      VALUES (${eventId}, 'recur')
+      ON CONFLICT (event_id) DO NOTHING
+      RETURNING event_id
+    `);
+    return (result.rows?.length ?? 0) > 0;
+  } catch (error) {
+    console.error("[webhook-recur] markEventProcessed 失敗:", error);
+    // DB 失敗時 fail-open（允許處理，避免漏付款）
+    return true;
+  }
+}
 
 export function registerRecurWebhookRoutes(app: Express) {
   /**
