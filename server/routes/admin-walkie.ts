@@ -52,37 +52,81 @@ export function registerAdminWalkieRoutes(app: Express) {
 
         const { target, teamIds, sessionIds, gameId } = parsed.data;
 
+        // 🔒 場域隔離：field_admin 只能廣播到自己場域；platform_admin 不限
+        const isPlatformAdmin = req.admin?.systemRole === "super_admin"
+          || req.admin?.systemRole === "platform_admin";
+        const adminFieldId = req.admin?.fieldId;
+
         // 收集 target rooms
         const roomNames: string[] = [];
 
         if (target === "all") {
-          // 所有 active sessions 的 room
-          // 若指定 gameId 只廣播到該遊戲；否則全場域
-          const whereClause = gameId
-            ? and(eq(gameSessions.gameId, gameId), eq(gameSessions.status, "playing"))
-            : eq(gameSessions.status, "playing");
+          // 🔒 場域隔離：JOIN games 確保只取自己場域的 sessions
+          const baseConditions = [eq(gameSessions.status, "playing")];
+          if (gameId) baseConditions.push(eq(gameSessions.gameId, gameId));
 
-          const active = await db
-            .select()
-            .from(gameSessions)
-            .where(whereClause);
+          if (!isPlatformAdmin && adminFieldId) {
+            // 透過 JOIN games 過濾 fieldId
+            const active = await db
+              .select({ session: gameSessions })
+              .from(gameSessions)
+              .innerJoin(games, eq(games.id, gameSessions.gameId))
+              .where(and(eq(games.fieldId, adminFieldId), ...baseConditions));
 
-          for (const s of active) {
-            const teamId = (s as { teamId?: string | null }).teamId;
-            if (teamId) {
-              const rn = getTeamRoomName(teamId);
-              if (!roomNames.includes(rn)) roomNames.push(rn);
-            } else {
-              roomNames.push(getSessionRoomName(s.id));
+            for (const r of active) {
+              const s = r.session;
+              const teamId = (s as { teamId?: string | null }).teamId;
+              if (teamId) {
+                const rn = getTeamRoomName(teamId);
+                if (!roomNames.includes(rn)) roomNames.push(rn);
+              } else {
+                roomNames.push(getSessionRoomName(s.id));
+              }
+            }
+          } else {
+            const active = await db
+              .select()
+              .from(gameSessions)
+              .where(and(...baseConditions));
+
+            for (const s of active) {
+              const teamId = (s as { teamId?: string | null }).teamId;
+              if (teamId) {
+                const rn = getTeamRoomName(teamId);
+                if (!roomNames.includes(rn)) roomNames.push(rn);
+              } else {
+                roomNames.push(getSessionRoomName(s.id));
+              }
             }
           }
         } else {
-          // selected：直接按 teamIds/sessionIds 產 room name
-          if (teamIds) {
-            for (const t of teamIds) roomNames.push(getTeamRoomName(t));
-          }
-          if (sessionIds) {
+          // 🔒 selected：先驗證 sessionIds 屬於自己場域（透過 game.fieldId）
+          if (!isPlatformAdmin && adminFieldId && sessionIds && sessionIds.length > 0) {
+            const verified = await db
+              .select({ id: gameSessions.id })
+              .from(gameSessions)
+              .innerJoin(games, eq(games.id, gameSessions.gameId))
+              .where(and(
+                inArray(gameSessions.id, sessionIds),
+                eq(games.fieldId, adminFieldId),
+              ));
+            const allowedSessionIds = new Set(verified.map((v) => v.id));
+            for (const s of sessionIds) {
+              if (allowedSessionIds.has(s)) roomNames.push(getSessionRoomName(s));
+            }
+          } else if (sessionIds) {
             for (const s of sessionIds) roomNames.push(getSessionRoomName(s));
+          }
+
+          // teamIds：透過 sessionId 反查場域比較複雜，目前不過濾（依賴上層 admin 自行選擇）
+          // 為避免跨場域風險，field_admin 不允許用 teamIds
+          if (teamIds && teamIds.length > 0) {
+            if (!isPlatformAdmin) {
+              return res.status(403).json({
+                message: "場域管理員請改用 sessionIds（teamIds 暫不開放跨場域驗證）",
+              });
+            }
+            for (const t of teamIds) roomNames.push(getTeamRoomName(t));
           }
         }
 
