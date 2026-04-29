@@ -99,6 +99,40 @@ export function registerPlayerSessionRoutes(app: Express) {
           data.playerName = result.value;
         }
 
+        // 🌐 location_lock 後端驗證：若遊戲有設指定地點，玩家必須在範圍內才能開始
+        // 防止玩家繞過前端 UI 強制開始遊戲（重要：付費 / 實境遊戲必須現場玩）
+        if (data.gameId) {
+          const game = await storage.getGame(data.gameId);
+          if (game?.locationLockEnabled && game.lockLatitude && game.lockLongitude) {
+            const playerLat = (req.body as any).playerLat as number | undefined;
+            const playerLng = (req.body as any).playerLng as number | undefined;
+
+            if (typeof playerLat !== "number" || typeof playerLng !== "number") {
+              return res.status(400).json({
+                message: "此遊戲需在指定地點才能開始，請允許 GPS 定位後重試",
+                requireLocation: true,
+                lockLocationName: game.lockLocationName,
+              });
+            }
+
+            const { distanceMeters } = await import("../lib/geo");
+            const lockLat = parseFloat(String(game.lockLatitude));
+            const lockLng = parseFloat(String(game.lockLongitude));
+            const dist = distanceMeters(playerLat, playerLng, lockLat, lockLng);
+            const maxRadius = (game.lockRadius ?? 50) + 50; // 加 50m 容差
+
+            if (dist > maxRadius) {
+              return res.status(403).json({
+                message: `必須在「${game.lockLocationName ?? "指定地點"}」附近 ${game.lockRadius ?? 50}m 內才能開始遊戲（目前距離 ${Math.round(dist)}m）`,
+                requireLocation: true,
+                lockLocationName: game.lockLocationName,
+                distance: Math.round(dist),
+                maxDistance: maxRadius,
+              });
+            }
+          }
+        }
+
         const session = await storage.createSession(data);
 
         const userId = req.user?.claims?.sub;
