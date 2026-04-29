@@ -1179,9 +1179,68 @@ function AiUsageCard() {
                 用量正常。達 80% 會寄 email 警告、達 95% 自動停用。
               </div>
             )}
+
+            {/* 🆕 Gemini / OpenRouter 用量 */}
+            {(gemini || openrouter) && (
+              <div className="mt-4 pt-4 border-t space-y-2">
+                <div className="text-xs font-semibold text-muted-foreground mb-2">
+                  其他 AI 服務（本月）
+                </div>
+                {gemini && (
+                  <ProviderRow
+                    label="Gemini（照片驗證 / 文字評分）"
+                    stats={gemini}
+                    color="text-violet-600 dark:text-violet-400"
+                    bgColor="bg-violet-500/5"
+                  />
+                )}
+                {openrouter && (
+                  <ProviderRow
+                    label="OpenRouter（多模型 AI）"
+                    stats={openrouter}
+                    color="text-blue-600 dark:text-blue-400"
+                    bgColor="bg-blue-500/5"
+                  />
+                )}
+              </div>
+            )}
           </>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+/** 單一 provider 統計列 */
+function ProviderRow({
+  label,
+  stats,
+  color,
+  bgColor,
+}: {
+  label: string;
+  stats: ProviderUsageStats;
+  color: string;
+  bgColor: string;
+}) {
+  const successRate = stats.total > 0
+    ? Math.round((stats.success / stats.total) * 100)
+    : 0;
+
+  return (
+    <div className={`p-2 rounded ${bgColor} border`}>
+      <div className="flex items-center justify-between mb-1">
+        <span className={`text-xs font-medium ${color}`}>{label}</span>
+        <span className="text-xs font-bold">{stats.total} 次</span>
+      </div>
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <span>成功 {stats.success}</span>
+        <span>失敗 {stats.fail}</span>
+        <span>成功率 {successRate}%</span>
+        {stats.avgLatencyMs != null && (
+          <span>平均 {stats.avgLatencyMs}ms</span>
+        )}
+      </div>
+    </div>
   );
 }
