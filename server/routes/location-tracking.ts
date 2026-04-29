@@ -259,32 +259,16 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
         return res.status(400).json({ message: "Invalid coordinates" });
       }
 
-      const R = 6371e3;
-      const φ1 = currentLat * Math.PI / 180;
-      const φ2 = targetLat * Math.PI / 180;
-      const Δφ = (targetLat - currentLat) * Math.PI / 180;
-      const Δλ = (targetLng - currentLng) * Math.PI / 180;
-
-      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c;
-
-      const y = Math.sin(Δλ) * Math.cos(φ2);
-      const x = Math.cos(φ1) * Math.sin(φ2) -
-                Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-      const θ = Math.atan2(y, x);
-      const bearing = (θ * 180 / Math.PI + 360) % 360;
-
-      const directions = ['北', '東北', '東', '東南', '南', '西南', '西', '西北'];
-      const directionIndex = Math.round(bearing / 45) % 8;
+      // 🌐 統一用 server/lib/geo.ts（前後端共用同一邏輯）
+      const { distanceMeters, bearingDegrees, bearingToCompass } = await import("../lib/geo");
+      const distance = distanceMeters(currentLat, currentLng, targetLat, targetLng);
+      const bearing = bearingDegrees(currentLat, currentLng, targetLat, targetLng);
 
       res.json({
         distance: Math.round(distance),
         bearing: Math.round(bearing),
-        direction: directions[directionIndex],
-        estimatedTime: Math.ceil(distance / 83.33),
+        direction: bearingToCompass(bearing),
+        estimatedTime: Math.ceil(distance / 83.33), // 5km/h ≈ 83.33 m/min
       });
     } catch (_error) {
       res.status(500).json({ message: "Failed to calculate navigation" });
@@ -308,18 +292,9 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
       const locLat = parseFloat(location.latitude || "0");
       const locLng = parseFloat(location.longitude || "0");
 
-      const R = 6371e3;
-      const φ1 = playerLat * Math.PI / 180;
-      const φ2 = locLat * Math.PI / 180;
-      const Δφ = (locLat - playerLat) * Math.PI / 180;
-      const Δλ = (locLng - playerLng) * Math.PI / 180;
-
-      const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c;
-
+      // 🌐 統一 Haversine
+      const { distanceMeters } = await import("../lib/geo");
+      const distance = distanceMeters(playerLat, playerLng, locLat, locLng);
       const isWithinRange = distance <= (location.radius || 50);
 
       res.json({
