@@ -208,6 +208,12 @@ async function resolveAiApiKey(gameId?: string): Promise<string | undefined> {
 async function resolveAiContext(gameId?: string): Promise<AiContextResolved> {
   if (!gameId) return {};
 
+  // 🛡️ 預覽模式安全：admin 預覽未儲存的遊戲時 client 會傳 gameId="preview-game"
+  // 不該用全域 key 計費，明確拒絕（前端會 catch 並顯示「預覽模式不支援 AI」）
+  if (gameId === "preview-game" || gameId === "new") {
+    throw new Error("預覽模式不支援 AI（請先儲存遊戲後測試）");
+  }
+
   try {
     // 查 game → fieldId
     const [game] = await db.select({ fieldId: games.fieldId })
