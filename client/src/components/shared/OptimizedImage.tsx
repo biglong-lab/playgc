@@ -111,6 +111,16 @@ export default function OptimizedImage({
   );
   const sizesStr = sizes ?? (enableSrcSet ? SIZES_PRESETS[preset] : undefined);
 
+  // 🆕 width/height attribute 防 CLS（瀏覽器預先保留圖片空間）
+  // 雖然 CSS 用 100%，但 width/height attr 給瀏覽器算 aspect-ratio 用
+  const presetDims: Record<string, { w: number; h: number }> = {
+    card: { w: 800, h: 500 },
+    cover: { w: 1600, h: 800 },
+    icon: { w: 160, h: 160 },
+    thumbnail: { w: 400, h: 400 },
+  };
+  const dims = preset ? presetDims[preset] : undefined;
+
   // retry 時加 cache-bust query
   const srcWithRetry = retryCount > 0
     ? `${optimizedSrc}${optimizedSrc.includes("?") ? "&" : "?"}_r=${retryCount}`
