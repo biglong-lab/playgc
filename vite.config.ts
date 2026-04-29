@@ -147,11 +147,11 @@ export default defineConfig({
           "vendor-map": ["leaflet", "react-leaflet"],
           "vendor-charts": ["recharts"],
           "vendor-motion": ["framer-motion"],
-          // ⚠️ 不把 lucide-react 強制打成單一 chunk
-          // manualChunks 會 break tree-shake → 整個 package 1000+ icons 都塞進來（775 KB）
-          // 移除後 Rollup 會自動把每個 icon 跟使用它的 page chunk 一起載 + 重複的放共用 chunk
-          // 預期 vendor-icons 從 775 KB → 個別 chunk 散落（總量大幅下降）
-          // "vendor-icons": ["lucide-react"], // ← 廢除
+          // 📦 lucide-react 整包 693 KB / gzip 125 KB
+          // Tree-shake 受 lucide entry re-export 限制（全站 icon 都 tree-shake 不掉）
+          // 集中打包反而對 cache 友善：一次下載後所有頁面共用
+          // 改善方案需改全站 import 路徑（lucide-react/dist/esm/icons/*），工程大
+          "vendor-icons": ["lucide-react"],
         },
       },
     },
