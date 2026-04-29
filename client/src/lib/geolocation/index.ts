@@ -20,3 +20,16 @@ export {
   type UseStableGeolocationOptions,
   type UseStableGeolocationResult,
 } from "./useStableGeolocation";
+
+export {
+  useTeamGpsFusion,
+  type UseTeamGpsFusionOptions,
+  type UseTeamGpsFusionResult,
+} from "./useTeamGpsFusion";
+
+export {
+  fuseTeamGps,
+  type FusionSample,
+  type FusionResult,
+  GPS_BROADCAST_INTERVAL_MS,
+} from "./fusion-utils";
