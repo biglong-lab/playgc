@@ -133,7 +133,7 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
   // Location Visit Routes
   // ===========================================
 
-  app.post("/api/sessions/:sessionId/locations/:locationId/visit", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/sessions/:sessionId/locations/:locationId/visit", isAuthenticated, hotPathLimiter, async (req: AuthenticatedRequest, res) => {
     try {
       const { sessionId, locationId } = req.params;
       const userId = req.user?.claims?.sub;
