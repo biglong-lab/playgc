@@ -276,7 +276,8 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
           <div className="flex items-center justify-between mb-2">
             <div className={`flex items-center gap-2 ${isUrgent ? "text-destructive" : "text-muted-foreground"}`}>
               <Timer className={`w-5 h-5 ${isUrgent ? "animate-pulse" : ""}`} />
-              <span className="font-mono font-bold text-lg">
+              {/* 🆕 tabular-nums 防數字位數變動造成抖動 */}
+              <span className="font-mono font-bold text-lg tabular-nums">
                 {timeLeft}s
               </span>
             </div>
@@ -284,7 +285,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
           </div>
           <Progress
             value={getTimeProgress()}
-            className={`h-2 ${isUrgent ? "[&>div]:bg-destructive" : ""}`}
+            className={`h-2 transition-all ${isUrgent ? "[&>div]:bg-destructive" : ""}`}
           />
           <div className="flex items-start gap-2 mt-2 text-xs text-muted-foreground">
             <Trophy className="w-3 h-3 mt-0.5 shrink-0" />
@@ -329,11 +330,11 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                   disabled={hasVoted}
                   data-testid={`vote-option-${index}`}
                   className={`w-full p-4 rounded-lg border-2 transition-all duration-300 text-left relative overflow-hidden
-                    ${isSelected 
-                      ? "border-primary bg-primary/5" 
+                    ${isSelected
+                      ? "border-primary bg-primary/5 shadow-sm"
                       : "border-border hover:border-primary/50 hover:bg-accent/50"
                     }
-                    ${hasVoted ? "cursor-default" : "cursor-pointer"}
+                    ${hasVoted ? "cursor-default" : "cursor-pointer active:scale-[0.99]"}
                     ${isWinner ? "ring-2 ring-primary ring-offset-2" : ""}
                   `}
                 >
@@ -364,10 +365,10 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                     
                     {showResults && result && (
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold">
+                        <span className="text-sm font-bold tabular-nums">
                           {result.percentage}%
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-muted-foreground tabular-nums">
                           ({result.count} 票)
                         </span>
                       </div>
@@ -395,7 +396,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                   <Users className="w-4 h-4" />
                   <span>總投票數</span>
                 </div>
-                <span className="font-bold">{totalVotes} 票</span>
+                <span className="font-bold tabular-nums">{totalVotes} 票</span>
               </div>
             </div>
           )}
@@ -406,7 +407,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                 onClick={handleVoteSubmit}
                 disabled={selectedOption === null || isAnimating}
                 size="lg"
-                className="w-full"
+                className="w-full transition-transform active:scale-[0.97] disabled:opacity-50"
                 data-testid="button-submit-vote"
               >
                 {isAnimating ? (
@@ -452,7 +453,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                   onClick={handleContinue}
                   disabled={isAdvancing}
                   size="lg"
-                  className={`w-full ${autoAdvanceIn !== null && autoAdvanceIn > 0 ? "animate-pulse" : ""}`}
+                  className={`w-full transition-transform active:scale-[0.97] ${autoAdvanceIn !== null && autoAdvanceIn > 0 ? "animate-pulse" : ""}`}
                   data-testid="button-continue"
                 >
                   {timedOut && totalVotes === 0 ? (
@@ -462,7 +463,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                     </>
                   ) : autoAdvanceIn !== null && autoAdvanceIn > 0 ? (
                     <>
-                      {autoAdvanceIn} 秒後自動進入下一關（立即繼續）
+                      <span className="tabular-nums">{autoAdvanceIn}</span> 秒後自動進入下一關（立即繼續）
                       <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
                     </>
                   ) : (
@@ -473,15 +474,15 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                   )}
                 </Button>
 
-                {/* 顯示勝選選項提示 */}
+                {/* 顯示勝選選項提示（🆕 加緩脈動 trophy + tabular-nums） */}
                 {hasVoted && (() => {
                   const winner = getWinningOption();
                   const winnerText = winner ? options[winner.optionIndex]?.text : null;
                   if (!winnerText) return null;
                   return (
                     <div className="flex items-center gap-2 justify-center text-xs text-muted-foreground">
-                      <Trophy className="w-3 h-3 text-primary" />
-                      <span>最多票：<b className="text-foreground">{winnerText}</b>（{winner?.count} 票）</span>
+                      <Trophy className="w-3 h-3 text-primary animate-[pulse_2s_ease-in-out_infinite]" />
+                      <span>最多票：<b className="text-foreground">{winnerText}</b>（<span className="tabular-nums">{winner?.count}</span> 票）</span>
                     </div>
                   );
                 })()}
