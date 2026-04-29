@@ -346,16 +346,56 @@ export default function PhotoCompareFlow({
   if (camera.mode === "verifying") return <VerifyingView />;
 
   if (camera.mode === "ai_fail") {
+    const finalPct = lastResult ? Math.round(lastResult.similarity * 100) : 0;
     return (
-      <div className="p-6 text-center space-y-4" data-testid="photo-compare-ai-fail">
+      <div className="p-6 text-center space-y-4 max-w-md mx-auto" data-testid="photo-compare-ai-fail">
         <AlertTriangle className="w-12 h-12 mx-auto text-amber-500" />
         <p className="text-lg font-medium">比對未通過</p>
+
+        {/* 🆕 最終相似度視覺化（類似 OCR success 的呈現） */}
         {lastResult && (
-          <p className="text-sm text-muted-foreground">
-            最高相似度 {Math.round(lastResult.similarity * 100)}%，已用完重試次數
-          </p>
+          <div className="bg-card border rounded-lg p-4 space-y-2">
+            <p className="text-xs text-muted-foreground">最高相似度</p>
+            {/* SVG 圓環視覺化 */}
+            <div className="relative w-20 h-20 mx-auto">
+              <svg className="w-20 h-20 -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="44" stroke="currentColor" strokeWidth="6" fill="none" className="text-muted/30" />
+                <circle
+                  cx="50" cy="50" r="44" fill="none"
+                  stroke="currentColor" strokeWidth="6" strokeLinecap="round"
+                  className={finalPct >= 70 ? "text-emerald-500" : finalPct >= 40 ? "text-amber-500" : "text-red-500"}
+                  strokeDasharray={2 * Math.PI * 44}
+                  strokeDashoffset={2 * Math.PI * 44 * (1 - finalPct / 100)}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold tabular-nums">{finalPct}%</span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">已用完重試次數</p>
+          </div>
         )}
-        <Button onClick={handleContinue} variant="outline" data-testid="btn-photo-compare-skip">
+
+        {/* 🆕 失敗時顯示參考圖 — 玩家可知道「該對的是什麼」 */}
+        {compare?.referenceImageUrl && (
+          <div className="rounded-lg overflow-hidden border">
+            <div className="px-3 py-2 bg-muted text-xs font-medium text-left">
+              📷 任務參考圖
+            </div>
+            <img
+              src={compare.referenceImageUrl}
+              alt="參考"
+              className="w-full aspect-square object-cover"
+            />
+          </div>
+        )}
+
+        <Button
+          onClick={handleContinue}
+          variant="outline"
+          className="transition-transform active:scale-[0.97]"
+          data-testid="btn-photo-compare-skip"
+        >
           跳過此任務
         </Button>
       </div>
@@ -406,17 +446,32 @@ export default function PhotoCompareFlow({
         )}
 
         {lastResult && retryCount > 0 && (
-          <div className="rounded-lg border bg-amber-50 dark:bg-amber-950/20 p-3 text-sm" data-testid="photo-compare-last-feedback">
-            <p className="font-medium text-amber-700 dark:text-amber-400">
-              上次相似度 {Math.round(lastResult.similarity * 100)}%
-            </p>
+          <div
+            className="rounded-lg border-2 border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 p-3 text-sm space-y-2"
+            data-testid="photo-compare-last-feedback"
+          >
+            {/* 🆕 視覺化進度條 — 比純數字直覺 */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-amber-700 dark:text-amber-400 shrink-0">
+                上次相似度
+              </span>
+              <div className="flex-1 h-2 rounded-full bg-amber-200 dark:bg-amber-900/40 overflow-hidden">
+                <div
+                  className="h-full bg-amber-500 transition-all"
+                  style={{ width: `${Math.round(lastResult.similarity * 100)}%` }}
+                />
+              </div>
+              <span className="text-sm font-bold text-amber-700 dark:text-amber-400 tabular-nums">
+                {Math.round(lastResult.similarity * 100)}%
+              </span>
+            </div>
             {lastResult.missingFeatures.length > 0 && (
-              <p className="text-xs mt-1">缺少：{lastResult.missingFeatures.join("、")}</p>
+              <p className="text-xs">⚠️ 缺少：{lastResult.missingFeatures.join("、")}</p>
             )}
             {lastResult.feedback && (
-              <p className="text-xs mt-1 italic">{lastResult.feedback}</p>
+              <p className="text-xs italic opacity-90">💬 {lastResult.feedback}</p>
             )}
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground tabular-nums">
               剩餘重試次數：{(config.maxAiRetries ?? 3) - retryCount}
             </p>
           </div>
@@ -425,7 +480,7 @@ export default function PhotoCompareFlow({
         <Button
           onClick={() => camera.startCamera(config.defaultFacingMode ?? "environment")}
           size="lg"
-          className="w-full gap-2 h-14"
+          className="w-full gap-2 h-14 transition-transform active:scale-[0.97]"
           data-testid="btn-photo-compare-open-camera"
         >
           <Camera className="w-5 h-5" />
