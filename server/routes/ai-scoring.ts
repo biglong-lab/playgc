@@ -362,6 +362,10 @@ export function registerAiScoringRoutes(app: Express): void {
       if (error instanceof Error && error.message.includes("預覽模式")) {
         return apiError(res, 503, "預覽模式不支援 AI（請先儲存遊戲後測試）");
       }
+      // 🛡️ AI timeout → 504（不阻塞 nginx）+ 友善訊息給前端
+      if (error instanceof Error && error.message.includes("AI_TIMEOUT")) {
+        return apiError(res, 504, "AI 處理超時，請稍候再試（圖片過大或服務繁忙）");
+      }
       // 場域 AI 被停用
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
         await logAiUsage({
@@ -522,6 +526,10 @@ export function registerAiScoringRoutes(app: Express): void {
       if (error instanceof Error && error.message.includes("預覽模式")) {
         return apiError(res, 503, "預覽模式不支援 AI（請先儲存遊戲後測試）");
       }
+      // 🛡️ AI timeout → 504（不阻塞 nginx）+ 友善訊息給前端
+      if (error instanceof Error && error.message.includes("AI_TIMEOUT")) {
+        return apiError(res, 504, "AI 處理超時，請稍候再試（圖片過大或服務繁忙）");
+      }
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
         await logAiUsage({
           provider: resolvedProvider,
@@ -661,6 +669,10 @@ export function registerAiScoringRoutes(app: Express): void {
       // 預覽模式（preview-game）→ 明確拒絕
       if (error instanceof Error && error.message.includes("預覽模式")) {
         return apiError(res, 503, "預覽模式不支援 AI（請先儲存遊戲後測試）");
+      }
+      // 🛡️ AI timeout → 504（不阻塞 nginx）+ 友善訊息給前端
+      if (error instanceof Error && error.message.includes("AI_TIMEOUT")) {
+        return apiError(res, 504, "AI 處理超時，請稍候再試（圖片過大或服務繁忙）");
       }
       // 場域 AI 被停用
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
