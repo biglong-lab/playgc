@@ -131,6 +131,24 @@ export function GpsAccuracyIndicator({
         </div>
       )}
 
+      {/* 🧭 IMU PDR 啟用中（GPS 失效）*/}
+      {isImu && imu && (
+        <div className="mt-2 pt-2 border-t border-border/50">
+          <div className="flex items-center justify-between text-xs">
+            <span className="flex items-center gap-1 text-amber-500">
+              <span>🧭</span>
+              <span className="font-medium">慣性導航中</span>
+            </span>
+            <span className="text-muted-foreground">
+              已走 {imu.steps} 步（{Math.round(imu.steps * 0.75)}m）
+            </span>
+          </div>
+          <div className="mt-1 text-xs text-muted-foreground">
+            GPS 失效中，正用步數+朝向推算位置（精度會隨距離遞減）
+          </div>
+        </div>
+      )}
+
       {/* 弱訊號建議 */}
       {desc.hint && (
         <div className="mt-2 pt-2 border-t border-border/50 text-xs text-muted-foreground leading-relaxed">
