@@ -168,8 +168,16 @@ export default function PhotoMissionPage({
       return response.json();
     },
     onSuccess: (data: { url: string }) => {
-      if (config.aiVerify && config.targetKeywords && config.targetKeywords.length > 0) {
-        // 啟用 AI 驗證 → 呼叫 AI 端點
+      // 🐛 修：原本要求 aiVerify=true **且** targetKeywords 有值才驗證
+      // 但 admin 常開了 aiVerify 卻忘填 keywords → 跳過驗證直接通過 (玩家覺得 AI 沒運作)
+      // 改為：只要 aiVerify=true 就驗證，沒 keywords 用 instruction 或預設「拍照場景」
+      if (config.aiVerify) {
+        const hasKeywords = config.targetKeywords && config.targetKeywords.length > 0;
+        if (!hasKeywords) {
+          console.warn(
+            "[PhotoMission] aiVerify=true 但未填 targetKeywords，使用 instruction 或預設關鍵字驗證",
+          );
+        }
         camera.setMode("verifying");
         verifyMutation.mutate(data.url);
       } else {
