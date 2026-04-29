@@ -9,6 +9,7 @@ import {
 import { eq, desc, and, isNull } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
+import { hotPathLimiter } from "../utils/rate-limiters";
 
 // 🔒 §19 防作弊：sourceType 白名單（玩家不能寫 "manual" 等隨意值）
 const ALLOWED_SOURCE_TYPES = new Set([
