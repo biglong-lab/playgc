@@ -97,7 +97,7 @@ export function registerTeamScoreRoutes(app: Express, ctx: RouteContext) {
           teamId,
           delta: body.delta,
           runningTotal: newScore,
-          sourceType: body.sourceType || "manual",
+          sourceType: body.sourceType,
           sourceId: body.sourceId,
           description: body.description,
         });
