@@ -258,7 +258,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
         <Button 
           onClick={handleContinue} 
           size="lg" 
-          className="gap-2 min-w-[160px]"
+          className="gap-2 min-w-[160px] transition-transform active:scale-[0.97] hover:shadow-lg"
           data-testid="button-continue"
         >
           {isTyping ? "顯示全部" : "繼續"}
@@ -305,7 +305,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
         <Button 
           onClick={handleContinue} 
           size="lg" 
-          className="gap-2 min-w-[160px]"
+          className="gap-2 min-w-[160px] transition-transform active:scale-[0.97] hover:shadow-lg"
           data-testid="button-continue"
         >
           {isTyping ? "顯示全部" : "繼續"}
@@ -353,7 +353,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
         <Button 
           onClick={handleContinue} 
           size="lg" 
-          className="gap-2 min-w-[160px]"
+          className="gap-2 min-w-[160px] transition-transform active:scale-[0.97] hover:shadow-lg"
           data-testid="button-continue"
         >
           {isTyping ? "顯示全部" : "繼續"}
@@ -393,7 +393,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
         <Button 
           onClick={handleContinue} 
           size="lg" 
-          className="gap-2 min-w-[160px]"
+          className="gap-2 min-w-[160px] transition-transform active:scale-[0.97] hover:shadow-lg"
           data-testid="button-continue"
         >
           {isTyping ? "顯示全部" : "繼續"}

@@ -409,16 +409,24 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
             </div>
           )}
 
-          <div className="bg-accent/50 border border-border rounded-lg p-4 mb-6">
+          {/* 🆕 進入範圍 → 整體變綠（border + bg），未到 → 中性 */}
+          <div
+            className={`border rounded-lg p-4 mb-6 transition-colors ${
+              isAtTarget
+                ? "bg-success/10 border-success/40"
+                : "bg-accent/50 border-border"
+            }`}
+            data-at-target={isAtTarget}
+          >
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">距離目標</span>
-              <span className={`font-number text-2xl ${isAtTarget ? "text-success" : "text-primary"}`}>
+              <span className={`font-number text-2xl tabular-nums transition-colors ${isAtTarget ? "text-success" : "text-primary"}`}>
                 {getDistanceDisplay()}
               </span>
             </div>
-            <Progress value={getProgressPercent()} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              需要在 {targetRadius}m 範圍內
+            <Progress value={getProgressPercent()} className="h-2 transition-all" />
+            <p className="text-xs text-muted-foreground mt-2 text-center tabular-nums">
+              {isAtTarget ? "✨ 已進入範圍！" : `需要在 ${targetRadius}m 範圍內`}
             </p>
           </div>
 
@@ -432,18 +440,18 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
           <div className="space-y-3">
             <div className="flex gap-2">
               {isWatching ? (
-                <Button 
-                  onClick={stopWatching} 
+                <Button
+                  onClick={stopWatching}
                   variant="outline"
-                  className="flex-1 gap-2"
+                  className="flex-1 gap-2 transition-transform active:scale-[0.97]"
                   data-testid="button-stop-watching"
                 >
                   停止追蹤
                 </Button>
               ) : (
-                <Button 
+                <Button
                   onClick={startWatching}
-                  className="flex-1 gap-2"
+                  className="flex-1 gap-2 transition-transform active:scale-[0.97]"
                   disabled={isLocating}
                   data-testid="button-start-tracking"
                 >
@@ -455,13 +463,15 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
                   {isLocating ? "定位中..." : "開始導航"}
                 </Button>
               )}
-              
+
               {config.proximitySound && (
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => setSoundEnabled(!soundEnabled)}
+                  className="transition-transform active:scale-[0.92]"
                   data-testid="button-toggle-sound"
+                  aria-label={soundEnabled ? "關閉音效" : "開啟音效"}
                 >
                   {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                 </Button>
