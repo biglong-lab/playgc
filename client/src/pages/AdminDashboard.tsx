@@ -1018,6 +1018,21 @@ interface AiUsageStats {
   shouldFallback: boolean; // 95%
 }
 
+interface ProviderUsageStats {
+  provider: "gemini" | "openrouter" | "google-vision" | "mediapipe";
+  total: number;
+  success: number;
+  fail: number;
+  avgLatencyMs: number | null;
+  endpoints: Record<string, { total: number; success: number; fail: number }>;
+}
+
+interface AiUsageOverview {
+  fromDate: string;
+  providers: ProviderUsageStats[];
+  fieldId?: string;
+}
+
 function AiUsageCard() {
   const { isAuthenticated } = useAdminAuth();
   const { data, isLoading, error } = useQuery<AiUsageStats>({
@@ -1030,6 +1045,23 @@ function AiUsageCard() {
     staleTime: 5 * 60_000,   // 5 分鐘快取
     refetchInterval: 10 * 60_000, // 10 分鐘自動重抓
   });
+  // 🆕 跨 provider 統計（gemini / openrouter / mediapipe）
+  const { data: overview } = useQuery<AiUsageOverview>({
+    queryKey: ["/api/ai/usage-stats"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/ai/usage-stats");
+      return res.json();
+    },
+    enabled: isAuthenticated,
+    staleTime: 5 * 60_000,
+    refetchInterval: 10 * 60_000,
+  });
+
+  const providersByName = new Map(
+    (overview?.providers ?? []).map((p) => [p.provider, p])
+  );
+  const gemini = providersByName.get("gemini");
+  const openrouter = providersByName.get("openrouter");
 
   const percent = data?.usagePercent ?? 0;
   const barColor =
