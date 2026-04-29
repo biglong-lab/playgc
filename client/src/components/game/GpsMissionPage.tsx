@@ -208,22 +208,40 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
     }
   }, [config.qrFallback]);
 
-  // 🛰️ 整合 useStableGeolocation：自動採樣 + Kalman 濾波 + 自動啟停
+  // 🛰️ 整合 useTeamGpsFusion：個人 GPS 穩定化 + 隊伍多人融合
+  // - 有 teamId → 自動廣播 GPS 給隊友 + 接收隊友 GPS 融合（誤差降 √N 倍）
+  // - 無 teamId → 退化為個人 GPS（仍有多採樣 + Kalman）
   const {
     position: stablePosition,
     accuracy: gpsAccuracy,
     quality: gpsQuality,
     samples: gpsSamples,
     active: gpsActive,
+    contributors: gpsContributors,
+    scattered: gpsScattered,
+    improvementRatio: gpsImprovementRatio,
     error: gpsError,
-  } = useStableGeolocation({
-    mode: "watch",
+  } = useTeamGpsFusion({
+    teamId,
+    userId: user?.id ?? null,
+    userName: user?.firstName || "玩家",
     enabled: isWatching && hasValidTarget,
     sampleSize: 5,
-    minSampleIntervalMs: 1000,
-    onUpdate: handleStableLocation,
-    onError: handleLocationError,
   });
+
+  // 把 stable position 的更新推給 handleStableLocation
+  useEffect(() => {
+    if (stablePosition && isWatching) {
+      handleStableLocation(stablePosition);
+    }
+  }, [stablePosition, isWatching, handleStableLocation]);
+
+  // 把 GPS error 推給 handler
+  useEffect(() => {
+    if (gpsError) {
+      handleLocationError(gpsError);
+    }
+  }, [gpsError, handleLocationError]);
 
   const startWatching = () => {
     if (!hasValidTarget) {
