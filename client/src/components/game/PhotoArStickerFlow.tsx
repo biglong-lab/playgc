@@ -15,7 +15,7 @@
 //   - 只做 landmark detection，不做 face recognition
 //   - 使用者需 opt-in（B4 加 Dialog）
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
   Camera, CheckCircle2, AlertTriangle, Download, Share2, Sparkles, RefreshCw,
