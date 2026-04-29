@@ -81,6 +81,15 @@ export async function writeSquadRecordFromSession(
     return;
   }
 
+  // 🚫 §19.1 防作弊 2：每日上限 10 場（單隊每日最多計 10 場）
+  const dailyCount = await countTodayRecords(squadId);
+  if (dailyCount >= 10) {
+    console.log(
+      `[squad-record] 跳過 session ${session.id}：squad ${squadId} 今日已 ${dailyCount} 場（上限 10）`,
+    );
+    return;
+  }
+
   // performance（從 session 推算）
   const performance = {
     duration: durationSec,
