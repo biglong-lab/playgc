@@ -147,7 +147,11 @@ export default defineConfig({
           "vendor-map": ["leaflet", "react-leaflet"],
           "vendor-charts": ["recharts"],
           "vendor-motion": ["framer-motion"],
-          "vendor-icons": ["lucide-react"],
+          // ⚠️ 不把 lucide-react 強制打成單一 chunk
+          // manualChunks 會 break tree-shake → 整個 package 1000+ icons 都塞進來（775 KB）
+          // 移除後 Rollup 會自動把每個 icon 跟使用它的 page chunk 一起載 + 重複的放共用 chunk
+          // 預期 vendor-icons 從 775 KB → 個別 chunk 散落（總量大幅下降）
+          // "vendor-icons": ["lucide-react"], // ← 廢除
         },
       },
     },
