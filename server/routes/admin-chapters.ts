@@ -75,11 +75,9 @@ export function registerAdminChapterRoutes(app: Express) {
     async (req, res) => {
       try {
         const { gameId } = req.params;
-
-        const game = await storage.getGame(gameId);
-        if (!game) {
-          return res.status(404).json({ message: "遊戲不存在" });
-        }
+        // 🔒 場域隔離（含 game 存在檢查）
+        const owned = await checkGameFieldOwnership(gameId, req.admin, res);
+        if (!owned) return;
 
         // 自動計算排序
         const existing = await storage.getChapters(gameId);
