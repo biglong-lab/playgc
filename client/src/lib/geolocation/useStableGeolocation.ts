@@ -24,6 +24,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { median, classifyAccuracy, type GpsQuality } from "./geo-utils";
+import { useImuPositioning, type ImuAnchor } from "./useImuPositioning";
 
 export interface StablePosition {
   lat: number;
