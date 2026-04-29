@@ -1,17 +1,43 @@
 import type { Express } from "express";
 import { db } from "../db";
 import { isAuthenticated } from "../firebaseAuth";
-import { teamSessions, teamScoreHistory } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import {
+  teamSessions,
+  teamScoreHistory,
+  teamMembers,
+} from "@shared/schema";
+import { eq, desc, and, isNull } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 
+// 🔒 §19 防作弊：sourceType 白名單（玩家不能寫 "manual" 等隨意值）
+const ALLOWED_SOURCE_TYPES = new Set([
+  "game_complete",
+  "game_score",
+  "page_complete",
+  "qr_scan",
+  "lock_solved",
+  "vote",
+  "shooting",
+  "battle",
+  "ar_sticker",
+  "photo",
+  "ocr_match",
+]);
+
+// 🔒 單次 delta 上下限（防止一次性灌分）
+const MAX_DELTA = 1000;
+const MIN_DELTA = -1000;
+
 /** 更新分數的請求驗證 */
 const updateScoreBodySchema = z.object({
-  delta: z.number(),
-  sourceType: z.string().optional(),
+  delta: z.number().int().min(MIN_DELTA).max(MAX_DELTA),
+  sourceType: z.string().refine(
+    (s) => ALLOWED_SOURCE_TYPES.has(s),
+    { message: "sourceType 不在允許清單" },
+  ),
   sourceId: z.string().optional(),
-  description: z.string().optional(),
+  description: z.string().max(200).optional(),
 });
 
 export function registerTeamScoreRoutes(app: Express, ctx: RouteContext) {
@@ -23,10 +49,27 @@ export function registerTeamScoreRoutes(app: Express, ctx: RouteContext) {
       try {
         const { teamId } = req.params;
         const body = updateScoreBodySchema.parse(req.body);
-        const userId = req.user?.claims?.sub;
+        const userId = req.user?.dbUser?.id || req.user?.claims?.sub;
 
         if (!userId) {
           return res.status(401).json({ message: "請先登入" });
+        }
+
+        // 🔒 §19 防作弊：必須是該隊成員才能改分
+        const [member] = await db
+          .select()
+          .from(teamMembers)
+          .where(
+            and(
+              eq(teamMembers.teamId, teamId),
+              eq(teamMembers.userId, userId),
+              isNull(teamMembers.leftAt),
+            ),
+          )
+          .limit(1);
+
+        if (!member) {
+          return res.status(403).json({ message: "您不是此隊成員，無法更新分數" });
         }
 
         const teamSession = await db.query.teamSessions.findFirst({
