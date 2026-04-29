@@ -24,6 +24,8 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
   const [isEnded, setIsEnded] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [errorDetail, setErrorDetail] = useState<string>("");
+  const retryCountRef = useRef(0);
 
   const videoUrl = (config.videoUrl || "").trim();
   const hasValidUrl = videoUrl.length > 0;
