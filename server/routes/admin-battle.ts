@@ -12,6 +12,7 @@ import {
 import { eq, and, count, sql, gte, desc, like, or, inArray } from "drizzle-orm";
 import { getTierFromRating, tierLabels } from "@shared/schema";
 import { z } from "zod";
+import { assertFieldOwnership } from "../lib/field-ownership";
 
 export function registerAdminBattleRoutes(app: Express) {
   // ============================================================================
