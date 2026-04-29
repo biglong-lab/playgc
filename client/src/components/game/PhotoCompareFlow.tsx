@@ -31,6 +31,7 @@ import {
   VerifyingView,
 } from "./photo-mission/PhotoViews";
 import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
+import { formatAiError } from "@/lib/ai-error";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoCompareFlowProps {
