@@ -161,49 +161,79 @@ export default function PhotoTeamFlow({
   });
 
   // 上傳階段：所有照片上傳到 Cloudinary → 合成
+  // 🐛 修：加 timeout + 改進 fallback 邏輯（不再呼叫同一個壞掉的端點）
   useEffect(() => {
     if (stage !== "uploading") return;
     let cancelled = false;
+
+    // 取首張照片 dataURL 當失敗的 fallback（不依賴後端合成）
+    const firstMemberDataUrl = members[0]?.imageData ?? null;
+
     (async () => {
       try {
-        const uploaded: string[] = [];
+        const uploaded: { publicId: string; url: string }[] = [];
         for (const m of members) {
           if (cancelled) return;
-          const res = await apiRequest("POST", "/api/cloudinary/player-photo", {
+          // 🛡️ 單張上傳 timeout 20 秒
+          const uploadPromise = apiRequest("POST", "/api/cloudinary/player-photo", {
             imageData: m.imageData,
             gameId,
             sessionId,
           });
-          const data = await res.json() as { publicId: string };
-          uploaded.push(data.publicId);
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("上傳超時（20 秒）")), 20000)
+          );
+          const res = await Promise.race([uploadPromise, timeoutPromise]);
+          const data = await res.json() as { publicId: string; url: string };
+          uploaded.push(data);
         }
         if (cancelled) return;
+
         setStage("compositing");
+
+        // 🛡️ 合成 timeout 30 秒
         try {
-          const comp = await compositeMutation.mutateAsync(uploaded);
+          const compositePromise = compositeMutation.mutateAsync(
+            uploaded.map((u) => u.publicId),
+          );
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("合成超時（30 秒）")), 30000)
+          );
+          const comp = await Promise.race([compositePromise, timeoutPromise]);
           if (cancelled) return;
           setCompositeUrl(comp.compositeUrl);
         } catch (err) {
-          console.warn("[Team] 合成失敗:", err);
-          // fallback 用第一張的 URL
+          console.warn("[Team] 合成失敗，用第一張當紀念:", err);
+          // 🐛 修：fallback 直接用第一張的原始 URL，不再呼叫 composite-photo
+          // （避免端點本身掛掉時 fallback 也卡住）
+          if (cancelled) return;
           if (uploaded.length > 0) {
-            const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
-              playerPhotoPublicId: uploaded[0],
-              config: { canvas: { width: 1080, height: 1080, crop: "fill" }, layers: [] },
-              dynamicVars: {},
+            setCompositeUrl(uploaded[0].url);
+            toast({
+              title: "合成失敗，使用首張代替",
+              description: "可能是 Cloudinary 處理超時，已用首張隊員照片繼續",
             });
-            const data = await res.json();
-            setCompositeUrl(data.compositeUrl);
+          } else if (firstMemberDataUrl) {
+            // 上傳成功但合成失敗 → 用本地 dataURL（最後保險）
+            setCompositeUrl(firstMemberDataUrl);
           }
         }
-        setStage("done");
+        if (!cancelled) setStage("done");
       } catch (err) {
+        if (cancelled) return;
+        console.error("[Team] 上傳階段失敗:", err);
         toast({
           title: "上傳失敗",
           description: err instanceof Error ? err.message : "請檢查網路",
           variant: "destructive",
         });
-        setStage("intro");
+        // 🐛 修：上傳失敗也提供繼續選項（不要直接回 intro 讓玩家重來）
+        if (firstMemberDataUrl) {
+          setCompositeUrl(firstMemberDataUrl);
+          setStage("done");
+        } else {
+          setStage("intro");
+        }
       }
     })();
     return () => { cancelled = true; };
