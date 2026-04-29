@@ -129,9 +129,41 @@ export const sessionStorageMethods = {
     return updated;
   },
 
-  /** 批次放棄超時場次（超過 thresholdHours 小時仍在 playing 的場次） */
-  async abandonStaleSessions(thresholdHours: number): Promise<GameSession[]> {
+  /**
+   * 批次放棄超時場次（超過 thresholdHours 小時仍在 playing 的場次）
+   * @param thresholdHours 超時閾值（小時）
+   * @param fieldId 可選 — 只清理此場域的 sessions（場域 admin 必須傳）
+   */
+  async abandonStaleSessions(
+    thresholdHours: number,
+    fieldId?: string,
+  ): Promise<GameSession[]> {
     const cutoff = new Date(Date.now() - thresholdHours * 60 * 60 * 1000);
+
+    // 場域過濾：JOIN games 取出對應 fieldId 的 session ids
+    if (fieldId) {
+      const targetIds = await db
+        .select({ id: gameSessions.id })
+        .from(gameSessions)
+        .innerJoin(games, eq(games.id, gameSessions.gameId))
+        .where(
+          and(
+            eq(games.fieldId, fieldId),
+            eq(gameSessions.status, "playing"),
+            lt(gameSessions.startedAt, cutoff),
+          ),
+        );
+
+      if (targetIds.length === 0) return [];
+
+      return db
+        .update(gameSessions)
+        .set({ status: "abandoned", completedAt: new Date() })
+        .where(inArray(gameSessions.id, targetIds.map((r) => r.id)))
+        .returning();
+    }
+
+    // 無 fieldId（super_admin）→ 清全部
     return db
       .update(gameSessions)
       .set({ status: "abandoned", completedAt: new Date() })
