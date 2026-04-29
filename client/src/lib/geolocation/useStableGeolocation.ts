@@ -135,6 +135,7 @@ export function useStableGeolocation(
     onUpdate,
     onError,
     enabled = true,
+    imuFallback = false,
   } = options;
 
   const [position, setPosition] = useState<StablePosition | null>(null);
