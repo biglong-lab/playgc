@@ -54,6 +54,9 @@ export function registerAdminChapterRoutes(app: Express) {
     async (req, res) => {
       try {
         const { gameId } = req.params;
+        // 🔒 場域隔離
+        if (!(await checkGameFieldOwnership(gameId, req.admin, res))) return;
+
         const chapters = await storage.getChapters(gameId);
         res.json(chapters);
       } catch (error) {
