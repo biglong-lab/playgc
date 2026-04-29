@@ -7,8 +7,8 @@ import type { Express } from "express";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 import { z } from "zod";
 import { db } from "../db";
-import { gameSessions } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { gameSessions, games } from "@shared/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import {
   createBroadcasterToken,
   isLiveKitConfigured,
