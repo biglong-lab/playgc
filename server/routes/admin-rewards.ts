@@ -506,6 +506,54 @@ export function registerAdminRewardsRoutes(app: Express) {
         return res.status(400).json({ error: "格式錯誤" });
       }
 
+      // 🔒 場域隔離：field_admin 只能發券給「自己場域的隊伍」（避免跨場域亂發）
+      // super_admin / platform_admin 不限制
+      const isSuperAdmin = req.admin?.systemRole === "super_admin"
+        || req.admin?.systemRole === "platform_admin";
+      const adminFieldId = req.admin?.fieldId;
+
+      if (!isSuperAdmin) {
+        if (!adminFieldId) {
+          return res.status(403).json({ error: "管理員未綁定場域" });
+        }
+
+        // 必須指定 squadId（場域 admin 只能透過 squadId 發券，不能直接靠 userId 發）
+        if (!parsed.data.squadId) {
+          return res.status(403).json({
+            error: "場域管理員需指定 squadId，僅平台管理員可直接指定 userId 發券",
+          });
+        }
+
+        // 檢查 squad 屬於自己的場域（用 homeFieldId 或最近戰績的 fieldId）
+        const { squads, squadMatchRecords } = await import("@shared/schema");
+        const [sq] = await db
+          .select({ homeFieldId: squads.homeFieldId })
+          .from(squads)
+          .where(eq(squads.id, parsed.data.squadId))
+          .limit(1);
+
+        if (!sq) {
+          return res.status(404).json({ error: "隊伍不存在" });
+        }
+
+        // homeFieldId 不符 → 看最近戰績是否在自己場域（24h 內）
+        let belongsToField = sq.homeFieldId === adminFieldId;
+        if (!belongsToField) {
+          const recentField = await db
+            .select({ fieldId: squadMatchRecords.fieldId })
+            .from(squadMatchRecords)
+            .where(eq(squadMatchRecords.squadId, parsed.data.squadId))
+            .orderBy(sql`${squadMatchRecords.playedAt} desc`)
+            .limit(1);
+          belongsToField = recentField[0]?.fieldId === adminFieldId;
+        }
+        if (!belongsToField) {
+          return res.status(403).json({
+            error: "此隊伍不屬於您的場域，無法發券",
+          });
+        }
+      }
+
       const [tpl] = await db
         .select()
         .from(couponTemplates)
@@ -529,7 +577,10 @@ export function registerAdminRewardsRoutes(app: Express) {
           expiresAt,
           redemptionContext: {
             manualReason: parsed.data.reason,
-            issuedBy: "admin",
+            // 🔒 audit trail — 記錄發券的 admin + 場域
+            issuedBy: req.admin?.username || "admin",
+            issuedByAdminId: req.admin?.id,
+            issuedByFieldId: adminFieldId,
           },
         })
         .returning();
