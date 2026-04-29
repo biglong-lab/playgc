@@ -9,6 +9,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Check, X, HelpCircle, RefreshCw, History, BookOpen, Loader2 } from "lucide-react";
 import type { TextVerifyConfig } from "@shared/schema";
 import { normalizeAnswer, NO_AUTO_INPUT_PROPS } from "@/lib/gameVerification";
+import { formatAiError } from "@/lib/ai-error";
 
 interface TextVerifyPageProps {
   config: TextVerifyConfig;
