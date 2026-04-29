@@ -220,6 +220,8 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
     contributors: gpsContributors,
     scattered: gpsScattered,
     improvementRatio: gpsImprovementRatio,
+    imuActive: gpsImuActive,
+    imuSteps: gpsImuSteps,
     error: gpsError,
   } = useTeamGpsFusion({
     teamId,
@@ -227,6 +229,7 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
     userName: user?.firstName || "玩家",
     enabled: isWatching && hasValidTarget,
     sampleSize: 5,
+    imuFallback: true, // 🧭 啟用 IMU fallback，GPS 失效時自動切換
   });
 
   // 把 stable position 的更新推給 handleStableLocation
