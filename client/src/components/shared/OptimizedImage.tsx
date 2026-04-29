@@ -62,6 +62,14 @@ function LoadingPlaceholder() {
 const MAX_RETRIES = 5;
 const RETRY_DELAYS = [1000, 2500, 5000, 8000, 15000];
 
+// 📦 模組層級常數：preset 對應 width/height（防 CLS 用，每張 img 都查同份）
+const PRESET_DIMS: Record<string, { w: number; h: number }> = {
+  card: { w: 800, h: 500 },
+  cover: { w: 1600, h: 800 },
+  icon: { w: 160, h: 160 },
+  thumbnail: { w: 400, h: 400 },
+};
+
 /**
  * 優化圖片元件
  * - Cloudinary URL 自動附加變換參數
