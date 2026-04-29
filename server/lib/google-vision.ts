@@ -85,8 +85,16 @@ export async function detectText(imageUrl: string): Promise<OcrDetectResult> {
   try {
     const client = getClient();
 
+    // 🛡️ 加 timeout（30 秒）— 避免 nginx 上游 timeout（60s）→ 502
+    // detection 慢的原因：Cloudinary URL 載入慢、Vision API cold start、大圖
+    const TIMEOUT_MS = 30000;
+    const detectionPromise = client.textDetection(imageUrl);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("OCR_TIMEOUT")), TIMEOUT_MS)
+    );
+
     // 呼叫 Vision API — 只傳 URL，不傳圖片內容
-    const [result] = await client.textDetection(imageUrl);
+    const [result] = await Promise.race([detectionPromise, timeoutPromise]);
     const detections = result.textAnnotations || [];
 
     const latencyMs = Date.now() - startTime;
