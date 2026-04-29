@@ -266,8 +266,12 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
   const { data: themePayload } = useQuery<FieldThemePayload>({
     queryKey: ["/api/fields", fieldCode, "theme"],
     queryFn: async () => {
+      // 🆕 cache: "no-store" 跳過瀏覽器 HTTP 快取，
+      // 讓 admin 修改後 invalidate 能立即拿到最新（封面焦點 / 公告等）
+      // React Query staleTime 仍控制記憶體快取，避免重複 fetch
       const res = await fetch(
         `/api/fields/${encodeURIComponent(fieldCode!)}/theme`,
+        { cache: "no-store" },
       );
       if (!res.ok) throw new Error("field theme not found");
       return res.json();

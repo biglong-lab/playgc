@@ -686,7 +686,10 @@ export function registerAdminFieldRoutes(app: Express) {
       // legacy fallback：舊的 settings.primaryColor
       const primaryColor = theme.primaryColor || settings.primaryColor;
 
-      res.set("Cache-Control", "public, max-age=300");
+      // 🆕 改 private 讓 CDN 不快取（避免 admin 改完封面，玩家端從 CDN 拿到舊版）
+      // max-age=60 + stale-while-revalidate=300：瀏覽器 60s 內用快取，
+      // 60-360s 用快取但背景更新
+      res.set("Cache-Control", "private, max-age=60, stale-while-revalidate=300");
       return res.json({
         fieldId: field.id,
         code: field.code,
@@ -718,6 +721,8 @@ export function registerAdminFieldRoutes(app: Express) {
           textColor: theme.textColor || null,
           layoutTemplate: theme.layoutTemplate || "classic",
           coverImageUrl: theme.coverImageUrl || null,
+          // 🆕 封面焦點位置（admin 拖拉調整）
+          coverImagePosition: theme.coverImagePosition || null,
           brandingLogoUrl: theme.brandingLogoUrl || null,
           fontFamily: theme.fontFamily || "default",
         },

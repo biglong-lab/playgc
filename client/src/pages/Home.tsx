@@ -146,10 +146,16 @@ export default function Home() {
       body: JSON.stringify({ theme: themeUpdate }),
     });
     // 重新拉場域資料 → 玩家端會看到更新
+    // 🆕 修正 predicate：Provider 用 ["/api/fields", code, "theme"]
+    //    原本 .includes("/api/fields/") 不匹配（沒結尾 /），所以舊版 invalidate 無效
     await queryClient.invalidateQueries({
       predicate: (q) => {
-        const key = String(q.queryKey[0] ?? "");
-        return key.includes("/api/fields/") || key.includes("/api/admin/fields");
+        const first = String(q.queryKey[0] ?? "");
+        return (
+          first === "/api/fields" ||              // Provider theme query
+          first.startsWith("/api/fields/") ||     // 公開列表/詳情
+          first.startsWith("/api/admin/fields")   // 管理端
+        );
       },
     });
   };
