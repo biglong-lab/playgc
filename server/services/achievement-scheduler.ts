@@ -182,19 +182,33 @@ export function startAchievementScheduler(): void {
 
   console.log("[achievement-scheduler] 已啟動（每 6 小時跑一次）");
 
+  // 🔒 cluster lock 包裹（多 container 安全）
+  const tick = async () => {
+    const { withClusterLock } = await import("../lib/cluster-lock");
+    return withClusterLock("scheduler:achievement", async () => {
+      return runAchievementsCycle();
+    });
+  };
+
   // 5 分鐘後跑第一次（避開 server 啟動高峰）
   initialDelay = setTimeout(async () => {
-    const result = await runAchievementsCycle();
-    console.log(
-      `[achievement-scheduler] 首輪完成: ${result.squadsProcessed} 隊處理 / ${result.achievementsAwarded} 個成就發放`,
-    );
+    const result = await tick();
+    if (result) {
+      console.log(
+        `[achievement-scheduler] 首輪完成: ${result.squadsProcessed} 隊處理 / ${result.achievementsAwarded} 個成就發放`,
+      );
+    } else {
+      console.log("[achievement-scheduler] 首輪 skip（其他 instance 已執行）");
+    }
 
     // 之後每 6 小時跑一次
     schedulerInterval = setInterval(async () => {
-      const r = await runAchievementsCycle();
-      console.log(
-        `[achievement-scheduler] 定期執行完成: ${r.squadsProcessed} 隊 / ${r.achievementsAwarded} 個成就`,
-      );
+      const r = await tick();
+      if (r) {
+        console.log(
+          `[achievement-scheduler] 定期執行完成: ${r.squadsProcessed} 隊 / ${r.achievementsAwarded} 個成就`,
+        );
+      }
     }, SIX_HOURS_MS);
   }, INITIAL_DELAY_MS);
 }
