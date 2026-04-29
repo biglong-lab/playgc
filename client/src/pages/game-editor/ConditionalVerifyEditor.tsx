@@ -1,5 +1,6 @@
 // 碎片收集 / 條件驗證編輯器
 // 支援兩種模式：fragment（碎片收集）+ conditions（條件檢查）
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
