@@ -324,7 +324,11 @@ export function registerAiScoringRoutes(app: Express): void {
 
       const threshold = confidenceThreshold ?? 0.6;
       // 🆕 若 page config 指定了 modelId 就傳下去（OpenRouter 會用指定模型，Gemini 會忽略）
-      const result = await verifyPhoto(imageUrl, targetKeywords, instruction, fieldApiKey, modelId);
+      // 🛡️ 加 timeout 防 nginx 上游 502
+      const result = await withAiTimeout(
+        () => verifyPhoto(imageUrl, targetKeywords, instruction, fieldApiKey, modelId),
+        { endpoint: "verify-photo", timeoutMs: 50_000 },
+      );
 
       // 根據閾值判斷是否通過
       const verified = result.confidence >= threshold;
