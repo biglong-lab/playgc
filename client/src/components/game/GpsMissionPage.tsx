@@ -62,35 +62,12 @@ export default function GpsMissionPage({ config, onComplete }: GpsMissionPagePro
   const targetLng = hasValidTarget ? (rawLng as number) : 0;
   const targetRadius = config.radius || 50;
 
-  const calculateDistance = useCallback((lat1: number, lng1: number, lat2: number, lng2: number): number => {
-    const R = 6371e3;
-    const φ1 = (lat1 * Math.PI) / 180;
-    const φ2 = (lat2 * Math.PI) / 180;
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lng2 - lng1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    return R * c;
-  }, []);
+  // 🌐 統一用 lib/geolocation 的 distanceMeters（避免三份 Haversine 各自實作）
+  const calculateDistance = useCallback(distanceMeters, []);
 
   const getDirectionHint = useCallback((userLat: number, userLng: number): string => {
-    const dLat = targetLat - userLat;
-    const dLng = targetLng - userLng;
-    const angle = Math.atan2(dLng, dLat) * (180 / Math.PI);
-    
-    if (angle >= -22.5 && angle < 22.5) return "往北走";
-    if (angle >= 22.5 && angle < 67.5) return "往東北走";
-    if (angle >= 67.5 && angle < 112.5) return "往東走";
-    if (angle >= 112.5 && angle < 157.5) return "往東南走";
-    if (angle >= 157.5 || angle < -157.5) return "往南走";
-    if (angle >= -157.5 && angle < -112.5) return "往西南走";
-    if (angle >= -112.5 && angle < -67.5) return "往西走";
-    if (angle >= -67.5 && angle < -22.5) return "往西北走";
-    return "繼續前進";
+    const bearing = bearingDegrees(userLat, userLng, targetLat, targetLng);
+    return `往${bearingToCompass(bearing)}走`;
   }, [targetLat, targetLng]);
 
   const playProximityBeep = useCallback((dist: number) => {
