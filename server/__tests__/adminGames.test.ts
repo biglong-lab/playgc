@@ -302,6 +302,63 @@ describe("Admin Games 路由", () => {
       expect(res.status).toBe(200);
       expect(res.body.title).toBe("新標題");
     });
+
+    // 🆕 2026-04-30 — coverImagePosition 鎖定測試
+    //   今日新增 admin 在前台拖拉遊戲卡封面焦點功能（EditableCoverImage）
+    //   zod schema 須接受合法 "X% Y%" 格式，拒絕惡意 CSS 注入
+    it("成功更新 coverImagePosition（合法 'X% Y%' 格式）", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", title: "遊戲", fieldId: "field-1",
+      });
+      const updated = {
+        id: "g1", title: "遊戲", fieldId: "field-1",
+        coverImagePosition: "30% 70%",
+      };
+      mockDb._chain.returning.mockResolvedValueOnce([updated]);
+
+      const res = await request(app)
+        .patch("/api/admin/games/g1")
+        .set(adminHeaders)
+        .send({ coverImagePosition: "30% 70%" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.coverImagePosition).toBe("30% 70%");
+    });
+
+    it("拒絕惡意 coverImagePosition 格式（防 CSS 注入）", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", title: "遊戲", fieldId: "field-1",
+      });
+
+      const res = await request(app)
+        .patch("/api/admin/games/g1")
+        .set(adminHeaders)
+        .send({ coverImagePosition: "<script>alert(1)</script>" });
+
+      // zod regex 攔住 → 400
+      expect(res.status).toBe(400);
+    });
+
+    it("接受 coverImagePosition 為 null（玩家可重設位置）", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", title: "遊戲", fieldId: "field-1",
+      });
+      const updated = {
+        id: "g1", title: "遊戲", fieldId: "field-1",
+        coverImagePosition: null,
+      };
+      mockDb._chain.returning.mockResolvedValueOnce([updated]);
+
+      const res = await request(app)
+        .patch("/api/admin/games/g1")
+        .set(adminHeaders)
+        .send({ coverImagePosition: null });
+
+      expect(res.status).toBe(200);
+    });
   });
 
   describe("DELETE /api/admin/games/:id", () => {
