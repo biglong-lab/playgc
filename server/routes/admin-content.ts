@@ -172,10 +172,9 @@ export function registerAdminContentRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      const item = await storage.getItem(req.params.id);
-      if (!item) {
-        return res.status(404).json({ message: "Item not found" });
-      }
+      // 🔒 場域隔離
+      const owned = await checkItemFieldOwnership(req.params.id, req.admin, res);
+      if (!owned) return;
 
       await storage.deleteItem(req.params.id);
       res.status(204).send();
