@@ -118,41 +118,7 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
           />
         </div>
         {Boolean(config.backgroundAudio) && (
-          <div className="mt-2">
-            {/* 🎵 用 ensureAudioUrl 處理 Cloudinary /video/upload/ → 強制 .mp3 transcode
-                ⚠️ 不要加 crossOrigin — Cloudinary /video/upload/ 不送 ACAO header
-                會導致 CORS 擋掉整個請求 */}
-            <audio
-              src={ensureAudioUrl(config.backgroundAudio as string)}
-              controls
-              preload="auto"
-              className="w-full"
-              data-testid="audio-preview"
-              onLoadedMetadata={(e) => {
-                console.log("[audio-preview] ✅ metadata loaded", {
-                  duration: e.currentTarget.duration,
-                  src: e.currentTarget.currentSrc,
-                });
-              }}
-              onError={(e) => {
-                const audio = e.currentTarget;
-                console.error("[audio-preview] ❌ load failed", {
-                  errorCode: audio.error?.code,
-                  errorMessage: audio.error?.message,
-                  networkState: audio.networkState,
-                  readyState: audio.readyState,
-                  src: audio.currentSrc,
-                });
-              }}
-              onCanPlay={() => {
-                console.log("[audio-preview] ▶️ can play");
-              }}
-            />
-            <p className="text-[11px] text-muted-foreground mt-1">
-              💡 若無法播放，請確認上傳的是音訊檔（mp3 / m4a / wav）—
-              開瀏覽器 DevTools Console 看 [audio-preview] 訊息
-            </p>
-          </div>
+          <AudioPreviewWithStatus url={config.backgroundAudio as string} />
         )}
       </div>
 
