@@ -133,9 +133,21 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
         return res.status(404).json({ message: "Session not found" });
       }
 
+      // 🔒 §19 防作弊：必須是 session 的玩家才能打卡
+      const progressList = await storage.getPlayerProgress(sessionId);
+      const isInSession = progressList.some((p) => p.userId === userId);
+      if (!isInSession) {
+        return res.status(403).json({ message: "您不在此遊戲場次中" });
+      }
+
       const location = await storage.getLocation(locId);
       if (!location) {
         return res.status(404).json({ message: "Location not found" });
+      }
+
+      // 🔒 §19 防作弊：location 必須屬於此 session 對應的 game
+      if (location.gameId !== session.gameId) {
+        return res.status(400).json({ message: "Location 不屬於此遊戲" });
       }
 
       const alreadyVisited = await storage.hasVisitedLocation(locId, sessionId, userId);
