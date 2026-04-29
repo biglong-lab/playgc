@@ -7,6 +7,7 @@ import {
   insertPlayerLocationSchema,
   insertLocationVisitSchema,
 } from "@shared/schema";
+import { hotPathLimiter } from "../utils/rate-limiters";
 
 export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) {
   // ===========================================
