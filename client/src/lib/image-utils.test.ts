@@ -46,25 +46,28 @@ describe("addCloudinaryTransform", () => {
 describe("getOptimizedImageUrl", () => {
   const cloudinaryUrl = "https://res.cloudinary.com/demo/image/upload/v1/sample.jpg";
 
-  it("preset card 套用正確參數", () => {
+  it("preset card 套用正確參數（800x500，桌面 retina 友善）", () => {
     const result = getOptimizedImageUrl(cloudinaryUrl, "card");
-    expect(result).toContain("w_400");
-    expect(result).toContain("h_250");
-    expect(result).toContain("q_auto");
+    expect(result).toContain("w_800");
+    expect(result).toContain("h_500");
+    expect(result).toContain("q_auto:good");
     expect(result).toContain("f_auto");
     expect(result).toContain("c_fill");
+    expect(result).toContain("dpr_auto");
   });
 
-  it("preset cover 套用正確參數", () => {
+  it("preset cover 套用正確參數（1600x800 hero）", () => {
     const result = getOptimizedImageUrl(cloudinaryUrl, "cover");
-    expect(result).toContain("w_800");
-    expect(result).toContain("h_400");
+    expect(result).toContain("w_1600");
+    expect(result).toContain("h_800");
   });
 
-  it("preset icon 套用正確參數", () => {
+  it("preset icon 套用正確參數（160x160 retina）", () => {
     const result = getOptimizedImageUrl(cloudinaryUrl, "icon");
-    expect(result).toContain("w_80");
-    expect(result).toContain("h_80");
+    expect(result).toContain("w_160");
+    expect(result).toContain("h_160");
+    // icon 用 g_face 智能裁切人臉
+    expect(result).toContain("g_face");
   });
 
   it("非 Cloudinary URL 原樣返回", () => {
