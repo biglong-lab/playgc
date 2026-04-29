@@ -118,6 +118,8 @@ export function registerAdminChapterRoutes(app: Express) {
             .status(400)
             .json({ message: "需要 gameId 和 chapterIds" });
         }
+        // 🔒 場域隔離
+        if (!(await checkGameFieldOwnership(gameId, req.admin, res))) return;
 
         await storage.reorderChapters(gameId, chapterIds);
         const chapters = await storage.getChapters(gameId);
