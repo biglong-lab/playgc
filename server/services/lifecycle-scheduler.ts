@@ -168,17 +168,31 @@ export function startLifecycleScheduler(): void {
 
   console.log("[lifecycle-scheduler] 已啟動（每 12 小時跑一次）");
 
+  // 🔒 包 cluster lock：避免多 container 同時執行（水平擴展安全）
+  const tick = async () => {
+    const { withClusterLock } = await import("../lib/cluster-lock");
+    return withClusterLock("scheduler:lifecycle", async () => {
+      return runLifecycleCycle();
+    });
+  };
+
   initialDelay = setTimeout(async () => {
-    const result = await runLifecycleCycle();
-    console.log(
-      `[lifecycle-scheduler] 首輪完成: ${result.squadsProcessed} 隊處理 / ${result.tierUpgrades.length} 個升級`,
-    );
+    const result = await tick();
+    if (result) {
+      console.log(
+        `[lifecycle-scheduler] 首輪完成: ${result.squadsProcessed} 隊處理 / ${result.tierUpgrades.length} 個升級`,
+      );
+    } else {
+      console.log("[lifecycle-scheduler] 首輪 skip（其他 instance 已執行）");
+    }
 
     schedulerInterval = setInterval(async () => {
-      const r = await runLifecycleCycle();
-      console.log(
-        `[lifecycle-scheduler] 定期執行: ${r.squadsProcessed} 隊 / ${r.tierUpgrades.length} 升級`,
-      );
+      const r = await tick();
+      if (r) {
+        console.log(
+          `[lifecycle-scheduler] 定期執行: ${r.squadsProcessed} 隊 / ${r.tierUpgrades.length} 升級`,
+        );
+      }
     }, TWELVE_HOURS_MS);
   }, INITIAL_DELAY_MS);
 }
