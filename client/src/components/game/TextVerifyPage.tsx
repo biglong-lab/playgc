@@ -242,14 +242,38 @@ export default function TextVerifyPage({ config, onComplete, gameId }: TextVerif
         } else {
           handleIncorrect(result.feedback);
         }
-      } catch {
+      } catch (err: unknown) {
         // API 錯誤 → 不扣次數、提示玩家重試（原本會呼叫 handleIncorrect 扣次數，不合理）
         setIsAnimating(false);
-        toast({
-          title: "評分服務連線失敗",
-          description: "請稍後再試，本次不扣除嘗試次數",
-          variant: "destructive",
-        });
+
+        const errMsg = err instanceof Error ? err.message : String(err);
+
+        // 🔍 區分錯誤類型給更精準訊息
+        if (errMsg.includes("503") && errMsg.includes("AI 服務未設定")) {
+          toast({
+            title: "AI 評分尚未啟用",
+            description: "此場域還沒設定 Gemini API key，請聯絡管理員到「場域管理」設定後再試",
+            variant: "destructive",
+          });
+        } else if (errMsg.includes("503") && errMsg.includes("AI 功能已停用")) {
+          toast({
+            title: "AI 評分已停用",
+            description: "此場域的 AI 功能被管理員停用，請聯絡管理員",
+            variant: "destructive",
+          });
+        } else if (errMsg.includes("429")) {
+          toast({
+            title: "AI 呼叫過於頻繁",
+            description: "請等 1 分鐘後再試（每分鐘上限 10 次）",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "評分服務連線失敗",
+            description: "請稍後再試，本次不扣除嘗試次數",
+            variant: "destructive",
+          });
+        }
       }
       return;
     }
