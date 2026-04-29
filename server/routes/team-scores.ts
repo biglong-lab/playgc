@@ -42,10 +42,11 @@ const updateScoreBodySchema = z.object({
 });
 
 export function registerTeamScoreRoutes(app: Express, ctx: RouteContext) {
-  // 更新隊伍分數
+  // 更新隊伍分數（per-user 60/min 防爆刷）
   app.post(
     "/api/teams/:teamId/score",
     isAuthenticated,
+    hotPathLimiter,
     async (req: AuthenticatedRequest, res) => {
       try {
         const { teamId } = req.params;
