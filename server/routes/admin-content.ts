@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import { storage } from "../storage";
 import {
   requireAdminAuth,
@@ -14,6 +14,39 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { ensureUniqueSlug, normalizeSlugInput } from "../lib/slug";
+
+// 🔒 Helper：檢查 item 屬於 admin 的場域（super_admin / platform_admin 跳過）
+// 回傳 null 表示通過；否則表示 已寫入 res 並要立即 return
+async function checkItemFieldOwnership(
+  itemId: string,
+  admin: { fieldId?: string | null; systemRole?: string | null } | undefined,
+  res: Response,
+): Promise<{ item: any } | null> {
+  const item = await storage.getItem(itemId);
+  if (!item) {
+    res.status(404).json({ message: "Item not found" });
+    return null;
+  }
+  const isPlatformAdmin = admin?.systemRole === "super_admin"
+    || admin?.systemRole === "platform_admin";
+  if (isPlatformAdmin) return { item };
+
+  if (!admin?.fieldId) {
+    res.status(403).json({ message: "管理員未綁定場域" });
+    return null;
+  }
+
+  const game = await storage.getGame(item.gameId);
+  if (!game) {
+    res.status(404).json({ message: "Game not found" });
+    return null;
+  }
+  if (game.fieldId !== admin.fieldId) {
+    res.status(403).json({ message: "無權存取其他場域的資源" });
+    return null;
+  }
+  return { item };
+}
 
 export function registerAdminContentRoutes(app: Express) {
   // ============================================================================
