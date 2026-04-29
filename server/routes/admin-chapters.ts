@@ -140,11 +140,9 @@ export function registerAdminChapterRoutes(app: Express) {
     async (req, res) => {
       try {
         const { id } = req.params;
-
-        const chapter = await storage.getChapter(id);
-        if (!chapter) {
-          return res.status(404).json({ message: "章節不存在" });
-        }
+        // 🔒 場域隔離
+        const owned = await checkChapterFieldOwnership(id, req.admin, res);
+        if (!owned) return;
 
         const updated = await storage.updateChapter(id, req.body);
         res.json(updated);
