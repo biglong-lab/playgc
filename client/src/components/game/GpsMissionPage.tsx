@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -7,13 +8,14 @@ import { MapPin, Navigation, Locate, CheckCircle, AlertCircle, QrCode, Volume2, 
 import type { GpsMissionConfig } from "@shared/schema";
 import GpsMissionMap from "./gps-mission/GpsMissionMap";
 import {
-  useStableGeolocation,
+  useTeamGpsFusion,
   distanceMeters,
   bearingDegrees,
   bearingToCompass,
   type StablePosition,
 } from "@/lib/geolocation";
 import { GpsAccuracyIndicator } from "./GpsAccuracyIndicator";
+import { useAuth } from "@/hooks/useAuth";
 
 interface GpsMissionPageProps {
   config: GpsMissionConfig;
