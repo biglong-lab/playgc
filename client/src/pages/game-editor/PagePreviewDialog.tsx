@@ -65,7 +65,9 @@ export default function PagePreviewDialog({ page, onClose, gameId }: PagePreview
               onComplete={mockHandlers.onComplete}
               onVariableUpdate={mockHandlers.onVariableUpdate}
               sessionId="preview-session"
-              gameId="preview-game"
+              // 🔑 傳真實 gameId 才能讓 AI 評分 / OCR 找到場域 API key
+              // 沒有 gameId 時 fallback 到字串（後端會用全域 key 或回 503）
+              gameId={gameId || "preview-game"}
               variables={{}}
               inventory={[]}
               score={0}
