@@ -46,10 +46,12 @@ export function GpsAccuracyIndicator({
   compact = false,
   className = "",
   fusion,
+  imu,
 }: GpsAccuracyIndicatorProps) {
   const desc = useMemo(() => describeQuality(quality), [quality]);
   const isCalibrating = calibrating || samples < 3;
   const isFused = !!fusion && fusion.contributors > 1 && !fusion.scattered;
+  const isImu = !!imu?.active;
 
   if (!active) {
     return (
