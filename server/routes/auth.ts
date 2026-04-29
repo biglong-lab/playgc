@@ -525,10 +525,10 @@ export function registerAuthRoutes(app: Express) {
     try {
       // 🔒 暴力破解防護：per-IP 失敗計數
       const clientIp = req.ip || req.headers["x-forwarded-for"]?.toString() || "unknown";
-      const now = Date.now();
+      const nowMs = Date.now();
       const failure = ownerLoginFailures.get(clientIp);
-      if (failure && now < failure.resetAt && failure.count >= OWNER_LOGIN_MAX_FAILURES) {
-        const remainMin = Math.ceil((failure.resetAt - now) / 60_000);
+      if (failure && nowMs < failure.resetAt && failure.count >= OWNER_LOGIN_MAX_FAILURES) {
+        const remainMin = Math.ceil((failure.resetAt - nowMs) / 60_000);
         return res.status(429).json({
           message: `登入嘗試次數過多，請 ${remainMin} 分鐘後再試`,
         });
@@ -546,9 +546,9 @@ export function registerAuthRoutes(app: Express) {
 
       // 🔒 timing-safe 比對 + 失敗計數
       if (!secret || !timingSafeStringEqual(secret, configuredSecret)) {
-        const next = failure && now < failure.resetAt
+        const next = failure && nowMs < failure.resetAt
           ? { count: failure.count + 1, resetAt: failure.resetAt }
-          : { count: 1, resetAt: now + OWNER_LOGIN_LOCK_MS };
+          : { count: 1, resetAt: nowMs + OWNER_LOGIN_LOCK_MS };
         ownerLoginFailures.set(clientIp, next);
         return res.status(403).json({ message: "密鑰錯誤" });
       }
