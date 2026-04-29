@@ -534,8 +534,15 @@ export default function PhotoArStickerFlow({
             const rotation = faceAnchor.rotationY
               ? `rotate(${(faceAnchor.rotationY * 180) / Math.PI}deg)`
               : "";
-            // user facing 時畫面已 scaleX(-1)，貼圖跟著翻（否則會文字反向）
-            const mirror = camera.facingMode === "user" ? " scaleX(-1)" : "";
+            // 🐛 修：MediaPipe 回傳的 x 是「未鏡像」座標（raw video 像素）
+            // video 元素被 scaleX(-1) 鏡像了 → 玩家看到的「左/右」跟 raw 相反
+            // DOM overlay 不在 video transform 下，要手動把 x 也鏡像才會跟視覺一致
+            const isMirror = camera.facingMode === "user";
+            const visualX = isMirror ? 1 - faceAnchor.x : faceAnchor.x;
+            // 🆕 sticker 內容（圖案／文字）也要鏡像，否則文字會反向
+            const mirror = isMirror ? " scaleX(-1)" : "";
+            // 🆕 透明度設定（admin 可在編輯器設 stickerOpacity，預設 1.0）
+            const opacity = (s as any).opacity ?? (config as any).stickerOpacity ?? 1;
             return (
               <img
                 key={idx}
@@ -543,11 +550,12 @@ export default function PhotoArStickerFlow({
                 alt=""
                 style={{
                   position: "absolute",
-                  left: `${faceAnchor.x * 100}%`,
+                  left: `${visualX * 100}%`,
                   top: `${faceAnchor.y * 100}%`,
                   width: `${widthPct}%`,
                   height: `${heightPct}%`,
                   transform: `translate(-50%, -50%) ${rotation}${mirror}`,
+                  opacity,
                   pointerEvents: "none",
                   transition: "top 0.08s, left 0.08s",
                 }}
