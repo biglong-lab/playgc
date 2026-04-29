@@ -295,8 +295,32 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
         return res.status(404).json({ error: "未加入此對戰" });
       }
 
+      // 🔒 §19 防作弊：score delta + 時間間隔檢查
+      const newScore = parseResult.data.score;
+      const oldScore = participant.currentScore ?? 0;
+      const delta = newScore - oldScore;
+
+      if (delta > MAX_SCORE_DELTA_PER_TICK) {
+        return res.status(400).json({
+          error: `單次分數增量不可超過 ${MAX_SCORE_DELTA_PER_TICK}`,
+        });
+      }
+
+      // 拒絕分數倒退（除非 admin 修正）
+      if (delta < 0) {
+        return res.status(400).json({ error: "分數不可倒退" });
+      }
+
+      // 時間間隔檢查（防快速灌分）
+      const lastUpdate = (participant as any).updatedAt
+        ? new Date((participant as any).updatedAt as string).getTime()
+        : 0;
+      if (lastUpdate > 0 && Date.now() - lastUpdate < MIN_SCORE_TICK_MS) {
+        return res.status(429).json({ error: "分數更新太頻繁" });
+      }
+
       const [updated] = await db.update(matchParticipants)
-        .set({ currentScore: parseResult.data.score })
+        .set({ currentScore: newScore })
         .where(eq(matchParticipants.id, participant.id))
         .returning();
 
