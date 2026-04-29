@@ -40,7 +40,41 @@ export interface AiErrorInfo {
  * 把任意 error / unknown 轉成精準的 AI 錯誤訊息
  */
 export function formatAiError(err: unknown): AiErrorInfo {
-  const errMsg = err instanceof Error ? err.message : String(err ?? "");
+  const rawMsg = err instanceof Error ? err.message : String(err ?? "");
+  // 🐛 截掉 HTML（502 nginx 會回整段 HTML）保留前 200 字
+  const errMsg = rawMsg.includes("<html")
+    ? rawMsg.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 200)
+    : rawMsg;
+
+  // 502 / 504 — 後端 timeout / nginx upstream
+  if (errMsg.includes("502") || errMsg.includes("504")) {
+    return {
+      title: "AI 服務暫時忙碌",
+      description: "處理超時（可能是圖片過大或服務繁忙），請稍候 30 秒再試",
+      category: "network",
+      shouldDeductAttempt: false,
+    };
+  }
+
+  // 500 — 後端錯誤
+  if (errMsg.includes("500") && !errMsg.includes("503")) {
+    return {
+      title: "AI 服務發生錯誤",
+      description: "伺服器處理發生錯誤，請稍候再試或聯絡管理員",
+      category: "unknown",
+      shouldDeductAttempt: false,
+    };
+  }
+
+  // OCR 超時
+  if (errMsg.includes("TIMEOUT") || errMsg.includes("超時")) {
+    return {
+      title: "AI 處理超時",
+      description: "圖片過大或服務繁忙，建議用較小張的照片重試",
+      category: "network",
+      shouldDeductAttempt: false,
+    };
+  }
 
   // 503 + 未設定
   if (
