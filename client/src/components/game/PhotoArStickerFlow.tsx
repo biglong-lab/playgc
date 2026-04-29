@@ -152,6 +152,68 @@ async function preloadStickers(
   return results.map((r) => (r.status === "fulfilled" ? r.value : null));
 }
 
+// 🎯 FaceStickersOverlay — 抽出獨立子元件 + memo
+// 為什麼：face tracking loop setFaceAnchor 每秒可能 5-10 次
+// 若整個 PhotoArStickerFlow re-render 浪費（含 camera UI、按鈕、Dialog 等大量 JSX）
+// 拆出來後只有此 overlay 重 render（只是幾張 img）
+// 預期：mobile 低端裝置 face tracking 流暢度大幅提升
+interface FaceStickersOverlayProps {
+  stickers: StickerConfigItem[];
+  preloadedStickers: (HTMLImageElement | null)[];
+  preloadDone: boolean;
+  faceAnchor: AnchorCoordinate | null;
+  isMirror: boolean;
+  pageOpacity?: number;
+}
+
+const FaceStickersOverlay = memo(function FaceStickersOverlay({
+  stickers,
+  preloadedStickers,
+  preloadDone,
+  faceAnchor,
+  isMirror,
+  pageOpacity = 1,
+}: FaceStickersOverlayProps) {
+  if (!faceAnchor) return null;
+
+  return (
+    <>
+      {stickers.map((s, idx) => {
+        const img = preloadedStickers[idx];
+        if (preloadDone && !img) return null;
+        const imgRatio = img ? img.naturalWidth / img.naturalHeight : 1;
+        const widthPct = faceAnchor.width * 100 * (s.sizeRatio || 0.6);
+        const heightPct = widthPct / imgRatio;
+        const rotation = faceAnchor.rotationY
+          ? `rotate(${(faceAnchor.rotationY * 180) / Math.PI}deg)`
+          : "";
+        const visualX = isMirror ? 1 - faceAnchor.x : faceAnchor.x;
+        const mirror = isMirror ? " scaleX(-1)" : "";
+        const opacity = (s as any).opacity ?? pageOpacity;
+        return (
+          <img
+            key={idx}
+            src={s.imageUrl}
+            alt=""
+            style={{
+              position: "absolute",
+              left: `${visualX * 100}%`,
+              top: `${faceAnchor.y * 100}%`,
+              width: `${widthPct}%`,
+              height: `${heightPct}%`,
+              transform: `translate(-50%, -50%) ${rotation}${mirror}`,
+              opacity,
+              pointerEvents: "none",
+              transition: "top 0.08s, left 0.08s",
+            }}
+            data-testid={`ar-sticker-face-${idx}`}
+          />
+        );
+      })}
+    </>
+  );
+});
+
 export default function PhotoArStickerFlow({
   config,
   onComplete,
