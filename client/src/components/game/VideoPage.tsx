@@ -158,10 +158,17 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
         message={
           !hasValidUrl
             ? "管理員尚未設定影片 URL，可跳過此關繼續"
-            : "網路或來源問題，可跳過此關繼續"
+            : errorDetail || "網路或來源問題，可跳過此關繼續"
         }
         hint={hasError ? "連 WiFi 或換個網路環境再試" : undefined}
-        onRetry={hasError ? () => setHasError(false) : undefined}
+        onRetry={hasError ? () => {
+          retryCountRef.current = 0;
+          setErrorDetail("");
+          setHasError(false);
+          setIsLoading(true);
+          // 強制 reload video element
+          videoRef.current?.load();
+        } : undefined}
         onSkip={finish}
         skipLabel="繼續遊戲"
         testId="video-error"
