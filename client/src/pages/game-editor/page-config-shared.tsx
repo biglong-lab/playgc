@@ -175,6 +175,31 @@ export function LocationSettingsSection({ config, updateField }: Omit<SharedSect
               </SelectContent>
             </Select>
           </div>
+
+          {/* 🗺️ 即時預覽地圖（已填座標時顯示） */}
+          {locationSettings.showOnMap !== false && (
+            <div>
+              <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                地圖預覽
+              </label>
+              <Suspense
+                fallback={
+                  <div className="h-[200px] rounded-lg bg-muted/30 flex items-center justify-center text-sm text-muted-foreground">
+                    載入地圖中...
+                  </div>
+                }
+              >
+                <PageLocationMiniMap
+                  settings={locationSettings}
+                  enableGps={false}
+                />
+              </Suspense>
+              <p className="text-xs text-muted-foreground mt-2">
+                💡 玩家進入此頁時，會在頁面上方看到這張地圖（含玩家定位）
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
