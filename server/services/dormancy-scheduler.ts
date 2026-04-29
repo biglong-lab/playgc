@@ -47,15 +47,23 @@ export function startDormancyScheduler(
     return;
   }
 
+  // 🔒 cluster lock 包裹（多 container 安全）
+  const tick = async () => {
+    const { withClusterLock } = await import("../lib/cluster-lock");
+    return withClusterLock("scheduler:dormancy", async () => {
+      return runDormancyCycle();
+    });
+  };
+
   // 啟動 1 小時後第一次（讓 server warm up）
   initialTimer = setTimeout(() => {
-    runDormancyCycle().catch((err) => {
+    tick().catch((err) => {
       console.error("[DormancyScheduler] 首次執行失敗:", err);
     });
 
     // 之後每 24h 跑一次
     schedulerTimer = setInterval(() => {
-      runDormancyCycle().catch((err) => {
+      tick().catch((err) => {
         console.error("[DormancyScheduler] 週期執行失敗:", err);
       });
     }, intervalMs);
