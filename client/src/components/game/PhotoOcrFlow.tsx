@@ -30,6 +30,7 @@ import {
   VerifyingView,
 } from "./photo-mission/PhotoViews";
 import type { PhotoMissionConfig } from "@shared/schema";
+import { formatAiError } from "@/lib/ai-error";
 
 interface PhotoOcrFlowProps {
   config: PhotoMissionConfig;
