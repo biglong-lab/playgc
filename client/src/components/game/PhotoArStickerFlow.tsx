@@ -338,6 +338,8 @@ export default function PhotoArStickerFlow({
         const img = preloadedStickers[i];
         if (!img) continue;
         const ratio = img.naturalWidth / img.naturalHeight;
+        // 🆕 透明度：sticker 級 > 頁面級 > 預設 1.0
+        const opacity = (s as any).opacity ?? (config as any).stickerOpacity ?? 1;
 
         // 🆕 B2: 若有 face anchor，用臉部座標定位；否則 fallback 固定位置
         if (useFaceTracking) {
@@ -349,13 +351,17 @@ export default function PhotoArStickerFlow({
           const cx = (isMirror ? 1 - faceAnchor.x : faceAnchor.x) * canvas.width;
           const cy = faceAnchor.y * canvas.height;
           ctx.save();
+          ctx.globalAlpha = opacity; // 🆕 套用透明度
           ctx.translate(cx, cy);
           if (faceAnchor.rotationY) ctx.rotate(faceAnchor.rotationY);
           ctx.drawImage(img, -anchorW / 2, -anchorH / 2, anchorW, anchorH);
           ctx.restore();
         } else {
           const rect = computeStickerRect(s.position, s.sizeRatio, canvas.width, canvas.height, ratio);
+          ctx.save();
+          ctx.globalAlpha = opacity; // 🆕 套用透明度
           ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
+          ctx.restore();
         }
       }
 
