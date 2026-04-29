@@ -18,13 +18,22 @@ import { useState, useMemo, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { Navigation, MapPin, Maximize2, Minimize2 } from "lucide-react";
+import { Navigation, MapPin, Maximize2, Minimize2, ExternalLink, CheckCircle2 } from "lucide-react";
 import {
   useStableGeolocation,
   distanceMeters,
   formatDistance,
   classifyAccuracy,
 } from "@/lib/geolocation";
+
+// 🆕 GPS 精度顏色分級（讓玩家一眼看出訊號好不好）
+const ACCURACY_COLOR: Record<string, string> = {
+  excellent: "text-emerald-600 dark:text-emerald-400",
+  good: "text-emerald-600 dark:text-emerald-400",
+  fair: "text-amber-600 dark:text-amber-400",
+  poor: "text-orange-600 dark:text-orange-400",
+  unusable: "text-red-600 dark:text-red-400",
+};
 
 // ============================================================================
 // 型別
@@ -154,6 +163,19 @@ export function PageLocationMiniMap({
 
   const inRange = distance !== null && distance <= radius;
 
+  // 🆕 GPS 精度等級（給距離條的色塊用）
+  const accuracyClass = useMemo(
+    () => (gpsAccuracy ? classifyAccuracy(gpsAccuracy) : "unusable"),
+    [gpsAccuracy],
+  );
+
+  // 🆕 外部導航 deep link（Google Maps / Apple Maps 自動跳）
+  // - iOS Safari 開 Apple Maps、其他開 Google Maps
+  const navUrl = useMemo(() => {
+    if (!hasValidTarget) return "";
+    return `https://www.google.com/maps/dir/?api=1&destination=${targetLat},${targetLng}&travelmode=walking`;
+  }, [hasValidTarget, targetLat, targetLng]);
+
   if (!hasValidTarget) {
     return (
       <div
@@ -241,22 +263,57 @@ export function PageLocationMiniMap({
         </MapContainer>
       </div>
 
-      {/* 距離指示 */}
-      {distance !== null && (
+      {/* 距離指示（🆕 進入範圍內時 pulse 慶祝動效） */}
+      {distance !== null ? (
         <div
-          className={`px-3 py-2 text-sm flex items-center justify-between ${
-            inRange ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" : "bg-muted/30"
+          className={`px-3 py-2 text-sm flex items-center justify-between transition-colors ${
+            inRange
+              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              : "bg-muted/30"
           }`}
+          data-in-range={inRange}
         >
-          <span className="flex items-center gap-1">
-            <Navigation className="w-3.5 h-3.5" />
-            {inRange ? "已在範圍內" : `距離 ${formatDistance(distance)}`}
+          <span className="flex items-center gap-1.5">
+            {inRange ? (
+              <>
+                <CheckCircle2 className="w-4 h-4 animate-[pulse_1.5s_ease-in-out_infinite]" />
+                <span className="font-semibold">已在範圍內！</span>
+              </>
+            ) : (
+              <>
+                <Navigation className="w-3.5 h-3.5" />
+                {/* 🆕 tabular-nums 讓數字寬度穩定不抖動 */}
+                <span className="tabular-nums">距離 {formatDistance(distance)}</span>
+              </>
+            )}
           </span>
-          {gpsAccuracy && (
-            <span className="text-xs text-muted-foreground">
-              GPS ±{Math.round(gpsAccuracy)}m
-            </span>
-          )}
+          <div className="flex items-center gap-2 text-xs">
+            {gpsAccuracy && (
+              <span className={`tabular-nums ${ACCURACY_COLOR[accuracyClass]}`}>
+                GPS ±{Math.round(gpsAccuracy)}m
+              </span>
+            )}
+            {/* 🆕 開外部導航（Google Maps / Apple Maps）*/}
+            {!inRange && (
+              <a
+                href={navUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded hover:bg-muted/50 active:scale-95 transition text-primary"
+                aria-label="開啟外部地圖導航"
+                data-testid="btn-external-nav"
+              >
+                <ExternalLink className="w-3 h-3" />
+                <span>導航</span>
+              </a>
+            )}
+          </div>
+        </div>
+      ) : (
+        // 🆕 GPS 取得中時顯示 placeholder（避免地圖下方一片空白）
+        <div className="px-3 py-2 text-sm flex items-center gap-2 bg-muted/30 text-muted-foreground">
+          <span className="animate-pulse">📡</span>
+          <span>正在取得 GPS 位置...</span>
         </div>
       )}
     </div>

@@ -115,9 +115,18 @@ export default function PhotoOcrFlow({
             retryCount < (ocr?.maxRetries ?? 3);
 
           if (canRetry) {
+            // 🆕 toast 訊息更詳細：原 feedback + 我們看到了什麼 + 拍照建議
+            // 原本只有 generic feedback，玩家不知道哪裡拍錯
+            const detected = result.fullText
+              ? result.fullText.slice(0, 30) +
+                (result.fullText.length > 30 ? "..." : "")
+              : "";
+            const description = detected
+              ? `${result.feedback}\n\n📷 我們看到的字：${detected}\n💡 試試靠近招牌、確認光線充足`
+              : `${result.feedback}\n💡 試試靠近招牌、避免反光、確認光線充足`;
             toast({
               title: "😢 未能辨識目標文字",
-              description: result.feedback,
+              description,
               variant: "destructive",
             });
             camera.setMode("instruction");
@@ -375,12 +384,12 @@ export default function PhotoOcrFlow({
         </div>
       )}
 
-      {/* 拍照按鈕 */}
+      {/* 拍照按鈕（🆕 active scale 觸感回饋） */}
       <div className="max-w-md w-full">
         <Button
           onClick={() => camera.startCamera(config.defaultFacingMode ?? "environment")}
           size="lg"
-          className="w-full gap-2 h-14 text-base font-semibold"
+          className="w-full gap-2 h-14 text-base font-semibold transition-transform active:scale-[0.97]"
           data-testid="btn-photo-ocr-start"
         >
           <Camera className="w-5 h-5" />
@@ -389,8 +398,14 @@ export default function PhotoOcrFlow({
         {retryCount > 0 && (
           <p className="text-xs text-center text-muted-foreground mt-2 flex items-center justify-center gap-1">
             <RefreshCw className="w-3 h-3" />
-            已重試 {retryCount} 次
+            已重試 {retryCount} 次（剩 {Math.max(0, (ocr.maxRetries ?? 3) - retryCount)} 次）
           </p>
+        )}
+        {/* 🆕 拍照訣竅（首次會顯示，重試時會被 toast 覆蓋） */}
+        {retryCount === 0 && (
+          <div className="text-[11px] text-center text-muted-foreground mt-3 leading-relaxed">
+            💡 拍照訣竅：靠近招牌、光線充足、避免反光與遮擋
+          </div>
         )}
       </div>
     </div>
