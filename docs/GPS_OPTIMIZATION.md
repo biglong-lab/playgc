@@ -208,40 +208,99 @@ GPS 跳點是常態，所以用中位數更穩。
 
 ---
 
-## 六、未來可能的優化（尚未實作）
+## 六、進階定位強化（已實作）
 
-### 1. IMU 感測器補強（PDR — 行人路徑推算）
+### 1. 🤝 多人同隊 GPS 融合（v2.0）
 
-利用 `DeviceMotionEvent` + `DeviceOrientationEvent`：
-- 加速度計 → 步數（Pedometer）
-- 陀螺儀 → 方向
-- 磁力計 → 北方校正
+**檔案**：
+- `client/src/lib/geolocation/fusion-utils.ts`
+- `client/src/lib/geolocation/useTeamGpsFusion.ts`
 
-**優點**：GPS 失效時用 IMU 推算位置（10-30 秒內 < 5m 誤差）
+**原理**：
+```
+玩家 A GPS (lat1, lng1, acc1) ┐
+玩家 B GPS (lat2, lng2, acc2) ┤
+玩家 C GPS (lat3, lng3, acc3) ┼ → WebSocket 即時共享 → 反方差加權平均融合
+玩家 D GPS (lat4, lng4, acc4) ┤
+玩家 E GPS (lat5, lng5, acc5) ┘
+```
 
-**限制**：iOS 14+ 需要使用者手動授權（`requestPermission()`）
+**效果**：
+- 5 人團隊 → 誤差降低 55%（理論 √N）
+- 自動偵測「隊友分散」（任一人距離 > 50m）→ 退化單機定位（不勉強融合）
+- IQR 過濾離群（不在中位數附近的丟掉）
+- WebSocket 廣播間隔 2 秒（省頻寬）
 
-### 2. WebRTC 訊號強度三角定位
+**用法**：
+```typescript
+const { position, contributors, scattered, improvementRatio } = useTeamGpsFusion({
+  teamId,        // 同隊識別
+  userId,        // 自己 ID
+  userName,      // 顯示名稱
+  enabled: true,
+});
+```
 
-在場域內部署藍牙 Beacon / WiFi AP，玩家裝置量測訊號強度（RSSI），用三角定位推算位置。
+### 2. 🧭 IMU PDR — 行人路徑推算（v2.0）
 
-**精度**：< 5m（室內）
+**檔案**：
+- `client/src/lib/geolocation/usePedometer.ts` — 步數偵測
+- `client/src/lib/geolocation/useImuPositioning.ts` — PDR 路徑推算
+- `client/src/components/game/MotionPermissionRequest.tsx` — iOS 授權 UI
 
-**成本**：場域需部署硬體
+**原理**：
+```
+新位置 = 起始位置(GPS anchor) + Σ (步距 × 朝向向量)
+                                    ↑           ↑
+                                  0.75m     磁力計
+```
 
-### 3. AR 視覺定位（VPS / Visual Positioning System）
+**自動觸發條件**（GPS 失效時無縫切換）：
+- `accuracy > 100m`（GPS 信號太差）
+- 最近 15 秒沒新採樣（GPS 完全失效）
+- `error` 出現
 
-玩家舉起相機，AI 比對畫面與 3D 場景模型 → 推算精準位置。
+**步數偵測算法**：
+- 高通濾波過濾重力（α=0.8）
+- 合振幅 |a| 超過閾值 1.2 m/s²
+- 不應期 250ms（避免單一波被當多步）
 
-**精度**：< 1m
+**累積誤差**：
+- 1 分鐘內：< 5m（足夠遊戲）
+- 5 分鐘：~50m（需 GPS 重新校正）
+- 玩家可見：「已走 N 步」+ 精度自動擴大
 
-**成本**：需先建立場域 3D 模型（成本極高）
+**iOS 14+ 限制**：
+- 必須使用者點按鈕才能 `requestPermission()`
+- 整合 `MotionPermissionRequest` UI 元件，自動偵測+提示
 
-### 4. 後端融合多裝置
+### 3. 🚦 完整定位策略決策樹
 
-多人同隊時，融合所有人的 GPS 取「眾數」位置 → 平均誤差降低 √N 倍。
+```
+GPS 採樣
+  ↓
+accuracy < 30m？ ─是→ ✅ 用 GPS
+  ↓ 否
+accuracy < 100m？ ─是→ ⚠️ 用 GPS + UI 提示「移到開闊處」
+  ↓ 否
+有隊伍？同隊距離 < 50m？ ─是→ 🤝 啟用多人融合
+  ↓ 否
+有 IMU 授權？最近有 GPS anchor？ ─是→ 🧭 切 IMU PDR
+  ↓ 否
+🔴 顯示警示「請開 WiFi / 走出室內」+ 提供 QR fallback
+```
 
-**精度**：團隊 5 人時，誤差降低 ~55%
+### 4. 未實作（建議未來考慮）
+
+#### Beacon / WiFi AP 室內定位
+- **精度**：< 5m（室內）
+- **限制**：Web Bluetooth API iOS 不支援；需走原生 App
+- **替代**：QR Code 點對點打卡（已有）
+
+#### AR 視覺定位（VPS）
+- **精度**：< 1m
+- **成本**：需建場域 3D 模型 + ML 訓練
+- **適用**：古蹟導覽、AR 拍照（賈村適合）
 
 ---
 
