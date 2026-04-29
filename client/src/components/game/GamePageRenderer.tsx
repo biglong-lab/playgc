@@ -83,37 +83,55 @@ export default function GamePageRenderer({
   // 解法：在 GamePageRenderer 統一包裝 onComplete，自動從 page.config 補上
   // rewardItems[] 和 rewardPoints。
   // 已經自己處理的元件（GpsMission / TextVerify 等）也安全 — 用 Set 去重。
+  //
+  // 失敗保護：
+  //   reward = undefined / null → 不補（元件明確表示沒獎勵）
+  //   reward.points === 0 且 reward.items 也空 → 視為「失敗 fallthrough」，不補
+  //   其他情況（成功）→ 補 items
   const wrappedOnComplete = useMemo(() => {
     return ((reward, nextPageId) => {
-      const finalReward: { points?: number; items?: string[] } = reward ? { ...reward } : {};
-
-      // 1. 補 rewardPoints（若元件沒帶 points）
-      const cfgPoints = config?.rewardPoints as number | undefined;
-      if (typeof cfgPoints === "number" && cfgPoints > 0 && !finalReward.points) {
-        finalReward.points = cfgPoints;
+      // 1. reward 為 undefined → 元件明確表示沒獎勵，不補
+      if (!reward) {
+        onComplete(reward, nextPageId);
+        return;
       }
 
-      // 2. 補 rewardItems（合併 + 去重 + 過濾空）
+      // 2. 判斷是否為「失敗 fallthrough」（points=0 且沒 items）
+      const elementSuppliedItems = reward.items && reward.items.length > 0;
+      const elementSuppliedPoints = typeof reward.points === "number" && reward.points > 0;
+      const isFailureFallthrough = !elementSuppliedItems && !elementSuppliedPoints;
+
+      if (isFailureFallthrough) {
+        onComplete(reward, nextPageId);
+        return;
+      }
+
+      // 3. 算成功 → 補 rewardItems（從 config）
+      const finalReward: { points?: number; items?: string[] } = { ...reward };
+
       const cfgItems = (config?.rewardItems as string[] | undefined) ?? [];
-      if (cfgItems.length > 0) {
-        const merged = new Set<string>([
-          ...(finalReward.items ?? []),
-          ...cfgItems.filter((id) => typeof id === "string" && id.length > 0),
-        ]);
+      const grantItem = config?.onSuccess?.grantItem as string | undefined;
+
+      if (cfgItems.length > 0 || grantItem) {
+        const merged = new Set<string>(finalReward.items ?? []);
+        cfgItems
+          .filter((id) => typeof id === "string" && id.length > 0)
+          .forEach((id) => merged.add(id));
+        if (grantItem && typeof grantItem === "string") {
+          merged.add(grantItem);
+        }
         if (merged.size > 0) {
           finalReward.items = Array.from(merged);
         }
       }
 
-      // 3. 向後相容：onSuccess.grantItem 也補上
-      const grantItem = config?.onSuccess?.grantItem as string | undefined;
-      if (grantItem && typeof grantItem === "string") {
-        const merged = new Set<string>([...(finalReward.items ?? []), grantItem]);
-        finalReward.items = Array.from(merged);
+      // 4. 補 rewardPoints（若元件沒帶 points 但 config 有設）
+      const cfgPoints = config?.rewardPoints as number | undefined;
+      if (typeof cfgPoints === "number" && cfgPoints > 0 && !elementSuppliedPoints) {
+        finalReward.points = cfgPoints;
       }
 
-      const hasReward = finalReward.points !== undefined || (finalReward.items && finalReward.items.length > 0);
-      onComplete(hasReward ? finalReward : reward, nextPageId);
+      onComplete(finalReward, nextPageId);
     }) as typeof onComplete;
   }, [config, onComplete]);
 
