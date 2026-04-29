@@ -5,6 +5,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Gift, MapPin } from "lucide-react";
 import ItemRewardPicker from "@/components/ItemRewardPicker";
+import { lazy, Suspense } from "react";
+
+// 編輯器即時預覽地圖（lazy 載入，避免 admin 頁面 chunk 過大）
+const PageLocationMiniMap = lazy(() =>
+  import("@/components/game/PageLocationMiniMap").then((m) => ({
+    default: m.PageLocationMiniMap,
+  }))
+);
 
 // 頁面設定值型別 — 涵蓋所有編輯器欄位的可能值
 export type PageConfigValue = string | number | boolean | null | undefined | Record<string, unknown> | unknown[];
