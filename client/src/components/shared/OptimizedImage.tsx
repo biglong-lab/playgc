@@ -78,6 +78,8 @@ export default function OptimizedImage({
   fallback,
   onError,
   onLoad,
+  sizes,
+  disableSrcSet = false,
 }: OptimizedImageProps) {
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
