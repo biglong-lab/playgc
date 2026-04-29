@@ -378,6 +378,33 @@ function mapGameModeToSquadType(gameMode: string | null): string {
 }
 
 /**
+ * 🚫 §19.1：當日場次計數（單隊每日上限 10 場）
+ *
+ * 用 UTC+8（台灣時區）的「當日」為界。
+ * 達 10 場後再進的場次直接 skip（不寫戰績、不計分）。
+ */
+async function countTodayRecords(squadId: string): Promise<number> {
+  // 取台灣時區的「今日 00:00」
+  const now = new Date();
+  const taipeiOffset = 8 * 60; // UTC+8 分鐘
+  const taipeiMidnight = new Date(now.getTime() + taipeiOffset * 60_000);
+  taipeiMidnight.setUTCHours(0, 0, 0, 0);
+  // 還原為實際 UTC 時間（減去 8 小時 offset）
+  const todayStart = new Date(taipeiMidnight.getTime() - taipeiOffset * 60_000);
+
+  const rows = await db
+    .select({ id: squadMatchRecords.id })
+    .from(squadMatchRecords)
+    .where(
+      and(
+        eq(squadMatchRecords.squadId, squadId),
+        sql`${squadMatchRecords.playedAt} >= ${todayStart}`,
+      ),
+    );
+  return rows.length;
+}
+
+/**
  * 🚫 Phase 9.7：24 小時內對同對手場次限制
  *
  * 規則（按 SQUAD_SYSTEM_DESIGN §19.3）：
