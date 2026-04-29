@@ -115,6 +115,8 @@ export function registerAdminPurchaseRoutes(app: Express) {
         if (!game) {
           return res.status(404).json({ message: "遊戲不存在" });
         }
+        // 🔒 場域隔離
+        if (!assertFieldOwnership(req.admin, game.fieldId, res)) return;
 
         const purchaseList = await storage.getPurchasesByGame(gameId);
         res.json(purchaseList);
