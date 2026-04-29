@@ -543,6 +543,12 @@ export function registerAiScoringRoutes(app: Express): void {
 
   // POST /api/ai/score-text — AI 文字語意評分
   app.post("/api/ai/score-text", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
+    const startedAt = Date.now();
+    let resolvedFieldId: string | undefined;
+    let resolvedProvider: ReturnType<typeof detectProvider> = "gemini";
+    let bodyGameId: string | undefined;
+
     try {
       // 驗證輸入
       const parsed = scoreTextSchema.safeParse(req.body);
@@ -551,36 +557,112 @@ export function registerAiScoringRoutes(app: Express): void {
       }
 
       const { question, userAnswer, expectedAnswers, context, passingScore, gameId } = parsed.data;
+      bodyGameId = gameId;
 
-      // 解析場域 API Key
-      const fieldApiKey = await resolveAiApiKey(gameId);
+      // 解析場域 API Key + fieldId
+      const ctx = await resolveAiContext(gameId);
+      const fieldApiKey = ctx.apiKey;
+      resolvedFieldId = ctx.fieldId;
+      resolvedProvider = detectProvider(fieldApiKey);
 
       // 檢查 Gemini 是否已設定
       if (!isGeminiConfigured(fieldApiKey)) {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "score-text",
+          success: false,
+          errorCode: "AI_NOT_CONFIGURED",
+          errorMessage: "AI 服務未設定",
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 503, "AI 服務未設定");
       }
 
       // Rate limit 檢查
-      const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
       if (!checkRateLimit(userId)) {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "score-text",
+          success: false,
+          errorCode: "RATE_LIMITED",
+          errorMessage: "AI 呼叫次數過多",
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
       }
 
+      const passing = passingScore ?? 70;
       const result = await scoreTextAnswer(
         question,
         userAnswer,
         expectedAnswers,
         context,
-        passingScore ?? 70,
+        passing,
         fieldApiKey,
       );
+
+      // 📊 記錄成功
+      await logAiUsage({
+        provider: resolvedProvider,
+        endpoint: "score-text",
+        success: true,
+        latencyMs: Date.now() - startedAt,
+        gameId,
+        fieldId: resolvedFieldId,
+        userId,
+        context: {
+          score: result.score,
+          isCorrect: result.isCorrect,
+          passingScore: passing,
+          questionLength: question.length,
+          answerLength: userAnswer.length,
+          expectedCount: expectedAnswers.length,
+        },
+      });
 
       return res.json(result);
     } catch (error) {
       // 場域 AI 被停用
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
+        await logAiUsage({
+          provider: resolvedProvider,
+          endpoint: "score-text",
+          success: false,
+          errorCode: "FIELD_AI_DISABLED",
+          errorMessage: "此場域 AI 功能已停用",
+          latencyMs: Date.now() - startedAt,
+          gameId: bodyGameId,
+          fieldId: resolvedFieldId,
+          userId,
+        });
         return apiError(res, 503, "此場域的 AI 功能已停用");
       }
+
+      const errMsg = error instanceof Error ? error.message : String(error);
+      let errorCode = "UNHANDLED_ERROR";
+      if (/quota|429|rate.?limit/i.test(errMsg)) errorCode = "QUOTA_EXCEEDED";
+      else if (/API.?key|invalid.?key|401/i.test(errMsg)) errorCode = "API_KEY_INVALID";
+      else if (/timeout|ECONN|fetch/i.test(errMsg)) errorCode = "NETWORK_ERROR";
+
+      console.error("[ai-scoring] score-text 失敗:", error);
+      await logAiUsage({
+        provider: resolvedProvider,
+        endpoint: "score-text",
+        success: false,
+        errorCode,
+        errorMessage: errMsg.slice(0, 500),
+        latencyMs: Date.now() - startedAt,
+        gameId: bodyGameId,
+        fieldId: resolvedFieldId,
+        userId,
+      });
+
       // AI 失敗時回傳 fallback，讓前端使用原始精確匹配
       return res.json({
         score: 0,
