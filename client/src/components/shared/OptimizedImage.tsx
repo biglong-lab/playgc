@@ -96,12 +96,19 @@ export default function OptimizedImage({
     return <>{fallback ?? <DefaultFallback />}</>;
   }
 
-  const optimizedSrc = preset ? getOptimizedImageUrl(src, preset) : src;
+  // ⚡ useMemo：避免每次 render 都重算 URL（高頻 re-render 場景，如圖片列表）
+  const optimizedSrc = useMemo(
+    () => (preset ? getOptimizedImageUrl(src, preset) : src),
+    [src, preset],
+  );
 
   // 🆕 多解析度 srcSet（給 retina / 高 DPR 螢幕用更大版本）
   // retry > 0 時不用 srcSet（避免 cache-bust 跟 srcSet 衝突）
   const enableSrcSet = preset && !disableSrcSet && retryCount === 0;
-  const srcSetStr = enableSrcSet ? buildSrcSet(src, preset) : "";
+  const srcSetStr = useMemo(
+    () => (enableSrcSet ? buildSrcSet(src, preset) : ""),
+    [enableSrcSet, src, preset],
+  );
   const sizesStr = sizes ?? (enableSrcSet ? SIZES_PRESETS[preset] : undefined);
 
   // retry 時加 cache-bust query
