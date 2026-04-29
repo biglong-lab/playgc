@@ -74,15 +74,58 @@ export default function GamePageRenderer({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 動態分發器，config 從 DB JSON 傳給各元件
   const config = page.config as any;
 
+  // 🎁 統一補完 rewardItems / rewardPoints — 修「道具獎勵發不出來」bug
+  //
+  // 背景：原本各頁面元件自己處理 rewardItems，導致 8+ 個頁面類型遺漏
+  // （TextCard / Dialogue / Video / Button / Vote / TimeBomb / Lock / MotionChallenge）
+  // 玩家完成這些頁面後 inventory 不會增加。
+  //
+  // 解法：在 GamePageRenderer 統一包裝 onComplete，自動從 page.config 補上
+  // rewardItems[] 和 rewardPoints。
+  // 已經自己處理的元件（GpsMission / TextVerify 等）也安全 — 用 Set 去重。
+  const wrappedOnComplete = useMemo(() => {
+    return ((reward, nextPageId) => {
+      const finalReward: { points?: number; items?: string[] } = reward ? { ...reward } : {};
+
+      // 1. 補 rewardPoints（若元件沒帶 points）
+      const cfgPoints = config?.rewardPoints as number | undefined;
+      if (typeof cfgPoints === "number" && cfgPoints > 0 && !finalReward.points) {
+        finalReward.points = cfgPoints;
+      }
+
+      // 2. 補 rewardItems（合併 + 去重 + 過濾空）
+      const cfgItems = (config?.rewardItems as string[] | undefined) ?? [];
+      if (cfgItems.length > 0) {
+        const merged = new Set<string>([
+          ...(finalReward.items ?? []),
+          ...cfgItems.filter((id) => typeof id === "string" && id.length > 0),
+        ]);
+        if (merged.size > 0) {
+          finalReward.items = Array.from(merged);
+        }
+      }
+
+      // 3. 向後相容：onSuccess.grantItem 也補上
+      const grantItem = config?.onSuccess?.grantItem as string | undefined;
+      if (grantItem && typeof grantItem === "string") {
+        const merged = new Set<string>([...(finalReward.items ?? []), grantItem]);
+        finalReward.items = Array.from(merged);
+      }
+
+      const hasReward = finalReward.points !== undefined || (finalReward.items && finalReward.items.length > 0);
+      onComplete(hasReward ? finalReward : reward, nextPageId);
+    }) as typeof onComplete;
+  }, [config, onComplete]);
+
   // 記憶化 commonProps 避免每次渲染都建立新物件
   const commonProps = useMemo(() => ({
     config,
-    onComplete,
+    onComplete: wrappedOnComplete, // 🎁 統一處理 rewardItems
     onVariableUpdate,
     sessionId,
     gameId,
     variables,
-  }), [config, onComplete, onVariableUpdate, sessionId, gameId, variables]);
+  }), [config, wrappedOnComplete, onVariableUpdate, sessionId, gameId, variables]);
 
   const renderPage = () => {
     switch (page.pageType) {
