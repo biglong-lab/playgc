@@ -354,6 +354,10 @@ export function registerAiScoringRoutes(app: Express): void {
         detectedObjects: result.detectedObjects,
       });
     } catch (error) {
+      // 預覽模式（preview-game）→ 明確拒絕
+      if (error instanceof Error && error.message.includes("預覽模式")) {
+        return apiError(res, 503, "預覽模式不支援 AI（請先儲存遊戲後測試）");
+      }
       // 場域 AI 被停用
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
         await logAiUsage({
@@ -638,6 +642,10 @@ export function registerAiScoringRoutes(app: Express): void {
 
       return res.json(result);
     } catch (error) {
+      // 預覽模式（preview-game）→ 明確拒絕
+      if (error instanceof Error && error.message.includes("預覽模式")) {
+        return apiError(res, 503, "預覽模式不支援 AI（請先儲存遊戲後測試）");
+      }
       // 場域 AI 被停用
       if (error instanceof Error && error.message === "FIELD_AI_DISABLED") {
         await logAiUsage({
