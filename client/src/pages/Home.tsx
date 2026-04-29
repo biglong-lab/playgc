@@ -140,8 +140,11 @@ export default function Home() {
     if (src !== undefined) themeUpdate.coverImageUrl = src;
     if (position !== undefined) themeUpdate.coverImagePosition = position;
 
-    // 🐛 fetchWithAdminAuth 已自動 parse + throw on !ok
-    await fetchWithAdminAuth(`/api/admin/fields/${currentField.fieldId}`, {
+    // 🐛 端點更正（2026-04-30）：theme 必須打 /settings 不是 /fields/:id
+    //    /api/admin/fields/:id PATCH 用 insertFieldSchema 只接 fields 表基本欄位
+    //    /api/admin/fields/:id/settings PATCH 才會把 body.theme 交給 fieldThemeSchema 處理
+    //    fetchWithAdminAuth 已自動 parse + throw on !ok
+    await fetchWithAdminAuth(`/api/admin/fields/${currentField.fieldId}/settings`, {
       method: "PATCH",
       body: JSON.stringify({ theme: themeUpdate }),
     });
