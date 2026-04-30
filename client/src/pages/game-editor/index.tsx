@@ -573,6 +573,36 @@ export default function GameEditor() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* 🤖 P9: AI 副駕駛 */}
+              {!isNew && gameId && (
+                <div className="mt-4">
+                  <AdminCopilotPanel
+                    gameId={gameId}
+                    pages={pages.map((p) => ({
+                      id: p.id,
+                      pageOrder: p.pageOrder,
+                      pageType: p.pageType,
+                      customName: p.customName,
+                      config: p.config as Record<string, unknown>,
+                    }))}
+                    onAddPage={(pageType, suggestedName) => {
+                      addPage(pageType);
+                      if (suggestedName) {
+                        setTimeout(() => {
+                          setPages((prev) => {
+                            const last = prev[prev.length - 1];
+                            if (!last) return prev;
+                            return prev.map((p) =>
+                              p.id === last.id ? { ...p, customName: suggestedName } : p,
+                            );
+                          });
+                        }, 0);
+                      }
+                    }}
+                  />
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="items" className="p-6">
