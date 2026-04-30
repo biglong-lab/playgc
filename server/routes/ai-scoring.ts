@@ -173,6 +173,8 @@ const scoreTextSchema = z.object({
   gameId: z.string().uuid().optional(),
   /** 🆕 指定 AI 模型（若場域用 OpenRouter，與 verify-photo / compare-photos 對齊） */
   modelId: z.string().optional(),
+  /** 🆕 P13-5: 任務 ID（pageId）— 用於取自適應 fuzzyTolerance */
+  pageId: z.string().optional(),
 });
 
 // 🆕 OCR 招牌偵測 schema
