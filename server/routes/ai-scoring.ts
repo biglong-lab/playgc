@@ -743,13 +743,15 @@ export function registerAiScoringRoutes(app: Express): void {
         return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
       }
 
-      const { question, userAnswer, expectedAnswers, context, passingScore, gameId, modelId } = parsed.data;
+      const { question, userAnswer, expectedAnswers, context, passingScore, gameId, modelId, pageId } = parsed.data;
       bodyGameId = gameId;
       const passing = passingScore ?? 70;
 
       // 🧠 P3 智慧分流：先試本地比對（exact / fuzzy），命中就直接回傳不呼叫 AI
-      // 預期省 70% AI 呼叫（簡單題大多在這裡解決）
-      const localMatch = matchAnswer(userAnswer, expectedAnswers, { fuzzyTolerance: 2 });
+      // 🆕 P13-5: fuzzyTolerance 改用自適應值（pageId 有設定時）
+      const adaptiveTextThresholds = pageId ? await getEffectiveThresholds(pageId) : null;
+      const fuzzyTolerance = adaptiveTextThresholds?.fuzzyTolerance ?? 2;
+      const localMatch = matchAnswer(userAnswer, expectedAnswers, { fuzzyTolerance });
       if (localMatch.match) {
         const score = localMatch.score ?? 100;
         const isCorrect = score >= passing;
