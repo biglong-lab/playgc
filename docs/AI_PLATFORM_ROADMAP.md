@@ -66,9 +66,9 @@ TOTAL_PROGRESS: 26/64
 - [x] **P2-16** 修改 `TextVerifyPage.tsx` 同樣改造
 - [x] **P2-17** 修改 `ConditionalVerifyPage.tsx` 同樣改造
 - [x] **P2-Bonus** GamePageRenderer commonProps 加 `variantPool: page.variantPool`（一次傳給所有元件）
-- [ ] **P2-18** 建立 `client/src/components/admin/VariantPoolEditor.tsx`：admin 編輯 UI
-- [ ] **P2-19** 在 `PageConfigEditor.tsx` 整合 VariantPoolEditor（每個 page 卡片底）
-- [ ] **P2-20** TS check 通過
+- [x] **P2-18** 建立 `client/src/components/admin/VariantPoolEditor.tsx`：admin 編輯 UI
+- [x] **P2-19** 在 `PageConfigEditor.tsx` 整合 VariantPoolEditor（每個 page 卡片底）
+- [x] **P2-20** TS check 通過
 
 ## 收尾
 
