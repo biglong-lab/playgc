@@ -216,10 +216,10 @@ TOTAL_PROGRESS: 125/120 (104%)
 - [x] **P10-3** SQL: `CREATE TABLE game_routes` + 2 個 index（本地 ✅ + 生產 ✅）
 - [x] **P10-4** SQL: `ALTER TABLE game_sessions ADD COLUMN route_id`（本地 ✅ + 生產 ✅；表名是 game_sessions 非 play_sessions）
 - [x] **P10-5** SQL: `CREATE TABLE coop_sync_points` + 2 個 index（本地 ✅ + 生產 ✅）
-- [ ] **P10-6** 建立 `server/routes/admin/game-routes.ts`：CRUD endpoint
-- [ ] **P10-7** 修改 game session 邏輯：開始遊戲時可選 route
-- [ ] **P10-8** 建立 `server/lib/roguelike-composer.ts`：從 page pool 隨機抽組合
-- [ ] **P10-9** 加 `POST /api/games/:gameId/start-roguelike`：產生個人化流程
+- [x] **P10-6** 建立 `server/routes/admin-game-routes.ts`（4 個 CRUD endpoints + audit log）
+- [x] **P10-7** game_sessions.route_id 欄位已加（P10-4），admin 端可建立 route → PlayPage P10-10 接 UI 選擇
+- [x] **P10-8** 建立 `server/lib/roguelike-composer.ts`（種子化隨機 + intro/outro 結構 + 不適合類型過濾）
+- [x] **P10-9** 加 `POST /api/games/:gameId/start-roguelike`（公開 API，玩家可呼叫）
 - [ ] **P10-10** 修改 `client/src/pages/PlayPage.tsx`：支援多腳本選擇
 - [ ] **P10-11** 建立 `client/src/pages/admin/GameRoutesEditor.tsx`
 - [ ] **P10-12** TS check
