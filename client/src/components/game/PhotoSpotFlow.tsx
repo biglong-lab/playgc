@@ -190,9 +190,14 @@ export default function PhotoSpotFlow({
             (config.allowRetryOnAiFail ?? true) &&
             retryCount < (config.maxAiRetries ?? 3);
           if (canRetry) {
+            // 🎨 從變體池抽失敗訊息（fallback 為 AI 即時 feedback）
             toast({
               title: "😢 AI 驗證未通過",
-              description: verifyResult.feedback || "拍到的場景不符，再試一次？",
+              description: pickVariant(
+                variantPool,
+                "fail",
+                verifyResult.feedback || "拍到的場景不符，再試一次？",
+              ),
               variant: "destructive",
             });
             camera.setMode("instruction");
@@ -200,7 +205,7 @@ export default function PhotoSpotFlow({
           } else {
             toast({
               title: "已達重試上限",
-              description: "可選擇跳過或下次再試",
+              description: pickVariant(variantPool, "hint", "可選擇跳過或下次再試"),
             });
             camera.setMode("ai_fail");
           }
