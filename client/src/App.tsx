@@ -165,6 +165,9 @@ const AdminRewardsAnalytics = lazy(() => import("@/pages/admin/AdminRewardsAnaly
 // 📈 推廣連結 Cohort 分析（Phase 17.1）
 const AdminInvitesCohort = lazy(() => import("@/pages/admin/AdminInvitesCohort"));
 
+// 🔬 A/B 實驗（P14-7 / Wave 2）
+const AbExperiments = lazy(() => import("@/pages/admin/AbExperiments"));
+
 // 🏢 場域總部 — 我的方案（v4.0 Phase 6）
 const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
 
