@@ -39,6 +39,7 @@ export * from "./field-applications";
 export * from "./field-memberships";
 export * from "./ai-models";
 export * from "./ai-usage-logs";
+export * from "./ai-variant-pool";
 export * from "./support-tickets";
 export * from "./error-logs";
 export * from "./platform-security";
