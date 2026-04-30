@@ -17,6 +17,7 @@ import { db } from "../db";
 import { pages } from "@shared/schema";
 import { getVariantScores } from "../lib/feedback-aggregator";
 import { banditPick, buildArmsFromVariants } from "../lib/bandit";
+import { findActiveExperiment, assignVariant } from "../lib/ab-test";
 
 const pickQuerySchema = z.object({
   key: z.enum(["success", "fail", "nearMiss", "hint"]).default("success"),
