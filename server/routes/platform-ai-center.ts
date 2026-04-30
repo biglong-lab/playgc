@@ -177,6 +177,43 @@ export function registerPlatformAiCenterRoutes(app: Express) {
   );
 
   // ============================================================================
+  // GET /api/platform/ai-center/content-health  (P15-5)
+  // 內容健康度（殭屍變體 / 孤兒任務 / 死路 page / 綜合分數）
+  // 支援 ?gameId=xxx 過濾單一遊戲
+  // ============================================================================
+  app.get(
+    "/api/platform/ai-center/content-health",
+    requirePlatformAdmin,
+    async (req, res) => {
+      try {
+        const gameId =
+          typeof req.query.gameId === "string" ? req.query.gameId : undefined;
+
+        // 並行抓 4 個結果
+        const [zombies, orphans, deadEnds, healthScore] = await Promise.all([
+          detectZombieVariants({ gameId, limit: 200 }),
+          detectOrphanTasks({ gameId, limit: 200 }),
+          detectDeadEndPages({ gameId, limit: 200 }),
+          calculateHealthScore({ gameId }),
+        ]);
+
+        res.json({
+          gameId: gameId ?? null,
+          score: healthScore,
+          zombieVariants: zombies,
+          orphanTasks: orphans,
+          deadEndPages: deadEnds,
+        });
+      } catch (error) {
+        console.error("[ai-center] content-health 失敗:", error);
+        res.status(500).json({
+          error: error instanceof Error ? error.message : "查詢內容健康度失敗",
+        });
+      }
+    },
+  );
+
+  // ============================================================================
   // POST /api/platform/ai-center/batch-generate-variants
   // 一鍵批次補變體池（與 cron task 1 相同邏輯，但 admin 主動觸發）
   // ============================================================================
