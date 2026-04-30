@@ -23,24 +23,33 @@ export interface AIModelOption {
 //   - gemini-2.0-flash-001: 「不再對新用戶開放」+ 504 全失敗
 //   - gemini-2.0-flash-lite-001: 504 timeout 嚴重
 export const AI_MODELS: AIModelOption[] = [
-  // ⭐ 主力：實測最快最穩
+  // ⭐ vision 主力：實測最快
+  {
+    id: "meta-llama/llama-4-scout",
+    label: "Llama 4 Scout ⭐ vision 推薦",
+    description: "實測最快（0.5-1.7s），$0.08/M 輸入，vision 任務首選",
+    priceIn: 0.08,
+    priceOut: 0.3,
+    tier: "budget",
+    vision: true,
+  },
   {
     id: "mistralai/mistral-small-3.2-24b-instruct",
-    label: "Mistral Small 3.2 24B ⭐ 推薦",
-    description: "實測 3/3 通過，速度 0.9-2.3s，$0.075/M 輸入（最便宜的穩定 vision）",
+    label: "Mistral Small 3.2 24B（text 推薦）",
+    description: "純文字任務首選，速度 0.5-2.3s，$0.075/M 輸入（最便宜）",
     priceIn: 0.075,
     priceOut: 0.2,
     tier: "budget",
     vision: true,
   },
   {
-    id: "meta-llama/llama-4-scout",
-    label: "Llama 4 Scout",
-    description: "實測 3/3 通過，速度 1-3s，$0.08/M 輸入",
-    priceIn: 0.08,
-    priceOut: 0.3,
-    tier: "budget",
-    vision: true,
+    id: "deepseek/deepseek-v3.2",
+    label: "DeepSeek V3.2 ✨ 創意生成",
+    description: "中文文采最佳，離線批次生成變體 / 文案優化用",
+    priceIn: 0.252,
+    priceOut: 0.378,
+    tier: "balanced",
+    vision: false,
   },
   // 🆓 免費保底（速度慢但能用）
   {
@@ -83,32 +92,29 @@ export const AI_MODELS: AIModelOption[] = [
 
 /** 🎯 預設模型（用於場域未指定時）
  *
- * 2026-04-30 完整測試結果（後浦金城場域 OpenRouter key × 8 個模型）：
- *   ✅ mistralai/mistral-small-3.2-24b-instruct  — 3/3 通過、0.9-2.3s ⭐ 最佳
- *   ✅ meta-llama/llama-4-scout                  — 3/3 通過、1-3s
- *   ✅ google/gemma-3-12b-it:free                — 3/3 通過但 11-37s（太慢）
- *   ❌ google/gemma-3-27b-it:free                — 「JSON mode 不支援」
- *   ❌ google/gemini-2.0-flash-001               — 「不再對新用戶開放」
- *   ❌ google/gemini-2.0-flash-lite-001          — 504 timeout
- *   ❌ meta-llama/llama-3.2-11b-vision-instruct:free — 404
- *   ⚠️ nvidia/nemotron-nano-12b-v2-vl:free      — JSON 格式不穩
+ * 2026-04-30 完整測試結果 + 文采對比（DeepSeek vs Claude vs Mistral vs Llama）：
+ *   📸 vision 即時：⭐ Llama 4 Scout 最快（0.5-1.7s）
+ *   📝 text 即時：Mistral Small 最快最便宜（0.5s, $0.075/M）
+ *   ✨ 變體生成：DeepSeek V3.2 文采最佳（離線批次用）
  *
- * 結論：選 Mistral Small 為主預設（最快、最便宜的穩定 vision）
+ * Phase 1 切換：vision 從 Mistral 改用 Llama 4 Scout（速度提升 2.5x）
  */
-export const DEFAULT_VISION_MODEL = "mistralai/mistral-small-3.2-24b-instruct";
+export const DEFAULT_VISION_MODEL = "meta-llama/llama-4-scout";
 export const DEFAULT_TEXT_MODEL = "mistralai/mistral-small-3.2-24b-instruct";
+/** 🆕 變體生成 / 文案優化專用模型（離線、admin 操作） */
+export const DEFAULT_VARIANT_GEN_MODEL = "deepseek/deepseek-v3.2";
 
 /**
  * 🔄 Fallback chain：當主模型 429 / 404 / 5xx 時依序嘗試
  *
  * 速度優先設計（玩家等不了 11-37 秒）：
- *   L1: Mistral Small 24B（$0.075/M、0.9-2.3s）
- *   L2: Llama 4 Scout（$0.08/M、1-3s）
+ *   L1: Llama 4 Scout（$0.08/M、0.5-1.7s）⭐ 最快
+ *   L2: Mistral Small 24B（$0.075/M、0.9-2.3s）
  *   L3: Gemma 3 12B 免費（11-37s 慢但保底）
  */
 export const OPENROUTER_FALLBACK_CHAIN = [
-  "mistralai/mistral-small-3.2-24b-instruct", // L1: 最快最便宜（實測 0.9-2.3s）
-  "meta-llama/llama-4-scout",                  // L2: 速度快（實測 1-3s）
+  "meta-llama/llama-4-scout",                  // L1: 最快（實測 0.5-1.7s）
+  "mistralai/mistral-small-3.2-24b-instruct", // L2: 最便宜（實測 0.9-2.3s）
   "google/gemma-3-12b-it:free",                // L3: 免費保底（實測 11-37s）
 ] as const;
 
