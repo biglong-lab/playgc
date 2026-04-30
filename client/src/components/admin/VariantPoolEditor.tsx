@@ -80,6 +80,30 @@ export default function VariantPoolEditor({
     enabled: !!gameId && !!pageId,
   });
 
+  // 🆕 P11-9: 取得變體反饋分數（admin 看每個變體 like/dislike 數）
+  interface VariantScoreEntry {
+    likeCount: number;
+    dislikeCount: number;
+    skipCount: number;
+    totalFeedback: number;
+    score: number; // Wilson Lower Bound
+    hidden: boolean;
+  }
+  const { data: scoresData } = useQuery<{ scores: Record<string, VariantScoreEntry> }>({
+    queryKey: ["/api/admin/games", gameId, "pages", pageId, "variant-scores"],
+    queryFn: async () => {
+      const res = await apiRequest(
+        "GET",
+        `/api/admin/games/${gameId}/pages/${pageId}/variant-scores`,
+      );
+      return res.json();
+    },
+    enabled: !!gameId && !!pageId && editOpen, // 開編輯 dialog 才查
+  });
+  const scores = scoresData?.scores ?? {};
+  const getScore = (key: string, idx: number): VariantScoreEntry | null =>
+    scores[`${key}|${idx}`] ?? null;
+
   const pool = poolData?.pool ?? null;
   const counts = countVariants(pool);
 
