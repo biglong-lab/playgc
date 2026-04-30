@@ -6,6 +6,8 @@ import { Loader2 } from "lucide-react";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/feedback/PageTransition";
 import { PageLocationMiniMap, shouldShowMiniMap } from "@/components/game/PageLocationMiniMap";
+import FeedbackButtons from "@/components/game/FeedbackButtons";
+import { useLastShownVariant, clearShownVariant } from "@/lib/feedback-tracker";
 
 const TextCardPage = lazy(() => import("@/components/game/TextCardPage"));
 const DialoguePage = lazy(() => import("@/components/game/DialoguePage"));
