@@ -26,6 +26,7 @@ import {
   type VariantPool,
 } from "@shared/schema";
 import { generateVariantPool } from "../lib/variant-generator";
+import { getVariantScores } from "../lib/feedback-aggregator";
 
 export function registerVariantPoolRoutes(app: Express) {
   // ============================================================================
