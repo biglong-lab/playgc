@@ -21,6 +21,8 @@ import {
 } from "../../server/lib/threshold-adapter";
 import { calculateSignificance } from "../../server/lib/ab-stats";
 import { calculateHealthScore } from "../../server/lib/content-health";
+import { trainTransitionMatrix } from "../../server/lib/markov-trainer";
+import { invalidateMarkovCache } from "../../server/lib/markov-sampler";
 
 interface CronStats {
   variantsGenerated: number;
