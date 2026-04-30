@@ -43,6 +43,7 @@ export * from "./ai-variant-pool";
 export * from "./ai-cache";
 export * from "./field-exemplar";
 export * from "./module-catalog";
+export * from "./game-routes";
 export * from "./support-tickets";
 export * from "./error-logs";
 export * from "./platform-security";
