@@ -38,6 +38,8 @@ interface PhotoSpotFlowProps {
   // 🔧 v2: GamePageRenderer commonProps 會 spread 這兩個（目前未用但保留接收避免 TS excess property）
   variables?: Record<string, unknown>;
   onVariableUpdate?: (key: string, value: unknown) => void;
+  // 🎨 P2: 變體池（admin 預生成的訊息陣列，玩家觸發時隨機抽）
+  variantPool?: unknown;
 }
 
 interface CompositeResponse {
