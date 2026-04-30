@@ -22,6 +22,7 @@
 //
 // 預設行為：
 //   - 表沒資料 → caller fallback 純隨機（向後相容）
+//   - fieldId NOT NULL（複合主鍵限制；全平台統計後續迭代再加）
 import { pgTable, varchar, integer, timestamp, primaryKey, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { fields } from "./fields";
