@@ -152,9 +152,9 @@ TOTAL_PROGRESS: 76/120 (63%)
 
 # Phase 7：AI 訓練中心（後台專區）🎓
 
-- [ ] **P7-1** 建立 `client/src/pages/platform/PlatformAiCenter.tsx`
-- [ ] **P7-2** 在 `client/src/config/platform-menu.ts` 加 sidebar item「AI 訓練中心」
-- [ ] **P7-3** 在 `App.tsx` 加路由 `/platform/ai-center`
+- [x] **P7-1** 建立 `client/src/pages/platform/PlatformAiCenter.tsx`（4 分頁完整 UI 含 P7-8~P7-11 內容）
+- [x] **P7-2** `platform-menu.ts` 加「AI 訓練中心」(Sparkles icon)，放在「平台總覽」群組末
+- [x] **P7-3** `App.tsx` 加路由 `/platform/ai-center`
 - [ ] **P7-4** 建立 `server/routes/platform/ai-center.ts`
 - [ ] **P7-5** 實作 `GET /api/platform/ai-center/usage`（按月/按 endpoint/按 model 統計）
 - [ ] **P7-6** 實作 `GET /api/platform/ai-center/health`（變體池健康度、快取 hit 率）
