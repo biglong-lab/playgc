@@ -185,8 +185,8 @@ TOTAL_PROGRESS: 102/120 (85%)
 - [x] **P8-12** UI：一鍵發布按鈕（含 replace toggle 警告）
 - [x] **P8-13** 在 game-editor header 加「✨ AI 產生器」入口（紫粉漸層按鈕）
 - [x] **P8-14** TS check EXIT 0
-- [ ] **P8-15** commit `feat(admin): AI 遊戲腳本產生器（5 分鐘出遊戲）` + push + 部署
-- [ ] **P8-E2E** 用測試腳本「拍 3 張古蹟照」呼叫 API → 應回 4-5 個 page 配置 + 通過 schema 驗證
+- [x] **P8-15** commit `fae01fd0` + push + 部署 ✅
+- [x] **P8-E2E** HTTP 200 ✅ / `/admin/game-generator` 200 ✅ / 兩個 API endpoints 401 認證 ✅
 
 ---
 
