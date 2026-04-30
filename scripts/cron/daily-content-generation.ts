@@ -318,6 +318,9 @@ export async function runDailyCron(): Promise<CronStats> {
     cacheExemplarsAdded: 0,
     cacheRowsDeleted: 0,
     exemplarsCollected: 0,
+    thresholdsAdjusted: 0,
+    thresholdsMaintained: 0,
+    thresholdsInsufficient: 0,
     startedAt: new Date(),
     durationMs: 0,
   };
