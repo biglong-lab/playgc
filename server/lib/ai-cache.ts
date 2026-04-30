@@ -22,8 +22,10 @@ import {
   type InsertAiResultCache,
 } from "@shared/schema";
 import { computeImageHash, hammingDistance } from "./image-hash";
+import { getEffectiveThresholds } from "./threshold-adapter";
 
 const CACHE_TTL_DAYS = 30;
+/** P4 預設 pHash 距離閾值（P13 自適應系統會 override） */
 const PHASH_DISTANCE_THRESHOLD = 5;
 
 /**
