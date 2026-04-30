@@ -17,7 +17,9 @@ import {
   insertFieldFeatureOverrideSchema,
 } from "@shared/schema";
 import { requirePlatformAdmin } from "../platformAuth";
-import { eq, sql, desc, and } from "drizzle-orm";
+import { logAuditAction } from "../adminAuth";
+import { auditLogs, adminAccounts as adminAccountsTable } from "@shared/schema";
+import { eq, sql, desc, and, gte, lte, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 export function registerPlatformRoutes(app: Express): void {
@@ -263,12 +265,30 @@ export function registerPlatformRoutes(app: Express): void {
     if (!parsed.success) {
       return res.status(400).json({ error: "Invalid input", details: parsed.error.errors });
     }
+    // 取舊狀態（給 audit 用）
+    const oldField = await db.query.fields.findFirst({ where: eq(fields.id, req.params.id) });
     const [field] = await db
       .update(fields)
       .set({ status: parsed.data.status, updatedAt: new Date() })
       .where(eq(fields.id, req.params.id))
       .returning();
     if (!field) return res.status(404).json({ error: "場域不存在" });
+    // 🆕 稽核日誌
+    await logAuditAction({
+      actorAdminId: req.platform?.adminAccountId ?? undefined,
+      action: "platform:field_status_change",
+      targetType: "field",
+      targetId: field.id,
+      fieldId: field.id,
+      metadata: {
+        oldStatus: oldField?.status,
+        newStatus: parsed.data.status,
+        reason: parsed.data.reason,
+        actorRole: req.platform?.role,
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
     res.json(field);
   });
 
@@ -292,6 +312,8 @@ export function registerPlatformRoutes(app: Express): void {
     const existing = await db.query.fieldSubscriptions.findFirst({
       where: eq(fieldSubscriptions.fieldId, req.params.id),
     });
+    let resultSub;
+    let actionType = "platform:field_plan_create";
     if (existing) {
       const [sub] = await db
         .update(fieldSubscriptions)
@@ -302,18 +324,39 @@ export function registerPlatformRoutes(app: Express): void {
         })
         .where(eq(fieldSubscriptions.id, existing.id))
         .returning();
-      return res.json(sub);
+      resultSub = sub;
+      actionType = "platform:field_plan_change";
+    } else {
+      const [sub] = await db
+        .insert(fieldSubscriptions)
+        .values({
+          fieldId: req.params.id,
+          planId: parsed.data.planId,
+          status: "active",
+          billingCycle: parsed.data.billingCycle ?? "monthly",
+        })
+        .returning();
+      resultSub = sub;
     }
-    const [sub] = await db
-      .insert(fieldSubscriptions)
-      .values({
-        fieldId: req.params.id,
-        planId: parsed.data.planId,
-        status: "active",
+    // 🆕 稽核日誌
+    await logAuditAction({
+      actorAdminId: req.platform?.adminAccountId ?? undefined,
+      action: actionType,
+      targetType: "field_subscription",
+      targetId: resultSub.id,
+      fieldId: req.params.id,
+      metadata: {
+        oldPlanId: existing?.planId,
+        newPlanId: parsed.data.planId,
+        planCode: plan.code,
+        planName: plan.name,
         billingCycle: parsed.data.billingCycle ?? "monthly",
-      })
-      .returning();
-    res.json(sub);
+        actorRole: req.platform?.role,
+      },
+      ipAddress: req.ip,
+      userAgent: req.headers["user-agent"],
+    });
+    res.json(resultSub);
   });
 
   // ============================================================================
@@ -569,6 +612,11 @@ export function registerPlatformRoutes(app: Express): void {
         });
       }
 
+      // 取舊資料給 audit 用
+      const existing = await db.query.adminAccounts.findFirst({
+        where: eq(adminAccounts.id, req.params.id),
+      });
+
       const [updated] = await db
         .update(adminAccounts)
         .set({ ...parsed.data, updatedAt: new Date() })
@@ -578,6 +626,24 @@ export function registerPlatformRoutes(app: Express): void {
       if (!updated) {
         return res.status(404).json({ message: "帳號不存在" });
       }
+
+      // 🆕 稽核日誌
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:admin_account_update",
+        targetType: "admin_account",
+        targetId: updated.id,
+        fieldId: updated.fieldId ?? undefined,
+        metadata: {
+          changes: parsed.data,
+          oldStatus: existing?.status,
+          oldRoleId: existing?.roleId,
+          targetUsername: updated.username,
+          actorRole: req.platform?.role,
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
 
       res.json({ ...updated, passwordHash: undefined });
     } catch (error) {
@@ -646,6 +712,156 @@ export function registerPlatformRoutes(app: Express): void {
     } catch (error) {
       console.error("[platform/permissions] failed:", error);
       res.status(500).json({ message: "取得權限列表失敗" });
+    }
+  });
+
+  // ============================================================================
+  // 🆕 P0-1（2026-04-30）— 平台稽核日誌
+  //   重用既有 audit_logs 表，提供跨場域查詢介面
+  //   action 前綴 platform: 為平台層操作（vs admin: 為場域層）
+  // ============================================================================
+
+  /**
+   * GET /api/platform/audit-logs
+   * Query params:
+   *   ?fieldId=xxx — 過濾特定場域
+   *   ?actorAdminId=xxx — 過濾特定操作者
+   *   ?action=xxx — 過濾特定動作（支援前綴匹配）
+   *   ?targetType=xxx — 過濾資源類型
+   *   ?from=ISO-date&to=ISO-date — 時間範圍
+   *   ?limit=100 (max 500) — 預設 100
+   *   ?cursor=createdAt-iso — 分頁
+   */
+  app.get("/api/platform/audit-logs", requirePlatformAdmin, async (req, res) => {
+    try {
+      const fieldId = typeof req.query.fieldId === "string" ? req.query.fieldId : null;
+      const actorAdminId = typeof req.query.actorAdminId === "string" ? req.query.actorAdminId : null;
+      const action = typeof req.query.action === "string" ? req.query.action : null;
+      const targetType = typeof req.query.targetType === "string" ? req.query.targetType : null;
+      const fromStr = typeof req.query.from === "string" ? req.query.from : null;
+      const toStr = typeof req.query.to === "string" ? req.query.to : null;
+      const limit = Math.min(parseInt(String(req.query.limit ?? "100"), 10) || 100, 500);
+      const cursor = typeof req.query.cursor === "string" ? req.query.cursor : null;
+
+      const conditions = [];
+      if (fieldId) conditions.push(eq(auditLogs.fieldId, fieldId));
+      if (actorAdminId) conditions.push(eq(auditLogs.actorAdminId, actorAdminId));
+      if (action) {
+        // 支援精確匹配與前綴（"platform:" 配對所有平台動作）
+        conditions.push(sql`${auditLogs.action} LIKE ${action.endsWith(":") ? action + "%" : action}`);
+      }
+      if (targetType) conditions.push(eq(auditLogs.targetType, targetType));
+      if (fromStr) {
+        const fromDate = new Date(fromStr);
+        if (!Number.isNaN(fromDate.getTime())) conditions.push(gte(auditLogs.createdAt, fromDate));
+      }
+      if (toStr) {
+        const toDate = new Date(toStr);
+        if (!Number.isNaN(toDate.getTime())) conditions.push(lte(auditLogs.createdAt, toDate));
+      }
+      if (cursor) {
+        const cursorDate = new Date(cursor);
+        if (!Number.isNaN(cursorDate.getTime())) conditions.push(lte(auditLogs.createdAt, cursorDate));
+      }
+
+      const logs = await db.query.auditLogs.findMany({
+        where: conditions.length ? and(...conditions) : undefined,
+        orderBy: [desc(auditLogs.createdAt)],
+        limit: limit + 1, // 多抓 1 筆判斷是否還有下一頁
+      });
+
+      const hasMore = logs.length > limit;
+      const items = hasMore ? logs.slice(0, limit) : logs;
+
+      // 一次性 join admin accounts + fields（避免 N+1）
+      const actorIds = Array.from(new Set(items.map((l) => l.actorAdminId).filter(Boolean) as string[]));
+      const fieldIds = Array.from(new Set(items.map((l) => l.fieldId).filter(Boolean) as string[]));
+
+      const [actors, fieldsList] = await Promise.all([
+        actorIds.length
+          ? db.query.adminAccounts.findMany({
+              where: inArray(adminAccountsTable.id, actorIds),
+              columns: { id: true, username: true, displayName: true, fieldId: true },
+            })
+          : Promise.resolve([]),
+        fieldIds.length
+          ? db.query.fields.findMany({
+              where: inArray(fields.id, fieldIds),
+              columns: { id: true, name: true, code: true },
+            })
+          : Promise.resolve([]),
+      ]);
+
+      const actorMap = new Map(actors.map((a) => [a.id, a]));
+      const fieldMap = new Map(fieldsList.map((f) => [f.id, f]));
+
+      const enriched = items.map((log) => ({
+        ...log,
+        actor: log.actorAdminId ? actorMap.get(log.actorAdminId) ?? null : null,
+        field: log.fieldId ? fieldMap.get(log.fieldId) ?? null : null,
+      }));
+
+      res.json({
+        items: enriched,
+        nextCursor: hasMore && items[items.length - 1].createdAt
+          ? items[items.length - 1].createdAt!.toISOString()
+          : null,
+      });
+    } catch (error) {
+      console.error("[platform/audit-logs] failed:", error);
+      res.status(500).json({ message: "取得稽核日誌失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/audit-logs/stats
+   * 提供統計：今日操作數、本月操作數、最常見動作、操作最頻繁的 admin
+   */
+  app.get("/api/platform/audit-logs/stats", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const [todayCount, monthCount, topActions, topActors] = await Promise.all([
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(auditLogs)
+          .where(gte(auditLogs.createdAt, todayStart))
+          .then((r) => Number(r[0]?.count ?? 0)),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(auditLogs)
+          .where(gte(auditLogs.createdAt, monthStart))
+          .then((r) => Number(r[0]?.count ?? 0)),
+        db.execute<{ action: string; count: number }>(sql`
+          SELECT action, COUNT(*)::int AS count
+          FROM audit_logs
+          WHERE created_at >= ${monthStart.toISOString()}
+          GROUP BY action
+          ORDER BY count DESC
+          LIMIT 10
+        `).then((r) => r.rows),
+        db.execute<{ actorAdminId: string; count: number }>(sql`
+          SELECT actor_admin_id AS "actorAdminId", COUNT(*)::int AS count
+          FROM audit_logs
+          WHERE created_at >= ${monthStart.toISOString()}
+            AND actor_admin_id IS NOT NULL
+          GROUP BY actor_admin_id
+          ORDER BY count DESC
+          LIMIT 5
+        `).then((r) => r.rows),
+      ]);
+
+      res.json({
+        todayCount,
+        monthCount,
+        topActions,
+        topActors,
+      });
+    } catch (error) {
+      console.error("[platform/audit-logs/stats] failed:", error);
+      res.status(500).json({ message: "取得稽核統計失敗" });
     }
   });
 }
