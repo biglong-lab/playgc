@@ -90,9 +90,9 @@ TOTAL_PROGRESS: 23/42
 - [x] **P13-3** 建立 `server/lib/threshold-adapter.ts`：calculateOptimalThreshold + applyThresholdRecommendation + getEffectiveThresholds（含失敗率區間判斷 / hard limits / 樣本不足保護）
 
 ## 整合
-- [ ] **P13-4** 修改 `server/lib/ai-cache.ts` getCached：讀 task_thresholds.pHashThreshold（fallback 5）
-- [ ] **P13-5** 修改 `server/lib/text-match.ts` matchAnswer：接收動態 fuzzyTolerance（fallback 2）
-- [ ] **P13-6** 修改 `server/routes/ai-scoring.ts`：依 task_thresholds 套用各閾值
+- [x] **P13-4** 修改 `ai-cache.ts` getCached：用 `getEffectiveThresholds(taskId).pHashThreshold` 取代硬編碼 5（含 60s in-memory cache）
+- [x] **P13-5** `text-match.ts` 已支援 `options.fuzzyTolerance`，改由 ai-scoring score-text endpoint 傳入（pageId 自適應值）
+- [x] **P13-6** `ai-scoring.ts` 三個 endpoint 套用：verify-photo（aiConfidenceThreshold）/ compare-photos（similarityThreshold）/ score-text（fuzzyTolerance），全保留 admin override 優先級
 
 ## cron
 - [ ] **P13-7** 修改 cron daily：加 task 4「重算閾值」— 每天分析昨日資料後 upsert task_thresholds
