@@ -42,6 +42,8 @@ interface PhotoCompareFlowProps {
   // 🔧 v2: GamePageRenderer commonProps 會 spread 這兩個
   variables?: Record<string, unknown>;
   onVariableUpdate?: (key: string, value: unknown) => void;
+  // 🎨 P2: 變體池
+  variantPool?: unknown;
 }
 
 interface CompareResponse {
