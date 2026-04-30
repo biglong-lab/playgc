@@ -160,7 +160,7 @@ TOTAL_PROGRESS: 49/50
 
 ## 整合
 - [x] **P16-5** 修改 `server/lib/roguelike-composer.ts`：新增 `useMarkov?: boolean` opt-in 參數（預設 false 走原 shuffle 向後相容）；啟用時取 game.fieldId → 第 1 個任務純隨機（無前者參考）→ 第 2~N 個 sampleNextType(fieldId, prev.pageType, allowedTypes) 從該 type pool 隨機抽避免重複；sampler 回 null 時 fallback 純隨機；rationale 顯示 Markov 使用 / fallback 計數
-- [ ] **P16-6** 修改 `server/lib/admin-copilot.ts` suggestNextModule：將 Markov 機率注入 prompt 給 AI 參考
+- [x] **P16-6** 修改 `server/lib/admin-copilot.ts` suggestNextModule：新增 `fieldId?: string` opt-in 參數 → 取 currentPages 最後一個 pageType → getTransitionProbabilities → 抽 top 5 機率注入 prompt（"📊 歷史資料統計"）+「考慮」段加一條 hint；try/catch 隔離 Markov 失敗不影響 AI 推薦；無 fieldId 走純 AI 向後相容
 
 ## cron + 部署
 - [ ] **P16-7** cron task 7：每週訓練 transition matrix（資料量大，不需每天）
