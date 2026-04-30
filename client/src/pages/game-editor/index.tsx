@@ -579,6 +579,37 @@ export default function GameEditor() {
               <ItemsEditor gameId={gameId || ""} useAdminApi={true} />
             </TabsContent>
 
+            {/* 🤖 P9: AI 副駕駛在「遊戲基本設定」分頁底部 — 放在 game tab 而不是另開 tab，讓 admin 編輯時方便看 */}
+            {!isNew && gameId && (
+              <div className="p-6 pt-0 hidden">
+                <AdminCopilotPanel
+                  gameId={gameId}
+                  pages={pages.map((p) => ({
+                    id: p.id,
+                    pageOrder: p.pageOrder,
+                    pageType: p.pageType,
+                    customName: p.customName,
+                    config: p.config as Record<string, unknown>,
+                  }))}
+                  onAddPage={(pageType, suggestedName) => {
+                    addPage(pageType);
+                    if (suggestedName) {
+                      // 找剛新增的 page 把 customName 改掉
+                      setTimeout(() => {
+                        setPages((prev) => {
+                          const last = prev[prev.length - 1];
+                          if (!last) return prev;
+                          return prev.map((p) =>
+                            p.id === last.id ? { ...p, customName: suggestedName } : p,
+                          );
+                        });
+                      }, 0);
+                    }
+                  }}
+                />
+              </div>
+            )}
+
             <TabsContent value="events" className="p-6">
               <EventsEditor gameId={gameId || ""} pages={pages} apiGamesPath={apiGamesPath} apiEventsPath={apiEventsPath} />
             </TabsContent>
