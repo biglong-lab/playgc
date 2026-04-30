@@ -34,6 +34,10 @@ interface CronStats {
   thresholdsAdjusted: number;
   thresholdsMaintained: number;
   thresholdsInsufficient: number;
+  // P14: A/B 實驗自動結論
+  abExperimentsConcluded: number;
+  abExperimentsPending: number;
+  abExperimentsFailed: number;
   startedAt: Date;
   durationMs: number;
 }
