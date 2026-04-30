@@ -140,10 +140,10 @@ TOTAL_PROGRESS: 73/64 (114%)
 - [x] **P6-6** 實作 `PATCH /api/admin/exemplar/:id`（標記 is_curated/tags/description）+ `DELETE` 移除
 - [x] **P6-7** 修改 cron 任務 3：從 ai_result_cache 找 confidence ≥ 0.85 自動策展（含 ALTER TABLE 加 image_url 欄位 + verify/compare endpoint 寫 imageUrl）
 - [x] **P6-8** 修改 `compare-photos` endpoint：加 `useExemplar` flag，true 時優先用素材庫 is_curated 範本（依 confidence DESC 取最佳），fallback admin reference；回應加 `referenceSource: 'admin'\|'exemplar'`
-- [ ] **P6-9** 建立 `client/src/pages/admin/ExemplarLibrary.tsx`
-- [ ] **P6-10** TS check
-- [ ] **P6-11** commit `feat(ai): 場域素材庫（內容資產化）` + push + 部署
-- [ ] **P6-E2E** admin 上傳 1 張範本 / cron 執行後素材庫有自動加入紀錄
+- [x] **P6-9** 建立 `client/src/pages/admin/ExemplarLibrary.tsx`（網格列表 + 標精選 / 刪除 / pageId 篩選）
+- [x] **P6-10** TS check EXIT 0
+- [x] **P6-11** commit `43c6762d` + push + 部署 ✅
+- [x] **P6-E2E** HTTP 200 ✅ / 4 個 endpoint 401 認證 ✅ / 頁面 200 ✅ / DB 表存在 ✅
 
 ---
 
