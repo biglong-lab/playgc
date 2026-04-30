@@ -1,3 +1,5 @@
+STATUS: ALL_COMPLETED
+
 # 🧠 AI 自我學習 ROADMAP（Wave 2 — 演算法 / 反饋 / 自我打磨）
 
 > **聚焦範圍**：演算法、玩家反饋、自主學習、自動優化
