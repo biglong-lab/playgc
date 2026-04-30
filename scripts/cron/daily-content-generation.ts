@@ -14,6 +14,11 @@ import { pages, games, fields, parseFieldSettings, aiResultCache, fieldExemplarP
 import { generateVariantPool } from "../../server/lib/variant-generator";
 import { decryptApiKey } from "../../server/lib/crypto";
 import { archiveExpired } from "../../server/lib/ai-cache";
+import {
+  calculateOptimalThreshold,
+  applyThresholdRecommendation,
+  invalidateThresholdCache,
+} from "../../server/lib/threshold-adapter";
 
 interface CronStats {
   variantsGenerated: number;
@@ -24,6 +29,10 @@ interface CronStats {
   cacheExemplarsAdded: number;
   cacheRowsDeleted: number;
   exemplarsCollected: number;
+  // P13: 自適應閾值
+  thresholdsAdjusted: number;
+  thresholdsMaintained: number;
+  thresholdsInsufficient: number;
   startedAt: Date;
   durationMs: number;
 }
