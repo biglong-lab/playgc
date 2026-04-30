@@ -87,7 +87,7 @@ TOTAL_PROGRESS: 20/42
 ## 資料 + 邏輯
 - [x] **P13-1** 建立 `shared/schema/task-thresholds.ts`（4 個閾值欄位 + stats jsonb + DEFAULT_THRESHOLDS 常數）
 - [x] **P13-2** SQL CREATE TABLE task_thresholds（task_id PRIMARY KEY + 2 個 index）— 本地 ✅ + 生產 ✅
-- [ ] **P13-3** 建立 `server/lib/threshold-adapter.ts`：calculateOptimalThreshold(taskId) — 從歷史 ai_usage_logs / player_event_logs 算最佳值
+- [x] **P13-3** 建立 `server/lib/threshold-adapter.ts`：calculateOptimalThreshold + applyThresholdRecommendation + getEffectiveThresholds（含失敗率區間判斷 / hard limits / 樣本不足保護）
 
 ## 整合
 - [ ] **P13-4** 修改 `server/lib/ai-cache.ts` getCached：讀 task_thresholds.pHashThreshold（fallback 5）
