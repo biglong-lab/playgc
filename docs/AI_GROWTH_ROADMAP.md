@@ -163,7 +163,7 @@ TOTAL_PROGRESS: 50/50
 - [x] **P16-6** 修改 `server/lib/admin-copilot.ts` suggestNextModule：新增 `fieldId?: string` opt-in 參數 → 取 currentPages 最後一個 pageType → getTransitionProbabilities → 抽 top 5 機率注入 prompt（"📊 歷史資料統計"）+「考慮」段加一條 hint；try/catch 隔離 Markov 失敗不影響 AI 推薦；無 fieldId 走純 AI 向後相容
 
 ## cron + 部署
-- [ ] **P16-7** cron task 7：每週訓練 transition matrix（資料量大，不需每天）
+- [x] **P16-7** cron task 7：每週一（getDay()===1）跑 → 取所有 fields → 對每個 field 跑 trainTransitionMatrix → invalidateMarkovCache 清快取；非週一直接 skip 顯示「skip（非週一）」；CronStats 加 4 欄（markovSkipped/FieldsTrained/TransitionsUpserted/SessionsAnalyzed）；console 報表顯示訓練統計
 - [ ] **P16-8** TS check + commit + push + 部署 + E2E
 
 ---
