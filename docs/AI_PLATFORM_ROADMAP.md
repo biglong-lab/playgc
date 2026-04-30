@@ -94,9 +94,9 @@ TOTAL_PROGRESS: 41/64
 
 ## 資料庫
 
-- [ ] **P4-1** 建立 `shared/schema/ai-cache.ts`：ai_result_cache 定義
-- [ ] **P4-2** 在 `shared/schema/index.ts` export
-- [ ] **P4-3** SQL: `CREATE TABLE IF NOT EXISTS ai_result_cache(...)` + 3 個 index（本地 + 生產）
+- [x] **P4-1** 建立 `shared/schema/ai-cache.ts`：ai_result_cache 定義（含 4 個 index）
+- [x] **P4-2** 在 `shared/schema/index.ts` export
+- [x] **P4-3** SQL: `CREATE TABLE IF NOT EXISTS ai_result_cache(...)` + 4 個 index（本地 ✅ + 生產 ✅）
 
 ## 後端
 
