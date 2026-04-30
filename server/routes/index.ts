@@ -89,6 +89,7 @@ export async function registerRoutes(
   registerAdminGameRoutes(app);
   registerVariantPoolRoutes(app);
   registerExemplarRoutes(app);
+  registerGameGeneratorRoutes(app);
   registerAdminContentRoutes(app);
   registerPlayerGameRoutes(app);
   registerDeviceRoutes(app, ctx);
