@@ -234,6 +234,79 @@ async function task3_curateExemplars(): Promise<number> {
 }
 
 /**
+ * 任務 4（P13）：自適應閾值重算
+ *
+ * 流程：
+ *   1. 找最近 30 天內有 player_event_logs 紀錄的 page（候選任務）
+ *   2. 對每個候選跑 calculateOptimalThreshold
+ *   3. recommendation 為 'loosen'/'tighten' 時 upsert task_thresholds
+ *   4. invalidate cache（讓下次玩家請求拿到新值）
+ *
+ * 限制：每次最多分析 100 個 task（控制 DB 負載）
+ */
+async function task4_adjustThresholds(): Promise<{
+  adjusted: number;
+  maintained: number;
+  insufficient: number;
+}> {
+  console.log("[cron] 任務 4：自適應閾值重算");
+
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+  // 用原生 SQL 找近 30 天有事件的 distinct page_id（避免另外 import playerEventLogs）
+  const { playerEventLogs } = await import("@shared/schema");
+  const candidatePages = await db
+    .selectDistinct({
+      pageId: playerEventLogs.pageId,
+      gameId: playerEventLogs.gameId,
+    })
+    .from(playerEventLogs)
+    .where(
+      and(
+        isNotNull(playerEventLogs.pageId),
+        gte(playerEventLogs.createdAt, since),
+      ),
+    )
+    .limit(100);
+
+  let adjusted = 0;
+  let maintained = 0;
+  let insufficient = 0;
+
+  for (const c of candidatePages) {
+    if (!c.pageId) continue;
+    try {
+      const analysis = await calculateOptimalThreshold(c.pageId, c.gameId ?? undefined);
+      if (analysis.recommendation === "insufficient-data") {
+        insufficient++;
+        continue;
+      }
+      if (analysis.recommendation === "maintain") {
+        maintained++;
+        continue;
+      }
+      // loosen / tighten → 套用
+      await applyThresholdRecommendation(c.pageId, c.gameId ?? null, analysis);
+      invalidateThresholdCache(c.pageId);
+      adjusted++;
+      console.log(
+        `[cron] 🎯 ${c.pageId.substring(0, 8)} ${analysis.recommendation}: ${analysis.reason}`,
+      );
+    } catch (err) {
+      console.warn(
+        `[cron] 閾值重算失敗 page ${c.pageId}:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+  }
+
+  console.log(
+    `[cron] ✅ 閾值重算完成：${adjusted} 調整 / ${maintained} 維持 / ${insufficient} 樣本不足`,
+  );
+  return { adjusted, maintained, insufficient };
+}
+
+/**
  * 主入口
  */
 export async function runDailyCron(): Promise<CronStats> {
