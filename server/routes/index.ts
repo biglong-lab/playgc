@@ -12,6 +12,7 @@ import { registerGameGeneratorRoutes } from "./admin-game-generator";
 import { registerAdminCopilotRoutes } from "./admin-copilot";
 import { registerAdminGameRoutesRoutes } from "./admin-game-routes";
 import { registerPlayerFeedbackRoutes } from "./player-feedback";
+import { registerVariantPickerServerRoutes } from "./variant-picker-server";
 import { registerAdminContentRoutes } from "./admin-content";
 import { registerPlayerGameRoutes } from "./player-games";
 import { registerDeviceRoutes } from "./devices";
