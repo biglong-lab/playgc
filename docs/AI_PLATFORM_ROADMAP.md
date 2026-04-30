@@ -150,7 +150,7 @@ TOTAL_PROGRESS: 86/120 (72%)
 
 ---
 
-# Phase 7：AI 訓練中心（後台專區）🎓
+# Phase 7：AI 訓練中心（後台專區）🎓 ✅ 完成
 
 - [x] **P7-1** 建立 `client/src/pages/platform/PlatformAiCenter.tsx`（4 分頁完整 UI 含 P7-8~P7-11 內容）
 - [x] **P7-2** `platform-menu.ts` 加「AI 訓練中心」(Sparkles icon)，放在「平台總覽」群組末
