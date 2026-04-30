@@ -204,8 +204,8 @@ TOTAL_PROGRESS: 116/120 (97%)
 - [x] **P9-10** AdminCopilotPanel 含「🔍 流程診斷」按鈕（純規則，毫秒級回應），點擊顯示 issues 清單（依 severity 染色）
 - [x] **P9-11** 建立 `<CopyPolishButton>` reusable 魔法棒元件（7 種風格 × 3 個變體選擇）— 可在任何文字輸入旁引用
 - [x] **P9-12** TS check EXIT 0
-- [ ] **P9-13** commit `feat(admin): AI 副駕駛（推薦/診斷/文案）` + push + 部署
-- [ ] **P9-E2E** 測試 3 個 endpoint（suggest-next / diagnose / polish-copy）回應正常
+- [x] **P9-13** commit `fce9ac80` + push + 部署 ✅
+- [x] **P9-E2E** HTTP 200 ✅ / 4 個 endpoints (suggest-next / diagnose / polish-copy / copy-styles) 全 401 認證 ✅
 
 ---
 
