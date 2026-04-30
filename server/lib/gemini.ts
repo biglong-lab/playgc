@@ -1,6 +1,49 @@
 // Gemini AI 服務封裝 — 照片驗證 + 文字語意評分
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
+/**
+ * 安全 JSON 解析（容錯：去 markdown code block、抓 first balanced object）
+ * 即使 Gemini 有 responseSchema，仍可能在某些 timeout / chunked 情境下回傳不完整
+ */
+function safeParseAiJson<T>(raw: string, label: string): T {
+  let cleaned = raw.trim();
+  const codeBlockMatch = cleaned.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+  if (codeBlockMatch) cleaned = codeBlockMatch[1].trim();
+
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch {
+    /* 進入 fallback */
+  }
+
+  const startIdx = cleaned.indexOf("{");
+  if (startIdx >= 0) {
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = startIdx; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (escape) { escape = false; continue; }
+      if (ch === "\\") { escape = true; continue; }
+      if (ch === '"') { inString = !inString; continue; }
+      if (inString) continue;
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          try {
+            return JSON.parse(cleaned.substring(startIdx, i + 1)) as T;
+          } catch {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  throw new Error(`${label} AI 回傳格式無效（非 JSON）：${raw.substring(0, 200)}`);
+}
+
 // ============================================================================
 // 初始化
 // ============================================================================
@@ -138,7 +181,7 @@ export async function verifyPhoto(
   }
 
   const text = result.response.text();
-  const parsed = JSON.parse(text) as PhotoVerifyResult;
+  const parsed = safeParseAiJson<PhotoVerifyResult>(text, "verify-photo");
 
   return {
     verified: parsed.verified,
@@ -284,7 +327,7 @@ export async function comparePhotos(
   }
 
   const text = result.response.text();
-  const parsed = JSON.parse(text) as PhotoCompareResult;
+  const parsed = safeParseAiJson<PhotoCompareResult>(text, "compare-photos");
 
   return {
     verified: !!parsed.verified,
@@ -349,7 +392,7 @@ export async function scoreTextAnswer(
 
   const result = await model.generateContent(prompt);
   const text = result.response.text();
-  const parsed = JSON.parse(text) as { score: number; feedback: string };
+  const parsed = safeParseAiJson<{ score: number; feedback: string }>(text, "score-text");
 
   const score = Math.max(0, Math.min(100, Math.round(parsed.score)));
   return {

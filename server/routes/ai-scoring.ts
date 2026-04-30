@@ -166,6 +166,8 @@ const scoreTextSchema = z.object({
   context: z.string().optional(),
   passingScore: z.number().min(0).max(100).optional(),
   gameId: z.string().uuid().optional(),
+  /** 🆕 指定 AI 模型（若場域用 OpenRouter，與 verify-photo / compare-photos 對齊） */
+  modelId: z.string().optional(),
 });
 
 // 🆕 OCR 招牌偵測 schema
@@ -590,7 +592,7 @@ export function registerAiScoringRoutes(app: Express): void {
         return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
       }
 
-      const { question, userAnswer, expectedAnswers, context, passingScore, gameId } = parsed.data;
+      const { question, userAnswer, expectedAnswers, context, passingScore, gameId, modelId } = parsed.data;
       bodyGameId = gameId;
 
       // 解析場域 API Key + fieldId
@@ -641,6 +643,7 @@ export function registerAiScoringRoutes(app: Express): void {
           context,
           passing,
           fieldApiKey,
+          modelId, // 🆕 與 verify-photo / compare-photos 對齊（Gemini 路線會忽略，OpenRouter 會用）
         ),
         { endpoint: "score-text", timeoutMs: 50_000 },
       );

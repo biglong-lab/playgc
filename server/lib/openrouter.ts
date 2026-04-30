@@ -27,6 +27,76 @@ interface ChatMessage {
 }
 
 /**
+ * 安全 JSON 解析（適用於 AI 回傳）
+ *
+ * 為什麼需要：
+ *  - 免費模型（如 Gemma）不像付費 Gemini 有 responseSchema 強制 JSON
+ *  - 模型可能回 markdown code block 或前後加說明文字
+ *  - 模型可能回截斷的 JSON（max_tokens 不夠時）
+ *
+ * 容錯策略：
+ *  1. 試直接 JSON.parse
+ *  2. 失敗時用 regex 找 first balanced object → 再 parse
+ *  3. 仍失敗 → 拋出明確錯誤訊息（前 200 字 raw）
+ */
+function safeParseAiJson<T>(raw: string, label: string): T {
+  // 去掉 markdown code block（```json ... ```）
+  let cleaned = raw.trim();
+  const codeBlockMatch = cleaned.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
+  if (codeBlockMatch) {
+    cleaned = codeBlockMatch[1].trim();
+  }
+
+  // 試一：直接 parse
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch {
+    /* 進入 fallback */
+  }
+
+  // 試二：抓第一個 balanced { ... }
+  const startIdx = cleaned.indexOf("{");
+  if (startIdx >= 0) {
+    let depth = 0;
+    let inString = false;
+    let escape = false;
+    for (let i = startIdx; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (escape) {
+        escape = false;
+        continue;
+      }
+      if (ch === "\\") {
+        escape = true;
+        continue;
+      }
+      if (ch === '"') {
+        inString = !inString;
+        continue;
+      }
+      if (inString) continue;
+      if (ch === "{") depth++;
+      else if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          const candidate = cleaned.substring(startIdx, i + 1);
+          try {
+            return JSON.parse(candidate) as T;
+          } catch {
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // 全部失敗
+  throw new Error(
+    `${label} AI 回傳格式無效（非 JSON）：${raw.substring(0, 200)}`,
+  );
+}
+
+/**
  * 取得 fallback chain：將 model 放最前，後接 OPENROUTER_FALLBACK_CHAIN（去重）
  * 若 model 在 DEPRECATED 清單裡，直接從 fallback chain 開始
  */
@@ -188,7 +258,7 @@ export async function verifyPhotoOpenRouter(
     },
   ]);
 
-  const parsed = JSON.parse(content) as PhotoVerifyResult;
+  const parsed = safeParseAiJson<PhotoVerifyResult>(content, "verify-photo");
   return {
     verified: !!parsed.verified,
     confidence: Math.max(0, Math.min(1, Number(parsed.confidence) || 0)),
@@ -257,13 +327,13 @@ export async function comparePhotosOpenRouter(
     },
   ]);
 
-  const parsed = JSON.parse(content) as {
+  const parsed = safeParseAiJson<{
     verified: boolean;
     similarity: number;
     matchedFeatures: string[];
     missingFeatures: string[];
     feedback: string;
-  };
+  }>(content, "compare-photos");
   return {
     verified: !!parsed.verified,
     similarity: Math.max(0, Math.min(1, Number(parsed.similarity) || 0)),
@@ -308,7 +378,7 @@ isCorrect 必須與 (score >= ${passingScore}) 一致。`;
     { role: "user", content: prompt },
   ]);
 
-  const parsed = JSON.parse(content) as TextScoreResult;
+  const parsed = safeParseAiJson<TextScoreResult>(content, "score-text");
   const score = Math.max(0, Math.min(100, Number(parsed.score) || 0));
   return {
     score,
