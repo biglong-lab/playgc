@@ -29,7 +29,7 @@ interface AiScoreResponse {
   fallback?: boolean;
 }
 
-export default function TextVerifyPage({ config, onComplete, gameId }: TextVerifyPageProps) {
+export default function TextVerifyPage({ config, onComplete, gameId, variantPool }: TextVerifyPageProps) {
   const { toast } = useToast();
   const [answer, setAnswer] = useState("");
   const [attempts, setAttempts] = useState(0);
