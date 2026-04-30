@@ -110,6 +110,7 @@ const PlatformBillingAlerts = lazy(() => import("@/pages/platform/PlatformBillin
 const PlatformUsage = lazy(() => import("@/pages/platform/PlatformUsage"));
 const PlatformBulkOps = lazy(() => import("@/pages/platform/PlatformBulkOps"));
 const PlatformInsights = lazy(() => import("@/pages/platform/PlatformInsights"));
+const PlatformAiCenter = lazy(() => import("@/pages/platform/PlatformAiCenter"));
 const PlatformSecurity = lazy(() => import("@/pages/platform/PlatformSecurity"));
 const PlatformErrorLogs = lazy(() => import("@/pages/platform/PlatformErrorLogs"));
 const PlatformHealth = lazy(() => import("@/pages/platform/PlatformHealth"));
