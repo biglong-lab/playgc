@@ -95,8 +95,8 @@ TOTAL_PROGRESS: 25/42
 - [x] **P13-6** `ai-scoring.ts` 三個 endpoint 套用：verify-photo（aiConfidenceThreshold）/ compare-photos（similarityThreshold）/ score-text（fuzzyTolerance），全保留 admin override 優先級
 
 ## cron
-- [ ] **P13-7** 修改 cron daily：加 task 4「重算閾值」— 每天分析昨日資料後 upsert task_thresholds
-- [ ] **P13-8** TS check + commit + push + 部署 + E2E
+- [x] **P13-7** cron task 4：每天最多分析 100 個近 30 天有事件的 task → upsert task_thresholds + invalidateThresholdCache
+- [x] **P13-8** TS check ✅ / 部署 `0b9a6c33` ✅ / cron 實跑成功（task 4 訊息顯示 0/0/0 樣本不足，符合預期）
 
 ---
 
