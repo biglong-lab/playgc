@@ -7,6 +7,7 @@ import { isAIConfigured as isGeminiConfigured, verifyPhoto, scoreTextAnswer, com
 import { detectText, isGoogleVisionConfigured, logOcrUsage, getMonthlyOcrUsage } from "../lib/google-vision";
 import { logAiUsage, getMonthlyAiUsage, withAiTimeout } from "../lib/ai-usage-logger";
 import { matchAnswer } from "../lib/text-match";
+import { getCached, setCached, buildCacheKey } from "../lib/ai-cache";
 import { decryptApiKey } from "../lib/crypto";
 import { db } from "../db";
 import { games, fields, parseFieldSettings } from "@shared/schema";
@@ -158,6 +159,8 @@ const verifyPhotoSchema = z.object({
   gameId: z.string().optional(), // 非 uuid 也行（seed game 用 slug-like ID）
   /** 🆕 指定 AI 模型（若場域用 OpenRouter） */
   modelId: z.string().optional(),
+  /** 🆕 P4: 任務 ID（pageId）— 用於 cache 對齊到同景點 */
+  pageId: z.string().optional(),
 });
 
 const scoreTextSchema = z.object({
@@ -191,6 +194,8 @@ const comparePhotosSchema = z.object({
   similarityThreshold: z.number().min(0).max(1).optional(),
   gameId: z.string().optional(),
   modelId: z.string().optional(),
+  /** 🆕 P4: 任務 ID（pageId）— 用於 cache 對齊到同景點 */
+  pageId: z.string().optional(),
 });
 
 // ============================================================================
@@ -284,7 +289,7 @@ export function registerAiScoringRoutes(app: Express): void {
         return apiError(res, 400, parsed.error.errors[0]?.message || "輸入驗證失敗");
       }
 
-      const { imageUrl, targetKeywords, instruction, confidenceThreshold, gameId, modelId } = parsed.data;
+      const { imageUrl, targetKeywords, instruction, confidenceThreshold, gameId, modelId, pageId } = parsed.data;
       bodyGameId = gameId;
 
       // 解析場域 API Key + fieldId（log 用）
@@ -292,6 +297,43 @@ export function registerAiScoringRoutes(app: Express): void {
       const fieldApiKey = ctx.apiKey;
       resolvedFieldId = ctx.fieldId;
       resolvedProvider = detectProvider(fieldApiKey);
+
+      const threshold = confidenceThreshold ?? 0.6;
+
+      // 📸 P4 Cache 查找：先看有沒有相似圖的 cache
+      const cacheLookup = await getCached<{ verified: boolean; confidence: number; feedback: string; detectedObjects: string[] }>({
+        endpoint: "verify-photo",
+        taskId: pageId,
+        imageUrl,
+        identityHint: targetKeywords,
+      });
+
+      if (cacheLookup.hit) {
+        // 命中！記 log（標 cached），直接回傳
+        await logAiUsage({
+          provider: "cache" as never, // 自訂 provider 標籤
+          endpoint: "verify-photo",
+          success: true,
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+          context: {
+            cached: true,
+            distance: cacheLookup.distance,
+            pHash: cacheLookup.pHash,
+            verified: cacheLookup.result.verified,
+          },
+        });
+        const cachedResult = cacheLookup.result;
+        return res.json({
+          ...cachedResult,
+          // 重新套用 threshold（cache 結果可能用過去的閾值算過 verified）
+          verified: cachedResult.confidence >= threshold,
+          cached: true,
+          cacheDistance: cacheLookup.distance,
+        });
+      }
 
       // 檢查 Gemini 是否已設定
       if (!isGeminiConfigured(fieldApiKey)) {
@@ -325,7 +367,6 @@ export function registerAiScoringRoutes(app: Express): void {
         return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
       }
 
-      const threshold = confidenceThreshold ?? 0.6;
       // 🆕 若 page config 指定了 modelId 就傳下去（OpenRouter 會用指定模型，Gemini 會忽略）
       // 🛡️ 加 timeout 防 nginx 上游 502
       const result = await withAiTimeout(
@@ -354,11 +395,28 @@ export function registerAiScoringRoutes(app: Express): void {
         },
       });
 
+      // 📸 P4: 寫入 cache（30 天 TTL）— 下次相似圖直接命中
+      if (cacheLookup.pHash && pageId) {
+        const cacheKey = cacheLookup.cacheKey ?? buildCacheKey(pageId, cacheLookup.pHash, targetKeywords);
+        if (cacheKey) {
+          await setCached({
+            endpoint: "verify-photo",
+            cacheKey,
+            taskId: pageId,
+            pHash: cacheLookup.pHash,
+            fieldId: resolvedFieldId,
+            gameId,
+            result,
+          });
+        }
+      }
+
       return res.json({
         verified,
         confidence: result.confidence,
         feedback: result.feedback,
         detectedObjects: result.detectedObjects,
+        cached: false,
       });
     } catch (error) {
       // 預覽模式（preview-game）→ 明確拒絕
@@ -439,6 +497,7 @@ export function registerAiScoringRoutes(app: Express): void {
         similarityThreshold,
         gameId,
         modelId,
+        pageId,
       } = parsed.data;
       bodyGameId = gameId;
 
@@ -446,6 +505,42 @@ export function registerAiScoringRoutes(app: Express): void {
       const fieldApiKey = ctx.apiKey;
       resolvedFieldId = ctx.fieldId;
       resolvedProvider = detectProvider(fieldApiKey);
+
+      const threshold = similarityThreshold ?? 0.6;
+      const mode = compareMode ?? "scene";
+
+      // 📸 P4 Cache 查找：identityHint 用 referenceImageUrl + mode（同任務同參考圖才能 hit）
+      const cacheLookup = await getCached<{ verified: boolean; similarity: number; matchedFeatures: string[]; missingFeatures: string[]; feedback: string }>({
+        endpoint: "compare-photos",
+        taskId: pageId,
+        imageUrl: playerImageUrl,
+        identityHint: [referenceImageUrl, mode],
+      });
+
+      if (cacheLookup.hit) {
+        await logAiUsage({
+          provider: "cache" as never,
+          endpoint: "compare-photos",
+          success: true,
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: resolvedFieldId,
+          userId,
+          context: {
+            cached: true,
+            distance: cacheLookup.distance,
+            pHash: cacheLookup.pHash,
+            similarity: cacheLookup.result.similarity,
+          },
+        });
+        const cachedResult = cacheLookup.result;
+        return res.json({
+          ...cachedResult,
+          verified: cachedResult.similarity >= threshold,
+          cached: true,
+          cacheDistance: cacheLookup.distance,
+        });
+      }
 
       if (!isGeminiConfigured(fieldApiKey)) {
         await logAiUsage({
@@ -476,9 +571,6 @@ export function registerAiScoringRoutes(app: Express): void {
         });
         return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
       }
-
-      const threshold = similarityThreshold ?? 0.6;
-      const mode = compareMode ?? "scene";
 
       // 🛡️ 加 timeout 防 nginx 上游 502
       const result = await withAiTimeout(
@@ -517,12 +609,29 @@ export function registerAiScoringRoutes(app: Express): void {
         },
       });
 
+      // 📸 P4: 寫入 cache（30 天 TTL）
+      if (cacheLookup.pHash && pageId) {
+        const cacheKey = cacheLookup.cacheKey ?? buildCacheKey(pageId, cacheLookup.pHash, [referenceImageUrl, mode]);
+        if (cacheKey) {
+          await setCached({
+            endpoint: "compare-photos",
+            cacheKey,
+            taskId: pageId,
+            pHash: cacheLookup.pHash,
+            fieldId: resolvedFieldId,
+            gameId,
+            result,
+          });
+        }
+      }
+
       return res.json({
         verified,
         similarity: result.similarity,
         matchedFeatures: result.matchedFeatures,
         missingFeatures: result.missingFeatures,
         feedback: result.feedback,
+        cached: false,
       });
     } catch (error) {
       // 預覽模式（preview-game）→ 明確拒絕

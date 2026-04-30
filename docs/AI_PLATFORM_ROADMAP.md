@@ -11,9 +11,9 @@
 
 ```
 CURRENT_PHASE: P4
-CURRENT_TASK: P4-7
-LAST_UPDATE: 2026-05-01T00:27:00Z
-TOTAL_PROGRESS: 44/64
+CURRENT_TASK: P4-12
+LAST_UPDATE: 2026-05-01T00:30:00Z
+TOTAL_PROGRESS: 49/64
 ```
 
 ## 📋 工作守則（loop 每次必遵守）
@@ -103,11 +103,11 @@ TOTAL_PROGRESS: 44/64
 - [x] **P4-4** 安裝 `sharp ^0.34.5` npm 套件（高效能影像處理）
 - [x] **P4-5** 建立 `server/lib/image-hash.ts`：`computeImageHash` + `hammingDistance` + `isSimilarHash`
 - [x] **P4-6** 建立 `server/lib/ai-cache.ts`：`getCached` + `setCached` + `cleanupExpired` + `getCacheStats` + `buildCacheKey`
-- [ ] **P4-7** 修改 `verify-photo` endpoint：先查 cache（pHash 距離 < 5 命中）
-- [ ] **P4-8** 修改 `compare-photos` endpoint：同樣加 cache
-- [ ] **P4-9** AI 結果寫回 cache（含 30 天 TTL）
-- [ ] **P4-10** 加 cache 命中率到回應 metadata
-- [ ] **P4-11** TS check
+- [x] **P4-7** 修改 `verify-photo` endpoint：先查 cache（pHash 距離 < 5 命中）+ schema 加 pageId
+- [x] **P4-8** 修改 `compare-photos` endpoint：同樣加 cache
+- [x] **P4-9** AI 結果寫回 cache（含 30 天 TTL）
+- [x] **P4-10** 回應加 `cached: boolean` + `cacheDistance` metadata
+- [x] **P4-11** TS check EXIT 0
 
 ## 收尾
 
