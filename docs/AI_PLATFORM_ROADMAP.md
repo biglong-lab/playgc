@@ -177,14 +177,14 @@ TOTAL_PROGRESS: 100/120 (83%)
 - [x] **P8-4** 實作 `POST /api/admin/games/generate-from-script`：腳本 → pages array（純生成，不寫 DB）
 - [x] **P8-5** Zod schema 驗證（generatedGameSchema 在 P8-2 lib + 路由內 generatedPageSchema 二次驗證）
 - [x] **P8-6** 實作 `POST /api/admin/games/:gameId/apply-generated`：append/replace 模式 + audit log
-- [ ] **P8-7** 建立 `client/src/pages/admin/GameGenerator.tsx`：腳本輸入 + 預覽 UI
-- [ ] **P8-8** GameGenerator UI：腳本輸入區（多行 + 設定欄位）
-- [ ] **P8-9** GameGenerator UI：AI 解析中 loading
-- [ ] **P8-10** GameGenerator UI：預覽區（顯示生成的 page list）
-- [ ] **P8-11** GameGenerator UI：每頁可微調 + 重新生成單頁
-- [ ] **P8-12** GameGenerator UI：一鍵發布按鈕
-- [ ] **P8-13** 在 admin 遊戲列表加「✨ AI 產生器」入口
-- [ ] **P8-14** TS check
+- [x] **P8-7** 建立 `client/src/pages/admin/GameGenerator.tsx`（3 步驟：輸入 → 預覽 → 套用）+ App.tsx 路由
+- [x] **P8-8** UI：腳本輸入區（textarea + 場域風格 + 時長 + 難度 + 範例填入）
+- [x] **P8-9** UI：生成 loading（「AI 正在解析腳本... 約 10-30 秒」）
+- [x] **P8-10** UI：預覽區（每頁卡片 + pageOrder + pageType + customName + config 摘要）
+- [x] **P8-11** UI：可移除單頁（admin 微調）+ 重新生成按鈕
+- [x] **P8-12** UI：一鍵發布按鈕（含 replace toggle 警告）
+- [x] **P8-13** 在 game-editor header 加「✨ AI 產生器」入口（紫粉漸層按鈕）
+- [x] **P8-14** TS check EXIT 0
 - [ ] **P8-15** commit `feat(admin): AI 遊戲腳本產生器（5 分鐘出遊戲）` + push + 部署
 - [ ] **P8-E2E** 用測試腳本「拍 3 張古蹟照」呼叫 API → 應回 4-5 個 page 配置 + 通過 schema 驗證
 
