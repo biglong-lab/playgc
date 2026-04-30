@@ -294,39 +294,68 @@ export async function applyThresholdRecommendation(
     });
 }
 
-/**
- * 取得任務的當前生效閾值（沒設定回 DEFAULT）
- */
-export async function getEffectiveThresholds(
-  taskId: string,
-): Promise<{
+// In-memory cache（60s TTL）— 玩家拍照熱頻不該每次查 DB
+const thresholdCache = new Map<string, { data: EffectiveThresholds; expiresAt: number }>();
+const CACHE_TTL_MS = 60_000;
+
+export interface EffectiveThresholds {
   pHashThreshold: number;
   fuzzyTolerance: number;
   aiConfidenceThreshold: number;
   similarityThreshold: number;
-}> {
+}
+
+/**
+ * 取得任務的當前生效閾值（沒設定回 DEFAULT）— 含 60s cache
+ */
+export async function getEffectiveThresholds(
+  taskId: string,
+): Promise<EffectiveThresholds> {
+  // Cache lookup
+  const cached = thresholdCache.get(taskId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
   const [row] = await db
     .select()
     .from(taskThresholds)
     .where(eq(taskThresholds.taskId, taskId))
     .limit(1);
 
+  let result: EffectiveThresholds;
   if (!row) {
-    return { ...DEFAULT_THRESHOLDS };
+    result = { ...DEFAULT_THRESHOLDS };
+  } else {
+    result = {
+      pHashThreshold: row.pHashThreshold ?? DEFAULT_THRESHOLDS.pHashThreshold,
+      fuzzyTolerance: row.fuzzyTolerance ?? DEFAULT_THRESHOLDS.fuzzyTolerance,
+      aiConfidenceThreshold:
+        row.aiConfidenceThreshold !== null
+          ? Number(row.aiConfidenceThreshold)
+          : DEFAULT_THRESHOLDS.aiConfidenceThreshold,
+      similarityThreshold:
+        row.similarityThreshold !== null
+          ? Number(row.similarityThreshold)
+          : DEFAULT_THRESHOLDS.similarityThreshold,
+    };
   }
 
-  return {
-    pHashThreshold: row.pHashThreshold ?? DEFAULT_THRESHOLDS.pHashThreshold,
-    fuzzyTolerance: row.fuzzyTolerance ?? DEFAULT_THRESHOLDS.fuzzyTolerance,
-    aiConfidenceThreshold:
-      row.aiConfidenceThreshold !== null
-        ? Number(row.aiConfidenceThreshold)
-        : DEFAULT_THRESHOLDS.aiConfidenceThreshold,
-    similarityThreshold:
-      row.similarityThreshold !== null
-        ? Number(row.similarityThreshold)
-        : DEFAULT_THRESHOLDS.similarityThreshold,
-  };
+  thresholdCache.set(taskId, {
+    data: result,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+  });
+
+  return result;
+}
+
+/** 失效 cache（cron 重算後或 admin 手動改完後呼叫） */
+export function invalidateThresholdCache(taskId?: string): void {
+  if (taskId) {
+    thresholdCache.delete(taskId);
+  } else {
+    thresholdCache.clear();
+  }
 }
 
 function clamp(v: number, min: number, max: number): number {
