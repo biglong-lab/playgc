@@ -414,6 +414,16 @@ export default function GameEditor() {
             <Button variant="outline" onClick={handleSave} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-save">
               <Save className="w-4 h-4" /> 儲存
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setLocation(`/admin/game-generator?gameId=${gameId}`)}
+              disabled={isNew}
+              className="gap-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 hover:from-purple-100 hover:to-pink-100 border-purple-200"
+              data-testid="button-ai-generator"
+              title="用 AI 從腳本生成多個 pages"
+            >
+              <span className="text-base">✨</span> AI 產生器
+            </Button>
             <Button onClick={handlePublish} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-publish">
               <Upload className="w-4 h-4" /> 發布
             </Button>
