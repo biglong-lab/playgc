@@ -15,7 +15,12 @@
 import crypto from "crypto";
 import { eq, and, sql, lt } from "drizzle-orm";
 import { db } from "../db";
-import { aiResultCache, type InsertAiResultCache } from "@shared/schema";
+import {
+  aiResultCache,
+  aiCacheArchive,
+  fieldExemplarPhotos,
+  type InsertAiResultCache,
+} from "@shared/schema";
 import { computeImageHash, hammingDistance } from "./image-hash";
 
 const CACHE_TTL_DAYS = 30;
@@ -175,20 +180,196 @@ export async function setCached(params: CacheSetParams): Promise<void> {
 }
 
 /**
- * 清過期 cache（給 cron 用）
- * @returns 刪除的筆數
+ * 歸檔過期 cache（取代直接刪除的舊邏輯）
+ *
+ * 流程：
+ *   1. 找 expires_at < NOW() 的 rows
+ *   2. 高 confidence ≥ 0.85 + 有 imageUrl 的 → 已在 field_exemplar_photos？沒有則加入
+ *   3. 累積統計到 ai_cache_archive（task_id × endpoint UNIQUE，每次 archive 累加）
+ *   4. DELETE 原 row（資料已被消化，空間節省）
+ *
+ * 為什麼這樣做：
+ *   - 高分照片 = 玩家成功的視覺證據 → 升級成「精選範本候選」
+ *   - 累積使用次數 = 任務熱門度 → admin 在 ai-center 可看
+ *   - 平台越用越有歷史資產，符合「自主成長」願景
+ *
+ * @returns { archived: 歸檔數, exemplarsAdded: 升級到素材庫數, deletedRows: 已刪原 row 數 }
+ */
+export async function archiveExpired(): Promise<{
+  archived: number;
+  exemplarsAdded: number;
+  deletedRows: number;
+}> {
+  try {
+    // 取所有過期 rows
+    const now = new Date();
+    const expired = await db
+      .select()
+      .from(aiResultCache)
+      .where(lt(aiResultCache.expiresAt, now));
+
+    if (expired.length === 0) {
+      return { archived: 0, exemplarsAdded: 0, deletedRows: 0 };
+    }
+
+    let exemplarsAdded = 0;
+    let archived = 0;
+
+    // 步驟 2 + 3：分組統計 + 升級高分照片
+    // 用 Map<task_id|endpoint, { totalCount, totalHits, sumConfidence, maxConfidence, firstSeen, fieldId, gameId, photos[] }>
+    type Group = {
+      taskId: string | null;
+      endpoint: string;
+      fieldId: string | null;
+      gameId: string | null;
+      totalCount: number;
+      totalHits: number;
+      sumConfidence: number;
+      maxConfidence: number;
+      confidenceCount: number;
+      firstSeen: Date | null;
+      highPhotos: { url: string; confidence: number; pageId: string | null }[];
+    };
+    const groups = new Map<string, Group>();
+
+    for (const row of expired) {
+      const key = `${row.taskId || "null"}|${row.endpoint}`;
+      let g = groups.get(key);
+      if (!g) {
+        g = {
+          taskId: row.taskId,
+          endpoint: row.endpoint,
+          fieldId: row.fieldId,
+          gameId: row.gameId,
+          totalCount: 0,
+          totalHits: 0,
+          sumConfidence: 0,
+          maxConfidence: 0,
+          confidenceCount: 0,
+          firstSeen: null,
+          highPhotos: [],
+        };
+        groups.set(key, g);
+      }
+      g.totalCount++;
+      g.totalHits += row.hitCount ?? 0;
+      if (row.createdAt && (!g.firstSeen || row.createdAt < g.firstSeen)) {
+        g.firstSeen = row.createdAt;
+      }
+      // 從 result 抽 confidence
+      const result = row.result as { confidence?: number; verified?: boolean } | null;
+      const conf = typeof result?.confidence === "number" ? result.confidence : null;
+      if (conf !== null) {
+        g.sumConfidence += conf;
+        g.confidenceCount++;
+        if (conf > g.maxConfidence) g.maxConfidence = conf;
+        // 高分 + 有 imageUrl + verified !== false → 候選素材
+        if (conf >= 0.85 && row.imageUrl && result?.verified !== false) {
+          g.highPhotos.push({
+            url: row.imageUrl,
+            confidence: conf,
+            pageId: row.taskId,
+          });
+        }
+      }
+    }
+
+    // 步驟 2: 升級到 field_exemplar_photos（去重）
+    for (const g of Array.from(groups.values())) {
+      for (const photo of g.highPhotos) {
+        if (!g.fieldId) continue;
+        // 去重檢查
+        const existing = await db
+          .select({ id: fieldExemplarPhotos.id })
+          .from(fieldExemplarPhotos)
+          .where(
+            and(
+              eq(fieldExemplarPhotos.photoUrl, photo.url),
+              photo.pageId
+                ? eq(fieldExemplarPhotos.pageId, photo.pageId)
+                : sql`${fieldExemplarPhotos.pageId} IS NULL`,
+            ),
+          )
+          .limit(1);
+        if (existing.length > 0) continue;
+        try {
+          await db.insert(fieldExemplarPhotos).values({
+            fieldId: g.fieldId,
+            gameId: g.gameId ?? null,
+            pageId: photo.pageId ?? null,
+            photoUrl: photo.url,
+            confidence: photo.confidence.toFixed(2),
+            source: "cron_collected",
+            isCurated: false,
+          });
+          exemplarsAdded++;
+        } catch (err) {
+          console.warn("[ai-cache] 升級 exemplar 失敗:", err instanceof Error ? err.message : err);
+        }
+      }
+    }
+
+    // 步驟 3: 統計 upsert 到 ai_cache_archive
+    for (const g of Array.from(groups.values())) {
+      const avgConfidence =
+        g.confidenceCount > 0 ? g.sumConfidence / g.confidenceCount : null;
+      try {
+        // PostgreSQL UPSERT (ON CONFLICT DO UPDATE 累加)
+        await db
+          .insert(aiCacheArchive)
+          .values({
+            fieldId: g.fieldId,
+            gameId: g.gameId,
+            taskId: g.taskId,
+            endpoint: g.endpoint,
+            totalCount: g.totalCount,
+            totalHits: g.totalHits,
+            avgConfidence: avgConfidence !== null ? avgConfidence.toFixed(3) : null,
+            maxConfidence: g.maxConfidence > 0 ? g.maxConfidence.toFixed(3) : null,
+            firstSeenAt: g.firstSeen,
+            lastArchivedAt: now,
+          })
+          .onConflictDoUpdate({
+            target: [aiCacheArchive.taskId, aiCacheArchive.endpoint],
+            set: {
+              totalCount: sql`${aiCacheArchive.totalCount} + ${g.totalCount}`,
+              totalHits: sql`${aiCacheArchive.totalHits} + ${g.totalHits}`,
+              // 加權平均（簡化：用新累加替換）
+              avgConfidence:
+                avgConfidence !== null ? avgConfidence.toFixed(3) : aiCacheArchive.avgConfidence,
+              maxConfidence: sql`GREATEST(COALESCE(${aiCacheArchive.maxConfidence}, 0), ${g.maxConfidence})`,
+              lastArchivedAt: now,
+            },
+          });
+        archived++;
+      } catch (err) {
+        console.warn("[ai-cache] archive upsert 失敗:", err instanceof Error ? err.message : err);
+      }
+    }
+
+    // 步驟 4: 刪除原 row
+    const deleted = await db
+      .delete(aiResultCache)
+      .where(lt(aiResultCache.expiresAt, now))
+      .returning({ id: aiResultCache.id });
+
+    return {
+      archived,
+      exemplarsAdded,
+      deletedRows: deleted.length,
+    };
+  } catch (err) {
+    console.error("[ai-cache] archiveExpired 失敗:", err);
+    return { archived: 0, exemplarsAdded: 0, deletedRows: 0 };
+  }
+}
+
+/**
+ * @deprecated 請用 archiveExpired() 取代（保留 alias 不破壞既有 import）
  */
 export async function cleanupExpired(): Promise<number> {
-  try {
-    const result = await db
-      .delete(aiResultCache)
-      .where(lt(aiResultCache.expiresAt, new Date()))
-      .returning({ id: aiResultCache.id });
-    return result.length;
-  } catch (err) {
-    console.error("[ai-cache] cleanupExpired 失敗:", err);
-    return 0;
-  }
+  const result = await archiveExpired();
+  return result.deletedRows;
 }
 
 /**

@@ -13,12 +13,15 @@ import { db } from "../../server/db";
 import { pages, games, fields, parseFieldSettings, aiResultCache, fieldExemplarPhotos } from "@shared/schema";
 import { generateVariantPool } from "../../server/lib/variant-generator";
 import { decryptApiKey } from "../../server/lib/crypto";
-import { cleanupExpired as cleanupCacheExpired } from "../../server/lib/ai-cache";
+import { archiveExpired } from "../../server/lib/ai-cache";
 
 interface CronStats {
   variantsGenerated: number;
   variantsSkipped: number;
   variantsFailed: number;
+  // P5+P6 修正：cache 不再直接刪除，改為歸檔
+  cacheArchived: number;
+  cacheExemplarsAdded: number;
   cacheRowsDeleted: number;
   exemplarsCollected: number;
   startedAt: Date;
@@ -126,13 +129,27 @@ async function task1_generateVariants(): Promise<{
 }
 
 /**
- * 任務 2：清過期快取
+ * 任務 2：歸檔過期快取（不再「直接刪除」，改成收納堆疊）
+ *
+ * 流程：
+ *   1. 高 confidence ≥ 0.85 + 有 imageUrl → 升級到 field_exemplar_photos（去重）
+ *   2. 統計累積到 ai_cache_archive（task × endpoint UNIQUE，每次 archive 累加）
+ *   3. 最後刪除原 row（資料已被消化）
+ *
+ * 結果：場域累積「某任務歷史 N 次成功 / 平均信心 X」資產，平台越用越聰明。
  */
-async function task2_cleanupCache(): Promise<number> {
-  console.log("[cron] 任務 2：清過期快取");
-  const deleted = await cleanupCacheExpired();
-  console.log(`[cron] ✅ 已清 ${deleted} 筆過期 cache`);
-  return deleted;
+async function task2_archiveCache(): Promise<{
+  archived: number;
+  exemplarsAdded: number;
+  deletedRows: number;
+}> {
+  console.log("[cron] 任務 2：歸檔過期快取（升級素材 + 統計累積 + 刪除原 row）");
+  const result = await archiveExpired();
+  console.log(
+    `[cron] ✅ 歸檔 ${result.archived} 個 task/endpoint，` +
+      `升級 ${result.exemplarsAdded} 張素材，刪除 ${result.deletedRows} 筆原 row`,
+  );
+  return result;
 }
 
 /**
@@ -215,6 +232,8 @@ export async function runDailyCron(): Promise<CronStats> {
     variantsGenerated: 0,
     variantsSkipped: 0,
     variantsFailed: 0,
+    cacheArchived: 0,
+    cacheExemplarsAdded: 0,
     cacheRowsDeleted: 0,
     exemplarsCollected: 0,
     startedAt: new Date(),
@@ -235,7 +254,10 @@ export async function runDailyCron(): Promise<CronStats> {
   }
 
   try {
-    stats.cacheRowsDeleted = await task2_cleanupCache();
+    const t2 = await task2_archiveCache();
+    stats.cacheArchived = t2.archived;
+    stats.cacheExemplarsAdded = t2.exemplarsAdded;
+    stats.cacheRowsDeleted = t2.deletedRows;
   } catch (err) {
     console.error("[cron] 任務 2 整體失敗:", err);
   }
@@ -253,8 +275,10 @@ export async function runDailyCron(): Promise<CronStats> {
   console.log(`  變體池生成：${stats.variantsGenerated}`);
   console.log(`  變體池跳過：${stats.variantsSkipped}（無 OpenRouter key）`);
   console.log(`  變體池失敗：${stats.variantsFailed}`);
-  console.log(`  cache 清理：${stats.cacheRowsDeleted}`);
-  console.log(`  素材策展：${stats.exemplarsCollected}（P6 待啟用）`);
+  console.log(`  快取歸檔：${stats.cacheArchived} 個 task × endpoint`);
+  console.log(`  快取升級素材：${stats.cacheExemplarsAdded} 張高分照片`);
+  console.log(`  快取刪原 row：${stats.cacheRowsDeleted}（已被消化進歸檔/素材庫）`);
+  console.log(`  task3 策展：${stats.exemplarsCollected}（從近 7 天 cache）`);
   console.log(`  耗時：${(stats.durationMs / 1000).toFixed(1)}s`);
   console.log("=" .repeat(60));
 

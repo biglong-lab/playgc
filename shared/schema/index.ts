@@ -41,6 +41,7 @@ export * from "./ai-models";
 export * from "./ai-usage-logs";
 export * from "./ai-variant-pool";
 export * from "./ai-cache";
+export * from "./ai-cache-archive";
 export * from "./field-exemplar";
 export * from "./module-catalog";
 export * from "./game-routes";
