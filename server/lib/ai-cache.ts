@@ -106,7 +106,7 @@ export async function getCached<T = unknown>(
     };
   }
 
-  // 第二層：模糊命中（同 task_id + pHash 距離 < 5）
+  // 第二層：模糊命中（同 task_id + pHash 距離 < 自適應閾值）
   // 用 idx_ai_cache_task_phash 索引篩 task_id 後在 app 層比對距離
   const candidates = await db
     .select()
@@ -119,11 +119,15 @@ export async function getCached<T = unknown>(
     )
     .limit(50); // 取 50 筆做距離比對（熱門景點不會太多）
 
+  // 🆕 P13-4: 取自適應閾值（無設定 = DEFAULT 5）
+  const thresholds = await getEffectiveThresholds(params.taskId);
+  const effectiveThreshold = thresholds.pHashThreshold;
+
   const now = new Date();
   for (const c of candidates) {
     if (c.expiresAt <= now || !c.pHash) continue;
     const dist = hammingDistance(pHash, c.pHash);
-    if (dist < PHASH_DISTANCE_THRESHOLD) {
+    if (dist < effectiveThreshold) {
       // 命中！更新 hit count
       await db
         .update(aiResultCache)
