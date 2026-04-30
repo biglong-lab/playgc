@@ -169,7 +169,7 @@ TOTAL_PROGRESS: 102/120 (85%)
 
 ---
 
-# Phase 8：AI 遊戲腳本產生器 🪄
+# Phase 8：AI 遊戲腳本產生器 🪄 ✅ 完成
 
 - [x] **P8-1** 建立 `shared/schema/module-catalog.ts`：23 個現有 page type 的能力描述（含 ModuleScenario / ModuleSpec / formatModuleCatalog）
 - [x] **P8-2** 建立 `server/lib/game-script-generator.ts`：DeepSeek prompt + Zod 驗證生成的 page configs
