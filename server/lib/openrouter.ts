@@ -39,7 +39,10 @@ interface ChatMessage {
  *  2. 失敗時用 regex 找 first balanced object → 再 parse
  *  3. 仍失敗 → 拋出明確錯誤訊息（前 200 字 raw）
  */
-function safeParseAiJson<T>(raw: string, label: string): T {
+/**
+ * @export 共用 JSON 解析（容錯：去 markdown / 抓 first balanced object）
+ */
+export function safeParseAiJson<T>(raw: string, label: string): T {
   // 去掉 markdown code block（```json ... ```）
   let cleaned = raw.trim();
   const codeBlockMatch = cleaned.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);
