@@ -10,10 +10,10 @@
 ## 📍 當前狀態（loop 每次必讀）
 
 ```
-CURRENT_PHASE: P1
-CURRENT_TASK: P1-1
-LAST_UPDATE: 2026-04-30T05:00:00Z
-TOTAL_PROGRESS: 0/64
+CURRENT_PHASE: P2
+CURRENT_TASK: P2-1
+LAST_UPDATE: 2026-04-30T15:58:00Z
+TOTAL_PROGRESS: 6/64
 ```
 
 ## 📋 工作守則（loop 每次必遵守）
@@ -28,16 +28,16 @@ TOTAL_PROGRESS: 0/64
 
 ---
 
-# Phase 1：模型分工切換 ⚡
+# Phase 1：模型分工切換 ⚡ ✅ 完成
 
 ## 任務清單
 
-- [ ] **P1-1** 修改 `shared/schema/ai-models.ts`：`DEFAULT_VISION_MODEL` 改為 `meta-llama/llama-4-scout`
-- [ ] **P1-2** 重排 `OPENROUTER_FALLBACK_CHAIN` 順序：[llama-4-scout, mistral-small-3.2-24b, gemma-3-12b-it:free]
-- [ ] **P1-3** TS check 通過
-- [ ] **P1-4** commit `fix(ai): vision 預設改 Llama 4 Scout（速度 0.5s）` + push
-- [ ] **P1-5** 部署生產（ssh + docker compose build app）
-- [ ] **P1-E2E** curl https://game.homi.cc/api/health（HTTP 200）+ 確認服務正常啟動
+- [x] **P1-1** 修改 `shared/schema/ai-models.ts`：`DEFAULT_VISION_MODEL` 改為 `meta-llama/llama-4-scout`
+- [x] **P1-2** 重排 `OPENROUTER_FALLBACK_CHAIN` 順序：[llama-4-scout, mistral-small-3.2-24b, gemma-3-12b-it:free]
+- [x] **P1-3** TS check 通過
+- [x] **P1-4** commit `fix(ai): vision 預設改 Llama 4 Scout（速度 0.5s）` + push
+- [x] **P1-5** 部署生產（ssh + docker compose build app）
+- [x] **P1-E2E** curl https://game.homi.cc/api/health（HTTP 200）+ 確認服務正常啟動
 
 ---
 
