@@ -406,6 +406,44 @@ async function task5_concludeAbExperiments(): Promise<{
 }
 
 /**
+ * 任務 6：內容健康度分析（P15-7）
+ *
+ * 流程：
+ *   1. 跑 calculateHealthScore() 取整體健康度
+ *   2. log 統計（分數 / 等級 / 殭屍 / 孤兒 / 死路 數量）
+ *   3. 不寫 metrics 表（caller 透過 stats 拿，需要持久化由後續迭代再加）
+ *
+ * 用途：日報級可見性 + 趨勢追蹤底盤
+ */
+async function task6_analyzeContentHealth(): Promise<{
+  score: number;
+  level: string;
+  zombies: number;
+  orphans: number;
+  deadEnds: number;
+}> {
+  console.log("[cron] 任務 6：內容健康度分析");
+
+  const result = await calculateHealthScore({});
+  const { score, level, breakdown, penalties } = result;
+
+  console.log(
+    `[cron] 🏥 健康度 ${score}/100 (${level}) — 殭屍 ${breakdown.zombieCount} / 孤兒 ${breakdown.orphanCount} / 死路 ${breakdown.deadEndCount}（H:${breakdown.deadEndHigh} M:${breakdown.deadEndMedium} L:${breakdown.deadEndLow}）`,
+  );
+  console.log(
+    `[cron] 🏥 扣分：殭屍 -${penalties.zombie} / 孤兒 -${penalties.orphan} / 死路 -${penalties.deadEnd}`,
+  );
+
+  return {
+    score,
+    level,
+    zombies: breakdown.zombieCount,
+    orphans: breakdown.orphanCount,
+    deadEnds: breakdown.deadEndCount,
+  };
+}
+
+/**
  * 主入口
  */
 export async function runDailyCron(): Promise<CronStats> {
