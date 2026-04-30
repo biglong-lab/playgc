@@ -152,6 +152,20 @@ export default function PlatformAiCenter() {
     enabled: isAuthed,
   });
 
+  // P15-6: 內容健康診斷
+  const { data: contentHealth, isLoading: contentHealthLoading } =
+    useQuery<ContentHealthResponse>({
+      queryKey: ["/api/platform/ai-center/content-health"],
+      queryFn: async () => {
+        const res = await apiRequest(
+          "GET",
+          "/api/platform/ai-center/content-health",
+        );
+        return res.json();
+      },
+      enabled: isAuthed,
+    });
+
   // 一鍵批次補生成
   const batchGenerateMutation = useMutation({
     mutationFn: async () => {
