@@ -263,15 +263,15 @@ export default function GamePageRenderer({
   const variant = page.pageType === "flow_router" ? "flow" : "default";
 
   // 🗺️ 自動偵測 locationSettings → 顯示頁面定位迷你地圖
-  // 適用於 text_card / dialogue / choice_verify / vote 等以文字為主的頁面
-  //
-  // 排除清單：
-  //  - 已有自己地圖：gps_mission, photo_spot
-  //  - 純路由：flow_router
-  //  - 全螢幕互動類（注入 MiniMap 會擠壓核心 UI）：
-  //    QR 相機、所有拍照流程、射擊任務、影片播放
-  // ⚡ 用模組層級 SKIP_MINI_MAP_TYPES（不在 render 內建 Set）
   const showMiniMap = shouldShowMiniMap(config) && !SKIP_MINI_MAP_TYPES.has(page.pageType);
+
+  // 📊 P11-8: 訂閱最近顯示的變體（給 FeedbackButtons 用）
+  const lastShownVariant = useLastShownVariant();
+  // 換頁時清除 tracker（避免上一頁變體按鈕殘留）
+  useMemo(() => {
+    clearShownVariant();
+    return null;
+  }, [page.id]);
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -283,6 +283,20 @@ export default function GamePageRenderer({
             </div>
           )}
           {renderPage()}
+          {/* 📊 P11-8: 變體訊息反饋按鈕（玩家觸發 toast 後 60s 內可見） */}
+          {lastShownVariant && lastShownVariant.pageId === page.id && (
+            <div className="fixed bottom-4 right-4 bg-background/95 backdrop-blur border rounded-lg shadow-lg p-2 z-50">
+              <FeedbackButtons
+                pageId={lastShownVariant.pageId}
+                variantKey={lastShownVariant.variantKey}
+                variantIndex={lastShownVariant.variantIndex}
+                variantText={lastShownVariant.variantText}
+                gameId={gameId}
+                sessionId={sessionId}
+                variant="floating"
+              />
+            </div>
+          )}
         </Suspense>
       </PageTransition>
     </AnimatePresence>
