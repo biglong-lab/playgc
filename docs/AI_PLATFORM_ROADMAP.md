@@ -130,7 +130,7 @@ TOTAL_PROGRESS: 73/64 (114%)
 
 ---
 
-# Phase 6：場域素材庫 🖼️
+# Phase 6：場域素材庫 🖼️ ✅ 完成
 
 - [x] **P6-1** 建立 `shared/schema/field-exemplar.ts`（含 4 個 index + ExemplarSource 型別）
 - [x] **P6-2** SQL: `CREATE TABLE field_exemplar_photos(...)` + 4 個 index（本地 ✅ + 生產 ✅）
