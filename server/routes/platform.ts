@@ -981,6 +981,177 @@ export function registerPlatformRoutes(app: Express): void {
     }
   });
 
+  // ============================================================================
+  // 🆕 P2-1（2026-04-30）— 批量管理工具
+  // ============================================================================
+
+  /**
+   * POST /api/platform/fields/bulk-status
+   * 批量變更場域狀態
+   * Body: { fieldIds: string[], status: "active"|"inactive"|"suspended", reason?: string }
+   */
+  const bulkStatusSchema = z.object({
+    fieldIds: z.array(z.string().uuid()).min(1).max(100),
+    status: z.enum(["active", "inactive", "suspended"]),
+    reason: z.string().max(500).optional(),
+  });
+
+  app.post("/api/platform/fields/bulk-status", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = bulkStatusSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤", errors: parsed.error.errors });
+      }
+
+      const { fieldIds, status, reason } = parsed.data;
+
+      // 抓舊狀態給 audit 用
+      const oldFields = await db.query.fields.findMany({
+        where: inArray(fields.id, fieldIds),
+        columns: { id: true, name: true, code: true, status: true },
+      });
+      const oldMap = new Map(oldFields.map((f) => [f.id, f]));
+
+      // 批量更新
+      await db
+        .update(fields)
+        .set({ status, updatedAt: new Date() })
+        .where(inArray(fields.id, fieldIds));
+
+      // 為每個變更寫 audit（一筆一筆寫、簡單容錯）
+      for (const f of oldFields) {
+        await logAuditAction({
+          actorAdminId: req.platform?.adminAccountId ?? undefined,
+          action: "platform:bulk_field_status_change",
+          targetType: "field",
+          targetId: f.id,
+          fieldId: f.id,
+          metadata: {
+            oldStatus: f.status,
+            newStatus: status,
+            reason,
+            batchSize: fieldIds.length,
+            actorRole: req.platform?.role,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+      }
+
+      res.json({
+        success: true,
+        updatedCount: oldFields.length,
+        skipped: fieldIds.length - oldFields.length,
+        items: oldFields.map((f) => ({
+          id: f.id,
+          name: f.name,
+          code: f.code,
+          oldStatus: f.status,
+          newStatus: status,
+        })),
+      });
+    } catch (error) {
+      console.error("[platform/fields/bulk-status] failed:", error);
+      res.status(500).json({ message: "批量變更狀態失敗" });
+    }
+  });
+
+  /**
+   * POST /api/platform/fields/bulk-plan
+   * 批量變更場域訂閱方案
+   * Body: { fieldIds: string[], planId: string, billingCycle?: "monthly"|"yearly" }
+   */
+  const bulkPlanSchema = z.object({
+    fieldIds: z.array(z.string().uuid()).min(1).max(100),
+    planId: z.string().uuid(),
+    billingCycle: z.enum(["monthly", "yearly"]).optional(),
+  });
+
+  app.post("/api/platform/fields/bulk-plan", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = bulkPlanSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤", errors: parsed.error.errors });
+      }
+
+      const { fieldIds, planId, billingCycle } = parsed.data;
+
+      // 確認方案存在
+      const plan = await db.query.platformPlans.findFirst({
+        where: eq(platformPlans.id, planId),
+      });
+      if (!plan) return res.status(404).json({ message: "方案不存在" });
+
+      const updated: Array<{ fieldId: string; subscriptionId: string; action: "create" | "update" }> = [];
+
+      // 對每個 fieldId 個別處理（同一場域可能已有 subscription）
+      for (const fieldId of fieldIds) {
+        const existing = await db.query.fieldSubscriptions.findFirst({
+          where: eq(fieldSubscriptions.fieldId, fieldId),
+        });
+        let action: "create" | "update";
+        let subId: string;
+
+        if (existing) {
+          const [sub] = await db
+            .update(fieldSubscriptions)
+            .set({
+              planId,
+              billingCycle: billingCycle ?? existing.billingCycle,
+              updatedAt: new Date(),
+            })
+            .where(eq(fieldSubscriptions.id, existing.id))
+            .returning();
+          subId = sub.id;
+          action = "update";
+        } else {
+          const [sub] = await db
+            .insert(fieldSubscriptions)
+            .values({
+              fieldId,
+              planId,
+              status: "active",
+              billingCycle: billingCycle ?? "monthly",
+            })
+            .returning();
+          subId = sub.id;
+          action = "create";
+        }
+
+        updated.push({ fieldId, subscriptionId: subId, action });
+
+        // 每個變更寫 audit
+        await logAuditAction({
+          actorAdminId: req.platform?.adminAccountId ?? undefined,
+          action: action === "update" ? "platform:bulk_field_plan_change" : "platform:bulk_field_plan_create",
+          targetType: "field_subscription",
+          targetId: subId,
+          fieldId,
+          metadata: {
+            planId,
+            planCode: plan.code,
+            planName: plan.name,
+            billingCycle: billingCycle ?? "monthly",
+            batchSize: fieldIds.length,
+            actorRole: req.platform?.role,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+      }
+
+      res.json({
+        success: true,
+        updatedCount: updated.filter((u) => u.action === "update").length,
+        createdCount: updated.filter((u) => u.action === "create").length,
+        items: updated,
+      });
+    } catch (error) {
+      console.error("[platform/fields/bulk-plan] failed:", error);
+      res.status(500).json({ message: "批量變更方案失敗" });
+    }
+  });
+
   /**
    * GET /api/platform/audit-logs
    * Query params:

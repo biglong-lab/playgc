@@ -107,6 +107,7 @@ const PlatformAuditLogs = lazy(() => import("@/pages/platform/PlatformAuditLogs"
 const PlatformTickets = lazy(() => import("@/pages/platform/PlatformTickets"));
 const PlatformBillingAlerts = lazy(() => import("@/pages/platform/PlatformBillingAlerts"));
 const PlatformUsage = lazy(() => import("@/pages/platform/PlatformUsage"));
+const PlatformBulkOps = lazy(() => import("@/pages/platform/PlatformBulkOps"));
 
 // 📝 公開申請頁（Phase 8）
 const Apply = lazy(() => import("@/pages/Apply"));
@@ -287,6 +288,7 @@ function Router() {
         <Route path="/platform/tickets">{() => <ProtectedAdminRoute><PlatformTickets /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/billing-alerts">{() => <ProtectedAdminRoute><PlatformBillingAlerts /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/usage">{() => <ProtectedAdminRoute><PlatformUsage /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/bulk-ops">{() => <ProtectedAdminRoute><PlatformBulkOps /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/settings">{() => <ProtectedAdminRoute><PlatformSettingsPage /></ProtectedAdminRoute>}</Route>
 
         {/* 📝 公開場域申請（Phase 8）*/}

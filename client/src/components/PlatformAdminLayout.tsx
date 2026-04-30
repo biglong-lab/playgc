@@ -39,6 +39,7 @@ import {
   Ticket,
   AlertTriangle,
   Activity,
+  Layers,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -69,6 +70,8 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
       { label: "場域申請", path: "/platform/applications", icon: Inbox },
       { label: "訂閱方案", path: "/platform/plans", icon: Package },
       { label: "功能開關", path: "/platform/feature-flags", icon: ToggleLeft },
+      // 🆕 P2-1（2026-04-30）— 批量管理
+      { label: "批量操作", path: "/platform/bulk-ops", icon: Layers },
     ],
   },
   // 🆕 2026-04-30 — 客服工單系統
