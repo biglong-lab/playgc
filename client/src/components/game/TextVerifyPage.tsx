@@ -190,8 +190,9 @@ export default function TextVerifyPage({ config, onComplete, gameId, variantPool
     } else {
       const answersArray = buildAnswersArray();
       const feedback = feedbackMessage || getGradedFeedback(answer, answersArray).message;
+      // 🎨 P2: 失敗訊息也從變體池抽（pool 沒設則用 graded feedback）
       toast({
-        title: feedback,
+        title: pickVariant(variantPool, "fail", feedback),
         description: `還剩 ${maxAttempts - newAttempts} 次機會`,
         variant: "destructive",
       });
