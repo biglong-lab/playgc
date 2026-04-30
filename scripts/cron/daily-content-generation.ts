@@ -625,6 +625,11 @@ export async function runDailyCron(): Promise<CronStats> {
   console.log(`  task4 閾值：${stats.thresholdsAdjusted} 調整 / ${stats.thresholdsMaintained} 維持 / ${stats.thresholdsInsufficient} 樣本不足`);
   console.log(`  task5 A/B：${stats.abExperimentsConcluded} 自動完成 / ${stats.abExperimentsPending} 待續 / ${stats.abExperimentsFailed} 失敗`);
   console.log(`  task6 健康度：${stats.healthScore}/100 (${stats.healthLevel}) — 殭屍 ${stats.healthZombies} / 孤兒 ${stats.healthOrphans} / 死路 ${stats.healthDeadEnds}`);
+  if (stats.markovSkipped) {
+    console.log(`  task7 Markov：skip（非週一）`);
+  } else {
+    console.log(`  task7 Markov：${stats.markovFieldsTrained} 場域 / ${stats.markovSessionsAnalyzed} sessions / ${stats.markovTransitionsUpserted} transitions`);
+  }
   console.log(`  耗時：${(stats.durationMs / 1000).toFixed(1)}s`);
   console.log("=" .repeat(60));
 
