@@ -155,15 +155,15 @@ TOTAL_PROGRESS: 84/120 (70%)
 - [x] **P7-1** 建立 `client/src/pages/platform/PlatformAiCenter.tsx`（4 分頁完整 UI 含 P7-8~P7-11 內容）
 - [x] **P7-2** `platform-menu.ts` 加「AI 訓練中心」(Sparkles icon)，放在「平台總覽」群組末
 - [x] **P7-3** `App.tsx` 加路由 `/platform/ai-center`
-- [ ] **P7-4** 建立 `server/routes/platform/ai-center.ts`
-- [ ] **P7-5** 實作 `GET /api/platform/ai-center/usage`（按月/按 endpoint/按 model 統計）
-- [ ] **P7-6** 實作 `GET /api/platform/ai-center/health`（變體池健康度、快取 hit 率）
-- [ ] **P7-7** 實作 `POST /api/platform/ai-center/batch-generate-variants`（批次補生成）
-- [ ] **P7-8** PlatformAiCenter UI：用量總覽分頁（圖表）
-- [ ] **P7-9** PlatformAiCenter UI：內容打磨分頁（健康度 + 一鍵補生成）
-- [ ] **P7-10** PlatformAiCenter UI：素材庫管理分頁（連結到 P6）
-- [ ] **P7-11** PlatformAiCenter UI：訓練設定分頁（修改各 endpoint 模型）
-- [ ] **P7-12** TS check
+- [x] **P7-4** 建立 `server/routes/platform-ai-center.ts`（registerPlatformAiCenterRoutes 註冊）
+- [x] **P7-5** 實作 `GET /api/platform/ai-center/usage`（本月 logs 按 endpoint/provider 統計 + cacheHitRate + 成本估算）
+- [x] **P7-6** 實作 `GET /api/platform/ai-center/health`（pages/cache/exemplar 統計）
+- [x] **P7-7** 實作 `POST /api/platform/ai-center/batch-generate-variants`（與 cron task 1 同邏輯）
+- [x] **P7-8** PlatformAiCenter UI：用量總覽分頁（4 卡片 + endpoint/provider 分佈）
+- [x] **P7-9** PlatformAiCenter UI：內容打磨分頁（3 卡片 + 一鍵批次按鈕）
+- [x] **P7-10** PlatformAiCenter UI：素材庫管理分頁（連結 ExemplarLibrary）
+- [x] **P7-11** PlatformAiCenter UI：訓練設定分頁（顯示 3 個模型分工，唯讀預覽）
+- [x] **P7-12** TS check EXIT 0
 - [ ] **P7-13** commit `feat(platform): AI 訓練中心後台專區` + push + 部署
 - [ ] **P7-E2E** 訪問 `/platform/ai-center`（HTTP 200）+ API 4 個端點都回 401（未登入正確擋下）
 
