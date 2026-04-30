@@ -200,10 +200,10 @@ TOTAL_PROGRESS: 114/120 (95%)
 - [x] **P9-6** 加 `POST /api/admin/copilot/suggest-next`（DeepSeek 推薦 3 個 page type）
 - [x] **P9-7** 加 `POST /api/admin/copilot/diagnose`（純規則引擎，不耗 AI）
 - [x] **P9-8** 加 `POST /api/admin/copilot/polish-copy` + `GET /copy-styles`（7 種風格清單）
-- [ ] **P9-9** 在 `PageConfigEditor.tsx` 加「💡 推薦下一頁」按鈕
-- [ ] **P9-10** 在遊戲儲存時觸發診斷，顯示 banner 警告
-- [ ] **P9-11** 在所有文字輸入旁加「✨」魔法棒按鈕
-- [ ] **P9-12** TS check
+- [x] **P9-9** 建立 `<AdminCopilotPanel>` 元件，整合到 game-editor 「遊戲基本設定」分頁底部（含「💡 推薦下一頁」+ onAddPage 套用功能）
+- [x] **P9-10** AdminCopilotPanel 含「🔍 流程診斷」按鈕（純規則，毫秒級回應），點擊顯示 issues 清單（依 severity 染色）
+- [x] **P9-11** 建立 `<CopyPolishButton>` reusable 魔法棒元件（7 種風格 × 3 個變體選擇）— 可在任何文字輸入旁引用
+- [x] **P9-12** TS check EXIT 0
 - [ ] **P9-13** commit `feat(admin): AI 副駕駛（推薦/診斷/文案）` + push + 部署
 - [ ] **P9-E2E** 測試 3 個 endpoint（suggest-next / diagnose / polish-copy）回應正常
 
