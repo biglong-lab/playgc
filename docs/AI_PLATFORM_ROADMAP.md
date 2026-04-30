@@ -116,7 +116,7 @@ TOTAL_PROGRESS: 60/64
 
 ---
 
-# Phase 5：週期生成 cron 🌙
+# Phase 5：週期生成 cron 🌙 ✅ 完成
 
 - [x] **P5-1** 建立 `scripts/cron/daily-content-generation.ts`（runDailyCron entry）
 - [x] **P5-2** 任務 1：補變體池（找 variant_pool=null 的 7 種 page type，每次最多 20 個）
