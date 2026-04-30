@@ -121,7 +121,7 @@ TOTAL_PROGRESS: 34/42
 - [x] **P14-8** App.tsx 加路由 `/admin/ab-experiments`：lazy import + ProtectedAdminRoute 包裹（與其他 admin 頁面一致）
 
 ## cron
-- [ ] **P14-9** cron task 5：每天檢查 active 實驗，達顯著性閾值自動標記結論
+- [x] **P14-9** cron task 5：抓所有 status=running 實驗 → calculateSignificance → a_wins/b_wins 自動 status=completed + endedAt + conclusionStats（含 pValue/zStatistic/effectSize/groupA/groupB/conclusionReason/calculatedAt）；no_difference 寫結論但保持 running；insufficient_data 不更新
 - [ ] **P14-10** TS check + commit + push + 部署 + E2E
 
 ---
