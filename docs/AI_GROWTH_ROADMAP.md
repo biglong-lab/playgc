@@ -159,7 +159,7 @@ TOTAL_PROGRESS: 48/50
 - [x] **P16-4** 建立 `server/lib/markov-sampler.ts`：sampleNextType(fieldId, currentType, options) — 從 page_type_transitions 取所有 (field, from) row → 計算機率分佈 → 累積分佈加權隨機抽；含 5 分鐘 in-memory cache（invalidateMarkovCache 給 trainer 用）+ allowedTypes 過濾 + minSamples=5 防樣本不足；4 種 reason: markov/no-data/no-allowed/insufficient + 順帶 export getTransitionProbabilities（不抽樣）
 
 ## 整合
-- [ ] **P16-5** 修改 `server/lib/roguelike-composer.ts`：用 Markov 排序而非純 shuffle（fallback 純隨機）
+- [x] **P16-5** 修改 `server/lib/roguelike-composer.ts`：新增 `useMarkov?: boolean` opt-in 參數（預設 false 走原 shuffle 向後相容）；啟用時取 game.fieldId → 第 1 個任務純隨機（無前者參考）→ 第 2~N 個 sampleNextType(fieldId, prev.pageType, allowedTypes) 從該 type pool 隨機抽避免重複；sampler 回 null 時 fallback 純隨機；rationale 顯示 Markov 使用 / fallback 計數
 - [ ] **P16-6** 修改 `server/lib/admin-copilot.ts` suggestNextModule：將 Markov 機率注入 prompt 給 AI 參考
 
 ## cron + 部署
