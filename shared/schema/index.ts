@@ -49,6 +49,7 @@ export * from "./player-feedback";
 export * from "./player-events";
 export * from "./task-thresholds";
 export * from "./ab-experiments";
+export * from "./markov-transitions";
 export * from "./support-tickets";
 export * from "./error-logs";
 export * from "./platform-security";
