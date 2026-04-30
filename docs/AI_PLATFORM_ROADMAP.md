@@ -49,13 +49,13 @@ TOTAL_PROGRESS: 17/64
 - [x] **P2-2** 在 `shared/schema/index.ts` 加 export
 - [x] **P2-3** SQL: `ALTER TABLE pages ADD COLUMN IF NOT EXISTS variant_pool JSONB`（本地 + 生產 DB）
 - [x] **P2-4** 在 `shared/schema/games.ts` 的 pages table 加 `variantPool: jsonb` 欄位
-- [ ] **P2-5** 建立 `server/lib/variant-generator.ts`：用 DeepSeek V3.2 生成變體
-- [ ] **P2-6** 建立 `server/routes/admin/variant-pool.ts`：路由模組
-- [ ] **P2-7** 實作 `POST /api/admin/games/:gameId/pages/:pageId/generate-variants`
-- [ ] **P2-8** 實作 `GET /api/admin/games/:gameId/pages/:pageId/variants`
-- [ ] **P2-9** 實作 `PATCH /api/admin/games/:gameId/pages/:pageId/variants`（手動編輯）
-- [ ] **P2-10** 在 `server/routes/index.ts`（或對應主路由檔）註冊 variant-pool 路由
-- [ ] **P2-11** TS check 通過
+- [x] **P2-5** 建立 `server/lib/variant-generator.ts`：用 DeepSeek V3.2 生成變體
+- [x] **P2-6** 建立 `server/routes/admin/variant-pool.ts`：路由模組（檔名實際為 admin-variant-pool.ts）
+- [x] **P2-7** 實作 `POST /api/admin/games/:gameId/pages/:pageId/generate-variants`
+- [x] **P2-8** 實作 `GET /api/admin/games/:gameId/pages/:pageId/variants`
+- [x] **P2-9** 實作 `PATCH /api/admin/games/:gameId/pages/:pageId/variants`（手動編輯）
+- [x] **P2-10** 在 `server/routes/index.ts`（或對應主路由檔）註冊 variant-pool 路由
+- [x] **P2-11** TS check 通過
 
 ## 前端任務
 
