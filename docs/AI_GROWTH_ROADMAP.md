@@ -134,7 +134,7 @@ TOTAL_PROGRESS: 39/42
 - [x] **P15-1** 建立 `server/lib/content-health.ts`：detectZombieVariants — 一次取 pool + 一次 selectDistinct feedback → Set 比對找出 pool 內存在但從沒 feedback 的變體；含 minDays 防剛生成誤判（預設 14 天）+ limit 上限 + ZombieVariant 介面（pageId/gameId/variantKey/index/text/daysOld）
 - [x] **P15-2** content-health 加 detectOrphanTasks — 取 createdAt ≤ now-minDays 的 pages，比對 page_complete 事件 distinct pageId Set；並查 page_enter 判斷 neverEntered 旗標（區分「沒人進入」vs「進去但沒完成」）；含 minDays 防剛上線誤判（預設 14 天）
 - [x] **P15-3** content-health 加 detectDeadEndPages — 一次 GROUP BY (pageId, eventType) 聚合 enter/complete/exit/fail/retry → exitRate=(exit+fail)/enter ≥ 0.7 + enter ≥ minSamples=10 → 嚴重度判定（high/medium/low 看 completionRate × enterCount）+ 排序回傳
-- [ ] **P15-4** content-health 加 calculateHealthScore（綜合分數 0-100）
+- [x] **P15-4** content-health 加 calculateHealthScore — Promise.all 並行抓 zombie/orphan/deadEnd + total pages + 加總 variant pool 算 totalVariants → 三項 penalty（zombie×30 / orphan×35 / deadEnd 加權×35：high=1/medium=0.5/low=0.2）→ 100 扣分得綜合分；分 5 級（excellent/good/fair/poor/critical）+ breakdown + penalties 透明明細
 
 ## API + UI
 - [ ] **P15-5** 加 `GET /api/platform/ai-center/content-health`（platform-ai-center.ts 內加）
