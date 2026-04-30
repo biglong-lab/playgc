@@ -513,7 +513,9 @@ export function registerAiScoringRoutes(app: Express): void {
       resolvedFieldId = ctx.fieldId;
       resolvedProvider = detectProvider(fieldApiKey);
 
-      const threshold = similarityThreshold ?? 0.6;
+      // 🆕 P13-6: 取自適應 similarity 閾值
+      const adaptiveCmpThresholds = pageId ? await getEffectiveThresholds(pageId) : null;
+      const threshold = similarityThreshold ?? adaptiveCmpThresholds?.similarityThreshold ?? 0.6;
       const mode = compareMode ?? "scene";
 
       // 🖼️ P6: 若指定 useExemplar 且有 pageId，優先用素材庫 is_curated 範本
