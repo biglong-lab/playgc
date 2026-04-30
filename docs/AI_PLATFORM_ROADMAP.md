@@ -59,12 +59,13 @@ TOTAL_PROGRESS: 23/64
 
 ## 前端任務
 
-- [ ] **P2-12** 建立 `client/src/lib/variant-picker.ts`：`pickVariant(pool, key, fallback)` 工具
-- [ ] **P2-13** 修改 `PhotoSpotFlow.tsx` 成功/失敗 toast 改用 variant-picker
-- [ ] **P2-14** 修改 `PhotoCompareFlow.tsx` 同樣改造
-- [ ] **P2-15** 修改 `PhotoOcrFlow.tsx` 同樣改造
-- [ ] **P2-16** 修改 `TextVerifyPage.tsx` 同樣改造
-- [ ] **P2-17** 修改 `ConditionalVerifyPage.tsx` 同樣改造
+- [x] **P2-12** 建立 `client/src/lib/variant-picker.ts`：`pickVariant(pool, key, fallback)` 工具（含 hasVariantPool / countVariants）
+- [x] **P2-13** 修改 `PhotoSpotFlow.tsx` 成功/失敗 toast 改用 variant-picker
+- [x] **P2-14** 修改 `PhotoCompareFlow.tsx` 同樣改造
+- [x] **P2-15** 修改 `PhotoOcrFlow.tsx` 同樣改造
+- [x] **P2-16** 修改 `TextVerifyPage.tsx` 同樣改造
+- [x] **P2-17** 修改 `ConditionalVerifyPage.tsx` 同樣改造
+- [x] **P2-Bonus** GamePageRenderer commonProps 加 `variantPool: page.variantPool`（一次傳給所有元件）
 - [ ] **P2-18** 建立 `client/src/components/admin/VariantPoolEditor.tsx`：admin 編輯 UI
 - [ ] **P2-19** 在 `PageConfigEditor.tsx` 整合 VariantPoolEditor（每個 page 卡片底）
 - [ ] **P2-20** TS check 通過
