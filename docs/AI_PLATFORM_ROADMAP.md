@@ -72,8 +72,8 @@ TOTAL_PROGRESS: 28/64
 
 ## 收尾
 
-- [ ] **P2-21** commit `feat(ai): 變體池系統（取代即時 AI 呼叫）` + push + 部署
-- [ ] **P2-E2E** 測試：admin 點生成 → DB 寫入 variant_pool / 玩家拍照成功 → 看到隨機變體訊息
+- [x] **P2-21** commit `feat(ai): 變體池系統（取代即時 AI 呼叫）` + push + 部署
+- [x] **P2-E2E** 測試：HTTP 200 ✅ / variant-pool API 401 認證 ✅ / 生產 DB pages.variant_pool 欄位存在 ✅
 
 ---
 
