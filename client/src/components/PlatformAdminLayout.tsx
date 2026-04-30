@@ -47,6 +47,7 @@ import {
   Key,
   KeyRound,
   Smartphone,
+  Mail,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -82,11 +83,12 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
       { label: "批量操作", path: "/platform/bulk-ops", icon: Layers },
     ],
   },
-  // 🆕 2026-04-30 — 客服工單系統
+  // 🆕 2026-04-30 — 客服工單系統 + 通訊中心
   {
     label: "客服支援",
     items: [
       { label: "客服工單", path: "/platform/tickets", icon: Ticket },
+      { label: "通訊中心", path: "/platform/notifications", icon: Mail },
     ],
   },
   {

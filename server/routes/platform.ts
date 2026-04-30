@@ -16,6 +16,9 @@ import {
   fieldUsageMeters,
   errorLogs,
   platformIpWhitelist,
+  notificationTemplates,
+  notificationLogs,
+  platformNotificationChannelEnum,
   insertPlatformPlanSchema,
   insertPlatformFeatureFlagSchema,
   insertFieldFeatureOverrideSchema,
@@ -826,6 +829,226 @@ export function registerPlatformRoutes(app: Express): void {
   //   重用既有 audit_logs 表，提供跨場域查詢介面
   //   action 前綴 platform: 為平台層操作（vs admin: 為場域層）
   // ============================================================================
+
+  // ============================================================================
+  // 🆕 通訊中心（2026-04-30）— 通知通道 / 模板 / 發送紀錄
+  // ============================================================================
+
+  /**
+   * GET /api/platform/notifications/channels
+   * 顯示各通知通道的配置狀態
+   */
+  app.get("/api/platform/notifications/channels", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const channels = [
+        {
+          type: "email",
+          name: "Email (Resend)",
+          configured: !!process.env.RESEND_API_KEY,
+          envKeys: ["RESEND_API_KEY"],
+          description: "透過 Resend 發送 transactional emails",
+        },
+        {
+          type: "fcm",
+          name: "FCM (Firebase Cloud Messaging)",
+          configured: !!process.env.FIREBASE_PROJECT_ID || !!process.env.VITE_FIREBASE_PROJECT_ID,
+          envKeys: ["FIREBASE_PROJECT_ID"],
+          description: "Firebase Cloud Messaging 推送通知（行動裝置 + Web）",
+        },
+        {
+          type: "line",
+          name: "LINE Messaging API",
+          configured: !!process.env.LINE_CHANNEL_ACCESS_TOKEN,
+          envKeys: ["LINE_CHANNEL_ACCESS_TOKEN", "LINE_CHANNEL_SECRET"],
+          description: "LINE 官方帳號推播",
+        },
+        {
+          type: "telegram",
+          name: "Telegram Bot",
+          configured: !!process.env.TELEGRAM_BOT_TOKEN,
+          envKeys: ["TELEGRAM_BOT_TOKEN"],
+          description: "Telegram bot 推播（給 admin 通知用）",
+        },
+        {
+          type: "webpush",
+          name: "Web Push (VAPID)",
+          configured:
+            !!(process.env.VAPID_PRIVATE_KEY) &&
+            !!(process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY),
+          envKeys: ["VAPID_PRIVATE_KEY", "VITE_VAPID_PUBLIC_KEY"],
+          description: "瀏覽器 Web Push 推送通知（PWA）",
+        },
+      ];
+
+      res.json({ channels });
+    } catch (error) {
+      console.error("[platform/notifications/channels] failed:", error);
+      res.status(500).json({ message: "取得通道狀態失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/notifications/templates
+   */
+  app.get("/api/platform/notifications/templates", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const templates = await db.query.notificationTemplates.findMany({
+        orderBy: [desc(notificationTemplates.updatedAt)],
+      });
+      res.json({ items: templates, total: templates.length });
+    } catch (error) {
+      console.error("[platform/notifications/templates] failed:", error);
+      res.status(500).json({ message: "取得模板失敗" });
+    }
+  });
+
+  const templateSchema = z.object({
+    templateKey: z.string().min(2).max(100).regex(/^[a-z0-9_]+$/, "只允許小寫英數+底線"),
+    name: z.string().min(1).max(200),
+    description: z.string().max(2000).optional(),
+    category: z.string().max(50).optional(),
+    channels: z.array(z.enum(platformNotificationChannelEnum)).default([]),
+    subject: z.string().max(500).optional(),
+    body: z.string().min(1).max(20000),
+    variables: z.array(z.string()).optional().default([]),
+    enabled: z.boolean().optional().default(true),
+  });
+
+  app.post("/api/platform/notifications/templates", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = templateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤", errors: parsed.error.errors });
+      }
+      const [created] = await db
+        .insert(notificationTemplates)
+        .values(parsed.data)
+        .returning();
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:notification_template_create",
+        targetType: "notification_template",
+        targetId: created.id,
+        metadata: { templateKey: created.templateKey, name: created.name },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.status(201).json(created);
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "";
+      if (msg.includes("duplicate")) {
+        return res.status(400).json({ message: "templateKey 已存在" });
+      }
+      console.error("[platform/notifications/templates] POST failed:", error);
+      res.status(500).json({ message: "建立模板失敗" });
+    }
+  });
+
+  app.patch("/api/platform/notifications/templates/:id", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = templateSchema.partial().safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤" });
+      }
+      const [updated] = await db
+        .update(notificationTemplates)
+        .set({ ...parsed.data, updatedAt: new Date() })
+        .where(eq(notificationTemplates.id, req.params.id))
+        .returning();
+      if (!updated) return res.status(404).json({ message: "模板不存在" });
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:notification_template_update",
+        targetType: "notification_template",
+        targetId: updated.id,
+        metadata: { changes: parsed.data, templateKey: updated.templateKey },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("[platform/notifications/templates] PATCH failed:", error);
+      res.status(500).json({ message: "更新模板失敗" });
+    }
+  });
+
+  app.delete("/api/platform/notifications/templates/:id", requirePlatformAdmin, async (req, res) => {
+    try {
+      const [deleted] = await db
+        .delete(notificationTemplates)
+        .where(eq(notificationTemplates.id, req.params.id))
+        .returning();
+      if (!deleted) return res.status(404).json({ message: "模板不存在" });
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:notification_template_delete",
+        targetType: "notification_template",
+        targetId: deleted.id,
+        metadata: { templateKey: deleted.templateKey, name: deleted.name },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[platform/notifications/templates] DELETE failed:", error);
+      res.status(500).json({ message: "刪除模板失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/notifications/logs
+   */
+  app.get("/api/platform/notifications/logs", requirePlatformAdmin, async (req, res) => {
+    try {
+      const channelFilter = typeof req.query.channel === "string" ? req.query.channel : null;
+      const statusFilter = typeof req.query.status === "string" ? req.query.status : null;
+      const limit = Math.min(parseInt(String(req.query.limit ?? "100"), 10) || 100, 500);
+
+      const conds = [];
+      if (channelFilter) conds.push(eq(notificationLogs.channel, channelFilter));
+      if (statusFilter) conds.push(eq(notificationLogs.status, statusFilter));
+
+      const items = await db.query.notificationLogs.findMany({
+        where: conds.length ? and(...conds) : undefined,
+        orderBy: [desc(notificationLogs.createdAt)],
+        limit,
+      });
+
+      res.json({ items, total: items.length });
+    } catch (error) {
+      console.error("[platform/notifications/logs] failed:", error);
+      res.status(500).json({ message: "取得發送紀錄失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/notifications/stats
+   */
+  app.get("/api/platform/notifications/stats", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const past7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const result = await db.execute<{
+        total: number;
+        sent: number;
+        failed: number;
+        last_24h: number;
+        last_7d: number;
+      }>(sql`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE status = 'sent')::int AS sent,
+          COUNT(*) FILTER (WHERE status = 'failed')::int AS failed,
+          COUNT(*) FILTER (WHERE created_at >= ${past24h.toISOString()})::int AS last_24h,
+          COUNT(*) FILTER (WHERE created_at >= ${past7d.toISOString()})::int AS last_7d
+        FROM notification_logs
+      `);
+      res.json(result.rows[0] ?? {});
+    } catch (error) {
+      console.error("[platform/notifications/stats] failed:", error);
+      res.status(500).json({ message: "取得統計失敗" });
+    }
+  });
 
   // ============================================================================
   // 🆕 登入管理（2026-04-30）— 各登入方式狀態與統計
