@@ -536,6 +536,10 @@ export async function runDailyCron(): Promise<CronStats> {
     healthZombies: 0,
     healthOrphans: 0,
     healthDeadEnds: 0,
+    markovSkipped: true,
+    markovFieldsTrained: 0,
+    markovTransitionsUpserted: 0,
+    markovSessionsAnalyzed: 0,
     startedAt: new Date(),
     durationMs: 0,
   };
