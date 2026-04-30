@@ -22,6 +22,12 @@ import {
 } from "@shared/schema";
 import { generateVariantPool } from "../lib/variant-generator";
 import { decryptApiKey } from "../lib/crypto";
+import {
+  detectZombieVariants,
+  detectOrphanTasks,
+  detectDeadEndPages,
+  calculateHealthScore,
+} from "../lib/content-health";
 
 // 模型 token 價格（粗估，用於 estimatedCost；單位：$ per 1M token）
 const PRICE_PER_M_TOKENS: Record<string, number> = {
