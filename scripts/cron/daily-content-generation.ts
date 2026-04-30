@@ -353,6 +353,15 @@ export async function runDailyCron(): Promise<CronStats> {
     console.error("[cron] 任務 3 整體失敗:", err);
   }
 
+  try {
+    const t4 = await task4_adjustThresholds();
+    stats.thresholdsAdjusted = t4.adjusted;
+    stats.thresholdsMaintained = t4.maintained;
+    stats.thresholdsInsufficient = t4.insufficient;
+  } catch (err) {
+    console.error("[cron] 任務 4 整體失敗:", err);
+  }
+
   stats.durationMs = Date.now() - stats.startedAt.getTime();
 
   console.log("=" .repeat(60));
