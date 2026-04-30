@@ -11,6 +11,7 @@
     "db:push": "node --env-file=.env node_modules/.bin/drizzle-kit push",
     "sync:db": "bash scripts/sync-prod-to-local.sh",
     "deploy": "bash scripts/deploy.sh",
+    "cron:daily": "node --env-file=.env node_modules/.bin/tsx scripts/cron/daily-content-generation.ts",
     "audit:games": "node scripts/audit-games-deep.mjs",
     "audit:modules": "node scripts/audit-modules.mjs",
     "audit:all": "npm run audit:games && npm run audit:modules",
