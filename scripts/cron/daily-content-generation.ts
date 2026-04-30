@@ -8,7 +8,7 @@
 // 用法：
 //   npm run cron:daily       # 跑一次
 //   crontab: 0 3 * * * cd /www/wwwroot/game.homi.cc && docker exec gamehomicc-app-1 npm run cron:daily
-import { sql, isNull, eq, gt, gte } from "drizzle-orm";
+import { sql, isNull, eq, gt, gte, inArray, and } from "drizzle-orm";
 import { db } from "../../server/db";
 import { pages, games, fields, parseFieldSettings } from "@shared/schema";
 import { generateVariantPool } from "../../server/lib/variant-generator";
@@ -50,9 +50,7 @@ async function task1_generateVariants(): Promise<{
   const candidates = await db
     .select({ id: pages.id, gameId: pages.gameId, config: pages.config })
     .from(pages)
-    .where(
-      sql`variant_pool IS NULL AND page_type = ANY(${TASK_TYPES}::text[])`,
-    )
+    .where(and(isNull(pages.variantPool), inArray(pages.pageType, TASK_TYPES)))
     .limit(20); // 每次最多 20 個（控制 AI 成本）
 
   console.log(`[cron] 發現 ${candidates.length} 個任務需要補變體池`);
