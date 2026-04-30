@@ -196,6 +196,8 @@ const comparePhotosSchema = z.object({
   modelId: z.string().optional(),
   /** 🆕 P4: 任務 ID（pageId）— 用於 cache 對齊到同景點 */
   pageId: z.string().optional(),
+  /** 🆕 P6: 是否用素材庫範本當參考（is_curated=true 優先；找不到時 fallback 到 referenceImageUrl） */
+  useExemplar: z.boolean().optional(),
 });
 
 // ============================================================================
@@ -404,6 +406,7 @@ export function registerAiScoringRoutes(app: Express): void {
             cacheKey,
             taskId: pageId,
             pHash: cacheLookup.pHash,
+            imageUrl, // 🆕 P6: 給 cron 策展用
             fieldId: resolvedFieldId,
             gameId,
             result,
@@ -491,13 +494,14 @@ export function registerAiScoringRoutes(app: Express): void {
 
       const {
         playerImageUrl,
-        referenceImageUrl,
+        referenceImageUrl: rawRefUrl,
         referenceDescription,
         compareMode,
         similarityThreshold,
         gameId,
         modelId,
         pageId,
+        useExemplar,
       } = parsed.data;
       bodyGameId = gameId;
 
@@ -508,6 +512,34 @@ export function registerAiScoringRoutes(app: Express): void {
 
       const threshold = similarityThreshold ?? 0.6;
       const mode = compareMode ?? "scene";
+
+      // 🖼️ P6: 若指定 useExemplar 且有 pageId，優先用素材庫 is_curated 範本
+      let referenceImageUrl = rawRefUrl;
+      let referenceSource: "admin" | "exemplar" = "admin";
+      if (useExemplar && pageId && resolvedFieldId) {
+        try {
+          const { fieldExemplarPhotos } = await import("@shared/schema");
+          const { and: andOp, eq: eqOp, desc: descOp } = await import("drizzle-orm");
+          const [exemplar] = await db
+            .select()
+            .from(fieldExemplarPhotos)
+            .where(
+              andOp(
+                eqOp(fieldExemplarPhotos.fieldId, resolvedFieldId),
+                eqOp(fieldExemplarPhotos.pageId, pageId),
+                eqOp(fieldExemplarPhotos.isCurated, true),
+              ),
+            )
+            .orderBy(descOp(fieldExemplarPhotos.confidence))
+            .limit(1);
+          if (exemplar?.photoUrl) {
+            referenceImageUrl = exemplar.photoUrl;
+            referenceSource = "exemplar";
+          }
+        } catch (err) {
+          console.warn("[compare-photos] 素材庫查詢失敗，fallback admin reference:", err);
+        }
+      }
 
       // 📸 P4 Cache 查找：identityHint 用 referenceImageUrl + mode（同任務同參考圖才能 hit）
       const cacheLookup = await getCached<{ verified: boolean; similarity: number; matchedFeatures: string[]; missingFeatures: string[]; feedback: string }>({
@@ -618,6 +650,7 @@ export function registerAiScoringRoutes(app: Express): void {
             cacheKey,
             taskId: pageId,
             pHash: cacheLookup.pHash,
+            imageUrl: playerImageUrl, // 🆕 P6: 給 cron 策展用
             fieldId: resolvedFieldId,
             gameId,
             result,
@@ -632,6 +665,7 @@ export function registerAiScoringRoutes(app: Express): void {
         missingFeatures: result.missingFeatures,
         feedback: result.feedback,
         cached: false,
+        referenceSource, // 'admin' | 'exemplar'
       });
     } catch (error) {
       // 預覽模式（preview-game）→ 明確拒絕

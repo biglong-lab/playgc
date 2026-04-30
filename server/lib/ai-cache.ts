@@ -145,6 +145,8 @@ export interface CacheSetParams {
   pHash: string;
   fieldId?: string;
   gameId?: string;
+  /** 玩家原始圖片 URL（P6 cron 策展用） */
+  imageUrl?: string;
   result: unknown;
 }
 
@@ -158,6 +160,7 @@ export async function setCached(params: CacheSetParams): Promise<void> {
     endpoint: params.endpoint,
     taskId: params.taskId ?? null,
     pHash: params.pHash,
+    imageUrl: params.imageUrl ?? null,
     fieldId: params.fieldId ?? null,
     gameId: params.gameId ?? null,
     result: params.result,

@@ -36,6 +36,8 @@ export const aiResultCache = pgTable(
     taskId: varchar("task_id", { length: 50 }),
     /** 圖片 perceptual hash（16 hex chars，64-bit dHash） */
     pHash: varchar("p_hash", { length: 20 }),
+    /** 玩家原始圖片 URL（給 P6 cron 策展素材庫用） */
+    imageUrl: varchar("image_url", { length: 500 }),
     /** AI 回的完整結果（VerifyPhotoResult / CompareResult） */
     result: jsonb("result").notNull(),
     /** 命中次數（用於分析熱門景點） */

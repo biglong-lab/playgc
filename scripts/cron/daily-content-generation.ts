@@ -8,9 +8,9 @@
 // 用法：
 //   npm run cron:daily       # 跑一次
 //   crontab: 0 3 * * * cd /www/wwwroot/game.homi.cc && docker exec gamehomicc-app-1 npm run cron:daily
-import { sql, isNull, eq, gt, gte, inArray, and } from "drizzle-orm";
+import { sql, isNull, eq, gt, gte, inArray, and, isNotNull, desc } from "drizzle-orm";
 import { db } from "../../server/db";
-import { pages, games, fields, parseFieldSettings } from "@shared/schema";
+import { pages, games, fields, parseFieldSettings, aiResultCache, fieldExemplarPhotos } from "@shared/schema";
 import { generateVariantPool } from "../../server/lib/variant-generator";
 import { decryptApiKey } from "../../server/lib/crypto";
 import { cleanupExpired as cleanupCacheExpired } from "../../server/lib/ai-cache";
@@ -136,20 +136,75 @@ async function task2_cleanupCache(): Promise<number> {
 }
 
 /**
- * 任務 3：策展素材庫（P6 預留）
- * 待 P6 場域素材庫表建立後啟用
+ * 任務 3：策展素材庫（P6 自動策展）
+ *
+ * 邏輯：
+ *   1. 從 ai_result_cache 找 endpoint=verify-photo + result.confidence ≥ 0.85 的記錄
+ *   2. 過濾掉已存在於 field_exemplar_photos 的 photoUrl（去重）
+ *   3. 寫入 field_exemplar_photos（source='cron_collected'）
+ *
+ * 限制：
+ *   - 每次最多策展 50 張（避免一次太多）
+ *   - 只看最近 7 天的 cache（更早的當「歷史」不算）
  */
 async function task3_curateExemplars(): Promise<number> {
-  console.log("[cron] 任務 3：策展素材庫（P6 待啟用）");
-  // TODO: P6 完成後啟用
-  // 邏輯：
-  //   SELECT page_id, player_photo_url, ai_confidence
-  //   FROM plays
-  //   WHERE verified = true AND ai_confidence > 0.85
-  //     AND created_at > NOW() - INTERVAL '1 day'
-  //   ORDER BY ai_confidence DESC LIMIT 50
-  // INSERT INTO field_exemplar_photos (...)
-  return 0;
+  console.log("[cron] 任務 3：策展素材庫（自動策展）");
+
+  // 取近 7 天 cache 中有 imageUrl 的 verify-photo 記錄
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const candidates = await db
+    .select()
+    .from(aiResultCache)
+    .where(
+      and(
+        eq(aiResultCache.endpoint, "verify-photo"),
+        isNotNull(aiResultCache.imageUrl),
+        gte(aiResultCache.createdAt, sevenDaysAgo),
+      ),
+    )
+    .orderBy(desc(aiResultCache.createdAt))
+    .limit(200);
+
+  let collected = 0;
+  for (const c of candidates) {
+    if (!c.imageUrl || !c.fieldId) continue;
+    const result = c.result as { confidence?: number; verified?: boolean } | null;
+    const confidence = result?.confidence;
+    if (typeof confidence !== "number" || confidence < 0.85) continue;
+    if (result?.verified === false) continue;
+
+    // 去重：同 photo_url + page_id 已存在則跳過
+    const existing = await db
+      .select({ id: fieldExemplarPhotos.id })
+      .from(fieldExemplarPhotos)
+      .where(
+        and(
+          eq(fieldExemplarPhotos.photoUrl, c.imageUrl),
+          c.taskId ? eq(fieldExemplarPhotos.pageId, c.taskId) : isNull(fieldExemplarPhotos.pageId),
+        ),
+      )
+      .limit(1);
+    if (existing.length > 0) continue;
+
+    try {
+      await db.insert(fieldExemplarPhotos).values({
+        fieldId: c.fieldId,
+        gameId: c.gameId ?? null,
+        pageId: c.taskId ?? null,
+        photoUrl: c.imageUrl,
+        confidence: confidence.toFixed(2),
+        source: "cron_collected",
+        isCurated: false,
+      });
+      collected++;
+      if (collected >= 50) break; // 每次最多 50 張
+    } catch (err) {
+      console.warn(`[cron] 策展失敗（photo ${c.imageUrl.substring(0, 50)}）:`, err instanceof Error ? err.message : err);
+    }
+  }
+
+  console.log(`[cron] ✅ 策展 ${collected} 張新素材`);
+  return collected;
 }
 
 /**

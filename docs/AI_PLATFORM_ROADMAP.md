@@ -11,9 +11,9 @@
 
 ```
 CURRENT_PHASE: P6
-CURRENT_TASK: P6-7
-LAST_UPDATE: 2026-05-01T01:11:00Z
-TOTAL_PROGRESS: 66/64
+CURRENT_TASK: P6-9
+LAST_UPDATE: 2026-05-01T01:18:00Z
+TOTAL_PROGRESS: 68/64
 ```
 
 ## 📋 工作守則（loop 每次必遵守）
@@ -138,8 +138,8 @@ TOTAL_PROGRESS: 66/64
 - [x] **P6-4** 實作 `GET /api/admin/exemplar?fieldId=&gameId=&pageId=&isCurated=` 列表（含 is_curated/confidence 排序）
 - [x] **P6-5** 實作 `POST /api/admin/exemplar`（手動上傳，Zod 驗證）
 - [x] **P6-6** 實作 `PATCH /api/admin/exemplar/:id`（標記 is_curated/tags/description）+ `DELETE` 移除
-- [ ] **P6-7** 修改 cron 任務 3：自動策展（confidence > 0.85 自動加入）
-- [ ] **P6-8** 修改 `compare-photos` endpoint：除了 admin 設定參考圖，也比對素材庫範本
+- [x] **P6-7** 修改 cron 任務 3：從 ai_result_cache 找 confidence ≥ 0.85 自動策展（含 ALTER TABLE 加 image_url 欄位 + verify/compare endpoint 寫 imageUrl）
+- [x] **P6-8** 修改 `compare-photos` endpoint：加 `useExemplar` flag，true 時優先用素材庫 is_curated 範本（依 confidence DESC 取最佳），fallback admin reference；回應加 `referenceSource: 'admin'\|'exemplar'`
 - [ ] **P6-9** 建立 `client/src/pages/admin/ExemplarLibrary.tsx`
 - [ ] **P6-10** TS check
 - [ ] **P6-11** commit `feat(ai): 場域素材庫（內容資產化）` + push + 部署

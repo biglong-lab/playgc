@@ -76,6 +76,7 @@ const GameSettings = lazy(() => import("@/pages/GameSettings"));
 const AdminRedeemCodes = lazy(() => import("@/pages/admin-redeem-codes"));
 const FieldSettingsPage = lazy(() => import("@/pages/admin/FieldSettingsPage"));
 const TicketsOverview = lazy(() => import("@/pages/admin/TicketsOverview"));
+const ExemplarLibrary = lazy(() => import("@/pages/admin/ExemplarLibrary"));
 const AdminStaffFields = lazy(() => import("@/pages/AdminStaffFields"));
 const AdminStaffRoles = lazy(() => import("@/pages/AdminStaffRoles"));
 const AdminStaffAccounts = lazy(() => import("@/pages/AdminStaffAccounts"));
@@ -267,6 +268,7 @@ function Router() {
         <Route path="/admin/games/:gameId/tickets">{() => <ProtectedAdminRoute><AdminRedeemCodes /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/field-settings">{() => <ProtectedAdminRoute><FieldSettingsPage /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/tickets">{() => <ProtectedAdminRoute><TicketsOverview /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/exemplar-library">{() => <ProtectedAdminRoute><ExemplarLibrary /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/fields">{() => <ProtectedAdminRoute><AdminStaffFields /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/roles">{() => <ProtectedAdminRoute><AdminStaffRoles /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/accounts">{() => <ProtectedAdminRoute><AdminStaffAccounts /></ProtectedAdminRoute>}</Route>
