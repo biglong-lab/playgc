@@ -45,10 +45,10 @@ TOTAL_PROGRESS: 10/64
 
 ## 後端任務
 
-- [ ] **P2-1** 建立 `shared/schema/ai-variant-pool.ts`（VariantPool 型別 + Zod schema）
-- [ ] **P2-2** 在 `shared/schema/index.ts` 加 export
-- [ ] **P2-3** SQL: `ALTER TABLE pages ADD COLUMN IF NOT EXISTS variant_pool JSONB`（本地 + 生產 DB）
-- [ ] **P2-4** 在 `shared/schema/games.ts` 的 pages table 加 `variantPool: jsonb` 欄位
+- [x] **P2-1** 建立 `shared/schema/ai-variant-pool.ts`（VariantPool 型別 + Zod schema）
+- [x] **P2-2** 在 `shared/schema/index.ts` 加 export
+- [x] **P2-3** SQL: `ALTER TABLE pages ADD COLUMN IF NOT EXISTS variant_pool JSONB`（本地 + 生產 DB）
+- [x] **P2-4** 在 `shared/schema/games.ts` 的 pages table 加 `variantPool: jsonb` 欄位
 - [ ] **P2-5** 建立 `server/lib/variant-generator.ts`：用 DeepSeek V3.2 生成變體
 - [ ] **P2-6** 建立 `server/routes/admin/variant-pool.ts`：路由模組
 - [ ] **P2-7** 實作 `POST /api/admin/games/:gameId/pages/:pageId/generate-variants`
