@@ -181,23 +181,22 @@ export default function ConditionalVerifyPage({
       setAllPassed(passed);
       setIsChecking(false);
 
+      // 🎨 P2: 從變體池抽訊息
+      const successTitle = pickVariant(variantPool, "success", config.successMessage || "條件達成!");
+      const successDesc = pickVariant(variantPool, "hint", config.onSuccess?.message || "你已滿足所有條件");
+      const failTitle = pickVariant(variantPool, "fail", config.failureMessage || "條件未達成");
+
       if (showToast && !hasShownToast) {
         setHasShownToast(true);
         if (passed) {
-          toast({
-            title: config.successMessage || "條件達成!",
-            description: config.onSuccess?.message || "你已滿足所有條件",
-          });
+          toast({ title: successTitle, description: successDesc });
         }
       } else if (showToast && hasShownToast) {
         if (passed) {
-          toast({
-            title: config.successMessage || "條件達成!",
-            description: config.onSuccess?.message || "你已滿足所有條件",
-          });
+          toast({ title: successTitle, description: successDesc });
         } else {
           toast({
-            title: config.failureMessage || "條件未達成",
+            title: failTitle,
             description: "請先完成必要任務",
             variant: "destructive",
           });
