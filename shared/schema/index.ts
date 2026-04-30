@@ -45,6 +45,7 @@ export * from "./ai-cache-archive";
 export * from "./field-exemplar";
 export * from "./module-catalog";
 export * from "./game-routes";
+export * from "./player-feedback";
 export * from "./support-tickets";
 export * from "./error-logs";
 export * from "./platform-security";
