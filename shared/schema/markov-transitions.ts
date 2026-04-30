@@ -29,10 +29,10 @@ import { fields } from "./fields";
 export const pageTypeTransitions = pgTable(
   "page_type_transitions",
   {
-    /** 場域 — 不同場域風格的銜接合理度可能不同；NULL 表示全平台統計 */
-    fieldId: varchar("field_id").references(() => fields.id, {
-      onDelete: "cascade",
-    }),
+    /** 場域 — 不同場域風格的銜接合理度可能不同（複合主鍵需 NOT NULL） */
+    fieldId: varchar("field_id")
+      .references(() => fields.id, { onDelete: "cascade" })
+      .notNull(),
     /** 起點 page type（如 text_card, photo_spot, qr_scan...） */
     fromType: varchar("from_type", { length: 50 }).notNull(),
     /** 終點 page type */
