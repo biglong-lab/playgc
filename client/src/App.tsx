@@ -273,6 +273,7 @@ function Router() {
         <Route path="/admin/tickets">{() => <ProtectedAdminRoute><TicketsOverview /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/exemplar-library">{() => <ProtectedAdminRoute><ExemplarLibrary /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/game-generator">{() => <ProtectedAdminRoute><GameGenerator /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/games/:gameId/routes">{() => <ProtectedAdminRoute><GameRoutesEditor /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/fields">{() => <ProtectedAdminRoute><AdminStaffFields /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/roles">{() => <ProtectedAdminRoute><AdminStaffRoles /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/accounts">{() => <ProtectedAdminRoute><AdminStaffAccounts /></ProtectedAdminRoute>}</Route>
