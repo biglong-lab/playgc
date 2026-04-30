@@ -173,10 +173,10 @@ TOTAL_PROGRESS: 92/120 (77%)
 
 - [x] **P8-1** 建立 `shared/schema/module-catalog.ts`：23 個現有 page type 的能力描述（含 ModuleScenario / ModuleSpec / formatModuleCatalog）
 - [x] **P8-2** 建立 `server/lib/game-script-generator.ts`：DeepSeek prompt + Zod 驗證生成的 page configs
-- [ ] **P8-3** 建立 `server/routes/admin/game-generator.ts`
-- [ ] **P8-4** 實作 `POST /api/admin/games/generate-from-script`：腳本 → pages array
-- [ ] **P8-5** 實作 Zod schema 驗證生成的 page configs（防 AI 亂組）
-- [ ] **P8-6** 實作 `POST /api/admin/games/:gameId/apply-generated`：寫入 DB
+- [x] **P8-3** 建立 `server/routes/admin-game-generator.ts`（registerGameGeneratorRoutes 註冊）
+- [x] **P8-4** 實作 `POST /api/admin/games/generate-from-script`：腳本 → pages array（純生成，不寫 DB）
+- [x] **P8-5** Zod schema 驗證（generatedGameSchema 在 P8-2 lib + 路由內 generatedPageSchema 二次驗證）
+- [x] **P8-6** 實作 `POST /api/admin/games/:gameId/apply-generated`：append/replace 模式 + audit log
 - [ ] **P8-7** 建立 `client/src/pages/admin/GameGenerator.tsx`：腳本輸入 + 預覽 UI
 - [ ] **P8-8** GameGenerator UI：腳本輸入區（多行 + 設定欄位）
 - [ ] **P8-9** GameGenerator UI：AI 解析中 loading
