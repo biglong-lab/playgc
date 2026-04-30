@@ -49,8 +49,8 @@ TOTAL_PROGRESS: 4/42
 ## 資料層
 - [x] **P11-1** 建立 `shared/schema/player-feedback.ts`：variant_feedback 表（5 段 key + 4 個 index + feedbackActionEnum）
 - [x] **P11-2** SQL CREATE TABLE variant_feedback（unique on user × page × variantKey × variantIndex）— 本地 ✅ + 生產 ✅
-- [ ] **P11-3** 建立 `shared/schema/player-events.ts`：player_event_logs 表（玩家行為流水帳：page_id × action × ts）
-- [ ] **P11-4** SQL CREATE TABLE player_event_logs（含 idx_events_field_time / idx_events_page_action）— 本地 + 生產
+- [x] **P11-3** 建立 `shared/schema/player-events.ts`：player_event_logs 表（9 種 event type + jsonb payload + duration_ms）
+- [x] **P11-4** SQL CREATE TABLE player_event_logs（4 個 index：field_time / page_action / session / created）— 本地 ✅ + 生產 ✅
 
 ## 後端
 - [ ] **P11-5** 建立 `server/routes/player-feedback.ts`：POST `/api/player/feedback`（記錄變體反饋）+ POST `/api/player/event`（記錄行為）
