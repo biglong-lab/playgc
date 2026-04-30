@@ -40,6 +40,8 @@ export interface RoguelikeCompositionInput {
   seed?: number;
   /** 是否強制有 intro / outro（預設 true） */
   withIntroOutro?: boolean;
+  /** P16-5: 是否啟用 Markov 排序中段任務（opt-in；預設 false 走純 shuffle 向後相容） */
+  useMarkov?: boolean;
 }
 
 export interface RoguelikeCompositionResult {
