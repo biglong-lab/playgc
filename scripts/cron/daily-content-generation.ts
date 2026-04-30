@@ -47,6 +47,11 @@ interface CronStats {
   healthZombies: number;
   healthOrphans: number;
   healthDeadEnds: number;
+  // P16: Markov 訓練（僅週一跑）
+  markovSkipped: boolean;
+  markovFieldsTrained: number;
+  markovTransitionsUpserted: number;
+  markovSessionsAnalyzed: number;
   startedAt: Date;
   durationMs: number;
 }
