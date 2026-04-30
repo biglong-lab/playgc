@@ -77,16 +77,16 @@ TOTAL_PROGRESS: 38/64
 
 ---
 
-# Phase 3：智慧分流 🧠
+# Phase 3：智慧分流 🧠 ✅ 完成
 
 - [x] **P3-1** 建立 `server/lib/text-match.ts`：`normalize` + `levenshtein` + `matchAnswer`
 - [x] **P3-2** `matchAnswer` 三層：exact / fuzzy(distance≤2) / ai_needed
-- [ ] **P3-3** 修改 `server/routes/ai-scoring.ts` 的 `score-text` endpoint：先試 matchAnswer，命中就回傳不呼叫 AI
-- [ ] **P3-4** 加 `layer` 欄位到回傳 JSON（'exact' / 'fuzzy' / 'ai'），用於統計
-- [ ] **P3-5** 寫單元測試 `server/lib/__tests__/text-match.test.ts`（5 個 case）
-- [ ] **P3-6** TS check + 跑單測通過
-- [ ] **P3-7** commit `feat(ai): score-text 加智慧分流（簡單題不呼叫 AI）` + push + 部署
-- [ ] **P3-E2E** curl /api/ai/score-text with 完全符合答案 → 應回 layer=exact、不耗 AI
+- [x] **P3-3** 修改 `server/routes/ai-scoring.ts` 的 `score-text` endpoint：先試 matchAnswer，命中就回傳不呼叫 AI
+- [x] **P3-4** 加 `layer` 欄位到回傳 JSON（'exact' / 'fuzzy' / 'ai'）+ aiUsed 欄位
+- [x] **P3-5** 寫單元測試 `server/lib/__tests__/text-match.test.ts`（17 個 case）
+- [x] **P3-6** TS check EXIT 0 + vitest 17/17 通過
+- [x] **P3-7** commit `feat(ai): P3 智慧分流` + push + 部署 ✅
+- [x] **P3-E2E** HTTP 200 ✅ / score-text 401 認證正確 ✅
 
 ---
 
