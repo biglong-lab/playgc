@@ -374,6 +374,229 @@ export default function PlatformAiCenter() {
             )}
           </TabsContent>
 
+          {/* === P15-6: 健康診斷 === */}
+          <TabsContent value="health-diag" className="space-y-3 mt-4">
+            {contentHealthLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <Loader2 className="w-6 h-6 animate-spin" />
+              </div>
+            ) : !contentHealth ? (
+              <p className="text-sm text-muted-foreground">無資料</p>
+            ) : (
+              <>
+                {/* 綜合分數 */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">綜合健康分數</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-end gap-3">
+                      <span
+                        className={`text-5xl font-bold ${HEALTH_LEVEL_COLOR[contentHealth.score.level]}`}
+                        data-testid="health-score"
+                      >
+                        {contentHealth.score.score}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className={HEALTH_LEVEL_COLOR[contentHealth.score.level]}
+                      >
+                        {HEALTH_LEVEL_LABEL[contentHealth.score.level]}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">殭屍扣分：</span>
+                        <span className="font-medium">
+                          -{contentHealth.score.penalties.zombie}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">孤兒扣分：</span>
+                        <span className="font-medium">
+                          -{contentHealth.score.penalties.orphan}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">死路扣分：</span>
+                        <span className="font-medium">
+                          -{contentHealth.score.penalties.deadEnd}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* 4 個統計卡 */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Database className="w-4 h-4 text-blue-500" />
+                        <span className="text-xs text-muted-foreground">總變體</span>
+                      </div>
+                      <p className="text-2xl font-bold mt-1">
+                        {contentHealth.score.breakdown.totalVariants}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Ghost className="w-4 h-4 text-purple-500" />
+                        <span className="text-xs text-muted-foreground">殭屍變體</span>
+                      </div>
+                      <p
+                        className="text-2xl font-bold mt-1 text-purple-600"
+                        data-testid="zombie-count"
+                      >
+                        {contentHealth.zombieVariants.length}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4 text-orange-500" />
+                        <span className="text-xs text-muted-foreground">孤兒任務</span>
+                      </div>
+                      <p
+                        className="text-2xl font-bold mt-1 text-orange-600"
+                        data-testid="orphan-count"
+                      >
+                        {contentHealth.orphanTasks.length}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Skull className="w-4 h-4 text-red-500" />
+                        <span className="text-xs text-muted-foreground">死路 page</span>
+                      </div>
+                      <p
+                        className="text-2xl font-bold mt-1 text-red-600"
+                        data-testid="dead-end-count"
+                      >
+                        {contentHealth.deadEndPages.length}
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* 殭屍變體清單 */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Ghost className="w-4 h-4 text-purple-500" />
+                      殭屍變體（從沒被選中過）
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+                    {contentHealth.zombieVariants.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">無殭屍變體 🎉</p>
+                    ) : (
+                      contentHealth.zombieVariants.slice(0, 50).map((z, i) => (
+                        <div
+                          key={`${z.pageId}-${z.variantKey}-${z.variantIndex}-${i}`}
+                          className="text-xs border-l-2 border-purple-300 pl-2 py-1"
+                        >
+                          <div className="font-mono text-muted-foreground">
+                            {z.pageId.slice(0, 8)} · {z.variantKey}#{z.variantIndex} · {z.daysOld}d
+                          </div>
+                          <div className="truncate">{z.variantText}</div>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* 孤兒任務清單 */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 text-orange-500" />
+                      孤兒任務(沒玩家完成過)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+                    {contentHealth.orphanTasks.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">無孤兒任務 🎉</p>
+                    ) : (
+                      contentHealth.orphanTasks.slice(0, 50).map((o) => (
+                        <div
+                          key={o.pageId}
+                          className="text-xs border-l-2 border-orange-300 pl-2 py-1 flex items-center justify-between"
+                        >
+                          <div>
+                            <span className="font-mono text-muted-foreground">
+                              {o.pageId.slice(0, 8)}
+                            </span>
+                            <span className="ml-2">{o.customName ?? o.pageType}</span>
+                            <span className="ml-1 text-muted-foreground">
+                              · 第{o.pageOrder}頁 · {o.daysOld}d
+                            </span>
+                          </div>
+                          {o.neverEntered && (
+                            <Badge variant="destructive" className="text-[10px]">
+                              沒人進入
+                            </Badge>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* 死路 page 清單 */}
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Skull className="w-4 h-4 text-red-500" />
+                      死路 page（玩家進去就退出）
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 max-h-64 overflow-y-auto">
+                    {contentHealth.deadEndPages.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">無死路 page 🎉</p>
+                    ) : (
+                      contentHealth.deadEndPages.slice(0, 50).map((d) => (
+                        <div
+                          key={d.pageId}
+                          className="text-xs border-l-2 border-red-300 pl-2 py-1 flex items-center justify-between"
+                        >
+                          <div>
+                            <span className="font-mono text-muted-foreground">
+                              {d.pageId.slice(0, 8)}
+                            </span>
+                            <span className="ml-2">
+                              {d.enterCount} 進入 / {d.completeCount} 完成
+                            </span>
+                            <span className="ml-2 text-muted-foreground">
+                              退出率 {(d.exitRate * 100).toFixed(0)}%
+                            </span>
+                          </div>
+                          <Badge
+                            variant={
+                              d.severity === "high"
+                                ? "destructive"
+                                : d.severity === "medium"
+                                  ? "default"
+                                  : "secondary"
+                            }
+                            className="text-[10px]"
+                          >
+                            {d.severity}
+                          </Badge>
+                        </div>
+                      ))
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </TabsContent>
+
           {/* === 3. 素材庫 === */}
           <TabsContent value="exemplar" className="space-y-3 mt-4">
             <Card>
