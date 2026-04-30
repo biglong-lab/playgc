@@ -100,6 +100,9 @@ const PlatformRevenue = lazy(() => import("@/pages/platform/PlatformRevenue"));
 const PlatformApplications = lazy(() => import("@/pages/platform/PlatformApplications"));
 const PlatformAnalytics = lazy(() => import("@/pages/platform/PlatformAnalytics"));
 const PlatformSettingsPage = lazy(() => import("@/pages/platform/PlatformSettings"));
+// 🆕 2026-04-30 — 跨場域管理員 + 角色管理
+const PlatformAdmins = lazy(() => import("@/pages/platform/PlatformAdmins"));
+const PlatformRoles = lazy(() => import("@/pages/platform/PlatformRoles"));
 
 // 📝 公開申請頁（Phase 8）
 const Apply = lazy(() => import("@/pages/Apply"));
@@ -273,6 +276,9 @@ function Router() {
         <Route path="/platform/revenue">{() => <ProtectedAdminRoute><PlatformRevenue /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/applications">{() => <ProtectedAdminRoute><PlatformApplications /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/analytics">{() => <ProtectedAdminRoute><PlatformAnalytics /></ProtectedAdminRoute>}</Route>
+        {/* 🆕 跨場域管理員 + 角色 */}
+        <Route path="/platform/admins">{() => <ProtectedAdminRoute><PlatformAdmins /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/roles">{() => <ProtectedAdminRoute><PlatformRoles /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/settings">{() => <ProtectedAdminRoute><PlatformSettingsPage /></ProtectedAdminRoute>}</Route>
 
         {/* 📝 公開場域申請（Phase 8）*/}

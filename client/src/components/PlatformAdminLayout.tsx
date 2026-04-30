@@ -33,6 +33,8 @@ import {
   Inbox,
   BarChart3,
   Settings,
+  Users,
+  Shield,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -67,6 +69,14 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     label: "財務",
     items: [
       { label: "平台營收", path: "/platform/revenue", icon: DollarSign },
+    ],
+  },
+  // 🆕 2026-04-30 — 跨場域管理員 / 角色管理
+  {
+    label: "權限管理",
+    items: [
+      { label: "跨場域管理員", path: "/platform/admins", icon: Users },
+      { label: "跨場域角色", path: "/platform/roles", icon: Shield },
     ],
   },
   {

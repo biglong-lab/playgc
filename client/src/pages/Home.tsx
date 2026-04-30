@@ -105,9 +105,16 @@ export default function Home() {
   const currentFieldCode = urlFieldCode || currentField?.code;
 
   // 🆕 admin 是否能編輯這個場域（super_admin 或當前場域 admin）
-  const canEditField = !!admin && (
+  // 🐛 修 (2026-04-30)：原本 admin.fieldCode === currentFieldCode 比對失敗
+  //    因為大小寫不一致（admin.fieldCode 可能是 db 原貌、currentFieldCode 經過 toUpperCase）
+  //    或 admin 用 fieldId 比 fieldCode 可靠（fieldId 是 UUID 不會大小寫變化）
+  //    雙重比對：systemRole === super_admin || fieldId 相同 || fieldCode 大小寫不分相同
+  const adminFieldCodeUpper = admin?.fieldCode?.toUpperCase();
+  const adminFieldId = admin?.fieldId;
+  const canEditField: boolean = !!admin && (
     admin.systemRole === "super_admin" ||
-    admin.fieldCode === currentFieldCode
+    (!!adminFieldId && adminFieldId === currentField?.fieldId) ||
+    (!!adminFieldCodeUpper && adminFieldCodeUpper === currentFieldCode)
   );
 
   // 🆕 儲存遊戲封面（圖 URL + 焦點位置）→ PATCH 遊戲

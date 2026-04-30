@@ -8,6 +8,10 @@ import {
   fieldSubscriptions,
   platformTransactions,
   fields,
+  adminAccounts,
+  roles,
+  permissions,
+  rolePermissions,
   insertPlatformPlanSchema,
   insertPlatformFeatureFlagSchema,
   insertFieldFeatureOverrideSchema,
@@ -503,5 +507,145 @@ export function registerPlatformRoutes(app: Express): void {
       })
       .returning();
     res.json({ success: true, settings: created.limits });
+  });
+
+  // ============================================================================
+  // 🆕 2026-04-30 — 跨場域管理員管理（platform-level admin oversight）
+  // ============================================================================
+
+  /**
+   * GET /api/platform/admins
+   * 列出**所有場域**的所有管理員帳號
+   * 用於 super_admin 在平台首頁集中管理所有場域 admin（不必逐場域切換）
+   *
+   * Query：
+   *   ?fieldId=xxx — 僅列該場域
+   *   ?status=active|inactive — 僅列特定狀態
+   */
+  app.get("/api/platform/admins", requirePlatformAdmin, async (req, res) => {
+    try {
+      const fieldFilter = typeof req.query.fieldId === "string" ? req.query.fieldId : null;
+      const accounts = await db.query.adminAccounts.findMany({
+        where: fieldFilter ? eq(adminAccounts.fieldId, fieldFilter) : undefined,
+        with: {
+          role: true,
+          field: true,
+        },
+        orderBy: [desc(adminAccounts.createdAt)],
+      });
+
+      // 移除 password hash（永遠不該回傳）
+      const safeAccounts = accounts.map((acc) => ({
+        ...acc,
+        passwordHash: undefined,
+      }));
+
+      res.json({ accounts: safeAccounts, total: safeAccounts.length });
+    } catch (error) {
+      console.error("[platform/admins] failed:", error);
+      res.status(500).json({ message: "取得管理員列表失敗" });
+    }
+  });
+
+  /**
+   * PATCH /api/platform/admins/:id
+   * 更新任一場域 admin 帳號（status / roleId / displayName / email）
+   * Platform admin 可以跨場域操作，不受 fieldId 限制
+   */
+  const platformAccountPatchSchema = z.object({
+    status: z.enum(["active", "inactive", "locked"]).optional(),
+    roleId: z.string().uuid().nullable().optional(),
+    displayName: z.string().max(100).optional(),
+    email: z.string().email().nullable().optional(),
+  });
+
+  app.patch("/api/platform/admins/:id", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = platformAccountPatchSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({
+          message: "資料格式錯誤",
+          errors: parsed.error.errors,
+        });
+      }
+
+      const [updated] = await db
+        .update(adminAccounts)
+        .set({ ...parsed.data, updatedAt: new Date() })
+        .where(eq(adminAccounts.id, req.params.id))
+        .returning();
+
+      if (!updated) {
+        return res.status(404).json({ message: "帳號不存在" });
+      }
+
+      res.json({ ...updated, passwordHash: undefined });
+    } catch (error) {
+      console.error("[platform/admins] PATCH failed:", error);
+      res.status(500).json({ message: "更新管理員失敗" });
+    }
+  });
+
+  // ============================================================================
+  // 🆕 跨場域角色與權限管理
+  // ============================================================================
+
+  /**
+   * GET /api/platform/roles
+   * 列出**所有場域**的角色（含每個角色的 permissions）
+   * 可用 ?fieldId=xxx 過濾
+   */
+  app.get("/api/platform/roles", requirePlatformAdmin, async (req, res) => {
+    try {
+      const fieldFilter = typeof req.query.fieldId === "string" ? req.query.fieldId : null;
+      const allRoles = await db.query.roles.findMany({
+        where: fieldFilter ? eq(roles.fieldId, fieldFilter) : undefined,
+        with: { field: true },
+        orderBy: [desc(roles.createdAt)],
+      });
+
+      // 取每個 role 的 permissions（一次性 query 避免 N+1）
+      const roleIds = allRoles.map((r) => r.id);
+      const allRolePerms = roleIds.length
+        ? await db
+            .select({
+              roleId: rolePermissions.roleId,
+              permissionKey: permissions.key,
+              allow: rolePermissions.allow,
+            })
+            .from(rolePermissions)
+            .innerJoin(permissions, eq(permissions.id, rolePermissions.permissionId))
+            .where(sql`${rolePermissions.roleId} = ANY(${roleIds})`)
+        : [];
+
+      // 把 permissions 塞回每個 role
+      const rolesWithPerms = allRoles.map((r) => ({
+        ...r,
+        permissions: allRolePerms
+          .filter((p) => p.roleId === r.id && p.allow)
+          .map((p) => p.permissionKey),
+      }));
+
+      res.json({ roles: rolesWithPerms, total: rolesWithPerms.length });
+    } catch (error) {
+      console.error("[platform/roles] failed:", error);
+      res.status(500).json({ message: "取得角色列表失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/permissions
+   * 列出系統所有 permission keys（給 role 編輯器選用）
+   */
+  app.get("/api/platform/permissions", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const allPerms = await db.query.permissions.findMany({
+        orderBy: [permissions.category, permissions.key],
+      });
+      res.json({ permissions: allPerms, total: allPerms.length });
+    } catch (error) {
+      console.error("[platform/permissions] failed:", error);
+      res.status(500).json({ message: "取得權限列表失敗" });
+    }
   });
 }
