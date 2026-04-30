@@ -47,8 +47,8 @@ TOTAL_PROGRESS: 2/42
 > 沒有訊號就無法學習。先建立資料收集底盤。
 
 ## 資料層
-- [ ] **P11-1** 建立 `shared/schema/player-feedback.ts`：variant_feedback 表（記錄玩家對每個變體訊息的 like/dislike/skip）
-- [ ] **P11-2** SQL CREATE TABLE variant_feedback（含 unique key on user×variant_id）— 本地 + 生產
+- [x] **P11-1** 建立 `shared/schema/player-feedback.ts`：variant_feedback 表（5 段 key + 4 個 index + feedbackActionEnum）
+- [x] **P11-2** SQL CREATE TABLE variant_feedback（unique on user × page × variantKey × variantIndex）— 本地 ✅ + 生產 ✅
 - [ ] **P11-3** 建立 `shared/schema/player-events.ts`：player_event_logs 表（玩家行為流水帳：page_id × action × ts）
 - [ ] **P11-4** SQL CREATE TABLE player_event_logs（含 idx_events_field_time / idx_events_page_action）— 本地 + 生產
 
