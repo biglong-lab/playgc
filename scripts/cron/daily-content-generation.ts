@@ -373,6 +373,7 @@ export async function runDailyCron(): Promise<CronStats> {
   console.log(`  快取升級素材：${stats.cacheExemplarsAdded} 張高分照片`);
   console.log(`  快取刪原 row：${stats.cacheRowsDeleted}（已被消化進歸檔/素材庫）`);
   console.log(`  task3 策展：${stats.exemplarsCollected}（從近 7 天 cache）`);
+  console.log(`  task4 閾值：${stats.thresholdsAdjusted} 調整 / ${stats.thresholdsMaintained} 維持 / ${stats.thresholdsInsufficient} 樣本不足`);
   console.log(`  耗時：${(stats.durationMs / 1000).toFixed(1)}s`);
   console.log("=" .repeat(60));
 
