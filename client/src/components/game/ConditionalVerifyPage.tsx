@@ -61,6 +61,8 @@ interface ConditionalVerifyPageProps {
   inventory?: string[];
   score?: number;
   visitedLocations?: string[];
+  // 🎨 P2: 變體池
+  variantPool?: unknown;
 }
 
 /**
