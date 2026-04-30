@@ -164,8 +164,8 @@ TOTAL_PROGRESS: 86/120 (72%)
 - [x] **P7-10** PlatformAiCenter UI：素材庫管理分頁（連結 ExemplarLibrary）
 - [x] **P7-11** PlatformAiCenter UI：訓練設定分頁（顯示 3 個模型分工，唯讀預覽）
 - [x] **P7-12** TS check EXIT 0
-- [ ] **P7-13** commit `feat(platform): AI 訓練中心後台專區` + push + 部署
-- [ ] **P7-E2E** 訪問 `/platform/ai-center`（HTTP 200）+ API 4 個端點都回 401（未登入正確擋下）
+- [x] **P7-13** commit `3df76145` + push + 部署 ✅
+- [x] **P7-E2E** HTTP 200 ✅ / `/platform/ai-center` 200 ✅ / 3 個 API endpoints 都 401 認證擋下 ✅
 
 ---
 
