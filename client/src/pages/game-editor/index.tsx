@@ -32,6 +32,7 @@ import { syncPages } from "./lib/page-sync";
 import { validateAllPages, formatIssue } from "./lib/validate-page-config";
 import ToolboxSidebar from "./components/ToolboxSidebar";
 import PageListSidebar from "./components/PageListSidebar";
+import AdminCopilotPanel from "@/components/admin/AdminCopilotPanel";
 
 export default function GameEditor() {
   const { gameId } = useParams<{ gameId: string }>();
