@@ -31,6 +31,7 @@ import {
 } from "./photo-mission/PhotoViews";
 import type { PhotoMissionConfig } from "@shared/schema";
 import { formatAiError } from "@/lib/ai-error";
+import { pickVariant } from "@/lib/variant-picker";
 
 interface PhotoOcrFlowProps {
   config: PhotoMissionConfig;
