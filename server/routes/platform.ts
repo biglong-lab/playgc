@@ -14,6 +14,7 @@ import {
   rolePermissions,
   aiUsageLogs,
   fieldUsageMeters,
+  errorLogs,
   insertPlatformPlanSchema,
   insertPlatformFeatureFlagSchema,
   insertFieldFeatureOverrideSchema,
@@ -24,6 +25,15 @@ import { scanBillingAlerts, getBillingAlertSummary } from "../lib/billing-alerts
 import { auditLogs, adminAccounts as adminAccountsTable } from "@shared/schema";
 import { eq, sql, desc, and, gte, lte, inArray } from "drizzle-orm";
 import { z } from "zod";
+
+function formatUptime(seconds: number): string {
+  if (seconds < 60) return `${seconds} 秒`;
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} 分`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} 小時 ${Math.floor((seconds % 3600) / 60)} 分`;
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  return `${days} 天 ${hours} 小時`;
+}
 
 export function registerPlatformRoutes(app: Express): void {
   // ============================================================================
@@ -815,6 +825,221 @@ export function registerPlatformRoutes(app: Express): void {
   //   重用既有 audit_logs 表，提供跨場域查詢介面
   //   action 前綴 platform: 為平台層操作（vs admin: 為場域層）
   // ============================================================================
+
+  // ============================================================================
+  // 🆕 錯誤記錄管理（2026-04-30）
+  // ============================================================================
+
+  /**
+   * GET /api/platform/errors
+   * Query: ?level=error|warning|info  ?resolved=true|false  ?fieldId=x  ?limit=100
+   */
+  app.get("/api/platform/errors", requirePlatformAdmin, async (req, res) => {
+    try {
+      const level = typeof req.query.level === "string" ? req.query.level : null;
+      const resolvedFilter = typeof req.query.resolved === "string" ? req.query.resolved : null;
+      const fieldFilter = typeof req.query.fieldId === "string" ? req.query.fieldId : null;
+      const limit = Math.min(parseInt(String(req.query.limit ?? "100"), 10) || 100, 500);
+
+      const conds = [];
+      if (level) conds.push(eq(errorLogs.level, level));
+      if (resolvedFilter === "true") conds.push(sql`${errorLogs.resolvedAt} IS NOT NULL`);
+      if (resolvedFilter === "false") conds.push(sql`${errorLogs.resolvedAt} IS NULL`);
+      if (fieldFilter) conds.push(eq(errorLogs.fieldId, fieldFilter));
+
+      const items = await db.query.errorLogs.findMany({
+        where: conds.length ? and(...conds) : undefined,
+        orderBy: [desc(errorLogs.lastSeenAt)],
+        limit,
+      });
+
+      res.json({ items, total: items.length });
+    } catch (error) {
+      console.error("[platform/errors] failed:", error);
+      res.status(500).json({ message: "取得錯誤紀錄失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/errors/stats
+   */
+  app.get("/api/platform/errors/stats", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const past7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const result = await db.execute<{
+        total: number;
+        unresolved: number;
+        last_24h: number;
+        last_7d: number;
+        unique_fingerprints: number;
+        total_occurrences: number;
+      }>(sql`
+        SELECT
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE resolved_at IS NULL)::int AS unresolved,
+          COUNT(*) FILTER (WHERE last_seen_at >= ${past24h.toISOString()})::int AS last_24h,
+          COUNT(*) FILTER (WHERE last_seen_at >= ${past7d.toISOString()})::int AS last_7d,
+          COUNT(DISTINCT fingerprint)::int AS unique_fingerprints,
+          COALESCE(SUM(occurrence_count), 0)::int AS total_occurrences
+        FROM error_logs
+      `);
+      res.json(result.rows[0] ?? {});
+    } catch (error) {
+      console.error("[platform/errors/stats] failed:", error);
+      res.status(500).json({ message: "取得錯誤統計失敗" });
+    }
+  });
+
+  /**
+   * PATCH /api/platform/errors/:id — 標記已解決
+   */
+  const resolveErrorSchema = z.object({
+    note: z.string().max(1000).optional(),
+  });
+
+  app.patch("/api/platform/errors/:id/resolve", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = resolveErrorSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤" });
+      }
+      const [updated] = await db
+        .update(errorLogs)
+        .set({
+          resolvedAt: new Date(),
+          resolvedByAdminId: req.platform?.adminAccountId ?? null,
+          resolvedNote: parsed.data.note,
+        })
+        .where(eq(errorLogs.id, req.params.id))
+        .returning();
+      if (!updated) return res.status(404).json({ message: "錯誤紀錄不存在" });
+
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:error_resolved",
+        targetType: "error_log",
+        targetId: updated.id,
+        metadata: { note: parsed.data.note, fingerprint: updated.fingerprint },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json(updated);
+    } catch (error) {
+      console.error("[platform/errors/resolve] failed:", error);
+      res.status(500).json({ message: "標記已解決失敗" });
+    }
+  });
+
+  // ============================================================================
+  // 🆕 系統健康監控（2026-04-30）
+  // ============================================================================
+
+  /**
+   * GET /api/platform/health/check
+   * 即時檢查各模組狀態：
+   *   - DB（PostgreSQL）
+   *   - Cloudinary（環境變數有沒有）
+   *   - Firebase（環境變數有沒有）
+   *   - 最近 error_logs 數量
+   *   - process uptime / memory
+   */
+  app.get("/api/platform/health/check", requirePlatformAdmin, async (_req, res) => {
+    const checks: Array<{
+      name: string;
+      status: "healthy" | "degraded" | "down";
+      latencyMs?: number;
+      detail?: string;
+    }> = [];
+
+    // DB ping
+    const dbStart = Date.now();
+    try {
+      await db.execute(sql`SELECT 1`);
+      checks.push({
+        name: "PostgreSQL",
+        status: "healthy",
+        latencyMs: Date.now() - dbStart,
+      });
+    } catch (e) {
+      checks.push({
+        name: "PostgreSQL",
+        status: "down",
+        latencyMs: Date.now() - dbStart,
+        detail: e instanceof Error ? e.message : "unknown error",
+      });
+    }
+
+    // Cloudinary 配置檢查
+    const cloudConfigured =
+      !!process.env.CLOUDINARY_CLOUD_NAME &&
+      !!process.env.CLOUDINARY_API_KEY &&
+      !!process.env.CLOUDINARY_API_SECRET;
+    checks.push({
+      name: "Cloudinary",
+      status: cloudConfigured ? "healthy" : "degraded",
+      detail: cloudConfigured ? "配置完整" : "環境變數缺失",
+    });
+
+    // Firebase 配置檢查
+    const firebaseConfigured =
+      !!process.env.FIREBASE_PROJECT_ID || !!process.env.VITE_FIREBASE_PROJECT_ID;
+    checks.push({
+      name: "Firebase",
+      status: firebaseConfigured ? "healthy" : "degraded",
+      detail: firebaseConfigured ? "配置完整" : "未設定 Firebase 環境變數",
+    });
+
+    // Resend Email
+    const resendConfigured = !!process.env.RESEND_API_KEY;
+    checks.push({
+      name: "Resend Email",
+      status: resendConfigured ? "healthy" : "degraded",
+      detail: resendConfigured ? "已配置" : "未設定 RESEND_API_KEY",
+    });
+
+    // 最近錯誤統計
+    try {
+      const past1h = new Date(Date.now() - 60 * 60 * 1000);
+      const errCount = await db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(errorLogs)
+        .where(sql`${errorLogs.lastSeenAt} >= ${past1h.toISOString()}`)
+        .then((r) => Number(r[0]?.count ?? 0));
+      checks.push({
+        name: "近 1 小時錯誤",
+        status: errCount === 0 ? "healthy" : errCount < 10 ? "degraded" : "down",
+        detail: `${errCount} 筆`,
+      });
+    } catch {
+      checks.push({ name: "近 1 小時錯誤", status: "down", detail: "查詢失敗" });
+    }
+
+    // Process 資訊
+    const memUsage = process.memoryUsage();
+    const uptimeSeconds = Math.floor(process.uptime());
+
+    res.json({
+      timestamp: new Date().toISOString(),
+      checks,
+      process: {
+        uptimeSeconds,
+        uptimeText: formatUptime(uptimeSeconds),
+        memoryMB: {
+          rss: Math.round(memUsage.rss / 1024 / 1024),
+          heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
+          heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
+          external: Math.round(memUsage.external / 1024 / 1024),
+        },
+        nodeVersion: process.version,
+      },
+      summary: {
+        healthy: checks.filter((c) => c.status === "healthy").length,
+        degraded: checks.filter((c) => c.status === "degraded").length,
+        down: checks.filter((c) => c.status === "down").length,
+      },
+    });
+  });
 
   // ============================================================================
   // 🆕 B 安全機制（2026-04-30）— 登入監控 + 鎖定帳號管理

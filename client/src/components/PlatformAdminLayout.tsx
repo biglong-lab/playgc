@@ -42,6 +42,8 @@ import {
   Layers,
   TrendingUp,
   Shield as ShieldIcon,
+  Bug,
+  Heart,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -99,6 +101,14 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
       { label: "跨場域角色", path: "/platform/roles", icon: Shield },
       { label: "稽核日誌", path: "/platform/audit-logs", icon: ScrollText },
       { label: "安全機制", path: "/platform/security", icon: ShieldIcon },
+    ],
+  },
+  // 🆕 系統運維（2026-04-30）
+  {
+    label: "系統運維",
+    items: [
+      { label: "系統健康", path: "/platform/health", icon: Heart },
+      { label: "錯誤記錄", path: "/platform/errors", icon: Bug },
     ],
   },
   {

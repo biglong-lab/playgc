@@ -40,3 +40,4 @@ export * from "./field-memberships";
 export * from "./ai-models";
 export * from "./ai-usage-logs";
 export * from "./support-tickets";
+export * from "./error-logs";
