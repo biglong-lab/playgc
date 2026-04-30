@@ -301,7 +301,9 @@ export function registerAiScoringRoutes(app: Express): void {
       resolvedFieldId = ctx.fieldId;
       resolvedProvider = detectProvider(fieldApiKey);
 
-      const threshold = confidenceThreshold ?? 0.6;
+      // 🆕 P13-6: 取自適應閾值（admin 傳入 confidenceThreshold 優先；否則用 task 自適應；最後 fallback DEFAULT 0.6）
+      const adaptiveThresholds = pageId ? await getEffectiveThresholds(pageId) : null;
+      const threshold = confidenceThreshold ?? adaptiveThresholds?.aiConfidenceThreshold ?? 0.6;
 
       // 📸 P4 Cache 查找：先看有沒有相似圖的 cache
       const cacheLookup = await getCached<{ verified: boolean; confidence: number; feedback: string; detectedObjects: string[] }>({
