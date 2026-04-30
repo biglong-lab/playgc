@@ -60,6 +60,7 @@ export default function PhotoCompareFlow({
   onComplete,
   sessionId,
   gameId,
+  variantPool,
 }: PhotoCompareFlowProps) {
   const { toast } = useToast();
   const camera = usePhotoCamera();
