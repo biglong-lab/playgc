@@ -144,7 +144,7 @@ TOTAL_PROGRESS: 43/50
 - [x] **P15-7** cron task 6：每天跑 calculateHealthScore() → log 分數/等級/殭屍/孤兒/死路（含 H/M/L）+ 三項扣分；CronStats 加 5 欄（healthScore/healthLevel/healthZombies/healthOrphans/healthDeadEnds）；console 報表加一行
 
 ## 收尾
-- [ ] **P15-8** TS check + commit + push + 部署 + E2E
+- [x] **P15-8** TS check ✅ EXIT 0 + push + 部署 + E2E（HTTP 200 + content-health 401 正確擋下）
 
 ---
 
