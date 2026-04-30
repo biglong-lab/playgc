@@ -85,8 +85,8 @@ TOTAL_PROGRESS: 19/42
 > pHash 距離 / Levenshtein tolerance / AI confidence 閾值依任務歷史自動調整。
 
 ## 資料 + 邏輯
-- [ ] **P13-1** 建立 `shared/schema/task-thresholds.ts`：task_thresholds 表（task_id × pHashThreshold / fuzzyTolerance / aiConfidenceThreshold + 統計）
-- [ ] **P13-2** SQL CREATE TABLE task_thresholds（含 unique on task_id）— 本地 + 生產
+- [x] **P13-1** 建立 `shared/schema/task-thresholds.ts`（4 個閾值欄位 + stats jsonb + DEFAULT_THRESHOLDS 常數）
+- [x] **P13-2** SQL CREATE TABLE task_thresholds（task_id PRIMARY KEY + 2 個 index）— 本地 ✅ + 生產 ✅
 - [ ] **P13-3** 建立 `server/lib/threshold-adapter.ts`：calculateOptimalThreshold(taskId) — 從歷史 ai_usage_logs / player_event_logs 算最佳值
 
 ## 整合
