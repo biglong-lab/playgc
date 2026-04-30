@@ -66,7 +66,7 @@ TOTAL_PROGRESS: 17/42
 
 ---
 
-# Phase 12：Multi-Armed Bandit 變體選擇 🎰
+# Phase 12：Multi-Armed Bandit 變體選擇 🎰 ✅ 完成
 
 > 從「純隨機」進化為「依品質加權」。經典 Bandit 演算法。
 
