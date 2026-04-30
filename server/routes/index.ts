@@ -8,6 +8,7 @@ import { registerAdminRoleRoutes } from "./admin-roles";
 import { registerAdminGameRoutes } from "./admin-games";
 import { registerVariantPoolRoutes } from "./admin-variant-pool";
 import { registerExemplarRoutes } from "./admin-exemplar";
+import { registerGameGeneratorRoutes } from "./admin-game-generator";
 import { registerAdminContentRoutes } from "./admin-content";
 import { registerPlayerGameRoutes } from "./player-games";
 import { registerDeviceRoutes } from "./devices";
