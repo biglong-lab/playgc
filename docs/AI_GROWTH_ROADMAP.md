@@ -122,7 +122,7 @@ TOTAL_PROGRESS: 35/42
 
 ## cron
 - [x] **P14-9** cron task 5：抓所有 status=running 實驗 → calculateSignificance → a_wins/b_wins 自動 status=completed + endedAt + conclusionStats（含 pValue/zStatistic/effectSize/groupA/groupB/conclusionReason/calculatedAt）；no_difference 寫結論但保持 running；insufficient_data 不更新
-- [ ] **P14-10** TS check + commit + push + 部署 + E2E
+- [x] **P14-10** TS check ✅ EXIT 0 + milestone commit + push + 部署 + E2E（HTTP 200）
 
 ---
 
