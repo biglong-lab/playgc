@@ -77,7 +77,13 @@ function shuffle<T>(arr: T[], rng: () => number): T[] {
 export async function composeRoguelikeFlow(
   input: RoguelikeCompositionInput,
 ): Promise<RoguelikeCompositionResult> {
-  const { gameId, targetCount = 6, seed = Date.now(), withIntroOutro = true } = input;
+  const {
+    gameId,
+    targetCount = 6,
+    seed = Date.now(),
+    withIntroOutro = true,
+    useMarkov = false,
+  } = input;
 
   // 取遊戲所有 pages
   const allPages = await db.select().from(pages).where(eq(pages.gameId, gameId));
@@ -99,8 +105,67 @@ export async function composeRoguelikeFlow(
 
   // 2. 中段任務
   const middleCount = withIntroOutro ? Math.max(1, targetCount - 2) : targetCount;
-  const shuffledTasks = shuffle(taskPool, rng).slice(0, middleCount);
-  composed.push(...shuffledTasks);
+  let middleTasks: Page[] = [];
+  let markovUsed = 0;
+  let markovFallbacks = 0;
+
+  if (useMarkov && taskPool.length > 0) {
+    // 取 fieldId（Markov 機率以場域為單位）
+    const [game] = await db
+      .select({ fieldId: games.fieldId })
+      .from(games)
+      .where(eq(games.id, gameId))
+      .limit(1);
+
+    if (game?.fieldId) {
+      const allowed = Array.from(new Set(taskPool.map((p) => p.pageType)));
+      const usedIds = new Set<string>();
+
+      // 第一個任務：純隨機（無前一個可參考）
+      const first = shuffle(taskPool, rng)[0];
+      middleTasks.push(first);
+      usedIds.add(first.id);
+
+      // 後續任務：依 Markov sampleNextType
+      for (let i = 1; i < middleCount && middleTasks.length < taskPool.length; i++) {
+        const prev = middleTasks[middleTasks.length - 1];
+        const result = await sampleNextType(game.fieldId, prev.pageType, {
+          allowedTypes: allowed,
+        });
+
+        let next: Page | undefined;
+        if (result.pickedType) {
+          // 從該 type 的可用 page 中隨機抽（避免重複）
+          const sameTypePool = taskPool.filter(
+            (p) => p.pageType === result.pickedType && !usedIds.has(p.id),
+          );
+          if (sameTypePool.length > 0) {
+            next = shuffle(sameTypePool, rng)[0];
+            markovUsed++;
+          }
+        }
+
+        // fallback：純隨機從未用過的 task pool 抽
+        if (!next) {
+          const remaining = taskPool.filter((p) => !usedIds.has(p.id));
+          if (remaining.length === 0) break;
+          next = shuffle(remaining, rng)[0];
+          markovFallbacks++;
+        }
+
+        middleTasks.push(next);
+        usedIds.add(next.id);
+      }
+    } else {
+      // 沒 fieldId → 純 shuffle
+      middleTasks = shuffle(taskPool, rng).slice(0, middleCount);
+    }
+  } else {
+    // 未啟用 Markov（向後相容）→ 純 shuffle
+    middleTasks = shuffle(taskPool, rng).slice(0, middleCount);
+  }
+
+  composed.push(...middleTasks);
 
   // 3. 結尾（從 intro_outro_pool 再抽 1，避免跟 intro 重複）
   if (withIntroOutro && introOutroPool.length > 1) {
@@ -118,9 +183,13 @@ export async function composeRoguelikeFlow(
     pageOrder: idx + 1,
   }));
 
+  const markovNote = useMarkov
+    ? `, Markov: ${markovUsed} 使用 / ${markovFallbacks} fallback`
+    : "";
+
   return {
     composedPages,
     totalSourcePages: allPages.length,
-    rationale: `從 ${allPages.length} 個 pages 中抽 ${composedPages.length} 個（intro=${withIntroOutro ? 1 : 0} / 任務=${middleCount} / outro=${withIntroOutro && introOutroPool.length > 1 ? 1 : 0}），seed=${seed}`,
+    rationale: `從 ${allPages.length} 個 pages 中抽 ${composedPages.length} 個（intro=${withIntroOutro ? 1 : 0} / 任務=${middleCount} / outro=${withIntroOutro && introOutroPool.length > 1 ? 1 : 0}），seed=${seed}${markovNote}`,
   };
 }
