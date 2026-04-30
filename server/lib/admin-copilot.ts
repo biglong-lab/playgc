@@ -36,15 +36,42 @@ export interface SuggestionResult {
 
 /**
  * 根據已有 pages 推薦下一個合適的 page type
+ *
+ * P16-6: 若 fieldId 提供 → 注入 Markov 機率（成功玩家在最後一個 type 後最常去的 type）
+ *         AI 仍可用其判斷，但有 data-driven 參考；fieldId 缺省走純 AI（向後相容）
  */
 export async function suggestNextModule(
   currentPages: PageSummary[],
   apiKey: string,
   model: string = DEFAULT_VARIANT_GEN_MODEL,
+  fieldId?: string,
 ): Promise<SuggestionResult[]> {
   const flowSummary = currentPages
     .map((p) => `${p.pageOrder}. ${p.pageType}${p.customName ? ` (${p.customName})` : ""}${p.hint ? ` — ${p.hint.substring(0, 30)}` : ""}`)
     .join("\n");
+
+  // P16-6: 取 Markov 機率（若有 fieldId + 至少一個 page）
+  let markovHint = "";
+  if (fieldId && currentPages.length > 0) {
+    const lastType = currentPages[currentPages.length - 1].pageType;
+    try {
+      const probs = await getTransitionProbabilities(fieldId, lastType);
+      if (probs.length > 0) {
+        const top5 = [...probs]
+          .sort((a, b) => b.probability - a.probability)
+          .slice(0, 5);
+        markovHint = `\n📊 歷史資料統計（成功玩家在 ${lastType} 後最常去的 type）：\n${top5
+          .map(
+            (p) =>
+              `  - ${p.toType}: ${(p.probability * 100).toFixed(1)}%（樣本 ${p.totalCount}）`,
+          )
+          .join("\n")}\n（這是參考數據，可作為推薦排序的依據）\n`;
+      }
+    } catch (err) {
+      // Markov 失敗不影響 AI 推薦
+      console.warn("[admin-copilot] Markov hint 取得失敗:", err);
+    }
+  }
 
   const prompt = `你是賈村競技場遊戲設計助手。以下是 admin 已建立的遊戲流程：
 
