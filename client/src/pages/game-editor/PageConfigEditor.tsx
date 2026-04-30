@@ -1995,6 +1995,28 @@ export default function PageConfigEditor({
       {page.pageType !== "flow_router" && (
         <OnCompleteActionsEditor config={config} updateField={updateField} gameId={gameId} />
       )}
+      {/* 🎨 P2 變體池編輯器（取代即時 AI 訊息呼叫） */}
+      {/* 只對「會給玩家成功/失敗訊息」的 page type 顯示 */}
+      {[
+        "photo_spot",
+        "photo_compare",
+        "photo_ocr",
+        "photo_mission",
+        "text_verify",
+        "choice_verify",
+        "conditional_verify",
+      ].includes(page.pageType) && page.id && !page.id.startsWith("temp-") && (
+        <VariantPoolEditor
+          gameId={gameId}
+          pageId={page.id}
+          defaultTaskContext={
+            (config.title as string) ||
+            (config.instruction as string) ||
+            (config.question as string) ||
+            ""
+          }
+        />
+      )}
     </div>
   );
 }
