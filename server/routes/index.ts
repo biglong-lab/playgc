@@ -142,6 +142,8 @@ export async function registerRoutes(
   registerRewardsRoutes(app);
   registerAdminRewardsRoutes(app);
   registerAdminEngagementRoutes(app);
+  // 🔬 A/B 實驗（P14-5）
+  registerAdminAbExperimentsRoutes(app);
   registerBattleNotificationRoutes(app);
   registerAdminBattleRoutes(app);
   registerAdminBattleSeasonRoutes(app);
