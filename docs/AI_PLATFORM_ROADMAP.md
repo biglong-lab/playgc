@@ -118,11 +118,11 @@ TOTAL_PROGRESS: 56/64
 
 # Phase 5：週期生成 cron 🌙
 
-- [ ] **P5-1** 建立 `scripts/cron/daily-content-generation.ts`
-- [ ] **P5-2** 任務 1：補變體池（找 variant_pool=null 且 play_count>5 的任務）
-- [ ] **P5-3** 任務 2：清過期快取（DELETE expires_at < NOW()）
-- [ ] **P5-4** 任務 3：策展素材庫（從成功玩家照片取樣，留待 P6 用）
-- [ ] **P5-5** 加 `npm run cron:daily` script 到 package.json
+- [x] **P5-1** 建立 `scripts/cron/daily-content-generation.ts`（runDailyCron entry）
+- [x] **P5-2** 任務 1：補變體池（找 variant_pool=null 的 7 種 page type，每次最多 20 個）
+- [x] **P5-3** 任務 2：清過期快取（呼叫 cleanupCacheExpired）
+- [x] **P5-4** 任務 3：策展素材庫（P6 預留 stub，邏輯註解中）
+- [x] **P5-5** 加 `npm run cron:daily` script 到 package.json
 - [ ] **P5-6** 在生產 docker-compose.prod.yml 加 cron service（用 node-cron 或 host crontab）
 - [ ] **P5-7** TS check
 - [ ] **P5-8** commit `feat(ai): 每日內容生成 cron` + push + 部署
