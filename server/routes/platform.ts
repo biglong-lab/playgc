@@ -828,6 +828,142 @@ export function registerPlatformRoutes(app: Express): void {
   // ============================================================================
 
   // ============================================================================
+  // 🆕 登入管理（2026-04-30）— 各登入方式狀態與統計
+  // ============================================================================
+
+  /**
+   * GET /api/platform/login-config
+   * 顯示各登入方式的設定狀態（環境變數有沒有）+ 使用統計
+   */
+  app.get("/api/platform/login-config", requirePlatformAdmin, async (_req, res) => {
+    try {
+      // Firebase Auth 狀態
+      const firebaseConfigured =
+        !!process.env.FIREBASE_PROJECT_ID || !!process.env.VITE_FIREBASE_PROJECT_ID;
+      const firebaseClientConfig = {
+        apiKey: !!process.env.VITE_FIREBASE_API_KEY,
+        authDomain: !!process.env.VITE_FIREBASE_AUTH_DOMAIN,
+        projectId: !!process.env.VITE_FIREBASE_PROJECT_ID,
+        messagingSenderId: !!process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+        appId: !!process.env.VITE_FIREBASE_APP_ID,
+      };
+
+      // Admin 帳號（username/password）統計
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const adminLoginStats = await db.execute<{
+        total_admins: number;
+        active_admins: number;
+        recent_logins_30d: number;
+      }>(sql`
+        SELECT
+          (SELECT COUNT(*)::int FROM admin_accounts) AS total_admins,
+          (SELECT COUNT(*)::int FROM admin_accounts WHERE status = 'active') AS active_admins,
+          (SELECT COUNT(*)::int FROM admin_accounts
+            WHERE last_login_at >= ${past30d.toISOString()}) AS recent_logins_30d
+      `);
+
+      // Active sessions
+      const activeSessions = await db.execute<{ count: number }>(sql`
+        SELECT COUNT(*)::int AS count
+        FROM admin_sessions
+        WHERE expires_at > NOW()
+      `).then((r) => Number(r.rows[0]?.count ?? 0));
+
+      // 用戶（玩家）統計
+      const userStats = await db.execute<{
+        total_users: number;
+        firebase_users: number;
+      }>(sql`
+        SELECT
+          (SELECT COUNT(*)::int FROM users) AS total_users,
+          (SELECT COUNT(*)::int FROM users WHERE id LIKE 'firebase:%' OR email IS NOT NULL) AS firebase_users
+      `);
+
+      res.json({
+        methods: [
+          {
+            name: "Admin 帳號（username/password）",
+            type: "admin_password",
+            enabled: true,
+            configured: true,
+            stats: adminLoginStats.rows[0] ?? null,
+          },
+          {
+            name: "Firebase Auth（Google / Email / 匿名）",
+            type: "firebase",
+            enabled: firebaseConfigured,
+            configured: firebaseConfigured,
+            details: firebaseClientConfig,
+            stats: userStats.rows[0] ?? null,
+          },
+        ],
+        activeSessions,
+        notes: [
+          "Admin 帳號：每場域獨立、bcrypt 加密、failedLoginAttempts ≥20 自動鎖定",
+          "Firebase：玩家端 OAuth 登入；環境變數需設定 VITE_FIREBASE_*",
+          "兩種登入機制獨立運作，admin 帳號不依賴 Firebase",
+        ],
+      });
+    } catch (error) {
+      console.error("[platform/login-config] failed:", error);
+      res.status(500).json({ message: "取得登入配置失敗" });
+    }
+  });
+
+  // ============================================================================
+  // 🆕 PWA 管理（2026-04-30）— PWA 配置與狀態
+  // ============================================================================
+
+  /**
+   * GET /api/platform/pwa-status
+   * 顯示 PWA 配置：manifest / service worker / VAPID push
+   */
+  app.get("/api/platform/pwa-status", requirePlatformAdmin, async (_req, res) => {
+    try {
+      // VAPID 配置檢查
+      const vapidPublic = process.env.VITE_VAPID_PUBLIC_KEY || process.env.VAPID_PUBLIC_KEY;
+      const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
+      const vapidConfigured = !!vapidPublic && !!vapidPrivate;
+
+      // PWA 預設 manifest（從 vite-plugin-pwa 設定推估）
+      const manifestInfo = {
+        name: "賈村競技場",
+        shortName: "CHITO",
+        themeColor: "#000000",
+        backgroundColor: "#ffffff",
+        display: "standalone",
+        orientation: "portrait",
+      };
+
+      res.json({
+        manifest: manifestInfo,
+        serviceWorker: {
+          enabled: true,
+          strategy: "GenerateSW (vite-plugin-pwa)",
+          autoUpdate: true,
+          skipWaiting: true,
+          clientsClaim: true,
+        },
+        push: {
+          enabled: vapidConfigured,
+          vapidPublicSet: !!vapidPublic,
+          vapidPrivateSet: !!vapidPrivate,
+          publicKey: vapidConfigured && vapidPublic ? `${vapidPublic.slice(0, 10)}...${vapidPublic.slice(-6)}` : null,
+        },
+        notes: [
+          "Service Worker：vite-plugin-pwa 自動產生，每次部署自動更新",
+          "skipWaiting + clientsClaim：新版本部署後立即生效（無需等使用者重整）",
+          "Push 通知：需設定 VAPID_PRIVATE_KEY / VITE_VAPID_PUBLIC_KEY 才能啟用",
+          "Manifest 設定請改 vite.config.ts 的 VitePWA() 區塊",
+        ],
+      });
+    } catch (error) {
+      console.error("[platform/pwa-status] failed:", error);
+      res.status(500).json({ message: "取得 PWA 狀態失敗" });
+    }
+  });
+
+  // ============================================================================
   // 🆕 IP 白名單管理（2026-04-30）
   //   注意：只給 platform admin 用，不影響場域 admin / 玩家
   //   驗證在 platformAuth.ts 中完成（若白名單啟用且 IP 不在內 → 拒絕）

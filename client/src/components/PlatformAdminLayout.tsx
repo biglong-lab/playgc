@@ -45,6 +45,8 @@ import {
   Bug,
   Heart,
   Key,
+  KeyRound,
+  Smartphone,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -112,6 +114,8 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     items: [
       { label: "系統健康", path: "/platform/health", icon: Heart },
       { label: "錯誤記錄", path: "/platform/errors", icon: Bug },
+      { label: "登入管理", path: "/platform/login-config", icon: KeyRound },
+      { label: "PWA 管理", path: "/platform/pwa", icon: Smartphone },
     ],
   },
   {
