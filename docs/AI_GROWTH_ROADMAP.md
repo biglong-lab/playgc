@@ -131,7 +131,7 @@ TOTAL_PROGRESS: 36/42
 > 自動找出「殭屍變體」「孤兒任務」「死路 page」等問題內容。
 
 ## 邏輯
-- [ ] **P15-1** 建立 `server/lib/content-health.ts`：detectZombieVariants（從沒被選中）
+- [x] **P15-1** 建立 `server/lib/content-health.ts`：detectZombieVariants — 一次取 pool + 一次 selectDistinct feedback → Set 比對找出 pool 內存在但從沒 feedback 的變體；含 minDays 防剛生成誤判（預設 14 天）+ limit 上限 + ZombieVariant 介面（pageId/gameId/variantKey/index/text/daysOld）
 - [ ] **P15-2** content-health 加 detectOrphanTasks（沒玩家完成過）
 - [ ] **P15-3** content-health 加 detectDeadEndPages（玩家進去就退出，從 player_event_logs 算）
 - [ ] **P15-4** content-health 加 calculateHealthScore（綜合分數 0-100）
