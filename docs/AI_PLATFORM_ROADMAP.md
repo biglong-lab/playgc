@@ -220,9 +220,9 @@ TOTAL_PROGRESS: 128/120 (107%)
 - [x] **P10-7** game_sessions.route_id 欄位已加（P10-4），admin 端可建立 route → PlayPage P10-10 接 UI 選擇
 - [x] **P10-8** 建立 `server/lib/roguelike-composer.ts`（種子化隨機 + intro/outro 結構 + 不適合類型過濾）
 - [x] **P10-9** 加 `POST /api/games/:gameId/start-roguelike`（公開 API，玩家可呼叫）
-- [ ] **P10-10** 修改 `client/src/pages/PlayPage.tsx`：支援多腳本選擇
-- [ ] **P10-11** 建立 `client/src/pages/admin/GameRoutesEditor.tsx`
-- [ ] **P10-12** TS check
+- [x] **P10-10** 建立 `client/src/components/game/PlayerRouteSelector.tsx`（reusable 玩家端路線選擇器，0/1/N 條路線自動處理）
+- [x] **P10-11** 建立 `client/src/pages/admin/GameRoutesEditor.tsx`（4 個 endpoint CRUD UI + Dialog 編輯）+ App.tsx 路由 `/admin/games/:gameId/routes`
+- [x] **P10-12** TS check EXIT 0
 - [ ] **P10-13** commit `feat(game): 多人/多腳本/Roguelike 架構` + push + 部署
 - [ ] **P10-E2E** 建立測試 game 含 2 條 route → start-roguelike 應回隨機抽選的 6 個 page
 
