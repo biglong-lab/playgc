@@ -105,8 +105,8 @@ TOTAL_PROGRESS: 27/42
 > 自動分組 / 統計 / 自動結論的內容實驗系統。
 
 ## 資料層
-- [ ] **P14-1** 建立 `shared/schema/ab-experiments.ts`：ab_experiments + ab_assignments 兩張表
-- [ ] **P14-2** SQL CREATE TABLE ab_experiments / ab_assignments — 本地 + 生產
+- [x] **P14-1** 建立 `shared/schema/ab-experiments.ts`：ab_experiments + ab_assignments + 3 個 enum
+- [x] **P14-2** SQL CREATE TABLE × 2（含 4 個 index + unique on experiment×user）— 本地 ✅ + 生產 ✅
 
 ## 邏輯
 - [ ] **P14-3** 建立 `server/lib/ab-test.ts`：assignVariant(userId, experimentId) — 用 user_id hash 確定性分組
