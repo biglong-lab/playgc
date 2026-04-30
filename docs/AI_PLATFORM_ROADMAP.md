@@ -79,8 +79,8 @@ TOTAL_PROGRESS: 30/64
 
 # Phase 3：智慧分流 🧠
 
-- [ ] **P3-1** 建立 `server/lib/text-match.ts`：`normalize` + `levenshtein` + `matchAnswer`
-- [ ] **P3-2** `matchAnswer` 三層：exact / fuzzy(distance≤2) / ai_needed
+- [x] **P3-1** 建立 `server/lib/text-match.ts`：`normalize` + `levenshtein` + `matchAnswer`
+- [x] **P3-2** `matchAnswer` 三層：exact / fuzzy(distance≤2) / ai_needed
 - [ ] **P3-3** 修改 `server/routes/ai-scoring.ts` 的 `score-text` endpoint：先試 matchAnswer，命中就回傳不呼叫 AI
 - [ ] **P3-4** 加 `layer` 欄位到回傳 JSON（'exact' / 'fuzzy' / 'ai'），用於統計
 - [ ] **P3-5** 寫單元測試 `server/lib/__tests__/text-match.test.ts`（5 個 case）
