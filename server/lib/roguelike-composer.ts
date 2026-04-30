@@ -9,8 +9,9 @@
 //   - 篩選只有「可單獨任務」的 pageType（排除 flow_router 等需上下文的）
 //   - 確保有 1 個 intro（text_card / dialogue）開頭、1 個 ending 結尾
 import { db } from "../db";
-import { pages, type Page } from "@shared/schema";
+import { pages, games, type Page } from "@shared/schema";
 import { eq, inArray } from "drizzle-orm";
+import { sampleNextType } from "./markov-sampler";
 
 /** 適合在 roguelike 中當「中段任務」的 pageType */
 const ROGUELIKE_TASK_TYPES = [
