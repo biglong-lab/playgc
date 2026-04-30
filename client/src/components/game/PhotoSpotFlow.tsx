@@ -18,6 +18,7 @@ import { calculateDistance } from "@/lib/map-utils";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useStableGeolocation } from "@/lib/geolocation";
+import { pickVariant } from "@/lib/variant-picker";
 import { GpsAccuracyIndicator } from "./GpsAccuracyIndicator";
 import { formatAiError } from "@/lib/ai-error";
 import {
