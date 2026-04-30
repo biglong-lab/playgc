@@ -186,7 +186,10 @@ async function callOpenRouterOnce(
  *  - 全部模型都失敗時拋出最後一個錯誤
  *  - 非 fallbackable 錯誤（401 認證錯、500）直接拋出
  */
-async function callOpenRouter(
+/**
+ * @export 共用：給 variant-generator / admin-copilot 等其他模組呼叫 OpenRouter
+ */
+export async function callOpenRouter(
   apiKey: string,
   model: string,
   messages: ChatMessage[],
