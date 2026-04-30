@@ -208,12 +208,10 @@ export async function runDailyCron(): Promise<CronStats> {
   return stats;
 }
 
-// 直接執行（npm run cron:daily）
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runDailyCron()
-    .then(() => process.exit(0))
-    .catch((err) => {
-      console.error("[cron] 嚴重錯誤:", err);
-      process.exit(1);
-    });
-}
+// 直接執行（npm run cron:daily）— CJS bundle 後直接呼叫
+runDailyCron()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error("[cron] 嚴重錯誤:", err);
+    process.exit(1);
+  });
