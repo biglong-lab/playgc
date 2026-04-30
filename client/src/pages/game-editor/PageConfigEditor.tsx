@@ -40,6 +40,7 @@ import { DeviceSelect } from "@/components/shared/DeviceSelect";
 import { AIModelSelect } from "@/components/shared/AIModelSelect";
 import { AIPhotoTester } from "@/components/shared/AIPhotoTester";
 import PagePreviewDialog from "./PagePreviewDialog";
+import VariantPoolEditor from "@/components/admin/VariantPoolEditor";
 
 export default function PageConfigEditor({
   page,
