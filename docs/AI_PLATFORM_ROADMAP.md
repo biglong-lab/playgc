@@ -100,9 +100,9 @@ TOTAL_PROGRESS: 44/64
 
 ## 後端
 
-- [ ] **P4-4** 安裝 `image-hash` 或 `sharp` npm 套件（package.json）
-- [ ] **P4-5** 建立 `server/lib/image-hash.ts`：`computePHash(imageUrl)` 函數
-- [ ] **P4-6** 建立 `server/lib/ai-cache.ts`：`getCached` / `setCached` / `cleanupExpired`
+- [x] **P4-4** 安裝 `sharp ^0.34.5` npm 套件（高效能影像處理）
+- [x] **P4-5** 建立 `server/lib/image-hash.ts`：`computeImageHash` + `hammingDistance` + `isSimilarHash`
+- [x] **P4-6** 建立 `server/lib/ai-cache.ts`：`getCached` + `setCached` + `cleanupExpired` + `getCacheStats` + `buildCacheKey`
 - [ ] **P4-7** 修改 `verify-photo` endpoint：先查 cache（pHash 距離 < 5 命中）
 - [ ] **P4-8** 修改 `compare-photos` endpoint：同樣加 cache
 - [ ] **P4-9** AI 結果寫回 cache（含 30 天 TTL）
