@@ -10,6 +10,7 @@ import { Check, X, HelpCircle, RefreshCw, History, BookOpen, Loader2 } from "luc
 import type { TextVerifyConfig } from "@shared/schema";
 import { normalizeAnswer, NO_AUTO_INPUT_PROPS } from "@/lib/gameVerification";
 import { formatAiError } from "@/lib/ai-error";
+import { pickVariant } from "@/lib/variant-picker";
 
 interface TextVerifyPageProps {
   config: TextVerifyConfig;
