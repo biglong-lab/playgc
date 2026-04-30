@@ -282,3 +282,168 @@ export async function detectOrphanTasks(
 
   return orphans;
 }
+
+// ============================================================================
+// 死路 page 偵測（P15-3）
+// ============================================================================
+
+/**
+ * 死路 page：玩家進去（page_enter）但大多數人沒完成（page_complete）就退出
+ *
+ * 判定（從 player_event_logs 算）：
+ *   1. 取最近 days 天的 page_enter / page_complete / page_exit / page_fail 統計
+ *   2. enterCount ≥ minSamples（避免樣本太少誤判）
+ *   3. exitRate = (exit + fail) / enter ≥ threshold（預設 0.7）
+ *   4. completionRate = complete / enter < (1 - threshold)
+ *
+ * 用途：
+ *   - 找出玩家「卡關」的 page → admin 可以調 hint / 降難度 / 改變體
+ *   - 與 detectOrphanTasks 不同：orphan 是「沒人完成」；deadEnd 是「進去的人都沒完成」
+ */
+export interface DeadEndPage {
+  pageId: string;
+  gameId: string | null;
+  enterCount: number;
+  completeCount: number;
+  exitCount: number;
+  failCount: number;
+  retryCount: number;
+  exitRate: number; // (exit + fail) / enter
+  completionRate: number; // complete / enter
+  /** 嚴重度：completionRate 越低 + enterCount 越大 = 越嚴重 */
+  severity: "high" | "medium" | "low";
+}
+
+export interface DetectDeadEndOptions {
+  /** 遊戲 ID 過濾 */
+  gameId?: string;
+  /** 統計窗口（最近幾天，預設 30） */
+  days?: number;
+  /** 最少需要多少 page_enter 才參與分析（預設 10，避免樣本不足誤判） */
+  minSamples?: number;
+  /** 退出率閾值（預設 0.7） */
+  exitThreshold?: number;
+  /** 上限 */
+  limit?: number;
+}
+
+export async function detectDeadEndPages(
+  options: DetectDeadEndOptions = {},
+): Promise<DeadEndPage[]> {
+  const days = options.days ?? 30;
+  const minSamples = options.minSamples ?? 10;
+  const exitThreshold = options.exitThreshold ?? 0.7;
+  const limit = options.limit ?? 500;
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  // 一次性聚合：對每個 (pageId, eventType) 統計 count
+  // 用 Drizzle GROUP BY
+  const filters = [
+    isNotNull(playerEventLogs.pageId),
+    gte(playerEventLogs.createdAt, since),
+  ];
+  if (options.gameId) {
+    filters.push(eq(playerEventLogs.gameId, options.gameId));
+  }
+
+  const rows = await db
+    .select({
+      pageId: playerEventLogs.pageId,
+      gameId: playerEventLogs.gameId,
+      eventType: playerEventLogs.eventType,
+      cnt: sql<number>`count(*)::int`,
+    })
+    .from(playerEventLogs)
+    .where(and(...filters))
+    .groupBy(
+      playerEventLogs.pageId,
+      playerEventLogs.gameId,
+      playerEventLogs.eventType,
+    );
+
+  // 聚合到 pageId 維度
+  const statsByPage = new Map<
+    string,
+    {
+      gameId: string | null;
+      enter: number;
+      complete: number;
+      exit: number;
+      fail: number;
+      retry: number;
+    }
+  >();
+
+  for (const r of rows) {
+    if (!r.pageId) continue;
+    const existing = statsByPage.get(r.pageId) ?? {
+      gameId: r.gameId,
+      enter: 0,
+      complete: 0,
+      exit: 0,
+      fail: 0,
+      retry: 0,
+    };
+    switch (r.eventType) {
+      case "page_enter":
+        existing.enter = r.cnt;
+        break;
+      case "page_complete":
+        existing.complete = r.cnt;
+        break;
+      case "page_exit":
+        existing.exit = r.cnt;
+        break;
+      case "page_fail":
+        existing.fail = r.cnt;
+        break;
+      case "page_retry":
+        existing.retry = r.cnt;
+        break;
+    }
+    statsByPage.set(r.pageId, existing);
+  }
+
+  // 過濾出死路 page
+  const deadEnds: DeadEndPage[] = [];
+  for (const [pageId, s] of Array.from(statsByPage.entries())) {
+    if (s.enter < minSamples) continue; // 樣本不足
+
+    const exitRate = (s.exit + s.fail) / s.enter;
+    if (exitRate < exitThreshold) continue; // 退出率不夠高
+
+    const completionRate = s.complete / s.enter;
+
+    // 嚴重度判定：低完成率 × 大樣本 = 高嚴重度
+    let severity: "high" | "medium" | "low" = "low";
+    if (completionRate < 0.1 && s.enter >= 50) {
+      severity = "high";
+    } else if (completionRate < 0.3 && s.enter >= 20) {
+      severity = "medium";
+    }
+
+    deadEnds.push({
+      pageId,
+      gameId: s.gameId,
+      enterCount: s.enter,
+      completeCount: s.complete,
+      exitCount: s.exit,
+      failCount: s.fail,
+      retryCount: s.retry,
+      exitRate,
+      completionRate,
+      severity,
+    });
+
+    if (deadEnds.length >= limit) break;
+  }
+
+  // 依嚴重度排序（high → medium → low），相同嚴重度依 exitRate 降序
+  const severityRank = { high: 0, medium: 1, low: 2 };
+  deadEnds.sort((a, b) => {
+    const r = severityRank[a.severity] - severityRank[b.severity];
+    return r !== 0 ? r : b.exitRate - a.exitRate;
+  });
+
+  return deadEnds;
+}
