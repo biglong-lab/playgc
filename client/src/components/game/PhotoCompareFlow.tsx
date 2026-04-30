@@ -32,6 +32,7 @@ import {
 } from "./photo-mission/PhotoViews";
 import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
 import { formatAiError } from "@/lib/ai-error";
+import { pickVariant } from "@/lib/variant-picker";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoCompareFlowProps {
