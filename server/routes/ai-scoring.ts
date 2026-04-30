@@ -6,6 +6,7 @@ import { isAuthenticated } from "../firebaseAuth";
 import { isAIConfigured as isGeminiConfigured, verifyPhoto, scoreTextAnswer, comparePhotos, detectProvider } from "../lib/ai-provider";
 import { detectText, isGoogleVisionConfigured, logOcrUsage, getMonthlyOcrUsage } from "../lib/google-vision";
 import { logAiUsage, getMonthlyAiUsage, withAiTimeout } from "../lib/ai-usage-logger";
+import { matchAnswer } from "../lib/text-match";
 import { decryptApiKey } from "../lib/crypto";
 import { db } from "../db";
 import { games, fields, parseFieldSettings } from "@shared/schema";
@@ -594,6 +595,43 @@ export function registerAiScoringRoutes(app: Express): void {
 
       const { question, userAnswer, expectedAnswers, context, passingScore, gameId, modelId } = parsed.data;
       bodyGameId = gameId;
+      const passing = passingScore ?? 70;
+
+      // 🧠 P3 智慧分流：先試本地比對（exact / fuzzy），命中就直接回傳不呼叫 AI
+      // 預期省 70% AI 呼叫（簡單題大多在這裡解決）
+      const localMatch = matchAnswer(userAnswer, expectedAnswers, { fuzzyTolerance: 2 });
+      if (localMatch.match) {
+        const score = localMatch.score ?? 100;
+        const isCorrect = score >= passing;
+        // 📊 記錄（不耗 AI 但仍記錄分流結果，方便後台看 hit 率）
+        await logAiUsage({
+          provider: "local-match" as never, // 自訂 provider 標籤
+          endpoint: "score-text",
+          success: true,
+          latencyMs: Date.now() - startedAt,
+          gameId,
+          fieldId: undefined,
+          userId,
+          context: {
+            score,
+            isCorrect,
+            passingScore: passing,
+            layer: localMatch.layer, // 'exact' | 'fuzzy'
+            distance: localMatch.distance,
+            aiSkipped: true,
+          },
+        });
+        return res.json({
+          score,
+          isCorrect,
+          feedback:
+            localMatch.layer === "exact"
+              ? "答對了！"
+              : `近似答對（編輯距離 ${localMatch.distance}）`,
+          layer: localMatch.layer,
+          aiUsed: false,
+        });
+      }
 
       // 解析場域 API Key + fieldId
       const ctx = await resolveAiContext(gameId);
@@ -633,7 +671,6 @@ export function registerAiScoringRoutes(app: Express): void {
         return apiError(res, 429, "AI 呼叫次數過多，請稍後再試");
       }
 
-      const passing = passingScore ?? 70;
       // 🛡️ 加 timeout 防 nginx 上游 502
       const result = await withAiTimeout(
         () => scoreTextAnswer(
@@ -664,10 +701,12 @@ export function registerAiScoringRoutes(app: Express): void {
           questionLength: question.length,
           answerLength: userAnswer.length,
           expectedCount: expectedAnswers.length,
+          layer: "ai",
         },
       });
 
-      return res.json(result);
+      // 🧠 P3-4: 加 layer 欄位讓前端知道這次走 AI（有別於 local-match）
+      return res.json({ ...result, layer: "ai", aiUsed: true });
     } catch (error) {
       // 預覽模式（preview-game）→ 明確拒絕
       if (error instanceof Error && error.message.includes("預覽模式")) {
