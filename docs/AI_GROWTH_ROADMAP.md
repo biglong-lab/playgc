@@ -117,7 +117,7 @@ TOTAL_PROGRESS: 32/42
 - [x] **P14-6** 整合到 variant-picker-server：在 bandit 之前先檢 `findActiveExperiment` → 命中則 `assignVariant` 確定性分組 → 返回對應 index（reason: "ab-experiment"）+ index 越界 fallback bandit 保留容錯
 
 ## UI
-- [ ] **P14-7** 建立 `client/src/pages/admin/AbExperiments.tsx`：實驗清單 + 結果儀表板
+- [x] **P14-7** 建立 `client/src/pages/admin/AbExperiments.tsx`（500 行）：實驗清單（含篩選 + 狀態流轉按鈕：啟動/完成/中止）+ 建立 dialog + 結果儀表板 dialog（z 值 / p 值 / 效果量 / A 組 vs B 組滿意度卡片 / 結論 badge）
 - [ ] **P14-8** App.tsx 加路由 `/admin/ab-experiments`
 
 ## cron
