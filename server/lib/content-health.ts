@@ -447,3 +447,159 @@ export async function detectDeadEndPages(
 
   return deadEnds;
 }
+
+// ============================================================================
+// 綜合健康度分數（P15-4）
+// ============================================================================
+
+/**
+ * 計算平台/場域/遊戲整體內容健康度（0-100）
+ *
+ * 計分公式（線性扣分）：
+ *   baseScore = 100
+ *   zombiePenalty   = zombieRatio   × 30   （殭屍變體比例）
+ *   orphanPenalty   = orphanRatio   × 35   （孤兒任務比例）
+ *   deadEndPenalty  = deadEndScore  × 35   （依嚴重度加權：high=1, medium=0.5, low=0.2）
+ *
+ *   finalScore = max(0, baseScore - 三項 penalty 總和)
+ *
+ * 分級：
+ *   90-100  excellent  完美
+ *   75-89   good       健康
+ *   60-74   fair       可接受
+ *   40-59   poor       需改善
+ *   0-39    critical   嚴重
+ */
+export interface HealthScore {
+  score: number; // 0-100
+  level: "excellent" | "good" | "fair" | "poor" | "critical";
+  /** 細項統計（用於 UI 顯示 + admin 行動）*/
+  breakdown: {
+    totalPages: number;
+    totalVariants: number;
+    zombieCount: number;
+    orphanCount: number;
+    deadEndCount: number;
+    deadEndHigh: number;
+    deadEndMedium: number;
+    deadEndLow: number;
+    zombieRatio: number;
+    orphanRatio: number;
+    deadEndScore: number;
+  };
+  /** 各 penalty 細節（透明度） */
+  penalties: {
+    zombie: number;
+    orphan: number;
+    deadEnd: number;
+  };
+}
+
+export interface CalculateHealthOptions {
+  gameId?: string;
+  /** 死路偵測窗口（同 detectDeadEndPages） */
+  days?: number;
+}
+
+export async function calculateHealthScore(
+  options: CalculateHealthOptions = {},
+): Promise<HealthScore> {
+  // 1. 並行抓三個偵測結果 + 全部 pages 計數
+  const [zombies, orphans, deadEnds, pageCountRow] = await Promise.all([
+    detectZombieVariants({ gameId: options.gameId, limit: 10000 }),
+    detectOrphanTasks({ gameId: options.gameId, limit: 10000 }),
+    detectDeadEndPages({
+      gameId: options.gameId,
+      days: options.days,
+      limit: 10000,
+    }),
+    db
+      .select({ cnt: sql<number>`count(*)::int` })
+      .from(pages)
+      .where(options.gameId ? eq(pages.gameId, options.gameId) : sql`true`),
+  ]);
+
+  const totalPages = pageCountRow[0]?.cnt ?? 0;
+
+  // 2. 算總變體數（用 jsonb 函數，但這裡簡單處理：取一次 pool 後加總）
+  // 注意：detectZombieVariants 已遍歷過 pool，這裡為了 totalVariants 再算一次
+  const allPagesWithPool = await db
+    .select({ variantPool: pages.variantPool })
+    .from(pages)
+    .where(
+      and(
+        isNotNull(pages.variantPool),
+        options.gameId ? eq(pages.gameId, options.gameId) : sql`true`,
+      ),
+    );
+
+  let totalVariants = 0;
+  for (const p of allPagesWithPool) {
+    const pool = p.variantPool as VariantPool | null;
+    if (!pool) continue;
+    for (const key of ["success", "fail", "nearMiss", "hint"] as const) {
+      const arr = pool[key];
+      if (Array.isArray(arr)) totalVariants += arr.length;
+    }
+  }
+
+  // 3. 計算比例（避免除以 0）
+  const zombieRatio =
+    totalVariants > 0 ? zombies.length / totalVariants : 0;
+  const orphanRatio = totalPages > 0 ? orphans.length / totalPages : 0;
+
+  // 死路嚴重度加權分數
+  let deadEndHigh = 0,
+    deadEndMedium = 0,
+    deadEndLow = 0;
+  for (const d of deadEnds) {
+    if (d.severity === "high") deadEndHigh++;
+    else if (d.severity === "medium") deadEndMedium++;
+    else deadEndLow++;
+  }
+  const weightedDeadEnd =
+    deadEndHigh * 1.0 + deadEndMedium * 0.5 + deadEndLow * 0.2;
+  const deadEndScore =
+    totalPages > 0 ? Math.min(1, weightedDeadEnd / totalPages) : 0;
+
+  // 4. 計算 penalty
+  const zombiePenalty = zombieRatio * 30;
+  const orphanPenalty = orphanRatio * 35;
+  const deadEndPenalty = deadEndScore * 35;
+
+  const score = Math.max(
+    0,
+    Math.round(100 - zombiePenalty - orphanPenalty - deadEndPenalty),
+  );
+
+  // 5. 分級
+  let level: HealthScore["level"];
+  if (score >= 90) level = "excellent";
+  else if (score >= 75) level = "good";
+  else if (score >= 60) level = "fair";
+  else if (score >= 40) level = "poor";
+  else level = "critical";
+
+  return {
+    score,
+    level,
+    breakdown: {
+      totalPages,
+      totalVariants,
+      zombieCount: zombies.length,
+      orphanCount: orphans.length,
+      deadEndCount: deadEnds.length,
+      deadEndHigh,
+      deadEndMedium,
+      deadEndLow,
+      zombieRatio,
+      orphanRatio,
+      deadEndScore,
+    },
+    penalties: {
+      zombie: Math.round(zombiePenalty * 10) / 10,
+      orphan: Math.round(orphanPenalty * 10) / 10,
+      deadEnd: Math.round(deadEndPenalty * 10) / 10,
+    },
+  };
+}
