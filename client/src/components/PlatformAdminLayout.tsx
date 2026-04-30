@@ -41,6 +41,7 @@ import {
   Activity,
   Layers,
   TrendingUp,
+  Shield as ShieldIcon,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -90,13 +91,14 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
       { label: "計費警示", path: "/platform/billing-alerts", icon: AlertTriangle },
     ],
   },
-  // 🆕 2026-04-30 — 跨場域管理員 / 角色管理 / 稽核日誌
+  // 🆕 2026-04-30 — 跨場域管理員 / 角色管理 / 稽核日誌 + 安全
   {
-    label: "權限管理",
+    label: "權限與安全",
     items: [
       { label: "跨場域管理員", path: "/platform/admins", icon: Users },
       { label: "跨場域角色", path: "/platform/roles", icon: Shield },
       { label: "稽核日誌", path: "/platform/audit-logs", icon: ScrollText },
+      { label: "安全機制", path: "/platform/security", icon: ShieldIcon },
     ],
   },
   {

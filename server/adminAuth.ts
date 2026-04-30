@@ -128,14 +128,47 @@ export async function adminLogin(
   const isValidPassword = await verifyPassword(password, account.passwordHash);
   
   if (!isValidPassword) {
+    const newAttempts = (account.failedLoginAttempts || 0) + 1;
+    // 🆕 累計失敗 ≥ HARD_LOCK_THRESHOLD 次 → 永久鎖定（status='locked'，需 admin 手動解鎖）
+    const HARD_LOCK_THRESHOLD = 20;
+    const updates: Record<string, unknown> = {
+      failedLoginAttempts: newAttempts,
+      updatedAt: new Date(),
+    };
+    if (newAttempts >= HARD_LOCK_THRESHOLD && account.status !== "locked") {
+      updates.status = "locked";
+    }
     await db
       .update(adminAccounts)
-      .set({ 
-        failedLoginAttempts: (account.failedLoginAttempts || 0) + 1,
-        updatedAt: new Date(),
-      })
+      .set(updates)
       .where(eq(adminAccounts.id, account.id));
-    
+
+    // 🆕 audit log（每次失敗都寫，給 platform admin 追蹤）
+    try {
+      await db.insert(auditLogs).values({
+        actorAdminId: account.id,
+        action: newAttempts >= HARD_LOCK_THRESHOLD
+          ? "auth:login_locked"
+          : "auth:login_failure",
+        targetType: "admin_account",
+        targetId: account.id,
+        fieldId: account.fieldId ?? undefined,
+        metadata: {
+          username,
+          attempts: newAttempts,
+          locked: newAttempts >= HARD_LOCK_THRESHOLD,
+          reason: "invalid_password",
+        },
+        ipAddress,
+        userAgent,
+      });
+    } catch {
+      // audit 失敗不影響主流程
+    }
+
+    if (newAttempts >= HARD_LOCK_THRESHOLD) {
+      return { success: false, error: "嘗試失敗次數過多，帳號已鎖定，請聯繫平台管理員" };
+    }
     return { success: false, error: "帳號或密碼錯誤" };
   }
 

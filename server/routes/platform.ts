@@ -725,6 +725,237 @@ export function registerPlatformRoutes(app: Express): void {
   // ============================================================================
 
   // ============================================================================
+  // 🆕 B 安全機制（2026-04-30）— 登入監控 + 鎖定帳號管理
+  // ============================================================================
+
+  /**
+   * GET /api/platform/security/overview
+   * 安全儀表板總覽：
+   *   - 過去 24h 登入失敗次數
+   *   - 過去 7 天登入失敗次數
+   *   - 鎖定帳號數
+   *   - 風險 IP 數量（24h 內失敗超過 10 次的 IP）
+   */
+  app.get("/api/platform/security/overview", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const past7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+      const [stats] = await Promise.all([
+        db.execute<{
+          failures_24h: number;
+          failures_7d: number;
+          locked_accounts: number;
+          risky_ips: number;
+          unique_failed_users_24h: number;
+        }>(sql`
+          SELECT
+            (SELECT COUNT(*)::int FROM audit_logs
+              WHERE action LIKE 'auth:login_%' AND created_at >= ${past24h.toISOString()}
+            ) AS failures_24h,
+            (SELECT COUNT(*)::int FROM audit_logs
+              WHERE action LIKE 'auth:login_%' AND created_at >= ${past7d.toISOString()}
+            ) AS failures_7d,
+            (SELECT COUNT(*)::int FROM admin_accounts WHERE status = 'locked') AS locked_accounts,
+            (SELECT COUNT(*)::int FROM (
+              SELECT ip_address, COUNT(*) AS cnt
+              FROM audit_logs
+              WHERE action LIKE 'auth:login_%'
+                AND created_at >= ${past24h.toISOString()}
+                AND ip_address IS NOT NULL
+              GROUP BY ip_address
+              HAVING COUNT(*) >= 10
+            ) AS risky) AS risky_ips,
+            (SELECT COUNT(DISTINCT actor_admin_id)::int FROM audit_logs
+              WHERE action LIKE 'auth:login_%'
+                AND created_at >= ${past24h.toISOString()}
+                AND actor_admin_id IS NOT NULL
+            ) AS unique_failed_users_24h
+        `).then((r) => r.rows[0]),
+      ]);
+
+      res.json(stats ?? {});
+    } catch (error) {
+      console.error("[platform/security/overview] failed:", error);
+      res.status(500).json({ message: "取得安全總覽失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/security/login-failures
+   * 最近登入失敗紀錄（從 audit_logs.action = auth:login_*）
+   * Query: ?hours=24 (預設) ?ip=x ?username=x
+   */
+  app.get("/api/platform/security/login-failures", requirePlatformAdmin, async (req, res) => {
+    try {
+      const hours = Math.min(parseInt(String(req.query.hours ?? "24"), 10) || 24, 720);
+      const ipFilter = typeof req.query.ip === "string" ? req.query.ip : null;
+      const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+      const conds = [
+        sql`${auditLogs.action} LIKE 'auth:login_%'`,
+        gte(auditLogs.createdAt, since),
+      ];
+      if (ipFilter) conds.push(eq(auditLogs.ipAddress, ipFilter));
+
+      const logs = await db.query.auditLogs.findMany({
+        where: and(...conds),
+        orderBy: [desc(auditLogs.createdAt)],
+        limit: 200,
+      });
+
+      // join admin accounts
+      const adminIds = Array.from(
+        new Set(logs.map((l) => l.actorAdminId).filter(Boolean) as string[]),
+      );
+      const adminList = adminIds.length
+        ? await db.query.adminAccounts.findMany({
+            where: inArray(adminAccountsTable.id, adminIds),
+            columns: {
+              id: true,
+              username: true,
+              displayName: true,
+              status: true,
+              fieldId: true,
+              failedLoginAttempts: true,
+            },
+          })
+        : [];
+      const adminMap = new Map(adminList.map((a) => [a.id, a]));
+
+      const enriched = logs.map((l) => ({
+        ...l,
+        admin: l.actorAdminId ? adminMap.get(l.actorAdminId) ?? null : null,
+      }));
+
+      res.json({ items: enriched, total: enriched.length });
+    } catch (error) {
+      console.error("[platform/security/login-failures] failed:", error);
+      res.status(500).json({ message: "取得登入失敗紀錄失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/security/risky-ips
+   * 24h 內登入失敗超過閾值的 IP（聚合）
+   * Query: ?threshold=10 (預設)
+   */
+  app.get("/api/platform/security/risky-ips", requirePlatformAdmin, async (req, res) => {
+    try {
+      const threshold = Math.max(parseInt(String(req.query.threshold ?? "10"), 10) || 10, 3);
+      const past24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      const rows = await db.execute<{
+        ip_address: string;
+        attempts: number;
+        unique_users: number;
+        last_attempt: string;
+      }>(sql`
+        SELECT
+          ip_address,
+          COUNT(*)::int AS attempts,
+          COUNT(DISTINCT actor_admin_id)::int AS unique_users,
+          MAX(created_at)::text AS last_attempt
+        FROM audit_logs
+        WHERE action LIKE 'auth:login_%'
+          AND created_at >= ${past24h.toISOString()}
+          AND ip_address IS NOT NULL
+        GROUP BY ip_address
+        HAVING COUNT(*) >= ${threshold}
+        ORDER BY attempts DESC
+        LIMIT 50
+      `);
+
+      res.json({ items: rows.rows, threshold });
+    } catch (error) {
+      console.error("[platform/security/risky-ips] failed:", error);
+      res.status(500).json({ message: "取得風險 IP 失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/security/locked-accounts
+   * 所有目前鎖定的帳號
+   */
+  app.get("/api/platform/security/locked-accounts", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const accounts = await db.query.adminAccounts.findMany({
+        where: eq(adminAccountsTable.status, "locked"),
+        with: {
+          field: true,
+          role: true,
+        },
+        orderBy: [desc(adminAccountsTable.updatedAt)],
+      });
+
+      const safe = accounts.map((a) => ({
+        ...a,
+        passwordHash: undefined,
+      }));
+
+      res.json({ items: safe, total: safe.length });
+    } catch (error) {
+      console.error("[platform/security/locked-accounts] failed:", error);
+      res.status(500).json({ message: "取得鎖定帳號失敗" });
+    }
+  });
+
+  /**
+   * POST /api/platform/security/unlock-account
+   * 手動解鎖帳號（reset failedLoginAttempts + status back to active）
+   */
+  const unlockSchema = z.object({
+    accountId: z.string().uuid(),
+    reason: z.string().max(500).optional(),
+  });
+
+  app.post("/api/platform/security/unlock-account", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = unlockSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤" });
+      }
+
+      const existing = await db.query.adminAccounts.findFirst({
+        where: eq(adminAccountsTable.id, parsed.data.accountId),
+      });
+      if (!existing) return res.status(404).json({ message: "帳號不存在" });
+
+      const [updated] = await db
+        .update(adminAccountsTable)
+        .set({
+          status: "active",
+          failedLoginAttempts: 0,
+          updatedAt: new Date(),
+        })
+        .where(eq(adminAccountsTable.id, parsed.data.accountId))
+        .returning();
+
+      // 🆕 audit log
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:account_unlock",
+        targetType: "admin_account",
+        targetId: updated.id,
+        fieldId: updated.fieldId ?? undefined,
+        metadata: {
+          targetUsername: updated.username,
+          previousAttempts: existing.failedLoginAttempts,
+          reason: parsed.data.reason,
+          actorRole: req.platform?.role,
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.json({ ...updated, passwordHash: undefined });
+    } catch (error) {
+      console.error("[platform/security/unlock-account] failed:", error);
+      res.status(500).json({ message: "解鎖帳號失敗" });
+    }
+  });
+
+  // ============================================================================
   // 🆕 數據資訊統計（2026-04-30）— 平台整體洞察
   //   涵蓋：場域 KPI 排名 / 遊戲熱度 / 玩家活躍 / 元件使用
   // ============================================================================
