@@ -211,11 +211,11 @@ TOTAL_PROGRESS: 121/120 (101%)
 
 # Phase 10：多人/多腳本架構 🎮
 
-- [ ] **P10-1** 建立 `shared/schema/game-routes.ts`：game_routes 表定義
-- [ ] **P10-2** SQL: `ALTER TABLE games ADD COLUMN game_mode VARCHAR(20)`（本地 + 生產）
-- [ ] **P10-3** SQL: `CREATE TABLE game_routes(...)`
-- [ ] **P10-4** SQL: `ALTER TABLE play_sessions ADD COLUMN route_id`
-- [ ] **P10-5** SQL: `CREATE TABLE coop_sync_points(...)`
+- [x] **P10-1** 建立 `shared/schema/game-routes.ts`（gameRoutes + coopSyncPoints + 2 個 enum）
+- [x] **P10-2** games.game_mode 欄位已存在（既有 individual/team/...），COMMENT 加上 P10 新增模式說明
+- [x] **P10-3** SQL: `CREATE TABLE game_routes` + 2 個 index（本地 ✅ + 生產 ✅）
+- [x] **P10-4** SQL: `ALTER TABLE game_sessions ADD COLUMN route_id`（本地 ✅ + 生產 ✅；表名是 game_sessions 非 play_sessions）
+- [x] **P10-5** SQL: `CREATE TABLE coop_sync_points` + 2 個 index（本地 ✅ + 生產 ✅）
 - [ ] **P10-6** 建立 `server/routes/admin/game-routes.ts`：CRUD endpoint
 - [ ] **P10-7** 修改 game session 邏輯：開始遊戲時可選 route
 - [ ] **P10-8** 建立 `server/lib/roguelike-composer.ts`：從 page pool 隨機抽組合
