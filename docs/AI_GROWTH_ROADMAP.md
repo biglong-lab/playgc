@@ -118,7 +118,7 @@ TOTAL_PROGRESS: 33/42
 
 ## UI
 - [x] **P14-7** 建立 `client/src/pages/admin/AbExperiments.tsx`（500 行）：實驗清單（含篩選 + 狀態流轉按鈕：啟動/完成/中止）+ 建立 dialog + 結果儀表板 dialog（z 值 / p 值 / 效果量 / A 組 vs B 組滿意度卡片 / 結論 badge）
-- [ ] **P14-8** App.tsx 加路由 `/admin/ab-experiments`
+- [x] **P14-8** App.tsx 加路由 `/admin/ab-experiments`：lazy import + ProtectedAdminRoute 包裹（與其他 admin 頁面一致）
 
 ## cron
 - [ ] **P14-9** cron task 5：每天檢查 active 實驗，達顯著性閾值自動標記結論
