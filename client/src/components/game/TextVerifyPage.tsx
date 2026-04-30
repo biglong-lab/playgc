@@ -18,6 +18,8 @@ interface TextVerifyPageProps {
   gameId: string;
   variables: Record<string, unknown>;
   onVariableUpdate: (key: string, value: unknown) => void;
+  // 🎨 P2: 變體池
+  variantPool?: unknown;
 }
 
 interface AiScoreResponse {
