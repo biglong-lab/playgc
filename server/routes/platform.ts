@@ -18,6 +18,7 @@ import {
 } from "@shared/schema";
 import { requirePlatformAdmin } from "../platformAuth";
 import { logAuditAction } from "../adminAuth";
+import { scanBillingAlerts, getBillingAlertSummary } from "../lib/billing-alerts";
 import { auditLogs, adminAccounts as adminAccountsTable } from "@shared/schema";
 import { eq, sql, desc, and, gte, lte, inArray } from "drizzle-orm";
 import { z } from "zod";
@@ -720,6 +721,48 @@ export function registerPlatformRoutes(app: Express): void {
   //   重用既有 audit_logs 表，提供跨場域查詢介面
   //   action 前綴 platform: 為平台層操作（vs admin: 為場域層）
   // ============================================================================
+
+  // ============================================================================
+  // 🆕 P0-3（2026-04-30）— 計費警示
+  // ============================================================================
+
+  /**
+   * GET /api/platform/billing-alerts
+   * 即時計算所有計費風險（訂閱到期 / 失敗交易 / 逾期付款）
+   * 不寫 DB，純讀取當下狀態。前端可定期 refetch。
+   *
+   * Query: ?type=expiring_soon|expired|failed_payment|overdue
+   */
+  app.get("/api/platform/billing-alerts", requirePlatformAdmin, async (req, res) => {
+    try {
+      const typeFilter = typeof req.query.type === "string" ? req.query.type : null;
+      const severityFilter = typeof req.query.severity === "string" ? req.query.severity : null;
+      const alerts = await scanBillingAlerts();
+      const filtered = alerts.filter((a) => {
+        if (typeFilter && a.type !== typeFilter) return false;
+        if (severityFilter && a.severity !== severityFilter) return false;
+        return true;
+      });
+      res.json({ items: filtered, total: filtered.length });
+    } catch (error) {
+      console.error("[platform/billing-alerts] failed:", error);
+      res.status(500).json({ message: "計算計費警示失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/billing-alerts/summary
+   * 統計 — 給 dashboard 徽章用
+   */
+  app.get("/api/platform/billing-alerts/summary", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const summary = await getBillingAlertSummary();
+      res.json(summary);
+    } catch (error) {
+      console.error("[platform/billing-alerts/summary] failed:", error);
+      res.status(500).json({ message: "計算計費統計失敗" });
+    }
+  });
 
   /**
    * GET /api/platform/audit-logs

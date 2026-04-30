@@ -37,6 +37,7 @@ import {
   Shield,
   ScrollText,
   Ticket,
+  AlertTriangle,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -78,6 +79,7 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     label: "財務",
     items: [
       { label: "平台營收", path: "/platform/revenue", icon: DollarSign },
+      { label: "計費警示", path: "/platform/billing-alerts", icon: AlertTriangle },
     ],
   },
   // 🆕 2026-04-30 — 跨場域管理員 / 角色管理 / 稽核日誌
