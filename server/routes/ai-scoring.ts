@@ -8,6 +8,7 @@ import { detectText, isGoogleVisionConfigured, logOcrUsage, getMonthlyOcrUsage }
 import { logAiUsage, getMonthlyAiUsage, withAiTimeout } from "../lib/ai-usage-logger";
 import { matchAnswer } from "../lib/text-match";
 import { getCached, setCached, buildCacheKey } from "../lib/ai-cache";
+import { getEffectiveThresholds } from "../lib/threshold-adapter";
 import { decryptApiKey } from "../lib/crypto";
 import { db } from "../db";
 import { games, fields, parseFieldSettings } from "@shared/schema";
