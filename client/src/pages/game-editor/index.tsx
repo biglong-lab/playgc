@@ -309,6 +309,7 @@ export default function GameEditor() {
       pageType: p.pageType,
       customName: null,
       config: p.config,
+      variantPool: null,
       chapterId: null,
       createdAt: new Date(),
     }));
