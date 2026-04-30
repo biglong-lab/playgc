@@ -290,6 +290,7 @@ function Router() {
         <Route path="/admin/battle/seasons">{() => <ProtectedAdminRoute><AdminBattleSeasons /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/rewards/rules">{() => <ProtectedAdminRoute><AdminRewardsRules /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/engagement">{() => <ProtectedAdminRoute><AdminEngagementSettings /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/ab-experiments">{() => <ProtectedAdminRoute><AbExperiments /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/rewards/analytics">{() => <ProtectedAdminRoute><AdminRewardsAnalytics /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/invites/cohort">{() => <ProtectedAdminRoute><AdminInvitesCohort /></ProtectedAdminRoute>}</Route>
 
