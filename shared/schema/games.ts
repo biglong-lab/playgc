@@ -84,6 +84,10 @@ export const pages = pgTable(
     // 顯示時作為主標題，副標題顯示 pageType 類別，方便辨識
     customName: varchar("custom_name", { length: 200 }),
     config: jsonb("config").notNull(), // Page-specific configuration
+    // 🎨 變體池（取代即時 AI 呼叫）— 由 admin 用 DeepSeek 生成的多樣訊息變體
+    // 結構：{ success: string[], fail: string[], nearMiss?: string[], hint?: string[] }
+    // 玩家觸發時隨機抽一個，避免機械感
+    variantPool: jsonb("variant_pool"),
     chapterId: varchar("chapter_id").references(() => gameChapters.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at").defaultNow(),
   },
