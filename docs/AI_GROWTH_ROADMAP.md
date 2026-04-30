@@ -59,10 +59,10 @@ TOTAL_PROGRESS: 10/42
 ## 前端
 - [x] **P11-7** 建立 `client/src/components/game/FeedbackButtons.tsx`（reusable + inline/floating 兩種樣式 + 30s 防 spam）+ `pickVariantWithIndex()` + `feedback-tracker.ts`
 - [x] **P11-8** 整合到 GamePageRenderer（最小擴散：用 `useLastShownVariant` hook + 浮動按鈕 fixed bottom-4 right-4，不需修改 5 個玩家元件 toast 邏輯）
-- [ ] **P11-9** admin UI：VariantPoolEditor 顯示每個變體的 like/dislike 數 + 排序
+- [x] **P11-9** admin UI：VariantPoolEditor 顯示每個變體 👍/👎/⏭ 統計 + Wilson 分數 + auto-hidden 警告 + 新增 admin variant-scores endpoint
 
 ## 收尾
-- [ ] **P11-10** TS check + commit + push + 部署 + E2E（4 endpoint 401 認證）
+- [x] **P11-10** TS check ✅ + 部署 `83868a63` ✅ + E2E（HTTP 200 / 4 endpoint 全 401 / 2 DB tables 存在）
 
 ---
 
