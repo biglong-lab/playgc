@@ -36,6 +36,7 @@ import {
   Users,
   Shield,
   ScrollText,
+  Ticket,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -64,6 +65,13 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
       { label: "場域申請", path: "/platform/applications", icon: Inbox },
       { label: "訂閱方案", path: "/platform/plans", icon: Package },
       { label: "功能開關", path: "/platform/feature-flags", icon: ToggleLeft },
+    ],
+  },
+  // 🆕 2026-04-30 — 客服工單系統
+  {
+    label: "客服支援",
+    items: [
+      { label: "客服工單", path: "/platform/tickets", icon: Ticket },
     ],
   },
   {

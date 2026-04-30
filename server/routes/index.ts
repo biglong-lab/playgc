@@ -38,6 +38,7 @@ import { registerAdminBattleSeasonRoutes } from "./admin-battle-seasons";
 import { registerBattleSeasonRoutes } from "./battle-seasons";
 import { registerBattleAchievementRoutes } from "./battle-achievements";
 import { registerPlatformRoutes } from "./platform";
+import { registerPlatformTicketRoutes } from "./platform-tickets";
 import { registerRevenueRoutes } from "./revenue";
 import { registerFieldRoutes } from "./field";
 import { registerApplicationRoutes } from "./applications";
@@ -133,6 +134,8 @@ export async function registerRoutes(
 
   // 🌐 SaaS 平台層（Phase 1 基礎）
   registerPlatformRoutes(app);
+  // 🎫 客服工單系統（P0-2）
+  registerPlatformTicketRoutes(app);
 
   // 💰 財務中心 Facade（Phase 3）
   registerRevenueRoutes(app);
