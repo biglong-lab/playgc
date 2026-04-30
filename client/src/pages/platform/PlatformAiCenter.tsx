@@ -200,7 +200,7 @@ export default function PlatformAiCenter() {
         </p>
 
         <Tabs defaultValue="usage" className="w-full">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl">
+          <TabsList className="grid grid-cols-5 w-full max-w-3xl">
             <TabsTrigger value="usage" data-testid="tab-usage">
               <Activity className="w-4 h-4 mr-1" />
               用量總覽
@@ -208,6 +208,10 @@ export default function PlatformAiCenter() {
             <TabsTrigger value="content" data-testid="tab-content">
               <Sparkles className="w-4 h-4 mr-1" />
               內容打磨
+            </TabsTrigger>
+            <TabsTrigger value="health-diag" data-testid="tab-health-diag">
+              <HeartPulse className="w-4 h-4 mr-1" />
+              健康診斷
             </TabsTrigger>
             <TabsTrigger value="exemplar" data-testid="tab-exemplar">
               <ImageIcon className="w-4 h-4 mr-1" />
