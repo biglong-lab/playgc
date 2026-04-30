@@ -19,6 +19,7 @@ import {
   applyThresholdRecommendation,
   invalidateThresholdCache,
 } from "../../server/lib/threshold-adapter";
+import { calculateSignificance } from "../../server/lib/ab-stats";
 
 interface CronStats {
   variantsGenerated: number;
