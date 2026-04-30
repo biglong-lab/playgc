@@ -59,6 +59,7 @@ export const PLATFORM_MENU_GROUPS: PlatformMenuGroupDef[] = [
       { label: "數據洞察", path: "/platform/insights", icon: TrendingUp },
       { label: "跨場域數據", path: "/platform/analytics", icon: BarChart3 },
       { label: "用量監控", path: "/platform/usage", icon: Activity },
+      { label: "AI 訓練中心", path: "/platform/ai-center", icon: Sparkles },
     ],
   },
   {
