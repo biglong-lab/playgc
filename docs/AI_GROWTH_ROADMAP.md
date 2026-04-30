@@ -53,8 +53,8 @@ TOTAL_PROGRESS: 6/42
 - [x] **P11-4** SQL CREATE TABLE player_event_logs（4 個 index：field_time / page_action / session / created）— 本地 ✅ + 生產 ✅
 
 ## 後端
-- [ ] **P11-5** 建立 `server/routes/player-feedback.ts`：POST `/api/player/feedback`（記錄變體反饋）+ POST `/api/player/event`（記錄行為）
-- [ ] **P11-6** 建立 `server/lib/feedback-aggregator.ts`：getVariantScores(pageId) 回每個變體的 like/dislike 統計
+- [x] **P11-5** 建立 `server/routes/player-feedback.ts`：3 個 endpoint（feedback POST UPSERT / event POST append-only / variant-scores GET）+ 註冊
+- [x] **P11-6** 建立 `server/lib/feedback-aggregator.ts`：`getVariantScores()` + Wilson Lower Bound 評分 + 30s in-memory cache + 自動 hidden（5 dislike）
 
 ## 前端
 - [ ] **P11-7** 建立 `client/src/components/game/FeedbackButtons.tsx`（reusable）— 成功 toast 旁加 👍/👎
