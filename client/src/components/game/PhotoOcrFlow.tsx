@@ -125,9 +125,11 @@ export default function PhotoOcrFlow({
               ? result.fullText.slice(0, 30) +
                 (result.fullText.length > 30 ? "..." : "")
               : "";
+            // 🎨 P2: 從變體池抽鼓勵訊息（fallback 為 AI 即時 feedback）
+            const variantMsg = pickVariant(variantPool, "fail", result.feedback);
             const description = detected
-              ? `${result.feedback}\n\n📷 我們看到的字：${detected}\n💡 試試靠近招牌、確認光線充足`
-              : `${result.feedback}\n💡 試試靠近招牌、避免反光、確認光線充足`;
+              ? `${variantMsg}\n\n📷 我們看到的字：${detected}\n💡 試試靠近招牌、確認光線充足`
+              : `${variantMsg}\n💡 試試靠近招牌、避免反光、確認光線充足`;
             toast({
               title: "😢 未能辨識目標文字",
               description,
