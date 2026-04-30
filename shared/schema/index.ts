@@ -41,6 +41,7 @@ export * from "./ai-models";
 export * from "./ai-usage-logs";
 export * from "./ai-variant-pool";
 export * from "./ai-cache";
+export * from "./field-exemplar";
 export * from "./support-tickets";
 export * from "./error-logs";
 export * from "./platform-security";
