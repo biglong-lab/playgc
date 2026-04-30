@@ -43,3 +43,4 @@ export * from "./support-tickets";
 export * from "./error-logs";
 export * from "./platform-security";
 export * from "./notifications";
+export * from "./platform-menu";

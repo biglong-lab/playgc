@@ -117,6 +117,7 @@ const PlatformApiKeys = lazy(() => import("@/pages/platform/PlatformApiKeys"));
 const PlatformLoginConfig = lazy(() => import("@/pages/platform/PlatformLoginConfig"));
 const PlatformPwa = lazy(() => import("@/pages/platform/PlatformPwa"));
 const PlatformNotifications = lazy(() => import("@/pages/platform/PlatformNotifications"));
+const PlatformMenu = lazy(() => import("@/pages/platform/PlatformMenu"));
 
 // 📝 公開申請頁（Phase 8）
 const Apply = lazy(() => import("@/pages/Apply"));
@@ -307,6 +308,7 @@ function Router() {
         <Route path="/platform/login-config">{() => <ProtectedAdminRoute><PlatformLoginConfig /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/pwa">{() => <ProtectedAdminRoute><PlatformPwa /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/notifications">{() => <ProtectedAdminRoute><PlatformNotifications /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/menu-management">{() => <ProtectedAdminRoute><PlatformMenu /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/settings">{() => <ProtectedAdminRoute><PlatformSettingsPage /></ProtectedAdminRoute>}</Route>
 
         {/* 📝 公開場域申請（Phase 8）*/}

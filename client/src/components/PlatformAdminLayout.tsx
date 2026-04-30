@@ -1,6 +1,10 @@
 // 🌐 平台管理後台 Layout — SaaS 平台層專用
 // 與場域管理後台（UnifiedAdminLayout）視覺上明確區分（藍色系 vs 紫紅）
+//
+// 選單結構：來自 client/src/config/platform-menu.ts（hardcoded）
+// + admin 在 /platform/menu-management 設定的 overrides（visibility/customLabel/sortOrder）
 import { Link, useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import CommandPalette from "@/components/CommandPalette";
@@ -22,111 +26,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Globe, LogOut } from "lucide-react";
 import {
-  Globe,
-  LayoutDashboard,
-  Building2,
-  Package,
-  DollarSign,
-  ToggleLeft,
-  LogOut,
-  Inbox,
-  BarChart3,
-  Settings,
-  Users,
-  Shield,
-  ScrollText,
-  Ticket,
-  AlertTriangle,
-  Activity,
-  Layers,
-  TrendingUp,
-  Shield as ShieldIcon,
-  Bug,
-  Heart,
-  Key,
-  KeyRound,
-  Smartphone,
-  Mail,
-} from "lucide-react";
-
-interface PlatformMenuItem {
-  label: string;
-  path: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-interface PlatformMenuGroup {
-  label: string;
-  items: PlatformMenuItem[];
-}
-
-const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
-  {
-    label: "平台總覽",
-    items: [
-      { label: "儀表板", path: "/platform", icon: LayoutDashboard },
-      // 🆕 數據洞察（2026-04-30）— 整合 KPI/排行/趨勢
-      { label: "數據洞察", path: "/platform/insights", icon: TrendingUp },
-      { label: "跨場域數據", path: "/platform/analytics", icon: BarChart3 },
-      { label: "用量監控", path: "/platform/usage", icon: Activity },
-    ],
-  },
-  {
-    label: "場域與方案",
-    items: [
-      { label: "場域管理", path: "/platform/fields", icon: Building2 },
-      { label: "場域申請", path: "/platform/applications", icon: Inbox },
-      { label: "訂閱方案", path: "/platform/plans", icon: Package },
-      { label: "功能開關", path: "/platform/feature-flags", icon: ToggleLeft },
-      // 🆕 P2-1（2026-04-30）— 批量管理
-      { label: "批量操作", path: "/platform/bulk-ops", icon: Layers },
-    ],
-  },
-  // 🆕 2026-04-30 — 客服工單系統 + 通訊中心
-  {
-    label: "客服支援",
-    items: [
-      { label: "客服工單", path: "/platform/tickets", icon: Ticket },
-      { label: "通訊中心", path: "/platform/notifications", icon: Mail },
-    ],
-  },
-  {
-    label: "財務",
-    items: [
-      { label: "平台營收", path: "/platform/revenue", icon: DollarSign },
-      { label: "計費警示", path: "/platform/billing-alerts", icon: AlertTriangle },
-    ],
-  },
-  // 🆕 2026-04-30 — 跨場域管理員 / 角色管理 / 稽核日誌 + 安全 + IP 白名單 + API 金鑰
-  {
-    label: "權限與安全",
-    items: [
-      { label: "跨場域管理員", path: "/platform/admins", icon: Users },
-      { label: "跨場域角色", path: "/platform/roles", icon: Shield },
-      { label: "稽核日誌", path: "/platform/audit-logs", icon: ScrollText },
-      { label: "安全機制", path: "/platform/security", icon: ShieldIcon },
-      { label: "IP 白名單", path: "/platform/ip-whitelist", icon: Globe },
-      { label: "API 金鑰", path: "/platform/api-keys", icon: Key },
-    ],
-  },
-  // 🆕 系統運維（2026-04-30）
-  {
-    label: "系統運維",
-    items: [
-      { label: "系統健康", path: "/platform/health", icon: Heart },
-      { label: "錯誤記錄", path: "/platform/errors", icon: Bug },
-      { label: "登入管理", path: "/platform/login-config", icon: KeyRound },
-      { label: "PWA 管理", path: "/platform/pwa", icon: Smartphone },
-    ],
-  },
-  {
-    label: "系統",
-    items: [
-      { label: "平台設定", path: "/platform/settings", icon: Settings },
-    ],
-  },
-];
+  PLATFORM_MENU_GROUPS,
+  applyMenuOverrides,
+  type PlatformMenuOverrideMap,
+} from "@/config/platform-menu";
+import { apiRequest } from "@/lib/queryClient";
 
 interface PlatformAdminLayoutProps {
   children: React.ReactNode;
@@ -137,6 +43,17 @@ interface PlatformAdminLayoutProps {
 export default function PlatformAdminLayout({ children, title, actions }: PlatformAdminLayoutProps) {
   const [location] = useLocation();
   const { admin, isLoading, isAuthenticated, logout } = useAdminAuth();
+
+  // 拉 menu overrides（每 60s 重新整理一次；session 期間靜態變更不需 invalidate 也會反映）
+  const { data: overridesData } = useQuery<{ map: PlatformMenuOverrideMap }>({
+    queryKey: ["/api/platform/menu-overrides"],
+    queryFn: async () => (await apiRequest("GET", "/api/platform/menu-overrides")).json(),
+    enabled: isAuthenticated && admin?.systemRole === "super_admin",
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  });
+
+  const finalGroups = applyMenuOverrides(PLATFORM_MENU_GROUPS, overridesData?.map);
 
   if (isLoading) {
     return (
@@ -205,7 +122,7 @@ export default function PlatformAdminLayout({ children, title, actions }: Platfo
               </SidebarGroupContent>
             </SidebarGroup>
 
-            {PLATFORM_MENU_GROUPS.map((group) => (
+            {finalGroups.map((group) => (
               <SidebarGroup key={group.label}>
                 <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
                 <SidebarGroupContent>

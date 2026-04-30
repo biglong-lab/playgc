@@ -19,6 +19,7 @@ import {
   notificationTemplates,
   notificationLogs,
   platformNotificationChannelEnum,
+  platformMenuOverrides,
   insertPlatformPlanSchema,
   insertPlatformFeatureFlagSchema,
   insertFieldFeatureOverrideSchema,
@@ -829,6 +830,128 @@ export function registerPlatformRoutes(app: Express): void {
   //   重用既有 audit_logs 表，提供跨場域查詢介面
   //   action 前綴 platform: 為平台層操作（vs admin: 為場域層）
   // ============================================================================
+
+  // ============================================================================
+  // 🆕 選單管理（2026-04-30）— overrides 控制 sidebar 顯示
+  // ============================================================================
+
+  /**
+   * GET /api/platform/menu-overrides
+   * 提供給 PlatformAdminLayout 套用 visibility / customLabel
+   * 公開給已認證 platform admin（不需 super_admin）
+   */
+  app.get("/api/platform/menu-overrides", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const items = await db.query.platformMenuOverrides.findMany();
+      // 回傳 path → override map（前端方便查找）
+      const map: Record<string, {
+        customLabel: string | null;
+        visible: boolean;
+        sortOrder: number;
+        customGroup: string | null;
+      }> = {};
+      for (const item of items) {
+        map[item.menuPath] = {
+          customLabel: item.customLabel,
+          visible: item.visible,
+          sortOrder: item.sortOrder ?? 0,
+          customGroup: item.customGroup,
+        };
+      }
+      res.json({ map, items, total: items.length });
+    } catch (error) {
+      console.error("[platform/menu-overrides] failed:", error);
+      res.status(500).json({ message: "取得選單設定失敗" });
+    }
+  });
+
+  const menuOverrideSchema = z.object({
+    menuPath: z.string().min(1).max(200),
+    customLabel: z.string().max(100).nullable().optional(),
+    visible: z.boolean().optional().default(true),
+    sortOrder: z.number().int().optional(),
+    customGroup: z.string().max(100).nullable().optional(),
+  });
+
+  /**
+   * POST /api/platform/menu-overrides
+   * upsert：以 menuPath 為 key，存在則更新、不存在則建立
+   */
+  app.post("/api/platform/menu-overrides", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = menuOverrideSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤", errors: parsed.error.errors });
+      }
+
+      // upsert
+      const existing = await db.query.platformMenuOverrides.findFirst({
+        where: eq(platformMenuOverrides.menuPath, parsed.data.menuPath),
+      });
+
+      let result;
+      if (existing) {
+        const [updated] = await db
+          .update(platformMenuOverrides)
+          .set({ ...parsed.data, updatedAt: new Date() })
+          .where(eq(platformMenuOverrides.id, existing.id))
+          .returning();
+        result = updated;
+      } else {
+        const [created] = await db
+          .insert(platformMenuOverrides)
+          .values(parsed.data)
+          .returning();
+        result = created;
+      }
+
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: existing ? "platform:menu_override_update" : "platform:menu_override_create",
+        targetType: "platform_menu_override",
+        targetId: result.id,
+        metadata: { menuPath: result.menuPath, changes: parsed.data },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error("[platform/menu-overrides] POST failed:", error);
+      res.status(500).json({ message: "儲存設定失敗" });
+    }
+  });
+
+  /**
+   * DELETE /api/platform/menu-overrides/:menuPath
+   */
+  app.delete("/api/platform/menu-overrides", requirePlatformAdmin, async (req, res) => {
+    try {
+      const path = typeof req.query.menuPath === "string" ? req.query.menuPath : null;
+      if (!path) return res.status(400).json({ message: "缺少 menuPath" });
+
+      const [deleted] = await db
+        .delete(platformMenuOverrides)
+        .where(eq(platformMenuOverrides.menuPath, path))
+        .returning();
+      if (!deleted) return res.status(404).json({ message: "設定不存在" });
+
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:menu_override_delete",
+        targetType: "platform_menu_override",
+        targetId: deleted.id,
+        metadata: { menuPath: deleted.menuPath },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[platform/menu-overrides] DELETE failed:", error);
+      res.status(500).json({ message: "刪除設定失敗" });
+    }
+  });
 
   // ============================================================================
   // 🆕 通訊中心（2026-04-30）— 通知通道 / 模板 / 發送紀錄
