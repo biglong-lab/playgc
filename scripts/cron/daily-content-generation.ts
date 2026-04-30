@@ -20,6 +20,7 @@ import {
   invalidateThresholdCache,
 } from "../../server/lib/threshold-adapter";
 import { calculateSignificance } from "../../server/lib/ab-stats";
+import { calculateHealthScore } from "../../server/lib/content-health";
 
 interface CronStats {
   variantsGenerated: number;
