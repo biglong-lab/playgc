@@ -601,6 +601,16 @@ export async function runDailyCron(): Promise<CronStats> {
     console.error("[cron] 任務 6 整體失敗:", err);
   }
 
+  try {
+    const t7 = await task7_trainMarkov();
+    stats.markovSkipped = t7.skipped;
+    stats.markovFieldsTrained = t7.fieldsTrained;
+    stats.markovTransitionsUpserted = t7.transitionsUpserted;
+    stats.markovSessionsAnalyzed = t7.sessionsAnalyzed;
+  } catch (err) {
+    console.error("[cron] 任務 7 整體失敗:", err);
+  }
+
   stats.durationMs = Date.now() - stats.startedAt.getTime();
 
   console.log("=" .repeat(60));
