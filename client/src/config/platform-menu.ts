@@ -22,6 +22,7 @@ import {
   Activity,
   Layers,
   TrendingUp,
+  Sparkles,
   Bug,
   Heart,
   Key,
