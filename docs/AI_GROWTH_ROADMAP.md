@@ -76,7 +76,7 @@ TOTAL_PROGRESS: 17/42
 - [x] **P12-4** 建立 `server/routes/variant-picker-server.ts`：GET `/api/player/variants/:pageId/pick`（用 server-side bandit，支援 ucb1/epsilon/thompson 三策略）
 - [x] **P12-5** 自動淘汰：在 `feedback-aggregator.ts:93` 已實作（`dislikeCount >= 5 && likeCount === 0 → hidden=true`，bandit.test.ts 有 hidden case 驗證）
 - [x] **P12-6** 冷啟動：在 `bandit.ts` 已實作（`coldStartMin = 3` 強制曝光，bandit.test.ts 有 cold-start case 驗證）
-- [ ] **P12-7** TS check + commit + push + 部署 + E2E
+- [x] **P12-7** TS check ✅ / 部署 `c461d20e` ✅ / E2E（HTTP 200 / pick endpoint 401 認證）✅
 
 ---
 
