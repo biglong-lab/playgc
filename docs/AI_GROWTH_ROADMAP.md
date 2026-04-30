@@ -70,8 +70,8 @@ TOTAL_PROGRESS: 12/42
 
 > 從「純隨機」進化為「依品質加權」。經典 Bandit 演算法。
 
-- [ ] **P12-1** 建立 `server/lib/bandit.ts`：UCB1 + epsilon-greedy 兩種策略 + 冷啟動處理
-- [ ] **P12-2** 單元測試 `server/lib/__tests__/bandit.test.ts`（5+ case）
+- [x] **P12-1** 建立 `server/lib/bandit.ts`：UCB1 / Epsilon-greedy / Thompson-like 3 種策略 + 冷啟動 + buildArmsFromVariants helper
+- [x] **P12-2** 單元測試 `bandit.test.ts`（12 case 全通過：cold-start / hidden / single-arm / UCB1 / ε-greedy / 整體）
 - [ ] **P12-3** 修改 `client/src/lib/variant-picker.ts`：接收 scores 參數，加權抽取（fallback 純隨機）
 - [ ] **P12-4** 建立 `server/routes/variant-picker-server.ts`：GET `/api/player/variants/:pageId/pick`（後端用 bandit 抽，玩家請求時呼叫）
 - [ ] **P12-5** 自動淘汰：連續 5 個 👎 標記 hidden（feedback-aggregator 加邏輯）
