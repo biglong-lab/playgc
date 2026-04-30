@@ -147,6 +147,14 @@ app.use(helmet({
             "https://unpkg.com",
             "https://*.googleusercontent.com",
           ],
+          // 🆕 影片/音訊：同源 + Cloudinary + blob:（音檔背景音樂、影片元件、團體拍照合成預覽）
+          // 不加這個會被 default-src 'self' 擋下，導致 video/audio src=cloudinary 全部失敗
+          mediaSrc: [
+            "'self'",
+            "blob:",
+            "data:",
+            "https://res.cloudinary.com",
+          ],
           // XHR/WebSocket：同源 + Firebase + Recur + WebSocket + MediaPipe CDN
           connectSrc: [
             "'self'",

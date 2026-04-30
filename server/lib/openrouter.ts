@@ -21,14 +21,30 @@ interface ChatMessage {
   >;
 }
 
+/**
+ * 已知失效模型 → 自動降級到預設模型
+ * 當 OpenRouter 回 404 "No endpoints found" 時觸發 fallback
+ */
+const DEPRECATED_MODELS = new Set([
+  "google/gemini-flash-1.5", // 2026-04 已被 OpenRouter 下架（404）
+]);
+
 async function callOpenRouter(
   apiKey: string,
   model: string,
   messages: ChatMessage[],
   jsonResponse = true,
+  attempt = 0,
 ): Promise<string> {
+  // 🆕 模型遷移：場域舊資料還是 google/gemini-flash-1.5 → 自動換到預設
+  let actualModel = model;
+  if (DEPRECATED_MODELS.has(model)) {
+    actualModel = DEFAULT_MODEL_VISION;
+    console.warn(`[openrouter] 模型 "${model}" 已下架，自動改用 "${actualModel}"`);
+  }
+
   const body: Record<string, unknown> = {
-    model,
+    model: actualModel,
     messages,
     temperature: 0.2,
     max_tokens: 500,
@@ -64,6 +80,18 @@ async function callOpenRouter(
 
   if (!res.ok) {
     const err = await res.text();
+    // 🆕 404 No endpoints found → 模型不存在，自動降級重試（最多 1 次）
+    if (
+      res.status === 404 &&
+      err.includes("No endpoints found") &&
+      attempt === 0 &&
+      actualModel !== DEFAULT_MODEL_VISION
+    ) {
+      console.warn(
+        `[openrouter] 模型 "${actualModel}" 不存在，降級到 "${DEFAULT_MODEL_VISION}" 重試`,
+      );
+      return callOpenRouter(apiKey, DEFAULT_MODEL_VISION, messages, jsonResponse, 1);
+    }
     throw new Error(`OpenRouter 失敗 (${res.status}): ${err.substring(0, 200)}`);
   }
 

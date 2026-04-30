@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
 import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import {
@@ -61,7 +61,12 @@ export default function PhotoTeamFlow({
   const [currentName, setCurrentName] = useState("");
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
 
+  // 🆕 上傳/合成進度顯示（避免玩家誤以為卡住）
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
+  const [progressMessage, setProgressMessage] = useState("");
+
   const finishedRef = useRef(false);
+  const cancelRef = useRef(false);
 
   // 相機拍完後暫存到 members
   useEffect(() => {
@@ -151,20 +156,30 @@ export default function PhotoTeamFlow({
         layers: [...layers, ...nameLayers],
       };
 
-      const res = await apiRequest("POST", "/api/cloudinary/composite-photo", {
-        playerPhotoPublicId: firstId,
-        config,
-        dynamicVars: { firstName },
-      });
+      // 🛡️ 用 apiRequestWithTimeout（AbortController），背景 tab 也能 abort
+      const res = await apiRequestWithTimeout(
+        "POST",
+        "/api/cloudinary/composite-photo",
+        {
+          playerPhotoPublicId: firstId,
+          config,
+          dynamicVars: { firstName },
+        },
+        30_000,
+      );
       return res.json();
     },
   });
 
   // 上傳階段：所有照片上傳到 Cloudinary → 合成
   // 🐛 修：加 timeout + 改進 fallback 邏輯（不再呼叫同一個壞掉的端點）
+  // 🆕 加 AbortController（背景 tab 也能 abort）+ 進度顯示 + 取消按鈕
   useEffect(() => {
     if (stage !== "uploading") return;
     let cancelled = false;
+    cancelRef.current = false;
+    setUploadProgress({ current: 0, total: members.length });
+    setProgressMessage("準備上傳...");
 
     // 取首張照片 dataURL 當失敗的 fallback（不依賴後端合成）
     const firstMemberDataUrl = members[0]?.imageData ?? null;
@@ -172,41 +187,47 @@ export default function PhotoTeamFlow({
     (async () => {
       try {
         const uploaded: { publicId: string; url: string }[] = [];
-        for (const m of members) {
-          if (cancelled) return;
-          // 🛡️ 單張上傳 timeout 20 秒
-          const uploadPromise = apiRequest("POST", "/api/cloudinary/player-photo", {
-            imageData: m.imageData,
-            gameId,
-            sessionId,
-          });
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("上傳超時（20 秒）")), 20000)
-          );
-          const res = await Promise.race([uploadPromise, timeoutPromise]);
-          const data = await res.json() as { publicId: string; url: string };
+        for (let i = 0; i < members.length; i++) {
+          if (cancelled || cancelRef.current) return;
+          const m = members[i];
+          setUploadProgress({ current: i + 1, total: members.length });
+          setProgressMessage(`上傳 ${m.name}（第 ${i + 1}/${members.length} 張）...`);
+
+          // 🛡️ 單張上傳 timeout 25 秒（apiRequestWithTimeout 用 AbortController，背景 tab 也有效）
+          let res: Response;
+          try {
+            res = await apiRequestWithTimeout(
+              "POST",
+              "/api/cloudinary/player-photo",
+              { imageData: m.imageData, gameId, sessionId },
+              25_000,
+            );
+          } catch (err) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+              throw new Error(`第 ${i + 1} 張上傳超時（25 秒）`);
+            }
+            throw err;
+          }
+          const data = (await res.json()) as { publicId: string; url: string };
           uploaded.push(data);
         }
-        if (cancelled) return;
+        if (cancelled || cancelRef.current) return;
 
         setStage("compositing");
+        setProgressMessage("合成團體照中...");
 
         // 🛡️ 合成 timeout 30 秒
         try {
-          const compositePromise = compositeMutation.mutateAsync(
+          const comp = await compositeMutation.mutateAsync(
             uploaded.map((u) => u.publicId),
           );
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("合成超時（30 秒）")), 30000)
-          );
-          const comp = await Promise.race([compositePromise, timeoutPromise]);
-          if (cancelled) return;
+          if (cancelled || cancelRef.current) return;
           setCompositeUrl(comp.compositeUrl);
         } catch (err) {
           console.warn("[Team] 合成失敗，用第一張當紀念:", err);
           // 🐛 修：fallback 直接用第一張的原始 URL，不再呼叫 composite-photo
           // （避免端點本身掛掉時 fallback 也卡住）
-          if (cancelled) return;
+          if (cancelled || cancelRef.current) return;
           if (uploaded.length > 0) {
             setCompositeUrl(uploaded[0].url);
             toast({
@@ -218,9 +239,9 @@ export default function PhotoTeamFlow({
             setCompositeUrl(firstMemberDataUrl);
           }
         }
-        if (!cancelled) setStage("done");
+        if (!cancelled && !cancelRef.current) setStage("done");
       } catch (err) {
-        if (cancelled) return;
+        if (cancelled || cancelRef.current) return;
         console.error("[Team] 上傳階段失敗:", err);
         toast({
           title: "上傳失敗",
@@ -236,9 +257,24 @@ export default function PhotoTeamFlow({
         }
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
+
+  /** 取消上傳/合成（玩家手動中斷） */
+  const handleCancelUpload = () => {
+    cancelRef.current = true;
+    const fallbackUrl = members[0]?.imageData ?? null;
+    if (fallbackUrl) {
+      setCompositeUrl(fallbackUrl);
+      setStage("done");
+      toast({ title: "已取消", description: "用首張照片繼續" });
+    } else {
+      setStage("intro");
+    }
+  };
 
   const handleStartShootingMember = () => {
     setStage("shooting");
@@ -339,12 +375,40 @@ export default function PhotoTeamFlow({
 
   // 上傳/合成中
   if (stage === "uploading" || stage === "compositing") {
+    const pct =
+      uploadProgress.total > 0
+        ? Math.round((uploadProgress.current / uploadProgress.total) * 100)
+        : 0;
     return (
       <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-team-processing">
         <UploadingView />
-        <p className="text-sm text-muted-foreground">
-          {stage === "uploading" ? "上傳所有隊員照片..." : "合成團體照..."}
+        <p className="text-sm font-medium text-foreground">
+          {progressMessage || (stage === "uploading" ? "上傳所有隊員照片..." : "合成團體照...")}
         </p>
+        {stage === "uploading" && uploadProgress.total > 0 && (
+          <div className="w-full max-w-xs">
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground text-center mt-2 tabular-nums">
+              {uploadProgress.current} / {uploadProgress.total} 張（{pct}%）
+            </p>
+          </div>
+        )}
+        <p className="text-xs text-muted-foreground text-center px-4">
+          請保持網路連線；單張上傳上限 25 秒、合成上限 30 秒，逾時會自動使用首張代替
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleCancelUpload}
+          data-testid="button-cancel-upload"
+        >
+          取消並使用首張照片
+        </Button>
       </div>
     );
   }

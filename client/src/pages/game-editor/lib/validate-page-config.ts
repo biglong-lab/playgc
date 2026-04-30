@@ -299,6 +299,12 @@ export function validateCrossPageFlow(pages: Page[]): ValidationIssue[] {
     if (typeof cfg.rewardPoints === "number" && cfg.rewardPoints > 0) {
       maxScoreBefore += cfg.rewardPoints;
     }
+    // 5. rewardItems（頁面級 — RewardsSection UI 設定，與 onSuccess.grantItem 並列）
+    // GamePageRenderer.wrappedOnComplete 也會合併這份道具到玩家端 inventory
+    const cfgRewardItems = (cfg.rewardItems as unknown[]) || [];
+    cfgRewardItems.forEach((id) => {
+      if (id != null && id !== "") grantedItems.add(String(id));
+    });
   }
 
   return issues;

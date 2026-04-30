@@ -17,20 +17,20 @@ export interface AIModelOption {
 export const AI_MODELS: AIModelOption[] = [
   // 視覺 + 文字 都支援
   {
-    id: "google/gemini-flash-1.5",
-    label: "Gemini 1.5 Flash ⭐ 推薦",
-    description: "最便宜、中文好、支援 vision（每 1M token 僅 $0.075 輸入）",
-    priceIn: 0.075,
-    priceOut: 0.3,
+    id: "google/gemini-2.0-flash-001",
+    label: "Gemini 2.0 Flash ⭐ 推薦",
+    description: "便宜、中文好、支援 vision（每 1M token $0.1 輸入）",
+    priceIn: 0.1,
+    priceOut: 0.4,
     tier: "budget",
     vision: true,
   },
   {
-    id: "google/gemini-2.0-flash-001",
-    label: "Gemini 2.0 Flash",
-    description: "比 1.5 更新，品質略好（每 1M token $0.1 輸入）",
-    priceIn: 0.1,
-    priceOut: 0.4,
+    id: "google/gemini-flash-1.5-8b",
+    label: "Gemini 1.5 Flash 8B",
+    description: "更便宜的 1.5 系列（每 1M token $0.0375 輸入），仍可用",
+    priceIn: 0.0375,
+    priceOut: 0.15,
     tier: "budget",
     vision: true,
   },
@@ -63,6 +63,10 @@ export const AI_MODELS: AIModelOption[] = [
   },
 ];
 
-/** 預設模型（用於場域未設定時 fallback）*/
-export const DEFAULT_VISION_MODEL = "google/gemini-flash-1.5";
-export const DEFAULT_TEXT_MODEL = "google/gemini-flash-1.5";
+/** 預設模型（用於場域未設定時 fallback）
+ * ⚠️ 2026-04-30 修正：原本 "google/gemini-flash-1.5" 已被 OpenRouter 下架（404 No endpoints found）
+ * 改用 "google/gemini-2.0-flash-001"（穩定版本，免費額度大）
+ * 監控：OpenRouter 模型清單 https://openrouter.ai/models
+ */
+export const DEFAULT_VISION_MODEL = "google/gemini-2.0-flash-001";
+export const DEFAULT_TEXT_MODEL = "google/gemini-2.0-flash-001";

@@ -51,9 +51,17 @@ export default function ConditionalVerifyEditor({
 
   // 🐛 修：第一次進編輯器時 admin 看似已有預設值（碎片類型 + 數量）
   // 但 fragments[] 是空陣列 → 玩家端 isFragmentMode=false → 看不到碎片 UI
-  // 自動初始化：偵測 fragmentCount > 0 但 fragments 為空 → 自動 generate
+  // 自動初始化：fragmentCount 未設或 > 0 且 fragments 為空 → 自動 generate
+  //
+  // 重要：input 顯示 `value={config.fragmentCount || 4}`，但若 config.fragmentCount 是 undefined
+  // admin 看到 4 卻沒實際儲存，玩家端 fragments=[] → 任務直接「無碎片」可繼續
+  // 這個 useEffect 確保 admin 一進編輯器就把預設值落到 config 裡
   useEffect(() => {
-    const hasCount = (config.fragmentCount as number | undefined) ?? 0;
+    const rawCount = config.fragmentCount as number | undefined;
+    // 預設 4 個碎片（與 input 預設值對齊）
+    const hasCount = rawCount === undefined || rawCount === null ? 4 : rawCount;
+    const isFragmentCountDirty = rawCount !== hasCount;
+
     if (hasCount > 0 && fragments.length === 0) {
       const type = (config.fragmentType as string | undefined) || "numbers";
       const generated: Fragment[] = [];
@@ -69,6 +77,12 @@ export default function ConditionalVerifyEditor({
         });
       }
       updateField("fragments", generated);
+      if (isFragmentCountDirty) {
+        updateField("fragmentCount", hasCount);
+      }
+      if (!config.fragmentType) {
+        updateField("fragmentType", type);
+      }
       if (type !== "custom") {
         updateField("targetCode", generated.map((f) => f.value).join(""));
       }
