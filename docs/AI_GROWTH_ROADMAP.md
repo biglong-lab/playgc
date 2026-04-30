@@ -166,7 +166,7 @@ TOTAL_PROGRESS: 50/50 ✅
 
 ## cron + 部署
 - [x] **P16-7** cron task 7：每週一（getDay()===1）跑 → 取所有 fields → 對每個 field 跑 trainTransitionMatrix → invalidateMarkovCache 清快取；非週一直接 skip 顯示「skip（非週一）」；CronStats 加 4 欄（markovSkipped/FieldsTrained/TransitionsUpserted/SessionsAnalyzed）；console 報表顯示訓練統計
-- [ ] **P16-8** TS check + commit + push + 部署 + E2E
+- [x] **P16-8** TS check ✅ EXIT 0 + push `f2c6ec11` + 部署生產 + E2E（HTTP 200 / ab-experiments 401 / content-health 401 / page_type_transitions 表存在 rows=0 等待週一首次訓練）
 
 ---
 
