@@ -137,7 +137,7 @@ TOTAL_PROGRESS: 40/42
 - [x] **P15-4** content-health 加 calculateHealthScore — Promise.all 並行抓 zombie/orphan/deadEnd + total pages + 加總 variant pool 算 totalVariants → 三項 penalty（zombie×30 / orphan×35 / deadEnd 加權×35：high=1/medium=0.5/low=0.2）→ 100 扣分得綜合分；分 5 級（excellent/good/fair/poor/critical）+ breakdown + penalties 透明明細
 
 ## API + UI
-- [ ] **P15-5** 加 `GET /api/platform/ai-center/content-health`（platform-ai-center.ts 內加）
+- [x] **P15-5** 加 `GET /api/platform/ai-center/content-health`（platform-ai-center.ts 內加）— Promise.all 並行抓 4 個（zombies/orphans/deadEnds/healthScore）+ 支援 `?gameId=` 過濾 + requirePlatformAdmin 權限
 - [ ] **P15-6** PlatformAiCenter UI 加「內容健康度」分頁（顯示 4 種問題清單）
 
 ## cron
