@@ -172,7 +172,7 @@ TOTAL_PROGRESS: 50/50 ✅
 
 # 🏁 完成
 
-- [ ] **DONE** 在本檔案頂部寫 STATUS: ALL_COMPLETED，停止 /loop
+- [x] **DONE** 在本檔案頂部寫 STATUS: ALL_COMPLETED ✅；停止 /loop
 
 ---
 
