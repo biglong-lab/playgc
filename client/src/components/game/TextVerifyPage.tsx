@@ -125,8 +125,13 @@ export default function TextVerifyPage({ config, onComplete, gameId, variantPool
   const handleCorrect = (feedbackMessage?: string) => {
     if (finishedRef.current) return;
     setIsCorrect(true);
+    // 🎨 P2: 從變體池抽成功訊息（pool 沒設則用 config.successMessage / AI feedback）
     toast({
-      title: feedbackMessage || config.onSuccess?.message || config.successMessage || "答對了！",
+      title: pickVariant(
+        variantPool,
+        "success",
+        feedbackMessage || config.onSuccess?.message || config.successMessage || "答對了！",
+      ),
       description: "做得好！",
     });
 
