@@ -10,6 +10,7 @@ import { registerVariantPoolRoutes } from "./admin-variant-pool";
 import { registerExemplarRoutes } from "./admin-exemplar";
 import { registerGameGeneratorRoutes } from "./admin-game-generator";
 import { registerAdminCopilotRoutes } from "./admin-copilot";
+import { registerAdminGameRoutesRoutes } from "./admin-game-routes";
 import { registerAdminContentRoutes } from "./admin-content";
 import { registerPlayerGameRoutes } from "./player-games";
 import { registerDeviceRoutes } from "./devices";
