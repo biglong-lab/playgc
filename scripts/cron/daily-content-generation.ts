@@ -451,6 +451,69 @@ async function task6_analyzeContentHealth(): Promise<{
 }
 
 /**
+ * 任務 7：Markov transition matrix 訓練（P16-7）
+ *
+ * 排程：每週一跑（其他天 skip）
+ * 流程：
+ *   1. 取所有場域（fields 表）
+ *   2. 對每個場域跑 trainTransitionMatrix({ fieldId })
+ *   3. 訓練完呼叫 invalidateMarkovCache(fieldId) 清快取
+ *   4. 統計累加回傳
+ *
+ * 為何每週：transition matrix 變動慢（need ~50+ sessions per fromType），
+ *           每天訓練 = 浪費；資料量大，每週一次足夠。
+ */
+async function task7_trainMarkov(): Promise<{
+  skipped: boolean;
+  fieldsTrained: number;
+  transitionsUpserted: number;
+  sessionsAnalyzed: number;
+}> {
+  // 只在週一跑（getDay: 0=Sun, 1=Mon, ...）
+  const today = new Date();
+  if (today.getDay() !== 1) {
+    console.log(
+      `[cron] 任務 7：Markov 訓練 skip（非週一，今天 day=${today.getDay()}）`,
+    );
+    return { skipped: true, fieldsTrained: 0, transitionsUpserted: 0, sessionsAnalyzed: 0 };
+  }
+
+  console.log("[cron] 任務 7：Markov transition matrix 訓練");
+
+  const { fields } = await import("@shared/schema");
+  const allFields = await db.select({ id: fields.id, code: fields.code }).from(fields);
+
+  let fieldsTrained = 0;
+  let transitionsUpserted = 0;
+  let sessionsAnalyzed = 0;
+
+  for (const f of allFields) {
+    try {
+      const stats = await trainTransitionMatrix({ fieldId: f.id });
+      transitionsUpserted += stats.transitionsUpserted;
+      sessionsAnalyzed += stats.sessionsAnalyzed;
+      if (stats.transitionsUpserted > 0) {
+        fieldsTrained++;
+        invalidateMarkovCache(f.id);
+        console.log(
+          `[cron] 🔄 ${f.code}: ${stats.sessionsAnalyzed} sessions / ${stats.transitionsUpserted} transitions / ${stats.totalEvents} events`,
+        );
+      }
+    } catch (err) {
+      console.warn(
+        `[cron] 訓練失敗 field ${f.code}:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+  }
+
+  console.log(
+    `[cron] ✅ Markov 訓練完成：${fieldsTrained}/${allFields.length} 場域有資料 / 共 ${transitionsUpserted} transitions`,
+  );
+  return { skipped: false, fieldsTrained, transitionsUpserted, sessionsAnalyzed };
+}
+
+/**
  * 主入口
  */
 export async function runDailyCron(): Promise<CronStats> {
