@@ -39,6 +39,12 @@ interface CronStats {
   abExperimentsConcluded: number;
   abExperimentsPending: number;
   abExperimentsFailed: number;
+  // P15: 內容健康度
+  healthScore: number;
+  healthLevel: string;
+  healthZombies: number;
+  healthOrphans: number;
+  healthDeadEnds: number;
   startedAt: Date;
   durationMs: number;
 }
