@@ -12,6 +12,8 @@ import {
   roles,
   permissions,
   rolePermissions,
+  aiUsageLogs,
+  fieldUsageMeters,
   insertPlatformPlanSchema,
   insertPlatformFeatureFlagSchema,
   insertFieldFeatureOverrideSchema,
@@ -721,6 +723,221 @@ export function registerPlatformRoutes(app: Express): void {
   //   重用既有 audit_logs 表，提供跨場域查詢介面
   //   action 前綴 platform: 為平台層操作（vs admin: 為場域層）
   // ============================================================================
+
+  // ============================================================================
+  // 🆕 P1-1（2026-04-30）— 用量監控儀表板
+  // ============================================================================
+
+  /**
+   * GET /api/platform/usage/overview
+   * 平台總體用量總覽：
+   *   - 過去 24 小時 / 7 天 / 30 天的 AI 呼叫總量
+   *   - 整體成功率
+   *   - 平均延遲
+   */
+  app.get("/api/platform/usage/overview", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const now = new Date();
+      const past24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const past7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const past30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const [stats24h, stats7d, stats30d] = await Promise.all([
+        db.execute<{ total: number; success: number; fail: number; avg_latency: number }>(sql`
+          SELECT
+            COUNT(*)::int AS total,
+            COUNT(*) FILTER (WHERE success = true)::int AS success,
+            COUNT(*) FILTER (WHERE success = false)::int AS fail,
+            COALESCE(AVG(latency_ms), 0)::int AS avg_latency
+          FROM ai_usage_logs
+          WHERE created_at >= ${past24h.toISOString()}
+        `).then((r) => r.rows[0] ?? { total: 0, success: 0, fail: 0, avg_latency: 0 }),
+        db.execute<{ total: number; success: number; fail: number }>(sql`
+          SELECT
+            COUNT(*)::int AS total,
+            COUNT(*) FILTER (WHERE success = true)::int AS success,
+            COUNT(*) FILTER (WHERE success = false)::int AS fail
+          FROM ai_usage_logs
+          WHERE created_at >= ${past7d.toISOString()}
+        `).then((r) => r.rows[0] ?? { total: 0, success: 0, fail: 0 }),
+        db.execute<{ total: number; success: number; fail: number }>(sql`
+          SELECT
+            COUNT(*)::int AS total,
+            COUNT(*) FILTER (WHERE success = true)::int AS success,
+            COUNT(*) FILTER (WHERE success = false)::int AS fail
+          FROM ai_usage_logs
+          WHERE created_at >= ${past30d.toISOString()}
+        `).then((r) => r.rows[0] ?? { total: 0, success: 0, fail: 0 }),
+      ]);
+
+      res.json({
+        last24h: stats24h,
+        last7d: stats7d,
+        last30d: stats30d,
+      });
+    } catch (error) {
+      console.error("[platform/usage/overview] failed:", error);
+      res.status(500).json({ message: "取得用量總覽失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/usage/by-provider
+   * 過去 30 天各 AI provider 用量分布
+   */
+  app.get("/api/platform/usage/by-provider", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const rows = await db.execute<{
+        provider: string;
+        total: number;
+        success: number;
+        fail: number;
+        avg_latency: number;
+      }>(sql`
+        SELECT
+          provider,
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE success = true)::int AS success,
+          COUNT(*) FILTER (WHERE success = false)::int AS fail,
+          COALESCE(AVG(latency_ms), 0)::int AS avg_latency
+        FROM ai_usage_logs
+        WHERE created_at >= ${past30d.toISOString()}
+        GROUP BY provider
+        ORDER BY total DESC
+      `);
+      res.json({ items: rows.rows });
+    } catch (error) {
+      console.error("[platform/usage/by-provider] failed:", error);
+      res.status(500).json({ message: "取得 provider 統計失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/usage/top-fields
+   * 用量最高的場域排行（Top 10，過去 30 天）
+   */
+  app.get("/api/platform/usage/top-fields", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const rows = await db.execute<{
+        field_id: string;
+        total: number;
+        success: number;
+        fail: number;
+      }>(sql`
+        SELECT
+          field_id,
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE success = true)::int AS success,
+          COUNT(*) FILTER (WHERE success = false)::int AS fail
+        FROM ai_usage_logs
+        WHERE created_at >= ${past30d.toISOString()}
+          AND field_id IS NOT NULL
+        GROUP BY field_id
+        ORDER BY total DESC
+        LIMIT 10
+      `);
+
+      // join field name
+      const fieldIds = rows.rows.map((r) => r.field_id).filter(Boolean);
+      const fieldList = fieldIds.length
+        ? await db.query.fields.findMany({
+            where: inArray(fields.id, fieldIds),
+            columns: { id: true, name: true, code: true },
+          })
+        : [];
+      const fieldMap = new Map(fieldList.map((f) => [f.id, f]));
+
+      const enriched = rows.rows.map((r) => ({
+        ...r,
+        field: fieldMap.get(r.field_id) ?? null,
+        successRate: r.total > 0 ? r.success / r.total : 0,
+      }));
+
+      res.json({ items: enriched });
+    } catch (error) {
+      console.error("[platform/usage/top-fields] failed:", error);
+      res.status(500).json({ message: "取得場域用量排行失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/usage/by-endpoint
+   * 各 AI endpoint 用量與成功率（過去 30 天）
+   */
+  app.get("/api/platform/usage/by-endpoint", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const rows = await db.execute<{
+        endpoint: string;
+        provider: string;
+        total: number;
+        success: number;
+        fail: number;
+        avg_latency: number;
+      }>(sql`
+        SELECT
+          endpoint,
+          provider,
+          COUNT(*)::int AS total,
+          COUNT(*) FILTER (WHERE success = true)::int AS success,
+          COUNT(*) FILTER (WHERE success = false)::int AS fail,
+          COALESCE(AVG(latency_ms), 0)::int AS avg_latency
+        FROM ai_usage_logs
+        WHERE created_at >= ${past30d.toISOString()}
+        GROUP BY endpoint, provider
+        ORDER BY total DESC
+        LIMIT 20
+      `);
+      res.json({ items: rows.rows });
+    } catch (error) {
+      console.error("[platform/usage/by-endpoint] failed:", error);
+      res.status(500).json({ message: "取得 endpoint 統計失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/usage/meters
+   * 各場域 meter 用量（field_usage_meters，含超額狀態）
+   */
+  app.get("/api/platform/usage/meters", requirePlatformAdmin, async (req, res) => {
+    try {
+      const fieldFilter = typeof req.query.fieldId === "string" ? req.query.fieldId : null;
+      const meterFilter = typeof req.query.meterKey === "string" ? req.query.meterKey : null;
+
+      const conds = [];
+      if (fieldFilter) conds.push(eq(fieldUsageMeters.fieldId, fieldFilter));
+      if (meterFilter) conds.push(eq(fieldUsageMeters.meterKey, meterFilter));
+
+      const meters = await db.query.fieldUsageMeters.findMany({
+        where: conds.length ? and(...conds) : undefined,
+        orderBy: [desc(fieldUsageMeters.updatedAt)],
+        limit: 200,
+      });
+
+      const fieldIds = Array.from(new Set(meters.map((m) => m.fieldId).filter(Boolean) as string[]));
+      const fieldList = fieldIds.length
+        ? await db.query.fields.findMany({
+            where: inArray(fields.id, fieldIds),
+            columns: { id: true, name: true, code: true },
+          })
+        : [];
+      const fieldMap = new Map(fieldList.map((f) => [f.id, f]));
+
+      const enriched = meters.map((m) => ({
+        ...m,
+        field: m.fieldId ? fieldMap.get(m.fieldId) ?? null : null,
+        usagePercent: m.limitValue ? (Number(m.currentValue) / Number(m.limitValue)) * 100 : null,
+        isOverage: m.limitValue ? Number(m.currentValue) > Number(m.limitValue) : false,
+      }));
+
+      res.json({ items: enriched, total: enriched.length });
+    } catch (error) {
+      console.error("[platform/usage/meters] failed:", error);
+      res.status(500).json({ message: "取得用量 meters 失敗" });
+    }
+  });
 
   // ============================================================================
   // 🆕 P0-3（2026-04-30）— 計費警示

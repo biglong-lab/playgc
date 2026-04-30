@@ -38,6 +38,7 @@ import {
   ScrollText,
   Ticket,
   AlertTriangle,
+  Activity,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -57,6 +58,8 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     items: [
       { label: "儀表板", path: "/platform", icon: LayoutDashboard },
       { label: "跨場域數據", path: "/platform/analytics", icon: BarChart3 },
+      // 🆕 P1-1（2026-04-30）— 用量監控
+      { label: "用量監控", path: "/platform/usage", icon: Activity },
     ],
   },
   {
