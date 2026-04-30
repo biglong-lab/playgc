@@ -153,7 +153,7 @@ TOTAL_PROGRESS: 44/50
 > 從成功玩家的歷史流程學「page type 銜接合理度」，用於 Roguelike + 副駕駛推薦。
 
 ## 資料 + 邏輯
-- [ ] **P16-1** 建立 `shared/schema/markov-transitions.ts`：page_type_transitions 表（from_type × to_type × success_count × total_count）
+- [x] **P16-1** 建立 `shared/schema/markov-transitions.ts`：page_type_transitions 表 — 複合主鍵 (fieldId, fromType, toType) + successCount/totalCount/lastTrainedAt + 2 個 index（from query / trained 更新檢查）+ TransitionProbability 介面 + 匯出到 schema/index.ts；fieldId NULL 表示全平台統計
 - [ ] **P16-2** SQL CREATE TABLE — 本地 + 生產
 - [ ] **P16-3** 建立 `server/lib/markov-trainer.ts`：trainTransitionMatrix() — 從 player_event_logs 提取統計
 - [ ] **P16-4** 建立 `server/lib/markov-sampler.ts`：sampleNextType(currentType) — 依機率抽下一個
