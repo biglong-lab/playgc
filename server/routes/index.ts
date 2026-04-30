@@ -139,6 +139,7 @@ export async function registerRoutes(
 
   // 🌐 SaaS 平台層（Phase 1 基礎）
   registerPlatformRoutes(app);
+  registerPlatformAiCenterRoutes(app);
   // 🎫 客服工單系統（P0-2）
   registerPlatformTicketRoutes(app);
 
