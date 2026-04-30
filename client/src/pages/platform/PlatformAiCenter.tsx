@@ -26,6 +26,10 @@ import {
   Zap,
   Loader2,
   RefreshCw,
+  HeartPulse,
+  AlertTriangle,
+  Skull,
+  Ghost,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
