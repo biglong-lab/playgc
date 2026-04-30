@@ -12,6 +12,7 @@ import {
   SUPPORTED_PAGE_TYPES,
 } from "@shared/schema";
 import { callOpenRouter, safeParseAiJson } from "./openrouter";
+import { getTransitionProbabilities } from "./markov-sampler";
 
 // ============================================================================
 // 1. suggestNextModule — 推薦下一個 page type
