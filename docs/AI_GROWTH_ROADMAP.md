@@ -109,8 +109,8 @@ TOTAL_PROGRESS: 29/42
 - [x] **P14-2** SQL CREATE TABLE × 2（含 4 個 index + unique on experiment×user）— 本地 ✅ + 生產 ✅
 
 ## 邏輯
-- [ ] **P14-3** 建立 `server/lib/ab-test.ts`：assignVariant(userId, experimentId) — 用 user_id hash 確定性分組
-- [ ] **P14-4** 建立 `server/lib/ab-stats.ts`：calculateSignificance(expId) — z-test 計算顯著性 + 自動結論
+- [x] **P14-3** 建立 `server/lib/ab-test.ts`：assignVariant + hashAssign + findActiveExperiment + getGroupAssignmentCount（SHA256 確定性分組 + onConflictDoNothing 防 race）
+- [x] **P14-4** 建立 `server/lib/ab-stats.ts`：calculateSignificance + twoProportionZTest + normalCdf（Abramowitz-Stegun 近似 < 7.5e-8）
 
 ## API
 - [ ] **P14-5** 建立 `server/routes/admin-ab-experiments.ts`：CRUD + getResults endpoint
