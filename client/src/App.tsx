@@ -78,6 +78,7 @@ const FieldSettingsPage = lazy(() => import("@/pages/admin/FieldSettingsPage"));
 const TicketsOverview = lazy(() => import("@/pages/admin/TicketsOverview"));
 const ExemplarLibrary = lazy(() => import("@/pages/admin/ExemplarLibrary"));
 const GameGenerator = lazy(() => import("@/pages/admin/GameGenerator"));
+const GameRoutesEditor = lazy(() => import("@/pages/admin/GameRoutesEditor"));
 const AdminStaffFields = lazy(() => import("@/pages/AdminStaffFields"));
 const AdminStaffRoles = lazy(() => import("@/pages/AdminStaffRoles"));
 const AdminStaffAccounts = lazy(() => import("@/pages/AdminStaffAccounts"));
