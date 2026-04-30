@@ -3,7 +3,12 @@
 // Docs: https://openrouter.ai/docs
 
 import type { PhotoVerifyResult, TextScoreResult } from "./gemini";
-import { DEFAULT_VISION_MODEL, DEFAULT_TEXT_MODEL } from "@shared/schema";
+import {
+  DEFAULT_VISION_MODEL,
+  DEFAULT_TEXT_MODEL,
+  OPENROUTER_FALLBACK_CHAIN,
+  DEPRECATED_OPENROUTER_MODELS,
+} from "@shared/schema";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
@@ -22,29 +27,45 @@ interface ChatMessage {
 }
 
 /**
- * 已知失效模型 → 自動降級到預設模型
- * 當 OpenRouter 回 404 "No endpoints found" 時觸發 fallback
+ * 取得 fallback chain：將 model 放最前，後接 OPENROUTER_FALLBACK_CHAIN（去重）
+ * 若 model 在 DEPRECATED 清單裡，直接從 fallback chain 開始
  */
-const DEPRECATED_MODELS = new Set([
-  "google/gemini-flash-1.5", // 2026-04 已被 OpenRouter 下架（404）
-]);
+function getFallbackChain(model: string): string[] {
+  const chain: string[] = [];
+  if (!DEPRECATED_OPENROUTER_MODELS.has(model)) {
+    chain.push(model);
+  }
+  for (const fb of OPENROUTER_FALLBACK_CHAIN) {
+    if (!chain.includes(fb) && !DEPRECATED_OPENROUTER_MODELS.has(fb)) {
+      chain.push(fb);
+    }
+  }
+  return chain;
+}
 
-async function callOpenRouter(
+/**
+ * 是否為「應該降級」的錯誤（值得試下一個模型）
+ *  - 404 No endpoints found：模型下架
+ *  - 429：rate limit / 額度用盡
+ *  - 502/503/504：上游暫時性錯誤
+ *  - 400 + "model" 訊息：模型參數問題
+ */
+function isFallbackableError(status: number, errorBody: string): boolean {
+  if (status === 404 && errorBody.includes("No endpoints found")) return true;
+  if (status === 429) return true;
+  if (status === 502 || status === 503 || status === 504) return true;
+  if (status === 400 && /model|invalid/i.test(errorBody)) return true;
+  return false;
+}
+
+async function callOpenRouterOnce(
   apiKey: string,
   model: string,
   messages: ChatMessage[],
-  jsonResponse = true,
-  attempt = 0,
-): Promise<string> {
-  // 🆕 模型遷移：場域舊資料還是 google/gemini-flash-1.5 → 自動換到預設
-  let actualModel = model;
-  if (DEPRECATED_MODELS.has(model)) {
-    actualModel = DEFAULT_MODEL_VISION;
-    console.warn(`[openrouter] 模型 "${model}" 已下架，自動改用 "${actualModel}"`);
-  }
-
+  jsonResponse: boolean,
+): Promise<{ ok: true; content: string } | { ok: false; status: number; body: string }> {
   const body: Record<string, unknown> = {
-    model: actualModel,
+    model,
     messages,
     temperature: 0.2,
     max_tokens: 500,
@@ -53,7 +74,7 @@ async function callOpenRouter(
     body.response_format = { type: "json_object" };
   }
 
-  // 🕒 加 45s timeout（跟 Gemini 對稱，避免 AI 擁塞卡住整個 request）
+  // 🕒 45s timeout
   const abort = new AbortController();
   const timer = setTimeout(() => abort.abort(), 45_000);
   let res: Response;
@@ -79,26 +100,59 @@ async function callOpenRouter(
   clearTimeout(timer);
 
   if (!res.ok) {
-    const err = await res.text();
-    // 🆕 404 No endpoints found → 模型不存在，自動降級重試（最多 1 次）
-    if (
-      res.status === 404 &&
-      err.includes("No endpoints found") &&
-      attempt === 0 &&
-      actualModel !== DEFAULT_MODEL_VISION
-    ) {
-      console.warn(
-        `[openrouter] 模型 "${actualModel}" 不存在，降級到 "${DEFAULT_MODEL_VISION}" 重試`,
-      );
-      return callOpenRouter(apiKey, DEFAULT_MODEL_VISION, messages, jsonResponse, 1);
-    }
-    throw new Error(`OpenRouter 失敗 (${res.status}): ${err.substring(0, 200)}`);
+    const errBody = await res.text();
+    return { ok: false, status: res.status, body: errBody };
   }
 
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content;
   if (!content) throw new Error("OpenRouter 回傳無內容");
-  return content;
+  return { ok: true, content };
+}
+
+/**
+ * 呼叫 OpenRouter，自動依 fallback chain 重試
+ *  - 失敗時依序試下一個模型
+ *  - 全部模型都失敗時拋出最後一個錯誤
+ *  - 非 fallbackable 錯誤（401 認證錯、500）直接拋出
+ */
+async function callOpenRouter(
+  apiKey: string,
+  model: string,
+  messages: ChatMessage[],
+  jsonResponse = true,
+): Promise<string> {
+  const chain = getFallbackChain(model);
+  let lastError = `沒有可用模型（chain: ${chain.join(", ")}）`;
+
+  for (let i = 0; i < chain.length; i++) {
+    const m = chain[i];
+    if (i > 0) {
+      console.warn(`[openrouter] 降級嘗試 #${i}：使用模型 "${m}"`);
+    }
+
+    const result = await callOpenRouterOnce(apiKey, m, messages, jsonResponse);
+    if (result.ok) {
+      if (i > 0) {
+        console.log(`[openrouter] ✅ Fallback 成功（用 "${m}" 完成）`);
+      }
+      return result.content;
+    }
+
+    lastError = `OpenRouter 失敗 (${result.status}) [model=${m}]: ${result.body.substring(0, 200)}`;
+
+    // 不該降級的錯誤 → 直接拋（401 認證錯、5xx 內部）
+    if (!isFallbackableError(result.status, result.body)) {
+      throw new Error(lastError);
+    }
+
+    console.warn(
+      `[openrouter] 模型 "${m}" 失敗 (${result.status})，` +
+        `${i + 1 < chain.length ? "嘗試下一個" : "已無下一個可用"}`,
+    );
+  }
+
+  throw new Error(lastError);
 }
 
 export async function verifyPhotoOpenRouter(
