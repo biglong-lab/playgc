@@ -45,6 +45,40 @@ export function pickVariant(
 }
 
 /**
+ * 🆕 P11-8: pickVariant 的詳細版本，回傳 text + index（給 FeedbackButtons 用）
+ *
+ * 用法：
+ *   const result = pickVariantWithIndex(variantPool, "success", aiFeedback);
+ *   toast({ title: result.text });
+ *   if (result.index >= 0) {
+ *     <FeedbackButtons variantIndex={result.index} variantText={result.text} ... />
+ *   }
+ *
+ * @returns { text, index, isFromPool }
+ *   - isFromPool=true: 從 pool 抽到，index 為陣列位置（≥ 0）
+ *   - isFromPool=false: 用 fallback，index = -1（玩家不該看到反饋按鈕）
+ */
+export function pickVariantWithIndex(
+  pool: unknown,
+  key: VariantPoolKey,
+  fallback: string,
+): { text: string; index: number; isFromPool: boolean } {
+  if (!pool || typeof pool !== "object") {
+    return { text: fallback, index: -1, isFromPool: false };
+  }
+  const arr = (pool as VariantPoolShape)[key];
+  if (!Array.isArray(arr) || arr.length === 0) {
+    return { text: fallback, index: -1, isFromPool: false };
+  }
+  const idx = Math.floor(Math.random() * arr.length);
+  const picked = arr[idx];
+  if (typeof picked !== "string" || picked.length === 0) {
+    return { text: fallback, index: -1, isFromPool: false };
+  }
+  return { text: picked, index: idx, isFromPool: true };
+}
+
+/**
  * 是否有可用的變體池（用於 admin UI 顯示「✓ 已生成」狀態）
  */
 export function hasVariantPool(pool: unknown, key?: VariantPoolKey): boolean {
