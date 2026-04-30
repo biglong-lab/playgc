@@ -171,8 +171,8 @@ TOTAL_PROGRESS: 88/120 (73%)
 
 # Phase 8：AI 遊戲腳本產生器 🪄
 
-- [ ] **P8-1** 建立 `shared/schema/module-catalog.ts`：23 個現有 page type 的能力描述
-- [ ] **P8-2** 建立 `server/lib/game-script-generator.ts`：DeepSeek prompt + 解析邏輯
+- [x] **P8-1** 建立 `shared/schema/module-catalog.ts`：23 個現有 page type 的能力描述（含 ModuleScenario / ModuleSpec / formatModuleCatalog）
+- [x] **P8-2** 建立 `server/lib/game-script-generator.ts`：DeepSeek prompt + Zod 驗證生成的 page configs
 - [ ] **P8-3** 建立 `server/routes/admin/game-generator.ts`
 - [ ] **P8-4** 實作 `POST /api/admin/games/generate-from-script`：腳本 → pages array
 - [ ] **P8-5** 實作 Zod schema 驗證生成的 page configs（防 AI 亂組）
