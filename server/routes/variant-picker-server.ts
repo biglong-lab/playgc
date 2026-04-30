@@ -70,6 +70,34 @@ export function registerVariantPickerServerRoutes(app: Express) {
         });
       }
 
+      // 🔬 P14-6: 先檢查 active A/B 實驗
+      // 若有 → 用確定性分組返回對應 index（覆蓋 bandit）
+      const userId = (req as { user?: { claims?: { sub?: string } } }).user?.claims?.sub;
+      if (userId) {
+        const activeExp = await findActiveExperiment(pageId, key);
+        if (activeExp) {
+          const group = await assignVariant(activeExp.experimentId, userId);
+          const idx =
+            group === "a" ? activeExp.variantAIndex : activeExp.variantBIndex;
+          if (idx >= 0 && idx < variants.length) {
+            return res.json({
+              pageId,
+              key,
+              picked: {
+                index: idx,
+                text: variants[idx],
+              },
+              reason: "ab-experiment",
+              experimentId: activeExp.experimentId,
+              group,
+              candidateCount: variants.length,
+              strategy: "ab-experiment",
+            });
+          }
+          // index 越界 → fallback 到 bandit（保留容錯）
+        }
+      }
+
       // 取分數
       const scoreMap = await getVariantScores(pageId);
       // 轉成 Record 給 buildArmsFromVariants 用
