@@ -59,6 +59,22 @@ async function buildAll() {
     external: externals,
     logLevel: "info",
   });
+
+  // 🌙 P5: build cron 腳本（獨立執行，不依賴 dist/index.cjs）
+  console.log("building cron...");
+  await esbuild({
+    entryPoints: ["scripts/cron/daily-content-generation.ts"],
+    platform: "node",
+    bundle: true,
+    format: "cjs",
+    outfile: "dist/cron-daily.cjs",
+    define: {
+      "process.env.NODE_ENV": '"production"',
+    },
+    minify: true,
+    external: externals,
+    logLevel: "info",
+  });
 }
 
 buildAll().catch((err) => {
