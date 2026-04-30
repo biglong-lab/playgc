@@ -66,6 +66,7 @@ import { registerSquadSeoRoutes } from "./squad-seo";
 import { registerRewardsRoutes } from "./rewards";
 import { registerAdminRewardsRoutes } from "./admin-rewards";
 import { registerAdminEngagementRoutes } from "./admin-engagement";
+import { registerAdminAbExperimentsRoutes } from "./admin-ab-experiments";
 
 export async function registerRoutes(
   httpServer: Server,
