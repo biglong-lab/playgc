@@ -74,8 +74,8 @@ TOTAL_PROGRESS: 14/42
 - [x] **P12-2** 單元測試 `bandit.test.ts`（12 case 全通過：cold-start / hidden / single-arm / UCB1 / ε-greedy / 整體）
 - [x] **P12-3** 修改 `client/src/lib/variant-picker.ts`：新增 `pickVariantWeighted()` — 加權隨機 + 冷啟動 + hidden 過濾（沒 scores 退化純隨機）
 - [x] **P12-4** 建立 `server/routes/variant-picker-server.ts`：GET `/api/player/variants/:pageId/pick`（用 server-side bandit，支援 ucb1/epsilon/thompson 三策略）
-- [ ] **P12-5** 自動淘汰：連續 5 個 👎 標記 hidden（feedback-aggregator 加邏輯）
-- [ ] **P12-6** 冷啟動：新變體強制曝光 N 次（未達 N 不算分）
+- [x] **P12-5** 自動淘汰：在 `feedback-aggregator.ts:93` 已實作（`dislikeCount >= 5 && likeCount === 0 → hidden=true`，bandit.test.ts 有 hidden case 驗證）
+- [x] **P12-6** 冷啟動：在 `bandit.ts` 已實作（`coldStartMin = 3` 強制曝光，bandit.test.ts 有 cold-start case 驗證）
 - [ ] **P12-7** TS check + commit + push + 部署 + E2E
 
 ---
