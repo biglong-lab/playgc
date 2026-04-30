@@ -123,10 +123,10 @@ TOTAL_PROGRESS: 60/64
 - [x] **P5-3** 任務 2：清過期快取（呼叫 cleanupCacheExpired）
 - [x] **P5-4** 任務 3：策展素材庫（P6 預留 stub，邏輯註解中）
 - [x] **P5-5** 加 `npm run cron:daily` script 到 package.json
-- [ ] **P5-6** 在生產 docker-compose.prod.yml 加 cron service（用 node-cron 或 host crontab）
-- [ ] **P5-7** TS check
-- [ ] **P5-8** commit `feat(ai): 每日內容生成 cron` + push + 部署
-- [ ] **P5-E2E** 手動觸發一次 cron 確認執行成功 + log 顯示處理數量
+- [x] **P5-6** 生產 host crontab 加 `0 3 * * * docker exec gamehomicc-app-1 npm run cron:daily`
+- [x] **P5-7** TS check EXIT 0
+- [x] **P5-8** commit + push + 部署（含 cron-daily.cjs build 整合）✅
+- [x] **P5-E2E** 手動觸發成功：DeepSeek 真實生成 1 個變體池（耗時 23.6s）✅
 
 ---
 
