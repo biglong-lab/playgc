@@ -138,7 +138,7 @@ TOTAL_PROGRESS: 41/42
 
 ## API + UI
 - [x] **P15-5** 加 `GET /api/platform/ai-center/content-health`（platform-ai-center.ts 內加）— Promise.all 並行抓 4 個（zombies/orphans/deadEnds/healthScore）+ 支援 `?gameId=` 過濾 + requirePlatformAdmin 權限
-- [ ] **P15-6** PlatformAiCenter UI 加「內容健康度」分頁（顯示 4 種問題清單）
+- [x] **P15-6** PlatformAiCenter UI 加「健康診斷」分頁（第 5 個 tab）— 綜合分數大字 + level badge + 三項 penalty 細節 / 4 個統計卡（總變體/殭屍/孤兒/死路）/ 三個清單卡（slice 50 上限避免過長）；含 5 個 testid（health-score, zombie-count, orphan-count, dead-end-count, tab-health-diag）
 
 ## cron
 - [ ] **P15-7** cron task 6：每天跑健康度分析 + log 統計
