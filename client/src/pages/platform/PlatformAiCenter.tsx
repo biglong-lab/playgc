@@ -51,6 +51,81 @@ interface HealthStats {
   curatedExemplars: number;
 }
 
+// P15-6: 內容健康度
+interface HealthScore {
+  score: number;
+  level: "excellent" | "good" | "fair" | "poor" | "critical";
+  breakdown: {
+    totalPages: number;
+    totalVariants: number;
+    zombieCount: number;
+    orphanCount: number;
+    deadEndCount: number;
+    deadEndHigh: number;
+    deadEndMedium: number;
+    deadEndLow: number;
+    zombieRatio: number;
+    orphanRatio: number;
+    deadEndScore: number;
+  };
+  penalties: { zombie: number; orphan: number; deadEnd: number };
+}
+
+interface ZombieVariant {
+  pageId: string;
+  gameId: string | null;
+  variantKey: string;
+  variantIndex: number;
+  variantText: string;
+  daysOld: number;
+}
+
+interface OrphanTask {
+  pageId: string;
+  gameId: string;
+  pageType: string;
+  customName: string | null;
+  pageOrder: number;
+  daysOld: number;
+  neverEntered: boolean;
+}
+
+interface DeadEndPage {
+  pageId: string;
+  gameId: string | null;
+  enterCount: number;
+  completeCount: number;
+  exitCount: number;
+  failCount: number;
+  exitRate: number;
+  completionRate: number;
+  severity: "high" | "medium" | "low";
+}
+
+interface ContentHealthResponse {
+  gameId: string | null;
+  score: HealthScore;
+  zombieVariants: ZombieVariant[];
+  orphanTasks: OrphanTask[];
+  deadEndPages: DeadEndPage[];
+}
+
+const HEALTH_LEVEL_LABEL: Record<string, string> = {
+  excellent: "優秀",
+  good: "健康",
+  fair: "可接受",
+  poor: "需改善",
+  critical: "嚴重",
+};
+
+const HEALTH_LEVEL_COLOR: Record<string, string> = {
+  excellent: "text-green-600",
+  good: "text-blue-600",
+  fair: "text-yellow-600",
+  poor: "text-orange-600",
+  critical: "text-red-600",
+};
+
 export default function PlatformAiCenter() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
