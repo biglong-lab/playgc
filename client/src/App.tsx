@@ -303,6 +303,7 @@ function Router() {
         <Route path="/platform/usage">{() => <ProtectedAdminRoute><PlatformUsage /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/bulk-ops">{() => <ProtectedAdminRoute><PlatformBulkOps /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/insights">{() => <ProtectedAdminRoute><PlatformInsights /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/ai-center">{() => <ProtectedAdminRoute><PlatformAiCenter /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/security">{() => <ProtectedAdminRoute><PlatformSecurity /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/errors">{() => <ProtectedAdminRoute><PlatformErrorLogs /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/health">{() => <ProtectedAdminRoute><PlatformHealth /></ProtectedAdminRoute>}</Route>
