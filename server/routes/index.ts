@@ -40,6 +40,7 @@ import { registerAdminBattleSeasonRoutes } from "./admin-battle-seasons";
 import { registerBattleSeasonRoutes } from "./battle-seasons";
 import { registerBattleAchievementRoutes } from "./battle-achievements";
 import { registerPlatformRoutes } from "./platform";
+import { registerPlatformAiCenterRoutes } from "./platform-ai-center";
 import { registerPlatformTicketRoutes } from "./platform-tickets";
 import { registerRevenueRoutes } from "./revenue";
 import { registerFieldRoutes } from "./field";
