@@ -172,7 +172,11 @@ export default function PhotoCompareFlow({
           if (canRetry) {
             toast({
               title: `相似度 ${Math.round(result.similarity * 100)}%`,
-              description: result.feedback || "跟參考照不夠像，再試一次？",
+              description: pickVariant(
+                variantPool,
+                "fail",
+                result.feedback || "跟參考照不夠像，再試一次？",
+              ),
               variant: "destructive",
             });
             // 失敗後顯示參考照（若原本隱藏）
