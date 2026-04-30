@@ -103,6 +103,7 @@ export default function ConditionalVerifyPage({
   inventory = EMPTY_STRING_ARRAY as string[],
   score = 0,
   visitedLocations = EMPTY_STRING_ARRAY as string[],
+  variantPool,
 }: ConditionalVerifyPageProps) {
   const { toast } = useToast();
   const [conditionResults, setConditionResults] = useState<boolean[]>([]);
