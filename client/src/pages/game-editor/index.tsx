@@ -281,6 +281,7 @@ export default function GameEditor() {
       pageType,
       customName: null,
       config: getDefaultConfig(pageType),
+      variantPool: null,
       chapterId: null,
       createdAt: new Date(),
     };
