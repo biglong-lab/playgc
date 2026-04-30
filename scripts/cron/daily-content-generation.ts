@@ -461,6 +461,11 @@ export async function runDailyCron(): Promise<CronStats> {
     abExperimentsConcluded: 0,
     abExperimentsPending: 0,
     abExperimentsFailed: 0,
+    healthScore: 0,
+    healthLevel: "unknown",
+    healthZombies: 0,
+    healthOrphans: 0,
+    healthDeadEnds: 0,
     startedAt: new Date(),
     durationMs: 0,
   };
