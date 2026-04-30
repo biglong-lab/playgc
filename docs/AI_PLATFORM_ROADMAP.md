@@ -132,8 +132,8 @@ TOTAL_PROGRESS: 62/64
 
 # Phase 6：場域素材庫 🖼️
 
-- [ ] **P6-1** 建立 `shared/schema/field-exemplar.ts`
-- [ ] **P6-2** SQL: `CREATE TABLE field_exemplar_photos(...)`（本地 + 生產）
+- [x] **P6-1** 建立 `shared/schema/field-exemplar.ts`（含 4 個 index + ExemplarSource 型別）
+- [x] **P6-2** SQL: `CREATE TABLE field_exemplar_photos(...)` + 4 個 index（本地 ✅ + 生產 ✅）
 - [ ] **P6-3** 建立 `server/routes/admin/exemplar.ts`
 - [ ] **P6-4** 實作 `GET /api/admin/exemplar?fieldId=&pageId=` 列表
 - [ ] **P6-5** 實作 `POST /api/admin/exemplar`（手動上傳）
