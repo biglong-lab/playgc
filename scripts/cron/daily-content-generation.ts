@@ -516,6 +516,17 @@ export async function runDailyCron(): Promise<CronStats> {
     console.error("[cron] 任務 5 整體失敗:", err);
   }
 
+  try {
+    const t6 = await task6_analyzeContentHealth();
+    stats.healthScore = t6.score;
+    stats.healthLevel = t6.level;
+    stats.healthZombies = t6.zombies;
+    stats.healthOrphans = t6.orphans;
+    stats.healthDeadEnds = t6.deadEnds;
+  } catch (err) {
+    console.error("[cron] 任務 6 整體失敗:", err);
+  }
+
   stats.durationMs = Date.now() - stats.startedAt.getTime();
 
   console.log("=" .repeat(60));
