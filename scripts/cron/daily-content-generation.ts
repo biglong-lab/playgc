@@ -457,6 +457,15 @@ export async function runDailyCron(): Promise<CronStats> {
     console.error("[cron] 任務 4 整體失敗:", err);
   }
 
+  try {
+    const t5 = await task5_concludeAbExperiments();
+    stats.abExperimentsConcluded = t5.concluded;
+    stats.abExperimentsPending = t5.pending;
+    stats.abExperimentsFailed = t5.failed;
+  } catch (err) {
+    console.error("[cron] 任務 5 整體失敗:", err);
+  }
+
   stats.durationMs = Date.now() - stats.startedAt.getTime();
 
   console.log("=" .repeat(60));
