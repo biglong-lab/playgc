@@ -113,8 +113,8 @@ TOTAL_PROGRESS: 31/42
 - [x] **P14-4** 建立 `server/lib/ab-stats.ts`：calculateSignificance + twoProportionZTest + normalCdf（Abramowitz-Stegun 近似 < 7.5e-8）
 
 ## API
-- [ ] **P14-5** 建立 `server/routes/admin-ab-experiments.ts`：CRUD + getResults endpoint
-- [ ] **P14-6** 整合到 variant-picker：若變體屬於 active 實驗，依分組返回對應變體
+- [x] **P14-5** 建立 `server/routes/admin-ab-experiments.ts`：6 endpoint（GET 列表/單一/results、POST 建立、PATCH 更新含 status 流轉、DELETE 僅 draft）+ 場域隔離（super_admin 全看）+ audit log + 註冊到 routes/index.ts
+- [x] **P14-6** 整合到 variant-picker-server：在 bandit 之前先檢 `findActiveExperiment` → 命中則 `assignVariant` 確定性分組 → 返回對應 index（reason: "ab-experiment"）+ index 越界 fallback bandit 保留容錯
 
 ## UI
 - [ ] **P14-7** 建立 `client/src/pages/admin/AbExperiments.tsx`：實驗清單 + 結果儀表板
