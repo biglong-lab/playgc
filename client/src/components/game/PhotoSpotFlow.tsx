@@ -59,6 +59,7 @@ export default function PhotoSpotFlow({
   onComplete,
   sessionId,
   gameId,
+  variantPool,
 }: PhotoSpotFlowProps) {
   const { toast } = useToast();
   const camera = usePhotoCamera();
