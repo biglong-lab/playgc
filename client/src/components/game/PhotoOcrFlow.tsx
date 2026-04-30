@@ -61,6 +61,7 @@ export default function PhotoOcrFlow({
   onComplete,
   sessionId,
   gameId,
+  variantPool,
 }: PhotoOcrFlowProps) {
   const { toast } = useToast();
   const camera = usePhotoCamera();
