@@ -170,6 +170,39 @@ export function registerVariantPoolRoutes(app: Express) {
   );
 
   // ============================================================================
+  // 🆕 P11-9: GET /api/admin/games/:gameId/pages/:pageId/variant-scores
+  // 給 admin VariantPoolEditor 顯示每個變體的 like/dislike 數
+  // ============================================================================
+  app.get(
+    "/api/admin/games/:gameId/pages/:pageId/variant-scores",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        const { gameId, pageId } = req.params;
+        // 確認 page 屬於 game
+        const [page] = await db
+          .select({ id: pages.id })
+          .from(pages)
+          .where(and(eq(pages.id, pageId), eq(pages.gameId, gameId)))
+          .limit(1);
+        if (!page) {
+          return res.status(404).json({ error: "頁面不存在" });
+        }
+        const scoreMap = await getVariantScores(pageId);
+        const scores: Record<string, unknown> = {};
+        for (const [k, v] of Array.from(scoreMap.entries())) {
+          scores[k] = v;
+        }
+        res.json({ pageId, scores, count: scoreMap.size });
+      } catch (error) {
+        console.error("[variant-pool] GET scores 失敗:", error);
+        res.status(500).json({ error: "查詢分數失敗" });
+      }
+    },
+  );
+
+  // ============================================================================
   // PATCH /api/admin/games/:gameId/pages/:pageId/variants
   // admin 手動編輯變體池（增刪改）
   // ============================================================================
