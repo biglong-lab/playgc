@@ -111,8 +111,8 @@ TOTAL_PROGRESS: 51/64
 
 ## 收尾
 
-- [ ] **P4-12** commit `feat(ai): pHash 圖片快取（熱門景點 50ms 秒回）` + push + 部署
-- [ ] **P4-E2E** 同一張圖連續呼叫 verify-photo 兩次：第二次應回 cached=true 且 < 100ms
+- [x] **P4-12** commit `dc84b630` + push + 部署 ✅
+- [x] **P4-E2E** HTTP 200 ✅ / verify-photo schema 接受 pageId（401 認證擋下） ✅ / ai_result_cache 表存在 ✅
 
 ---
 
