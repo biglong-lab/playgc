@@ -718,6 +718,98 @@ export function registerPlatformRoutes(app: Express): void {
     }
   });
 
+  /**
+   * PATCH /api/platform/roles/:id
+   * 更新角色（platform 層，可編輯任何場域的角色）
+   * Body: { name?, description?, permissionIds?: string[] }
+   *
+   * permissionIds 傳入時：刪除原 rolePermissions → 全部重建
+   * 不傳則只更新 name/description
+   */
+  const platformRolePatchSchema = z.object({
+    name: z.string().min(1).max(100).optional(),
+    description: z.string().max(500).optional(),
+    permissionIds: z.array(z.string().uuid()).optional(),
+  });
+
+  app.patch("/api/platform/roles/:id", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = platformRolePatchSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤", errors: parsed.error.errors });
+      }
+
+      const existing = await db.query.roles.findFirst({
+        where: eq(roles.id, req.params.id),
+      });
+      if (!existing) return res.status(404).json({ message: "角色不存在" });
+
+      // 防護：super_admin systemRole 不可被改名/刪權限（避免鎖死自己）
+      if (existing.systemRole === "super_admin") {
+        return res.status(403).json({ message: "super_admin 系統角色不可修改" });
+      }
+
+      // 更新基本欄位
+      const updates: Record<string, unknown> = { updatedAt: new Date() };
+      if (parsed.data.name !== undefined) updates.name = parsed.data.name;
+      if (parsed.data.description !== undefined) updates.description = parsed.data.description;
+
+      const [updated] = await db
+        .update(roles)
+        .set(updates)
+        .where(eq(roles.id, req.params.id))
+        .returning();
+
+      // 更新權限
+      let oldPermissionCount = 0;
+      let newPermissionCount = 0;
+      if (parsed.data.permissionIds !== undefined) {
+        // 取舊 permissions（給 audit 用）
+        const oldPerms = await db.query.rolePermissions.findMany({
+          where: eq(rolePermissions.roleId, updated.id),
+        });
+        oldPermissionCount = oldPerms.length;
+
+        // 刪除舊全部 → 重建
+        await db.delete(rolePermissions).where(eq(rolePermissions.roleId, updated.id));
+        if (parsed.data.permissionIds.length > 0) {
+          await db.insert(rolePermissions).values(
+            parsed.data.permissionIds.map((permId) => ({
+              roleId: updated.id,
+              permissionId: permId,
+              allow: true,
+            })),
+          );
+          newPermissionCount = parsed.data.permissionIds.length;
+        }
+      }
+
+      // 🆕 audit log
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:role_update",
+        targetType: "role",
+        targetId: updated.id,
+        fieldId: updated.fieldId ?? undefined,
+        metadata: {
+          changes: parsed.data,
+          oldPermissionCount,
+          newPermissionCount,
+          targetRoleName: updated.name,
+          targetSystemRole: updated.systemRole,
+          actorRole: req.platform?.role,
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("[platform/roles] PATCH failed:", error);
+      res.status(500).json({ message: "更新角色失敗" });
+    }
+  });
+
   // ============================================================================
   // 🆕 P0-1（2026-04-30）— 平台稽核日誌
   //   重用既有 audit_logs 表，提供跨場域查詢介面
