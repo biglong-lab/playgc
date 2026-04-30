@@ -134,10 +134,10 @@ TOTAL_PROGRESS: 66/64
 
 - [x] **P6-1** 建立 `shared/schema/field-exemplar.ts`（含 4 個 index + ExemplarSource 型別）
 - [x] **P6-2** SQL: `CREATE TABLE field_exemplar_photos(...)` + 4 個 index（本地 ✅ + 生產 ✅）
-- [ ] **P6-3** 建立 `server/routes/admin/exemplar.ts`
-- [ ] **P6-4** 實作 `GET /api/admin/exemplar?fieldId=&pageId=` 列表
-- [ ] **P6-5** 實作 `POST /api/admin/exemplar`（手動上傳）
-- [ ] **P6-6** 實作 `PATCH /api/admin/exemplar/:id`（標記 is_curated）
+- [x] **P6-3** 建立 `server/routes/admin-exemplar.ts`（routes/index.ts 已註冊）
+- [x] **P6-4** 實作 `GET /api/admin/exemplar?fieldId=&gameId=&pageId=&isCurated=` 列表（含 is_curated/confidence 排序）
+- [x] **P6-5** 實作 `POST /api/admin/exemplar`（手動上傳，Zod 驗證）
+- [x] **P6-6** 實作 `PATCH /api/admin/exemplar/:id`（標記 is_curated/tags/description）+ `DELETE` 移除
 - [ ] **P6-7** 修改 cron 任務 3：自動策展（confidence > 0.85 自動加入）
 - [ ] **P6-8** 修改 `compare-photos` endpoint：除了 admin 設定參考圖，也比對素材庫範本
 - [ ] **P6-9** 建立 `client/src/pages/admin/ExemplarLibrary.tsx`
