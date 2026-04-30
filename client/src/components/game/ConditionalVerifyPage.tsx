@@ -248,9 +248,10 @@ export default function ConditionalVerifyPage({
 
   const handleSuccess = () => {
     setAllPassed(true);
+    // 🎨 P2: 從變體池抽成功訊息
     toast({
-      title: config.successMessage || "解鎖成功!",
-      description: config.onSuccess?.message || "你成功組合了正確的密碼",
+      title: pickVariant(variantPool, "success", config.successMessage || "解鎖成功!"),
+      description: pickVariant(variantPool, "hint", config.onSuccess?.message || "你成功組合了正確的密碼"),
     });
   };
 
