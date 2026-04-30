@@ -312,6 +312,93 @@ async function task4_adjustThresholds(): Promise<{
 }
 
 /**
+ * 任務 5：A/B 實驗自動結論（P14-9）
+ *
+ * 流程：
+ *   1. 找所有 status='running' 的實驗
+ *   2. 對每個跑 calculateSignificance
+ *   3. conclusion 為 a_wins / b_wins → status='completed' + 寫回 conclusion + endedAt
+ *   4. conclusion 為 no_difference → 仍寫回 conclusion，但保持 running（讓 admin 自行決定是否中止）
+ *   5. conclusion 為 insufficient_data → 不更新（資料還不夠）
+ */
+async function task5_concludeAbExperiments(): Promise<{
+  concluded: number;
+  pending: number;
+  failed: number;
+}> {
+  console.log("[cron] 任務 5：A/B 實驗自動結論");
+
+  const { abExperiments } = await import("@shared/schema");
+  const running = await db
+    .select({ id: abExperiments.id, name: abExperiments.name })
+    .from(abExperiments)
+    .where(eq(abExperiments.status, "running"));
+
+  let concluded = 0;
+  let pending = 0;
+  let failed = 0;
+
+  for (const exp of running) {
+    try {
+      const stats = await calculateSignificance(exp.id);
+
+      if (stats.conclusion === "insufficient_data") {
+        pending++;
+        continue;
+      }
+
+      const isWinner =
+        stats.conclusion === "a_wins" || stats.conclusion === "b_wins";
+
+      const setData: Record<string, unknown> = {
+        conclusion: stats.conclusion,
+        conclusionStats: {
+          pValue: stats.pValue,
+          zStatistic: stats.zStatistic,
+          effectSize: stats.effectSize,
+          totalAssignments: stats.totalAssignments,
+          groupA: stats.groupA,
+          groupB: stats.groupB,
+          conclusionReason: stats.conclusionReason,
+          calculatedAt: new Date().toISOString(),
+        },
+      };
+
+      // 有勝負 → 自動完成；no_difference → 保持 running 讓 admin 決定
+      if (isWinner) {
+        setData.status = "completed";
+        setData.endedAt = new Date();
+      }
+
+      await db
+        .update(abExperiments)
+        .set(setData)
+        .where(eq(abExperiments.id, exp.id));
+
+      if (isWinner) {
+        concluded++;
+        console.log(
+          `[cron] 🔬 ${exp.name}: ${stats.conclusion} (${stats.conclusionReason})`,
+        );
+      } else {
+        pending++;
+      }
+    } catch (err) {
+      failed++;
+      console.warn(
+        `[cron] 實驗 ${exp.id} 結論失敗:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+  }
+
+  console.log(
+    `[cron] ✅ A/B 結論完成：${concluded} 自動完成 / ${pending} 待續 / ${failed} 失敗`,
+  );
+  return { concluded, pending, failed };
+}
+
+/**
  * 主入口
  */
 export async function runDailyCron(): Promise<CronStats> {
