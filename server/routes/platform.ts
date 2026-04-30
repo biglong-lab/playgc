@@ -725,6 +725,276 @@ export function registerPlatformRoutes(app: Express): void {
   // ============================================================================
 
   // ============================================================================
+  // 🆕 數據資訊統計（2026-04-30）— 平台整體洞察
+  //   涵蓋：場域 KPI 排名 / 遊戲熱度 / 玩家活躍 / 元件使用
+  // ============================================================================
+
+  /**
+   * GET /api/platform/insights/overview
+   * 平台整體 KPI：總場域 / 總玩家 / 總遊戲 / 總場次 / 今日活躍 / 累計營收
+   */
+  app.get("/api/platform/insights/overview", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+      const past24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const past7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const result = await db.execute<{
+        total_fields: number;
+        total_users: number;
+        total_games: number;
+        total_sessions: number;
+        sessions_today: number;
+        sessions_24h: number;
+        sessions_7d: number;
+        sessions_30d: number;
+        completed_sessions: number;
+        total_revenue: number;
+      }>(sql`
+        SELECT
+          (SELECT COUNT(*)::int FROM fields) AS total_fields,
+          (SELECT COUNT(*)::int FROM users) AS total_users,
+          (SELECT COUNT(*)::int FROM games) AS total_games,
+          (SELECT COUNT(*)::int FROM game_sessions) AS total_sessions,
+          (SELECT COUNT(*)::int FROM game_sessions WHERE started_at >= ${todayStart.toISOString()}) AS sessions_today,
+          (SELECT COUNT(*)::int FROM game_sessions WHERE started_at >= ${past24h.toISOString()}) AS sessions_24h,
+          (SELECT COUNT(*)::int FROM game_sessions WHERE started_at >= ${past7d.toISOString()}) AS sessions_7d,
+          (SELECT COUNT(*)::int FROM game_sessions WHERE started_at >= ${past30d.toISOString()}) AS sessions_30d,
+          (SELECT COUNT(*)::int FROM game_sessions WHERE status = 'completed') AS completed_sessions,
+          (SELECT COALESCE(SUM(amount), 0)::int FROM platform_transactions WHERE status = 'paid') AS total_revenue
+      `);
+
+      const row = result.rows[0] ?? null;
+      if (!row) return res.json({});
+      const completionRate = row.total_sessions > 0
+        ? (row.completed_sessions / row.total_sessions) * 100
+        : 0;
+
+      res.json({
+        ...row,
+        completionRate: parseFloat(completionRate.toFixed(2)),
+      });
+    } catch (error) {
+      console.error("[platform/insights/overview] failed:", error);
+      res.status(500).json({ message: "取得平台總覽失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/insights/engagement
+   * DAU/WAU/MAU 估算（從 game_sessions 找 distinct users）
+   */
+  app.get("/api/platform/insights/engagement", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past1d = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const past7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      // 用 player_progress.userId（每個 session 可能多人）
+      const result = await db.execute<{
+        dau: number;
+        wau: number;
+        mau: number;
+      }>(sql`
+        SELECT
+          (SELECT COUNT(DISTINCT pp.user_id)::int
+            FROM player_progress pp
+            INNER JOIN game_sessions gs ON pp.session_id = gs.id
+            WHERE gs.started_at >= ${past1d.toISOString()} AND pp.user_id IS NOT NULL) AS dau,
+          (SELECT COUNT(DISTINCT pp.user_id)::int
+            FROM player_progress pp
+            INNER JOIN game_sessions gs ON pp.session_id = gs.id
+            WHERE gs.started_at >= ${past7d.toISOString()} AND pp.user_id IS NOT NULL) AS wau,
+          (SELECT COUNT(DISTINCT pp.user_id)::int
+            FROM player_progress pp
+            INNER JOIN game_sessions gs ON pp.session_id = gs.id
+            WHERE gs.started_at >= ${past30d.toISOString()} AND pp.user_id IS NOT NULL) AS mau
+      `);
+
+      const row = result.rows[0] ?? { dau: 0, wau: 0, mau: 0 };
+      const stickiness = row.mau > 0 ? (row.dau / row.mau) * 100 : 0;
+      res.json({
+        ...row,
+        stickiness: parseFloat(stickiness.toFixed(2)),
+      });
+    } catch (error) {
+      console.error("[platform/insights/engagement] failed:", error);
+      res.status(500).json({ message: "取得活躍度失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/insights/field-rankings
+   * 場域 KPI 排行（依玩家數 / 遊戲數 / 場次 / 收益）
+   * Query: ?metric=players|games|sessions|revenue (default: sessions)
+   */
+  app.get("/api/platform/insights/field-rankings", requirePlatformAdmin, async (req, res) => {
+    try {
+      const metric = typeof req.query.metric === "string" ? req.query.metric : "sessions";
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const rows = await db.execute<{
+        field_id: string;
+        field_name: string;
+        field_code: string;
+        total_games: number;
+        total_sessions: number;
+        active_users: number;
+        revenue: number;
+      }>(sql`
+        SELECT
+          f.id AS field_id,
+          f.name AS field_name,
+          f.code AS field_code,
+          (SELECT COUNT(*)::int FROM games g WHERE g.field_id = f.id) AS total_games,
+          (SELECT COUNT(*)::int FROM game_sessions gs
+            INNER JOIN games g ON gs.game_id = g.id
+            WHERE g.field_id = f.id AND gs.started_at >= ${past30d.toISOString()}
+          ) AS total_sessions,
+          (SELECT COUNT(DISTINCT pp.user_id)::int
+            FROM player_progress pp
+            INNER JOIN game_sessions gs ON pp.session_id = gs.id
+            INNER JOIN games g ON gs.game_id = g.id
+            WHERE g.field_id = f.id
+              AND gs.started_at >= ${past30d.toISOString()}
+              AND pp.user_id IS NOT NULL
+          ) AS active_users,
+          (SELECT COALESCE(SUM(amount), 0)::int
+            FROM platform_transactions
+            WHERE field_id = f.id AND status = 'paid'
+              AND created_at >= ${past30d.toISOString()}
+          ) AS revenue
+        FROM fields f
+        ORDER BY ${sql.raw(
+          metric === "players" ? "active_users" :
+          metric === "games" ? "total_games" :
+          metric === "revenue" ? "revenue" :
+          "total_sessions"
+        )} DESC
+        LIMIT 20
+      `);
+
+      res.json({ items: rows.rows, metric });
+    } catch (error) {
+      console.error("[platform/insights/field-rankings] failed:", error);
+      res.status(500).json({ message: "取得場域排行失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/insights/game-rankings
+   * 遊戲熱度排行 — Top 20（過去 30 天）
+   */
+  app.get("/api/platform/insights/game-rankings", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+      const rows = await db.execute<{
+        game_id: string;
+        game_title: string;
+        field_id: string | null;
+        field_code: string | null;
+        total_sessions: number;
+        completed_sessions: number;
+        unique_players: number;
+        avg_score: number;
+      }>(sql`
+        SELECT
+          g.id AS game_id,
+          g.title AS game_title,
+          g.field_id AS field_id,
+          f.code AS field_code,
+          COUNT(gs.id)::int AS total_sessions,
+          COUNT(*) FILTER (WHERE gs.status = 'completed')::int AS completed_sessions,
+          COUNT(DISTINCT pp.user_id)::int AS unique_players,
+          COALESCE(AVG(gs.score) FILTER (WHERE gs.status = 'completed'), 0)::int AS avg_score
+        FROM games g
+        LEFT JOIN game_sessions gs ON gs.game_id = g.id AND gs.started_at >= ${past30d.toISOString()}
+        LEFT JOIN player_progress pp ON pp.session_id = gs.id
+        LEFT JOIN fields f ON f.id = g.field_id
+        GROUP BY g.id, g.title, g.field_id, f.code
+        HAVING COUNT(gs.id) > 0
+        ORDER BY total_sessions DESC
+        LIMIT 20
+      `);
+
+      const enriched = rows.rows.map((r) => ({
+        ...r,
+        completionRate: r.total_sessions > 0
+          ? parseFloat(((r.completed_sessions / r.total_sessions) * 100).toFixed(1))
+          : 0,
+      }));
+
+      res.json({ items: enriched });
+    } catch (error) {
+      console.error("[platform/insights/game-rankings] failed:", error);
+      res.status(500).json({ message: "取得遊戲排行失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/insights/component-usage
+   * pageType 元件使用次數（從 pages + player_progress.currentPageId 推估）
+   */
+  app.get("/api/platform/insights/component-usage", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const rows = await db.execute<{
+        page_type: string;
+        usage_count: number;
+        unique_pages: number;
+      }>(sql`
+        SELECT
+          p.page_type AS page_type,
+          COUNT(DISTINCT pp.id)::int AS usage_count,
+          COUNT(DISTINCT p.id)::int AS unique_pages
+        FROM pages p
+        LEFT JOIN player_progress pp ON pp.current_page_id = p.id
+        LEFT JOIN game_sessions gs ON pp.session_id = gs.id
+        WHERE gs.started_at >= ${past30d.toISOString()}
+        GROUP BY p.page_type
+        ORDER BY usage_count DESC
+      `);
+
+      res.json({ items: rows.rows });
+    } catch (error) {
+      console.error("[platform/insights/component-usage] failed:", error);
+      res.status(500).json({ message: "取得元件使用統計失敗" });
+    }
+  });
+
+  /**
+   * GET /api/platform/insights/daily-trend
+   * 過去 30 天每日趨勢（場次數 / DAU）
+   */
+  app.get("/api/platform/insights/daily-trend", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const rows = await db.execute<{
+        day: string;
+        sessions: number;
+        dau: number;
+      }>(sql`
+        SELECT
+          DATE_TRUNC('day', gs.started_at)::date::text AS day,
+          COUNT(*)::int AS sessions,
+          COUNT(DISTINCT pp.user_id)::int AS dau
+        FROM game_sessions gs
+        LEFT JOIN player_progress pp ON pp.session_id = gs.id
+        WHERE gs.started_at >= ${past30d.toISOString()}
+        GROUP BY DATE_TRUNC('day', gs.started_at)
+        ORDER BY day
+      `);
+
+      res.json({ items: rows.rows });
+    } catch (error) {
+      console.error("[platform/insights/daily-trend] failed:", error);
+      res.status(500).json({ message: "取得趨勢失敗" });
+    }
+  });
+
+  // ============================================================================
   // 🆕 P1-1（2026-04-30）— 用量監控儀表板
   // ============================================================================
 

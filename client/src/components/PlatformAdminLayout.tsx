@@ -40,6 +40,7 @@ import {
   AlertTriangle,
   Activity,
   Layers,
+  TrendingUp,
 } from "lucide-react";
 
 interface PlatformMenuItem {
@@ -58,8 +59,9 @@ const PLATFORM_MENU_GROUPS: PlatformMenuGroup[] = [
     label: "平台總覽",
     items: [
       { label: "儀表板", path: "/platform", icon: LayoutDashboard },
+      // 🆕 數據洞察（2026-04-30）— 整合 KPI/排行/趨勢
+      { label: "數據洞察", path: "/platform/insights", icon: TrendingUp },
       { label: "跨場域數據", path: "/platform/analytics", icon: BarChart3 },
-      // 🆕 P1-1（2026-04-30）— 用量監控
       { label: "用量監控", path: "/platform/usage", icon: Activity },
     ],
   },
