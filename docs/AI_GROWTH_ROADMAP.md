@@ -154,7 +154,7 @@ TOTAL_PROGRESS: 45/50
 
 ## 資料 + 邏輯
 - [x] **P16-1** 建立 `shared/schema/markov-transitions.ts`：page_type_transitions 表 — 複合主鍵 (fieldId, fromType, toType) + successCount/totalCount/lastTrainedAt + 2 個 index（from query / trained 更新檢查）+ TransitionProbability 介面 + 匯出到 schema/index.ts；fieldId NULL 表示全平台統計
-- [ ] **P16-2** SQL CREATE TABLE — 本地 + 生產
+- [x] **P16-2** SQL CREATE TABLE — 本地 ✅ + 生產 ✅（複合主鍵 pk_transitions + FK→fields ON DELETE CASCADE + 2 個 index）；schema 修正 fieldId NOT NULL（PK 限制），全平台統計後續迭代再加
 - [ ] **P16-3** 建立 `server/lib/markov-trainer.ts`：trainTransitionMatrix() — 從 player_event_logs 提取統計
 - [ ] **P16-4** 建立 `server/lib/markov-sampler.ts`：sampleNextType(currentType) — 依機率抽下一個
 
