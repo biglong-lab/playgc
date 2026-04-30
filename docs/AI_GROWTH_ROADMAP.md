@@ -132,7 +132,7 @@ TOTAL_PROGRESS: 37/42
 
 ## 邏輯
 - [x] **P15-1** 建立 `server/lib/content-health.ts`：detectZombieVariants — 一次取 pool + 一次 selectDistinct feedback → Set 比對找出 pool 內存在但從沒 feedback 的變體；含 minDays 防剛生成誤判（預設 14 天）+ limit 上限 + ZombieVariant 介面（pageId/gameId/variantKey/index/text/daysOld）
-- [ ] **P15-2** content-health 加 detectOrphanTasks（沒玩家完成過）
+- [x] **P15-2** content-health 加 detectOrphanTasks — 取 createdAt ≤ now-minDays 的 pages，比對 page_complete 事件 distinct pageId Set；並查 page_enter 判斷 neverEntered 旗標（區分「沒人進入」vs「進去但沒完成」）；含 minDays 防剛上線誤判（預設 14 天）
 - [ ] **P15-3** content-health 加 detectDeadEndPages（玩家進去就退出，從 player_event_logs 算）
 - [ ] **P15-4** content-health 加 calculateHealthScore（綜合分數 0-100）
 
