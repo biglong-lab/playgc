@@ -192,10 +192,10 @@ TOTAL_PROGRESS: 106/120 (88%)
 
 # Phase 9：模組智慧副駕駛 🤖
 
-- [ ] **P9-1** 建立 `server/lib/admin-copilot.ts`：3 種 AI 助手函式
-- [ ] **P9-2** 實作 `suggestNextModule(currentPages)`：推薦下一個 page type
-- [ ] **P9-3** 實作 `diagnoseFlow(pages)`：流程診斷（找漏發道具、孤兒頁等）
-- [ ] **P9-4** 實作 `polishCopy(text, style)`：文案優化（DeepSeek）
+- [x] **P9-1** 建立 `server/lib/admin-copilot.ts`：3 種 AI 助手函式 + 型別
+- [x] **P9-2** 實作 `suggestNextModule(currentPages, apiKey)`：DeepSeek 推薦 3 個 page type + 過濾無效類型
+- [x] **P9-3** 實作 `diagnoseFlow(pages)`：純規則引擎（不耗 AI）— 5 種診斷（道具鏈/必填/節奏/結尾）
+- [x] **P9-4** 實作 `polishCopy(original, style)`：DeepSeek 7 種風格 × 3 個變體
 - [ ] **P9-5** 建立 `server/routes/admin/copilot.ts`
 - [ ] **P9-6** 加 `POST /api/admin/copilot/suggest-next`
 - [ ] **P9-7** 加 `POST /api/admin/copilot/diagnose`
