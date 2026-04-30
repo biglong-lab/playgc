@@ -15,6 +15,7 @@ import {
   aiUsageLogs,
   fieldUsageMeters,
   errorLogs,
+  platformIpWhitelist,
   insertPlatformPlanSchema,
   insertPlatformFeatureFlagSchema,
   insertFieldFeatureOverrideSchema,
@@ -825,6 +826,207 @@ export function registerPlatformRoutes(app: Express): void {
   //   重用既有 audit_logs 表，提供跨場域查詢介面
   //   action 前綴 platform: 為平台層操作（vs admin: 為場域層）
   // ============================================================================
+
+  // ============================================================================
+  // 🆕 IP 白名單管理（2026-04-30）
+  //   注意：只給 platform admin 用，不影響場域 admin / 玩家
+  //   驗證在 platformAuth.ts 中完成（若白名單啟用且 IP 不在內 → 拒絕）
+  // ============================================================================
+
+  app.get("/api/platform/ip-whitelist", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const items = await db.query.platformIpWhitelist.findMany({
+        orderBy: [desc(platformIpWhitelist.createdAt)],
+      });
+      res.json({ items, total: items.length });
+    } catch (error) {
+      console.error("[platform/ip-whitelist] failed:", error);
+      res.status(500).json({ message: "取得白名單失敗" });
+    }
+  });
+
+  const ipWhitelistSchema = z.object({
+    ipOrCidr: z.string()
+      .min(7)
+      .max(50)
+      .regex(
+        /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(\/\d{1,2})?$/,
+        "格式必須為 IPv4 或 CIDR（例：192.168.1.1 或 10.0.0.0/24）"
+      ),
+    label: z.string().max(100).optional(),
+    description: z.string().max(500).optional(),
+    enabled: z.boolean().optional().default(true),
+  });
+
+  app.post("/api/platform/ip-whitelist", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = ipWhitelistSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤", errors: parsed.error.errors });
+      }
+
+      const [created] = await db
+        .insert(platformIpWhitelist)
+        .values({
+          ...parsed.data,
+          createdByAdminId: req.platform?.adminAccountId ?? null,
+        })
+        .returning();
+
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:ip_whitelist_add",
+        targetType: "platform_ip_whitelist",
+        targetId: created.id,
+        metadata: { ipOrCidr: created.ipOrCidr, label: created.label },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.status(201).json(created);
+    } catch (error) {
+      console.error("[platform/ip-whitelist] POST failed:", error);
+      res.status(500).json({ message: "新增白名單失敗" });
+    }
+  });
+
+  app.patch("/api/platform/ip-whitelist/:id", requirePlatformAdmin, async (req, res) => {
+    try {
+      const parsed = ipWhitelistSchema.partial().safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "資料格式錯誤", errors: parsed.error.errors });
+      }
+
+      const [updated] = await db
+        .update(platformIpWhitelist)
+        .set({ ...parsed.data, updatedAt: new Date() })
+        .where(eq(platformIpWhitelist.id, req.params.id))
+        .returning();
+
+      if (!updated) return res.status(404).json({ message: "白名單項目不存在" });
+
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:ip_whitelist_update",
+        targetType: "platform_ip_whitelist",
+        targetId: updated.id,
+        metadata: { changes: parsed.data },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.json(updated);
+    } catch (error) {
+      console.error("[platform/ip-whitelist] PATCH failed:", error);
+      res.status(500).json({ message: "更新白名單失敗" });
+    }
+  });
+
+  app.delete("/api/platform/ip-whitelist/:id", requirePlatformAdmin, async (req, res) => {
+    try {
+      const existing = await db.query.platformIpWhitelist.findFirst({
+        where: eq(platformIpWhitelist.id, req.params.id),
+      });
+      if (!existing) return res.status(404).json({ message: "白名單項目不存在" });
+
+      await db.delete(platformIpWhitelist).where(eq(platformIpWhitelist.id, req.params.id));
+
+      await logAuditAction({
+        actorAdminId: req.platform?.adminAccountId ?? undefined,
+        action: "platform:ip_whitelist_delete",
+        targetType: "platform_ip_whitelist",
+        targetId: existing.id,
+        metadata: { ipOrCidr: existing.ipOrCidr, label: existing.label },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error("[platform/ip-whitelist] DELETE failed:", error);
+      res.status(500).json({ message: "刪除白名單失敗" });
+    }
+  });
+
+  // ============================================================================
+  // 🆕 API 金鑰管理（2026-04-30）— 跨場域聚合 AI key 狀態
+  // ============================================================================
+
+  /**
+   * GET /api/platform/api-keys
+   * 列出所有場域的 AI API key 設定狀態（不回傳 key 內容！只回傳 mask 與用量）
+   */
+  app.get("/api/platform/api-keys", requirePlatformAdmin, async (_req, res) => {
+    try {
+      const past30d = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const allFields = await db.query.fields.findMany({
+        columns: { id: true, name: true, code: true, settings: true },
+      });
+
+      // 一次抓 30 天內各場域 AI 用量（join ai_usage_logs）
+      const usageRows = await db.execute<{
+        field_id: string;
+        provider: string;
+        usage_30d: number;
+        success_rate: number;
+        last_used: string | null;
+      }>(sql`
+        SELECT
+          field_id,
+          provider,
+          COUNT(*)::int AS usage_30d,
+          (COUNT(*) FILTER (WHERE success = true)::float / NULLIF(COUNT(*), 0)) AS success_rate,
+          MAX(created_at)::text AS last_used
+        FROM ai_usage_logs
+        WHERE created_at >= ${past30d.toISOString()}
+          AND field_id IS NOT NULL
+        GROUP BY field_id, provider
+      `);
+
+      // 用 Map 聚合：fieldId → { provider → stats }
+      const usageMap = new Map<string, Map<string, typeof usageRows.rows[number]>>();
+      for (const r of usageRows.rows) {
+        if (!usageMap.has(r.field_id)) usageMap.set(r.field_id, new Map());
+        usageMap.get(r.field_id)!.set(r.provider, r);
+      }
+
+      const items = allFields.map((f) => {
+        const settings = (f.settings as Record<string, unknown>) ?? {};
+        const geminiKey = settings.geminiApiKey as string | undefined;
+        const hasGeminiKey = !!geminiKey && geminiKey.length > 0;
+        // mask: 顯示前 4 + 後 4，中間 ****
+        const maskedKey = hasGeminiKey && geminiKey.length > 12
+          ? `${geminiKey.slice(0, 4)}****${geminiKey.slice(-4)}`
+          : (hasGeminiKey ? "****" : null);
+
+        const fieldUsage = usageMap.get(f.id);
+        const providers = fieldUsage
+          ? Array.from(fieldUsage.entries()).map(([provider, u]) => ({
+              provider,
+              usage30d: u.usage_30d,
+              successRate: u.success_rate,
+              lastUsed: u.last_used,
+            }))
+          : [];
+
+        return {
+          fieldId: f.id,
+          fieldName: f.name,
+          fieldCode: f.code,
+          gemini: {
+            configured: hasGeminiKey,
+            maskedKey,
+          },
+          providers,
+        };
+      });
+
+      res.json({ items, total: items.length });
+    } catch (error) {
+      console.error("[platform/api-keys] failed:", error);
+      res.status(500).json({ message: "取得 API 金鑰狀態失敗" });
+    }
+  });
 
   // ============================================================================
   // 🆕 錯誤記錄管理（2026-04-30）

@@ -112,6 +112,8 @@ const PlatformInsights = lazy(() => import("@/pages/platform/PlatformInsights"))
 const PlatformSecurity = lazy(() => import("@/pages/platform/PlatformSecurity"));
 const PlatformErrorLogs = lazy(() => import("@/pages/platform/PlatformErrorLogs"));
 const PlatformHealth = lazy(() => import("@/pages/platform/PlatformHealth"));
+const PlatformIpWhitelist = lazy(() => import("@/pages/platform/PlatformIpWhitelist"));
+const PlatformApiKeys = lazy(() => import("@/pages/platform/PlatformApiKeys"));
 
 // 📝 公開申請頁（Phase 8）
 const Apply = lazy(() => import("@/pages/Apply"));
@@ -297,6 +299,8 @@ function Router() {
         <Route path="/platform/security">{() => <ProtectedAdminRoute><PlatformSecurity /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/errors">{() => <ProtectedAdminRoute><PlatformErrorLogs /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/health">{() => <ProtectedAdminRoute><PlatformHealth /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/ip-whitelist">{() => <ProtectedAdminRoute><PlatformIpWhitelist /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/api-keys">{() => <ProtectedAdminRoute><PlatformApiKeys /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/settings">{() => <ProtectedAdminRoute><PlatformSettingsPage /></ProtectedAdminRoute>}</Route>
 
         {/* 📝 公開場域申請（Phase 8）*/}
