@@ -372,27 +372,45 @@ export default function VariantPoolEditor({
             </TabsList>
             {(Object.keys(CATEGORY_LABELS) as VariantPoolKey[]).map((k) => (
               <TabsContent key={k} value={k} className="space-y-2 mt-3">
-                {(editPool[k] ?? []).map((msg, idx) => (
-                  <div key={idx} className="flex gap-2 items-start">
-                    <Textarea
-                      value={msg}
-                      onChange={(e) => updateMessage(k, idx, e.target.value)}
-                      rows={1}
-                      className="flex-1 min-h-[40px]"
-                      placeholder="輸入訊息變體..."
-                      data-testid={`textarea-msg-${k}-${idx}`}
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => deleteMessage(k, idx)}
-                      data-testid={`button-delete-${k}-${idx}`}
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
+                {(editPool[k] ?? []).map((msg, idx) => {
+                  // 🆕 P11-9: 取此變體的反饋分數
+                  const sc = getScore(k, idx);
+                  return (
+                    <div key={idx} className="space-y-1">
+                      <div className="flex gap-2 items-start">
+                        <Textarea
+                          value={msg}
+                          onChange={(e) => updateMessage(k, idx, e.target.value)}
+                          rows={1}
+                          className={`flex-1 min-h-[40px] ${sc?.hidden ? "opacity-50 line-through" : ""}`}
+                          placeholder="輸入訊息變體..."
+                          data-testid={`textarea-msg-${k}-${idx}`}
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => deleteMessage(k, idx)}
+                          data-testid={`button-delete-${k}-${idx}`}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                      {/* 🆕 P11-9: 反饋統計 badge（玩家有反饋才顯示） */}
+                      {sc && sc.totalFeedback > 0 && (
+                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground pl-1">
+                          <span>👍 {sc.likeCount}</span>
+                          <span>👎 {sc.dislikeCount}</span>
+                          {sc.skipCount > 0 && <span>⏭ {sc.skipCount}</span>}
+                          <span className="ml-auto">分數 {(sc.score * 100).toFixed(0)}</span>
+                          {sc.hidden && (
+                            <span className="text-destructive font-medium">⚠️ 自動隱藏</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
                 <Button
                   type="button"
                   size="sm"
