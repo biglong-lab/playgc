@@ -189,13 +189,19 @@ export default function MapView() {
 
     // 🔧 修地圖渲染問題：mount 時 main flex layout 還沒算完，map size = 0
     //   多次 invalidateSize 確保 tiles 重新計算大小並載入
-    const sizeChecks = [50, 200, 500, 1000].map((delay) =>
+    const sizeChecks = [50, 200, 500, 1000, 2000].map((delay) =>
       setTimeout(() => {
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
         }
       }, delay),
     );
+
+    // ResizeObserver 監聽地圖容器尺寸變化（最可靠，不依賴 setTimeout 猜時機）
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    });
+    if (mapRef.current) resizeObserver.observe(mapRef.current);
 
     // 視窗 resize 也重算
     const onResize = () => {
@@ -205,6 +211,7 @@ export default function MapView() {
 
     return () => {
       sizeChecks.forEach(clearTimeout);
+      resizeObserver.disconnect();
       window.removeEventListener("resize", onResize);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
