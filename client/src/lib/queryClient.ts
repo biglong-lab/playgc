@@ -36,7 +36,8 @@ const WRITE_ENDPOINT_PREFIXES = [
   "/api/leaderboard",      // 排行榜寫入
   "/api/rewards",          // 獎勵發放
   "/api/redeem-codes",     // 兌換碼使用 / 消耗
-  "/api/player-feedback",  // P11 玩家反饋（事件 / 變體投票）
+  "/api/player/feedback",  // P11 玩家反饋（變體投票）— 實際路徑用斜線
+  "/api/player/event",     // P11 事件日誌 — 實際路徑用斜線
   "/api/matches",          // 對戰場次寫入
 ];
 
