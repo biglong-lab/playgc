@@ -1,0 +1,163 @@
+# 🎮 場域 Admin 後台 API endpoints
+#
+# 格式：METHOD /path expected_status auth_required
+# auth_required: yes = 需 admin token, no = 公開
+#
+# 未認證時所有 admin endpoint 應回 401（除非標 no）
+# 採頁面導向：每頁 1-3 個關鍵 endpoint
+#
+# Source: server/routes/admin-*.ts
+
+# ─── 公開 endpoint（無 auth）──────────────────────────────────
+GET /api/fields/public 200 no
+GET /api/fields/JIACHUN/theme 200 no
+
+# ─── dashboard / settings ───────────────────────────────────────
+GET /api/admin/settings 401 yes
+PATCH /api/admin/settings 401 yes
+GET /api/admin/stats/overview 401 yes
+GET /api/admin/tickets/summary 401 yes
+
+# ─── games CRUD ─────────────────────────────────────────────────
+GET /api/admin/games 401 yes
+GET /api/admin/games/test-id 401 yes
+POST /api/admin/games 401 yes
+PATCH /api/admin/games/test-id 401 yes
+DELETE /api/admin/games/test-id 401 yes
+POST /api/admin/games/test-id/publish 401 yes
+POST /api/admin/games/test-id/cover 401 yes
+POST /api/admin/games/test-id/cover-upload-url 401 yes
+GET /api/admin/games/test-id/qrcode 401 yes
+POST /api/admin/games/test-id/qrcode 401 yes
+POST /api/admin/games/test-id/grant-access 401 yes
+
+# ─── pages / chapters / items / achievements / events / routes ─
+GET /api/admin/games/test-id/pages 401 yes
+POST /api/admin/games/test-id/pages 401 yes
+PATCH /api/admin/pages/test-id 401 yes
+DELETE /api/admin/pages/test-id 401 yes
+PATCH /api/admin/pages/test-id/chapter 401 yes
+
+GET /api/admin/games/test-id/chapters 401 yes
+PATCH /api/admin/chapters/test-id 401 yes
+DELETE /api/admin/chapters/test-id 401 yes
+POST /api/admin/chapters/reorder 401 yes
+POST /api/admin/chapters/test-id/save-as-template 401 yes
+
+GET /api/admin/games/test-id/items 401 yes
+POST /api/admin/games/test-id/items 401 yes
+PATCH /api/admin/items/test-id 401 yes
+DELETE /api/admin/items/test-id 401 yes
+
+GET /api/admin/games/test-id/achievements 401 yes
+POST /api/admin/games/test-id/achievements 401 yes
+PATCH /api/admin/achievements/test-id 401 yes
+DELETE /api/admin/achievements/test-id 401 yes
+
+GET /api/admin/games/test-id/events 401 yes
+POST /api/admin/games/test-id/events 401 yes
+PATCH /api/admin/events/test-id 401 yes
+DELETE /api/admin/events/test-id 401 yes
+
+GET /api/admin/games/test-id/routes 401 yes
+
+# ─── variant pool / exemplar ────────────────────────────────────
+GET /api/admin/games/test-id/pages/test-page/variants 401 yes
+POST /api/admin/games/test-id/pages/test-page/generate-variants 401 yes
+GET /api/admin/games/test-id/pages/test-page/variant-scores 401 yes
+GET /api/admin/exemplar 401 yes
+
+# ─── modules / templates / generator ───────────────────────────
+GET /api/admin/modules 401 yes
+GET /api/admin/modules/test-id 401 yes
+POST /api/admin/modules/test-id/create-game 401 yes
+GET /api/admin/fields/test-id/chapter-templates 401 yes
+PATCH /api/admin/chapter-templates/test-id 401 yes
+POST /api/admin/chapter-templates/test-id/import 401 yes
+POST /api/admin/games/generate-from-script 401 yes
+POST /api/admin/games/test-id/apply-generated 401 yes
+
+# ─── copilot ────────────────────────────────────────────────────
+GET /api/admin/copilot/copy-styles 401 yes
+POST /api/admin/copilot/diagnose 401 yes
+POST /api/admin/copilot/suggest-next 401 yes
+POST /api/admin/copilot/polish-copy 401 yes
+
+# ─── sessions / live ────────────────────────────────────────────
+GET /api/admin/sessions 401 yes
+POST /api/admin/sessions/cleanup 401 yes
+
+# ─── battle ─────────────────────────────────────────────────────
+GET /api/admin/battle/stats 401 yes
+GET /api/admin/battle/recent-results 401 yes
+GET /api/admin/battle/tier-distribution 401 yes
+GET /api/admin/battle/rankings 401 yes
+PATCH /api/admin/battle/rankings/test-id 401 yes
+GET /api/admin/battle/seasons 401 yes
+POST /api/admin/battle/seasons 401 yes
+GET /api/admin/battle/seasons/test-id/rankings 401 yes
+POST /api/admin/battle/seasons/test-id/end 401 yes
+
+# ─── fields / roles / accounts / audit ──────────────────────────
+GET /api/admin/fields 401 yes
+POST /api/admin/fields 401 yes
+PATCH /api/admin/fields/test-id 401 yes
+GET /api/admin/fields/test-id/settings 401 yes
+PATCH /api/admin/fields/test-id/settings 401 yes
+POST /api/admin/fields/test-id/seed-default-roles 401 yes
+
+GET /api/admin/roles 401 yes
+POST /api/admin/roles 401 yes
+PATCH /api/admin/roles/test-id 401 yes
+DELETE /api/admin/roles/test-id 401 yes
+GET /api/admin/permissions 401 yes
+
+GET /api/admin/accounts 401 yes
+POST /api/admin/accounts 401 yes
+PATCH /api/admin/accounts/test-id 401 yes
+POST /api/admin/accounts/test-id/approve 401 yes
+POST /api/admin/accounts/test-id/reset-password 401 yes
+
+GET /api/admin/audit-logs 401 yes
+GET /api/admin/users 401 yes
+
+# ─── rules / coupons / redeem-codes / purchases ────────────────
+GET /api/admin/rules 401 yes
+POST /api/admin/rules 401 yes
+PATCH /api/admin/rules/test-id 401 yes
+DELETE /api/admin/rules/test-id 401 yes
+GET /api/admin/rules/test-id/stats 401 yes
+
+GET /api/admin/coupon-templates 401 yes
+POST /api/admin/coupon-templates 401 yes
+PATCH /api/admin/coupon-templates/test-id 401 yes
+
+GET /api/admin/games/test-id/redeem-codes 401 yes
+POST /api/admin/games/test-id/redeem-codes/batch 401 yes
+GET /api/admin/redeem-codes/test-id/uses 401 yes
+DELETE /api/admin/redeem-codes/test-id 401 yes
+
+GET /api/admin/games/test-id/purchases 401 yes
+PATCH /api/admin/purchases/test-id 401 yes
+
+# ─── rewards / engagement / ab-experiments ──────────────────────
+GET /api/admin/rewards/analytics 401 yes
+POST /api/admin/rewards/manual 401 yes
+
+GET /api/admin/engagement/settings/test-fid 401 yes
+POST /api/admin/engagement/run-achievements 401 yes
+GET /api/admin/engagement/super-leaders/test-fid 401 yes
+GET /api/admin/engagement/welcome-squads/test-fid 401 yes
+GET /api/admin/engagement/channels 401 yes
+POST /api/admin/engagement/channels 401 yes
+
+GET /api/admin/ab-experiments 401 yes
+POST /api/admin/ab-experiments 401 yes
+GET /api/admin/ab-experiments/test-id 401 yes
+PATCH /api/admin/ab-experiments/test-id 401 yes
+DELETE /api/admin/ab-experiments/test-id 401 yes
+GET /api/admin/ab-experiments/test-id/results 401 yes
+
+# ─── walkie ─────────────────────────────────────────────────────
+GET /api/admin/walkie/broadcast-tokens 401 yes
+GET /api/admin/walkie/live-stats 401 yes
