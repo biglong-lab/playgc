@@ -728,6 +728,52 @@ export interface LockConfig {
 }
 
 /**
+ * 🆕 Phase 4 — TerritoryCapture（地盤戰）配置
+ *
+ * 玩法（依 docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.8）：
+ *   - 場域內多個 GPS 任務點，多隊同時爭奪
+ *   - 玩家到任務點 → 佔領該點（標自己隊伍顏色）
+ *   - 對手到已佔領的點 → 奪回（cooldown 防快速搶）
+ *   - 時限到 → 佔領最多點的隊伍獲勝
+ *
+ * MVP 設計（簡化版）：
+ *   - 純 client-side WebSocket 廣播（不打 DB）
+ *   - 整個 game session 多 team 共享（broadcast 範圍 = session 不是 team）
+ *   - 倒數純 client-side（不要 server 權威時間）
+ *   - 至少 2 隊才能玩
+ */
+export interface TerritoryPoint {
+  /** 點唯一 ID（admin 設定） */
+  id: string;
+  /** 顯示名稱 */
+  title: string;
+  /** 緯度 */
+  lat: number;
+  /** 經度 */
+  lng: number;
+  /** 觸發半徑（公尺，預設 30） */
+  radius?: number;
+}
+
+export interface TerritoryCaptureConfig {
+  title?: string;
+  instruction?: string;
+  /** 任務點清單（建議至少 3 個） */
+  points: TerritoryPoint[];
+  /** 時限秒數（0 或 undefined = 不限時） */
+  timeLimitSec?: number;
+  /** 佔領一點得分（預設 5） */
+  capturePoints?: number;
+  /** 奪回一點得分（預設 10） */
+  recapturePoints?: number;
+  /** 冷卻秒數（預設 30，避免兩隊快速來回搶） */
+  cooldownSec?: number;
+  successMessage?: string;
+  nextPageId?: string;
+  rewardPoints?: number;
+}
+
+/**
  * 🆕 Phase 3.3 — RelayMission（接力任務）配置
  *
  * 玩法（依 docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.7）：
@@ -886,6 +932,7 @@ export type PageConfig =
   | LockConfig
   | LockCoopConfig
   | RelayMissionConfig
+  | TerritoryCaptureConfig
   | VoteConfig
   | MotionChallengeConfig
   | FlowRouterConfig;

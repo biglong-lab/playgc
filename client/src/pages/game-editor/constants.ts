@@ -46,6 +46,8 @@ export const PAGE_TYPES = [
   { value: "lock_coop", label: "協作解鎖 👥", icon: Lock, color: "bg-amber-600/30 text-amber-300" },
   // Phase 3.3（2026-05-02）— 接力任務（一人完成解鎖下一人）
   { value: "relay_mission", label: "接力任務 👥", icon: ArrowRight, color: "bg-purple-600/30 text-purple-300" },
+  // Phase 4（2026-05-02）— 地盤戰（多隊爭奪 GPS 點）
+  { value: "territory_capture", label: "地盤戰 👥", icon: MapPin, color: "bg-rose-600/30 text-rose-300" },
 ] as const;
 
 export const PAGE_TEMPLATES = [
