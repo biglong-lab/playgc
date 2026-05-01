@@ -54,7 +54,7 @@ TOTAL_PROGRESS: 10/18
 
 # Phase 4：上下頁邏輯 ⏭
 
-- [ ] **P4-1** GamePreview 維護 `currentPageIndex` state，PreviewNavBar 按鈕直接 setIndex（不檢查 condition）
+- [x] **P4-1** 驗證確認：GamePreview 已在 P3-1+P3-2 階段實作完成 — useState(0) + onComplete `Math.min(prev+1, totalPages-1)` 只 clamp 邊界 + NavBar onJump 直接 setCurrentIndex；3 處無 resolveFlowRouter / condition / completedPageIds 檢查；自由翻頁完成 ✅
 - [ ] **P4-2** 鍵盤快捷：← 上一頁 / → 下一頁 / Esc 退出（預覽限定）
 
 ---
