@@ -441,6 +441,24 @@ export default function GameEditor() {
             >
               <span className="text-base">✨</span> AI 產生器
             </Button>
+            {/* 🤖 P6-4: AI 實測標記（不阻擋發布只提醒）*/}
+            <Button
+              variant={game?.lastLiveTestedAt ? "secondary" : "outline"}
+              onClick={() => markTestedMutation.mutate()}
+              disabled={isNew || markTestedMutation.isPending}
+              className="gap-2"
+              data-testid="button-mark-tested"
+              title={
+                game?.lastLiveTestedAt
+                  ? `最近實測：${new Date(game.lastLiveTestedAt).toLocaleString("zh-TW")}`
+                  : "尚未實機測試 AI 元件 — 發布前建議先走一輪 docs/AI_LIVE_TEST_CHECKLIST.md"
+              }
+            >
+              <CheckCircle2
+                className={`w-4 h-4 ${game?.lastLiveTestedAt ? "text-emerald-600 dark:text-emerald-400" : ""}`}
+              />
+              {game?.lastLiveTestedAt ? "已實測" : "標記已實測"}
+            </Button>
             <Button onClick={handlePublish} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-publish">
               <Upload className="w-4 h-4" /> 發布
             </Button>
