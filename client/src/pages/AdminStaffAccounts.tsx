@@ -131,7 +131,10 @@ export default function AdminStaffAccounts() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.username.trim()) {
+    // 🔧 username 只在「新建帳號」時必填；
+    // 編輯時 username 不會被後端更新（後端只接收 displayName/email/roleId/status），
+    // 且 Firebase SSO 帳號本來就允許 username 為空（schema: "Optional for legacy password auth"）
+    if (!editingAccount && !formData.username.trim()) {
       toast({ title: "請填寫帳號", variant: "destructive" });
       return;
     }
