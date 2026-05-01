@@ -1,5 +1,6 @@
 // Gemini AI 服務封裝 — 照片驗證 + 文字語意評分
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { DEFAULT_GEMINI_MODEL } from "@shared/schema";
 
 /**
  * 安全 JSON 解析（容錯：去 markdown code block、抓 first balanced object）
