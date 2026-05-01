@@ -159,11 +159,32 @@ export default function MapView() {
     const defaultCenter: [number, number] = [24.4399, 118.3471];
     const map = L.map(mapRef.current, { zoomControl: false }).setView(defaultCenter, 15);
     L.control.zoom({ position: "bottomright" }).addTo(map);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: "abcd",
-      maxZoom: 20,
-    }).addTo(map);
+    // 🔧 用 Carto fastly CDN（比 basemaps.cartocdn.com 穩，部分網路會擋後者）
+    //   參考：https://carto.com/help/building-maps/basemap-list/
+    const tileLayer = L.tileLayer(
+      "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
+      {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: "abcd",
+        maxZoom: 20,
+        // 載入失敗 fallback：用 OSM 標準 tile（亮色但至少有圖）
+        errorTileUrl: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGNgAAIAAAUAAarVyFEAAAAASUVORK5CYII=",
+      },
+    );
+    tileLayer.addTo(map);
+
+    // 偵測 tile 載入失敗 → fallback 到 OSM
+    let osmFallbackTriggered = false;
+    tileLayer.on("tileerror", () => {
+      if (osmFallbackTriggered) return;
+      osmFallbackTriggered = true;
+      console.warn("[map] Carto tile 載入失敗，fallback 到 OpenStreetMap");
+      tileLayer.remove();
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }).addTo(map);
+    });
     mapInstanceRef.current = map;
 
     // 🔧 修地圖渲染問題：mount 時 main flex layout 還沒算完，map size = 0
