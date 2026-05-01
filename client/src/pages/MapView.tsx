@@ -214,7 +214,9 @@ export default function MapView() {
     //   多次 invalidateSize 確保 tiles 重新計算大小並載入
     const sizeChecks = [50, 200, 500, 1000, 2000].map((delay) =>
       setTimeout(() => {
-        if (mapInstanceRef.current) {
+        if (mapInstanceRef.current && mapRef.current) {
+          const rect = mapRef.current.getBoundingClientRect();
+          console.log(`[map] @${delay}ms 容器尺寸: ${Math.round(rect.width)}×${Math.round(rect.height)}`);
           mapInstanceRef.current.invalidateSize();
         }
       }, delay),
