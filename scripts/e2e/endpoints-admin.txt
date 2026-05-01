@@ -138,7 +138,7 @@ GET /api/admin/redeem-codes/test-id/uses 401 yes
 DELETE /api/admin/redeem-codes/test-id 401 yes
 
 GET /api/admin/games/test-id/purchases 401 yes
-PATCH /api/admin/purchases/test-id 401 yes
+DELETE /api/admin/purchases/test-id 401 yes
 
 # ─── rewards / engagement / ab-experiments ──────────────────────
 GET /api/admin/rewards/analytics 401 yes
