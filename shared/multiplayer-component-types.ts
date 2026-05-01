@@ -161,13 +161,22 @@ export function getRequiredPlayerMode(pageType: string): PlayerMode | null {
 /**
  * 驗證 pageType 是否允許在指定 playerMode 的遊戲中使用
  *
+ * 不對稱約束規則（v1.2 修訂）：
+ *   - solo 元件：兩種模式都允許（多人遊戲穿插個人挑戰是正常做法，業界皆如此）
+ *   - multi 元件：只允許 multi 模式（必須多人才有意義）
+ *   - shared 元件：兩種模式都允許
+ *
+ * 修訂背景（2026-05-01）：盤點線上 28 個 team 遊戲時發現全部都是「solo 元件 +
+ * 隊伍基礎建設（Walkie/WebSocket/TeamLobby）」的混合模式，原本的對稱約束
+ * 會擋下所有現有 team 遊戲，故改為不對稱約束。
+ *
  * @param pageType 元件類型（如 "lock"、"photo_team"）
  * @param gamePlayerMode 遊戲的 playerMode（"solo" / "multi"）
  * @returns true = 允許，false = 違反約束
  *
  * @example
  *   isComponentAllowedForPlayerMode("lock", "solo")        // true（個人元件用在個人遊戲）
- *   isComponentAllowedForPlayerMode("lock", "multi")       // false（個人元件不能用在多人遊戲）
+ *   isComponentAllowedForPlayerMode("lock", "multi")       // true（個人元件可用在多人遊戲，v1.2 修訂）
  *   isComponentAllowedForPlayerMode("photo_team", "multi") // true
  *   isComponentAllowedForPlayerMode("photo_team", "solo")  // false（多人元件不能用在個人遊戲）
  *   isComponentAllowedForPlayerMode("text_card", "solo")   // true（通用元件兩種都行）
@@ -180,10 +189,10 @@ export function isComponentAllowedForPlayerMode(
   // 通用元件：兩種模式都允許
   if (isSharedComponent(pageType)) return true;
 
-  // 個人專用元件：只允許 solo
-  if (isSoloOnlyComponent(pageType)) return gamePlayerMode === "solo";
+  // 個人專用元件：兩種模式都允許（v1.2 修訂：不對稱約束）
+  if (isSoloOnlyComponent(pageType)) return true;
 
-  // 多人專用元件：只允許 multi
+  // 多人專用元件：只允許 multi（嚴格）
   if (isMultiOnlyComponent(pageType)) return gamePlayerMode === "multi";
 
   // 未知 pageType：保守允許（避免擋住未來新增的元件，
@@ -216,19 +225,23 @@ export function isComponentAllowedForGameMode(
 /**
  * 取得指定 playerMode 可用的所有 pageType（給 admin UI 過濾用）
  *
+ * v1.2 不對稱約束：
+ *   - solo 模式：shared + solo
+ *   - multi 模式：shared + solo + multi（個人元件也允許）
+ *
  * @example
  *   getAllowedComponentsForPlayerMode("solo")
- *   // → ['text_card', 'dialogue', 'video', 'flow_router', 'button', 'vote', ...]
+ *   // → 4 + 18 = 22 個（shared + solo）
  *
  *   getAllowedComponentsForPlayerMode("multi")
- *   // → ['text_card', 'dialogue', 'video', 'flow_router', 'photo_team', 'vote_team', ...]
+ *   // → 4 + 18 + 8 = 30 個（shared + solo + multi）
  */
 export function getAllowedComponentsForPlayerMode(
   playerMode: PlayerMode,
 ): readonly string[] {
   return playerMode === "solo"
     ? [...SHARED_COMPONENTS, ...SOLO_ONLY_COMPONENTS]
-    : [...SHARED_COMPONENTS, ...MULTI_ONLY_COMPONENTS];
+    : [...SHARED_COMPONENTS, ...SOLO_ONLY_COMPONENTS, ...MULTI_ONLY_COMPONENTS];
 }
 
 /**

@@ -14,6 +14,10 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { ensureUniqueSlug, normalizeSlugInput } from "../lib/slug";
+import {
+  isComponentAllowedForGameMode,
+  getComponentCategory,
+} from "@shared/multiplayer-component-types";
 
 // 🔒 Helper：檢查 item 屬於 admin 的場域（super_admin / platform_admin 跳過）
 // 回傳 null 表示通過；否則表示 已寫入 res 並要立即 return
@@ -225,6 +229,18 @@ export function registerAdminContentRoutes(app: Express) {
       }
 
       const data = insertPageSchema.parse({ ...req.body, gameId: req.params.gameId });
+
+      // 🎮 多人遊戲元件約束（GAME_COMPONENT_MULTIPLAYER_PLAN §5.2）
+      //   - solo 模式：禁用 multi 元件
+      //   - multi 模式：允許 solo + multi + shared（不對稱約束 v1.2）
+      const gameMode = game.gameMode ?? "individual";
+      if (!isComponentAllowedForGameMode(data.pageType, gameMode)) {
+        const category = getComponentCategory(data.pageType);
+        return res.status(400).json({
+          message: `元件「${data.pageType}」（${category === "multi" ? "多人專用" : "未分類"}）不允許用於「${gameMode}」模式的遊戲`,
+        });
+      }
+
       const page = await storage.createPage(data);
       res.status(201).json(page);
     } catch (error) {
@@ -256,6 +272,18 @@ export function registerAdminContentRoutes(app: Express) {
       }
 
       const data = insertPageSchema.partial().parse(req.body);
+
+      // 🎮 多人遊戲元件約束（PATCH 改動 pageType 時驗證）
+      if (data.pageType !== undefined) {
+        const gameMode = game.gameMode ?? "individual";
+        if (!isComponentAllowedForGameMode(data.pageType, gameMode)) {
+          const category = getComponentCategory(data.pageType);
+          return res.status(400).json({
+            message: `元件「${data.pageType}」（${category === "multi" ? "多人專用" : "未分類"}）不允許用於「${gameMode}」模式的遊戲`,
+          });
+        }
+      }
+
       const updatedPage = await storage.updatePage(req.params.id, data);
       res.json(updatedPage);
     } catch (error) {

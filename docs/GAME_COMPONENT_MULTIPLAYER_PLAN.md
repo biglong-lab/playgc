@@ -130,15 +130,26 @@ gameMode === "competitive" → playerMode = "multi"
 gameMode === "relay"       → playerMode = "multi"
 ```
 
-**約束**：
-- `playerMode='solo'`（即 `gameMode='individual'`）的遊戲，pages 只能用 **個人專用 + 通用元件**
-- `playerMode='multi'`（即其他三種 gameMode）的遊戲，pages 只能用 **多人專用 + 通用元件**
-- 違反 → server 拒絕儲存 + admin UI 灰掉不允許選
+**約束**（**v1.2 修訂為不對稱**）：
+
+| 遊戲模式 | 允許的元件 | 不允許 |
+|---------|-----------|--------|
+| `playerMode='solo'`（gameMode=individual） | 通用 + 個人專用 | 多人專用 |
+| `playerMode='multi'`（gameMode=team/competitive/relay） | 通用 + 個人專用 + **多人專用** | — |
+
+**為什麼不對稱**：盤點線上 28 個 team 遊戲時發現，全部都是「個人元件 + 隊伍基礎建設（Walkie/WebSocket/TeamLobby）」的混合模式。多人遊戲穿插個人挑戰是業界常態（LoL、密室逃脫、大富翁皆如此），原本對稱約束會擋下所有現有 team 遊戲。
+
+**規則**：
+- 多人專用元件（如 photo_team、vote_team）必須在多人遊戲才有意義 — 嚴格禁止個人遊戲使用
+- 個人專用元件（如 lock、shooting_mission）兩種模式都可用 — 多人遊戲可穿插個人挑戰
+- 通用元件（如 text_card、video）兩種模式都可用 — 純展示無互動
+
+**違反 → server 拒絕儲存 + admin UI 灰掉不允許選**
 
 **好處**：
 - 零 schema 變更 = 零風險
 - 既有資料無需遷移
-- 不會出現「兩個欄位不同步」的資料一致性問題
+- 線上既有 team 遊戲不被破壞
 - admin UI 一個欄位就夠
 
 ### 2.5 原則五：使用者語言一致
@@ -1042,6 +1053,7 @@ Week 6+    Phase 4：補完與選擇性             🟡 依需求
 |------|------|------|------|
 | 2026-05-01 | v1.0 | 初版建立 | Hung + Claude Code |
 | 2026-05-01 | v1.1 | Phase 1.3 修訂：取消 `games.playerMode` 欄位新增，改用 `derivePlayerModeFromGameMode(gameMode)` helper 推導。理由：DRY 原則 + 零 schema 變更 + 既有資料無需遷移。影響 §2.4、§5、§11.1 | Claude Code（Loop Phase 1.3） |
+| 2026-05-01 | v1.2 | Phase 1.4 重大修訂：約束改為**不對稱**（multi 元件只能在 multi 遊戲；solo 元件兩種都可）。觸發原因：盤點線上 28 個 team 遊戲全部用 solo 元件，原對稱約束會破壞所有現有遊戲。影響 §2.4、`isComponentAllowedForPlayerMode`、`getAllowedComponentsForPlayerMode` | Claude Code（Loop Phase 1.4） |
 
 ---
 
