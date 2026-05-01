@@ -44,6 +44,8 @@ export const PAGE_TYPES = [
   { value: "choice_verify_race", label: "隊伍搶答 👥", icon: HelpCircle, color: "bg-teal-600/30 text-teal-300" },
   // Phase 3.2（2026-05-02）— 協作解鎖（不對稱資訊，每人不同線索）
   { value: "lock_coop", label: "協作解鎖 👥", icon: Lock, color: "bg-amber-600/30 text-amber-300" },
+  // Phase 3.3（2026-05-02）— 接力任務（一人完成解鎖下一人）
+  { value: "relay_mission", label: "接力任務 👥", icon: ArrowRight, color: "bg-purple-600/30 text-purple-300" },
 ] as const;
 
 export const PAGE_TEMPLATES = [

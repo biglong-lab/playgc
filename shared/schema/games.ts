@@ -728,6 +728,42 @@ export interface LockConfig {
 }
 
 /**
+ * 🆕 Phase 3.3 — RelayMission（接力任務）配置
+ *
+ * 玩法（依 docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.7）：
+ *   - 一個任務分為 N 段，每段一個簡單問答 + 答案
+ *   - 玩家 A 完成第 1 段 → 玩家 B 解鎖第 2 段 → 玩家 C 解鎖第 3 段
+ *   - 段內順序：sequential（依序）/ free（任意順序）
+ *   - 玩家分配：用 hash(sessionId + userId) 決定誰負責哪段（穩定分配）
+ *   - 全部完成 → 通關
+ *
+ * MVP 設計（簡化版）：每段 = 一個簡單問答（題目 + 文字答案）
+ *   不嵌套其他元件（避免遞歸複雜度），未來可擴充 segmentType 加 photo/qr/gps
+ */
+export interface RelaySegment {
+  /** 段標題（顯示在進度條） */
+  title: string;
+  /** 段任務描述（給負責人看） */
+  prompt: string;
+  /** 文字答案（normalize 後比對） */
+  answer: string;
+  /** 提示（admin 設定才顯示） */
+  hint?: string;
+}
+
+export interface RelayMissionConfig {
+  title?: string;
+  instruction?: string;
+  /** 段陣列（最少 2 段） */
+  segments: RelaySegment[];
+  /** 段內順序：sequential（依序）/ free（任意，玩家可挑段） */
+  segmentOrder?: "sequential" | "free";
+  successMessage?: string;
+  nextPageId?: string;
+  rewardPoints?: number;
+}
+
+/**
  * 🆕 Phase 3 — LockCoop（協作解鎖）配置
  *
  * 玩法：一把鎖需 N 位密碼，每位玩家拿到不同線索（admin 設定多組線索）。
@@ -849,6 +885,7 @@ export type PageConfig =
   | TimeBombConfig
   | LockConfig
   | LockCoopConfig
+  | RelayMissionConfig
   | VoteConfig
   | MotionChallengeConfig
   | FlowRouterConfig;
