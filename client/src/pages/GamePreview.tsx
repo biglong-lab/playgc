@@ -10,15 +10,16 @@
 // 路由：/admin/games/:gameId/preview
 // 權限：requireAdminAuth + game:view（在 App.tsx 用 ProtectedAdminRoute 包覆）
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { PreviewBanner } from "@/components/preview/PreviewBanner";
 import { PreviewNavBar } from "@/components/preview/PreviewNavBar";
+import GamePageRenderer from "@/components/game/GamePageRenderer";
+import type { Page } from "@shared/schema";
 
 interface GamePreviewProps {
   gameId: string;
