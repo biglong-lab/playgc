@@ -11,8 +11,21 @@ import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types"
 // 🆕 Phase 2c：寬限期常數（單位 ms）
 //   30s = 短斷線寬限期（換頁/網路抖）
 //   120s = 寬限期過後到自動 leave 的 buffer（給隊長決定的時間）
-const GRACE_PERIOD_MS = 30_000;
-const AUTO_LEAVE_AFTER_GRACE_MS = 120_000;
+//
+// 🔧 Phase 4.4：支援環境變數覆寫（admin UI 完成前的過渡方案）
+//   - DISCONNECT_GRACE_MS：寬限期毫秒（10000-300000 合理範圍）
+//   - AUTO_LEAVE_AFTER_GRACE_MS：寬限期過後到 auto leave 的毫秒
+//   未設或無效值 → 用預設
+function parseEnvMs(v: string | undefined, fallback: number): number {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 1000 || n > 600_000) return fallback;
+  return n;
+}
+const GRACE_PERIOD_MS = parseEnvMs(process.env.DISCONNECT_GRACE_MS, 30_000);
+const AUTO_LEAVE_AFTER_GRACE_MS = parseEnvMs(
+  process.env.AUTO_LEAVE_AFTER_GRACE_MS,
+  120_000,
+);
 
 // 從 URL 解析 query 參數
 function parseQueryParams(url: string | undefined): Record<string, string> {

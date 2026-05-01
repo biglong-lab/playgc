@@ -137,6 +137,14 @@ export interface FieldSettings {
   autoEndIdleSession?: boolean;       // 自動結束閒置場次
   sessionIdleTimeout?: number;        // 閒置超時時間（分鐘）
 
+  // 🆕 Phase 4.4 多人遊戲斷線寬限期（單位：秒）
+  //   未設值 → server 用環境變數 / 預設（30s 寬限 + 120s auto leave）
+  //   admin 後台 UI 預備中（目前需 ops 改 server 環境變數 DISCONNECT_GRACE_MS / AUTO_LEAVE_AFTER_GRACE_MS）
+  disconnectGracePeriodSec?: number;     // 預設 30，玩家斷線後寬限期（秒）
+  autoLeaveAfterGraceSec?: number;       // 預設 120，寬限期過後到自動 leave 的秒數
+  /** 暫停策略：always_pause（一律暫停）/ never_pause（不暫停）/ leader_decide（隊長決定，預設）*/
+  disconnectPauseStrategy?: "always_pause" | "never_pause" | "leader_decide";
+
   // 🆕 新場域 onboarding — 場域級別標記，避免 localStorage 只管當前設備
   // 當場域首次授權的 admin 完成 FieldOnboardingWizard 後設為 true，之後不再跳
   hasCompletedOnboarding?: boolean;
