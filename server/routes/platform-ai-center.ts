@@ -254,6 +254,9 @@ export function registerPlatformAiCenterRoutes(app: Express) {
         };
 
         for (const page of candidates) {
+          // 🔧 達生成上限即停，避免過量處理（原本 SQL LIMIT 20 的成本控制保留）
+          if (generated >= limit) break;
+
           try {
             const [game] = await db
               .select()
