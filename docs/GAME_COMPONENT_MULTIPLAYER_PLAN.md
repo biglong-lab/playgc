@@ -1,11 +1,11 @@
 # 多人遊戲元件規劃（GAME_COMPONENT_MULTIPLAYER_PLAN）
 
-> **文件版本**: v1.6
+> **文件版本**: v1.7
 > **建立日期**: 2026-05-01
 > **最後更新**: 2026-05-02
 > **作者**: Hung（大哉實業有限公司）+ Claude Code 規劃協作
-> **狀態**: Phase 1 ✅ + Phase 2 ✅ + Phase 2.5 ✅（穩定性軸）+ Phase 2.6 ✅ + Phase 2.7 ✅（ChoiceVerifyRace 已先行） · Phase 3 待開工（LockCoop + RelayMission）
-> **預計工期**: 5-6 週（分 4 階段 + 穩定性穿插軸）
+> **狀態**: 🎉 全部完成 — Phase 1 ✅ Phase 2 ✅ Phase 2.5 ✅（穩定性軸） Phase 2.6 ✅ Phase 2.7 ✅ Phase 3 ✅（LockCoop + RelayMission + WS Reconnect） Phase 4 ✅（TerritoryCapture）
+> **預計工期**: 5-6 週（分 4 階段 + 穩定性穿插軸） · 實際 1 天高密度 /loop 推進完成
 
 ---
 
@@ -229,9 +229,9 @@ gameMode === "relay"       → playerMode = "multi"
 | `ShootingTeam` | 隊伍射擊累計 | 協作 | ✅ 已實作（Phase 2） |
 | `GpsTeamMission` | 隊伍 GPS 尋寶 | 協作 | ✅ 已實作（Phase 2） |
 | `ChoiceVerifyRace` | 隊伍搶答 | 對戰 | ✅ 已實作（Phase 2.7） |
-| `LockCoop` | 協作解鎖（不對稱資訊） | 協作 | ❌ Phase 3 待開工 |
-| `RelayMission` | 接力任務（一人完成解鎖下一人） | 接力 | ❌ Phase 3 待開工 |
-| `TerritoryCapture` | 地盤戰（多隊爭奪 GPS 點） | 對戰 | ❌ Phase 4 待開工 |
+| `LockCoop` | 協作解鎖（不對稱資訊） | 協作 | ✅ 已實作（Phase 3.2） |
+| `RelayMission` | 接力任務（一人完成解鎖下一人） | 接力 | ✅ 已實作（Phase 3.3） |
+| `TerritoryCapture` | 地盤戰（多隊爭奪 GPS 點） | 對戰 | ✅ 已實作（Phase 4） |
 
 ### 3.4 目錄結構
 
@@ -547,10 +547,10 @@ export const MULTI_ONLY_COMPONENTS = ['photo_team', 'vote_team', 'shooting_team'
 
 ---
 
-### 6.5 LockCoop（**新類型**，協作解鎖）
+### 6.5 LockCoop（✅ **已實作**，協作解鎖）
 
-**檔案**（新建）：`client/src/components/game/multi/LockCoop.tsx`
-**估時**：1 週
+**檔案**：`client/src/components/game/multi/LockCoop.tsx` + `LockCoopPage.tsx` + `useTeamLockCoopSync` hook
+**狀態**：Phase 3.2 完成（5 commits / 20 測試）
 **靈感**：類似密室逃脫的「分頭收集線索」玩法
 
 **玩法**：
@@ -621,10 +621,10 @@ export const MULTI_ONLY_COMPONENTS = ['photo_team', 'vote_team', 'shooting_team'
 
 ---
 
-### 6.7 RelayMission（**新類型**，接力任務）
+### 6.7 RelayMission（✅ **已實作**，接力任務）
 
-**檔案**（新建）：`client/src/components/game/multi/RelayMission.tsx`
-**估時**：1 週
+**檔案**：`client/src/components/game/multi/RelayMission.tsx` + `RelayMissionPage.tsx` + `useTeamRelaySync` hook
+**狀態**：Phase 3.3 完成（5 commits / 18 測試）
 **靈感**：[matches.ts:relayConfig](../server/routes/matches.ts) 的接力對戰，但用在單一隊伍內部
 
 **玩法**：
@@ -659,10 +659,10 @@ export const MULTI_ONLY_COMPONENTS = ['photo_team', 'vote_team', 'shooting_team'
 
 ---
 
-### 6.8 TerritoryCapture（**新類型**，地盤戰）
+### 6.8 TerritoryCapture（✅ **已實作**，地盤戰）
 
-**檔案**（新建）：`client/src/components/game/multi/TerritoryCapture.tsx`
-**估時**：1 週
+**檔案**：`client/src/components/game/multi/TerritoryCapture.tsx` + `TerritoryCapturePage.tsx` + `useTeamTerritorySync` hook
+**狀態**：Phase 4 完成（5 commits / 22 測試）
 **靈感**：類似 Pokemon Go 的地盤站、Splatoon 的地盤戰
 
 **玩法**：
@@ -977,23 +977,25 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 
 ---
 
-### Phase 3：新類型多人元件（**範圍縮減 — ChoiceVerifyRace 已先行**）
+### Phase 3：新類型多人元件 ✅ **完成**
 
 **目標**：增加多人專屬玩法的多樣性
 
-**第 1 週**：
-- [x] ~~`ChoiceVerifyRace.tsx`（隊伍搶答）~~ ✅ Phase 2.7 已完成（對焦時發現）
-- [ ] `LockCoop.tsx`（協作解鎖）
-  - 線索分配邏輯
-  - 共享輸入區
-  - 自動建議 Walkie
-
-**第 2 週**：
-- [ ] `RelayMission.tsx`（接力任務）
-  - relaySegments 後端設定
-  - 段間切換 UI
-  - 換人接手投票
-- [ ] WebSocket 新事件：`page_state_request` / `page_state_snapshot` / Reconnect 狀態恢復
+- [x] `ChoiceVerifyRace.tsx`（隊伍搶答）✅ Phase 2.7（對焦時發現已先行）
+- [x] `LockCoop.tsx`（協作解鎖）✅ Phase 3.2 完成
+  - 線索分配邏輯（fnv1aHash + pickClueIndexForUser 純函式）
+  - 共享輸入區（useTeamLockCoopSync hook）
+  - 自動建議 Walkie（useWalkieSuggestion）
+  - 5 commits / 20 測試
+- [x] `RelayMission.tsx`（接力任務）✅ Phase 3.3 完成
+  - relayConfig.segments 設定（每段 prompt+answer）
+  - 段間切換 UI（pickPlayerForSegment 穩定分配）
+  - useTeamRelaySync hook（驗證 + 廣播 + 推進）
+  - 5 commits / 18 測試
+- [x] WebSocket §7.4 Reconnect 狀態恢復 ✅
+  - server 端 in-memory state cache（per-team）
+  - team_join 時 snapshot 送給新連線
+  - 1 commit
 
 **驗收**：
 - ✅ 2 個新類型多人元件可玩（LockCoop + RelayMission；ChoiceVerifyRace 已 done）
@@ -1002,14 +1004,21 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 
 ---
 
-### Phase 4：補完與選擇性（1-2 週，依需求）
+### Phase 4：補完與選擇性 ✅ **TerritoryCapture 完成**
 
 **目標**：依實際使用回饋補完
 
-**可能 Task**：
-- [ ] `TerritoryCapture.tsx`（地盤戰）— 適合節慶活動
-- [ ] B 級元件多人化（依需求）：TextVerifyTeam / QrScanRelay / TimeBombCoop
-- [ ] Photo 系列多人化（依需求）
+**已完成 Task**：
+- [x] `TerritoryCapture.tsx`（地盤戰）✅ 完成
+  - schema TerritoryCaptureConfig（points/timeLimitSec/cooldownSec/...）
+  - 純函式 helpers（distanceMeters Haversine + computeRanking + canCapturePoint）
+  - useTeamTerritorySync hook + alsoJoinSessionId（多隊共享 session 廣播）
+  - 容器層 GPS 監聽 + client-side 倒數
+  - 5 commits / 22 測試
+
+**未排期 Task（依需求）**：
+- [ ] B 級元件多人化：TextVerifyTeam / QrScanRelay / TimeBombCoop
+- [ ] Photo 系列多人化（PhotoTeam 已有，其他依需求）
 - [ ] `usePageReconnect` 進階場景
 - [ ] Server 權威倒數（`useServerTimer`）
 
@@ -1133,6 +1142,7 @@ Week 6+    Phase 4：補完與選擇性             🟡 依需求
 | 2026-05-02 | v1.4 | **Phase 2 完成**。多人元件全鏈路就位（VoteTeam / ShootingTeam / GpsTeamMission），共 9 個 commits / 115 新測試。三個元件都包含：純 UI 元件 + 容器（自取 myTeam）+ GamePageRenderer 註冊。Admin GameFormDialog 加 gameMode 選擇器。TeammatePanel 共用 UI 完成。多人元件總數從 1 增至 4。剩餘整合工作（admin page editor、server WebSocket 接合）歸入 Phase 2.6 或視試玩結果決定。 | Claude Code（Loop Phase 2） |
 | 2026-05-02 | v1.5 | **Phase 2.5 完成（穩定性軸）**。實機驗證 Phase 2 期間發現多人遊戲執行時 7 個關鍵 bug，這個軸與元件層 Phase 1-4 並列補完穩定性層：field routing fix + 重連 flash + 自願退出 + 存在感通知 + ghost lobby fix + 進度同步（maxPageIndex） + 寬限期計時 + TTS 語音通知。共 7 commits，schema 加 `team_sessions.max_page_index` 欄位（部署前須跑 db:push）。完整斷線重連流程：disconnect 30s grace → grace_expired → 120s auto-leave。所有測試通過。 | Claude Code（Loop Phase 2.5） |
 | 2026-05-02 | v1.6 | **全面對焦與文件整理**。修文件內部不一致：§3.3 / §6.6 / §11 Phase 3 ChoiceVerifyRace 從 ❌ 改 ✅（已實作但未列入計畫）；Phase 3 範圍縮減為 2 個元件（LockCoop + RelayMission）。同步補完 Phase 2.6 阻塞項：Admin page editor / VoteTeam WS / shooting_hit userId 都已就位（驗證），新增 useWalkieSuggestion hook 並整合進 3 個多人元件容器。連動更新 PROGRESS.md / GAME_COMPONENTS_STATUS_V2.md / MEMORY.md 反映實況。共 commit `15cdeada` + `5b04244b`。 | Claude Code（對焦階段） |
+| 2026-05-02 | v1.7 | 🎉 **全部 Phase 完成**。Phase 3 LockCoop（5 commits / 20 測試 / fnv1aHash 線索分配）+ RelayMission（5 commits / 18 測試 / pickPlayerForSegment 段落分配）+ WS §7.4 Reconnect 狀態恢復（per-team in-memory state cache）；Phase 4 TerritoryCapture（5 commits / 22 測試 / Haversine distanceMeters / session 範圍廣播 / alsoJoinSessionId 雙 room 機制）。多人元件總數 8 個全鏈路就位。共 16 個 Phase 3+4 commits，所有測試通過。 | Claude Code（/loop 2 分鐘節奏推進） |
 
 ---
 
