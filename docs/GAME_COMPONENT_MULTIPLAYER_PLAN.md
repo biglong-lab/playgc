@@ -1,10 +1,10 @@
 # 多人遊戲元件規劃（GAME_COMPONENT_MULTIPLAYER_PLAN）
 
-> **文件版本**: v1.5
+> **文件版本**: v1.6
 > **建立日期**: 2026-05-01
 > **最後更新**: 2026-05-02
 > **作者**: Hung（大哉實業有限公司）+ Claude Code 規劃協作
-> **狀態**: Phase 1 ✅ + Phase 2 ✅ + Phase 2.5 ✅（穩定性軸）+ Phase 2.6 ⏳ 進行中
+> **狀態**: Phase 1 ✅ + Phase 2 ✅ + Phase 2.5 ✅（穩定性軸）+ Phase 2.6 ✅ + Phase 2.7 ✅（ChoiceVerifyRace 已先行） · Phase 3 待開工（LockCoop + RelayMission）
 > **預計工期**: 5-6 週（分 4 階段 + 穩定性穿插軸）
 
 ---
@@ -224,14 +224,14 @@ gameMode === "relay"       → playerMode = "multi"
 
 | 元件 | 玩法 | 協作模式 | 狀態 |
 |------|------|---------|------|
-| `PhotoTeam` | 團體合影 | 協作 | ✅ 已存在 |
-| `VoteTeam` | 隊伍投票 | 協作 | 🟡 後端 ✅，前端待建 |
-| `ShootingTeam` | 隊伍射擊累計 | 協作 | 🟡 部分 |
-| `GpsTeamMission` | 隊伍 GPS 尋寶 | 協作 | 🟡 hook 已預留 |
-| `LockCoop` | 協作解鎖（不對稱資訊） | 協作 | ❌ 新建 |
-| `ChoiceVerifyRace` | 隊伍搶答 | 對戰 | ❌ 新建 |
-| `RelayMission` | 接力任務（一人完成解鎖下一人） | 接力 | ❌ 新建 |
-| `TerritoryCapture` | 地盤戰（多隊爭奪 GPS 點） | 對戰 | ❌ 新建 |
+| `PhotoTeam` | 團體合影 | 協作 | ✅ 已實作（Phase 1） |
+| `VoteTeam` | 隊伍投票 | 協作 | ✅ 已實作（Phase 2） |
+| `ShootingTeam` | 隊伍射擊累計 | 協作 | ✅ 已實作（Phase 2） |
+| `GpsTeamMission` | 隊伍 GPS 尋寶 | 協作 | ✅ 已實作（Phase 2） |
+| `ChoiceVerifyRace` | 隊伍搶答 | 對戰 | ✅ 已實作（Phase 2.7） |
+| `LockCoop` | 協作解鎖（不對稱資訊） | 協作 | ❌ Phase 3 待開工 |
+| `RelayMission` | 接力任務（一人完成解鎖下一人） | 接力 | ❌ Phase 3 待開工 |
+| `TerritoryCapture` | 地盤戰（多隊爭奪 GPS 點） | 對戰 | ❌ Phase 4 待開工 |
 
 ### 3.4 目錄結構
 
@@ -590,10 +590,10 @@ export const MULTI_ONLY_COMPONENTS = ['photo_team', 'vote_team', 'shooting_team'
 
 ---
 
-### 6.6 ChoiceVerifyRace（**新類型**，隊伍搶答）
+### 6.6 ChoiceVerifyRace（✅ **已實作**，隊伍搶答）
 
-**檔案**（新建）：`client/src/components/game/multi/ChoiceVerifyRace.tsx`
-**估時**：3-4 天
+**檔案**：`client/src/components/game/multi/ChoiceVerifyRace.tsx` + `ChoiceVerifyRacePage.tsx`
+**狀態**：Phase 2.7 完成（對焦時發現已實作但未列入計畫）
 
 **玩法**：
 - 一系列選擇題
@@ -977,18 +977,16 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 
 ---
 
-### Phase 3：新類型多人元件（2 週）
+### Phase 3：新類型多人元件（**範圍縮減 — ChoiceVerifyRace 已先行**）
 
 **目標**：增加多人專屬玩法的多樣性
 
 **第 1 週**：
+- [x] ~~`ChoiceVerifyRace.tsx`（隊伍搶答）~~ ✅ Phase 2.7 已完成（對焦時發現）
 - [ ] `LockCoop.tsx`（協作解鎖）
   - 線索分配邏輯
   - 共享輸入區
   - 自動建議 Walkie
-- [ ] `ChoiceVerifyRace.tsx`（隊伍搶答）
-  - server 權威時間
-  - 提示功能（可選）
 
 **第 2 週**：
 - [ ] `RelayMission.tsx`（接力任務）
@@ -998,7 +996,7 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 - [ ] WebSocket 新事件：`page_state_request` / `page_state_snapshot` / Reconnect 狀態恢復
 
 **驗收**：
-- ✅ 3 個新類型多人元件可玩
+- ✅ 2 個新類型多人元件可玩（LockCoop + RelayMission；ChoiceVerifyRace 已 done）
 - ✅ Reconnect 後狀態正常恢復
 - ✅ Demo：3 人玩 LockCoop（每人不同線索） + 自動連 walkie
 
@@ -1134,6 +1132,7 @@ Week 6+    Phase 4：補完與選擇性             🟡 依需求
 | 2026-05-01 | v1.3 | **Phase 1 完成**。23 個元件全部分類就位：shared/components/ (4) + multi/ (1) + solo/ (18)。子目錄（photo-mission/、gps-mission/、qr-scan/）保留在 game/ 根目錄作為共用工具。git rename 完整保留 history。三層驗證通過。 | Claude Code（Loop Phase 1.6） |
 | 2026-05-02 | v1.4 | **Phase 2 完成**。多人元件全鏈路就位（VoteTeam / ShootingTeam / GpsTeamMission），共 9 個 commits / 115 新測試。三個元件都包含：純 UI 元件 + 容器（自取 myTeam）+ GamePageRenderer 註冊。Admin GameFormDialog 加 gameMode 選擇器。TeammatePanel 共用 UI 完成。多人元件總數從 1 增至 4。剩餘整合工作（admin page editor、server WebSocket 接合）歸入 Phase 2.6 或視試玩結果決定。 | Claude Code（Loop Phase 2） |
 | 2026-05-02 | v1.5 | **Phase 2.5 完成（穩定性軸）**。實機驗證 Phase 2 期間發現多人遊戲執行時 7 個關鍵 bug，這個軸與元件層 Phase 1-4 並列補完穩定性層：field routing fix + 重連 flash + 自願退出 + 存在感通知 + ghost lobby fix + 進度同步（maxPageIndex） + 寬限期計時 + TTS 語音通知。共 7 commits，schema 加 `team_sessions.max_page_index` 欄位（部署前須跑 db:push）。完整斷線重連流程：disconnect 30s grace → grace_expired → 120s auto-leave。所有測試通過。 | Claude Code（Loop Phase 2.5） |
+| 2026-05-02 | v1.6 | **全面對焦與文件整理**。修文件內部不一致：§3.3 / §6.6 / §11 Phase 3 ChoiceVerifyRace 從 ❌ 改 ✅（已實作但未列入計畫）；Phase 3 範圍縮減為 2 個元件（LockCoop + RelayMission）。同步補完 Phase 2.6 阻塞項：Admin page editor / VoteTeam WS / shooting_hit userId 都已就位（驗證），新增 useWalkieSuggestion hook 並整合進 3 個多人元件容器。連動更新 PROGRESS.md / GAME_COMPONENTS_STATUS_V2.md / MEMORY.md 反映實況。共 commit `15cdeada` + `5b04244b`。 | Claude Code（對焦階段） |
 
 ---
 

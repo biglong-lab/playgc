@@ -1,8 +1,40 @@
 # 🎮 遊戲元件現況盤點與優化規劃 v2
 
-> **盤點時間**：2026-04-19
+> **盤點時間**：2026-04-19（v2 初版） · **2026-05-02 對焦更新**（v2.1）
 > **前版**：`docs/GAME_COMPONENTS_AUDIT.md`（2026-04-18，8 PR 優化前）
-> **本版目的**：記錄所有元件目前最新狀態、本週（4 PR + /loop 多輪）優化內容、並列出剩餘優化項目與優先序
+> **本版目的**：記錄所有元件目前最新狀態、優化內容、剩餘優化項目與優先序
+
+---
+
+## 🆕 2026-05-02 對焦更新（v2.1）
+
+兩條軸並行推進，本表更新到當前狀況：
+
+### 元件軸：多人元件全鏈路完成（5 個）
+
+| 多人元件 | 狀態 | Page 容器 | GamePageRenderer 註冊 | 來源 Phase |
+|---------|------|----------|----------------------|----------|
+| `PhotoTeam` | ✅ | PhotoTeamFlow | ✅ | Phase 1 |
+| `VoteTeam` | ✅ | VoteTeamPage | ✅ | Phase 2 |
+| `ShootingTeam` | ✅ | ShootingTeamPage | ✅ | Phase 2 |
+| `GpsTeamMission` | ✅ | GpsTeamMissionPage | ✅ | Phase 2 |
+| `ChoiceVerifyRace` | ✅ | ChoiceVerifyRacePage | ✅ | Phase 2.7（先行） |
+| `LockCoop` | ❌ 待開工 | - | - | Phase 3 |
+| `RelayMission` | ❌ 待開工 | - | - | Phase 3 |
+| `TerritoryCapture` | ❌ 待開工 | - | - | Phase 4 |
+
+### 穩定性軸：Phase 2.5 完成（7 commits）
+
+執行時的斷線重連 / 進度同步 / 寬限期 / TTS 通知全部就位。詳見 [PROGRESS.md](../PROGRESS.md) 與
+[GAME_COMPONENT_MULTIPLAYER_PLAN.md](GAME_COMPONENT_MULTIPLAYER_PLAN.md) §11 Phase 2.5。
+
+### Vote P0「團隊同步投票」狀態
+
+下方 §🗳 協作類 / §🎯 優先序總結 列的 P0「Vote 團隊同步投票」原為單機 Vote 元件需求 →
+**已在 Phase 2 解決** — 不是改 Vote 元件，而是新建 VoteTeam 元件（拆分模式 SRP，元件單一職責）。
+舊 Vote 仍維持單機，新 VoteTeam 給多人遊戲使用。
+
+剩餘 P0：**ShootingMission HMAC 防作弊** 仍待處理（工程量大，暫緩）。
 
 ---
 
@@ -246,11 +278,11 @@ const handleDone = () => {
 **功能**：選項投票 + 自動前進倒數 + showResults + winner strategy。
 **已實作**：單機 per-player 模式 / handleContinueRef 避免 stale closure / Enter 鍵送出 / 觸覺 / 焦點自動跳繼續鈕。
 **剩餘**：
-- 🔴 **P0**：**團隊同步投票** — 目前 `variables` 只存單機，多人真實投票需後端 API
-  1. 新增 `POST /api/sessions/:id/vote` + WebSocket broadcast
-  2. `minVotes` 欄位才能真正生效
-  3. 加入「已 X/Y 人投票」即時顯示
-  > 註：本項需求來源於使用者先前提的「團隊投票後端同步」待辦。
+- ✅ ~~**P0：團隊同步投票**~~ → **已在 Phase 2 完成**（採拆分模式 — 新建 VoteTeam 元件）
+  - 後端 `POST /api/teams/:teamId/votes` + WebSocket `vote_cast` 廣播
+  - `majority` / `unanimous` / `display` 三種模式
+  - 「已 X/Y 人投票」即時顯示（隊友投票即時看到）
+  - 詳見 [docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.2](GAME_COMPONENT_MULTIPLAYER_PLAN.md)
 - 🟡 P2：votingTimeLimit > 0 時建議加「最後 5 秒紅色全螢幕脈動」警示
 
 ---
@@ -281,8 +313,8 @@ const handleDone = () => {
 ## 🎯 優先序總結（按工作量）
 
 ### 🔴 P0（1-2 天內應處理）
-1. **ShootingMission 作弊防護** — 後端 HMAC 簽章 + 編輯器警示（半天）
-2. **Vote 團隊同步投票** — 新增 API + WebSocket 廣播（1 天）
+1. **ShootingMission 作弊防護** — 後端 HMAC 簽章 + 編輯器警示（半天）⏸️ 暫緩到後批
+2. ~~**Vote 團隊同步投票**~~ ✅ **已完成** — 採拆分模式新建 VoteTeam 元件（Phase 2）
 
 ### 🟠 P1（本月內）
 3. **ConditionalVerifyPage 拆分** — 508 行超過規範，拆成 3 個檔案（半天）
