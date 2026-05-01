@@ -13,7 +13,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2, Eye } from "lucide-react";
+import { Loader2, Eye, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { PreviewBanner } from "@/components/preview/PreviewBanner";
