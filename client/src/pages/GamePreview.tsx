@@ -48,6 +48,37 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
     };
   }, []);
 
+  // ⌨️ 鍵盤快捷：← 上一頁 / → 下一頁 / Esc 退出
+  useEffect(() => {
+    function isEditableTarget(target: EventTarget | null): boolean {
+      if (!(target instanceof HTMLElement)) return false;
+      const tag = target.tagName;
+      return (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        target.isContentEditable
+      );
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setLocation(`/admin/games/${gameId}`);
+        return;
+      }
+      // 在 input/textarea/contenteditable 內輸入時，忽略 ←/→（讓使用者正常打字 / 移動游標）
+      if (isEditableTarget(e.target)) return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        setCurrentIndex((i) => Math.max(0, i - 1));
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        setCurrentIndex((i) => Math.min(i + 1, Number.MAX_SAFE_INTEGER));
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [gameId, setLocation]);
+
   const { data: game, isLoading, error } = useQuery<GameWithPages>({
     queryKey: ["/api/admin/games", gameId, "preview"],
     queryFn: async () => {
