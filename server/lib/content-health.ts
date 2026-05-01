@@ -14,7 +14,7 @@
 //   - 不改 pool / 不改 page（純讀取分析）
 //   - 不寫 metrics 表（統計結果 in-memory，由 caller 處理是否快取）
 
-import { sql, and, eq, gt, gte, lte, isNotNull } from "drizzle-orm";
+import { sql, and, eq, gt, gte, lte, isNotNull, inArray } from "drizzle-orm";
 import { db } from "../db";
 import {
   pages,
