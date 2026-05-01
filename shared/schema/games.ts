@@ -727,6 +727,38 @@ export interface LockConfig {
   rewardPoints?: number;
 }
 
+/**
+ * 🆕 Phase 3 — LockCoop（協作解鎖）配置
+ *
+ * 玩法：一把鎖需 N 位密碼，每位玩家拿到不同線索（admin 設定多組線索）。
+ * 玩家用對講機溝通拼出完整密碼，任一人輸入即解鎖。
+ *
+ * 線索分配：clue 用 hash(sessionId + userId) 決定拿哪組（避免每次重整變）。
+ * 線索組數 < 隊員數 → 重複分配（同組線索給多人）。
+ *
+ * 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.5
+ */
+export interface LockCoopConfig {
+  title?: string;
+  instruction?: string;
+  /** 密碼長度（與 combination 一致） */
+  digits: number;
+  /** 正解密碼（admin 預先設定） */
+  combination: string;
+  /** 線索組陣列；每組為玩家收到的提示文字 */
+  clues: Array<{
+    text: string;
+    /** 可選：每組線索對應的標題（如「奇數位」「偶數位」） */
+    label?: string;
+  }>;
+  maxAttempts?: number;
+  hint?: string;
+  successMessage?: string;
+  failureMessage?: string;
+  nextPageId?: string;
+  rewardPoints?: number;
+}
+
 export interface VoteConfig {
   title?: string;
   question: string;
@@ -816,6 +848,7 @@ export type PageConfig =
   | ArduinoSensorConfig
   | TimeBombConfig
   | LockConfig
+  | LockCoopConfig
   | VoteConfig
   | MotionChallengeConfig
   | FlowRouterConfig;

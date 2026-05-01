@@ -42,6 +42,8 @@ export const PAGE_TYPES = [
   { value: "gps_team_mission", label: "隊伍 GPS 任務 👥", icon: MapPin, color: "bg-red-600/30 text-red-300" },
   // Phase 3.1（2026-05-02）— 隊伍搶答（強競爭性）
   { value: "choice_verify_race", label: "隊伍搶答 👥", icon: HelpCircle, color: "bg-teal-600/30 text-teal-300" },
+  // Phase 3.2（2026-05-02）— 協作解鎖（不對稱資訊，每人不同線索）
+  { value: "lock_coop", label: "協作解鎖 👥", icon: Lock, color: "bg-amber-600/30 text-amber-300" },
 ] as const;
 
 export const PAGE_TEMPLATES = [
