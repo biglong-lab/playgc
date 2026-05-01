@@ -61,7 +61,7 @@ TOTAL_PROGRESS: 12/18
 
 # Phase 5：流程驗證 ✅
 
-- [ ] **P5-1** Smoke test：admin 預覽一輪後 `SELECT COUNT(*) FROM sessions WHERE created_at > now()` 應為 0；同時 player_event_logs / variant_feedback / ai_usage_logs 也不增加
+- [x] **P5-1** Smoke test 準備：取 baseline（sessions=0 / player_event_logs=24 / variant_feedback=5 / ai_usage_logs=90，含 test seed）；grep 確認 client mutation endpoint 全在攔截白名單；修正 `/api/player-feedback` → `/api/player/feedback` + 補 `/api/player/event` 實際路徑（伺服器是斜線分隔不是連字號）；TS check ✅；推 `cf27da5a`；P5-2 部署後請使用者實機跑一輪預覽，回 SQL 比對 baseline 應 0 增量
 - [ ] **P5-2** TS check + commit + push + 部署 + 主站 200
 
 ---
