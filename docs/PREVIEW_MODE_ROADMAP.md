@@ -79,7 +79,7 @@ TOTAL_PROGRESS: 18/18 ✅
 
 # 🏁 完成
 
-- [ ] **DONE** 在本檔頂部寫 STATUS: ALL_COMPLETED + 停止 cron + 回報
+- [x] **DONE** 頂部寫 STATUS: ALL_COMPLETED ✅；CronDelete b2cccb01；總結 6 phase / 18 task：3 個新檔（GamePreview / PreviewBanner / PreviewNavBar / PreviewContext）+ apiRequest 攔截 4 AI + 7 write endpoint + games schema 加 lastLiveTestedAt + 鍵盤 ←→Esc + AI_LIVE_TEST_CHECKLIST 模板；部署上線 https://game.homi.cc/admin/games/:id/preview 200
 
 ---
 
