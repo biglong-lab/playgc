@@ -68,7 +68,7 @@ TOTAL_PROGRESS: 14/18
 
 # Phase 6：AI 實測機制 🤖
 
-- [ ] **P6-1** 建立 `docs/AI_LIVE_TEST_CHECKLIST.md`：標準測試清單模板（含 7 種 AI 任務檢查項 + 確認項目）
+- [x] **P6-1** 建立 `docs/AI_LIVE_TEST_CHECKLIST.md`：完整實機測試清單（測試前準備 + 7 種 AI 任務逐項表格化檢查 ✅/❌/⚠️ 路徑 / 共通確認項目（速度/UX/資料/Fallback）/ 紅燈條件 / 測試結束後流程）；給場域 admin 發布前用，每個遊戲走一輪
 - [ ] **P6-2** PreviewBanner 加「⚠️ AI 已 mock，上線後必須實測」+ link 到 checklist
 - [ ] **P6-3** 在 photo_spot/photo_compare/photo_ocr/photo_mission/text_verify/choice_verify/conditional_verify 7 種 AI 元件渲染處，加 inline 黃底警告框（preview 模式才顯示）
 - [ ] **P6-4** game-editor「發布」按鈕旁加「📋 已完成 AI 實測」checkbox（ToggleButton + games schema 加 `lastLiveTestedAt` timestamp）— 不阻擋發布只提醒
