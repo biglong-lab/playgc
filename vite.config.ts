@@ -71,16 +71,11 @@ export default defineConfig({
           // 下面兩條規則以前在這裡，現在移除（沒註冊 = workbox 不攔截）
           // 若未來要加回 offline image cache，務必用 NetworkFirst + cacheableResponse.statuses: [200]
           // 且 img 必須加 crossOrigin="anonymous" 才不會存 opaque。
-          // Google Fonts — StaleWhileRevalidate
-          {
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\//,
-            handler: "StaleWhileRevalidate",
-            options: {
-              cacheName: "google-fonts",
-              expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 3600 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
+          // 🔧 Google Fonts cache rule 已移除（2026-05-01）
+          //   原本 StaleWhileRevalidate fonts.gstatic.com，但部分網路（中華電信偶發、
+          //   企業/學校 DNS）會擋 fonts.gstatic.com → workbox 拋 "no-response" 污染 console
+          //   解法：讓瀏覽器自帶 HTTP cache 處理（Google Fonts 已有 max-age=31536000）
+          //   字體載入失敗時 CSS @font-face 會自動 fallback 到 system font，不影響功能
         ],
         navigateFallback: "/index.html",
         // /assets/ 必須排除：當 hash 過時的 JS/CSS chunk 404 時，若 fallback 回 index.html
