@@ -47,7 +47,7 @@ TOTAL_PROGRESS: 8/18
 
 - [x] **P3-1** GamePreview 完整骨架：useState 維護 currentIndex（純 in-memory，不建 session）+ PreviewProvider 包覆樹（傳 isPreview + gameId）+ PreviewBanner 頂部 + PreviewNavBar 底部 + 中間先顯 page metadata（pageOrder/pageType/customName/config JSON）佔位等 P3-2 替換 GamePageRenderer；無 sessions API 呼叫；空 pages / load fail 都有 fallback；TS check ✅
 - [x] **P3-2** 採用最小擴散策略：GamePreview 直接渲染 `<GamePageRenderer>`（不 mount GamePlay 整體）+ sessionId="" + onComplete 跳下一頁 + onVariableUpdate 純 in-memory（local useState） + score=0/inventory=[]/visitedLocations=[] 都用空值；下游元件嘗試呼叫 sessions API 因 sessionId 空會 404（不寫 DB），P3-3 處理 AI 元件 mock
-- [ ] **P3-3** AI 驗證在預覽模式 mock 直接回 `{ success: true, confidence: 1.0 }`（不打 OpenRouter / Vision）
+- [x] **P3-3** AI 驗證 mock：在 `apiRequest` 全域攔截 4 個 AI endpoint（verify-photo / score-text / compare-photos / ocr-detect）+ 透過 `sessionStorage.previewMode='1'` 標記偵測 + 直接回 happy-path mock Response（含 success/passed/verified/detected/similar 各端點期望欄位）；GamePreview useEffect mount 時設、unmount 清；不擴散到 16 個元件；TS check ✅
 - [ ] **P3-4** 排行榜 / 獎勵發放 / 兌換碼消耗 / `/api/locations/.../visit` 在 preview 模式跳過
 
 ---
