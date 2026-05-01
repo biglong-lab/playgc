@@ -11,7 +11,7 @@ vi.mock("../db", () => ({
   db: {
     query: {
       teams: { findFirst: vi.fn() },
-      teamMembers: { findFirst: vi.fn() },
+      teamMembers: { findFirst: vi.fn(), findMany: vi.fn() },
     },
     insert: vi.fn(() => ({
       values: vi.fn(() => ({
@@ -70,6 +70,7 @@ function createApp() {
   app.use(express.json());
   const ctx = {
     broadcastToSession: vi.fn(),
+    broadcastToTeam: vi.fn(),
   };
   registerTeamRoutes(app, ctx as any);
   return { app, ctx };
@@ -619,8 +620,9 @@ describe("隊伍路由 (teams)", () => {
       expect(res.status).toBe(200);
       expect(res.body.sessionId).toBe("session-1");
       expect(res.body.gameId).toBe("game-1");
-      expect(ctx.broadcastToSession).toHaveBeenCalledWith(
-        "team_team-1",
+      // 🔧 改驗 broadcastToTeam（teamId 直接，不用 "team_" prefix）
+      expect(ctx.broadcastToTeam).toHaveBeenCalledWith(
+        "team-1",
         expect.objectContaining({ type: "game_started" }),
       );
     });
@@ -638,7 +640,7 @@ describe("隊伍路由 (teams)", () => {
 
     it("沒有隊伍時回傳 null", async () => {
       const { app } = createApp();
-      mockDb.query.teamMembers.findFirst.mockResolvedValue(null);
+      mockDb.query.teamMembers.findMany.mockResolvedValue([]);
 
       const res = await request(app)
         .get("/api/games/game-1/my-team")
@@ -650,9 +652,11 @@ describe("隊伍路由 (teams)", () => {
 
     it("隊伍已完成時回傳 null", async () => {
       const { app } = createApp();
-      mockDb.query.teamMembers.findFirst.mockResolvedValue({
-        team: { gameId: "game-1", status: "completed" },
-      });
+      mockDb.query.teamMembers.findMany.mockResolvedValue([
+        {
+          team: { gameId: "game-1", status: "completed" },
+        },
+      ]);
 
       const res = await request(app)
         .get("/api/games/game-1/my-team")
@@ -671,9 +675,9 @@ describe("隊伍路由 (teams)", () => {
         name: "我的隊伍",
         members: [{ userId: "user-1" }],
       };
-      mockDb.query.teamMembers.findFirst.mockResolvedValue({
-        team: mockTeam,
-      });
+      mockDb.query.teamMembers.findMany.mockResolvedValue([
+        { team: mockTeam },
+      ]);
 
       const res = await request(app)
         .get("/api/games/game-1/my-team")

@@ -27,6 +27,9 @@ interface TeamMessage {
   latitude?: number;
   longitude?: number;
   accuracy?: number;
+  /** game_started 訊息：隊長按開始遊戲 */
+  sessionId?: string;
+  gameId?: string;
 }
 
 interface UseTeamWebSocketOptions {
@@ -40,6 +43,8 @@ interface UseTeamWebSocketOptions {
   onVoteCast?: (voteId: string, pageId: string, userId: string, choice: string) => void;
   onScoreUpdate?: (score: number, change: number, reason: string) => void;
   onReadyUpdate?: (userId: string, isReady: boolean) => void;
+  /** 🆕 隊長按下開始遊戲 → 廣播給全員（含自己），所有玩家自動跳到遊戲頁 */
+  onGameStarted?: (sessionId: string, gameId: string) => void;
 }
 
 export function useTeamWebSocket({
@@ -53,6 +58,7 @@ export function useTeamWebSocket({
   onVoteCast,
   onScoreUpdate,
   onReadyUpdate,
+  onGameStarted,
 }: UseTeamWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -69,6 +75,7 @@ export function useTeamWebSocket({
     onVoteCast,
     onScoreUpdate,
     onReadyUpdate,
+    onGameStarted,
   });
   useEffect(() => {
     callbacksRef.current = {
@@ -79,8 +86,9 @@ export function useTeamWebSocket({
       onVoteCast,
       onScoreUpdate,
       onReadyUpdate,
+      onGameStarted,
     };
-  }, [onMessage, onMemberJoined, onMemberLeft, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate]);
+  }, [onMessage, onMemberJoined, onMemberLeft, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted]);
 
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
@@ -161,6 +169,12 @@ export function useTeamWebSocket({
               break;
 
             case "team_chat":
+              break;
+
+            case "game_started":
+              if (data.sessionId && data.gameId) {
+                callbacksRef.current.onGameStarted?.(data.sessionId, data.gameId);
+              }
               break;
           }
         } catch {

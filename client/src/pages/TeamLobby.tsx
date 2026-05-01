@@ -1,4 +1,5 @@
 // 隊伍大廳主頁面
+import { useEffect } from "react";
 import { useTeamLobby } from "./team-lobby/useTeamLobby";
 import {
   LoadingView, GameNotFoundView, SoloModeView,
@@ -7,6 +8,19 @@ import {
 
 export default function TeamLobby() {
   const ctx = useTeamLobby();
+
+  // 🆕 重連場景：myTeam.status='playing' + activeSessionId → 自動跳回遊戲
+  //   斷線/關閉瀏覽器後再開啟，能繼續未完成的遊戲
+  const myTeam = ctx.myTeam as { status?: string; activeSessionId?: string | null } | null | undefined;
+  useEffect(() => {
+    if (
+      myTeam?.status === "playing" &&
+      myTeam.activeSessionId &&
+      ctx.game
+    ) {
+      ctx.navigate(`/game/${ctx.game.id}?session=${myTeam.activeSessionId}`);
+    }
+  }, [myTeam?.status, myTeam?.activeSessionId, ctx.game, ctx]);
 
   if (ctx.gameLoading || ctx.teamLoading) {
     return <LoadingView />;

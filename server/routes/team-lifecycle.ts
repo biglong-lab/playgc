@@ -265,7 +265,10 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
           });
         }
 
-        ctx.broadcastToSession(`team_${teamId}`, {
+        // 🔧 Fix（2026-05-02）：原本誤用 broadcastToSession + "team_" prefix，
+        //   訊息送到不存在的 session room → 隊員永遠收不到 game_started
+        //   改用 broadcastToTeam 廣播給該 team 的所有 active 連線
+        ctx.broadcastToTeam(teamId, {
           type: "game_started",
           sessionId: session.id,
           gameId: team.gameId,

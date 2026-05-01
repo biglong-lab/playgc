@@ -168,6 +168,10 @@ export function useTeamLobby(): TeamLobbyReturn {
     onReadyUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
+    // 🆕 隊長按開始 → 全員（含隊長）收到 game_started 自動跳遊戲頁
+    onGameStarted: (sessionId, _gameId) => {
+      setLocation(`/game/${gameId}?session=${sessionId}`);
+    },
   });
 
   // Mutations

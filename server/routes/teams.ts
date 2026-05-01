@@ -5,8 +5,10 @@ import { db } from "../db";
 import {
   teams,
   teamMembers,
+  teamSessions,
+  gameSessions,
 } from "@shared/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, desc } from "drizzle-orm"; // desc 用於 activeSessionId 查詢
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { registerTeamVoteRoutes } from "./team-votes";
@@ -283,35 +285,33 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
         // 🔧 Fix（2026-05-02）：原本用 findFirst 沒過濾 gameId，
         //   會撈到 user 在別的遊戲的 active team，導致剛建的隊伍看不到。
-        //   改用 JOIN 精準找此 game 的 active membership。
-        const matched = await db
-          .select({ teamId: teamMembers.teamId })
-          .from(teamMembers)
-          .innerJoin(teams, eq(teamMembers.teamId, teams.id))
-          .where(
-            and(
-              eq(teamMembers.userId, userId),
-              eq(teams.gameId, gameId),
-              isNull(teamMembers.leftAt),
-            ),
-          )
-          .limit(1);
+        //   改用 findMany + 應用層過濾（兼容測試 mock 環境）
+        const memberships = await db.query.teamMembers.findMany({
+          where: and(
+            eq(teamMembers.userId, userId),
+            isNull(teamMembers.leftAt),
+          ),
+          with: {
+            team: {
+              with: {
+                game: true,
+                members: {
+                  where: isNull(teamMembers.leftAt),
+                  with: { user: true },
+                },
+                leader: true,
+              },
+            },
+          },
+        });
 
-        if (matched.length === 0) {
+        const myMembership = memberships.find((m) => m.team.gameId === gameId);
+
+        if (!myMembership) {
           return res.json(null);
         }
 
-        const team = await db.query.teams.findFirst({
-          where: eq(teams.id, matched[0].teamId),
-          with: {
-            game: true,
-            members: {
-              where: isNull(teamMembers.leftAt),
-              with: { user: true },
-            },
-            leader: true,
-          },
-        });
+        const team = myMembership.team;
 
         if (
           !team ||
@@ -320,7 +320,33 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           return res.json(null);
         }
 
-        res.json(team);
+        // 🆕 status='playing' 時補 active sessionId 進回傳，讓 client 能跳回遊戲
+        //   （重連場景：玩家斷線後重新打開 → lobby 偵測有 sessionId 自動 redirect）
+        //   失敗則 null（不阻塞主流程，client 仍能停在 lobby）
+        let activeSessionId: string | null = null;
+        if (team.status === "playing") {
+          try {
+            const ts = await db
+              .select({ sessionId: teamSessions.sessionId })
+              .from(teamSessions)
+              .innerJoin(gameSessions, eq(teamSessions.sessionId, gameSessions.id))
+              .where(
+                and(
+                  eq(teamSessions.teamId, team.id),
+                  eq(gameSessions.status, "playing"),
+                ),
+              )
+              .orderBy(desc(teamSessions.createdAt))
+              .limit(1);
+            if (ts.length > 0) {
+              activeSessionId = ts[0].sessionId;
+            }
+          } catch {
+            // 反查失敗 → 不阻塞，client 顯示 lobby
+          }
+        }
+
+        res.json({ ...team, activeSessionId });
       } catch (error) {
         res.status(500).json({ message: "取得隊伍資料失敗" });
       }
