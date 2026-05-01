@@ -236,7 +236,7 @@ export async function detectOrphanTasks(
     .where(
       and(
         eq(playerEventLogs.eventType, "page_complete"),
-        sql`${playerEventLogs.pageId} = ANY(${pageIds})`,
+        inArray(playerEventLogs.pageId, pageIds),
       ),
     );
   const completedSet = new Set<string>();
@@ -251,7 +251,7 @@ export async function detectOrphanTasks(
     .where(
       and(
         eq(playerEventLogs.eventType, "page_enter"),
-        sql`${playerEventLogs.pageId} = ANY(${pageIds})`,
+        inArray(playerEventLogs.pageId, pageIds),
       ),
     );
   const enteredSet = new Set<string>();
