@@ -390,6 +390,23 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
+          // 🆕 Phase 4 TerritoryCapture：地盤戰用 session 範圍廣播（多隊共享）
+          //   action: "capture"（佔領 / 奪回）/ "snapshot"（重連時 echo）
+          //   payload: { pointId, teamId, capturedAt }
+          //   ws 必須先 send "join" 訊息（useTeamWebSocket alsoJoinSessionId=true 自動觸發）
+          //   才會被加進 clients[sessionId]
+          case "territory_capture_sync":
+            if (ws.sessionId) {
+              broadcastToSession(ws.sessionId, {
+                type: "territory_capture_sync",
+                action: message.action,
+                payload: message.payload,
+                userId: message.userId,
+                timestamp: new Date().toISOString(),
+              });
+            }
+            break;
+
           case "chat":
             if (ws.sessionId) {
               await storage.createChatMessage({

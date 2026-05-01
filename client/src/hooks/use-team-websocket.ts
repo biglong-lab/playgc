@@ -42,6 +42,12 @@ interface UseTeamWebSocketOptions {
   teamId: string | undefined;
   userId: string | undefined;
   userName: string | undefined;
+  /**
+   * 🆕 Phase 4：若提供 sessionId 且 true → ws 連線時同時 send "join" 訊息把
+   *    ws 加進 session room。讓 territory_capture_sync 等需要 session 範圍
+   *    廣播的訊息能正確收發。
+   */
+  alsoJoinSessionId?: string;
   onMessage?: (message: TeamMessage) => void;
   onMemberJoined?: (userId: string, userName: string) => void;
   onMemberLeft?: (userId: string, userName: string) => void;
@@ -65,6 +71,7 @@ export function useTeamWebSocket({
   teamId,
   userId,
   userName,
+  alsoJoinSessionId,
   onMessage,
   onMemberJoined,
   onMemberLeft,
@@ -133,6 +140,16 @@ export function useTeamWebSocket({
           userId,
           userName,
         }));
+        // 🆕 Phase 4：若 alsoJoinSessionId → 同 ws 也 join session room
+        //   讓 broadcastToSession 廣播的 territory_capture_sync 等訊息能收到
+        if (alsoJoinSessionId) {
+          ws.send(JSON.stringify({
+            type: "join",
+            sessionId: alsoJoinSessionId,
+            userId,
+            userName,
+          }));
+        }
       };
 
       ws.onmessage = (event) => {
@@ -257,7 +274,7 @@ export function useTeamWebSocket({
     } catch {
       // WebSocket 連線建立失敗
     }
-  }, [teamId, userId, userName]); // ⚠️ 不放 callback：用 callbacksRef.current 取代
+  }, [teamId, userId, userName, alsoJoinSessionId]); // ⚠️ 不放 callback：用 callbacksRef.current 取代
 
   const sendChat = useCallback((message: string, messageType: string = "text") => {
     if (wsRef.current?.readyState === WebSocket.OPEN && teamId && userId && userName) {
@@ -350,6 +367,28 @@ export function useTeamWebSocket({
     [userId],
   );
 
+  /**
+   * 🆕 Phase 4 TerritoryCapture 廣播 — 地盤戰 session 範圍廣播
+   *   action: "capture" / "snapshot"
+   *   payload: { pointId, teamId, capturedAt }
+   *   server 端用 broadcastToSession（多隊共享 session）
+   */
+  const sendTerritorySync = useCallback(
+    (action: string, payload: Record<string, unknown>) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "territory_capture_sync",
+            userId,
+            action,
+            payload,
+          }),
+        );
+      }
+    },
+    [userId],
+  );
+
   return {
     isConnected,
     memberLocations,
@@ -359,5 +398,6 @@ export function useTeamWebSocket({
     sendReady,
     sendLockCoopSync,
     sendRelaySync,
+    sendTerritorySync,
   };
 }
