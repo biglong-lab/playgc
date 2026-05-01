@@ -308,6 +308,27 @@ export function useTeamWebSocket({
     }
   }, [userId, userName]);
 
+  /**
+   * 🆕 Phase 3.2 LockCoop 廣播 — 廣義「動作 + payload」訊息
+   *   action: "code"（共享輸入更新）/ "attempt"（次數累計）/ "unlocked" / "failed"
+   *   server 端純轉發，不驗證；驗證在 client 觸發者
+   */
+  const sendLockCoopSync = useCallback(
+    (action: string, payload: Record<string, unknown>) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "team_lock_coop_sync",
+            userId,
+            action,
+            payload,
+          }),
+        );
+      }
+    },
+    [userId],
+  );
+
   return {
     isConnected,
     memberLocations,
@@ -315,5 +336,6 @@ export function useTeamWebSocket({
     sendLocation,
     sendVote,
     sendReady,
+    sendLockCoopSync,
   };
 }

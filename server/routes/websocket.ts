@@ -308,6 +308,26 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
+          // 🆕 Phase 3.2 LockCoop：協作解鎖共享輸入 + 嘗試 + 解鎖/失敗廣播
+          //   action: "code" | "attempt" | "unlocked" | "failed"
+          //   payload 結構依 action 而定（純廣播，client 端各自處理）
+          //   排除自己（excludeClient=ws）避免送回觸發者
+          case "team_lock_coop_sync":
+            if (ws.teamId) {
+              broadcastToTeam(
+                ws.teamId,
+                {
+                  type: "team_lock_coop_sync",
+                  action: message.action,
+                  payload: message.payload,
+                  userId: message.userId,
+                  timestamp: new Date().toISOString(),
+                },
+                ws,
+              );
+            }
+            break;
+
           case "chat":
             if (ws.sessionId) {
               await storage.createChatMessage({
