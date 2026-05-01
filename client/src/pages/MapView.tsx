@@ -469,19 +469,6 @@ export default function MapView() {
           />
         )}
 
-        {/* 🔍 地圖 tile 載入狀態指示器（右下角小標籤）*/}
-        <div className="absolute bottom-20 right-2 z-[999] pointer-events-none">
-          <div
-            className={`text-[10px] px-2 py-0.5 rounded backdrop-blur ${
-              tilesLoaded > 0
-                ? "bg-emerald-500/20 text-emerald-300"
-                : "bg-amber-500/20 text-amber-300"
-            }`}
-          >
-            {tilesLoaded > 0 ? `🗺 ${tilesLoaded}` : "⏳ 載入..."}
-          </div>
-        </div>
-
         {locationError && (
           <div className="absolute bottom-24 left-4 right-4 z-[1000]">
             <Card className="bg-destructive/10 border-destructive/30">
