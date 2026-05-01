@@ -197,12 +197,66 @@ export function registerPlatformAiCenterRoutes(app: Express) {
           calculateHealthScore({ gameId }),
         ]);
 
+        // 🔧 Enrich：把 gameId/pageId 補上遊戲名稱、任務名稱、pageType（讓前端可顯示有意義資訊）
+        const allGameIds = Array.from(new Set([
+          ...zombies.map((z) => z.gameId),
+          ...orphans.map((o) => o.gameId),
+          ...deadEnds.map((d) => d.gameId),
+        ].filter((g): g is string => !!g)));
+
+        const allPageIds = Array.from(new Set([
+          ...zombies.map((z) => z.pageId),
+          ...deadEnds.map((d) => d.pageId),
+        ]));
+
+        const gameRows = allGameIds.length > 0
+          ? await db
+              .select({ id: games.id, title: games.title })
+              .from(games)
+              .where(inArray(games.id, allGameIds))
+          : [];
+        const gameById = new Map(gameRows.map((g) => [g.id, g.title]));
+
+        const pageRows = allPageIds.length > 0
+          ? await db
+              .select({
+                id: pages.id,
+                pageType: pages.pageType,
+                customName: pages.customName,
+                pageOrder: pages.pageOrder,
+              })
+              .from(pages)
+              .where(inArray(pages.id, allPageIds))
+          : [];
+        const pageById = new Map(pageRows.map((p) => [p.id, p]));
+
+        const enrichedZombies = zombies.map((z) => ({
+          ...z,
+          gameName: z.gameId ? gameById.get(z.gameId) ?? null : null,
+          pageType: pageById.get(z.pageId)?.pageType ?? null,
+          customName: pageById.get(z.pageId)?.customName ?? null,
+          pageOrder: pageById.get(z.pageId)?.pageOrder ?? null,
+        }));
+
+        const enrichedOrphans = orphans.map((o) => ({
+          ...o,
+          gameName: gameById.get(o.gameId) ?? null,
+        }));
+
+        const enrichedDeadEnds = deadEnds.map((d) => ({
+          ...d,
+          gameName: d.gameId ? gameById.get(d.gameId) ?? null : null,
+          pageType: pageById.get(d.pageId)?.pageType ?? null,
+          customName: pageById.get(d.pageId)?.customName ?? null,
+          pageOrder: pageById.get(d.pageId)?.pageOrder ?? null,
+        }));
+
         res.json({
           gameId: gameId ?? null,
           score: healthScore,
-          zombieVariants: zombies,
-          orphanTasks: orphans,
-          deadEndPages: deadEnds,
+          zombieVariants: enrichedZombies,
+          orphanTasks: enrichedOrphans,
+          deadEndPages: enrichedDeadEnds,
         });
       } catch (error) {
         console.error("[ai-center] content-health 失敗:", error);
