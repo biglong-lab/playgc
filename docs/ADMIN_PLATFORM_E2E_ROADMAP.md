@@ -90,7 +90,7 @@ TOTAL_PROGRESS: 29/30
 - [x] **P4-2** 修復 Critical 問題 — ISSUES.md Critical 區塊空（P4-1 已分類確認 0 個）；無事可修，無程式碼變更
 - [x] **P4-3** 修復 High 問題 — ISSUES.md High 區塊空（P4-1 已分類確認 0 個）；無事可修，無程式碼變更
 - [x] **P4-4** 修復 Medium 問題 — ISSUES.md Medium 區塊空（P4-1 已分類確認 0 個）；錯誤訊息已驗證中文化（樣本：overview/content-health 都回「需要登入」）；無事可修，無程式碼變更
-- [ ] **P4-5** Phase 4 收尾：commit + push + 部署 + 驗證
+- [x] **P4-5** Phase 4 收尾：push `a2b10d06` ✅；無實際生產變更（P4-2/3/4 全 0 issue），不需部署；生產 https://game.homi.cc 仍 HTTP 200 健康
 
 ---
 
