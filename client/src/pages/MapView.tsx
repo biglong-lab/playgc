@@ -56,6 +56,7 @@ export default function MapView() {
   const pageMarkersRef = useRef<Map<string, any>>(new Map());
 
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
+  const [mapStuck, setMapStuck] = useState(false);  // 地圖載入超時（5 秒沒任何 tile）→ 顯示診斷 UI
 
   // === 資料查詢 ===
   const { data: locations = [], isLoading: locationsLoading } = useQuery<Location[]>({
