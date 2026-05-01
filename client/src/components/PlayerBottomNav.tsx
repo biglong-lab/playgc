@@ -60,17 +60,23 @@ export default function PlayerBottomNav() {
   return (
     <nav
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-border"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       data-testid="player-bottom-nav"
     >
-      <div className="grid grid-cols-3 h-14">
+      {/* 🔧 把 safe-area 算進 grid 高度，icon 在「總高度」中央
+          原本 padding-bottom: env(...) 會把 icon 推到上半部（home indicator 區留白） */}
+      <div
+        className="grid grid-cols-3"
+        style={{
+          height: `calc(3.5rem + env(safe-area-inset-bottom))`,
+        }}
+      >
         {NAV_ITEMS.map((item) => {
           const active = item.isActive(location);
           const Icon = item.icon;
           return (
             <Link key={item.path} href={item.path}>
               <a
-                className={`flex flex-col items-center justify-center gap-1 transition-all ${
+                className={`flex flex-col items-center justify-center gap-1 h-full transition-all ${
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
