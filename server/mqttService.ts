@@ -1,5 +1,6 @@
 import mqtt, { MqttClient, IClientOptions } from "mqtt";
 import { storage } from "./storage";
+import { enrichShootingRecordForBroadcast } from "./lib/shooting-broadcast";
 import type { ArduinoDevice, InsertShootingRecord, InsertDeviceLog } from "@shared/schema";
 
 interface MqttMessage {
@@ -239,12 +240,14 @@ class MqttService {
       await this.logDeviceActivity(deviceId, "hit", `Score: ${hitData.score}, Zone: ${hitData.position}`);
 
       if (this.hitBroadcastHandler && hitData.sessionId) {
-        this.hitBroadcastHandler(hitData.sessionId, {
+        // 🆕 Phase A2：補 displayName 給 ShootingTeam 排行榜用
+        const enriched = await enrichShootingRecordForBroadcast({
           ...savedRecord,
           points: hitData.score,
           hitZone: hitData.position,
           hitPosition: { x: Math.random() * 100, y: Math.random() * 100 },
         });
+        this.hitBroadcastHandler(hitData.sessionId, enriched);
       }
     } catch (error) {
       // 靜默處理命中記錄失敗

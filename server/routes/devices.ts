@@ -6,6 +6,7 @@ import { insertArduinoDeviceSchema, insertShootingRecordSchema } from "@shared/s
 import { z } from "zod";
 import { requireAdminRole } from "./utils";
 import { hotPathLimiter } from "../utils/rate-limiters";
+import { enrichShootingRecordForBroadcast } from "../lib/shooting-broadcast";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 
 export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
@@ -265,9 +266,11 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       const record = await storage.createShootingRecord(data);
 
       if (data.sessionId) {
+        // 🆕 Phase A2：補 displayName 給 ShootingTeam 排行榜用
+        const enriched = await enrichShootingRecordForBroadcast(record);
         ctx.broadcastToSession(data.sessionId, {
           type: "shooting_hit",
-          record,
+          record: enriched,
         });
       }
 
