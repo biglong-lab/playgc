@@ -8,9 +8,94 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Users, Copy, Check, Play, LogOut, Crown, Loader2,
   RefreshCw, ArrowLeft, UserPlus, Wifi, WifiOff, Share2,
+  Radio, Mic,
 } from "lucide-react";
 import type { Game, TeamMember, User } from "@shared/schema";
 import type { TeamWithDetails } from "./useTeamLobby";
+
+// 🆕 開始遊戲倒數畫面（給隊長按開始後，所有玩家看到的緩衝畫面）
+//   - 5 秒倒數
+//   - 顯示隊員列表（含 ready 狀態）
+//   - 提示對講機已連線
+export function StartingCountdownView({
+  game,
+  team,
+  remainingSeconds,
+}: {
+  game: Game;
+  team: TeamWithDetails;
+  remainingSeconds: number;
+}) {
+  const memberCount = team.members?.length ?? 0;
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+            <span
+              className="text-5xl font-bold font-number tabular-nums text-primary"
+              data-testid="starting-countdown-seconds"
+            >
+              {remainingSeconds}
+            </span>
+          </div>
+          <CardTitle>{game.title}</CardTitle>
+          <CardDescription>遊戲即將開始 — 請確認隊友都準備好</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* 隊員列表 */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <Users className="w-4 h-4 text-primary" />
+              <span>本場隊伍（{memberCount} 位）</span>
+            </div>
+            <div className="space-y-1.5">
+              {(team.members ?? []).map((m: TeamMember & { user?: User }) => (
+                <div
+                  key={m.userId}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 border"
+                  data-testid={`countdown-member-${m.userId}`}
+                >
+                  <Avatar className="w-7 h-7">
+                    {m.user?.profileImageUrl && (
+                      <AvatarImage src={m.user.profileImageUrl} />
+                    )}
+                    <AvatarFallback className="text-xs">
+                      {m.user?.firstName?.[0] ?? m.userId.slice(0, 1)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="flex-1 text-sm font-medium truncate">
+                    {m.user?.firstName ?? m.userId.slice(0, 8)}
+                    {m.role === "leader" && (
+                      <Crown className="inline w-3 h-3 ml-1 text-amber-400" />
+                    )}
+                  </span>
+                  <Badge variant="outline" className="text-[10px]">
+                    已準備
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 對講機提示 */}
+          <Alert>
+            <Radio className="w-4 h-4" />
+            <AlertDescription className="text-xs">
+              <strong>對講機已自動連線</strong> —
+              點右下角按鈕按住即可跟隊友通話。建議全程開啟，可即時溝通。
+            </AlertDescription>
+          </Alert>
+
+          <div className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1">
+            <Mic className="w-3 h-3" />
+            進入遊戲後對講機會自動就緒
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 // 載入畫面
 export function LoadingView() {

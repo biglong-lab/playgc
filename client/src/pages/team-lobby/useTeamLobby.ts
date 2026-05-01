@@ -1,5 +1,5 @@
 // 隊伍大廳邏輯 Hook
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -102,6 +102,8 @@ export interface TeamLobbyReturn {
   readyPending: boolean;
   startPending: boolean;
   leavePending: boolean;
+  // 🆕 開始遊戲倒數狀態
+  startingCountdown: number | null;
 }
 
 export function useTeamLobby(): TeamLobbyReturn {
@@ -117,6 +119,9 @@ export function useTeamLobby(): TeamLobbyReturn {
   const [teamName, setTeamName] = useState("");
   const [copied, setCopied] = useState(false);
   const [showJoinForm, setShowJoinForm] = useState(!!initialInviteCode); // 有 code 自動展開 join form
+  // 🆕 開始遊戲倒數（null = 沒在倒數 / 數字 = 剩餘秒數）
+  const [startingCountdown, setStartingCountdown] = useState<number | null>(null);
+  const startSessionIdRef = useRef<string | null>(null);
 
   const currentUserId = dbUser?.id;
 
@@ -168,11 +173,33 @@ export function useTeamLobby(): TeamLobbyReturn {
     onReadyUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
-    // 🆕 隊長按開始 → 全員（含隊長）收到 game_started 自動跳遊戲頁
+    // 🆕 隊長按開始 → 全員（含隊長）進入 5 秒倒數緩衝畫面，
+    //   讓所有玩家確認上線、對講機就緒，再一起進遊戲
     onGameStarted: (sessionId, _gameId) => {
-      setLocation(`/game/${gameId}?session=${sessionId}`);
+      // 防重複：mutation 與 ws 兩個都會觸發，只取第一個
+      if (startSessionIdRef.current) return;
+      startSessionIdRef.current = sessionId;
+      setStartingCountdown(5);
     },
   });
+
+  // 倒數 effect：每秒減 1，到 0 → setLocation 跳遊戲
+  useEffect(() => {
+    if (startingCountdown === null) return;
+    if (startingCountdown <= 0) {
+      const sid = startSessionIdRef.current;
+      if (sid) {
+        setLocation(`/game/${gameId}?session=${sid}`);
+      }
+      setStartingCountdown(null);
+      startSessionIdRef.current = null;
+      return;
+    }
+    const timer = setTimeout(() => {
+      setStartingCountdown((prev) => (prev === null ? null : prev - 1));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [startingCountdown, gameId, setLocation]);
 
   // Mutations
   const createTeamMutation = useMutation({
@@ -240,8 +267,13 @@ export function useTeamLobby(): TeamLobbyReturn {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({ title: "遊戲開始！" });
-      setLocation(`/game/${gameId}?session=${data.sessionId}`);
+      toast({ title: "遊戲即將開始！" });
+      // 🆕 改成觸發倒數（跟 onGameStarted ws callback 同樣效果，防 ws 漏接）
+      //   防重複：ref 已有值 → 不再觸發
+      if (!startSessionIdRef.current) {
+        startSessionIdRef.current = data.sessionId;
+        setStartingCountdown(5);
+      }
     },
     onError: (error: unknown) => {
       const msg = error instanceof Error ? error.message : "無法開始遊戲";
@@ -309,5 +341,6 @@ export function useTeamLobby(): TeamLobbyReturn {
     readyPending: updateReadyMutation.isPending,
     startPending: startGameMutation.isPending,
     leavePending: leaveTeamMutation.isPending,
+    startingCountdown,
   };
 }

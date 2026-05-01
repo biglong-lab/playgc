@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useTeamLobby } from "./team-lobby/useTeamLobby";
 import {
   LoadingView, GameNotFoundView, SoloModeView,
-  JoinOrCreateView, TeamLobbyView,
+  JoinOrCreateView, TeamLobbyView, StartingCountdownView,
 } from "./team-lobby/LobbyViews";
 
 export default function TeamLobby() {
@@ -32,6 +32,17 @@ export default function TeamLobby() {
 
   if (ctx.game.gameMode !== "team") {
     return <SoloModeView onStart={() => ctx.navigate(`/game/${ctx.game!.id}`)} />;
+  }
+
+  // 🆕 開始遊戲倒數中（隊長按開始 → 全員 5 秒緩衝）
+  if (ctx.startingCountdown !== null && ctx.myTeam) {
+    return (
+      <StartingCountdownView
+        game={ctx.game!}
+        team={ctx.myTeam}
+        remainingSeconds={ctx.startingCountdown}
+      />
+    );
   }
 
   if (!ctx.myTeam) {
