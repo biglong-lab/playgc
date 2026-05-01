@@ -448,11 +448,21 @@ export default function MapView() {
       </header>
 
       {/* 地圖 + 覆蓋層 */}
-      <main className="flex-1 relative min-h-0">
-        {/* 🔧 純 absolute inset-0，撐滿父層 flex-1 main
-            （之前加 inline `height: 100%` 反而把高度卡死在 300px，
-            因為 height: 100% 計算父層 explicit height，flex-1 的 height 是 auto） */}
-        <div ref={mapRef} className="absolute inset-0" />
+      {/* 🔧 改用 calc(100dvh - header - nav) 直接給 main 明確高度
+          flex-1 + absolute inset-0 在某些 mobile browser 算不出高度（容器 0 高）
+          直接給 main height 才能保證 mapRef 撐得開 */}
+      <main
+        className="relative w-full"
+        style={{
+          height: "calc(100dvh - 56px - 64px)",  // 56=header 估、64=底部 nav 估
+          minHeight: "400px",
+        }}
+      >
+        <div
+          ref={mapRef}
+          className="absolute inset-0"
+          style={{ width: "100%", height: "100%" }}
+        />
 
         <MapLocationList
           locations={locations}
