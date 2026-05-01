@@ -6,6 +6,7 @@ import {
   LoadingView, GameNotFoundView, SoloModeView,
   JoinOrCreateView, TeamLobbyView, StartingCountdownView,
 } from "./team-lobby/LobbyViews";
+import LeaderDecideDialog from "@/components/team/LeaderDecideDialog";
 
 export default function TeamLobby() {
   const ctx = useTeamLobby();
@@ -54,23 +55,33 @@ export default function TeamLobby() {
   }
 
   return (
-    <TeamLobbyView
-      game={ctx.game}
-      team={ctx.myTeam}
-      wsConnected={ctx.wsConnected}
-      copied={ctx.copied}
-      myMembership={ctx.myMembership}
-      allReady={ctx.allReady}
-      hasEnoughPlayers={ctx.hasEnoughPlayers}
-      onBack={() => ctx.navigate("/home")}
-      onRefresh={ctx.refetchTeam}
-      onCopyCode={ctx.handleCopyCode}
-      onToggleReady={ctx.toggleReady}
-      onStartGame={ctx.startGame}
-      onLeaveTeam={ctx.leaveTeam}
-      readyPending={ctx.readyPending}
-      startPending={ctx.startPending}
-      leavePending={ctx.leavePending}
-    />
+    <>
+      <TeamLobbyView
+        game={ctx.game}
+        team={ctx.myTeam}
+        wsConnected={ctx.wsConnected}
+        copied={ctx.copied}
+        myMembership={ctx.myMembership}
+        allReady={ctx.allReady}
+        hasEnoughPlayers={ctx.hasEnoughPlayers}
+        onBack={() => ctx.navigate("/home")}
+        onRefresh={ctx.refetchTeam}
+        onCopyCode={ctx.handleCopyCode}
+        onToggleReady={ctx.toggleReady}
+        onStartGame={ctx.startGame}
+        onLeaveTeam={ctx.leaveTeam}
+        readyPending={ctx.readyPending}
+        startPending={ctx.startPending}
+        leavePending={ctx.leavePending}
+      />
+      {/* 🆕 Phase 2c+ leader-decide：寬限期過時隊長決定 dialog */}
+      <LeaderDecideDialog
+        open={!!ctx.pendingDecisionTarget}
+        targetUserName={ctx.pendingDecisionTarget?.userName ?? null}
+        onWait={() => ctx.decideLeader("wait")}
+        onContinue={() => ctx.decideLeader("continue")}
+        onCancel={() => ctx.setPendingDecisionTarget(null)}
+      />
+    </>
   );
 }

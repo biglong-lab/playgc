@@ -109,6 +109,14 @@ export interface TeamLobbyReturn {
   startingCountdown: number | null;
   /** 區分「全員開始倒數（5 秒）」vs「掉線重連 flash（1 秒）」— UI 顯示不同畫面 */
   startingMode: "starting" | "reconnecting" | null;
+  /** 🆕 leader-decide：寬限期過的玩家 — 隊長收到時設值，顯示 dialog */
+  pendingDecisionTarget: { userId: string; userName: string } | null;
+  setPendingDecisionTarget: (
+    v: { userId: string; userName: string } | null,
+  ) => void;
+  /** 隊長對 pendingDecision 下決定（傳 wait / continue） */
+  decideLeader: (action: "wait" | "continue") => Promise<void>;
+  decidePending: boolean;
 }
 
 export function useTeamLobby(): TeamLobbyReturn {
@@ -129,6 +137,12 @@ export function useTeamLobby(): TeamLobbyReturn {
   // 🆕 區分模式：starting = 全員開始 5 秒倒數；reconnecting = 掉線回來 1 秒 flash
   const [startingMode, setStartingMode] = useState<"starting" | "reconnecting" | null>(null);
   const startSessionIdRef = useRef<string | null>(null);
+
+  // 🆕 leader-decide：寬限期過的玩家（隊長收到時設值，顯示 dialog）
+  const [pendingDecisionTarget, setPendingDecisionTarget] = useState<
+    { userId: string; userName: string } | null
+  >(null);
+  const [decidePending, setDecidePending] = useState(false);
 
   const currentUserId = dbUser?.id;
 
@@ -211,6 +225,10 @@ export function useTeamLobby(): TeamLobbyReturn {
         variant: "destructive",
       });
       speakTeamEvent(userId, userName, "graceExpired");
+      // 🆕 leader-decide：若我是隊長，跳 dialog 讓隊長決定（其他人不跳）
+      if (myTeam?.leaderId === currentUserId) {
+        setPendingDecisionTarget({ userId, userName });
+      }
     },
     // 🆕 Phase 2c+ leader-decide：隊長對寬限期過的隊員下決定
     onLeaderDecide: (action, _targetUserId, _leaderUserId) => {
@@ -227,6 +245,7 @@ export function useTeamLobby(): TeamLobbyReturn {
           duration: 4000,
         });
       }
+      setPendingDecisionTarget(null);
     },
     onReadyUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
@@ -379,6 +398,27 @@ export function useTeamLobby(): TeamLobbyReturn {
     joinTeamMutation.mutate({ accessCode: accessCode.trim().toUpperCase() });
   };
 
+  // 🆕 leader-decide：隊長對 pendingDecision 下決定
+  const decideLeader = useCallback(
+    async (action: "wait" | "continue") => {
+      if (!myTeam?.id || !pendingDecisionTarget) return;
+      setDecidePending(true);
+      try {
+        await apiRequest("POST", `/api/teams/${myTeam.id}/leader-decide`, {
+          targetUserId: pendingDecisionTarget.userId,
+          action,
+        });
+        // 不在這 setPendingDecisionTarget(null) — 等 onLeaderDecide WS 廣播觸發
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "決定失敗";
+        toast({ title: "決定失敗", description: msg, variant: "destructive" });
+      } finally {
+        setDecidePending(false);
+      }
+    },
+    [myTeam?.id, pendingDecisionTarget, toast],
+  );
+
   // 計算屬性
   const isLeader = myTeam?.leaderId === currentUserId;
   const myMembership = myTeam?.members.find(m => m.userId === currentUserId);
@@ -419,5 +459,9 @@ export function useTeamLobby(): TeamLobbyReturn {
     leavePending: leaveTeamMutation.isPending,
     startingCountdown,
     startingMode,
+    pendingDecisionTarget,
+    setPendingDecisionTarget,
+    decideLeader,
+    decidePending,
   };
 }
