@@ -299,6 +299,8 @@ export function registerAdminGameRoutes(app: Express) {
     enableTeamVoice: z.boolean().optional(),
     enableTeamLocation: z.boolean().optional(),
     teamScoreMode: z.enum(["shared", "individual", "hybrid"]).optional(),
+    // 🤖 P6-4: AI 實測時戳（admin 點「已完成 AI 實測」按鈕時帶當前時間）
+    lastLiveTestedAt: z.coerce.date().nullable().optional(),
   }).strict(); // strict() 拒絕未定義的欄位
 
   app.patch("/api/admin/games/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
