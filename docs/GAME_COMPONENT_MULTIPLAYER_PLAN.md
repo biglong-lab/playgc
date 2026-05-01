@@ -1,11 +1,11 @@
 # 多人遊戲元件規劃（GAME_COMPONENT_MULTIPLAYER_PLAN）
 
-> **文件版本**: v1.0
+> **文件版本**: v1.5
 > **建立日期**: 2026-05-01
-> **最後更新**: 2026-05-01
+> **最後更新**: 2026-05-02
 > **作者**: Hung（大哉實業有限公司）+ Claude Code 規劃協作
-> **狀態**: 規劃階段（尚未開工）
-> **預計工期**: 5-6 週（分 4 階段）
+> **狀態**: Phase 1 ✅ + Phase 2 ✅ + Phase 2.5 ✅（穩定性軸）+ Phase 2.6 ⏳ 進行中
+> **預計工期**: 5-6 週（分 4 階段 + 穩定性穿插軸）
 
 ---
 
@@ -21,6 +21,17 @@
 - 開工前 → 讀 §5 §6 §11（設計、現狀、施工順序）
 - 實作中 → 對照 §6 個別元件設計
 - 完工驗收 → 對照 §12 驗收標準
+
+### 📊 雙軸架構（v1.5 加入）
+
+本規劃實作時分**兩條獨立並行的軸**：
+
+| 軸 | 範圍 | 章節 |
+|---|------|------|
+| **元件軸**：Phase 1-4 | 元件層多人化（PhotoTeam / VoteTeam / LockCoop ...） | §3 §6 §11 |
+| **穩定性軸**：Phase 2.5 | 多人遊戲執行時的穩定性（重連 / 寬限期 / 進度同步 / 通知） | §11 Phase 2.5 |
+
+兩軸**同等必要不可缺**。元件軸建造多人玩法，穩定性軸保證玩法在現場活動的網路波動下不破裂。Phase 2.5 是 Phase 2 完成後實機驗證才補上的軸，後續若發現新的穩定性需求應加進 Phase 2.5（命名 2.5.X）而非塞進元件 Phase。
 
 ---
 
@@ -903,6 +914,69 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 
 ---
 
+### Phase 2.5：多人遊戲穩定性軸（**已完成 — 2026-05-02**）
+
+**背景**：實機驗證 Phase 1 / Phase 2 期間，盤點出多人遊戲執行時有大量穩定性 bug — 重連體驗破裂、找不到「離開遊戲」按鈕、隊友狀態看不見、進度不同步。這些原本預設「會自動就位」的穩定性層其實沒人做，所以 Phase 2.6 之前先把這層補上。
+
+**這條軸與 Phase 1-4 並列，不取代任何 Phase**：
+- Phase 1-4 是「**元件層多人化**」（PhotoTeam / VoteTeam / LockCoop / TerritoryCapture）
+- Phase 2.5 是「**多人遊戲穩定性**」（重連 / 寬限期 / 進度同步 / 通知）
+- 兩條軸都是必要的，缺一不可
+
+**完成項目（7 commits）**：
+
+| Commit | 範圍 | 摘要 |
+|--------|------|------|
+| `f28edd45` | field routing fix | 點賈村卻顯示後浦遊戲 — useCurrentField 用 localStorage / Provider 用 URL，cache key 不對齊。修法：用 React Context 共享 themePayload |
+| `37bd7a6b` | Phase 2.5.1 重連 flash + 自願退出 | 重連 3 秒倒數改 1 秒「歡迎回來」flash；遊戲中「離開」確認時呼叫 `/api/teams/:teamId/leave` 設 leftAt → 永不被自動拉回 |
+| `005c6429` | Phase 2.5.2 存在感通知 | 訊息語意拆三類：`team_member_disconnected`（暫時離線）/ `team_member_reconnected`（回來）/ `team_member_left`（明確自願退出）；server 加 teamMemberHistory 追蹤 |
+| `9941ae67` | Phase 2.5.3 ghost lobby fix | `team.status='playing'` 但找不到 active session → 視為已結束，回 null（避免玩家被困在 ghost lobby） |
+| `eb69d0f1` | Phase 2.5.4 進度同步（最快進度） | `team_sessions.maxPageIndex` 欄位 + `POST /api/teams/:teamId/advance-progress` API + `team_progress_advance` WS 廣播 + GamePlay 訂閱跟上隊伍最快進度 |
+| `1e7b6101` | Phase 2.5.5 寬限期計時 | server 純 in-memory 計時器：30 秒 grace timer + 120 秒 auto-leave timer；超時自動標 leftAt + 廣播 left（reason: auto_leave_after_grace） |
+| `fec26059` | Phase 2.5.6 TTS 語音通知 | 瀏覽器 SpeechSynthesis API 中文語音；volume 0.4 不打斷遊戲音樂；同 user 同事件 60 秒 throttle |
+
+**完整斷線重連流程**：
+
+```
+玩家 A 斷線
+  ├─[0s]─    broadcast disconnected
+  │          🔔 toast「⚠️ A 暫時離線」 + 🔊 語音
+  │
+  ├─[0~30s]─ 重連 ✅ → cancelTimer + reconnected
+  │           🔔 toast「✅ A 回來了」 + 🔊
+  │           進遊戲時自動跳到隊伍 maxPageIndex
+  │
+  ├─[30s]─   grace_expired
+  │          🔔 toast「⏳ 寬限期已過 120s」 + 🔊 destructive
+  │
+  ├─[30~150s]─ 仍可重連
+  │
+  └─[150s]─  auto-leave timer fire
+             DB 設 leftAt + broadcast team_member_left
+             下次開遊戲 → my-team 回 null → 不被自動拉回
+```
+
+**設計決策**：
+
+| 決策 | 選擇 | 理由 |
+|------|------|------|
+| 進度同步策略 | **B 跟最快進度（簡化版）** | 進度只往前不倒退，慢的玩家不被拋下；個人分數各自累計，不嘗試補分；接受斷線玩家少賺 |
+| 暫停策略 | **全自動 hybrid（無隊長 dialog）** | 30s grace + 120s auto-leave；隊長 dialog 留給後續加強版 |
+| 寬限期實作 | **純 in-memory（不動 schema）** | server 重啟會 reset，可接受；schema 變更等真有需要再加 |
+| TTS 語音 | **瀏覽器內建 SpeechSynthesis** | 免費、零依賴、零成本；中文 zh-TW 優先，volume 0.4，60s throttle |
+
+**驗收**：
+- ✅ TypeScript 零錯誤
+- ✅ 50 個 team/websocket 測試 + 9 個 voice-notification 測試全過
+- ✅ DB schema 變更（`team_sessions.max_page_index`）— 部署前必須跑 `npm run db:push`
+
+**剩餘加強項（**非阻塞**）**：
+- ⏳ Phase 2.5+ 隊長 dialog（leader-decide UI）— 寬限期過時讓隊長選「等待 / 先繼續」（C2 if-needed）
+- ⏳ 後台寬限期可調整 UI — field settings 加 `disconnectGracePeriod` / `pauseStrategy` 欄位（A3 if-needed）
+- ⏳ 語音開關 UI — 設定頁讓玩家可關閉（目前已有 localStorage flag，缺 toggle UI）
+
+---
+
 ### Phase 3：新類型多人元件（2 週）
 
 **目標**：增加多人專屬玩法的多樣性
@@ -1059,6 +1133,7 @@ Week 6+    Phase 4：補完與選擇性             🟡 依需求
 | 2026-05-01 | v1.2 | Phase 1.4 重大修訂：約束改為**不對稱**（multi 元件只能在 multi 遊戲；solo 元件兩種都可）。觸發原因：盤點線上 28 個 team 遊戲全部用 solo 元件，原對稱約束會破壞所有現有遊戲。影響 §2.4、`isComponentAllowedForPlayerMode`、`getAllowedComponentsForPlayerMode` | Claude Code（Loop Phase 1.4） |
 | 2026-05-01 | v1.3 | **Phase 1 完成**。23 個元件全部分類就位：shared/components/ (4) + multi/ (1) + solo/ (18)。子目錄（photo-mission/、gps-mission/、qr-scan/）保留在 game/ 根目錄作為共用工具。git rename 完整保留 history。三層驗證通過。 | Claude Code（Loop Phase 1.6） |
 | 2026-05-02 | v1.4 | **Phase 2 完成**。多人元件全鏈路就位（VoteTeam / ShootingTeam / GpsTeamMission），共 9 個 commits / 115 新測試。三個元件都包含：純 UI 元件 + 容器（自取 myTeam）+ GamePageRenderer 註冊。Admin GameFormDialog 加 gameMode 選擇器。TeammatePanel 共用 UI 完成。多人元件總數從 1 增至 4。剩餘整合工作（admin page editor、server WebSocket 接合）歸入 Phase 2.6 或視試玩結果決定。 | Claude Code（Loop Phase 2） |
+| 2026-05-02 | v1.5 | **Phase 2.5 完成（穩定性軸）**。實機驗證 Phase 2 期間發現多人遊戲執行時 7 個關鍵 bug，這個軸與元件層 Phase 1-4 並列補完穩定性層：field routing fix + 重連 flash + 自願退出 + 存在感通知 + ghost lobby fix + 進度同步（maxPageIndex） + 寬限期計時 + TTS 語音通知。共 7 commits，schema 加 `team_sessions.max_page_index` 欄位（部署前須跑 db:push）。完整斷線重連流程：disconnect 30s grace → grace_expired → 120s auto-leave。所有測試通過。 | Claude Code（Loop Phase 2.5） |
 
 ---
 
