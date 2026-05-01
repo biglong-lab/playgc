@@ -50,6 +50,27 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   const disconnectTimers: Map<string, NodeJS.Timeout> = new Map();
   const autoLeaveTimers: Map<string, NodeJS.Timeout> = new Map();
 
+  // 🆕 Phase 3 WS Reconnect 狀態恢復（依 docs §7.4）
+  //   maintain per-team last-state cache：每個 team 的每種 sync 訊息保留最新 payload
+  //   team_*_sync 廣播時 cache.set(teamId, type, payload)
+  //   team_join 時把 cache 內所有 type 送給新連線（snapshot）
+  //   server 重啟會 reset（接受限制；元件自身應 graceful 處理空狀態）
+  type CachedState = Record<string, unknown>;
+  const teamStateCache: Map<string, Map<string, CachedState>> = new Map();
+
+  function cachePerTeamState(teamId: string, msgType: string, payload: CachedState) {
+    if (!teamStateCache.has(teamId)) {
+      teamStateCache.set(teamId, new Map());
+    }
+    teamStateCache.get(teamId)!.set(msgType, payload);
+  }
+
+  function snapshotPerTeamState(teamId: string): Array<{ type: string; payload: CachedState }> {
+    const cache = teamStateCache.get(teamId);
+    if (!cache) return [];
+    return Array.from(cache.entries()).map(([type, payload]) => ({ type, payload }));
+  }
+
   function timerKey(teamId: string, userId: string): string {
     return `${teamId}:${userId}`;
   }
@@ -239,6 +260,22 @@ export function setupWebSocket(httpServer: Server): RouteContext {
                 timestamp: new Date().toISOString(),
               });
             }
+
+            // 🆕 Phase 3 WS Reconnect：把該 team 已快取的 state 送給新連線
+            //   讓 reconnect / 後加入的玩家看到當前狀態（不需等下次廣播）
+            //   只送給此 ws 不廣播（用 ws.send 直接送）
+            const snapshot = snapshotPerTeamState(message.teamId);
+            for (const item of snapshot) {
+              if (ws.readyState === WebSocket.OPEN) {
+                ws.send(
+                  JSON.stringify({
+                    ...item.payload,
+                    type: item.type,
+                    _isSnapshot: true,
+                  }),
+                );
+              }
+            }
             break;
 
           case "team_chat":
@@ -314,16 +351,19 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           //   排除自己（excludeClient=ws）避免送回觸發者
           case "team_lock_coop_sync":
             if (ws.teamId) {
-              broadcastToTeam(
+              const lockCoopMsg = {
+                type: "team_lock_coop_sync",
+                action: message.action,
+                payload: message.payload,
+                userId: message.userId,
+                timestamp: new Date().toISOString(),
+              };
+              broadcastToTeam(ws.teamId, lockCoopMsg, ws);
+              // 🆕 Phase 3 WS Reconnect：cache 最新 state（key 用 type+action 區分）
+              cachePerTeamState(
                 ws.teamId,
-                {
-                  type: "team_lock_coop_sync",
-                  action: message.action,
-                  payload: message.payload,
-                  userId: message.userId,
-                  timestamp: new Date().toISOString(),
-                },
-                ws,
+                `team_lock_coop_sync:${message.action}`,
+                lockCoopMsg as CachedState,
               );
             }
             break;
@@ -333,16 +373,19 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           //   payload: { segmentIndex, completedBy, nextSegmentIndex? }
           case "team_relay_sync":
             if (ws.teamId) {
-              broadcastToTeam(
+              const relayMsg = {
+                type: "team_relay_sync",
+                action: message.action,
+                payload: message.payload,
+                userId: message.userId,
+                timestamp: new Date().toISOString(),
+              };
+              broadcastToTeam(ws.teamId, relayMsg, ws);
+              // 🆕 Phase 3 WS Reconnect：cache 最新 state
+              cachePerTeamState(
                 ws.teamId,
-                {
-                  type: "team_relay_sync",
-                  action: message.action,
-                  payload: message.payload,
-                  userId: message.userId,
-                  timestamp: new Date().toISOString(),
-                },
-                ws,
+                `team_relay_sync:${message.action}`,
+                relayMsg as CachedState,
               );
             }
             break;
