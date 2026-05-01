@@ -54,7 +54,7 @@ TOTAL_PROGRESS: 7/30
 
 - [x] **P2-1** Smoke test：`/platform`（dashboard）+ `/api/platform/overview` — SPA 200 ✅ / API 無 token 回 401 ✅ / 錯誤訊息已中文化「需要登入」✅；無 issue
 - [x] **P2-2** Smoke test：fields / plans / feature-flags — 3 SPA 200 ✅ + 16/16 API 401 ✅（16 endpoint：fields 8 含 overrides+bulk / plans 4 / feature-flags 4）；無 issue
-- [ ] **P2-3** Smoke test：revenue / applications / analytics（3 頁面 8 endpoint）
+- [x] **P2-3** Smoke test：revenue / applications / analytics — 3 SPA 200 ✅ + 5/5 API ✅（revenue+transactions 401 / applications 401 / public POST /api/apply 400 缺 body / analytics 401）；無 issue
 - [ ] **P2-4** Smoke test：admins / roles / audit-logs（3 頁面 5 endpoint）
 - [ ] **P2-5** Smoke test：tickets / billing-alerts / usage（3 頁面 6 endpoint）
 - [ ] **P2-6** Smoke test：bulk-ops / insights（2 頁面 7 endpoint）
