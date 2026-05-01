@@ -36,6 +36,10 @@ interface TeamMessage {
   /** 🆕 Phase 2c：grace_expired / disconnected 帶的逾時毫秒 */
   autoLeaveInMs?: number;
   graceInMs?: number;
+  /** 🆕 Phase 2c+ leader-decide */
+  action?: string;
+  targetUserId?: string;
+  leaderUserId?: string;
 }
 
 interface UseTeamWebSocketOptions {
@@ -65,6 +69,8 @@ interface UseTeamWebSocketOptions {
   onProgressAdvance?: (maxPageIndex: number, advancedBy: string) => void;
   /** 🆕 Phase 2c：隊員寬限期過了（30 秒未重連），autoLeaveInMs 後自動 leave */
   onGraceExpired?: (userId: string, userName: string, autoLeaveInMs: number) => void;
+  /** 🆕 Phase 2c+ leader-decide：隊長對寬限期過的隊員下決定（wait / continue） */
+  onLeaderDecide?: (action: "wait" | "continue", targetUserId: string, leaderUserId: string) => void;
 }
 
 export function useTeamWebSocket({
@@ -84,6 +90,7 @@ export function useTeamWebSocket({
   onGameStarted,
   onProgressAdvance,
   onGraceExpired,
+  onLeaderDecide,
 }: UseTeamWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -105,6 +112,7 @@ export function useTeamWebSocket({
     onGameStarted,
     onProgressAdvance,
     onGraceExpired,
+    onLeaderDecide,
   });
   useEffect(() => {
     callbacksRef.current = {
@@ -120,8 +128,9 @@ export function useTeamWebSocket({
       onGameStarted,
       onProgressAdvance,
       onGraceExpired,
+      onLeaderDecide,
     };
-  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance, onGraceExpired]);
+  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance, onGraceExpired, onLeaderDecide]);
 
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
@@ -247,6 +256,21 @@ export function useTeamWebSocket({
                   data.userId,
                   data.userName || "",
                   data.autoLeaveInMs || 120_000,
+                );
+              }
+              break;
+
+            // 🆕 Phase 2c+ leader-decide：隊長下決定
+            case "team_leader_decide":
+              if (
+                (data.action === "wait" || data.action === "continue") &&
+                data.targetUserId &&
+                data.leaderUserId
+              ) {
+                callbacksRef.current.onLeaderDecide?.(
+                  data.action,
+                  data.targetUserId,
+                  data.leaderUserId,
                 );
               }
               break;

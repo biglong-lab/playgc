@@ -413,4 +413,96 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
       }
     },
   );
+
+  // 🆕 Phase 2c+ leader-decide：寬限期過後隊長決定「等待」/「先繼續」
+  //   依 docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §11 Phase 2.5 暫緩項
+  //   action: "wait" → 取消 autoLeave timer（玩家無限等）+ 廣播 leader_decide_wait
+  //   action: "continue" → 立刻設 leftAt + cancel timer + 廣播 team_member_left
+  app.post(
+    "/api/teams/:teamId/leader-decide",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { teamId } = req.params;
+        const userId = req.user?.claims?.sub;
+        if (!userId) {
+          return res.status(401).json({ message: "請先登入" });
+        }
+
+        const decideSchema = z.object({
+          targetUserId: z.string().min(1),
+          action: z.enum(["wait", "continue"]),
+        });
+        const body = decideSchema.parse(req.body);
+
+        // 驗證 leader 身份
+        const team = await db.query.teams.findFirst({
+          where: eq(teams.id, teamId),
+        });
+        if (!team) {
+          return res.status(404).json({ message: "隊伍不存在" });
+        }
+        if (team.leaderId !== userId) {
+          return res.status(403).json({ message: "只有隊長可以決定" });
+        }
+
+        // 取消既有 timer（grace + autoLeave）
+        ctx.cancelDisconnectTimer?.(teamId, body.targetUserId);
+
+        if (body.action === "wait") {
+          // 廣播「隊長選擇等待」— client 顯示「隊長正等 OOO 回來」
+          ctx.broadcastToTeam(teamId, {
+            type: "team_leader_decide",
+            action: "wait",
+            targetUserId: body.targetUserId,
+            leaderUserId: userId,
+            timestamp: new Date().toISOString(),
+          });
+          return res.json({ message: "已通知隊伍等待", action: "wait" });
+        }
+
+        // action === "continue" → 立刻將 target 標為 leftAt + 廣播
+        try {
+          await db
+            .update(teamMembers)
+            .set({ leftAt: new Date() })
+            .where(
+              and(
+                eq(teamMembers.teamId, teamId),
+                eq(teamMembers.userId, body.targetUserId),
+                isNull(teamMembers.leftAt),
+              ),
+            );
+
+          // 拿 target 顯示名給 toast 用
+          let targetUserName = body.targetUserId;
+          try {
+            const u = await db.query.users.findFirst({
+              where: eq(users.id, body.targetUserId),
+            });
+            if (u?.firstName) targetUserName = u.firstName;
+            else if (u?.email) targetUserName = u.email.split("@")[0];
+          } catch {
+            /* ignore */
+          }
+
+          ctx.broadcastToTeam(teamId, {
+            type: "team_member_left",
+            userId: body.targetUserId,
+            userName: targetUserName,
+            reason: "leader_continue_decision",
+            timestamp: new Date().toISOString(),
+          });
+          res.json({ message: "已將該玩家標為離開", action: "continue" });
+        } catch {
+          res.status(500).json({ message: "處理離開失敗" });
+        }
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+        }
+        res.status(500).json({ message: "leader-decide 處理失敗" });
+      }
+    },
+  );
 }

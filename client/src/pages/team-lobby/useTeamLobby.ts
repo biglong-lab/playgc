@@ -206,11 +206,27 @@ export function useTeamLobby(): TeamLobbyReturn {
       const seconds = Math.round(autoLeaveInMs / 1000);
       toast({
         title: `⏳ ${userName} 寬限期已過`,
-        description: `${seconds} 秒後將自動視為離開`,
+        description: `${seconds} 秒後將自動視為離開（隊長可介入決定）`,
         duration: 5000,
         variant: "destructive",
       });
       speakTeamEvent(userId, userName, "graceExpired");
+    },
+    // 🆕 Phase 2c+ leader-decide：隊長對寬限期過的隊員下決定
+    onLeaderDecide: (action, _targetUserId, _leaderUserId) => {
+      if (action === "wait") {
+        toast({
+          title: "👑 隊長選擇等待",
+          description: "隊長決定等待離線玩家回來，遊戲繼續",
+          duration: 4000,
+        });
+      } else {
+        toast({
+          title: "👑 隊長選擇先繼續",
+          description: "離線玩家已標為離開，遊戲繼續進行",
+          duration: 4000,
+        });
+      }
     },
     onReadyUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
