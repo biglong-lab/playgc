@@ -308,7 +308,13 @@ export function registerPlatformAiCenterRoutes(app: Express) {
           }
         }
 
-        res.json({ generated, skipped, failed, total: candidates.length });
+        res.json({
+          generated,
+          skipped,
+          failed,
+          total: candidates.length,
+          skipReasons,
+        });
       } catch (error) {
         console.error("[ai-center] batch-generate 失敗:", error);
         res.status(500).json({ error: "批次生成失敗" });
