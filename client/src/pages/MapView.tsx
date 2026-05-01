@@ -166,7 +166,25 @@ export default function MapView() {
     }).addTo(map);
     mapInstanceRef.current = map;
 
+    // 🔧 修地圖渲染問題：mount 時 main flex layout 還沒算完，map size = 0
+    //   多次 invalidateSize 確保 tiles 重新計算大小並載入
+    const sizeChecks = [50, 200, 500, 1000].map((delay) =>
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, delay),
+    );
+
+    // 視窗 resize 也重算
+    const onResize = () => {
+      if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+    };
+    window.addEventListener("resize", onResize);
+
     return () => {
+      sizeChecks.forEach(clearTimeout);
+      window.removeEventListener("resize", onResize);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
