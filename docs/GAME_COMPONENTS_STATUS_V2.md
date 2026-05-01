@@ -10,18 +10,20 @@
 
 兩條軸並行推進，本表更新到當前狀況：
 
-### 元件軸：多人元件全鏈路完成（5 個）
+### 元件軸：8 個多人元件全鏈路完成 🎉
 
-| 多人元件 | 狀態 | Page 容器 | GamePageRenderer 註冊 | 來源 Phase |
-|---------|------|----------|----------------------|----------|
-| `PhotoTeam` | ✅ | PhotoTeamFlow | ✅ | Phase 1 |
-| `VoteTeam` | ✅ | VoteTeamPage | ✅ | Phase 2 |
-| `ShootingTeam` | ✅ | ShootingTeamPage | ✅ | Phase 2 |
-| `GpsTeamMission` | ✅ | GpsTeamMissionPage | ✅ | Phase 2 |
-| `ChoiceVerifyRace` | ✅ | ChoiceVerifyRacePage | ✅ | Phase 2.7（先行） |
-| `LockCoop` | ❌ 待開工 | - | - | Phase 3 |
-| `RelayMission` | ❌ 待開工 | - | - | Phase 3 |
-| `TerritoryCapture` | ❌ 待開工 | - | - | Phase 4 |
+| 多人元件 | 狀態 | Page 容器 | GamePageRenderer 註冊 | 廣播範圍 | 測試數 | 來源 Phase |
+|---------|------|----------|----------------------|---------|-------|----------|
+| `PhotoTeam` | ✅ | PhotoTeamFlow | ✅ | (隊長主控) | - | Phase 1 |
+| `VoteTeam` | ✅ | VoteTeamPage | ✅ | team | 39 | Phase 2 |
+| `ShootingTeam` | ✅ | ShootingTeamPage | ✅ | session | 37 | Phase 2 |
+| `GpsTeamMission` | ✅ | GpsTeamMissionPage | ✅ | team | 27 | Phase 2 |
+| `ChoiceVerifyRace` | ✅ | ChoiceVerifyRacePage | ✅ | team | - | Phase 2.7 |
+| `LockCoop` | ✅ | LockCoopPage | ✅ | team | 20 | Phase 3.2 |
+| `RelayMission` | ✅ | RelayMissionPage | ✅ | team | 18 | Phase 3.3 |
+| `TerritoryCapture` | ✅ | TerritoryCapturePage | ✅ | **session**（多隊共享） | 22 | Phase 4 |
+
+WS Reconnect 狀態恢復（§7.4）也已就位：server in-memory cache + team_join 自動 snapshot。
 
 ### 穩定性軸：Phase 2.5 完成（7 commits）
 
