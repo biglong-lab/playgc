@@ -687,5 +687,33 @@ describe("隊伍路由 (teams)", () => {
       expect(res.status).toBe(200);
       expect(res.body.name).toBe("我的隊伍");
     });
+
+    // 🆕 Phase 2a Fix：team.status='playing' 但找不到 active session → 回 null
+    //   避免玩家在「遊戲已結束但 team status 沒改」時被困在 ghost lobby
+    it("team status='playing' 但無 active session → 回 null（避免迷路）", async () => {
+      const { app } = createApp();
+      const mockTeam = {
+        id: "team-1",
+        gameId: "game-1",
+        status: "playing",
+        name: "我的隊伍",
+        members: [{ userId: "user-1" }],
+      };
+      mockDb.query.teamMembers.findMany.mockResolvedValue([
+        { team: mockTeam },
+      ]);
+      // 模擬 db.select 反查 sessionId 失敗（throw）→ activeSessionId 為 null
+      const dbAny = mockDb as { select: ReturnType<typeof vi.fn> };
+      dbAny.select = vi.fn(() => {
+        throw new Error("無 active session");
+      });
+
+      const res = await request(app)
+        .get("/api/games/game-1/my-team")
+        .set(AUTH_HEADER);
+
+      expect(res.status).toBe(200);
+      expect(res.body).toBeNull();
+    });
   });
 });

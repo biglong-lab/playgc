@@ -346,6 +346,14 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           }
         }
 
+        // 🆕 Fix（2026-05-02）：team.status='playing' 但找不到 active session
+        //   → 視為已結束（遊戲結束流程沒改 team status，或 session 自然 completed）
+        //   → 回 null 讓 lobby 顯示「創建/加入隊伍」，避免玩家被困在 ghost lobby
+        //   只 forming/ready 狀態下沒 session 是正常（還沒開打），不過濾
+        if (team.status === "playing" && !activeSessionId) {
+          return res.json(null);
+        }
+
         res.json({ ...team, activeSessionId });
       } catch (error) {
         res.status(500).json({ message: "取得隊伍資料失敗" });
