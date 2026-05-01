@@ -8,7 +8,11 @@
 // 使用：
 //   <PreviewBanner gameTitle={game.title} onExit={() => setLocation(`/admin/games/${gameId}`)} />
 import { Button } from "@/components/ui/button";
-import { X, Eye } from "lucide-react";
+import { X, Eye, ExternalLink } from "lucide-react";
+
+// 📋 AI 實測清單（GitHub raw 連結，方便場域 admin 發布前查看）
+const AI_TEST_CHECKLIST_URL =
+  "https://github.com/biglong-lab/playgc/blob/main/docs/AI_LIVE_TEST_CHECKLIST.md";
 
 interface PreviewBannerProps {
   gameTitle: string;
