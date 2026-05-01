@@ -57,6 +57,7 @@ export default function MapView() {
 
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [mapStuck, setMapStuck] = useState(false);  // 地圖載入超時（5 秒沒任何 tile）→ 顯示診斷 UI
+  const [tilesLoaded, setTilesLoaded] = useState(0);  // 已載入的 tile 數（給使用者確認地圖有在動）
 
   // === 資料查詢 ===
   const { data: locations = [], isLoading: locationsLoading } = useQuery<Location[]>({
