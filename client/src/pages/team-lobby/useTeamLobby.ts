@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
+import { speakTeamEvent, primeVoices } from "@/lib/voice-notification";
 import type { Game, Team, TeamMember, User } from "@shared/schema";
 
 /**
@@ -163,36 +164,45 @@ export function useTeamLobby(): TeamLobbyReturn {
     }
   }, [myTeam?.id]);
 
+  // 🆕 Phase 3：首次掛載時 prime SpeechSynthesis voices（Chrome 需要）
+  useEffect(() => {
+    primeVoices();
+  }, []);
+
   // WebSocket
   const { isConnected: wsConnected } = useTeamWebSocket({
     teamId: myTeam?.id,
     userId: currentUserId,
     userName: dbUser?.firstName || dbUser?.email || "Player",
-    onMemberJoined: (_userId, userName) => {
+    onMemberJoined: (userId, userName) => {
       toast({ title: `${userName} 加入了隊伍` });
+      speakTeamEvent(userId, userName, "joined");
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
-    onMemberLeft: (_userId, userName) => {
+    onMemberLeft: (userId, userName) => {
       toast({ title: `${userName} 離開了隊伍` });
+      speakTeamEvent(userId, userName, "left");
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
     // 🆕 Phase 2a：暫時離線（socket 斷）— 提示但不刷新成員（人還在）
-    onMemberDisconnected: (_userId, userName) => {
+    onMemberDisconnected: (userId, userName) => {
       toast({
         title: `⚠️ ${userName} 暫時離線`,
         description: "30 秒寬限期內回來不影響",
         duration: 3000,
       });
+      speakTeamEvent(userId, userName, "disconnected");
     },
     // 🆕 Phase 2a：重連回來
-    onMemberReconnected: (_userId, userName) => {
+    onMemberReconnected: (userId, userName) => {
       toast({
         title: `✅ ${userName} 回來了`,
         duration: 2000,
       });
+      speakTeamEvent(userId, userName, "reconnected");
     },
     // 🆕 Phase 2c：寬限期過了 — 顯示倒數提醒（autoLeaveInMs 後自動 leave）
-    onGraceExpired: (_userId, userName, autoLeaveInMs) => {
+    onGraceExpired: (userId, userName, autoLeaveInMs) => {
       const seconds = Math.round(autoLeaveInMs / 1000);
       toast({
         title: `⏳ ${userName} 寬限期已過`,
@@ -200,6 +210,7 @@ export function useTeamLobby(): TeamLobbyReturn {
         duration: 5000,
         variant: "destructive",
       });
+      speakTeamEvent(userId, userName, "graceExpired");
     },
     onReadyUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });

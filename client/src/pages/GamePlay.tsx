@@ -19,6 +19,7 @@ import GamePageErrorBoundary from "@/components/game/GamePageErrorBoundary";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import { useSessionManager } from "./hooks/useSessionManager";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
+import { speakTeamEvent, primeVoices } from "@/lib/voice-notification";
 import {
   RewardFeedbackOverlay,
   fireReward,
@@ -117,6 +118,11 @@ export default function GamePlay() {
   const totalPages = activePages.length;
   const progressPercent = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
 
+  // 🆕 Phase 3：首次掛載時 prime SpeechSynthesis voices（Chrome 需要）
+  useEffect(() => {
+    primeVoices();
+  }, []);
+
   // 🆕 Phase 2a：遊戲中也訂閱 team WS，顯示隊友離線/重連/離開 toast（存在感）
   //   solo mode → myTeam 為 null，hook 內部 effect 會跳過建立連線
   // 🆕 Phase 2.B：訂閱 team_progress_advance → 慢的玩家自動跟上最快進度
@@ -124,27 +130,30 @@ export default function GamePlay() {
     teamId: myTeam?.id,
     userId: user?.id,
     userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
-    onMemberDisconnected: (_, userName) => {
+    onMemberDisconnected: (userId, userName) => {
       toast({
         title: `⚠️ ${userName} 暫時離線`,
         description: "30 秒寬限期內回來不影響",
         duration: 3000,
       });
+      speakTeamEvent(userId, userName, "disconnected");
     },
-    onMemberReconnected: (_, userName) => {
+    onMemberReconnected: (userId, userName) => {
       toast({
         title: `✅ ${userName} 回來了`,
         duration: 2000,
       });
+      speakTeamEvent(userId, userName, "reconnected");
     },
-    onMemberLeft: (_, userName) => {
+    onMemberLeft: (userId, userName) => {
       toast({
         title: `👋 ${userName} 已離開遊戲`,
         duration: 3000,
       });
+      speakTeamEvent(userId, userName, "left");
     },
     // 🆕 Phase 2c：寬限期過了 — 倒數 2 分鐘自動 leave
-    onGraceExpired: (_, userName, autoLeaveInMs) => {
+    onGraceExpired: (userId, userName, autoLeaveInMs) => {
       const seconds = Math.round(autoLeaveInMs / 1000);
       toast({
         title: `⏳ ${userName} 寬限期已過`,
@@ -152,6 +161,7 @@ export default function GamePlay() {
         duration: 5000,
         variant: "destructive",
       });
+      speakTeamEvent(userId, userName, "graceExpired");
     },
     onProgressAdvance: (newMax, advancedBy) => {
       // 自己引發的 advance 不要再跳（已經在 newMax 頁面了）
