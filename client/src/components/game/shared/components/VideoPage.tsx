@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Play, Pause, SkipForward, ChevronRight, Volume2, VolumeX } from "lucide-react";
 import type { VideoConfig } from "@shared/schema";
-import GameErrorView from "./photo-mission/GameErrorView";
+import GameErrorView from "../../photo-mission/GameErrorView";
 
 interface VideoPageProps {
   config: VideoConfig;

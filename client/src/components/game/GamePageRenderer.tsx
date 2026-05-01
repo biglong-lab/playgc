@@ -9,22 +9,27 @@ import { PageLocationMiniMap, shouldShowMiniMap } from "@/components/game/PageLo
 import FeedbackButtons from "@/components/game/FeedbackButtons";
 import { useLastShownVariant, clearShownVariant } from "@/lib/feedback-tracker";
 
-const TextCardPage = lazy(() => import("@/components/game/TextCardPage"));
-const DialoguePage = lazy(() => import("@/components/game/DialoguePage"));
-const VideoPage = lazy(() => import("@/components/game/VideoPage"));
+// 通用元件（shared/components/）— 個人/多人都可用
+const TextCardPage = lazy(() => import("@/components/game/shared/components/TextCardPage"));
+const DialoguePage = lazy(() => import("@/components/game/shared/components/DialoguePage"));
+const VideoPage = lazy(() => import("@/components/game/shared/components/VideoPage"));
+const FlowRouterPage = lazy(() => import("@/components/game/shared/components/FlowRouterPage"));
+
+// 多人專用元件（multi/）— 只能在 playerMode='multi' 的遊戲使用
+const PhotoTeamFlow = lazy(() => import("@/components/game/multi/PhotoTeamFlow"));
+
+// 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/ButtonPage"));
 const TextVerifyPage = lazy(() => import("@/components/game/TextVerifyPage"));
 const ChoiceVerifyPage = lazy(() => import("@/components/game/ChoiceVerifyPage"));
 const ConditionalVerifyPage = lazy(() => import("@/components/game/ConditionalVerifyPage"));
 const ShootingMissionPage = lazy(() => import("@/components/game/ShootingMissionPage"));
 const PhotoMissionPage = lazy(() => import("@/components/game/PhotoMissionPage"));
-// 🆕 v2 獨立拍照類元件（2026-04-24）
 const PhotoSpotFlow = lazy(() => import("@/components/game/PhotoSpotFlow"));
 const PhotoCompareFlow = lazy(() => import("@/components/game/PhotoCompareFlow"));
 const PhotoBeforeAfterFlow = lazy(() => import("@/components/game/PhotoBeforeAfterFlow"));
 const PhotoBurstFlow = lazy(() => import("@/components/game/PhotoBurstFlow"));
 const PhotoArStickerFlow = lazy(() => import("@/components/game/PhotoArStickerFlow"));
-const PhotoTeamFlow = lazy(() => import("@/components/game/PhotoTeamFlow"));
 const PhotoOcrFlow = lazy(() => import("@/components/game/PhotoOcrFlow"));
 const GpsMissionPage = lazy(() => import("@/components/game/GpsMissionPage"));
 const QrScanPage = lazy(() => import("@/components/game/QrScanPage"));
@@ -32,7 +37,6 @@ const TimeBombPage = lazy(() => import("@/components/game/TimeBombPage"));
 const LockPage = lazy(() => import("@/components/game/LockPage"));
 const MotionChallengePage = lazy(() => import("@/components/game/MotionChallengePage"));
 const VotePage = lazy(() => import("@/components/game/VotePage"));
-const FlowRouterPage = lazy(() => import("@/components/game/FlowRouterPage"));
 
 // 📦 模組層級常數（避免每次 render 重新建立 Set）
 const SKIP_REWARD_WRAP_TYPES = new Set([

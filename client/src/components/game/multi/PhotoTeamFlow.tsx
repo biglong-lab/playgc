@@ -16,12 +16,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
-import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import {
   CameraInitializingView, CameraView, PhotoPreview, UploadingView,
-} from "./photo-mission/PhotoViews";
-import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
+} from "../photo-mission/PhotoViews";
+import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoTeamFlowProps {

@@ -7,9 +7,14 @@ import { render, screen, waitFor } from "@testing-library/react";
 import type { Page } from "@shared/schema";
 
 // 批次 mock 所有遊戲頁面元件
-vi.mock("@/components/game/TextCardPage", () => ({ default: () => <div data-testid="text_card" /> }));
-vi.mock("@/components/game/DialoguePage", () => ({ default: () => <div data-testid="dialogue" /> }));
-vi.mock("@/components/game/VideoPage", () => ({ default: () => <div data-testid="video" /> }));
+// 通用元件（shared/components/）
+vi.mock("@/components/game/shared/components/TextCardPage", () => ({ default: () => <div data-testid="text_card" /> }));
+vi.mock("@/components/game/shared/components/DialoguePage", () => ({ default: () => <div data-testid="dialogue" /> }));
+vi.mock("@/components/game/shared/components/VideoPage", () => ({ default: () => <div data-testid="video" /> }));
+vi.mock("@/components/game/shared/components/FlowRouterPage", () => ({ default: () => <div data-testid="flow_router" /> }));
+// 多人專用元件（multi/）
+vi.mock("@/components/game/multi/PhotoTeamFlow", () => ({ default: () => <div data-testid="photo_team" /> }));
+// 個人專用元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 vi.mock("@/components/game/ButtonPage", () => ({ default: () => <div data-testid="button" /> }));
 vi.mock("@/components/game/TextVerifyPage", () => ({ default: () => <div data-testid="text_verify" /> }));
 vi.mock("@/components/game/ChoiceVerifyPage", () => ({ default: () => <div data-testid="choice_verify" /> }));
@@ -22,7 +27,6 @@ vi.mock("@/components/game/TimeBombPage", () => ({ default: () => <div data-test
 vi.mock("@/components/game/LockPage", () => ({ default: () => <div data-testid="lock" /> }));
 vi.mock("@/components/game/MotionChallengePage", () => ({ default: () => <div data-testid="motion_challenge" /> }));
 vi.mock("@/components/game/VotePage", () => ({ default: () => <div data-testid="vote" /> }));
-vi.mock("@/components/game/FlowRouterPage", () => ({ default: () => <div data-testid="flow_router" /> }));
 
 import GamePageRenderer from "@/components/game/GamePageRenderer";
 
