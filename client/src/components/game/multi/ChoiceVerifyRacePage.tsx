@@ -19,11 +19,24 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import ChoiceVerifyRace, {
   type RaceAnswerRecord,
   type RaceMemberInfo,
 } from "./ChoiceVerifyRace";
 import type { ChoiceVerifyConfig } from "@shared/schema";
+
+/** Server 廣播 race_answered 訊息格式（part 3 client 準備接收，server 端 endpoint 待補） */
+interface RaceAnsweredWsMessage {
+  type: "race_answered";
+  userId: string;
+  displayName: string;
+  questionIndex: number;
+  selectedOption: number;
+  isCorrect: boolean;
+  answeredAt: string;
+  points: number;
+}
 
 export interface ChoiceVerifyRacePageProps {
   config: ChoiceVerifyConfig;
@@ -96,7 +109,48 @@ export default function ChoiceVerifyRacePage({
     [myTeam],
   );
 
-  // 處理玩家答題（MVP：本地計算，server 整合後改 POST + WebSocket）
+  // 訂閱 WebSocket race_answered 訊息（server 端 endpoint 待 part 3 補完）
+  // 收到隊友答題訊息 → 加進 answerRecords（本地 + 隊友統一管理）
+  const handleWsMessage = useCallback(
+    (msg: { type: string }) => {
+      if (msg.type !== "race_answered") return;
+      const m = msg as unknown as RaceAnsweredWsMessage;
+      // 自己的訊息不重複加（handleAnswer 本地已加）
+      if (m.userId === user?.id) return;
+      setAnswerRecords((prev) => {
+        // 防重：同 user 同題不重複
+        if (
+          prev.some(
+            (r) => r.userId === m.userId && r.questionIndex === m.questionIndex,
+          )
+        ) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            userId: m.userId,
+            displayName: m.displayName,
+            questionIndex: m.questionIndex,
+            selectedOption: m.selectedOption,
+            isCorrect: m.isCorrect,
+            answeredAt: m.answeredAt,
+            points: m.points,
+          },
+        ];
+      });
+    },
+    [user],
+  );
+
+  useTeamWebSocket({
+    teamId: myTeam?.id,
+    userId: user?.id,
+    userName: myDisplayName,
+    onMessage: handleWsMessage,
+  });
+
+  // 處理玩家答題（MVP：本地計算 + 廣播 — server 端 broadcast endpoint 待補）
   const handleAnswer = useCallback(
     (questionIndex: number, optionIndex: number) => {
       if (!user) return;
