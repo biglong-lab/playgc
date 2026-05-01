@@ -1,3 +1,5 @@
+STATUS: ALL_COMPLETED
+
 # 🔍 Admin + Platform 後台全面盤點與 E2E ROADMAP
 
 > **聚焦範圍**：現有功能驗證、優化、修復（不開發新功能）
