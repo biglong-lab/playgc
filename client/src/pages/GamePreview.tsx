@@ -31,6 +31,17 @@ interface GameWithPages {
   pages?: Page[];
 }
 
+// 🤖 7 種會走 AI 驗證的 page type — 預覽模式會 mock pass，需提示 admin 上線後實測
+const AI_PAGE_TYPES = new Set([
+  "photo_spot",
+  "photo_compare",
+  "photo_ocr",
+  "photo_mission",
+  "text_verify",
+  "choice_verify",
+  "conditional_verify",
+]);
+
 export default function GamePreview({ gameId }: GamePreviewProps) {
   const [, setLocation] = useLocation();
   // 🔒 in-memory state — 完全不寫 DB（守則 9 資料隔離）
