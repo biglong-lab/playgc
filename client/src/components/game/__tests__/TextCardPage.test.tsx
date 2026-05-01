@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import TextCardPage from "../TextCardPage";
+import TextCardPage from "../shared/components/TextCardPage";
 import type { TextCardConfig } from "@shared/schema";
 
 function renderWith(config: TextCardConfig, onComplete = vi.fn()) {

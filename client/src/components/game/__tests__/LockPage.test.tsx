@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import LockPage from "../LockPage";
+import LockPage from "../solo/LockPage";
 import type { LockConfig } from "@shared/schema";
 
 function renderWith(config: LockConfig, onComplete = vi.fn()) {

@@ -10,7 +10,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import TextVerifyPage from "../TextVerifyPage";
+import TextVerifyPage from "../solo/TextVerifyPage";
 import type { TextVerifyConfig } from "@shared/schema";
 
 function renderWith(config: TextVerifyConfig, onComplete = vi.fn()) {

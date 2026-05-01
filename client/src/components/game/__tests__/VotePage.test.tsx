@@ -12,7 +12,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import VotePage from "../VotePage";
+import VotePage from "../solo/VotePage";
 import type { VoteConfig } from "@shared/schema";
 
 function renderWith(config: VoteConfig, onComplete = vi.fn()) {

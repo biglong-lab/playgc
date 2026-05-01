@@ -10,7 +10,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import ConditionalVerifyPage from "../ConditionalVerifyPage";
+import ConditionalVerifyPage from "../solo/ConditionalVerifyPage";
 import type { ConditionalVerifyConfig } from "@shared/schema";
 
 interface RenderOptions {

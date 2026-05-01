@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import VideoPage from "../VideoPage";
+import VideoPage from "../shared/components/VideoPage";
 import type { VideoConfig } from "@shared/schema";
 
 function renderWith(config: VideoConfig, onComplete = vi.fn()) {

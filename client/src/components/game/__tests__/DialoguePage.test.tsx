@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import DialoguePage from "../DialoguePage";
+import DialoguePage from "../shared/components/DialoguePage";
 import type { DialogueConfig } from "@shared/schema";
 
 function renderWith(config: DialogueConfig, onComplete = vi.fn()) {

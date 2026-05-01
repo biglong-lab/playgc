@@ -3,7 +3,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import ButtonPage from "../ButtonPage";
+import ButtonPage from "../solo/ButtonPage";
 import type { ButtonConfig } from "@shared/schema";
 
 function renderWith(config: ButtonConfig, onComplete = vi.fn()) {

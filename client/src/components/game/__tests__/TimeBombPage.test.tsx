@@ -9,7 +9,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
-import TimeBombPage from "../TimeBombPage";
+import TimeBombPage from "../solo/TimeBombPage";
 import type { TimeBombConfig } from "@shared/schema";
 
 function renderWith(config: TimeBombConfig, onComplete = vi.fn()) {
