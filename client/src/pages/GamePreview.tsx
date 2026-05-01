@@ -169,6 +169,31 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
         <PreviewBanner gameTitle={game.title} onExit={handleExit} />
 
         <main className="flex-1 relative overflow-hidden">
+          {/* 🤖 AI 任務 inline 警告（preview only）— 提醒 admin AI 已 mock 上線後需實測 */}
+          {AI_PAGE_TYPES.has(currentPage.pageType) && (
+            <div
+              className="bg-amber-50 dark:bg-amber-950/40 border-l-4 border-amber-500 px-4 py-2 text-xs text-amber-900 dark:text-amber-100 flex items-start gap-2"
+              data-testid="ai-mock-warning"
+            >
+              <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <div>
+                <strong>預覽模式：AI 驗證已自動通過</strong>
+                <span className="ml-1 opacity-80">
+                  · 此頁是 <code className="font-mono">{currentPage.pageType}</code> 任務，正式遊戲會實際呼叫 AI 判定（會收費）。
+                  上線後請依{" "}
+                  <a
+                    href="https://github.com/biglong-lab/playgc/blob/main/docs/AI_LIVE_TEST_CHECKLIST.md"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline font-medium"
+                  >
+                    實測清單
+                  </a>{" "}
+                  實機驗證。
+                </span>
+              </div>
+            </div>
+          )}
           <GamePageRenderer
             key={currentPage.id}
             page={currentPage}
