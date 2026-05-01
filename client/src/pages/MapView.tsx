@@ -195,7 +195,10 @@ export default function MapView() {
 
     // 5 秒沒任何 tile load 成功 → 顯示診斷
     let tileLoadCount = 0;
-    tileLayer.on("tileload", () => { tileLoadCount++; });
+    tileLayer.on("tileload", () => {
+      tileLoadCount++;
+      setTilesLoaded((n) => n + 1);
+    });
     setTimeout(() => {
       if (tileLoadCount === 0) setMapStuck(true);
     }, 5000);
