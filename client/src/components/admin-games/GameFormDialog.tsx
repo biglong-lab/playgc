@@ -76,6 +76,27 @@ export default function GameFormDialog({
                 data-testid="input-game-description"
               />
             </div>
+            {/* 🎮 遊戲類型（影響元件分類約束） */}
+            <div className="space-y-2">
+              <Label htmlFor="gameMode">遊戲類型 *</Label>
+              <Select
+                value={formData.gameMode}
+                onValueChange={(value) => setFormData({ ...formData, gameMode: value })}
+              >
+                <SelectTrigger data-testid="select-game-mode">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">🧍 個人遊戲（玩家獨立完成）</SelectItem>
+                  <SelectItem value="team">👥 隊伍協作（共同進度）</SelectItem>
+                  <SelectItem value="competitive">⚔️ 競技對戰（隊伍 PVP）</SelectItem>
+                  <SelectItem value="relay">🏃 接力任務（順序解鎖）</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                個人遊戲只能使用個人元件；多人遊戲（隊伍/競技/接力）可額外使用多人專用元件
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="difficulty">難度</Label>

@@ -22,6 +22,8 @@ export interface StaffGame {
   difficulty: string | null;
   estimatedTime: number | null;
   maxPlayers: number | null;
+  /** 遊戲模式：individual / team / competitive / relay */
+  gameMode: string | null;
   status: string | null;
   fieldId: string | null;
   publicSlug: string | null;
@@ -222,6 +224,7 @@ export function useAdminStaffGames(): AdminStaffGamesReturn {
       difficulty: game.difficulty || "medium",
       estimatedTime: game.estimatedTime?.toString() || "",
       maxPlayers: game.maxPlayers?.toString() || "6",
+      gameMode: game.gameMode || "individual",
     });
     setIsDialogOpen(true);
   }
@@ -237,6 +240,7 @@ export function useAdminStaffGames(): AdminStaffGamesReturn {
           difficulty: formData.difficulty,
           estimatedTime: formData.estimatedTime ? parseInt(formData.estimatedTime) : null,
           maxPlayers: formData.maxPlayers ? parseInt(formData.maxPlayers) : 6,
+          gameMode: formData.gameMode || "individual",
         },
       });
     } else {

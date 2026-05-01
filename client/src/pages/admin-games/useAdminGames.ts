@@ -227,6 +227,7 @@ export function useAdminGames(): AdminGamesReturn {
       difficulty: game.difficulty || "medium",
       estimatedTime: game.estimatedTime?.toString() || "",
       maxPlayers: game.maxPlayers?.toString() || "6",
+      gameMode: game.gameMode || "individual",
     });
     setIsDialogOpen(true);
   }
@@ -242,6 +243,7 @@ export function useAdminGames(): AdminGamesReturn {
           difficulty: formData.difficulty,
           estimatedTime: formData.estimatedTime ? parseInt(formData.estimatedTime) : null,
           maxPlayers: formData.maxPlayers ? parseInt(formData.maxPlayers) : 6,
+          gameMode: formData.gameMode || "individual",
         },
       });
     } else {
