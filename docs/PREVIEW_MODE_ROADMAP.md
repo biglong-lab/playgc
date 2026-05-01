@@ -69,7 +69,7 @@ TOTAL_PROGRESS: 15/18
 # Phase 6：AI 實測機制 🤖
 
 - [x] **P6-1** 建立 `docs/AI_LIVE_TEST_CHECKLIST.md`：完整實機測試清單（測試前準備 + 7 種 AI 任務逐項表格化檢查 ✅/❌/⚠️ 路徑 / 共通確認項目（速度/UX/資料/Fallback）/ 紅燈條件 / 測試結束後流程）；給場域 admin 發布前用，每個遊戲走一輪
-- [ ] **P6-2** PreviewBanner 加「⚠️ AI 已 mock，上線後必須實測」+ link 到 checklist
+- [x] **P6-2** PreviewBanner 副標籤加「📋 實測清單」inline link → GitHub raw URL `biglong-lab/playgc/blob/main/docs/AI_LIVE_TEST_CHECKLIST.md`（target=_blank + ExternalLink icon + underline 高亮）；與既有「⚠️ AI 任務已 mock」串成完整提醒；data-testid: link-test-checklist；TS check ✅
 - [ ] **P6-3** 在 photo_spot/photo_compare/photo_ocr/photo_mission/text_verify/choice_verify/conditional_verify 7 種 AI 元件渲染處，加 inline 黃底警告框（preview 模式才顯示）
 - [ ] **P6-4** game-editor「發布」按鈕旁加「📋 已完成 AI 實測」checkbox（ToggleButton + games schema 加 `lastLiveTestedAt` timestamp）— 不阻擋發布只提醒
 
