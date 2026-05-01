@@ -20,11 +20,69 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
+// 🎬 AI endpoint 列表（preview 模式直接 mock，不打 OpenRouter / Vision）
+//   GamePreview 進入時 set sessionStorage.previewMode='1'，unmount 清除
+const AI_ENDPOINTS = [
+  "/api/ai/verify-photo",
+  "/api/ai/score-text",
+  "/api/ai/compare-photos",
+  "/api/ai/ocr-detect",
+];
+
+function isAiEndpoint(url: string): boolean {
+  return AI_ENDPOINTS.some((ep) => url.startsWith(ep));
+}
+
+function isPreviewMode(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem("previewMode") === "1";
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 🎬 預覽模式 mock response
+ *   各 endpoint 期望結構不同，這裡塞所有可能欄位的 happy-path 值
+ */
+function makePreviewMockResponse(): Response {
+  const body = {
+    // 通用
+    success: true,
+    passed: true,
+    preview: true,
+    reason: "[預覽模式] AI 驗證已 mock 通過，正式上線會實際呼叫 AI",
+    // verify-photo
+    verified: true,
+    confidence: 1.0,
+    detectedObjects: ["preview-mock"],
+    // ocr-detect
+    detected: true,
+    text: "[預覽] OCR 模擬結果",
+    matchedKeywords: [],
+    // compare-photos
+    similar: true,
+    similarity: 0.95,
+    // score-text
+    score: 100,
+  };
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  // 🎬 預覽模式攔截：AI endpoint 直接 mock pass，不發送請求
+  if (isPreviewMode() && isAiEndpoint(url)) {
+    return makePreviewMockResponse();
+  }
+
   const token = await getIdToken();
   const headers: Record<string, string> = {};
 
