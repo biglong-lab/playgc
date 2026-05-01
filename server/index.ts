@@ -137,13 +137,18 @@ app.use(helmet({
             "https://fonts.googleapis.com",
           ],
           fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-          // 圖片：同源 + Cloudinary + Leaflet tiles + data:/blob:
+          // 圖片：同源 + Cloudinary + Leaflet tiles（多 CDN）+ data:/blob:
           imgSrc: [
             "'self'",
             "data:",
             "blob:",
             "https://res.cloudinary.com",
-            "https://*.tile.openstreetmap.org",
+            // Leaflet tile sources（地圖瓦片）
+            "https://tile.openstreetmap.org",       // OSM 標準（無 subdomain）
+            "https://*.tile.openstreetmap.org",     // OSM with {s} subdomain
+            "https://*.basemaps.cartocdn.com",      // Carto direct CDN
+            "https://*.global.ssl.fastly.net",      // Carto fastly CDN
+            "https://*.arcgisonline.com",           // ESRI 備援 tiles
             "https://unpkg.com",
             "https://*.googleusercontent.com",
           ],
