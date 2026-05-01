@@ -91,6 +91,25 @@ export type MultiOnlyComponent = (typeof MULTI_ONLY_COMPONENTS)[number];
 
 export type PlayerMode = "solo" | "multi";
 
+/**
+ * 從現有 gameMode 推導 playerMode
+ *
+ * 設計決策：不在 games 表新增 playerMode 欄位，而是從現有的 gameMode 推導。
+ *   理由：DRY 原則、零 schema 變更、既有資料無需遷移。
+ *
+ * 對應關係：
+ *   - "individual"  → "solo"
+ *   - "team"        → "multi"
+ *   - "competitive" → "multi"
+ *   - "relay"       → "multi"
+ *
+ * @param gameMode 來自 shared/schema/games.ts 的 gameModeEnum
+ * @returns "solo" / "multi"
+ */
+export function derivePlayerModeFromGameMode(gameMode: string): PlayerMode {
+  return gameMode === "individual" ? "solo" : "multi";
+}
+
 /** 所有已知 pageType（包括規劃中尚未實作的多人元件） */
 export type KnownPageType =
   | SharedComponent
@@ -170,6 +189,28 @@ export function isComponentAllowedForPlayerMode(
   // 未知 pageType：保守允許（避免擋住未來新增的元件，
   //   但建議未來新增元件時同步加進這個常數檔案）
   return true;
+}
+
+/**
+ * 驗證 pageType 是否允許在指定 gameMode 的遊戲中使用（便利函式）
+ *
+ * 內部會先 derivePlayerModeFromGameMode 再呼叫 isComponentAllowedForPlayerMode。
+ * server 端 page 儲存約束直接用這個函式更方便（不必先做兩步轉換）。
+ *
+ * @example
+ *   isComponentAllowedForGameMode("lock", "individual")    // true
+ *   isComponentAllowedForGameMode("lock", "team")          // false
+ *   isComponentAllowedForGameMode("photo_team", "team")    // true
+ *   isComponentAllowedForGameMode("photo_team", "individual") // false
+ */
+export function isComponentAllowedForGameMode(
+  pageType: string,
+  gameMode: string,
+): boolean {
+  return isComponentAllowedForPlayerMode(
+    pageType,
+    derivePlayerModeFromGameMode(gameMode),
+  );
 }
 
 /**

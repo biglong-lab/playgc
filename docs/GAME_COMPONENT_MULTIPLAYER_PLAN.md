@@ -117,20 +117,29 @@ CHITO 平台底層多人基礎建設**完成度高**：
 - 多人元件後綴必須能反映玩法（`Team` ≠ `Coop` ≠ `Race`）
 - 命名必須出現在 `multi/` 或 `solo/` 對應目錄（雙重保證）
 
-### 2.4 原則四：playerMode 強約束
+### 2.4 原則四：playerMode 強約束（**從現有 gameMode 推導，不新增欄位**）
 
-games 表新增 `playerMode` 欄位，與元件分類配對：
+**設計決策（v1.1 修訂）**：原本規劃新增 `games.playerMode` 欄位，盤點後發現 [shared/schema/games.ts:22](../shared/schema/games.ts) 既有的 `gameMode` enum（`individual / team / competitive / relay`）已能完全推導，依 DRY 原則改用 helper 推導，**不變更 schema**。
 
-```sql
-games.playerMode  enum  ('solo' | 'multi')  default 'solo'
+**推導邏輯**（[shared/multiplayer-component-types.ts](../shared/multiplayer-component-types.ts) `derivePlayerModeFromGameMode`）：
+
+```
+gameMode === "individual"  → playerMode = "solo"
+gameMode === "team"        → playerMode = "multi"
+gameMode === "competitive" → playerMode = "multi"
+gameMode === "relay"       → playerMode = "multi"
 ```
 
 **約束**：
-- `playerMode='solo'` 的遊戲，pages 只能用 **個人專用 + 通用元件**
-- `playerMode='multi'` 的遊戲，pages 只能用 **多人專用 + 通用元件**
+- `playerMode='solo'`（即 `gameMode='individual'`）的遊戲，pages 只能用 **個人專用 + 通用元件**
+- `playerMode='multi'`（即其他三種 gameMode）的遊戲，pages 只能用 **多人專用 + 通用元件**
 - 違反 → server 拒絕儲存 + admin UI 灰掉不允許選
 
-**目的**：資料層保證一致性，admin 不可能誤組合。
+**好處**：
+- 零 schema 變更 = 零風險
+- 既有資料無需遷移
+- 不會出現「兩個欄位不同步」的資料一致性問題
+- admin UI 一個欄位就夠
 
 ### 2.5 原則五：使用者語言一致
 
@@ -323,53 +332,62 @@ client/src/components/game/
 
 ---
 
-## 5. 資料模型變更
+## 5. 資料模型變更（**v1.1 修訂：零 schema 變更**）
 
-### 5.1 新增 `games.playerMode` 欄位
+### 5.1 不新增欄位 — 從 `gameMode` 推導 `playerMode`
 
-**Schema 變更**（[shared/schema/games.ts](../shared/schema/games.ts)）：
+**設計決策**：盤點現有 [shared/schema/games.ts:22](../shared/schema/games.ts) 發現 `gameMode` enum（`individual / team / competitive / relay`）已能完全推導 `playerMode`，依 DRY 原則改用 helper 推導，**不變更 schema**。
+
+**Helper 函式**（[shared/multiplayer-component-types.ts](../shared/multiplayer-component-types.ts)）：
 
 ```typescript
-playerMode: varchar("player_mode", { length: 10 })
-  .default("solo")
-  .notNull(),
-// enum: 'solo' | 'multi'
+export function derivePlayerModeFromGameMode(gameMode: string): PlayerMode {
+  return gameMode === "individual" ? "solo" : "multi";
+}
 ```
 
-**遷移計畫**：
-1. ALTER TABLE 加欄位（NOT NULL DEFAULT 'solo'）
-2. 既有資料：依 `gameMode` 欄位推導
-   - `gameMode === 'team'` → `playerMode='multi'`
-   - 其他 → `playerMode='solo'`
-3. 不允許 DROP（依 CLAUDE.md 規則）
+**好處**：
+- 零 schema 變更 = 零部署風險、無 migration
+- 既有資料無需遷移
+- 不會出現「兩個欄位不同步」的資料一致性問題
+- 簡化 admin UI（一個 gameMode 欄位即可）
 
-### 5.2 新增約束（伺服器層）
+### 5.2 Server 層約束（用 helper 驗證）
 
 **儲存 page 時驗證**（[server/routes/pages.ts](../server/routes/pages.ts) 改動）：
 
 ```typescript
+import { isComponentAllowedForGameMode } from "@shared/multiplayer-component-types";
+
 // pseudo
-if (game.playerMode === 'solo' && page.componentType in MULTI_ONLY) {
-  throw 400; // "個人遊戲不能使用多人元件"
-}
-if (game.playerMode === 'multi' && page.componentType in SOLO_ONLY) {
-  throw 400; // "多人遊戲不能使用個人元件"
+if (!isComponentAllowedForGameMode(page.pageType, game.gameMode)) {
+  throw 400; // "本遊戲模式不允許此元件類型"
 }
 ```
 
-**元件分類常數**（新建 [shared/multiplayer-component-types.ts](../shared/multiplayer-component-types.ts)）：
+**元件分類常數**（[shared/multiplayer-component-types.ts](../shared/multiplayer-component-types.ts)）：
 
 ```typescript
 export const SHARED_COMPONENTS = ['text_card', 'dialogue', 'video', 'flow_router'] as const;
-export const SOLO_ONLY_COMPONENTS = ['lock', 'vote', 'shooting', 'gps_mission', /*...*/] as const;
-export const MULTI_ONLY_COMPONENTS = ['lock_coop', 'vote_team', 'shooting_team', /*...*/] as const;
+export const SOLO_ONLY_COMPONENTS = ['lock', 'vote', 'shooting_mission', /*...*/] as const;
+export const MULTI_ONLY_COMPONENTS = ['photo_team', 'vote_team', 'shooting_team', /*...*/] as const;
 ```
+
+提供 8 個純函式 helpers：
+- `isSharedComponent(pageType)` / `isSoloOnlyComponent` / `isMultiOnlyComponent`
+- `derivePlayerModeFromGameMode(gameMode)` — 推導
+- `isComponentAllowedForPlayerMode(pageType, playerMode)` — 用 playerMode 驗證
+- `isComponentAllowedForGameMode(pageType, gameMode)` — **server 端建議用這個**（一步到位）
+- `getAllowedComponentsForPlayerMode(playerMode)` — admin UI 過濾用
+- `getComponentCategory(pageType)` — UI 顯示用
 
 ### 5.3 不變更的部分
 
+- `games.gameMode` 維持現有 4 種 enum（individual / team / competitive / relay）
 - `teams` 表結構不變（已有 minPlayers / maxPlayers / accessCode）
 - `team_sessions` / `team_scores` / `team_votes` 不變
 - `squads` 系統獨立演進，不耦合
+- **本規劃 v1.1 起不再要求 schema 變更**
 
 ---
 
@@ -821,24 +839,20 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 **目標**：底層分類框架就位，不影響線上功能
 
 **Task**：
-- [ ] 建立目錄結構 `solo/` / `multi/` / `shared/`
-- [ ] 把 16 個現有元件搬到 `solo/`（純改路徑，不改邏輯）
-- [ ] 把 PhotoTeam 搬到 `multi/`
-- [ ] 抽出 `shared/hooks/` 共用 hooks（useGameTimer / useGameProgress / useScoreSubmit）
-- [ ] 抽出 `shared/hooks/useTeamSync.ts`（包裝 useTeamWebSocket）
-- [ ] 抽出 `shared/ui/` 共用 UI（CountdownDisplay / ScoreCard / ProgressBar）
-- [ ] schema：新增 `games.playerMode` 欄位 + 遷移腳本
-- [ ] 後端：page 儲存約束（solo / multi / shared 元件分類）
-- [ ] [shared/multiplayer-component-types.ts](../shared/multiplayer-component-types.ts) 元件分類常數
-- [ ] 既有 import 路徑更新（grep + sed 批次改）
-- [ ] 跑 `tsc --noEmit` + 全部測試確保零回歸
+- [x] **Phase 1.1**：[shared/multiplayer-component-types.ts](../shared/multiplayer-component-types.ts) 元件分類常數 + 8 個 helpers ✅ commit `5db5565e`
+- [x] **Phase 1.2**：建立目錄結構 `solo/` / `multi/` / `shared/`（含 .gitkeep）✅ commit `68288f1c`
+- [x] **Phase 1.3**：~~schema 新增 `games.playerMode`~~ → **改為從 `gameMode` 推導**（v1.1 修訂，無 schema 變更）
+- [ ] **Phase 1.4**：後端 page 儲存約束（用 `isComponentAllowedForGameMode` 驗證）
+- [ ] **Phase 1.5**：抽出 `shared/hooks/` 共用 hooks（useGameTimer / useGameProgress / useScoreSubmit / useTeamSync）
+- [ ] **Phase 1.6**：把 16 個現有元件搬到 `solo/`、PhotoTeam 搬到 `multi/`、import 路徑批次更新
+- [ ] 全程跑 `tsc --noEmit` + 既有測試確保零回歸
 
 **驗收**：
 - ✅ 目錄結構就位
 - ✅ 全部既有遊戲正常運作（無 UI 變化）
 - ✅ TypeScript 零錯誤
 - ✅ 全部測試通過
-- ✅ DB 有 `playerMode` 欄位
+- ✅ helper `isComponentAllowedForGameMode` 可正確驗證所有 23 個 pageType
 
 ---
 
@@ -1027,6 +1041,7 @@ Week 6+    Phase 4：補完與選擇性             🟡 依需求
 | 日期 | 版本 | 變更 | 作者 |
 |------|------|------|------|
 | 2026-05-01 | v1.0 | 初版建立 | Hung + Claude Code |
+| 2026-05-01 | v1.1 | Phase 1.3 修訂：取消 `games.playerMode` 欄位新增，改用 `derivePlayerModeFromGameMode(gameMode)` helper 推導。理由：DRY 原則 + 零 schema 變更 + 既有資料無需遷移。影響 §2.4、§5、§11.1 | Claude Code（Loop Phase 1.3） |
 
 ---
 
