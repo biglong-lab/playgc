@@ -85,13 +85,38 @@ export default function AppUpdateChecker() {
   if (!updateAvailable || dismissed) return null;
 
   const handleUpdate = async () => {
+    // 🔧 一次點擊就更新的正確流程：
+    //   方案 A（最快）：有 waiting SW → postMessage SKIP_WAITING
+    //                   → SW activate → controllerchange 事件
+    //                   → main.tsx 監聽器自動 reload
+    //   方案 B（保險）：沒 waiting SW（罕見）→ unregister + 清 caches + reload
+    //
+    // 原本只 reg.update() 不會 activate waiting SW，舊 SW 仍在 control，
+    // serve 的還是舊 cache → 看起來「按了沒反應」要按很多次。
     try {
       if ("serviceWorker" in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
+        // 先觸發一次檢查（拉最新 SW 進 waiting 狀態）
         await reg?.update();
+        // 方案 A：若有 waiting SW，叫它 skipWaiting → activate
+        if (reg?.waiting) {
+          reg.waiting.postMessage({ type: "SKIP_WAITING" });
+          // controllerchange 應在 1-2 秒內觸發，main.tsx 自動 reload
+          // 加 2 秒 fallback 避免某些瀏覽器 SW 訊息沒收到
+          setTimeout(() => window.location.reload(), 2000);
+          return;
+        }
+        // 方案 B：沒 waiting（剛好沒新 SW 安裝完）→ 強制清掉
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((r) => r.unregister()));
+      }
+      // 清 cache storage（PWA 快取）
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
       }
     } catch {
-      /* 拿不到 registration 也直接 reload，reload 自己會拿新資源 */
+      /* 失敗時直接 reload，至少 HTTP cache 會被 server cache-control 控制 */
     }
     window.location.reload();
   };
