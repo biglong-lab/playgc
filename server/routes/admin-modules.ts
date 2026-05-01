@@ -88,6 +88,8 @@ export function registerAdminModuleRoutes(app: Express) {
             difficulty: moduleData.difficulty,
             estimatedTime: moduleData.estimatedTime,
             maxPlayers: moduleData.maxPlayers,
+            // 🆕 從模組讀 gameMode（個人 / 隊伍協作 / 競技 / 接力）
+            gameMode: moduleData.gameMode ?? "individual",
           })
           .returning();
 

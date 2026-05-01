@@ -37,6 +37,10 @@ export interface GameModule {
   highlights: string[];      // 亮點特色（3-5 項）
   flowDescription: string;   // 頁面流程簡述
   coverEmoji: string;        // 封面 emoji（用於卡片展示）
+  /** 遊戲模式（影響 multi 元件可否使用）— 選填，預設 individual。
+   *  含 multi 元件（vote_team / shooting_team / gps_team_mission /
+   *  choice_verify_race / photo_team）的模組必須設為 team / competitive / relay */
+  gameMode?: "individual" | "team" | "competitive" | "relay";
 }
 
 /** 難度中文對照 */
@@ -590,6 +594,7 @@ import { INDOOR_MODULES } from "./modules/indoor";
 import { EDUCATION_MODULES } from "./modules/education";
 import { TEAM_MODULES } from "./modules/team";
 import { DIGITAL_MODULES } from "./modules/digital";
+import { JIACHUN_MODULES } from "./modules/jiachun";
 
 export const GAME_MODULES: GameModule[] = [
   outdoorTreasureHunt,
@@ -602,6 +607,7 @@ export const GAME_MODULES: GameModule[] = [
   ...EDUCATION_MODULES,
   ...TEAM_MODULES,
   ...DIGITAL_MODULES,
+  ...JIACHUN_MODULES,
 ];
 
 /** 根據模組 ID 取得模組 */

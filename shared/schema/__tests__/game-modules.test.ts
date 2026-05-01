@@ -12,8 +12,8 @@ import {
 } from "../game-modules";
 
 describe("GAME_MODULES 常數", () => {
-  it("包含 15 套模組", () => {
-    expect(GAME_MODULES).toHaveLength(15);
+  it("包含 17 套模組（含賈村 2 套多人示範）", () => {
+    expect(GAME_MODULES).toHaveLength(17);
   });
 
   it("每個模組都有唯一 ID", () => {
@@ -102,9 +102,9 @@ describe("getModuleById", () => {
 });
 
 describe("getAllModules", () => {
-  it("回傳所有 15 套模組", () => {
+  it("回傳所有 17 套模組", () => {
     const modules = getAllModules();
-    expect(modules).toHaveLength(15);
+    expect(modules).toHaveLength(17);
   });
 
   it("回傳的是 GAME_MODULES 的引用", () => {
@@ -189,10 +189,17 @@ describe("DIFFICULTY_LABELS", () => {
 
 describe("模組頁面類型驗證", () => {
   const VALID_PAGE_TYPES = [
-    "text_card", "dialogue", "video", "button",
-    "text_verify", "choice_verify", "conditional_verify",
+    // 通用 / 流程控制
+    "text_card", "dialogue", "video", "flow_router",
+    // 個人專用
+    "button", "text_verify", "choice_verify", "conditional_verify",
     "shooting_mission", "photo_mission", "gps_mission",
     "qr_scan", "time_bomb", "lock", "motion_challenge", "vote",
+    "photo_spot", "photo_compare", "photo_before_after", "photo_burst",
+    "photo_ar", "photo_ocr",
+    // 多人專用（Phase 2 + 3.1）
+    "photo_team", "vote_team", "shooting_team", "gps_team_mission",
+    "choice_verify_race",
   ];
 
   it("所有模組使用的 pageType 都是有效值", () => {
