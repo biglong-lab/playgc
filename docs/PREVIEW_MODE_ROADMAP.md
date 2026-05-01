@@ -38,7 +38,7 @@ TOTAL_PROGRESS: 4/18
 
 # Phase 2：UI 元件 🎨
 
-- [ ] **P2-1** 建立 `client/src/components/preview/PreviewBanner.tsx`：頂部固定 amber banner（🎬 預覽模式 + 遊戲名 + 不會記錄資料 + ⚠️ AI 已 mock + 退出按鈕）
+- [x] **P2-1** 建立 `client/src/components/preview/PreviewBanner.tsx`：頂部 sticky amber banner（z-50 backdrop-blur）+ Eye icon + 「🎬 預覽模式 · {gameTitle}」+ 副標籤「不會記錄玩家資料 · 可自由翻頁 · ⚠️ AI 任務已 mock，上線後請實機測試」+ 退出按鈕（X icon）；data-testid: preview-banner / button-exit-preview；TS check ✅
 - [ ] **P2-2** 建立 `client/src/components/preview/PreviewNavBar.tsx`：底部固定（⏮ 第一頁 / ◀ 上一頁 / 第 X / Y 頁 / 下一頁 ▶ / ⏭ 最後頁 / 跳到第 X 頁）
 
 ---
