@@ -43,7 +43,7 @@ TOTAL_PROGRESS: 3/30
 
 - [x] **P1-1** 建立 `scripts/e2e/smoke-test.sh`：bash 腳本（curl + status 檢查 + token Bearer header + 跳過註解/空行 + auth=yes+no-token 自動 SKIP + 失敗彙總；syntax check 通過 + chmod +x）
 - [x] **P1-2** 建立 `scripts/e2e/endpoints-platform.txt`：81 個 platform endpoint（從 platform.ts + platform-ai-center.ts + platform-tickets.ts + revenue.ts + applications.ts 抽出 + 補齊 ai-center 4 個分多行的格式）；分 13 區塊（overview/fields/revenue/applications/analytics/admins/tickets/billing/ai-center/security/errors/system/ip-whitelist/notifications/menu）
-- [ ] **P1-3** 建立 `scripts/e2e/endpoints-admin.txt`：列出所有 admin endpoint（從 server/routes/admin-* 抽出）
+- [x] **P1-3** 建立 `scripts/e2e/endpoints-admin.txt`：115 個 admin endpoint（從 22 個 admin-*.ts 檔抽出，含單行與多行 app.METHOD 格式）；分 14 區塊（公開/dashboard/games/pages-chapters-items/variants/modules/copilot/sessions/battle/fields-roles-accounts/rules-coupons/rewards-engagement-ab/walkie）
 - [ ] **P1-4** 建立 `docs/ADMIN_PLATFORM_ISSUES.md`：問題收集模板（每筆：頁面 / API / 觀察 / 建議）
 
 ---
