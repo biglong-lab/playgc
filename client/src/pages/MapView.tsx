@@ -446,8 +446,14 @@ export default function MapView() {
       </header>
 
       {/* 地圖 + 覆蓋層 */}
-      <main className="flex-1 relative">
-        <div ref={mapRef} className="absolute inset-0" />
+      <main className="flex-1 relative min-h-0">
+        {/* 🔧 改 fixed inset-0-style 確保 mapRef 一定有寬高
+            原本 absolute inset-0 在 flex-1 父層偶爾因 layout 順序計算成 0x0 */}
+        <div
+          ref={mapRef}
+          className="absolute inset-0"
+          style={{ minHeight: "300px", width: "100%", height: "100%" }}
+        />
 
         <MapLocationList
           locations={locations}
