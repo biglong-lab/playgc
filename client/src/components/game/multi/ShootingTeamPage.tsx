@@ -14,6 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useWalkieSuggestion } from "@/hooks/useWalkieSuggestion";
 import { useTeamShootingSync } from "../shared/hooks/useTeamShootingSync";
 import ShootingTeam, { type TeamMemberInfo } from "./ShootingTeam";
 import type { ShootingMissionConfig } from "@shared/schema";
@@ -80,6 +81,9 @@ export default function ShootingTeamPage({
     myDisplayName,
     enabled,
   });
+
+  // 🆕 多人元件入場時提示玩家「建議開啟對講機」（同 session + 同 team 只一次）
+  useWalkieSuggestion({ teamId });
 
   // 將 myTeam.members 轉成 TeamMemberInfo
   const members: TeamMemberInfo[] = (myTeam?.members ?? []).map((m) => ({

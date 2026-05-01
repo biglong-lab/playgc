@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
+import { useWalkieSuggestion } from "@/hooks/useWalkieSuggestion";
 import { useTeamVoteSync } from "../shared/hooks/useTeamVoteSync";
 import VoteTeam from "./VoteTeam";
 import type { VoteConfig } from "@shared/schema";
@@ -99,6 +100,9 @@ export default function VoteTeamPage({
     userName: myDisplayName,
     onMessage: handleVoteWsMessage,
   });
+
+  // 🆕 多人元件入場時提示玩家「建議開啟對講機」（同 session + 同 team 只一次）
+  useWalkieSuggestion({ teamId });
 
   // ============================================================================
   // Fallback UI
