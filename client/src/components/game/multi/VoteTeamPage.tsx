@@ -1,0 +1,125 @@
+// 🗳️ VoteTeamPage — 隊伍投票元件的容器（自取 teamId / members）
+//
+// 角色：
+//   - VoteTeam（純 UI presentation）的容器層
+//   - 從 gameId 自動找當前玩家的 team（GET /api/games/:gameId/my-team）
+//   - 用 useTeamVoteSync 接後端 + WebSocket
+//   - 沒組隊 → 顯示提示訊息
+//
+// GamePageRenderer 用此元件對應 pageType="vote_team"
+//
+// 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.2 + VOTE_SYNC_PLAN.md
+
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Users, AlertCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useTeamVoteSync } from "../shared/hooks/useTeamVoteSync";
+import VoteTeam from "./VoteTeam";
+import type { VoteConfig } from "@shared/schema";
+
+/** 此元件需要的 props（GamePageRenderer 透過 commonProps + pageId 傳入） */
+export interface VoteTeamPageProps {
+  config: VoteConfig;
+  onComplete: (
+    reward?: { points?: number; items?: string[] },
+    nextPageId?: string,
+  ) => void;
+  sessionId: string;
+  gameId: string;
+  /** 當前 page id（用來建立投票歸屬） */
+  pageId: string;
+}
+
+/** GET /api/games/:gameId/my-team 回傳結構（簡化版，只取我們需要的） */
+interface MyTeamResponse {
+  id: string;
+  members: Array<{ userId: string; user?: { id: string } }>;
+}
+
+export default function VoteTeamPage({
+  config,
+  onComplete,
+  gameId,
+  pageId,
+}: VoteTeamPageProps) {
+  const { user } = useAuth();
+
+  // 取得當前玩家的隊伍
+  const {
+    data: myTeam,
+    isLoading: teamLoading,
+    isError: teamError,
+  } = useQuery<MyTeamResponse | null>({
+    queryKey: [`/api/games/${gameId}/my-team`],
+    enabled: !!gameId && !!user,
+  });
+
+  // 整合 hook（teamId 還沒有時 enabled=false 不發 request）
+  const teamId = myTeam?.id;
+  const totalMembers = myTeam?.members?.length ?? 0;
+
+  const { voteState, ensureVote, castVote } = useTeamVoteSync({
+    teamId: teamId ?? "",
+    pageId,
+    config,
+    votingMode: "majority", // 預設過半，admin 後續可在 config 加開關
+    totalMembers,
+    enabled: !!teamId && !!pageId,
+  });
+
+  // ============================================================================
+  // Fallback UI
+  // ============================================================================
+
+  if (!user) {
+    return (
+      <Card data-testid="vote-team-page-not-authed">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">請先登入後再使用</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (teamLoading) {
+    return (
+      <Card data-testid="vote-team-page-loading">
+        <CardContent className="p-6 text-center text-muted-foreground text-sm">
+          載入隊伍資訊中...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (teamError || !myTeam || !teamId) {
+    return (
+      <Card data-testid="vote-team-page-no-team">
+        <CardContent className="p-6 text-center">
+          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm font-medium mb-1">此元件需要組隊使用</p>
+          <p className="text-xs text-muted-foreground">
+            請回到場域首頁建立或加入隊伍
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // ============================================================================
+  // 主要渲染（VoteTeam）
+  // ============================================================================
+
+  return (
+    <VoteTeam
+      config={config}
+      myUserId={user.id}
+      teamId={teamId}
+      voteState={voteState}
+      onEnsureVote={ensureVote}
+      onCastVote={castVote}
+      onComplete={onComplete}
+    />
+  );
+}

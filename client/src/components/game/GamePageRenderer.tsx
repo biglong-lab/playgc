@@ -17,6 +17,7 @@ const FlowRouterPage = lazy(() => import("@/components/game/shared/components/Fl
 
 // 多人專用元件（multi/）— 只能在 playerMode='multi' 的遊戲使用
 const PhotoTeamFlow = lazy(() => import("@/components/game/multi/PhotoTeamFlow"));
+const VoteTeamPage = lazy(() => import("@/components/game/multi/VoteTeamPage"));
 
 // 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/solo/ButtonPage"));
@@ -225,6 +226,8 @@ export default function GamePageRenderer({
         return <PhotoArStickerFlow {...commonProps} />;
       case "photo_team":
         return <PhotoTeamFlow {...commonProps} />;
+      case "vote_team":
+        return <VoteTeamPage {...commonProps} pageId={page.id} />;
       case "photo_ocr":
         return <PhotoOcrFlow {...commonProps} />;
       case "gps_mission":
