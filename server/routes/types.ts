@@ -24,6 +24,8 @@ export interface RouteContext {
   broadcastToTeam: (teamId: string, message: WsBroadcastMessage, excludeClient?: WebSocketClient) => void;
   broadcastToMatch: (matchId: string, message: WsBroadcastMessage) => void;
   broadcastToBattleSlot: (slotId: string, message: WsBroadcastMessage) => void;
+  /** 🆕 Phase 2c：取消隊員的斷線寬限期計時器（leader-decide / 重連時用） */
+  cancelDisconnectTimer?: (teamId: string, userId: string) => void;
 }
 
 // 經 Firebase 認證後的 Request 型別

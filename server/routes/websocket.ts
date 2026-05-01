@@ -4,9 +4,15 @@ import { storage } from "../storage";
 import { mqttService } from "../mqttService";
 import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
-import { gameMatches } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { gameMatches, teamMembers } from "@shared/schema";
+import { eq, and, isNull } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
+
+// 🆕 Phase 2c：寬限期常數（單位 ms）
+//   30s = 短斷線寬限期（換頁/網路抖）
+//   120s = 寬限期過後到自動 leave 的 buffer（給隊長決定的時間）
+const GRACE_PERIOD_MS = 30_000;
+const AUTO_LEAVE_AFTER_GRACE_MS = 120_000;
 
 // 從 URL 解析 query 參數
 function parseQueryParams(url: string | undefined): Record<string, string> {
@@ -35,6 +41,88 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   //   close 後 history 仍保留，再次 team_join 時 → reconnected 而非 joined。
   //   server 重啟會清空（接受限制 — 重啟後第一次連會被當「joined」廣播）。
   const teamMemberHistory: Map<string, Set<string>> = new Map();
+
+  // 🆕 Phase 2c：斷線寬限期計時器
+  //   key = `${teamId}:${userId}`
+  //   close → start 30s grace timer
+  //   30s 後 → 廣播 grace_expired + start 120s auto-leave timer
+  //   重連 / leader 先繼續 → cancelDisconnectTimer 取消
+  const disconnectTimers: Map<string, NodeJS.Timeout> = new Map();
+  const autoLeaveTimers: Map<string, NodeJS.Timeout> = new Map();
+
+  function timerKey(teamId: string, userId: string): string {
+    return `${teamId}:${userId}`;
+  }
+
+  function cancelDisconnectTimer(teamId: string, userId: string) {
+    const key = timerKey(teamId, userId);
+    const grace = disconnectTimers.get(key);
+    if (grace) {
+      clearTimeout(grace);
+      disconnectTimers.delete(key);
+    }
+    const autoLeave = autoLeaveTimers.get(key);
+    if (autoLeave) {
+      clearTimeout(autoLeave);
+      autoLeaveTimers.delete(key);
+    }
+  }
+
+  function isUserStillConnected(teamId: string, userId: string): boolean {
+    const teamSet = teamClients.get(teamId);
+    if (!teamSet) return false;
+    return Array.from(teamSet).some(
+      (c) => (c as WebSocketClient).userId === userId,
+    );
+  }
+
+  function startGraceTimer(teamId: string, userId: string, userName: string) {
+    cancelDisconnectTimer(teamId, userId); // 先 clear 殘留
+    const key = timerKey(teamId, userId);
+    const timer = setTimeout(() => {
+      disconnectTimers.delete(key);
+      // 寬限期到，再確認一次該 user 還沒回來
+      if (isUserStillConnected(teamId, userId)) return;
+
+      broadcastToTeam(teamId, {
+        type: "team_member_grace_expired",
+        userId,
+        userName,
+        autoLeaveInMs: AUTO_LEAVE_AFTER_GRACE_MS,
+        timestamp: new Date().toISOString(),
+      });
+
+      // 啟動 auto-leave timer（120s 後若 user 仍未回 → DB 設 leftAt + 廣播 left）
+      const autoLeaveTimer = setTimeout(async () => {
+        autoLeaveTimers.delete(key);
+        if (isUserStillConnected(teamId, userId)) return;
+
+        try {
+          await db
+            .update(teamMembers)
+            .set({ leftAt: new Date() })
+            .where(
+              and(
+                eq(teamMembers.teamId, teamId),
+                eq(teamMembers.userId, userId),
+                isNull(teamMembers.leftAt),
+              ),
+            );
+          broadcastToTeam(teamId, {
+            type: "team_member_left",
+            userId,
+            userName,
+            reason: "auto_leave_after_grace",
+            timestamp: new Date().toISOString(),
+          });
+        } catch {
+          // DB 寫入失敗不阻塞，下次再試（玩家手動回來也能處理）
+        }
+      }, AUTO_LEAVE_AFTER_GRACE_MS);
+      autoLeaveTimers.set(key, autoLeaveTimer);
+    }, GRACE_PERIOD_MS);
+    disconnectTimers.set(key, timer);
+  }
 
   wss.on("connection", async (ws: WebSocketClient, request: IncomingMessage) => {
     ws.isAlive = true;
@@ -135,6 +223,8 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             if (userAlreadyConnected) {
               // 同 user 多 socket，不廣播
             } else if (hasReconnected) {
+              // 🆕 Phase 2c：重連回來 → 取消寬限期計時器（grace + auto-leave）
+              cancelDisconnectTimer(message.teamId, message.userId);
               broadcastToTeam(message.teamId, {
                 type: "team_member_reconnected",
                 userId: message.userId,
@@ -383,8 +473,13 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             type: "team_member_disconnected",
             userId: ws.userId,
             userName: ws.userName,
+            graceInMs: GRACE_PERIOD_MS,
             timestamp: new Date().toISOString(),
           });
+          // 🆕 Phase 2c：啟動寬限期計時器（30s 後若仍未回 → 廣播 grace_expired）
+          if (ws.userId && ws.userName) {
+            startGraceTimer(ws.teamId, ws.userId, ws.userName);
+          }
         }
       }
 
@@ -483,5 +578,11 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
-  return { broadcastToSession, broadcastToTeam, broadcastToMatch, broadcastToBattleSlot };
+  return {
+    broadcastToSession,
+    broadcastToTeam,
+    broadcastToMatch,
+    broadcastToBattleSlot,
+    cancelDisconnectTimer,
+  };
 }

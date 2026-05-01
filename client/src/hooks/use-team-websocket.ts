@@ -33,6 +33,9 @@ interface TeamMessage {
   /** 🆕 team_progress_advance 訊息：隊伍最快進度更新 */
   maxPageIndex?: number;
   advancedBy?: string;
+  /** 🆕 Phase 2c：grace_expired / disconnected 帶的逾時毫秒 */
+  autoLeaveInMs?: number;
+  graceInMs?: number;
 }
 
 interface UseTeamWebSocketOptions {
@@ -54,6 +57,8 @@ interface UseTeamWebSocketOptions {
   onGameStarted?: (sessionId: string, gameId: string) => void;
   /** 🆕 Phase 2.B：隊伍最快進度更新（用於同步慢的玩家跟上） */
   onProgressAdvance?: (maxPageIndex: number, advancedBy: string) => void;
+  /** 🆕 Phase 2c：隊員寬限期過了（30 秒未重連），autoLeaveInMs 後自動 leave */
+  onGraceExpired?: (userId: string, userName: string, autoLeaveInMs: number) => void;
 }
 
 export function useTeamWebSocket({
@@ -71,6 +76,7 @@ export function useTeamWebSocket({
   onReadyUpdate,
   onGameStarted,
   onProgressAdvance,
+  onGraceExpired,
 }: UseTeamWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -91,6 +97,7 @@ export function useTeamWebSocket({
     onReadyUpdate,
     onGameStarted,
     onProgressAdvance,
+    onGraceExpired,
   });
   useEffect(() => {
     callbacksRef.current = {
@@ -105,8 +112,9 @@ export function useTeamWebSocket({
       onReadyUpdate,
       onGameStarted,
       onProgressAdvance,
+      onGraceExpired,
     };
-  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance]);
+  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance, onGraceExpired]);
 
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
@@ -211,6 +219,17 @@ export function useTeamWebSocket({
                 callbacksRef.current.onProgressAdvance?.(
                   data.maxPageIndex,
                   data.advancedBy || "",
+                );
+              }
+              break;
+
+            // 🆕 Phase 2c：寬限期過了（30 秒未重連）
+            case "team_member_grace_expired":
+              if (data.userId) {
+                callbacksRef.current.onGraceExpired?.(
+                  data.userId,
+                  data.userName || "",
+                  data.autoLeaveInMs || 120_000,
                 );
               }
               break;

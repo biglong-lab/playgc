@@ -127,7 +127,7 @@ export default function GamePlay() {
     onMemberDisconnected: (_, userName) => {
       toast({
         title: `⚠️ ${userName} 暫時離線`,
-        description: "等他重連回來",
+        description: "30 秒寬限期內回來不影響",
         duration: 3000,
       });
     },
@@ -141,6 +141,16 @@ export default function GamePlay() {
       toast({
         title: `👋 ${userName} 已離開遊戲`,
         duration: 3000,
+      });
+    },
+    // 🆕 Phase 2c：寬限期過了 — 倒數 2 分鐘自動 leave
+    onGraceExpired: (_, userName, autoLeaveInMs) => {
+      const seconds = Math.round(autoLeaveInMs / 1000);
+      toast({
+        title: `⏳ ${userName} 寬限期已過`,
+        description: `${seconds} 秒後將自動視為離開`,
+        duration: 5000,
+        variant: "destructive",
       });
     },
     onProgressAdvance: (newMax, advancedBy) => {
