@@ -232,12 +232,15 @@ export function registerPlatformAiCenterRoutes(app: Express) {
         }
         const { limit } = parsed.data;
 
-        // 找需要補的 pages（限 7 種 task type + 沒變體池）
+        // 🔧 過抓 candidates（最多 limit × 10 = 200）：
+        //   原本 limit=20 直接 SQL limit，若前 20 個都是 AIza 場域會全跳過。
+        //   現在抓多一點，讓迴圈跳過 AIza 後繼續處理 sk-or- 場域，直到湊滿生成上限。
+        const fetchSize = Math.min(200, limit * 10);
         const candidates = await db
           .select({ id: pages.id, gameId: pages.gameId, config: pages.config })
           .from(pages)
           .where(and(isNull(pages.variantPool), inArray(pages.pageType, TASK_TYPES)))
-          .limit(limit);
+          .limit(fetchSize);
 
         let generated = 0;
         let skipped = 0;
