@@ -81,7 +81,7 @@ export function JoinOrCreateView({
         subtitle="團隊模式 - 組隊大廳"
         onBack={onBack}
       />
-      <main className="container max-w-md py-8 space-y-6">
+      <main className="container mx-auto max-w-md py-8 space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export function TeamLobbyView({
         </div>
       </header>
 
-      <main className="container max-w-md py-6 space-y-6">
+      <main className="container mx-auto max-w-md py-6 space-y-6">
         <AccessCodeCard code={team.accessCode} status={team.status} copied={copied} onCopy={onCopyCode} />
         <MemberListCard team={team} />
 

@@ -281,40 +281,46 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           return res.status(401).json({ message: "請先登入" });
         }
 
-        const membership = await db.query.teamMembers.findFirst({
-          where: and(
-            eq(teamMembers.userId, userId),
-            isNull(teamMembers.leftAt),
-          ),
-          with: {
-            team: {
-              with: {
-                game: true,
-                members: {
-                  where: isNull(teamMembers.leftAt),
-                  with: {
-                    user: true,
-                  },
-                },
-                leader: true,
-              },
-            },
-          },
-        });
+        // 🔧 Fix（2026-05-02）：原本用 findFirst 沒過濾 gameId，
+        //   會撈到 user 在別的遊戲的 active team，導致剛建的隊伍看不到。
+        //   改用 JOIN 精準找此 game 的 active membership。
+        const matched = await db
+          .select({ teamId: teamMembers.teamId })
+          .from(teamMembers)
+          .innerJoin(teams, eq(teamMembers.teamId, teams.id))
+          .where(
+            and(
+              eq(teamMembers.userId, userId),
+              eq(teams.gameId, gameId),
+              isNull(teamMembers.leftAt),
+            ),
+          )
+          .limit(1);
 
-        if (!membership || membership.team.gameId !== gameId) {
+        if (matched.length === 0) {
           return res.json(null);
         }
 
+        const team = await db.query.teams.findFirst({
+          where: eq(teams.id, matched[0].teamId),
+          with: {
+            game: true,
+            members: {
+              where: isNull(teamMembers.leftAt),
+              with: { user: true },
+            },
+            leader: true,
+          },
+        });
+
         if (
-          ["completed", "disbanded"].includes(
-            membership.team.status || "",
-          )
+          !team ||
+          ["completed", "disbanded"].includes(team.status || "")
         ) {
           return res.json(null);
         }
 
-        res.json(membership.team);
+        res.json(team);
       } catch (error) {
         res.status(500).json({ message: "取得隊伍資料失敗" });
       }
