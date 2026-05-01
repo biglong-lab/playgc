@@ -376,6 +376,13 @@ export default function PlatformAiCenter() {
                       用 DeepSeek V3.2 為「需要補生成」的任務一次性補上變體池。
                       每次最多處理 20 個（控制成本）。
                     </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mb-3 flex items-start gap-1">
+                      <span>⚠️</span>
+                      <span>
+                        前置條件：場域需設定 <strong>OpenRouter API key</strong>（<code>sk-or-...</code>）
+                        — 用 Gemini key（<code>AIza...</code>）的場域會被跳過。
+                      </span>
+                    </p>
                     <Button
                       onClick={() => batchGenerateMutation.mutate()}
                       disabled={
