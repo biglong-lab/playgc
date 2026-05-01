@@ -8,7 +8,7 @@
 // 退出條件：按 ✕ 收合面板（但群組身份保留，重開時自動恢復）
 //          按「離開群組」才真正退出 walkie_groups 成員資格
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -59,7 +59,7 @@ export function WalkieFloatingButton({
   const [scanning, setScanning] = useState(false);             // 掃碼模式
 
   // 取得目前已加入的群組
-  const { data: myGroupData, refetch: refetchMyGroup } = useQuery<{ group: WalkieGroup | null }>({
+  const { data: myGroupData, isLoading: groupLoading, refetch: refetchMyGroup } = useQuery<{ group: WalkieGroup | null }>({
     queryKey: ["/api/walkie/groups/my"],
     enabled,
   });
@@ -72,6 +72,24 @@ export function WalkieFloatingButton({
       setView("in-group");
     }
   }, [myGroup, view]);
+
+  // 🆕 多人遊戲場景：進入 GamePlay 時自動連 session 對講群
+  //   組隊後玩家不必再手動點「跟遊戲隊友對講」。
+  //   用 ref 確保只自動連一次，使用者離開群組不會被反覆拉回。
+  const autoJoinedSessionRef = useRef(false);
+  useEffect(() => {
+    if (
+      sessionId &&
+      !groupLoading && // 等 myGroup query 結束才判斷
+      !myGroup && // 已有手動建的群組則不搶
+      view === "menu" &&
+      !autoJoinedSessionRef.current
+    ) {
+      autoJoinedSessionRef.current = true;
+      setUseSessionMode(true);
+      setView("in-session");
+    }
+  }, [sessionId, myGroup, view, groupLoading]);
 
   // 決定連線參數
   const connectParams = (() => {
