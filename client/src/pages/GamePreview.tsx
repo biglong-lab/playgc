@@ -182,9 +182,8 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
                   · 此頁是 <code className="font-mono">{currentPage.pageType}</code> 任務，正式遊戲會實際呼叫 AI 判定（會收費）。
                   上線後請依{" "}
                   <a
-                    href="https://github.com/biglong-lab/playgc/blob/main/docs/AI_LIVE_TEST_CHECKLIST.md"
+                    href="/admin/ai-test-checklist"
                     target="_blank"
-                    rel="noopener noreferrer"
                     className="underline font-medium"
                   >
                     實測清單
