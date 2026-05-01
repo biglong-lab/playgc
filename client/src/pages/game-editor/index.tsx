@@ -273,6 +273,21 @@ export default function GameEditor() {
     });
   };
 
+  // 🤖 P6-4: 標記「已完成 AI 實測」(發布前提醒用)
+  const markTestedMutation = useMutation({
+    mutationFn: async () =>
+      apiRequest("PATCH", `${apiGamesPath}/${gameId}`, {
+        lastLiveTestedAt: new Date().toISOString(),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [apiGamesPath, gameId] });
+      toast({ title: "✅ 已標記完成 AI 實測" });
+    },
+    onError: (err: Error) => {
+      toast({ title: "標記失敗", description: err.message, variant: "destructive" });
+    },
+  });
+
   // ====== 頁面操作 ======
 
   const addPage = (pageType: string, atIndex?: number) => {
