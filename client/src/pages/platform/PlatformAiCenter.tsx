@@ -176,10 +176,34 @@ export default function PlatformAiCenter() {
       );
       return res.json();
     },
-    onSuccess: (data: { generated: number; skipped: number; failed: number }) => {
+    onSuccess: (data: {
+      generated: number;
+      skipped: number;
+      failed: number;
+      skipReasons?: {
+        noFieldId: number;
+        fieldNotFound: number;
+        noApiKey: number;
+        notOpenRouter: number;
+      };
+    }) => {
+      // 🔧 跳過原因細項提示（讓 admin 知道為什麼沒生成）
+      let detail = `成功 ${data.generated} 個 / 跳過 ${data.skipped} / 失敗 ${data.failed}`;
+      if (data.generated === 0 && data.skipped > 0 && data.skipReasons) {
+        const r = data.skipReasons;
+        const reasons: string[] = [];
+        if (r.notOpenRouter > 0)
+          reasons.push(`${r.notOpenRouter} 個非 OpenRouter key（變體生成需 sk-or-）`);
+        if (r.noApiKey > 0) reasons.push(`${r.noApiKey} 個場域未設 API key`);
+        if (r.fieldNotFound > 0) reasons.push(`${r.fieldNotFound} 個場域不存在`);
+        if (r.noFieldId > 0) reasons.push(`${r.noFieldId} 個遊戲未綁場域`);
+        if (reasons.length > 0) detail += `\n原因：${reasons.join(" / ")}`;
+      }
       toast({
-        title: "✨ 批次生成完成",
-        description: `成功 ${data.generated} 個 / 跳過 ${data.skipped} / 失敗 ${data.failed}`,
+        title:
+          data.generated > 0 ? "✨ 批次生成完成" : "ℹ️ 沒有可補生成的任務",
+        description: detail,
+        variant: data.generated === 0 && data.skipped > 0 ? "destructive" : "default",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/platform/ai-center/health"] });
     },
