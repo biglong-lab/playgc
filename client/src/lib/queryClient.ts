@@ -93,9 +93,18 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // 🎬 預覽模式攔截：AI endpoint 直接 mock pass，不發送請求
-  if (isPreviewMode() && isAiEndpoint(url)) {
-    return makePreviewMockResponse();
+  // 🎬 預覽模式攔截
+  if (isPreviewMode()) {
+    // 1. AI endpoint → mock pass（不打 OpenRouter / Vision，不寫 ai_usage_logs）
+    if (isAiEndpoint(url)) {
+      return makePreviewMockResponse();
+    }
+    // 2. 寫入類 mutation（POST/PATCH/DELETE）→ mock pass（不寫 sessions/locations/leaderboard...）
+    //    GET 不攔截（讓預覽能讀真實資料如 game/page 內容）
+    const writeMethod = method === "POST" || method === "PATCH" || method === "DELETE";
+    if (writeMethod && isWriteEndpoint(url)) {
+      return makePreviewMockResponse();
+    }
   }
 
   const token = await getIdToken();
