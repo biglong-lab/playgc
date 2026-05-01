@@ -423,6 +423,18 @@ export default function MapView() {
           </Button>
           <h1 className="font-display font-bold">地圖導航</h1>
           <div className="flex items-center gap-2">
+            {/* 🗺 tile 載入狀態（綠色=已載入，黃色=還沒載入）*/}
+            <Badge
+              variant="outline"
+              className={`text-[10px] ${
+                tilesLoaded > 0
+                  ? "border-emerald-500/50 text-emerald-500"
+                  : "border-amber-500/50 text-amber-500"
+              }`}
+              data-testid="badge-tile-status"
+            >
+              {tilesLoaded > 0 ? `🗺 ${tilesLoaded}` : "⏳"}
+            </Badge>
             {sessionId && (
               <Badge variant="outline" className="gap-1">
                 <Users className="w-3 h-3" />
