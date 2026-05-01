@@ -1,0 +1,121 @@
+# 🌐 Platform 後台 API endpoints
+#
+# 格式：METHOD /path expected_status auth_required
+# auth_required: yes = 需 platform_admin token, no = 公開
+#
+# 未認證時所有 platform endpoint 應回 401
+# expected_status 給 smoke test 用：未帶 token 跑時用 401
+#
+# Source: server/routes/platform.ts + platform-ai-center.ts + platform-tickets.ts
+#         + revenue.ts + applications.ts
+
+# ─── overview / dashboard ───────────────────────────────────────
+GET /api/platform/overview 401 yes
+
+# ─── fields / plans / feature flags ─────────────────────────────
+GET /api/platform/fields 401 yes
+PATCH /api/platform/fields/test-id/status 401 yes
+PATCH /api/platform/fields/test-id/plan 401 yes
+POST /api/platform/fields/bulk-status 401 yes
+POST /api/platform/fields/bulk-plan 401 yes
+GET /api/platform/fields/test-id/overrides 401 yes
+POST /api/platform/fields/test-id/overrides 401 yes
+DELETE /api/platform/fields/test-id/overrides/test-flag 401 yes
+GET /api/platform/plans 401 yes
+POST /api/platform/plans 401 yes
+PATCH /api/platform/plans/test-id 401 yes
+DELETE /api/platform/plans/test-id 401 yes
+GET /api/platform/feature-flags 401 yes
+POST /api/platform/feature-flags 401 yes
+PATCH /api/platform/feature-flags/test-id 401 yes
+DELETE /api/platform/feature-flags/test-id 401 yes
+
+# ─── revenue / transactions ─────────────────────────────────────
+GET /api/platform/revenue 401 yes
+GET /api/platform/transactions 401 yes
+
+# ─── applications ───────────────────────────────────────────────
+POST /api/apply 400 no
+GET /api/platform/applications 401 yes
+
+# ─── analytics / insights ───────────────────────────────────────
+GET /api/platform/analytics 401 yes
+GET /api/platform/insights/overview 401 yes
+GET /api/platform/insights/engagement 401 yes
+GET /api/platform/insights/field-rankings 401 yes
+GET /api/platform/insights/game-rankings 401 yes
+GET /api/platform/insights/component-usage 401 yes
+GET /api/platform/insights/daily-trend 401 yes
+
+# ─── admins / roles / permissions / audit ───────────────────────
+GET /api/platform/admins 401 yes
+PATCH /api/platform/admins/test-id 401 yes
+GET /api/platform/roles 401 yes
+PATCH /api/platform/roles/test-id 401 yes
+GET /api/platform/permissions 401 yes
+GET /api/platform/audit-logs 401 yes
+GET /api/platform/audit-logs/stats 401 yes
+
+# ─── tickets ────────────────────────────────────────────────────
+GET /api/platform/tickets 401 yes
+GET /api/platform/tickets/stats 401 yes
+GET /api/platform/tickets/test-id 401 yes
+POST /api/platform/tickets 401 yes
+PATCH /api/platform/tickets/test-id 401 yes
+POST /api/platform/tickets/test-id/messages 401 yes
+
+# ─── billing alerts / usage ─────────────────────────────────────
+GET /api/platform/billing-alerts 401 yes
+GET /api/platform/billing-alerts/summary 401 yes
+GET /api/platform/usage/by-endpoint 401 yes
+GET /api/platform/usage/by-provider 401 yes
+GET /api/platform/usage/meters 401 yes
+GET /api/platform/usage/overview 401 yes
+GET /api/platform/usage/top-fields 401 yes
+
+# ─── ai center (5 tabs) ─────────────────────────────────────────
+GET /api/platform/ai-center/usage 401 yes
+GET /api/platform/ai-center/health 401 yes
+GET /api/platform/ai-center/content-health 401 yes
+POST /api/platform/ai-center/batch-generate-variants 401 yes
+
+# ─── security ───────────────────────────────────────────────────
+GET /api/platform/security/overview 401 yes
+GET /api/platform/security/login-failures 401 yes
+GET /api/platform/security/risky-ips 401 yes
+GET /api/platform/security/locked-accounts 401 yes
+POST /api/platform/security/unlock-account 401 yes
+
+# ─── error logs ─────────────────────────────────────────────────
+GET /api/platform/errors 401 yes
+GET /api/platform/errors/stats 401 yes
+PATCH /api/platform/errors/test-id/resolve 401 yes
+
+# ─── system ─────────────────────────────────────────────────────
+GET /api/platform/health 401 yes
+GET /api/platform/health/check 401 yes
+GET /api/platform/pwa-status 401 yes
+GET /api/platform/api-keys 401 yes
+GET /api/platform/login-config 401 yes
+GET /api/platform/settings 401 yes
+PATCH /api/platform/settings 401 yes
+
+# ─── ip whitelist ───────────────────────────────────────────────
+GET /api/platform/ip-whitelist 401 yes
+POST /api/platform/ip-whitelist 401 yes
+PATCH /api/platform/ip-whitelist/test-id 401 yes
+DELETE /api/platform/ip-whitelist/test-id 401 yes
+
+# ─── notifications ──────────────────────────────────────────────
+GET /api/platform/notifications/channels 401 yes
+GET /api/platform/notifications/templates 401 yes
+POST /api/platform/notifications/templates 401 yes
+PATCH /api/platform/notifications/templates/test-id 401 yes
+DELETE /api/platform/notifications/templates/test-id 401 yes
+GET /api/platform/notifications/logs 401 yes
+GET /api/platform/notifications/stats 401 yes
+
+# ─── menu overrides ─────────────────────────────────────────────
+GET /api/platform/menu-overrides 401 yes
+POST /api/platform/menu-overrides 401 yes
+DELETE /api/platform/menu-overrides 401 yes
