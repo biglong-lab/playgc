@@ -96,7 +96,7 @@ export async function verifyPhoto(
 ): Promise<PhotoVerifyResult> {
   const client = getClient(apiKey);
   const model = client.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: DEFAULT_GEMINI_MODEL,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -251,7 +251,7 @@ export async function comparePhotos(
 ): Promise<PhotoCompareResult> {
   const client = getClient(apiKey);
   const model = client.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: DEFAULT_GEMINI_MODEL,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: {
@@ -360,7 +360,7 @@ export async function scoreTextAnswer(
 ): Promise<TextScoreResult> {
   const client = getClient(apiKey);
   const model = client.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: DEFAULT_GEMINI_MODEL,
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: {
