@@ -74,6 +74,10 @@ interface HealthScore {
 interface ZombieVariant {
   pageId: string;
   gameId: string | null;
+  gameName?: string | null;
+  pageType?: string | null;
+  customName?: string | null;
+  pageOrder?: number | null;
   variantKey: string;
   variantIndex: number;
   variantText: string;
@@ -83,6 +87,7 @@ interface ZombieVariant {
 interface OrphanTask {
   pageId: string;
   gameId: string;
+  gameName?: string | null;
   pageType: string;
   customName: string | null;
   pageOrder: number;
@@ -93,6 +98,10 @@ interface OrphanTask {
 interface DeadEndPage {
   pageId: string;
   gameId: string | null;
+  gameName?: string | null;
+  pageType?: string | null;
+  customName?: string | null;
+  pageOrder?: number | null;
   enterCount: number;
   completeCount: number;
   exitCount: number;
