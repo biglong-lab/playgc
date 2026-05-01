@@ -8,7 +8,7 @@ import {
   gameSessions,
   users,
 } from "@shared/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, desc } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { isAuthenticated } from "../firebaseAuth";
@@ -297,6 +297,119 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
         });
       } catch (error) {
         res.status(500).json({ message: "開始遊戲失敗" });
+      }
+    },
+  );
+
+  // 🆕 Phase 2.B：取得隊伍當前進度（給 GamePlay 進入時跳轉用）
+  //   回 { sessionId, maxPageIndex }；找不到 active session 回 404
+  app.get(
+    "/api/teams/:teamId/active-session",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { teamId } = req.params;
+        const userId = req.user?.claims?.sub;
+        if (!userId) {
+          return res.status(401).json({ message: "請先登入" });
+        }
+
+        // 驗證 user 在此 team 中
+        const membership = await db.query.teamMembers.findFirst({
+          where: and(
+            eq(teamMembers.teamId, teamId),
+            eq(teamMembers.userId, userId),
+            isNull(teamMembers.leftAt),
+          ),
+        });
+        if (!membership) {
+          return res.status(403).json({ message: "您不在此隊伍中" });
+        }
+
+        const ts = await db.query.teamSessions.findFirst({
+          where: eq(teamSessions.teamId, teamId),
+          orderBy: [desc(teamSessions.createdAt)],
+        });
+        if (!ts) {
+          return res.status(404).json({ message: "尚無進行中的遊戲" });
+        }
+
+        res.json({
+          sessionId: ts.sessionId,
+          maxPageIndex: ts.maxPageIndex ?? 0,
+        });
+      } catch (error) {
+        res.status(500).json({ message: "查詢進度失敗" });
+      }
+    },
+  );
+
+  // 🆕 Phase 2.B：玩家前進頁面時呼叫 → 用 Math.max 更新隊伍 maxPageIndex
+  //   廣播 team_progress_advance 給其他玩家（讓慢的人跟上）
+  //   只往前不往後（用 Math.max 保證）
+  app.post(
+    "/api/teams/:teamId/advance-progress",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { teamId } = req.params;
+        const userId = req.user?.claims?.sub;
+        if (!userId) {
+          return res.status(401).json({ message: "請先登入" });
+        }
+
+        const advanceSchema = z.object({
+          pageIndex: z.number().int().min(0),
+        });
+        const body = advanceSchema.parse(req.body);
+
+        // 驗證 user 在此 team
+        const membership = await db.query.teamMembers.findFirst({
+          where: and(
+            eq(teamMembers.teamId, teamId),
+            eq(teamMembers.userId, userId),
+            isNull(teamMembers.leftAt),
+          ),
+        });
+        if (!membership) {
+          return res.status(403).json({ message: "您不在此隊伍中" });
+        }
+
+        const ts = await db.query.teamSessions.findFirst({
+          where: eq(teamSessions.teamId, teamId),
+          orderBy: [desc(teamSessions.createdAt)],
+        });
+        if (!ts) {
+          return res.status(404).json({ message: "尚無進行中的遊戲" });
+        }
+
+        const currentMax = ts.maxPageIndex ?? 0;
+        const newMax = Math.max(currentMax, body.pageIndex);
+
+        // 沒往前 → 不更新不廣播（節省 IO）
+        if (newMax === currentMax) {
+          return res.json({ maxPageIndex: currentMax, advanced: false });
+        }
+
+        await db
+          .update(teamSessions)
+          .set({ maxPageIndex: newMax, updatedAt: new Date() })
+          .where(eq(teamSessions.id, ts.id));
+
+        // 廣播給其他玩家：「有人進到頁面 X 了，跟上」
+        ctx.broadcastToTeam(teamId, {
+          type: "team_progress_advance",
+          maxPageIndex: newMax,
+          advancedBy: userId,
+          timestamp: new Date().toISOString(),
+        });
+
+        res.json({ maxPageIndex: newMax, advanced: true });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ message: "資料驗證失敗", errors: error.errors });
+        }
+        res.status(500).json({ message: "更新進度失敗" });
       }
     },
   );

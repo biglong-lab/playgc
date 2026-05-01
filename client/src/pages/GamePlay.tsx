@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useParams, useLocation, useSearch } from "wouter";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery } from "@tanstack/react-query";
@@ -70,30 +70,19 @@ export default function GamePlay() {
     enabled: !!gameId,
   });
 
-  // 🆕 Phase 2a：遊戲中也訂閱 team WS，顯示隊友離線/重連/離開 toast（存在感）
-  //   solo mode → myTeam 為 null，hook 內部 effect 會跳過建立連線
-  useTeamWebSocket({
-    teamId: myTeam?.id,
-    userId: user?.id,
-    userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
-    onMemberDisconnected: (_, userName) => {
-      toast({
-        title: `⚠️ ${userName} 暫時離線`,
-        description: "等他重連回來",
-        duration: 3000,
+  // 🆕 Phase 2.B：拿隊伍當前進度（給進入時自動跳到最快頁面）
+  //   server schema 不一致時 retry: false 避免無謂重試（玩家仍能玩自己進度）
+  const { data: activeSession } = useQuery<{ sessionId: string; maxPageIndex: number } | null>({
+    queryKey: ["/api/teams", myTeam?.id, "active-session"],
+    enabled: !!myTeam?.id,
+    retry: false,
+    queryFn: async () => {
+      const res = await fetch(`/api/teams/${myTeam!.id}/active-session`, {
+        credentials: "include",
       });
-    },
-    onMemberReconnected: (_, userName) => {
-      toast({
-        title: `✅ ${userName} 回來了`,
-        duration: 2000,
-      });
-    },
-    onMemberLeft: (_, userName) => {
-      toast({
-        title: `👋 ${userName} 已離開遊戲`,
-        duration: 3000,
-      });
+      if (res.status === 404) return null;
+      if (!res.ok) throw new Error("查詢隊伍進度失敗");
+      return res.json();
     },
   });
 
@@ -127,6 +116,92 @@ export default function GamePlay() {
   const currentPage = activePages[currentPageIndex];
   const totalPages = activePages.length;
   const progressPercent = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
+
+  // 🆕 Phase 2a：遊戲中也訂閱 team WS，顯示隊友離線/重連/離開 toast（存在感）
+  //   solo mode → myTeam 為 null，hook 內部 effect 會跳過建立連線
+  // 🆕 Phase 2.B：訂閱 team_progress_advance → 慢的玩家自動跟上最快進度
+  useTeamWebSocket({
+    teamId: myTeam?.id,
+    userId: user?.id,
+    userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
+    onMemberDisconnected: (_, userName) => {
+      toast({
+        title: `⚠️ ${userName} 暫時離線`,
+        description: "等他重連回來",
+        duration: 3000,
+      });
+    },
+    onMemberReconnected: (_, userName) => {
+      toast({
+        title: `✅ ${userName} 回來了`,
+        duration: 2000,
+      });
+    },
+    onMemberLeft: (_, userName) => {
+      toast({
+        title: `👋 ${userName} 已離開遊戲`,
+        duration: 3000,
+      });
+    },
+    onProgressAdvance: (newMax, advancedBy) => {
+      // 自己引發的 advance 不要再跳（已經在 newMax 頁面了）
+      if (advancedBy === user?.id) return;
+      setState((prev) => {
+        if (newMax <= prev.currentPageIndex) return prev;
+        // 跳到隊伍最快進度，跳過的頁面標 visited 不重複出現
+        const skippedIds = activePagesRef.current
+          .slice(prev.currentPageIndex, newMax)
+          .map((p) => p.id);
+        toast({
+          title: "🏃 跟上隊伍進度",
+          description: `跳過 ${skippedIds.length} 頁，跟上最快的隊友`,
+          duration: 2500,
+        });
+        return {
+          ...prev,
+          currentPageIndex: Math.min(newMax, activePagesRef.current.length - 1),
+          completedPageIds: Array.from(new Set([...prev.completedPageIds, ...skippedIds])),
+        };
+      });
+    },
+  });
+
+  // 🆕 Phase 2.B：玩家自己往前 → 呼叫 advance API（server 用 Math.max 更新隊伍 max）
+  //   失敗不阻塞遊戲（離線可重連時補上）
+  const lastAdvancedIndexRef = useRef(-1);
+  useEffect(() => {
+    if (!myTeam?.id) return;
+    if (currentPageIndex <= lastAdvancedIndexRef.current) return;
+    lastAdvancedIndexRef.current = currentPageIndex;
+    apiRequest("POST", `/api/teams/${myTeam.id}/advance-progress`, {
+      pageIndex: currentPageIndex,
+    }).catch(() => {
+      /* advance 失敗不阻塞遊戲 */
+    });
+  }, [currentPageIndex, myTeam?.id]);
+
+  // 🆕 Phase 2.B：進入遊戲時，若隊伍 maxPageIndex > 自己 → 跳上去
+  //   只在 maxPageIndex 第一次有值 + currentPageIndex 還很前面時觸發（避免覆蓋使用者操作）
+  const hasJumpedToTeamMaxRef = useRef(false);
+  useEffect(() => {
+    if (hasJumpedToTeamMaxRef.current) return;
+    if (!activeSession || !activePages.length) return;
+    const teamMax = activeSession.maxPageIndex;
+    if (teamMax > currentPageIndex) {
+      hasJumpedToTeamMaxRef.current = true;
+      const skippedIds = activePages.slice(currentPageIndex, teamMax).map((p) => p.id);
+      toast({
+        title: "🏃 跟上隊伍進度",
+        description: `從第 ${currentPageIndex + 1} 頁跳到第 ${teamMax + 1} 頁`,
+        duration: 3000,
+      });
+      setState((prev) => ({
+        ...prev,
+        currentPageIndex: Math.min(teamMax, activePages.length - 1),
+        completedPageIds: Array.from(new Set([...prev.completedPageIds, ...skippedIds])),
+      }));
+    }
+  }, [activeSession, activePages.length, currentPageIndex, setState, toast]);
 
   // 玩家已造訪的位置（供 ConditionalVerifyPage 的 visited_location 條件判定）
   const { data: visitsData } = useQuery<Array<{ locationId: string | number }>>({

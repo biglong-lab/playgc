@@ -30,6 +30,9 @@ interface TeamMessage {
   /** game_started 訊息：隊長按開始遊戲 */
   sessionId?: string;
   gameId?: string;
+  /** 🆕 team_progress_advance 訊息：隊伍最快進度更新 */
+  maxPageIndex?: number;
+  advancedBy?: string;
 }
 
 interface UseTeamWebSocketOptions {
@@ -49,6 +52,8 @@ interface UseTeamWebSocketOptions {
   onReadyUpdate?: (userId: string, isReady: boolean) => void;
   /** 🆕 隊長按下開始遊戲 → 廣播給全員（含自己），所有玩家自動跳到遊戲頁 */
   onGameStarted?: (sessionId: string, gameId: string) => void;
+  /** 🆕 Phase 2.B：隊伍最快進度更新（用於同步慢的玩家跟上） */
+  onProgressAdvance?: (maxPageIndex: number, advancedBy: string) => void;
 }
 
 export function useTeamWebSocket({
@@ -65,6 +70,7 @@ export function useTeamWebSocket({
   onScoreUpdate,
   onReadyUpdate,
   onGameStarted,
+  onProgressAdvance,
 }: UseTeamWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -84,6 +90,7 @@ export function useTeamWebSocket({
     onScoreUpdate,
     onReadyUpdate,
     onGameStarted,
+    onProgressAdvance,
   });
   useEffect(() => {
     callbacksRef.current = {
@@ -97,8 +104,9 @@ export function useTeamWebSocket({
       onScoreUpdate,
       onReadyUpdate,
       onGameStarted,
+      onProgressAdvance,
     };
-  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted]);
+  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance]);
 
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
@@ -194,6 +202,16 @@ export function useTeamWebSocket({
             case "game_started":
               if (data.sessionId && data.gameId) {
                 callbacksRef.current.onGameStarted?.(data.sessionId, data.gameId);
+              }
+              break;
+
+            // 🆕 Phase 2.B：隊伍最快進度同步
+            case "team_progress_advance":
+              if (typeof data.maxPageIndex === "number") {
+                callbacksRef.current.onProgressAdvance?.(
+                  data.maxPageIndex,
+                  data.advancedBy || "",
+                );
               }
               break;
           }

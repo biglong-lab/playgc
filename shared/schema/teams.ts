@@ -91,6 +91,9 @@ export const teamSessions = pgTable(
     currentPageId: varchar("current_page_id").references(() => pages.id, { onDelete: "set null" }),
     teamInventory: jsonb("team_inventory").default([]), // Shared team items
     teamVariables: jsonb("team_variables").default({}), // Shared team variables
+    /** 🆕 Phase 2.B：隊伍最快進度同步（玩家 advance 時用 Math.max 更新；
+     *  重連 / 慢的人進場自動跳到此 index，避免被拋下）*/
+    maxPageIndex: integer("max_page_index").default(0).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
