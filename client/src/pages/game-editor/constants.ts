@@ -25,7 +25,7 @@ export const PAGE_TYPES = [
   { value: "photo_before_after", label: "前後對比", icon: ImageIcon, color: "bg-fuchsia-500/20 text-fuchsia-400" },
   { value: "photo_burst", label: "連拍紀念", icon: LayoutGrid, color: "bg-rose-500/20 text-rose-400" },
   { value: "photo_ar", label: "AR 貼圖拍照", icon: Sparkles, color: "bg-yellow-500/20 text-yellow-400" },
-  { value: "photo_team", label: "團體合影", icon: UsersIcon, color: "bg-indigo-500/20 text-indigo-400" },
+  { value: "photo_team", label: "團體合影 👥", icon: UsersIcon, color: "bg-indigo-500/20 text-indigo-400" },
   // 🆕 A3 OCR 招牌任務（Google Vision，2026-04-25）
   { value: "photo_ocr", label: "招牌辨識", icon: ScanText, color: "bg-cyan-500/20 text-cyan-400" },
   { value: "gps_mission", label: "GPS 任務", icon: MapPin, color: "bg-red-500/20 text-red-400" },
@@ -33,8 +33,13 @@ export const PAGE_TYPES = [
   { value: "time_bomb", label: "拆彈任務", icon: Bomb, color: "bg-red-600/20 text-red-500" },
   { value: "lock", label: "密碼鎖", icon: Lock, color: "bg-amber-500/20 text-amber-400" },
   { value: "motion_challenge", label: "體感挑戰", icon: Smartphone, color: "bg-violet-500/20 text-violet-400" },
-  { value: "vote", label: "隊伍投票", icon: Vote, color: "bg-emerald-500/20 text-emerald-400" },
+  { value: "vote", label: "投票（個人）", icon: Vote, color: "bg-emerald-500/20 text-emerald-400" },
   { value: "flow_router", label: "流程路由", icon: GitBranch, color: "bg-gray-500/20 text-gray-400" },
+  // 🆕 多人專用元件（Phase 2，2026-05-02）— 只在 gameMode != "individual" 的遊戲顯示
+  // 標尾「👥」讓 admin 一眼識別為多人元件
+  { value: "vote_team", label: "隊伍投票（即時同步）👥", icon: Vote, color: "bg-emerald-600/30 text-emerald-300" },
+  { value: "shooting_team", label: "隊伍射擊累計 👥", icon: Target, color: "bg-orange-600/30 text-orange-300" },
+  { value: "gps_team_mission", label: "隊伍 GPS 任務 👥", icon: MapPin, color: "bg-red-600/30 text-red-300" },
 ] as const;
 
 export const PAGE_TEMPLATES = [

@@ -3,8 +3,16 @@ import { describe, it, expect } from "vitest";
 import { PAGE_TYPES, PAGE_TEMPLATES, EVENT_TYPES, REWARD_TYPES, getPageTypeInfo } from "./constants";
 
 describe("PAGE_TYPES", () => {
-  it("定義 23 種頁面類型（含 photo_* 子類型 + flow_router）", () => {
-    expect(PAGE_TYPES).toHaveLength(23);
+  it("定義 26 種頁面類型（含 photo_* 子類型 + flow_router + 4 個 multi 元件）", () => {
+    expect(PAGE_TYPES).toHaveLength(26);
+  });
+
+  it("包含 4 個多人專用元件（Phase 2）", () => {
+    const values = PAGE_TYPES.map((pt) => pt.value);
+    const multiTypes = ["photo_team", "vote_team", "shooting_team", "gps_team_mission"];
+    for (const v of multiTypes) {
+      expect(values).toContain(v);
+    }
   });
 
   it("每個類型都有 value、label、icon、color", () => {

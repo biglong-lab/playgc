@@ -493,6 +493,7 @@ export default function GameEditor() {
           onDragStart={handleToolboxDragStart}
           onDragEnd={handleToolboxDragEnd}
           onAddTemplate={addTemplatePages}
+          gameMode={game?.gameMode}
         />
 
         <PageListSidebar

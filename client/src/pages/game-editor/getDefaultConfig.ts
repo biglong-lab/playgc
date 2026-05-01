@@ -77,6 +77,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         rewardPoints: 30,
       };
     case "shooting_mission":
+    case "shooting_team": // 多人版共用 config schema
       return {
         requiredHits: 5,
         timeLimit: 60,
@@ -101,6 +102,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         rewardPoints: 30,
       };
     case "gps_mission":
+    case "gps_team_mission": // 多人版共用 config schema
       return {
         targetLocation: { lat: 25.033, lng: 121.565 },
         radius: 50,
@@ -142,8 +144,9 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         rewardPoints: 15,
       };
     case "vote":
+    case "vote_team": // 多人版共用 config schema
       return {
-        title: "隊伍投票",
+        title: pageType === "vote_team" ? "隊伍投票（即時同步）" : "投票",
         question: "請選擇你的答案",
         options: [{ text: "選項一" }, { text: "選項二" }],
         showResults: true,

@@ -123,6 +123,7 @@ export default function PageConfigEditor({
       );
 
     case "shooting_mission":
+    case "shooting_team": // 多人版共用 config schema（ShootingMissionConfig）
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
@@ -1705,6 +1706,7 @@ export default function PageConfigEditor({
       );
 
     case "gps_mission":
+    case "gps_team_mission": // 多人版共用 config schema（GpsMissionConfig）
       return (
         <GpsMissionEditor
           config={config}
@@ -1919,6 +1921,7 @@ export default function PageConfigEditor({
       return <MotionChallengeEditor config={config} updateField={updateField} />;
 
     case "vote":
+    case "vote_team": // 多人版共用 config schema（VoteConfig）
       return <VoteEditor config={config} updateField={updateField} allPages={allPages} />;
 
     case "flow_router":
