@@ -852,11 +852,12 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 **Task**：
 - [x] **Phase 1.1**：[shared/multiplayer-component-types.ts](../shared/multiplayer-component-types.ts) 元件分類常數 + 8 個 helpers ✅ commit `5db5565e`
 - [x] **Phase 1.2**：建立目錄結構 `solo/` / `multi/` / `shared/`（含 .gitkeep）✅ commit `68288f1c`
-- [x] **Phase 1.3**：~~schema 新增 `games.playerMode`~~ → **改為從 `gameMode` 推導**（v1.1 修訂，無 schema 變更）
-- [ ] **Phase 1.4**：後端 page 儲存約束（用 `isComponentAllowedForGameMode` 驗證）
-- [ ] **Phase 1.5**：抽出 `shared/hooks/` 共用 hooks（useGameTimer / useGameProgress / useScoreSubmit / useTeamSync）
-- [ ] **Phase 1.6**：把 16 個現有元件搬到 `solo/`、PhotoTeam 搬到 `multi/`、import 路徑批次更新
-- [ ] 全程跑 `tsc --noEmit` + 既有測試確保零回歸
+- [x] **Phase 1.3**：~~schema 新增 `games.playerMode`~~ → **改為從 `gameMode` 推導**（v1.1 修訂，無 schema 變更）✅ commit `77e3602e`
+- [x] **Phase 1.4**：後端 page 儲存約束（用 `isComponentAllowedForGameMode` 驗證）+ 不對稱規則修訂（v1.2）✅ commit `ca19ad98`
+- [x] **Phase 1.5**：useGameTimer hook + 10 個測試（範圍縮減：useTeamSync 等暫緩到 Phase 2 實際需求出現時）✅ commit `c43208a4`
+- [x] **Phase 1.6 part 1**：4 通用元件 → shared/components/ + 1 多人元件 → multi/ ✅ commit `9f4e3661`
+- [x] **Phase 1.6 part 2**：18 個個人元件 → solo/（含內部 import 修正）✅ 本 commit
+- [x] 三層驗證：tsc 零錯誤 + GamePageRenderer 17/17 測試 + production build 成功
 
 **驗收**：
 - ✅ 目錄結構就位
@@ -1054,6 +1055,7 @@ Week 6+    Phase 4：補完與選擇性             🟡 依需求
 | 2026-05-01 | v1.0 | 初版建立 | Hung + Claude Code |
 | 2026-05-01 | v1.1 | Phase 1.3 修訂：取消 `games.playerMode` 欄位新增，改用 `derivePlayerModeFromGameMode(gameMode)` helper 推導。理由：DRY 原則 + 零 schema 變更 + 既有資料無需遷移。影響 §2.4、§5、§11.1 | Claude Code（Loop Phase 1.3） |
 | 2026-05-01 | v1.2 | Phase 1.4 重大修訂：約束改為**不對稱**（multi 元件只能在 multi 遊戲；solo 元件兩種都可）。觸發原因：盤點線上 28 個 team 遊戲全部用 solo 元件，原對稱約束會破壞所有現有遊戲。影響 §2.4、`isComponentAllowedForPlayerMode`、`getAllowedComponentsForPlayerMode` | Claude Code（Loop Phase 1.4） |
+| 2026-05-01 | v1.3 | **Phase 1 完成**。23 個元件全部分類就位：shared/components/ (4) + multi/ (1) + solo/ (18)。子目錄（photo-mission/、gps-mission/、qr-scan/）保留在 game/ 根目錄作為共用工具。git rename 完整保留 history。三層驗證通過。 | Claude Code（Loop Phase 1.6） |
 
 ---
 

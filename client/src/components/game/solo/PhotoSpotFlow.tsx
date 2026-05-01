@@ -15,11 +15,11 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { calculateDistance } from "@/lib/map-utils";
-import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useStableGeolocation } from "@/lib/geolocation";
 import { pickVariant } from "@/lib/variant-picker";
-import { GpsAccuracyIndicator } from "./GpsAccuracyIndicator";
+import { GpsAccuracyIndicator } from "../GpsAccuracyIndicator";
 import { formatAiError } from "@/lib/ai-error";
 import {
   CameraInitializingView,
@@ -27,8 +27,8 @@ import {
   PhotoPreview,
   UploadingView,
   VerifyingView,
-} from "./photo-mission/PhotoViews";
-import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
+} from "../photo-mission/PhotoViews";
+import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoSpotFlowProps {

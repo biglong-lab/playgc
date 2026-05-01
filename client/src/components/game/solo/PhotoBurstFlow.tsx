@@ -17,13 +17,13 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
 import { createLocalCollage } from "@/lib/client-collage";
 import { createClientGif } from "@/lib/client-gif";
-import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, savePhotosToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 import {
   CameraInitializingView, CameraView, UploadingView,
-} from "./photo-mission/PhotoViews";
-import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
+} from "../photo-mission/PhotoViews";
+import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoBurstFlowProps {

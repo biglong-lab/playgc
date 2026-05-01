@@ -1,9 +1,9 @@
 import type { QrScanConfig } from "@shared/schema";
-import { useQrScanner } from "./qr-scan/useQrScanner";
+import { useQrScanner } from "../qr-scan/useQrScanner";
 import {
   InstructionView, CameraView,
   ManualInputView, SuccessView, ErrorView,
-} from "./qr-scan/QrScanViews";
+} from "../qr-scan/QrScanViews";
 import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 
 interface QrScanPageProps {

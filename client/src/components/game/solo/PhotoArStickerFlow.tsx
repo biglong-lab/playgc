@@ -32,13 +32,13 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 import {
   CameraInitializingView, UploadingView,
-} from "./photo-mission/PhotoViews";
-import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
+} from "../photo-mission/PhotoViews";
+import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
 import type { PhotoMissionConfig } from "@shared/schema";
 import {
   getFaceLandmarker,

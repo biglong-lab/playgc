@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { PhotoMissionConfig } from "@shared/schema";
 import { formatAiError } from "@/lib/ai-error";
-import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import {
   InstructionView,
   CameraInitializingView,
@@ -13,7 +13,7 @@ import {
   UploadingView,
   VerifyingView,
   AiFailView,
-} from "./photo-mission/PhotoViews";
+} from "../photo-mission/PhotoViews";
 
 // 🆕 v2 多模式拍照元件（lazy load，避免影響既有 free mode bundle）
 const PhotoSpotFlow = lazy(() => import("./PhotoSpotFlow"));

@@ -21,14 +21,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import {
   CameraInitializingView,
   CameraView,
   PhotoPreview,
   UploadingView,
   VerifyingView,
-} from "./photo-mission/PhotoViews";
+} from "../photo-mission/PhotoViews";
 import type { PhotoMissionConfig } from "@shared/schema";
 import { formatAiError } from "@/lib/ai-error";
 import { pickVariant } from "@/lib/variant-picker";

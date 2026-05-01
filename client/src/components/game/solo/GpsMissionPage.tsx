@@ -6,7 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Navigation, Locate, CheckCircle, AlertCircle, QrCode, Volume2, VolumeX } from "lucide-react";
 import type { GpsMissionConfig } from "@shared/schema";
-import GpsMissionMap from "./gps-mission/GpsMissionMap";
+import GpsMissionMap from "../gps-mission/GpsMissionMap";
 import {
   useTeamGpsFusion,
   distanceMeters,
@@ -14,8 +14,8 @@ import {
   bearingToCompass,
   type StablePosition,
 } from "@/lib/geolocation";
-import { GpsAccuracyIndicator } from "./GpsAccuracyIndicator";
-import { MotionPermissionRequest } from "./MotionPermissionRequest";
+import { GpsAccuracyIndicator } from "../GpsAccuracyIndicator";
+import { MotionPermissionRequest } from "../MotionPermissionRequest";
 import { useAuth } from "@/hooks/useAuth";
 
 interface GpsMissionPageProps {

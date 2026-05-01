@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { usePhotoCamera } from "./photo-mission/usePhotoCamera";
+import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import {
   CameraInitializingView,
@@ -29,8 +29,8 @@ import {
   PhotoPreview,
   UploadingView,
   VerifyingView,
-} from "./photo-mission/PhotoViews";
-import PhotoSuccessView from "./photo-mission/PhotoSuccessView";
+} from "../photo-mission/PhotoViews";
+import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
 import { formatAiError } from "@/lib/ai-error";
 import { pickVariant } from "@/lib/variant-picker";
 import type { PhotoMissionConfig } from "@shared/schema";

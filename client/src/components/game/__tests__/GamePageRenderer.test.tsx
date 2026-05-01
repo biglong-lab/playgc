@@ -15,18 +15,18 @@ vi.mock("@/components/game/shared/components/FlowRouterPage", () => ({ default: 
 // 多人專用元件（multi/）
 vi.mock("@/components/game/multi/PhotoTeamFlow", () => ({ default: () => <div data-testid="photo_team" /> }));
 // 個人專用元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
-vi.mock("@/components/game/ButtonPage", () => ({ default: () => <div data-testid="button" /> }));
-vi.mock("@/components/game/TextVerifyPage", () => ({ default: () => <div data-testid="text_verify" /> }));
-vi.mock("@/components/game/ChoiceVerifyPage", () => ({ default: () => <div data-testid="choice_verify" /> }));
-vi.mock("@/components/game/ConditionalVerifyPage", () => ({ default: () => <div data-testid="conditional_verify" /> }));
-vi.mock("@/components/game/ShootingMissionPage", () => ({ default: () => <div data-testid="shooting_mission" /> }));
-vi.mock("@/components/game/PhotoMissionPage", () => ({ default: () => <div data-testid="photo_mission" /> }));
-vi.mock("@/components/game/GpsMissionPage", () => ({ default: () => <div data-testid="gps_mission" /> }));
-vi.mock("@/components/game/QrScanPage", () => ({ default: () => <div data-testid="qr_scan" /> }));
-vi.mock("@/components/game/TimeBombPage", () => ({ default: () => <div data-testid="time_bomb" /> }));
-vi.mock("@/components/game/LockPage", () => ({ default: () => <div data-testid="lock" /> }));
-vi.mock("@/components/game/MotionChallengePage", () => ({ default: () => <div data-testid="motion_challenge" /> }));
-vi.mock("@/components/game/VotePage", () => ({ default: () => <div data-testid="vote" /> }));
+vi.mock("@/components/game/solo/ButtonPage", () => ({ default: () => <div data-testid="button" /> }));
+vi.mock("@/components/game/solo/TextVerifyPage", () => ({ default: () => <div data-testid="text_verify" /> }));
+vi.mock("@/components/game/solo/ChoiceVerifyPage", () => ({ default: () => <div data-testid="choice_verify" /> }));
+vi.mock("@/components/game/solo/ConditionalVerifyPage", () => ({ default: () => <div data-testid="conditional_verify" /> }));
+vi.mock("@/components/game/solo/ShootingMissionPage", () => ({ default: () => <div data-testid="shooting_mission" /> }));
+vi.mock("@/components/game/solo/PhotoMissionPage", () => ({ default: () => <div data-testid="photo_mission" /> }));
+vi.mock("@/components/game/solo/GpsMissionPage", () => ({ default: () => <div data-testid="gps_mission" /> }));
+vi.mock("@/components/game/solo/QrScanPage", () => ({ default: () => <div data-testid="qr_scan" /> }));
+vi.mock("@/components/game/solo/TimeBombPage", () => ({ default: () => <div data-testid="time_bomb" /> }));
+vi.mock("@/components/game/solo/LockPage", () => ({ default: () => <div data-testid="lock" /> }));
+vi.mock("@/components/game/solo/MotionChallengePage", () => ({ default: () => <div data-testid="motion_challenge" /> }));
+vi.mock("@/components/game/solo/VotePage", () => ({ default: () => <div data-testid="vote" /> }));
 
 import GamePageRenderer from "@/components/game/GamePageRenderer";
 
