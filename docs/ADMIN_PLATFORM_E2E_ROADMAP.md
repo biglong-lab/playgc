@@ -58,7 +58,7 @@ TOTAL_PROGRESS: 11/30
 - [x] **P2-4** Smoke test：admins / roles / audit-logs — 3 SPA 200 ✅ + 7/7 API 401 ✅（admins 2 / roles 2 / permissions 1 / audit-logs 2）；無 issue
 - [x] **P2-5** Smoke test：tickets / billing-alerts / usage — 3 SPA 200 ✅ + 13/13 API 401 ✅（tickets 6 含 messages / billing-alerts 2 / usage 5 含 by-endpoint/provider/meters/overview/top-fields）；無 issue
 - [x] **P2-6** Smoke test：bulk-ops / insights — 2 SPA 200 ✅ + 6/6 insights API 401 ✅（overview/engagement/field-rankings/game-rankings/component-usage/daily-trend）；bulk-ops 用的 fields/bulk-* 已在 P2-2 測過避免重複；無 issue
-- [ ] **P2-7** Smoke test：ai-center 5 tabs + 4 endpoints（含 P15-5 content-health）
+- [x] **P2-7** Smoke test：ai-center — SPA 200 ✅（5 tab 同頁）+ 4/4 API 401 ✅（usage / health / content-health P15-5 / batch-generate-variants）；content-health 錯誤訊息中文化「需要登入」；無 issue
 - [ ] **P2-8** Smoke test：security / error-logs / health（3 頁面 7 endpoint）
 - [ ] **P2-9** Smoke test：ip-whitelist / api-keys / login-config / pwa / notifications / menu / settings（7 頁面 12 endpoint）
 - [ ] **P2-10** Phase 2 收尾：彙總 platform 測試結果到 ISSUES.md（共多少通過 / 異常）+ commit
