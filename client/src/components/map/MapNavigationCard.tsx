@@ -32,27 +32,27 @@ export default function MapNavigationCard({
 
   return (
     <div className="absolute top-28 left-4 right-4 z-[1000]">
-      <Card className="bg-primary/10 border-primary/30">
+      <Card className="bg-card/95 backdrop-blur border-primary/40 shadow-lg">
         <CardHeader className="pb-2 pt-3 px-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Compass className="w-4 h-4" />
+          <CardTitle className="text-sm font-medium flex items-center gap-2 text-foreground">
+            <Compass className="w-4 h-4 text-primary" />
             導航至: {selectedLocation.name}
           </CardTitle>
         </CardHeader>
         <CardContent className="pb-3 px-3">
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
-              <div className="text-2xl font-number font-bold">{navigationInfo.distance}</div>
+              <div className="text-2xl font-number font-bold text-foreground tabular-nums">{navigationInfo.distance}</div>
               <div className="text-xs text-muted-foreground">公尺</div>
             </div>
             <div>
-              <div className="text-2xl font-display font-bold">{navigationInfo.direction}</div>
+              <div className="text-2xl font-display font-bold text-foreground">{navigationInfo.direction}</div>
               <div className="text-xs text-muted-foreground">方向</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1">
-                <Timer className="w-4 h-4" />
-                <span className="text-lg font-number font-bold">{navigationInfo.estimatedTime}</span>
+              <div className="flex items-center gap-1 text-foreground">
+                <Timer className="w-4 h-4 text-primary" />
+                <span className="text-lg font-number font-bold tabular-nums">{navigationInfo.estimatedTime}</span>
               </div>
               <div className="text-xs text-muted-foreground">分鐘</div>
             </div>
