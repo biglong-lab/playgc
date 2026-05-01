@@ -41,7 +41,7 @@ PATCH /api/admin/pages/test-id/chapter 401 yes
 GET /api/admin/games/test-id/chapters 401 yes
 PATCH /api/admin/chapters/test-id 401 yes
 DELETE /api/admin/chapters/test-id 401 yes
-POST /api/admin/chapters/reorder 401 yes
+PATCH /api/admin/chapters/reorder 401 yes
 POST /api/admin/chapters/test-id/save-as-template 401 yes
 
 GET /api/admin/games/test-id/items 401 yes
