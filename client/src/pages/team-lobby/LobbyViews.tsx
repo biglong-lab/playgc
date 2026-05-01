@@ -13,19 +13,45 @@ import {
 import type { Game, TeamMember, User } from "@shared/schema";
 import type { TeamWithDetails } from "./useTeamLobby";
 
-// 🆕 開始遊戲倒數畫面（給隊長按開始後，所有玩家看到的緩衝畫面）
-//   - 5 秒倒數
-//   - 顯示隊員列表（含 ready 狀態）
-//   - 提示對講機已連線
+// 🆕 開始遊戲緩衝畫面（兩種模式）：
+//   - mode='starting' (5 秒倒數)：隊長按開始 → 全員看到，等大家對講機就緒
+//   - mode='reconnecting' (1 秒 flash)：掉線回來 → 顯示「歡迎回來」flash 後直接進遊戲
 export function StartingCountdownView({
   game,
   team,
   remainingSeconds,
+  mode,
 }: {
   game: Game;
   team: TeamWithDetails;
   remainingSeconds: number;
+  mode: "starting" | "reconnecting";
 }) {
+  if (mode === "reconnecting") {
+    // 重連 flash：簡潔卡片，1 秒後跳遊戲
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-8 pb-8 text-center space-y-4">
+            <div
+              className="mx-auto w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center"
+              data-testid="reconnecting-flash"
+            >
+              <Radio className="w-8 h-8 text-green-500 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold">歡迎回來</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {game.title} · 隊伍仍在進行中，正在接回遊戲...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // starting 模式：完整倒數 + 隊員列表 + 對講機提示
   const memberCount = team.members?.length ?? 0;
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

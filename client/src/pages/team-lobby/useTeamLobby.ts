@@ -106,6 +106,8 @@ export interface TeamLobbyReturn {
   leavePending: boolean;
   // 🆕 開始遊戲倒數狀態
   startingCountdown: number | null;
+  /** 區分「全員開始倒數（5 秒）」vs「掉線重連 flash（1 秒）」— UI 顯示不同畫面 */
+  startingMode: "starting" | "reconnecting" | null;
 }
 
 export function useTeamLobby(): TeamLobbyReturn {
@@ -123,6 +125,8 @@ export function useTeamLobby(): TeamLobbyReturn {
   const [showJoinForm, setShowJoinForm] = useState(!!initialInviteCode); // 有 code 自動展開 join form
   // 🆕 開始遊戲倒數（null = 沒在倒數 / 數字 = 剩餘秒數）
   const [startingCountdown, setStartingCountdown] = useState<number | null>(null);
+  // 🆕 區分模式：starting = 全員開始 5 秒倒數；reconnecting = 掉線回來 1 秒 flash
+  const [startingMode, setStartingMode] = useState<"starting" | "reconnecting" | null>(null);
   const startSessionIdRef = useRef<string | null>(null);
 
   const currentUserId = dbUser?.id;
@@ -181,13 +185,14 @@ export function useTeamLobby(): TeamLobbyReturn {
       // 防重複：mutation 與 ws 兩個都會觸發，只取第一個
       if (startSessionIdRef.current) return;
       startSessionIdRef.current = sessionId;
+      setStartingMode("starting");
       setStartingCountdown(5);
     },
   });
 
-  // 🆕 重連場景：myTeam.status='playing' + activeSessionId → 觸發 3 秒倒數
-  //   讓玩家先看到「歡迎回來 + 隊友狀況 + 對講機就緒」再進遊戲，
-  //   避免直接跳進 ChoiceVerifyRace 等元件造成計時器搶答來不及反應。
+  // 🆕 重連場景：myTeam.status='playing' + activeSessionId → 1 秒「歡迎回來」flash
+  //   遊戲已開打了不該再 5、4、3 倒數讓玩家乾等，直接 1 秒 flash 顯示存在感後跳遊戲。
+  //   （自願退出的玩家 leftAt 已設值，my-team 回 null，不會走到這裡 → 不會被拉回）
   useEffect(() => {
     if (
       myTeam?.status === "playing" &&
@@ -195,7 +200,8 @@ export function useTeamLobby(): TeamLobbyReturn {
       !startSessionIdRef.current
     ) {
       startSessionIdRef.current = myTeam.activeSessionId;
-      setStartingCountdown(3);
+      setStartingMode("reconnecting");
+      setStartingCountdown(1);
     }
   }, [myTeam?.status, myTeam?.activeSessionId]);
 
@@ -208,6 +214,7 @@ export function useTeamLobby(): TeamLobbyReturn {
         setLocation(`/game/${gameId}?session=${sid}`);
       }
       setStartingCountdown(null);
+      setStartingMode(null);
       startSessionIdRef.current = null;
       return;
     }
@@ -288,6 +295,7 @@ export function useTeamLobby(): TeamLobbyReturn {
       //   防重複：ref 已有值 → 不再觸發
       if (!startSessionIdRef.current) {
         startSessionIdRef.current = data.sessionId;
+        setStartingMode("starting");
         setStartingCountdown(5);
       }
     },
@@ -358,5 +366,6 @@ export function useTeamLobby(): TeamLobbyReturn {
     startPending: startGameMutation.isPending,
     leavePending: leaveTeamMutation.isPending,
     startingCountdown,
+    startingMode,
   };
 }

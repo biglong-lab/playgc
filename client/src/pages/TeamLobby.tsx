@@ -22,13 +22,14 @@ export default function TeamLobby() {
     return <SoloModeView onStart={() => ctx.navigate(`/game/${ctx.game!.id}`)} />;
   }
 
-  // 🆕 開始遊戲倒數中（隊長按開始 → 全員 5 秒緩衝）
-  if (ctx.startingCountdown !== null && ctx.myTeam) {
+  // 🆕 開始遊戲緩衝中：starting=隊長按開始 5 秒倒數；reconnecting=掉線回來 1 秒 flash
+  if (ctx.startingCountdown !== null && ctx.startingMode && ctx.myTeam) {
     return (
       <StartingCountdownView
         game={ctx.game!}
         team={ctx.myTeam}
         remainingSeconds={ctx.startingCountdown}
+        mode={ctx.startingMode}
       />
     );
   }

@@ -62,6 +62,13 @@ export default function GamePlay() {
     queryKey: ["/api/games", gameId],
   });
 
+  // 🆕 多人遊戲時拿 my-team 用來「自願離開」呼叫 /leave 設 leftAt
+  //   solo mode → my-team 為 null，跳過 leave API（直接 setLocation 即可）
+  const { data: myTeam } = useQuery<{ id: string } | null>({
+    queryKey: ["/api/games", gameId, "my-team"],
+    enabled: !!gameId,
+  });
+
   // 章節模式：載入章節頁面
   const { data: chapterData } = useQuery<GameChapterWithPages>({
     queryKey: ["/api/games", gameId, "chapters", chapterId],
@@ -361,19 +368,25 @@ export default function GamePlay() {
         inventoryCount={inventory.length}
       />
 
-      {/* 🆕 F1: 離開遊戲確認 Dialog */}
+      {/* 🆕 F1: 離開遊戲確認 Dialog
+          多人：呼叫 /leave 設 leftAt → 下次回 lobby 不會被自動拉回（明確自願退出）
+          單人：只更新 lastActiveAt，session 保留可繼續 */}
       <AlertDialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>確定要離開遊戲？</AlertDialogTitle>
+            <AlertDialogTitle>
+              {myTeam?.id ? "確定要離開遊戲？" : "確定要返回大廳？"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              你的進度和已獲得的分數 / 道具都會保留。從大廳的「進行中」就能接著玩。
+              {myTeam?.id
+                ? "你會脫離隊伍。已獲得的分數 / 道具會保留，但隊伍進行中時不會被自動拉回。"
+                : "你的進度和已獲得的分數 / 道具都會保留。從大廳的「進行中」就能接著玩。"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-leave-game-cancel">繼續遊戲</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
+              onClick={async () => {
                 // 更新 lastActiveAt（session 狀態保持 playing，不動 status）
                 const sid = stateRef.current.sessionId;
                 if (sid) {
@@ -383,12 +396,22 @@ export default function GamePlay() {
                     /* 離開本來就不該 block，失敗也要讓玩家離開 */
                   });
                 }
+                // 🆕 多人遊戲：呼叫 /leave 設 leftAt → 下次回 lobby 不會被自動拉回
+                //   失敗也讓玩家走（離開不該 block）
+                if (myTeam?.id) {
+                  try {
+                    await apiRequest("POST", `/api/teams/${myTeam.id}/leave`, {});
+                    toast({ title: "已離開隊伍" });
+                  } catch {
+                    /* 忽略，仍讓玩家離開 */
+                  }
+                }
                 setShowLeaveDialog(false);
                 setLocation(isChapterMode ? link(`/game/${gameId}/chapters`) : link("/home"));
               }}
               data-testid="button-leave-game"
             >
-              離開（保留進度）
+              {myTeam?.id ? "離開隊伍" : "離開（保留進度）"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
