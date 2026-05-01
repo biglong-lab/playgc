@@ -52,7 +52,7 @@ TOTAL_PROGRESS: 5/30
 
 > 對 26 個 platform 頁面 + 對應 endpoint 跑未認證 401 測試（驗證權限守衛）
 
-- [ ] **P2-1** Smoke test：`/platform`（dashboard）+ `/api/platform/overview`
+- [x] **P2-1** Smoke test：`/platform`（dashboard）+ `/api/platform/overview` — SPA 200 ✅ / API 無 token 回 401 ✅ / 錯誤訊息已中文化「需要登入」✅；無 issue
 - [ ] **P2-2** Smoke test：fields / plans / feature-flags（3 頁面 5 endpoint）
 - [ ] **P2-3** Smoke test：revenue / applications / analytics（3 頁面 8 endpoint）
 - [ ] **P2-4** Smoke test：admins / roles / audit-logs（3 頁面 5 endpoint）
