@@ -315,7 +315,12 @@ const handleDone = () => {
 ## 🎯 優先序總結（按工作量）
 
 ### 🔴 P0（1-2 天內應處理）
-1. **ShootingMission 作弊防護** — 後端 HMAC 簽章 + 編輯器警示（半天）⏸️ 暫緩到後批
+1. ~~**ShootingMission 作弊防護**~~ ✅ **實質已解決**（2026-05-02 對焦發現）
+   - 後端：`/api/shooting-records` 已有 device API key 驗證（X-Device-Key header）— Critical #7 已修
+   - 前端：`isSimulationAllowed` 在 `import.meta.env.PROD === true` 時強制回 false
+     → **正式部署 simulateHit 按鈕完全隱藏**，玩家拿不到入口
+   - admin 編輯器：開啟 allowSimulation 時顯示紅字警示「⚠️ 防作弊警示」
+   - 玩家若改 client 程式碼仍可繞過，但這需要 dev tools，少數情境可接受
 2. ~~**Vote 團隊同步投票**~~ ✅ **已完成** — 採拆分模式新建 VoteTeam 元件（Phase 2）
 
 ### 🟠 P1（本月內）

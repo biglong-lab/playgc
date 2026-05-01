@@ -182,10 +182,23 @@ export default function PageConfigEditor({
               />
             </div>
           </div>
-          <div className="flex items-center justify-between border rounded p-2">
+          <div className={`flex items-center justify-between border rounded p-2 ${config.allowSimulation === true ? "border-destructive/40 bg-destructive/5" : ""}`}>
             <div>
-              <span className="text-sm font-medium">啟用模擬命中</span>
-              <p className="text-xs text-muted-foreground">無硬體場地/開發測試用；開啟後玩家可手動點按鈕模擬</p>
+              <span className="text-sm font-medium">
+                啟用模擬命中
+                {config.allowSimulation === true && (
+                  <span className="ml-2 text-xs text-destructive font-bold">⚠️ 防作弊警示</span>
+                )}
+              </span>
+              <p className="text-xs text-muted-foreground">
+                無硬體場地/開發測試用；開啟後玩家可手動點按鈕模擬
+              </p>
+              {config.allowSimulation === true && (
+                <p className="text-xs text-destructive mt-1">
+                  ⚠️ 玩家可手動加分（無上限），生產環境（已發布遊戲）強烈建議關閉。
+                  正式比賽請務必使用實體靶機 + Arduino MQTT 才能防作弊。
+                </p>
+              )}
             </div>
             <Switch
               checked={config.allowSimulation === true}
