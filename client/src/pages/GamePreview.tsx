@@ -72,12 +72,12 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
         setCurrentIndex((i) => Math.max(0, i - 1));
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        setCurrentIndex((i) => Math.min(i + 1, Number.MAX_SAFE_INTEGER));
+        setCurrentIndex((i) => Math.min(i + 1, totalPages - 1));
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [gameId, setLocation]);
+  }, [gameId, setLocation, totalPages]);
 
   const { data: game, isLoading, error } = useQuery<GameWithPages>({
     queryKey: ["/api/admin/games", gameId, "preview"],
