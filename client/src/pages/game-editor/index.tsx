@@ -409,7 +409,7 @@ export default function GameEditor() {
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => setLocation(`/game/${gameId}`)} className="gap-2" disabled={isNew} data-testid="button-preview">
+            <Button variant="outline" onClick={() => setLocation(`/admin/games/${gameId}/preview`)} className="gap-2" disabled={isNew} data-testid="button-preview">
               <Eye className="w-4 h-4" /> 預覽
             </Button>
             <Button variant="outline" onClick={handleSave} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-save">
