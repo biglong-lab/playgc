@@ -329,6 +329,27 @@ export function useTeamWebSocket({
     [userId],
   );
 
+  /**
+   * 🆕 Phase 3.3 RelayMission 廣播 — 接力任務段間切換
+   *   action: "segment_complete" / "all_complete"
+   *   payload: { segmentIndex, completedBy, nextSegmentIndex? }
+   */
+  const sendRelaySync = useCallback(
+    (action: string, payload: Record<string, unknown>) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "team_relay_sync",
+            userId,
+            action,
+            payload,
+          }),
+        );
+      }
+    },
+    [userId],
+  );
+
   return {
     isConnected,
     memberLocations,
@@ -337,5 +358,6 @@ export function useTeamWebSocket({
     sendVote,
     sendReady,
     sendLockCoopSync,
+    sendRelaySync,
   };
 }

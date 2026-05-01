@@ -328,6 +328,25 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
+          // 🆕 Phase 3.3 RelayMission：接力任務段間切換廣播
+          //   action: "segment_complete" | "all_complete"
+          //   payload: { segmentIndex, completedBy, nextSegmentIndex? }
+          case "team_relay_sync":
+            if (ws.teamId) {
+              broadcastToTeam(
+                ws.teamId,
+                {
+                  type: "team_relay_sync",
+                  action: message.action,
+                  payload: message.payload,
+                  userId: message.userId,
+                  timestamp: new Date().toISOString(),
+                },
+                ws,
+              );
+            }
+            break;
+
           case "chat":
             if (ws.sessionId) {
               await storage.createChatMessage({
