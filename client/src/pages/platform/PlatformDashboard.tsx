@@ -3,7 +3,20 @@ import { useQuery } from "@tanstack/react-query";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import PlatformAdminLayout from "@/components/PlatformAdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Package, ToggleLeft, Users } from "lucide-react";
+import {
+  Building2,
+  Package,
+  ToggleLeft,
+  Users,
+  // 模組總覽 icons
+  DollarSign,
+  Shield,
+  BarChart3,
+  Brain,
+  Headphones,
+  Server,
+  ChevronRight,
+} from "lucide-react";
 
 interface PlatformOverview {
   fields: number;
