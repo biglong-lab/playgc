@@ -171,6 +171,9 @@ const AbExperiments = lazy(() => import("@/pages/admin/AbExperiments"));
 // 🎬 遊戲預覽模式（草稿可預覽，不污染資料）
 const GamePreview = lazy(() => import("@/pages/GamePreview"));
 
+// 🤖 AI 實測清單（admin 內頁）
+const AiTestChecklist = lazy(() => import("@/pages/admin/AiTestChecklist"));
+
 // 🏢 場域總部 — 我的方案（v4.0 Phase 6）
 const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
 
