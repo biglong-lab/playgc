@@ -64,6 +64,9 @@ export const games = pgTable("games", {
   price: integer("price"), // 一次付費金額（新台幣元）
   currency: varchar("currency", { length: 10 }).default("TWD"),
   recurProductId: varchar("recur_product_id", { length: 200 }), // Recur.tw 產品 ID
+  // 🤖 AI 實測標記（P6-4 / Preview Mode）— admin 在發布前點「已完成 AI 實測」會更新此時戳
+  // null = 從未實測；timestamp 記錄最近一次標記時間（提醒用，不阻擋發布）
+  lastLiveTestedAt: timestamp("last_live_tested_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
