@@ -58,6 +58,30 @@ export function useTeamWebSocket({
   const [isConnected, setIsConnected] = useState(false);
   const [memberLocations, setMemberLocations] = useState<Map<string, TeamMemberLocation>>(new Map());
 
+  // 🔧 Fix（2026-05-02）：把 callback 放進 ref，避免父元件 re-render 時
+  //   產生新 reference 觸發 useEffect 重跑 → WebSocket 重連 →
+  //   server 又廣播 member_joined → toast 一直跳
+  const callbacksRef = useRef({
+    onMessage,
+    onMemberJoined,
+    onMemberLeft,
+    onLocationUpdate,
+    onVoteCast,
+    onScoreUpdate,
+    onReadyUpdate,
+  });
+  useEffect(() => {
+    callbacksRef.current = {
+      onMessage,
+      onMemberJoined,
+      onMemberLeft,
+      onLocationUpdate,
+      onVoteCast,
+      onScoreUpdate,
+      onReadyUpdate,
+    };
+  }, [onMessage, onMemberJoined, onMemberLeft, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate]);
+
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
 
@@ -80,16 +104,18 @@ export function useTeamWebSocket({
       ws.onmessage = (event) => {
         try {
           const data: TeamMessage = JSON.parse(event.data);
-          
-          onMessage?.(data);
+
+          // 🔧 用 callbacksRef.current 取代直接呼叫，確保拿最新 callback
+          //   且不會把 callback 列入 deps 觸發重連
+          callbacksRef.current.onMessage?.(data);
 
           switch (data.type) {
             case "team_member_joined":
-              onMemberJoined?.(data.userId || "", data.userName || "");
+              callbacksRef.current.onMemberJoined?.(data.userId || "", data.userName || "");
               break;
 
             case "team_member_left":
-              onMemberLeft?.(data.userId || "", data.userName || "");
+              callbacksRef.current.onMemberLeft?.(data.userId || "", data.userName || "");
               setMemberLocations(prev => {
                 const newMap = new Map(prev);
                 if (data.userId) newMap.delete(data.userId);
@@ -112,25 +138,25 @@ export function useTeamWebSocket({
                   newMap.set(data.userId!, location);
                   return newMap;
                 });
-                onLocationUpdate?.(location);
+                callbacksRef.current.onLocationUpdate?.(location);
               }
               break;
 
             case "team_vote_cast":
               if (data.voteId && data.pageId && data.userId && data.choice) {
-                onVoteCast?.(data.voteId, data.pageId, data.userId, data.choice);
+                callbacksRef.current.onVoteCast?.(data.voteId, data.pageId, data.userId, data.choice);
               }
               break;
 
             case "team_score_update":
               if (data.score !== undefined && data.change !== undefined) {
-                onScoreUpdate?.(data.score, data.change, data.reason || "");
+                callbacksRef.current.onScoreUpdate?.(data.score, data.change, data.reason || "");
               }
               break;
 
             case "team_ready_update":
               if (data.userId && data.isReady !== undefined) {
-                onReadyUpdate?.(data.userId, data.isReady);
+                callbacksRef.current.onReadyUpdate?.(data.userId, data.isReady);
               }
               break;
 
@@ -160,7 +186,7 @@ export function useTeamWebSocket({
     } catch {
       // WebSocket 連線建立失敗
     }
-  }, [teamId, userId, userName, onMessage, onMemberJoined, onMemberLeft, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate]);
+  }, [teamId, userId, userName]); // ⚠️ 不放 callback：用 callbacksRef.current 取代
 
   const sendChat = useCallback((message: string, messageType: string = "text") => {
     if (wsRef.current?.readyState === WebSocket.OPEN && teamId && userId && userName) {
