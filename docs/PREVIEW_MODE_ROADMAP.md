@@ -62,7 +62,7 @@ TOTAL_PROGRESS: 13/18
 # Phase 5：流程驗證 ✅
 
 - [x] **P5-1** Smoke test 準備：取 baseline（sessions=0 / player_event_logs=24 / variant_feedback=5 / ai_usage_logs=90，含 test seed）；grep 確認 client mutation endpoint 全在攔截白名單；修正 `/api/player-feedback` → `/api/player/feedback` + 補 `/api/player/event` 實際路徑（伺服器是斜線分隔不是連字號）；TS check ✅；推 `cf27da5a`；P5-2 部署後請使用者實機跑一輪預覽，回 SQL 比對 baseline 應 0 增量
-- [ ] **P5-2** TS check + commit + push + 部署 + 主站 200
+- [x] **P5-2** TS check ✅ EXIT 0 + push `402f338b` + 部署生產（Docker recreate）+ 主站 https://game.homi.cc HTTP/2 200 ✅ + 預覽路由 https://game.homi.cc/admin/games/test-id/preview HTTP/2 200 ✅；首次完整功能上線，使用者可實機測試
 
 ---
 
