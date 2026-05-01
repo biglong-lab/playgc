@@ -12,8 +12,8 @@ import {
 } from "../game-modules";
 
 describe("GAME_MODULES 常數", () => {
-  it("包含 17 套模組（含賈村 2 套多人示範）", () => {
-    expect(GAME_MODULES).toHaveLength(17);
+  it("包含 21 套模組（含賈村 2 套多人示範）", () => {
+    expect(GAME_MODULES).toHaveLength(21);
   });
 
   it("每個模組都有唯一 ID", () => {
@@ -102,9 +102,9 @@ describe("getModuleById", () => {
 });
 
 describe("getAllModules", () => {
-  it("回傳所有 17 套模組", () => {
+  it("回傳所有 21 套模組", () => {
     const modules = getAllModules();
-    expect(modules).toHaveLength(17);
+    expect(modules).toHaveLength(21);
   });
 
   it("回傳的是 GAME_MODULES 的引用", () => {
