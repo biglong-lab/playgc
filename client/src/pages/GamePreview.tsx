@@ -48,6 +48,20 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
     };
   }, []);
 
+  const { data: game, isLoading, error } = useQuery<GameWithPages>({
+    queryKey: ["/api/admin/games", gameId, "preview"],
+    queryFn: async () => {
+      const res = await fetch(`/api/admin/games/${gameId}`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    },
+  });
+
+  // 計算 totalPages（hook 區塊內，不能放 if early return 後面）
+  const totalPages = game?.pages?.length ?? 0;
+
   // ⌨️ 鍵盤快捷：← 上一頁 / → 下一頁 / Esc 退出
   useEffect(() => {
     function isEditableTarget(target: EventTarget | null): boolean {
@@ -78,17 +92,6 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [gameId, setLocation, totalPages]);
-
-  const { data: game, isLoading, error } = useQuery<GameWithPages>({
-    queryKey: ["/api/admin/games", gameId, "preview"],
-    queryFn: async () => {
-      const res = await fetch(`/api/admin/games/${gameId}`, {
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res.json();
-    },
-  });
 
   if (isLoading) {
     return (
