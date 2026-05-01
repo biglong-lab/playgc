@@ -41,12 +41,10 @@ export function PreviewBanner({ gameTitle, onExit }: PreviewBannerProps) {
             <a
               href={AI_TEST_CHECKLIST_URL}
               target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center gap-1 underline font-medium hover:opacity-100 opacity-90"
               data-testid="link-test-checklist"
             >
               📋 實測清單
-              <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </div>
