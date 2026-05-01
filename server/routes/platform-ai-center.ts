@@ -242,6 +242,13 @@ export function registerPlatformAiCenterRoutes(app: Express) {
         let generated = 0;
         let skipped = 0;
         let failed = 0;
+        // 🔧 細分跳過原因（讓 admin 知道為什麼補不了）
+        const skipReasons = {
+          noFieldId: 0,        // game 沒綁場域
+          fieldNotFound: 0,    // 場域不存在
+          noApiKey: 0,         // 場域沒設 API key
+          notOpenRouter: 0,    // 場域 key 不是 OpenRouter (sk-or-)
+        };
 
         for (const page of candidates) {
           try {
@@ -252,6 +259,7 @@ export function registerPlatformAiCenterRoutes(app: Express) {
               .limit(1);
             if (!game?.fieldId) {
               skipped++;
+              skipReasons.noFieldId++;
               continue;
             }
             const [field] = await db
@@ -261,16 +269,19 @@ export function registerPlatformAiCenterRoutes(app: Express) {
               .limit(1);
             if (!field) {
               skipped++;
+              skipReasons.fieldNotFound++;
               continue;
             }
             const settings = parseFieldSettings(field.settings);
             if (!settings.geminiApiKey) {
               skipped++;
+              skipReasons.noApiKey++;
               continue;
             }
             const apiKey = decryptApiKey(settings.geminiApiKey);
             if (!apiKey.startsWith("sk-or-")) {
               skipped++;
+              skipReasons.notOpenRouter++;
               continue;
             }
 
