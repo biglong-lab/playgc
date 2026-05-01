@@ -86,7 +86,7 @@ TOTAL_PROGRESS: 25/30
 
 > 處理 P2/P3 抓到的 issue（按優先序）
 
-- [ ] **P4-1** 讀 ISSUES.md 分類（Critical / High / Medium / Low / Cosmetic）
+- [x] **P4-1** 讀 ISSUES.md 分類 — 全 4 級嚴重度（Critical/High/Medium/Low）皆 0 個生產 issue；2 個測試清單錯誤已即時修正不計（reorder POST→PATCH / purchases PATCH→DELETE）；Phase 4 後續修復 task 無工作量，僅需依守則標記完成
 - [ ] **P4-2** 修復 Critical 問題（500 / 認證錯誤 / 路由註冊缺失等）
 - [ ] **P4-3** 修復 High 問題（404 endpoint / SQL 錯誤 / undefined 訪問）
 - [ ] **P4-4** 修復 Medium 問題（loading state 缺失 / 錯誤訊息混雜中英）
