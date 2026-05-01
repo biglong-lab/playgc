@@ -20,6 +20,7 @@ import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import { useSessionManager } from "./hooks/useSessionManager";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { speakTeamEvent, primeVoices } from "@/lib/voice-notification";
+import LeaderDecideDialog from "@/components/team/LeaderDecideDialog";
 import {
   RewardFeedbackOverlay,
   fireReward,
@@ -66,10 +67,37 @@ export default function GamePlay() {
 
   // 🆕 多人遊戲時拿 my-team 用來「自願離開」呼叫 /leave 設 leftAt
   //   solo mode → my-team 為 null，跳過 leave API（直接 setLocation 即可）
-  const { data: myTeam } = useQuery<{ id: string } | null>({
+  //   leaderId 給 leader-decide dialog 判斷我是不是隊長用
+  const { data: myTeam } = useQuery<{ id: string; leaderId: string | null } | null>({
     queryKey: ["/api/games", gameId, "my-team"],
     enabled: !!gameId,
   });
+
+  // 🆕 leader-decide：寬限期過的玩家（隊長收到時設值，顯示 dialog）
+  const [pendingDecisionTarget, setPendingDecisionTarget] = useState<
+    { userId: string; userName: string } | null
+  >(null);
+  const [decidePending, setDecidePending] = useState(false);
+
+  const handleLeaderDecide = useCallback(
+    async (action: "wait" | "continue") => {
+      if (!myTeam?.id || !pendingDecisionTarget) return;
+      setDecidePending(true);
+      try {
+        await apiRequest("POST", `/api/teams/${myTeam.id}/leader-decide`, {
+          targetUserId: pendingDecisionTarget.userId,
+          action,
+        });
+        // pendingDecisionTarget 由 onLeaderDecide WS 廣播觸發後才清空
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "決定失敗";
+        toast({ title: "決定失敗", description: msg, variant: "destructive" });
+      } finally {
+        setDecidePending(false);
+      }
+    },
+    [myTeam?.id, pendingDecisionTarget, toast],
+  );
 
   // 🆕 Phase 2.B：拿隊伍當前進度（給進入時自動跳到最快頁面）
   //   server schema 不一致時 retry: false 避免無謂重試（玩家仍能玩自己進度）
@@ -157,11 +185,32 @@ export default function GamePlay() {
       const seconds = Math.round(autoLeaveInMs / 1000);
       toast({
         title: `⏳ ${userName} 寬限期已過`,
-        description: `${seconds} 秒後將自動視為離開`,
+        description: `${seconds} 秒後將自動視為離開（隊長可介入決定）`,
         duration: 5000,
         variant: "destructive",
       });
       speakTeamEvent(userId, userName, "graceExpired");
+      // 🆕 leader-decide：若我是隊長 → 開 dialog 讓決定
+      if (myTeam?.leaderId === user?.id) {
+        setPendingDecisionTarget({ userId, userName });
+      }
+    },
+    // 🆕 Phase 2c+ leader-decide：隊長下決定後 ws 廣播
+    onLeaderDecide: (action) => {
+      if (action === "wait") {
+        toast({
+          title: "👑 隊長選擇等待",
+          description: "繼續等離線玩家回來",
+          duration: 4000,
+        });
+      } else {
+        toast({
+          title: "👑 隊長選擇先繼續",
+          description: "離線玩家已標為離開",
+          duration: 4000,
+        });
+      }
+      setPendingDecisionTarget(null);
     },
     onProgressAdvance: (newMax, advancedBy) => {
       // 自己引發的 advance 不要再跳（已經在 newMax 頁面了）
@@ -688,6 +737,15 @@ export default function GamePlay() {
           onClose={() => setShowInventory(false)}
         />
       )}
+
+      {/* 🆕 Phase 2c+ leader-decide dialog（多人遊戲中隊長介入） */}
+      <LeaderDecideDialog
+        open={!!pendingDecisionTarget}
+        targetUserName={pendingDecisionTarget?.userName ?? null}
+        onWait={() => handleLeaderDecide("wait")}
+        onContinue={() => handleLeaderDecide("continue")}
+        onCancel={() => setPendingDecisionTarget(null)}
+      />
     </div>
   );
 }
