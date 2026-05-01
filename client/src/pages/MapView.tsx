@@ -455,6 +455,54 @@ export default function MapView() {
             </Card>
           </div>
         )}
+
+        {/* 🆘 地圖載入卡住診斷 — 5 秒沒任何 tile 載入 → 提示重設 PWA */}
+        {mapStuck && (
+          <div className="absolute inset-0 z-[1500] bg-black/80 backdrop-blur flex items-center justify-center p-4">
+            <Card className="max-w-sm w-full">
+              <CardContent className="p-5 space-y-3 text-center">
+                <AlertCircle className="w-10 h-10 mx-auto text-amber-500" />
+                <h3 className="font-bold">地圖載入失敗</h3>
+                <p className="text-sm text-muted-foreground">
+                  地圖瓦片無法載入，可能原因：
+                </p>
+                <ul className="text-xs text-left text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>PWA 快取為舊版（最常見）</li>
+                  <li>網路擋住 OpenStreetMap / Carto CDN</li>
+                  <li>裝置時間錯誤導致 HTTPS 失敗</li>
+                </ul>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => window.location.reload()}
+                  >
+                    重新載入
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={async () => {
+                      // 強制清 SW + cache + reload（與 main.tsx checkVersion 同邏輯）
+                      try {
+                        if ("serviceWorker" in navigator) {
+                          const regs = await navigator.serviceWorker.getRegistrations();
+                          await Promise.all(regs.map((r) => r.unregister()));
+                        }
+                        if ("caches" in window) {
+                          const keys = await caches.keys();
+                          await Promise.all(keys.map((k) => caches.delete(k)));
+                        }
+                      } catch { /* */ }
+                      window.location.reload();
+                    }}
+                  >
+                    清快取 + 重載
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
 
       {/* 底部控制列 */}
