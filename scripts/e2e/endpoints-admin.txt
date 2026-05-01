@@ -159,5 +159,5 @@ DELETE /api/admin/ab-experiments/test-id 401 yes
 GET /api/admin/ab-experiments/test-id/results 401 yes
 
 # ─── walkie ─────────────────────────────────────────────────────
-GET /api/admin/walkie/broadcast-tokens 401 yes
+POST /api/admin/walkie/broadcast-tokens 401 yes
 GET /api/admin/walkie/live-stats 401 yes
