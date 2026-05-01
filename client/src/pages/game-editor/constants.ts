@@ -40,6 +40,8 @@ export const PAGE_TYPES = [
   { value: "vote_team", label: "隊伍投票（即時同步）👥", icon: Vote, color: "bg-emerald-600/30 text-emerald-300" },
   { value: "shooting_team", label: "隊伍射擊累計 👥", icon: Target, color: "bg-orange-600/30 text-orange-300" },
   { value: "gps_team_mission", label: "隊伍 GPS 任務 👥", icon: MapPin, color: "bg-red-600/30 text-red-300" },
+  // Phase 3.1（2026-05-02）— 隊伍搶答（強競爭性）
+  { value: "choice_verify_race", label: "隊伍搶答 👥", icon: HelpCircle, color: "bg-teal-600/30 text-teal-300" },
 ] as const;
 
 export const PAGE_TEMPLATES = [

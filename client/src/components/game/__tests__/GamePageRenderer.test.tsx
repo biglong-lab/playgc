@@ -17,6 +17,7 @@ vi.mock("@/components/game/multi/PhotoTeamFlow", () => ({ default: () => <div da
 vi.mock("@/components/game/multi/VoteTeamPage", () => ({ default: () => <div data-testid="vote_team" /> }));
 vi.mock("@/components/game/multi/ShootingTeamPage", () => ({ default: () => <div data-testid="shooting_team" /> }));
 vi.mock("@/components/game/multi/GpsTeamMissionPage", () => ({ default: () => <div data-testid="gps_team_mission" /> }));
+vi.mock("@/components/game/multi/ChoiceVerifyRacePage", () => ({ default: () => <div data-testid="choice_verify_race" /> }));
 // 個人專用元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 vi.mock("@/components/game/solo/ButtonPage", () => ({ default: () => <div data-testid="button" /> }));
 vi.mock("@/components/game/solo/TextVerifyPage", () => ({ default: () => <div data-testid="text_verify" /> }));
@@ -65,7 +66,7 @@ describe("GamePageRenderer", () => {
     "text_verify", "choice_verify", "conditional_verify",
     "shooting_mission", "photo_mission", "gps_mission",
     "qr_scan", "time_bomb", "lock", "motion_challenge", "vote", "flow_router",
-    "vote_team", "shooting_team", "gps_team_mission",
+    "vote_team", "shooting_team", "gps_team_mission", "choice_verify_race",
   ];
 
   supportedTypes.forEach((pageType) => {

@@ -16,7 +16,7 @@ const baseProps = {
 };
 
 describe("ToolboxSidebar — gameMode 過濾", () => {
-  it("gameMode='individual' 時隱藏 4 個 multi 元件", () => {
+  it("gameMode='individual' 時隱藏 5 個 multi 元件", () => {
     render(<ToolboxSidebar {...baseProps} gameMode="individual" />);
 
     // multi 元件不應在 toolbox
@@ -24,6 +24,7 @@ describe("ToolboxSidebar — gameMode 過濾", () => {
     expect(screen.queryByTestId("toolbox-vote_team")).not.toBeInTheDocument();
     expect(screen.queryByTestId("toolbox-shooting_team")).not.toBeInTheDocument();
     expect(screen.queryByTestId("toolbox-gps_team_mission")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("toolbox-choice_verify_race")).not.toBeInTheDocument();
 
     // 個人 / 通用元件正常顯示
     expect(screen.getByTestId("toolbox-text_card")).toBeInTheDocument();
@@ -32,7 +33,7 @@ describe("ToolboxSidebar — gameMode 過濾", () => {
     expect(screen.getByTestId("toolbox-gps_mission")).toBeInTheDocument();
   });
 
-  it("gameMode='team' 時顯示全部 26 種元件", () => {
+  it("gameMode='team' 時顯示全部 27 種元件", () => {
     render(<ToolboxSidebar {...baseProps} gameMode="team" />);
 
     // multi 元件全部顯示
@@ -40,6 +41,7 @@ describe("ToolboxSidebar — gameMode 過濾", () => {
     expect(screen.getByTestId("toolbox-vote_team")).toBeInTheDocument();
     expect(screen.getByTestId("toolbox-shooting_team")).toBeInTheDocument();
     expect(screen.getByTestId("toolbox-gps_team_mission")).toBeInTheDocument();
+    expect(screen.getByTestId("toolbox-choice_verify_race")).toBeInTheDocument();
 
     // 個人 / 通用元件也全部顯示（不對稱規則 v1.2）
     expect(screen.getByTestId("toolbox-text_card")).toBeInTheDocument();

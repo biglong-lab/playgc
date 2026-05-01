@@ -61,6 +61,19 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         showExplanation: false,
         rewardPerQuestion: 10,
       };
+    case "choice_verify_race": // 多人搶答（用 questions[] 多題模式）
+      return {
+        title: "隊伍搶答",
+        questions: [
+          {
+            question: "範例題目（請編輯）",
+            options: ["選項 A", "選項 B", "選項 C", "選項 D"],
+            correctAnswer: 0,
+          },
+        ],
+        rewardPerQuestion: 10,
+        timeLimit: 30,
+      };
     case "conditional_verify":
       return {
         title: "碎片收集",

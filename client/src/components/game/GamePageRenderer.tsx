@@ -20,6 +20,7 @@ const PhotoTeamFlow = lazy(() => import("@/components/game/multi/PhotoTeamFlow")
 const VoteTeamPage = lazy(() => import("@/components/game/multi/VoteTeamPage"));
 const ShootingTeamPage = lazy(() => import("@/components/game/multi/ShootingTeamPage"));
 const GpsTeamMissionPage = lazy(() => import("@/components/game/multi/GpsTeamMissionPage"));
+const ChoiceVerifyRacePage = lazy(() => import("@/components/game/multi/ChoiceVerifyRacePage"));
 
 // 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/solo/ButtonPage"));
@@ -234,6 +235,8 @@ export default function GamePageRenderer({
         return <ShootingTeamPage {...commonProps} />;
       case "gps_team_mission":
         return <GpsTeamMissionPage {...commonProps} />;
+      case "choice_verify_race":
+        return <ChoiceVerifyRacePage {...commonProps} />;
       case "photo_ocr":
         return <PhotoOcrFlow {...commonProps} />;
       case "gps_mission":

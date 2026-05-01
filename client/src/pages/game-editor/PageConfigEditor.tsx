@@ -1883,6 +1883,7 @@ export default function PageConfigEditor({
       );
 
     case "choice_verify":
+    case "choice_verify_race": // 多人搶答版共用 ChoiceVerifyConfig schema
       return (
         <ChoiceVerifyEditor
           config={config}
