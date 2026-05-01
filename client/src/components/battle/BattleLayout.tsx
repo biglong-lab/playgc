@@ -114,8 +114,8 @@ export default function BattleLayout({
         </div>
       </header>
 
-      {/* 內容區（底部加上安全邊距） */}
-      <main className="max-w-4xl mx-auto px-4 py-6 pb-safe">
+      {/* 內容區（底部加上安全邊距 + PlayerBottomNav 56px 預留空間） */}
+      <main className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
         {children}
       </main>
     </div>
