@@ -55,7 +55,7 @@ TOTAL_PROGRESS: 11/18
 # Phase 4：上下頁邏輯 ⏭
 
 - [x] **P4-1** 驗證確認：GamePreview 已在 P3-1+P3-2 階段實作完成 — useState(0) + onComplete `Math.min(prev+1, totalPages-1)` 只 clamp 邊界 + NavBar onJump 直接 setCurrentIndex；3 處無 resolveFlowRouter / condition / completedPageIds 檢查；自由翻頁完成 ✅
-- [ ] **P4-2** 鍵盤快捷：← 上一頁 / → 下一頁 / Esc 退出（預覽限定）
+- [x] **P4-2** 鍵盤快捷：useEffect 註冊 keydown listener — Esc 任何時候退出 / ←→ 翻頁；isEditableTarget() 偵測 INPUT/TEXTAREA/SELECT/contentEditable 焦點時忽略 ←→（不干擾打字）+ e.preventDefault() 避免捲動；deps [gameId, setLocation, totalPages] 確保 totalPages 變化時 listener 取最新值；TS check ✅；Phase 4 push `6dcb8666`
 
 ---
 
