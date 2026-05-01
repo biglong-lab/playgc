@@ -10,7 +10,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
-  Camera, CheckCircle2, AlertTriangle, Download, Share2, Users, ArrowRight,
+  Camera, CheckCircle2, Download, Share2, Users, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -350,14 +350,9 @@ export default function PhotoTeamFlow({
   // Render
   // ═══════════════════════════════════════════════════════════════
 
-  if (!team) {
-    return (
-      <div className="p-6 text-center" data-testid="photo-team-missing-config">
-        <AlertTriangle className="w-10 h-10 mx-auto text-destructive mb-3" />
-        <p className="text-destructive font-medium">缺少 teamConfig 設定</p>
-      </div>
-    );
-  }
+  // 🔧 fix（2026-05-02）：teamConfig 是 schema optional，admin 拖元件但沒填欄位時
+  //   不應該整個畫面 reject，下面流程已用 ?? defaults 給合理預設值（minMembers=2, maxMembers=6, layoutMode='grid'）
+  //   原本「缺少 teamConfig 設定」紅字頁卡住玩家。
 
   // 完成（共用 PhotoSuccessView）
   if (stage === "done" && compositeUrl) {
