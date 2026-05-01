@@ -97,11 +97,22 @@ export function AccountFormDialog({
           {/* 帳號 + 密碼 */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="username">帳號 *</Label>
+              <Label htmlFor="username">
+                帳號{!editingAccount && " *"}
+                {editingAccount && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    （建立後不可修改）
+                  </span>
+                )}
+              </Label>
               <Input
                 id="username"
                 data-testid="input-account-username"
-                placeholder="登入帳號"
+                placeholder={
+                  editingAccount && !formData.username
+                    ? "Firebase SSO 帳號（無 username）"
+                    : "登入帳號"
+                }
                 value={formData.username}
                 onChange={(e) => updateField("username", e.target.value)}
                 disabled={!!editingAccount}
