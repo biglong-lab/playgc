@@ -46,7 +46,7 @@ TOTAL_PROGRESS: 7/18
 # Phase 3：資料隔離 🚫
 
 - [x] **P3-1** GamePreview 完整骨架：useState 維護 currentIndex（純 in-memory，不建 session）+ PreviewProvider 包覆樹（傳 isPreview + gameId）+ PreviewBanner 頂部 + PreviewNavBar 底部 + 中間先顯 page metadata（pageOrder/pageType/customName/config JSON）佔位等 P3-2 替換 GamePageRenderer；無 sessions API 呼叫；空 pages / load fail 都有 fallback；TS check ✅
-- [ ] **P3-2** GamePlay 元件 `apiRequest("PATCH"|"POST", "/api/sessions/...")` 全包 `if (!isPreview)` 跳過
+- [x] **P3-2** 採用最小擴散策略：GamePreview 直接渲染 `<GamePageRenderer>`（不 mount GamePlay 整體）+ sessionId="" + onComplete 跳下一頁 + onVariableUpdate 純 in-memory（local useState） + score=0/inventory=[]/visitedLocations=[] 都用空值；下游元件嘗試呼叫 sessions API 因 sessionId 空會 404（不寫 DB），P3-3 處理 AI 元件 mock
 - [ ] **P3-3** AI 驗證在預覽模式 mock 直接回 `{ success: true, confidence: 1.0 }`（不打 OpenRouter / Vision）
 - [ ] **P3-4** 排行榜 / 獎勵發放 / 兌換碼消耗 / `/api/locations/.../visit` 在 preview 模式跳過
 
