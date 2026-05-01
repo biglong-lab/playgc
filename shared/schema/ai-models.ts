@@ -105,6 +105,17 @@ export const DEFAULT_TEXT_MODEL = "mistralai/mistral-small-3.2-24b-instruct";
 export const DEFAULT_VARIANT_GEN_MODEL = "deepseek/deepseek-v3.2";
 
 /**
+ * 🆕 Gemini 直連預設模型（場域用 AIza... key 走 google-genai SDK 時用）
+ *   - gemini-2.0-flash 已被 Google 下架（2026-04 起 404 "no longer available to new users"）
+ *   - gemini-1.5-flash 為穩定可用版本
+ *
+ * ⚠️ 為何不用更新版（如 gemini-2.5-flash）：
+ *   - 1.5-flash 廣泛支援、穩定、便宜
+ *   - 升級需個別測試 SDK 相容性
+ */
+export const DEFAULT_GEMINI_MODEL = "gemini-1.5-flash";
+
+/**
  * 🔄 Fallback chain：當主模型 429 / 404 / 5xx 時依序嘗試
  *
  * 速度優先設計（玩家等不了 11-37 秒）：
