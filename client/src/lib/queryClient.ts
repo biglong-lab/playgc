@@ -20,7 +20,7 @@ async function throwIfResNotOk(res: Response) {
   }
 }
 
-// 🎬 AI endpoint 列表（preview 模式直接 mock，不打 OpenRouter / Vision）
+// 🎬 預覽模式攔截白名單（preview 時 mutation 全部 mock pass）
 //   GamePreview 進入時 set sessionStorage.previewMode='1'，unmount 清除
 const AI_ENDPOINTS = [
   "/api/ai/verify-photo",
@@ -29,8 +29,23 @@ const AI_ENDPOINTS = [
   "/api/ai/ocr-detect",
 ];
 
+/** 寫入類 endpoint：preview 時跳過任何 mutation */
+const WRITE_ENDPOINT_PREFIXES = [
+  "/api/sessions",         // session lifecycle / progress / visits / chapter-complete
+  "/api/locations",        // 地點打卡 PATCH/DELETE
+  "/api/leaderboard",      // 排行榜寫入
+  "/api/rewards",          // 獎勵發放
+  "/api/redeem-codes",     // 兌換碼使用 / 消耗
+  "/api/player-feedback",  // P11 玩家反饋（事件 / 變體投票）
+  "/api/matches",          // 對戰場次寫入
+];
+
 function isAiEndpoint(url: string): boolean {
   return AI_ENDPOINTS.some((ep) => url.startsWith(ep));
+}
+
+function isWriteEndpoint(url: string): boolean {
+  return WRITE_ENDPOINT_PREFIXES.some((p) => url.startsWith(p));
 }
 
 function isPreviewMode(): boolean {
