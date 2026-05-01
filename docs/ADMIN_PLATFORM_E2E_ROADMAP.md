@@ -70,7 +70,7 @@ TOTAL_PROGRESS: 16/30
 > 對 28 個 admin 頁面 + 對應 endpoint 跑 401 測試 + 已認證 200 測試
 
 - [x] **P3-1** Smoke test：dashboard / settings / sessions / live — 4 SPA 200 ✅ + 6/6 API 401 ✅（settings GET+PATCH / stats overview / tickets summary / sessions list+cleanup）；live 頁面主要走 WebSocket 故 API 部分由其他 task 涵蓋；無 issue
-- [ ] **P3-2** Smoke test：games CRUD + game-editor + cover/qrcode（5 endpoint）
+- [x] **P3-2** Smoke test：games CRUD + game-editor + cover/qrcode — 2 SPA 200 ✅ + 11/11 API 401 ✅（games CRUD 5 / publish / cover+cover-upload-url / qrcode GET+POST / grant-access）；無 issue
 - [ ] **P3-3** Smoke test：locations / items / chapters / achievements / routes（5 個編輯器）
 - [ ] **P3-4** Smoke test：game-generator / exemplar-library / templates（3 頁面）
 - [ ] **P3-5** Smoke test：tickets / redeem-codes（2 頁面）
