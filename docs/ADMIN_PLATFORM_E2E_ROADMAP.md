@@ -77,7 +77,7 @@ TOTAL_PROGRESS: 23/30
 - [x] **P3-6** Smoke test：battle 5 頁面 — 5 SPA 200 ✅ + 19/19 API ✅（venues 4：GET 公開 200 / POST/PATCH/DELETE 401 / slots 7：GET 帶 venueId 200 + 6 個 admin mutation 401 / admin/battle 9 含 stats/recent-results/tier-distribution/rankings/seasons CRUD/rankings PATCH）；GET /api/battle/slots 無 venueId 設計回 400 schema validation 合理（不算 issue）
 - [x] **P3-7** Smoke test：fields / roles / accounts / audit-logs / players / qrcodes — 6 SPA 200 ✅ + 18/18 API 401 ✅（fields 6 含 settings+seed-default-roles / roles 4+permissions / accounts 5 含 approve+reset-password / audit-logs 1 / users 1）；無 issue
 - [x] **P3-8** Smoke test：field-settings / analytics / leaderboard / suspicious / devices — 5 SPA 200 ✅ + 6/6 API 401 ✅（client-logs 2 / devices 1 + 廣播 LED+Ping 2 / mqtt 1）；field-settings API 已在 P3-7 測 / analytics+leaderboard SPA 自帶但 API 已散在其他 task；無 issue
-- [ ] **P3-9** Smoke test：rewards/rules / engagement / ab-experiments（3 頁面，含 P14-7）
+- [x] **P3-9** Smoke test：rewards/rules / engagement / ab-experiments — 3 SPA 200 ✅ + 19/19 API 401 ✅（rewards 2 / rules 5 含 stats / engagement 6 含 settings+run-achievements+super-leaders+welcome-squads+channels CRUD / ab-experiments 6 含 list+create+get+patch+delete+results — P14-7 全到位）；無 issue
 - [ ] **P3-10** Phase 3 收尾：彙總 admin 測試結果 + commit
 
 ---
