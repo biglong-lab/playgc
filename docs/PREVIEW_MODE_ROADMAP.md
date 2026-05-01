@@ -32,7 +32,7 @@ TOTAL_PROGRESS: 3/18
 
 - [x] **P1-1** App.tsx 加路由 `/admin/games/:gameId/preview`（lazy import GamePreview + ProtectedAdminRoute 包覆 + 取 params.gameId 傳入）+ 建立 `client/src/pages/GamePreview.tsx` 骨架（useQuery 取 game + loading/error 處理 + Phase 階段提示）；TS check ✅
 - [x] **P1-2** 建立 `client/src/contexts/PreviewContext.tsx`：`PreviewContextValue { isPreview, gameId }` + `PreviewProvider` 元件 + `usePreview()` hook；預設 `{ isPreview: false, gameId: null }` 確保正式遊玩流程不受影響；TS check ✅
-- [ ] **P1-3** 修改 `client/src/pages/game-editor/index.tsx`：「預覽」按鈕從 `/game/:gameId` 改為 `/admin/games/:gameId/preview`
+- [x] **P1-3** 修改 `client/src/pages/game-editor/index.tsx`：「預覽」按鈕 `setLocation` 從 `/game/${gameId}` 改為 `/admin/games/${gameId}/preview`；TS check ✅；Phase 1 收尾 push `2e0e9886` ✅（無生產變更，等 Phase 5 完整功能再部署）
 
 ---
 
