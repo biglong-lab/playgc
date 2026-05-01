@@ -181,11 +181,21 @@ export default function MapView() {
       osmFallbackTriggered = true;
       console.warn("[map] Carto tile 載入失敗，fallback 到 OpenStreetMap");
       tileLayer.remove();
-      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
-      }).addTo(map);
+      });
+      osmLayer.addTo(map);
+      // 連 OSM 都失敗 → 顯示診斷 UI 給使用者重設
+      osmLayer.on("tileerror", () => setMapStuck(true));
     });
+
+    // 5 秒沒任何 tile load 成功 → 顯示診斷
+    let tileLoadCount = 0;
+    tileLayer.on("tileload", () => { tileLoadCount++; });
+    setTimeout(() => {
+      if (tileLoadCount === 0) setMapStuck(true);
+    }, 5000);
     mapInstanceRef.current = map;
 
     // 🔧 修地圖渲染問題：mount 時 main flex layout 還沒算完，map size = 0
