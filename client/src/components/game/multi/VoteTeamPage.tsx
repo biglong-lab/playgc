@@ -10,10 +10,12 @@
 //
 // 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.2 + VOTE_SYNC_PLAN.md
 
+import { useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { useTeamVoteSync } from "../shared/hooks/useTeamVoteSync";
 import VoteTeam from "./VoteTeam";
 import type { VoteConfig } from "@shared/schema";
@@ -59,13 +61,43 @@ export default function VoteTeamPage({
   const teamId = myTeam?.id;
   const totalMembers = myTeam?.members?.length ?? 0;
 
-  const { voteState, ensureVote, castVote } = useTeamVoteSync({
+  const { voteState, ensureVote, castVote, handleWsMessage } = useTeamVoteSync({
     teamId: teamId ?? "",
     pageId,
     config,
     votingMode: "majority", // 預設過半，admin 後續可在 config 加開關
     totalMembers,
     enabled: !!teamId && !!pageId,
+  });
+
+  // 推導顯示名（給 useTeamWebSocket 用）
+  const myDisplayName = useMemo(() => {
+    if (!user) return "我";
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
+    if (fullName) return fullName;
+    if (user.email) return user.email.split("@")[0];
+    return user.id.slice(0, 8);
+  }, [user]);
+
+  // 訊息 adapter — 把 useTeamWebSocket 的通用訊息轉發給 useTeamVoteSync
+  // 注意：TeamMessage 型別未列 `vote` 欄位（vote_created 有），用 unknown cast 廣義處理
+  const handleVoteWsMessage = useCallback(
+    (msg: { type: string; voteId?: string; userId?: string; choice?: string }) => {
+      if (msg.type === "vote_cast" || msg.type === "vote_created") {
+        handleWsMessage(
+          msg as unknown as Parameters<typeof handleWsMessage>[0],
+        );
+      }
+    },
+    [handleWsMessage],
+  );
+
+  // 連 WebSocket（接 vote_cast / vote_created 訊息）
+  useTeamWebSocket({
+    teamId,
+    userId: user?.id,
+    userName: myDisplayName,
+    onMessage: handleVoteWsMessage,
   });
 
   // ============================================================================
