@@ -298,6 +298,7 @@ function Router() {
         <Route path="/admin/engagement">{() => <ProtectedAdminRoute><AdminEngagementSettings /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/ab-experiments">{() => <ProtectedAdminRoute><AbExperiments /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId/preview">{(params) => <ProtectedAdminRoute><GamePreview gameId={params.gameId} /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/ai-test-checklist">{() => <ProtectedAdminRoute><AiTestChecklist /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/rewards/analytics">{() => <ProtectedAdminRoute><AdminRewardsAnalytics /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/invites/cohort">{() => <ProtectedAdminRoute><AdminInvitesCohort /></ProtectedAdminRoute>}</Route>
 
