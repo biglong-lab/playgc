@@ -25,18 +25,10 @@ interface GamePreviewProps {
   gameId: string;
 }
 
-interface PreviewPage {
-  id: string;
-  pageOrder: number;
-  pageType: string;
-  customName: string | null;
-  config: Record<string, unknown>;
-}
-
 interface GameWithPages {
   id: string;
   title: string;
-  pages?: PreviewPage[];
+  pages?: Page[];
 }
 
 export default function GamePreview({ gameId }: GamePreviewProps) {
