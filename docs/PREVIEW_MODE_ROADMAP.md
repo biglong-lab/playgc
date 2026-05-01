@@ -39,7 +39,7 @@ TOTAL_PROGRESS: 5/18
 # Phase 2：UI 元件 🎨
 
 - [x] **P2-1** 建立 `client/src/components/preview/PreviewBanner.tsx`：頂部 sticky amber banner（z-50 backdrop-blur）+ Eye icon + 「🎬 預覽模式 · {gameTitle}」+ 副標籤「不會記錄玩家資料 · 可自由翻頁 · ⚠️ AI 任務已 mock，上線後請實機測試」+ 退出按鈕（X icon）；data-testid: preview-banner / button-exit-preview；TS check ✅
-- [ ] **P2-2** 建立 `client/src/components/preview/PreviewNavBar.tsx`：底部固定（⏮ 第一頁 / ◀ 上一頁 / 第 X / Y 頁 / 下一頁 ▶ / ⏭ 最後頁 / 跳到第 X 頁）
+- [x] **P2-2** 建立 `client/src/components/preview/PreviewNavBar.tsx`：底部 sticky 導航條（⏮ ChevronsLeft 第一頁 / ◀ 上一頁 / 中央「第 X / Y 頁」+ 跳頁 input / 下一頁 ▶ / ⏭ ChevronsRight 最後頁）+ 邊界 disabled（首/尾頁禁用）+ Enter 確認跳轉；6 個 data-testid 友善 E2E；TS check ✅；Phase 2 commit `f2b2e4d9` push ✅
 
 ---
 
