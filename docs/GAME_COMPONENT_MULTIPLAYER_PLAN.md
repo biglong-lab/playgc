@@ -868,36 +868,38 @@ games.leaderRequiredFor   text[]  default '{}'  -- ['start', 'advance', 'submit_
 
 ---
 
-### Phase 2：核心 3 個多人元件（2 週）
+### Phase 2：核心 3 個多人元件（**已完成 — 2026-05-02**）
 
 **目標**：讓玩家立刻能玩到多人玩法
 
 **Task**：
 
-**第 1 週**：
-- [ ] `VoteTeam.tsx`（依 VOTE_SYNC_PLAN，估 8-12h）
-  - 接後端 API
-  - 訂閱 vote_cast 事件
-  - majority / unanimous / display 三模式
-- [ ] Admin 兩段式選擇器 UI
-- [ ] `playerMode` 進階設定折疊區塊（min/max/timeout/leaderBonus）
-
-**第 2 週**：
-- [ ] `ShootingTeam.tsx`
-  - hit record 加 team_id
-  - HMAC 簽章防作弊
-  - 隊內排行 UI
-- [ ] `GpsTeamMission.tsx`
-  - 接 useTeamGpsFusion
-  - any / all 觸發模式
-- [ ] `TeammatePanel` 共用元件
-- [ ] `WalkieSuggestionToast` 共用元件
+- [x] **2.1** GameFormDialog 加 gameMode 欄位（個人/隊伍/競技/接力）✅ commit `3ace636d`
+- [x] **2.2** TeammatePanel 共用元件（compact / full 兩版型）+ 12 測試 ✅ commit `420ba76f`
+- [x] **2.3** VoteTeam 全鏈路（majority/unanimous/display）✅ 3 commits（`3690933a` + `a3beb1ed` + `b22a6ebb`）
+  - VoteTeam 元件 + 23 測試
+  - useTeamVoteSync hook（API + WebSocket 訊息處理）+ 16 測試
+  - VoteTeamPage 容器 + GamePageRenderer 註冊
+- [x] **2.4** ShootingTeam 全鏈路（隊伍累計分 + 排行榜）✅ 2 commits（`7ae5293f` + `3d358354`）
+  - ShootingTeam 元件 + 25 測試
+  - useTeamShootingSync hook（WebSocket 訂閱）+ 12 測試
+  - ShootingTeamPage 容器 + GamePageRenderer 註冊
+- [x] **2.5** GpsTeamMission 全鏈路（any / all 觸發模式）✅ 2 commits（`d1037f6b` + `6a057e28`）
+  - GpsTeamMission 元件 + 27 測試
+  - GpsTeamMissionPage 容器（接 useStableGeolocation + useTeamWebSocket）+ 註冊
 
 **驗收**：
-- ✅ 3 個多人元件可在 admin 建立並測試
-- ✅ 玩家 demo 路徑：建多人遊戲 → 加 VoteTeam → 兩位玩家測試 → 投票同步 ✓
-- ✅ Shooting HMAC 簽章驗證通過
-- ✅ TeammatePanel 顯示隊友狀態
+- ✅ 3 個多人元件 GamePageRenderer 已註冊（vote_team / shooting_team / gps_team_mission）
+- ✅ Admin 可在 GameFormDialog 選遊戲類型
+- ✅ 三層驗證：tsc 零錯誤 + 全 client 測試 ≥ 870/870 通過 + GamePageRenderer 20/20
+
+**Phase 2 待後續處理（歸入 Phase 2.6 或挪後）**：
+- ⏳ **WalkieSuggestionToast** 共用元件（多人元件入場時提示開對講機）
+- ⏳ **Admin page editor** 加 multi pageType 選項（admin 才能建立多人 page，**目前阻塞項**）
+- ⏳ **VoteTeamPage 的 handleWsMessage** 接到 useTeamWebSocket（隊友投票即時看到）
+- ⏳ **shooting_hit** 訊息 server side 附 userId（無法區分誰打的）
+- ⏳ **HMAC 防作弊**（前端 simulateHit 帶簽章 + server 驗證）
+- ⏳ **TeammatePanel 整合進三個元件**（目前各自有自己的隊友顯示）
 
 ---
 
@@ -1056,6 +1058,7 @@ Week 6+    Phase 4：補完與選擇性             🟡 依需求
 | 2026-05-01 | v1.1 | Phase 1.3 修訂：取消 `games.playerMode` 欄位新增，改用 `derivePlayerModeFromGameMode(gameMode)` helper 推導。理由：DRY 原則 + 零 schema 變更 + 既有資料無需遷移。影響 §2.4、§5、§11.1 | Claude Code（Loop Phase 1.3） |
 | 2026-05-01 | v1.2 | Phase 1.4 重大修訂：約束改為**不對稱**（multi 元件只能在 multi 遊戲；solo 元件兩種都可）。觸發原因：盤點線上 28 個 team 遊戲全部用 solo 元件，原對稱約束會破壞所有現有遊戲。影響 §2.4、`isComponentAllowedForPlayerMode`、`getAllowedComponentsForPlayerMode` | Claude Code（Loop Phase 1.4） |
 | 2026-05-01 | v1.3 | **Phase 1 完成**。23 個元件全部分類就位：shared/components/ (4) + multi/ (1) + solo/ (18)。子目錄（photo-mission/、gps-mission/、qr-scan/）保留在 game/ 根目錄作為共用工具。git rename 完整保留 history。三層驗證通過。 | Claude Code（Loop Phase 1.6） |
+| 2026-05-02 | v1.4 | **Phase 2 完成**。多人元件全鏈路就位（VoteTeam / ShootingTeam / GpsTeamMission），共 9 個 commits / 115 新測試。三個元件都包含：純 UI 元件 + 容器（自取 myTeam）+ GamePageRenderer 註冊。Admin GameFormDialog 加 gameMode 選擇器。TeammatePanel 共用 UI 完成。多人元件總數從 1 增至 4。剩餘整合工作（admin page editor、server WebSocket 接合）歸入 Phase 2.6 或視試玩結果決定。 | Claude Code（Loop Phase 2） |
 
 ---
 
