@@ -36,6 +36,18 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
   // 🔒 in-memory state — 完全不寫 DB（守則 9 資料隔離）
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // 🎬 標記 preview 模式：apiRequest 看到 sessionStorage.previewMode='1' + AI endpoint 會 mock pass
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("previewMode", "1");
+    } catch { /* ignore */ }
+    return () => {
+      try {
+        sessionStorage.removeItem("previewMode");
+      } catch { /* ignore */ }
+    };
+  }, []);
+
   const { data: game, isLoading, error } = useQuery<GameWithPages>({
     queryKey: ["/api/admin/games", gameId, "preview"],
     queryFn: async () => {
