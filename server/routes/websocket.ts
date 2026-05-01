@@ -31,6 +31,11 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   const matchClients: Map<string, Set<WebSocketClient>> = new Map();
   const battleSlotClients: Map<string, Set<WebSocketClient>> = new Map();
 
+  // 🆕 Phase 2a：記錄每個 team 曾經連過的 userId（用來區分「初次加入」vs「重連」）
+  //   close 後 history 仍保留，再次 team_join 時 → reconnected 而非 joined。
+  //   server 重啟會清空（接受限制 — 重啟後第一次連會被當「joined」廣播）。
+  const teamMemberHistory: Map<string, Set<string>> = new Map();
+
   wss.on("connection", async (ws: WebSocketClient, request: IncomingMessage) => {
     ws.isAlive = true;
 
@@ -106,18 +111,37 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             if (!teamClients.has(message.teamId)) {
               teamClients.set(message.teamId, new Set());
             }
+            if (!teamMemberHistory.has(message.teamId)) {
+              teamMemberHistory.set(message.teamId, new Set());
+            }
 
             // 🔧 Fix（2026-05-02）：去重廣播 — 同 userId 已有 active socket 時
             //   重連不再廣播 member_joined（避免 toast 一直跳）
+            // 🆕 Phase 2a（2026-05-02）：區分「初次加入」vs「重連回來」三狀態：
+            //   - 已有 active socket → 同 user 多 socket，不廣播
+            //   - 沒 active socket 但 history 有他 → 重連，廣播 reconnected
+            //   - 沒 active socket 且 history 沒他 → 初次，廣播 joined
             const teamSetForJoin = teamClients.get(message.teamId)!;
+            const memberHistory = teamMemberHistory.get(message.teamId)!;
             const userAlreadyConnected = Array.from(teamSetForJoin).some(
               (c) =>
                 (c as WebSocketClient).userId === message.userId,
             );
+            const hasReconnected = !userAlreadyConnected && memberHistory.has(message.userId);
 
             teamSetForJoin.add(ws);
+            memberHistory.add(message.userId);
 
-            if (!userAlreadyConnected) {
+            if (userAlreadyConnected) {
+              // 同 user 多 socket，不廣播
+            } else if (hasReconnected) {
+              broadcastToTeam(message.teamId, {
+                type: "team_member_reconnected",
+                userId: message.userId,
+                userName: message.userName,
+                timestamp: new Date().toISOString(),
+              });
+            } else {
               broadcastToTeam(message.teamId, {
                 type: "team_member_joined",
                 userId: message.userId,
@@ -338,8 +362,11 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         teamClients.get(ws.teamId)?.delete(ws);
 
         // 🔧 Fix（2026-05-02）：同 userId 是否還有其他 active socket
-        //   有 → 不廣播 member_left（只是其中一個 socket 斷線）
-        //   無 → 廣播 member_left（user 真的離開了）
+        //   有 → 不廣播（只是其中一個 socket 斷線）
+        //   無 → 廣播 disconnected（暫時離線，可能會回來）
+        // 🆕 Phase 2a：close 不再廣播 team_member_left（那代表「真的離開隊伍」）
+        //   改廣播 team_member_disconnected（「暫時離線」）
+        //   真正的 team_member_left 由 /api/teams/:teamId/leave route 廣播
         const teamSetForLeave = teamClients.get(ws.teamId);
         const userStillConnected = teamSetForLeave
           ? Array.from(teamSetForLeave).some(
@@ -353,7 +380,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
         if (!userStillConnected) {
           broadcastToTeam(ws.teamId, {
-            type: "team_member_left",
+            type: "team_member_disconnected",
             userId: ws.userId,
             userName: ws.userName,
             timestamp: new Date().toISOString(),

@@ -176,6 +176,21 @@ export function useTeamLobby(): TeamLobbyReturn {
       toast({ title: `${userName} 離開了隊伍` });
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
+    // 🆕 Phase 2a：暫時離線（socket 斷）— 提示但不刷新成員（人還在）
+    onMemberDisconnected: (_userId, userName) => {
+      toast({
+        title: `⚠️ ${userName} 暫時離線`,
+        description: "等他重連回來",
+        duration: 3000,
+      });
+    },
+    // 🆕 Phase 2a：重連回來
+    onMemberReconnected: (_userId, userName) => {
+      toast({
+        title: `✅ ${userName} 回來了`,
+        duration: 2000,
+      });
+    },
     onReadyUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },

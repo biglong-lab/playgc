@@ -162,6 +162,45 @@ describe("websocket 路由", () => {
       const msg = await msgPromise;
       expect(msg.userId).toBe("u2");
     });
+
+    // 🆕 Phase 2a：socket close → 廣播 disconnected（不是 left）
+    it("socket close 後廣播 team_member_disconnected（暫時離線）", async () => {
+      const ws1 = trackWs(await connectWs(port));
+      const ws2 = trackWs(await connectWs(port));
+
+      ws1.send(JSON.stringify({ type: "team_join", teamId: "t2", userId: "u1", userName: "成員一" }));
+      ws2.send(JSON.stringify({ type: "team_join", teamId: "t2", userId: "u2", userName: "成員二" }));
+      await new Promise((r) => setTimeout(r, 100));
+
+      const msgPromise = waitForMessage(ws1, "team_member_disconnected");
+      ws2.close();
+      const msg = await msgPromise;
+      expect(msg.userId).toBe("u2");
+      expect(msg.type).toBe("team_member_disconnected");
+    });
+
+    // 🆕 Phase 2a：曾連過再連 → 廣播 reconnected
+    it("曾連過後重連 → 廣播 team_member_reconnected", async () => {
+      const ws1 = trackWs(await connectWs(port));
+      const ws2 = trackWs(await connectWs(port));
+
+      ws1.send(JSON.stringify({ type: "team_join", teamId: "t3", userId: "u1", userName: "成員一" }));
+      ws2.send(JSON.stringify({ type: "team_join", teamId: "t3", userId: "u2", userName: "成員二" }));
+      await new Promise((r) => setTimeout(r, 100));
+
+      // u2 斷線
+      ws2.close();
+      await new Promise((r) => setTimeout(r, 100));
+
+      // u2 重連
+      const ws2b = trackWs(await connectWs(port));
+      const msgPromise = waitForMessage(ws1, "team_member_reconnected");
+      ws2b.send(JSON.stringify({ type: "team_join", teamId: "t3", userId: "u2", userName: "成員二" }));
+
+      const msg = await msgPromise;
+      expect(msg.userId).toBe("u2");
+      expect(msg.type).toBe("team_member_reconnected");
+    });
   });
 
   describe("team_chat", () => {

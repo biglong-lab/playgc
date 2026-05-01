@@ -39,6 +39,10 @@ interface UseTeamWebSocketOptions {
   onMessage?: (message: TeamMessage) => void;
   onMemberJoined?: (userId: string, userName: string) => void;
   onMemberLeft?: (userId: string, userName: string) => void;
+  /** 🆕 Phase 2a：socket 斷線（暫時離線，可能會回來） */
+  onMemberDisconnected?: (userId: string, userName: string) => void;
+  /** 🆕 Phase 2a：socket 重連（曾連過 → 又出現） */
+  onMemberReconnected?: (userId: string, userName: string) => void;
   onLocationUpdate?: (location: TeamMemberLocation) => void;
   onVoteCast?: (voteId: string, pageId: string, userId: string, choice: string) => void;
   onScoreUpdate?: (score: number, change: number, reason: string) => void;
@@ -54,6 +58,8 @@ export function useTeamWebSocket({
   onMessage,
   onMemberJoined,
   onMemberLeft,
+  onMemberDisconnected,
+  onMemberReconnected,
   onLocationUpdate,
   onVoteCast,
   onScoreUpdate,
@@ -71,6 +77,8 @@ export function useTeamWebSocket({
     onMessage,
     onMemberJoined,
     onMemberLeft,
+    onMemberDisconnected,
+    onMemberReconnected,
     onLocationUpdate,
     onVoteCast,
     onScoreUpdate,
@@ -82,13 +90,15 @@ export function useTeamWebSocket({
       onMessage,
       onMemberJoined,
       onMemberLeft,
+      onMemberDisconnected,
+      onMemberReconnected,
       onLocationUpdate,
       onVoteCast,
       onScoreUpdate,
       onReadyUpdate,
       onGameStarted,
     };
-  }, [onMessage, onMemberJoined, onMemberLeft, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted]);
+  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted]);
 
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
@@ -129,6 +139,16 @@ export function useTeamWebSocket({
                 if (data.userId) newMap.delete(data.userId);
                 return newMap;
               });
+              break;
+
+            // 🆕 Phase 2a：socket 斷線（暫時離線）
+            case "team_member_disconnected":
+              callbacksRef.current.onMemberDisconnected?.(data.userId || "", data.userName || "");
+              break;
+
+            // 🆕 Phase 2a：socket 重連（回來了）
+            case "team_member_reconnected":
+              callbacksRef.current.onMemberReconnected?.(data.userId || "", data.userName || "");
               break;
 
             case "team_location":

@@ -18,6 +18,7 @@ import GamePageRenderer from "@/components/game/GamePageRenderer";
 import GamePageErrorBoundary from "@/components/game/GamePageErrorBoundary";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import { useSessionManager } from "./hooks/useSessionManager";
+import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import {
   RewardFeedbackOverlay,
   fireReward,
@@ -67,6 +68,33 @@ export default function GamePlay() {
   const { data: myTeam } = useQuery<{ id: string } | null>({
     queryKey: ["/api/games", gameId, "my-team"],
     enabled: !!gameId,
+  });
+
+  // 🆕 Phase 2a：遊戲中也訂閱 team WS，顯示隊友離線/重連/離開 toast（存在感）
+  //   solo mode → myTeam 為 null，hook 內部 effect 會跳過建立連線
+  useTeamWebSocket({
+    teamId: myTeam?.id,
+    userId: user?.id,
+    userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
+    onMemberDisconnected: (_, userName) => {
+      toast({
+        title: `⚠️ ${userName} 暫時離線`,
+        description: "等他重連回來",
+        duration: 3000,
+      });
+    },
+    onMemberReconnected: (_, userName) => {
+      toast({
+        title: `✅ ${userName} 回來了`,
+        duration: 2000,
+      });
+    },
+    onMemberLeft: (_, userName) => {
+      toast({
+        title: `👋 ${userName} 已離開遊戲`,
+        duration: 3000,
+      });
+    },
   });
 
   // 章節模式：載入章節頁面

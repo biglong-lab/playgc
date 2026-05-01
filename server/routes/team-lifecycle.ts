@@ -6,6 +6,7 @@ import {
   teamMembers,
   teamSessions,
   gameSessions,
+  users,
 } from "@shared/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import { z } from "zod";
@@ -172,9 +173,24 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
           .set({ leftAt: new Date() })
           .where(eq(teamMembers.id, membership.id));
 
-        ctx.broadcastToSession(`team_${teamId}`, {
-          type: "member_left",
+        // 🆕 Phase 2a：明確「離開隊伍」廣播 team_member_left（≠ socket 斷線）
+        //   broadcastToTeam 才會送到 lobby（broadcastToSession 是 game session room）
+        //   拿 user.firstName 顯示在 toast，失敗也不阻塞 leave 流程
+        let userName = userId;
+        try {
+          const u = await db.query.users.findFirst({
+            where: eq(users.id, userId),
+          });
+          if (u?.firstName) userName = u.firstName;
+          else if (u?.email) userName = u.email.split("@")[0];
+        } catch {
+          /* 拿不到名字也不阻塞 */
+        }
+        ctx.broadcastToTeam(teamId, {
+          type: "team_member_left",
           userId,
+          userName,
+          timestamp: new Date().toISOString(),
         });
 
         res.json({ message: "已離開隊伍" });

@@ -512,9 +512,10 @@ describe("隊伍路由 (teams)", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.message).toBe("已離開隊伍");
-      expect(ctx.broadcastToSession).toHaveBeenCalledWith(
-        "team_team-1",
-        expect.objectContaining({ type: "member_left", userId: "user-1" }),
+      // 🆕 Phase 2a：改用 broadcastToTeam + team_member_left 語意
+      expect(ctx.broadcastToTeam).toHaveBeenCalledWith(
+        "team-1",
+        expect.objectContaining({ type: "team_member_left", userId: "user-1" }),
       );
     });
 
