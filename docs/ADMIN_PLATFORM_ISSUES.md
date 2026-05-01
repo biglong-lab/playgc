@@ -17,6 +17,30 @@ Low:      0   (cosmetic / 中文化不統一)
 Resolved: 0
 ```
 
+## 🌐 Phase 2 — Platform Smoke Test 彙總（已完成）
+
+| Task | 範圍 | SPA | API | 通過 | 失敗 | Issues |
+|---|---|---|---|---|---|---|
+| P2-1 | overview | 1 | 1 | 2/2 | 0 | 0 |
+| P2-2 | fields/plans/feature-flags | 3 | 16 | 19/19 | 0 | 0 |
+| P2-3 | revenue/applications/analytics | 3 | 5 | 8/8 | 0 | 0 |
+| P2-4 | admins/roles/audit-logs | 3 | 7 | 10/10 | 0 | 0 |
+| P2-5 | tickets/billing-alerts/usage | 3 | 13 | 16/16 | 0 | 0 |
+| P2-6 | bulk-ops/insights | 2 | 6 | 8/8 | 0 | 0 |
+| P2-7 | ai-center (5 tabs) | 1 | 4 | 5/5 | 0 | 0 |
+| P2-8 | security/error-logs/health | 3 | 10 | 13/13 | 0 | 0 |
+| P2-9 | ip-whitelist/api-keys/login-config/pwa/notifications/menu/settings | 7 | 19 | 26/26 | 0 | 0 |
+| **小計** | **26 SPA + 81 API** | **26** | **81** | **107/107** | **0** | **0** |
+
+### 結論：Platform 後台健康
+
+- ✅ **所有 SPA 路由（26 個）正確掛載 React Router**（HTTP 200）
+- ✅ **所有 API endpoint（81 個）認證守衛正常**（HTTP 401）
+- ✅ **錯誤訊息已中文化**（驗證樣本：`overview` / `content-health` 都回 `{"error":"需要登入"}`）
+- ✅ **無 Issue 寫入需求**
+
+⚠️ **注意**：本階段為「未認證 401 守衛測試」。實際業務邏輯（200 帶 token 路徑）需 admin token 才能驗證，留待 future iteration（不在當前 ROADMAP 範圍）。
+
 ## 🏷️ 嚴重度說明
 
 | 級別 | 標準 | P4 處理優先序 |
