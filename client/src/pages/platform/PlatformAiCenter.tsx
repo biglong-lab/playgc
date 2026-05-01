@@ -532,21 +532,39 @@ export default function PlatformAiCenter() {
                       <Ghost className="w-4 h-4 text-purple-500" />
                       殭屍變體（從沒被選中過）
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      💡 <strong>可以做什麼</strong>：去 admin 編輯該 page → 變體池編輯器 → 刪除或改寫該變體（可能語氣不對／太長／不貼題）
+                    </p>
                   </CardHeader>
                   <CardContent className="space-y-2 max-h-64 overflow-y-auto">
                     {contentHealth.zombieVariants.length === 0 ? (
                       <p className="text-xs text-muted-foreground">無殭屍變體 🎉</p>
                     ) : (
                       contentHealth.zombieVariants.slice(0, 50).map((z, i) => (
-                        <div
+                        <a
                           key={`${z.pageId}-${z.variantKey}-${z.variantIndex}-${i}`}
-                          className="text-xs border-l-2 border-purple-300 pl-2 py-1"
+                          href={z.gameId ? `/admin/games/${z.gameId}` : "#"}
+                          className="block text-xs border-l-2 border-purple-300 pl-2 py-1.5 hover:bg-accent/50 rounded transition-colors"
                         >
-                          <div className="font-mono text-muted-foreground">
-                            {z.pageId.slice(0, 8)} · {z.variantKey}#{z.variantIndex} · {z.daysOld}d
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="font-medium">
+                              {z.gameName ?? "（未知遊戲）"}
+                            </span>
+                            <span className="text-muted-foreground">→</span>
+                            <span>{z.customName ?? z.pageType ?? "?"}</span>
+                            {z.pageOrder && (
+                              <span className="text-muted-foreground text-[10px]">
+                                第 {z.pageOrder} 頁
+                              </span>
+                            )}
+                            <Badge variant="outline" className="text-[10px] ml-auto">
+                              {z.variantKey}#{z.variantIndex} · {z.daysOld}d
+                            </Badge>
                           </div>
-                          <div className="truncate">{z.variantText}</div>
-                        </div>
+                          <div className="text-muted-foreground truncate mt-0.5">
+                            「{z.variantText}」
+                          </div>
+                        </a>
                       ))
                     )}
                   </CardContent>
@@ -557,33 +575,40 @@ export default function PlatformAiCenter() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 text-orange-500" />
-                      孤兒任務(沒玩家完成過)
+                      孤兒任務（沒玩家完成過）
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      💡 <strong>可以做什麼</strong>：「沒人進入」紅標 = 玩家根本沒走到這裡（流程斷頭、入口缺失、章節斷層） / 沒紅標 = 玩家進去但沒完成（任務太難、描述不清、條件難以滿足）。點擊跳到該遊戲編輯器確認。
+                    </p>
                   </CardHeader>
                   <CardContent className="space-y-2 max-h-64 overflow-y-auto">
                     {contentHealth.orphanTasks.length === 0 ? (
                       <p className="text-xs text-muted-foreground">無孤兒任務 🎉</p>
                     ) : (
                       contentHealth.orphanTasks.slice(0, 50).map((o) => (
-                        <div
+                        <a
                           key={o.pageId}
-                          className="text-xs border-l-2 border-orange-300 pl-2 py-1 flex items-center justify-between"
+                          href={`/admin/games/${o.gameId}`}
+                          className="flex items-center justify-between text-xs border-l-2 border-orange-300 pl-2 py-1.5 hover:bg-accent/50 rounded transition-colors"
                         >
-                          <div>
-                            <span className="font-mono text-muted-foreground">
-                              {o.pageId.slice(0, 8)}
+                          <div className="flex items-center gap-1 flex-wrap min-w-0 flex-1">
+                            <span className="font-medium truncate">
+                              {o.gameName ?? "（未知遊戲）"}
                             </span>
-                            <span className="ml-2">{o.customName ?? o.pageType}</span>
-                            <span className="ml-1 text-muted-foreground">
-                              · 第{o.pageOrder}頁 · {o.daysOld}d
+                            <span className="text-muted-foreground">→</span>
+                            <span className="truncate">
+                              {o.customName ?? o.pageType}
+                            </span>
+                            <span className="text-muted-foreground text-[10px]">
+                              第 {o.pageOrder} 頁 · {o.daysOld}d
                             </span>
                           </div>
                           {o.neverEntered && (
-                            <Badge variant="destructive" className="text-[10px]">
+                            <Badge variant="destructive" className="text-[10px] flex-shrink-0">
                               沒人進入
                             </Badge>
                           )}
-                        </div>
+                        </a>
                       ))
                     )}
                   </CardContent>
@@ -596,26 +621,38 @@ export default function PlatformAiCenter() {
                       <Skull className="w-4 h-4 text-red-500" />
                       死路 page（玩家進去就退出）
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground">
+                      💡 <strong>可以做什麼</strong>：玩家有進入但 ≥70% 沒完成。點擊跳到編輯器，可考慮：(1) 加 hint 文案 (2) 降難度（如 fuzzy tolerance 放寬）(3) 補 success 變體鼓勵玩家 (4) 確認任務描述清楚。
+                    </p>
                   </CardHeader>
                   <CardContent className="space-y-2 max-h-64 overflow-y-auto">
                     {contentHealth.deadEndPages.length === 0 ? (
                       <p className="text-xs text-muted-foreground">無死路 page 🎉</p>
                     ) : (
                       contentHealth.deadEndPages.slice(0, 50).map((d) => (
-                        <div
+                        <a
                           key={d.pageId}
-                          className="text-xs border-l-2 border-red-300 pl-2 py-1 flex items-center justify-between"
+                          href={d.gameId ? `/admin/games/${d.gameId}` : "#"}
+                          className="flex items-center justify-between text-xs border-l-2 border-red-300 pl-2 py-1.5 hover:bg-accent/50 rounded transition-colors"
                         >
-                          <div>
-                            <span className="font-mono text-muted-foreground">
-                              {d.pageId.slice(0, 8)}
-                            </span>
-                            <span className="ml-2">
-                              {d.enterCount} 進入 / {d.completeCount} 完成
-                            </span>
-                            <span className="ml-2 text-muted-foreground">
-                              退出率 {(d.exitRate * 100).toFixed(0)}%
-                            </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className="font-medium truncate">
+                                {d.gameName ?? "（未知遊戲）"}
+                              </span>
+                              <span className="text-muted-foreground">→</span>
+                              <span className="truncate">
+                                {d.customName ?? d.pageType ?? "?"}
+                              </span>
+                              {d.pageOrder && (
+                                <span className="text-muted-foreground text-[10px]">
+                                  第 {d.pageOrder} 頁
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-muted-foreground text-[11px] mt-0.5">
+                              {d.enterCount} 進入 / {d.completeCount} 完成 · 退出率 {(d.exitRate * 100).toFixed(0)}%
+                            </div>
                           </div>
                           <Badge
                             variant={
@@ -625,11 +662,11 @@ export default function PlatformAiCenter() {
                                   ? "default"
                                   : "secondary"
                             }
-                            className="text-[10px]"
+                            className="text-[10px] flex-shrink-0 ml-2"
                           >
                             {d.severity}
                           </Badge>
-                        </div>
+                        </a>
                       ))
                     )}
                   </CardContent>
