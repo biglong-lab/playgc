@@ -1,0 +1,138 @@
+// 🎯 ShootingTeamPage — ShootingTeam 元件的容器（自取 teamId / members + WebSocket）
+//
+// 角色：
+//   - ShootingTeam（純 UI）的容器層
+//   - 從 gameId 自動找隊伍（GET /api/games/:gameId/my-team）
+//   - 用 useTeamShootingSync 訂閱 WebSocket 累積全隊 hits
+//   - 沒組隊 → fallback UI
+//
+// GamePageRenderer 用此元件對應 pageType="shooting_team"
+//
+// 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.3
+
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Users, AlertCircle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useTeamShootingSync } from "../shared/hooks/useTeamShootingSync";
+import ShootingTeam, { type TeamMemberInfo } from "./ShootingTeam";
+import type { ShootingMissionConfig } from "@shared/schema";
+
+export interface ShootingTeamPageProps {
+  config: ShootingMissionConfig;
+  onComplete: (
+    reward?: { points?: number; items?: string[] },
+    nextPageId?: string,
+  ) => void;
+  sessionId: string;
+  gameId: string;
+}
+
+interface MyTeamResponse {
+  id: string;
+  members: Array<{
+    userId: string;
+    user?: { id: string; firstName?: string | null; lastName?: string | null; email?: string };
+  }>;
+}
+
+/** 從 user 物件取出顯示名（優先 firstName + lastName，再 email，最後 userId） */
+function deriveDisplayName(user: MyTeamResponse["members"][number]): string {
+  const u = user.user;
+  if (!u) return user.userId.slice(0, 8);
+  const fullName = [u.firstName, u.lastName].filter(Boolean).join(" ").trim();
+  if (fullName) return fullName;
+  if (u.email) return u.email.split("@")[0];
+  return u.id.slice(0, 8);
+}
+
+export default function ShootingTeamPage({
+  config,
+  onComplete,
+  sessionId,
+  gameId,
+}: ShootingTeamPageProps) {
+  const { user } = useAuth();
+
+  // 取隊伍資訊
+  const {
+    data: myTeam,
+    isLoading: teamLoading,
+    isError: teamError,
+  } = useQuery<MyTeamResponse | null>({
+    queryKey: [`/api/games/${gameId}/my-team`],
+    enabled: !!gameId && !!user,
+  });
+
+  const myDisplayName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+      user.email?.split("@")[0] ||
+      user.id.slice(0, 8)
+    : "我";
+
+  const teamId = myTeam?.id;
+  const enabled = !!teamId && !!user;
+
+  // 訂閱 WebSocket 累積全隊 hits
+  const { teamHits } = useTeamShootingSync({
+    sessionId,
+    myUserId: user?.id ?? "",
+    myDisplayName,
+    enabled,
+  });
+
+  // 將 myTeam.members 轉成 TeamMemberInfo
+  const members: TeamMemberInfo[] = (myTeam?.members ?? []).map((m) => ({
+    userId: m.userId,
+    displayName: deriveDisplayName(m),
+  }));
+
+  // ============================================================================
+  // Fallback UI
+  // ============================================================================
+
+  if (!user) {
+    return (
+      <Card data-testid="shooting-team-page-not-authed">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">請先登入後再使用</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (teamLoading) {
+    return (
+      <Card data-testid="shooting-team-page-loading">
+        <CardContent className="p-6 text-center text-muted-foreground text-sm">
+          載入隊伍資訊中...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (teamError || !myTeam || !teamId) {
+    return (
+      <Card data-testid="shooting-team-page-no-team">
+        <CardContent className="p-6 text-center">
+          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm font-medium mb-1">此元件需要組隊使用</p>
+          <p className="text-xs text-muted-foreground">
+            請回到場域首頁建立或加入隊伍
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <ShootingTeam
+      config={config}
+      myUserId={user.id}
+      teamHits={teamHits}
+      members={members}
+      onComplete={onComplete}
+    />
+  );
+}
