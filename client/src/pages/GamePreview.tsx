@@ -116,7 +116,6 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
   }
 
   const pages = (game.pages ?? []).slice().sort((a, b) => a.pageOrder - b.pageOrder);
-  const totalPages = pages.length;
   const currentPage = pages[currentIndex];
 
   if (totalPages === 0) {
