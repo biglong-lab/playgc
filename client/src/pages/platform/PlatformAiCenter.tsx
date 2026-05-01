@@ -375,7 +375,7 @@ export default function PlatformAiCenter() {
                   <CardContent>
                     <p className="text-sm text-muted-foreground mb-3">
                       用 DeepSeek V3.2 為「需要補生成」的任務一次性補上變體池。
-                      每次最多處理 20 個（控制成本）。
+                      每次最多處理 <strong>5 個</strong>（避免 timeout，每個約 10-15 秒）。
                     </p>
                     <p className="text-xs text-amber-600 dark:text-amber-400 mb-3 flex items-start gap-1">
                       <span>⚠️</span>
