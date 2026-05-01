@@ -98,7 +98,7 @@ TOTAL_PROGRESS: 30/30
 
 > 收尾統一性檢查（小幅優化，不重構）
 
-- [ ] **P5-1** 統一錯誤 toast 中文化檢查（pages/platform 全部）
+- [x] **P5-1** 統一錯誤 toast 中文化檢查（pages/platform 全部）— 掃描 36 個 toast 全部繁體中文 + emoji（樣本：「✅ 已更新 / ✨ 批次生成完成 / ❌ 開通失敗 / ❌ 更新失敗 / 已拒絕申請 / ✅ 場域已開通！/ ✅ 已標記為解決 / ✅ 帳號已解鎖」）；無中英混雜，無需修復
 - [ ] **P5-2** 統一錯誤 toast 中文化檢查（pages/admin 全部）
 - [ ] **P5-3** Phase 5 收尾 + 整體 commit + push + 部署 + 最終 E2E
 
