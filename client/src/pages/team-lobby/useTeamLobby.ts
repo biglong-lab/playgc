@@ -63,6 +63,8 @@ export interface TeamWithDetails extends Team {
   members: (TeamMember & { user: User })[];
   game: Game;
   leader: User;
+  /** 🆕 status='playing' 時 server 補上正在進行的 sessionId（重連用） */
+  activeSessionId?: string | null;
 }
 
 export interface TeamLobbyReturn {
@@ -182,6 +184,20 @@ export function useTeamLobby(): TeamLobbyReturn {
       setStartingCountdown(5);
     },
   });
+
+  // 🆕 重連場景：myTeam.status='playing' + activeSessionId → 觸發 3 秒倒數
+  //   讓玩家先看到「歡迎回來 + 隊友狀況 + 對講機就緒」再進遊戲，
+  //   避免直接跳進 ChoiceVerifyRace 等元件造成計時器搶答來不及反應。
+  useEffect(() => {
+    if (
+      myTeam?.status === "playing" &&
+      myTeam.activeSessionId &&
+      !startSessionIdRef.current
+    ) {
+      startSessionIdRef.current = myTeam.activeSessionId;
+      setStartingCountdown(3);
+    }
+  }, [myTeam?.status, myTeam?.activeSessionId]);
 
   // 倒數 effect：每秒減 1，到 0 → setLocation 跳遊戲
   useEffect(() => {
