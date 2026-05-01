@@ -100,7 +100,7 @@ TOTAL_PROGRESS: 32/33
 
 - [x] **P5-1** 統一錯誤 toast 中文化檢查（pages/platform 全部）— 掃描 36 個 toast 全部繁體中文 + emoji（樣本：「✅ 已更新 / ✨ 批次生成完成 / ❌ 開通失敗 / ❌ 更新失敗 / 已拒絕申請 / ✅ 場域已開通！/ ✅ 已標記為解決 / ✅ 帳號已解鎖」）；無中英混雜，無需修復
 - [x] **P5-2** 統一錯誤 toast 中文化檢查（pages/admin 全部）— 掃描 36+ 個 toast 全部繁體中文化（樣本：AdminBattle 8 個 / AdminGames 2 / AdminLive 3 / AdminRewardsRules 6 / AdminSessions 5 / AdminSettings 4 / AdminStaffAccounts 10+ / 其他）；MQTT/QR 為技術縮寫合理；無中英混雜，無需修復
-- [ ] **P5-3** Phase 5 收尾 + 整體 commit + push + 部署 + 最終 E2E
+- [x] **P5-3** Phase 5 收尾 — 最終 E2E 跑全清單：platform 81/81 ✅ + admin 115/115 ✅ = **196/196 全通過**；發現並修正第 3 個測試清單錯誤（walkie/broadcast-tokens GET→POST）；push `5784371c` ✅；生產 HTTP 200 ✅；無修復生產變更不需部署
 
 ---
 
