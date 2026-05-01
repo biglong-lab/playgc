@@ -106,14 +106,25 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             if (!teamClients.has(message.teamId)) {
               teamClients.set(message.teamId, new Set());
             }
-            teamClients.get(message.teamId)?.add(ws);
 
-            broadcastToTeam(message.teamId, {
-              type: "team_member_joined",
-              userId: message.userId,
-              userName: message.userName,
-              timestamp: new Date().toISOString(),
-            });
+            // 🔧 Fix（2026-05-02）：去重廣播 — 同 userId 已有 active socket 時
+            //   重連不再廣播 member_joined（避免 toast 一直跳）
+            const teamSetForJoin = teamClients.get(message.teamId)!;
+            const userAlreadyConnected = Array.from(teamSetForJoin).some(
+              (c) =>
+                (c as WebSocketClient).userId === message.userId,
+            );
+
+            teamSetForJoin.add(ws);
+
+            if (!userAlreadyConnected) {
+              broadcastToTeam(message.teamId, {
+                type: "team_member_joined",
+                userId: message.userId,
+                userName: message.userName,
+                timestamp: new Date().toISOString(),
+              });
+            }
             break;
 
           case "team_chat":
@@ -325,16 +336,29 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
       if (ws.teamId) {
         teamClients.get(ws.teamId)?.delete(ws);
-        if (teamClients.get(ws.teamId)?.size === 0) {
+
+        // 🔧 Fix（2026-05-02）：同 userId 是否還有其他 active socket
+        //   有 → 不廣播 member_left（只是其中一個 socket 斷線）
+        //   無 → 廣播 member_left（user 真的離開了）
+        const teamSetForLeave = teamClients.get(ws.teamId);
+        const userStillConnected = teamSetForLeave
+          ? Array.from(teamSetForLeave).some(
+              (c) => (c as WebSocketClient).userId === ws.userId,
+            )
+          : false;
+
+        if (teamSetForLeave?.size === 0) {
           teamClients.delete(ws.teamId);
         }
 
-        broadcastToTeam(ws.teamId, {
-          type: "team_member_left",
-          userId: ws.userId,
-          userName: ws.userName,
-          timestamp: new Date().toISOString(),
-        });
+        if (!userStillConnected) {
+          broadcastToTeam(ws.teamId, {
+            type: "team_member_left",
+            userId: ws.userId,
+            userName: ws.userName,
+            timestamp: new Date().toISOString(),
+          });
+        }
       }
 
       // 清理水彈對戰時段客戶端
