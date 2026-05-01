@@ -10,6 +10,7 @@ import {
   RefreshCw, ArrowLeft, UserPlus, Wifi, WifiOff, Share2,
   Radio, Mic,
 } from "lucide-react";
+import VoiceNotificationToggle from "@/components/shared/VoiceNotificationToggle";
 import type { Game, TeamMember, User } from "@shared/schema";
 import type { TeamWithDetails } from "./useTeamLobby";
 
@@ -273,6 +274,7 @@ export function TeamLobbyView({
             ) : (
               <WifiOff className="w-4 h-4 text-muted-foreground" />
             )}
+            <VoiceNotificationToggle />
             <Button variant="ghost" size="icon" onClick={onRefresh} data-testid="button-refresh">
               <RefreshCw className="w-4 h-4" />
             </Button>
