@@ -11,7 +11,7 @@
 //   6. 最後回到 "JIACHUN"（系統預設）
 //
 // 不依賴 AuthProvider（因為 admin 和玩家驗證不同），自己獨立查 session
-import { useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { applyTheme } from "@/lib/themeUtils";
 import type { FieldTheme, FieldHighlight } from "@shared/schema";
@@ -54,23 +54,17 @@ export interface FieldThemePayload {
   settings?: Record<string, unknown>;
 }
 
+// 🔧 bug 修 (2026-05-01)：useCurrentField 改用 Context 從 Provider 直接拿 payload
+//   原本 bug：useCurrentField 用 localStorage 算 fieldCode、Provider 用 URL 算 fieldCode
+//     → 兩邊 cache key 不對齊，hook 拿到舊場域資料
+//     → 玩家剛點 JIACHUN（URL=/f/JIACHUN），但 localStorage 還是 HPSPACE
+//        → 顯示後浦遊戲列表，必須重整才修好
+//   修法：Provider 用 React Context 暴露 themePayload，所有 hook user 自動同步
+const FieldContext = createContext<FieldThemePayload | null>(null);
+
 /** 給其他元件拿當前場域 payload 用（name / logo / coverImage / welcome 訊息） */
 export function useCurrentField(): FieldThemePayload | null {
-  const fieldCode = (() => {
-    // 使用跟 Provider 同樣的 fieldCode 決策：但此 hook 在 Provider 內部，用 query 共享快取
-    try {
-      const cached = localStorage.getItem(STORAGE_KEY);
-      if (cached && /^[A-Z0-9_-]{2,50}$/i.test(cached)) return cached;
-    } catch { /* ignore */ }
-    return DEFAULT_FIELD_CODE;
-  })();
-
-  const { data } = useQuery<FieldThemePayload>({
-    queryKey: ["/api/fields", fieldCode, "theme"],
-    enabled: false, // 已由 Provider 觸發，這 hook 只讀快取
-    staleTime: 5 * 60_000,
-  });
-  return data || null;
+  return useContext(FieldContext);
 }
 
 const DEFAULT_FIELD_CODE =
@@ -302,5 +296,9 @@ export function FieldThemeProvider({ children }: { children: React.ReactNode }) 
     return revert;
   }, [previewTheme, themePayload, isPlatformPage]);
 
-  return <>{children}</>;
+  return (
+    <FieldContext.Provider value={themePayload || null}>
+      {children}
+    </FieldContext.Provider>
+  );
 }
