@@ -1,3 +1,5 @@
+STATUS: ALL_COMPLETED
+
 # 🎬 遊戲預覽模式 ROADMAP
 
 > **聚焦範圍**：admin 預覽未發布遊戲、不污染統計、自由翻頁、AI mock + 上線實測機制
