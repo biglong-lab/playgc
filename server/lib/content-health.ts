@@ -99,7 +99,7 @@ export async function detectZombieVariants(
       variantIndex: variantFeedback.variantIndex,
     })
     .from(variantFeedback)
-    .where(sql`${variantFeedback.pageId} = ANY(${pageIds})`);
+    .where(inArray(variantFeedback.pageId, pageIds));
 
   // 3. 建立「有 feedback」的 Set 快查
   const seenSet = new Set<string>();
