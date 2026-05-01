@@ -130,15 +130,15 @@ export default function MeCenter() {
       <div className="container mx-auto max-w-2xl px-4 -mt-6 space-y-4">
         {/* 🏢 管理員後台入口（僅授權管理員顯示）*/}
         {adminMemberships.length > 0 && (
-          <Card className="border-blue-200 shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50">
+          <Card className="border-blue-200 dark:border-blue-800 shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40">
             <CardContent className="p-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/60 flex items-center justify-center text-blue-700 dark:text-blue-300">
                   <Shield className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">🔑 管理員後台</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-blue-900 dark:text-blue-100">🔑 管理員後台</p>
+                  <p className="text-xs text-blue-700/80 dark:text-blue-300/80">
                     您有 {adminMemberships.length} 個場域的管理權限
                   </p>
                 </div>
@@ -146,17 +146,17 @@ export default function MeCenter() {
               <div className="space-y-1.5 mt-3">
                 {adminMemberships.map((m) => (
                   <Link key={m.fieldId} href="/admin">
-                    <a className="flex items-center justify-between p-2 rounded hover:bg-white/60 transition-colors">
-                      <span className="flex items-center gap-2 text-sm">
-                        <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                    <a className="flex items-center justify-between p-2 rounded hover:bg-white/60 dark:hover:bg-blue-900/30 transition-colors">
+                      <span className="flex items-center gap-2 text-sm text-blue-900 dark:text-blue-100">
+                        <Building2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                         <span className="font-medium">{m.fieldName}</span>
                         {m.adminRoleName && (
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-[10px] border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300">
                             {m.adminRoleName}
                           </Badge>
                         )}
                       </span>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      <ChevronRight className="w-4 h-4 text-blue-600/60 dark:text-blue-400/60" />
                     </a>
                   </Link>
                 ))}
