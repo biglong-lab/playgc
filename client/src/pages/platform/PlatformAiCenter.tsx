@@ -167,12 +167,13 @@ export default function PlatformAiCenter() {
     });
 
   // 一鍵批次補生成
+  // 🔧 limit=5 避免 Nginx 60s timeout（每個 page 約 8-15 秒呼叫 DeepSeek）
   const batchGenerateMutation = useMutation({
     mutationFn: async () => {
       const res = await apiRequest(
         "POST",
         "/api/platform/ai-center/batch-generate-variants",
-        { limit: 20 },
+        { limit: 5 },
       );
       return res.json();
     },
