@@ -74,7 +74,7 @@ TOTAL_PROGRESS: 20/30
 - [x] **P3-3** Smoke test：locations / items / chapters / achievements / routes — 5 SPA 200 ✅ + 17/17 API 401 ✅（locations 4 用 isAuthenticated 玩家 token / items 4 / chapters 4 含 reorder / achievements 4 / routes 1）；發現並修正 endpoints-admin.txt 中 reorder 寫錯為 POST，實際是 PATCH；無 issue（測試清單錯誤已修正）
 - [x] **P3-4** Smoke test：game-generator / exemplar-library / templates — 3 SPA 200 ✅ + 9/9 API 401 ✅（modules 3 含 create-game / chapter-templates 3 / generator 2 含 generate-from-script+apply-generated / exemplar 1）；無 issue
 - [x] **P3-5** Smoke test：tickets / redeem-codes — 2 SPA 200 ✅ + 9/9 API 401 ✅（coupon-templates 3 / redeem-codes 4 含 batch+uses / purchases 2 list+撤銷）；發現並修正 endpoints-admin.txt 中 purchases 寫錯為 PATCH，實際是 DELETE（撤銷購買/退款）；無 issue（測試清單錯誤已修正）
-- [ ] **P3-6** Smoke test：battle/dashboard / venues / slots / rankings / seasons（5 頁面 10+ endpoint）
+- [x] **P3-6** Smoke test：battle 5 頁面 — 5 SPA 200 ✅ + 19/19 API ✅（venues 4：GET 公開 200 / POST/PATCH/DELETE 401 / slots 7：GET 帶 venueId 200 + 6 個 admin mutation 401 / admin/battle 9 含 stats/recent-results/tier-distribution/rankings/seasons CRUD/rankings PATCH）；GET /api/battle/slots 無 venueId 設計回 400 schema validation 合理（不算 issue）
 - [ ] **P3-7** Smoke test：fields / roles / accounts / audit-logs / players / qrcodes（6 頁面）
 - [ ] **P3-8** Smoke test：field-settings / analytics / leaderboard / suspicious / devices（5 頁面）
 - [ ] **P3-9** Smoke test：rewards/rules / engagement / ab-experiments（3 頁面，含 P14-7）
