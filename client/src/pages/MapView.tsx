@@ -157,8 +157,10 @@ export default function MapView() {
   // === 地圖初始化 ===
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current) return;
-    const defaultCenter: [number, number] = [24.4399, 118.3471];
-    const map = L.map(mapRef.current, { zoomControl: false }).setView(defaultCenter, 15);
+    // 🔧 default center 改金門城（陸地中心，有道路/地名特徵）
+    //   原本 [24.4399, 118.3471] 是金門島西邊海域，dark 主題下是純黑看不出地圖
+    const defaultCenter: [number, number] = [24.4170, 118.3060];
+    const map = L.map(mapRef.current, { zoomControl: false }).setView(defaultCenter, 14);
     L.control.zoom({ position: "bottomright" }).addTo(map);
     // 🔧 用 Carto fastly CDN（比 basemaps.cartocdn.com 穩，部分網路會擋後者）
     //   參考：https://carto.com/help/building-maps/basemap-list/
