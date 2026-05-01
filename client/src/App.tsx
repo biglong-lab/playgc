@@ -168,6 +168,9 @@ const AdminInvitesCohort = lazy(() => import("@/pages/admin/AdminInvitesCohort")
 // 🔬 A/B 實驗（P14-7 / Wave 2）
 const AbExperiments = lazy(() => import("@/pages/admin/AbExperiments"));
 
+// 🎬 遊戲預覽模式（草稿可預覽，不污染資料）
+const GamePreview = lazy(() => import("@/pages/GamePreview"));
+
 // 🏢 場域總部 — 我的方案（v4.0 Phase 6）
 const MySubscription = lazy(() => import("@/pages/field/MySubscription"));
 
