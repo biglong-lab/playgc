@@ -10,7 +10,7 @@
 // 路由：/admin/games/:gameId/preview
 // 權限：requireAdminAuth + game:view（在 App.tsx 用 ProtectedAdminRoute 包覆）
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Eye } from "lucide-react";
