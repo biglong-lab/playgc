@@ -30,6 +30,10 @@ interface FieldSettingsResponse {
   enablePayment?: boolean;
   enableTeamMode?: boolean;
   enableCompetitiveMode?: boolean;
+  // 🆕 Phase 4.4 多人遊戲斷線寬限期
+  disconnectGracePeriodSec?: number;
+  autoLeaveAfterGraceSec?: number;
+  disconnectPauseStrategy?: "always_pause" | "never_pause" | "leader_decide";
   // 🆕 模組開關
   enableShootingMission?: boolean;
   enableBattleArena?: boolean;
@@ -458,6 +462,16 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
   const [enableChapters, setEnableChapters] = useState(settings?.enableChapters ?? false);
   const [enablePhoto, setEnablePhoto] = useState(settings?.enablePhotoMission ?? false);
   const [enableGps, setEnableGps] = useState(settings?.enableGpsMission ?? false);
+  // 🆕 Phase 4.4 多人遊戲斷線寬限期設定
+  const [disconnectGracePeriodSec, setDisconnectGracePeriodSec] = useState(
+    settings?.disconnectGracePeriodSec ?? 30,
+  );
+  const [autoLeaveAfterGraceSec, setAutoLeaveAfterGraceSec] = useState(
+    settings?.autoLeaveAfterGraceSec ?? 120,
+  );
+  const [pauseStrategy, setPauseStrategy] = useState<
+    "always_pause" | "never_pause" | "leader_decide"
+  >(settings?.disconnectPauseStrategy ?? "leader_decide");
 
   useEffect(() => {
     if (!settings) return;
@@ -471,6 +485,9 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
     setEnableChapters(settings.enableChapters ?? false);
     setEnablePhoto(settings.enablePhotoMission ?? false);
     setEnableGps(settings.enableGpsMission ?? false);
+    setDisconnectGracePeriodSec(settings.disconnectGracePeriodSec ?? 30);
+    setAutoLeaveAfterGraceSec(settings.autoLeaveAfterGraceSec ?? 120);
+    setPauseStrategy(settings.disconnectPauseStrategy ?? "leader_decide");
   }, [settings]);
 
   // 🆕 未儲存變更警示
@@ -485,7 +502,10 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
         enableBattle !== (settings.enableBattleArena ?? false) ||
         enableChapters !== (settings.enableChapters ?? false) ||
         enablePhoto !== (settings.enablePhotoMission ?? false) ||
-        enableGps !== (settings.enableGpsMission ?? false)),
+        enableGps !== (settings.enableGpsMission ?? false) ||
+        disconnectGracePeriodSec !== (settings.disconnectGracePeriodSec ?? 30) ||
+        autoLeaveAfterGraceSec !== (settings.autoLeaveAfterGraceSec ?? 120) ||
+        pauseStrategy !== (settings.disconnectPauseStrategy ?? "leader_decide")),
   );
   useUnsavedWarning(hasUnsavedChanges);
 
@@ -516,6 +536,9 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
       enableChapters,
       enablePhotoMission: enablePhoto,
       enableGpsMission: enableGps,
+      disconnectGracePeriodSec,
+      autoLeaveAfterGraceSec,
+      disconnectPauseStrategy: pauseStrategy,
     });
   };
 
@@ -607,6 +630,70 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
             onChange={setEnableCompetitive}
             testId="switch-competitive"
           />
+        </div>
+
+        {/* 🆕 多人遊戲斷線寬限期設定（Phase 4.4） */}
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+              多人遊戲行為（斷線寬限期）
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              控制玩家在多人遊戲中斷線時的處理流程。預設值適合多數場域，特殊活動再調整。
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">寬限期（秒）</label>
+              <input
+                type="number"
+                min={5}
+                max={600}
+                value={disconnectGracePeriodSec}
+                onChange={(e) => setDisconnectGracePeriodSec(Number(e.target.value) || 30)}
+                className="mt-1 w-full px-3 py-2 rounded-lg border bg-background"
+                data-testid="input-disconnect-grace"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                玩家斷線後幾秒內不影響（預設 30 秒）
+              </p>
+            </div>
+            <div>
+              <label className="text-sm font-medium">超時自動離開（秒）</label>
+              <input
+                type="number"
+                min={30}
+                max={600}
+                value={autoLeaveAfterGraceSec}
+                onChange={(e) => setAutoLeaveAfterGraceSec(Number(e.target.value) || 120)}
+                className="mt-1 w-full px-3 py-2 rounded-lg border bg-background"
+                data-testid="input-auto-leave-grace"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                寬限期過後再多久 server 自動標離開（預設 120 秒）
+              </p>
+            </div>
+          </div>
+          <div>
+            <label className="text-sm font-medium">暫停策略</label>
+            <select
+              value={pauseStrategy}
+              onChange={(e) =>
+                setPauseStrategy(e.target.value as typeof pauseStrategy)
+              }
+              className="mt-1 w-full px-3 py-2 rounded-lg border bg-background"
+              data-testid="select-pause-strategy"
+            >
+              <option value="leader_decide">隊長決定（預設）— 寬限期過顯示 dialog</option>
+              <option value="never_pause">不暫停 — 自動處理，不打擾玩家</option>
+              <option value="always_pause">永遠暫停 — 等斷線玩家手動回來</option>
+            </select>
+          </div>
+          <p className="text-xs text-muted-foreground italic">
+            💡 注意：此設定目前需 server 重啟才生效（admin 改後設定 server 環境變數
+            DISCONNECT_GRACE_MS / AUTO_LEAVE_AFTER_GRACE_MS 為過渡方案）。
+            完整熱載運行時讀取規劃在後續 Phase。
+          </p>
         </div>
 
         {/* 配額 */}
