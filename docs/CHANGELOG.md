@@ -69,6 +69,22 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📊 Phase 3 W9 D4 ✅（情境使用統計）
+**主題**：admin dashboard 加情境使用統計 Card（最近 30 天）
+**範圍**：3 個檔案
+
+關鍵變動：
+- `server/routes/scenarios.ts` instantiate 加 `[scenario:<id>]` 標記
+- 新 `GET /api/admin/scenarios/stats` endpoint（場域過濾 + 30 天 window）
+- AdminDashboard 加紫色「情境使用統計」Card（top 8 + 進度條）
+- 點任一行跳 /template-market/:id
+
+**Smoke test 26/26**（加 4c GET stats 401 守衛）
+
+**細節** → [changes/2026-05-02-phase3-w9-d4-scenario-stats.md](changes/2026-05-02-phase3-w9-d4-scenario-stats.md)
+
+⏭ 下一步：W9 D5 — W9 收尾 + W10 付費機制規劃
+
 ### 📒 Phase 3 W9 D3 ✅（客戶 onboarding 文件包）
 **主題**：業務帶看 → 收費 → 建場 → 現場一條龍工具就緒
 **範圍**：3 個 runbook 新文件

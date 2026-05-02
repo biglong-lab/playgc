@@ -198,6 +198,81 @@ function getGameModeForComponent(component: ScenarioComponent): "individual" | "
 
 export function registerScenarioRoutes(app: Express) {
   /**
+   * GET /api/admin/scenarios/stats
+   * 回傳目前場域的情境使用統計（最近 30 天）
+   *
+   * 來源：games.description 含 `[scenario:<id>]` 標記
+   */
+  app.get(
+    "/api/admin/scenarios/stats",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+
+        const fieldId = req.admin.fieldId;
+        const isSuperAdmin = req.admin.systemRole === "super_admin";
+
+        // 取最近 30 天
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+        // 用 description LIKE 找情境實例
+        const allGames = await db
+          .select({
+            id: games.id,
+            title: games.title,
+            description: games.description,
+            fieldId: games.fieldId,
+            createdAt: games.createdAt,
+          })
+          .from(games);
+
+        // 過濾：場域隔離 + 含 [scenario:] 標記 + 最近 30 天
+        const scenarioGames = allGames.filter((g) => {
+          if (!g.description?.includes("[scenario:")) return false;
+          if (!isSuperAdmin && g.fieldId !== fieldId) return false;
+          if (g.createdAt && new Date(g.createdAt) < thirtyDaysAgo) return false;
+          return true;
+        });
+
+        // 抽 scenario id
+        const scenarioCounts: Record<string, number> = {};
+        for (const g of scenarioGames) {
+          const match = g.description?.match(/\[scenario:([^\]]+)\]/);
+          if (match) {
+            const sid = match[1];
+            scenarioCounts[sid] = (scenarioCounts[sid] ?? 0) + 1;
+          }
+        }
+
+        // 加上情境名稱
+        const breakdown = Object.entries(scenarioCounts)
+          .map(([scenarioId, count]) => {
+            const scenario = getScenarioById(scenarioId);
+            return {
+              scenarioId,
+              scenarioName: scenario?.name ?? scenarioId,
+              category: scenario?.category ?? "unknown",
+              count,
+            };
+          })
+          .sort((a, b) => b.count - a.count);
+
+        res.json({
+          windowDays: 30,
+          totalGamesCreated: scenarioGames.length,
+          totalScenariosUsed: Object.keys(scenarioCounts).length,
+          breakdown,
+        });
+      } catch (err) {
+        console.error("[scenarios] stats 失敗:", err);
+        res.status(500).json({ error: "統計查詢失敗" });
+      }
+    },
+  );
+
+  /**
    * POST /api/admin/scenarios/:scenarioId/ai-preview
    * Body: { context: string }
    *
@@ -398,7 +473,7 @@ interface InstantiateComponentParams {
 }
 
 async function instantiateComponent(params: InstantiateComponentParams): Promise<void> {
-  const { scenarioDisplayName, component, fieldId, expiresAt, collector, aiConfig } = params;
+  const { scenarioId, scenarioDisplayName, component, fieldId, expiresAt, collector, aiConfig } = params;
 
   const isHost = component.axis === "host";
   const gameMode = getGameModeForComponent(component);
@@ -411,7 +486,7 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
     .insert(games)
     .values({
       title: `${scenarioDisplayName} - ${component.label}`,
-      description: `情境模板實例：${component.role}`,
+      description: `情境模板實例：${component.role} [scenario:${scenarioId}]`,
       fieldId,
       maxPlayers: 100,
       status: "published",

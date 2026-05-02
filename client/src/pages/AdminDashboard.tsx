@@ -74,6 +74,22 @@ export default function AdminDashboard() {
     enabled: isAuthenticated,
   });
 
+  // W9 D4: 情境模板使用統計（最近 30 天）
+  const { data: scenarioStats } = useQuery<{
+    windowDays: number;
+    totalGamesCreated: number;
+    totalScenariosUsed: number;
+    breakdown: Array<{
+      scenarioId: string;
+      scenarioName: string;
+      category: string;
+      count: number;
+    }>;
+  }>({
+    queryKey: ["/api/admin/scenarios/stats"],
+    enabled: isAuthenticated,
+  });
+
   const { data: sessions } = useQuery<GameSession[]>({
     queryKey: ["/api/sessions"],
     enabled: isAuthenticated,
@@ -251,6 +267,49 @@ export default function AdminDashboard() {
           </Link>
         </CardContent>
       </Card>
+
+      {/* 🆕 W9 D4: 情境模板使用統計（最近 30 天）*/}
+      {scenarioStats && scenarioStats.totalGamesCreated > 0 && (
+        <Card className="mb-8 bg-gradient-to-br from-purple-500/5 to-purple-500/10 border-purple-500/30">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-purple-600" />
+                情境使用統計（最近 30 天）
+              </span>
+              <Badge variant="outline">
+                {scenarioStats.totalGamesCreated} 個 game · {scenarioStats.totalScenariosUsed} 種情境
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {scenarioStats.breakdown.slice(0, 8).map((b) => {
+                const pct = (b.count / scenarioStats.totalGamesCreated) * 100;
+                return (
+                  <Link key={b.scenarioId} href={`/template-market/${b.scenarioId}`}>
+                    <div className="flex items-center gap-3 p-2 rounded hover:bg-muted/50 cursor-pointer transition-colors" data-testid={`stat-${b.scenarioId}`}>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium">{b.scenarioName}</div>
+                        <div className="text-xs text-muted-foreground">{b.category}</div>
+                      </div>
+                      <div className="flex-1 max-w-[200px]">
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-purple-500 rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-sm font-semibold w-8 text-right">{b.count}</div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 🆕 G2: 本週趨勢圖（場次 + 完成 + 最高分） */}
       <div className="mb-8">

@@ -156,6 +156,16 @@ async function runSmokeTest() {
     });
   }
 
+  // 4c. GET stats 認證守衛（W9 D4 新增）
+  console.log(`${COLOR.bold}── Section 4c: GET stats 認證守衛 ──${COLOR.reset}`);
+  await check("GET /api/admin/scenarios/stats (401)", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/admin/scenarios/stats`);
+    if (res.status !== 401) {
+      return { ok: false, error: `expected 401, got ${res.status}` };
+    }
+    return { ok: true };
+  });
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>
