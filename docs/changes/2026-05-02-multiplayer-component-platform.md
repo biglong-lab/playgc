@@ -182,11 +182,24 @@ Week 4 強制跑首場付費活動
 
 ## 本週進度
 
-### 2026-05-02（Week 1 D1）
+### 2026-05-02（Week 1 D1-D4）
 
-- ✅ ADR 0004 host-screen-axis 完成（技術契約 lock）
-- ✅ 本檔建立（12 週路徑紀錄）
-- ⏭ 下一步：D2 加 schema + WS 事件 + multiplayer-component-types
+| Day | 完成 | Commit |
+|-----|------|--------|
+| D1 | ADR-0004 host-screen-axis 技術契約 lock | `0c52ad49` |
+| D1 | 12 週路徑文件、CHANGELOG / changes/README 索引 | `0c52ad49` |
+| D2 | sessions schema 加 host_mode/host_token/host_token_expires_at | `0c52ad49` |
+| D2 | multiplayer-component-types 加 HOST_ONLY_COMPONENTS（8 個）+ 'host' 分類 | `0c52ad49` |
+| D2 | DEMO_GAME json import 路徑修復 | `0c52ad49` |
+| D3 | WS 事件 host_screen_register/pulse/state（含 hostToken 驗證、state cache） | `6803b373` |
+| D3 | broadcastToHostSession 函式 + close handler 清理 + types 補欄位 | `6803b373` |
+| D3 | server/routes/host-sessions.ts（4 個 admin/public endpoint） | `6803b373` |
+| D3 | pages/HostScreen.tsx + pages/HostPlay.tsx 骨架頁 + App.tsx 路由 | `6803b373` |
+| D4 | scripts/scaffold-host-component.mjs 腳手架腳本（解 R1）| 本 commit |
+| D4 | npm run scaffold:host 註冊到 package.json | 本 commit |
+| D4 | client/src/components/game/host/README.md 元件目錄文件 | 本 commit |
+
+- ⏭ 下一步：D5 ShowcaseHub MVP + E2E 驗證 + 生產 SQL 加欄 + 部署
 
 ---
 

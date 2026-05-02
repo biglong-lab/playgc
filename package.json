@@ -15,6 +15,7 @@
     "audit:games": "node scripts/audit-games-deep.mjs",
     "audit:modules": "node scripts/audit-modules.mjs",
     "seed:jiachun": "node --env-file=.env node_modules/.bin/tsx scripts/seed-jiachun-multiplayer-demos.ts",
+    "scaffold:host": "node scripts/scaffold-host-component.mjs",
     "audit:all": "npm run audit:games && npm run audit:modules",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
