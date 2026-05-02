@@ -69,6 +69,32 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 3 W11 完整收尾 ✅（Public API + 代理商 onboarding 工具）
+**主題**：W11 5 天累計 + 代理商 onboarding runbook
+**範圍**：W11 26 檔、~2,606 行、smoke test 31→38
+
+**W11 5 天時序**：
+- D1（`0932a57c`）ADR-0008 + API key middleware + 3 read-only endpoints
+- D2（`967b14c6`）Rate limit (60/min) + Idempotency (24h cache)
+- D3（`170e4933`）POST /api/v1/instances + API key→fieldId mapping
+- D4（`4d5db5c4`）OpenAPI 3.1 spec + ApiDocs 公開頁
+- D5 代理商 onboarding runbook + W11 收尾
+
+**新公開頁**：`/api-docs` + `/api/v1/openapi.json`
+
+**新 endpoints**：5 個（health / openapi / scenarios×2 / instances）
+
+**完整代理商工作流**：
+1. 評估 /api-docs → 2. 簽約 → 3. 收 ck_test_xxx → 4. 自我測試 → 5. 收 ck_live_xxx → 6. 整合上線
+
+**Runbook**：[runbooks/agency-onboarding.md](runbooks/agency-onboarding.md)
+
+**Smoke test 38/38 全綠**
+
+**完整收尾** → [changes/2026-05-03-phase3-w11-complete.md](changes/2026-05-03-phase3-w11-complete.md)
+
+⏭ 下一步：Phase 3 W12 — 擴大客戶 + Phase 3 整體收尾
+
 ### 📖 Phase 3 W11 D4 ✅（OpenAPI 規格 + 公開 API 文件頁）
 **主題**：代理商正式參考文件
 **範圍**：4 個檔案
