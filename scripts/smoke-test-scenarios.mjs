@@ -244,6 +244,20 @@ async function runSmokeTest() {
     return { ok: true };
   });
 
+  // 5b. Rate limit / Idempotency middleware 載入驗證（W11 D2）
+  // 驗證：401 response 不會帶 X-RateLimit-Limit（middleware 順序正確、認證先行）
+  await check("API key 失敗時不執行 rate-limit middleware（順序正確）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/v1/scenarios`, {
+      headers: { Authorization: "Bearer ck_invalid_xxx" },
+    });
+    if (res.status !== 401) return { ok: false, error: `expected 401, got ${res.status}` };
+    // 401 不該設 rate-limit header（rateLimit 只在 requireApiKey 通過後執行）
+    if (res.headers.get("X-RateLimit-Limit")) {
+      return { ok: false, error: "401 不該設 X-RateLimit-Limit header" };
+    }
+    return { ok: true };
+  });
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>

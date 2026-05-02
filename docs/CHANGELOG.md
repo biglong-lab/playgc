@@ -69,6 +69,31 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🚦 Phase 3 W11 D2 ✅（Rate limit + Idempotency middleware）
+**主題**：API 生產級保障（限速 + 防重發）
+**範圍**：3 個檔案
+
+關鍵變動：
+- `server/middleware/rate-limit.ts` sliding window in-memory（60 req/min/key）
+  - 429 + Retry-After / X-RateLimit-* headers
+  - 每 5 分鐘自動清理過期 entries
+- `server/middleware/idempotency.ts` 24h in-memory cache
+  - Idempotency-Key header 防重發
+  - cache key 隔離（apiKeyId:idempotencyKey）
+- v1 routes 整合 rateLimit（順序：requireApiKey → rateLimit → handler）
+- smoke test 加 5b 驗證 middleware 順序（34 → 35）
+
+**設計**：
+- in-memory 適合 W11 單 server、W12 規模擴大可升 Redis
+- 401 不吃 rate quota（避免 brute force 耗盡他人配額）
+- idempotency 24h TTL、不持久化
+
+**Smoke test 35/35 全綠**
+
+**細節** → [changes/2026-05-03-phase3-w11-d2-rate-limit-idempotency.md](changes/2026-05-03-phase3-w11-d2-rate-limit-idempotency.md)
+
+⏭ 下一步：W11 D3 — POST /api/v1/instances（含計費）
+
 ### 🌐 Phase 3 W11 D1 ✅（Public API v1 啟動）
 **主題**：對外 API + API key 認證機制 + read-only endpoints
 **範圍**：4 個檔案

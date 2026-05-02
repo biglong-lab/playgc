@@ -18,6 +18,7 @@
 
 import type { Express } from "express";
 import { requireApiKey } from "../../middleware/api-key";
+import { rateLimit } from "../../middleware/rate-limit";
 import {
   SCENARIO_TEMPLATES,
   SCENARIO_CATEGORY_LABELS,
@@ -45,7 +46,7 @@ export function registerPublicApiV1Routes(app: Express) {
    *   ?status=live  只列 live
    *   ?category=social  過濾分類
    */
-  app.get("/api/v1/scenarios", requireApiKey, (req, res) => {
+  app.get("/api/v1/scenarios", requireApiKey, rateLimit, (req, res) => {
     const statusFilter = req.query.status as string | undefined;
     const categoryFilter = req.query.category as string | undefined;
 
@@ -82,7 +83,7 @@ export function registerPublicApiV1Routes(app: Express) {
    * GET /api/v1/scenarios/:id
    * 單一情境詳情（含完整 components）
    */
-  app.get("/api/v1/scenarios/:id", requireApiKey, (req, res) => {
+  app.get("/api/v1/scenarios/:id", requireApiKey, rateLimit, (req, res) => {
     const scenario = getScenarioById(req.params.id);
 
     if (!scenario) {
