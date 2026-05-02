@@ -1,4 +1,11 @@
 // PWA 安裝提示：攔截 beforeinstallprompt 事件，顯示客製化底部浮動卡片
+//
+// 🆕 2026-05-02 防擾人優化：
+//   1. dismiss cooldown：7 天 → 30 天
+//   2. 「不再提示」按鈕（永久關閉）
+//   3. 累計訪問門檻：第 3 次訪問才彈（Visit count）
+//      → 一次性訪客不打擾，回訪 ≥ 3 次代表有意圖才提示
+//   4. 主動入口：使用者可在「我的」頁面手動點擊安裝
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, X } from "lucide-react";
@@ -10,8 +17,11 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const DISMISS_KEY = "pwa-install-dismissed-at";
-// 使用者關閉後，7 天內不再顯示
-const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+const NEVER_KEY = "pwa-install-never-show";
+const VISIT_COUNT_KEY = "pwa-install-visit-count";
+
+const DISMISS_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000; // 30 天
+const MIN_VISITS_BEFORE_PROMPT = 3; // 累計第 3 次訪問才彈
 
 function wasRecentlyDismissed(): boolean {
   try {
@@ -25,11 +35,39 @@ function wasRecentlyDismissed(): boolean {
   }
 }
 
+function isNeverShow(): boolean {
+  try {
+    return localStorage.getItem(NEVER_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 function markDismissed() {
   try {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
   } catch {
     // localStorage 不可用時靜默忽略
+  }
+}
+
+function markNeverShow() {
+  try {
+    localStorage.setItem(NEVER_KEY, "1");
+  } catch {
+    // localStorage 不可用時靜默忽略
+  }
+}
+
+/** 累計訪問次數：每次模組 mount 累加 1（用於 prompt 門檻判斷）*/
+function bumpVisitCount(): number {
+  try {
+    const cur = Number(localStorage.getItem(VISIT_COUNT_KEY)) || 0;
+    const next = cur + 1;
+    localStorage.setItem(VISIT_COUNT_KEY, String(next));
+    return next;
+  } catch {
+    return 0;
   }
 }
 
@@ -48,13 +86,20 @@ export default function PWAInstallPrompt() {
   useEffect(() => {
     // 已是 standalone 模式 → 已安裝，無需提示
     if (isStandaloneMode()) return;
-    // 近期已關閉 → 不再打擾
+    // 永久關閉 → 完全不再打擾
+    if (isNeverShow()) return;
+    // 30 天冷靜期內 → 不再打擾
     if (wasRecentlyDismissed()) return;
+
+    // 累計訪問次數，未達門檻先不彈（但要監聽事件，等下次達標自然彈）
+    const visitCount = bumpVisitCount();
+    const visitsReached = visitCount >= MIN_VISITS_BEFORE_PROMPT;
 
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setVisible(true);
+      // 只有達到訪問門檻才顯示彈窗
+      if (visitsReached) setVisible(true);
     };
 
     const handleAppInstalled = () => {
@@ -94,6 +139,12 @@ export default function PWAInstallPrompt() {
     setVisible(false);
   };
 
+  const handleNeverShow = () => {
+    markNeverShow();
+    setVisible(false);
+    setDeferredPrompt(null);
+  };
+
   return (
     <div
       className="fixed bottom-20 inset-x-3 z-50 md:bottom-4 md:left-auto md:right-4 md:max-w-sm safe-bottom"
@@ -112,7 +163,7 @@ export default function PWAInstallPrompt() {
           <p className="text-xs text-muted-foreground mt-0.5">
             將 CHITO 加到手機桌面，下次直接一鍵開啟，體驗更順暢。
           </p>
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-3 flex-wrap">
             <Button
               size="sm"
               onClick={handleInstall}
@@ -127,6 +178,15 @@ export default function PWAInstallPrompt() {
               data-testid="button-pwa-dismiss"
             >
               稍後再說
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleNeverShow}
+              className="text-muted-foreground/70 hover:text-muted-foreground text-xs"
+              data-testid="button-pwa-never-show"
+            >
+              不再提示
             </Button>
           </div>
         </div>

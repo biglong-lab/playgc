@@ -385,8 +385,8 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+    <div className="min-h-screen bg-background pb-bottom-nav md:pb-0">
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">

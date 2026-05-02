@@ -92,7 +92,7 @@ export default function BattleLayout({
   return (
     <div className="min-h-screen bg-background">
       {/* Sticky 導航列 */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border">
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <Link href={backHref}>
@@ -114,8 +114,8 @@ export default function BattleLayout({
         </div>
       </header>
 
-      {/* 內容區（底部加上安全邊距 + PlayerBottomNav 56px 預留空間） */}
-      <main className="max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-6">
+      {/* 內容區（pb-bottom-nav 涵蓋 PlayerBottomNav 56px + iPhone home indicator safe-area）*/}
+      <main className="max-w-4xl mx-auto px-4 py-6 pb-bottom-nav md:pb-6">
         {children}
       </main>
     </div>

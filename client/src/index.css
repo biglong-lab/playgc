@@ -225,6 +225,13 @@
     padding-right: env(safe-area-inset-right);
   }
 
+  /* 📱 玩家底部導覽避讓 — 給有 PlayerBottomNav 的頁面用，避免內容被遮蔽
+     PlayerBottomNav 高度: 3.5rem (56px) + safe-area-inset-bottom (iPhone home indicator)
+     額外 +0.5rem 給內容呼吸空間 */
+  .pb-bottom-nav {
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom) + 0.5rem);
+  }
+
   /* 📱 動態視口高度（配合手機瀏覽器 UI 展開/收起）*/
   .h-screen-dynamic {
     height: 100vh;

@@ -26,6 +26,7 @@ import {
   Shield,
   Image as ImageIcon,
 } from "lucide-react";
+import PwaInstallEntry from "@/components/shared/PwaInstallEntry";
 
 interface MembershipSummary {
   fieldId: string;
@@ -91,9 +92,9 @@ export default function MeCenter() {
   const initials = (user.firstName?.[0] || user.email?.[0] || "U").toUpperCase();
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-20 md:pb-8">
-      {/* Hero 區 — 綠色系品牌 */}
-      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white pb-12 pt-6 px-4">
+    <div className="min-h-screen bg-muted/30 pb-bottom-nav md:pb-8">
+      {/* Hero 區 — 綠色系品牌（safe-top 避開 iOS PWA 狀態列）*/}
+      <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white pb-12 pt-6 px-4 safe-top">
         <div className="container mx-auto max-w-2xl">
           <div className="flex items-center gap-3 mb-6">
             <Avatar className="w-14 h-14 border-2 border-white/40">
@@ -164,6 +165,9 @@ export default function MeCenter() {
             </CardContent>
           </Card>
         )}
+
+        {/* 📱 PWA 主動安裝入口（已安裝/不支援的瀏覽器自動隱藏，不擾人） */}
+        <PwaInstallEntry />
 
         {/* 🎮 我參與的場域 */}
         {memberships.length > 0 && (
