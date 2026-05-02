@@ -162,9 +162,23 @@ export function registerPaymentsRoutes(app: Express) {
         });
       }
 
-      const { scenarioId, productId, mode = "PAYMENT", customerEmail } = req.body ?? {};
+      const { scenarioId, mode = "PAYMENT", customerEmail } = req.body ?? {};
+      let { productId } = req.body ?? {};
       if (!scenarioId) return res.status(400).json({ error: "缺少 scenarioId" });
-      if (!productId) return res.status(400).json({ error: "缺少 productId（請在 Recur.tw 後台建立產品）" });
+
+      // W10 D3: 若未提供 productId，從環境變數查（依 scenarioId）
+      // 環境變數命名：RECUR_PRODUCT_<SCENARIO_ID_UPPER_SNAKE>
+      // 例如：RECUR_PRODUCT_WEDDING=prod_xxx
+      if (!productId) {
+        const envKey = `RECUR_PRODUCT_${scenarioId.toUpperCase().replace(/-/g, "_")}`;
+        productId = process.env[envKey];
+        if (!productId) {
+          return res.status(400).json({
+            error: `此情境尚未設定 Recur.tw productId（${envKey} 未設）`,
+            code: "RECUR_PRODUCT_NOT_MAPPED",
+          });
+        }
+      }
 
       const scenario = getScenarioById(scenarioId);
       if (!scenario) return res.status(404).json({ error: "情境不存在" });

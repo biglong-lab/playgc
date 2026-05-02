@@ -49,32 +49,37 @@ export default function Pricing() {
     if (!selected) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/payments/create-checkout", {
+      // W10 D3: 主要路徑 Recur.tw、Stripe 退場為 international fallback
+      const res = await fetch("/api/payments/recur/create-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           scenarioId: selected,
+          mode: "PAYMENT",
           customerEmail: email.trim() || undefined,
-          displayName: displayName.trim() || undefined,
         }),
       });
       const data: CheckoutResponse | { error: string; code?: string } = await res.json();
 
       if (!res.ok) {
-        const errorMsg = "error" in data ? data.error : "付費建立失敗";
-        // 503 STRIPE_NOT_CONFIGURED → 友善訊息
-        if ("code" in data && data.code === "STRIPE_NOT_CONFIGURED") {
+        const errorCode = "code" in data ? data.code : null;
+        // 友善訊息對應 error code
+        if (errorCode === "RECUR_NOT_CONFIGURED" || errorCode === "RECUR_PRODUCT_NOT_MAPPED") {
           toast({
             title: "💳 付費系統準備中",
-            description: "目前先用線下匯款 / LINE Pay。請聯絡業務報名",
+            description: "請聯絡業務報名（LINE / Email），活動建場流程不受影響",
           });
         } else {
-          toast({ title: "❌ 失敗", description: errorMsg, variant: "destructive" });
+          toast({
+            title: "❌ 失敗",
+            description: "error" in data ? data.error : "付費建立失敗",
+            variant: "destructive",
+          });
         }
         return;
       }
 
-      // 跳轉到 Stripe Checkout
+      // 跳轉到 Recur.tw Checkout
       window.location.href = (data as CheckoutResponse).checkoutUrl;
     } catch (err) {
       toast({
@@ -236,7 +241,9 @@ export default function Pricing() {
                   )}
                 </Button>
                 <p className="text-xs text-muted-foreground text-center">
-                  跳轉到 Stripe 安全付款頁面 · 接信用卡 / Apple Pay / Google Pay
+                  跳轉到 Recur.tw 安全付款頁面 · 信用卡 / LINE Pay / ATM / 超商
+                  <br />
+                  自動開立電子發票（依 Email 寄送）
                 </p>
               </CardContent>
             </Card>

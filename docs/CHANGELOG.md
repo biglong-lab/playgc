@@ -69,6 +69,24 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🔀 Phase 3 W10 D3 ✅（Pricing 切換 Recur.tw、Stripe 退場為 fallback）
+**主題**：Pricing 頁前端切換 Recur.tw 主路徑 + 後端 productId 環境變數對應
+**範圍**：3 個檔案
+
+關鍵變動：
+- Pricing.tsx 改呼叫 `/api/payments/recur/create-checkout`（取代 Stripe）
+- 後端自動從 `RECUR_PRODUCT_<SCENARIO_ID>` 環境變數查 productId
+- friendly error 處理（RECUR_NOT_CONFIGURED / RECUR_PRODUCT_NOT_MAPPED → 「請聯絡業務」）
+- UI 文案：信用卡 / LINE Pay / ATM / 超商 + 自動電子發票
+
+**12 個產品 ID 環境變數規格**（admin 在 Recur.tw 後台建後填入）
+
+**Smoke test 29/29 維持綠色**
+
+**細節** → [changes/2026-05-02-phase3-w10-d3-pricing-recur-switch.md](changes/2026-05-02-phase3-w10-d3-pricing-recur-switch.md)
+
+⏭ 下一步：W10 D4 — 用量配額追蹤
+
 ### 🇹🇼 Phase 3 W10 D2 ✅（Recur.tw API client 整合）
 **主題**：依 ADR-0006 啟動 Recur.tw 主要付費路徑
 **範圍**：3 個檔案
