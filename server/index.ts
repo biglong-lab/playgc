@@ -105,6 +105,13 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// 🆕 Phase 4 §7.1 useServerTimer：server 權威時間 endpoint
+//   client 用此 timestamp 計算 offset，做倒數時用 server time 不受 client clock skew 影響
+//   特別用於 ChoiceVerifyRace 搶答 / TerritoryCapture 限時等需要公平計時的元件
+app.get("/api/time", (_req, res) => {
+  res.json({ now: Date.now() });
+});
+
 const allowedOrigins: string[] = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
   : ["http://localhost:3333", "http://localhost:3000"];
