@@ -71,6 +71,28 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### 💰 Phase 5 W17 D3 ✅（ROI 計算機公開頁）
+**主題**：客戶填 3 參數即時試算 ROI（業務殺手級工具）
+**範圍**：1 新檔 + 3 修改
+
+關鍵變動：
+- `client/src/pages/RoiCalculator.tsx`（新）
+  - 5 種活動類型（婚禮 / 同學會 / 內訓 / 街區 / 破冰）
+  - Slider 輸入：人數（10-500）+ 預算（3K-200K）
+  - 3 個輸出：節省時間 / 互動率提升 / 互動價值
+  - 總結：ROI 比例（例 1:5.3）
+- App.tsx /roi 路由
+- PitchDeck 加「💰 ROI 試算」CTA
+- smoke PUBLIC_PAGES 加 /roi
+
+**試算依據透明**：時薪 NT$ 500、業界互動率 30% vs 75%、來賓單值 NT$ 80-200
+
+**Smoke test 49 → 50**
+
+**細節** → [changes/2026-05-03-phase5-w17-d3-roi-calculator.md](changes/2026-05-03-phase5-w17-d3-roi-calculator.md)
+
+⏭ 下一步：W17 D4 — admin 健康度儀表板雛形 / 業務反饋 hotfix
+
 ### ❓ Phase 5 W17 D2 ✅（公開 FAQ 頁）
 **主題**：客戶 self-service 14 個常見問題（業務不必每次都答）
 **範圍**：1 新檔 + 3 修改

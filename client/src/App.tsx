@@ -184,6 +184,8 @@ const ApiDocs = lazy(() => import("@/pages/ApiDocs"));
 const PlayLiff = lazy(() => import("@/pages/PlayLiff"));
 // ❓ Faq 公開常見問題頁（W17 D2）
 const Faq = lazy(() => import("@/pages/Faq"));
+// 💰 RoiCalculator 公開 ROI 試算頁（W17 D3）
+const RoiCalculator = lazy(() => import("@/pages/RoiCalculator"));
 
 // 📺 Admin Host Session 管理（W2 D5）
 const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
@@ -275,6 +277,9 @@ function Router() {
 
         {/* ❓ 公開常見問題頁（W17 D2）*/}
         <Route path="/faq" component={Faq} />
+
+        {/* 💰 公開 ROI 試算頁（W17 D3）*/}
+        <Route path="/roi" component={RoiCalculator} />
 
         {/* 📖 Public API 文件頁（W11 D4）*/}
         <Route path="/api-docs" component={ApiDocs} />

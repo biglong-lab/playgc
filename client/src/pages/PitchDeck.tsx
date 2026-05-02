@@ -276,6 +276,11 @@ export default function PitchDeck() {
                 常見問題
               </Button>
             </Link>
+            <Link href="/roi">
+              <Button size="lg" variant="ghost" data-testid="cta-pitch-roi">
+                💰 ROI 試算
+              </Button>
+            </Link>
           </div>
         </section>
       </main>

@@ -71,6 +71,7 @@ const PUBLIC_PAGES = [
   "/showcase",
   "/admin/scenario-qr-print",
   "/faq", // W17 D2
+  "/roi", // W17 D3
 ];
 
 const SCENARIO_IDS = [
