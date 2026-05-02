@@ -69,6 +69,34 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🤝 Phase 3 W11 D3 ✅（POST /api/v1/instances 代理商一鍵建場）
+**主題**：代理商核心 API + API key → fieldId mapping
+**範圍**：3 個檔案
+
+關鍵變動：
+- `POST /api/v1/instances` endpoint
+  - middleware: requireApiKey → rateLimit → idempotency
+  - body: scenarioId / displayName / customerEmail
+  - header: Idempotency-Key（24h 防重發）
+- `getFieldIdForApiKey()` helper
+  - 環境變數 `API_KEY_FIELD_<keyIdShort>` mapping
+  - fallback: `API_KEY_DEFAULT_FIELD`
+- `instantiateForApi()` 內嵌邏輯（W11 D5 可重構共用）
+- description 標記 `[scenario:<id>] [via:api/v1]` 區分代理商建立
+- smoke test 加 5c POST /instances 401 守衛 (35 → 36)
+
+**完整代理商工作流**：
+1. 取得 ck_live_xxx
+2. 環境變數 admin 設好 API_KEY_FIELD_<keyIdShort>=field_xxx
+3. POST /api/v1/instances 帶 scenarioId
+4. 即得 hostUrl + playUrl 實例
+
+**Smoke test 36/36 全綠**
+
+**細節** → [changes/2026-05-03-phase3-w11-d3-instances-endpoint.md](changes/2026-05-03-phase3-w11-d3-instances-endpoint.md)
+
+⏭ 下一步：W11 D4 — API 文件（OpenAPI / Postman）
+
 ### 🚦 Phase 3 W11 D2 ✅（Rate limit + Idempotency middleware）
 **主題**：API 生產級保障（限速 + 防重發）
 **範圍**：3 個檔案

@@ -258,6 +258,17 @@ async function runSmokeTest() {
     return { ok: true };
   });
 
+  // 5c. POST /api/v1/instances 認證守衛（W11 D3）
+  await check("POST /api/v1/instances（無 key → 401）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/v1/instances`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scenarioId: "wedding" }),
+    });
+    if (res.status !== 401) return { ok: false, error: `expected 401, got ${res.status}` };
+    return { ok: true };
+  });
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>
