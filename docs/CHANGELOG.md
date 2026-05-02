@@ -69,6 +69,33 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+## 2026-05-03（Phase 5 啟動）
+
+### 🚀 Phase 5 W17 D1 ✅（真實客戶 pilot 啟動）
+**主題**：W17 業務週啟動、SOP + 反饋表就緒
+**範圍**：3 個新文件（純 docs）
+
+關鍵變動：
+- `docs/runbooks/customer-pilot.md`（新）
+  - 10 步驟業務跑團 SOP（每步 ≤ 30 分鐘）
+  - 5 個常見 FAQ（人數 / App / 資料 / 連線 / 客製）
+  - 業務工具速查表（6 個公開頁）
+- `docs/runbooks/pilot-feedback-template.md`（新）
+  - 5 個關鍵錨點（對齊 ADR-0012）
+  - 詳細反饋（活動前 / 中 / 後）
+  - 競品比較 + 後續意願
+- `docs/changes/2026-05-03-phase5-w17-d1-customer-pilot.md`
+
+**W17 預期**：接觸 ≥ 5 客戶、成交 ≥ 1 場、反饋 ≥ 1 份
+
+**Smoke test 維持 48/48**（純 docs 變動）
+
+**細節** → [changes/2026-05-03-phase5-w17-d1-customer-pilot.md](changes/2026-05-03-phase5-w17-d1-customer-pilot.md)
+
+⏭ 下一步：W17 D2 — 業務跑客戶 / 工程備援任務
+
+---
+
 ### 🎉 Phase 4 完整收尾 ✅（W16 D5 — Phase 4 retro + Phase 5 ADR）
 **主題**：Phase 4 W13-W16 全套完成、Phase 5 規劃 ADR-0012
 **範圍**：2 個新文件
