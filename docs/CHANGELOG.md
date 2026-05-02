@@ -56,6 +56,38 @@
 
 ⏭ 下一步：Phase 1 Week 4 — 補 5 個 multi 元件（JigsawPuzzle 等）
 
+### 🎯 Phase 1 Week 4 完成 ✅（5 個 multi 元件 + Phase 1 全套收尾）
+**部署**：`c6405f5a..a4e61714`
+
+關鍵 commit：
+- `90c78434` W4 D1: JigsawPuzzle (M) — 拼圖協作（親子王牌） 6/6 測試
+- `8f814310` W4 D2: TreasureHunt + GpsCascade — 兩元件同輪 11/11 測試
+- `5fc01cd2` W4 D3: CollectiveScore + RoleAssign — 兩元件同輪
+- `a4e61714` W4 D4: ShowcaseHub demo 擴充 5 multi 元件 + 部署
+
+**ShowcaseHub** [showcase](https://game.homi.cc/showcase)：
+- 15 個 demo 入口（10 host × 雙版型 + 5 multi）
+- 客戶不需登入、不需建 session 即可看到全部元件玩法
+
+### 🎉 Phase 1 全套完成（4 週路徑）
+
+```
+Phase 1（4 週、~30 個 commit、~80 個單元測試）
+├ W1: ADR-0004 + HostScreen 骨架 + ShowcaseHub MVP + scaffold
+├ W2: PollLive 完整商業鏈路 + Admin UI
+├ W3: 4 個 host 元件（EmojiReact/WaveResponse/CrowdGather/LiveLeaderboard）
+├ W4: 5 個 multi 元件（JigsawPuzzle/TreasureHunt/GpsCascade/CollectiveScore/RoleAssign）
+└ 完整部署、healthy、E2E 5 端點全綠
+```
+
+**累計能力**：
+- HostScreen 軸線 5/8 元件 + Multi 軸線 13/13 元件
+- Admin 後台 host-session 管理
+- ShowcaseHub 15 個公開 demo 入口
+- 完整鏈路：admin 建 session → 大螢幕 → 玩家投票 → 即時更新
+
+⏭ 下一步：Phase 2（W5-W8）— 紀念類 + 接力類 + 12 情境模板（首批客戶變現）
+
 ### 🛡 Squad 系統一次到位（取代三套組隊系統）
 **主題**：合併 teams / battle_clans / 過渡 squads 為單一 Squad 系統
 **範圍**：8 個 commit（PR0 + PR1-PR6）

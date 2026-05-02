@@ -337,6 +337,86 @@ admin 登入 → 「📺 主控大螢幕」→ 選遊戲 → 建 session
 ⏭ 下一步：Phase 1 Week 4 — 補完 Phase 1 的 5 個 multi 元件
 （JigsawPuzzle / TreasureHunt / GpsCascade / CollectiveScore / RoleAssign）
 
+---
+
+### 2026-05-02 Week 4 完成 ✅（5 個 multi 元件 + ShowcaseHub demo 擴充）
+
+| Day | 元件 / 範圍 | 級別 | 測試 | Commit |
+|-----|------------|------|------|--------|
+| W4 D1 | JigsawPuzzle 拼圖協作（親子王牌） | M | 6/6 | `90c78434` |
+| W4 D2 | TreasureHunt + GpsCascade（兩元件同輪） | S+S | 11/11 | `8f814310` |
+| W4 D3 | CollectiveScore + RoleAssign（兩元件同輪） | S+S | — | `5fc01cd2` |
+| W4 D4 | ShowcaseHub demo 加 5 multi 元件 + 部署 | — | — | `a4e61714` |
+| W4 D5 | Phase 1 全套收尾 + 文件更新 | — | — | 本 commit |
+
+**Phase 1 Week 4 成就**：
+- multi 軸線從 8 元件 → 13 元件（補完規劃 5 個）
+- 全部 4 件套（元件 + 容器頁 + 測試 + GamePageRenderer 註冊）
+- 17 個單元測試（W4 D1+D2 = 6+5+6 通過）
+- ShowcaseHub demo 擴充到 15 個入口（10 host + 5 multi）
+
+**Phase 1 全套完成標記** 🎉：
+
+```
+Phase 1（4 週、~25 個 commit、~75 個單元測試）
+├ W1: ADR + 骨架（HostScreen 軸線 + scaffold + ShowcaseHub MVP）
+├ W2: PollLive 完整商業鏈路 + Admin UI
+├ W3: 4 個 host 元件（EmojiReact / WaveResponse / CrowdGather / LiveLeaderboard）
+├ W4: 5 個 multi 元件（JigsawPuzzle / TreasureHunt / GpsCascade / CollectiveScore / RoleAssign）
+└ 已部署、healthy、E2E 全綠
+```
+
+**HostScreen 軸線進度**：5/8 元件就位（剩 host_trivia_showdown / host_scoreboard_announcement / host_knowledge_map）
+**Multi 軸線進度**：13/13 元件全完成
+**ShowcaseHub**：15 個 demo 入口公開試玩
+
+---
+
+## ⏭ Phase 2 預告（W5-W8、4 週、12 個元件 + 12 個情境模板）
+
+### Phase 2 核心目標
+
+> **首批客戶變現** — 從「展示」到「成交」
+
+### Phase 2 W5-W6：紀念類元件（傳播力王牌）
+
+| 元件 | 軸線 | 用途 |
+|------|------|------|
+| PolaroidCollage | host | 拍立得拼貼牆（婚禮王牌）|
+| MemoryAlbum | multi | 活動紀念冊自動生成 |
+| Storybook | multi | 活動結束自動生成繪本 |
+| GuestbookDigital | host | 數位簽名簿 + 短影片祝福 |
+
+### Phase 2 W7：接力類元件
+
+| 元件 | 軸線 | 用途 |
+|------|------|------|
+| StoryRelay | multi | 故事接龍（每人寫一句拼成劇本） |
+| DrawRelay | multi | 畫圖接力（每人加一筆） |
+| PhotoRelay | multi | 拍照接力（4 張拼成敘事） |
+
+### Phase 2 W8：HostScreen 補完
+
+| 元件 | 軸線 | 用途 |
+|------|------|------|
+| TriviaShowdown | host | 搶答秀（園遊會主舞台） |
+| ScoreboardAnnouncement | host | 跑馬燈宣告 |
+| KnowledgeMap | host | 場域全景地圖 |
+
+### Phase 2 平台基建：TemplateMarket
+
+`/admin/templates` 情境模板市集（12 個預建情境）：
+1. **破冰**：JigsawPuzzle + EmojiReact + PollLive
+2. **景點走讀**：GpsCascade + PhotoStorytelling + KnowledgeMap
+3. **企業內訓**：TriviaShowdown + RoleAssign + CompanyReport
+4. **婚禮派對**：PolaroidCollage + GuestbookDigital + EmojiReact
+5. **園遊會**：WaveResponse + TriviaShowdown + LiveLeaderboard
+6. **親子家庭**：TreasureHunt + JigsawPuzzle + MemoryAlbum
+7. **同學會**：CoupleQuiz + Storybook + GuestbookDigital
+8-12. 待 W5 規劃時定義
+
+
+
 
 
 ---
