@@ -299,6 +299,31 @@ async function runSmokeTest() {
   // 5g. LIFF 玩家入口（W14 D1）
   await check("GET /liff/play/test", 200, () => checkStatus(`${BASE_URL}/liff/play/test-w14`, 200));
 
+  // 5h. LINE Bot webhook health（W15 D1，公開）
+  console.log(`${COLOR.bold}── Section 5h: LINE Bot（W15 D1）──${COLOR.reset}`);
+  await check("GET /api/webhooks/line/health", 200, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/webhooks/line/health`);
+    if (res.status !== 200) return { ok: false, error: `expected 200, got ${res.status}` };
+    const data = await res.json();
+    if (data.status !== "ok") return { ok: false, error: "status != ok" };
+    if (typeof data.lineBotConfigured !== "boolean") {
+      return { ok: false, error: "missing lineBotConfigured" };
+    }
+    return { ok: true };
+  });
+  await check("POST /api/webhooks/line（無簽章 → 401 或 503）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/webhooks/line`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    });
+    // 接受 401（無 secret）或 503（未配置）
+    if (res.status !== 401 && res.status !== 503) {
+      return { ok: false, error: `expected 401 or 503, got ${res.status}` };
+    }
+    return { ok: true };
+  });
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>

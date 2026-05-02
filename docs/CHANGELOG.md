@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🤖 Phase 4 W15 D1 ✅（LINE Bot scaffold）
+**主題**：Bot 雙向溝通基礎（Webhook + signing 驗證 + reply API）
+**範圍**：4 個檔案
+
+關鍵變動：
+- `server/lib/line-bot.ts` Bot 工具
+  - verifyLineSignature (HMAC SHA-256 + base64 + timingSafeEqual)
+  - replyMessage / pushMessage
+- `server/routes/line-webhook.ts`
+  - GET /api/webhooks/line/health（公開）
+  - POST /api/webhooks/line（簽章驗證 + fire-and-forget）
+  - 預設 echo bot（W15 D2-D3 加 NLU）
+- routes/index.ts 註冊
+- smoke test 加 5h (41 → 43)
+
+**環境變數**：LINE_CHANNEL_SECRET + LINE_CHANNEL_ACCESS_TOKEN
+
+**Smoke test 43/43 全綠**
+
+**細節** → [changes/2026-05-03-phase4-w15-d1-line-bot-scaffold.md](changes/2026-05-03-phase4-w15-d1-line-bot-scaffold.md)
+
+⏭ 下一步：W15 D2 — 推播 activity reminder
+
 ### 🎉 Phase 4 W14 完整收尾 + ADR-0010 LINE Bot 規劃 ✅
 **主題**：W14 5 天累計 + W15 LINE Bot 整合策略
 **範圍**：W14 23 檔、~1,400 行 + 2 個收尾文件 + ADR-0010
