@@ -15,6 +15,7 @@ const WaveResponsePage = lazy(() => import("./WaveResponsePage"));
 const CrowdGatherPage = lazy(() => import("./CrowdGatherPage"));
 const LiveLeaderboardPage = lazy(() => import("./LiveLeaderboardPage"));
 const PolaroidCollagePage = lazy(() => import("./PolaroidCollagePage"));
+const GuestbookDigitalPage = lazy(() => import("./GuestbookDigitalPage"));
 
 interface HostPageRendererProps {
   page: Page;
@@ -45,6 +46,8 @@ export default function HostPageRenderer({ page }: HostPageRendererProps) {
             return <LiveLeaderboardPage page={page} />;
           case "host_polaroid_collage":
             return <PolaroidCollagePage page={page} />;
+          case "host_guestbook_digital":
+            return <GuestbookDigitalPage page={page} />;
           // Phase 1 W3-W4 會陸續加：
           //   host_emoji_react / host_wave_response / host_crowd_gather
           //   host_trivia_showdown / host_live_leaderboard

@@ -116,6 +116,7 @@ export const HOST_ONLY_COMPONENTS = [
 
   // Phase 2 規劃（W5+ 紀念類）
   "host_polaroid_collage",       // 拍立得紀念牆（婚禮王牌）
+  "host_guestbook_digital",      // 數位簽名簿（婚禮配套、退休歡送）
 ] as const;
 
 // ============================================================================
