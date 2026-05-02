@@ -71,6 +71,33 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### 🚀 Phase 5 W18 D2 ✅（host_progress_quest 全場進度條元件）
+**主題**：街區走讀 / 內訓 KPI / 通用全場進度視覺化（6+ 情境覆蓋）
+**範圍**：3 新檔 + 4 修改
+
+關鍵變動：
+- `client/src/components/game/host/ProgressQuest.tsx`（新）— 主元件
+  - 大螢幕：大進度條（漸層 emerald→cyan）+ 里程碑刻度 + 計數 + top 5 貢獻榜
+  - 達成里程碑覆蓋層慶祝動畫（3.5s）
+  - 玩家端：全場進度 + 我的貢獻 + 推進按鈕
+  - 純函式 calculateProgress / detectNewMilestones（易測試）
+- `ProgressQuestPage.tsx`（新）— WebSocket 容器
+  - pulse `complete` 防超過 totalTasks
+  - 自動偵測新里程碑加入 milestonesReached
+- `ProgressQuest.test.tsx`（新）— 9 測試全綠
+- GamePageRenderer + HostPageRenderer 註冊
+- `getDefaultConfigForPageType` 加預設
+
+**新覆蓋情境**：街區 / 商圈 / 內訓 KPI / 員工旅遊 / 通用任務（+6）
+
+**W18 累計（D1+D2）**：+12 情境覆蓋
+
+**Smoke test 維持 51/51**
+
+**細節** → [changes/2026-05-03-phase5-w18-d2-progress-quest.md](changes/2026-05-03-phase5-w18-d2-progress-quest.md)
+
+⏭ 下一步：W18 D3 — host_word_cloud（即時字雲）
+
 ### 🎯 Phase 5 W18 D1 ✅（host_lottery_wheel 轉盤抽獎元件）
 **主題**：婚禮 / 派對 / 福委會通用轉盤抽獎（6+ 情境覆蓋）
 **範圍**：3 新檔 + 4 修改

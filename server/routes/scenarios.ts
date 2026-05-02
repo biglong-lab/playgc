@@ -96,6 +96,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         spinDurationMs: 5000,
         allowJoin: true,
       };
+    case "host_progress_quest":
+      return {
+        title: `${scenarioName} 全場進度`,
+        subtitle: "一起完成 100 個任務、達標慶祝",
+        totalTasks: 100,
+        milestones: [25, 50, 75, 100],
+        celebrationLevel: "auto",
+      };
 
     // ─── multi 軸線 ───
     case "gps_cascade":
