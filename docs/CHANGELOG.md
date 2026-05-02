@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🤖 Phase 3 W9 D1 ✅（AI 內容生成 MVP — DeepSeek 整合）
+**主題**：admin 可輸入 context 讓 AI 為情境生成客製化 config
+**範圍**：3 個檔案
+
+關鍵變動：
+- `server/lib/scenario-content-generator.ts` AI 內容生成器
+- `server/routes/scenarios.ts` 新增 POST /api/admin/scenarios/:id/ai-preview
+- smoke test 擴充至 25 個檢查（加 ai-preview 401 守衛）
+
+**功能**：
+- 接收 context（500 字內）
+- 用 OpenRouter（DeepSeek V3.2）為每個元件生成客製 config
+- 支援 13 種 pageType（10 host + 5 multi）
+- 純 preview、不寫 DB、不影響 instantiate
+
+**安全**：requireAdminAuth + game:create + 場域 API key 解密 + sk-or-* 驗證
+
+**Smoke test**：預期 **25/25 全綠**（含新增 4b ai-preview）
+
+**細節** → [changes/2026-05-02-phase3-w9-d1-ai-content-mvp.md](changes/2026-05-02-phase3-w9-d1-ai-content-mvp.md)
+
+⏭ 下一步：W9 D2 — 前端 AI 預覽 UI + 套用按鈕
+
 ### 📋 Phase 3 規劃啟動 ✅（W8 D5 — ADR-0005 + W9-W12 路徑書）
 **主題**：Phase 2 收尾、Phase 3 真實付費 + AI 內容 + 業務 API 規劃
 

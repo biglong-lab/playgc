@@ -22,14 +22,17 @@
 
 import type { Express } from "express";
 import { db } from "../db";
-import { games, pages, gameSessions } from "@shared/schema";
+import { games, pages, gameSessions, fields, parseFieldSettings } from "@shared/schema";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 import { randomBytes } from "crypto";
+import { eq } from "drizzle-orm";
 import {
   getScenarioById,
   type ScenarioComponent,
 } from "@shared/scenario-templates";
 import { generateSlug } from "../qrCodeService";
+import { generateScenarioContent } from "../lib/scenario-content-generator";
+import { decryptApiKey } from "../lib/crypto";
 
 const HOST_TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 小時
 
@@ -194,6 +197,104 @@ function getGameModeForComponent(component: ScenarioComponent): "individual" | "
 }
 
 export function registerScenarioRoutes(app: Express) {
+  /**
+   * POST /api/admin/scenarios/:scenarioId/ai-preview
+   * Body: { context: string }
+   *
+   * 用 OpenRouter（DeepSeek）為情境的所有元件生成客製化 config 預覽
+   * 不寫入 DB、純 preview，admin 可決定是否套用
+   *
+   * 需要場域已設定 OpenRouter API key（settings.geminiApiKey 為 sk-or-* 格式）
+   */
+  app.post(
+    "/api/admin/scenarios/:scenarioId/ai-preview",
+    requireAdminAuth,
+    requirePermission("game:create"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+
+        const scenario = getScenarioById(req.params.scenarioId);
+        if (!scenario) {
+          return res.status(404).json({ error: "情境不存在" });
+        }
+
+        const context = (req.body?.context ?? "").toString().trim().slice(0, 500);
+        if (!context) {
+          return res.status(400).json({ error: "請提供 context（活動描述）" });
+        }
+
+        // 取場域 OpenRouter API key
+        const fieldId = req.admin.fieldId;
+        if (!fieldId && req.admin.systemRole !== "super_admin") {
+          return res.status(400).json({ error: "您的帳號未綁定場域、無法使用 AI 服務" });
+        }
+
+        if (!fieldId) {
+          return res.status(503).json({
+            error: "super_admin 暫不支援 AI 預覽（需要綁定場域 API key）",
+          });
+        }
+
+        const [field] = await db.select().from(fields).where(eq(fields.id, fieldId)).limit(1);
+        if (!field) return res.status(404).json({ error: "場域不存在" });
+
+        const settings = parseFieldSettings(field.settings);
+        const fieldApiKey = settings.geminiApiKey;
+        if (!fieldApiKey) {
+          return res.status(503).json({
+            error: "此場域尚未設定 OpenRouter API key",
+            code: "FIELD_AI_NOT_CONFIGURED",
+          });
+        }
+
+        let apiKey: string;
+        try {
+          apiKey = decryptApiKey(fieldApiKey);
+        } catch {
+          return res.status(500).json({ error: "場域 API key 解密失敗" });
+        }
+
+        if (!apiKey.startsWith("sk-or-")) {
+          return res.status(400).json({
+            error: "AI 預覽功能僅支援 OpenRouter API key",
+            code: "REQUIRES_OPENROUTER",
+          });
+        }
+
+        const generated = await generateScenarioContent({
+          apiKey,
+          scenarioName: scenario.name,
+          context,
+          components: scenario.components,
+        });
+
+        res.json({
+          scenario: {
+            id: scenario.id,
+            name: scenario.name,
+            tagline: scenario.tagline,
+          },
+          context,
+          configs: generated.configs,
+          rationale: generated.rationale,
+          components: scenario.components.map((c) => ({
+            pageType: c.pageType,
+            label: c.label,
+            role: c.role,
+            axis: c.axis,
+            hasAiConfig: !!generated.configs[c.pageType],
+          })),
+        });
+      } catch (err) {
+        console.error("[scenarios] ai-preview 失敗:", err);
+        res.status(500).json({
+          error: err instanceof Error ? err.message : "AI 內容生成失敗",
+        });
+      }
+    },
+  );
+
   /**
    * POST /api/admin/scenarios/:scenarioId/instantiate
    * Body: { displayName?: string }
