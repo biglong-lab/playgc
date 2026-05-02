@@ -33,6 +33,11 @@ import {
 import { generateSlug } from "../qrCodeService";
 import { generateScenarioContent } from "../lib/scenario-content-generator";
 import { decryptApiKey } from "../lib/crypto";
+import {
+  pushActivityCreated,
+  pushActivityReminder,
+  pushActivityEnded,
+} from "../lib/line-pusher";
 
 const HOST_TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 小時
 
@@ -268,6 +273,67 @@ export function registerScenarioRoutes(app: Express) {
       } catch (err) {
         console.error("[scenarios] stats 失敗:", err);
         res.status(500).json({ error: "統計查詢失敗" });
+      }
+    },
+  );
+
+  /**
+   * POST /api/admin/scenarios/notify-line
+   * Body: {
+   *   userId, displayName, activityName, playUrl,
+   *   type: "created" | "reminder-24h" | "reminder-1h" | "ended",
+   *   recapUrl?, closingMessage?
+   * }
+   *
+   * 觸發 LINE 推播給單一玩家（W15 D2）
+   */
+  app.post(
+    "/api/admin/scenarios/notify-line",
+    requireAdminAuth,
+    requirePermission("game:create"),
+    async (req, res) => {
+      try {
+        if (!process.env.LINE_CHANNEL_ACCESS_TOKEN) {
+          return res.status(503).json({
+            error: "LINE Bot 未啟用（LINE_CHANNEL_ACCESS_TOKEN 缺）",
+            code: "LINE_BOT_NOT_CONFIGURED",
+          });
+        }
+
+        const { userId, displayName, activityName, playUrl, type, recapUrl, closingMessage } = req.body ?? {};
+        if (!userId || !displayName || !activityName) {
+          return res.status(400).json({ error: "缺少必填欄位（userId / displayName / activityName）" });
+        }
+
+        switch (type) {
+          case "created":
+            if (!playUrl) return res.status(400).json({ error: "created 類型需 playUrl" });
+            await pushActivityCreated({ userId, displayName, activityName, playUrl });
+            break;
+          case "reminder-24h":
+          case "reminder-1h":
+            if (!playUrl) return res.status(400).json({ error: "reminder 類型需 playUrl" });
+            await pushActivityReminder({
+              userId,
+              displayName,
+              activityName,
+              playUrl,
+              remindType: type === "reminder-24h" ? "24h" : "1h",
+            });
+            break;
+          case "ended":
+            await pushActivityEnded({ userId, displayName, activityName, recapUrl, closingMessage });
+            break;
+          default:
+            return res.status(400).json({
+              error: "type 必須為 created / reminder-24h / reminder-1h / ended",
+            });
+        }
+
+        res.json({ ok: true, type, dispatched: true, to: userId });
+      } catch (err) {
+        console.error("[scenarios] notify-line 失敗:", err);
+        res.status(500).json({ error: err instanceof Error ? err.message : "推播失敗" });
       }
     },
   );

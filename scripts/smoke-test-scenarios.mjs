@@ -175,6 +175,19 @@ async function runSmokeTest() {
     return { ok: true };
   });
 
+  // 4c3. POST notify-line 認證守衛（W15 D2 新增）
+  await check("POST /api/admin/scenarios/notify-line (401)", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/admin/scenarios/notify-line`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    if (res.status !== 401) {
+      return { ok: false, error: `expected 401, got ${res.status}` };
+    }
+    return { ok: true };
+  });
+
   // 4d. GET payments health（W10 D1 新增 — 公開、不需認證）
   console.log(`${COLOR.bold}── Section 4d: 付費系統健康檢查 ──${COLOR.reset}`);
   await check("GET /api/payments/health", 200, async () => {

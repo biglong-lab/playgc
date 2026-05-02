@@ -69,6 +69,27 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📣 Phase 4 W15 D2 ✅（LINE Pusher + activity reminder endpoint）
+**主題**：admin 主動推播 LINE 通知（4 種 type）
+**範圍**：3 個檔案
+
+關鍵變動：
+- `server/lib/line-pusher.ts` 高層推播 helper
+  - pushActivityCreated（建場通知）
+  - pushActivityReminder（24h / 1h 前提醒）
+  - pushActivityEnded（結束 + 回顧）
+  - broadcastToUsers + 100ms throttle
+- POST /api/admin/scenarios/notify-line
+  - type: created / reminder-24h / reminder-1h / ended
+  - 503 graceful（未設 ACCESS_TOKEN）
+- smoke test 加 4c3 (43 → 44)
+
+**Smoke test 44/44 全綠**
+
+**細節** → [changes/2026-05-03-phase4-w15-d2-line-pusher.md](changes/2026-05-03-phase4-w15-d2-line-pusher.md)
+
+⏭ 下一步：W15 D3 — admin 文字建場（DeepSeek NLU）
+
 ### 🤖 Phase 4 W15 D1 ✅（LINE Bot scaffold）
 **主題**：Bot 雙向溝通基礎（Webhook + signing 驗證 + reply API）
 **範圍**：4 個檔案
