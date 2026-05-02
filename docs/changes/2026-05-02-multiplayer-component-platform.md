@@ -244,6 +244,31 @@ WHERE table_name='game_sessions'
 - [x] 生產 schema 對齊
 - [x] 部署後 healthy
 
+---
+
+### 2026-05-02 Week 2 進度（4/5 天完成）
+
+| Day | 完成 | Commit |
+|-----|------|--------|
+| W2 D1 | PollLive 元件本體（雙版型，~250 行）+ 10/10 單元測試 | `0201b25e` |
+| W2 D2 | useHostScreenSync hook + Pulse 進階版 + GamePageRenderer 註冊 host_poll_live | `c8c81b3a` |
+| W2 D3 | HostPageRenderer mini-renderer + HostScreen / HostPlay 整合 game pages 載入 | `6f232c69` |
+| W2 D4 | ShowcaseHub 加 PollLive 即時試玩 demo（兩按鈕看大螢幕 + 玩家版型）| `dd8ed648` |
+
+**Week 2 部署狀態**：
+- `dd8ed648` 已部署、container healthy
+- 三條路徑全 200：/showcase、/host/*、/play/*
+- 元件完整鏈路打通：
+  - admin 建 session → 大螢幕進入 → 玩家投票 → 大螢幕長條圖即時更新
+
+**Week 2 驗收**（W2 D5 留待最後）：
+- [x] PollLive 大螢幕版型完整（倒數、長條圖、狀態 badge）
+- [x] PollLive 玩家版型完整（選項、鎖定、揭曉、改票）
+- [x] useHostScreenSync hook 抽出（之後 7 個 host 元件可重用）
+- [x] HostScreen / HostPlay 載入 game pages
+- [x] ShowcaseHub demo 預覽 host / player 版型
+- [ ] W2 D5：壓測（50/100/500 玩家）+ ShowcaseHub 加更多 host 元件 demo
+
 
 
 ---
