@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🚀 Phase 4 W16 D1 ✅（instantiator-line 擴充多元件）
+**主題**：LINE admin 建場從「只第 1 個 host」→「全元件（host + multi + solo + shared）」
+**範圍**：3 個檔案修改
+
+關鍵變動：
+- `server/routes/scenarios.ts` 兩個 helper 改 export（getDefaultConfigForPageType / getGameModeForComponent）
+- `server/lib/scenario-instantiator-line.ts` 重寫
+  - 建立所有 components（不只第 1 個 host）
+  - LineInstance 介面 + primaryHostUrl/primaryPlayUrl/primaryGameUrl
+  - 序列建立（DB 連線壓力 + 易 debug）
+- `server/routes/line-webhook.ts` 加 formatInstantiateReply
+  - 主入口（host 第一個 / 非 host 第一個）
+  - 元件清單（最多顯示 5 個、超過 truncate 提示）
+  - LINE 5000 字上限保護
+
+**場景覆蓋率**：60% → 100%（12 情境全支援）
+
+**Smoke test 維持 45/45**
+
+**細節** → [changes/2026-05-03-phase4-w16-d1-multi-component-instantiate.md](changes/2026-05-03-phase4-w16-d1-multi-component-instantiate.md)
+
+⏭ 下一步：W16 D2 — LINE reply 進階範本（quick reply / sticker / 多訊息）
+
 ### 🎉 Phase 4 W15 完整收尾 ✅（D5 — Admin 認證 + LINE 真建場）
 **主題**：LINE admin @chito 指令一鍵真實建場（30 秒收到 hostUrl）
 **範圍**：3 個新檔 + 2 個修改 + ADR-0011

@@ -23,7 +23,69 @@ import {
 } from "../lib/line-bot";
 import { parseAdminCommand, formatCommandReply } from "../lib/admin-nlu";
 import { isLineUserAdmin, getAdminFieldId, getLineAdminStatus } from "../lib/admin-line-auth";
-import { instantiateScenarioForLine } from "../lib/scenario-instantiator-line";
+import {
+  instantiateScenarioForLine,
+  type LineInstantiateResult,
+} from "../lib/scenario-instantiator-line";
+
+/**
+ * W16 D1: 把多元件 instantiate 結果格式化為 LINE 訊息
+ *
+ * 訊息結構：
+ *   ✅ 建場成功！
+ *   📦 情境 / 📝 名稱 / ⏰ 有效期
+ *   🖥 主大螢幕（host 第一個）
+ *   📱 主玩家網址（host 第一個）
+ *   📋 元件清單（最多顯示 5 個，超過 truncate）
+ *
+ * LINE text message 上限 5000 字、多元件 truncate 至 5 個避免超限
+ */
+function formatInstantiateReply(result: LineInstantiateResult, baseUrl: string): string {
+  const lines: string[] = [
+    `✅ 建場成功！`,
+    ``,
+    `📦 情境：${result.scenarioName}`,
+    `📝 名稱：${result.displayName}`,
+    `⏰ 有效期：12 小時`,
+    `🎮 元件數：${result.instances.length}`,
+    ``,
+  ];
+
+  if (result.primaryHostUrl) {
+    lines.push(`🖥 大螢幕網址（請投影）：`);
+    lines.push(`${baseUrl}${result.primaryHostUrl}`);
+    lines.push(``);
+  }
+  if (result.primaryPlayUrl) {
+    lines.push(`📱 玩家網址（QR 給來賓掃）：`);
+    lines.push(`${baseUrl}${result.primaryPlayUrl}`);
+    lines.push(``);
+  }
+  if (result.primaryGameUrl) {
+    lines.push(`🎯 主玩家入口：`);
+    lines.push(`${baseUrl}${result.primaryGameUrl}`);
+    lines.push(``);
+  }
+
+  // 元件清單（最多 5 個、超過 truncate）
+  const showCount = Math.min(result.instances.length, 5);
+  if (result.instances.length > 1) {
+    lines.push(`📋 元件清單：`);
+    for (let i = 0; i < showCount; i++) {
+      const inst = result.instances[i];
+      const url = inst.hostUrl || inst.gameUrl || "";
+      const axisIcon =
+        inst.axis === "host" ? "🖥" : inst.axis === "multi" ? "👥" : inst.axis === "solo" ? "🎮" : "🔗";
+      lines.push(`${axisIcon} ${inst.label}`);
+      if (url) lines.push(`   ${baseUrl}${url}`);
+    }
+    if (result.instances.length > showCount) {
+      lines.push(`...（還有 ${result.instances.length - showCount} 個元件，請至 admin 後台查看）`);
+    }
+  }
+
+  return lines.join("\n");
+}
 
 const CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET;
 const ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -167,23 +229,11 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
       });
 
       if (result.ok) {
-        const fullHostUrl = `${APP_BASE_URL}${result.hostUrl}`;
-        const fullPlayUrl = `${APP_BASE_URL}${result.playUrl}`;
+        const text = formatInstantiateReply(result, APP_BASE_URL);
         await replyMessage({
           accessToken: ACCESS_TOKEN,
           replyToken,
-          messages: [
-            {
-              type: "text",
-              text:
-                `✅ 建場成功！\n\n` +
-                `📦 情境：${result.scenarioName}\n` +
-                `📝 名稱：${result.displayName}\n` +
-                `⏰ 有效期：12 小時\n\n` +
-                `🖥 大螢幕網址（請投影）：\n${fullHostUrl}\n\n` +
-                `📱 玩家網址（QR 給來賓掃）：\n${fullPlayUrl}`,
-            },
-          ],
+          messages: [{ type: "text", text }],
         });
       } else {
         await replyMessage({

@@ -45,8 +45,8 @@ function generateHostToken(): string {
   return randomBytes(16).toString("hex");
 }
 
-/** 為每個元件提供預設 page config（最小可玩內容）*/
-function getDefaultConfigForPageType(pageType: string, scenarioName: string): Record<string, unknown> {
+/** 為每個元件提供預設 page config（最小可玩內容）— W16 D1 export 給 LINE instantiator 複用 */
+export function getDefaultConfigForPageType(pageType: string, scenarioName: string): Record<string, unknown> {
   switch (pageType) {
     // ─── host 軸線 ───
     case "host_polaroid_collage":
@@ -195,8 +195,8 @@ function getDefaultConfigForPageType(pageType: string, scenarioName: string): Re
   }
 }
 
-/** 依 axis 推導 gameMode */
-function getGameModeForComponent(component: ScenarioComponent): "individual" | "team" {
+/** 依 axis 推導 gameMode — W16 D1 export 給 LINE instantiator 複用 */
+export function getGameModeForComponent(component: ScenarioComponent): "individual" | "team" {
   if (component.axis === "multi") return "team";
   return "individual";
 }
