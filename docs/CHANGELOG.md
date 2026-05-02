@@ -71,6 +71,34 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### ⛓ Phase 5 W18 D4 ✅（quest_chain 任務鏈元件）
+**主題**：街區走讀 / 內訓 / 員工旅遊通用線性任務鏈（5+ 情境）
+**範圍**：3 新檔 + 3 修改
+
+關鍵變動：
+- `client/src/components/game/multi/QuestChain.tsx`（新）
+  - 進度條 + 站點列表（已完成 ✅ / 當前 🔢 / 鎖住 🔒）
+  - 當前站答題（input + hint + 送出）
+  - 達 N 次失敗顯示 hint
+  - 全部完成 banner（金牌獎勵 + onComplete）
+  - 純函式 checkStationAnswer / calculateChainProgress
+- `QuestChainPage.tsx`（新）
+  - local state + localStorage 持久化（重整不卡關）
+  - W18 D4 簡化版、W19+ 補 team WS sync
+- `QuestChain.test.tsx`（新）11 測試全綠
+- GamePageRenderer 註冊
+- getDefaultConfigForPageType 加 3 站範例
+
+**新覆蓋情境**：街區走讀 / 商圈打卡 / 內訓任務鏈 / 員工旅遊景點 / 解謎活動（+5）
+
+**W18 累計（D1-D4）**：+22 情境覆蓋
+
+**Smoke test 維持 51/51**
+
+**細節** → [changes/2026-05-03-phase5-w18-d4-quest-chain.md](changes/2026-05-03-phase5-w18-d4-quest-chain.md)
+
+⏭ 下一步：W18 D5 — solo_memory_match + W18 retro
+
 ### 💬 Phase 5 W18 D3 ✅（host_word_cloud 即時字雲元件）
 **主題**：玩家送詞、字雲即時生成（婚禮 / 同學會 / 內訓 5+ 情境）
 **範圍**：3 新檔 + 4 修改

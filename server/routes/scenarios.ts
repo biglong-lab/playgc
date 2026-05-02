@@ -111,6 +111,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxWordsPerUser: 3,
         maxLength: 10,
       };
+    case "quest_chain":
+      return {
+        title: `${scenarioName} 任務鏈`,
+        subtitle: "依序解鎖每一站",
+        stations: [
+          { id: "s1", label: "第 1 站", puzzle: "範例題：請輸入「開始」", answer: "開始" },
+          { id: "s2", label: "第 2 站", puzzle: "範例題：請輸入「下一步」", answer: "下一步" },
+          { id: "s3", label: "第 3 站", puzzle: "範例題：請輸入「終點」", answer: "終點" },
+        ],
+        rewardOnComplete: "🏆 隊伍榮譽勳章",
+        hintAfterFailures: 2,
+      };
 
     // ─── multi 軸線 ───
     case "gps_cascade":
