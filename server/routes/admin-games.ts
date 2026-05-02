@@ -503,13 +503,16 @@ export function registerAdminGameRoutes(app: Express) {
         return res.status(403).json({ message: "無權限檢視此遊戲的 QR Code" });
       }
 
-      if (!game.publicSlug || !game.qrCodeUrl) {
+      if (!game.publicSlug) {
         return res.status(404).json({ message: "尚未產生 QR Code" });
       }
 
+      // 🔄 2026-05-02：動態 regenerate（不讀 DB cache）— 確保 BASE_URL 改了立刻生效
+      const qrCodeDataUrl = await generateGameQRCode(req.params.id);
+
       res.json({
         slug: game.publicSlug,
-        qrCodeUrl: game.qrCodeUrl,
+        qrCodeUrl: qrCodeDataUrl,
         gameUrl: generateGameUrl(game.publicSlug),
       });
     } catch (error) {

@@ -34,10 +34,15 @@ export function registerPlayerGameRoutes(app: Express) {
 
   app.get("/api/games/:id/qrcode", isAuthenticated, async (req, res) => {
     try {
+      // 🔄 2026-05-02：generateGameQRCode 內部會 ensure slug，這裡再撈出來組 URL
+      //   原本 generateGameUrl(req.params.id) 傳的是 gameId（UUID）→ /g/:gameId 是錯的，
+      //   /g/:slug 才是正確的 public 進入點
       const qrCodeDataUrl = await generateGameQRCode(req.params.id);
+      const game = await db.query.games.findFirst({ where: eq(games.id, req.params.id) });
+      const gameUrl = game?.publicSlug ? generateGameUrl(game.publicSlug) : null;
       res.json({
         qrCodeUrl: qrCodeDataUrl,
-        gameUrl: generateGameUrl(req.params.id),
+        gameUrl,
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to generate QR code" });
