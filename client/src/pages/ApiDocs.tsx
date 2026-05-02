@@ -179,6 +179,36 @@ Retry-After: 35  # 達上限時`}</CodeBlock>
           </ul>
         </Section>
 
+        {/* SDK */}
+        <Section title="📦 TypeScript SDK" icon={Code}>
+          <p className="text-sm">
+            提供 minimal TypeScript SDK（含完整 type definitions），代理商可直接整合：
+          </p>
+          <CodeBlock onCopy={handleCopy}>{`import { ChitoClient } from "@chito/api-client";
+
+const chito = new ChitoClient({
+  apiKey: process.env.CHITO_API_KEY!,
+});
+
+// 列出情境
+const { data } = await chito.scenarios.list({ status: "live" });
+
+// 一鍵建場
+const instance = await chito.instances.create({
+  scenarioId: "wedding",
+  displayName: "Hung & Anita 5/15 婚禮",
+  idempotencyKey: \`order-\${orderId}\`,
+});
+
+console.log(instance.components); // hostUrl / playUrl / gameUrl`}</CodeBlock>
+          <p className="text-sm text-muted-foreground">
+            完整文件 + 安裝指引：
+            <a href="https://github.com/biglong-lab/playgc/tree/main/sdk/typescript" className="underline ml-1" target="_blank" rel="noopener noreferrer">
+              GitHub sdk/typescript
+            </a>
+          </p>
+        </Section>
+
         {/* CTA */}
         <section className="text-center space-y-3 py-8">
           <h3 className="font-display font-bold text-lg">想成為代理商？</h3>

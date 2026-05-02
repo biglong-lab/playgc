@@ -1,0 +1,21 @@
+{
+  "name": "@chito/api-client",
+  "version": "0.1.0",
+  "description": "CHITO Public API v1 TypeScript SDK",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["chito", "api", "scenarios", "events"],
+  "author": "CHITO 平台",
+  "license": "MIT",
+  "homepage": "https://game.homi.cc/api-docs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/biglong-lab/playgc"
+  }
+}

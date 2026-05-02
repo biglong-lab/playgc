@@ -69,6 +69,35 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📦 Phase 3 W12 D2 ✅（TypeScript SDK package）
+**主題**：代理商整合工具 — 零依賴 TypeScript SDK
+**範圍**：4 個檔案
+
+關鍵變動：
+- `sdk/typescript/` 新目錄
+  - `package.json` (Node 18+, zero deps)
+  - `src/index.ts` ChitoClient 主類別（5 個 resource）
+  - `src/types.ts` 完整 OpenAPI types
+  - `README.md` 150+ 行完整文件
+- ApiDocs 公開頁加「📦 TypeScript SDK」區段（含 import 範例）
+
+**SDK 介面**：
+```ts
+const chito = new ChitoClient({ apiKey: "ck_test_xxx" });
+chito.scenarios.list({ status: "live" });
+chito.instances.create({ scenarioId, idempotencyKey });
+chito.keys.me();
+chito.health();
+```
+
+**特色**：零依賴（內建 fetch）、完整 types、ChitoApiError 錯誤類別、可注入 fetch（polyfill）
+
+**Smoke test 維持 39/39**
+
+**細節** → [changes/2026-05-03-phase3-w12-d2-typescript-sdk.md](changes/2026-05-03-phase3-w12-d2-typescript-sdk.md)
+
+⏭ 下一步：W12 D3 — 業務驗證（找客戶 / 真實活動）
+
 ### 🔐 Phase 3 W12 D1 ✅（API Key Store 抽象層 + JSON metadata）
 **主題**：API key 從純字串升級為含 metadata（label / fieldId / quota）
 **範圍**：4 個檔案
