@@ -69,6 +69,36 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🧠 Phase 4 W15 D3 ✅（Admin NLU 自然語言解析）
+**主題**：admin 在 LINE 用自然語言預覽指令（DeepSeek 整合）
+**範圍**：3 個檔案
+
+關鍵變動：
+- `server/lib/admin-nlu.ts` Admin NLU lib
+  - parseAdminCommand 解析自然語言為結構化指令
+  - 4 種 intent: create_scenario / help / list_scenarios / unknown
+  - 快速路徑（help/list regex 不耗 AI cost）
+  - DeepSeek prompt 含 12 情境動態清單
+  - formatCommandReply 4 種訊息範本
+- line-webhook 整合
+  - 偵測 `@chito` 開頭 → parseAdminCommand → formatCommandReply
+  - 一般訊息保留 echo + 加「試試 @chito help」提示
+- 友善 fallback（OPENROUTER_API_KEY 未設）
+
+**範例**：
+```
+"@chito 婚禮 Hung & Anita 5/15"
+→ {scenarioId: "wedding", displayName: "Hung & Anita 5/15 婚禮"}
+```
+
+**W15 D5 才真建場**：W15 D3 純解析預覽（避免假指令誤建）
+
+**Smoke test 維持 44/44**
+
+**細節** → [changes/2026-05-03-phase4-w15-d3-admin-nlu.md](changes/2026-05-03-phase4-w15-d3-admin-nlu.md)
+
+⏭ 下一步：W15 D4 — 活動結束推播鉤子
+
 ### 📣 Phase 4 W15 D2 ✅（LINE Pusher + activity reminder endpoint）
 **主題**：admin 主動推播 LINE 通知（4 種 type）
 **範圍**：3 個檔案

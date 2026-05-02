@@ -21,9 +21,11 @@ import {
   type LineWebhookBody,
   type LineWebhookEvent,
 } from "../lib/line-bot";
+import { parseAdminCommand, formatCommandReply } from "../lib/admin-nlu";
 
 const CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET;
 const ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
 
 export function registerLineWebhookRoutes(app: Express) {
   /**
@@ -108,14 +110,40 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
   const replyToken = event.replyToken;
   if (!replyToken) return;
 
-  // W15 D1 預設 echo bot
+  // W15 D3: 偵測 @chito 指令 → 走 NLU
+  if (/^@chito\b/i.test(text)) {
+    if (!OPENROUTER_KEY) {
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: "🚧 admin 指令模式未啟用（OPENROUTER_API_KEY 未設定）",
+          },
+        ],
+      });
+      return;
+    }
+
+    const cmd = await parseAdminCommand({ apiKey: OPENROUTER_KEY, text });
+    const replyText = formatCommandReply(cmd);
+    await replyMessage({
+      accessToken: ACCESS_TOKEN,
+      replyToken,
+      messages: [{ type: "text", text: replyText }],
+    });
+    return;
+  }
+
+  // 一般訊息：echo bot（W15 D1 行為保留）
   await replyMessage({
     accessToken: ACCESS_TOKEN,
     replyToken,
     messages: [
       {
         type: "text",
-        text: `您說：${text}\n\n（W15 D1 echo mode、後續加入 admin 文字建場 + 玩家報名）`,
+        text: `您說：${text}\n\n💡 試試「@chito help」看 admin 指令用法`,
       },
     ],
   });
