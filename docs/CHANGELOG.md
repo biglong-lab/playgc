@@ -69,6 +69,24 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🚀 Phase 2 W7 D1 ✅（業務化首發 — 第 12 情境 + 主頁業務入口）
+**主題**：12 情境清單補位 + 主辦方主頁入口
+**範圍**：4 個檔案
+
+關鍵變動：
+- `shared/scenario-templates.ts` 新增 `kids-adventure` 親子冒險（social/混合 multi+host）
+- `shared/__tests__/scenario-templates.test.ts` 16/16 通過
+- `client/src/pages/FieldEntry.tsx` 主頁新增「主辦活動的人？」入口區塊（漸層 primary/5）
+- 雙 CTA：瀏覽 12 情境模板 / 先看單一元件試玩
+
+**12 情境全部 live**（包含 4 個 social / 3 個 event / 2 個 public / 2 個 corporate / 1 個 venue）
+
+**E2E 全綠**：12 情境詳情頁 + 主頁業務入口
+
+**細節** → [changes/2026-05-02-phase2-w7-d1-12th-scenario.md](changes/2026-05-02-phase2-w7-d1-12th-scenario.md)
+
+⏭ 下一步：W7 D2 — ShowcaseHub 改版深化 demo 互連
+
 ### 🎉 Phase 2 W6 完整收尾 ✅（情境模板平台基建上線）
 **主題**：從元件展示進化到「情境組合銷售 + 一鍵建場 + 現場 QR 列印」
 **範圍**：W6 5 天連續推進、6 個新檔、~1,600 行程式碼、11 情境全部可用

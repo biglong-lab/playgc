@@ -460,6 +460,51 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   // 空間（特定場域故事）
   // ════════════════════════════════════════════
   {
+    id: "kids-adventure",
+    name: "親子冒險情境包",
+    tagline: "尋寶任務 + 拼圖協作 + 應援池",
+    description:
+      "為孩子量身打造的親子冒險體驗。家長帶孩子完成尋寶、拼圖協作；終點集合時用 emoji 池一起慶祝。\n適合假日商場、親子館、主題樂園、暑期營隊。",
+    useCases: [
+      "百貨親子節活動",
+      "親子館主題日",
+      "主題樂園定點互動",
+      "暑期夏令營",
+      "兒童節市集",
+    ],
+    category: "social",
+    icon: "Baby",
+    gradient: "from-yellow-500/20 to-orange-500/20",
+    estimatedPlayers: "5-50 組親子",
+    estimatedDuration: "60-120 分鐘",
+    components: [
+      {
+        pageType: "treasure_hunt",
+        label: "尋寶任務",
+        role: "親子一起找線索、解謎",
+        axis: "multi",
+        demoMode: "treasure",
+      },
+      {
+        pageType: "jigsaw_puzzle",
+        label: "拼圖協作",
+        role: "孩子貼拼圖、家長拍照",
+        axis: "multi",
+        demoMode: "jigsaw",
+      },
+      {
+        pageType: "host_emoji_react",
+        label: "終點應援池",
+        role: "完賽時全場 emoji 慶祝",
+        axis: "host",
+        demoMode: "emoji-host",
+      },
+    ],
+    valueProposition:
+      "親子市場高黏著度活動。可日常常駐主題館使用 + 節慶包裝活動。NT$ 8,000-25,000 / 場 + 月訂閱。",
+    status: "live",
+  },
+  {
     id: "venue-storyline",
     name: "場域故事情境包",
     tagline: "NPC 對話 + 任務鏈 + 紀念牆",

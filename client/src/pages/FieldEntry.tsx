@@ -370,6 +370,38 @@ export default function FieldEntry() {
         </div>
       </section>
 
+      {/* ═══════════ 主辦方入口（W7 D1）═══════════ */}
+      <section className="border-t border-border bg-gradient-to-b from-primary/5 to-transparent">
+        <div className="container mx-auto px-4 py-12 md:py-16">
+          <div className="max-w-3xl mx-auto text-center space-y-4">
+            <p className="text-xs font-display uppercase tracking-wider text-muted-foreground">
+              For Event Organizers
+            </p>
+            <h2 className="text-2xl md:text-3xl font-display font-bold">
+              辦活動的人？
+            </h2>
+            <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto">
+              我們有 12 個預組好的情境模板：婚禮、園遊會、街區走讀、企業內訓、員工旅遊、親子冒險…
+              <br className="hidden md:inline" />
+              選一個套用，10 分鐘搞定建場 + QR 列印
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+              <Link href="/template-market">
+                <Button size="lg" data-testid="link-template-market-home">
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  瀏覽 12 情境模板
+                </Button>
+              </Link>
+              <Link href="/showcase">
+                <Button size="lg" variant="outline">
+                  先看單一元件試玩
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ═══════════ 次要入口 ═══════════ */}
       <section className="border-t border-border bg-muted/20">
         <div className="container mx-auto px-4 py-10">

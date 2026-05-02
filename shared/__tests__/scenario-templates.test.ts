@@ -7,8 +7,17 @@ import {
 } from "../scenario-templates";
 
 describe("SCENARIO_TEMPLATES 常數", () => {
-  it("12 個情境（W6 D1 至少 11 個就位 + 1 個保留位）", () => {
-    expect(SCENARIO_TEMPLATES.length).toBeGreaterThanOrEqual(11);
+  it("12 個情境（W7 D1 補位完成）", () => {
+    expect(SCENARIO_TEMPLATES.length).toBeGreaterThanOrEqual(12);
+  });
+
+  it("親子冒險情境（W7 D1 新）必含 TreasureHunt + JigsawPuzzle + EmojiReact", () => {
+    const kids = getScenarioById("kids-adventure");
+    expect(kids).toBeDefined();
+    const pageTypes = kids!.components.map((c) => c.pageType);
+    expect(pageTypes).toContain("treasure_hunt");
+    expect(pageTypes).toContain("jigsaw_puzzle");
+    expect(pageTypes).toContain("host_emoji_react");
   });
 
   it("ID 不重複", () => {
