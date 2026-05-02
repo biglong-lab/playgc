@@ -69,6 +69,24 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🧭 Phase 2 W7 D3 ✅（Onboarding Wizard 3 問找情境）
+**主題**：客戶不知道選什麼情境時的引導工具
+**範圍**：3 個檔案
+
+關鍵變動：
+- `FindScenarioWizard.tsx` 新公開頁 `/find-scenario`
+- 3 題（分類 / 人數 / 重點）→ score-based 推薦 Top 3
+- TemplateMarket Hero 新增「3 問找情境」CTA
+- FieldEntry 主頁雙 CTA 改為「12 模板 + 3 問找情境」
+
+**演算法**：分類匹配 +5、人數匹配 +3、重點關鍵字命中 +2、live 狀態 +0.5
+
+**E2E**：/find-scenario 200 + 推薦 Dialog 含 score + reasons 列表
+
+**細節** → [changes/2026-05-02-phase2-w7-d3-onboarding-wizard.md](changes/2026-05-02-phase2-w7-d3-onboarding-wizard.md)
+
+⏭ 下一步：W7 D4 — 客戶簡報模板（PDF / 影片）
+
 ### 🔄 Phase 2 W7 D2 ✅（ShowcaseHub 元件 → 情境反向連結）
 **主題**：客戶試玩元件時直接看到「這個能用在什麼場合」
 **範圍**：3 個檔案

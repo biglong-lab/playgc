@@ -392,12 +392,17 @@ export default function FieldEntry() {
                   瀏覽 12 情境模板
                 </Button>
               </Link>
-              <Link href="/showcase">
-                <Button size="lg" variant="outline">
-                  先看單一元件試玩
+              <Link href="/find-scenario">
+                <Button size="lg" variant="outline" data-testid="link-find-scenario-home">
+                  🧭 3 問找情境
                 </Button>
               </Link>
             </div>
+            <p className="text-xs text-muted-foreground pt-1">
+              <Link href="/showcase" className="underline hover:text-foreground">
+                或先看單一元件試玩
+              </Link>
+            </p>
           </div>
         </div>
       </section>

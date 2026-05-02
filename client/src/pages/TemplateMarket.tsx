@@ -85,6 +85,16 @@ export default function TemplateMarket() {
               紀念回顧
             </Badge>
           </div>
+
+          {/* 3 問找情境 CTA（W7 D3）*/}
+          <div className="pt-4">
+            <Link href="/find-scenario">
+              <Button size="lg" variant="outline" className="border-primary/40" data-testid="btn-find-scenario-cta">
+                <Sparkles className="w-4 h-4 mr-1" />
+                不知道選哪個？3 問找情境
+              </Button>
+            </Link>
+          </div>
         </section>
 
         {/* 5 大分類 */}
