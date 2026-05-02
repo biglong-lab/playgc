@@ -21,6 +21,7 @@ const ScoreboardAnnouncementPage = lazy(() => import("./ScoreboardAnnouncementPa
 const KnowledgeMapPage = lazy(() => import("./KnowledgeMapPage"));
 const LotteryWheelPage = lazy(() => import("./LotteryWheelPage")); // W18 D1
 const ProgressQuestPage = lazy(() => import("./ProgressQuestPage")); // W18 D2
+const WordCloudPage = lazy(() => import("./WordCloudPage")); // W18 D3
 
 interface HostPageRendererProps {
   page: Page;
@@ -65,6 +66,8 @@ export default function HostPageRenderer({ page, myUserName }: HostPageRendererP
             return <LotteryWheelPage page={page} />;
           case "host_progress_quest":
             return <ProgressQuestPage page={page} />;
+          case "host_word_cloud":
+            return <WordCloudPage page={page} />;
           default:
             return (
               <div className="text-center text-zinc-400 p-8">

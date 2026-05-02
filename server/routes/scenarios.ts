@@ -104,6 +104,13 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         milestones: [25, 50, 75, 100],
         celebrationLevel: "auto",
       };
+    case "host_word_cloud":
+      return {
+        title: `${scenarioName} 字雲`,
+        subtitle: "一人一詞、字雲即時長出來",
+        maxWordsPerUser: 3,
+        maxLength: 10,
+      };
 
     // ─── multi 軸線 ───
     case "gps_cascade":

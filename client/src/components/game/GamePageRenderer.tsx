@@ -35,6 +35,7 @@ const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
 const EmojiReactPage = lazy(() => import("@/components/game/host/EmojiReactPage"));
 const LotteryWheelPage = lazy(() => import("@/components/game/host/LotteryWheelPage"));
 const ProgressQuestPage = lazy(() => import("@/components/game/host/ProgressQuestPage"));
+const WordCloudPage = lazy(() => import("@/components/game/host/WordCloudPage"));
 const WaveResponsePage = lazy(() => import("@/components/game/host/WaveResponsePage"));
 const CrowdGatherPage = lazy(() => import("@/components/game/host/CrowdGatherPage"));
 const LiveLeaderboardPage = lazy(() => import("@/components/game/host/LiveLeaderboardPage"));
@@ -284,6 +285,8 @@ export default function GamePageRenderer({
         return <LotteryWheelPage page={page} />;
       case "host_progress_quest":
         return <ProgressQuestPage page={page} />;
+      case "host_word_cloud":
+        return <WordCloudPage page={page} />;
       case "host_wave_response":
         return <WaveResponsePage page={page} />;
       case "host_crowd_gather":

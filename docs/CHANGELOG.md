@@ -71,6 +71,33 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### 💬 Phase 5 W18 D3 ✅（host_word_cloud 即時字雲元件）
+**主題**：玩家送詞、字雲即時生成（婚禮 / 同學會 / 內訓 5+ 情境）
+**範圍**：3 新檔 + 4 修改
+
+關鍵變動：
+- `client/src/components/game/host/WordCloud.tsx`（新）
+  - 大螢幕：紫色漸層 + 字雲（詞頻 → 字體 + 6 色循環）
+  - 新詞動畫：2.5s 從上往下掉
+  - 詞頻 > 1 顯示 ×N
+  - 玩家端：input + 送出 + 已用次數 + top 5 熱詞
+  - 純函式 calculateWordSize / getSortedWords（易測試）
+- `WordCloudPage.tsx`（新）— WS 容器
+  - pulse submit 雙重防超限（client UX + server 強制）
+- `WordCloud.test.tsx`（新）9 測試全綠
+- GamePageRenderer + HostPageRenderer 註冊
+- getDefaultConfigForPageType 加預設
+
+**新覆蓋情境**：婚禮新人特質 / 同學會記憶詞 / 內訓回饋 / 派對暖身（+5）
+
+**W18 累計（D1-D3）**：+17 情境覆蓋
+
+**Smoke test 維持 51/51**
+
+**細節** → [changes/2026-05-03-phase5-w18-d3-word-cloud.md](changes/2026-05-03-phase5-w18-d3-word-cloud.md)
+
+⏭ 下一步：W18 D4 — multi_quest_chain（隊伍任務鏈）
+
 ### 🚀 Phase 5 W18 D2 ✅（host_progress_quest 全場進度條元件）
 **主題**：街區走讀 / 內訓 KPI / 通用全場進度視覺化（6+ 情境覆蓋）
 **範圍**：3 新檔 + 4 修改
