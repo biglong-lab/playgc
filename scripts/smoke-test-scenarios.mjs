@@ -312,6 +312,38 @@ async function runSmokeTest() {
   // 5g. LIFF 玩家入口（W14 D1）
   await check("GET /liff/play/test", 200, () => checkStatus(`${BASE_URL}/liff/play/test-w14`, 200));
 
+  // 5i. Cron endpoints（W16 D4）
+  console.log(`${COLOR.bold}── Section 5i: Cron Endpoints（W16 D4）──${COLOR.reset}`);
+  await check("GET /api/cron/health（公開、不洩漏 secret）", 200, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/cron/health`);
+    if (res.status !== 200) return { ok: false, error: `expected 200, got ${res.status}` };
+    const data = await res.json();
+    if (data.status !== "ok") return { ok: false, error: "status != ok" };
+    if (typeof data.cronSecretConfigured !== "boolean") {
+      return { ok: false, error: "missing cronSecretConfigured" };
+    }
+    return { ok: true };
+  });
+  await check("POST /api/cron/check-expiring-sessions（無 token → 401 或 503）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/cron/check-expiring-sessions`, {
+      method: "POST",
+    });
+    if (res.status !== 401 && res.status !== 503) {
+      return { ok: false, error: `expected 401 or 503, got ${res.status}` };
+    }
+    return { ok: true };
+  });
+  await check("POST /api/cron/check-expiring-sessions（錯誤 token → 401 或 503）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/cron/check-expiring-sessions`, {
+      method: "POST",
+      headers: { Authorization: "Bearer wrong-secret" },
+    });
+    if (res.status !== 401 && res.status !== 503) {
+      return { ok: false, error: `expected 401 or 503, got ${res.status}` };
+    }
+    return { ok: true };
+  });
+
   // 5h. LINE Bot webhook health（W15 D1，公開）+ W15 D5 admin 認證 status
   console.log(`${COLOR.bold}── Section 5h: LINE Bot（W15 D1+D5）──${COLOR.reset}`);
   await check("GET /api/webhooks/line/health", 200, async () => {

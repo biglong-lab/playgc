@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### ⏰ Phase 4 W16 D4 ✅（活動即將過期 LINE reminder）
+**主題**：過期前 1 小時自動推 LINE 提醒（避免活動意外結束）
+**範圍**：2 新檔 + 1 修改
+
+關鍵變動：
+- `server/lib/expiring-session-checker.ts`（新）
+  - checkExpiringSessionsAndNotify（± 10 分鐘 buffer）
+  - 用 Set 防重複（不動 schema、紅線符合）
+  - fire-and-forget 推給所有 LINE_ADMIN_USER_IDS
+- `server/routes/cron-endpoints.ts`（新）
+  - GET /api/cron/health（公開、不洩漏 secret）
+  - POST /api/cron/check-expiring-sessions（CRON_SECRET 認證）
+- 註冊到 server/routes/index.ts
+- 系統 crontab 範例：每小時觸發
+
+**LINE 推播範本**：含 hostUrl + 結束指令提示
+
+**Smoke test 45 → 48**（新增 3 筆驗證）
+
+**細節** → [changes/2026-05-03-phase4-w16-d4-expiring-reminder.md](changes/2026-05-03-phase4-w16-d4-expiring-reminder.md)
+
+⏭ 下一步：W16 D5 — Phase 4 整體收尾 + Phase 5 規劃 ADR-0012
+
 ### 🛠 Phase 4 W16 D3 ✅（LINE Admin 直接管理活動）
 **主題**：admin 在 LINE 看 active 活動 + 結束指定活動（不必開電腦）
 **範圍**：1 新檔 + 3 修改

@@ -63,6 +63,7 @@ import { registerScenarioHealthRoutes } from "./scenario-health";
 import { registerPaymentsRoutes } from "./payments";
 import { registerPublicApiV1Routes } from "./api/v1";
 import { registerLineWebhookRoutes } from "./line-webhook";
+import { registerCronEndpoints } from "./cron-endpoints";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
@@ -145,6 +146,7 @@ export async function registerRoutes(
   registerPaymentsRoutes(app);
   registerPublicApiV1Routes(app);
   registerLineWebhookRoutes(app);
+  registerCronEndpoints(app);
   registerBattleSelfReportRoutes(app);
   registerSquadRecordsRoutes(app);
   registerSquadInvitesRoutes(app);
