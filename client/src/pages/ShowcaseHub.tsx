@@ -17,6 +17,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import PollLive from "@/components/game/host/PollLive";
+import EmojiReact from "@/components/game/host/EmojiReact";
+import WaveResponse from "@/components/game/host/WaveResponse";
+import CrowdGather from "@/components/game/host/CrowdGather";
+import LiveLeaderboard from "@/components/game/host/LiveLeaderboard";
 import {
   ArrowLeft, Tv, Users, User as UserIcon, Sparkles,
   Vote, Camera, MapPin, Trophy, Flame, Lock,
@@ -39,11 +43,11 @@ interface ComponentItem {
 const COMPONENTS: ComponentItem[] = [
   // 第三軸線 host（規劃 8 個）
   { name: "PollLive", zhName: "即時民調", desc: "全場投票，大螢幕長條圖動態", status: "live", axis: "host" },
-  { name: "EmojiReact", zhName: "情緒池", desc: "全場 emoji 雨，演講即時回饋", status: "planned", axis: "host" },
-  { name: "WaveResponse", zhName: "人浪應援", desc: "連點按鈕觸發場域熱力", status: "planned", axis: "host" },
+  { name: "EmojiReact", zhName: "情緒池", desc: "全場 emoji 雨，演講即時回饋", status: "live", axis: "host" },
+  { name: "WaveResponse", zhName: "人浪應援", desc: "連點按鈕觸發場域熱力", status: "live", axis: "host" },
   { name: "TriviaShowdown", zhName: "搶答秀", desc: "園遊會主舞台、多回合排行", status: "planned", axis: "host" },
-  { name: "LiveLeaderboard", zhName: "即時排行", desc: "活動全程動態排行投影", status: "planned", axis: "host" },
-  { name: "CrowdGather", zhName: "聚眾任務", desc: "簽到打卡達標解鎖", status: "planned", axis: "host" },
+  { name: "LiveLeaderboard", zhName: "即時排行", desc: "活動全程動態排行投影", status: "live", axis: "host" },
+  { name: "CrowdGather", zhName: "聚眾任務", desc: "簽到打卡達標解鎖", status: "live", axis: "host" },
   { name: "ScoreboardAnnouncement", zhName: "跑馬燈宣告", desc: "比賽插播得分", status: "planned", axis: "host" },
   { name: "KnowledgeMap", zhName: "知識地圖", desc: "場域全景 + 進度視覺化", status: "planned", axis: "host" },
 
@@ -204,10 +208,13 @@ const POLLLIVE_DEMO_PLAYER_STATE = {
   revealResults: true,
 };
 
+// 5 個 host 元件 demo 預覽配置
+type HostDemo = "poll-host" | "poll-player" | "emoji-host" | "emoji-player" | "wave-host" | "wave-player" | "crowd-host" | "crowd-player" | "leaderboard-host" | "leaderboard-player";
+
 export default function ShowcaseHub() {
   const liveCount = COMPONENTS.filter((c) => c.status === "live").length;
   const plannedCount = COMPONENTS.filter((c) => c.status === "planned").length;
-  const [demoMode, setDemoMode] = useState<"host" | "player" | null>(null);
+  const [demoMode, setDemoMode] = useState<HostDemo | null>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -240,53 +247,163 @@ export default function ShowcaseHub() {
           </p>
         </section>
 
-        {/* 🎬 PollLive 即時試玩（W2 D4 新增）*/}
+        {/* 🎬 5 個 host 元件即時試玩（W3 D5 擴充）*/}
         <section className="space-y-4">
           <div className="text-center space-y-2">
-            <h2 className="text-xl font-display font-bold">📺 立即看 — PollLive 即時民調</h2>
+            <h2 className="text-xl font-display font-bold">📺 立即看 — HostScreen 5 元件</h2>
             <p className="text-sm text-muted-foreground">
-              主控大螢幕投影 + 玩家手機投票 — 適合園遊會、企業內訓、課堂互動
+              主控大螢幕投影 + 玩家手機互動 — 適合園遊會、企業內訓、課堂互動、開幕熱場、競賽結算
             </p>
           </div>
-          <div className="flex gap-3 justify-center flex-wrap">
-            <Button onClick={() => setDemoMode("host")} variant="default" size="lg" data-testid="btn-demo-poll-host">
-              📺 看大螢幕版型
-            </Button>
-            <Button onClick={() => setDemoMode("player")} variant="outline" size="lg" data-testid="btn-demo-poll-player">
-              📱 看玩家版型
-            </Button>
+
+          {/* 5 個元件對照卡片 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { id: "poll", title: "📊 即時民調", desc: "PollLive — 全場投票 + 長條圖", host: "poll-host", player: "poll-player" },
+              { id: "emoji", title: "🎉 情緒池", desc: "EmojiReact — emoji 雨 + 計數", host: "emoji-host", player: "emoji-player" },
+              { id: "wave", title: "📣 人浪應援", desc: "WaveResponse — 強度脈動", host: "wave-host", player: "wave-player" },
+              { id: "crowd", title: "👥 聚眾達標", desc: "CrowdGather — 簽到熱場", host: "crowd-host", player: "crowd-player" },
+              { id: "leaderboard", title: "🏆 即時排行", desc: "LiveLeaderboard — Top 10 競賽榜", host: "leaderboard-host", player: "leaderboard-player" },
+            ].map((item) => (
+              <Card key={item.id} className="hover:border-primary/40 transition-colors">
+                <CardContent className="p-4 space-y-3">
+                  <div>
+                    <h3 className="font-bold">{item.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setDemoMode(item.host as HostDemo)}
+                      size="sm"
+                      className="flex-1"
+                      data-testid={`btn-demo-${item.id}-host`}
+                    >
+                      📺 大螢幕
+                    </Button>
+                    <Button
+                      onClick={() => setDemoMode(item.player as HostDemo)}
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      data-testid={`btn-demo-${item.id}-player`}
+                    >
+                      📱 玩家
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
+
           <p className="text-xs text-center text-muted-foreground">
-            （Demo 模式 — 真實活動由 admin 建 host session 後產生網址）
+            （Demo 模式靜態預覽 — 真實活動由 admin 建 host session 後產生網址、玩家投票會即時更新）
           </p>
         </section>
 
-        {/* PollLive demo Dialog */}
+        {/* Demo Dialog（依 demoMode 渲染對應元件）*/}
         <Dialog open={demoMode !== null} onOpenChange={(open) => !open && setDemoMode(null)}>
-          <DialogContent className={demoMode === "host" ? "max-w-5xl h-[80vh] p-0 bg-black overflow-hidden" : "max-w-md p-0 max-h-[80vh] overflow-y-auto"}>
-            <DialogHeader className={demoMode === "host" ? "px-6 py-3 bg-zinc-900 text-white" : "p-4"}>
+          <DialogContent
+            className={
+              demoMode?.endsWith("-host")
+                ? "max-w-5xl h-[80vh] p-0 bg-black overflow-hidden"
+                : "max-w-md p-0 max-h-[80vh] overflow-y-auto"
+            }
+          >
+            <DialogHeader
+              className={demoMode?.endsWith("-host") ? "px-6 py-3 bg-zinc-900 text-white" : "p-4"}
+            >
               <DialogTitle>
-                {demoMode === "host" ? "📺 大螢幕版型 (Demo)" : "📱 玩家手機版型 (Demo)"}
+                {demoMode?.endsWith("-host") ? "📺 大螢幕版型 (Demo)" : "📱 玩家手機版型 (Demo)"}
               </DialogTitle>
             </DialogHeader>
-            {demoMode === "host" && (
-              <div className="flex-1 overflow-y-auto">
-                <PollLive
-                  config={POLLLIVE_DEMO_CONFIG}
+            <div className={demoMode?.endsWith("-host") ? "flex-1 overflow-y-auto" : "overflow-y-auto"}>
+              {demoMode === "poll-host" && (
+                <PollLive config={POLLLIVE_DEMO_CONFIG} hostMode={true} state={POLLLIVE_DEMO_HOST_STATE} />
+              )}
+              {demoMode === "poll-player" && (
+                <PollLive config={POLLLIVE_DEMO_CONFIG} hostMode={false} state={POLLLIVE_DEMO_PLAYER_STATE} />
+              )}
+              {demoMode === "emoji-host" && (
+                <EmojiReact
+                  config={{ title: "演講互動", subtitle: "點 emoji 表達感受" }}
                   hostMode={true}
-                  state={POLLLIVE_DEMO_HOST_STATE}
+                  state={{
+                    counts: { "❤️": 47, "👍": 89, "🎉": 31, "🔥": 22, "😍": 18, "👏": 65, "😂": 14, "🙌": 9 },
+                    totalReacts: 295,
+                    recentFlying: [],
+                  }}
                 />
-              </div>
-            )}
-            {demoMode === "player" && (
-              <div className="overflow-y-auto">
-                <PollLive
-                  config={POLLLIVE_DEMO_CONFIG}
+              )}
+              {demoMode === "emoji-player" && <EmojiReact config={{}} hostMode={false} />}
+              {demoMode === "wave-host" && (
+                <WaveResponse
+                  config={{ title: "全場應援", subtitle: "GO! GO! GO!" }}
+                  hostMode={true}
+                  state={{ totalTaps: 1248, bucketBySec: { [Math.floor(Date.now() / 1000)]: 12 } }}
+                />
+              )}
+              {demoMode === "wave-player" && (
+                <WaveResponse
+                  config={{ title: "為主隊加油！", buttonLabel: "GO!" }}
                   hostMode={false}
-                  state={POLLLIVE_DEMO_PLAYER_STATE}
                 />
-              </div>
-            )}
+              )}
+              {demoMode === "crowd-host" && (
+                <CrowdGather
+                  config={{ title: "歡迎加入活動", targetCount: 30, celebrationText: "🎉 全員到齊！" }}
+                  hostMode={true}
+                  state={{
+                    registered: [
+                      { name: "阿鬨", ts: Date.now() - 5000 },
+                      { name: "Alice", ts: Date.now() - 4000 },
+                      { name: "Bob", ts: Date.now() - 3000 },
+                      { name: "小明", ts: Date.now() - 2000 },
+                    ],
+                    totalCount: 18,
+                    isReached: false,
+                  }}
+                />
+              )}
+              {demoMode === "crowd-player" && (
+                <CrowdGather
+                  config={{ title: "我來了！", targetCount: 30 }}
+                  hostMode={false}
+                  state={{ registered: [], totalCount: 18, isReached: false }}
+                />
+              )}
+              {demoMode === "leaderboard-host" && (
+                <LiveLeaderboard
+                  config={{ title: "🏆 競賽排行榜", subtitle: "本場結算" }}
+                  hostMode={true}
+                  state={{
+                    entries: [
+                      { id: "1", name: "後浦小隊", score: 1280 },
+                      { id: "2", name: "賈村英雄", score: 1145 },
+                      { id: "3", name: "古寧連線", score: 980 },
+                      { id: "4", name: "莒光戰隊", score: 875 },
+                      { id: "5", name: "金門勇者", score: 720 },
+                    ],
+                    lastUpdated: Date.now(),
+                  }}
+                />
+              )}
+              {demoMode === "leaderboard-player" && (
+                <LiveLeaderboard
+                  config={{ topN: 10 }}
+                  hostMode={false}
+                  myId="2"
+                  state={{
+                    entries: [
+                      { id: "1", name: "後浦小隊", score: 1280 },
+                      { id: "2", name: "賈村英雄", score: 1145 },
+                      { id: "3", name: "古寧連線", score: 980 },
+                      { id: "4", name: "莒光戰隊", score: 875 },
+                      { id: "5", name: "金門勇者", score: 720 },
+                    ],
+                  }}
+                />
+              )}
+            </div>
           </DialogContent>
         </Dialog>
 
