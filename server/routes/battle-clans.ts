@@ -98,54 +98,19 @@ export function registerBattleClanRoutes(app: Express) {
   );
 
   // ============================================================================
-  // POST /api/battle/clans — 建立戰隊
+  // POST /api/battle/clans — ⚠️ 已棄用（PR6 一次到位收尾）
+  // 使用 POST /api/squads 建立統一 Squad
   // ============================================================================
   app.post(
     "/api/battle/clans",
     isAuthenticated,
-    async (req: AuthenticatedRequest, res) => {
-      try {
-        if (!req.user) return res.status(401).json({ error: "未認證" });
-
-        const fieldId = req.query.fieldId as string;
-        if (!fieldId) {
-          return res.status(400).json({ error: "缺少 fieldId 參數" });
-        }
-
-        // 檢查是否已有戰隊
-        const existing = await battleStorageMethods.getUserClan(req.user.dbUser.id, fieldId);
-        if (existing) {
-          return res.status(409).json({ error: "你已經有戰隊了，請先離開現有戰隊" });
-        }
-
-        const parsed = insertBattleClanSchema.safeParse(req.body);
-        if (!parsed.success) {
-          const firstError = parsed.error.errors[0];
-          return res.status(400).json({ error: `欄位驗證失敗：${firstError?.path.join(".")} ${firstError?.message}` });
-        }
-
-        // 使用事務確保建立戰隊 + 加入隊長的原子性
-        const clan = await battleStorageMethods.createClanWithLeader({
-          ...parsed.data,
-          fieldId,
-          leaderId: req.user.dbUser.id,
-        });
-
-        res.status(201).json(clan);
-      } catch (error) {
-        if (error instanceof Error) {
-          if (error.message.includes("uq_battle_clan_field_name")) {
-            return res.status(409).json({ error: "此場域已有同名戰隊" });
-          }
-          if (error.message.includes("uq_battle_clan_field_tag")) {
-            return res.status(409).json({ error: "此場域已有相同標籤的戰隊" });
-          }
-          if (error.message.includes("battle_clans_field_id_fields_id_fk")) {
-            return res.status(400).json({ error: "無效的場域 ID" });
-          }
-        }
-        res.status(500).json({ error: "建立戰隊失敗" });
-      }
+    async (_req: AuthenticatedRequest, res) => {
+      // 🔒 凍結寫入：所有「建立水彈戰隊」呼叫一律 410 Gone，引導至 squads
+      res.status(410).json({
+        error: "此入口已棄用，請改用統一隊伍建立：POST /api/squads",
+        deprecated: true,
+        replacement: "/api/squads",
+      });
     },
   );
 
@@ -243,43 +208,19 @@ export function registerBattleClanRoutes(app: Express) {
   );
 
   // ============================================================================
-  // POST /api/battle/clans/:id/join — 加入戰隊
+  // POST /api/battle/clans/:id/join — ⚠️ 已棄用（PR6 一次到位收尾）
+  // 使用 POST /api/squads/:id/members 加入統一 Squad
   // ============================================================================
   app.post(
     "/api/battle/clans/:id/join",
     isAuthenticated,
-    async (req: AuthenticatedRequest, res) => {
-      try {
-        if (!req.user) return res.status(401).json({ error: "未認證" });
-
-        const clan = await battleStorageMethods.getClan(req.params.id);
-        if (!clan) return res.status(404).json({ error: "戰隊不存在" });
-        if (!clan.isActive) return res.status(400).json({ error: "戰隊已停用" });
-
-        // 檢查是否已有戰隊
-        const existing = await battleStorageMethods.getUserClan(req.user.dbUser.id, clan.fieldId);
-        if (existing) {
-          return res.status(409).json({ error: "你已經有戰隊了，請先離開現有戰隊" });
-        }
-
-        // 檢查人數上限
-        if (clan.memberCount >= clan.maxMembers) {
-          return res.status(400).json({ error: "戰隊人數已滿" });
-        }
-
-        const member = await battleStorageMethods.addClanMember({
-          clanId: clan.id,
-          userId: req.user.dbUser.id,
-          role: "member",
-        });
-
-        res.status(201).json(member);
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("uq_battle_clan_member")) {
-          return res.status(409).json({ error: "你已經是此戰隊成員" });
-        }
-        res.status(500).json({ error: "加入戰隊失敗" });
-      }
+    async (_req: AuthenticatedRequest, res) => {
+      // 🔒 凍結寫入
+      res.status(410).json({
+        error: "此入口已棄用，請改用統一隊伍：POST /api/squads/:id/members",
+        deprecated: true,
+        replacement: "/api/squads/:id/members",
+      });
     },
   );
 
