@@ -165,6 +165,9 @@ const MySquads = lazy(() => import("@/pages/MySquads"));
 const HostScreen = lazy(() => import("@/pages/HostScreen"));
 const HostPlay = lazy(() => import("@/pages/HostPlay"));
 
+// 🎬 ShowcaseHub 元件展示館（W1 D5 MVP）
+const ShowcaseHub = lazy(() => import("@/pages/ShowcaseHub"));
+
 // ⚙️ 場域行銷設定（Squad System Phase 12.6）
 const AdminEngagementSettings = lazy(() => import("@/pages/admin/AdminEngagementSettings"));
 
@@ -230,6 +233,9 @@ function Router() {
         {/* 📺 ADR-0004 HostScreen 軸線 — 大螢幕端與玩家端（無需 Firebase auth）*/}
         <Route path="/host/:sessionId" component={HostScreen} />
         <Route path="/play/:sessionId" component={HostPlay} />
+
+        {/* 🎬 元件展示館（公開頁，銷售工具）*/}
+        <Route path="/showcase" component={ShowcaseHub} />
 
         <Route path="/squad/create" component={SquadCreate} />
         <Route path="/squad/:squadId/settings" component={SquadSettings} />
