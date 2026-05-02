@@ -108,22 +108,34 @@ export async function apiRequest(
     }
   }
 
-  const token = await getIdToken();
   const headers: Record<string, string> = {};
+  if (data) headers["Content-Type"] = "application/json";
 
-  if (data) {
-    headers["Content-Type"] = "application/json";
-  }
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
+  const doFetch = async (token: string | null) => {
+    const reqHeaders = { ...headers };
+    if (token) reqHeaders["Authorization"] = `Bearer ${token}`;
+    return fetch(url, {
+      method,
+      headers: reqHeaders,
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
+  };
 
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  // 第一次：用 cached token
+  let res = await doFetch(await getIdToken(false));
+
+  // 🆕 2026-05-02：401 → force refresh token 重試一次
+  //   Firebase ID token 1 小時過期，雖然 SDK 預設會 auto-refresh，
+  //   但 SDK 端 cache 過期判斷與 server 端可能 race（特別是時鐘飄移），
+  //   出現「cached token 看起來還沒過期但 server 認為已過期」的 401。
+  //   force refresh 一次再 retry，多數情況可救回，避免讓使用者看到「登入已失效」紅卡。
+  if (res.status === 401) {
+    const fresh = await getIdToken(true);
+    if (fresh) {
+      res = await doFetch(fresh);
+    }
+  }
 
   await throwIfResNotOk(res);
   return res;
@@ -169,17 +181,19 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const token = await getIdToken();
-    const headers: Record<string, string> = {};
-    
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+    const url = queryKey.join("/") as string;
+    const doFetch = async (token: string | null) => {
+      const headers: Record<string, string> = {};
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      return fetch(url, { credentials: "include", headers });
+    };
 
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
-      headers,
-    });
+    let res = await doFetch(await getIdToken(false));
+    // 🆕 401 → force refresh + retry（同 apiRequest）
+    if (res.status === 401) {
+      const fresh = await getIdToken(true);
+      if (fresh) res = await doFetch(fresh);
+    }
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;

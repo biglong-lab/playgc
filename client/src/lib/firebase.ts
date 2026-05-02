@@ -138,11 +138,18 @@ export async function signOut() {
   }
 }
 
-export async function getIdToken(): Promise<string | null> {
+/**
+ * 取得 Firebase ID token
+ *
+ * 預設用 cached token（Firebase 會在過期時自動 refresh）。
+ * 傳 forceRefresh=true 強制向 Firebase 取新 token —
+ * 用於 401 retry 場景（cached token 還在 cache window 但 server 認為已過期）。
+ */
+export async function getIdToken(forceRefresh = false): Promise<string | null> {
   const user = auth.currentUser;
   if (!user) return null;
   try {
-    return await user.getIdToken();
+    return await user.getIdToken(forceRefresh);
   } catch (error) {
     return null;
   }
