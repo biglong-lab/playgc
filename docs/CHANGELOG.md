@@ -69,6 +69,32 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🌐 Phase 3 W11 D1 ✅（Public API v1 啟動）
+**主題**：對外 API + API key 認證機制 + read-only endpoints
+**範圍**：4 個檔案
+
+關鍵變動：
+- ADR-0008 Public API 設計原則（path versioning / Bearer key / 統一 error）
+- `server/middleware/api-key.ts` requireApiKey middleware
+- `server/routes/api/v1.ts` 3 個 read-only endpoints：
+  - GET /api/v1/health（公開）
+  - GET /api/v1/scenarios（需 key）
+  - GET /api/v1/scenarios/:id（需 key）
+- smoke test 31 → 34（5a 加 health + 401 守衛 ×2）
+
+**設計**：
+- Versioning：URL path（`/api/v1/`）
+- API key 格式：`ck_test_*` / `ck_live_*`（仿 Stripe）
+- 環境變數：`API_KEYS`（逗號分隔，W12 改 DB）
+- 統一 error 格式：`{ error: { code, message, documentation_url } }`
+
+**Smoke test 34/34 全綠**
+
+**細節** → [changes/2026-05-03-phase3-w11-d1-public-api.md](changes/2026-05-03-phase3-w11-d1-public-api.md)
+**ADR** → [decisions/0008-public-api-design.md](decisions/0008-public-api-design.md)
+
+⏭ 下一步：W11 D2 — Rate limit + Idempotency middleware
+
 ### 🎉 Phase 3 W10 完整收尾 ✅（付費 + 信件 + 配額三軸完整）
 **主題**：W10 5 天累計 + Resend 信件整合
 **範圍**：W10 24 檔、~1,633 行、smoke test 24→31

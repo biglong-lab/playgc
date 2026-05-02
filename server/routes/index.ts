@@ -61,6 +61,7 @@ import { registerHostSessionRoutes } from "./host-sessions";
 import { registerScenarioRoutes } from "./scenarios";
 import { registerScenarioHealthRoutes } from "./scenario-health";
 import { registerPaymentsRoutes } from "./payments";
+import { registerPublicApiV1Routes } from "./api/v1";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
@@ -141,6 +142,7 @@ export async function registerRoutes(
   registerScenarioRoutes(app);
   registerScenarioHealthRoutes(app);
   registerPaymentsRoutes(app);
+  registerPublicApiV1Routes(app);
   registerBattleSelfReportRoutes(app);
   registerSquadRecordsRoutes(app);
   registerSquadInvitesRoutes(app);

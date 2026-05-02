@@ -220,6 +220,30 @@ async function runSmokeTest() {
     return { ok: true };
   });
 
+  // 5a. Public API v1（W11 D1）
+  console.log(`${COLOR.bold}── Section 5a: Public API v1（W11 D1）──${COLOR.reset}`);
+  await check("GET /api/v1/health", 200, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/v1/health`);
+    if (res.status !== 200) return { ok: false, error: `expected 200, got ${res.status}` };
+    const data = await res.json();
+    if (data.version !== "v1") return { ok: false, error: "version != v1" };
+    return { ok: true };
+  });
+  await check("GET /api/v1/scenarios（無 API key → 401）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/v1/scenarios`);
+    if (res.status !== 401) return { ok: false, error: `expected 401, got ${res.status}` };
+    const data = await res.json();
+    if (!data.error?.code) return { ok: false, error: "missing error.code field" };
+    return { ok: true };
+  });
+  await check("GET /api/v1/scenarios（無效 key → 401）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/v1/scenarios`, {
+      headers: { Authorization: "Bearer ck_invalid_xxx" },
+    });
+    if (res.status !== 401) return { ok: false, error: `expected 401, got ${res.status}` };
+    return { ok: true };
+  });
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>
