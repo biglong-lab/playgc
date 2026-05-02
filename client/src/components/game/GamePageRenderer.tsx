@@ -38,6 +38,7 @@ const CrowdGatherPage = lazy(() => import("@/components/game/host/CrowdGatherPag
 const LiveLeaderboardPage = lazy(() => import("@/components/game/host/LiveLeaderboardPage"));
 const PolaroidCollagePage = lazy(() => import("@/components/game/host/PolaroidCollagePage"));
 const GuestbookDigitalPage = lazy(() => import("@/components/game/host/GuestbookDigitalPage"));
+const TriviaShowdownPage = lazy(() => import("@/components/game/host/TriviaShowdownPage"));
 
 // 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/solo/ButtonPage"));
@@ -285,6 +286,8 @@ export default function GamePageRenderer({
         return <PolaroidCollagePage page={page} />;
       case "host_guestbook_digital":
         return <GuestbookDigitalPage page={page} />;
+      case "host_trivia_showdown":
+        return <TriviaShowdownPage page={page} />;
       case "photo_ocr":
         return <PhotoOcrFlow {...commonProps} />;
       case "gps_mission":

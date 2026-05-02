@@ -16,6 +16,7 @@ const CrowdGatherPage = lazy(() => import("./CrowdGatherPage"));
 const LiveLeaderboardPage = lazy(() => import("./LiveLeaderboardPage"));
 const PolaroidCollagePage = lazy(() => import("./PolaroidCollagePage"));
 const GuestbookDigitalPage = lazy(() => import("./GuestbookDigitalPage"));
+const TriviaShowdownPage = lazy(() => import("./TriviaShowdownPage"));
 
 interface HostPageRendererProps {
   page: Page;
@@ -48,6 +49,8 @@ export default function HostPageRenderer({ page }: HostPageRendererProps) {
             return <PolaroidCollagePage page={page} />;
           case "host_guestbook_digital":
             return <GuestbookDigitalPage page={page} />;
+          case "host_trivia_showdown":
+            return <TriviaShowdownPage page={page} />;
           // Phase 1 W3-W4 會陸續加：
           //   host_emoji_react / host_wave_response / host_crowd_gather
           //   host_trivia_showdown / host_live_leaderboard
