@@ -166,6 +166,21 @@ async function runSmokeTest() {
     return { ok: true };
   });
 
+  // 4d. GET payments health（W10 D1 新增 — 公開、不需認證）
+  console.log(`${COLOR.bold}── Section 4d: 付費系統健康檢查 ──${COLOR.reset}`);
+  await check("GET /api/payments/health", 200, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/payments/health`);
+    if (res.status !== 200) {
+      return { ok: false, error: `expected 200, got ${res.status}` };
+    }
+    const data = await res.json();
+    if (data.status !== "ok") return { ok: false, error: "status field != ok" };
+    return { ok: true };
+  });
+
+  // 4e. Pricing 公開頁（W10 D1）
+  await check("GET /pricing", 200, () => checkStatus(`${BASE_URL}/pricing`, 200));
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>

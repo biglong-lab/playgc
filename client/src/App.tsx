@@ -176,6 +176,8 @@ const ScenarioQrPrint = lazy(() => import("@/pages/ScenarioQrPrint"));
 const FindScenarioWizard = lazy(() => import("@/pages/FindScenarioWizard"));
 // 🎤 PitchDeck 客戶銷售簡報頁（W7 D4）
 const PitchDeck = lazy(() => import("@/pages/PitchDeck"));
+// 💳 Pricing 公開定價頁（W10 D1）
+const Pricing = lazy(() => import("@/pages/Pricing"));
 
 // 📺 Admin Host Session 管理（W2 D5）
 const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
@@ -261,6 +263,9 @@ function Router() {
 
         {/* 🎤 客戶銷售簡報頁（W7 D4，公開頁）*/}
         <Route path="/pitch" component={PitchDeck} />
+
+        {/* 💳 公開定價頁（W10 D1）*/}
+        <Route path="/pricing" component={Pricing} />
 
         <Route path="/squad/create" component={SquadCreate} />
         <Route path="/squad/:squadId/settings" component={SquadSettings} />
