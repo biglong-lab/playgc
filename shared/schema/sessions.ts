@@ -9,6 +9,7 @@ import {
   jsonb,
   index,
   serial,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -36,6 +37,13 @@ export const gameSessions = pgTable(
     currentChapterId: varchar("current_chapter_id").references(() => gameChapters.id, { onDelete: "set null" }),
     startedAt: timestamp("started_at").defaultNow(),
     completedAt: timestamp("completed_at"),
+    // 🆕 ADR-0004 (2026-05-02)：HostScreen 主控大螢幕模式
+    //   host_mode = true：此 session 是 HostScreen 模式，需 hostToken 才能進大螢幕
+    //   host_token：admin 簽發的 12 小時有效 token，給 /host/:sessionId?token=xxx 驗證
+    //   host_token_expires_at：token 過期時間（過期需 admin 重新簽發）
+    hostMode: boolean("host_mode").default(false).notNull(),
+    hostToken: varchar("host_token"),
+    hostTokenExpiresAt: timestamp("host_token_expires_at"),
   },
   (table) => [index("idx_sessions_status").on(table.status, table.startedAt)]
 );

@@ -7,6 +7,13 @@
 
 ## 2026-05-02
 
+### 🎮 多人遊戲元件平台 12 週路徑啟動（Phase 1 W1 D1）
+**主題**：38 新元件 + 4 大平台基建 + 12 個情境模板
+**範圍**：3 個月路徑，當日完成 ADR 0004 + 路徑紀錄
+**狀態**：🟡 進行中
+**細節** → [changes/2026-05-02-multiplayer-component-platform.md](changes/2026-05-02-multiplayer-component-platform.md)
+**ADR** → [decisions/0004-host-screen-axis.md](decisions/0004-host-screen-axis.md) — HostScreen 獨立第三軸線
+
 ### 🛡 Squad 系統一次到位（取代三套組隊系統）
 **主題**：合併 teams / battle_clans / 過渡 squads 為單一 Squad 系統
 **範圍**：8 個 commit（PR0 + PR1-PR6）

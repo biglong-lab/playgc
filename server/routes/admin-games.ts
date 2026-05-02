@@ -5,10 +5,10 @@ import {
   logAuditAction,
 } from "../adminAuth";
 // 🆕 C2: 示範遊戲 JSON（esbuild 會把 JSON inline 進 bundle）
-import demoGameJiachun from "../../docs/DEMO_GAME_JIACHUN.json";
+import demoGameJiachun from "../../docs/archive/DEMO_GAME_JIACHUN.json";
 // 🆕 新增兩個打卡/影像紀念為主的示範模板
-import demoGameCheckin from "../../docs/DEMO_GAME_JIACHUN_CHECKIN.json";
-import demoGameArFun from "../../docs/DEMO_GAME_JIACHUN_AR_FUN.json";
+import demoGameCheckin from "../../docs/archive/DEMO_GAME_JIACHUN_CHECKIN.json";
+import demoGameArFun from "../../docs/archive/DEMO_GAME_JIACHUN_AR_FUN.json";
 
 type DemoGameData = {
   game: Record<string, unknown>;
