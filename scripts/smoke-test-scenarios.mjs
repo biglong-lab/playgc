@@ -1,0 +1,171 @@
+#!/usr/bin/env node
+// 🩺 Phase 2 W8 D1 — Scenario Platform Smoke Test
+//
+// 用法：
+//   BASE_URL=https://game.homi.cc node scripts/smoke-test-scenarios.mjs
+//   BASE_URL=http://localhost:3333 node scripts/smoke-test-scenarios.mjs
+//
+// 驗證項目：
+//   1. 公開頁全部 200（主頁 / pitch / find-scenario / template-market / 12 情境 / showcase / scenario-qr-print）
+//   2. /api/scenarios/health 回應 OK + 含 12 情境
+//   3. POST /api/admin/scenarios/:id/instantiate 回應 401（認證守衛正確）
+//   4. 12 情境健康狀態（live / preview / planned）
+
+const BASE_URL = process.env.BASE_URL || "https://game.homi.cc";
+const COLOR = {
+  green: "\x1b[32m",
+  red: "\x1b[31m",
+  yellow: "\x1b[33m",
+  cyan: "\x1b[36m",
+  bold: "\x1b[1m",
+  reset: "\x1b[0m",
+};
+
+let pass = 0;
+let fail = 0;
+const failures = [];
+
+function log(symbol, msg) {
+  console.log(`${symbol} ${msg}`);
+}
+
+async function check(name, expectedStatus, fn) {
+  try {
+    const result = await fn();
+    if (result.ok) {
+      log(`${COLOR.green}✅${COLOR.reset}`, name);
+      pass++;
+    } else {
+      log(`${COLOR.red}❌${COLOR.reset}`, `${name} — ${result.error}`);
+      fail++;
+      failures.push({ name, error: result.error });
+    }
+  } catch (err) {
+    log(`${COLOR.red}❌${COLOR.reset}`, `${name} — exception: ${err.message}`);
+    fail++;
+    failures.push({ name, error: err.message });
+  }
+}
+
+async function fetchUrl(url, options = {}) {
+  const start = Date.now();
+  const res = await fetch(url, options);
+  const ms = Date.now() - start;
+  return { res, ms };
+}
+
+async function checkStatus(url, expectedCode, options = {}) {
+  const { res, ms } = await fetchUrl(url, options);
+  if (res.status !== expectedCode) {
+    return { ok: false, error: `expected ${expectedCode}, got ${res.status} (${ms}ms)` };
+  }
+  return { ok: true, ms };
+}
+
+// ════════ Section 1: 公開頁 ════════
+const PUBLIC_PAGES = [
+  "/",
+  "/pitch",
+  "/find-scenario",
+  "/template-market",
+  "/showcase",
+  "/admin/scenario-qr-print",
+];
+
+const SCENARIO_IDS = [
+  "wedding",
+  "birthday",
+  "reunion",
+  "kids-adventure",
+  "carnival-stage",
+  "icebreaker",
+  "awards-ceremony",
+  "street-walk",
+  "district-checkin",
+  "corporate-training",
+  "company-trip",
+  "venue-storyline",
+];
+
+async function runSmokeTest() {
+  console.log(`${COLOR.bold}🩺 Scenario Platform Smoke Test${COLOR.reset}`);
+  console.log(`Base URL: ${COLOR.cyan}${BASE_URL}${COLOR.reset}`);
+  console.log("");
+
+  // 1. 公開頁
+  console.log(`${COLOR.bold}── Section 1: 公開頁（${PUBLIC_PAGES.length}）──${COLOR.reset}`);
+  for (const path of PUBLIC_PAGES) {
+    await check(`GET ${path}`, 200, () => checkStatus(`${BASE_URL}${path}`, 200));
+  }
+
+  // 2. 12 情境詳情頁
+  console.log(`${COLOR.bold}── Section 2: 12 情境詳情頁 ──${COLOR.reset}`);
+  for (const id of SCENARIO_IDS) {
+    await check(`GET /template-market/${id}`, 200, () =>
+      checkStatus(`${BASE_URL}/template-market/${id}`, 200),
+    );
+  }
+
+  // 3. Health endpoint
+  console.log(`${COLOR.bold}── Section 3: Health endpoint ──${COLOR.reset}`);
+  await check("GET /api/scenarios/health", 200, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/scenarios/health`);
+    if (res.status !== 200) return { ok: false, error: `status ${res.status}` };
+    const data = await res.json();
+    if (data.status !== "ok") return { ok: false, error: "status field != ok" };
+    if (data.total < 12) return { ok: false, error: `total ${data.total} < 12` };
+    if (data.byStatus.live < 9) return { ok: false, error: `live ${data.byStatus.live} < 9` };
+    return { ok: true };
+  });
+
+  // 4. POST instantiate 認證守衛
+  console.log(`${COLOR.bold}── Section 4: POST instantiate 認證守衛 ──${COLOR.reset}`);
+  for (const id of SCENARIO_IDS.slice(0, 3)) {
+    await check(`POST /api/admin/scenarios/${id}/instantiate (401)`, 401, async () => {
+      const { res } = await fetchUrl(
+        `${BASE_URL}/api/admin/scenarios/${id}/instantiate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        },
+      );
+      if (res.status !== 401) {
+        return { ok: false, error: `expected 401, got ${res.status}` };
+      }
+      return { ok: true };
+    });
+  }
+
+  // 5. host/play 路徑
+  console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
+  await check("GET /host/smoke-test", 200, () =>
+    checkStatus(`${BASE_URL}/host/smoke-test`, 200),
+  );
+  await check("GET /play/smoke-test", 200, () =>
+    checkStatus(`${BASE_URL}/play/smoke-test`, 200),
+  );
+
+  // ════════ 結果 ════════
+  console.log("");
+  console.log(`${COLOR.bold}── 結果 ──${COLOR.reset}`);
+  console.log(`  ${COLOR.green}通過：${pass}${COLOR.reset}`);
+  console.log(`  ${COLOR.red}失敗：${fail}${COLOR.reset}`);
+
+  if (fail > 0) {
+    console.log("");
+    console.log(`${COLOR.bold}${COLOR.red}失敗清單：${COLOR.reset}`);
+    for (const f of failures) {
+      console.log(`  - ${f.name}: ${f.error}`);
+    }
+    process.exit(1);
+  }
+
+  console.log(`${COLOR.green}${COLOR.bold}🎉 全部通過${COLOR.reset}`);
+  process.exit(0);
+}
+
+runSmokeTest().catch((err) => {
+  console.error(`${COLOR.red}Fatal error:${COLOR.reset}`, err);
+  process.exit(1);
+});

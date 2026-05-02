@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🩺 Phase 2 W8 D1 ✅（Scenario Health endpoint + Smoke Test 自動化）
+**主題**：CI / 監控可自動驗證情境平台健康
+**範圍**：3 個新檔
+
+關鍵變動：
+- `server/routes/scenario-health.ts` 新公開 endpoint `GET /api/scenarios/health`
+- `server/routes/index.ts` registerScenarioHealthRoutes 註冊
+- `scripts/smoke-test-scenarios.mjs` 24 個檢查的 smoke test 腳本
+
+**Health endpoint 回應**：12 情境 metadata + byStatus + byCategory + totalComponents
+
+**Smoke test 5 區塊**：
+1. 6 個公開頁
+2. 12 個情境詳情頁
+3. Health endpoint JSON 結構
+4. 3 個 POST instantiate 401 認證守衛
+5. host/play SPA 路徑
+
+**CI 整合**：`BASE_URL=https://game.homi.cc node scripts/smoke-test-scenarios.mjs`
+
+**細節** → [changes/2026-05-02-phase2-w8-d1-smoke-test.md](changes/2026-05-02-phase2-w8-d1-smoke-test.md)
+
+⏭ 下一步：W8 D2 — Admin scenario instances 列表頁
+
 ### 🎉 Phase 2 W7 完整收尾 + W5-W7 三週階段性回顧 ✅
 **主題**：W7 業務化工具鏈完成 + 三週路徑成果回顧
 **範圍**：W7 5 天（6 個檔、~920 行）+ 三週累計（22 檔、~4,920 行、18 commits、120+ 測試）

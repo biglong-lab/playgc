@@ -59,6 +59,7 @@ import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadsCoreRoutes } from "./squads-core";
 import { registerHostSessionRoutes } from "./host-sessions";
 import { registerScenarioRoutes } from "./scenarios";
+import { registerScenarioHealthRoutes } from "./scenario-health";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
@@ -137,6 +138,7 @@ export async function registerRoutes(
   registerSquadsCoreRoutes(app);
   registerHostSessionRoutes(app);
   registerScenarioRoutes(app);
+  registerScenarioHealthRoutes(app);
   registerBattleSelfReportRoutes(app);
   registerSquadRecordsRoutes(app);
   registerSquadInvitesRoutes(app);
