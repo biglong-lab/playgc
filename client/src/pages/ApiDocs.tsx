@@ -159,6 +159,40 @@ Retry-After: 35  # 達上限時`}</CodeBlock>
           />
         </Section>
 
+        {/* Webhook */}
+        <Section title="📡 Webhook 反向觸發" icon={Repeat}>
+          <p className="text-sm">
+            活動建立後，CHITO 會派送 webhook 到您預設的 URL（含 HMAC SHA-256 簽章）。
+          </p>
+          <p className="text-sm">事件類型：</p>
+          <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+            <li><code className="bg-muted px-1 rounded">instance.created</code> — 建場成功（含完整 instance 資料）</li>
+            <li>後續加：<code className="bg-muted px-1 rounded">instance.expired</code> / <code className="bg-muted px-1 rounded">payment.succeeded</code></li>
+          </ul>
+          <p className="text-sm">Headers：</p>
+          <CodeBlock onCopy={handleCopy}>{`X-CHITO-Event: instance.created
+X-CHITO-Event-Id: evt_1735693200_abc123
+X-CHITO-Signature: t=1735693200,v1=<hmac_sha256>`}</CodeBlock>
+          <p className="text-sm">驗證簽章（Node 範例）：</p>
+          <CodeBlock onCopy={handleCopy}>{`import crypto from "crypto";
+
+function verifySignature(rawPayload, header, secret) {
+  const [tPart, v1Part] = header.split(",");
+  const t = tPart.split("=")[1];
+  const v1 = v1Part.split("=")[1];
+  const expected = crypto.createHmac("sha256", secret)
+    .update(\`\${t}.\${rawPayload}\`)
+    .digest("hex");
+  return crypto.timingSafeEqual(
+    Buffer.from(v1),
+    Buffer.from(expected)
+  );
+}`}</CodeBlock>
+          <p className="text-sm text-muted-foreground">
+            重試：失敗時 1 / 5 / 15 分鐘各重試一次。設定：聯絡業務提供 URL + secret。
+          </p>
+        </Section>
+
         {/* Error format */}
         <Section title="⚠️ Error 格式" icon={Shield}>
           <p className="text-sm">所有 error 回應統一格式：</p>

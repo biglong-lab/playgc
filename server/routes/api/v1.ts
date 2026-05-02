@@ -31,6 +31,7 @@ import {
 import { db } from "../../db";
 import { games, pages, gameSessions, fields } from "@shared/schema";
 import { generateSlug } from "../../qrCodeService";
+import { dispatchWebhook } from "../../lib/webhook-dispatcher";
 
 const HOST_TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
 
@@ -243,8 +244,8 @@ export function registerPublicApiV1Routes(app: Express) {
           other: instances.filter((i) => i.axis !== "host" && i.axis !== "multi").length,
         };
 
-        res.status(201).json({
-          object: "instance",
+        const responseBody = {
+          object: "instance" as const,
           scenario: { id: scenario.id, name: scenario.name },
           displayName: finalDisplayName,
           customerEmail: customerEmail || null,
@@ -253,7 +254,16 @@ export function registerPublicApiV1Routes(app: Express) {
           breakdown,
           components: instances,
           createdBy: req.apiKey!.keyId,
+        };
+
+        // W12 D3: 派送 webhook（fire-and-forget，不阻擋 response）
+        dispatchWebhook({
+          type: "instance.created",
+          data: responseBody as unknown as Record<string, unknown>,
+          apiKeyId: req.apiKey!.keyId,
         });
+
+        res.status(201).json(responseBody);
       } catch (err) {
         console.error("[api/v1] POST /instances 失敗:", err);
         res.status(500).json({
