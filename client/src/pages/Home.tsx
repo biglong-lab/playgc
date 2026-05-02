@@ -25,6 +25,7 @@ import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDispl
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { setLastVisitedField } from "@/lib/last-visited-field";
+import InAppQrScanFAB from "@/components/shared/InAppQrScanFAB";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import OptimizedImage from "@/components/shared/OptimizedImage";
@@ -542,6 +543,11 @@ export default function Home() {
           ) : (
             <p className="text-muted-foreground">選擇一個任務開始你的冒險</p>
           )}
+        </div>
+
+        {/* 🆕 PWA 內掃 QR Code 入口（避免玩家用手機相機掃跑出 PWA） */}
+        <div className="mb-6">
+          <InAppQrScanFAB variant="card" />
         </div>
 
         {/* 對戰快速入口 — 僅在場域啟用對戰模組時顯示（後台 FieldSettings 設定） */}
