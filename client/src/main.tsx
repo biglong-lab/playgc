@@ -2,6 +2,11 @@ import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./contexts/AuthContext";
 import App from "./App";
 import "./index.css";
+import { logAppLaunch } from "@/lib/pwa-analytics";
+
+// 🆕 Phase D：App 啟動時 log（PWA / browser / TWA 區分），給後台統計用
+//   非阻塞，1 秒延遲讓 critical render 先完成
+setTimeout(() => logAppLaunch(), 1000);
 
 // Service Worker 更新時強制 reload，避免當前 tab 卡在舊 bundle
 // （已設 skipWaiting + clientsClaim，但舊 JS 已載入 memory，需要 reload 才會拿新版）

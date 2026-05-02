@@ -218,6 +218,76 @@ export function registerClientLogsRoutes(app: Express) {
       }
     },
   );
+
+  /**
+   * 🆕 Phase D：PWA 使用情境統計（依 docs/PWA_USER_FLOW_OPTIMIZATION_V2.md）
+   *   query: ?days=7（預設 7 天）
+   *   回：
+   *     - launchByMode: app_launch_* 各模式啟動次數（standalone / browser / twa）
+   *     - qrScansBySource: qr_scan_* 各來源（in_pwa_scan / browser_camera / manual_input）
+   *     - launchTrendDaily: 7 日每日啟動次數
+   */
+  app.get(
+    "/api/admin/analytics/pwa-usage",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+        const days = Math.min(30, Math.max(1, Number(req.query.days) || 7));
+        const since = new Date(Date.now() - days * 24 * 3600 * 1000);
+
+        // 啟動模式分布（code = app_launch_standalone / browser / twa）
+        const launchByMode = await db
+          .select({
+            code: clientEvents.code,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(clientEvents)
+          .where(
+            sql`${clientEvents.category} = 'pwa' AND ${clientEvents.code} LIKE 'app_launch_%' AND ${clientEvents.createdAt} >= ${since}`,
+          )
+          .groupBy(clientEvents.code);
+
+        // QR 掃描來源（code = qr_scan_in_pwa_scan / browser_camera / manual_input）
+        const qrScansBySource = await db
+          .select({
+            code: clientEvents.code,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(clientEvents)
+          .where(
+            sql`${clientEvents.category} = 'qr' AND ${clientEvents.code} LIKE 'qr_scan_%' AND ${clientEvents.createdAt} >= ${since}`,
+          )
+          .groupBy(clientEvents.code);
+
+        // 7 日每日啟動次數（趨勢）
+        const launchTrendDaily = await db
+          .select({
+            day: sql<string>`date_trunc('day', ${clientEvents.createdAt})::date::text`,
+            count: sql<number>`count(*)::int`,
+          })
+          .from(clientEvents)
+          .where(
+            sql`${clientEvents.category} = 'pwa' AND ${clientEvents.code} LIKE 'app_launch_%' AND ${clientEvents.createdAt} >= ${since}`,
+          )
+          .groupBy(sql`date_trunc('day', ${clientEvents.createdAt})`)
+          .orderBy(sql`date_trunc('day', ${clientEvents.createdAt})`);
+
+        res.json({
+          since: since.toISOString(),
+          days,
+          launchByMode,
+          qrScansBySource,
+          launchTrendDaily,
+        });
+      } catch (err) {
+        console.error("[client-logs] pwa-usage failed:", err);
+        res.status(500).json({ message: "PWA 統計查詢失敗" });
+      }
+    },
+  );
 }
 
 /**

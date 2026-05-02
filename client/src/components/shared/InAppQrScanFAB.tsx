@@ -26,6 +26,7 @@ import {
 import { Camera, X, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Html5Qrcode } from "html5-qrcode";
+import { logQrScan } from "@/lib/pwa-analytics";
 
 const SCANNER_ELEMENT_ID = "in-app-qr-scanner";
 
@@ -125,6 +126,18 @@ export default function InAppQrScanFAB({
       setScanning(false);
 
       const parsed = parseScanResult(decoded);
+
+      // 🆕 Phase D：log 統計（不論結果類型都記錄）
+      const fieldMatch = parsed.path?.match(/^\/f\/([A-Z0-9_-]+)/i);
+      const gameMatch = parsed.path?.match(/\/game\/([^/?]+)/);
+      logQrScan({
+        source: "in_pwa_scan",
+        scannedRaw: decoded,
+        resultType: parsed.type,
+        inferredFieldCode: fieldMatch?.[1],
+        inferredGameId: gameMatch?.[1],
+      });
+
       if (parsed.type === "same-site-path" && parsed.path) {
         toast({
           title: "✅ 掃描成功",
