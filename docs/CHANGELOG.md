@@ -69,6 +69,25 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### ✨ Phase 3 W9 D2 ✅（AI 預覽 UI + 套用建場）
+**主題**：admin 完整工作流（輸入 context → AI 預覽 → 套用建場）
+**範圍**：2 個檔案
+
+關鍵變動：
+- 後端 instantiate 接受 `aiConfigs`（key=pageType / value=config）
+- 每個 component 用 `aiConfig ?? defaultConfig` fallback 邏輯
+- TemplateMarketDetail 新增紫色「AI 客製化內容」Card
+  - 500 字 textarea
+  - 預覽按鈕 → AI 思考 + 元件 ✅/⚠ + JSON details
+  - 「用 AI 內容建場」按鈕（紫色）
+- 既有綠色「default 內容建場」Card 保留（雙軌並存）
+
+**雙軌設計**：紫色 AI 推薦在上、綠色 default fallback 在下
+
+**細節** → [changes/2026-05-02-phase3-w9-d2-ai-preview-ui.md](changes/2026-05-02-phase3-w9-d2-ai-preview-ui.md)
+
+⏭ 下一步：W9 D3 — 找第一個付費客戶（業務工作）
+
 ### 🤖 Phase 3 W9 D1 ✅（AI 內容生成 MVP — DeepSeek 整合）
 **主題**：admin 可輸入 context 讓 AI 為情境生成客製化 config
 **範圍**：3 個檔案

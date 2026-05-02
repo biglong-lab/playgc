@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, CheckCircle, Tv, Smartphone, Zap, Copy, ExternalLink, Loader2, Printer } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Tv, Smartphone, Zap, Copy, ExternalLink, Loader2, Printer, Wand2 } from "lucide-react";
 import { getScenarioById, type ScenarioComponent } from "@shared/scenario-templates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -40,6 +40,14 @@ interface InstantiateResponse {
   breakdown: { host: number; multi: number; other: number };
 }
 
+interface AiPreviewResponse {
+  scenario: { id: string; name: string; tagline: string };
+  context: string;
+  configs: Record<string, Record<string, unknown>>;
+  rationale: string;
+  components: Array<{ pageType: string; label: string; role: string; axis: string; hasAiConfig: boolean }>;
+}
+
 export default function TemplateMarketDetail() {
   const [, params] = useRoute("/template-market/:scenarioId");
   const [, navigate] = useLocation();
@@ -47,8 +55,62 @@ export default function TemplateMarketDetail() {
   const [launching, setLaunching] = useState(false);
   const [launchResult, setLaunchResult] = useState<InstantiateResponse | null>(null);
 
+  // W9 D2: AI 預覽 state
+  const [aiContext, setAiContext] = useState("");
+  const [aiPreviewing, setAiPreviewing] = useState(false);
+  const [aiPreview, setAiPreview] = useState<AiPreviewResponse | null>(null);
+
   const scenarioId = params?.scenarioId;
   const scenario = scenarioId ? getScenarioById(scenarioId) : undefined;
+
+  const handleAiPreview = async () => {
+    if (!scenarioId) return;
+    const trimmed = aiContext.trim();
+    if (!trimmed) {
+      toast({ title: "請輸入活動描述", variant: "destructive" });
+      return;
+    }
+    setAiPreviewing(true);
+    try {
+      const res = await apiRequest("POST", `/api/admin/scenarios/${scenarioId}/ai-preview`, {
+        context: trimmed,
+      });
+      const data: AiPreviewResponse = await res.json();
+      setAiPreview(data);
+      toast({ title: "✅ AI 內容已生成", description: `${Object.keys(data.configs).length} 個元件已客製` });
+    } catch (err) {
+      toast({
+        title: "❌ AI 預覽失敗",
+        description: err instanceof Error ? err.message : "未知錯誤",
+        variant: "destructive",
+      });
+    } finally {
+      setAiPreviewing(false);
+    }
+  };
+
+  const handleLaunchWithAi = async () => {
+    if (!scenarioId || !aiPreview) return;
+    setLaunching(true);
+    try {
+      const res = await apiRequest("POST", `/api/admin/scenarios/${scenarioId}/instantiate`, {
+        aiConfigs: aiPreview.configs,
+        displayName: aiContext.slice(0, 100),
+      });
+      const data: InstantiateResponse = await res.json();
+      setLaunchResult(data);
+      setAiPreview(null);
+      toast({ title: "✅ 用 AI 內容建場成功" });
+    } catch (err) {
+      toast({
+        title: "❌ 建場失敗",
+        description: err instanceof Error ? err.message : "未知錯誤",
+        variant: "destructive",
+      });
+    } finally {
+      setLaunching(false);
+    }
+  };
 
   const handleLaunch = async () => {
     if (!scenarioId) return;
@@ -176,17 +238,108 @@ export default function TemplateMarketDetail() {
           </CardContent>
         </Card>
 
+        {/* W9 D2: AI 客製化內容（admin only）*/}
+        {admin && (
+          <Card className="bg-purple-500/10 border-purple-500/30">
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <h3 className="font-display font-bold text-lg flex items-center gap-2">
+                  <Wand2 className="w-5 h-5 text-purple-600" />
+                  AI 客製化內容（選用）
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  輸入活動描述，AI 會為每個元件生成客製化內容（取代範例 default）
+                </p>
+              </div>
+              <textarea
+                value={aiContext}
+                onChange={(e) => setAiContext(e.target.value.slice(0, 500))}
+                placeholder="例如：Hung & Anita 5/15 晶華婚禮、新郎新娘都喜歡音樂、賓客約 100 人"
+                className="w-full px-3 py-2 rounded-md border bg-background text-sm min-h-[80px]"
+                maxLength={500}
+                data-testid="input-ai-context"
+              />
+              <div className="text-xs text-muted-foreground text-right">{aiContext.length}/500</div>
+              <Button
+                onClick={handleAiPreview}
+                disabled={aiPreviewing || !aiContext.trim()}
+                variant="outline"
+                className="w-full border-purple-500/50"
+                data-testid="btn-ai-preview"
+              >
+                {aiPreviewing ? (
+                  <><Loader2 className="w-4 h-4 mr-1 animate-spin" />AI 思考中...</>
+                ) : (
+                  <><Wand2 className="w-4 h-4 mr-1" />預覽 AI 客製內容</>
+                )}
+              </Button>
+
+              {aiPreview && (
+                <div className="space-y-3 pt-3 border-t">
+                  <div className="bg-card rounded-lg p-3 space-y-2">
+                    <div className="text-xs text-muted-foreground">💡 AI 思考</div>
+                    <div className="text-sm">{aiPreview.rationale}</div>
+                  </div>
+                  <div className="bg-card rounded-lg p-3 space-y-2">
+                    <div className="text-xs text-muted-foreground">📦 客製化結果</div>
+                    {aiPreview.components.map((c) => (
+                      <div key={c.pageType} className="flex items-center gap-2 text-sm">
+                        {c.hasAiConfig ? (
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                        ) : (
+                          <span className="w-3.5 h-3.5 text-amber-500 flex-shrink-0">⚠</span>
+                        )}
+                        <span className="font-medium">{c.label}</span>
+                        <span className="text-xs text-muted-foreground">{c.pageType}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <details className="bg-card rounded-lg p-3">
+                    <summary className="text-xs text-muted-foreground cursor-pointer">
+                      📄 看完整 JSON（debug）
+                    </summary>
+                    <pre className="text-xs mt-2 overflow-auto bg-muted p-2 rounded max-h-60">
+                      {JSON.stringify(aiPreview.configs, null, 2)}
+                    </pre>
+                  </details>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setAiPreview(null)}
+                      variant="ghost"
+                      className="flex-1"
+                    >
+                      取消
+                    </Button>
+                    <Button
+                      onClick={handleLaunchWithAi}
+                      disabled={launching}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700"
+                      data-testid="btn-launch-with-ai"
+                    >
+                      {launching ? (
+                        <><Loader2 className="w-4 h-4 mr-1 animate-spin" />建場中...</>
+                      ) : (
+                        <><Wand2 className="w-4 h-4 mr-1" />用 AI 內容建場</>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Admin 一鍵建場（W6 D2 + D3 含混合情境）*/}
         {admin && (
           <Card className="bg-emerald-500/10 border-emerald-500/30">
             <CardContent className="p-6 space-y-3 text-center">
               <h3 className="font-display font-bold text-lg flex items-center justify-center gap-2">
                 <Zap className="w-5 h-5 text-emerald-600" />
-                Admin 一鍵建場
+                Admin 一鍵建場（用 default 內容）
               </h3>
               <p className="text-sm text-muted-foreground">
                 為這個情境的 {scenario.components.length} 個元件，一次建好所有 game + 場次。<br />
-                host 元件 → 12h hostToken / multi solo 元件 → publicSlug 玩家入口
+                <span className="text-xs">不用 AI、用 default 範例 — 適合快速 demo 或 admin 自己改內容</span>
               </p>
               <Button
                 size="lg"

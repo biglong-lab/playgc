@@ -323,6 +323,10 @@ export function registerScenarioRoutes(app: Express) {
         const displayName = (req.body?.displayName || scenario.name).slice(0, 100);
         const expiresAt = new Date(Date.now() + HOST_TOKEN_TTL_MS);
 
+        // W9 D2: 接受 AI 預覽過的客製 configs（可選）
+        // 結構：{ "<pageType>": { ...config } }
+        const aiConfigs = (req.body?.aiConfigs ?? null) as Record<string, Record<string, unknown>> | null;
+
         const instances: ScenarioInstance[] = [];
 
         for (const component of scenario.components) {
@@ -333,6 +337,7 @@ export function registerScenarioRoutes(app: Express) {
             fieldId: fieldId ?? null,
             expiresAt,
             collector: instances,
+            aiConfig: aiConfigs?.[component.pageType] ?? null,
           });
         }
 
@@ -388,14 +393,19 @@ interface InstantiateComponentParams {
   fieldId: string | null;
   expiresAt: Date;
   collector: ScenarioInstance[];
+  /** W9 D2: 若有 AI 生成的客製 config，優先使用 */
+  aiConfig?: Record<string, unknown> | null;
 }
 
 async function instantiateComponent(params: InstantiateComponentParams): Promise<void> {
-  const { scenarioDisplayName, component, fieldId, expiresAt, collector } = params;
+  const { scenarioDisplayName, component, fieldId, expiresAt, collector, aiConfig } = params;
 
   const isHost = component.axis === "host";
   const gameMode = getGameModeForComponent(component);
   const slug = isHost ? null : generateSlug();
+
+  // W9 D2: AI 生成的 config 優先、fallback 到 default
+  const config = aiConfig ?? getDefaultConfigForPageType(component.pageType, scenarioDisplayName);
 
   const [game] = await db
     .insert(games)
@@ -417,7 +427,7 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
     pageOrder: 1,
     pageType: component.pageType,
     customName: component.label,
-    config: getDefaultConfigForPageType(component.pageType, scenarioDisplayName),
+    config,
   });
 
   if (isHost) {
