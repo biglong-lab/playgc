@@ -170,6 +170,8 @@ const ShowcaseHub = lazy(() => import("@/pages/ShowcaseHub"));
 // 🎯 TemplateMarket 12 情境模板市集（W6 D1）
 const TemplateMarket = lazy(() => import("@/pages/TemplateMarket"));
 const TemplateMarketDetail = lazy(() => import("@/pages/TemplateMarketDetail"));
+// 📄 ScenarioQrPrint QR 列印頁（W6 D4）
+const ScenarioQrPrint = lazy(() => import("@/pages/ScenarioQrPrint"));
 
 // 📺 Admin Host Session 管理（W2 D5）
 const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
@@ -246,6 +248,9 @@ function Router() {
         {/* 🎯 12 情境模板市集（公開頁，銷售工具）*/}
         <Route path="/template-market/:scenarioId" component={TemplateMarketDetail} />
         <Route path="/template-market" component={TemplateMarket} />
+
+        {/* 📄 情境實例 QR 列印頁（W6 D4，admin 用）*/}
+        <Route path="/admin/scenario-qr-print" component={ScenarioQrPrint} />
 
         <Route path="/squad/create" component={SquadCreate} />
         <Route path="/squad/:squadId/settings" component={SquadSettings} />

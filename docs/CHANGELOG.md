@@ -69,6 +69,28 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📄 Phase 2 W6 D4 ✅（Scenario QR 列印頁）
+**主題**：admin 一鍵生成所有元件 QR codes 列印（A4，每張 QR 一頁）
+**範圍**：1 天、新增 1 個 client 頁面
+
+關鍵變動：
+- `ScenarioQrPrint.tsx` 新頁（路徑 `/admin/scenario-qr-print?data=<base64>`）
+- TemplateMarketDetail 結果 Dialog 新增「列印 QR」按鈕
+- 用 client side `qrcode` 套件即時產生 base64 data URL
+- @media print CSS 自動分頁（每張 QR 一頁）
+
+**功能**：
+- host 元件 → 兩張 QR（大螢幕 + 玩家）
+- multi/solo → 一張 QR（玩家入口）
+- 漸層底色依 axis 區分（藍/紫/綠/灰）
+- 顯示元件名稱 + URL 類型 + 完整 URL + pageType
+
+**E2E 8 端點全綠**（含新增 /admin/scenario-qr-print）
+
+**細節** → [changes/2026-05-02-phase2-w6-d4-qr-print.md](changes/2026-05-02-phase2-w6-d4-qr-print.md)
+
+⏭ 下一步：W6 D5 — W6 收尾文件 + 完整流程 walkthrough
+
 ### 🔀 Phase 2 W6 D3 ✅（混合情境一鍵建場）
 **主題**：移除 pure-host 限制、所有 11 個情境都可一鍵建場
 **範圍**：1 天、後端 endpoint 擴充 + 前端 axis-aware UI

@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, CheckCircle, Tv, Smartphone, Zap, Copy, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Tv, Smartphone, Zap, Copy, ExternalLink, Loader2, Printer } from "lucide-react";
 import { getScenarioById, type ScenarioComponent } from "@shared/scenario-templates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -284,16 +284,26 @@ export default function TemplateMarketDetail() {
                   <InstanceRow key={inst.sessionId} instance={inst} />
                 ))}
               </div>
-              <div className="flex justify-between pt-4 border-t">
+              <div className="flex justify-between pt-4 border-t flex-wrap gap-2">
                 <Button variant="outline" onClick={() => setLaunchResult(null)}>
                   關閉
                 </Button>
-                <Button
-                  onClick={() => navigate("/admin/host-sessions")}
-                  data-testid="btn-go-host-sessions"
-                >
-                  到管理後台 <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    onClick={() => openPrintPage(launchResult)}
+                    data-testid="btn-print-qr"
+                  >
+                    <Printer className="w-4 h-4 mr-1" />
+                    列印 QR
+                  </Button>
+                  <Button
+                    onClick={() => navigate("/admin/host-sessions")}
+                    data-testid="btn-go-host-sessions"
+                  >
+                    到管理後台 <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
               </div>
             </div>
           )}
@@ -301,6 +311,27 @@ export default function TemplateMarketDetail() {
       </Dialog>
     </div>
   );
+}
+
+function openPrintPage(result: InstantiateResponse) {
+  const printData = {
+    displayName: result.displayName,
+    expiresAt: result.expiresAt,
+    instances: result.instances.map((i) => ({
+      axis: i.axis,
+      label: i.label,
+      pageType: i.pageType,
+      role: i.role,
+      hostUrl: i.hostUrl,
+      playUrl: i.playUrl,
+      gameUrl: i.gameUrl,
+    })),
+  };
+  const json = JSON.stringify(printData);
+  // base64 encode（含中文）
+  const base64 = btoa(unescape(encodeURIComponent(json)));
+  const encoded = encodeURIComponent(base64);
+  window.open(`/admin/scenario-qr-print?data=${encoded}`, "_blank");
 }
 
 function InstanceRow({ instance }: { instance: ScenarioInstance }) {
