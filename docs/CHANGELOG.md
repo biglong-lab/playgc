@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎮 Phase 2 Week 5 完成 ✅（HostScreen 軸線 10/10 收尾）
+**主題**：5 個新元件補齊 HostScreen 軸線（紀念類 + 競賽類 + 場域類）
+**範圍**：5 天連續推進、5 個元件、33 個新測試
+**狀態**：🟢 W5 完成、HostScreen 軸線 100%、E2E 5 端點全綠
+
+關鍵 commit：
+- W5 D1: PolaroidCollage (M) — 拍立得紀念牆（婚禮王牌） 6/6 測試
+- W5 D2: GuestbookDigital (S) — 數位簽名簿（婚禮 / 退休） 6/6 測試
+- W5 D3: TriviaShowdown (M) — 搶答秀（園遊會主舞台） 6/6 測試
+- `7554be00` W5 D4: ScoreboardAnnouncement (S) — 跑馬燈宣告（賽事播報）6/6 測試
+- W5 D5: KnowledgeMap (M) — 場域全景地圖（街區商圈打卡） 9/9 測試 + ShowcaseHub demo 擴充
+
+**HostScreen 軸線 10/10**：PollLive / EmojiReact / WaveResponse / CrowdGather / LiveLeaderboard
++ PolaroidCollage / GuestbookDigital / TriviaShowdown / ScoreboardAnnouncement / KnowledgeMap
+
+**ShowcaseHub** [showcase](https://game.homi.cc/showcase)：
+- 25 個 demo 入口（10 host × 雙版型 + 5 multi）
+- 5 大商業情境完整覆蓋（婚禮 / 主舞台 / 街區 / 內訓 / 課堂）
+
+**細節** → [changes/2026-05-02-phase2-w5-host-axis-complete.md](changes/2026-05-02-phase2-w5-host-axis-complete.md)
+
+⏭ 下一步：Phase 2 Week 6 — TemplateMarket 12 情境模板（婚禮 / 園遊會 / 街區 / 內訓四大首發）
+
 ### 🎉 Phase 1 全套完成（4 週路徑）
 
 ```

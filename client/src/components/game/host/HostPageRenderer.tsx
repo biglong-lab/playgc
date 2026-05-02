@@ -18,6 +18,7 @@ const PolaroidCollagePage = lazy(() => import("./PolaroidCollagePage"));
 const GuestbookDigitalPage = lazy(() => import("./GuestbookDigitalPage"));
 const TriviaShowdownPage = lazy(() => import("./TriviaShowdownPage"));
 const ScoreboardAnnouncementPage = lazy(() => import("./ScoreboardAnnouncementPage"));
+const KnowledgeMapPage = lazy(() => import("./KnowledgeMapPage"));
 
 interface HostPageRendererProps {
   page: Page;
@@ -54,10 +55,8 @@ export default function HostPageRenderer({ page }: HostPageRendererProps) {
             return <TriviaShowdownPage page={page} />;
           case "host_scoreboard_announcement":
             return <ScoreboardAnnouncementPage page={page} />;
-          // Phase 1 W3-W4 會陸續加：
-          //   host_emoji_react / host_wave_response / host_crowd_gather
-          //   host_trivia_showdown / host_live_leaderboard
-          //   host_scoreboard_announcement / host_knowledge_map
+          case "host_knowledge_map":
+            return <KnowledgeMapPage page={page} />;
           default:
             return (
               <div className="text-center text-zinc-400 p-8">
