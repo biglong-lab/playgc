@@ -7,12 +7,26 @@
 
 ## 2026-05-02
 
-### 🎮 多人遊戲元件平台 12 週路徑啟動（Phase 1 W1 D1）
+### 🎮 多人遊戲元件平台 12 週路徑（Phase 1 Week 1 完成 ✅）
 **主題**：38 新元件 + 4 大平台基建 + 12 個情境模板
-**範圍**：3 個月路徑，當日完成 ADR 0004 + 路徑紀錄
-**狀態**：🟡 進行中
+**範圍**：Week 1 7 個 commit / 5 個工作日
+**狀態**：🟢 Week 1 完成、E2E 驗證通過、生產部署 healthy
+**部署**：`d6134d6b..3d7dcedc`
+
+關鍵 commit：
+- `0c52ad49` W1 D1+D2: ADR-0004 + schema + types
+- `6803b373` W1 D3: WS 事件 + /host /play 路徑 + admin endpoints
+- `1ebe435c` W1 D4: scaffold:host 腳手架 + host/ 目錄
+- `3d7dcedc` W1 D5: ShowcaseHub MVP 元件展示館
+
+**生產 SQL**：`game_sessions` 加 `host_mode` / `host_token` / `host_token_expires_at`
+**新公開頁**：[/showcase](https://game.homi.cc/showcase) 元件展示館
+**新路徑**：`/host/:sessionId`（大螢幕）+ `/play/:sessionId`（玩家）
+
 **細節** → [changes/2026-05-02-multiplayer-component-platform.md](changes/2026-05-02-multiplayer-component-platform.md)
-**ADR** → [decisions/0004-host-screen-axis.md](decisions/0004-host-screen-axis.md) — HostScreen 獨立第三軸線
+**ADR** → [decisions/0004-host-screen-axis.md](decisions/0004-host-screen-axis.md)
+
+⏭ 下一步：Phase 1 Week 2 — PollLive 完整實作（HostScreen 軸線首發業務元件）
 
 ### 🛡 Squad 系統一次到位（取代三套組隊系統）
 **主題**：合併 teams / battle_clans / 過渡 squads 為單一 Squad 系統

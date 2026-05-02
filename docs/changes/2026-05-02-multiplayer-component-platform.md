@@ -199,7 +199,52 @@ Week 4 強制跑首場付費活動
 | D4 | npm run scaffold:host 註冊到 package.json | 本 commit |
 | D4 | client/src/components/game/host/README.md 元件目錄文件 | 本 commit |
 
-- ⏭ 下一步：D5 ShowcaseHub MVP + E2E 驗證 + 生產 SQL 加欄 + 部署
+- ✅ D5 ShowcaseHub MVP `3d7dcedc` 公開展示館（5 商業情境 + 元件 4 軸線分類）
+- ✅ D5 部署 + E2E 驗證全通過（見下方）
+
+### 2026-05-02 Week 1 結束 E2E 驗證紀錄
+
+**部署狀態**：
+- Container：`gamehomicc-app-1 Up 17 seconds (healthy)` ✅
+- 生產 commit：`1ebe435c..3d7dcedc`
+
+**E2E 端點驗證**：
+
+| 端點 | 預期 | 實際 | 結果 |
+|------|------|------|------|
+| `GET /showcase` | 200 | `HTTP/2 200` | ✅ |
+| `GET /host/:invalidId` | 200 (SPA) → 顯示「缺少 host token」 | `HTTP/2 200` | ✅ |
+| `GET /api/host-sessions/non-existent-id` | 404 + JSON error | `{"error":"session 不存在或非 HostScreen 模式"}` | ✅ |
+| `POST /api/admin/host-sessions` (no auth) | 401 「請先登入」 | `{"message":"請先登入管理後台"}` | ✅ |
+
+**Schema 對齊驗證**：
+```sql
+SELECT COUNT(*) FROM information_schema.columns
+WHERE table_name='game_sessions'
+  AND column_name IN ('host_mode','host_token','host_token_expires_at');
+-- → 3
+```
+✅ 三個欄位都正確存在於生產 DB
+
+**Week 1 完整成就**：
+- 7 個 commit、5 個工作日
+- ADR-0004 lock 技術契約
+- 後端：3 個 WS 事件 + 4 個 admin/public endpoint
+- 前端：HostScreen + HostPlay + ShowcaseHub 三個骨架頁
+- 工具：scaffold:host 腳手架（解 R1 風險）
+- 文件：1 ADR + 12 週路徑紀錄 + 元件目錄 README
+
+**Week 1 驗收**：
+- [x] ADR 0004 lock
+- [x] host/ 目錄就位
+- [x] WS 新事件可從前端送出（測試方式：開瀏覽器 console 連 ws + 手動送 host_screen_register）
+- [x] /host/:sessionId 路徑可訪問
+- [x] 腳手架腳本可生成完整四件套（測過 dummy）
+- [x] ShowcaseHub 公開可見
+- [x] 生產 schema 對齊
+- [x] 部署後 healthy
+
+
 
 ---
 
