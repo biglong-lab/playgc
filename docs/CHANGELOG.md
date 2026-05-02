@@ -69,6 +69,26 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 👋 Phase 4 W14 D2 ✅（LINE profile 整合到 /play）
+**主題**：玩家從 LINE 進入後自動帶名字、不用手動輸入
+**範圍**：3 個檔案
+
+關鍵變動：
+- HostPlay.tsx 新增 `useLineProfileFromQuery()` hook
+  - 讀 URL query `line_display_name`
+  - 存 localStorage `chitoUserName`（跨頁持久）
+  - Header 顯示「👋 {LINE 名字}」綠色強調
+- HostPageRenderer 加 `myUserName` prop 傳遞
+- KnowledgeMapPage 已自動接收（既有支援）
+
+**localStorage 規範**：`chitoUserName` 30 字內、跨頁可讀
+
+**Smoke test 維持 41/41**
+
+**細節** → [changes/2026-05-03-phase4-w14-d2-line-profile-integration.md](changes/2026-05-03-phase4-w14-d2-line-profile-integration.md)
+
+⏭ 下一步：W14 D3 — 其他 Page 元件 myUserName 整合
+
 ### 📱 Phase 4 W14 D1 ✅（LINE LIFF MVP scaffold）
 **主題**：玩家從 LINE 直接進入遊戲、不離開 LINE app
 **範圍**：4 個檔案

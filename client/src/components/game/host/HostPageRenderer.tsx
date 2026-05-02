@@ -22,6 +22,8 @@ const KnowledgeMapPage = lazy(() => import("./KnowledgeMapPage"));
 
 interface HostPageRendererProps {
   page: Page;
+  /** W14 D2: LINE 玩家名字（從 LIFF 中繼頁帶過來）*/
+  myUserName?: string;
 }
 
 function FallbackLoader() {
@@ -32,7 +34,7 @@ function FallbackLoader() {
   );
 }
 
-export default function HostPageRenderer({ page }: HostPageRendererProps) {
+export default function HostPageRenderer({ page, myUserName }: HostPageRendererProps) {
   return (
     <Suspense fallback={<FallbackLoader />}>
       {(() => {
@@ -56,7 +58,7 @@ export default function HostPageRenderer({ page }: HostPageRendererProps) {
           case "host_scoreboard_announcement":
             return <ScoreboardAnnouncementPage page={page} />;
           case "host_knowledge_map":
-            return <KnowledgeMapPage page={page} />;
+            return <KnowledgeMapPage page={page} myUserName={myUserName} />;
           default:
             return (
               <div className="text-center text-zinc-400 p-8">

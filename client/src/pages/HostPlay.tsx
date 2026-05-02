@@ -17,6 +17,30 @@ import { AlertCircle, Loader2, Smartphone } from "lucide-react";
 import HostPageRenderer from "@/components/game/host/HostPageRenderer";
 import type { Page } from "@shared/schema";
 
+/**
+ * W14 D2: 從 URL query 讀 LINE profile 並存 localStorage
+ * Query 來自 LIFF 中繼頁（/liff/play/...）跳轉時帶的：
+ *   ?line_user_id=...&line_display_name=...
+ * 既有 Page 元件可從 localStorage `chitoUserName` 讀取
+ */
+function useLineProfileFromQuery(): string {
+  const [name, setName] = useState<string>(() => {
+    return localStorage.getItem("chitoUserName") || "";
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const lineName = params.get("line_display_name");
+    if (lineName) {
+      const cleaned = lineName.slice(0, 30);
+      localStorage.setItem("chitoUserName", cleaned);
+      setName(cleaned);
+    }
+  }, []);
+
+  return name;
+}
+
 interface HostSessionInfo {
   sessionId: string;
   gameId: string;
@@ -28,6 +52,7 @@ export default function HostPlay() {
   const wsRef = useRef<WebSocket | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const myUserName = useLineProfileFromQuery();
 
   const { data: info, isLoading } = useQuery<HostSessionInfo>({
     queryKey: ["/api/host-sessions", sessionId],
@@ -122,7 +147,12 @@ export default function HostPlay() {
               <p className="text-xs text-muted-foreground">主控活動 · 互動中</p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {myUserName && (
+              <span className="text-emerald-600 font-medium" data-testid="header-line-name">
+                👋 {myUserName}
+              </span>
+            )}
             <div className={`w-2 h-2 rounded-full ${wsConnected ? "bg-emerald-500" : "bg-zinc-400"}`} />
             {wsConnected ? "已連線" : "連線中"}
           </div>
@@ -131,8 +161,8 @@ export default function HostPlay() {
 
       <main className="container mx-auto px-4 py-6 max-w-md">
         {hostPage ? (
-          // 有 host_* pageType → 渲染對應元件玩家版
-          <HostPageRenderer page={hostPage} />
+          // 有 host_* pageType → 渲染對應元件玩家版（W14 D2 帶 LINE 名字）
+          <HostPageRenderer page={hostPage} myUserName={myUserName || undefined} />
         ) : (
           // 沒有 → 等待畫面
         <Card>
