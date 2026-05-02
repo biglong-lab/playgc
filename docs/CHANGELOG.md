@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🧪 Phase 3 W12 D4 ✅（Webhook 測試 endpoint + SDK 擴充）
+**主題**：代理商可主動測試 webhook（onboarding 階段驗證）
+**範圍**：4 個檔案
+
+關鍵變動：
+- 新 `POST /api/v1/webhooks/test` endpoint
+  - 派送 webhook.test 測試事件
+  - 未設 webhook URL → 400 + webhook_not_configured
+- OpenAPI 加 /keys/me + /webhooks/test paths（5 → 7 paths）
+- SDK 加 `chito.webhooks.test()` resource
+- smoke test 加 5f (39 → 40)
+
+**用法**：
+```ts
+const test = await chito.webhooks.test();
+// → 代理商檢查自家 webhook endpoint log
+```
+
+**Smoke test 40/40 全綠**
+
+**細節** → [changes/2026-05-03-phase3-w12-d4-webhook-test.md](changes/2026-05-03-phase3-w12-d4-webhook-test.md)
+
+⏭ 下一步：W12 D5 — Phase 3 整體收尾 + Phase 4 規劃
+
 ### 📡 Phase 3 W12 D3 ✅（Webhook 反向觸發機制）
 **主題**：CHITO 主動通知代理商（事件發生時）
 **範圍**：3 個檔案

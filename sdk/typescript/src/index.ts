@@ -105,6 +105,22 @@ export class ChitoClient {
   };
 
   // ════════════════════════════════════════════════════════
+  // Resource: webhooks
+  // ════════════════════════════════════════════════════════
+
+  webhooks = {
+    test: async (): Promise<{
+      object: "webhook_test";
+      dispatched: boolean;
+      url: string;
+      eventType: string;
+      message: string;
+    }> => {
+      return this.request("POST", `${this.baseUrl}/webhooks/test`, {});
+    },
+  };
+
+  // ════════════════════════════════════════════════════════
   // Resource: meta
   // ════════════════════════════════════════════════════════
 

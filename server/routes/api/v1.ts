@@ -89,6 +89,51 @@ export function registerPublicApiV1Routes(app: Express) {
     });
   });
 
+  /**
+   * POST /api/v1/webhooks/test
+   * 代理商主動觸發一次測試 webhook（W12 D4）
+   *
+   * 用途：代理商可在 onboarding 階段測試自己的 webhook endpoint 是否能收到 + 簽章驗證是否正確
+   * 不影響真實事件流
+   */
+  app.post("/api/v1/webhooks/test", requireApiKey, rateLimit, (req, res) => {
+    const meta = req.apiKey!;
+
+    // 檢查是否有設 webhook URL
+    const shortKey = meta.keyId.slice(0, 8).replace(/[^a-zA-Z0-9_]/g, "_");
+    const webhookUrl = process.env[`API_KEY_WEBHOOK_URL_${shortKey}`];
+
+    if (!webhookUrl) {
+      return res.status(400).json({
+        error: {
+          code: "webhook_not_configured",
+          message: "您的 API key 尚未設定 webhook URL，請聯絡業務",
+          documentation_url: "https://game.homi.cc/api-docs",
+        },
+      });
+    }
+
+    // 派送測試事件
+    dispatchWebhook({
+      type: "webhook.test",
+      data: {
+        message: "這是測試 webhook、不對應真實活動",
+        keyId: meta.keyId,
+        label: meta.label,
+        timestamp: new Date().toISOString(),
+      },
+      apiKeyId: meta.keyId,
+    });
+
+    res.json({
+      object: "webhook_test",
+      dispatched: true,
+      url: webhookUrl,
+      eventType: "webhook.test",
+      message: "測試事件已派送、請檢查您的 webhook endpoint",
+    });
+  });
+
   app.get("/api/v1/scenarios", requireApiKey, rateLimit, (req, res) => {
     const statusFilter = req.query.status as string | undefined;
     const categoryFilter = req.query.category as string | undefined;
@@ -458,6 +503,63 @@ function buildOpenApiSpec(baseUrl: string): Record<string, unknown> {
             "200": { description: "情境詳情" },
             "404": {
               description: "Not found",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            },
+          },
+        },
+      },
+      "/keys/me": {
+        get: {
+          summary: "查自己 API key 的 metadata",
+          tags: ["Keys"],
+          responses: {
+            "200": {
+              description: "API key metadata（不含完整 key）",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      object: { type: "string", const: "api_key_metadata" },
+                      keyId: { type: "string" },
+                      label: { type: "string" },
+                      isTest: { type: "boolean" },
+                      fieldId: { type: "string", nullable: true },
+                      quota: { type: "integer", nullable: true },
+                    },
+                  },
+                },
+              },
+            },
+            "401": { description: "Missing or invalid API key" },
+          },
+        },
+      },
+      "/webhooks/test": {
+        post: {
+          summary: "派送測試 webhook 到您的 endpoint",
+          tags: ["Webhooks"],
+          description: "代理商在 onboarding 階段可用此 endpoint 驗證自己的 webhook URL + 簽章驗證是否正確。",
+          responses: {
+            "200": {
+              description: "測試事件已派送",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      object: { type: "string", const: "webhook_test" },
+                      dispatched: { type: "boolean" },
+                      url: { type: "string" },
+                      eventType: { type: "string" },
+                      message: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+            "400": {
+              description: "Webhook URL 尚未設定",
               content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
             },
           },
