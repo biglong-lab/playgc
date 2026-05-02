@@ -113,6 +113,9 @@ export const HOST_ONLY_COMPONENTS = [
   "host_crowd_gather",           // 簽到熱場
   "host_scoreboard_announcement", // 跑馬燈宣告
   "host_knowledge_map",          // 場域全景地圖
+
+  // Phase 2 規劃（W5+ 紀念類）
+  "host_polaroid_collage",       // 拍立得紀念牆（婚禮王牌）
 ] as const;
 
 // ============================================================================
