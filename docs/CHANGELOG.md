@@ -69,6 +69,36 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 3 W9 完整收尾 ✅（AI 內容 + 客戶 onboarding 工具完整化）
+**主題**：W9 5 天累計 + ADR-0006 付費機制技術選型 + W10 規劃
+**範圍**：W9 17 個檔、~1,560 行 + 5 個新文件
+
+**W9 5 天時序**：
+- D1（`63d0f629`）AI 內容生成 MVP（DeepSeek 整合）
+- D2（`959124d9`）AI 預覽 UI + 雙軌建場（紫色 AI / 綠色 default）
+- D3（`7c508f3a`）客戶 onboarding 文件包（onboarding + faq + cheatsheet）
+- D4（`f280a8d0`）情境使用統計（dashboard 紫色卡）
+- D5 收尾 + ADR-0006 + W10 規劃
+
+**新公開頁能力**：
+- /template-market/:id 多 AI 預覽 Card
+- /admin dashboard 多情境統計 Card
+
+**新 endpoint**：
+- POST /api/admin/scenarios/:id/ai-preview
+- GET /api/admin/scenarios/stats
+
+**Smoke test**：26/26 全綠（4b ai-preview + 4c stats）
+
+**ADR-0006 付費選型**：Stripe Checkout（一次性）+ Recur.tw（訂閱）雙軌
+
+**W10 路徑**：D1 Stripe / D2 解鎖機制 / D3 Recur.tw 訂閱 / D4 配額追蹤 / D5 收尾發票退款
+
+**完整收尾** → [changes/2026-05-02-phase3-w9-complete.md](changes/2026-05-02-phase3-w9-complete.md)
+**ADR-0006** → [decisions/0006-payment-system.md](decisions/0006-payment-system.md)
+
+⏭ 下一步：Phase 3 W10 D1 — Stripe Checkout 整合啟動
+
 ### 📊 Phase 3 W9 D4 ✅（情境使用統計）
 **主題**：admin dashboard 加情境使用統計 Card（最近 30 天）
 **範圍**：3 個檔案
