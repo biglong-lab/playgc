@@ -18,6 +18,7 @@ import { eq, and, gte } from "drizzle-orm";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 import { isAuthenticated } from "../firebaseAuth";
 import { randomBytes } from "crypto";
+import { dispatchWebhook } from "../lib/webhook-dispatcher";
 
 /** 簽發 12 小時 hostToken（32 字元 hex） */
 function generateHostToken(): string {
@@ -162,6 +163,38 @@ export function registerHostSessionRoutes(app: Express) {
             hostTokenExpiresAt: null,
           })
           .where(eq(gameSessions.id, req.params.id));
+
+        // W15 D4: 結束時派發 webhook（fire-and-forget）
+        // 取對應 game.description 中的 [scenario:<id>] + [via:api/v1] 標記
+        // 若是代理商（via:api/v1）建立的 → 用其 API key 派 webhook
+        if (session.gameId) {
+          const [game] = await db.select().from(games).where(eq(games.id, session.gameId));
+          if (game?.description?.includes("[via:api/v1]")) {
+            // 從 description 抽 scenarioId
+            const scenarioMatch = game.description.match(/\[scenario:([^\]]+)\]/);
+            // W15 D4 暫無 game→apiKey 對應、用 default API key 派發（W15 D5 補完整 mapping）
+            console.log("[host-sessions] [W15 D4] api/v1 host session ended:", {
+              gameId: session.gameId,
+              scenarioId: scenarioMatch?.[1],
+              note: "W15 D5 補 game→apiKey mapping 後自動派 webhook",
+            });
+          }
+
+          // 直接派 instance.expired 給場域的 default API key（如有）
+          const defaultApiKeyId = process.env.API_KEY_DEFAULT_FOR_WEBHOOKS;
+          if (defaultApiKeyId) {
+            dispatchWebhook({
+              type: "instance.expired",
+              data: {
+                sessionId: session.id,
+                gameId: session.gameId,
+                endedAt: new Date().toISOString(),
+                endedBy: req.admin.username || "admin",
+              },
+              apiKeyId: defaultApiKeyId,
+            });
+          }
+        }
 
         res.json({ success: true });
       } catch (err) {

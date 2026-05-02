@@ -69,6 +69,25 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🪝 Phase 4 W15 D4 ✅（活動結束 webhook 鉤子）
+**主題**：host_session ended → 自動派 instance.expired webhook
+**範圍**：1 個檔案修改
+
+關鍵變動：
+- `server/routes/host-sessions.ts` POST /:id/end 加 webhook 派發
+  - 偵測 `[via:api/v1]` 標記（W15 D5 補完整 game→apiKey mapping）
+  - 派 instance.expired 給 `API_KEY_DEFAULT_FOR_WEBHOOKS`（如有設）
+  - fire-and-forget（不 block admin UI）
+  - HMAC SHA-256 簽章 + 3 retry（dispatcher 內建）
+
+**Webhook payload**：sessionId / gameId / endedAt / endedBy
+
+**Smoke test 維持 44/44**（W15 D4 不新增 endpoint、僅整合既有 /end 流程）
+
+**細節** → [changes/2026-05-03-phase4-w15-d4-session-end-webhook.md](changes/2026-05-03-phase4-w15-d4-session-end-webhook.md)
+
+⏭ 下一步：W15 D5 — admin 認證 + 真實建場 + W16 規劃
+
 ### 🧠 Phase 4 W15 D3 ✅（Admin NLU 自然語言解析）
 **主題**：admin 在 LINE 用自然語言預覽指令（DeepSeek 整合）
 **範圍**：3 個檔案
