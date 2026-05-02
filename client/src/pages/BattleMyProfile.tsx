@@ -8,10 +8,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBattleFieldId } from "@/hooks/useBattleFieldId";
 import { apiRequest } from "@/lib/queryClient";
 import BattleLayout from "@/components/battle/BattleLayout";
-import type { BattlePlayerRanking, BattleClan, BattleClanMember } from "@shared/schema";
+import type { BattlePlayerRanking } from "@shared/schema";
 import {
   Trophy, Shield, Flame, Crown,
   History as HistoryIcon, Medal, Calendar,
+  ChevronRight,
 } from "lucide-react";
 
 interface MyRankingResponse extends BattlePlayerRanking {
@@ -19,9 +20,16 @@ interface MyRankingResponse extends BattlePlayerRanking {
   winRate: number;
 }
 
-interface MyClanResponse extends BattleClan {
-  myRole: string;
-  members: BattleClanMember[];
+// 🆕 Squad 系統一次到位（PR2）：用 squads 取代 battle_clans
+interface MySquad {
+  id: string;
+  name: string;
+  tag: string;
+  description: string | null;
+  primaryColor: string | null;
+  status: string;
+  myRole: "leader" | "officer" | "member";
+  joinedAt: string;
 }
 
 export default function BattleMyProfile() {
@@ -41,18 +49,16 @@ export default function BattleMyProfile() {
     enabled: !!fieldId && !!user,
   });
 
-  const { data: myClan } = useQuery<MyClanResponse | null>({
-    queryKey: ["/api/battle/my/clan", fieldId],
+  // 🆕 Squad 系統一次到位（PR2）：取代 /api/battle/my/clan
+  const { data: squadsData } = useQuery<{ memberships: MySquad[] }>({
+    queryKey: ["/api/me/squads"],
     queryFn: async () => {
-      try {
-        const res = await apiRequest("GET", `/api/battle/my/clan?fieldId=${fieldId}`);
-        return res.json();
-      } catch {
-        return null;
-      }
+      const res = await apiRequest("GET", "/api/me/squads");
+      return res.json();
     },
-    enabled: !!fieldId && !!user,
+    enabled: !!user,
   });
+  const activeSquads = (squadsData?.memberships ?? []).filter((s) => s.status === "active");
 
   return (
     <BattleLayout title="我的戰鬥檔案">
@@ -100,38 +106,64 @@ export default function BattleMyProfile() {
           </Card>
         )}
 
-        {/* 我的隊伍 */}
+        {/* 我的隊伍（Squad 系統一次到位 PR2 — 改用 /api/me/squads）*/}
         <Card className="bg-card border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Shield className="h-4 w-4" /> 我的隊伍
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {myClan ? (
-              <Link href={`/battle/clan/${myClan.id}`}>
-                <div className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-card/80 cursor-pointer transition-colors">
-                  <div>
-                    <p className="font-semibold">[{myClan.tag}] {myClan.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {myClan.members.filter((m) => !m.leftAt).length} 名成員 · 積分 {myClan.clanRating}
-                    </p>
-                  </div>
-                  <Badge variant="outline">
-                    {myClan.myRole === "leader" && <Crown className="h-3 w-3 mr-1 text-yellow-500" />}
-                    {myClan.myRole === "leader" ? "隊長" : myClan.myRole === "officer" ? "幹部" : "隊員"}
-                  </Badge>
-                </div>
-              </Link>
+          <CardContent className="space-y-2">
+            {activeSquads.length > 0 ? (
+              <>
+                {activeSquads.map((squad) => {
+                  const color = squad.primaryColor || "#a855f7";
+                  return (
+                    <Link key={squad.id} href={`/squad/${squad.id}`}>
+                      <div
+                        className="flex items-center justify-between p-3 rounded-lg border border-border hover:bg-card/80 cursor-pointer transition-colors"
+                        data-testid={`battle-my-squad-${squad.id}`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div
+                            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 font-bold text-xs"
+                            style={{ backgroundColor: `${color}25`, color }}
+                          >
+                            [{squad.tag}]
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold truncate">{squad.name}</p>
+                            {squad.description && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {squad.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="shrink-0">
+                          {squad.myRole === "leader" && <Crown className="h-3 w-3 mr-1 text-yellow-500" />}
+                          {squad.myRole === "leader" ? "隊長" : squad.myRole === "officer" ? "幹部" : "隊員"}
+                        </Badge>
+                      </div>
+                    </Link>
+                  );
+                })}
+                <Link href="/me/squads">
+                  <Button variant="ghost" size="sm" className="w-full gap-1 text-xs">
+                    管理所有隊伍
+                    <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </Link>
+              </>
             ) : (
               <div className="text-center py-4">
                 <p className="text-muted-foreground text-sm mb-1">你還沒有加入任何隊伍</p>
                 <p className="text-xs text-muted-foreground mb-3">
-                  與隊友一起戰鬥、累積隊伍積分
+                  與隊友一起戰鬥、累積跨遊戲戰績
                 </p>
                 <div className="flex gap-2 justify-center flex-wrap">
-                  <Link href="/battle/clan/create">
-                    <Button size="sm">建立隊伍</Button>
+                  <Link href="/squad/create">
+                    <Button size="sm" data-testid="btn-battle-create-squad">建立隊伍</Button>
                   </Link>
                   <Link href="/battle/ranking">
                     <Button size="sm" variant="outline">瀏覽排行榜</Button>

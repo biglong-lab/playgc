@@ -91,7 +91,7 @@ function QuickNav() {
   const navItems = [
     { href: "/battle/my", icon: User, label: "我的檔案", color: "text-primary" },
     { href: "/battle/ranking", icon: Trophy, label: "排行榜", color: "text-tactical-orange" },
-    { href: "/battle/clan/create", icon: Shield, label: "隊伍", color: "text-purple-400" },
+    { href: "/me/squads", icon: Shield, label: "隊伍", color: "text-purple-400" },
     { href: "/battle/notifications", icon: Bell, label: "通知", color: "text-orange-400" },
     { href: "/battle/achievements", icon: Medal, label: "成就", color: "text-amber-400" },
     { href: "/battle/history", icon: History, label: "歷史", color: "text-muted-foreground" },
