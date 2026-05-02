@@ -69,6 +69,25 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🔀 Phase 2 W6 D3 ✅（混合情境一鍵建場）
+**主題**：移除 pure-host 限制、所有 11 個情境都可一鍵建場
+**範圍**：1 天、後端 endpoint 擴充 + 前端 axis-aware UI
+
+關鍵變動：
+- scenarios.ts ScenarioInstance 介面 axis-aware（host vs multi/solo/shared）
+- getDefaultConfigForPageType 擴充支援 13 個 multi 元件 + shared
+- getGameModeForComponent 依 axis 推導 gameMode（multi → team）
+- 回應加 breakdown { host, multi, other }
+- TemplateMarketDetail 移除 isPureHost 守衛
+- InstanceRow axis-aware 顯示對應 URL
+- UrlRow 元件抽取（DRY）
+
+**11 情境全部可一鍵建場**：婚禮 / 生日 / 同學會 / 街區走讀 / 商圈打卡 / 園遊會 / 破冰 / 頒獎 / 企業內訓 / 員工旅遊 / 場域故事
+
+**細節** → [changes/2026-05-02-phase2-w6-d3-mixed-scenarios.md](changes/2026-05-02-phase2-w6-d3-mixed-scenarios.md)
+
+⏭ 下一步：W6 D4 — QR code 生成 + 列印頁
+
 ### ⚡ Phase 2 W6 D2 ✅（Scenario Instantiate 一鍵建場）
 **主題**：admin 從情境詳情頁一鍵建好所有大螢幕場次
 **範圍**：1 天、3 個檔案、後端 endpoint + 前端完整 UX

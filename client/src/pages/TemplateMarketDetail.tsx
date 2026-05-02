@@ -16,13 +16,19 @@ import { apiRequest } from "@/lib/queryClient";
 import { toast } from "@/hooks/use-toast";
 
 interface ScenarioInstance {
-  sessionId: string;
+  axis: "host" | "multi" | "solo" | "shared";
   gameId: string;
   pageType: string;
   label: string;
-  hostUrl: string;
-  playUrl: string;
-  hostToken: string;
+  role: string;
+  // host 才有
+  sessionId?: string;
+  hostUrl?: string;
+  playUrl?: string;
+  hostToken?: string;
+  // multi/solo/shared 才有
+  gameUrl?: string;
+  publicSlug?: string;
 }
 
 interface InstantiateResponse {
@@ -31,6 +37,7 @@ interface InstantiateResponse {
   expiresAt: string;
   instances: ScenarioInstance[];
   totalCreated: number;
+  breakdown: { host: number; multi: number; other: number };
 }
 
 export default function TemplateMarketDetail() {
@@ -42,8 +49,6 @@ export default function TemplateMarketDetail() {
 
   const scenarioId = params?.scenarioId;
   const scenario = scenarioId ? getScenarioById(scenarioId) : undefined;
-
-  const isPureHost = scenario?.components.every((c) => c.axis === "host") ?? false;
 
   const handleLaunch = async () => {
     if (!scenarioId) return;
@@ -171,8 +176,8 @@ export default function TemplateMarketDetail() {
           </CardContent>
         </Card>
 
-        {/* Admin 一鍵建場（W6 D2）*/}
-        {admin && isPureHost && (
+        {/* Admin 一鍵建場（W6 D2 + D3 含混合情境）*/}
+        {admin && (
           <Card className="bg-emerald-500/10 border-emerald-500/30">
             <CardContent className="p-6 space-y-3 text-center">
               <h3 className="font-display font-bold text-lg flex items-center justify-center gap-2">
@@ -180,8 +185,8 @@ export default function TemplateMarketDetail() {
                 Admin 一鍵建場
               </h3>
               <p className="text-sm text-muted-foreground">
-                為這個情境的 {scenario.components.length} 個元件，一次建好所有大螢幕場次。<br />
-                每個場次都會有獨立的 hostUrl + playUrl，12 小時內有效。
+                為這個情境的 {scenario.components.length} 個元件，一次建好所有 game + 場次。<br />
+                host 元件 → 12h hostToken / multi solo 元件 → publicSlug 玩家入口
               </p>
               <Button
                 size="lg"
@@ -198,7 +203,7 @@ export default function TemplateMarketDetail() {
                 ) : (
                   <>
                     <Zap className="w-4 h-4 mr-1" />
-                    立即建立 {scenario.components.length} 個場次
+                    立即建立 {scenario.components.length} 個元件實例
                   </>
                 )}
               </Button>
@@ -206,11 +211,11 @@ export default function TemplateMarketDetail() {
           </Card>
         )}
 
-        {!admin && isPureHost && (
+        {!admin && (
           <Card className="bg-amber-500/10 border-amber-500/30">
             <CardContent className="p-5 text-center space-y-2">
               <p className="text-sm">
-                💡 Admin 登入後可看到「一鍵建場」按鈕，自動為這個情境建好所有大螢幕場次
+                💡 Admin 登入後可看到「一鍵建場」按鈕，自動為這個情境建好所有元件實例
               </p>
               <Link href="/admin/login">
                 <Button size="sm" variant="outline">
@@ -225,9 +230,7 @@ export default function TemplateMarketDetail() {
         <section className="text-center space-y-4 py-6">
           <h3 className="font-display font-bold text-lg">看好了？開始建一個</h3>
           <p className="text-sm text-muted-foreground">
-            {isPureHost
-              ? "上方一鍵建場（admin 限定），或自訂內容後手動建立"
-              : "此情境含多軸線元件，需手動建 game + 配合 host session（W7 補上自動化）"}
+            上方一鍵建場（admin 限定）為跨軸線情境一次建好所有元件實例，或下方手動操作既有後台
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/showcase">
@@ -257,9 +260,24 @@ export default function TemplateMarketDetail() {
           </DialogHeader>
           {launchResult && (
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                建立了 <span className="font-bold text-foreground">{launchResult.totalCreated}</span> 個大螢幕場次
-                ，{new Date(launchResult.expiresAt).toLocaleString("zh-TW")} 前有效
+              <div className="text-sm text-muted-foreground space-y-1">
+                <div>
+                  建立了 <span className="font-bold text-foreground">{launchResult.totalCreated}</span> 個元件實例
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  {launchResult.breakdown.host > 0 && (
+                    <Badge variant="outline">📺 大螢幕 × {launchResult.breakdown.host}</Badge>
+                  )}
+                  {launchResult.breakdown.multi > 0 && (
+                    <Badge variant="outline">👥 隊伍 × {launchResult.breakdown.multi}</Badge>
+                  )}
+                  {launchResult.breakdown.other > 0 && (
+                    <Badge variant="outline">👤 其他 × {launchResult.breakdown.other}</Badge>
+                  )}
+                </div>
+                <div className="text-xs">
+                  hostToken {new Date(launchResult.expiresAt).toLocaleString("zh-TW")} 前有效
+                </div>
               </div>
               <div className="space-y-2">
                 {launchResult.instances.map((inst) => (
@@ -286,9 +304,6 @@ export default function TemplateMarketDetail() {
 }
 
 function InstanceRow({ instance }: { instance: ScenarioInstance }) {
-  const fullHostUrl = `${window.location.origin}${instance.hostUrl}`;
-  const fullPlayUrl = `${window.location.origin}${instance.playUrl}`;
-
   const handleCopy = async (url: string, label: string) => {
     try {
       await navigator.clipboard.writeText(url);
@@ -298,38 +313,59 @@ function InstanceRow({ instance }: { instance: ScenarioInstance }) {
     }
   };
 
+  const axisLabel = {
+    host: { emoji: "📺", label: "大螢幕主控", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400" },
+    multi: { emoji: "👥", label: "隊伍協作", color: "bg-purple-500/10 text-purple-700 dark:text-purple-400" },
+    solo: { emoji: "👤", label: "個人闖關", color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
+    shared: { emoji: "🧩", label: "通用元件", color: "bg-zinc-500/10 text-zinc-700 dark:text-zinc-400" },
+  }[instance.axis];
+
   return (
     <div className="rounded-lg border bg-card p-3 space-y-2" data-testid={`instance-${instance.pageType}`}>
-      <div className="flex items-center justify-between">
-        <div className="font-medium text-sm">📺 {instance.label}</div>
-        <Badge variant="outline" className="text-xs">{instance.pageType}</Badge>
+      <div className="flex items-center justify-between flex-wrap gap-1">
+        <div className="font-medium text-sm">{axisLabel.emoji} {instance.label}</div>
+        <div className="flex items-center gap-1">
+          <Badge className={`text-xs ${axisLabel.color}`}>{axisLabel.label}</Badge>
+          <Badge variant="outline" className="text-xs">{instance.pageType}</Badge>
+        </div>
       </div>
       <div className="space-y-1.5">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground w-12 flex-shrink-0">大螢幕</span>
-          <code className="text-xs flex-1 truncate bg-muted px-2 py-1 rounded">{fullHostUrl}</code>
-          <Button size="sm" variant="ghost" onClick={() => handleCopy(fullHostUrl, "大螢幕")}>
-            <Copy className="w-3 h-3" />
-          </Button>
-          <a href={instance.hostUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm" variant="ghost">
-              <ExternalLink className="w-3 h-3" />
-            </Button>
-          </a>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground w-12 flex-shrink-0">玩家</span>
-          <code className="text-xs flex-1 truncate bg-muted px-2 py-1 rounded">{fullPlayUrl}</code>
-          <Button size="sm" variant="ghost" onClick={() => handleCopy(fullPlayUrl, "玩家")}>
-            <Copy className="w-3 h-3" />
-          </Button>
-          <a href={instance.playUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="sm" variant="ghost">
-              <ExternalLink className="w-3 h-3" />
-            </Button>
-          </a>
-        </div>
+        {instance.axis === "host" && instance.hostUrl && instance.playUrl && (
+          <>
+            <UrlRow label="大螢幕" url={instance.hostUrl} onCopy={(u) => handleCopy(u, "大螢幕")} />
+            <UrlRow label="玩家" url={instance.playUrl} onCopy={(u) => handleCopy(u, "玩家")} />
+          </>
+        )}
+        {instance.axis !== "host" && instance.gameUrl && (
+          <UrlRow label="玩家入口" url={instance.gameUrl} onCopy={(u) => handleCopy(u, "玩家")} />
+        )}
       </div>
+    </div>
+  );
+}
+
+function UrlRow({
+  label,
+  url,
+  onCopy,
+}: {
+  label: string;
+  url: string;
+  onCopy: (full: string) => void;
+}) {
+  const fullUrl = `${window.location.origin}${url}`;
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-xs text-muted-foreground w-16 flex-shrink-0">{label}</span>
+      <code className="text-xs flex-1 truncate bg-muted px-2 py-1 rounded">{fullUrl}</code>
+      <Button size="sm" variant="ghost" onClick={() => onCopy(fullUrl)}>
+        <Copy className="w-3 h-3" />
+      </Button>
+      <a href={url} target="_blank" rel="noopener noreferrer">
+        <Button size="sm" variant="ghost">
+          <ExternalLink className="w-3 h-3" />
+        </Button>
+      </a>
     </div>
   );
 }
