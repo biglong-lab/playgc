@@ -90,7 +90,10 @@ export default defineConfig({
         background_color: "#111827",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/home",
+        // 🆕 PWA 啟動 — 走 SmartRedirect 流程（依 lastVisitedField 智能跳轉）
+        // 不直接寫死 /home（無 fieldCode），避免依賴 cache 跑錯場域
+        // ?launch=pwa 給 client 統計用（區分 PWA 啟動 vs 直接開網址）
+        start_url: "/home?launch=pwa",
         scope: "/",
         lang: "zh-TW",
         icons: [

@@ -1,15 +1,17 @@
 // 🔀 SmartRedirect — 把 legacy 路徑（/home /leaderboard /me /purchases）
 // 自動轉到當前場域的對應 /f/{code}/<path>
 //
-// 邏輯：
-//   1. 讀 localStorage.lastFieldCode → 有就導 /f/{code}{to}
-//   2. 沒有 → 導 /f（讓使用者先選場域）
+// 邏輯（v2 — 2026-05-02）：
+//   1. 優先讀 lastVisitedField（玩家主動造訪過）— 防 PWA cache 跑錯場域
+//   2. fallback 到 lastFieldCode（舊邏輯）
+//   3. 都沒有 → 導 /f（讓使用者選場域）
 //
 // 使用場景：App.tsx 把舊路徑套上這個元件，保持 URL 一致性
 import { useEffect } from "react";
 import { useLocation } from "wouter";
+import { getLastVisitedField } from "@/lib/last-visited-field";
 
-/** 同步讀取上次場域 code */
+/** 同步讀取上次場域 code（fallback：lastFieldCode 是 cache 寫入） */
 function readLastFieldCode(): string | null {
   if (typeof window === "undefined") return null;
   try {
@@ -34,7 +36,8 @@ export default function SmartRedirect({ to }: SmartRedirectProps) {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    const code = readLastFieldCode();
+    // 🆕 v2：優先讀「主動造訪」的場域，再 fallback 到 cache
+    const code = getLastVisitedField() || readLastFieldCode();
     // 保留原本的 query string 和 hash（例如 ?replay=true）
     const search = typeof window !== "undefined" ? window.location.search : "";
     const hash = typeof window !== "undefined" ? window.location.hash : "";

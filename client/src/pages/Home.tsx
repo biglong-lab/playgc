@@ -24,6 +24,7 @@ import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
+import { setLastVisitedField } from "@/lib/last-visited-field";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import OptimizedImage from "@/components/shared/OptimizedImage";
@@ -103,6 +104,14 @@ export default function Home() {
   const urlParams = useParams<{ fieldCode?: string }>();
   const urlFieldCode = urlParams.fieldCode?.toUpperCase();
   const currentFieldCode = urlFieldCode || currentField?.code;
+
+  // 🆕 PWA 智能路由：玩家主動進到場域 home，記錄為「主動造訪場域」
+  //    用於 PWA 從桌面 launch 時智能跳轉（避免 cache 殘留跑錯場域）
+  useEffect(() => {
+    if (urlFieldCode) {
+      setLastVisitedField(urlFieldCode);
+    }
+  }, [urlFieldCode]);
 
   // 🆕 admin 是否能編輯這個場域（super_admin 或當前場域 admin）
   // 🐛 修 (2026-04-30)：原本 admin.fieldCode === currentFieldCode 比對失敗

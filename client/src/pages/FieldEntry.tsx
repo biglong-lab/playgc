@@ -40,6 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import GenericCoverFallback from "@/components/shared/GenericCoverFallback";
 import { daysUntilDate, formatRemainingDays } from "@/lib/date-utils";
+import { setLastVisitedField } from "@/lib/last-visited-field";
 
 interface FieldItem {
   id: string;
@@ -331,7 +332,10 @@ export default function FieldEntry() {
                   <FieldCard
                     field={lastField}
                     highlighted
-                    onClick={() => setLocation(`/f/${lastField.code}`)}
+                    onClick={() => {
+                      setLastVisitedField(lastField.code);
+                      setLocation(`/f/${lastField.code}`);
+                    }}
                   />
                 </div>
               )}
@@ -348,7 +352,10 @@ export default function FieldEntry() {
                         key={f.id}
                         field={f}
                         eager={!lastField && idx < 2}
-                        onClick={() => setLocation(`/f/${f.code}`)}
+                        onClick={() => {
+                          setLastVisitedField(f.code);
+                          setLocation(`/f/${f.code}`);
+                        }}
                       />
                     ))}
                   </div>
