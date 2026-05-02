@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🪝 Phase 4 W14 D3 ✅（useMyUserName hook + 4 Page 元件整合）
+**主題**：所有主要 host 元件統一從 hook 取 LINE 名字
+**範圍**：5 個檔案
+
+關鍵變動：
+- `client/src/hooks/useMyUserName.ts` 新 hook
+  - URL query > localStorage > "" 三層優先序
+  - 跨 tab 同步（listen storage event）
+  - 30 字內限制
+- 4 個 Page 元件整合：
+  - PolaroidCollagePage（婚禮王牌）
+  - GuestbookDigitalPage（婚禮配套）
+  - TriviaShowdownPage（園遊會主舞台）
+  - KnowledgeMapPage（街區走讀，prop 向下相容）
+
+**Pattern**：`lineName || useAuth user || "匿名"`
+
+**Smoke test 維持 41/41**
+
+**細節** → [changes/2026-05-03-phase4-w14-d3-username-hook.md](changes/2026-05-03-phase4-w14-d3-username-hook.md)
+
+⏭ 下一步：W14 D4 — QR code LIFF URL 選項
+
 ### 👋 Phase 4 W14 D2 ✅（LINE profile 整合到 /play）
 **主題**：玩家從 LINE 進入後自動帶名字、不用手動輸入
 **範圍**：3 個檔案

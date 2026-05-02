@@ -2,6 +2,7 @@
 
 import KnowledgeMap, { type KnowledgeMapConfig } from "./KnowledgeMap";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
+import { useMyUserName } from "@/hooks/useMyUserName";
 import type { Page } from "@shared/schema";
 
 interface KnowledgeMapPageProps {
@@ -44,7 +45,10 @@ function reduceVisit(
   return { visits };
 }
 
-export default function KnowledgeMapPage({ page, myUserName }: KnowledgeMapPageProps) {
+export default function KnowledgeMapPage({ page, myUserName: propUserName }: KnowledgeMapPageProps) {
+  // W14 D3: hook 優先 → 既有 prop fallback（向下相容）
+  const lineName = useMyUserName();
+  const myUserName = lineName || propUserName;
   const rawConfig = (page.config as { config?: KnowledgeMapConfig } | KnowledgeMapConfig | null) ?? null;
   const config: KnowledgeMapConfig =
     (rawConfig && "config" in rawConfig

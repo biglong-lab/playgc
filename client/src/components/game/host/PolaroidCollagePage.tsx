@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import PolaroidCollage, { type PolaroidCollageConfig } from "./PolaroidCollage";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import { useAuth } from "@/hooks/useAuth";
+import { useMyUserName } from "@/hooks/useMyUserName";
 import type { Page } from "@shared/schema";
 
 interface PolaroidCollagePageProps {
@@ -26,8 +27,10 @@ interface PolaroidCollageStateShape {
 const MAX_POLAROIDS = 100;
 
 export default function PolaroidCollagePage({ page }: PolaroidCollagePageProps) {
+  // W14 D3: 優先讀 LIFF / localStorage、fallback 到 useAuth（admin 大螢幕端）
+  const lineName = useMyUserName();
   const { user } = useAuth();
-  const myUserName = user?.firstName || user?.email?.split("@")[0] || "匿名";
+  const myUserName = lineName || user?.firstName || user?.email?.split("@")[0] || "匿名";
 
   const rawConfig = (page.config as { config?: PolaroidCollageConfig } | PolaroidCollageConfig | null) ?? null;
   const config: PolaroidCollageConfig =

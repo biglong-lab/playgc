@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import TriviaShowdown, { type TriviaShowdownConfig } from "./TriviaShowdown";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import { useAuth } from "@/hooks/useAuth";
+import { useMyUserName } from "@/hooks/useMyUserName";
 import type { Page } from "@shared/schema";
 
 interface TriviaShowdownPageProps {
@@ -26,8 +27,10 @@ interface TriviaShowdownStateShape {
 const DEFAULT_SCORE_BY_RANK = [100, 75, 50, 25];
 
 export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
+  // W14 D3: LINE 名字優先 → admin 帳號 fallback → 匿名
+  const lineName = useMyUserName();
   const { user } = useAuth();
-  const myUserName = user?.firstName || user?.email?.split("@")[0] || "匿名";
+  const myUserName = lineName || user?.firstName || user?.email?.split("@")[0] || "匿名";
 
   const rawConfig = (page.config as { config?: TriviaShowdownConfig } | TriviaShowdownConfig | null) ?? null;
   const config: TriviaShowdownConfig =

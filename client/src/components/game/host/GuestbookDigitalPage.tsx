@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import GuestbookDigital, { type GuestbookDigitalConfig } from "./GuestbookDigital";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import { useAuth } from "@/hooks/useAuth";
+import { useMyUserName } from "@/hooks/useMyUserName";
 import type { Page } from "@shared/schema";
 
 interface GuestbookDigitalPageProps {
@@ -24,8 +25,10 @@ interface GuestbookDigitalStateShape {
 const MAX_ENTRIES = 200;
 
 export default function GuestbookDigitalPage({ page }: GuestbookDigitalPageProps) {
+  // W14 D3: LINE 名字優先 → admin 帳號 fallback
+  const lineName = useMyUserName();
   const { user } = useAuth();
-  const myUserName = user?.firstName || user?.email?.split("@")[0] || "";
+  const myUserName = lineName || user?.firstName || user?.email?.split("@")[0] || "";
 
   const rawConfig = (page.config as { config?: GuestbookDigitalConfig } | GuestbookDigitalConfig | null) ?? null;
   const config: GuestbookDigitalConfig =
