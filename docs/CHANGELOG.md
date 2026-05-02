@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📋 Phase 3 規劃啟動 ✅（W8 D5 — ADR-0005 + W9-W12 路徑書）
+**主題**：Phase 2 收尾、Phase 3 真實付費 + AI 內容 + 業務 API 規劃
+
+關鍵變動：
+- `docs/decisions/0005-phase3-direction.md` ADR-0005 方向決策
+- `docs/changes/2026-05-02-phase3-plan.md` W9-W12 4 週路徑書
+
+**W9-W12 路徑**：
+- W9 PMF 驗證（第一場付費活動）+ DeepSeek AI 內容 MVP
+- W10 付費機制（Stripe Checkout + Recur.tw 訂閱 + 用量配額）
+- W11 業務 API（public REST + API key + 代理商 onboarding）
+- W12 第 2-3 場活動 + Phase 3 收尾
+
+**6 個選項評估**：A 真實活動 / B 付費機制 / C AI 內容 / D 業務 API / E 多語系 / F LINE 整合
+**選定組合**：A + C → B → D → A 收尾（暫緩 E、F）
+
+**目標**：Phase 3 結束時 ≥ 3 場真實付費 + 1 個月訂閱 + 1 個 API 代理商 + NT$30K-50K
+
+**細節**：
+- ADR-0005 → [decisions/0005-phase3-direction.md](decisions/0005-phase3-direction.md)
+- W9-W12 路徑 → [changes/2026-05-02-phase3-plan.md](changes/2026-05-02-phase3-plan.md)
+
+⏭ 下一步：W9 D1 — 找第一個付費客戶 + DeepSeek AI 內容生成
+
 ### 🎉 Phase 2 完整收尾 ✅（W5-W8 四週路徑全部完成）
 **主題**：從元件展示進化到完整 SaaS 平台
 **範圍**：4 週、19 commits、27 個新檔、~5,620 行、120+ 測試
