@@ -189,13 +189,41 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
           //
           // 注意：水彈對戰可能是 clan vs clan，也可能是 random matchmaking
           //
-          // 取每個 user 的 clan 資訊
+          // 🆕 PR5：優先從 battle_registrations.squadId 取（PR3b 寫入）
+          //   玩家以「永久隊伍」報名 → 戰績寫入該 squad
+          //   若沒有 squadId → 沿用 battle_clans（向後相容）
+          //   全沒有 → solo
           const userClansMap = new Map<string, string | null>();
-          for (const pr of savedPlayerResults) {
-            const userClan = await battleStorageMethods
-              .getUserClan(pr.userId, realFieldId)
-              .catch(() => null);
-            userClansMap.set(pr.userId, userClan?.clan?.id ?? null);
+          const userSquadTypeMap = new Map<string, "squad" | "clan">();
+          {
+            const { db: dbInstance } = await import("../db");
+            const { battleRegistrations } = await import("@shared/schema");
+            const { eq: eqOp, and: andOp } = await import("drizzle-orm");
+
+            for (const pr of savedPlayerResults) {
+              // 1) 先看玩家本場 registration 的 squadId
+              const [reg] = await dbInstance
+                .select()
+                .from(battleRegistrations)
+                .where(
+                  andOp(
+                    eqOp(battleRegistrations.slotId, slotId),
+                    eqOp(battleRegistrations.userId, pr.userId),
+                  ),
+                )
+                .limit(1);
+              if (reg?.squadId) {
+                userClansMap.set(pr.userId, reg.squadId);
+                userSquadTypeMap.set(pr.userId, "squad");
+                continue;
+              }
+              // 2) 退回到 battle_clans（向後相容）
+              const userClan = await battleStorageMethods
+                .getUserClan(pr.userId, realFieldId)
+                .catch(() => null);
+              userClansMap.set(pr.userId, userClan?.clan?.id ?? null);
+              if (userClan?.clan?.id) userSquadTypeMap.set(pr.userId, "clan");
+            }
           }
 
           // 4. 對每個玩家寫 squad_record
@@ -210,7 +238,10 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
 
             const clanId = userClansMap.get(pr.userId);
             const squadId = clanId ?? `solo:${pr.userId}`;
-            const squadType = clanId ? "clan" : "premade_group";
+            // 🆕 PR5：squadType 依來源 — squad（PR3b 寫的）/ clan（舊）/ premade_group（solo）
+            const detectedType = userSquadTypeMap.get(pr.userId);
+            const squadType: "squad" | "clan" | "premade_group" =
+              detectedType ?? "premade_group";
 
             // clan 玩家：每個 clan 只寫一筆（避免 N 個玩家寫 N 筆同戰績）
             if (clanId) {

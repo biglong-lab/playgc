@@ -17,10 +17,38 @@ import {
   squadMatchRecords,
   squadRatings,
   squadStats,
+  teams,
+  teamSessions,
 } from "@shared/schema";
 import { eq, and, sql, desc, gte } from "drizzle-orm";
 import type { GameSession } from "@shared/schema";
 import { calcRewards, deriveTier } from "./squad-rating-calc";
+
+/**
+ * 找出 session 對應的 team 的真正 squadId（PR4 之後）
+ *
+ * 流程：
+ *   sessions.id → team_sessions.sessionId → teams.id → teams.squadId
+ *
+ * 回傳：
+ *   - 真正的 squads.id（玩家以隊伍身份開場）
+ *   - null（純臨時組隊，無關聯 squad）
+ */
+async function findRealSquadIdFromSession(
+  sessionId: string,
+): Promise<string | null> {
+  try {
+    const [row] = await db
+      .select({ squadId: teams.squadId })
+      .from(teamSessions)
+      .innerJoin(teams, eq(teams.id, teamSessions.teamId))
+      .where(eq(teamSessions.sessionId, sessionId))
+      .limit(1);
+    return row?.squadId ?? null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * 從一般遊戲 session 完成事件寫入 squad record
@@ -52,10 +80,12 @@ export async function writeSquadRecordFromSession(
   });
   if (!game) return;
 
-  // 推算 squadType + 遊戲類型
-  // 暫用 teamName 當 squadId（Phase 5 統一 squad 後改用 squad.id）
-  const squadId = `team:${session.gameId}:${teamName}`; // 臨時 squadId
-  const squadType = "team";
+  // 🆕 PR5：優先查 team.squadId（玩家以永久隊伍開場）
+  //   找到 → 寫入真正的 squad，戰績匯入永久隊伍
+  //   沒有 → 沿用 teamName-based 臨時 ID（純臨時組隊）
+  const realSquadId = await findRealSquadIdFromSession(session.id);
+  const squadId = realSquadId ?? `team:${session.gameId}:${teamName}`;
+  const squadType = realSquadId ? "squad" : "team";
 
   // 推算 game_type（map 既有 game.gameMode 到 SquadGameType）
   const gameType = mapGameModeToSquadType(game.gameMode);
@@ -220,7 +250,8 @@ export async function writeSquadRecordFromSession(
  */
 export async function writeSquadRecordFromBattle(opts: {
   squadId: string;
-  squadType: "clan" | "premade_group";
+  // 🆕 PR5：加 "squad" 支援（PR3b 後玩家以永久 squad 報名水彈）
+  squadType: "squad" | "clan" | "premade_group";
   result: "win" | "loss" | "draw";
   slotId: string;
   fieldId: string;
