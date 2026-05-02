@@ -71,6 +71,32 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### 📊 Phase 5 W17 D4 ✅（Admin Pilot 健康度雛形 endpoint）
+**主題**：admin 一個 endpoint 看平台運作（為 W20 觀測儀表板鋪路）
+**範圍**：1 新檔 + 2 修改
+
+關鍵變動：
+- `server/routes/admin-pilot-health.ts`（新）
+  - GET /api/admin/pilot/health（admin 認證）
+  - 三大區塊：activity / coverage / serviceStatus
+  - 場域過濾（super_admin / 一般 admin）
+  - 不暴露 secrets（只看 service 有沒配置）
+- 註冊到 routes/index.ts
+- smoke test 加 401 驗證
+
+**回傳結構**：
+- activity：activeSessions / completedSessions30d / totalSessions30d / completionRate
+- coverage：distinctScenarios / scenarioIds / fieldsCount
+- serviceStatus：lineBot / lineNlu / cronEnabled / webhookDispatch / payment / email / ai
+
+**Smoke test 50 → 51**
+
+**雛形原則**：W17 D4 endpoint only、W20 才做完整 UI（看真實數據後再設計）
+
+**細節** → [changes/2026-05-03-phase5-w17-d4-pilot-health.md](changes/2026-05-03-phase5-w17-d4-pilot-health.md)
+
+⏭ 下一步：W17 D5 — W17 業務週 retro + W18 元件擴充清單
+
 ### 💰 Phase 5 W17 D3 ✅（ROI 計算機公開頁）
 **主題**：客戶填 3 參數即時試算 ROI（業務殺手級工具）
 **範圍**：1 新檔 + 3 修改

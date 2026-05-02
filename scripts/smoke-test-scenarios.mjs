@@ -314,6 +314,16 @@ async function runSmokeTest() {
   // 5g. LIFF 玩家入口（W14 D1）
   await check("GET /liff/play/test", 200, () => checkStatus(`${BASE_URL}/liff/play/test-w14`, 200));
 
+  // 5j. Admin Pilot Health endpoint（W17 D4）
+  console.log(`${COLOR.bold}── Section 5j: Admin Pilot Health（W17 D4）──${COLOR.reset}`);
+  await check("GET /api/admin/pilot/health（無認證 → 401）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/admin/pilot/health`);
+    if (res.status !== 401) {
+      return { ok: false, error: `expected 401, got ${res.status}` };
+    }
+    return { ok: true };
+  });
+
   // 5i. Cron endpoints（W16 D4）
   console.log(`${COLOR.bold}── Section 5i: Cron Endpoints（W16 D4）──${COLOR.reset}`);
   await check("GET /api/cron/health（公開、不洩漏 secret）", 200, async () => {
