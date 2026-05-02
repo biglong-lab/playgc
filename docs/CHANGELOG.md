@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 4 W14 完整收尾 + ADR-0010 LINE Bot 規劃 ✅
+**主題**：W14 5 天累計 + W15 LINE Bot 整合策略
+**範圍**：W14 23 檔、~1,400 行 + 2 個收尾文件 + ADR-0010
+
+**W14 5 天時序**：
+- D1（`aee902a7`）LIFF SDK + PlayLiff 中繼頁
+- D2（`d6b3b19c`）/play LINE profile 整合
+- D3（`409b4c2c`）useMyUserName hook + 4 Page 元件
+- D4（`3a771976`）QR 列印頁 LIFF URL 切換
+- D5 W14 收尾 + ADR-0010
+
+**完整玩家旅程**：admin 列印「💚 LINE」QR → 玩家從 LINE 點 → LIFF SDK 取 displayName → 跳 /play 帶名字 → host 元件全部用 LINE 名字
+
+**ADR-0010 W15 LINE Bot 路徑**：
+- 功能 A 活動推播（24h / 1h 前 / 結束後）
+- 功能 B admin 文字建場（DeepSeek NLU）
+- 暫緩：玩家報名 / 客服 NLU / CRM 行銷
+
+**W14 完整收尾** → [changes/2026-05-03-phase4-w14-complete.md](changes/2026-05-03-phase4-w14-complete.md)
+**ADR-0010** → [decisions/0010-line-bot-integration.md](decisions/0010-line-bot-integration.md)
+
+⏭ 下一步：Phase 4 W15 D1 — LINE Bot scaffold 啟動
+
 ### 💚 Phase 4 W14 D4 ✅（QR 列印頁 LIFF URL 切換）
 **主題**：admin 一鍵切換玩家 QR 為 LIFF URL（從 LINE 進入）
 **範圍**：1 個檔案
