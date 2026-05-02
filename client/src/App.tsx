@@ -166,6 +166,9 @@ const AdminRewardsAnalytics = lazy(() => import("@/pages/admin/AdminRewardsAnaly
 // 📈 推廣連結 Cohort 分析（Phase 17.1）
 const AdminInvitesCohort = lazy(() => import("@/pages/admin/AdminInvitesCohort"));
 
+// 📊 PWA 使用情境分析（Phase D — PWA 用戶流動線優化）
+const PwaUsageAnalytics = lazy(() => import("@/pages/admin/PwaUsageAnalytics"));
+
 // 🔬 A/B 實驗（P14-7 / Wave 2）
 const AbExperiments = lazy(() => import("@/pages/admin/AbExperiments"));
 
@@ -302,6 +305,7 @@ function Router() {
         <Route path="/admin/ai-test-checklist">{() => <ProtectedAdminRoute><AiTestChecklist /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/rewards/analytics">{() => <ProtectedAdminRoute><AdminRewardsAnalytics /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/invites/cohort">{() => <ProtectedAdminRoute><AdminInvitesCohort /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/pwa-analytics">{() => <ProtectedAdminRoute><PwaUsageAnalytics /></ProtectedAdminRoute>}</Route>
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>

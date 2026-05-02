@@ -24,6 +24,7 @@ import {
   Calendar,
   DollarSign,
   Package,
+  Smartphone,
 } from "lucide-react";
 
 /** 場域模組 key（對應 FieldSettings 的 enableXxx 開關） */
@@ -60,6 +61,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
     items: [
       { title: "儀表板", icon: LayoutDashboard, path: "/admin", permission: null },
       { title: "數據分析", icon: BarChart3, path: "/admin/analytics", permission: "game:view" },
+      { title: "PWA 使用分析", icon: Smartphone, path: "/admin/pwa-analytics", permission: "game:view" },
       { title: "排行榜", icon: Trophy, path: "/admin/leaderboard", permission: "game:view" },
     ],
   },
