@@ -22,10 +22,13 @@ import {
   type LineWebhookEvent,
 } from "../lib/line-bot";
 import { parseAdminCommand, formatCommandReply } from "../lib/admin-nlu";
+import { isLineUserAdmin, getAdminFieldId, getLineAdminStatus } from "../lib/admin-line-auth";
+import { instantiateScenarioForLine } from "../lib/scenario-instantiator-line";
 
 const CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET;
 const ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY;
+const APP_BASE_URL = process.env.APP_BASE_URL || "https://game.homi.cc";
 
 export function registerLineWebhookRoutes(app: Express) {
   /**
@@ -33,9 +36,13 @@ export function registerLineWebhookRoutes(app: Express) {
    * 公開健康檢查（不洩漏 secret）
    */
   app.get("/api/webhooks/line/health", (_req, res) => {
+    const adminStatus = getLineAdminStatus();
     res.json({
       status: "ok",
       lineBotConfigured: !!(CHANNEL_SECRET && ACCESS_TOKEN),
+      nluConfigured: !!OPENROUTER_KEY,
+      adminConfigured: adminStatus.configured,
+      adminCount: adminStatus.adminCount,
       timestamp: new Date().toISOString(),
     });
   });
@@ -110,7 +117,7 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
   const replyToken = event.replyToken;
   if (!replyToken) return;
 
-  // W15 D3: 偵測 @chito 指令 → 走 NLU
+  // W15 D3-D5: 偵測 @chito 指令 → 走 NLU + admin 認證 → 真建場
   if (/^@chito\b/i.test(text)) {
     if (!OPENROUTER_KEY) {
       await replyMessage({
@@ -127,11 +134,77 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
     }
 
     const cmd = await parseAdminCommand({ apiKey: OPENROUTER_KEY, text });
-    const replyText = formatCommandReply(cmd);
+
+    // W15 D5: admin 認證 + create_scenario → 真建場
+    const lineUserId = event.source?.userId;
+    const isAdmin = isLineUserAdmin(lineUserId);
+
+    if (cmd.intent === "create_scenario" && cmd.scenarioId) {
+      if (!isAdmin) {
+        // 非 admin → 回 NLU 預覽 + 提示需 admin 設定
+        await replyMessage({
+          accessToken: ACCESS_TOKEN,
+          replyToken,
+          messages: [
+            {
+              type: "text",
+              text:
+                `${formatCommandReply(cmd)}\n\n` +
+                `⚠️ 您非 admin、無法直接建場。\n` +
+                `請聯繫平台管理員將您的 LINE userId（${lineUserId?.slice(0, 8)}...）加入白名單。`,
+            },
+          ],
+        });
+        return;
+      }
+
+      // admin → 真建場
+      const fieldId = getAdminFieldId(lineUserId);
+      const result = await instantiateScenarioForLine({
+        scenarioId: cmd.scenarioId,
+        displayName: cmd.displayName || cmd.scenarioId,
+        fieldId,
+      });
+
+      if (result.ok) {
+        const fullHostUrl = `${APP_BASE_URL}${result.hostUrl}`;
+        const fullPlayUrl = `${APP_BASE_URL}${result.playUrl}`;
+        await replyMessage({
+          accessToken: ACCESS_TOKEN,
+          replyToken,
+          messages: [
+            {
+              type: "text",
+              text:
+                `✅ 建場成功！\n\n` +
+                `📦 情境：${result.scenarioName}\n` +
+                `📝 名稱：${result.displayName}\n` +
+                `⏰ 有效期：12 小時\n\n` +
+                `🖥 大螢幕網址（請投影）：\n${fullHostUrl}\n\n` +
+                `📱 玩家網址（QR 給來賓掃）：\n${fullPlayUrl}`,
+            },
+          ],
+        });
+      } else {
+        await replyMessage({
+          accessToken: ACCESS_TOKEN,
+          replyToken,
+          messages: [
+            {
+              type: "text",
+              text: `❌ 建場失敗：${result.error}\n\n${formatCommandReply(cmd)}`,
+            },
+          ],
+        });
+      }
+      return;
+    }
+
+    // help / list / unknown → 回 NLU 預覽
     await replyMessage({
       accessToken: ACCESS_TOKEN,
       replyToken,
-      messages: [{ type: "text", text: replyText }],
+      messages: [{ type: "text", text: formatCommandReply(cmd) }],
     });
     return;
   }

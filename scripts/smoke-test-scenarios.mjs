@@ -312,8 +312,8 @@ async function runSmokeTest() {
   // 5g. LIFF 玩家入口（W14 D1）
   await check("GET /liff/play/test", 200, () => checkStatus(`${BASE_URL}/liff/play/test-w14`, 200));
 
-  // 5h. LINE Bot webhook health（W15 D1，公開）
-  console.log(`${COLOR.bold}── Section 5h: LINE Bot（W15 D1）──${COLOR.reset}`);
+  // 5h. LINE Bot webhook health（W15 D1，公開）+ W15 D5 admin 認證 status
+  console.log(`${COLOR.bold}── Section 5h: LINE Bot（W15 D1+D5）──${COLOR.reset}`);
   await check("GET /api/webhooks/line/health", 200, async () => {
     const { res } = await fetchUrl(`${BASE_URL}/api/webhooks/line/health`);
     if (res.status !== 200) return { ok: false, error: `expected 200, got ${res.status}` };
@@ -321,6 +321,20 @@ async function runSmokeTest() {
     if (data.status !== "ok") return { ok: false, error: "status != ok" };
     if (typeof data.lineBotConfigured !== "boolean") {
       return { ok: false, error: "missing lineBotConfigured" };
+    }
+    return { ok: true };
+  });
+  await check("GET /api/webhooks/line/health 含 W15 D5 admin status", 200, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/webhooks/line/health`);
+    const data = await res.json();
+    if (typeof data.adminConfigured !== "boolean") {
+      return { ok: false, error: "missing adminConfigured（W15 D5）" };
+    }
+    if (typeof data.adminCount !== "number") {
+      return { ok: false, error: "missing adminCount（W15 D5）" };
+    }
+    if (typeof data.nluConfigured !== "boolean") {
+      return { ok: false, error: "missing nluConfigured（W15 D5）" };
     }
     return { ok: true };
   });

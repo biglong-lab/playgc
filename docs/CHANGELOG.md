@@ -69,6 +69,33 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 4 W15 完整收尾 ✅（D5 — Admin 認證 + LINE 真建場）
+**主題**：LINE admin @chito 指令一鍵真實建場（30 秒收到 hostUrl）
+**範圍**：3 個新檔 + 2 個修改 + ADR-0011
+
+關鍵變動：
+- `server/lib/admin-line-auth.ts`（新）— LINE userId → admin 對應（環境變數版）
+- `server/lib/scenario-instantiator-line.ts`（新）— LINE admin 簡化建場（W15 D5 只建第 1 個 host 元件、W16 擴充全部）
+- `server/routes/line-webhook.ts`（修改）— 偵測 admin + create_scenario → 真建場 → reply hostUrl + playUrl
+- `health` endpoint 加 nluConfigured / adminConfigured / adminCount
+- ADR-0011 W16 規劃（完整 instantiate + 進階 LINE + Phase 5）
+
+**業務加速**：admin 開電腦建場 5-10 分鐘 → LINE 30 秒 ⚡ 10×
+
+**W15 五天完整鏈路**：
+- D1 LINE Bot scaffold（webhook + signature）
+- D2 LINE Pusher（活動推播）
+- D3 Admin NLU（DeepSeek 解析、純預覽）
+- D4 活動結束 webhook 鉤子
+- D5 admin 認證 + 真建場
+
+**Smoke test 44 → 45 全綠**
+
+**細節** → [changes/2026-05-03-phase4-w15-d5-admin-instantiate.md](changes/2026-05-03-phase4-w15-d5-admin-instantiate.md)
+**ADR** → [decisions/0011-w16-planning.md](decisions/0011-w16-planning.md)
+
+⏭ 下一步：Phase 4 W16 D1 — instantiator-line 擴充支援多元件 + multi/solo
+
 ### 🪝 Phase 4 W15 D4 ✅（活動結束 webhook 鉤子）
 **主題**：host_session ended → 自動派 instance.expired webhook
 **範圍**：1 個檔案修改
