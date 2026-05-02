@@ -17,6 +17,8 @@ export type AdminCommandIntent =
   | "create_scenario"
   | "help"
   | "list_scenarios"
+  | "list_active"      // W16 D3: 列出我場域 active sessions
+  | "end_session"      // W16 D3: 結束指定 session
   | "unknown";
 
 export interface AdminCommand {
@@ -25,6 +27,8 @@ export interface AdminCommand {
   scenarioId?: string;
   /** 顯示名稱（intent=create_scenario 時可選）*/
   displayName?: string;
+  /** session ID（intent=end_session 時必有）*/
+  sessionId?: string;
   /** AI 解析說明（給 admin 確認）*/
   rationale?: string;
   /** 原始輸入 */
@@ -61,6 +65,21 @@ export async function parseAdminCommand(input: {
   // list 指令快速路徑
   if (/^(list|清單|有什麼|有哪些)$/i.test(cleaned)) {
     return { intent: "list_scenarios", rawInput: text };
+  }
+
+  // W16 D3: list_active 快速路徑（不耗 AI）
+  if (/^(我的活動|active|active-list|list-active|目前活動|進行中)$/i.test(cleaned)) {
+    return { intent: "list_active", rawInput: text };
+  }
+
+  // W16 D3: end_session 快速路徑（格式：「結束 <sessionId>」/「end <sessionId>」）
+  const endMatch = cleaned.match(/^(?:結束|end|end-session|關閉)\s+([a-f0-9-]{8,})$/i);
+  if (endMatch) {
+    return {
+      intent: "end_session",
+      sessionId: endMatch[1],
+      rawInput: text,
+    };
   }
 
   // 用 DeepSeek 解析其他自然語言
@@ -127,8 +146,9 @@ export function formatCommandReply(cmd: AdminCommand): string {
         `常用指令：\n` +
         `  @chito 婚禮 Hung & Anita 5/15\n` +
         `  @chito 破冰 公司新人訓\n` +
-        `  @chito 同學會 政大畢業 20 週年\n` +
-        `  @chito list（看所有情境）\n\n` +
+        `  @chito list（看所有情境）\n` +
+        `  @chito 我的活動（看 active sessions）\n` +
+        `  @chito 結束 <sessionId>（結束某活動）\n\n` +
         `12 情境：婚禮 / 生日 / 同學會 / 親子 / 園遊會 / 破冰 / 頒獎 / 街區 / 商圈 / 內訓 / 旅遊 / 場域`
       );
 
@@ -141,12 +161,18 @@ export function formatCommandReply(cmd: AdminCommand): string {
 
     case "create_scenario":
       return (
-        `✅ 解析成功（W15 D3 預覽，未實際建場）\n\n` +
         `📦 情境：${cmd.scenarioId}\n` +
         `📝 名稱：${cmd.displayName || "（未指定）"}\n` +
-        `💡 說明：${cmd.rationale || "（無）"}\n\n` +
-        `（W15 D5 完成 admin 認證 + 自動建場後，此指令會直接生效）`
+        `💡 說明：${cmd.rationale || "（無）"}`
       );
+
+    case "list_active":
+      // 此分支由 line-webhook 補實際資料、此處只回 fallback
+      return `📋 取得活動清單中...`;
+
+    case "end_session":
+      // 此分支由 line-webhook 補實際結果、此處只回 fallback
+      return `🛑 結束 session ${cmd.sessionId} 中...`;
 
     case "unknown":
     default:

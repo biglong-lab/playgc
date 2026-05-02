@@ -29,23 +29,34 @@ import {
   instantiateScenarioForLine,
   type LineInstantiateResult,
 } from "../lib/scenario-instantiator-line";
+import {
+  listActiveSessionsForLineAdmin,
+  endSessionForLineAdmin,
+  type ActiveSessionSummary,
+} from "../lib/admin-line-actions";
 
 /**
- * W16 D2: Quick Reply 工廠 — admin 常用指令快速按鈕
+ * W16 D2/D3: Quick Reply 工廠 — admin 常用指令快速按鈕
  *
  * LINE 客戶端在訊息底部顯示按鈕列、點擊送對應文字訊息
  * 最多 13 個 items（LINE 限制）
+ *
+ * W16 D3 加入「📋 我的活動」管理按鈕
  */
 function adminQuickReply(): LineQuickReply {
   return {
     items: [
       {
         type: "action",
+        action: { type: "message", label: "📋 我的活動", text: "@chito 我的活動" },
+      },
+      {
+        type: "action",
         action: { type: "message", label: "📖 用法", text: "@chito help" },
       },
       {
         type: "action",
-        action: { type: "message", label: "📦 情境清單", text: "@chito list" },
+        action: { type: "message", label: "📦 情境", text: "@chito list" },
       },
       {
         type: "action",
@@ -62,6 +73,76 @@ function adminQuickReply(): LineQuickReply {
       {
         type: "action",
         action: { type: "message", label: "🎓 同學會", text: "@chito 同學會" },
+      },
+    ],
+  };
+}
+
+/**
+ * W16 D3: active sessions 列表的 reply 訊息
+ *
+ * 訊息結構：
+ *   📋 您的 active 活動（N 個）
+ *   1. <gameTitle>
+ *      🆔 <sessionId>（前 8 字元）
+ *      ⏰ 剩餘 X 小時
+ *      🖥 hostUrl
+ *   2. ...
+ *   💡 結束某場：「@chito 結束 <sessionId>」
+ *
+ * 場次多時 truncate 至 5 個
+ */
+function formatActiveSessionsReply(
+  sessions: ActiveSessionSummary[],
+  baseUrl: string,
+): string {
+  if (sessions.length === 0) {
+    return `📋 您目前沒有 active 活動\n\n💡 試試「@chito 婚禮」建立一個吧！`;
+  }
+
+  const lines: string[] = [`📋 您的 active 活動（${sessions.length} 個）`, ``];
+  const showCount = Math.min(sessions.length, 5);
+
+  for (let i = 0; i < showCount; i++) {
+    const s = sessions[i];
+    const remainHours = s.expiresAt
+      ? Math.max(0, Math.round((new Date(s.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60)))
+      : 0;
+    lines.push(`${i + 1}. ${s.gameTitle}`);
+    lines.push(`   🆔 ${s.sessionId.slice(0, 8)}`);
+    lines.push(`   ⏰ 剩餘 ${remainHours} 小時`);
+    lines.push(`   🖥 ${baseUrl}${s.hostUrl}`);
+    lines.push(``);
+  }
+
+  if (sessions.length > showCount) {
+    lines.push(`...（還有 ${sessions.length - showCount} 個，請至 admin 後台查看）`);
+    lines.push(``);
+  }
+
+  lines.push(`💡 結束某場：「@chito 結束 <sessionId>」`);
+  lines.push(`   sessionId 取訊息中前 8 字元即可`);
+
+  return lines.join("\n");
+}
+
+/**
+ * W16 D3: end_session 的 quick reply（成功後讓 admin 容易繼續操作）
+ */
+function postEndQuickReply(): LineQuickReply {
+  return {
+    items: [
+      {
+        type: "action",
+        action: { type: "message", label: "📋 看剩餘活動", text: "@chito 我的活動" },
+      },
+      {
+        type: "action",
+        action: { type: "message", label: "💒 再開一場", text: "@chito 婚禮" },
+      },
+      {
+        type: "action",
+        action: { type: "message", label: "📖 用法", text: "@chito help" },
       },
     ],
   };
@@ -312,6 +393,84 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
           ],
         });
       }
+      return;
+    }
+
+    // W16 D3: list_active → 列出 admin 場域 active sessions
+    if (cmd.intent === "list_active") {
+      const result = await listActiveSessionsForLineAdmin(lineUserId);
+      if (!result.ok) {
+        await replyMessage({
+          accessToken: ACCESS_TOKEN,
+          replyToken,
+          messages: [
+            {
+              type: "text",
+              text: `❌ ${result.error}（請先聯繫平台管理員加入 admin 白名單）`,
+            },
+          ],
+        });
+        return;
+      }
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: formatActiveSessionsReply(result.sessions, APP_BASE_URL),
+            quickReply: adminQuickReply(),
+          },
+        ],
+      });
+      return;
+    }
+
+    // W16 D3: end_session → 結束指定 session
+    if (cmd.intent === "end_session" && cmd.sessionId) {
+      // 支援前 8 字元 → 從 active list 找完整 sessionId
+      let fullSessionId = cmd.sessionId;
+      if (cmd.sessionId.length < 30) {
+        const list = await listActiveSessionsForLineAdmin(lineUserId);
+        if (list.ok) {
+          const matched = list.sessions.find((s) =>
+            s.sessionId.startsWith(cmd.sessionId!),
+          );
+          if (matched) fullSessionId = matched.sessionId;
+        }
+      }
+      const result = await endSessionForLineAdmin({
+        lineUserId,
+        sessionId: fullSessionId,
+      });
+      if (!result.ok) {
+        await replyMessage({
+          accessToken: ACCESS_TOKEN,
+          replyToken,
+          messages: [
+            {
+              type: "text",
+              text: `❌ 結束失敗：${result.error}`,
+              quickReply: adminQuickReply(),
+            },
+          ],
+        });
+        return;
+      }
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text:
+              `✅ session 已結束\n\n` +
+              `🆔 ${fullSessionId.slice(0, 8)}\n` +
+              `📊 webhook 已派發 instance.expired（如有設定）`,
+            quickReply: postEndQuickReply(),
+          },
+        ],
+      });
       return;
     }
 

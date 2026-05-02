@@ -69,6 +69,32 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🛠 Phase 4 W16 D3 ✅（LINE Admin 直接管理活動）
+**主題**：admin 在 LINE 看 active 活動 + 結束指定活動（不必開電腦）
+**範圍**：1 新檔 + 3 修改
+
+關鍵變動：
+- `server/lib/admin-line-actions.ts`（新）
+  - listActiveSessionsForLineAdmin / endSessionForLineAdmin
+  - 認證透過 W15 D5 環境變數、不動 schema
+  - 場域過濾 + webhook 派發（與 admin endpoint 一致）
+- `server/lib/admin-nlu.ts`
+  - 加 list_active / end_session intent
+  - 快速路徑（regex 不耗 AI）：「@chito 我的活動」/「@chito 結束 <id>」
+- `server/routes/line-webhook.ts`
+  - formatActiveSessionsReply / postEndQuickReply
+  - end_session 支援前 8 字元（admin 不必複製完整 UUID）
+- Quick reply 加「📋 我的活動」（第一順位）
+
+**完整 admin LINE 工具鏈（W15-W16 累積）**：
+- 建場 / 看用法 / 看情境 / 看 active / 結束某場
+
+**Smoke test 維持 45/45**
+
+**細節** → [changes/2026-05-03-phase4-w16-d3-line-admin-actions.md](changes/2026-05-03-phase4-w16-d3-line-admin-actions.md)
+
+⏭ 下一步：W16 D4 — 排程推播（cron）
+
 ### 🎉 Phase 4 W16 D2 ✅（LINE Quick Reply + Sticker）
 **主題**：admin LINE 操作體驗升級（按鈕 + 慶祝貼圖）
 **範圍**：2 個檔案修改
