@@ -71,6 +71,28 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### 🎉 Phase 5 W18 完整收尾 ✅（D5 — solo_memory_match + W18 retro）
+**主題**：W18 元件擴充週完成、5 個新元件 live、+26 情境覆蓋
+**範圍**：3 新檔（D5 元件 + 測試 + W18 retro 文件）
+
+W18 五天累計：
+- D1 host_lottery_wheel（轉盤抽獎）+6 情境
+- D2 host_progress_quest（全場進度條）+6 情境
+- D3 host_word_cloud（即時字雲）+5 情境
+- D4 quest_chain（任務鏈）+5 情境
+- D5 memory_match（配對記憶遊戲）+4 情境
+
+**統計**：15+ 檔 / ~3,300 行 / 5 commits / 49 測試全綠 / smoke 51/51
+
+**5 大市場全強化**：公部門 / 私部門 / 活動 / 空間 / 交誼
+
+**Smoke test 維持 51/51**
+
+**W18 完整收尾** → [changes/2026-05-03-phase5-w18-complete.md](changes/2026-05-03-phase5-w18-complete.md)
+**W18 D5 細節** → [changes/2026-05-03-phase5-w18-d5-memory-match.md](changes/2026-05-03-phase5-w18-d5-memory-match.md)
+
+⏭ 下一步：Phase 5 W19 — 情境模板擴充（12 → 20+）
+
 ### ⛓ Phase 5 W18 D4 ✅（quest_chain 任務鏈元件）
 **主題**：街區走讀 / 內訓 / 員工旅遊通用線性任務鏈（5+ 情境）
 **範圍**：3 新檔 + 3 修改

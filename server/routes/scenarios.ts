@@ -123,6 +123,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         rewardOnComplete: "🏆 隊伍榮譽勳章",
         hintAfterFailures: 2,
       };
+    case "memory_match":
+      return {
+        title: `${scenarioName} 記憶配對`,
+        subtitle: "翻牌找出全部配對",
+        size: "4x4",
+        showFirstNSeconds: 3,
+        rewardPoints: 100,
+      };
 
     // ─── multi 軸線 ───
     case "gps_cascade":
