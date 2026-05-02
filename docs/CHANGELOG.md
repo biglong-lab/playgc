@@ -42,6 +42,20 @@
 
 ⏭ 下一步：Phase 1 Week 3 — HostScreen 連發 4 個元件
 
+### 🎮 Phase 1 Week 3 完成 ✅（4 個 host 元件 + 22 測試）
+**部署**：`e8b1447c..c6405f5a`
+
+關鍵 commit：
+- `6582ed45` W3 D1: EmojiReact (S) — 全場 emoji 雨 + 即時統計
+- `7d2d66aa` W3 D2: WaveResponse (S) — 人浪應援 + 30 秒長條圖
+- `276d9ab0` W3 D3: CrowdGather (S) — 簽到聚眾達標
+- `708e2a01` W3 D4: LiveLeaderboard (M) — 即時排行 + 金銀銅 + ↑↓ 變動
+- `c6405f5a` W3 D5: ShowcaseHub demo 擴充 5 元件雙版型 + W3 收尾
+
+**HostScreen 軸線進度**：5/8 元件就位（含 PollLive）
+
+⏭ 下一步：Phase 1 Week 4 — 補 5 個 multi 元件（JigsawPuzzle 等）
+
 ### 🛡 Squad 系統一次到位（取代三套組隊系統）
 **主題**：合併 teams / battle_clans / 過渡 squads 為單一 Squad 系統
 **範圍**：8 個 commit（PR0 + PR1-PR6）

@@ -297,6 +297,46 @@ admin 登入 → 「📺 主控大螢幕」→ 選遊戲 → 建 session
 ⏭ 下一步：Phase 1 Week 3 — HostScreen 軸線連發 4 個元件
 （EmojiReact / WaveResponse / CrowdGather / LiveLeaderboard）
 
+---
+
+### 2026-05-02 Week 3 完成 ✅（4 個 host 元件 + 22 測試）
+
+| Day | 元件 | 級別 | 測試 | Commit |
+|-----|------|------|------|--------|
+| W3 D1 | EmojiReact | S | 5/5 | `6582ed45` |
+| W3 D2 | WaveResponse | S | 5/5 | `7d2d66aa` |
+| W3 D3 | CrowdGather | S | 6/6 | `276d9ab0` |
+| W3 D4 | LiveLeaderboard | M | 6/6 | `708e2a01` |
+| W3 D5 | ShowcaseHub demo 擴充 + 部署 | — | — | `c6405f5a` |
+
+**Week 3 完整成就**：
+- HostScreen 軸線從 1 個元件 → 5 個元件就位
+- 全部含 sync hook + GamePageRenderer 註冊 + HostPageRenderer 註冊 + 單元測試
+- ShowcaseHub demo 卡片 5 個元件 × 雙版型 = 10 種視覺即時可看
+- 累計 22/22 host 元件單元測試通過
+
+**HostScreen 軸線進度（5/8 元件）**：
+- ✅ host_poll_live（W2）
+- ✅ host_emoji_react（W3 D1）
+- ✅ host_wave_response（W3 D2）
+- ✅ host_crowd_gather（W3 D3）
+- ✅ host_live_leaderboard（W3 D4）
+- ⏳ host_trivia_showdown（W4 補）
+- ⏳ host_scoreboard_announcement（W4 補）
+- ⏳ host_knowledge_map（Phase 2 再補）
+
+**Week 3 結束 E2E 驗證**：
+| 端點 | 結果 |
+|------|------|
+| Container | ✅ Up 20s healthy |
+| `/showcase` | ✅ 200（5 元件 demo 全可預覽）|
+| `/host/*` | ✅ 200 |
+| `/play/*` | ✅ 200 |
+| `/admin/host-sessions` | ✅ 200 |
+
+⏭ 下一步：Phase 1 Week 4 — 補完 Phase 1 的 5 個 multi 元件
+（JigsawPuzzle / TreasureHunt / GpsCascade / CollectiveScore / RoleAssign）
+
 
 
 ---
