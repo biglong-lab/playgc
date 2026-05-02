@@ -38,7 +38,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Tv, Plus, Copy, X, Loader2, ExternalLink, Smartphone } from "lucide-react";
+import { Tv, Plus, Copy, X, Loader2, ExternalLink, Smartphone, Printer } from "lucide-react";
 
 interface HostSessionItem {
   sessionId: string;
@@ -134,6 +134,34 @@ export default function AdminHostSessions() {
     },
   });
 
+  /**
+   * 開啟 QR 列印頁，傳入給定的 sessions
+   * 使用與 TemplateMarketDetail 相同的 base64 格式
+   */
+  const openPrintPage = (
+    targetSessions: Array<{
+      sessionId: string;
+      gameTitle: string;
+      hostUrl: string;
+      playUrl: string;
+    }>,
+    displayName: string,
+  ) => {
+    const printData = {
+      displayName,
+      instances: targetSessions.map((s) => ({
+        axis: "host" as const,
+        label: s.gameTitle,
+        pageType: "host_session",
+        hostUrl: s.hostUrl,
+        playUrl: s.playUrl,
+      })),
+    };
+    const json = JSON.stringify(printData);
+    const base64 = btoa(unescape(encodeURIComponent(json)));
+    window.open(`/admin/scenario-qr-print?data=${encodeURIComponent(base64)}`, "_blank");
+  };
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: `${label} 已複製`, duration: 2000 });
@@ -186,10 +214,28 @@ export default function AdminHostSessions() {
         {/* 現有 active sessions */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Tv className="w-5 h-5" /> 進行中 Sessions
-              <Badge variant="outline">{sessions.length}</Badge>
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle className="flex items-center gap-2">
+                <Tv className="w-5 h-5" /> 進行中 Sessions
+                <Badge variant="outline">{sessions.length}</Badge>
+              </CardTitle>
+              {sessions.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    openPrintPage(
+                      sessions,
+                      `所有進行中場次（${sessions.length} 個）`,
+                    )
+                  }
+                  data-testid="btn-print-all-sessions"
+                >
+                  <Printer className="w-4 h-4 mr-1" />
+                  列印全部 QR
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading && (
@@ -224,14 +270,26 @@ export default function AdminHostSessions() {
                           Session {s.sessionId.slice(0, 8)} · 剩餘 {remainingHours} 小時
                         </p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => endMutation.mutate(s.sessionId)}
-                        data-testid={`btn-end-session-${s.sessionId}`}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => openPrintPage([s], s.gameTitle)}
+                          data-testid={`btn-print-session-${s.sessionId}`}
+                          title="列印 QR"
+                        >
+                          <Printer className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => endMutation.mutate(s.sessionId)}
+                          data-testid={`btn-end-session-${s.sessionId}`}
+                          title="結束場次"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">

@@ -69,6 +69,21 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🖨 Phase 2 W8 D2 ✅（AdminHostSessions QR 列印整合）
+**主題**：admin 後台直接列印 QR（單張 / 批次）
+**範圍**：1 個檔案
+
+關鍵變動：
+- `AdminHostSessions.tsx` 新增 openPrintPage helper（複用 ScenarioQrPrint 列印頁）
+- 頂部「列印全部 QR」批次按鈕
+- 每張 session 卡新增單張「列印」按鈕（與「結束場次」並列）
+
+**設計**：兩個入口（TemplateMarketDetail + AdminHostSessions）共用同一個列印頁，DRY
+
+**細節** → [changes/2026-05-02-phase2-w8-d2-admin-print-qr.md](changes/2026-05-02-phase2-w8-d2-admin-print-qr.md)
+
+⏭ 下一步：W8 D3 — admin 後台首頁整合情境市集連結
+
 ### 🩺 Phase 2 W8 D1 ✅（Scenario Health endpoint + Smoke Test 自動化）
 **主題**：CI / 監控可自動驗證情境平台健康
 **範圍**：3 個新檔
