@@ -175,11 +175,29 @@ async function runSmokeTest() {
     }
     const data = await res.json();
     if (data.status !== "ok") return { ok: false, error: "status field != ok" };
+    if (typeof data.recurTwConfigured !== "boolean") {
+      return { ok: false, error: "missing recurTwConfigured field" };
+    }
     return { ok: true };
   });
 
   // 4e. Pricing 公開頁（W10 D1）
   await check("GET /pricing", 200, () => checkStatus(`${BASE_URL}/pricing`, 200));
+
+  // 4f. Recur.tw create-checkout（W10 D2 — 503 graceful 或 400 缺欄位）
+  console.log(`${COLOR.bold}── Section 4f: Recur.tw endpoints ──${COLOR.reset}`);
+  await check("POST /api/payments/recur/create-checkout（缺欄位 → 400 或 503）", 400, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/payments/recur/create-checkout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+    // 接受 400（驗證失敗）或 503（key 未設）
+    if (res.status !== 400 && res.status !== 503) {
+      return { ok: false, error: `expected 400 or 503, got ${res.status}` };
+    }
+    return { ok: true };
+  });
 
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);

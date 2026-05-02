@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🇹🇼 Phase 3 W10 D2 ✅（Recur.tw API client 整合）
+**主題**：依 ADR-0006 啟動 Recur.tw 主要付費路徑
+**範圍**：3 個檔案
+
+關鍵變動：
+- `server/lib/recur-tw.ts` Recur.tw API client（fetch 直打 + JSON）
+- `server/routes/payments.ts` 新增 2 endpoints：
+  - POST /api/payments/recur/create-checkout（一次性 / 訂閱、503 graceful）
+  - POST /api/payments/recur/webhook（待 D5 補簽章驗證）
+- Health endpoint 加 `recurTwConfigured` / `recurWebhookConfigured` 欄位
+- smoke test 28 → 29（4f Recur create-checkout 400/503 守衛）
+
+**Recur.tw 設定就緒**：
+- Base URL: `https://api.recur.tw/v1`
+- Auth: Bearer sk_test_*
+- 環境變數：`RECUR_TW_API_KEY` + `RECUR_TW_WEBHOOK_SECRET`
+- 待生產設定 productId 對應（admin 在 Recur.tw 後台建立產品）
+
+**Smoke test 29/29 全綠**
+
+**細節** → [changes/2026-05-02-phase3-w10-d2-recur-tw.md](changes/2026-05-02-phase3-w10-d2-recur-tw.md)
+
+⏭ 下一步：W10 D3 — Pricing 切換 Recur.tw、Stripe 退場為 fallback
+
 ### 💳 Phase 3 W10 D1 ✅（付費 scaffold + Pricing 公開頁 + ADR 切換）
 **主題**：Stripe scaffold 上線 + ADR-0006 切換為 Recur.tw 主導
 **範圍**：6 個檔案

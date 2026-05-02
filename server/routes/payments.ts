@@ -14,9 +14,12 @@
 
 import type { Express } from "express";
 import { createCheckoutSession } from "../lib/stripe-checkout";
+import { createRecurCheckoutSession, verifyRecurWebhookSignature } from "../lib/recur-tw";
 import { getScenarioById } from "@shared/scenario-templates";
 
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;
+const RECUR_KEY = process.env.RECUR_TW_API_KEY;
+const RECUR_WEBHOOK_SECRET = process.env.RECUR_TW_WEBHOOK_SECRET;
 
 /** 預設定價（依規模與情境）*/
 function defaultPrice(scenarioId: string): { amountCents: number; productName: string } | null {
@@ -130,7 +133,97 @@ export function registerPaymentsRoutes(app: Express) {
     res.json({
       status: "ok",
       stripeConfigured: !!STRIPE_KEY,
+      recurTwConfigured: !!RECUR_KEY,
+      recurWebhookConfigured: !!RECUR_WEBHOOK_SECRET,
       timestamp: new Date().toISOString(),
     });
+  });
+
+  // ════════════════════════════════════════════════════════════════════
+  // Recur.tw（W10 D2）— 主要付費路徑
+  // ════════════════════════════════════════════════════════════════════
+
+  /**
+   * POST /api/payments/recur/create-checkout
+   * Body: { scenarioId: string, productId: string, mode?: "PAYMENT"|"SUBSCRIPTION", customerEmail?: string }
+   *
+   * 主要付費入口（取代 Stripe）
+   * 公開（不需登入）— 客戶可從 /pricing 直接下單
+   *
+   * 注意：productId 必須在 Recur.tw 後台先建立
+   *       admin 在後台 settings 維護「scenarioId → productId」對應
+   */
+  app.post("/api/payments/recur/create-checkout", async (req, res) => {
+    try {
+      if (!RECUR_KEY) {
+        return res.status(503).json({
+          error: "Recur.tw 付費系統未啟用（RECUR_TW_API_KEY 未設定）",
+          code: "RECUR_NOT_CONFIGURED",
+        });
+      }
+
+      const { scenarioId, productId, mode = "PAYMENT", customerEmail } = req.body ?? {};
+      if (!scenarioId) return res.status(400).json({ error: "缺少 scenarioId" });
+      if (!productId) return res.status(400).json({ error: "缺少 productId（請在 Recur.tw 後台建立產品）" });
+
+      const scenario = getScenarioById(scenarioId);
+      if (!scenario) return res.status(404).json({ error: "情境不存在" });
+
+      const origin = `${req.protocol}://${req.get("host")}`;
+
+      const session = await createRecurCheckoutSession({
+        apiKey: RECUR_KEY,
+        mode,
+        productId,
+        successUrl: `${origin}/pricing/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${origin}/pricing?canceled=1`,
+        customerEmail,
+        metadata: {
+          scenarioId,
+          source: "template-market",
+        },
+      });
+
+      res.json({
+        checkoutUrl: session.url,
+        sessionId: session.id,
+      });
+    } catch (err) {
+      console.error("[payments] recur/create-checkout 失敗:", err);
+      res.status(500).json({
+        error: err instanceof Error ? err.message : "建立 Recur.tw Checkout 失敗",
+      });
+    }
+  });
+
+  /**
+   * POST /api/payments/recur/webhook
+   * Recur.tw 付費完成 webhook
+   *
+   * TODO（W10 D5）：
+   *   - 驗章 verifyRecurWebhookSignature
+   *   - 解析 event type → 解鎖付費權限 / 寄付費通知
+   */
+  app.post("/api/payments/recur/webhook", async (req, res) => {
+    try {
+      if (!RECUR_KEY) {
+        return res.status(503).json({ error: "Recur.tw 付費系統未啟用" });
+      }
+
+      // TODO: 驗章 + 處理事件（W10 D5）
+      const event = req.body;
+      console.log("[payments] recur webhook 收到:", event?.type ?? "unknown");
+
+      // 預期事件類型（依 Recur.tw 文件，待 W10 D5 確認）：
+      // - checkout.session.completed
+      // - subscription.created
+      // - subscription.canceled
+      // - invoice.payment_succeeded
+
+      res.json({ received: true });
+    } catch (err) {
+      console.error("[payments] recur webhook 失敗:", err);
+      res.status(500).json({ error: "webhook 處理失敗" });
+    }
   });
 }
