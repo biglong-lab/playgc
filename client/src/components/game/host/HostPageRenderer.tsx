@@ -13,6 +13,7 @@ const PollLivePage = lazy(() => import("./PollLivePage"));
 const EmojiReactPage = lazy(() => import("./EmojiReactPage"));
 const WaveResponsePage = lazy(() => import("./WaveResponsePage"));
 const CrowdGatherPage = lazy(() => import("./CrowdGatherPage"));
+const LiveLeaderboardPage = lazy(() => import("./LiveLeaderboardPage"));
 
 interface HostPageRendererProps {
   page: Page;
@@ -39,6 +40,8 @@ export default function HostPageRenderer({ page }: HostPageRendererProps) {
             return <WaveResponsePage page={page} />;
           case "host_crowd_gather":
             return <CrowdGatherPage page={page} />;
+          case "host_live_leaderboard":
+            return <LiveLeaderboardPage page={page} />;
           // Phase 1 W3-W4 會陸續加：
           //   host_emoji_react / host_wave_response / host_crowd_gather
           //   host_trivia_showdown / host_live_leaderboard

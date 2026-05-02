@@ -30,6 +30,7 @@ const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
 const EmojiReactPage = lazy(() => import("@/components/game/host/EmojiReactPage"));
 const WaveResponsePage = lazy(() => import("@/components/game/host/WaveResponsePage"));
 const CrowdGatherPage = lazy(() => import("@/components/game/host/CrowdGatherPage"));
+const LiveLeaderboardPage = lazy(() => import("@/components/game/host/LiveLeaderboardPage"));
 
 // 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/solo/ButtonPage"));
@@ -261,6 +262,8 @@ export default function GamePageRenderer({
         return <WaveResponsePage page={page} />;
       case "host_crowd_gather":
         return <CrowdGatherPage page={page} />;
+      case "host_live_leaderboard":
+        return <LiveLeaderboardPage page={page} />;
       case "photo_ocr":
         return <PhotoOcrFlow {...commonProps} />;
       case "gps_mission":
