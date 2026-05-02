@@ -39,6 +39,10 @@ export const teams = pgTable(
     minPlayers: integer("min_players").default(2),
     maxPlayers: integer("max_players").default(6),
     settings: jsonb("settings").default({}), // Team-specific settings
+    // 🆕 2026-05-02 (Squad 一次到位 PR4)：這場遊戲組隊代表的「永久隊伍」
+    //   - null：臨時組隊（純為了這場遊戲而組）
+    //   - 非 null：對應 squads.id，遊戲結束戰績寫入 squad_match_records
+    squadId: varchar("squad_id"),
     createdAt: timestamp("created_at").defaultNow(),
     startedAt: timestamp("started_at"),
     completedAt: timestamp("completed_at"),

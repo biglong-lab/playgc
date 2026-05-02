@@ -18,6 +18,8 @@ import { registerTeamLifecycleRoutes } from "./team-lifecycle";
 /** 建立隊伍的請求驗證 */
 const createTeamBodySchema = z.object({
   name: z.string().min(1).max(50).optional(),
+  // 🆕 PR4：以「永久隊伍」身份開場
+  squadId: z.string().uuid().optional(),
 });
 
 /** 加入隊伍的請求驗證 */
@@ -103,17 +105,42 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
         const body = createTeamBodySchema.parse(req.body);
 
+        // 🆕 PR4：若帶 squadId，驗證該玩家是該 Squad active 成員，並把 team 名稱用 squad 名稱
+        let squadId: string | null = null;
+        let squadName: string | null = null;
+        if (body.squadId) {
+          const { squadMembers, squads } = await import("@shared/schema");
+          const [membership] = await db
+            .select({ squad: squads })
+            .from(squadMembers)
+            .innerJoin(squads, eq(squads.id, squadMembers.squadId))
+            .where(
+              and(
+                eq(squadMembers.squadId, body.squadId),
+                eq(squadMembers.userId, userId),
+                isNull(squadMembers.leftAt),
+              ),
+            )
+            .limit(1);
+          if (!membership) {
+            return res.status(403).json({ message: "你不是此隊伍的成員" });
+          }
+          squadId = body.squadId;
+          squadName = `[${membership.squad.tag}] ${membership.squad.name}`;
+        }
+
         const [team] = await db
           .insert(teams)
           .values({
             gameId,
-            name: body.name || `隊伍 ${accessCode}`,
+            name: body.name || squadName || `隊伍 ${accessCode}`,
             accessCode,
             leaderId: userId,
             status: "forming",
             minPlayers: game.minTeamPlayers || 2,
             maxPlayers: game.maxTeamPlayers || 6,
             settings: {},
+            squadId,
           })
           .returning();
 

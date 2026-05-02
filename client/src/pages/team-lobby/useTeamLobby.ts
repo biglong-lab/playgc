@@ -94,7 +94,7 @@ export interface TeamLobbyReturn {
   navigate: (path: string) => void;
   refetchTeam: () => void;
   handleCopyCode: () => void;
-  handleCreateTeam: () => void;
+  handleCreateTeam: (squadId?: string) => void;
   handleJoinTeam: () => void;
   toggleReady: () => void;
   startGame: () => void;
@@ -297,11 +297,13 @@ export function useTeamLobby(): TeamLobbyReturn {
 
   // Mutations
   const createTeamMutation = useMutation({
-    mutationFn: async (data: { name: string }) => {
+    mutationFn: async (data: { name: string; squadId?: string }) => {
       const response = await apiRequest("POST", `/api/games/${gameId}/teams`, data);
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
+      // 🆕 PR4：記住這次用的 squad，下次自動帶入
+      if (vars.squadId) setLastUsedSquadId(vars.squadId);
       toast({ title: "隊伍已創建" });
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
@@ -386,8 +388,13 @@ export function useTeamLobby(): TeamLobbyReturn {
     }
   }, [myTeam?.accessCode, toast]);
 
-  const handleCreateTeam = () => {
-    createTeamMutation.mutate({ name: teamName || "" });
+  const handleCreateTeam = (squadId?: string) => {
+    // 🆕 PR4：傳入的 squadId 優先；沒傳則用上次用過的（若存在）
+    const finalSquadId = squadId ?? getLastUsedSquadId() ?? undefined;
+    createTeamMutation.mutate({
+      name: teamName || "",
+      squadId: finalSquadId,
+    });
   };
 
   const handleJoinTeam = () => {
