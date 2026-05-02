@@ -10,6 +10,7 @@ import type { Page } from "@shared/schema";
 import { Loader2 } from "lucide-react";
 
 const PollLivePage = lazy(() => import("./PollLivePage"));
+const EmojiReactPage = lazy(() => import("./EmojiReactPage"));
 
 interface HostPageRendererProps {
   page: Page;
@@ -30,6 +31,8 @@ export default function HostPageRenderer({ page }: HostPageRendererProps) {
         switch (page.pageType) {
           case "host_poll_live":
             return <PollLivePage page={page} />;
+          case "host_emoji_react":
+            return <EmojiReactPage page={page} />;
           // Phase 1 W3-W4 會陸續加：
           //   host_emoji_react / host_wave_response / host_crowd_gather
           //   host_trivia_showdown / host_live_leaderboard

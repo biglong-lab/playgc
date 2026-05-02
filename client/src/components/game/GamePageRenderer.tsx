@@ -27,6 +27,7 @@ const TerritoryCapturePage = lazy(() => import("@/components/game/multi/Territor
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
+const EmojiReactPage = lazy(() => import("@/components/game/host/EmojiReactPage"));
 
 // 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/solo/ButtonPage"));
@@ -252,6 +253,8 @@ export default function GamePageRenderer({
       // 📺 HostScreen 軸線（ADR-0004）
       case "host_poll_live":
         return <PollLivePage page={page} />;
+      case "host_emoji_react":
+        return <EmojiReactPage page={page} />;
       case "photo_ocr":
         return <PhotoOcrFlow {...commonProps} />;
       case "gps_mission":
