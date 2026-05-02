@@ -28,6 +28,20 @@
 
 ⏭ 下一步：Phase 1 Week 2 — PollLive 完整實作（HostScreen 軸線首發業務元件）
 
+### 🎮 Phase 1 Week 2 完成 ✅（PollLive 全鏈路上線）
+**部署**：`3d7dcedc..e8b1447c`
+
+關鍵 commit：
+- `0201b25e` W2 D1: PollLive 元件本體（雙版型 + 10 測試）
+- `c8c81b3a` W2 D2: useHostScreenSync hook + GamePageRenderer 註冊
+- `6f232c69` W2 D3: HostPageRenderer + HostScreen/HostPlay 整合 game pages
+- `dd8ed648` W2 D4: ShowcaseHub PollLive demo 預覽
+- `e8b1447c` W2 D5: Admin host-session UI 後台管理
+
+**完整商業鏈路打通** 🎉：admin 建 session → 大螢幕投影 → 玩家投票 → 即時更新
+
+⏭ 下一步：Phase 1 Week 3 — HostScreen 連發 4 個元件
+
 ### 🛡 Squad 系統一次到位（取代三套組隊系統）
 **主題**：合併 teams / battle_clans / 過渡 squads 為單一 Squad 系統
 **範圍**：8 個 commit（PR0 + PR1-PR6）

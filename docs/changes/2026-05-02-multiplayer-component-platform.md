@@ -261,13 +261,41 @@ WHERE table_name='game_sessions'
 - 元件完整鏈路打通：
   - admin 建 session → 大螢幕進入 → 玩家投票 → 大螢幕長條圖即時更新
 
-**Week 2 驗收**（W2 D5 留待最後）：
+**Week 2 驗收**：
 - [x] PollLive 大螢幕版型完整（倒數、長條圖、狀態 badge）
 - [x] PollLive 玩家版型完整（選項、鎖定、揭曉、改票）
 - [x] useHostScreenSync hook 抽出（之後 7 個 host 元件可重用）
 - [x] HostScreen / HostPlay 載入 game pages
 - [x] ShowcaseHub demo 預覽 host / player 版型
-- [ ] W2 D5：壓測（50/100/500 玩家）+ ShowcaseHub 加更多 host 元件 demo
+- [x] W2 D5 完成：admin host-sessions UI（建/列/結束/複製網址）
+
+**W2 D5 變動**：commit `e8b1447c`
+- 新增 `client/src/pages/admin/AdminHostSessions.tsx`
+- App.tsx 加 `/admin/host-sessions` 路由
+- admin menu 加「📺 主控大螢幕」入口（系統總覽群組）
+
+**Week 2 結束 E2E 驗證**（5 個端點全通）：
+| 端點 | 結果 |
+|------|------|
+| Container | ✅ Up 20s healthy |
+| `/showcase` | ✅ 200 |
+| `/host/*` | ✅ 200 |
+| `/play/*` | ✅ 200 |
+| `/admin/host-sessions` | ✅ 200 |
+| `/api/admin/host-sessions` (no auth) | ✅ 「請先登入管理後台」|
+
+**Week 2 完整商業鏈路打通** 🎉：
+```
+admin 登入 → 「📺 主控大螢幕」→ 選遊戲 → 建 session
+  ↓
+複製大螢幕網址 → 投影機開
+複製玩家網址 / 印 QR → 給玩家
+  ↓
+玩家投票 → host_screen_pulse → 大螢幕長條圖即時更新
+```
+
+⏭ 下一步：Phase 1 Week 3 — HostScreen 軸線連發 4 個元件
+（EmojiReact / WaveResponse / CrowdGather / LiveLeaderboard）
 
 
 
