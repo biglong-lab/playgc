@@ -69,6 +69,32 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 2 W7 完整收尾 + W5-W7 三週階段性回顧 ✅
+**主題**：W7 業務化工具鏈完成 + 三週路徑成果回顧
+**範圍**：W7 5 天（6 個檔、~920 行）+ 三週累計（22 檔、~4,920 行、18 commits、120+ 測試）
+
+**W7 5 天時序**：
+- W7 D1（`95465776`）第 12 情境補位（kids-adventure）+ 主頁業務入口
+- W7 D2（`2d290f48`）ShowcaseHub 元件 → 情境反向連結 + DemoCard DRY
+- W7 D3（`f779cba7`）Onboarding Wizard 3 問找情境 + score-based Top 3
+- W7 D4（`0ecdd52d`）PitchDeck 7 區段銷售簡報 + 收費三方案 + 對比表
+- W7 D5 收尾文件 + 三週回顧
+
+**完整客戶轉換動線達成**：
+- 業務帶看 `/pitch` → 客戶 `/find-scenario` 3 問 → Top 3 `/template-market/:id` →
+  admin 一鍵建場 → A4 QR 列印 → 現場掃碼即玩
+- 第一次接觸到第一場活動上線 < 30 分鐘 ⚡
+
+**E2E 9 端點全綠**：/ /pitch /find-scenario /template-market /showcase
++ 12 情境詳情頁 + /admin/scenario-qr-print + /host /play /admin/host-sessions
+
+**收費三方案**：一次性 NT$3K-30K / 訂閱 NT$1.5K-5K（推薦）/ 委辦 NT$80K-200K
+
+**細節** → [W7 完整收尾](changes/2026-05-02-phase2-w7-complete.md)
+**三週回顧** → [Phase 2 W5-W7 階段性回顧](changes/2026-05-02-phase2-w5w6w7-recap.md)
+
+⏭ 下一步：Phase 2 W8 — 第一場真實付費活動 + Phase 2 整體收尾
+
 ### 🎤 Phase 2 W7 D4 ✅（客戶銷售簡報頁 PitchDeck）
 **主題**：業務拿手機 / 平板開會即可講解的一頁式簡報
 **範圍**：3 個檔案
