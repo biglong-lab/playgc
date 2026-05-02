@@ -70,6 +70,7 @@ const PUBLIC_PAGES = [
   "/template-market",
   "/showcase",
   "/admin/scenario-qr-print",
+  "/faq", // W17 D2
 ];
 
 const SCENARIO_IDS = [

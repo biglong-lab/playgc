@@ -182,6 +182,8 @@ const Pricing = lazy(() => import("@/pages/Pricing"));
 const ApiDocs = lazy(() => import("@/pages/ApiDocs"));
 // 📱 PlayLiff LINE LIFF 玩家入口（W14 D1）
 const PlayLiff = lazy(() => import("@/pages/PlayLiff"));
+// ❓ Faq 公開常見問題頁（W17 D2）
+const Faq = lazy(() => import("@/pages/Faq"));
 
 // 📺 Admin Host Session 管理（W2 D5）
 const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
@@ -270,6 +272,9 @@ function Router() {
 
         {/* 💳 公開定價頁（W10 D1）*/}
         <Route path="/pricing" component={Pricing} />
+
+        {/* ❓ 公開常見問題頁（W17 D2）*/}
+        <Route path="/faq" component={Faq} />
 
         {/* 📖 Public API 文件頁（W11 D4）*/}
         <Route path="/api-docs" component={ApiDocs} />

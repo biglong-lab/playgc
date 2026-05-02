@@ -271,6 +271,11 @@ export default function PitchDeck() {
                 先試玩元件
               </Button>
             </Link>
+            <Link href="/faq">
+              <Button size="lg" variant="ghost" data-testid="cta-pitch-faq">
+                常見問題
+              </Button>
+            </Link>
           </div>
         </section>
       </main>

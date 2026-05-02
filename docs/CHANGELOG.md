@@ -71,6 +71,24 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### ❓ Phase 5 W17 D2 ✅（公開 FAQ 頁）
+**主題**：客戶 self-service 14 個常見問題（業務不必每次都答）
+**範圍**：1 新檔 + 3 修改
+
+關鍵變動：
+- `client/src/pages/Faq.tsx`（新）— 14 題分 7 類（規模 / 體驗 / 資料 / 連線 / 客製 / 收費 / 整合）
+- `App.tsx` `/faq` 路由註冊
+- `PitchDeck.tsx` 底部 CTA 加「常見問題」按鈕
+- smoke test PUBLIC_PAGES 加 `/faq`
+
+**互動**：點擊展開 / 收合、一次只開一個、底部三個 CTA（簡報 / 找情境 / 價格）
+
+**Smoke test 48 → 49**
+
+**細節** → [changes/2026-05-03-phase5-w17-d2-faq-page.md](changes/2026-05-03-phase5-w17-d2-faq-page.md)
+
+⏭ 下一步：W17 D3 — 業務反饋 hotfix / ROI 計算 / admin UX 微調
+
 ### 🚀 Phase 5 W17 D1 ✅（真實客戶 pilot 啟動）
 **主題**：W17 業務週啟動、SOP + 反饋表就緒
 **範圍**：3 個新文件（純 docs）
