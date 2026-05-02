@@ -99,6 +99,11 @@ export const battleRegistrations = pgTable("battle_registrations", {
   slotId: varchar("slot_id").notNull().references(() => battleSlots.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id),
   premadeGroupId: varchar("premade_group_id"),
+  // 🆕 2026-05-02 (Squad 一次到位 PR3b)：玩家以「永久隊伍」身份報名
+  //   - null：個人散客報名
+  //   - 非 null：對應 squads.id，報名後可看到隊友是否同樣報名同 slot
+  //   premadeGroupId（臨時報名小組）保留向後相容，但新流程改用 squadId
+  squadId: varchar("squad_id"),
 
   registrationType: varchar("registration_type", { length: 20 }).notNull().default("individual"),
   status: varchar("status", { length: 20 }).notNull().default("registered"),
@@ -119,6 +124,7 @@ export const battleRegistrations = pgTable("battle_registrations", {
   index("idx_battle_reg_slot").on(table.slotId),
   index("idx_battle_reg_user").on(table.userId),
   index("idx_battle_reg_premade").on(table.premadeGroupId),
+  index("idx_battle_reg_squad").on(table.squadId),
 ]);
 
 // ============================================================================
@@ -159,6 +165,8 @@ export const insertRegistrationSchema = z.object({
   skillLevel: z.enum(skillLevelEnum).default("beginner"),
   equipmentSelection: z.array(z.string()).optional(),
   notes: z.string().max(500).optional(),
+  // 🆕 Squad 一次到位 PR3b：可選以「永久隊伍」身份報名
+  squadId: z.string().uuid().optional(),
 });
 
 export const insertPremadeGroupSchema = z.object({

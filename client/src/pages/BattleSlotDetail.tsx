@@ -62,6 +62,20 @@ export default function BattleSlotDetail() {
   const [teamName, setTeamName] = useState("");
   const [accessCode, setAccessCode] = useState("");
   const [copiedCode, setCopiedCode] = useState(false);
+  // 🆕 Squad 一次到位 PR3b：以哪個身份報名（"individual" / squadId）
+  const [registrationIdentity, setRegistrationIdentity] = useState<string>("individual");
+
+  // 🆕 PR3b：拿玩家所屬的所有 active squads（顯示在 register dialog 給選）
+  interface MySquad { id: string; name: string; tag: string; primaryColor: string | null; status: string; myRole: string; }
+  const { data: mySquadsData } = useQuery<{ memberships: MySquad[] }>({
+    queryKey: ["/api/me/squads"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/me/squads");
+      return res.json();
+    },
+    enabled: !!user,
+  });
+  const myActiveSquads = (mySquadsData?.memberships ?? []).filter((s) => s.status === "active");
 
   const { data: slotData, isLoading } = useQuery<SlotDetailResponse>({
     queryKey: ["/api/battle/slots", slotId],
@@ -86,12 +100,21 @@ export default function BattleSlotDetail() {
       return apiRequest("POST", `/api/battle/slots/${slotId}/register`, {
         skillLevel,
         notes: notes || undefined,
+        // 🆕 PR3b：若選了非個人身份，帶 squadId
+        squadId: registrationIdentity !== "individual" ? registrationIdentity : undefined,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/battle/slots", slotId] });
       queryClient.invalidateQueries({ queryKey: ["/api/battle/my-registrations"] });
-      toast({ title: "報名成功！" });
+      const squadName =
+        registrationIdentity !== "individual"
+          ? myActiveSquads.find((s) => s.id === registrationIdentity)?.name
+          : null;
+      toast({
+        title: "報名成功！",
+        description: squadName ? `以 [${squadName}] 隊伍身份報名` : undefined,
+      });
       setShowRegisterDialog(false);
     },
     onError: (err: Error) => {
@@ -398,6 +421,26 @@ export default function BattleSlotDetail() {
             <DialogTitle>報名對戰</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* 🆕 PR3b：以哪個身份報名（個人 / 永久隊伍）*/}
+            <div>
+              <Label>報名身份</Label>
+              <Select value={registrationIdentity} onValueChange={setRegistrationIdentity}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="individual">個人散客</SelectItem>
+                  {myActiveSquads.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      🛡 [{s.tag}] {s.name}（{s.myRole === "leader" ? "隊長" : s.myRole === "officer" ? "幹部" : "隊員"}）
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                {myActiveSquads.length === 0
+                  ? "💡 建立永久隊伍可累積跨遊戲戰績"
+                  : "選永久隊伍報名 → 勝負算入該隊伍積分"}
+              </p>
+            </div>
             <div>
               <Label>技能等級</Label>
               <Select value={skillLevel} onValueChange={setSkillLevel}>

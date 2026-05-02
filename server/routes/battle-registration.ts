@@ -61,9 +61,33 @@ export function registerBattleRegistrationRoutes(app: Express) {
         // 解析選填欄位
         const body = insertRegistrationSchema.parse(req.body);
 
+        // 🆕 2026-05-02 (Squad PR3b)：若帶 squadId，驗證該玩家確實是該 Squad 成員
+        let squadId: string | null = null;
+        if (body.squadId) {
+          const { db } = await import("../db");
+          const { squadMembers } = await import("@shared/schema");
+          const { and, eq, isNull } = await import("drizzle-orm");
+          const [membership] = await db
+            .select()
+            .from(squadMembers)
+            .where(
+              and(
+                eq(squadMembers.squadId, body.squadId),
+                eq(squadMembers.userId, userId),
+                isNull(squadMembers.leftAt),
+              ),
+            )
+            .limit(1);
+          if (!membership) {
+            return res.status(403).json({ error: "你不是此隊伍的成員，無法以隊伍身份報名" });
+          }
+          squadId = body.squadId;
+        }
+
         const registration = await battleStorageMethods.createRegistration({
           slotId,
           userId,
+          squadId,
           registrationType: "individual",
           status: "registered",
           skillLevel: body.skillLevel,
