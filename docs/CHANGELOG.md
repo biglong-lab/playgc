@@ -69,6 +69,36 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 3 完整收尾 + ADR-0009 Phase 4 方向 ✅
+**主題**：W12 5 天累計 + Phase 3 整體 4 週路徑收尾 + Phase 4 規劃
+**範圍**：W12 26 檔、~2,141 行 + Phase 3 累計 93 檔、~7,940 行
+
+**Phase 3 W9-W12 四週時序**：
+- W9（17 檔）AI 內容 + 客戶 onboarding 工具
+- W10（24 檔）付費 + 信件 + 配額（Recur.tw + Resend + Stripe fallback）
+- W11（26 檔）Public API + Rate limit + Idempotency + OpenAPI
+- W12（26 檔）API Key Store + SDK + Webhook 雙向
+
+**Phase 3 累積能力**：
+- ✅ AI 內容生成（DeepSeek）
+- ✅ 付費機制（Recur.tw 主 + Stripe fallback）
+- ✅ 信件系統（Resend）
+- ✅ 用量配額追蹤
+- ✅ Public REST API v1（含 SDK + Webhook）
+- ✅ 雙向通訊（outbound + inbound webhook）
+- ✅ 完整 onboarding 文件（客戶 + 代理商）
+- ✅ Smoke test 自動化（24 → 40，+16 個檢查）
+
+**ADR-0009 Phase 4 方向**：
+- 選項 A 真實客戶 + 案例（業務）
+- 選項 B LINE LIFF 整合（技術）
+- W13-W16 路徑：W13 真實客戶 / W14 LIFF MVP / W15 LINE Bot / W16 收尾
+
+**完整收尾** → [changes/2026-05-03-phase3-complete.md](changes/2026-05-03-phase3-complete.md)
+**ADR-0009** → [decisions/0009-phase4-direction.md](decisions/0009-phase4-direction.md)
+
+⏭ 下一步：Phase 4 W13 — 真實付費客戶 + LINE LIFF MVP
+
 ### 🧪 Phase 3 W12 D4 ✅（Webhook 測試 endpoint + SDK 擴充）
 **主題**：代理商可主動測試 webhook（onboarding 階段驗證）
 **範圍**：4 個檔案
