@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎤 Phase 2 W7 D4 ✅（客戶銷售簡報頁 PitchDeck）
+**主題**：業務拿手機 / 平板開會即可講解的一頁式簡報
+**範圍**：3 個檔案
+
+關鍵變動：
+- `PitchDeck.tsx` 新公開頁 `/pitch`（7 個區段 scroll narrative）
+- App.tsx 路由註冊
+- FieldEntry 底部加「看完整簡報」入口
+
+**7 區段**：痛點 → 解法 → 12 情境 → 流程 → 收費 → 對比表 → CTA
+
+**收費三方案**：
+- 一次性 NT$ 3,000-30,000 / 場
+- 訂閱 NT$ 1,500-5,000 / 月（推薦）
+- 委辦 NT$ 80,000-200,000 / 季
+
+**對比表**：自己手作 vs 客製外包 vs CHITO（6 維度）
+
+**E2E**：/pitch 200 + JS bundle 引用整合
+
+**細節** → [changes/2026-05-02-phase2-w7-d4-pitch-deck.md](changes/2026-05-02-phase2-w7-d4-pitch-deck.md)
+
+⏭ 下一步：W7 D5 — W7 完整收尾 + 客戶 onboarding walkthrough
+
 ### 🧭 Phase 2 W7 D3 ✅（Onboarding Wizard 3 問找情境）
 **主題**：客戶不知道選什麼情境時的引導工具
 **範圍**：3 個檔案

@@ -398,9 +398,13 @@ export default function FieldEntry() {
                 </Button>
               </Link>
             </div>
-            <p className="text-xs text-muted-foreground pt-1">
+            <p className="text-xs text-muted-foreground pt-1 space-x-3">
+              <Link href="/pitch" className="underline hover:text-foreground" data-testid="link-pitch-home">
+                看完整簡報
+              </Link>
+              <span>·</span>
               <Link href="/showcase" className="underline hover:text-foreground">
-                或先看單一元件試玩
+                先看單一元件試玩
               </Link>
             </p>
           </div>
