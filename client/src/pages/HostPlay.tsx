@@ -14,6 +14,8 @@ import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2, Smartphone } from "lucide-react";
+import HostPageRenderer from "@/components/game/host/HostPageRenderer";
+import type { Page } from "@shared/schema";
 
 interface HostSessionInfo {
   sessionId: string;
@@ -36,6 +38,19 @@ export default function HostPlay() {
     },
     enabled: !!sessionId,
   });
+
+  // 載入該 game 的 pages（取第一個 host_* pageType 渲染）
+  const { data: pages } = useQuery<Page[]>({
+    queryKey: ["/api/games", info?.gameId, "pages"],
+    queryFn: async () => {
+      const res = await fetch(`/api/games/${info!.gameId}/pages`);
+      if (!res.ok) throw new Error("無法載入 game pages");
+      return res.json();
+    },
+    enabled: !!info?.gameId,
+  });
+
+  const hostPage = pages?.find((p) => p.pageType.startsWith("host_"));
 
   useEffect(() => {
     if (!sessionId) return;
@@ -115,6 +130,11 @@ export default function HostPlay() {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-md">
+        {hostPage ? (
+          // 有 host_* pageType → 渲染對應元件玩家版
+          <HostPageRenderer page={hostPage} />
+        ) : (
+          // 沒有 → 等待畫面
         <Card>
           <CardContent className="p-6 text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
@@ -129,6 +149,7 @@ export default function HostPlay() {
             </div>
           </CardContent>
         </Card>
+        )}
       </main>
     </div>
   );

@@ -15,6 +15,8 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2, Tv } from "lucide-react";
+import HostPageRenderer from "@/components/game/host/HostPageRenderer";
+import type { Page } from "@shared/schema";
 
 interface HostSessionInfo {
   sessionId: string;
@@ -43,6 +45,20 @@ export default function HostScreen() {
     },
     enabled: !!sessionId,
   });
+
+  // 載入該 game 的 pages（取第一個 host_* pageType 渲染）
+  const { data: pages } = useQuery<Page[]>({
+    queryKey: ["/api/games", info?.gameId, "pages"],
+    queryFn: async () => {
+      const res = await fetch(`/api/games/${info!.gameId}/pages`);
+      if (!res.ok) throw new Error("無法載入 game pages");
+      return res.json();
+    },
+    enabled: !!info?.gameId,
+  });
+
+  // 找第一個 host_* pageType 的頁
+  const hostPage = pages?.find((p) => p.pageType.startsWith("host_"));
 
   // 建立 WebSocket
   useEffect(() => {
@@ -142,30 +158,35 @@ export default function HostScreen() {
         </div>
       </div>
 
-      {/* 主舞台（Phase 1 W2 起接入元件） */}
-      <main className="flex-1 flex items-center justify-center p-8">
-        <Card className="max-w-2xl w-full bg-zinc-900 border-zinc-700">
-          <CardContent className="p-12 text-center space-y-6">
-            <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-              <Tv className="w-10 h-10 text-primary" />
-            </div>
-            <h2 className="text-3xl font-display font-bold">
-              主控大螢幕已就緒
-            </h2>
-            <p className="text-zinc-400">
-              等待元件啟動 — Phase 1 W2 起 PollLive / EmojiReact / TriviaShowdown 等元件將陸續上線。
-            </p>
-            <div className="bg-zinc-800/50 rounded-lg p-4 text-left text-sm space-y-2">
-              <p className="text-zinc-300">📺 玩家網址：</p>
-              <code className="text-emerald-400 break-all">
-                {window.location.origin}/play/{sessionId}
-              </code>
-              <p className="text-zinc-400 text-xs mt-2">
-                請玩家掃 QR 或輸入網址（不需 token）
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* 主舞台 */}
+      <main className="flex-1 flex flex-col">
+        {hostPage ? (
+          // 有 host_* pageType → 渲染對應元件（PollLive / EmojiReact ...）
+          <div className="flex-1 flex">
+            <HostPageRenderer page={hostPage} />
+          </div>
+        ) : (
+          // 沒有對應 pageType → 顯示等待畫面 + 玩家網址
+          <div className="flex-1 flex items-center justify-center p-8">
+            <Card className="max-w-2xl w-full bg-zinc-900 border-zinc-700">
+              <CardContent className="p-12 text-center space-y-6">
+                <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
+                  <Tv className="w-10 h-10 text-primary" />
+                </div>
+                <h2 className="text-3xl font-display font-bold">主控大螢幕已就緒</h2>
+                <p className="text-zinc-400">
+                  此 session 對應的遊戲沒有 host_* 頁面，請通知 admin 加入 host_poll_live 等頁面
+                </p>
+                <div className="bg-zinc-800/50 rounded-lg p-4 text-left text-sm space-y-2">
+                  <p className="text-zinc-300">📺 玩家網址：</p>
+                  <code className="text-emerald-400 break-all">
+                    {window.location.origin}/play/{sessionId}
+                  </code>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
 
       {/* 底部資訊 */}
