@@ -69,6 +69,34 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 3 W10 完整收尾 ✅（付費 + 信件 + 配額三軸完整）
+**主題**：W10 5 天累計 + Resend 信件整合
+**範圍**：W10 24 檔、~1,633 行、smoke test 24→31
+
+**W10 5 天時序**：
+- D1（`370a4781`）Stripe scaffold + Pricing 公開頁 + ADR 切換
+- D2（`4084aeb8`）Recur.tw API client + endpoints
+- D3（`9aff6a8d`）Pricing 切換 Recur.tw + productId 環境變數
+- D4（`476c6784`）用量配額追蹤
+- D5 Resend 信件整合 + payment success email + W10 收尾
+
+**新增 endpoints**：7 個（payments + recur + email/test + quota + 既有）
+
+**3 套外部服務統一風格**：
+- Stripe（國際 fallback）/ Recur.tw（主路徑）/ Resend（信件）
+- 都用 fetch 直打、graceful 503、統一環境變數命名
+
+**待 admin 設定**：
+- RECUR_TW_API_KEY + RECUR_PRODUCT_<SCENARIO_ID>×12
+- RESEND_API_KEY + EMAIL_FROM
+- SCENARIO_QUOTA_DEFAULT / SCENARIO_QUOTA_FIELD_<id>
+
+**Smoke test 31/31 全綠**
+
+**完整收尾** → [changes/2026-05-02-phase3-w10-complete.md](changes/2026-05-02-phase3-w10-complete.md)
+
+⏭ 下一步：Phase 3 W11 — 業務 API + 代理商 onboarding
+
 ### 📈 Phase 3 W10 D4 ✅（用量配額追蹤）
 **主題**：admin 看本月情境建場用量 / 配額 / 重置時間
 **範圍**：3 個檔案

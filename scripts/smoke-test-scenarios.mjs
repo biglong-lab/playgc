@@ -187,6 +187,18 @@ async function runSmokeTest() {
     if (typeof data.recurTwConfigured !== "boolean") {
       return { ok: false, error: "missing recurTwConfigured field" };
     }
+    if (typeof data.resendConfigured !== "boolean") {
+      return { ok: false, error: "missing resendConfigured field (W10 D5)" };
+    }
+    return { ok: true };
+  });
+
+  // 4d2. Resend test endpoint（503 graceful when no key）
+  await check("GET /api/payments/email/test（缺 to → 400 或 503）", 400, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/payments/email/test`);
+    if (res.status !== 400 && res.status !== 503) {
+      return { ok: false, error: `expected 400 or 503, got ${res.status}` };
+    }
     return { ok: true };
   });
 

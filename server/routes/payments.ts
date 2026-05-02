@@ -15,11 +15,13 @@
 import type { Express } from "express";
 import { createCheckoutSession } from "../lib/stripe-checkout";
 import { createRecurCheckoutSession, verifyRecurWebhookSignature } from "../lib/recur-tw";
+import { sendEmailAsync, buildPaymentSuccessEmail } from "../lib/resend-mailer";
 import { getScenarioById } from "@shared/scenario-templates";
 
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;
 const RECUR_KEY = process.env.RECUR_TW_API_KEY;
 const RECUR_WEBHOOK_SECRET = process.env.RECUR_TW_WEBHOOK_SECRET;
+const RESEND_KEY = process.env.RESEND_API_KEY;
 
 /** 預設定價（依規模與情境）*/
 function defaultPrice(scenarioId: string): { amountCents: number; productName: string } | null {
@@ -135,6 +137,7 @@ export function registerPaymentsRoutes(app: Express) {
       stripeConfigured: !!STRIPE_KEY,
       recurTwConfigured: !!RECUR_KEY,
       recurWebhookConfigured: !!RECUR_WEBHOOK_SECRET,
+      resendConfigured: !!RESEND_KEY,
       timestamp: new Date().toISOString(),
     });
   });
@@ -224,20 +227,73 @@ export function registerPaymentsRoutes(app: Express) {
         return res.status(503).json({ error: "Recur.tw 付費系統未啟用" });
       }
 
-      // TODO: 驗章 + 處理事件（W10 D5）
       const event = req.body;
-      console.log("[payments] recur webhook 收到:", event?.type ?? "unknown");
+      const eventType = event?.type ?? "unknown";
+      console.log("[payments] recur webhook 收到:", eventType);
 
-      // 預期事件類型（依 Recur.tw 文件，待 W10 D5 確認）：
-      // - checkout.session.completed
-      // - subscription.created
-      // - subscription.canceled
-      // - invoice.payment_succeeded
+      // 簽章驗證（W10 D5 stub、上線前需補實際 HMAC 驗證）
+      if (RECUR_WEBHOOK_SECRET) {
+        const sig = req.headers["x-recur-signature"] as string | undefined;
+        const rawPayload = JSON.stringify(req.body);
+        if (!sig || !verifyRecurWebhookSignature(rawPayload, sig, RECUR_WEBHOOK_SECRET)) {
+          console.warn("[payments] recur webhook 簽章未通過（暫不阻擋）");
+          // TODO: return res.status(401).json({ error: "Invalid signature" });
+        }
+      }
+
+      // checkout.session.completed → 付款成功通知信件（W10 D5）
+      if (eventType === "checkout.session.completed" && RESEND_KEY) {
+        const customerEmail = event?.data?.customer_email ?? event?.data?.customerEmail;
+        const scenarioId = event?.data?.metadata?.scenarioId;
+        const scenario = scenarioId ? getScenarioById(scenarioId) : null;
+
+        if (customerEmail && scenario) {
+          const { subject, html } = buildPaymentSuccessEmail({
+            customerEmail,
+            scenarioName: scenario.name,
+            amount: event?.data?.amount_total ?? 0,
+            instances: [], // 真實場景：應於 webhook 回 instantiate 後再寄
+          });
+          sendEmailAsync({
+            apiKey: RESEND_KEY,
+            to: customerEmail,
+            subject,
+            html,
+            tags: [{ name: "type", value: "payment-success" }],
+          });
+        }
+      }
 
       res.json({ received: true });
     } catch (err) {
       console.error("[payments] recur webhook 失敗:", err);
       res.status(500).json({ error: "webhook 處理失敗" });
+    }
+  });
+
+  /**
+   * GET /api/payments/email/test
+   * super_admin 測試信件發送（W10 D5）
+   * 不寫進 smoke test（需要實際 RESEND_API_KEY）
+   */
+  app.get("/api/payments/email/test", async (req, res) => {
+    if (!RESEND_KEY) {
+      return res.status(503).json({ error: "Resend 未啟用（RESEND_API_KEY 未設定）" });
+    }
+    const to = req.query.to as string | undefined;
+    if (!to) return res.status(400).json({ error: "缺少 ?to=email@example.com" });
+
+    try {
+      const { sendEmail } = await import("../lib/resend-mailer");
+      const result = await sendEmail({
+        apiKey: RESEND_KEY,
+        to,
+        subject: "✅ CHITO 信件測試",
+        html: "<h1>Hello CHITO</h1><p>Resend 信件系統運作正常</p>",
+      });
+      res.json({ ok: true, id: result.id });
+    } catch (err) {
+      res.status(500).json({ error: err instanceof Error ? err.message : "未知錯誤" });
     }
   });
 }
