@@ -168,6 +168,9 @@ const HostPlay = lazy(() => import("@/pages/HostPlay"));
 // 🎬 ShowcaseHub 元件展示館（W1 D5 MVP）
 const ShowcaseHub = lazy(() => import("@/pages/ShowcaseHub"));
 
+// 📺 Admin Host Session 管理（W2 D5）
+const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
+
 // ⚙️ 場域行銷設定（Squad System Phase 12.6）
 const AdminEngagementSettings = lazy(() => import("@/pages/admin/AdminEngagementSettings"));
 
@@ -327,6 +330,7 @@ function Router() {
         <Route path="/admin/rewards/analytics">{() => <ProtectedAdminRoute><AdminRewardsAnalytics /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/invites/cohort">{() => <ProtectedAdminRoute><AdminInvitesCohort /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/pwa-analytics">{() => <ProtectedAdminRoute><PwaUsageAnalytics /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/host-sessions">{() => <ProtectedAdminRoute><AdminHostSessions /></ProtectedAdminRoute>}</Route>
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>

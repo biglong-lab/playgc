@@ -80,6 +80,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       // 🆕 設備管理僅 shooting 模組啟用才顯示（硬體靶機）
       { title: "設備管理", icon: Cpu, path: "/admin/devices", permission: "game:view", requiresModule: "shooting" },
       { title: "QR Code 發布", icon: QrCode, path: "/admin/qrcodes", permission: "qr:generate" },
+      { title: "📺 主控大螢幕", icon: Cpu, path: "/admin/host-sessions", permission: "game:create" },
     ],
   },
 
