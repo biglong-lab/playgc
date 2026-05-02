@@ -21,6 +21,11 @@ import EmojiReact from "@/components/game/host/EmojiReact";
 import WaveResponse from "@/components/game/host/WaveResponse";
 import CrowdGather from "@/components/game/host/CrowdGather";
 import LiveLeaderboard from "@/components/game/host/LiveLeaderboard";
+import JigsawPuzzle from "@/components/game/multi/JigsawPuzzle";
+import TreasureHunt from "@/components/game/multi/TreasureHunt";
+import GpsCascade from "@/components/game/multi/GpsCascade";
+import CollectiveScore from "@/components/game/multi/CollectiveScore";
+import RoleAssign from "@/components/game/multi/RoleAssign";
 import {
   ArrowLeft, Tv, Users, User as UserIcon, Sparkles,
   Vote, Camera, MapPin, Trophy, Flame, Lock,
@@ -60,11 +65,11 @@ const COMPONENTS: ComponentItem[] = [
   { name: "ChoiceVerifyRace", zhName: "選擇題搶答", desc: "server 權威時間", status: "live", axis: "multi" },
   { name: "RelayMission", zhName: "接力任務", desc: "段落穩定分配", status: "live", axis: "multi" },
   { name: "TerritoryCapture", zhName: "地盤戰", desc: "多隊爭奪 GPS 點", status: "live", axis: "multi" },
-  { name: "JigsawPuzzle", zhName: "拼圖協作", desc: "拍照拼圖（破冰王牌）", status: "planned", axis: "multi" },
-  { name: "TreasureHunt", zhName: "藏寶圖", desc: "線索拼密碼", status: "planned", axis: "multi" },
-  { name: "GpsCascade", zhName: "GPS 連鎖解鎖", desc: "依序連動", status: "planned", axis: "multi" },
-  { name: "CollectiveScore", zhName: "全體累計分", desc: "達標才贏", status: "planned", axis: "multi" },
-  { name: "RoleAssign", zhName: "角色分派", desc: "隊伍隨機指派角色", status: "planned", axis: "multi" },
+  { name: "JigsawPuzzle", zhName: "拼圖協作", desc: "拍照拼圖（破冰王牌）", status: "live", axis: "multi" },
+  { name: "TreasureHunt", zhName: "藏寶圖", desc: "線索拼密碼", status: "live", axis: "multi" },
+  { name: "GpsCascade", zhName: "GPS 連鎖解鎖", desc: "依序連動", status: "live", axis: "multi" },
+  { name: "CollectiveScore", zhName: "全體累計分", desc: "達標才贏", status: "live", axis: "multi" },
+  { name: "RoleAssign", zhName: "角色分派", desc: "隊伍隨機指派角色", status: "live", axis: "multi" },
 
   // 第一軸線 solo（已 18 個）— 摘要列幾個代表
   { name: "PhotoMission", zhName: "拍照任務", desc: "AI 驗證指定物", status: "live", axis: "solo" },
@@ -208,8 +213,14 @@ const POLLLIVE_DEMO_PLAYER_STATE = {
   revealResults: true,
 };
 
-// 5 個 host 元件 demo 預覽配置
-type HostDemo = "poll-host" | "poll-player" | "emoji-host" | "emoji-player" | "wave-host" | "wave-player" | "crowd-host" | "crowd-player" | "leaderboard-host" | "leaderboard-player";
+// 5 個 host 元件 + 5 個 multi 元件 demo 預覽配置
+type HostDemo =
+  | "poll-host" | "poll-player"
+  | "emoji-host" | "emoji-player"
+  | "wave-host" | "wave-player"
+  | "crowd-host" | "crowd-player"
+  | "leaderboard-host" | "leaderboard-player"
+  | "jigsaw" | "treasure" | "gps-cascade" | "collective" | "role-assign";
 
 export default function ShowcaseHub() {
   const liveCount = COMPONENTS.filter((c) => c.status === "live").length;
@@ -297,6 +308,47 @@ export default function ShowcaseHub() {
 
           <p className="text-xs text-center text-muted-foreground">
             （Demo 模式靜態預覽 — 真實活動由 admin 建 host session 後產生網址、玩家投票會即時更新）
+          </p>
+        </section>
+
+        {/* 🎬 5 個 multi 元件 demo（W4 D4 新增）*/}
+        <section className="space-y-4">
+          <div className="text-center space-y-2">
+            <h2 className="text-xl font-display font-bold">👥 立即看 — Multi 隊伍協作 5 元件</h2>
+            <p className="text-sm text-muted-foreground">
+              玩家分頭協作完成任務 — 適合親子家庭、企業團建、景點探秘、劇本殺
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { id: "jigsaw", title: "🧩 拼圖協作", desc: "JigsawPuzzle — 親子家庭王牌", demo: "jigsaw" },
+              { id: "treasure", title: "💎 藏寶尋找", desc: "TreasureHunt — 線索拼密碼", demo: "treasure" },
+              { id: "gps-cascade", title: "🗺 連鎖探索", desc: "GpsCascade — 強制動線", demo: "gps-cascade" },
+              { id: "collective", title: "🎯 合作達標", desc: "CollectiveScore — 班際積分", demo: "collective" },
+              { id: "role-assign", title: "🎭 角色分派", desc: "RoleAssign — 劇本殺王牌", demo: "role-assign" },
+            ].map((item) => (
+              <Card key={item.id} className="hover:border-primary/40 transition-colors">
+                <CardContent className="p-4 space-y-3">
+                  <div>
+                    <h3 className="font-bold">{item.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                  </div>
+                  <Button
+                    onClick={() => setDemoMode(item.demo as HostDemo)}
+                    size="sm"
+                    className="w-full"
+                    data-testid={`btn-demo-${item.id}`}
+                  >
+                    📱 看玩家版型
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <p className="text-xs text-center text-muted-foreground">
+            （Multi 元件玩家共同操作 — Demo 用本地 state 模擬、真實活動 WS 同步）
           </p>
         </section>
 
@@ -401,6 +453,108 @@ export default function ShowcaseHub() {
                       { id: "5", name: "金門勇者", score: 720 },
                     ],
                   }}
+                />
+              )}
+
+              {/* Multi 元件 demos */}
+              {demoMode === "jigsaw" && (
+                <JigsawPuzzle
+                  config={{ title: "金門景點拼圖", rows: 2, cols: 2, prompts: ["紅磚牆", "白色廟宇", "綠色稻田", "藍色海岸"] }}
+                  state={{
+                    slots: [
+                      { id: "r0c0", row: 0, col: 0, prompt: "紅磚牆", filledBy: "Alice", text: "紅色古厝", color: "#ef4444" },
+                      { id: "r0c1", row: 0, col: 1, prompt: "白色廟宇", filledBy: "Bob", text: "城隍廟", color: "#f9fafb" },
+                      { id: "r1c0", row: 1, col: 0, prompt: "綠色稻田", filledBy: "Carol", text: "稻浪", color: "#10b981" },
+                      { id: "r1c1", row: 1, col: 1, prompt: "藍色海岸", filledBy: "Dave", text: "夕陽海景", color: "#3b82f6" },
+                    ],
+                    isComplete: true,
+                  }}
+                  myUserId="me"
+                  myUserName="我"
+                  onFillSlot={() => {}}
+                />
+              )}
+              {demoMode === "treasure" && (
+                <TreasureHunt
+                  config={{
+                    title: "金門尋寶",
+                    finalReward: "🏆 800",
+                    clues: [
+                      { id: "c1", prompt: "金門最大紀念日？", answer: "823砲戰", reward: "8" },
+                      { id: "c2", prompt: "金門特產之一（飲品）？", answer: "高粱酒", reward: "0" },
+                      { id: "c3", prompt: "金門地標建築？", answer: "莒光樓", reward: "0" },
+                    ],
+                  }}
+                  state={{ unlockedClueIds: ["c1"] }}
+                  onUnlockClue={() => {}}
+                />
+              )}
+              {demoMode === "gps-cascade" && (
+                <GpsCascade
+                  config={{
+                    title: "金門古蹟巡禮",
+                    points: [
+                      { id: "p1", name: "後浦老街", hint: "找入口的牌樓", story: "後浦是金門最早的商業聚落。" },
+                      { id: "p2", name: "賈村牌坊", hint: "從後浦往南 200m" },
+                      { id: "p3", name: "莒光樓", hint: "南方海岸地標" },
+                    ],
+                  }}
+                  state={{ reachedPointIds: ["p1"] }}
+                  onReachPoint={() => {}}
+                />
+              )}
+              {demoMode === "collective" && (
+                <CollectiveScore
+                  config={{
+                    title: "🎯 班際合作達標",
+                    targetScore: 1000,
+                  }}
+                  state={{
+                    totalScore: 720,
+                    contributors: [
+                      { name: "Alice", total: 320 },
+                      { name: "Bob", total: 250 },
+                      { name: "Carol", total: 150 },
+                    ],
+                    isReached: false,
+                  }}
+                  myUserName="Bob"
+                  onContribute={() => {}}
+                />
+              )}
+              {demoMode === "role-assign" && (
+                <RoleAssign
+                  config={{
+                    title: "🎭 推理之夜",
+                    subtitle: "你扮演誰？",
+                    roles: [
+                      {
+                        id: "detective",
+                        name: "偵探",
+                        emoji: "🕵️",
+                        description: "你是案件的偵探。\n仔細聽嫌犯與證人的描述，找出真相。",
+                        color: "#3b82f6",
+                      },
+                      {
+                        id: "suspect",
+                        name: "嫌犯",
+                        emoji: "🎭",
+                        description: "你被懷疑了！\n但你是無辜的（也可能不是）。",
+                        color: "#ef4444",
+                        isSecret: true,
+                      },
+                      {
+                        id: "witness",
+                        name: "證人",
+                        emoji: "👁",
+                        description: "你看到事發經過。\n誠實回答偵探的問題。",
+                        color: "#10b981",
+                      },
+                    ],
+                  }}
+                  state={{ assignments: { 我: "detective" } }}
+                  myUserName="我"
+                  onAssign={() => {}}
                 />
               )}
             </div>
