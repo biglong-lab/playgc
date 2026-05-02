@@ -35,8 +35,9 @@ import {
   ArrowLeft, Tv, Users, User as UserIcon, Sparkles,
   Vote, Camera, MapPin, Trophy, Flame, Lock,
   Smartphone, Image as ImageIcon, Award, Briefcase, Heart,
-  GraduationCap, Building2, PartyPopper,
+  GraduationCap, Building2, PartyPopper, ArrowRight,
 } from "lucide-react";
+import { getScenariosForPageType } from "@shared/scenario-templates";
 
 // ════════════════════════════════════════════════════════════════════
 // 元件清單（依軸線分類）
@@ -282,39 +283,18 @@ export default function ShowcaseHub() {
           {/* 5 個元件對照卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { id: "poll", title: "📊 即時民調", desc: "PollLive — 全場投票 + 長條圖", host: "poll-host", player: "poll-player" },
-              { id: "emoji", title: "🎉 情緒池", desc: "EmojiReact — emoji 雨 + 計數", host: "emoji-host", player: "emoji-player" },
-              { id: "wave", title: "📣 人浪應援", desc: "WaveResponse — 強度脈動", host: "wave-host", player: "wave-player" },
-              { id: "crowd", title: "👥 聚眾達標", desc: "CrowdGather — 簽到熱場", host: "crowd-host", player: "crowd-player" },
-              { id: "leaderboard", title: "🏆 即時排行", desc: "LiveLeaderboard — Top 10 競賽榜", host: "leaderboard-host", player: "leaderboard-player" },
+              { id: "poll", title: "📊 即時民調", desc: "PollLive — 全場投票 + 長條圖", host: "poll-host", player: "poll-player", pageType: "host_poll_live" },
+              { id: "emoji", title: "🎉 情緒池", desc: "EmojiReact — emoji 雨 + 計數", host: "emoji-host", player: "emoji-player", pageType: "host_emoji_react" },
+              { id: "wave", title: "📣 人浪應援", desc: "WaveResponse — 強度脈動", host: "wave-host", player: "wave-player", pageType: "host_wave_response" },
+              { id: "crowd", title: "👥 聚眾達標", desc: "CrowdGather — 簽到熱場", host: "crowd-host", player: "crowd-player", pageType: "host_crowd_gather" },
+              { id: "leaderboard", title: "🏆 即時排行", desc: "LiveLeaderboard — Top 10 競賽榜", host: "leaderboard-host", player: "leaderboard-player", pageType: "host_live_leaderboard" },
             ].map((item) => (
-              <Card key={item.id} className="hover:border-primary/40 transition-colors">
-                <CardContent className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-bold">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => setDemoMode(item.host as HostDemo)}
-                      size="sm"
-                      className="flex-1"
-                      data-testid={`btn-demo-${item.id}-host`}
-                    >
-                      📺 大螢幕
-                    </Button>
-                    <Button
-                      onClick={() => setDemoMode(item.player as HostDemo)}
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      data-testid={`btn-demo-${item.id}-player`}
-                    >
-                      📱 玩家
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <DemoCard
+                key={item.id}
+                item={item}
+                onDemoOpen={(demo) => setDemoMode(demo as HostDemo)}
+                hasBoth
+              />
             ))}
           </div>
 
@@ -334,39 +314,18 @@ export default function ShowcaseHub() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { id: "polaroid", title: "📸 拍立得紀念牆", desc: "PolaroidCollage — 婚禮王牌", host: "polaroid-host", player: "polaroid-player" },
-              { id: "guestbook", title: "✍️ 數位簽名簿", desc: "GuestbookDigital — 婚禮 / 退休", host: "guestbook-host", player: "guestbook-player" },
-              { id: "trivia", title: "🎯 搶答秀", desc: "TriviaShowdown — 園遊會主舞台", host: "trivia-host", player: "trivia-player" },
-              { id: "scoreboard", title: "📣 跑馬燈宣告", desc: "ScoreboardAnnouncement — 賽事播報", host: "scoreboard-host", player: "scoreboard-player" },
-              { id: "knowledgemap", title: "🗺️ 場域全景地圖", desc: "KnowledgeMap — 街區商圈打卡", host: "knowledgemap-host", player: "knowledgemap-player" },
+              { id: "polaroid", title: "📸 拍立得紀念牆", desc: "PolaroidCollage — 婚禮王牌", host: "polaroid-host", player: "polaroid-player", pageType: "host_polaroid_collage" },
+              { id: "guestbook", title: "✍️ 數位簽名簿", desc: "GuestbookDigital — 婚禮 / 退休", host: "guestbook-host", player: "guestbook-player", pageType: "host_guestbook_digital" },
+              { id: "trivia", title: "🎯 搶答秀", desc: "TriviaShowdown — 園遊會主舞台", host: "trivia-host", player: "trivia-player", pageType: "host_trivia_showdown" },
+              { id: "scoreboard", title: "📣 跑馬燈宣告", desc: "ScoreboardAnnouncement — 賽事播報", host: "scoreboard-host", player: "scoreboard-player", pageType: "host_scoreboard_announcement" },
+              { id: "knowledgemap", title: "🗺️ 場域全景地圖", desc: "KnowledgeMap — 街區商圈打卡", host: "knowledgemap-host", player: "knowledgemap-player", pageType: "host_knowledge_map" },
             ].map((item) => (
-              <Card key={item.id} className="hover:border-primary/40 transition-colors">
-                <CardContent className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-bold">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => setDemoMode(item.host as HostDemo)}
-                      size="sm"
-                      className="flex-1"
-                      data-testid={`btn-demo-${item.id}-host`}
-                    >
-                      📺 大螢幕
-                    </Button>
-                    <Button
-                      onClick={() => setDemoMode(item.player as HostDemo)}
-                      size="sm"
-                      variant="outline"
-                      className="flex-1"
-                      data-testid={`btn-demo-${item.id}-player`}
-                    >
-                      📱 玩家
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <DemoCard
+                key={item.id}
+                item={item}
+                onDemoOpen={(demo) => setDemoMode(demo as HostDemo)}
+                hasBoth
+              />
             ))}
           </div>
 
@@ -386,28 +345,18 @@ export default function ShowcaseHub() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { id: "jigsaw", title: "🧩 拼圖協作", desc: "JigsawPuzzle — 親子家庭王牌", demo: "jigsaw" },
-              { id: "treasure", title: "💎 藏寶尋找", desc: "TreasureHunt — 線索拼密碼", demo: "treasure" },
-              { id: "gps-cascade", title: "🗺 連鎖探索", desc: "GpsCascade — 強制動線", demo: "gps-cascade" },
-              { id: "collective", title: "🎯 合作達標", desc: "CollectiveScore — 班際積分", demo: "collective" },
-              { id: "role-assign", title: "🎭 角色分派", desc: "RoleAssign — 劇本殺王牌", demo: "role-assign" },
+              { id: "jigsaw", title: "🧩 拼圖協作", desc: "JigsawPuzzle — 親子家庭王牌", demo: "jigsaw", pageType: "jigsaw_puzzle" },
+              { id: "treasure", title: "💎 藏寶尋找", desc: "TreasureHunt — 線索拼密碼", demo: "treasure", pageType: "treasure_hunt" },
+              { id: "gps-cascade", title: "🗺 連鎖探索", desc: "GpsCascade — 強制動線", demo: "gps-cascade", pageType: "gps_cascade" },
+              { id: "collective", title: "🎯 合作達標", desc: "CollectiveScore — 班際積分", demo: "collective", pageType: "collective_score" },
+              { id: "role-assign", title: "🎭 角色分派", desc: "RoleAssign — 劇本殺王牌", demo: "role-assign", pageType: "role_assign" },
             ].map((item) => (
-              <Card key={item.id} className="hover:border-primary/40 transition-colors">
-                <CardContent className="p-4 space-y-3">
-                  <div>
-                    <h3 className="font-bold">{item.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                  </div>
-                  <Button
-                    onClick={() => setDemoMode(item.demo as HostDemo)}
-                    size="sm"
-                    className="w-full"
-                    data-testid={`btn-demo-${item.id}`}
-                  >
-                    📱 看玩家版型
-                  </Button>
-                </CardContent>
-              </Card>
+              <DemoCard
+                key={item.id}
+                item={{ ...item, host: item.demo, player: item.demo }}
+                onDemoOpen={(demo) => setDemoMode(demo as HostDemo)}
+                hasBoth={false}
+              />
             ))}
           </div>
 
@@ -927,5 +876,96 @@ export default function ShowcaseHub() {
         ADR-0004 · HostScreen 第三軸線 · 文件機制 v1.0
       </footer>
     </div>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════
+// DemoCard — 抽出 demo 卡片以共用「適用情境」反向連結（W7 D2）
+// ════════════════════════════════════════════════════════════════════
+
+interface DemoCardItem {
+  id: string;
+  title: string;
+  desc: string;
+  pageType: string;
+  host: string;
+  player: string;
+}
+
+function DemoCard({
+  item,
+  onDemoOpen,
+  hasBoth,
+}: {
+  item: DemoCardItem;
+  onDemoOpen: (demo: string) => void;
+  hasBoth: boolean;
+}) {
+  const scenarios = getScenariosForPageType(item.pageType);
+  return (
+    <Card className="hover:border-primary/40 transition-colors">
+      <CardContent className="p-4 space-y-3">
+        <div>
+          <h3 className="font-bold">{item.title}</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+        </div>
+
+        {/* W7 D2 反向連結：適用情境 */}
+        {scenarios.length > 0 && (
+          <div className="flex flex-wrap gap-1 pt-1 border-t">
+            <span className="text-xs text-muted-foreground self-center">適用：</span>
+            {scenarios.slice(0, 3).map((s) => (
+              <Link key={s.id} href={`/template-market/${s.id}`}>
+                <Badge
+                  variant="outline"
+                  className="text-xs hover:bg-primary/10 cursor-pointer"
+                  data-testid={`scenario-link-${item.id}-${s.id}`}
+                >
+                  {s.name.replace(/情境包$/, "")}
+                </Badge>
+              </Link>
+            ))}
+            {scenarios.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{scenarios.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-2">
+          {hasBoth ? (
+            <>
+              <Button
+                onClick={() => onDemoOpen(item.host)}
+                size="sm"
+                className="flex-1"
+                data-testid={`btn-demo-${item.id}-host`}
+              >
+                📺 大螢幕
+              </Button>
+              <Button
+                onClick={() => onDemoOpen(item.player)}
+                size="sm"
+                variant="outline"
+                className="flex-1"
+                data-testid={`btn-demo-${item.id}-player`}
+              >
+                📱 玩家
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => onDemoOpen(item.host)}
+              size="sm"
+              className="w-full"
+              data-testid={`btn-demo-${item.id}`}
+            >
+              📱 看玩家版型
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

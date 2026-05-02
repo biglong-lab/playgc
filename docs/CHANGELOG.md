@@ -69,6 +69,25 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🔄 Phase 2 W7 D2 ✅（ShowcaseHub 元件 → 情境反向連結）
+**主題**：客戶試玩元件時直接看到「這個能用在什麼場合」
+**範圍**：3 個檔案
+
+關鍵變動：
+- `shared/scenario-templates.ts` 新增 `getScenariosForPageType()` 反向索引 helper
+- `shared/__tests__/scenario-templates.test.ts` +4 測試（20/20 通過）
+- `client/src/pages/ShowcaseHub.tsx` 抽 DemoCard 元件、15 張 demo 卡片全部含「適用情境」連結
+
+**範例反向連結**：
+- emoji_react → 婚禮 / 生日 / 親子
+- polaroid_collage → 婚禮 / 生日 / 同學會
+- trivia_showdown → 同學會 / 園遊會 / 頒獎
+- treasure_hunt → 親子 / 商圈 / 場域
+
+**細節** → [changes/2026-05-02-phase2-w7-d2-showcase-bidirectional.md](changes/2026-05-02-phase2-w7-d2-showcase-bidirectional.md)
+
+⏭ 下一步：W7 D3 — 客戶 onboarding 引導 wizard
+
 ### 🚀 Phase 2 W7 D1 ✅（業務化首發 — 第 12 情境 + 主頁業務入口）
 **主題**：12 情境清單補位 + 主辦方主頁入口
 **範圍**：4 個檔案

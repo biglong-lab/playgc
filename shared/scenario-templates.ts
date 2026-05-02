@@ -556,6 +556,13 @@ export function getScenariosByCategory(
   return SCENARIO_TEMPLATES.filter((s) => s.category === category);
 }
 
+/** 反向索引：給定 pageType，回傳所有含這個元件的情境 */
+export function getScenariosForPageType(pageType: string): ScenarioTemplate[] {
+  return SCENARIO_TEMPLATES.filter((s) =>
+    s.components.some((c) => c.pageType === pageType),
+  );
+}
+
 export const SCENARIO_CATEGORY_LABELS: Record<ScenarioCategory, string> = {
   public: "🏛 公部門｜空間活化",
   corporate: "💼 私部門｜企業內訓",

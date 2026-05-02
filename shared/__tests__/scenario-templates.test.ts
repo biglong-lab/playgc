@@ -4,6 +4,7 @@ import {
   SCENARIO_CATEGORY_LABELS,
   getScenarioById,
   getScenariosByCategory,
+  getScenariosForPageType,
 } from "../scenario-templates";
 
 describe("SCENARIO_TEMPLATES 常數", () => {
@@ -105,6 +106,30 @@ describe("getScenarioById", () => {
 
   it("找不到回傳 undefined", () => {
     expect(getScenarioById("non-existent")).toBeUndefined();
+  });
+});
+
+describe("getScenariosForPageType（W7 D2 反向索引）", () => {
+  it("host_emoji_react 至少出現在 3 個情境（婚禮 / 生日 / 親子）", () => {
+    const scenarios = getScenariosForPageType("host_emoji_react");
+    expect(scenarios.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("host_polaroid_collage 出現在婚禮 + 生日", () => {
+    const scenarios = getScenariosForPageType("host_polaroid_collage");
+    const ids = scenarios.map((s) => s.id);
+    expect(ids).toContain("wedding");
+    expect(ids).toContain("birthday");
+  });
+
+  it("treasure_hunt 出現在親子冒險 + 商圈打卡 + 場域故事", () => {
+    const scenarios = getScenariosForPageType("treasure_hunt");
+    const ids = scenarios.map((s) => s.id);
+    expect(ids).toContain("kids-adventure");
+  });
+
+  it("不存在的 pageType 回傳空陣列", () => {
+    expect(getScenariosForPageType("non_existent_type")).toEqual([]);
   });
 });
 
