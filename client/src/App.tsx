@@ -180,6 +180,8 @@ const PitchDeck = lazy(() => import("@/pages/PitchDeck"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
 // 📖 ApiDocs 公開 API 文件頁（W11 D4）
 const ApiDocs = lazy(() => import("@/pages/ApiDocs"));
+// 📱 PlayLiff LINE LIFF 玩家入口（W14 D1）
+const PlayLiff = lazy(() => import("@/pages/PlayLiff"));
 
 // 📺 Admin Host Session 管理（W2 D5）
 const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
@@ -271,6 +273,9 @@ function Router() {
 
         {/* 📖 Public API 文件頁（W11 D4）*/}
         <Route path="/api-docs" component={ApiDocs} />
+
+        {/* 📱 LINE LIFF 玩家入口（W14 D1）*/}
+        <Route path="/liff/play/:sessionId" component={PlayLiff} />
 
         <Route path="/squad/create" component={SquadCreate} />
         <Route path="/squad/:squadId/settings" component={SquadSettings} />

@@ -296,6 +296,9 @@ async function runSmokeTest() {
     return { ok: true };
   });
 
+  // 5g. LIFF 玩家入口（W14 D1）
+  await check("GET /liff/play/test", 200, () => checkStatus(`${BASE_URL}/liff/play/test-w14`, 200));
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>

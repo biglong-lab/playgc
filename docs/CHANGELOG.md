@@ -69,6 +69,28 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📱 Phase 4 W14 D1 ✅（LINE LIFF MVP scaffold）
+**主題**：玩家從 LINE 直接進入遊戲、不離開 LINE app
+**範圍**：4 個檔案
+
+關鍵變動：
+- `client/src/lib/liff.ts` LIFF SDK wrapper
+  - Lazy load CDN SDK（不裝 npm）
+  - initLiff / triggerLineLogin / closeLiffWindow
+- `client/src/pages/PlayLiff.tsx` LIFF 玩家中繼頁
+  - 自動取 LINE profile → 跳 /play?line_user_id=...
+  - fallback 到一般 /play（無 LIFF ID 或非 LINE 環境）
+- App.tsx 路由 /liff/play/:sessionId
+- smoke test 加 5g (40 → 41)
+
+**環境變數**：`VITE_LIFF_ID_PLAY`（admin 在 LINE 後台申請後設定）
+
+**Smoke test 41/41 全綠**
+
+**細節** → [changes/2026-05-03-phase4-w14-d1-liff-mvp.md](changes/2026-05-03-phase4-w14-d1-liff-mvp.md)
+
+⏭ 下一步：W14 D2 — LINE profile 整合到 /play 頁
+
 ### 🎉 Phase 3 完整收尾 + ADR-0009 Phase 4 方向 ✅
 **主題**：W12 5 天累計 + Phase 3 整體 4 週路徑收尾 + Phase 4 規劃
 **範圍**：W12 26 檔、~2,141 行 + Phase 3 累計 93 檔、~7,940 行
