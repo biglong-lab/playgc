@@ -1,30 +1,38 @@
 // 📺 PollLivePage — GamePageRenderer 用此元件對應 pageType="host_poll_live"
 //
 // 設計依據：docs/decisions/0004-host-screen-axis.md
-// 取得 hostMode：根據 URL 路徑（/host/* → true，/play/* → false）
+// 用 useHostScreenSyncWithPulse hook 處理 WS 連線、register、計票
 
-import { useState, useRef } from "react";
+import { useCallback } from "react";
 import PollLive, { type PollLiveConfig } from "./PollLive";
+import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import type { Page } from "@shared/schema";
 
 interface PollLivePageProps {
   page: Page;
 }
 
-// state 型別（與 PollLive.tsx 內部對齊；因為 onBroadcastState 是 internal type，
-// 這裡用 unknown → cast 給元件，元件內 type narrow）
-type PollLiveStateShape = Parameters<NonNullable<React.ComponentProps<typeof PollLive>["onBroadcastState"]>>[0];
+interface PollOption {
+  id: string;
+  label: string;
+}
+
+interface PollLiveStateShape {
+  question: string;
+  options: PollOption[];
+  votes: Record<string, number>;
+  totalVotes: number;
+  status: "open" | "closed" | "revealed";
+  revealResults: boolean;
+  startedAt?: string;
+  endsAt?: string;
+}
 
 export default function PollLivePage({ page }: PollLivePageProps) {
-  // 從路徑判斷是大螢幕還是玩家端
-  const isHostMode = window.location.pathname.startsWith("/host/");
-  const [state, setState] = useState<PollLiveStateShape | null>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  // page.config 是 jsonb 欄位（schema 是 unknown）— 抽 config 並 fallback 為空
+  // 從 page.config jsonb 解析 config（合理 fallback 確保不爆）
+  const rawConfig = (page.config as { config?: PollLiveConfig } | PollLiveConfig | null) ?? null;
   const config: PollLiveConfig =
-    (page.config as { config?: PollLiveConfig })?.config ??
-    (page.config as PollLiveConfig | undefined) ?? {
+    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as PollLiveConfig | null)) ?? {
       question: "請投票",
       options: [
         { id: "a", label: "選項 A" },
@@ -32,35 +40,51 @@ export default function PollLivePage({ page }: PollLivePageProps) {
       ],
     };
 
-  // 訂閱父層 WS 訊息：W2 D2 會抽 useHostScreenSync hook 取代此處的 wsRef.current
-  // 目前簡化：state 透過父層的 host_screen_state 注入（HostScreen.tsx 訂閱後 dispatch）
+  // 大螢幕端計票邏輯：玩家送 pulseType='vote' + payload={optionId}
+  // 規則：每個 user 只算一次（用 fromUserId 去重 — server 端 ws 訊息有附）
+  const handlePulse = useCallback(
+    (pulseType: string, payload: unknown, currentState: PollLiveStateShape | null): PollLiveStateShape | null => {
+      if (pulseType !== "vote") return null; // 不認得的 pulse 不處理
+      const optionId = (payload as { optionId?: string })?.optionId;
+      if (!optionId) return null;
+
+      const baseState: PollLiveStateShape = currentState ?? {
+        question: config.question,
+        options: config.options,
+        votes: Object.fromEntries(config.options.map((o) => [o.id, 0])),
+        totalVotes: 0,
+        status: "open",
+        revealResults: false,
+      };
+
+      // 不接受 closed/revealed 狀態下的投票
+      if (baseState.status !== "open") return baseState;
+      // optionId 必須存在於選項中
+      if (!baseState.options.find((o) => o.id === optionId)) return baseState;
+
+      return {
+        ...baseState,
+        votes: {
+          ...baseState.votes,
+          [optionId]: (baseState.votes[optionId] ?? 0) + 1,
+        },
+        totalVotes: baseState.totalVotes + 1,
+      };
+    },
+    [config],
+  );
+
+  const { state, sendPulse, broadcastState, hostMode } = useHostScreenSyncWithPulse<PollLiveStateShape>({
+    onPulse: handlePulse,
+  });
 
   return (
     <PollLive
       config={config}
-      hostMode={isHostMode}
+      hostMode={hostMode}
       state={state}
-      onPulse={(pulseType, payload) => {
-        wsRef.current?.send(JSON.stringify({
-          type: "host_screen_pulse",
-          sessionId: getHostSessionIdFromUrl(),
-          pulseType,
-          payload,
-        }));
-      }}
-      onBroadcastState={(newState) => {
-        setState(newState);
-        wsRef.current?.send(JSON.stringify({
-          type: "host_screen_state",
-          sessionId: getHostSessionIdFromUrl(),
-          state: newState,
-        }));
-      }}
+      onPulse={sendPulse}
+      onBroadcastState={broadcastState}
     />
   );
-}
-
-function getHostSessionIdFromUrl(): string {
-  const match = window.location.pathname.match(/^\/(host|play)\/([^/]+)/);
-  return match?.[2] ?? "";
 }
