@@ -770,11 +770,33 @@ export default function ShowcaseHub() {
           </DialogContent>
         </Dialog>
 
-        {/* 5 大商業情境 */}
+        {/* 12 情境模板入口 — W6 D1 新增 */}
         <section className="space-y-4">
-          <h2 className="text-xl font-display font-bold">💼 5 大商業情境</h2>
+          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/30">
+            <CardContent className="p-6 md:p-8 text-center space-y-3">
+              <h2 className="text-xl md:text-2xl font-display font-bold">
+                🎯 看完元件，看情境組合
+              </h2>
+              <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto">
+                元件不是工具，是「情境武器」 — 我們已預組好 12 個情境模板，
+                <br className="hidden md:inline" />
+                婚禮、園遊會、街區、企業、空間，看你的場合直接套用
+              </p>
+              <Link href="/template-market">
+                <Button size="lg" data-testid="link-template-market">
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  瀏覽 12 情境模板
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* 5 大商業情境（簡介卡）*/}
+        <section className="space-y-4">
+          <h2 className="text-xl font-display font-bold">💼 5 大商業情境（簡介）</h2>
           <p className="text-sm text-muted-foreground">
-            元件不是工具，是「情境武器」 — 看到就知道能用在哪
+            主要市場分類 — 詳細模板組合請看 <Link href="/template-market" className="text-primary underline">情境模板市集</Link>
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {SCENARIOS.map((s) => {

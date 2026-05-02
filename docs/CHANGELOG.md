@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎯 Phase 2 W6 D1 ✅（TemplateMarket 12 情境模板首發）
+**主題**：跨軸線情境模板市集（情境包 = 銷售武器）
+**範圍**：1 天、3 個新檔、15 個單元測試、2 個新公開頁路由
+
+關鍵變動：
+- `shared/scenario-templates.ts` — 12 個情境（11 live/preview + 1 保留）
+- `client/src/pages/TemplateMarket.tsx` — 情境市集列表頁（5 大分類）
+- `client/src/pages/TemplateMarketDetail.tsx` — 單一情境詳情頁
+- App.tsx 路由：`/template-market` + `/template-market/:scenarioId`
+- ShowcaseHub 新增 TemplateMarket 入口
+
+**12 情境**：
+- 交誼類：婚禮 / 生日 / 同學會（live）
+- 活動類：園遊會 / 破冰 / 頒獎（live × 2 + preview）
+- 公部門：街區走讀 / 商圈打卡（live + preview）
+- 私部門：企業內訓 / 員工旅遊（live + preview）
+- 空間類：場域故事（live）
+
+**E2E 6 端點全綠**：showcase + template-market + template-market/wedding + host + play + admin/host-sessions
+
+**細節** → [changes/2026-05-02-phase2-w6-d1-template-market.md](changes/2026-05-02-phase2-w6-d1-template-market.md)
+
+⏭ 下一步：W6 D2 — 自動化建場（一鍵套用婚禮模板）
+
 ### 🎮 Phase 2 Week 5 完成 ✅（HostScreen 軸線 10/10 收尾）
 **主題**：5 個新元件補齊 HostScreen 軸線（紀念類 + 競賽類 + 場域類）
 **範圍**：5 天連續推進、5 個元件、33 個新測試

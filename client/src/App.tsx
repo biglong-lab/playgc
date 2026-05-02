@@ -167,6 +167,9 @@ const HostPlay = lazy(() => import("@/pages/HostPlay"));
 
 // 🎬 ShowcaseHub 元件展示館（W1 D5 MVP）
 const ShowcaseHub = lazy(() => import("@/pages/ShowcaseHub"));
+// 🎯 TemplateMarket 12 情境模板市集（W6 D1）
+const TemplateMarket = lazy(() => import("@/pages/TemplateMarket"));
+const TemplateMarketDetail = lazy(() => import("@/pages/TemplateMarketDetail"));
 
 // 📺 Admin Host Session 管理（W2 D5）
 const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
@@ -239,6 +242,10 @@ function Router() {
 
         {/* 🎬 元件展示館（公開頁，銷售工具）*/}
         <Route path="/showcase" component={ShowcaseHub} />
+
+        {/* 🎯 12 情境模板市集（公開頁，銷售工具）*/}
+        <Route path="/template-market/:scenarioId" component={TemplateMarketDetail} />
+        <Route path="/template-market" component={TemplateMarket} />
 
         <Route path="/squad/create" component={SquadCreate} />
         <Route path="/squad/:squadId/settings" component={SquadSettings} />
