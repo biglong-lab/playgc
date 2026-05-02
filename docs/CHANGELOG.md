@@ -69,6 +69,24 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 💚 Phase 4 W14 D4 ✅（QR 列印頁 LIFF URL 切換）
+**主題**：admin 一鍵切換玩家 QR 為 LIFF URL（從 LINE 進入）
+**範圍**：1 個檔案
+
+關鍵變動：
+- ScenarioQrPrint.tsx 新增 `urlMode: "web" | "liff"` state
+- Toolbar UI 切換器（🌐 一般 / 💚 LINE）
+- maybeLiffify() helper：`/play/...` → `/liff/play/...`
+- localStorage `chitoQrUrlMode` 記住選擇
+- 切換時自動重生 QR
+- 大螢幕 QR 永遠用一般 URL（LIFF 不適合 host）
+
+**Smoke test 維持 41/41**
+
+**細節** → [changes/2026-05-03-phase4-w14-d4-qr-liff-toggle.md](changes/2026-05-03-phase4-w14-d4-qr-liff-toggle.md)
+
+⏭ 下一步：W14 D5 — W14 收尾 + W15 LINE Bot 規劃
+
 ### 🪝 Phase 4 W14 D3 ✅（useMyUserName hook + 4 Page 元件整合）
 **主題**：所有主要 host 元件統一從 hook 取 LINE 名字
 **範圍**：5 個檔案

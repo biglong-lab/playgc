@@ -53,11 +53,18 @@ function parsePrintData(searchString: string): PrintData | null {
   }
 }
 
+type UrlMode = "web" | "liff";
+
 export default function ScenarioQrPrint() {
   const [location] = useLocation();
   const [cards, setCards] = useState<QrCard[]>([]);
   const [printData, setPrintData] = useState<PrintData | null>(null);
   const [generating, setGenerating] = useState(true);
+  // W14 D4: URL 模式（一般網頁 / LINE LIFF）
+  const [urlMode, setUrlMode] = useState<UrlMode>(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("chitoQrUrlMode") : null;
+    return saved === "liff" ? "liff" : "web";
+  });
 
   const search = useMemo(() => {
     if (typeof window === "undefined") return "";
@@ -71,11 +78,19 @@ export default function ScenarioQrPrint() {
       return;
     }
     setPrintData(data);
-    generateAllQrs(data).then((result) => {
+    setGenerating(true);
+    generateAllQrs(data, urlMode).then((result) => {
       setCards(result);
       setGenerating(false);
     });
-  }, [search]);
+  }, [search, urlMode]);
+
+  // 切換時存記憶
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("chitoQrUrlMode", urlMode);
+    }
+  }, [urlMode]);
 
   if (!printData && !generating) {
     return (
@@ -114,11 +129,39 @@ export default function ScenarioQrPrint() {
               </p>
             </div>
           </div>
-          <Button onClick={() => window.print()} data-testid="btn-print">
-            <Printer className="w-4 h-4 mr-1" />
-            列印
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* W14 D4: URL 模式切換 */}
+            <div className="hidden md:flex items-center gap-1 bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setUrlMode("web")}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  urlMode === "web" ? "bg-white shadow text-foreground" : "text-muted-foreground"
+                }`}
+                data-testid="btn-url-mode-web"
+              >
+                🌐 一般網頁
+              </button>
+              <button
+                onClick={() => setUrlMode("liff")}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  urlMode === "liff" ? "bg-emerald-500 text-white shadow" : "text-muted-foreground"
+                }`}
+                data-testid="btn-url-mode-liff"
+              >
+                💚 LINE
+              </button>
+            </div>
+            <Button onClick={() => window.print()} data-testid="btn-print">
+              <Printer className="w-4 h-4 mr-1" />
+              列印
+            </Button>
+          </div>
         </div>
+        {urlMode === "liff" && (
+          <div className="container mx-auto px-4 pb-2 text-xs text-emerald-700">
+            💚 LINE 模式：玩家 QR 改為 LIFF URL（玩家從 LINE 點開、自動帶名字）
+          </div>
+        )}
       </div>
 
       {/* 列印區域 */}
@@ -155,15 +198,27 @@ export default function ScenarioQrPrint() {
   );
 }
 
-async function generateAllQrs(data: PrintData): Promise<QrCard[]> {
+/**
+ * W14 D4: 把玩家 URL 轉成 LIFF 格式（如選 LIFF 模式）
+ * /play/:sessionId → /liff/play/:sessionId
+ * 大螢幕網址不變（LIFF 不適合 host）
+ */
+function maybeLiffify(playUrl: string, mode: UrlMode): string {
+  if (mode !== "liff") return playUrl;
+  return playUrl.replace(/^\/play\//, "/liff/play/");
+}
+
+async function generateAllQrs(data: PrintData, urlMode: UrlMode): Promise<QrCard[]> {
   const cards: QrCard[] = [];
   const origin = window.location.origin;
+  const liffSuffix = urlMode === "liff" ? "（LINE）" : "";
 
   for (const instance of data.instances) {
     if (instance.axis === "host" && instance.hostUrl && instance.playUrl) {
       // host 元件：兩張 QR（大螢幕 + 玩家）
       const hostFull = `${origin}${instance.hostUrl}`;
-      const playFull = `${origin}${instance.playUrl}`;
+      const playUrlFinal = maybeLiffify(instance.playUrl, urlMode);
+      const playFull = `${origin}${playUrlFinal}`;
       cards.push({
         instanceLabel: instance.label,
         pageType: instance.pageType,
@@ -179,8 +234,8 @@ async function generateAllQrs(data: PrintData): Promise<QrCard[]> {
         pageType: instance.pageType,
         axis: instance.axis,
         role: instance.role,
-        urlLabel: "📱 玩家手機端",
-        url: instance.playUrl,
+        urlLabel: `📱 玩家手機端${liffSuffix}`,
+        url: playUrlFinal,
         fullUrl: playFull,
         qrDataUrl: await QRCode.toDataURL(playFull, { width: 600, margin: 2 }),
       });
