@@ -71,6 +71,36 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### 🎉 Phase 5 W17 完整收尾 ✅（D5 — retro + ADR-0013 W18 規劃）
+**主題**：W17 業務週工程備援任務全套完成、W18 元件擴充清單就緒
+**範圍**：2 個新文件（retro + ADR）
+
+W17 五天累計：
+- D1 業務跑團 SOP（10 步驟、5 錨點反饋表）
+- D2 公開 FAQ 頁（14 題 7 類）
+- D3 ROI 計算機（5 種活動 + Slider 試算）
+- D4 Pilot Health endpoint（W20 雛形）
+- D5 retro + W18 規劃
+
+**統計**：12 檔 / ~1,500 行 / 5 commits / smoke 48→51
+
+**業務 KPI（W17）**：
+- 接觸潛在客戶 / 真實成交 / 完整跑團 / 客戶反饋 ⏳ 業務統計中
+
+**ADR-0013 W18 5 個新元件**：
+- D1 host_lottery_wheel（轉盤抽獎、6+ 情境通用）
+- D2 host_progress_quest（全場進度條、6+ 情境）
+- D3 host_word_cloud（即時字雲、5+ 情境）
+- D4 multi_quest_chain（隊伍任務鏈、5+ 情境）
+- D5 solo_memory_match（配對記憶遊戲、4+ 情境）
+
+**Smoke test 維持 51/51**（純 docs）
+
+**W17 完整收尾** → [changes/2026-05-03-phase5-w17-complete.md](changes/2026-05-03-phase5-w17-complete.md)
+**ADR-0013** → [decisions/0013-w18-component-expansion.md](decisions/0013-w18-component-expansion.md)
+
+⏭ 下一步：W18 D1 — host_lottery_wheel 元件實作
+
 ### 📊 Phase 5 W17 D4 ✅（Admin Pilot 健康度雛形 endpoint）
 **主題**：admin 一個 endpoint 看平台運作（為 W20 觀測儀表板鋪路）
 **範圍**：1 新檔 + 2 修改
