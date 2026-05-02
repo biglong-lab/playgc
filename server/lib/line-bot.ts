@@ -12,14 +12,46 @@ import crypto from "crypto";
 
 const LINE_API_BASE = "https://api.line.me/v2/bot";
 
+/**
+ * Quick Reply Action（W16 D2）
+ * 文件：https://developers.line.biz/en/docs/messaging-api/using-quick-reply/
+ *
+ * - message：點擊後送出文字訊息（最常用）
+ * - uri：點擊開啟 URL
+ * - postback：點擊送 postback event（W16 D3+ 用）
+ */
+export interface LineQuickReplyItem {
+  type: "action";
+  action:
+    | { type: "message"; label: string; text: string }
+    | { type: "uri"; label: string; uri: string }
+    | { type: "postback"; label: string; data: string; displayText?: string };
+  /** 可選 icon URL */
+  imageUrl?: string;
+}
+
+/**
+ * Quick Reply 容器（最多 13 個 items）
+ * 附在 message 上、用戶看到底部按鈕列
+ */
+export interface LineQuickReply {
+  items: LineQuickReplyItem[];
+}
+
+/**
+ * LINE Message（W15 D1 → W16 D2 加 quickReply）
+ *
+ * 文件：https://developers.line.biz/en/reference/messaging-api/#message-objects
+ */
 export interface LineMessage {
   type: "text" | "image" | "sticker";
   text?: string;
-  // image / sticker 等其他欄位 W15 D2+ 補
   originalContentUrl?: string;
   previewImageUrl?: string;
   packageId?: string;
   stickerId?: string;
+  /** W16 D2: quick reply buttons（最多 13 個） */
+  quickReply?: LineQuickReply;
 }
 
 /**

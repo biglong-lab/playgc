@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 4 W16 D2 ✅（LINE Quick Reply + Sticker）
+**主題**：admin LINE 操作體驗升級（按鈕 + 慶祝貼圖）
+**範圍**：2 個檔案修改
+
+關鍵變動：
+- `server/lib/line-bot.ts` 加 LineQuickReply / LineQuickReplyItem 型別
+- `server/routes/line-webhook.ts` 加兩個工廠
+  - `adminQuickReply()` — 6 個常用指令按鈕（help/list/婚禮/生日/破冰/同學會）
+  - `celebrationSticker()` — 拍手慶祝 sticker（LINE Friends 11537）
+- 訊息分發策略
+  - 建場成功 → sticker + text(quickReply)
+  - 失敗 / help / list → text(quickReply)
+  - 一般訊息：admin 給 quickReply、非 admin 不給（避免困惑）
+
+**效果**：
+- 建場成功有慶祝感（admin 印象深刻）
+- 點按鈕 1 秒 vs 打字 5 秒 ⚡ 5×
+
+**Smoke test 維持 45/45**
+
+**細節** → [changes/2026-05-03-phase4-w16-d2-line-quick-reply.md](changes/2026-05-03-phase4-w16-d2-line-quick-reply.md)
+
+⏭ 下一步：W16 D3 — LINE 進階互動（postback / Flex Message / admin 管理）
+
 ### 🚀 Phase 4 W16 D1 ✅（instantiator-line 擴充多元件）
 **主題**：LINE admin 建場從「只第 1 個 host」→「全元件（host + multi + solo + shared）」
 **範圍**：3 個檔案修改

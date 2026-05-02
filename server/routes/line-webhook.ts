@@ -20,6 +20,8 @@ import {
   replyMessage,
   type LineWebhookBody,
   type LineWebhookEvent,
+  type LineMessage,
+  type LineQuickReply,
 } from "../lib/line-bot";
 import { parseAdminCommand, formatCommandReply } from "../lib/admin-nlu";
 import { isLineUserAdmin, getAdminFieldId, getLineAdminStatus } from "../lib/admin-line-auth";
@@ -27,6 +29,59 @@ import {
   instantiateScenarioForLine,
   type LineInstantiateResult,
 } from "../lib/scenario-instantiator-line";
+
+/**
+ * W16 D2: Quick Reply 工廠 — admin 常用指令快速按鈕
+ *
+ * LINE 客戶端在訊息底部顯示按鈕列、點擊送對應文字訊息
+ * 最多 13 個 items（LINE 限制）
+ */
+function adminQuickReply(): LineQuickReply {
+  return {
+    items: [
+      {
+        type: "action",
+        action: { type: "message", label: "📖 用法", text: "@chito help" },
+      },
+      {
+        type: "action",
+        action: { type: "message", label: "📦 情境清單", text: "@chito list" },
+      },
+      {
+        type: "action",
+        action: { type: "message", label: "💒 婚禮", text: "@chito 婚禮" },
+      },
+      {
+        type: "action",
+        action: { type: "message", label: "🎂 生日", text: "@chito 生日派對" },
+      },
+      {
+        type: "action",
+        action: { type: "message", label: "❄️ 破冰", text: "@chito 破冰活動" },
+      },
+      {
+        type: "action",
+        action: { type: "message", label: "🎓 同學會", text: "@chito 同學會" },
+      },
+    ],
+  };
+}
+
+/**
+ * W16 D2: 建場成功 sticker（LINE 預設貼圖、慶祝氣氛）
+ *
+ * Package 11537 = LINE Friends（免費官方）
+ * Sticker 52002734 = 拍手慶祝
+ *
+ * 文件：https://developers.line.biz/en/docs/messaging-api/sticker-list/
+ */
+function celebrationSticker(): LineMessage {
+  return {
+    type: "sticker",
+    packageId: "11537",
+    stickerId: "52002734",
+  };
+}
 
 /**
  * W16 D1: 把多元件 instantiate 結果格式化為 LINE 訊息
@@ -230,10 +285,19 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
 
       if (result.ok) {
         const text = formatInstantiateReply(result, APP_BASE_URL);
+        // W16 D2: sticker 慶祝 + text + quick reply 按鈕
+        // LINE reply 一次最多 5 訊息、用 sticker + text 兩則
         await replyMessage({
           accessToken: ACCESS_TOKEN,
           replyToken,
-          messages: [{ type: "text", text }],
+          messages: [
+            celebrationSticker(),
+            {
+              type: "text",
+              text,
+              quickReply: adminQuickReply(),
+            },
+          ],
         });
       } else {
         await replyMessage({
@@ -243,6 +307,7 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
             {
               type: "text",
               text: `❌ 建場失敗：${result.error}\n\n${formatCommandReply(cmd)}`,
+              quickReply: adminQuickReply(),
             },
           ],
         });
@@ -250,16 +315,24 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
       return;
     }
 
-    // help / list / unknown → 回 NLU 預覽
+    // help / list / unknown → 回 NLU 預覽 + quick reply
     await replyMessage({
       accessToken: ACCESS_TOKEN,
       replyToken,
-      messages: [{ type: "text", text: formatCommandReply(cmd) }],
+      messages: [
+        {
+          type: "text",
+          text: formatCommandReply(cmd),
+          quickReply: adminQuickReply(),
+        },
+      ],
     });
     return;
   }
 
-  // 一般訊息：echo bot（W15 D1 行為保留）
+  // 一般訊息：echo bot + quick reply（admin 也方便直接點按鈕）
+  const lineUserId = event.source?.userId;
+  const isAdmin = isLineUserAdmin(lineUserId);
   await replyMessage({
     accessToken: ACCESS_TOKEN,
     replyToken,
@@ -267,6 +340,8 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
       {
         type: "text",
         text: `您說：${text}\n\n💡 試試「@chito help」看 admin 指令用法`,
+        // 只給 admin 顯示 quick reply（一般用戶看到會困惑）
+        ...(isAdmin ? { quickReply: adminQuickReply() } : {}),
       },
     ],
   });
