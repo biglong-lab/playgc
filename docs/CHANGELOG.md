@@ -69,6 +69,28 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### ⚡ Phase 2 W6 D2 ✅（Scenario Instantiate 一鍵建場）
+**主題**：admin 從情境詳情頁一鍵建好所有大螢幕場次
+**範圍**：1 天、3 個檔案、後端 endpoint + 前端完整 UX
+
+關鍵變動：
+- `server/routes/scenarios.ts` — POST /api/admin/scenarios/:id/instantiate
+- `server/routes/index.ts` — registerScenarioRoutes 註冊
+- `client/src/pages/TemplateMarketDetail.tsx` — Admin 一鍵建場卡片 + 結果 Dialog
+
+**邏輯**：
+- pure-host 情境（所有 components.axis === "host"）支援
+- 為每個 host 元件建立：game + page（合理預設 config）+ host_session（12h token）
+- 結果 Dialog 顯示所有場次的 hostUrl + playUrl + Copy 按鈕
+
+**安全**：requireAdminAuth + game:create + 場域隔離
+
+**E2E 6 端點全綠** + 新 endpoint POST 正確回傳 401（無認證）
+
+**細節** → [changes/2026-05-02-phase2-w6-d2-scenario-instantiate.md](changes/2026-05-02-phase2-w6-d2-scenario-instantiate.md)
+
+⏭ 下一步：W6 D3 — 含 multi 元件的情境一鍵建場
+
 ### 🎯 Phase 2 W6 D1 ✅（TemplateMarket 12 情境模板首發）
 **主題**：跨軸線情境模板市集（情境包 = 銷售武器）
 **範圍**：1 天、3 個新檔、15 個單元測試、2 個新公開頁路由

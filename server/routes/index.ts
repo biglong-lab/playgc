@@ -58,6 +58,7 @@ import { registerSitemapRoute } from "./sitemap";
 import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadsCoreRoutes } from "./squads-core";
 import { registerHostSessionRoutes } from "./host-sessions";
+import { registerScenarioRoutes } from "./scenarios";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
@@ -135,6 +136,7 @@ export async function registerRoutes(
   registerBattleClanRoutes(app);
   registerSquadsCoreRoutes(app);
   registerHostSessionRoutes(app);
+  registerScenarioRoutes(app);
   registerBattleSelfReportRoutes(app);
   registerSquadRecordsRoutes(app);
   registerSquadInvitesRoutes(app);
