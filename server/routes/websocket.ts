@@ -50,6 +50,19 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   const matchClients: Map<string, Set<WebSocketClient>> = new Map();
   const battleSlotClients: Map<string, Set<WebSocketClient>> = new Map();
 
+  // 🆕 ADR-0004 (2026-05-02)：HostScreen 主控大螢幕模式
+  //   每個 host session 維護兩組 client：
+  //     hostScreenClients[sessionId]：大螢幕端（無登入，唯讀觀看 state 廣播）
+  //     hostPlayerClients[sessionId]：玩家手機端（送 pulse、收 state 廣播）
+  //   廣播時 broadcastToHostSession 會送給兩組所有 client
+  //
+  //   注意：與既有 broadcastToSession 不衝突（hostScreen sessions 也是 game_sessions
+  //   只是 host_mode=true，但 WS 訊息 type prefix 為 host_screen_* 區分契約）
+  const hostScreenClients: Map<string, Set<WebSocketClient>> = new Map();
+  const hostPlayerClients: Map<string, Set<WebSocketClient>> = new Map();
+  // server-side last state cache（給後加入的玩家拿目前狀態）
+  const hostSessionStateCache: Map<string, Record<string, unknown>> = new Map();
+
   // 🆕 Phase 2a：記錄每個 team 曾經連過的 userId（用來區分「初次加入」vs「重連」）
   //   close 後 history 仍保留，再次 team_join 時 → reconnected 而非 joined。
   //   server 重啟會清空（接受限制 — 重啟後第一次連會被當「joined」廣播）。
@@ -448,6 +461,101 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
+          // ════════════════════════════════════════════════════════════
+          // 🆕 ADR-0004 HostScreen 主控大螢幕事件（2026-05-02）
+          // ════════════════════════════════════════════════════════════
+          case "host_screen_register": {
+            // 大螢幕端註冊頻道（含 hostToken 驗證）
+            // 訊息：{ type, sessionId, hostToken, role: 'host' | 'player' }
+            const hostSessionId = message.sessionId;
+            if (!hostSessionId) break;
+
+            // 驗 hostToken 是 hostScreen 模式的關鍵安全點
+            // role='host' 的訊息必須帶有效 token；role='player' 不需 token
+            if (message.role === "host") {
+              const session = await storage.getSession(hostSessionId).catch(() => null);
+              if (!session?.hostMode || session.hostToken !== message.hostToken) {
+                ws.send(JSON.stringify({
+                  type: "host_screen_error",
+                  message: "host token 無效或已過期",
+                }));
+                break;
+              }
+              if (session.hostTokenExpiresAt && new Date(session.hostTokenExpiresAt) < new Date()) {
+                ws.send(JSON.stringify({
+                  type: "host_screen_error",
+                  message: "host token 已過期，請重新從 admin 取得網址",
+                }));
+                break;
+              }
+              // 加入大螢幕群
+              ws.hostSessionId = hostSessionId;
+              ws.hostRole = "host";
+              if (!hostScreenClients.has(hostSessionId)) {
+                hostScreenClients.set(hostSessionId, new Set());
+              }
+              hostScreenClients.get(hostSessionId)!.add(ws);
+            } else {
+              // 玩家端：不需 token，只要 session 存在 + host_mode=true
+              const session = await storage.getSession(hostSessionId).catch(() => null);
+              if (!session?.hostMode) {
+                ws.send(JSON.stringify({
+                  type: "host_screen_error",
+                  message: "此 session 不是 HostScreen 模式",
+                }));
+                break;
+              }
+              ws.hostSessionId = hostSessionId;
+              ws.hostRole = "player";
+              if (!hostPlayerClients.has(hostSessionId)) {
+                hostPlayerClients.set(hostSessionId, new Set());
+              }
+              hostPlayerClients.get(hostSessionId)!.add(ws);
+            }
+
+            // 註冊成功 → 送目前 state cache 給新連線（snapshot）
+            const cached = hostSessionStateCache.get(hostSessionId);
+            if (cached) {
+              ws.send(JSON.stringify({
+                type: "host_screen_state",
+                sessionId: hostSessionId,
+                state: cached,
+                cached: true,
+              }));
+            }
+            break;
+          }
+
+          case "host_screen_pulse": {
+            // 玩家端送訊號（投票、emoji、按鈕觸發）→ 廣播給大螢幕端
+            // 訊息：{ type, sessionId, pulseType, payload }
+            if (!ws.hostSessionId || ws.hostRole !== "player") break;
+            broadcastToHostSession(ws.hostSessionId, {
+              type: "host_screen_pulse",
+              sessionId: ws.hostSessionId,
+              pulseType: message.pulseType,
+              payload: message.payload,
+              fromUserId: ws.userId,  // 可選 — 玩家有登入才有
+            }, /* hostOnly */ true);  // pulse 只送大螢幕端，不擾其他玩家
+            break;
+          }
+
+          case "host_screen_state": {
+            // 大螢幕端廣播當前狀態 → 所有玩家 + 大螢幕端共用看到
+            // 訊息：{ type, sessionId, state }
+            if (!ws.hostSessionId || ws.hostRole !== "host") break;
+            // 寫進 cache（給後加入的玩家用）
+            hostSessionStateCache.set(ws.hostSessionId, message.state ?? {});
+            // 廣播給兩組
+            broadcastToHostSession(ws.hostSessionId, {
+              type: "host_screen_state",
+              sessionId: ws.hostSessionId,
+              state: message.state,
+            });
+            break;
+          }
+          // ════════════════════════════════════════════════════════════
+
           // 對戰系統事件
           case "match_join": {
             const matchId = message.matchId;
@@ -618,6 +726,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           timestamp: new Date().toISOString(),
         });
       }
+
+      // 🆕 ADR-0004：清理 HostScreen 客戶端
+      if (ws.hostSessionId) {
+        if (ws.hostRole === "host") {
+          hostScreenClients.get(ws.hostSessionId)?.delete(ws);
+          if (hostScreenClients.get(ws.hostSessionId)?.size === 0) {
+            hostScreenClients.delete(ws.hostSessionId);
+          }
+        } else if (ws.hostRole === "player") {
+          hostPlayerClients.get(ws.hostSessionId)?.delete(ws);
+          if (hostPlayerClients.get(ws.hostSessionId)?.size === 0) {
+            hostPlayerClients.delete(ws.hostSessionId);
+          }
+        }
+      }
     });
   });
 
@@ -690,11 +813,35 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
+  /**
+   * 🆕 ADR-0004：HostScreen 廣播
+   *
+   * @param sessionId host session id
+   * @param message WS 訊息
+   * @param hostOnly 是否只送大螢幕端（true: pulse 用；false: state 廣播給雙方）
+   */
+  function broadcastToHostSession(
+    sessionId: string,
+    message: WsBroadcastMessage,
+    hostOnly = false,
+  ) {
+    const payload = JSON.stringify(message);
+    const send = (set: Set<WebSocketClient> | undefined) => {
+      if (!set) return;
+      set.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) client.send(payload);
+      });
+    };
+    send(hostScreenClients.get(sessionId));
+    if (!hostOnly) send(hostPlayerClients.get(sessionId));
+  }
+
   return {
     broadcastToSession,
     broadcastToTeam,
     broadcastToMatch,
     broadcastToBattleSlot,
+    broadcastToHostSession,
     cancelDisconnectTimer,
   };
 }

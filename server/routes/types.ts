@@ -11,6 +11,9 @@ export interface WebSocketClient extends WebSocket {
   authenticatedUserId?: string;  // 經 token 驗證的用戶 ID
   matchId?: string;              // 對戰房間 ID
   battleSlotId?: string;         // 水彈對戰時段 ID
+  // 🆕 ADR-0004 (2026-05-02)：HostScreen 主控大螢幕模式
+  hostSessionId?: string;        // host session id
+  hostRole?: "host" | "player";  // host = 大螢幕端、player = 玩家端
 }
 
 /** WebSocket 廣播訊息型別 */
@@ -26,6 +29,8 @@ export interface RouteContext {
   broadcastToBattleSlot: (slotId: string, message: WsBroadcastMessage) => void;
   /** 🆕 Phase 2c：取消隊員的斷線寬限期計時器（leader-decide / 重連時用） */
   cancelDisconnectTimer?: (teamId: string, userId: string) => void;
+  /** 🆕 ADR-0004：HostScreen 主控大螢幕廣播 */
+  broadcastToHostSession?: (sessionId: string, message: WsBroadcastMessage, hostOnly?: boolean) => void;
 }
 
 // 經 Firebase 認證後的 Request 型別

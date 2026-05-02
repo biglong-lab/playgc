@@ -161,6 +161,10 @@ const SquadLeaderboards = lazy(() => import("@/pages/SquadLeaderboards"));
 const SquadCreate = lazy(() => import("@/pages/SquadCreate"));
 const MySquads = lazy(() => import("@/pages/MySquads"));
 
+// 📺 ADR-0004: HostScreen 主控大螢幕模式（W1 D3 骨架）
+const HostScreen = lazy(() => import("@/pages/HostScreen"));
+const HostPlay = lazy(() => import("@/pages/HostPlay"));
+
 // ⚙️ 場域行銷設定（Squad System Phase 12.6）
 const AdminEngagementSettings = lazy(() => import("@/pages/admin/AdminEngagementSettings"));
 
@@ -223,6 +227,10 @@ function Router() {
         <Route path="/me/rewards" component={MyRewards} />
         <Route path="/f/:fieldCode/me/inbox" component={MyInbox} />
         <Route path="/me/inbox" component={MyInbox} />
+        {/* 📺 ADR-0004 HostScreen 軸線 — 大螢幕端與玩家端（無需 Firebase auth）*/}
+        <Route path="/host/:sessionId" component={HostScreen} />
+        <Route path="/play/:sessionId" component={HostPlay} />
+
         <Route path="/squad/create" component={SquadCreate} />
         <Route path="/squad/:squadId/settings" component={SquadSettings} />
         <Route path="/squad/:squadId" component={SquadPublic} />
