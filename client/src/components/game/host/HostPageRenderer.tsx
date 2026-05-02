@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 const PollLivePage = lazy(() => import("./PollLivePage"));
 const EmojiReactPage = lazy(() => import("./EmojiReactPage"));
 const WaveResponsePage = lazy(() => import("./WaveResponsePage"));
+const CrowdGatherPage = lazy(() => import("./CrowdGatherPage"));
 
 interface HostPageRendererProps {
   page: Page;
@@ -36,6 +37,8 @@ export default function HostPageRenderer({ page }: HostPageRendererProps) {
             return <EmojiReactPage page={page} />;
           case "host_wave_response":
             return <WaveResponsePage page={page} />;
+          case "host_crowd_gather":
+            return <CrowdGatherPage page={page} />;
           // Phase 1 W3-W4 會陸續加：
           //   host_emoji_react / host_wave_response / host_crowd_gather
           //   host_trivia_showdown / host_live_leaderboard
