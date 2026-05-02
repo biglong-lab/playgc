@@ -69,6 +69,22 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎛 Phase 2 W8 D3 ✅（AdminDashboard 平台工具快速入口）
+**主題**：admin 後台首頁加 4 個 W6-W7 工具入口
+**範圍**：1 個檔案（AdminDashboard）
+
+關鍵變動：
+- AdminDashboard 中段加「情境模板平台工具」Card（漸層 primary 5/10）
+- 4 個入口（Grid 2x2 / 4x1 響應式）：
+  - 🌟 情境模板市集 / 📺 主控場次 / 🧭 3 問找情境 / 🎤 客戶簡報頁
+- 每個入口卡有 icon + title + 一句說明、hover 時邊框轉 primary
+
+**Smoke test 24/24 全綠** ✅
+
+**細節** → [changes/2026-05-02-phase2-w8-d3-admin-tools-card.md](changes/2026-05-02-phase2-w8-d3-admin-tools-card.md)
+
+⏭ 下一步：W8 D4 — Phase 2 W4-W8 五週路徑彙整收尾文件
+
 ### 🖨 Phase 2 W8 D2 ✅（AdminHostSessions QR 列印整合）
 **主題**：admin 後台直接列印 QR（單張 / 批次）
 **範圍**：1 個檔案
