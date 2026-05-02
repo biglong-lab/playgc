@@ -27,6 +27,8 @@ const TerritoryCapturePage = lazy(() => import("@/components/game/multi/Territor
 const JigsawPuzzlePage = lazy(() => import("@/components/game/multi/JigsawPuzzlePage"));
 const TreasureHuntPage = lazy(() => import("@/components/game/multi/TreasureHuntPage"));
 const GpsCascadePage = lazy(() => import("@/components/game/multi/GpsCascadePage"));
+const CollectiveScorePage = lazy(() => import("@/components/game/multi/CollectiveScorePage"));
+const RoleAssignPage = lazy(() => import("@/components/game/multi/RoleAssignPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -262,6 +264,10 @@ export default function GamePageRenderer({
         return <TreasureHuntPage page={page} />;
       case "gps_cascade":
         return <GpsCascadePage page={page} />;
+      case "collective_score":
+        return <CollectiveScorePage page={page} />;
+      case "role_assign":
+        return <RoleAssignPage page={page} />;
       // 📺 HostScreen 軸線（ADR-0004）
       case "host_poll_live":
         return <PollLivePage page={page} />;
