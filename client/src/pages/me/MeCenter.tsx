@@ -166,6 +166,24 @@ export default function MeCenter() {
           </Card>
         )}
 
+        {/* 🛡 我的隊伍入口（Squad 系統一次到位 PR1）*/}
+        <Link href={link("/me/squads")}>
+          <Card className="cursor-pointer hover:border-primary/50 active:scale-[0.98] transition-all">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm">🛡 我的隊伍</p>
+                <p className="text-xs text-muted-foreground">
+                  跨遊戲統一隊伍，累積戰績、徽章、排行榜
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+
         {/* 📱 PWA 主動安裝入口（已安裝/不支援的瀏覽器自動隱藏，不擾人） */}
         <PwaInstallEntry />
 
