@@ -273,6 +273,81 @@ export function registerScenarioRoutes(app: Express) {
   );
 
   /**
+   * GET /api/admin/scenarios/quota
+   * 回傳本月用量 + 配額（W10 D4）
+   *
+   * 配額來源（優先序）：
+   * 1. 環境變數 `SCENARIO_QUOTA_FIELD_<fieldId>`（指定場域配額）
+   * 2. 環境變數 `SCENARIO_QUOTA_DEFAULT`（全域 default）
+   * 3. 預設 50（無設定時）
+   */
+  app.get(
+    "/api/admin/scenarios/quota",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+
+        const fieldId = req.admin.fieldId;
+        const isSuperAdmin = req.admin.systemRole === "super_admin";
+
+        // 取本月（從本月 1 號 0:00 起）
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+        // 抓所有 scenario 實例 game
+        const allGames = await db
+          .select({
+            id: games.id,
+            description: games.description,
+            fieldId: games.fieldId,
+            createdAt: games.createdAt,
+          })
+          .from(games);
+
+        const monthGames = allGames.filter((g) => {
+          if (!g.description?.includes("[scenario:")) return false;
+          if (!isSuperAdmin && g.fieldId !== fieldId) return false;
+          if (g.createdAt && new Date(g.createdAt) < monthStart) return false;
+          return true;
+        });
+
+        const used = monthGames.length;
+
+        // 解析配額
+        let quota = 50; // default
+        const fieldQuotaEnv = fieldId ? process.env[`SCENARIO_QUOTA_FIELD_${fieldId}`] : null;
+        const defaultQuotaEnv = process.env.SCENARIO_QUOTA_DEFAULT;
+        if (fieldQuotaEnv && /^\d+$/.test(fieldQuotaEnv)) {
+          quota = parseInt(fieldQuotaEnv, 10);
+        } else if (defaultQuotaEnv && /^\d+$/.test(defaultQuotaEnv)) {
+          quota = parseInt(defaultQuotaEnv, 10);
+        }
+
+        const remaining = Math.max(0, quota - used);
+        const percent = quota > 0 ? Math.min(100, Math.round((used / quota) * 100)) : 0;
+
+        // 下個重置時間（下個月 1 號 0:00）
+        const nextReset = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+        res.json({
+          windowMonth: monthStart.toISOString().slice(0, 7), // YYYY-MM
+          quota,
+          used,
+          remaining,
+          percent,
+          nextResetAt: nextReset.toISOString(),
+          source: fieldQuotaEnv ? "field-env" : defaultQuotaEnv ? "default-env" : "hardcoded",
+        });
+      } catch (err) {
+        console.error("[scenarios] quota 失敗:", err);
+        res.status(500).json({ error: "配額查詢失敗" });
+      }
+    },
+  );
+
+  /**
    * POST /api/admin/scenarios/:scenarioId/ai-preview
    * Body: { context: string }
    *

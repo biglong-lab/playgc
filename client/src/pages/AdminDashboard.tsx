@@ -90,6 +90,20 @@ export default function AdminDashboard() {
     enabled: isAuthenticated,
   });
 
+  // W10 D4: 本月配額
+  const { data: quota } = useQuery<{
+    windowMonth: string;
+    quota: number;
+    used: number;
+    remaining: number;
+    percent: number;
+    nextResetAt: string;
+    source: string;
+  }>({
+    queryKey: ["/api/admin/scenarios/quota"],
+    enabled: isAuthenticated,
+  });
+
   const { data: sessions } = useQuery<GameSession[]>({
     queryKey: ["/api/sessions"],
     enabled: isAuthenticated,
@@ -267,6 +281,43 @@ export default function AdminDashboard() {
           </Link>
         </CardContent>
       </Card>
+
+      {/* 🆕 W10 D4: 本月配額 */}
+      {quota && (
+        <Card className={`mb-6 ${quota.percent >= 80 ? "bg-amber-500/10 border-amber-500/40" : "bg-card"}`}>
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className={`w-4 h-4 ${quota.percent >= 80 ? "text-amber-600" : "text-primary"}`} />
+                <h3 className="font-semibold text-sm">本月情境建場配額</h3>
+              </div>
+              <Badge variant="outline" className="text-xs">
+                {quota.windowMonth}
+              </Badge>
+            </div>
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-2xl font-bold">{quota.used}</span>
+              <span className="text-sm text-muted-foreground">/ {quota.quota}</span>
+              <span className={`text-xs ml-auto ${quota.percent >= 80 ? "text-amber-600 font-medium" : "text-muted-foreground"}`}>
+                {quota.percent}% 已用 · 剩 {quota.remaining}
+              </span>
+            </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  quota.percent >= 80 ? "bg-amber-500" : quota.percent >= 50 ? "bg-blue-500" : "bg-emerald-500"
+                }`}
+                style={{ width: `${Math.min(100, quota.percent)}%` }}
+              />
+            </div>
+            {quota.percent >= 80 && (
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-2">
+                ⚠️ 配額即將用完，{new Date(quota.nextResetAt).toLocaleDateString("zh-TW")} 重置
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* 🆕 W9 D4: 情境模板使用統計（最近 30 天）*/}
       {scenarioStats && scenarioStats.totalGamesCreated > 0 && (

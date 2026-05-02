@@ -69,6 +69,27 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📈 Phase 3 W10 D4 ✅（用量配額追蹤）
+**主題**：admin 看本月情境建場用量 / 配額 / 重置時間
+**範圍**：3 個檔案
+
+關鍵變動：
+- 新 endpoint `GET /api/admin/scenarios/quota`（場域過濾 + 環境變數配額）
+- AdminDashboard「本月情境建場配額」Card
+  - 進度條（綠/藍/琥珀依百分比）
+  - ≥ 80% 警告 + 整卡轉琥珀
+- 配額來源：`SCENARIO_QUOTA_FIELD_<fieldId>` > `SCENARIO_QUOTA_DEFAULT` > 50
+- smoke test 29 → 30（4c2 quota 401 守衛）
+
+**設計**：
+- 不動 schema（環境變數）
+- 純資訊性（不阻擋 instantiate）
+- 80% 警告閾值（標準 disk usage 慣例）
+
+**細節** → [changes/2026-05-02-phase3-w10-d4-quota.md](changes/2026-05-02-phase3-w10-d4-quota.md)
+
+⏭ 下一步：W10 D5 — Resend 信件 + Recur webhook 簽章 + W10 收尾
+
 ### 🔀 Phase 3 W10 D3 ✅（Pricing 切換 Recur.tw、Stripe 退場為 fallback）
 **主題**：Pricing 頁前端切換 Recur.tw 主路徑 + 後端 productId 環境變數對應
 **範圍**：3 個檔案
