@@ -69,6 +69,36 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 4 完整收尾 ✅（W16 D5 — Phase 4 retro + Phase 5 ADR）
+**主題**：Phase 4 W13-W16 全套完成、Phase 5 規劃 ADR-0012
+**範圍**：2 個新文件
+
+關鍵成果（Phase 4 整體）：
+- 4 週 / 20 工作日 / 50+ 檔 / ~5,000 行 / 19 commits
+- Smoke test 38 → 48（+10 筆驗證）
+- admin 體驗從電腦端 → LINE 隨身（30 秒建場 ⚡ 10×）
+- 完整工具鏈：建場 / 管理 / reminder / webhook 全套
+
+商業價值對比：
+- 建場時間：5-10 分鐘 → 30 秒
+- 玩家進入：QR + 輸入名 → LINE LIFF 自動帶入
+- 過期通知：靜默等過期 → 前 1 小時 LINE 推播
+- 客戶通知：admin 手動 → webhook 自動派發
+
+Phase 5 規劃（W17-W21）：
+- W17：真實客戶 + 第一場付費活動
+- W18：元件庫擴充 5 個 host 新元件
+- W19：情境模板擴充（12 → 20+）
+- W20：觀測 + 健康度儀表板
+- W21：緩衝 + Phase 6 規劃
+
+**Smoke test 維持 48/48**
+
+**Phase 4 完整收尾** → [changes/2026-05-03-phase4-complete.md](changes/2026-05-03-phase4-complete.md)
+**Phase 5 ADR** → [decisions/0012-phase5-direction.md](decisions/0012-phase5-direction.md)
+
+⏭ 下一步：Phase 5 W17 D1 — 真實客戶招募啟動
+
 ### ⏰ Phase 4 W16 D4 ✅（活動即將過期 LINE reminder）
 **主題**：過期前 1 小時自動推 LINE 提醒（避免活動意外結束）
 **範圍**：2 新檔 + 1 修改
