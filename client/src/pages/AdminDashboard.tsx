@@ -39,6 +39,7 @@ import {
   TrendingUp,
   Cloud, HardDrive, ImageIcon, Zap as ZapIcon,
   ScanText, AlertTriangle,
+  Sparkles, Tv, Compass, Presentation,
 } from "lucide-react";
 import {
   LineChart,
@@ -202,6 +203,54 @@ export default function AdminDashboard() {
           />
         </Link>
       </div>
+
+      {/* 🆕 W8 D3: Phase 2 平台工具快速入口 */}
+      <Card className="mb-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/30">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            情境模板平台工具
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Link href="/template-market" className="block">
+            <div className="rounded-lg border bg-card hover:border-primary/40 hover:shadow-md transition-all p-4 h-full" data-testid="dashboard-link-template-market">
+              <Sparkles className="w-5 h-5 text-primary mb-2" />
+              <h4 className="font-semibold text-sm">情境模板市集</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                12 個預組情境一鍵建場
+              </p>
+            </div>
+          </Link>
+          <Link href="/admin/host-sessions" className="block">
+            <div className="rounded-lg border bg-card hover:border-primary/40 hover:shadow-md transition-all p-4 h-full" data-testid="dashboard-link-host-sessions">
+              <Tv className="w-5 h-5 text-blue-600 mb-2" />
+              <h4 className="font-semibold text-sm">主控場次</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                進行中大螢幕 + QR 列印
+              </p>
+            </div>
+          </Link>
+          <Link href="/find-scenario" className="block">
+            <div className="rounded-lg border bg-card hover:border-primary/40 hover:shadow-md transition-all p-4 h-full" data-testid="dashboard-link-find-scenario">
+              <Compass className="w-5 h-5 text-emerald-600 mb-2" />
+              <h4 className="font-semibold text-sm">3 問找情境</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                推薦 Top 3 適合你的情境
+              </p>
+            </div>
+          </Link>
+          <Link href="/pitch" className="block">
+            <div className="rounded-lg border bg-card hover:border-primary/40 hover:shadow-md transition-all p-4 h-full" data-testid="dashboard-link-pitch">
+              <Presentation className="w-5 h-5 text-amber-600 mb-2" />
+              <h4 className="font-semibold text-sm">客戶簡報頁</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                帶客戶看的銷售工具
+              </p>
+            </div>
+          </Link>
+        </CardContent>
+      </Card>
 
       {/* 🆕 G2: 本週趨勢圖（場次 + 完成 + 最高分） */}
       <div className="mb-8">
