@@ -10,9 +10,13 @@
 //   - Phase 2: 12 情境模板入口
 //   - Phase 3: 30 秒 demo 影片整合
 
+import { useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import PollLive from "@/components/game/host/PollLive";
 import {
   ArrowLeft, Tv, Users, User as UserIcon, Sparkles,
   Vote, Camera, MapPin, Trophy, Flame, Lock,
@@ -34,7 +38,7 @@ interface ComponentItem {
 
 const COMPONENTS: ComponentItem[] = [
   // 第三軸線 host（規劃 8 個）
-  { name: "PollLive", zhName: "即時民調", desc: "全場投票，大螢幕長條圖動態", status: "planned", axis: "host" },
+  { name: "PollLive", zhName: "即時民調", desc: "全場投票，大螢幕長條圖動態", status: "live", axis: "host" },
   { name: "EmojiReact", zhName: "情緒池", desc: "全場 emoji 雨，演講即時回饋", status: "planned", axis: "host" },
   { name: "WaveResponse", zhName: "人浪應援", desc: "連點按鈕觸發場域熱力", status: "planned", axis: "host" },
   { name: "TriviaShowdown", zhName: "搶答秀", desc: "園遊會主舞台、多回合排行", status: "planned", axis: "host" },
@@ -170,9 +174,40 @@ function getAxisLabel(axis: ComponentItem["axis"]) {
   }
 }
 
+// PollLive demo 模擬資料（給 ShowcaseHub 預覽用，無 WS）
+const POLLLIVE_DEMO_CONFIG = {
+  question: "你最喜歡金門哪個古蹟？",
+  subtitle: "（PollLive 即時民調 — Demo 模式）",
+  options: [
+    { id: "a", label: "後浦老街" },
+    { id: "b", label: "賈村牌坊" },
+    { id: "c", label: "古寧頭戰史館" },
+    { id: "d", label: "莒光樓" },
+  ],
+};
+
+const POLLLIVE_DEMO_HOST_STATE = {
+  question: POLLLIVE_DEMO_CONFIG.question,
+  options: POLLLIVE_DEMO_CONFIG.options,
+  votes: { a: 47, b: 32, c: 51, d: 18 },
+  totalVotes: 148,
+  status: "open" as const,
+  revealResults: false,
+};
+
+const POLLLIVE_DEMO_PLAYER_STATE = {
+  question: POLLLIVE_DEMO_CONFIG.question,
+  options: POLLLIVE_DEMO_CONFIG.options,
+  votes: { a: 47, b: 32, c: 51, d: 18 },
+  totalVotes: 148,
+  status: "revealed" as const,
+  revealResults: true,
+};
+
 export default function ShowcaseHub() {
   const liveCount = COMPONENTS.filter((c) => c.status === "live").length;
   const plannedCount = COMPONENTS.filter((c) => c.status === "planned").length;
+  const [demoMode, setDemoMode] = useState<"host" | "player" | null>(null);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -204,6 +239,56 @@ export default function ShowcaseHub() {
             從個人闖關到大螢幕主控，從隊伍協作到全場互動 — 一個平台、無限想像
           </p>
         </section>
+
+        {/* 🎬 PollLive 即時試玩（W2 D4 新增）*/}
+        <section className="space-y-4">
+          <div className="text-center space-y-2">
+            <h2 className="text-xl font-display font-bold">📺 立即看 — PollLive 即時民調</h2>
+            <p className="text-sm text-muted-foreground">
+              主控大螢幕投影 + 玩家手機投票 — 適合園遊會、企業內訓、課堂互動
+            </p>
+          </div>
+          <div className="flex gap-3 justify-center flex-wrap">
+            <Button onClick={() => setDemoMode("host")} variant="default" size="lg" data-testid="btn-demo-poll-host">
+              📺 看大螢幕版型
+            </Button>
+            <Button onClick={() => setDemoMode("player")} variant="outline" size="lg" data-testid="btn-demo-poll-player">
+              📱 看玩家版型
+            </Button>
+          </div>
+          <p className="text-xs text-center text-muted-foreground">
+            （Demo 模式 — 真實活動由 admin 建 host session 後產生網址）
+          </p>
+        </section>
+
+        {/* PollLive demo Dialog */}
+        <Dialog open={demoMode !== null} onOpenChange={(open) => !open && setDemoMode(null)}>
+          <DialogContent className={demoMode === "host" ? "max-w-5xl h-[80vh] p-0 bg-black overflow-hidden" : "max-w-md p-0 max-h-[80vh] overflow-y-auto"}>
+            <DialogHeader className={demoMode === "host" ? "px-6 py-3 bg-zinc-900 text-white" : "p-4"}>
+              <DialogTitle>
+                {demoMode === "host" ? "📺 大螢幕版型 (Demo)" : "📱 玩家手機版型 (Demo)"}
+              </DialogTitle>
+            </DialogHeader>
+            {demoMode === "host" && (
+              <div className="flex-1 overflow-y-auto">
+                <PollLive
+                  config={POLLLIVE_DEMO_CONFIG}
+                  hostMode={true}
+                  state={POLLLIVE_DEMO_HOST_STATE}
+                />
+              </div>
+            )}
+            {demoMode === "player" && (
+              <div className="overflow-y-auto">
+                <PollLive
+                  config={POLLLIVE_DEMO_CONFIG}
+                  hostMode={false}
+                  state={POLLLIVE_DEMO_PLAYER_STATE}
+                />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* 5 大商業情境 */}
         <section className="space-y-4">
