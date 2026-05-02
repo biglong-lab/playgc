@@ -6,6 +6,9 @@ import {
   playerProgress,
   chatMessages,
   games,
+  teams,
+  teamSessions,
+  teamMembers,
   type GameSession,
   type InsertGameSession,
   type PlayerProgress,
@@ -100,7 +103,21 @@ export const sessionStorageMethods = {
     return null;
   },
 
-  /** 取得使用者的所有工作階段（含進度） */
+  /**
+   * 取得使用者的所有工作階段（含進度）
+   *
+   * 🆕 2026-05-02：多人遊戲完成偵測
+   *   問題：團隊遊戲結束/解散後，gameSessions.status 仍是 "playing"，
+   *         導致 Home 顯示「返回隊伍」但點進去隊伍已不存在。
+   *   修法：LEFT JOIN team_sessions + teams + team_members(該玩家)，
+   *         若 team 已 disbanded/completed 或玩家已 leftAt，
+   *         覆寫 session.status = "completed"（保留 score 給 UI 顯示「再玩一次」）。
+   *
+   * 影響：
+   *   - 此方法的所有 caller 都會看到「對該玩家而言有效」的 status
+   *   - 單人遊戲不受影響（LEFT JOIN 不命中時 teamStatus / memberLeftAt 為 null）
+   *   - 不寫回 DB（其他玩家可能還在玩同一個 session）
+   */
   async getSessionsByUser(
     userId: string
   ): Promise<{ session: GameSession; progress: PlayerProgress }[]> {
@@ -108,13 +125,38 @@ export const sessionStorageMethods = {
       .select({
         session: gameSessions,
         progress: playerProgress,
+        teamStatus: teams.status,
+        memberLeftAt: teamMembers.leftAt,
       })
       .from(playerProgress)
       .innerJoin(gameSessions, eq(playerProgress.sessionId, gameSessions.id))
+      .leftJoin(teamSessions, eq(teamSessions.sessionId, gameSessions.id))
+      .leftJoin(teams, eq(teams.id, teamSessions.teamId))
+      .leftJoin(
+        teamMembers,
+        and(
+          eq(teamMembers.userId, userId),
+          eq(teamMembers.teamId, teams.id),
+        ),
+      )
       .where(eq(playerProgress.userId, userId))
       .orderBy(desc(gameSessions.startedAt));
 
-    return results;
+    return results.map(({ session, progress, teamStatus, memberLeftAt }) => {
+      // 多人遊戲且還掛 "playing"：若 team 結束或玩家退出 → 對該玩家視為 completed
+      const teamEnded =
+        teamStatus === "disbanded" || teamStatus === "completed";
+      if (
+        session.status === "playing" &&
+        (teamEnded || memberLeftAt !== null)
+      ) {
+        return {
+          session: { ...session, status: "completed" },
+          progress,
+        };
+      }
+      return { session, progress };
+    });
   },
 
   /** 建立新工作階段 */

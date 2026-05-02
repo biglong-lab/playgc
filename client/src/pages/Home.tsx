@@ -220,21 +220,43 @@ export default function Home() {
     enabled: !!user,
   });
 
+  // 🔄 2026-05-02 修正：completed 優先於 playing
+  //   原本是 "playing 優先 completed"，導致使用者完成過一次（completed），
+  //   後來又開了一場（playing 但隊伍解散沒清乾淨）→ Home 顯示「返回隊伍」+
+  //   點進去顯示「創建或加入隊伍」。
+  //   後端 getSessionsByUser 已會把卡死的多人 playing 改為 completed，
+  //   前端再加一道保險：只要該遊戲有任何 completed 紀錄，就以 completed 為主，
+  //   並挑「最高分的那次 completed」顯示，更貼近使用者直覺。
   const gameStatusMap = new Map<string, UserGameStatus>();
   if (userSessions) {
-    userSessions.forEach(session => {
+    userSessions.forEach((session) => {
       if (!session.gameId) return;
-      if (session.status === "playing" || session.status === "completed") {
-        const existing = gameStatusMap.get(session.gameId);
-        if (!existing || (session.status === "playing" && existing.status === "completed")) {
-          gameStatusMap.set(session.gameId, {
-            gameId: session.gameId,
-            status: session.status as "playing" | "completed",
-            sessionId: session.id,
-            score: session.score || 0,
-          });
-        }
+      if (session.status !== "playing" && session.status !== "completed") return;
+
+      const existing = gameStatusMap.get(session.gameId);
+      const incoming: UserGameStatus = {
+        gameId: session.gameId,
+        status: session.status as "playing" | "completed",
+        sessionId: session.id,
+        score: session.score || 0,
+      };
+
+      if (!existing) {
+        gameStatusMap.set(session.gameId, incoming);
+        return;
       }
+
+      // 規則：completed 永遠優先；都是 completed 取最高分；都是 playing 取最新（最先迭代到的）
+      if (incoming.status === "completed" && existing.status === "playing") {
+        gameStatusMap.set(session.gameId, incoming);
+      } else if (
+        incoming.status === "completed" &&
+        existing.status === "completed" &&
+        incoming.score > existing.score
+      ) {
+        gameStatusMap.set(session.gameId, incoming);
+      }
+      // 其他情況維持 existing（playing 不能蓋 completed；同 status 沿用最新的迭代結果）
     });
   }
 
@@ -372,9 +394,11 @@ export default function Home() {
     return "開始遊戲";
   };
 
+  // 🔄 2026-05-02 統一語意：所有「已完成過、再來一場」的 CTA 都用「再玩一次」
+  //   理由：使用者反映「重新組隊」辨識度低，看到「再玩一次」直覺知道「以前玩過」。
+  //   點進去後 team mode 會自動進 TeamLobby 重新組隊，所以文案不影響流程。
   const getReplayLabel = (game: Game): string => {
-    if (game.gameStructure === "chapters") return "重新挑戰章節";
-    if (game.gameMode === "team") return "重新組隊";
+    if (game.gameStructure === "chapters") return "再玩一次（重選章節）";
     return "再玩一次";
   };
 
