@@ -11,7 +11,9 @@ import {
   MapPin,
   Play,
   AlertCircle,
-  ArrowLeft
+  ArrowLeft,
+  BookOpen,
+  Swords,
 } from "lucide-react";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 
@@ -34,6 +36,8 @@ interface Game {
   isIsolated: boolean | null;
   locationLockEnabled: boolean | null;
   lockLocationName: string | null;
+  gameMode: string | null;        // single / team / relay / competitive
+  gameStructure: string | null;   // chapters / linear
 }
 
 const DIFFICULTY_LABELS: Record<string, string> = {
@@ -203,15 +207,58 @@ export default function GameBySlug() {
               </div>
             )}
             
-            <div className="pt-4">
-              <Button 
-                className="w-full h-12 text-lg"
-                onClick={() => setLocation(link(`/game/${game.id}`))}
-                data-testid="button-start-game"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                開始遊戲
-              </Button>
+            {/* 🆕 2026-05-02：QR 掃描進入後的按鈕依遊戲模式導向正確流程
+                - chapters     → /game/:id/chapters（先選章節）
+                - team         → /team/:id（先組隊 / 加入隊伍）
+                - competitive  → /match/:id（先入競賽）
+                - relay        → /match/:id（先入接力賽）
+                - 其他（single）→ /game/:id（直接玩） */}
+            <div className="pt-4 space-y-2">
+              {(() => {
+                const mode = game.gameMode;
+                const structure = game.gameStructure;
+                let label = "開始遊戲";
+                let Icon = Play;
+                let target = `/game/${game.id}`;
+                let hint: string | null = null;
+
+                if (structure === "chapters") {
+                  label = "選擇章節";
+                  Icon = BookOpen;
+                  target = `/game/${game.id}/chapters`;
+                  hint = "本遊戲分多個章節，請先選擇要挑戰的章節";
+                } else if (mode === "team") {
+                  label = "創建或加入隊伍";
+                  Icon = Users;
+                  target = `/team/${game.id}`;
+                  hint = "本遊戲為多人隊伍模式，必須先組隊或加入既有隊伍才能開始";
+                } else if (mode === "competitive" || mode === "relay") {
+                  label = mode === "relay" ? "進入接力賽" : "進入競賽";
+                  Icon = Swords;
+                  target = `/match/${game.id}`;
+                  hint = mode === "relay"
+                    ? "本遊戲為接力賽，必須先進入賽事大廳"
+                    : "本遊戲為競賽模式，必須先進入賽事大廳";
+                }
+
+                return (
+                  <>
+                    {hint && (
+                      <p className="text-xs text-muted-foreground text-center px-2">
+                        💡 {hint}
+                      </p>
+                    )}
+                    <Button
+                      className="w-full h-12 text-lg"
+                      onClick={() => setLocation(link(target))}
+                      data-testid="button-start-game"
+                    >
+                      <Icon className="w-5 h-5 mr-2" />
+                      {label}
+                    </Button>
+                  </>
+                );
+              })()}
             </div>
           </CardContent>
         </Card>
