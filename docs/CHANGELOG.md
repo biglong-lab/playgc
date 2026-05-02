@@ -69,6 +69,29 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🎉 Phase 2 W6 完整收尾 ✅（情境模板平台基建上線）
+**主題**：從元件展示進化到「情境組合銷售 + 一鍵建場 + 現場 QR 列印」
+**範圍**：W6 5 天連續推進、6 個新檔、~1,600 行程式碼、11 情境全部可用
+**部署**：`d27caffb..fcbfca58`
+
+**5 天歷程**：
+- W6 D1（`01f0ffbf`）TemplateMarket 12 情境 + 公開頁 + 詳情頁 + 15 測試
+- W6 D2（`cba7b5b3`）Pure-host 一鍵建場（後端 endpoint + Dialog UX）
+- W6 D3（`af919703`）混合情境（multi/solo）支援 + axis-aware UI
+- W6 D4（`fcbfca58`）QR 列印頁（A4 自動分頁、漸層底色）
+- W6 D5 收尾文件 + admin runbook
+
+**商業流程改造**：admin 從 1 小時手動建場 → 10 分鐘一鍵搞定 ⚡ 6× 加速
+
+**E2E 全綠**：`/template-market` `/template-market/wedding` `/admin/scenario-qr-print`
++ POST /api/admin/scenarios/:id/instantiate 認證守衛正確
+
+**Runbook**：[runbooks/scenario-launch.md](runbooks/scenario-launch.md)
+
+**細節** → [changes/2026-05-02-phase2-w6-complete.md](changes/2026-05-02-phase2-w6-complete.md)
+
+⏭ 下一步：Phase 2 W7 — 業務化 + 客戶 onboarding 簡化 + 第 12 情境補位
+
 ### 📄 Phase 2 W6 D4 ✅（Scenario QR 列印頁）
 **主題**：admin 一鍵生成所有元件 QR codes 列印（A4，每張 QR 一頁）
 **範圍**：1 天、新增 1 個 client 頁面
