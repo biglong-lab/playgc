@@ -15,6 +15,7 @@ import SmartRedirect from "@/components/shared/SmartRedirect";
 import { ThemePreviewBanner } from "@/components/shared/ThemePreviewBanner";
 import PlayerBottomNav from "@/components/PlayerBottomNav";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import FloatingHomeButton from "@/components/shared/FloatingHomeButton";
 import AppUpdateChecker from "@/components/AppUpdateChecker";
 import WelcomeSquadsTrigger from "@/components/WelcomeSquadsTrigger";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
@@ -387,6 +388,7 @@ function App() {
                 <Toaster />
                 <Router />
                 <PlayerBottomNav />
+                <FloatingHomeButton />
                 <PWAInstallPrompt />
                 <AppUpdateChecker />
                 <WelcomeSquadsTrigger />
