@@ -33,6 +33,7 @@ const RoleAssignPage = lazy(() => import("@/components/game/multi/RoleAssignPage
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
 const EmojiReactPage = lazy(() => import("@/components/game/host/EmojiReactPage"));
+const LotteryWheelPage = lazy(() => import("@/components/game/host/LotteryWheelPage"));
 const WaveResponsePage = lazy(() => import("@/components/game/host/WaveResponsePage"));
 const CrowdGatherPage = lazy(() => import("@/components/game/host/CrowdGatherPage"));
 const LiveLeaderboardPage = lazy(() => import("@/components/game/host/LiveLeaderboardPage"));
@@ -278,6 +279,8 @@ export default function GamePageRenderer({
         return <PollLivePage page={page} />;
       case "host_emoji_react":
         return <EmojiReactPage page={page} />;
+      case "host_lottery_wheel":
+        return <LotteryWheelPage page={page} />;
       case "host_wave_response":
         return <WaveResponsePage page={page} />;
       case "host_crowd_gather":

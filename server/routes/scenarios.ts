@@ -88,6 +88,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
           { id: "c", label: "選項 C" },
         ],
       };
+    case "host_lottery_wheel":
+      return {
+        title: `${scenarioName} 抽獎`,
+        subtitle: "報名加入轉盤、等大螢幕轉",
+        items: [], // 預設空、玩家報名
+        spinDurationMs: 5000,
+        allowJoin: true,
+      };
 
     // ─── multi 軸線 ───
     case "gps_cascade":

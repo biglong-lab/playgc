@@ -71,6 +71,30 @@
 
 ## 2026-05-03（Phase 5 啟動）
 
+### 🎯 Phase 5 W18 D1 ✅（host_lottery_wheel 轉盤抽獎元件）
+**主題**：婚禮 / 派對 / 福委會通用轉盤抽獎（6+ 情境覆蓋）
+**範圍**：3 新檔 + 4 修改
+
+關鍵變動：
+- `client/src/components/game/host/LotteryWheel.tsx`（新）— 主元件
+  - CSS clip-path 切片轉盤（無 Canvas）
+  - 5 圈 ease-out cubic 減速到中獎位置
+  - 大螢幕：指針 + 圓盤 + 中獎 banner
+  - 玩家端：報名按鈕 + 中獎結果區分「您 / 他」
+  - 純函式 calculateWheelAngle / buildInitialLotteryState 易測試
+- `LotteryWheelPage.tsx`（新）— WebSocket 容器（pulse: join/spin/stop）
+- `LotteryWheel.test.tsx`（新）— 9 測試全綠
+- GamePageRenderer + HostPageRenderer 註冊 host_lottery_wheel
+- `getDefaultConfigForPageType` 加預設 config
+
+**新覆蓋情境**：婚禮抽伴娘 / 生日抽禮物 / 福委會 / 派對 / 尾牙（+6）
+
+**Smoke test 維持 51/51**
+
+**細節** → [changes/2026-05-03-phase5-w18-d1-lottery-wheel.md](changes/2026-05-03-phase5-w18-d1-lottery-wheel.md)
+
+⏭ 下一步：W18 D2 — host_progress_quest（全場進度條）
+
 ### 🎉 Phase 5 W17 完整收尾 ✅（D5 — retro + ADR-0013 W18 規劃）
 **主題**：W17 業務週工程備援任務全套完成、W18 元件擴充清單就緒
 **範圍**：2 個新文件（retro + ADR）

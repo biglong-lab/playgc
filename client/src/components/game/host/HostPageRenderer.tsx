@@ -19,6 +19,7 @@ const GuestbookDigitalPage = lazy(() => import("./GuestbookDigitalPage"));
 const TriviaShowdownPage = lazy(() => import("./TriviaShowdownPage"));
 const ScoreboardAnnouncementPage = lazy(() => import("./ScoreboardAnnouncementPage"));
 const KnowledgeMapPage = lazy(() => import("./KnowledgeMapPage"));
+const LotteryWheelPage = lazy(() => import("./LotteryWheelPage")); // W18 D1
 
 interface HostPageRendererProps {
   page: Page;
@@ -59,6 +60,8 @@ export default function HostPageRenderer({ page, myUserName }: HostPageRendererP
             return <ScoreboardAnnouncementPage page={page} />;
           case "host_knowledge_map":
             return <KnowledgeMapPage page={page} myUserName={myUserName} />;
+          case "host_lottery_wheel":
+            return <LotteryWheelPage page={page} />;
           default:
             return (
               <div className="text-center text-zinc-400 p-8">
