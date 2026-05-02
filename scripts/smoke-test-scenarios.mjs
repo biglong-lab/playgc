@@ -281,6 +281,14 @@ async function runSmokeTest() {
   });
   await check("GET /api-docs", 200, () => checkStatus(`${BASE_URL}/api-docs`, 200));
 
+  // 5e. /api/v1/keys/me（W12 D1，無 key → 401）
+  console.log(`${COLOR.bold}── Section 5e: keys/me（W12 D1）──${COLOR.reset}`);
+  await check("GET /api/v1/keys/me（無 key → 401）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/v1/keys/me`);
+    if (res.status !== 401) return { ok: false, error: `expected 401, got ${res.status}` };
+    return { ok: true };
+  });
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>

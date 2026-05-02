@@ -69,6 +69,35 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 🔐 Phase 3 W12 D1 ✅（API Key Store 抽象層 + JSON metadata）
+**主題**：API key 從純字串升級為含 metadata（label / fieldId / quota）
+**範圍**：4 個檔案
+
+關鍵變動：
+- `server/lib/api-key-store.ts` 新抽象層
+  - 來源優先序：API_KEYS_JSON（推薦）> API_KEYS 純字串（向下相容）
+  - 含 helper：findApiKey / listApiKeys / getApiKeyStats / reloadApiKeys
+- `server/middleware/api-key.ts` 改用 store
+  - ApiKeyContext 擴充 fieldId / quota / label
+- `server/routes/api/v1.ts` 重構
+  - 移除 getFieldIdForApiKey() helper
+  - POST /instances 直接用 req.apiKey.fieldId
+  - 新 endpoint GET /api/v1/keys/me（代理商查自己 metadata）
+- smoke test 加 5e (38 → 39)
+
+**JSON 格式**：
+```json
+[
+  { "key": "ck_test_xxx", "label": "代理商 A", "fieldId": "field_xxx", "quota": 50 }
+]
+```
+
+**Smoke test 39/39 全綠**
+
+**細節** → [changes/2026-05-03-phase3-w12-d1-api-key-store.md](changes/2026-05-03-phase3-w12-d1-api-key-store.md)
+
+⏭ 下一步：W12 D2 — 業務驗證（找客戶 / 真實活動）
+
 ### 🎉 Phase 3 W11 完整收尾 ✅（Public API + 代理商 onboarding 工具）
 **主題**：W11 5 天累計 + 代理商 onboarding runbook
 **範圍**：W11 26 檔、~2,606 行、smoke test 31→38

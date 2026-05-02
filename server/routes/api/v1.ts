@@ -38,17 +38,8 @@ function generateHostToken(): string {
   return randomBytes(16).toString("hex");
 }
 
-/**
- * 從 API key 推導對應 fieldId
- * W11 D3：用環境變數 `API_KEY_FIELD_<keyIdShort>`（keyIdShort 是前 8 字元）
- * W12：改用 DB api_keys 表
- */
-function getFieldIdForApiKey(keyId: string): string | null {
-  // keyId 是 maskKey 後的格式（ck_test_***...123），取前 8 字元做查詢
-  const shortKey = keyId.slice(0, 8).replace(/[^a-zA-Z0-9_]/g, "_");
-  const envKey = `API_KEY_FIELD_${shortKey}`;
-  return process.env[envKey] || process.env.API_KEY_DEFAULT_FIELD || null;
-}
+// W12 D1: fieldId 改從 req.apiKey.fieldId 直接取（store metadata 已含）
+// 既有 getFieldIdForApiKey() 移除、邏輯內聯到 handler
 
 export function registerPublicApiV1Routes(app: Express) {
   /**
@@ -81,6 +72,22 @@ export function registerPublicApiV1Routes(app: Express) {
    *   ?status=live  只列 live
    *   ?category=social  過濾分類
    */
+  /**
+   * GET /api/v1/keys/me
+   * 代理商查自己 API key 的 metadata（不含完整 key）
+   */
+  app.get("/api/v1/keys/me", requireApiKey, rateLimit, (req, res) => {
+    const meta = req.apiKey!;
+    res.json({
+      object: "api_key_metadata",
+      keyId: meta.keyId,
+      label: meta.label,
+      isTest: meta.isTest,
+      fieldId: meta.fieldId,
+      quota: meta.quota,
+    });
+  });
+
   app.get("/api/v1/scenarios", requireApiKey, rateLimit, (req, res) => {
     const statusFilter = req.query.status as string | undefined;
     const categoryFilter = req.query.category as string | undefined;
@@ -184,13 +191,13 @@ export function registerPublicApiV1Routes(app: Express) {
           });
         }
 
-        const fieldId = getFieldIdForApiKey(req.apiKey!.keyId);
+        const fieldId = req.apiKey!.fieldId;
         if (!fieldId) {
           return res.status(400).json({
             error: {
               code: "api_key_not_mapped_to_field",
               message: "您的 API key 未綁定場域，請聯絡業務設定",
-              documentation_url: "https://game.homi.cc/api/docs#api-key-field",
+              documentation_url: "https://game.homi.cc/api-docs",
             },
           });
         }

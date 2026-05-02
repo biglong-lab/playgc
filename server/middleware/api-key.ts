@@ -7,18 +7,19 @@
 // W12+：改用 DB 表（api_keys）
 
 import type { Request, Response, NextFunction } from "express";
-
-// 解析 API key whitelist（從環境變數）
-function getValidApiKeys(): Set<string> {
-  const raw = process.env.API_KEYS || "";
-  return new Set(raw.split(",").map((k) => k.trim()).filter(Boolean));
-}
+import { findApiKey } from "../lib/api-key-store";
 
 export interface ApiKeyContext {
   /** API key（masked、用於 log）*/
   keyId: string;
   /** 是否為測試 key */
   isTest: boolean;
+  /** 對應場域（從 metadata 取） */
+  fieldId: string | null;
+  /** 月配額 */
+  quota: number | null;
+  /** 標籤（如代理商名稱） */
+  label: string;
 }
 
 declare global {
@@ -50,9 +51,9 @@ export function requireApiKey(req: Request, res: Response, next: NextFunction) {
   }
 
   const key = match[1];
-  const validKeys = getValidApiKeys();
+  const meta = findApiKey(key);
 
-  if (!validKeys.has(key)) {
+  if (!meta) {
     return res.status(401).json({
       error: {
         code: "invalid_api_key",
@@ -61,10 +62,13 @@ export function requireApiKey(req: Request, res: Response, next: NextFunction) {
     });
   }
 
-  // 標記給後續 middleware / handler
+  // 標記給後續 middleware / handler（含 metadata）
   req.apiKey = {
     keyId: maskKey(key),
-    isTest: key.startsWith("ck_test_"),
+    isTest: meta.isTest,
+    fieldId: meta.fieldId,
+    quota: meta.quota,
+    label: meta.label,
   };
 
   next();
