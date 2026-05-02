@@ -24,6 +24,7 @@ const ChoiceVerifyRacePage = lazy(() => import("@/components/game/multi/ChoiceVe
 const LockCoopPage = lazy(() => import("@/components/game/multi/LockCoopPage"));
 const RelayMissionPage = lazy(() => import("@/components/game/multi/RelayMissionPage"));
 const TerritoryCapturePage = lazy(() => import("@/components/game/multi/TerritoryCapturePage"));
+const JigsawPuzzlePage = lazy(() => import("@/components/game/multi/JigsawPuzzlePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -253,6 +254,8 @@ export default function GamePageRenderer({
         return <RelayMissionPage {...commonProps} />;
       case "territory_capture":
         return <TerritoryCapturePage {...commonProps} />;
+      case "jigsaw_puzzle":
+        return <JigsawPuzzlePage page={page} />;
       // 📺 HostScreen 軸線（ADR-0004）
       case "host_poll_live":
         return <PollLivePage page={page} />;
