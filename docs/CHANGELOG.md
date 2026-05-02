@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 💳 Phase 3 W10 D1 ✅（付費 scaffold + Pricing 公開頁 + ADR 切換）
+**主題**：Stripe scaffold 上線 + ADR-0006 切換為 Recur.tw 主導
+**範圍**：6 個檔案
+
+關鍵變動：
+- `server/lib/stripe-checkout.ts` Stripe Checkout 整合（保留為國際 fallback）
+- `server/routes/payments.ts` 3 endpoints（create-checkout / webhook / health）
+- `client/src/pages/Pricing.tsx` 公開定價頁（三方案 + 一次性下單流程）
+- App.tsx 路由 /pricing 註冊
+- smoke test 26 → 28（加 4d payments health + 4e pricing 頁）
+
+**ADR 切換**（依用戶決策）：
+- ADR-0006 改寫：Stripe + Recur.tw 雙軌 → **Recur.tw 主導**
+- ADR-0007 新增：Resend 信件服務選用
+
+**理由**：台灣客戶 95%+ / 抽成低 / 自動發票合規 / 單一 vendor 簡化
+**Stripe**：保留 scaffold 當國際 fallback、不主動推
+
+**Smoke test 28/28 全綠**：含 /pricing 公開頁 + payments health 公開端點
+
+**細節** → [changes/2026-05-02-phase3-w10-d1-payment-scaffold.md](changes/2026-05-02-phase3-w10-d1-payment-scaffold.md)
+
+⏭ 下一步：W10 D2 — Recur.tw API client + endpoint
+
 ### 🎉 Phase 3 W9 完整收尾 ✅（AI 內容 + 客戶 onboarding 工具完整化）
 **主題**：W9 5 天累計 + ADR-0006 付費機制技術選型 + W10 規劃
 **範圍**：W9 17 個檔、~1,560 行 + 5 個新文件

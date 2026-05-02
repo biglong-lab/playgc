@@ -1,167 +1,138 @@
-# ADR-0006: 付費機制技術選型 — Stripe + Recur.tw 雙軌
+# ADR-0006: 付費機制技術選型 — Recur.tw 主導（更新版）
 
-> 日期：2026-05-02
-> 狀態：採用中（Phase 3 W10 啟動）
+> 日期：2026-05-02（**更新**：原方案 Stripe + Recur.tw 雙軌 → 改為 Recur.tw 主導）
+> 狀態：採用中（Phase 3 W10 D2 啟動 Recur.tw 整合）
 > 影響：Phase 3 W10 全部工作 + W11 業務 API 計費 + 後續所有變現工作
+> 文件：[docs.recur.tw](https://docs.recur.tw/)
 
 ---
 
 ## 背景
 
-Phase 3 W10 主軸是「啟動付費機制」，但有 3 個獨立支付場景：
+**初版選型**（W9 D5 規劃）：Stripe（一次性）+ Recur.tw（訂閱）雙軌
 
-1. **客戶端一次性付費**（婚禮 / 破冰 / 內訓 一場 NT$ 3K-30K）
-2. **admin 端月訂閱**（民宿 / 親子館 / 內訓 SaaS NT$ 1.5K-5K / 月）
-3. **季度委辦**（公部門 / 商圈 NT$ 80K-200K / 季）— 通常走電匯，不走線上
+**用戶決策變更**（2026-05-02）：
+- 一次性 + 訂閱皆改用 **Recur.tw**
+- 信件服務獨立用 **Resend**（取代既有 SMTP / nodemailer）
 
-需要選擇技術方案處理 1 + 2。
+理由：
+- Recur.tw 是台灣本土方案、抽成更低
+- 自動發票（電子發票）已內建、不需另接 ezpay / 智付通
+- 支援 LINE Pay / 信用卡 / ATM / 超商
+- 一次性 + 訂閱統一一個 vendor、不用兩套程式
+- 國際客戶（觀光客）佔比目前極低、Stripe 暫無必要
 
 ---
 
-## 選項評估
+## 最終決定（更新版）
 
-### 選項 A：Stripe Checkout（國際）
+### 主方案：Recur.tw 全包
 
-**優點**：
-- 全球最大、文件最完整
-- 一次性付費（Checkout）+ 訂閱（Subscriptions）都支援
-- Webhook 機制成熟
-- 可接信用卡 / Apple Pay / Google Pay
-- 開發者體驗最佳
+| 場景 | 工具 |
+|------|------|
+| 客戶端一次性付費 | Recur.tw（一次性訂單）|
+| admin 月訂閱 | Recur.tw（訂閱方案）|
+| 季度委辦 | 不入線上（電匯）|
 
-**缺點**：
-- 結算 USD（要承擔匯差）
-- 非台灣優化（不直接接 LINE Pay / 街口）
-- 抽成 3.4% + NT$ 10
-- 發票需另接（ezpay / 智付通）
+**信件**：Resend
+- 付費成功通知
+- 訂閱續訂提醒
+- 活動回顧寄送
+- 業務 onboarding 自動化
 
-### 選項 B：Recur.tw（台灣訂閱專精）
+### 暫緩：Stripe
 
-**優點**：
-- 台灣本土、台幣結算
-- 訂閱機制最完整（試用期 / 升降級 / 暫停）
-- 自動串接電子發票（已含）
-- LINE Pay / 信用卡 / 街口
-- 抽成 1-2%（依方案）
-
-**缺點**：
-- 一次性付費功能較弱
-- 文件零散
-- API 不如 Stripe 成熟
-- 台灣限定（無國際客戶）
-
-### 選項 C：LINE Pay 直接整合
-
-**優點**：
-- 台灣覆蓋率最高
-- 客戶最熟悉
-- 抽成低（< 2%）
-
-**缺點**：
-- 不支援訂閱（只有一次性）
-- 開發複雜（需 LINE Pay Merchant 帳號）
-- 不接國外卡
-
-### 選項 D：smartpay / ezpay（綜合金流）
-
-**優點**：
-- 台灣綜合金流（含信用卡 / ATM / 超商）
-- 自動發票
-- 台幣結算
-
-**缺點**：
-- 訂閱支援差（多半要 webhook 自己管理）
-- 抽成 2.5-3%
-- API 較舊（部分還是 SOAP）
-
-### 選項 E：完全自建（不用第三方）
-
-**優點**：
-- 抽成 0%
-- 完全控制
-
-**缺點**：
-- 需要金流牌照（台灣依《電子支付管理條例》）
-- PCI-DSS 合規
-- 開發成本高、不建議
+W10 D1 已完成 Stripe scaffold（`server/lib/stripe-checkout.ts`）。
+**保留為 international fallback** — 若有國際客戶（觀光客 / 海外婚禮）才啟用。
+不主動推廣、不顯示 Stripe 入口給客戶。
 
 ---
 
-## 決定
+## Recur.tw 整合計畫（W10 D2-D5）
 
-**雙軌：Stripe（一次性）+ Recur.tw（訂閱）**
+### W10 D2 — Recur.tw API 整合
 
-### 一次性付費 → Stripe Checkout
+新增：
+- `server/lib/recur-tw.ts` — REST API client（建立訂單 / 訂閱）
+- `POST /api/payments/recur/create-order` — 一次性訂單
+- `POST /api/payments/recur/create-subscription` — 訂閱
+- `POST /api/payments/recur/webhook` — 接收付費通知
 
-理由：
-- 文件最佳、開發快
-- 客戶選 Apple Pay / Google Pay 體驗好
-- USD 結算可接國際客戶（婚禮觀光客）
-- 抽成 3.4% 可接受（NT$ 10K 抽 NT$ 350）
+### W10 D3 — Pricing 頁切換到 Recur.tw
 
-### 訂閱（admin 月費）→ Recur.tw
+改動：
+- Pricing.tsx 預設用 Recur.tw（不顯示 Stripe）
+- 訂閱方案實際下單流程（admin 端）
 
-理由：
-- 台灣訂閱機制最成熟
-- 自動發票（不用另接）
-- LINE Pay 適合月費小額
-- 抽成低（NT$ 5K 月費抽 NT$ 50-100）
+### W10 D4 — 用量配額追蹤
 
-### 季度委辦（不走線上）
+- games 表加 `metering` jsonb（記錄 admin 月配額用量）
+- middleware 攔截 over-quota 的 admin instantiate
 
-理由：
-- 公部門 / 大型商圈習慣電匯 / 對公轉帳
-- 抽成 0%（節省成本）
-- 額度大、走銀行較穩
+### W10 D5 — Resend 信件 + 收尾
+
+- 付費後自動寄發票通知
+- 訂閱續訂前 3 天提醒
+- 活動結束後寄回顧
+
+---
+
+## 環境變數
+
+| 變數 | 說明 | 範例 |
+|------|------|------|
+| `RECUR_TW_API_KEY` | Recur.tw 商家 API key | (依文件) |
+| `RECUR_TW_WEBHOOK_SECRET` | webhook 簽章驗證 | (依文件) |
+| `RESEND_API_KEY` | Resend 信件 API | `re_xxxxx` |
+| `STRIPE_SECRET_KEY` | （fallback）國際客戶用 | `sk_test_*` |
 
 ---
 
 ## 理由（≤ 5 點）
 
-1. **不重複造輪子**：付費是高風險領域、用成熟平台、不自建
+1. **本土化優先**：台灣客戶 95%+、用台灣方案抽成低 + 自動發票合規
 
-2. **本土 + 國際雙軌**：客戶端可能含觀光客，admin 多為本土 — 對應不同支付習慣
+2. **單一 vendor 簡化**：一次性 + 訂閱用同一個 API、減少維護
 
-3. **訂閱選 Recur.tw**：自動發票最重要、台灣的法遵痛點 Stripe 解不了
+3. **Resend 信件分離**：付費系統 ≠ 信件系統、各自最佳工具
 
-4. **抽成可接受**：NT$ 5K 月費抽 NT$ 50-100（< 2%）、NT$ 10K 一次抽 NT$ 350（3.5%）— 都比客製外包成本低
+4. **Stripe 保留 fallback**：scaffold 已建好、必要時可啟用、不浪費已寫的程式碼
 
-5. **季度委辦不入線上**：節省抽成 + 對公轉帳客戶習慣
+5. **快速啟動**：跳過 Stripe webhook 簽章 / USD 結算 / 跨國發票等複雜性
 
 ---
 
 ## 影響
 
 ### 程式碼面
-- W10 D1：`server/routes/payments.ts` Stripe webhook 處理
-- W10 D3：訂閱狀態追蹤（middleware 攔截 unpaid admin）
-- W10 D4：用量配額（games 表加 `monthlyCreatedCount` 或另建 metering 表）
+- W10 D2：新建 `server/lib/recur-tw.ts` + `server/routes/payments.ts` 擴充 recur 路徑
+- W10 D5：新建 `server/lib/resend-mailer.ts` 整合
+- 環境變數：3 個新變數待生產設定
 
 ### 紅線
-- 付費失敗 → 不影響既有 admin 手動建場（hostUrl 仍可用）
-- 退款規則 → 活動結束後 7 天內可退 50%
-- 試用期 → admin 訂閱前 14 天免費試用
-- 發票 → 每筆付費自動寄電子發票
+- 付費失敗 → 不影響既有 admin 手動建場
+- Stripe scaffold 不刪除、保留為國際 fallback
+- 退款 → 走 Recur.tw 後台處理（不自動）
 
 ### 已知限制
-- Stripe 結算需要 5-7 天到台幣帳戶（用第三方匯款）
-- Recur.tw 對接需要商業登記（個人開發者要走中介）
-- 退款處理需手動審核（不自動）
+- Recur.tw 文件零散、API 細節要邊試邊摸
+- 試用期 / 升降級策略需在 Recur.tw 後台設定（非 API 控制）
+- 不支援 Apple Pay / Google Pay（限信用卡 + LINE Pay + ATM）
 
 ---
 
 ## 後續可能變動
 
-- 若 Stripe 客戶實際國際比例低 → 改為純 Recur.tw（一次性也接 Recur）
-- 若訂閱客戶 < 5 個 → 暫緩 Recur.tw 整合、純 Stripe 處理
-- 若觀光客戶超過 30% → 加 Apple Pay In-App Purchase（iOS App Store）
-
-每月評估、必要時補 ADR-0007。
+- 若 Recur.tw API 限制太多 → 改自建（接 ezpay / 智付通直接）
+- 若國際客戶比例上升至 20%+ → 啟用 Stripe scaffold
+- 若 Resend 用量大 → 改自架 SMTP（成本考量）
 
 ---
 
 ## 相關文件
 
-- [Phase 3 W10 路徑書](../changes/2026-05-02-phase3-w9-complete.md#phase-3-w10-規劃付費機制)
-- [Phase 3 主規劃](../changes/2026-05-02-phase3-plan.md)
-- [ADR-0005 Phase 3 方向](0005-phase3-direction.md)
+- [Recur.tw 文件](https://docs.recur.tw/)
+- [Resend 文件](https://resend.com/docs)
+- [Phase 3 W9 收尾（W10 規劃起點）](../changes/2026-05-02-phase3-w9-complete.md)
+- [Phase 3 規劃](../changes/2026-05-02-phase3-plan.md)
+- [ADR-0007 Resend 信件](0007-resend-email.md)
