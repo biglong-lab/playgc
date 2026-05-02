@@ -269,6 +269,18 @@ async function runSmokeTest() {
     return { ok: true };
   });
 
+  // 5d. OpenAPI spec + Docs 頁（W11 D4）
+  console.log(`${COLOR.bold}── Section 5d: API 文件（W11 D4）──${COLOR.reset}`);
+  await check("GET /api/v1/openapi.json（公開）", 200, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/v1/openapi.json`);
+    if (res.status !== 200) return { ok: false, error: `expected 200, got ${res.status}` };
+    const data = await res.json();
+    if (data.openapi !== "3.1.0") return { ok: false, error: "openapi version != 3.1.0" };
+    if (!data.paths?.["/instances"]) return { ok: false, error: "missing /instances path" };
+    return { ok: true };
+  });
+  await check("GET /api-docs", 200, () => checkStatus(`${BASE_URL}/api-docs`, 200));
+
   // 5. host/play 路徑
   console.log(`${COLOR.bold}── Section 5: host / play SPA 路徑 ──${COLOR.reset}`);
   await check("GET /host/smoke-test", 200, () =>

@@ -69,6 +69,30 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📖 Phase 3 W11 D4 ✅（OpenAPI 規格 + 公開 API 文件頁）
+**主題**：代理商正式參考文件
+**範圍**：4 個檔案
+
+關鍵變動：
+- `GET /api/v1/openapi.json` 公開 OpenAPI 3.1 規格 endpoint
+- `client/src/pages/ApiDocs.tsx` 公開頁 `/api-docs`
+  - Hero + 認證 + 速率 + Idempotency + Endpoints + Error 格式 + CTA
+  - 每個 curl 範例一鍵複製
+  - 右上「OpenAPI JSON」直接下載 spec
+- App.tsx /api-docs 路由
+- smoke test 加 5d (36 → 38): openapi.json + /api-docs 公開頁
+
+**OpenAPI spec 含**:
+- 4 endpoints: GET /health, GET /scenarios, GET /scenarios/{id}, POST /instances
+- Schemas: Error / ScenarioListItem / Instance / InstanceComponent
+- Security: ApiKeyAuth (Bearer)
+
+**Smoke test 38/38 全綠**
+
+**細節** → [changes/2026-05-03-phase3-w11-d4-api-docs.md](changes/2026-05-03-phase3-w11-d4-api-docs.md)
+
+⏭ 下一步：W11 D5 — 收尾 + 代理商 onboarding runbook
+
 ### 🤝 Phase 3 W11 D3 ✅（POST /api/v1/instances 代理商一鍵建場）
 **主題**：代理商核心 API + API key → fieldId mapping
 **範圍**：3 個檔案

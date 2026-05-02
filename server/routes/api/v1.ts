@@ -64,6 +64,16 @@ export function registerPublicApiV1Routes(app: Express) {
   });
 
   /**
+   * GET /api/v1/openapi.json
+   * 公開 OpenAPI 3.1 規格（W11 D4）
+   * 代理商可匯入 Postman / Insomnia / Swagger UI
+   */
+  app.get("/api/v1/openapi.json", (req, res) => {
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+    res.json(buildOpenApiSpec(baseUrl));
+  });
+
+  /**
    * GET /api/v1/scenarios
    * 列出所有情境（需 API key）
    *
@@ -248,6 +258,239 @@ export function registerPublicApiV1Routes(app: Express) {
       }
     },
   );
+}
+
+// ════════════════════════════════════════════════════════════════════
+// OpenAPI 3.1 規格（W11 D4）
+// ════════════════════════════════════════════════════════════════════
+
+function buildOpenApiSpec(baseUrl: string): Record<string, unknown> {
+  return {
+    openapi: "3.1.0",
+    info: {
+      title: "CHITO Public API",
+      version: "v1",
+      description:
+        "CHITO 數位遊戲平台對外 API — 讓代理商整合情境模板、自動建場\n\n" +
+        "認證：Authorization: Bearer ck_test_xxx 或 ck_live_xxx\n" +
+        "速率限制：每 API key 每分鐘 60 次請求\n" +
+        "Idempotency：POST 端點可帶 Idempotency-Key header（24 小時內重發回相同結果）",
+      contact: {
+        name: "CHITO 平台",
+        url: "https://game.homi.cc",
+      },
+    },
+    servers: [
+      { url: `${baseUrl}/api/v1`, description: "Public API v1" },
+    ],
+    security: [{ ApiKeyAuth: [] }],
+    components: {
+      securitySchemes: {
+        ApiKeyAuth: {
+          type: "http",
+          scheme: "bearer",
+          description: "Bearer token，格式 ck_test_* 或 ck_live_*",
+        },
+      },
+      schemas: {
+        Error: {
+          type: "object",
+          properties: {
+            error: {
+              type: "object",
+              properties: {
+                code: { type: "string", example: "missing_api_key" },
+                message: { type: "string" },
+                documentation_url: { type: "string", nullable: true },
+              },
+              required: ["code", "message"],
+            },
+          },
+        },
+        ScenarioListItem: {
+          type: "object",
+          properties: {
+            id: { type: "string", example: "wedding" },
+            name: { type: "string", example: "婚禮派對情境包" },
+            tagline: { type: "string" },
+            category: { type: "string", enum: ["social", "event", "public", "corporate", "venue"] },
+            estimatedPlayers: { type: "string" },
+            estimatedDuration: { type: "string" },
+            status: { type: "string", enum: ["live", "preview", "planned"] },
+            componentCount: { type: "integer" },
+            axes: { type: "array", items: { type: "string" } },
+            valueProposition: { type: "string" },
+          },
+        },
+        Instance: {
+          type: "object",
+          properties: {
+            object: { type: "string", const: "instance" },
+            scenario: {
+              type: "object",
+              properties: { id: { type: "string" }, name: { type: "string" } },
+            },
+            displayName: { type: "string" },
+            customerEmail: { type: "string", nullable: true },
+            expiresAt: { type: "string", format: "date-time" },
+            totalCreated: { type: "integer" },
+            breakdown: {
+              type: "object",
+              properties: {
+                host: { type: "integer" },
+                multi: { type: "integer" },
+                other: { type: "integer" },
+              },
+            },
+            components: { type: "array", items: { $ref: "#/components/schemas/InstanceComponent" } },
+          },
+        },
+        InstanceComponent: {
+          type: "object",
+          properties: {
+            axis: { type: "string", enum: ["host", "multi", "solo", "shared"] },
+            gameId: { type: "string" },
+            pageType: { type: "string" },
+            label: { type: "string" },
+            hostUrl: { type: "string", nullable: true, description: "host 元件才有" },
+            playUrl: { type: "string", nullable: true, description: "host 元件才有" },
+            gameUrl: { type: "string", nullable: true, description: "multi/solo 元件才有" },
+          },
+        },
+      },
+    },
+    paths: {
+      "/health": {
+        get: {
+          summary: "API health check",
+          security: [],
+          tags: ["Meta"],
+          responses: {
+            "200": {
+              description: "OK",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      status: { type: "string" },
+                      version: { type: "string" },
+                      timestamp: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/scenarios": {
+        get: {
+          summary: "列出所有情境模板",
+          tags: ["Scenarios"],
+          parameters: [
+            {
+              name: "status",
+              in: "query",
+              schema: { type: "string", enum: ["live", "preview", "planned"] },
+            },
+            {
+              name: "category",
+              in: "query",
+              schema: { type: "string", enum: ["social", "event", "public", "corporate", "venue"] },
+            },
+          ],
+          responses: {
+            "200": {
+              description: "情境列表",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      object: { type: "string", const: "list" },
+                      total: { type: "integer" },
+                      data: {
+                        type: "array",
+                        items: { $ref: "#/components/schemas/ScenarioListItem" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "401": {
+              description: "Missing or invalid API key",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            },
+            "429": {
+              description: "Rate limit exceeded",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            },
+          },
+        },
+      },
+      "/scenarios/{id}": {
+        get: {
+          summary: "單一情境詳情",
+          tags: ["Scenarios"],
+          parameters: [
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": { description: "情境詳情" },
+            "404": {
+              description: "Not found",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            },
+          },
+        },
+      },
+      "/instances": {
+        post: {
+          summary: "建立情境實例（一鍵建場）",
+          tags: ["Instances"],
+          parameters: [
+            {
+              name: "Idempotency-Key",
+              in: "header",
+              schema: { type: "string" },
+              description: "24 小時內重發回相同結果",
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["scenarioId"],
+                  properties: {
+                    scenarioId: { type: "string", example: "wedding" },
+                    displayName: { type: "string", example: "Hung & Anita 5/15 婚禮" },
+                    customerEmail: { type: "string", format: "email" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "實例建立成功",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Instance" } } },
+            },
+            "400": {
+              description: "Bad request（缺欄位 / API key 未綁定場域）",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Error" } } },
+            },
+            "401": { description: "Missing or invalid API key" },
+            "404": { description: "Scenario not found" },
+            "429": { description: "Rate limit exceeded" },
+          },
+        },
+      },
+    },
+  };
 }
 
 // ════════════════════════════════════════════════════════════════════
