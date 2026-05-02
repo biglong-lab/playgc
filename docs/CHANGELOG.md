@@ -69,6 +69,23 @@
 - 15 個 demo 入口（10 host × 雙版型 + 5 multi）
 - 客戶不需登入、不需建 session 即可看到全部元件玩法
 
+### 📒 Phase 3 W9 D3 ✅（客戶 onboarding 文件包）
+**主題**：業務帶看 → 收費 → 建場 → 現場一條龍工具就緒
+**範圍**：3 個 runbook 新文件
+
+關鍵變動：
+- `runbooks/customer-onboarding.md` 完整 SOP（6 步驟、30-60 分鐘）
+- `runbooks/customer-faq.md` 5 大類 25+ 常見問題答案模板
+- `runbooks/event-day-cheatsheet.md` A4 列印小抄（業務帶現場用）
+
+**文件協同**：onboarding（流程）+ FAQ（知識）+ cheatsheet（emergency）
+
+業務工具完整化：找客戶不用再想動線、客戶問什麼可直接答、活動現場有應急小抄
+
+**細節** → [changes/2026-05-02-phase3-w9-d3-customer-runbooks.md](changes/2026-05-02-phase3-w9-d3-customer-runbooks.md)
+
+⏭ 下一步：W9 D4 — 依真實客戶反饋微調 AI prompt（業務工作）
+
 ### ✨ Phase 3 W9 D2 ✅（AI 預覽 UI + 套用建場）
 **主題**：admin 完整工作流（輸入 context → AI 預覽 → 套用建場）
 **範圍**：2 個檔案
