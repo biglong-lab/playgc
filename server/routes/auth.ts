@@ -104,18 +104,42 @@ export function registerAuthRoutes(app: Express) {
       let adminAccount: Awaited<ReturnType<typeof db.query.adminAccounts.findFirst>>;
 
       if (!fieldCode || !fieldCode.trim()) {
-        // 無場域碼：搜尋 super_admin 帳號
-        adminAccount = await db.query.adminAccounts.findFirst({
-          where: eq(adminAccounts.firebaseUserId, firebaseUserId),
-        });
+        // 無場域碼：直接 join 篩「firebaseUserId + super_admin role + active」優先匹配
+        // Bug fix（2026-05-03）：之前用 findFirst by firebaseUserId、若同 user 有多個 admin_accounts
+        // （例如同時是某場域 super_admin + 其他場域 field_director），findFirst 隨機抓到
+        // 非 super_admin 那筆 → 走 systemRole !== "super_admin" 分支 → 拒絕「非超級管理員請輸入場域編號」
+        const superAdminMatch = await db
+          .select({ admin: adminAccounts })
+          .from(adminAccounts)
+          .innerJoin(roles, eq(roles.id, adminAccounts.roleId))
+          .where(
+            and(
+              eq(adminAccounts.firebaseUserId, firebaseUserId),
+              eq(adminAccounts.status, "active"),
+              eq(roles.systemRole, "super_admin"),
+            ),
+          )
+          .limit(1);
 
-        // 若找不到但有 email 匹配，自動綁定或重新綁定（Firebase 已驗證 email）
+        adminAccount = superAdminMatch[0]?.admin;
+
+        // 若 firebaseUserId 找不到 super_admin 但有 email、用 email 補綁定（同樣篩 super_admin）
         if (!adminAccount && firebaseEmail) {
-          const emailMatch = await db.query.adminAccounts.findFirst({
-            where: eq(adminAccounts.email, firebaseEmail),
-          });
-          if (emailMatch && emailMatch.status === "active") {
-            // 即使已有 firebase_user_id 也允許更新（支援多裝置/多登入方式切換）
+          const emailSuperAdmin = await db
+            .select({ admin: adminAccounts })
+            .from(adminAccounts)
+            .innerJoin(roles, eq(roles.id, adminAccounts.roleId))
+            .where(
+              and(
+                eq(adminAccounts.email, firebaseEmail),
+                eq(adminAccounts.status, "active"),
+                eq(roles.systemRole, "super_admin"),
+              ),
+            )
+            .limit(1);
+
+          const emailMatch = emailSuperAdmin[0]?.admin;
+          if (emailMatch) {
             await db.update(adminAccounts)
               .set({ firebaseUserId, displayName: firebaseDisplayName || emailMatch.displayName })
               .where(eq(adminAccounts.id, emailMatch.id));
@@ -124,18 +148,10 @@ export function registerAuthRoutes(app: Express) {
         }
 
         if (!adminAccount) {
-          return res.status(404).json({ message: "找不到管理員帳號，請輸入場域編號" });
+          return res.status(404).json({ message: "找不到超級管理員帳號，請輸入場域編號或聯絡平台" });
         }
 
-        // 查角色確認 super_admin
-        const accountRole = adminAccount.roleId
-          ? await db.query.roles.findFirst({ where: eq(roles.id, adminAccount.roleId) })
-          : null;
-
-        if (accountRole?.systemRole !== "super_admin") {
-          return res.status(400).json({ message: "非超級管理員請輸入場域編號" });
-        }
-
+        // adminAccount 已透過 innerJoin role 確認是 super_admin、無需再次驗證
         field = await db.query.fields.findFirst({
           where: eq(fields.id, adminAccount.fieldId),
         }) ?? undefined;

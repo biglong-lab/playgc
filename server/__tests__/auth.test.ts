@@ -8,6 +8,21 @@ const mockDbFindMany = vi.fn();
 const mockDbInsertValues = vi.fn();
 const mockDbUpdateSet = vi.fn();
 
+// 通用 select chain mock：可被覆寫 limit 結果（select().from().innerJoin().where().limit()）
+const { mockSelectLimit, mockSelectChain } = vi.hoisted(() => {
+  const mockSelectLimit = vi.fn().mockResolvedValue([]);
+  return {
+    mockSelectLimit,
+    mockSelectChain: {
+      from: vi.fn().mockReturnThis(),
+      innerJoin: vi.fn().mockReturnThis(),
+      leftJoin: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      limit: mockSelectLimit,
+    },
+  };
+});
+
 vi.mock("../db", () => ({
   db: {
     query: {
@@ -25,6 +40,7 @@ vi.mock("../db", () => ({
         where: mockDbUpdateSet,
       })),
     })),
+    select: vi.fn(() => mockSelectChain),
   },
 }));
 
@@ -180,13 +196,14 @@ describe("認證路由 (auth)", () => {
       expect(res.body.message).toBe("無效的登入令牌");
     });
 
-    it("缺少 fieldCode 且無管理員帳號時回傳 404", async () => {
+    it("缺少 fieldCode 且無 super_admin 帳號時回傳 404", async () => {
       const app = createApp();
       mockVerifyFirebaseToken.mockResolvedValue({
         uid: "firebase-user-1",
         email: "admin@test.com",
       });
-      mockDb.query.adminAccounts.findFirst.mockResolvedValue(null);
+      // select().from().innerJoin().where().limit() 都返回空陣列（找不到 super_admin）
+      mockSelectLimit.mockResolvedValue([]);
 
       const res = await request(app)
         .post("/api/admin/firebase-login")
@@ -194,24 +211,31 @@ describe("認證路由 (auth)", () => {
         .send({});
 
       expect(res.status).toBe(404);
-      expect(res.body.message).toBe("找不到管理員帳號，請輸入場域編號");
+      expect(res.body.message).toBe("找不到超級管理員帳號，請輸入場域編號或聯絡平台");
     });
 
-    it("缺少 fieldCode 且非 super_admin 時回傳 400", async () => {
+    it("缺少 fieldCode 但有 super_admin 帳號 → 不再回 404/400 (status 不會卡關)", async () => {
       const app = createApp();
       mockVerifyFirebaseToken.mockResolvedValue({
         uid: "firebase-user-1",
         email: "admin@test.com",
       });
-      mockDb.query.adminAccounts.findFirst.mockResolvedValue({
-        id: "admin-1",
-        roleId: "role-1",
-        fieldId: "field-1",
-        status: "active",
-      });
-      mockDb.query.roles.findFirst.mockResolvedValue({
-        id: "role-1",
-        systemRole: "field_admin",
+      // select 篩 super_admin 找到一筆（已透過 innerJoin role 確保是 super_admin）
+      mockSelectLimit.mockResolvedValue([
+        {
+          admin: {
+            id: "admin-1",
+            roleId: "role-1",
+            fieldId: "field-1",
+            status: "active",
+            email: "admin@test.com",
+          },
+        },
+      ]);
+      mockDb.query.fields.findFirst.mockResolvedValue({
+        id: "field-1",
+        code: "TEST",
+        name: "測試場域",
       });
 
       const res = await request(app)
@@ -219,8 +243,47 @@ describe("認證路由 (auth)", () => {
         .set({ Authorization: "Bearer firebase-token" })
         .send({});
 
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("非超級管理員請輸入場域編號");
+      // 關鍵驗證：不再走 systemRole 檢查（之前是 400「非超級管理員請輸入場域編號」）
+      expect(res.status).not.toBe(400);
+      expect(res.status).not.toBe(404);
+      expect(mockSelectLimit).toHaveBeenCalled();
+    });
+
+    it("缺少 fieldCode 且 firebaseUser 有多個 admin_accounts → join 篩出 super_admin", async () => {
+      const app = createApp();
+      mockVerifyFirebaseToken.mockResolvedValue({
+        uid: "firebase-user-1",
+        email: "twfam4@test.com",
+      });
+      // 模擬：DB 有 4 個 admin_accounts、3 個 field_director + 1 個 super_admin
+      // join 篩 super_admin → 直接拿到 super_admin 那筆（不會被其他 field_director 干擾）
+      mockSelectLimit.mockResolvedValue([
+        {
+          admin: {
+            id: "admin-super",
+            roleId: "role-super",
+            fieldId: "field-1",
+            status: "active",
+            email: "twfam4@test.com",
+          },
+        },
+      ]);
+      mockDb.query.fields.findFirst.mockResolvedValue({
+        id: "field-1",
+        code: "JIACHUN",
+        name: "賈村",
+      });
+
+      const res = await request(app)
+        .post("/api/admin/firebase-login")
+        .set({ Authorization: "Bearer firebase-token" })
+        .send({});
+
+      // 關鍵驗證：不會回 400 「非超級管理員請輸入場域編號」（之前 findFirst 隨機抓 field_director 會回這個）
+      expect(res.status).not.toBe(400);
+      expect(res.status).not.toBe(404);
+      // 驗證 select join chain 確實被呼叫
+      expect(mockSelectLimit).toHaveBeenCalled();
     });
 
     it("場域不存在時回傳 404", async () => {
