@@ -631,6 +631,92 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "園遊會升級版 — 把分散攤位串起來、提升賓客整場參與率。包套 NT$ 25,000-50,000 / 場。",
     status: "live",
   },
+  {
+    id: "escape-room",
+    name: "密室逃脫情境包",
+    tagline: "協作解鎖 + 任務鏈 + 線索拼密碼 + 隊伍搶答",
+    description:
+      "為密室主題場域打造的多元件協作體驗。隊伍進入後需共同解鎖、解謎、找線索、搶答、最終逃出。\n適合主題密室、實境解謎遊戲、企業 team building、學校歷史尋寶。",
+    useCases: ["主題密室遊戲", "實境解謎", "企業 team building", "校園尋寶活動", "夏令營解謎"],
+    category: "venue",
+    icon: "Lock",
+    gradient: "from-purple-500/30 to-indigo-500/30",
+    estimatedPlayers: "4-30 人 / 場",
+    estimatedDuration: "60-120 分鐘",
+    components: [
+      {
+        pageType: "lock_coop",
+        label: "協作解鎖",
+        role: "每人持密碼片段、合作開鎖",
+        axis: "multi",
+      },
+      {
+        pageType: "treasure_hunt",
+        label: "線索拼密碼",
+        role: "解謎找出最終答案",
+        axis: "multi",
+        demoMode: "treasure",
+      },
+      {
+        pageType: "quest_chain",
+        label: "任務鏈",
+        role: "故事 + 解謎多階段",
+        axis: "multi",
+      },
+      {
+        pageType: "choice_verify_race",
+        label: "隊伍搶答",
+        role: "對戰場景的緊張感",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "密室主題店面長期訂閱 + 一次性活動雙軌。月費 NT$ 1,500-3,500 + 一次性 NT$ 8K-25K。",
+    status: "live",
+  },
+  {
+    id: "team-building",
+    name: "企業團建活動情境包",
+    tagline: "角色分派 + 接力任務 + 全場應援 + 即時排行",
+    description:
+      "私部門員工團建升級版。劇本式角色扮演 + 接力強制互動 + emoji 池 + 排行榜、HR 一人就能搞定整天活動。\n適合年度員工旅遊、季度部門團建、新進主管 workshop。",
+    useCases: ["年度員工旅遊", "季度部門團建", "新進主管 workshop", "Off-site 共識營", "尾牙活動"],
+    category: "corporate",
+    icon: "Users2",
+    gradient: "from-blue-500/30 to-cyan-500/30",
+    estimatedPlayers: "20-80 人 / 場",
+    estimatedDuration: "半天 - 1 天",
+    components: [
+      {
+        pageType: "role_assign",
+        label: "角色分派",
+        role: "劇本式分組（含 DISC / 能力互補）",
+        axis: "multi",
+        demoMode: "role-assign",
+      },
+      {
+        pageType: "relay_mission",
+        label: "接力任務",
+        role: "強制每人完成、團隊互動深度",
+        axis: "multi",
+      },
+      {
+        pageType: "host_emoji_react",
+        label: "全場應援",
+        role: "高潮時刻 emoji 雨",
+        axis: "host",
+        demoMode: "emoji-host",
+      },
+      {
+        pageType: "host_live_leaderboard",
+        label: "即時排行",
+        role: "組別積分排行榜",
+        axis: "host",
+        demoMode: "leaderboard-host",
+      },
+    ],
+    valueProposition: "私部門年度團建活動主推。HR 不用準備、一鍵建場。NT$ 15,000-40,000 / 場。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

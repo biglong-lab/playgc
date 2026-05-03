@@ -1,4 +1,4 @@
-# 🎬 情境模板 — 14 個（5 大市場全覆蓋）
+# 🎬 情境模板 — 16 個（5 大市場全覆蓋）
 
 > 預設好的元件組合包、客戶選一個就能 30 分鐘現場可玩
 > 設計依據：[Phase 2 W6 一鍵建場 ADR](../changes/2026-05-02-phase2-complete.md)
@@ -318,7 +318,49 @@ A4 列印 QR → 婚禮現場貼桌卡 → 賓客掃 + 互動
 
 ---
 
-## 📊 14 情境一覽表
+### 15. escape-room — 密室逃脫情境包 ✅ live
+
+| 項目 | 內容 |
+|------|------|
+| **Tagline** | 協作解鎖 + 任務鏈 + 線索拼密碼 + 隊伍搶答 |
+| **適用** | 主題密室、實境解謎、企業 team building、校園尋寶、夏令營解謎 |
+| **人數** | 4-30 人 / 場 |
+| **時長** | 60-120 分鐘 |
+| **收費** | 月費 NT$ 1.5K-3.5K + 一次性 NT$ 8K-25K |
+| **狀態** | ✅ live |
+
+**含元件**（4 個 multi）：
+- LockCoop（協作解鎖）— 每人持密碼片段、合作開鎖
+- TreasureHunt（線索拼密碼）— 解謎找最終答案
+- QuestChain（任務鏈）— 故事 + 解謎多階段
+- ChoiceVerifyRace（隊伍搶答）— 對戰場景緊張感
+
+**商業價值**：密室主題店面長期訂閱 + 一次性活動雙軌
+
+---
+
+### 16. team-building — 企業團建活動情境包 ✅ live
+
+| 項目 | 內容 |
+|------|------|
+| **Tagline** | 角色分派 + 接力任務 + 全場應援 + 即時排行 |
+| **適用** | 年度員工旅遊、季度部門團建、新進主管 workshop、Off-site 共識營、尾牙活動 |
+| **人數** | 20-80 人 / 場 |
+| **時長** | 半天 - 1 天 |
+| **收費** | NT$ 15,000-40,000 / 場 |
+| **狀態** | ✅ live |
+
+**含元件**（4 個、混合 multi + host）：
+- RoleAssign（角色分派、multi）— 劇本式分組（DISC / 能力互補）
+- RelayMission（接力任務、multi）— 強制每人完成、團隊互動深度
+- EmojiReact（全場應援、host）— 高潮時刻 emoji 雨
+- LiveLeaderboard（即時排行、host）— 組別積分排行榜
+
+**商業價值**：私部門年度團建主推、HR 不用準備、一鍵建場
+
+---
+
+## 📊 16 情境一覽表
 
 | ID | 名稱 | 類別 | 狀態 | 收費 | 主元件 |
 |----|------|------|------|------|--------|
@@ -336,6 +378,8 @@ A4 列印 QR → 婚禮現場貼桌卡 → 賓客掃 + 互動
 | venue-storyline | 場域故事 | 🏠 venue | ✅ | 800-2.5K/月 | Dialogue + Treasure + Polaroid |
 | **wedding-deluxe** ✨ | **婚禮 ✨ 升級版** | 💝 social | ✅ | 12K-20K | Blessing + Polaroid + Bingo + Emoji |
 | **carnival-bingo** ✨ | **園遊會 Bingo 嘉年華** | 🎉 event | ✅ | 25K-50K | Bingo + Leaderboard + Scoreboard + Wave |
+| **escape-room** ✨ | **密室逃脫** | 🏠 venue | ✅ | 月 1.5-3.5K + 8K-25K/場 | LockCoop + Treasure + QuestChain + ChoiceVerifyRace |
+| **team-building** ✨ | **企業團建** | 💼 corporate | ✅ | 15K-40K | RoleAssign + RelayMission + Emoji + Leaderboard |
 
 ✅ = live、🟡 = preview（待真實活動驗證）
 
