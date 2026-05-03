@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 14:35 [Claude]（**🎯 累計 milestone — 156 檔 / 2190 tests / 5 endpoints 200 / CPU 0% / Memory 21% 完全穩定**）
+- **上次更新**：2026-05-03 14:50 [Claude]（**📚 文件化收尾 — CHANGELOG 2026-05-03 entry + security-and-ux-fixes changes 補完**）
 
 ---
 
@@ -54,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 14:35 | Claude | **🎯 累計 milestone — 完整 test:run 156/2190 全綠**、生產 CPU 0% / Memory 21% 完全穩定 |
+| 14:50 | Claude | **📚 文件化收尾**（CHANGELOG 2026-05-03 entry + security-and-ux-fixes changes 162 行、commit fdef41ac）|
+| 14:35 | Claude | 🎯 累計 milestone — 完整 test:run 156/2190 全綠、生產 CPU 0% / Memory 21% 完全穩定 |
 | 14:25 | Claude | 補強另外 2 個 webhook 簽章 timing-safe（recur-client throw → 防 + aihomi === → timingSafeEqual、commit cd766036）+ 部署 |
 | 14:10 | Claude | 3 個使用者新問題全修 + 部署（df2c5855 對講機 UX）|
 | 14:00 | Claude | **P0 super_admin 不需區域代號進入後台**（findFirst 隨機抓非 super_admin、改 join 篩、commit 04b68d99）+ 部署 |
