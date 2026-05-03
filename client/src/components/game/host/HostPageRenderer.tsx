@@ -23,6 +23,7 @@ const LotteryWheelPage = lazy(() => import("./LotteryWheelPage")); // W18 D1
 const ProgressQuestPage = lazy(() => import("./ProgressQuestPage")); // W18 D2
 const WordCloudPage = lazy(() => import("./WordCloudPage")); // W18 D3
 const TeamBattleScorePage = lazy(() => import("./TeamBattleScorePage")); // W19 紅藍對抗
+const BingoBoardPage = lazy(() => import("./BingoBoardPage")); // W22 5×5 賓果板（5 大市場通用）
 
 interface HostPageRendererProps {
   page: Page;
@@ -71,6 +72,8 @@ export default function HostPageRenderer({ page, myUserName }: HostPageRendererP
             return <WordCloudPage page={page} />;
           case "host_team_battle_score":
             return <TeamBattleScorePage page={page} />;
+          case "host_bingo_board":
+            return <BingoBoardPage page={page} />;
           default:
             return (
               <div className="text-center text-zinc-400 p-8">

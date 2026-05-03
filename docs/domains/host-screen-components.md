@@ -1,7 +1,7 @@
 # Host Screen Components — 大螢幕互動元件總覽
 
 > **更新日期**：2026-05-03
-> **元件總數**：14 個（W19 + TeamBattleScore）
+> **元件總數**：15 個（W22 + BingoBoard）
 > **設計依據**：[ADR-0004 host-screen-axis](../decisions/0004-host-screen-axis.md) + [ADR-0013 W18 元件擴充](../decisions/0013-w18-component-expansion.md)
 
 ---
@@ -41,6 +41,7 @@
 | 12 | ProgressQuest | `host_progress_quest` | 完成回報 | 任務進度、團隊里程碑 |
 | 13 | WordCloud | `host_word_cloud` | 提交詞彙 | 關鍵字蒐集、發想互動 |
 | 14 | **TeamBattleScore** | `host_team_battle_score` | 加分（雙隊） | **紅藍對抗、團體競賽、男女組互動** |
+| 15 | **BingoBoard** | `host_bingo_board` | 任務完成 + 連線判定 | **園遊會、商圈集章、員工旅遊、Bingo 派對**（5 大市場通用） |
 
 ---
 
