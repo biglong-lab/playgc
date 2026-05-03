@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 13:45 [Claude]（**Codex 第 9 輪結案性質判讀 — 所有真 bug 修完、進入下一階段**）
+- **上次更新**：2026-05-03 13:50 [Claude]（**🚀 部署上線完成 — Codex 9 輪審查 30+ commits 全上生產**）
 
 ---
 
@@ -22,6 +22,8 @@
 | Smoke test | 51/51 ✅ | 13:15 [Claude] |
 | TypeScript | 零錯誤 ✅ | 13:15 [Claude] |
 | **完整 test:run** | **155 檔 / 2179 tests 全綠** ✅ | 13:15 [Claude] |
+| **🚀 生產端部署** | **commit 355ea092 已上線** | 13:50 [Claude] |
+| 生產 e2e 5 endpoints | scenarios + openapi + line + cron + 主頁全 200 ✅ | 13:50 [Claude] |
 | WebSocket 連線穩定 | useHostScreenSync hook 不重連 + HostPlay/HostScreen 不再雙連線 ✅ | 12:50 [Claude] |
 | Chat 安全 | 單一資料流（REST only）+ 不繞 auth/limit ✅ | 12:35 [Claude] |
 | Team realtime | 5 個事件房間/名稱統一 broadcastToTeam ✅ | 13:05 [Claude] |
@@ -50,7 +52,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 13:45 | Claude | **Codex 第 9 輪結案性質判讀**（自我修正先前誤判、確認所有真 bug 已修、建議停止無限掃；累計 9 輪 Codex 審查結束）|
+| 13:50 | Claude | **🚀 部署上線完成**（commit 355ea092 → 生產 docker rebuild、5 端點 e2e 全 200、12 情境 live、無 regression）|
+| 13:45 | Claude | Codex 第 9 輪結案性質判讀（自我修正先前誤判、確認所有真 bug 已修、建議停止無限掃；累計 9 輪 Codex 審查結束）|
 | 13:35 | Claude | P1 補完 race_answered realtime 鏈路（server case "race_answer" + sendRaceAnswer + ChoiceVerifyRacePage 接通、commit 120fda71）|
 | 13:25 | Claude | ADR-0014 + changes 文件化 Codex 7 輪審查（5 個 dead broadcasts 保留給未來、提供 W19+ realtime 統一規範、commit e1844a2f）|
 | 13:15 | Claude | 完整 test:run 155 檔 / 2179 tests 全綠 + Codex 第 6 輪盤點對照表（11 realtime 功能全對齊、修法無漏網）|
