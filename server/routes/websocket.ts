@@ -4,7 +4,7 @@ import { storage } from "../storage";
 import { mqttService } from "../mqttService";
 import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
-import { gameMatches, teamMembers } from "@shared/schema";
+import { gameMatches, matchParticipants, teamMembers } from "@shared/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
 
@@ -347,18 +347,11 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
-          case "team_score":
-            if (ws.teamId) {
-              broadcastToTeam(ws.teamId, {
-                type: "team_score_update",
-                teamId: ws.teamId,
-                score: message.score,
-                change: message.change,
-                reason: message.reason,
-                timestamp: new Date().toISOString(),
-              });
-            }
-            break;
+          // case "team_score" 已移除（2026-05-03 P1 修）：
+          //   依 Codex 第 2 輪資安審查：WS 端無 ownership 驗證、可被偽造分數廣播
+          //   且 grep client 確認從未送此事件、是 dead WS path
+          //   分數變更請走 REST POST /api/teams/:teamId/score（已有 isAuthenticated + 成員驗證 + hotPathLimiter + broadcastToTeam team_score_update）
+          //   單一資料流原則（同 chat case 移除模式）
 
           case "team_ready":
             if (ws.teamId) {
@@ -627,24 +620,55 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           }
 
           // 前端倒數完成 → 切換對戰為 playing
+          // 🔒 安全（2026-05-03 修）：違反 ADR-0015「禁 WS 路徑做 DB write」紅線
+          //   之前任何匿名 ws 連線送 match_join + match_countdown_complete 即可
+          //   觸發 update(gameMatches).set({ status: "playing" }) → 任意提早比賽
+          //   修法：強制 ws.authenticatedUserId + 驗 match 參與者
           case "match_countdown_complete": {
             const countdownMatchId = ws.matchId;
-            if (countdownMatchId) {
-              const [match] = await db.select()
-                .from(gameMatches)
+            if (!countdownMatchId) break;
+
+            // 必須認證
+            if (!ws.authenticatedUserId) {
+              ws.send(JSON.stringify({
+                type: "error",
+                message: "倒數完成需要登入身份",
+              }));
+              break;
+            }
+
+            // 驗證是 match 參與者（防非參與者觸發倒數）
+            const [participant] = await db
+              .select({ id: matchParticipants.id })
+              .from(matchParticipants)
+              .where(and(
+                eq(matchParticipants.matchId, countdownMatchId),
+                eq(matchParticipants.userId, ws.authenticatedUserId),
+              ))
+              .limit(1);
+
+            if (!participant) {
+              ws.send(JSON.stringify({
+                type: "error",
+                message: "非比賽參與者",
+              }));
+              break;
+            }
+
+            const [match] = await db.select()
+              .from(gameMatches)
+              .where(eq(gameMatches.id, countdownMatchId));
+
+            // 僅在 countdown 狀態才執行（防重複）
+            if (match && match.status === "countdown") {
+              await db.update(gameMatches)
+                .set({ status: "playing", startedAt: new Date(), updatedAt: new Date() })
                 .where(eq(gameMatches.id, countdownMatchId));
 
-              // 僅在 countdown 狀態才執行（防重複）
-              if (match && match.status === "countdown") {
-                await db.update(gameMatches)
-                  .set({ status: "playing", startedAt: new Date(), updatedAt: new Date() })
-                  .where(eq(gameMatches.id, countdownMatchId));
-
-                broadcastToMatch(countdownMatchId, {
-                  type: "match_started",
-                  timestamp: new Date().toISOString(),
-                });
-              }
+              broadcastToMatch(countdownMatchId, {
+                type: "match_started",
+                timestamp: new Date().toISOString(),
+              });
             }
             break;
           }
