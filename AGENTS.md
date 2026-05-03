@@ -5,9 +5,32 @@
 
 ---
 
+## 📂 重要：協作機制已重構（2026-05-03 09:50）
+
+從單檔改成目錄結構：
+
+```
+codexclaude-dbug.md             ← 主索引（雙方第一個讀）
+codex-claude/
+├── PROTOCOL.md                 ← 規則本體（細節在這）
+├── STATUS.md                   ← 當前狀態
+├── BACKLOG.md                  ← 任務清單
+├── logs/YYYY-MM-DD.md          ← append-only 紀錄
+├── tasks/TXXX-<title>.md       ← 任務深度檔
+└── decisions/DXXX-<title>.md   ← 協作 ADR
+```
+
+**Codex 第一次讀順序**：
+1. [codexclaude-dbug.md](codexclaude-dbug.md) — 主索引（1 分鐘看完）
+2. [codex-claude/STATUS.md](codex-claude/STATUS.md) — 當前狀態
+3. [codex-claude/BACKLOG.md](codex-claude/BACKLOG.md) — 任務清單
+4. [codex-claude/PROTOCOL.md](codex-claude/PROTOCOL.md) — 規則細節
+
+---
+
 ## 🎯 主要協作機制
 
-當使用者打 **`/cc <args>`** 時，依 `codexclaude-dbug.md` 的 protocol 執行。
+當使用者打 **`/cc <args>`** 時，依 [codex-claude/PROTOCOL.md](codex-claude/PROTOCOL.md) 執行。
 
 ### `/cc` 語意（雙方一致）
 
@@ -41,7 +64,7 @@
 - 每步小驗證（測試 / build / smoke）
 
 #### 3. 完成後 — append 紀錄（紅線：不刪舊紀錄）
-在「🔄 紀錄串流」尾端 append 一筆：
+寫到 [codex-claude/logs/{今日}.md](codex-claude/logs/)（檔名 `YYYY-MM-DD.md`、不存在就建）：
 ```markdown
 ### YYYY-MM-DD HH:MM [Codex]
 - **動作**：（做了什麼）
@@ -50,21 +73,21 @@
 - **判斷**：（測試過時 / 真 bug / 環境 / ...）
 - **建議下一步**：（給對方 Claude 的接力提示）
 - **檔案**：（動到哪些檔案路徑）
+- **任務 ID**（選用）：（連結到 codex-claude/tasks/TXXX.md）
 ```
 
-#### 4. 「📋 Backlog」更新
-- 完成 → 標 `[x]` 並移到「✅ 已完成」區
-- 過程發現新 bug / 任務 → 加新項
+#### 4. 更新 [BACKLOG.md](codex-claude/BACKLOG.md) / [STATUS.md](codex-claude/STATUS.md)
+- BACKLOG：完成項標 `[x]` 並移到「✅ 已完成」區
+- STATUS：「上次更新」打卡
 
 #### 5. commit + push（如有改檔）
 commit message 格式：
 ```
-fix(test|route|...): <檔名> — <一句話>
+<type>(<scope>): <檔名> — <一句話>
 
 <詳細變動>
 
-紀錄：codexclaude-dbug.md (Codex YYYY-MM-DD HH:MM)
-Co-authored-by: Codex
+紀錄：codex-claude/logs/YYYY-MM-DD.md (Codex HH:MM)
 ```
 
 push 到 main：`git push origin HEAD:main`
