@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 12:35 [Claude]（**P0+P1 修 — Chat 雙寫 DB + WS auth bypass + session_join 協定錯誤 + UI bugs**）
+- **上次更新**：2026-05-03 12:50 [Claude]（**P0 修 — HostPlay/HostScreen 砍頁面層重複 WS 連線**）
 
 ---
 
@@ -19,11 +19,12 @@
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 12:35 [Claude] |
-| TypeScript | 零錯誤 ✅ | 12:35 [Claude] |
-| WebSocket 連線穩定 | useHostScreenSync hook 不再反覆重連 ✅ | 12:25 [Claude] |
+| Smoke test | 51/51 ✅ | 12:50 [Claude] |
+| TypeScript | 零錯誤 ✅ | 12:50 [Claude] |
+| WebSocket 連線穩定 | useHostScreenSync hook 不重連 + HostPlay/HostScreen 不再雙連線 ✅ | 12:50 [Claude] |
 | Chat 安全 | 單一資料流（REST only）+ 不繞 auth/limit ✅ | 12:35 [Claude] |
 | useTeamShootingSync 協定 | join 對齊 server case ✅ | 12:35 [Claude] |
+| host pages tests | 14 檔 109/109 ✅ | 12:50 [Claude] |
 | playerSessions tests | 17/17 ✅ | 12:35 [Claude] |
 | hook tests | 38/38 ✅（含 useTeamShootingSync 12）| 12:35 [Claude] |
 | Build | 成功（6.14s + server + cron）✅ | 11:55 [Claude] |
@@ -48,7 +49,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 12:35 | Claude | **P0+P1 修 — 依 Codex 第 3 輪補分析（同步 / 安全契約）**：3 commits ba0872f9 + 8b015cc2 + b098eadb — Chat 雙寫 DB + WS auth bypass + session_join 協定 + UI bugs |
+| 12:50 | Claude | **P0 修 — 依 Codex 第 4 輪補分析**：HostPlay/HostScreen 頁面層砍重複 WS、indicator 改用 query 載入狀態（commit 1392305f、減半 WS 連線數）|
+| 12:35 | Claude | P0+P1 修 — 依 Codex 第 3 輪補分析（同步 / 安全契約）：3 commits ba0872f9 + 8b015cc2 + b098eadb — Chat 雙寫 DB + WS auth bypass + session_join 協定 + UI bugs |
 | 12:25 | Claude | P0 修真 bug — useHostScreenSync hook 不再反覆重連 WS（依 Codex 第 2 輪補分析、commit 60a628b3）|
 | 12:10 | Claude | 新增第 14 個 host 元件 TeamBattleScore（紅藍對抗即時計分、3 commits a98781b4 + 6aee8f3e + 2c276308）|
 | 11:55 | Claude | 新增 host-screen-components.md 對照文件（13 元件 × 5 市場 + 5 套餐、commit 00454fd4）+ build 驗證 6.14s ✅ |
