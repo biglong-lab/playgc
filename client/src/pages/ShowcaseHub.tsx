@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import W22DemoSection from "@/components/showcase/W22DemoSection";
 import PollLive from "@/components/game/host/PollLive";
 import EmojiReact from "@/components/game/host/EmojiReact";
 import WaveResponse from "@/components/game/host/WaveResponse";
@@ -270,6 +271,9 @@ export default function ShowcaseHub() {
             從個人闖關到大螢幕主控，從隊伍協作到全場互動 — 一個平台、無限想像
           </p>
         </section>
+
+        {/* ✨ Phase 6 W22 新增 2 元件（最新、置頂呈現）*/}
+        <W22DemoSection />
 
         {/* 🎬 5 個 host 元件即時試玩（W3 D5 擴充）*/}
         <section className="space-y-4">
