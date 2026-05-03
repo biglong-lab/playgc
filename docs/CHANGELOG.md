@@ -7,6 +7,27 @@
 
 ## 2026-05-03
 
+### 🐛 錯誤處理體系 3 階段（Stage 1+2+3#8、追查能力 / 不迷路 / 回報）
+**主題**：完整錯誤處理升級、修「玩家迷路」+「工程師追查不到」12 個場景
+**部署 commit 範圍**：`648fef51 .. c1ab07d6`
+
+關鍵 commits：
+- `648fef51` 錯誤處理體系盤點報告（5 類純盤點）
+- `91033939` Stage 1 追查能力（useErrorReport 重啟 + server middleware 寫 DB + schema +8 欄）
+- `95145eea` Stage 2 玩家不迷路（HostPlay 替代入口 + WsConnectionBadge + GamePlay 失連警示）
+- `cb4367e7` Stage 3 #8 ErrorBoundary 複製錯誤回報 + ADR-0016 完整規劃
+
+**生產 ALTER TABLE**：`error_logs` 新增 8 欄 + 4 index（platform/requestId/sessionId/teamId/matchId/statusCode/method/route）
+**新公開頁**：無（沿用既有 `/platform/errors`、現在有資料）
+**新 ADR**：ADR-0016 錯誤處理政策統一
+
+**細節** → [changes/2026-05-03-error-handling-audit.md](changes/2026-05-03-error-handling-audit.md)
+**完整移交** → [changes/2026-05-03-session-handoff.md](changes/2026-05-03-session-handoff.md)
+
+⏭ 下一步：24h 觀察 PlatformErrorLogs 真實資料 + 啟動 Stage 3 #6+#7（ADR-0016 規劃）
+
+---
+
 ### 🔒 Codex 9 輪審查 + 使用者 P0/UX 修法 + Webhook 安全統一（39 commits）
 **主題**：雙 AI 協作橫向掃描 + 使用者回報修法 + 整體系統安全姿態統一
 **範圍**：39 個 commits / 一個 working session（11:30 → 14:35）
