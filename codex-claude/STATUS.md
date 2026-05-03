@@ -9,9 +9,9 @@
 
 - **目前負責人**：Claude（/loop dynamic mode 持續進行中）
 - **開始時間**：2026-05-03 19:30
-- **進行中任務**：Phase 6 W22 階段 1+1.5 完成、階段 2 BingoBoard 暫存（待用戶確認手冊頁 OK）
-- **阻塞項**：等使用者說「部署」讓 /admin/manual 上線
-- **上次更新**：2026-05-03 19:55+ [Claude]（**📖 後台使用說明手冊頁完成（commit `a3a436e4`、10 檔 2674 行、入口在 AdminDashboard）+ BingoBoard 暫存**）
+- **進行中任務**：Phase 6 W22 階段 1+1.5+2 完成（手冊 + 後台手冊頁 + BingoBoard 第 15 元件）
+- **阻塞項**：等使用者說「部署」讓 /admin/manual + BingoBoard 上線生效
+- **上次更新**：2026-05-03 20:00+ [Claude]（**✅ 階段 2 完成 — BingoBoard 5×5 賓果板（commit `316d055a`、host element +1、host tests 109→123）**）
 
 ---
 
@@ -54,6 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
+| 20:00+ | Claude | **✅ Phase 6 W22 階段 2 BingoBoard**（第 15 host 元件、5×5 賓果板、5 大市場通用、commit `316d055a`、雙 renderer + 14 tests + 文件三處同步）|
+| 19:55+ | Claude | **📖 後台手冊頁 /admin/manual**（commit `a3a436e4`、6 tab 切換 + markdown-mini 自寫渲染器、AdminDashboard 加金色入口卡）|
 | 19:35+ | Claude | **✨ Phase 6 W22 階段 1 平台手冊**（docs/manual/ 6 檔 2210 行 — README + 14 host + 14 multi + 12 情境 + 11 業務頁 + 整體流程；e2e 8 頁全 200）|
 | 19:20 | Claude | **🏁 Session 收尾**（建 docs/changes/2026-05-03-session-handoff.md + 更新 CHANGELOG + 標記 STATUS 暫停、73 commits 完整時序、commit `4afb09fb`）|
 | 19:10 | Claude | 📝 Stage 3 #8 + ADR-0016（ErrorBoundary 複製錯誤回報按鈕 + 完整錯誤政策規劃 #6/#7 留下個 sprint、commit cb4367e7）+ 部署 |
