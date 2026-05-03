@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 14:25 [Claude]（**補強另外 2 個 webhook 簽章驗證 timing-safe + 防 throw、4 個 webhook signature 全部統一安全姿態**）
+- **上次更新**：2026-05-03 14:35 [Claude]（**🎯 累計 milestone — 156 檔 / 2190 tests / 5 endpoints 200 / CPU 0% / Memory 21% 完全穩定**）
 
 ---
 
@@ -19,11 +19,13 @@
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 13:15 [Claude] |
-| TypeScript | 零錯誤 ✅ | 13:15 [Claude] |
-| **完整 test:run** | **155 檔 / 2179 tests 全綠** ✅ | 13:15 [Claude] |
-| **🚀 生產端部署** | **commit 355ea092 已上線** | 13:50 [Claude] |
-| 生產 e2e 5 endpoints | scenarios + openapi + line + cron + 主頁全 200 ✅ | 13:50 [Claude] |
+| Smoke test | 51/51 ✅ | 14:35 [Claude] |
+| TypeScript | 零錯誤 ✅ | 14:35 [Claude] |
+| **完整 test:run** | **156 檔 / 2190 tests 全綠** ✅ | 14:35 [Claude] |
+| **🚀 生產端部署** | **commit 28218cdb 已上線** | 14:25 [Claude] |
+| 生產 e2e 5 endpoints | scenarios + openapi + line + cron + 主頁全 200 ✅ | 14:35 [Claude] |
+| 生產資源 | CPU 0% / Memory 327MiB (21%) | 14:35 [Claude] |
+| 4 個 webhook signature | timing-safe + 統一防護姿態 ✅ | 14:25 [Claude] |
 | WebSocket 連線穩定 | useHostScreenSync hook 不重連 + HostPlay/HostScreen 不再雙連線 ✅ | 12:50 [Claude] |
 | Chat 安全 | 單一資料流（REST only）+ 不繞 auth/limit ✅ | 12:35 [Claude] |
 | Team realtime | 5 個事件房間/名稱統一 broadcastToTeam ✅ | 13:05 [Claude] |
@@ -52,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 14:25 | Claude | **補強另外 2 個 webhook 簽章 timing-safe**（recur-client throw → 防 + aihomi === → timingSafeEqual、commit cd766036）+ 部署 |
+| 14:35 | Claude | **🎯 累計 milestone — 完整 test:run 156/2190 全綠**、生產 CPU 0% / Memory 21% 完全穩定 |
+| 14:25 | Claude | 補強另外 2 個 webhook 簽章 timing-safe（recur-client throw → 防 + aihomi === → timingSafeEqual、commit cd766036）+ 部署 |
 | 14:10 | Claude | 3 個使用者新問題全修 + 部署（df2c5855 對講機 UX）|
 | 14:00 | Claude | **P0 super_admin 不需區域代號進入後台**（findFirst 隨機抓非 super_admin、改 join 篩、commit 04b68d99）+ 部署 |
 | 13:55 | Claude | **P0-security 未爆彈 Recur webhook 簽章 stub**（→ HMAC SHA-256 + 401 阻擋、commit f02b1652）+ 部署 |
