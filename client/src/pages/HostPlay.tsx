@@ -10,10 +10,11 @@
 //   - 送 host_screen_pulse（投票、emoji、按鈕觸發）
 
 import { useEffect, useState } from "react";
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Loader2, Smartphone } from "lucide-react";
+import { AlertCircle, Loader2, Smartphone, Home, QrCode } from "lucide-react";
 import HostPageRenderer from "@/components/game/host/HostPageRenderer";
 import type { Page } from "@shared/schema";
 
@@ -92,10 +93,35 @@ export default function HostPlay() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4 safe-top safe-bottom">
         <Card className="max-w-md w-full">
-          <CardContent className="p-6 text-center space-y-4">
+          <CardContent className="p-6 text-center space-y-5">
             <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
-            <h1 className="text-xl font-bold">{error || "無法載入"}</h1>
-            <p className="text-sm text-muted-foreground">活動已結束或主辦方未開啟，請通知主辦方</p>
+            <div className="space-y-1">
+              <h1 className="text-xl font-bold">{error || "無法載入"}</h1>
+              <p className="text-sm text-muted-foreground">
+                活動可能已結束或主辦方尚未開啟
+              </p>
+            </div>
+            {/* 🆕 替代入口：玩家不迷路（Stage 2 #4）*/}
+            <div className="space-y-2 pt-2">
+              <Link href="/">
+                <Button variant="default" className="w-full gap-2" data-testid="button-go-home">
+                  <Home className="w-4 h-4" />
+                  返回首頁找其他活動
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => window.history.back()}
+                data-testid="button-go-back"
+              >
+                <QrCode className="w-4 h-4" />
+                返回上一頁重新掃 QR
+              </Button>
+              <p className="text-xs text-muted-foreground pt-1">
+                若你預期此活動可進入、請通知主辦方確認狀態
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

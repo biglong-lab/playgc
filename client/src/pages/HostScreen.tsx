@@ -10,10 +10,11 @@
 //   - 連 WS 後送 host_screen_register（role: 'host', hostToken）
 //   - 收 host_screen_pulse（玩家動作）+ 廣播 host_screen_state（狀態同步）
 
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { AlertCircle, Loader2, Tv } from "lucide-react";
+import { AlertCircle, Loader2, Tv, Home, ArrowLeft } from "lucide-react";
 import HostPageRenderer from "@/components/game/host/HostPageRenderer";
 import type { Page } from "@shared/schema";
 
@@ -68,12 +69,23 @@ export default function HostScreen() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white p-4">
         <Card className="max-w-md w-full bg-zinc-900 border-zinc-700">
-          <CardContent className="p-8 text-center space-y-4">
+          <CardContent className="p-8 text-center space-y-5">
             <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
-            <h1 className="text-xl font-bold">缺少 host token</h1>
-            <p className="text-sm text-zinc-400">
-              請從 admin 後台「主控大螢幕」拿完整網址（含 ?token=...）
-            </p>
+            <div className="space-y-1">
+              <h1 className="text-xl font-bold">缺少 host token</h1>
+              <p className="text-sm text-zinc-400">
+                請從 admin 後台「主控大螢幕」拿完整網址（含 ?token=...）
+              </p>
+            </div>
+            {/* 🆕 替代入口：admin 不迷路（Stage 2 #4）*/}
+            <div className="space-y-2 pt-2">
+              <Link href="/admin">
+                <Button variant="default" className="w-full gap-2" data-testid="button-go-admin">
+                  <Home className="w-4 h-4" />
+                  返回管理後台重新發放網址
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -92,10 +104,32 @@ export default function HostScreen() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white p-4">
         <Card className="max-w-md w-full bg-zinc-900 border-zinc-700">
-          <CardContent className="p-8 text-center space-y-4">
+          <CardContent className="p-8 text-center space-y-5">
             <AlertCircle className="w-12 h-12 mx-auto text-destructive" />
-            <h1 className="text-xl font-bold">{error || "無法載入"}</h1>
-            <p className="text-sm text-zinc-400">請通知 admin 重新發放網址</p>
+            <div className="space-y-1">
+              <h1 className="text-xl font-bold">{error || "無法載入"}</h1>
+              <p className="text-sm text-zinc-400">
+                Session 可能已過期或被結束、請通知 admin 重新發放網址
+              </p>
+            </div>
+            {/* 🆕 替代入口：admin 不迷路（Stage 2 #4）*/}
+            <div className="space-y-2 pt-2">
+              <Link href="/admin">
+                <Button variant="default" className="w-full gap-2" data-testid="button-go-admin">
+                  <Home className="w-4 h-4" />
+                  返回管理後台
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                className="w-full gap-2 border-zinc-700"
+                onClick={() => window.history.back()}
+                data-testid="button-go-back"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                返回上一頁
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

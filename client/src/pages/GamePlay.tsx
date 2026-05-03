@@ -19,6 +19,7 @@ import GamePageErrorBoundary from "@/components/game/GamePageErrorBoundary";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import { useSessionManager } from "./hooks/useSessionManager";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
+import { WsConnectionBadge } from "@/components/shared/WsConnectionBadge";
 import { speakTeamEvent, primeVoices } from "@/lib/voice-notification";
 import LeaderDecideDialog from "@/components/team/LeaderDecideDialog";
 import {
@@ -154,7 +155,7 @@ export default function GamePlay() {
   // 🆕 Phase 2a：遊戲中也訂閱 team WS，顯示隊友離線/重連/離開 toast（存在感）
   //   solo mode → myTeam 為 null，hook 內部 effect 會跳過建立連線
   // 🆕 Phase 2.B：訂閱 team_progress_advance → 慢的玩家自動跟上最快進度
-  useTeamWebSocket({
+  const { isConnected: isTeamWsConnected } = useTeamWebSocket({
     teamId: myTeam?.id,
     userId: user?.id,
     userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
@@ -539,6 +540,16 @@ export default function GamePlay() {
         onInventory={() => setShowInventory(true)}
         inventoryCount={inventory.length}
       />
+
+      {/* 🆕 WS 失連警示（Stage 2 #3）多人組隊才顯示、避免玩家以為「lag」 */}
+      {myTeam?.id && !isTeamWsConnected && (
+        <div className="bg-destructive/10 border-b border-destructive/30 px-4 py-2 flex items-center justify-between gap-3 text-xs">
+          <WsConnectionBadge isConnected={false} />
+          <span className="text-destructive flex-1">
+            隊伍即時同步中斷、隊員操作可能不會更新到你這邊
+          </span>
+        </div>
+      )}
 
       {/* 🆕 F1: 離開遊戲確認 Dialog
           多人：呼叫 /leave 設 leftAt → 下次回 lobby 不會被自動拉回（明確自願退出）
