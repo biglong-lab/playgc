@@ -38,6 +38,7 @@
 - [photo-system.md](domains/photo-system.md) — 照片元件與 Cloudinary
 - [pwa.md](domains/pwa.md) — PWA / Service Worker / 離線
 - [multi-field.md](domains/multi-field.md) — 多場域隔離與 SaaS 架構
+- [host-screen-components.md](domains/host-screen-components.md) — 13 個大螢幕互動元件 × 5 大市場對照
 
 ### 3. [`decisions/`](decisions/) — ADR（架構決策紀錄）
 **寫什麼**：影響 ≥ 3 模組的技術決策。**寫完不改**，只能新增「Superseded by XXX」。
