@@ -1,7 +1,7 @@
 # Host Screen Components — 大螢幕互動元件總覽
 
 > **更新日期**：2026-05-03
-> **元件總數**：15 個（W22 + BingoBoard）
+> **元件總數**：16 個（W22 + BingoBoard + BlessingWall）
 > **設計依據**：[ADR-0004 host-screen-axis](../decisions/0004-host-screen-axis.md) + [ADR-0013 W18 元件擴充](../decisions/0013-w18-component-expansion.md)
 
 ---
@@ -42,6 +42,7 @@
 | 13 | WordCloud | `host_word_cloud` | 提交詞彙 | 關鍵字蒐集、發想互動 |
 | 14 | **TeamBattleScore** | `host_team_battle_score` | 加分（雙隊） | **紅藍對抗、團體競賽、男女組互動** |
 | 15 | **BingoBoard** | `host_bingo_board` | 任務完成 + 連線判定 | **園遊會、商圈集章、員工旅遊、Bingo 派對**（5 大市場通用） |
+| 16 | **BlessingWall** | `host_blessing_wall` | 祝福訊息漂浮（throttle 3s） | **婚禮主視覺、生日壽星、同學會、頒獎應援**（交誼類核心） |
 
 ---
 

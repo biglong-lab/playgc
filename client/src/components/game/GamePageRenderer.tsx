@@ -48,6 +48,7 @@ const ScoreboardAnnouncementPage = lazy(() => import("@/components/game/host/Sco
 const KnowledgeMapPage = lazy(() => import("@/components/game/host/KnowledgeMapPage"));
 const TeamBattleScorePage = lazy(() => import("@/components/game/host/TeamBattleScorePage"));
 const BingoBoardPage = lazy(() => import("@/components/game/host/BingoBoardPage"));
+const BlessingWallPage = lazy(() => import("@/components/game/host/BlessingWallPage"));
 
 // 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/solo/ButtonPage"));
@@ -315,6 +316,8 @@ export default function GamePageRenderer({
         return <TeamBattleScorePage page={page} />;
       case "host_bingo_board":
         return <BingoBoardPage page={page} />;
+      case "host_blessing_wall":
+        return <BlessingWallPage page={page} />;
       case "photo_ocr":
         return <PhotoOcrFlow {...commonProps} />;
       case "gps_mission":

@@ -266,7 +266,7 @@ A4 列印 QR → 婚禮現場貼桌卡 → 賓客掃 + 互動
 | **狀態** | ✅ live |
 
 **含元件**：
-- dialogue（NPC 對話）— 場域主人公開場介紹（⚠️ 元件待補實作）
+- dialogue（NPC 對話）— 場域主人公開場介紹（已存在於 shared/components/）
 - TreasureHunt（任務鏈）— 解謎找密碼、解鎖故事
 - PolaroidCollage（紀念牆）— 客人離開前留念
 
