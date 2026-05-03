@@ -7,11 +7,11 @@
 
 ## 📊 當前
 
-- **目前負責人**：（無人、session 暫停、待下個 sprint）
-- **開始時間**：—
-- **進行中任務**：—（Stage 3 #6+#7 規劃中、見 ADR-0016）
+- **目前負責人**：Claude（/loop dynamic mode 持續進行中）
+- **開始時間**：2026-05-03 19:30
+- **進行中任務**：Phase 6 W22 平台手冊撰寫（已完成 5 份文件、6 檔 2210 行）
 - **阻塞項**：無
-- **上次更新**：2026-05-03 19:20 [Claude]（**🏁 Session 完整收尾紀錄 — 73 commits + handoff 文件 + 24h 觀察期**）
+- **上次更新**：2026-05-03 19:35+ [Claude]（**✨ Phase 6 W22 階段 1 — 平台元件 + 情境 + 業務頁完整手冊（5 份文件 + e2e 8 頁全 200）**）
 
 ---
 
@@ -54,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 19:20 | Claude | **🏁 Session 收尾**（建 docs/changes/2026-05-03-session-handoff.md + 更新 CHANGELOG + 標記 STATUS 暫停、73 commits 完整時序）|
+| 19:35+ | Claude | **✨ Phase 6 W22 階段 1 平台手冊**（docs/manual/ 6 檔 2210 行 — README + 14 host + 14 multi + 12 情境 + 11 業務頁 + 整體流程；e2e 8 頁全 200）|
+| 19:20 | Claude | **🏁 Session 收尾**（建 docs/changes/2026-05-03-session-handoff.md + 更新 CHANGELOG + 標記 STATUS 暫停、73 commits 完整時序、commit `4afb09fb`）|
 | 19:10 | Claude | 📝 Stage 3 #8 + ADR-0016（ErrorBoundary 複製錯誤回報按鈕 + 完整錯誤政策規劃 #6/#7 留下個 sprint、commit cb4367e7）+ 部署 |
 | 18:50 | Claude | 🛟 Stage 2 玩家不迷路完整實作 + 部署（HostPlay/HostScreen 替代入口 + WsConnectionBadge 共用元件 + GamePlay 多人組隊失連警示、commit 95145eea）|
 | 18:30 | Claude | 🐛 Stage 1 追查能力完整實作 + 部署（useErrorReport 重啟 + server middleware 寫 DB + schema +8 欄 +4 index + X-Request-Id 注入 + 生產 ALTER TABLE、commit 91033939）|
