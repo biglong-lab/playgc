@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../firebaseAuth";
-import type { AuthenticatedRequest } from "./types";
+import type { AuthenticatedRequest, RouteContext } from "./types";
 import {
   ObjectStorageService,
   ObjectNotFoundError,
@@ -11,7 +11,8 @@ import { insertGameSessionSchema } from "@shared/schema";
 import { z } from "zod";
 import { hotPathLimiter, chatLimiter } from "../utils/rate-limiters";
 
-export function registerPlayerSessionRoutes(app: Express) {
+// ctx 為 optional：測試環境可不傳；正式環境由 player-games → setupWebSocket 注入
+export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
   // ==========================================================================
   // Session & Progress API
   // ==========================================================================
@@ -455,6 +456,14 @@ export function registerPlayerSessionRoutes(app: Express) {
           sessionId: req.params.sessionId,
           userId: userId,
           message: req.body.message,
+        });
+        // 寫 DB 後廣播給 session 內 WS clients、消除 client 雙路徑送訊（之前同時走 WS + REST 會雙寫 DB）
+        ctx?.broadcastToSession?.(req.params.sessionId, {
+          type: "chat",
+          sessionId: req.params.sessionId,
+          userId,
+          message: req.body.message,
+          timestamp: new Date().toISOString(),
         });
         res.status(201).json(message);
       } catch (error) {

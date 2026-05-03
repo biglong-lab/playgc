@@ -87,20 +87,11 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
 
   const handleSend = useCallback(() => {
     if (!message.trim()) return;
-
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({
-        type: "chat",
-        sessionId,
-        userId,
-        userName,
-        message: message.trim(),
-      }));
-    }
-
+    // 只走 REST（有 isAuthenticated + chatLimiter）；server 寫 DB 後 broadcast 給 WS 訂閱端
+    // 移除原本「同時送 WS + REST」造成的雙寫 DB + 權限繞過問題（2026-05-03 P0 修）
     sendMessageMutation.mutate(message.trim());
     setMessage("");
-  }, [message, sessionId, userId, userName, sendMessageMutation]);
+  }, [message, sendMessageMutation]);
 
   const formatTime = (date: Date | string | null) => {
     if (!date) return "";

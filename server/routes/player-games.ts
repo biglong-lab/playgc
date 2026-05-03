@@ -21,10 +21,11 @@ import { checkGameOwnership } from "./utils";
 import { registerPlayerSessionRoutes } from "./player-sessions";
 import { registerPlayerItemRoutes } from "./player-items";
 import { registerPlayerAchievementRoutes } from "./player-achievements";
+import type { RouteContext } from "./types";
 
-export function registerPlayerGameRoutes(app: Express) {
+export function registerPlayerGameRoutes(app: Express, ctx?: RouteContext) {
   // 註冊子模組路由
-  registerPlayerSessionRoutes(app);
+  registerPlayerSessionRoutes(app, ctx);
   registerPlayerItemRoutes(app);
   registerPlayerAchievementRoutes(app);
 

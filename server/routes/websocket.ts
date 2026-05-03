@@ -434,24 +434,10 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
-          case "chat":
-            if (ws.sessionId) {
-              await storage.createChatMessage({
-                sessionId: ws.sessionId,
-                userId: message.userId,
-                message: message.message,
-              });
-
-              broadcastToSession(ws.sessionId, {
-                type: "chat",
-                sessionId: ws.sessionId,
-                userId: message.userId,
-                userName: message.userName,
-                message: message.message,
-                timestamp: new Date().toISOString(),
-              });
-            }
-            break;
+          // case "chat" 已移除（2026-05-03 P0 修）：
+          // 之前 client 同時送 WS + REST、兩邊都 createChatMessage 造成同一則訊息雙寫 DB；
+          // 且 WS 路徑無 isAuthenticated / chatLimiter，存在權限與限流繞過風險。
+          // 改為單一資料流：client 只送 REST POST /api/chat/:sessionId，server 寫 DB 後 broadcast 給 WS clients。
 
           case "game_update":
             if (ws.sessionId) {

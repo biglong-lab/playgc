@@ -108,7 +108,7 @@ export async function registerRoutes(
   registerPlayerFeedbackRoutes(app);
   registerVariantPickerServerRoutes(app);
   registerAdminContentRoutes(app);
-  registerPlayerGameRoutes(app);
+  registerPlayerGameRoutes(app, ctx);
   registerDeviceRoutes(app, ctx);
   registerLeaderboardRoutes(app);
   registerMediaRoutes(app);
