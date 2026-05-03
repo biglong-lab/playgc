@@ -1,4 +1,4 @@
-# 🎬 情境模板 — 16 個（5 大市場全覆蓋）
+# 🎬 情境模板 — 17 個（5 大市場全覆蓋）
 
 > 預設好的元件組合包、客戶選一個就能 30 分鐘現場可玩
 > 設計依據：[Phase 2 W6 一鍵建場 ADR](../changes/2026-05-02-phase2-complete.md)
@@ -360,7 +360,28 @@ A4 列印 QR → 婚禮現場貼桌卡 → 賓客掃 + 互動
 
 ---
 
-## 📊 16 情境一覽表
+### 17. lecture-conference — 講座研討會情境包 ✅ live
+
+| 項目 | 內容 |
+|------|------|
+| **Tagline** | 即時 Q&A + 投票 + 文字雲 + emoji 池 |
+| **適用** | 學術研討會、企業大會、產品發表會、市政說明會、TED 式演講 |
+| **人數** | 30-300 人 |
+| **時長** | 1-3 小時 |
+| **收費** | NT$ 8,000-25,000 / 場 + 大型場域包套 |
+| **狀態** | ✅ live |
+
+**含元件**（4 個 host）：
+- MicroQa（即時 Q&A、W22 新增）— 觀眾匿名提問、按讚推熱門
+- PollLive（即時投票）— 中段共識調查、決策模擬
+- WordCloud（結尾文字雲）— 凝聚共識「給今天的關鍵字」
+- EmojiReact（全場應援）— 認同金句即時應援
+
+**商業價值**：講者輕鬆、觀眾投入、主辦掌握民意
+
+---
+
+## 📊 17 情境一覽表
 
 | ID | 名稱 | 類別 | 狀態 | 收費 | 主元件 |
 |----|------|------|------|------|--------|
@@ -380,6 +401,7 @@ A4 列印 QR → 婚禮現場貼桌卡 → 賓客掃 + 互動
 | **carnival-bingo** ✨ | **園遊會 Bingo 嘉年華** | 🎉 event | ✅ | 25K-50K | Bingo + Leaderboard + Scoreboard + Wave |
 | **escape-room** ✨ | **密室逃脫** | 🏠 venue | ✅ | 月 1.5-3.5K + 8K-25K/場 | LockCoop + Treasure + QuestChain + ChoiceVerifyRace |
 | **team-building** ✨ | **企業團建** | 💼 corporate | ✅ | 15K-40K | RoleAssign + RelayMission + Emoji + Leaderboard |
+| **lecture-conference** ✨ | **講座研討會** | 💼 corporate | ✅ | 8K-25K | MicroQa + Poll + WordCloud + Emoji |
 
 ✅ = live、🟡 = preview（待真實活動驗證）
 

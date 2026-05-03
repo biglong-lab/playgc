@@ -717,6 +717,55 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "私部門年度團建活動主推。HR 不用準備、一鍵建場。NT$ 15,000-40,000 / 場。",
     status: "live",
   },
+  {
+    id: "lecture-conference",
+    name: "講座研討會情境包",
+    tagline: "即時 Q&A + 投票 + 文字雲 + emoji 池",
+    description:
+      "為學術 / 企業 / 政府講座 / 研討會打造的觀眾互動完整方案。MicroQa 觀眾匿名提問、講者依按讚數回答熱門問題；中段穿插 PollLive 投票決策、結尾 WordCloud 凝聚共識。\n聽眾不舉手就能參與、講者掌握真實民意。",
+    useCases: [
+      "學術研討會",
+      "企業大會 / 全員會議",
+      "產品發表會",
+      "市政說明會",
+      "顧問講座 / TED 式演講",
+    ],
+    category: "corporate",
+    icon: "Mic",
+    gradient: "from-indigo-500/30 to-blue-500/30",
+    estimatedPlayers: "30-300 人",
+    estimatedDuration: "1-3 小時",
+    components: [
+      {
+        pageType: "host_micro_qa",
+        label: "即時 Q&A",
+        role: "觀眾匿名提問、按讚推熱門、講者標記已回答",
+        axis: "host",
+      },
+      {
+        pageType: "host_poll_live",
+        label: "即時投票",
+        role: "中段共識調查、決策模擬",
+        axis: "host",
+        demoMode: "poll-host",
+      },
+      {
+        pageType: "host_word_cloud",
+        label: "結尾文字雲",
+        role: "「請給今天的關鍵字」凝聚共識",
+        axis: "host",
+      },
+      {
+        pageType: "host_emoji_react",
+        label: "全場應援",
+        role: "認同金句即時應援",
+        axis: "host",
+        demoMode: "emoji-host",
+      },
+    ],
+    valueProposition: "講者輕鬆、觀眾投入、主辦掌握民意。NT$ 8,000-25,000 / 場 + 大型場域包套。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
