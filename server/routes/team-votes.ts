@@ -90,7 +90,8 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
           })
           .returning();
 
-        ctx.broadcastToSession(`team_${teamId}`, {
+        // 用 broadcastToTeam 對齊 client team_join 房間（事件名 vote_created 已對應 useTeamVoteSync）
+        ctx.broadcastToTeam(teamId, {
           type: "vote_created",
           vote,
         });
@@ -230,7 +231,8 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
             .where(eq(teamVotes.id, voteId));
         }
 
-        ctx.broadcastToSession(`team_${vote.teamId}`, {
+        // 用 broadcastToTeam 對齊 client team_join 房間（事件名 vote_cast 已對應 useTeamVoteSync）
+        ctx.broadcastToTeam(vote.teamId, {
           type: "vote_cast",
           voteId,
           voteCounts: Object.fromEntries(voteCounts),

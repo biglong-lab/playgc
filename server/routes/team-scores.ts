@@ -104,8 +104,13 @@ export function registerTeamScoreRoutes(app: Express, ctx: RouteContext) {
           description: body.description,
         });
 
-        ctx.broadcastToSession(`team_${teamId}`, {
-          type: "score_update",
+        // 用 broadcastToTeam 對齊 client；事件名 score_update → team_score_update（client 期望 team_ 前綴）
+        // 補 score / change / reason 欄位（client onScoreUpdate 簽名要求）+ 保留 delta/newScore 欄位向下相容
+        ctx.broadcastToTeam(teamId, {
+          type: "team_score_update",
+          score: newScore,
+          change: body.delta,
+          reason: body.description ?? body.sourceType ?? "",
           delta: body.delta,
           newScore,
           sourceType: body.sourceType,

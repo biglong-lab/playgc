@@ -247,8 +247,11 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           },
         });
 
-        ctx.broadcastToSession(`team_${team.id}`, {
-          type: "member_joined",
+        // 用 broadcastToTeam（teamClients map）對齊 client 的 team_join；之前用 broadcastToSession
+        // 廣播到不存在的 session room "team_${id}" → client 收不到（房間 + 名稱雙錯）
+        ctx.broadcastToTeam(team.id, {
+          type: "team_member_joined",
+          userId,
           team: updatedTeam,
         });
 

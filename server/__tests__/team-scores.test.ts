@@ -165,9 +165,9 @@ describe("Team Scores 路由", () => {
       // 應插入 scoreHistory
       expect(mockDb.insert).toHaveBeenCalled();
       // 應廣播
-      expect(ctx.broadcastToSession).toHaveBeenCalledWith(
-        "team_team-1",
-        expect.objectContaining({ type: "score_update", delta: 10, newScore: 60 }),
+      expect(ctx.broadcastToTeam).toHaveBeenCalledWith(
+        "team-1",
+        expect.objectContaining({ type: "team_score_update", delta: 10, newScore: 60, score: 60, change: 10 }),
       );
     });
 

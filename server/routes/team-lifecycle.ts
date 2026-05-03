@@ -97,7 +97,8 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
           },
         });
 
-        ctx.broadcastToSession(`team_${teamId}`, {
+        // 用 broadcastToTeam 對齊 client 的 team_join；之前 broadcastToSession 廣播到不存在的 session room
+        ctx.broadcastToTeam(teamId, {
           type: "ready_status_changed",
           team: updatedTeam,
         });

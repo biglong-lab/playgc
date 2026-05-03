@@ -209,8 +209,8 @@ describe("Team Votes 路由", () => {
 
       expect(res.status).toBe(201);
       expect(res.body.id).toBe("vote-1");
-      expect(ctx.broadcastToSession).toHaveBeenCalledWith(
-        "team_team-1",
+      expect(ctx.broadcastToTeam).toHaveBeenCalledWith(
+        "team-1",
         expect.objectContaining({ type: "vote_created" }),
       );
     });
@@ -364,8 +364,8 @@ describe("Team Votes 路由", () => {
       // 應更新投票狀態為 completed
       expect(mockDb.update).toHaveBeenCalled();
       // 應廣播
-      expect(ctx.broadcastToSession).toHaveBeenCalledWith(
-        "team_team-1",
+      expect(ctx.broadcastToTeam).toHaveBeenCalledWith(
+        "team-1",
         expect.objectContaining({ type: "vote_cast", isComplete: true }),
       );
     });

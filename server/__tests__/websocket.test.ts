@@ -247,29 +247,9 @@ describe("websocket 路由", () => {
     });
   });
 
-  describe("chat（session 聊天）", () => {
-    it("session 聊天會儲存訊息並廣播", async () => {
-      const ws1 = trackWs(await connectWs(port));
-      const ws2 = trackWs(await connectWs(port));
-
-      ws1.send(JSON.stringify({ type: "join", sessionId: "s1", userId: "u1", userName: "玩家一" }));
-      ws2.send(JSON.stringify({ type: "join", sessionId: "s1", userId: "u2", userName: "玩家二" }));
-      await new Promise((r) => setTimeout(r, 100));
-
-      const msgPromise = waitForMessage(ws1, "chat");
-      ws2.send(JSON.stringify({
-        type: "chat",
-        userId: "u2",
-        userName: "玩家二",
-        message: "哈囉",
-      }));
-
-      const msg = await msgPromise;
-      expect(msg.message).toBe("哈囉");
-      // 確認有儲存聊天訊息
-      expect(mockCreateChatMessage).toHaveBeenCalled();
-    });
-  });
+  // ⚠️ "chat（session 聊天）" describe 已移除（commit ba0872f9 P0 修）
+  //   原因：server WS case "chat" 整段已刪除（之前同 client REST POST /api/chat 雙寫 DB + 繞過 auth/limit）
+  //   chat 寫入測試請查 player-sessions REST handler；廣播由 ctx.broadcastToSession 完成（見下面測試）
 
   describe("broadcastToSession / broadcastToTeam 工具函式", () => {
     it("broadcastToSession 傳送訊息到指定 session", async () => {

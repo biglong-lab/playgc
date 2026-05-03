@@ -18,6 +18,8 @@ interface TeamMessage {
   messageType?: string;
   timestamp?: string;
   isReady?: boolean;
+  /** ready_status_changed / team_member_joined 帶完整 team 物件（含 members 陣列）*/
+  team?: unknown;
   choice?: string;
   voteId?: string;
   pageId?: string;
@@ -71,6 +73,8 @@ interface UseTeamWebSocketOptions {
   onGraceExpired?: (userId: string, userName: string, autoLeaveInMs: number) => void;
   /** 🆕 Phase 2c+ leader-decide：隊長對寬限期過的隊員下決定（wait / continue） */
   onLeaderDecide?: (action: "wait" | "continue", targetUserId: string, leaderUserId: string) => void;
+  /** 🆕 ready_status_changed：team-lifecycle REST 廣播完整 team 物件、含 members */
+  onReadyStatusChanged?: (team: unknown) => void;
 }
 
 export function useTeamWebSocket({
@@ -91,6 +95,7 @@ export function useTeamWebSocket({
   onProgressAdvance,
   onGraceExpired,
   onLeaderDecide,
+  onReadyStatusChanged,
 }: UseTeamWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -113,6 +118,7 @@ export function useTeamWebSocket({
     onProgressAdvance,
     onGraceExpired,
     onLeaderDecide,
+    onReadyStatusChanged,
   });
   useEffect(() => {
     callbacksRef.current = {
@@ -129,8 +135,9 @@ export function useTeamWebSocket({
       onProgressAdvance,
       onGraceExpired,
       onLeaderDecide,
+      onReadyStatusChanged,
     };
-  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance, onGraceExpired, onLeaderDecide]);
+  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance, onGraceExpired, onLeaderDecide, onReadyStatusChanged]);
 
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
@@ -272,6 +279,13 @@ export function useTeamWebSocket({
                   data.targetUserId,
                   data.leaderUserId,
                 );
+              }
+              break;
+
+            // ready_status_changed：team-lifecycle REST 廣播完整 team 物件（含 members）
+            case "ready_status_changed":
+              if (data.team) {
+                callbacksRef.current.onReadyStatusChanged?.(data.team);
               }
               break;
           }

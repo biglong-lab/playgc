@@ -325,9 +325,9 @@ describe("隊伍路由 (teams)", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.members).toHaveLength(2);
-      expect(ctx.broadcastToSession).toHaveBeenCalledWith(
-        "team_team-1",
-        expect.objectContaining({ type: "member_joined" }),
+      expect(ctx.broadcastToTeam).toHaveBeenCalledWith(
+        "team-1",
+        expect.objectContaining({ type: "team_member_joined" }),
       );
     });
   });
@@ -450,8 +450,8 @@ describe("隊伍路由 (teams)", () => {
         .send({ isReady: true });
 
       expect(res.status).toBe(200);
-      expect(ctx.broadcastToSession).toHaveBeenCalledWith(
-        "team_team-1",
+      expect(ctx.broadcastToTeam).toHaveBeenCalledWith(
+        "team-1",
         expect.objectContaining({ type: "ready_status_changed" }),
       );
     });
