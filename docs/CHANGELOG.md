@@ -5,6 +5,42 @@
 
 ---
 
+## 2026-05-03
+
+### 🔒 Codex 9 輪審查 + 使用者 P0/UX 修法 + Webhook 安全統一（39 commits）
+**主題**：雙 AI 協作橫向掃描 + 使用者回報修法 + 整體系統安全姿態統一
+**範圍**：39 個 commits / 一個 working session（11:30 → 14:35）
+**狀態**：🟢 完整 test:run 156/2190 全綠 / 生產部署 healthy
+**部署**：`44cc1c81 .. 2fb3b9f5`
+
+關鍵 commits：
+- `44cc1c81 .. 092eba69` Codex 第 1-5 輪：座標 + Hook deps + Chat 雙寫 + team realtime 房間統一
+- `120fda71` Codex 第 8 輪：race_answered realtime 鏈路補完
+- `e1844a2f` ADR-0014 Realtime 協定清理
+- `a98781b4 .. 2c276308` 第 14 個 host 元件 TeamBattleScore（紅藍對抗）
+- `f02b1652` P0-security: Recur webhook 簽章 stub → HMAC SHA-256 實作
+- `04b68d99` P0: super_admin 不需區域代號進後台（findFirst 隨機抓非 super_admin）
+- `df2c5855` UX: 單人遊戲對講機自動登入 → 多人組隊才自動連、單人顯示選單
+- `cd766036` Security: 4 個 webhook signature 全部 timing-safe 統一
+
+**修復的真 bug 統計**：
+- 5 個 user-facing silent bugs（Codex 9 輪挖出）
+- 1 個未爆彈安全洞（Recur webhook stub）
+- 1 個 admin 入口失效（findFirst 多帳號隨機抓）
+- 1 個玩家 UX 問題（對講機強制登入）
+- 4 個 webhook signature 風格不一統一
+
+**新元件**：TeamBattleScore（第 14 個 host、紅藍對抗即時計分）
+**新文件**：ADR-0014 Realtime 協定清理 + host-screen-components.md（13→14 元件對照）
+
+**細節** → [changes/2026-05-03-codex-realtime-cleanup.md](changes/2026-05-03-codex-realtime-cleanup.md)
+**細節** → [changes/2026-05-03-security-and-ux-fixes.md](changes/2026-05-03-security-and-ux-fixes.md)
+**ADR** → [decisions/0014-realtime-protocol-cleanup.md](decisions/0014-realtime-protocol-cleanup.md)
+
+⏭ 下一步：商業價值推進（PhotoMosaic 候選 #2）/ 長期防護（WS schema 化）
+
+---
+
 ## 2026-05-02
 
 ### 🎮 多人遊戲元件平台 12 週路徑（Phase 1 Week 1 完成 ✅）
