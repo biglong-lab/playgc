@@ -9,6 +9,8 @@
 // 認證：Authorization: Bearer sk_xxx
 // Rate limit：sandbox 120/min、production 600/min
 
+import { verifyHmacSignature } from "./webhook-signature";
+
 const RECUR_API_BASE = "https://api.recur.tw/v1";
 
 export type RecurMode = "PAYMENT" | "SUBSCRIPTION";
@@ -94,9 +96,7 @@ export async function createRecurCheckoutSession(
  */
 /**
  * 驗證 Recur.tw webhook 簽章（HMAC SHA-256 hex）
- *
- * 安全要求：開啟 RECUR_WEBHOOK_SECRET 後此函式必須返回 false 才算阻擋成功
- * 之前 stub 直接 return true → 任何 POST 都當 valid → email spam 跳板
+ * 內部用 shared verifyHmacSignature 統一安全姿態（防 timing attack + 長度 check + 不 throw）
  *
  * @param payload 原始 request body string
  * @param signature header `x-recur-signature` 值（hex）
@@ -108,20 +108,5 @@ export function verifyRecurWebhookSignature(
   signature: string,
   webhookSecret: string,
 ): boolean {
-  if (!signature || !webhookSecret || !payload) return false;
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const crypto = require("crypto") as typeof import("crypto");
-    const expected = crypto
-      .createHmac("sha256", webhookSecret)
-      .update(payload)
-      .digest("hex");
-    const sigBuf = Buffer.from(signature, "hex");
-    const expBuf = Buffer.from(expected, "hex");
-    // 長度不一致 timingSafeEqual 會 throw、防 timing attack 必須長度先 check
-    if (sigBuf.length !== expBuf.length) return false;
-    return crypto.timingSafeEqual(sigBuf, expBuf);
-  } catch {
-    return false;
-  }
+  return verifyHmacSignature(payload, signature, webhookSecret, "hex");
 }

@@ -8,7 +8,7 @@
 //
 // 設計：用 fetch 直接打 LINE API（與 stripe-checkout / recur-tw 風格一致）
 
-import crypto from "crypto";
+import { verifyHmacSignature } from "./webhook-signature";
 
 const LINE_API_BASE = "https://api.line.me/v2/bot";
 
@@ -60,23 +60,14 @@ export interface LineMessage {
  * LINE 用 HMAC-SHA256 + base64：
  *   X-Line-Signature = base64(hmac_sha256(rawPayload, channelSecret))
  *
- * 用 timingSafeEqual 防 timing attack
+ * 內部用 shared verifyHmacSignature（base64 encoding）統一安全姿態
  */
 export function verifyLineSignature(
   rawPayload: string,
   signature: string | undefined,
   channelSecret: string,
 ): boolean {
-  if (!signature || !channelSecret) return false;
-  const expected = crypto
-    .createHmac("SHA256", channelSecret)
-    .update(rawPayload)
-    .digest("base64");
-  try {
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
-  } catch {
-    return false;
-  }
+  return verifyHmacSignature(rawPayload, signature, channelSecret, "base64");
 }
 
 /**
