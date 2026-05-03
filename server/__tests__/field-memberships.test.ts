@@ -139,6 +139,8 @@ describe("field-memberships service", () => {
   describe("grantAdmin", () => {
     it("角色不存在 → 回傳 error", async () => {
       mockFindFirst.mockResolvedValue({ id: "m-1" }); // ensureMembership existing
+      // 路由先檢查 user 存在（防匿名帳號授權）
+      mockUsersFind.mockResolvedValueOnce({ id: "user-1", email: "user@example.com" });
       mockRolesFind.mockResolvedValue(null);
 
       const result = await grantAdmin("user-1", "field-1", "role-bad", "admin-1");
@@ -149,6 +151,7 @@ describe("field-memberships service", () => {
 
     it("跨場域角色 → 阻擋", async () => {
       mockFindFirst.mockResolvedValue({ id: "m-1" });
+      mockUsersFind.mockResolvedValueOnce({ id: "user-1", email: "user@example.com" });
       mockRolesFind.mockResolvedValue({
         id: "role-other",
         fieldId: "other-field",
@@ -180,20 +183,19 @@ describe("field-memberships service", () => {
       expect(mockUpdate).toHaveBeenCalled();
     });
 
-    it("無真實 email 玩家 → 不寄信但成功", async () => {
+    // 路由 v2 加防匿名帳號：firebase.local email 會 reject（不再「不寄信但成功」）
+    it("匿名帳號（@firebase.local）不可授權 → 回傳 error", async () => {
       mockFindFirst.mockResolvedValue({ id: "m-1" });
-      mockRolesFind.mockResolvedValue({ id: "role-1", fieldId: null, name: "角色" });
-      mockAdminAccountsFind
-        .mockResolvedValueOnce({ firebaseUserId: "firebase-admin-1" })
-        .mockResolvedValueOnce(null);
+      // 第一次 query.users 用於檢查匿名帳號
       mockUsersFind.mockResolvedValueOnce({
         id: "user-1",
-        email: "user-xxx@firebase.local", // fallback 假 email
+        email: "user-xxx@firebase.local", // 匿名帳號 fallback email
       });
 
       const result = await grantAdmin("user-1", "field-1", "role-1", "admin-1");
 
-      expect(result.success).toBe(true);
+      expect(result.success).toBe(false);
+      expect(result.error).toContain("匿名帳號");
       expect(mockSendGranted).not.toHaveBeenCalled();
     });
   });

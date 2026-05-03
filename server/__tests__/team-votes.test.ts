@@ -7,13 +7,19 @@ const { mockDb } = vi.hoisted(() => {
   const mockInsert = vi.fn();
   const mockValues = vi.fn();
   const mockReturning = vi.fn();
+  const mockOnConflictDoNothing = vi.fn();
   const mockUpdate = vi.fn();
   const mockSet = vi.fn();
   const mockWhere = vi.fn();
 
-  // 鏈式操作
+  // 鏈式操作 — 路由 cast 用 insert→values→onConflictDoNothing→returning
+  // 創建用 insert→values→returning（無 onConflict）
   mockInsert.mockReturnValue({ values: mockValues });
-  mockValues.mockReturnValue({ returning: mockReturning });
+  mockValues.mockReturnValue({
+    returning: mockReturning,
+    onConflictDoNothing: mockOnConflictDoNothing,
+  });
+  mockOnConflictDoNothing.mockReturnValue({ returning: mockReturning });
   mockUpdate.mockReturnValue({ set: mockSet });
   mockSet.mockReturnValue({ where: mockWhere });
 
@@ -25,7 +31,7 @@ const { mockDb } = vi.hoisted(() => {
       },
       insert: mockInsert,
       update: mockUpdate,
-      _chain: { values: mockValues, returning: mockReturning, set: mockSet, where: mockWhere },
+      _chain: { values: mockValues, returning: mockReturning, onConflictDoNothing: mockOnConflictDoNothing, set: mockSet, where: mockWhere },
     },
   };
 });
@@ -108,9 +114,16 @@ describe("Team Votes 路由", () => {
     mockDb.query.teamVotes.findMany.mockReset();
     mockDb._chain.returning.mockReset();
     mockDb._chain.where.mockReset();
-    // 重設鏈式 mock
+    mockDb._chain.onConflictDoNothing.mockReset();
+    // 重設鏈式 mock — cast 路由用 insert→values→onConflictDoNothing→returning
     mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
-    mockDb._chain.values.mockReturnValue({ returning: mockDb._chain.returning });
+    mockDb._chain.values.mockReturnValue({
+      returning: mockDb._chain.returning,
+      onConflictDoNothing: mockDb._chain.onConflictDoNothing,
+    });
+    mockDb._chain.onConflictDoNothing.mockReturnValue({ returning: mockDb._chain.returning });
+    // 預設 returning 回有結果（cast 認為成功插入）
+    mockDb._chain.returning.mockResolvedValue([{ id: "ballot-1" }]);
     mockDb.update.mockReturnValue({ set: mockDb._chain.set });
     mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });
   });
@@ -338,7 +351,6 @@ describe("Team Votes 路由", () => {
         team: mockTeamWithMembers,
         ballots: [{ userId: "user-3", optionId: "option_0" }],
       });
-      mockDb._chain.values.mockResolvedValueOnce(undefined);
       mockDb._chain.where.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
@@ -371,7 +383,6 @@ describe("Team Votes 路由", () => {
         ballots: [],
       });
       // insert ballot
-      mockDb._chain.values.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
         .post("/api/votes/vote-1/cast")
@@ -401,7 +412,6 @@ describe("Team Votes 路由", () => {
           { userId: "user-3", optionId: "option_1" },
         ],
       });
-      mockDb._chain.values.mockResolvedValueOnce(undefined);
       mockDb._chain.where.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
@@ -429,7 +439,6 @@ describe("Team Votes 路由", () => {
           { userId: "user-3", optionId: "option_0" },
         ],
       });
-      mockDb._chain.values.mockResolvedValueOnce(undefined);
       mockDb._chain.where.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
@@ -457,7 +466,6 @@ describe("Team Votes 路由", () => {
           { userId: "user-3", optionId: "option_1" },
         ],
       });
-      mockDb._chain.values.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
         .post("/api/votes/vote-1/cast")

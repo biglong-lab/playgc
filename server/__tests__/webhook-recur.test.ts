@@ -29,6 +29,7 @@ vi.mock("../services/billing", () => ({
 
 // Mock db 避免 server/db.ts 頂層 throw（DATABASE_URL must be set）
 // 路由 import 鏈：webhook-recur.ts → db.ts
+// 路由用 db.execute 做冪等性檢查（CREATE TABLE + INSERT ON CONFLICT）
 vi.mock("../db", () => ({
   db: {
     select: vi.fn(),
@@ -37,7 +38,17 @@ vi.mock("../db", () => ({
     delete: vi.fn(),
     transaction: vi.fn(),
     query: {},
+    // 路由 markEventProcessed 用 execute(sql`INSERT ... RETURNING event_id`)
+    // rows.length > 0 = 首次處理；預設視為首次（每個測試新建 event）
+    execute: vi.fn().mockResolvedValue({ rows: [{ event_id: "evt-default" }] }),
   },
+}));
+
+// Mock drizzle-orm sql template
+vi.mock("drizzle-orm", () => ({
+  sql: vi.fn((strings: TemplateStringsArray, ..._values: unknown[]) => ({
+    queryChunks: strings,
+  })),
 }));
 
 import { storage } from "../storage";
@@ -90,10 +101,16 @@ function makeTx(overrides: Record<string, unknown> = {}) {
   };
 }
 
+// 取出 db.execute mock（每個測試 beforeEach 重新設定）
+import { db } from "../db";
+const mockDbExecute = (db as unknown as { execute: ReturnType<typeof vi.fn> }).execute;
+
 describe("Recur Webhook 路由", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockVerify.mockReturnValue(true);
+    // 重設 db.execute（首次處理 = rows.length > 0）
+    mockDbExecute.mockResolvedValue({ rows: [{ event_id: "evt-default" }] });
   });
 
   // ======================================================================
@@ -200,6 +217,12 @@ describe("Recur Webhook 路由", () => {
     mockStorage.getTransaction.mockResolvedValue(makeTx());
     mockStorage.updateTransaction.mockResolvedValue(undefined);
     mockStorage.createPurchase.mockResolvedValue(undefined);
+
+    // 第一次：rows.length > 0（首次處理）
+    // 第二次：rows.length === 0（duplicate）
+    mockDbExecute
+      .mockResolvedValueOnce({ rows: [{ event_id: "evt-dup" }] })
+      .mockResolvedValueOnce({ rows: [] });
 
     const app = createTestApp();
     const event = makeEvent({ id: "evt-dup" });

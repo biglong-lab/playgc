@@ -138,73 +138,29 @@ describe("戰隊 API", () => {
     expect(res.body).toBeNull();
   });
 
-  // ── POST /api/battle/clans ──
+  // ── POST 端點全部凍結 ──
+  // 紅線：CLAUDE.md / ADR-0003 — Squad 系統已取代 battle_clans
+  // POST /api/battle/clans 與 /api/battle/clans/:id/join 都已凍結為 410 Gone
+  // 舊資料保留唯讀、不再接受新寫入
 
-  it("已有戰隊 → 409", async () => {
+  it("POST /api/battle/clans 已凍結 → 410（Squad 系統取代）", async () => {
     const app = createApp();
-    mockStorage.getUserClan.mockResolvedValue({
-      clan: { id: "clan-1" },
-      membership: { role: "leader" },
-    });
-
     const res = await request(app)
       .post("/api/battle/clans?fieldId=field-1")
       .set(userHeaders)
       .send({ name: "新隊", tag: "NEW" });
 
-    expect(res.status).toBe(409);
-    expect(res.body.error).toContain("已經有戰隊");
+    expect(res.status).toBe(410);
   });
 
-  it("成功建立戰隊 → 201", async () => {
+  it("POST /api/battle/clans/:id/join 已凍結 → 410（Squad 系統取代）", async () => {
     const app = createApp();
-    const fakeClan = { id: "clan-new", name: "新隊", fieldId: "field-1", leaderId: "user-1" };
-
-    mockStorage.getUserClan.mockResolvedValue(null);
-    // 現在 route 用的是 createClanWithLeader 單一事務方法
-    mockStorage.createClanWithLeader.mockResolvedValue(fakeClan);
-
-    const res = await request(app)
-      .post("/api/battle/clans?fieldId=field-1")
-      .set(userHeaders)
-      .send({ name: "新隊", tag: "NEW" });
-
-    expect(res.status).toBe(201);
-    expect(res.body.id).toBe("clan-new");
-    expect(mockStorage.createClanWithLeader).toHaveBeenCalledWith(
-      expect.objectContaining({ fieldId: "field-1", leaderId: "user-1" }),
-    );
-  });
-
-  // ── POST /api/battle/clans/:id/join ──
-
-  it("加入不存在的戰隊 → 404", async () => {
-    const app = createApp();
-    mockStorage.getClan.mockResolvedValue(null);
-
-    const res = await request(app)
-      .post("/api/battle/clans/clan-999/join")
-      .set(userHeaders)
-      .send();
-
-    expect(res.status).toBe(404);
-  });
-
-  it("戰隊人數已滿 → 400", async () => {
-    const app = createApp();
-    mockStorage.getClan.mockResolvedValue({
-      id: "clan-1", fieldId: "field-1", isActive: true,
-      memberCount: 10, maxMembers: 10,
-    });
-    mockStorage.getUserClan.mockResolvedValue(null);
-
     const res = await request(app)
       .post("/api/battle/clans/clan-1/join")
       .set(userHeaders)
       .send();
 
-    expect(res.status).toBe(400);
-    expect(res.body.error).toContain("人數已滿");
+    expect(res.status).toBe(410);
   });
 
   // ── DELETE /api/battle/clans/:id/leave ──

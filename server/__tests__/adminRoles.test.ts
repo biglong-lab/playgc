@@ -11,6 +11,12 @@ const { mockDb } = vi.hoisted(() => {
   const mockSet = vi.fn();
   const mockWhere = vi.fn();
   const mockDelete = vi.fn();
+  // /api/admin/users 用 select chain
+  const mockSelect = vi.fn();
+  const mockFrom = vi.fn();
+  const mockLeftJoin = vi.fn();
+  const mockSelectWhere = vi.fn();
+  const mockOrderBy = vi.fn();
 
   // 鏈式操作
   mockInsert.mockReturnValue({ values: mockValues });
@@ -19,6 +25,12 @@ const { mockDb } = vi.hoisted(() => {
   mockSet.mockReturnValue({ where: mockWhere });
   mockWhere.mockReturnValue({ returning: mockReturning });
   mockDelete.mockReturnValue({ where: vi.fn() });
+  // select chain：select → from → leftJoin → where → orderBy（resolves to rows）
+  mockSelect.mockReturnValue({ from: mockFrom });
+  mockFrom.mockReturnValue({ leftJoin: mockLeftJoin });
+  mockLeftJoin.mockReturnValue({ where: mockSelectWhere });
+  mockSelectWhere.mockReturnValue({ orderBy: mockOrderBy });
+  mockOrderBy.mockResolvedValue([]);
 
   return {
     mockDb: {
@@ -32,7 +44,8 @@ const { mockDb } = vi.hoisted(() => {
       insert: mockInsert,
       update: mockUpdate,
       delete: mockDelete,
-      _chain: { values: mockValues, returning: mockReturning, set: mockSet, where: mockWhere },
+      select: mockSelect,
+      _chain: { values: mockValues, returning: mockReturning, set: mockSet, where: mockWhere, orderBy: mockOrderBy },
     },
   };
 });
@@ -72,7 +85,8 @@ vi.mock("@shared/schema", () => ({
   rolePermissions: { roleId: "rolePermissions.roleId" },
   adminAccounts: { id: "adminAccounts.id", fieldId: "adminAccounts.fieldId", createdAt: "adminAccounts.createdAt" },
   auditLogs: { fieldId: "auditLogs.fieldId", createdAt: "auditLogs.createdAt" },
-  users: { createdAt: "users.createdAt" },
+  users: { id: "users.id", createdAt: "users.createdAt" },
+  fieldMemberships: { fieldId: "fieldMemberships.fieldId", userId: "fieldMemberships.userId", joinedAt: "fieldMemberships.joinedAt" },
 }));
 
 import { registerAdminRoleRoutes } from "../routes/admin-roles";
@@ -286,6 +300,12 @@ describe("admin-roles 路由", () => {
 
   describe("PATCH /api/admin/accounts/:id", () => {
     it("成功更新帳號", async () => {
+      // 路由 checkAccountAccessOrThrow 先 query target account
+      mockDb.query.adminAccounts.findFirst.mockResolvedValueOnce({
+        id: "acc-1",
+        fieldId: "field-1",
+        role: { systemRole: "field_admin" },
+      });
       const updated = { id: "acc-1", displayName: "新名稱", passwordHash: "hashed" };
       mockDb._chain.returning.mockResolvedValue([updated]);
       const app = createApp();
@@ -310,6 +330,11 @@ describe("admin-roles 路由", () => {
 
   describe("POST /api/admin/accounts/:id/reset-password", () => {
     it("成功重設密碼", async () => {
+      mockDb.query.adminAccounts.findFirst.mockResolvedValueOnce({
+        id: "acc-1",
+        fieldId: "field-1",
+        role: { systemRole: "field_admin" },
+      });
       const app = createApp();
       const res = await request(app)
         .post("/api/admin/accounts/acc-1/reset-password")
@@ -320,13 +345,18 @@ describe("admin-roles 路由", () => {
     });
 
     it("密碼太短回傳 400", async () => {
+      mockDb.query.adminAccounts.findFirst.mockResolvedValueOnce({
+        id: "acc-1",
+        fieldId: "field-1",
+        role: { systemRole: "field_admin" },
+      });
       const app = createApp();
       const res = await request(app)
         .post("/api/admin/accounts/acc-1/reset-password")
         .set(adminHeaders)
         .send({ newPassword: "123" });
       expect(res.status).toBe(400);
-      expect(res.body.message).toContain("6");
+      expect(res.body.message).toContain("8"); // 路由 v2 要求至少 8 字元（曾為 6）
     });
   });
 
@@ -405,11 +435,18 @@ describe("admin-roles 路由", () => {
 
   describe("GET /api/admin/users", () => {
     it("成功取得玩家列表", async () => {
-      const mockUsers = [
-        { id: "user-1", displayName: "玩家一" },
-        { id: "user-2", displayName: "玩家二" },
+      // 路由用 select join fieldMemberships + users
+      const mockRows = [
+        {
+          user: { id: "user-1", displayName: "玩家一", email: "u1@test.com" },
+          membership: { joinedAt: new Date(), isAdmin: false, playerStatus: "active" },
+        },
+        {
+          user: { id: "user-2", displayName: "玩家二", email: "u2@test.com" },
+          membership: { joinedAt: new Date(), isAdmin: false, playerStatus: "active" },
+        },
       ];
-      mockDb.query.users.findMany.mockResolvedValue(mockUsers);
+      mockDb._chain.orderBy.mockResolvedValueOnce(mockRows);
       const app = createApp();
       const res = await request(app).get("/api/admin/users").set(adminHeaders);
       expect(res.status).toBe(200);

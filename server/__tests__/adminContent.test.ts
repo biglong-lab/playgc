@@ -49,6 +49,15 @@ vi.mock("../db", () => ({
   },
 }));
 
+// Mock slug 函數避免 ensureUniqueSlug 用 db.select chain
+vi.mock("../lib/slug", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/slug")>();
+  return {
+    ...actual,
+    ensureUniqueSlug: vi.fn(async (_table, _slugCol, _scopeCol, _scope, base) => base),
+  };
+});
+
 vi.mock("../adminAuth", () => ({
   requireAdminAuth: vi.fn((req: any, _res: any, next: any) => {
     if (req.headers["x-admin-id"]) {
@@ -84,6 +93,11 @@ vi.mock("@shared/schema", () => ({
     parse: vi.fn((data: Record<string, unknown>) => data),
     partial: vi.fn().mockReturnValue({ parse: vi.fn((data: Record<string, unknown>) => data) }),
   },
+  // 路由 ensureUniqueSlug 需要 schema table 物件
+  items: { id: "items.id", slug: "items.slug", gameId: "items.gameId" },
+  pages: { id: "pages.id", slug: "pages.slug", gameId: "pages.gameId" },
+  events: { id: "events.id", slug: "events.slug", gameId: "events.gameId" },
+  achievements: { id: "achievements.id", slug: "achievements.slug", gameId: "achievements.gameId" },
 }));
 
 import { registerAdminContentRoutes } from "../routes/admin-content";
@@ -145,7 +159,9 @@ describe("Admin Content 路由", () => {
 
     it("PATCH /api/admin/items/:id 更新道具", async () => {
       const app = createApp();
-      mockStorage.getItem.mockResolvedValueOnce({ id: "i1", name: "鑰匙" });
+      // 路由 checkItemFieldOwnership 會 getItem + getGame
+      mockStorage.getItem.mockResolvedValueOnce({ id: "i1", name: "鑰匙", gameId: "game-1" });
+      mockStorage.getGame.mockResolvedValueOnce(mockGame);
       mockStorage.updateItem.mockResolvedValueOnce({ id: "i1", name: "黃金鑰匙" });
 
       const res = await request(app)
@@ -159,7 +175,8 @@ describe("Admin Content 路由", () => {
 
     it("DELETE /api/admin/items/:id 刪除道具", async () => {
       const app = createApp();
-      mockStorage.getItem.mockResolvedValueOnce({ id: "i1", name: "鑰匙" });
+      mockStorage.getItem.mockResolvedValueOnce({ id: "i1", name: "鑰匙", gameId: "game-1" });
+      mockStorage.getGame.mockResolvedValueOnce(mockGame);
       mockStorage.deleteItem.mockResolvedValueOnce(undefined);
 
       const res = await request(app).delete("/api/admin/items/i1").set(headers);

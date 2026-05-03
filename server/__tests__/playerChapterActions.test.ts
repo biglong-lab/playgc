@@ -45,6 +45,14 @@ vi.mock("../adminAuth", () => ({
   getAdminPermissions: vi.fn(),
 }));
 
+// 路由 chapter-complete 動態 import scoreValidation 做防作弊驗證
+vi.mock("../lib/scoreValidation", () => ({
+  validateSessionScore: vi.fn().mockImplementation(async ({ clientScore }) => ({
+    safeScore: clientScore ?? 0,
+    adjusted: false,
+  })),
+}));
+
 import {
   mockStorage,
   createTestApp,

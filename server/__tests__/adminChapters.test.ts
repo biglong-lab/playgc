@@ -30,9 +30,17 @@ vi.mock("../db", () => ({
   },
 }));
 
-// Mock adminAuth 中間件 - 預設放行
+// Mock adminAuth 中間件 - 注入 req.admin（路由 checkGameFieldOwnership 需要）
 vi.mock("../adminAuth", () => ({
-  requireAdminAuth: vi.fn((_req: any, _res: any, next: any) => next()),
+  requireAdminAuth: vi.fn((req: any, _res: any, next: any) => {
+    req.admin = {
+      id: "admin-1",
+      username: "test-admin",
+      systemRole: "super_admin",
+      fieldId: "field-1",
+    };
+    next();
+  }),
   requirePermission: vi.fn(
     () => (_req: any, _res: any, next: any) => next()
   ),
@@ -94,6 +102,12 @@ function makeChapter(overrides = {}) {
 describe("管理端章節路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // 路由 checkGameFieldOwnership 會 storage.getGame、預設提供合法 game
+    mockStorage.getGame.mockResolvedValue({
+      id: "game-1",
+      fieldId: "field-1",
+      title: "Test Game",
+    });
   });
 
   // ======================================================================

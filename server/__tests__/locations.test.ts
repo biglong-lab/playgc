@@ -6,6 +6,15 @@ vi.mock("../db", () => ({
   db: { query: {} },
 }));
 
+// Mock slug 函數避免 ensureUniqueSlug 用 db.select chain（test mock db 不提供）
+vi.mock("../lib/slug", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/slug")>();
+  return {
+    ...actual,
+    ensureUniqueSlug: vi.fn(async (_table, _slugCol, _scopeCol, _scope, base) => base),
+  };
+});
+
 vi.mock("../storage", () => ({
   storage: {
     getGame: vi.fn(),
@@ -378,7 +387,9 @@ describe("地點路由 (locations)", () => {
 
     it("地點不存在時回傳 404", async () => {
       const { app } = createApp();
-      mockStorage.getSession.mockResolvedValue({ id: "s1" });
+      mockStorage.getSession.mockResolvedValue({ id: "s1", gameId: "game-1" });
+      // 路由會用 progressList 驗 isInSession（防作弊）
+      mockStorage.getPlayerProgress.mockResolvedValue([{ id: 1, userId: "user-1" }]);
       mockStorage.getLocation.mockResolvedValue(null);
 
       const res = await request(app)
@@ -390,8 +401,9 @@ describe("地點路由 (locations)", () => {
 
     it("已訪問時回傳 400", async () => {
       const { app } = createApp();
-      mockStorage.getSession.mockResolvedValue({ id: "s1" });
-      mockStorage.getLocation.mockResolvedValue({ id: 1, points: 10 });
+      mockStorage.getSession.mockResolvedValue({ id: "s1", gameId: "game-1" });
+      mockStorage.getPlayerProgress.mockResolvedValue([{ id: 1, userId: "user-1" }]);
+      mockStorage.getLocation.mockResolvedValue({ id: 1, points: 10, gameId: "game-1" });
       mockStorage.hasVisitedLocation.mockResolvedValue(true);
 
       const res = await request(app)

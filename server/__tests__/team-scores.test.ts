@@ -9,11 +9,21 @@ const { mockDb } = vi.hoisted(() => {
   const mockWhere = vi.fn();
   const mockInsert = vi.fn();
   const mockValues = vi.fn();
+  // 路由新增 §19 防作弊：db.select().from(teamMembers).where(...).limit(1)
+  const mockSelect = vi.fn();
+  const mockFrom = vi.fn();
+  const mockSelectWhere = vi.fn();
+  const mockLimit = vi.fn();
 
   // 鏈式操作支援
   mockUpdate.mockReturnValue({ set: mockSet });
   mockSet.mockReturnValue({ where: mockWhere });
   mockInsert.mockReturnValue({ values: mockValues });
+  // select chain
+  mockSelect.mockReturnValue({ from: mockFrom });
+  mockFrom.mockReturnValue({ where: mockSelectWhere });
+  mockSelectWhere.mockReturnValue({ limit: mockLimit });
+  mockLimit.mockResolvedValue([{ userId: "user-1", teamId: "team-1" }]); // 預設認為是成員
 
   return {
     mockDb: {
@@ -23,7 +33,8 @@ const { mockDb } = vi.hoisted(() => {
       },
       update: mockUpdate,
       insert: mockInsert,
-      _chain: { set: mockSet, where: mockWhere, values: mockValues },
+      select: mockSelect,
+      _chain: { set: mockSet, where: mockWhere, values: mockValues, limit: mockLimit },
     },
   };
 });
@@ -45,13 +56,16 @@ vi.mock("../firebaseAuth", () => ({
 
 // Mock schema（避免 Drizzle 直接存取 table 物件引發錯誤）
 vi.mock("@shared/schema", () => ({
-  teamSessions: { id: "teamSessions.id", teamId: "teamSessions.teamId" },
+  teamSessions: { id: "teamSessions.id", teamId: "teamSessions.teamId", createdAt: "teamSessions.createdAt" },
   teamScoreHistory: { teamId: "teamScoreHistory.teamId", createdAt: "teamScoreHistory.createdAt" },
+  teamMembers: { teamId: "teamMembers.teamId", userId: "teamMembers.userId", leftAt: "teamMembers.leftAt" },
 }));
 
 vi.mock("drizzle-orm", () => ({
   eq: vi.fn((a: string, b: string) => ({ op: "eq", a, b })),
   desc: vi.fn((col: string) => ({ op: "desc", col })),
+  and: vi.fn((...conds: any[]) => ({ op: "and", conds })),
+  isNull: vi.fn((col: string) => ({ op: "isNull", col })),
 }));
 
 import { registerTeamScoreRoutes } from "../routes/team-scores";
@@ -86,7 +100,7 @@ describe("Team Scores 路由", () => {
       const { app } = createApp();
       const res = await request(app)
         .post("/api/teams/team-1/score")
-        .send({ delta: 10 });
+        .send({ delta: 10, sourceType: "qr_scan" });
       expect(res.status).toBe(401);
     });
 
@@ -97,7 +111,7 @@ describe("Team Scores 路由", () => {
       const res = await request(app)
         .post("/api/teams/team-1/score")
         .set("Authorization", "Bearer valid-token")
-        .send({ delta: 10 });
+        .send({ delta: 10, sourceType: "qr_scan" });
 
       expect(res.status).toBe(404);
       expect(res.body.message).toContain("不存在");
@@ -137,7 +151,7 @@ describe("Team Scores 路由", () => {
       const res = await request(app)
         .post("/api/teams/team-1/score")
         .set("Authorization", "Bearer valid-token")
-        .send({ delta: 10, sourceType: "quiz", description: "答對問題" });
+        .send({ delta: 10, sourceType: "qr_scan", description: "答對問題" });
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
@@ -170,7 +184,7 @@ describe("Team Scores 路由", () => {
       const res = await request(app)
         .post("/api/teams/team-1/score")
         .set("Authorization", "Bearer valid-token")
-        .send({ delta: -15 });
+        .send({ delta: -15, sourceType: "qr_scan" });
 
       expect(res.status).toBe(200);
       expect(res.body.newScore).toBe(15);
@@ -190,7 +204,7 @@ describe("Team Scores 路由", () => {
       const res = await request(app)
         .post("/api/teams/team-1/score")
         .set("Authorization", "Bearer valid-token")
-        .send({ delta: 25 });
+        .send({ delta: 25, sourceType: "qr_scan" });
 
       expect(res.status).toBe(200);
       expect(res.body.newScore).toBe(25);
@@ -212,7 +226,7 @@ describe("Team Scores 路由", () => {
         .set("Authorization", "Bearer valid-token")
         .send({
           delta: 5,
-          sourceType: "achievement",
+          sourceType: "ar_sticker",
           sourceId: "ach-1",
           description: "完成地標探索",
         });
