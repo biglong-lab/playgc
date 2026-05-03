@@ -1,5 +1,6 @@
 // 🗺️ KnowledgeMapPage — GamePageRenderer 對應 pageType="host_knowledge_map"
 
+import { useMemo } from "react";
 import KnowledgeMap, { type KnowledgeMapConfig } from "./KnowledgeMap";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import { useMyUserName } from "@/hooks/useMyUserName";
@@ -49,11 +50,11 @@ export default function KnowledgeMapPage({ page, myUserName: propUserName }: Kno
   // W14 D3: hook 優先 → 既有 prop fallback（向下相容）
   const lineName = useMyUserName();
   const myUserName = lineName || propUserName;
-  const rawConfig = (page.config as { config?: KnowledgeMapConfig } | KnowledgeMapConfig | null) ?? null;
-  const config: KnowledgeMapConfig =
-    (rawConfig && "config" in rawConfig
-      ? rawConfig.config
-      : (rawConfig as KnowledgeMapConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（與其他 host pages 一致 pattern）
+  const config = useMemo<KnowledgeMapConfig>(() => {
+    const raw = (page.config as { config?: KnowledgeMapConfig } | KnowledgeMapConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as KnowledgeMapConfig | null)) ?? {};
+  }, [page.config]);
   const maxVisits = config.maxVisits ?? 200;
 
   const { state, sendPulse, hostMode } = useHostScreenSyncWithPulse<KnowledgeMapStateShape>({
