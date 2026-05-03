@@ -215,7 +215,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         const message = JSON.parse(data.toString());
 
         switch (message.type) {
-          case "join":
+          case "join": {
             // 驗證：如果有認證的 userId，確保訊息中的 userId 匹配
             if (ws.authenticatedUserId && message.userId !== ws.authenticatedUserId) {
               ws.send(JSON.stringify({
@@ -225,8 +225,13 @@ export function setupWebSocket(httpServer: Server): RouteContext {
               return;
             }
 
+            // 🔒 安全（Codex 第 5 輪 P0 #3）：優先用 server 端認證身份、防偽造
+            // 沒認證仍允許 join（兼容 LIFF 匿名玩家流程）、但 broadcast 用 effectiveUserId
+            // 認證 client 永遠用 server 端身份（不論 client 傳什麼）
+            const sessionEffectiveUserId = ws.authenticatedUserId || message.userId;
+
             ws.sessionId = message.sessionId;
-            ws.userId = message.userId;
+            ws.userId = sessionEffectiveUserId;
             ws.userName = message.userName;
 
             if (!clients.has(message.sessionId)) {
@@ -236,10 +241,11 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
             broadcastToSession(message.sessionId, {
               type: "user_joined",
-              userId: message.userId,
+              userId: sessionEffectiveUserId,
               userName: message.userName,
             });
             break;
+          }
 
           case "team_join": {
             // 驗證：如果有認證的 userId，確保訊息中的 userId 匹配
@@ -251,8 +257,14 @@ export function setupWebSocket(httpServer: Server): RouteContext {
               return;
             }
 
+            // 🔒 安全（Codex 第 5 輪 P0 #3）：優先用 server 端認證身份、防偽造
+            // 沒認證仍允許加入（兼容既有 client、LIFF 玩家流程）、但廣播時用 effectiveUserId
+            // 攻擊者偽造 message.userId 只能影響 UI 顯示「假名字加入」、不影響後續寫入決策
+            // （後續寫入事件已在第 3 輪修法用 ws.authenticatedUserId 強制）
+            const effectiveUserId = ws.authenticatedUserId || message.userId;
+
             ws.teamId = message.teamId;
-            ws.userId = message.userId;
+            ws.userId = effectiveUserId;
             ws.userName = message.userName;
 
             if (!teamClients.has(message.teamId)) {
@@ -272,28 +284,28 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             const memberHistory = teamMemberHistory.get(message.teamId)!;
             const userAlreadyConnected = Array.from(teamSetForJoin).some(
               (c) =>
-                (c as WebSocketClient).userId === message.userId,
+                (c as WebSocketClient).userId === effectiveUserId,
             );
-            const hasReconnected = !userAlreadyConnected && memberHistory.has(message.userId);
+            const hasReconnected = !userAlreadyConnected && memberHistory.has(effectiveUserId);
 
             teamSetForJoin.add(ws);
-            memberHistory.add(message.userId);
+            memberHistory.add(effectiveUserId);
 
             if (userAlreadyConnected) {
               // 同 user 多 socket，不廣播
             } else if (hasReconnected) {
               // 🆕 Phase 2c：重連回來 → 取消寬限期計時器（grace + auto-leave）
-              cancelDisconnectTimer(message.teamId, message.userId);
+              cancelDisconnectTimer(message.teamId, effectiveUserId);
               broadcastToTeam(message.teamId, {
                 type: "team_member_reconnected",
-                userId: message.userId,
+                userId: effectiveUserId,
                 userName: message.userName,
                 timestamp: new Date().toISOString(),
               });
             } else {
               broadcastToTeam(message.teamId, {
                 type: "team_member_joined",
-                userId: message.userId,
+                userId: effectiveUserId,
                 userName: message.userName,
                 timestamp: new Date().toISOString(),
               });
