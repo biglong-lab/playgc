@@ -111,6 +111,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxWordsPerUser: 3,
         maxLength: 10,
       };
+    case "host_team_battle_score":
+      return {
+        title: `${scenarioName} 紅藍對抗`,
+        subtitle: "雙隊即時計分、先達標獲勝",
+        teams: [
+          { id: "red", name: "紅隊", color: "#ef4444", emoji: "🔴" },
+          { id: "blue", name: "藍隊", color: "#3b82f6", emoji: "🔵" },
+        ],
+        targetScore: 50,
+        mode: "first_to_target",
+        showRecentEvents: true,
+        acceptPlayerPulse: false,
+      };
     case "quest_chain":
       return {
         title: `${scenarioName} 任務鏈`,
