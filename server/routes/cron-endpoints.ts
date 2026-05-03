@@ -17,15 +17,16 @@ import {
   checkExpiringSessionsAndNotify,
   pruneRemindedCache,
 } from "../lib/expiring-session-checker";
+import { verifySharedSecret } from "../lib/webhook-signature";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
 function verifyCronAuth(req: Request): boolean {
-  if (!CRON_SECRET) return false;
   const auth = req.headers.authorization || "";
   if (!auth.startsWith("Bearer ")) return false;
   const token = auth.slice(7);
-  return token === CRON_SECRET;
+  // 用 shared verifySharedSecret（timing-safe 比對、防 timing attack）取代 ===
+  return verifySharedSecret(token, CRON_SECRET);
 }
 
 export function registerCronEndpoints(app: Express) {
