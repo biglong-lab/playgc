@@ -17,12 +17,14 @@ interface ChatPanelProps {
 
 export default function ChatPanel({ sessionId, userId, userName, onClose }: ChatPanelProps) {
   const [message, setMessage] = useState("");
+  const [isWsConnected, setIsWsConnected] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat", sessionId],
-    refetchInterval: wsRef.current ? false : 5000,
+    // 用 state 而非 ref（ref 變更不觸發 render → query 永遠拿首次 ref 值 5000）
+    refetchInterval: isWsConnected ? false : 5000,
   });
 
   const sendMessageMutation = useMutation({
@@ -39,11 +41,12 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
   useEffect(() => {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     try {
       const ws = new WebSocket(wsUrl);
-      
+
       ws.onopen = () => {
+        setIsWsConnected(true);
         ws.send(JSON.stringify({
           type: "join",
           sessionId,
@@ -67,12 +70,17 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
         // WebSocket 錯誤已處理
       };
 
+      ws.onclose = () => {
+        setIsWsConnected(false);
+      };
+
       wsRef.current = ws;
 
       return () => {
         if (ws.readyState === WebSocket.OPEN) {
           ws.close();
         }
+        setIsWsConnected(false);
       };
     } catch {
       // WebSocket 連線建立失敗
@@ -101,6 +109,13 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
 
   const getInitial = (name: string) => {
     return name.charAt(0).toUpperCase();
+  };
+
+  // 訊息發送者頭像顯示：自己用 userName 首字、其他人用 userId 末 4 碼首字（暫時、未來補 user join 取真實名）
+  const getMessageInitial = (msg: ChatMessage): string => {
+    if (msg.userId === userId) return getInitial(userName);
+    if (!msg.userId) return "?";
+    return getInitial(msg.userId.slice(-4));
   };
 
   return (
@@ -151,7 +166,7 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
                 >
                   <Avatar className="w-8 h-8 flex-shrink-0">
                     <AvatarFallback className={isOwn ? "bg-primary text-primary-foreground" : "bg-muted"}>
-                      {getInitial(userName)}
+                      {getMessageInitial(msg)}
                     </AvatarFallback>
                   </Avatar>
                   
