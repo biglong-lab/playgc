@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 11:45 [Claude]（W18 全 11 個 host pages config useMemo 統一）
+- **上次更新**：2026-05-03 11:55 [Claude]（host-screen-components.md 對照文件 + build 驗證）
 
 ---
 
@@ -21,7 +21,7 @@
 |------|------|----------|
 | Smoke test | 51/51 ✅ | 11:40 [Claude] |
 | TypeScript | 零錯誤 ✅ | 11:40 [Claude] |
-| Build | 成功 ✅ | 09:15 [Claude] |
+| Build | 成功（6.14s + server + cron）✅ | 11:55 [Claude] |
 | 完整 test:run | **154/154 檔、2163/2163 測試全綠** ✅ | 11:09 [Claude] |
 | host pages tests | 13 檔、92/92 tests 全綠 ✅ | 11:37 [Claude] |
 | eslint no-case-declarations | 0 errors ✅ | 11:18 [Claude] |
@@ -43,9 +43,9 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 11:45 | Claude | **W18 全 11 個 host pages config useMemo 統一**（KnowledgeMap + ScoreboardAnnouncement、commit 07333431）|
+| 11:55 | Claude | **新增 host-screen-components.md 對照文件**（13 元件 × 5 市場 + 5 套餐、commit 00454fd4）+ build 驗證 6.14s ✅ |
+| 11:45 | Claude | W18 全 11 個 host pages config useMemo 統一（KnowledgeMap + ScoreboardAnnouncement、commit 07333431）|
 | 11:40 | Claude | 8 個 host pages 統一 useMemo（CrowdGather/Guestbook/LiveLeaderboard/Polaroid/PollLive/Trivia/WaveResponse/WordCloud、commit 009c4262）|
-| 11:30 | Claude | 補修 P0/P1（依 Codex 補分析、座標全鏈一致 + Hook deps 穩定、commit 44cc1c81）|
 
 ---
 
