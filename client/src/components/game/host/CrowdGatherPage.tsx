@@ -1,6 +1,6 @@
 // 📺 CrowdGatherPage — GamePageRenderer 對應 pageType="host_crowd_gather"
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import CrowdGather, { type CrowdGatherConfig } from "./CrowdGather";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import type { Page } from "@shared/schema";
@@ -21,9 +21,11 @@ interface CrowdGatherStateShape {
 }
 
 export default function CrowdGatherPage({ page }: CrowdGatherPageProps) {
-  const rawConfig = (page.config as { config?: CrowdGatherConfig } | CrowdGatherConfig | null) ?? null;
-  const config: CrowdGatherConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as CrowdGatherConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效 + 避免 useHostScreenSync opts 反覆觸發 effect）
+  const config = useMemo<CrowdGatherConfig>(() => {
+    const raw = (page.config as { config?: CrowdGatherConfig } | CrowdGatherConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as CrowdGatherConfig | null)) ?? {};
+  }, [page.config]);
   const targetCount = Math.max(1, config.targetCount ?? 10);
 
   const handlePulse = useCallback(

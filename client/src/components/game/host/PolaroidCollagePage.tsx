@@ -1,6 +1,6 @@
 // 📺 PolaroidCollagePage — GamePageRenderer 對應 pageType="host_polaroid_collage"
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import PolaroidCollage, { type PolaroidCollageConfig } from "./PolaroidCollage";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,9 +32,11 @@ export default function PolaroidCollagePage({ page }: PolaroidCollagePageProps) 
   const { user } = useAuth();
   const myUserName = lineName || user?.firstName || user?.email?.split("@")[0] || "匿名";
 
-  const rawConfig = (page.config as { config?: PolaroidCollageConfig } | PolaroidCollageConfig | null) ?? null;
-  const config: PolaroidCollageConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as PolaroidCollageConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<PolaroidCollageConfig>(() => {
+    const raw = (page.config as { config?: PolaroidCollageConfig } | PolaroidCollageConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as PolaroidCollageConfig | null)) ?? {};
+  }, [page.config]);
 
   const handlePulse = useCallback(
     (

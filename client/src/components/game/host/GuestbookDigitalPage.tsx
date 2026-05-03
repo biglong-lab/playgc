@@ -1,6 +1,6 @@
 // 📺 GuestbookDigitalPage — GamePageRenderer 對應 pageType="host_guestbook_digital"
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import GuestbookDigital, { type GuestbookDigitalConfig } from "./GuestbookDigital";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,9 +30,11 @@ export default function GuestbookDigitalPage({ page }: GuestbookDigitalPageProps
   const { user } = useAuth();
   const myUserName = lineName || user?.firstName || user?.email?.split("@")[0] || "";
 
-  const rawConfig = (page.config as { config?: GuestbookDigitalConfig } | GuestbookDigitalConfig | null) ?? null;
-  const config: GuestbookDigitalConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as GuestbookDigitalConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<GuestbookDigitalConfig>(() => {
+    const raw = (page.config as { config?: GuestbookDigitalConfig } | GuestbookDigitalConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as GuestbookDigitalConfig | null)) ?? {};
+  }, [page.config]);
 
   const handlePulse = useCallback(
     (

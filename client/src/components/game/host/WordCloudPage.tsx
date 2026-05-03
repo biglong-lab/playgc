@@ -1,6 +1,6 @@
 // 💬 WordCloudPage — GamePageRenderer 用此元件對應 pageType="host_word_cloud"
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import WordCloud, {
   type WordCloudConfig,
   type WordCloudState,
@@ -18,9 +18,11 @@ interface WordCloudPageProps {
 }
 
 export default function WordCloudPage({ page }: WordCloudPageProps) {
-  const rawConfig = (page.config as { config?: WordCloudConfig } | WordCloudConfig | null) ?? null;
-  const config: WordCloudConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as WordCloudConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<WordCloudConfig>(() => {
+    const raw = (page.config as { config?: WordCloudConfig } | WordCloudConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as WordCloudConfig | null)) ?? {};
+  }, [page.config]);
   const maxWordsPerUser = config.maxWordsPerUser ?? DEFAULT_MAX_WORDS_PER_USER;
   const maxLength = config.maxLength ?? DEFAULT_MAX_LENGTH;
 

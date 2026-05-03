@@ -1,6 +1,6 @@
 // 📺 TriviaShowdownPage — GamePageRenderer 對應 pageType="host_trivia_showdown"
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import TriviaShowdown, { type TriviaShowdownConfig } from "./TriviaShowdown";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,9 +32,10 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
   const { user } = useAuth();
   const myUserName = lineName || user?.firstName || user?.email?.split("@")[0] || "匿名";
 
-  const rawConfig = (page.config as { config?: TriviaShowdownConfig } | TriviaShowdownConfig | null) ?? null;
-  const config: TriviaShowdownConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as TriviaShowdownConfig | null)) ?? {
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<TriviaShowdownConfig>(() => {
+    const raw = (page.config as { config?: TriviaShowdownConfig } | TriviaShowdownConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as TriviaShowdownConfig | null)) ?? {
       title: "🏆 知識搶答",
       questions: [
         {
@@ -53,6 +54,7 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
         },
       ],
     };
+  }, [page.config]);
 
   const handlePulse = useCallback(
     (

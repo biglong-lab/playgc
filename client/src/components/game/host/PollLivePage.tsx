@@ -3,7 +3,7 @@
 // 設計依據：docs/decisions/0004-host-screen-axis.md
 // 用 useHostScreenSyncWithPulse hook 處理 WS 連線、register、計票
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import PollLive, { type PollLiveConfig } from "./PollLive";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import type { Page } from "@shared/schema";
@@ -30,15 +30,17 @@ interface PollLiveStateShape {
 
 export default function PollLivePage({ page }: PollLivePageProps) {
   // 從 page.config jsonb 解析 config（合理 fallback 確保不爆）
-  const rawConfig = (page.config as { config?: PollLiveConfig } | PollLiveConfig | null) ?? null;
-  const config: PollLiveConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as PollLiveConfig | null)) ?? {
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<PollLiveConfig>(() => {
+    const raw = (page.config as { config?: PollLiveConfig } | PollLiveConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as PollLiveConfig | null)) ?? {
       question: "請投票",
       options: [
         { id: "a", label: "選項 A" },
         { id: "b", label: "選項 B" },
       ],
     };
+  }, [page.config]);
 
   // 大螢幕端計票邏輯：玩家送 pulseType='vote' + payload={optionId}
   // 規則：每個 user 只算一次（用 fromUserId 去重 — server 端 ws 訊息有附）

@@ -1,6 +1,6 @@
 // 📺 WaveResponsePage — GamePageRenderer 對應 pageType="host_wave_response"
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import WaveResponse, { type WaveResponseConfig } from "./WaveResponse";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import type { Page } from "@shared/schema";
@@ -17,9 +17,11 @@ interface WaveResponseStateShape {
 const BUCKET_WINDOW_SEC = 30;
 
 export default function WaveResponsePage({ page }: WaveResponsePageProps) {
-  const rawConfig = (page.config as { config?: WaveResponseConfig } | WaveResponseConfig | null) ?? null;
-  const config: WaveResponseConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as WaveResponseConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<WaveResponseConfig>(() => {
+    const raw = (page.config as { config?: WaveResponseConfig } | WaveResponseConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as WaveResponseConfig | null)) ?? {};
+  }, [page.config]);
 
   const handlePulse = useCallback(
     (

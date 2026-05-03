@@ -1,6 +1,6 @@
 // 📺 LiveLeaderboardPage — GamePageRenderer 對應 pageType="host_live_leaderboard"
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import LiveLeaderboard, { type LiveLeaderboardConfig } from "./LiveLeaderboard";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import type { Page } from "@shared/schema";
@@ -21,9 +21,11 @@ interface LiveLeaderboardStateShape {
 }
 
 export default function LiveLeaderboardPage({ page }: LiveLeaderboardPageProps) {
-  const rawConfig = (page.config as { config?: LiveLeaderboardConfig } | LiveLeaderboardConfig | null) ?? null;
-  const config: LiveLeaderboardConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as LiveLeaderboardConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<LiveLeaderboardConfig>(() => {
+    const raw = (page.config as { config?: LiveLeaderboardConfig } | LiveLeaderboardConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as LiveLeaderboardConfig | null)) ?? {};
+  }, [page.config]);
 
   // 玩家 myId — 用 sessionStorage 隨機 id（簡化版；正式應接 useAuth）
   const myId = (() => {
