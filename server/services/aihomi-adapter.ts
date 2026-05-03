@@ -237,15 +237,26 @@ export async function processAihomiRedeemCallback(payload: {
 
 /**
  * 驗證 webhook secret（防偽造）
+ * 用 timingSafeEqual 防 timing attack（之前 === 直接比對 timing 較弱）
  */
 export async function verifyAihomiWebhookSecret(secretFromHeader: string): Promise<boolean> {
+  if (!secretFromHeader) return false;
   const [integration] = await db
     .select()
     .from(externalRewardIntegrations)
     .where(eq(externalRewardIntegrations.provider, PROVIDER_AIHOMI));
 
   if (!integration || !integration.webhookSecret) return false;
-  return secretFromHeader === integration.webhookSecret;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const crypto = require("crypto") as typeof import("crypto");
+    const headerBuf = Buffer.from(secretFromHeader);
+    const storedBuf = Buffer.from(integration.webhookSecret);
+    if (headerBuf.length !== storedBuf.length) return false;
+    return crypto.timingSafeEqual(headerBuf, storedBuf);
+  } catch {
+    return false;
+  }
 }
 
 function getCallbackUrl(): string {

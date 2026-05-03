@@ -80,20 +80,28 @@ export async function createCheckoutSession(
   return response.json() as Promise<CheckoutSessionResponse>;
 }
 
-/** 驗證 Webhook 簽名（HMAC-SHA256） */
+/** 驗證 Webhook 簽名（HMAC-SHA256 hex）
+ *  安全：長度不符 / Buffer 解析失敗一律 false（不 throw、避免 outer catch 變 200 OK）
+ */
 export function verifyWebhookSignature(
   rawBody: string,
   signature: string,
 ): boolean {
-  const secret = getWebhookSecret();
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(rawBody)
-    .digest("hex");
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected),
-  );
+  if (!signature || !rawBody) return false;
+  try {
+    const secret = getWebhookSecret();
+    const expected = crypto
+      .createHmac("sha256", secret)
+      .update(rawBody)
+      .digest("hex");
+    const sigBuf = Buffer.from(signature, "hex");
+    const expBuf = Buffer.from(expected, "hex");
+    // timingSafeEqual 長度不符會 throw、必須先 check
+    if (sigBuf.length !== expBuf.length) return false;
+    return crypto.timingSafeEqual(sigBuf, expBuf);
+  } catch {
+    return false;
+  }
 }
 
 /** 解析 Webhook 事件 */
