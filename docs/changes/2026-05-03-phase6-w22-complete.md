@@ -144,7 +144,11 @@ Phase 6 W22 sprint 目標：
 ### 已知限制 / 後續優化
 1. **未部署**：須使用者明確說「部署」才能讓 /admin/manual + 3 新元件 + 5 新情境上線
 2. **3 新元件 demo 未進 ShowcaseHub 主流程**：W22DemoSection 是獨立區塊、不在原 host element 5 demo grid
-3. **新元件未進 game-editor PAGE_TYPES**：admin 後台「建立關卡」選單未含 host_bingo_board / host_blessing_wall / host_micro_qa（需另加進 `client/src/pages/game-editor/constants.ts`）
+3. **新元件透過 scenario-templates 已可用**（不需改 PAGE_TYPES）：
+   - host_* 元件用法是「admin 進 /template-market 選情境 → 一鍵建場」、不走 PAGE_TYPES 手動選單
+   - PAGE_TYPES 用於 game-editor 個人 / 多人關卡編輯、host_* 元件已在 GamePageRenderer 註冊、自動可被引用
+   - 已驗證：wedding-deluxe / carnival-bingo / lecture-conference 三情境引用 BingoBoard / BlessingWall / MicroQa、admin 一鍵建場即可使用
+   - 未來如要在 game-editor 自定義流程加 host_* 為單關、可選擇性加進 PAGE_TYPES（非必要）
 4. **scenario-templates 測試只有 20 個**：未針對新加 5 情境寫專屬 assertion
 5. **W22 元件無 ShowcaseHub demo screenshot**：行銷材料 / 截圖待補
 
