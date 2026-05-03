@@ -25,6 +25,7 @@ const WordCloudPage = lazy(() => import("./WordCloudPage")); // W18 D3
 const TeamBattleScorePage = lazy(() => import("./TeamBattleScorePage")); // W19 紅藍對抗
 const BingoBoardPage = lazy(() => import("./BingoBoardPage")); // W22 5×5 賓果板（5 大市場通用）
 const BlessingWallPage = lazy(() => import("./BlessingWallPage")); // W22 祝福瀑布牆（交誼類主視覺）
+const MicroQaPage = lazy(() => import("./MicroQaPage")); // W22 即時 Q&A（講座 / 會議）
 
 interface HostPageRendererProps {
   page: Page;
@@ -77,6 +78,8 @@ export default function HostPageRenderer({ page, myUserName }: HostPageRendererP
             return <BingoBoardPage page={page} />;
           case "host_blessing_wall":
             return <BlessingWallPage page={page} />;
+          case "host_micro_qa":
+            return <MicroQaPage page={page} />;
           default:
             return (
               <div className="text-center text-zinc-400 p-8">
