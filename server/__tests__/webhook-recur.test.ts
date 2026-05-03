@@ -27,6 +27,19 @@ vi.mock("../services/billing", () => ({
   recordTransactionFee: vi.fn().mockResolvedValue({ feeAmount: 5, feePercent: 5 }),
 }));
 
+// Mock db 避免 server/db.ts 頂層 throw（DATABASE_URL must be set）
+// 路由 import 鏈：webhook-recur.ts → db.ts
+vi.mock("../db", () => ({
+  db: {
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    transaction: vi.fn(),
+    query: {},
+  },
+}));
+
 import { storage } from "../storage";
 import { verifyWebhookSignature } from "../services/recur-client";
 import { incrementUsage, recordTransactionFee } from "../services/billing";

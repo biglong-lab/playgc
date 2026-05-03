@@ -36,6 +36,19 @@ const { mockStorage } = vi.hoisted(() => ({
 
 vi.mock("../storage", () => ({ storage: mockStorage }));
 
+// Mock db 避免 server/db.ts 頂層 throw（DATABASE_URL must be set）
+// 路由 import 鏈：admin-content.ts → lib/slug.ts → db.ts
+vi.mock("../db", () => ({
+  db: {
+    select: vi.fn(),
+    insert: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    transaction: vi.fn(),
+    query: {},
+  },
+}));
+
 vi.mock("../adminAuth", () => ({
   requireAdminAuth: vi.fn((req: any, _res: any, next: any) => {
     if (req.headers["x-admin-id"]) {

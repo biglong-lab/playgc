@@ -7,17 +7,27 @@
 
 ## 🚧 P0 — 環境問題（最快、5 分鐘 × 2）
 
-### [ ] T002.1 修 `adminContent.test.ts` 整檔崩
-- **症狀**：`Error: DATABASE_URL must be set` — 路由 import 觸發 db.ts 頂層 throw
-- **修法**：頂層加 `vi.mock("../db", () => ({ db: {} }))` 在 import 路由前
-- **估時**：5 分鐘
-- **任務檔**：[tasks/T002-test-suite-cleanup.md](tasks/T002-test-suite-cleanup.md)
+### [ ] T003.1 修協作文檔 `cc` / `/cc` 文案矛盾 + 進度板過時
+- **症狀**：`AGENTS.md`、`PROTOCOL.md`、`codexclaude-dbug.md` 對 `cc` / `/cc` 說法不一致；`STATUS.md` / `BACKLOG.md` 有過時進度
+- **修法**：統一成單一說法、同步 STATUS 最近動作 / smoke 健檢狀態 / 已完成 commit 事實
+- **估時**：15 分鐘
+- **任務檔**：待建立
 
-### [ ] T002.2 修 `webhook-recur.test.ts` 整檔崩
-- **症狀**：同上
-- **修法**：同上
-- **估時**：5 分鐘
-- **任務檔**：[tasks/T002-test-suite-cleanup.md](tasks/T002-test-suite-cleanup.md)
+<!-- T002.1 / T002.2 已完成、移到「✅ 已完成」區 -->
+
+### [ ] T002.1b adminContent.test.ts 剩 4 失敗（CRUD）
+- **症狀**：Items CRUD POST/PATCH/DELETE 回 500/404
+- **背景**：T002.1 db mock 修好整檔崩、但 mock storage method 不夠完整
+- **修法**：補 mock 對應的 storage method、或對齊路由實際邏輯
+- **估時**：15 分鐘
+- **優先**：P3（測試過時類型）
+
+### [ ] T002.2b webhook-recur.test.ts 剩 6 失敗
+- **症狀**：6/12 測試失敗、需查路由邏輯
+- **背景**：T002.2 db mock 修好整檔崩、但仍有 6 個 assertion 失敗
+- **修法**：跑單檔看詳細錯誤、判斷類型（過時 / 真 bug）
+- **估時**：20 分鐘
+- **優先**：P3
 
 ---
 
@@ -116,4 +126,15 @@
 #### [x] T-RESTRUCTURE 重構協作檔為 codex-claude/ 目錄結構
 - **目的**：讓未來多次協作不混亂
 - **產出**：codex-claude/{PROTOCOL, STATUS, BACKLOG}.md + logs/ + tasks/ + decisions/
-- **commit**：（pending）
+- **commit**：`331d5ae4`
+
+### 2026-05-03 10:55 [Claude]
+
+#### [x] T002.1 修 adminContent.test.ts 整檔崩 + [x] T002.2 修 webhook-recur.test.ts 整檔崩
+- **修法**：兩檔頂層加 `vi.mock("../db", () => ({ db: { ... } }))` 在 import 路由前
+- **影響**：
+  - adminContent：0 → 24 tests（20 通過、4 失敗 → 移 T002.1b）
+  - webhook-recur：0 → 12 tests（6 通過、6 失敗 → 移 T002.2b）
+- **驗證**：smoke 51/51 / TS 零錯誤
+- **預估 vs 實際**：估 10 分鐘、實際 ~10 分鐘
+- **commit**：（即將）
