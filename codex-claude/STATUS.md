@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 14:10 [Claude]（**3 個使用者新問題全修 + 部署：未爆彈 webhook + super_admin 入口 + 單人對講機 UX**）
+- **上次更新**：2026-05-03 14:25 [Claude]（**補強另外 2 個 webhook 簽章驗證 timing-safe + 防 throw、4 個 webhook signature 全部統一安全姿態**）
 
 ---
 
@@ -52,7 +52,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 14:10 | Claude | **3 個使用者新問題全修 + 部署**（df2c5855 對講機 UX）|
+| 14:25 | Claude | **補強另外 2 個 webhook 簽章 timing-safe**（recur-client throw → 防 + aihomi === → timingSafeEqual、commit cd766036）+ 部署 |
+| 14:10 | Claude | 3 個使用者新問題全修 + 部署（df2c5855 對講機 UX）|
 | 14:00 | Claude | **P0 super_admin 不需區域代號進入後台**（findFirst 隨機抓非 super_admin、改 join 篩、commit 04b68d99）+ 部署 |
 | 13:55 | Claude | **P0-security 未爆彈 Recur webhook 簽章 stub**（→ HMAC SHA-256 + 401 阻擋、commit f02b1652）+ 部署 |
 | 13:50 | Claude | 🚀 部署上線完成（commit 355ea092 → 生產 docker rebuild、5 端點 e2e 全 200、12 情境 live、無 regression）|
