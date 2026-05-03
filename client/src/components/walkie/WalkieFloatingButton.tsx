@@ -33,6 +33,8 @@ interface WalkieFloatingButtonProps {
   gameId?: string | null;
   /** 是否顯示 */
   enabled?: boolean;
+  /** 🆕 是否已組隊（多人模式）— 只在 true 時自動進 session 對講群、單人模式顯示選單讓玩家用 QR 邀請朋友 */
+  hasTeam?: boolean;
 }
 
 interface WalkieGroup {
@@ -48,6 +50,7 @@ export function WalkieFloatingButton({
   sessionId,
   gameId,
   enabled = true,
+  hasTeam = false,
 }: WalkieFloatingButtonProps) {
   const { toast } = useToast();
   const [expanded, setExpanded] = useState(false);
@@ -76,9 +79,12 @@ export function WalkieFloatingButton({
   // 🆕 多人遊戲場景：進入 GamePlay 時自動連 session 對講群
   //   組隊後玩家不必再手動點「跟遊戲隊友對講」。
   //   用 ref 確保只自動連一次，使用者離開群組不會被反覆拉回。
+  // 🆕 2026-05-03 修：只在「多人已組隊」(hasTeam=true) 才自動連、
+  //   單人遊戲應該顯示選單讓玩家自行決定要不要建群（QR 邀請朋友）
   const autoJoinedSessionRef = useRef(false);
   useEffect(() => {
     if (
+      hasTeam && // 必須已組隊（多人模式）
       sessionId &&
       !groupLoading && // 等 myGroup query 結束才判斷
       !myGroup && // 已有手動建的群組則不搶
@@ -89,7 +95,7 @@ export function WalkieFloatingButton({
       setUseSessionMode(true);
       setView("in-session");
     }
-  }, [sessionId, myGroup, view, groupLoading]);
+  }, [hasTeam, sessionId, myGroup, view, groupLoading]);
 
   // 決定連線參數
   const connectParams = (() => {
@@ -426,7 +432,8 @@ export function WalkieFloatingButton({
                   <span>或手動輸入 6 碼</span>
                 </button>
 
-                {sessionId && (
+                {/* 多人模式才顯示「跟遊戲隊友」選項；單人模式只能透過 QR 邀請朋友建組 */}
+                {sessionId && hasTeam && (
                   <button
                     onClick={() => {
                       setUseSessionMode(true);
@@ -435,7 +442,7 @@ export function WalkieFloatingButton({
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors text-left text-xs text-muted-foreground"
                   >
                     <Users className="w-3.5 h-3.5" />
-                    <span>跟遊戲隊友對講（若有組隊）</span>
+                    <span>跟遊戲隊友對講</span>
                   </button>
                 )}
 

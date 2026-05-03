@@ -629,11 +629,14 @@ export default function GamePlay() {
       <RewardFeedbackOverlay />
 
       {/* 📻 對講機浮動按鈕（玩家可跟隊友語音） */}
+      {/* hasTeam=true：多人模式自動連 session 對講群、不必手動點 */}
+      {/* hasTeam=false：單人模式不自動連、玩家可透過 QR 邀請朋友建組（沒需求就不用）*/}
       {!isCompleted && (
         <WalkieFloatingButton
           sessionId={sessionId}
           gameId={gameId}
           enabled
+          hasTeam={!!myTeam?.id}
         />
       )}
 
