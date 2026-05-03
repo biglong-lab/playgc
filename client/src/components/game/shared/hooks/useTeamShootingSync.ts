@@ -128,8 +128,15 @@ export function useTeamShootingSync({
           setIsConnected(true);
           setError(null);
           reconnectAttemptsRef.current = 0;
-          // 加入 session
-          ws.send(JSON.stringify({ type: "session_join", sessionId }));
+          // 加入 session（用 server case "join"、之前送 "session_join" 是協定錯誤、server 沒對應 case → 收不到 shooting_hit 廣播）
+          ws.send(
+            JSON.stringify({
+              type: "join",
+              sessionId,
+              userId: myUserId,
+              userName: myDisplayName,
+            }),
+          );
         };
 
         ws.onmessage = (event) => {
