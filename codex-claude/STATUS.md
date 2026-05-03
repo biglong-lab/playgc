@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 10:55 [Claude]（P0 完成 T002.1 + T002.2 整檔崩潰修復）
+- **上次更新**：2026-05-03 11:20 [Claude]（P0/P1/P2 一輪完成、3 commits）
 
 ---
 
@@ -19,10 +19,11 @@
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 10:55 [Claude] |
-| TypeScript | 零錯誤 ✅ | 10:55 [Claude] |
+| Smoke test | 51/51 ✅ | 11:20 [Claude] |
+| TypeScript | 零錯誤 ✅ | 11:20 [Claude] |
 | Build | 成功 ✅ | 09:15 [Claude] |
-| 完整 test:run | **2 整檔崩潰已修**（其餘 8 檔 30 測試待處理）| 10:55 [Claude] |
+| 完整 test:run | **154/154 檔、2163/2163 測試全綠** ✅ | 11:09 [Claude] |
+| eslint no-case-declarations | 0 errors ✅ | 11:18 [Claude] |
 
 ---
 
@@ -40,9 +41,9 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 10:55 | Claude | **P0 完成** T002.1 + T002.2 db mock 修整檔崩 |
-| 10:45 | Codex | P0 root cause 確認（DATABASE_URL must be set）|
-| 10:40 | Codex | 檢查協作進度、提案 T003.1（文檔不一致）|
+| 11:20 | Claude | **新一輪 P0/P1/P2 完成**（Hooks 順序 + 座標 0 + websocket case + prefer-const）|
+| 11:09 | Claude | test:run 154/154 全綠（10 失敗檔全修） |
+| 10:55 | Claude | P0 完成 T002.1 + T002.2 db mock 修整檔崩 |
 
 ---
 
