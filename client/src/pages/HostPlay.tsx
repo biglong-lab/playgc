@@ -9,7 +9,7 @@
 //   - 收 host_screen_state（大螢幕廣播狀態）
 //   - 送 host_screen_pulse（投票、emoji、按鈕觸發）
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,12 +49,11 @@ interface HostSessionInfo {
 
 export default function HostPlay() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const wsRef = useRef<WebSocket | null>(null);
-  const [wsConnected, setWsConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const myUserName = useLineProfileFromQuery();
+  // 頁面層不再自開 WS（之前重複建立、跟元件層 useHostScreenSync 同畫面雙連線）
+  // 連線狀態 + error 改由 HostPageRenderer 內部 hook 管理；indicator 改用 info query 載入狀態
 
-  const { data: info, isLoading } = useQuery<HostSessionInfo>({
+  const { data: info, isLoading, error: queryError } = useQuery<HostSessionInfo>({
     queryKey: ["/api/host-sessions", sessionId],
     queryFn: async () => {
       const res = await fetch(`/api/host-sessions/${sessionId}`);
@@ -77,40 +76,9 @@ export default function HostPlay() {
 
   const hostPage = pages?.find((p) => p.pageType.startsWith("host_"));
 
-  useEffect(() => {
-    if (!sessionId) return;
-
-    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      setWsConnected(true);
-      ws.send(JSON.stringify({
-        type: "host_screen_register",
-        sessionId,
-        role: "player",
-      }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === "host_screen_error") {
-          setError(msg.message);
-          setWsConnected(false);
-        }
-        // 元件層會自己訂閱 host_screen_state（之後 PollLive 等元件實作）
-      } catch { /* ignore */ }
-    };
-
-    ws.onclose = () => setWsConnected(false);
-    ws.onerror = () => setError("連線失敗");
-
-    return () => {
-      ws.close();
-    };
-  }, [sessionId]);
+  // 用 query 載入狀態當 indicator 訊號（已就緒 / 載入中），實際 WS 連線由元件層 hook 管理
+  const isReady = !!info && !!sessionId;
+  const error = queryError instanceof Error ? queryError.message : null;
 
   if (isLoading) {
     return (
@@ -153,8 +121,8 @@ export default function HostPlay() {
                 👋 {myUserName}
               </span>
             )}
-            <div className={`w-2 h-2 rounded-full ${wsConnected ? "bg-emerald-500" : "bg-zinc-400"}`} />
-            {wsConnected ? "已連線" : "連線中"}
+            <div className={`w-2 h-2 rounded-full ${isReady ? "bg-emerald-500" : "bg-zinc-400"}`} />
+            {isReady ? "已就緒" : "載入中"}
           </div>
         </div>
       </header>

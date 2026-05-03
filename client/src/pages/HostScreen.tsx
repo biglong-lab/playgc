@@ -10,8 +10,7 @@
 //   - 連 WS 後送 host_screen_register（role: 'host', hostToken）
 //   - 收 host_screen_pulse（玩家動作）+ 廣播 host_screen_state（狀態同步）
 
-import { useEffect, useState, useRef } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2, Tv } from "lucide-react";
@@ -28,15 +27,13 @@ interface HostSessionInfo {
 
 export default function HostScreen() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const [, setLocation] = useLocation();
-  const wsRef = useRef<WebSocket | null>(null);
-  const [wsConnected, setWsConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // 頁面層不再自開 WS（之前重複建立、跟元件層 useHostScreenSync 同畫面雙連線）
+  // 連線狀態 + error 改由 HostPageRenderer 內部 hook 管理；indicator 改用 info query 載入狀態
 
   // URL 取 token
   const hostToken = new URLSearchParams(window.location.search).get("token");
 
-  const { data: info, isLoading } = useQuery<HostSessionInfo>({
+  const { data: info, isLoading, error: queryError } = useQuery<HostSessionInfo>({
     queryKey: ["/api/host-sessions", sessionId],
     queryFn: async () => {
       const res = await fetch(`/api/host-sessions/${sessionId}`);
@@ -60,42 +57,9 @@ export default function HostScreen() {
   // 找第一個 host_* pageType 的頁
   const hostPage = pages?.find((p) => p.pageType.startsWith("host_"));
 
-  // 建立 WebSocket
-  useEffect(() => {
-    if (!sessionId || !hostToken) return;
-
-    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      setWsConnected(true);
-      ws.send(JSON.stringify({
-        type: "host_screen_register",
-        sessionId,
-        hostToken,
-        role: "host",
-      }));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === "host_screen_error") {
-          setError(msg.message);
-          setWsConnected(false);
-        }
-        // 其他事件交給元件層處理（state 由元件 dispatch）
-      } catch { /* ignore */ }
-    };
-
-    ws.onclose = () => setWsConnected(false);
-    ws.onerror = () => setError("WebSocket 連線失敗");
-
-    return () => {
-      ws.close();
-    };
-  }, [sessionId, hostToken]);
+  // 用 query 載入狀態當 indicator 訊號（已就緒 / 載入中），實際 WS 連線由元件層 hook 管理
+  const isReady = !!info && !!sessionId && !!hostToken;
+  const error = queryError instanceof Error ? queryError.message : null;
 
   // 嘗試自動全螢幕（需使用者互動觸發 — 大螢幕模式 admin 應該主動點全螢幕）
   // 這裡只提供按鈕，不強制 fullscreen API（會被瀏覽器擋）
@@ -153,8 +117,8 @@ export default function HostScreen() {
           </div>
         </div>
         <div className="flex items-center gap-2 text-xs">
-          <div className={`w-2 h-2 rounded-full ${wsConnected ? "bg-emerald-500" : "bg-zinc-600"}`} />
-          {wsConnected ? "已連線" : "連線中..."}
+          <div className={`w-2 h-2 rounded-full ${isReady ? "bg-emerald-500" : "bg-zinc-600"}`} />
+          {isReady ? "已就緒" : "載入中..."}
         </div>
       </div>
 
