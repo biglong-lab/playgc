@@ -1,7 +1,7 @@
 // 🎯 LotteryWheelPage — GamePageRenderer 用此元件對應 pageType="host_lottery_wheel"
 // 設計依據：docs/decisions/0013-w18-component-expansion.md
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import LotteryWheel, {
   type LotteryWheelConfig,
   type LotteryWheelState,
@@ -15,9 +15,11 @@ interface LotteryWheelPageProps {
 }
 
 export default function LotteryWheelPage({ page }: LotteryWheelPageProps) {
-  const rawConfig = (page.config as { config?: LotteryWheelConfig } | LotteryWheelConfig | null) ?? null;
-  const config: LotteryWheelConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as LotteryWheelConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<LotteryWheelConfig>(() => {
+    const raw = (page.config as { config?: LotteryWheelConfig } | LotteryWheelConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as LotteryWheelConfig | null)) ?? {};
+  }, [page.config]);
 
   const handlePulse = useCallback(
     (

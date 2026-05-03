@@ -61,9 +61,8 @@ export function LocationImporter({
   // 依模式過濾：gps 模式要有座標；qr 模式要有 qrCodeData
   const filtered = (locations || []).filter((loc) => {
     if (mode === "gps") {
-      return (
-        loc.latitude && loc.longitude && loc.latitude !== "0" && loc.longitude !== "0"
-      );
+      // 用 != null 取代 truthy 檢查 + 移除 "0" 特判（防赤道 / 子午線合法座標被排除）
+      return loc.latitude != null && loc.longitude != null;
     }
     if (mode === "qr") {
       return !!loc.qrCodeData?.trim();
@@ -144,7 +143,7 @@ export function LocationImporter({
           )}
 
           {filtered.map((loc) => {
-            const hasCoords = !!(loc.latitude && loc.longitude);
+            const hasCoords = loc.latitude != null && loc.longitude != null;
             const hasQr = !!loc.qrCodeData?.trim();
             return (
               <button

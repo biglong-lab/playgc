@@ -1,7 +1,7 @@
 // 📺 EmojiReactPage — GamePageRenderer 用此元件對應 pageType="host_emoji_react"
 // 設計依據：docs/decisions/0004-host-screen-axis.md
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import EmojiReact, { type EmojiReactConfig } from "./EmojiReact";
 import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
 import type { Page } from "@shared/schema";
@@ -27,9 +27,11 @@ const DEFAULT_EMOJIS = ["❤️", "👍", "🎉", "🔥", "😍", "👏", "😂"
 const MAX_FLYING = 50;
 
 export default function EmojiReactPage({ page }: EmojiReactPageProps) {
-  const rawConfig = (page.config as { config?: EmojiReactConfig } | EmojiReactConfig | null) ?? null;
-  const config: EmojiReactConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as EmojiReactConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<EmojiReactConfig>(() => {
+    const raw = (page.config as { config?: EmojiReactConfig } | EmojiReactConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as EmojiReactConfig | null)) ?? {};
+  }, [page.config]);
 
   const handlePulse = useCallback(
     (

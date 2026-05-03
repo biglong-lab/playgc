@@ -220,7 +220,9 @@ export function diagnoseFlow(pages: PageWithConfig[]): DiagnoseIssue[] {
     if (p.pageType === "gps_mission") {
       const lat = cfg.latitude;
       const lng = cfg.longitude;
-      if (!lat || !lng || lat === 0 || lng === 0) {
+      // 用 == null 避免合法 0 值被誤判為缺值（赤道 / 子午線座標）
+      // 與前後端其他座標檢查一致（locations.ts / LocationImporter.tsx / MapView.tsx）
+      if (lat == null || lng == null) {
         issues.push({
           severity: "error",
           message: `第 ${p.pageOrder} 頁（gps_mission）缺少座標`,

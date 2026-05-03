@@ -1,7 +1,7 @@
 // 🚀 ProgressQuestPage — GamePageRenderer 用此元件對應 pageType="host_progress_quest"
 // 設計依據：docs/decisions/0013-w18-component-expansion.md
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import ProgressQuest, {
   type ProgressQuestConfig,
   type ProgressQuestState,
@@ -19,9 +19,11 @@ interface ProgressQuestPageProps {
 }
 
 export default function ProgressQuestPage({ page }: ProgressQuestPageProps) {
-  const rawConfig = (page.config as { config?: ProgressQuestConfig } | ProgressQuestConfig | null) ?? null;
-  const config: ProgressQuestConfig =
-    (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as ProgressQuestConfig | null)) ?? {};
+  // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
+  const config = useMemo<ProgressQuestConfig>(() => {
+    const raw = (page.config as { config?: ProgressQuestConfig } | ProgressQuestConfig | null) ?? null;
+    return (raw && "config" in raw ? raw.config : (raw as ProgressQuestConfig | null)) ?? {};
+  }, [page.config]);
   const milestones = config.milestones ?? DEFAULT_MILESTONES;
 
   const handlePulse = useCallback(

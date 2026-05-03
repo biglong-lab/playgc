@@ -42,10 +42,11 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
             const config = page.config as Record<string, unknown> | null;
             if (config) {
               const targetLocation = config.targetLocation as Record<string, unknown> | undefined;
-              const lat = targetLocation?.lat || config.targetLatitude;
-              const lng = targetLocation?.lng || config.targetLongitude;
+              // 用 ?? 避免合法 0 值被誤判為缺值（赤道 / 子午線座標）
+              const lat = targetLocation?.lat ?? config.targetLatitude;
+              const lng = targetLocation?.lng ?? config.targetLongitude;
 
-              if (lat && lng) {
+              if (lat != null && lng != null) {
                 const existingLocation = gameLocations.find(loc =>
                   loc.latitude === String(lat) && loc.longitude === String(lng)
                 );
