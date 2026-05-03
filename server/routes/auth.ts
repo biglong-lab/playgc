@@ -397,34 +397,17 @@ export function registerAuthRoutes(app: Express) {
   // 原理：用現有 admin session 驗證身分是 super_admin + active
   //       驗證通過後，對同一個 adminAccount 生成新 token，但 fieldId = 目標場域
   //       前端拿到新 admin 後 queryClient.clear() + 可直接繼續使用
-  app.post("/api/admin/switch-field", async (req, res) => {
+  //
+  // 安全：用 requireAdminAuth 統一 middleware（attachAdmin 已驗 cookie/JWT/session/active）
+  //       避免之前手動驗章繞過 + 未來 requireAdminAuth 加新檢查時容易漏同步
+  app.post("/api/admin/switch-field", requireAdminAuth, async (req: AuthenticatedRequest, res) => {
     try {
-      // 讀既有 admin cookie
-      const cookieToken = req.cookies?.adminToken;
-      if (!cookieToken) return res.status(401).json({ message: "未登入" });
+      // attachAdmin 已驗：cookie/JWT/session/account.status === "active"
+      // requireAdminAuth 已驗：req.admin 存在
+      const admin = req.admin!;
 
-      const sessionSecret = process.env.SESSION_SECRET;
-      if (!sessionSecret) {
-        return res.status(500).json({ message: "伺服器設定錯誤" });
-      }
-
-      // 驗證現有 token
-      let payload: { sub: string; firebaseUserId?: string };
-      try {
-        payload = jwt.verify(cookieToken, sessionSecret) as typeof payload;
-      } catch {
-        return res.status(401).json({ message: "登入已失效，請重登" });
-      }
-
-      // 取現有帳號
-      const currentAcct = await db.query.adminAccounts.findFirst({
-        where: eq(adminAccounts.id, payload.sub),
-        with: { role: true },
-      });
-      if (!currentAcct || currentAcct.status !== "active") {
-        return res.status(403).json({ message: "帳號已停用" });
-      }
-      if (currentAcct.role?.systemRole !== "super_admin") {
+      // super_admin 檢查（業務邏輯特定、attachAdmin 不做這個）
+      if (admin.systemRole !== "super_admin") {
         return res.status(403).json({ message: "僅超級管理員可跨場域切換" });
       }
 
@@ -436,6 +419,19 @@ export function registerAuthRoutes(app: Express) {
       });
       if (!targetField) {
         return res.status(404).json({ message: "找不到此場域" });
+      }
+
+      const sessionSecret = process.env.SESSION_SECRET;
+      if (!sessionSecret) {
+        return res.status(500).json({ message: "伺服器設定錯誤" });
+      }
+
+      // 取得帳號 firebaseUserId（switch-field 仍需重簽 JWT、需要原 firebaseUserId）
+      const currentAcct = await db.query.adminAccounts.findFirst({
+        where: eq(adminAccounts.id, admin.id),
+      });
+      if (!currentAcct) {
+        return res.status(404).json({ message: "帳號異常" });
       }
 
       // 權限確認完成：取 role / permissions
@@ -459,7 +455,7 @@ export function registerAuthRoutes(app: Express) {
           sub: currentAcct.id,
           fieldId: targetField.id,
           roleId: currentAcct.roleId,
-          firebaseUserId: payload.firebaseUserId,
+          firebaseUserId: currentAcct.firebaseUserId,
           type: "admin",
         },
         sessionSecret,
