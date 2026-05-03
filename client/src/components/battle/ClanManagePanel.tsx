@@ -46,8 +46,8 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
 
   const isLeader = myRole === "leader";
   const isOfficer = myRole === "officer";
-  if (!isLeader && !isOfficer) return null;
 
+  // ⚠️ React Hooks 規則：useMutation 必須在所有 early return 之前
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["/api/battle/clans"] });
     queryClient.invalidateQueries({ queryKey: ["/api/battle/my/clan"] });
@@ -103,6 +103,9 @@ export default function ClanManagePanel({ clan, members, myRole, myUserId }: Cla
     },
     onError: (err: Error) => toast({ title: "轉讓失敗", description: err.message, variant: "destructive" }),
   });
+
+  // hooks 全部 call 完才能 early return
+  if (!isLeader && !isOfficer) return null;
 
   /** 取得成員可執行的操作 */
   function getMemberActions(member: ClanMemberWithName) {

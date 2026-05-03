@@ -260,7 +260,7 @@ export default function MapView() {
     }
 
     locations.forEach((location) => {
-      if (!location.latitude || !location.longitude) return;
+      if (location.latitude == null || location.longitude == null) return;
       const isVisited = visitedLocationIds.has(location.id);
       const lat = parseFloat(location.latitude);
       const lng = parseFloat(location.longitude);
@@ -395,7 +395,7 @@ export default function MapView() {
   // === 選擇地點 ===
   const handleSelectLocation = useCallback((location: Location) => {
     setSelectedLocation(location);
-    if (mapInstanceRef.current && location.latitude && location.longitude) {
+    if (mapInstanceRef.current && location.latitude != null && location.longitude != null) {
       const lat = parseFloat(location.latitude);
       const lng = parseFloat(location.longitude);
       mapInstanceRef.current.setView([lat, lng], 17);

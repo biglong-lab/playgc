@@ -33,7 +33,7 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
 
       const gameLocations = await storage.getLocations(gameId, filters);
 
-      if (includeGpsMissions === 'true' || gameLocations.every(loc => !loc.latitude || !loc.longitude)) {
+      if (includeGpsMissions === 'true' || gameLocations.every(loc => loc.latitude == null || loc.longitude == null)) {
         try {
           const pages = await storage.getPages(gameId);
           const gpsMissionPages = pages.filter(p => p.pageType === 'gps_mission');

@@ -47,6 +47,8 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
   const [location] = useLocation();
   const { admin, isLoading, isAuthenticated, hasPermission, logout } = useAdminAuth();
   const currentField = useCurrentField();
+  // 🆕 偵測 macOS（必須在 early return 之前、否則違反 React Hooks 規則）
+  const isMac = useMemo(() => isMacOS(), []);
 
   if (isLoading) {
     return (
@@ -78,9 +80,6 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "4rem",
   };
-
-  // 🆕 偵測 macOS，決定快捷鍵按鈕顯示 ⌘K 還是 Ctrl+K
-  const isMac = useMemo(() => isMacOS(), []);
 
   return (
     <SidebarProvider style={sidebarStyle as React.CSSProperties}>

@@ -24,7 +24,7 @@ export default function MapNavigationCard({
   onVisit,
 }: MapNavigationCardProps) {
   const handleExternalNav = () => {
-    if (!selectedLocation.latitude || !selectedLocation.longitude) return;
+    if (selectedLocation.latitude == null || selectedLocation.longitude == null) return;
     const lat = parseFloat(selectedLocation.latitude);
     const lng = parseFloat(selectedLocation.longitude);
     openExternalNavigation(lat, lng, selectedLocation.name);

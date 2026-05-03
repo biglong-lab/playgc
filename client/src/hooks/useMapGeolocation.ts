@@ -55,7 +55,7 @@ export function useMapGeolocation({
 
   const checkProximityToLocations = useCallback((lat: number, lng: number) => {
     locations.forEach((location) => {
-      if (!location.latitude || !location.longitude) return;
+      if (location.latitude == null || location.longitude == null) return;
       const locLat = parseFloat(location.latitude);
       const locLng = parseFloat(location.longitude);
       const distance = calculateDistance(lat, lng, locLat, locLng);
@@ -89,7 +89,7 @@ export function useMapGeolocation({
 
     // 更新導航資訊
     const sel = selectedLocationRef.current;
-    if (sel?.latitude && sel?.longitude) {
+    if (sel?.latitude != null && sel?.longitude != null) {
       const locLat = parseFloat(sel.latitude);
       const locLng = parseFloat(sel.longitude);
       setNavigationInfo(calculateNavigation(latitude, longitude, locLat, locLng));
@@ -98,7 +98,7 @@ export function useMapGeolocation({
 
   // 當選取的地點改變時，重新計算導航
   useEffect(() => {
-    if (userLocation && selectedLocation?.latitude && selectedLocation?.longitude) {
+    if (userLocation && selectedLocation?.latitude != null && selectedLocation?.longitude != null) {
       const locLat = parseFloat(selectedLocation.latitude);
       const locLng = parseFloat(selectedLocation.longitude);
       setNavigationInfo(calculateNavigation(userLocation.lat, userLocation.lng, locLat, locLng));
