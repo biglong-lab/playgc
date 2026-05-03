@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 13:25 [Claude]（**ADR-0014 + changes 文件化 7 輪 Codex 審查、5 個 dead broadcasts 保留給未來**）
+- **上次更新**：2026-05-03 13:35 [Claude]（**P1 補完 race_answered realtime 鏈路 — Codex 第 8 輪指出半成品功能**）
 
 ---
 
@@ -50,7 +50,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 13:25 | Claude | **ADR-0014 + changes 文件化 Codex 7 輪審查**（5 個 dead broadcasts 保留給未來、提供 W19+ realtime 統一規範、commit e1844a2f）|
+| 13:35 | Claude | **P1 補完 race_answered realtime 鏈路**（server case "race_answer" + sendRaceAnswer + ChoiceVerifyRacePage 接通、commit 120fda71）|
+| 13:25 | Claude | ADR-0014 + changes 文件化 Codex 7 輪審查（5 個 dead broadcasts 保留給未來、提供 W19+ realtime 統一規範、commit e1844a2f）|
 | 13:15 | Claude | 完整 test:run 155 檔 / 2179 tests 全綠 + Codex 第 6 輪盤點對照表（11 realtime 功能全對齊、修法無漏網）|
 | 13:05 | Claude | P0 修系統性問題 — Codex 第 5 輪補分析：team realtime 房間 + 事件名雙重不一致、5 處 server REST 統一 broadcastToTeam（commit 092eba69）|
 | 12:50 | Claude | P0 修 — 依 Codex 第 4 輪補分析：HostPlay/HostScreen 頁面層砍重複 WS、indicator 改用 query 載入狀態（commit 1392305f、減半 WS 連線數）|
