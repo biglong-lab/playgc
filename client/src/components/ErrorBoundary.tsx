@@ -2,7 +2,7 @@
 // 捕獲 React 渲染錯誤，避免整個應用程式崩潰
 import { Component, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, Copy, Check } from "lucide-react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -13,6 +13,8 @@ interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
   errorInfo: React.ErrorInfo | null;
+  /** 複製錯誤資訊狀態（給回報用、Stage 3 #8） */
+  copied: boolean;
 }
 
 const AUTO_RECOVERY_FLAG = "pwa-auto-recovery-attempted";
@@ -58,6 +60,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       hasError: false,
       error: null,
       errorInfo: null,
+      copied: false,
     };
   }
 
@@ -105,7 +108,53 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       hasError: false,
       error: null,
       errorInfo: null,
+      copied: false,
     });
+  };
+
+  /** 複製錯誤資訊（給玩家回報、Stage 3 #8）
+   *  包含 message + URL + UA + timestamp + componentStack（前 10 行）
+   */
+  handleCopyReport = async (): Promise<void> => {
+    const err = this.state.error;
+    const errInfo = this.state.errorInfo;
+    if (!err) return;
+
+    const lines = [
+      `【錯誤回報】`,
+      `時間：${new Date().toISOString()}`,
+      `頁面：${typeof window !== "undefined" ? window.location.href : "unknown"}`,
+      `錯誤：${err.name}: ${err.message}`,
+      "",
+      `── 技術資訊（請保留給工程師）──`,
+      `User-Agent：${typeof navigator !== "undefined" ? navigator.userAgent : "unknown"}`,
+      err.stack ? `Stack：\n${err.stack.split("\n").slice(0, 10).join("\n")}` : "",
+      errInfo?.componentStack
+        ? `Component：${errInfo.componentStack.split("\n").slice(0, 5).join("\n")}`
+        : "",
+    ].filter(Boolean);
+
+    const text = lines.join("\n");
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // fallback：用 textarea 複製（HTTP / 老 browser）
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      this.setState({ copied: true });
+      setTimeout(() => this.setState({ copied: false }), 2000);
+    } catch {
+      // fail-silent — 不能在 ErrorBoundary 內再 throw
+    }
   };
 
   handleReload = (): void => {
@@ -174,6 +223,31 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 清除快取重新載入
               </Button>
             </div>
+
+            {/* 🆕 複製錯誤資訊回報（Stage 3 #8）— 比「請截圖」更友善 + 工程師可貼上 */}
+            {this.state.error && (
+              <div className="pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={this.handleCopyReport}
+                  data-testid="button-err-copy-report"
+                  className="gap-2"
+                >
+                  {this.state.copied ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-600" />
+                      已複製、可貼給工程師
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      複製錯誤資訊回報
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       );
