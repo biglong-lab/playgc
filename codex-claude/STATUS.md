@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 12:50 [Claude]（**P0 修 — HostPlay/HostScreen 砍頁面層重複 WS 連線**）
+- **上次更新**：2026-05-03 13:05 [Claude]（**P0 修系統性問題 — team realtime 房間 + 事件名雙重不一致、5 處 server REST 統一 broadcastToTeam**）
 
 ---
 
@@ -19,14 +19,16 @@
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 12:50 [Claude] |
-| TypeScript | 零錯誤 ✅ | 12:50 [Claude] |
+| Smoke test | 51/51 ✅ | 13:05 [Claude] |
+| TypeScript | 零錯誤 ✅ | 13:05 [Claude] |
 | WebSocket 連線穩定 | useHostScreenSync hook 不重連 + HostPlay/HostScreen 不再雙連線 ✅ | 12:50 [Claude] |
 | Chat 安全 | 單一資料流（REST only）+ 不繞 auth/limit ✅ | 12:35 [Claude] |
+| Team realtime | 5 個事件房間/名稱統一 broadcastToTeam ✅ | 13:05 [Claude] |
 | useTeamShootingSync 協定 | join 對齊 server case ✅ | 12:35 [Claude] |
 | host pages tests | 14 檔 109/109 ✅ | 12:50 [Claude] |
 | playerSessions tests | 17/17 ✅ | 12:35 [Claude] |
 | hook tests | 38/38 ✅（含 useTeamShootingSync 12）| 12:35 [Claude] |
+| team realtime tests | 4 檔 84/84 ✅（teams + scores + votes + websocket）| 13:05 [Claude] |
 | Build | 成功（6.14s + server + cron）✅ | 11:55 [Claude] |
 | 完整 test:run | **154/154 檔、2163/2163 測試全綠**（待補 TeamBattleScore 17 → 2180） | 11:09 [Claude] |
 | host pages tests | 14 檔、109/109 tests 全綠（含 TeamBattleScore 17）✅ | 12:10 [Claude] |
@@ -49,7 +51,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 12:50 | Claude | **P0 修 — 依 Codex 第 4 輪補分析**：HostPlay/HostScreen 頁面層砍重複 WS、indicator 改用 query 載入狀態（commit 1392305f、減半 WS 連線數）|
+| 13:05 | Claude | **P0 修系統性問題 — Codex 第 5 輪補分析**：team realtime 房間 + 事件名雙重不一致、5 處 server REST 統一 broadcastToTeam（commit 092eba69、5 個 team 事件實際送達 client）|
+| 12:50 | Claude | P0 修 — 依 Codex 第 4 輪補分析：HostPlay/HostScreen 頁面層砍重複 WS、indicator 改用 query 載入狀態（commit 1392305f、減半 WS 連線數）|
 | 12:35 | Claude | P0+P1 修 — 依 Codex 第 3 輪補分析（同步 / 安全契約）：3 commits ba0872f9 + 8b015cc2 + b098eadb — Chat 雙寫 DB + WS auth bypass + session_join 協定 + UI bugs |
 | 12:25 | Claude | P0 修真 bug — useHostScreenSync hook 不再反覆重連 WS（依 Codex 第 2 輪補分析、commit 60a628b3）|
 | 12:10 | Claude | 新增第 14 個 host 元件 TeamBattleScore（紅藍對抗即時計分、3 commits a98781b4 + 6aee8f3e + 2c276308）|
