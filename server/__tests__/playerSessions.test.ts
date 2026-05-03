@@ -12,12 +12,15 @@ const { mockStorage } = vi.hoisted(() => ({
     updateSession: vi.fn(),
     createLeaderboardEntry: vi.fn(),
     getPlayerProgress: vi.fn(),
+    getPlayerProgressByUser: vi.fn(), // PATCH /api/sessions/:id/progress 用
     createPlayerProgress: vi.fn(),
     updatePlayerProgress: vi.fn(),
     getUser: vi.fn(),
     upsertUser: vi.fn(),
     getChatMessages: vi.fn(),
     createChatMessage: vi.fn(),
+    getGame: vi.fn(),    // POST /api/sessions location_lock 用
+    getItems: vi.fn(),   // PATCH progress inventory validation 用
   },
 }));
 
@@ -54,6 +57,21 @@ vi.mock("../objectStorage", () => ({
 
 vi.mock("../objectAcl", () => ({
   ObjectPermission: { READ: "read", WRITE: "write" },
+}));
+
+// Mock rate limiters（測試環境不需限流）
+vi.mock("../utils/rate-limiters", () => ({
+  hotPathLimiter: vi.fn((_req: any, _res: any, next: any) => next()),
+  chatLimiter: vi.fn((_req: any, _res: any, next: any) => next()),
+}));
+
+// Mock 動態 import 的 services
+vi.mock("../services/field-memberships", () => ({
+  ensureMembership: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../services/achievement-unlock", () => ({
+  checkAndUnlockAchievements: vi.fn().mockResolvedValue([]),
 }));
 
 import { registerPlayerSessionRoutes } from "../routes/player-sessions";
@@ -267,10 +285,10 @@ describe("Player Sessions 路由", () => {
   // =====================================================
   describe("PATCH /api/sessions/:id/progress", () => {
     it("應更新現有進度", async () => {
-      mockStorage.getSession.mockResolvedValue({ id: "s-1" });
-      mockStorage.getPlayerProgress.mockResolvedValue([
-        { id: 1, userId: "user-1", currentPageId: "p-1" },
-      ]);
+      // 路由改用 getPlayerProgressByUser（複合 index 優化）
+      mockStorage.getPlayerProgressByUser.mockResolvedValue({
+        id: 1, sessionId: "s-1", userId: "user-1", currentPageId: "p-1",
+      });
       mockStorage.updatePlayerProgress.mockResolvedValue({
         id: 1, userId: "user-1", currentPageId: "p-2", score: 200,
       });
@@ -288,8 +306,10 @@ describe("Player Sessions 路由", () => {
     });
 
     it("無現有進度應自動建立", async () => {
-      mockStorage.getSession.mockResolvedValue({ id: "s-1" });
-      mockStorage.getPlayerProgress.mockResolvedValue([]);
+      // 路由先 getPlayerProgressByUser → 沒有 → 查 session 確認存在 → createPlayerProgress
+      mockStorage.getPlayerProgressByUser.mockResolvedValue(undefined);
+      mockStorage.getSession.mockResolvedValue({ id: "s-1", gameId: "g-1" });
+      mockStorage.getItems.mockResolvedValue([{ id: "sword" }]); // inventory 驗證
       mockStorage.createPlayerProgress.mockResolvedValue({
         id: 2, userId: "user-1", score: 0,
       });
@@ -306,6 +326,8 @@ describe("Player Sessions 路由", () => {
     });
 
     it("場次不存在應回傳 404", async () => {
+      // 路由：getPlayerProgressByUser → 無 → 查 session → 不存在 → 404
+      mockStorage.getPlayerProgressByUser.mockResolvedValue(undefined);
       mockStorage.getSession.mockResolvedValue(null);
 
       const res = await request(app)

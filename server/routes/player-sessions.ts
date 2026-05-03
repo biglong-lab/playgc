@@ -335,8 +335,15 @@ export function registerPlayerSessionRoutes(app: Express) {
         // 多人併發優化：
         // 原本：getSession + getPlayerProgress(整個 session 全部玩家) + update/create = 3 次 DB query
         // 優化：getPlayerProgressByUser（用 session_id+user_id 複合 index）+ update/create = 2 次
-        // 省去 session 存在檢查（若 sessionId 無效，update 會回 undefined → 404）
         let progress = await storage.getPlayerProgressByUser(sessionId, userId);
+
+        // 沒進度紀錄 → 確認 session 存在才建立，否則 404（兌現 contract）
+        if (!progress) {
+          const session = await storage.getSession(sessionId);
+          if (!session) {
+            return res.status(404).json({ message: "Session not found" });
+          }
+        }
 
         // 🛡️ 防作弊：驗證 inventory 中的 itemId 都屬於該 game
         // 避免玩家透過離線改 request 注入其他遊戲的 itemId
