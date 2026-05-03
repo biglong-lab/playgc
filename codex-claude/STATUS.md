@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 16:30 [Claude]（**🔐 Codex 第 3 輪 P1：4 個 WS 寫入事件強制 authenticatedUserId 防偽造他人身份**）
+- **上次更新**：2026-05-03 16:45 [Claude]（**🔐 Codex 第 4 輪資安審查全結束 — WS-level rate limit per connection 補完、ADR-0015 預告全部實作完**）
 
 ---
 
@@ -54,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 16:30 | Claude | **🔐 Codex 第 3 輪 P1**（team_chat/location/vote/ready 4 個 WS 寫入事件強制 authenticatedUserId、用 server 端身份覆寫 client 傳的 userId 防偽造、commit a7093508）+ 部署 |
+| 16:45 | Claude | **🔐 Codex 第 4 輪結束**（WS-level rate limit per connection 10/秒 silent drop、ADR-0015 預告全部實作完、commit b512a7b0）+ 部署 |
+| 16:30 | Claude | 🔐 Codex 第 3 輪 P1（team_chat/location/vote/ready 4 個 WS 寫入事件強制 authenticatedUserId、用 server 端身份覆寫 client 傳的 userId 防偽造、commit a7093508）+ 部署 |
 | 16:15 | Claude | 🚨 Codex 第 2 輪 P0（match_countdown_complete 匿名寫 DB 攻擊面修正 + 強制 authenticatedUserId + 驗 match 參與者 + 移除 dead team_score WS case、commit 5a3f809b）+ 部署 |
 | 16:00 | Claude | 🛡️ Codex 第 1 輪資安審查處理（#4 switch-field 改 requireAdminAuth、#5 dev-token 確認 production 404 安全、#1-3 WS 匿名寫入採 ADR-0015 設計取捨保留現狀、commit 87c8d5a6 + 4e05ed17）+ 部署 |
 | 15:45 | Claude | 🔑 super_admin 跨場域登入完整修法（軟刪 twfam4 在 HPSPACE/HDSH/WDLW 的 3 個 field_director + auth.ts:172 加 status='active' 篩防 inactive 擋路 + 23 auth tests、commit d01f73e6）+ 部署 |
