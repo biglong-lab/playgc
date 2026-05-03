@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 15:45 [Claude]（**🔑 super_admin 跨場域登入完整修法：軟刪冗餘帳號 + active filter 防 inactive 擋路**）
+- **上次更新**：2026-05-03 16:00 [Claude]（**🛡️ Codex 第 1 輪資安審查：#4 switch-field 改 requireAdminAuth + #5 dev-token 確認安全 + ADR-0015 WS 匿名寫入政策**）
 
 ---
 
@@ -54,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 15:45 | Claude | **🔑 super_admin 跨場域登入完整修法**（軟刪 twfam4 在 HPSPACE/HDSH/WDLW 的 3 個 field_director + auth.ts:172 加 status='active' 篩防 inactive 擋路 + 23 auth tests、commit d01f73e6）+ 部署 |
+| 16:00 | Claude | **🛡️ Codex 第 1 輪資安審查處理**（#4 switch-field 改 requireAdminAuth、#5 dev-token 確認 production 404 安全、#1-3 WS 匿名寫入採 ADR-0015 設計取捨保留現狀、commit 87c8d5a6 + 4e05ed17）+ 部署 |
+| 15:45 | Claude | 🔑 super_admin 跨場域登入完整修法（軟刪 twfam4 在 HPSPACE/HDSH/WDLW 的 3 個 field_director + auth.ts:172 加 status='active' 篩防 inactive 擋路 + 23 auth tests、commit d01f73e6）+ 部署 |
 | 15:25 | Claude | 🛡️ 補 rate limit 覆蓋（/api/apply 加 publicWriteLimiter 10/小時 + /api/invites/click 加 hotPathLimiter 120/分鐘、新增 publicWriteLimiter util、commit 0bef2190）+ 部署 |
 | 15:10 | Claude | 🔧 延伸 shared util（cron endpoint token === 改 verifySharedSecret、grep 確認最後一個 === 比對、commit 9bea9554）+ 部署 |
 | 15:00 | Claude | 🔧 重構 shared util（4 個 webhook verifier 統一呼叫 lib/webhook-signature.ts、17 unit tests、test:run 157/2207、commit 8c722355）+ 部署 |
