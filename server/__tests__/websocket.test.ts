@@ -281,6 +281,39 @@ describe("websocket 路由", () => {
   //   原因：server WS case "chat" 整段已刪除（之前同 client REST POST /api/chat 雙寫 DB + 繞過 auth/limit）
   //   chat 寫入測試請查 player-sessions REST handler；廣播由 ctx.broadcastToSession 完成（見下面測試）
 
+  describe("WS rate limit (ADR-0015)", () => {
+    it("超過 10 個訊息/秒 → silent drop（不影響其他正常玩家）", async () => {
+      const ws1 = trackWs(await connectWs(port)); // 接收方
+      const ws2 = trackWs(await connectWs(port, "?token=valid-firebase-token")); // 灌訊息方
+
+      ws1.send(JSON.stringify({ type: "team_join", teamId: "rt", userId: "u1", userName: "接收" }));
+      ws2.send(JSON.stringify({ type: "team_join", teamId: "rt", userId: "firebase-user-1", userName: "灌訊息" }));
+      await new Promise((r) => setTimeout(r, 100));
+
+      // 1 秒內快速送 30 個 team_chat
+      // 前 9 個應該成功（join 占用 1 個額度）、之後 silent drop
+      const receivedCount: { count: number } = { count: 0 };
+      ws1.on("message", (data) => {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === "team_chat") receivedCount.count++;
+      });
+
+      for (let i = 0; i < 30; i++) {
+        ws2.send(JSON.stringify({
+          type: "team_chat",
+          message: `flood-${i}`,
+        }));
+      }
+      // 等所有訊息傳完
+      await new Promise((r) => setTimeout(r, 500));
+
+      // 接收量 < 30（被 rate limit 擋掉一部分）
+      expect(receivedCount.count).toBeLessThan(30);
+      // 至少收到一些（不是完全擋掉）
+      expect(receivedCount.count).toBeGreaterThan(0);
+    });
+  });
+
   describe("broadcastToSession / broadcastToTeam 工具函式", () => {
     it("broadcastToSession 傳送訊息到指定 session", async () => {
       const ws = trackWs(await connectWs(port));

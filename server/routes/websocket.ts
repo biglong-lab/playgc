@@ -200,6 +200,18 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
     ws.on("message", async (data) => {
       try {
+        // 🔒 ADR-0015 WS-level rate limit：每 ws 每秒 10 個訊息（防腳本灌、防 abuse）
+        // 正常玩家頻率：1-3 訊息/秒（位置上報、互動）；10/秒留充足 buffer
+        // 超過 → silent drop（不斷連、不報錯、不洩漏限制細節）
+        const now = Date.now();
+        if (!ws.rateWindowStart || now - ws.rateWindowStart >= 1000) {
+          ws.rateWindowStart = now;
+          ws.rateMsgCount = 1;
+        } else {
+          ws.rateMsgCount = (ws.rateMsgCount ?? 0) + 1;
+          if (ws.rateMsgCount > 10) return; // silent drop
+        }
+
         const message = JSON.parse(data.toString());
 
         switch (message.type) {

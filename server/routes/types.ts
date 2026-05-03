@@ -14,6 +14,9 @@ export interface WebSocketClient extends WebSocket {
   // 🆕 ADR-0004 (2026-05-02)：HostScreen 主控大螢幕模式
   hostSessionId?: string;        // host session id
   hostRole?: "host" | "player";  // host = 大螢幕端、player = 玩家端
+  // 🆕 ADR-0015 (2026-05-03)：WS-level rate limit（防腳本灌訊息）
+  rateWindowStart?: number;      // 當前秒級窗口起始 timestamp
+  rateMsgCount?: number;         // 當前窗口內已收訊息數
 }
 
 /** WebSocket 廣播訊息型別 */
