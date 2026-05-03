@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 18:30 [Claude]（**🐛 Stage 1 完成：useErrorReport 重啟 + server middleware 寫 DB + schema 擴 8 欄 + X-Request-Id 注入 + 生產 migration**）
+- **上次更新**：2026-05-03 18:50 [Claude]（**🛟 Stage 2 完成：HostPlay/HostScreen 替代入口 + WsConnectionBadge 共用元件 + GamePlay 多人組隊失連警示**）
 
 ---
 
@@ -54,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 18:30 | Claude | **🐛 Stage 1 追查能力完整實作 + 部署**（useErrorReport 重啟 + server middleware 寫 DB + schema +8 欄 +4 index + X-Request-Id 注入 + 生產 ALTER TABLE、commit 91033939）|
+| 18:50 | Claude | **🛟 Stage 2 玩家不迷路完整實作 + 部署**（HostPlay/HostScreen 替代入口 + WsConnectionBadge 共用元件 + GamePlay 多人組隊失連警示、commit 95145eea）|
+| 18:30 | Claude | 🐛 Stage 1 追查能力完整實作 + 部署（useErrorReport 重啟 + server middleware 寫 DB + schema +8 欄 +4 index + X-Request-Id 注入 + 生產 ALTER TABLE、commit 91033939）|
 | 17:50 | Claude | 🔍 錯誤處理體系盤點報告（5 類盤點純不實作、docs/changes/2026-05-03-error-handling-audit.md、找 2 P0 + 5 P1 + 3 P2 缺口）|
 | 17:30 | Claude | 📦 自我分析資安 + 依賴漏洞修補（npm audit 35→20、drizzle-orm 0.45.2 修 SQL injection CVE、QA 測試清單、commit 335ecfb7 + 79e70d02 + 2199cbfe）+ 部署 |
 | 17:00 | Claude | 🔐 Codex 第 5 輪 P0 #3 結束（join/team_join effectiveUserId 兼容模式 + client 連 WS 帶 Firebase token、所有 5 輪 19 點全處理、commit 648d04f0）+ 部署 |
