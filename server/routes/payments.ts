@@ -231,13 +231,14 @@ export function registerPaymentsRoutes(app: Express) {
       const eventType = event?.type ?? "unknown";
       console.log("[payments] recur webhook 收到:", eventType);
 
-      // 簽章驗證（W10 D5 stub、上線前需補實際 HMAC 驗證）
+      // 簽章驗證（HMAC SHA-256、verifyRecurWebhookSignature 實作見 lib/recur-tw.ts）
+      // 安全：簽章不通過直接阻擋、避免任何人能偽造 checkout.session.completed 觸發發 email
       if (RECUR_WEBHOOK_SECRET) {
         const sig = req.headers["x-recur-signature"] as string | undefined;
         const rawPayload = JSON.stringify(req.body);
         if (!sig || !verifyRecurWebhookSignature(rawPayload, sig, RECUR_WEBHOOK_SECRET)) {
-          console.warn("[payments] recur webhook 簽章未通過（暫不阻擋）");
-          // TODO: return res.status(401).json({ error: "Invalid signature" });
+          console.warn("[payments] recur webhook 簽章未通過、拒絕請求");
+          return res.status(401).json({ error: "Invalid signature" });
         }
       }
 

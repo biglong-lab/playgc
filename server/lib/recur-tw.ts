@@ -92,12 +92,36 @@ export async function createRecurCheckoutSession(
  *
  * 目前：未驗證、僅回傳 true（生產環境前必須補上）
  */
+/**
+ * 驗證 Recur.tw webhook 簽章（HMAC SHA-256 hex）
+ *
+ * 安全要求：開啟 RECUR_WEBHOOK_SECRET 後此函式必須返回 false 才算阻擋成功
+ * 之前 stub 直接 return true → 任何 POST 都當 valid → email spam 跳板
+ *
+ * @param payload 原始 request body string
+ * @param signature header `x-recur-signature` 值（hex）
+ * @param webhookSecret 環境變數 RECUR_WEBHOOK_SECRET
+ * @returns 簽章是否有效
+ */
 export function verifyRecurWebhookSignature(
-  _payload: string,
-  _signature: string,
-  _webhookSecret: string,
+  payload: string,
+  signature: string,
+  webhookSecret: string,
 ): boolean {
-  // TODO: 實作 HMAC SHA-256 驗證
-  console.warn("[recur-tw] webhook 簽章驗證尚未實作（W10 D5 補上）");
-  return true;
+  if (!signature || !webhookSecret || !payload) return false;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const crypto = require("crypto") as typeof import("crypto");
+    const expected = crypto
+      .createHmac("sha256", webhookSecret)
+      .update(payload)
+      .digest("hex");
+    const sigBuf = Buffer.from(signature, "hex");
+    const expBuf = Buffer.from(expected, "hex");
+    // 長度不一致 timingSafeEqual 會 throw、防 timing attack 必須長度先 check
+    if (sigBuf.length !== expBuf.length) return false;
+    return crypto.timingSafeEqual(sigBuf, expBuf);
+  } catch {
+    return false;
+  }
 }
