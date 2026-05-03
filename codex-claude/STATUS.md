@@ -19,9 +19,11 @@
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 14:35 [Claude] |
-| TypeScript | 零錯誤 ✅ | 14:35 [Claude] |
-| **完整 test:run** | **157 檔 / 2207 tests 全綠** ✅ | 15:00 [Claude] |
+| Smoke test | 51/51 ✅ | 20:45 [Claude] |
+| TypeScript | 零錯誤 ✅ | 20:45 [Claude] |
+| **完整 test:run** | **160 檔 / 2250 tests 全綠** ✅ | 20:45 [Claude] |
+| **Host 元件** | **17 個（W22 +3：BingoBoard/BlessingWall/MicroQa）** ✅ | 20:45 [Claude] |
+| **情境模板** | **17 個（W22 +5）** ✅ | 20:45 [Claude] |
 | **🚀 生產端部署** | **commit 28218cdb 已上線** | 14:25 [Claude] |
 | 生產 e2e 5 endpoints | scenarios + openapi + line + cron + 主頁全 200 ✅ | 14:35 [Claude] |
 | 生產資源 | CPU 0% / Memory 327MiB (21%) | 14:35 [Claude] |
