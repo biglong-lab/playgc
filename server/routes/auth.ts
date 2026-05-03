@@ -169,10 +169,15 @@ export function registerAuthRoutes(app: Express) {
           return res.status(404).json({ message: "找不到此場域" });
         }
 
+        // 🔒 篩 status='active' 避免 inactive 帳號擋住跨場域登入
+        // 場景：super_admin 之前在某場域有 inactive field_director 帳號（軟刪後）
+        //   findFirst 不篩 status 會抓到 inactive → 跳過下面 super_admin 跨場域守門
+        //   最終回 403「您的帳號已被停用」、即使他本來是 super_admin 該能進
         adminAccount = await db.query.adminAccounts.findFirst({
           where: and(
             eq(adminAccounts.fieldId, field.id),
             eq(adminAccounts.firebaseUserId, firebaseUserId),
+            eq(adminAccounts.status, "active"),
           ),
         });
 

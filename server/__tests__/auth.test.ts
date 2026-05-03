@@ -374,6 +374,42 @@ describe("認證路由 (auth)", () => {
       expect(res.status).toBe(202);
       expect(res.body.status).toBe("pending");
     });
+
+    it("super_admin 跨場域登入：fieldCode 指向另一場域、active filter 過濾掉 inactive 帳號 → 借用 super_admin 身分（不回 403）", async () => {
+      const app = createApp();
+      mockVerifyFirebaseToken.mockResolvedValue({
+        uid: "firebase-super",
+        email: "super@test.com",
+      });
+      mockDb.query.fields.findFirst.mockResolvedValue({
+        id: "hpspace-id",
+        code: "HPSPACE",
+      });
+      // 第一次 findFirst（line 172 active filter）→ null（inactive 帳號被過濾）
+      // 第二次 findFirst（line 184 super_admin 跨場域 candidate）→ active super_admin
+      mockDb.query.adminAccounts.findFirst
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({
+          id: "super-id",
+          roleId: "super-role",
+          fieldId: "jiachun-id",
+          status: "active",
+          email: "super@test.com",
+        });
+      mockDb.query.roles.findFirst.mockResolvedValue({
+        id: "super-role",
+        systemRole: "super_admin",
+      });
+
+      const res = await request(app)
+        .post("/api/admin/firebase-login")
+        .set({ Authorization: "Bearer firebase-token" })
+        .send({ fieldCode: "HPSPACE" });
+
+      // 關鍵驗證：不再回 403（之前 inactive 帳號擋住跨場域）
+      expect(res.status).not.toBe(403);
+      expect(res.status).not.toBe(404);
+    });
   });
 
   // ===========================================
