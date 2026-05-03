@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 11:20 [Claude]（P0/P1/P2 一輪完成、3 commits）
+- **上次更新**：2026-05-03 11:30 [Claude]（補修 P0/P1 — 座標全鏈 + Hook deps）
 
 ---
 
@@ -19,11 +19,12 @@
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 11:20 [Claude] |
-| TypeScript | 零錯誤 ✅ | 11:20 [Claude] |
+| Smoke test | 51/51 ✅ | 11:30 [Claude] |
+| TypeScript | 零錯誤 ✅ | 11:30 [Claude] |
 | Build | 成功 ✅ | 09:15 [Claude] |
 | 完整 test:run | **154/154 檔、2163/2163 測試全綠** ✅ | 11:09 [Claude] |
 | eslint no-case-declarations | 0 errors ✅ | 11:18 [Claude] |
+| react-hooks/exhaustive-deps | 0 errors（host pages 三檔）✅ | 11:30 [Claude] |
 
 ---
 
@@ -41,9 +42,9 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 11:20 | Claude | **新一輪 P0/P1/P2 完成**（Hooks 順序 + 座標 0 + websocket case + prefer-const）|
+| 11:30 | Claude | **補修 P0/P1**（依 Codex 補分析、座標全鏈一致 + Hook deps 穩定、commit 44cc1c81）|
+| 11:20 | Claude | 新一輪 P0/P1/P2 完成（Hooks 順序 + 座標 0 + websocket case + prefer-const）|
 | 11:09 | Claude | test:run 154/154 全綠（10 失敗檔全修） |
-| 10:55 | Claude | P0 完成 T002.1 + T002.2 db mock 修整檔崩 |
 
 ---
 
