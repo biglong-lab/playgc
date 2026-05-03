@@ -142,30 +142,15 @@ export function useTeamWebSocket({
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
 
-    let cancelled = false;
-    let ws: WebSocket | null = null;
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
 
-    const connect = async () => {
-      // 🔒 安全（Codex 第 5 輪 P0 #3）：team_join 必須認證、連 WS 時帶 Firebase token
-      // 沒 token 時 server team_join 會回 error 拒絕加入
-      const { getIdToken } = await import("@/lib/firebase");
-      const token = await getIdToken().catch(() => null);
-      if (cancelled) return;
-
-      const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = token
-        ? `${protocol}//${window.location.host}/ws?token=${encodeURIComponent(token)}`
-        : `${protocol}//${window.location.host}/ws`;
-
-      try {
-        ws = new WebSocket(wsUrl);
-      } catch {
-        return; // WebSocket 連線建立失敗
-      }
+    try {
+      const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         setIsConnected(true);
-        ws!.send(JSON.stringify({
+        ws.send(JSON.stringify({
           type: "team_join",
           teamId,
           userId,
@@ -174,7 +159,7 @@ export function useTeamWebSocket({
         // 🆕 Phase 4：若 alsoJoinSessionId → 同 ws 也 join session room
         //   讓 broadcastToSession 廣播的 territory_capture_sync 等訊息能收到
         if (alsoJoinSessionId) {
-          ws!.send(JSON.stringify({
+          ws.send(JSON.stringify({
             type: "join",
             sessionId: alsoJoinSessionId,
             userId,
@@ -318,16 +303,15 @@ export function useTeamWebSocket({
       };
 
       wsRef.current = ws;
-    };
 
-    connect();
-
-    return () => {
-      cancelled = true;
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.close();
-      }
-    };
+      return () => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        }
+      };
+    } catch {
+      // WebSocket 連線建立失敗
+    }
   }, [teamId, userId, userName, alsoJoinSessionId]); // ⚠️ 不放 callback：用 callbacksRef.current 取代
 
   const sendChat = useCallback((message: string, messageType: string = "text") => {
