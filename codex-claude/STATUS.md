@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 15:10 [Claude]（**🔧 延伸 shared util — cron endpoint token === 改 verifySharedSecret、grep 確認全 server 無其他 === secret 比對**）
+- **上次更新**：2026-05-03 15:25 [Claude]（**🛡️ 補 rate limit 覆蓋 — /api/apply + /api/invites/click 公開 POST 防 spam abuse**）
 
 ---
 
@@ -54,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 15:10 | Claude | **🔧 延伸 shared util**（cron endpoint token === 改 verifySharedSecret、grep 確認最後一個 === 比對、commit 9bea9554）+ 部署 |
+| 15:25 | Claude | **🛡️ 補 rate limit 覆蓋**（/api/apply 加 publicWriteLimiter 10/小時 + /api/invites/click 加 hotPathLimiter 120/分鐘、新增 publicWriteLimiter util、commit 0bef2190）+ 部署 |
+| 15:10 | Claude | 🔧 延伸 shared util（cron endpoint token === 改 verifySharedSecret、grep 確認最後一個 === 比對、commit 9bea9554）+ 部署 |
 | 15:00 | Claude | 🔧 重構 shared util（4 個 webhook verifier 統一呼叫 lib/webhook-signature.ts、17 unit tests、test:run 157/2207、commit 8c722355）+ 部署 |
 | 14:50 | Claude | 📚 文件化收尾（CHANGELOG 2026-05-03 entry + security-and-ux-fixes changes 162 行、commit fdef41ac）|
 | 14:35 | Claude | 🎯 累計 milestone — 完整 test:run 156/2190 全綠、生產 CPU 0% / Memory 21% 完全穩定 |
