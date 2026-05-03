@@ -229,7 +229,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             });
             break;
 
-          case "team_join":
+          case "team_join": {
             // 驗證：如果有認證的 userId，確保訊息中的 userId 匹配
             if (ws.authenticatedUserId && message.userId !== ws.authenticatedUserId) {
               ws.send(JSON.stringify({
@@ -303,6 +303,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
               }
             }
             break;
+          }
 
           case "team_chat":
             if (ws.teamId) {
