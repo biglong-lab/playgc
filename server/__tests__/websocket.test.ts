@@ -204,46 +204,76 @@ describe("websocket 路由", () => {
   });
 
   describe("team_chat", () => {
-    it("團隊聊天訊息廣播", async () => {
+    it("團隊聊天訊息廣播（必須認證、用 server 端 userId 防偽造）", async () => {
       const ws1 = trackWs(await connectWs(port));
-      const ws2 = trackWs(await connectWs(port));
+      // ws2 帶 token、authenticatedUserId 會被設為 firebase-user-1
+      const ws2 = trackWs(await connectWs(port, "?token=valid-firebase-token"));
 
       ws1.send(JSON.stringify({ type: "team_join", teamId: "t1", userId: "u1", userName: "成員一" }));
-      ws2.send(JSON.stringify({ type: "team_join", teamId: "t1", userId: "u2", userName: "成員二" }));
+      ws2.send(JSON.stringify({ type: "team_join", teamId: "t1", userId: "firebase-user-1", userName: "成員二" }));
       await new Promise((r) => setTimeout(r, 100));
 
       const msgPromise = waitForMessage(ws1, "team_chat");
       ws2.send(JSON.stringify({
         type: "team_chat",
-        userId: "u2",
-        userName: "成員二",
+        userId: "fake-user", // 攻擊者偽造、應該被忽略
+        userName: "fake",
         message: "你好！",
       }));
 
       const msg = await msgPromise;
       expect(msg.message).toBe("你好！");
+      // 廣播的 userId 用 server 端 authenticatedUserId、不是 client 傳的偽造值
+      expect(msg.userId).toBe("firebase-user-1");
     });
-  });
 
-  describe("team_ready", () => {
-    it("準備狀態廣播", async () => {
-      const ws1 = trackWs(await connectWs(port));
-      const ws2 = trackWs(await connectWs(port));
+    it("未認證 ws 送 team_chat → silent drop", async () => {
+      const ws1 = trackWs(await connectWs(port)); // 接收用
+      const ws2 = trackWs(await connectWs(port)); // 無 token
 
       ws1.send(JSON.stringify({ type: "team_join", teamId: "t1", userId: "u1", userName: "成員一" }));
       ws2.send(JSON.stringify({ type: "team_join", teamId: "t1", userId: "u2", userName: "成員二" }));
       await new Promise((r) => setTimeout(r, 100));
 
+      // ws2 未認證、送 team_chat 應被 silent drop
+      ws2.send(JSON.stringify({
+        type: "team_chat",
+        userId: "u2",
+        userName: "成員二",
+        message: "假訊息",
+      }));
+
+      // 等 200ms 確認 ws1 沒收到（silent drop）
+      let received = false;
+      ws1.on("message", (data) => {
+        const msg = JSON.parse(data.toString());
+        if (msg.type === "team_chat") received = true;
+      });
+      await new Promise((r) => setTimeout(r, 200));
+      expect(received).toBe(false);
+    });
+  });
+
+  describe("team_ready", () => {
+    it("準備狀態廣播（必須認證、用 server 端 userId）", async () => {
+      const ws1 = trackWs(await connectWs(port));
+      const ws2 = trackWs(await connectWs(port, "?token=valid-firebase-token"));
+
+      ws1.send(JSON.stringify({ type: "team_join", teamId: "t1", userId: "u1", userName: "成員一" }));
+      ws2.send(JSON.stringify({ type: "team_join", teamId: "t1", userId: "firebase-user-1", userName: "成員二" }));
+      await new Promise((r) => setTimeout(r, 100));
+
       const msgPromise = waitForMessage(ws1, "team_ready_update");
       ws2.send(JSON.stringify({
         type: "team_ready",
-        userId: "u2",
-        userName: "成員二",
+        userId: "fake-user", // 偽造
+        userName: "fake",
         isReady: true,
       }));
 
       const msg = await msgPromise;
       expect(msg.isReady).toBe(true);
+      expect(msg.userId).toBe("firebase-user-1");
     });
   });
 

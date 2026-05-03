@@ -306,12 +306,14 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           }
 
           case "team_chat":
+            // 強制 authenticatedUserId 防偽造他人聊天訊息（純廣播、不寫 DB）
+            if (!ws.authenticatedUserId) break;
             if (ws.teamId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_chat",
                 teamId: ws.teamId,
-                userId: message.userId,
-                userName: message.userName,
+                userId: ws.authenticatedUserId,
+                userName: ws.userName,
                 message: message.message,
                 messageType: message.messageType || "text",
                 timestamp: new Date().toISOString(),
@@ -319,12 +321,16 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
+          // 🔒 安全（2026-05-03 Codex 第 3 輪 P1 修）：強制 authenticatedUserId 防腳本繞過 client
+          // team_location/vote/ready 都是「能影響其他隊員看到的訊息」、必須認證才能廣播
+          // client 端 useTeamWebSocket 本來就要求 userId、強制這個對正常使用者透明
           case "team_location":
+            if (!ws.authenticatedUserId) break; // silent drop（client 反正都登入才送）
             if (ws.teamId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_location",
-                userId: message.userId,
-                userName: message.userName,
+                userId: ws.authenticatedUserId, // 用 server 端認證身份、防偽造
+                userName: ws.userName,
                 latitude: message.latitude,
                 longitude: message.longitude,
                 accuracy: message.accuracy,
@@ -334,13 +340,14 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
 
           case "team_vote":
+            if (!ws.authenticatedUserId) break;
             if (ws.teamId && message.voteId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_vote_cast",
                 voteId: message.voteId,
                 pageId: message.pageId,
-                userId: message.userId,
-                userName: message.userName,
+                userId: ws.authenticatedUserId, // 用 server 端認證身份、防偽造投票他人
+                userName: ws.userName,
                 choice: message.choice,
                 timestamp: new Date().toISOString(),
               });
@@ -354,11 +361,12 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           //   單一資料流原則（同 chat case 移除模式）
 
           case "team_ready":
+            if (!ws.authenticatedUserId) break;
             if (ws.teamId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_ready_update",
-                userId: message.userId,
-                userName: message.userName,
+                userId: ws.authenticatedUserId, // 用 server 端認證身份、防偽造他人 ready 狀態
+                userName: ws.userName,
                 isReady: message.isReady,
                 timestamp: new Date().toISOString(),
               });
