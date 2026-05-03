@@ -1,42 +1,65 @@
-# PROTOCOL.md — `/cc` 雙 AI 協作 Protocol
+# PROTOCOL.md — `cc` 雙 AI 協作 Protocol
 
 > **少更新**：此檔是規則本體、非狀態
 > 改動需在 [decisions/](decisions/) 留 ADR
 
 ---
 
-## 🎯 `/cc` 指令對照（雙方一致）
+## 🎯 `cc` 指令對照（雙方一致）
 
 | 指令 | 行為 | 是否動手 |
 |------|------|----------|
-| `/cc` | 報告當前狀態 + 建議下一步 | ❌ 不動 |
-| `/cc 狀態` | 只讀檔報告現況 | ❌ 不動 |
-| `/cc 接 P0` ~ `P4` | 接 backlog 對應優先項 | ✅ 動 |
-| `/cc 接 <檔名>` | 接指定項目 | ✅ 動 |
-| `/cc 檢查 <檔名>` | 跑該測試檔、報告結果 | ❌ 只跑、不修 |
-| `/cc 修完` | 跑 smoke + TS + build 全驗證、commit + push | ✅ 動 |
-| `/cc claude <args>` | 指定 Claude 接 | ✅ Claude 動 |
-| `/cc codex <args>` | 指定 Codex 接 | ✅ Codex 動 |
-| `/cc <自由描述>` | 視為任務描述、判斷如何接力 | 視內容 |
+| `cc` | 報告當前狀態 + 建議下一步 | ❌ 不動 |
+| `cc 狀態` | 只讀檔報告現況 | ❌ 不動 |
+| `cc 接 P0` ~ `P4` | 接 backlog 對應優先項 | ✅ 動 |
+| `cc 接 <檔名>` | 接指定項目 | ✅ 動 |
+| `cc 檢查 <檔名>` | 跑該測試檔、報告結果 | ❌ 只跑、不修 |
+| `cc 修完` | 跑 smoke + TS + build 全驗證、commit + push | ✅ 動 |
+| `cc claude <args>` | 指定 Claude 接 | ✅ Claude 動 |
+| `cc codex <args>` | 指定 Codex 接 | ✅ Codex 動 |
+| `cc <自由描述>` | 視為任務描述、判斷如何接力 | 視內容 |
 
-斜線 `/` 可省略：`cc 接 P0` 等同 `/cc 接 P0`
+⚠️ **重要**：不要打 `cc`（Claude Code CLI 會擋）、直接打 `cc xxx`（純文字）
 
 ---
 
 ## 📋 動手 protocol（每次必走）
 
-### Step 1：開始前
-1. 讀 [STATUS.md](STATUS.md) 看「目前負責人」
-2. 判斷：
-   - 是別人 + 上次更新 < 30 分鐘 → **不要動**、回報該換人或等
-   - 是自己 / 沒人 / 上次更新 ≥ 30 分鐘 → **可接**
-3. 讀 [BACKLOG.md](BACKLOG.md) 對齊任務
-4. 改 [STATUS.md](STATUS.md)：
-   ```
-   目前負責人：Claude 或 Codex
-   開始時間：YYYY-MM-DD HH:MM
-   進行中任務：<args 描述>
-   ```
+### Step 1：開始前（**必讀全部進度資料**）
+
+#### 1.1 讀協作檔（4 個）
+- [STATUS.md](STATUS.md) — 「目前負責人」+ 系統健康
+- [BACKLOG.md](BACKLOG.md) — 待處理任務
+- [logs/{今日}.md](logs/) — 今日紀錄（最後 3-5 筆）
+- [tasks/](tasks/) — 進行中任務（如 STATUS 有指）
+
+#### 1.2 跑即時健康檢查（不需動程式碼）
+```bash
+git log --oneline -5                              # 最近 commits
+git status -s                                     # 未 commit 變動
+node scripts/smoke-test-scenarios.mjs | tail -3   # smoke 51/51?
+```
+
+#### 1.3 30 分鐘鎖期判斷
+- 別人 + 上次更新 < 30 分鐘 → **不動**、回報換人或等
+- 自己 / 沒人 / ≥ 30 分鐘 → **可接**
+
+#### 1.4 改 [STATUS.md](STATUS.md)（搶鎖）
+```
+目前負責人：Claude 或 Codex
+開始時間：YYYY-MM-DD HH:MM
+進行中任務：<args 描述>
+上次更新：YYYY-MM-DD HH:MM [角色]
+```
+
+#### 1.5 給使用者「進度快報」（每次 cc 必做）
+回應使用者前先報這四點：
+1. **系統健康**：smoke / TS / build 數字
+2. **當前進度**：負責人 / 上次動作 / backlog 剩多少
+3. **新動作**：你打算做什麼
+4. **預估**：估時 + 影響範圍
+
+讓使用者一目了然「協作目前在哪、你要去哪」。
 
 ### Step 2：動手中
 - 依 `<args>` 執行任務
@@ -86,7 +109,7 @@ push 到 main：`git push origin HEAD:main`
 1. 做了什麼
 2. 結果（測試 pass / fail / smoke）
 3. backlog 進度
-4. 建議下一步（讓使用者決定再 /cc 還是換人）
+4. 建議下一步（讓使用者決定再 cc 還是換人）
 
 ---
 

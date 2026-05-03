@@ -5,21 +5,22 @@
 
 ---
 
-## ⚡ 最快速：`/cc` 指令
+## ⚡ 最快速：`cc` 指令
 
 雙方共用、語意一致：
 
 | 指令 | 行為 | 動手？ |
 |------|------|--------|
-| `/cc` 或 `/cc 狀態` | 報告當前狀態（讀 STATUS） | ❌ |
-| `/cc 接 P0` ~ `P4` | 接 backlog 對應優先項 | ✅ |
-| `/cc 接 <檔名>` | 接指定項目 | ✅ |
-| `/cc 檢查 <檔名>` | 跑該測試檔報結果（不修） | ❌ |
-| `/cc 修完` | smoke + TS + build 全驗證 + commit + push | ✅ |
-| `/cc claude <args>` / `/cc codex <args>` | 指定哪邊接 | ✅ |
-| `/cc <自由描述>` | 視為任務描述 | 視內容 |
+| `cc` 或 `cc 狀態` | 報告當前狀態（讀 STATUS） | ❌ |
+| `cc 接 P0` ~ `P4` | 接 backlog 對應優先項 | ✅ |
+| `cc 接 <檔名>` | 接指定項目 | ✅ |
+| `cc 檢查 <檔名>` | 跑該測試檔報結果（不修） | ❌ |
+| `cc 修完` | smoke + TS + build 全驗證 + commit + push | ✅ |
+| `cc claude <args>` / `cc codex <args>` | 指定哪邊接 | ✅ |
+| `cc <自由描述>` | 視為任務描述 | 視內容 |
 
-斜線可省略：`cc 接 P0` 等同 `/cc 接 P0`
+> ⚠️ **不要打 `/cc`（前面加斜線）**：Claude Code CLI 會攔截為 slash command（"Unknown command"）、訊息根本送不到 AI
+> 直接打 `cc xxx`（純文字、無斜線）— Claude 與 Codex 都認得
 
 完整 protocol → [codex-claude/PROTOCOL.md](codex-claude/PROTOCOL.md)
 
@@ -53,11 +54,14 @@
 3. **[codex-claude/BACKLOG.md](codex-claude/BACKLOG.md)** — 看待處理項
 4. **[codex-claude/PROTOCOL.md](codex-claude/PROTOCOL.md)** — 規則細節（首次讀、之後查）
 
-### 動手前
-1. 讀 [STATUS.md](codex-claude/STATUS.md) 確認 30 分鐘鎖
+### 動手前（**必讀全部進度資料**）
+1. 讀 [STATUS.md](codex-claude/STATUS.md) 看負責人 + 系統健康
 2. 讀 [BACKLOG.md](codex-claude/BACKLOG.md) 對齊任務
-3. 讀對應 [tasks/](codex-claude/tasks/) 細節（如有）
-4. 改 STATUS、開始動手
+3. 讀 [logs/{今日}.md](codex-claude/logs/) 看最近 3-5 筆動作
+4. 讀對應 [tasks/](codex-claude/tasks/) 細節（如有）
+5. 跑即時健康檢查：`git log --oneline -5 && git status -s && smoke test`
+6. 改 STATUS 搶鎖
+7. **給使用者四項進度快報**（系統健康 / 當前進度 / 新動作 / 預估）後才動手
 
 ### 動手後
 1. append 到 [logs/{今日}.md](codex-claude/logs/)

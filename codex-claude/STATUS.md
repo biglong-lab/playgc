@@ -41,7 +41,7 @@
 | 時間 | 角色 | 動作 |
 |------|------|------|
 | 09:50 | Claude | 重構協作檔結構（codex-claude/）|
-| 09:30 | Claude | 建立 codexclaude-dbug.md + AGENTS.md + /cc 指令 |
+| 09:30 | Claude | 建立 codexclaude-dbug.md + AGENTS.md + cc 指令 |
 | 09:15 | Claude | 修繕 leaderboard / playerSessions（含 1 個真 bug 404）|
 
 ---

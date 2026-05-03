@@ -30,19 +30,21 @@ codex-claude/
 
 ## 🎯 主要協作機制
 
-當使用者打 **`/cc <args>`** 時，依 [codex-claude/PROTOCOL.md](codex-claude/PROTOCOL.md) 執行。
+當使用者打 **`cc <args>`**（純文字、無斜線）時，依 [codex-claude/PROTOCOL.md](codex-claude/PROTOCOL.md) 執行。
 
-### `/cc` 語意（雙方一致）
+⚠️ **不要打 `cc`**：Claude Code CLI 會攔截為 slash command（"Unknown command"）、訊息送不到 AI
+
+### `cc` 語意（雙方一致）
 
 | 輸入 | 行為 |
 |------|------|
-| `/cc` | 報告當前狀態 + 建議下一步（不動手） |
-| `/cc 接 P0` / `接 P1` | 接 backlog 對應優先項 |
-| `/cc 接 <檔名>` | 接指定項目 |
-| `/cc 檢查 <檔名>` | 跑該測試檔、報告結果（不修） |
-| `/cc 修完` | 跑 smoke + TS + build 全驗證、commit + push |
-| `/cc 狀態` | 只讀檔、報告現況、不動手 |
-| `/cc <自由描述>` | 視為任務描述、判斷如何接力 |
+| `cc` | 報告當前狀態 + 建議下一步（不動手） |
+| `cc 接 P0` / `接 P1` | 接 backlog 對應優先項 |
+| `cc 接 <檔名>` | 接指定項目 |
+| `cc 檢查 <檔名>` | 跑該測試檔、報告結果（不修） |
+| `cc 修完` | 跑 smoke + TS + build 全驗證、commit + push |
+| `cc 狀態` | 只讀檔、報告現況、不動手 |
+| `cc <自由描述>` | 視為任務描述、判斷如何接力 |
 
 ### 你（Codex）必須做的事
 
@@ -159,7 +161,7 @@ push 到 main：`git push origin HEAD:main`
 
 ---
 
-## 🎬 範例：使用者說 `/cc 接 P0`
+## 🎬 範例：使用者說 `cc 接 P0`
 
 1. 你讀 `codexclaude-dbug.md`
 2. 看到 P0 是 `adminContent.test.ts` + `webhook-recur.test.ts` 的 DATABASE_URL 問題
