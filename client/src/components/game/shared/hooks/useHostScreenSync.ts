@@ -148,6 +148,14 @@ export function useHostScreenSyncWithPulse<TState>(opts: {
   const stateRef = useRef<TState | null>(null);
   stateRef.current = state;
 
+  // 用 ref 存最新 onPulse、避免 effect 依賴整個 opts 物件
+  // 呼叫端通常用 inline `{ onPulse: handlePulse }`，opts 物件 identity 每次 render 都是新的
+  // 若 effect 直接依賴 opts → 會反覆 teardown + reconnect WebSocket（重複註冊 + cache snapshot 抖動）
+  const onPulseRef = useRef(opts.onPulse);
+  useEffect(() => {
+    onPulseRef.current = opts.onPulse;
+  }, [opts.onPulse]);
+
   useEffect(() => {
     if (!route.sessionId) return;
 
@@ -180,8 +188,9 @@ export function useHostScreenSyncWithPulse<TState>(opts: {
           setConnected(true);
         }
         // 大螢幕端：收到玩家 pulse → 用 onPulse 計算新 state → broadcast
-        if (msg.type === "host_screen_pulse" && route.hostMode && opts.onPulse) {
-          const newState = opts.onPulse(msg.pulseType, msg.payload, stateRef.current);
+        const onPulse = onPulseRef.current;
+        if (msg.type === "host_screen_pulse" && route.hostMode && onPulse) {
+          const newState = onPulse(msg.pulseType, msg.payload, stateRef.current);
           if (newState !== null) {
             setState(newState);
             ws.send(JSON.stringify({
@@ -202,7 +211,7 @@ export function useHostScreenSyncWithPulse<TState>(opts: {
     return () => {
       ws.close();
     };
-  }, [route.sessionId, route.hostMode, route.hostToken, opts]);
+  }, [route.sessionId, route.hostMode, route.hostToken]);
 
   const sendPulse = useCallback((pulseType: string, payload: unknown) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
