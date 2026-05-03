@@ -11,7 +11,7 @@
 - **開始時間**：—
 - **進行中任務**：—
 - **阻塞項**：無
-- **上次更新**：2026-05-03 14:50 [Claude]（**📚 文件化收尾 — CHANGELOG 2026-05-03 entry + security-and-ux-fixes changes 補完**）
+- **上次更新**：2026-05-03 15:00 [Claude]（**🔧 重構 shared util — 4 個 webhook signature verifier 統一呼叫 lib/webhook-signature.ts、防未來再次風格分裂**）
 
 ---
 
@@ -21,7 +21,7 @@
 |------|------|----------|
 | Smoke test | 51/51 ✅ | 14:35 [Claude] |
 | TypeScript | 零錯誤 ✅ | 14:35 [Claude] |
-| **完整 test:run** | **156 檔 / 2190 tests 全綠** ✅ | 14:35 [Claude] |
+| **完整 test:run** | **157 檔 / 2207 tests 全綠** ✅ | 15:00 [Claude] |
 | **🚀 生產端部署** | **commit 28218cdb 已上線** | 14:25 [Claude] |
 | 生產 e2e 5 endpoints | scenarios + openapi + line + cron + 主頁全 200 ✅ | 14:35 [Claude] |
 | 生產資源 | CPU 0% / Memory 327MiB (21%) | 14:35 [Claude] |
@@ -54,7 +54,8 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
-| 14:50 | Claude | **📚 文件化收尾**（CHANGELOG 2026-05-03 entry + security-and-ux-fixes changes 162 行、commit fdef41ac）|
+| 15:00 | Claude | **🔧 重構 shared util**（4 個 webhook verifier 統一呼叫 lib/webhook-signature.ts、17 unit tests、test:run 157/2207、commit 8c722355）+ 部署 |
+| 14:50 | Claude | 📚 文件化收尾（CHANGELOG 2026-05-03 entry + security-and-ux-fixes changes 162 行、commit fdef41ac）|
 | 14:35 | Claude | 🎯 累計 milestone — 完整 test:run 156/2190 全綠、生產 CPU 0% / Memory 21% 完全穩定 |
 | 14:25 | Claude | 補強另外 2 個 webhook 簽章 timing-safe（recur-client throw → 防 + aihomi === → timingSafeEqual、commit cd766036）+ 部署 |
 | 14:10 | Claude | 3 個使用者新問題全修 + 部署（df2c5855 對講機 UX）|
