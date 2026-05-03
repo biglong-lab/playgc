@@ -41,7 +41,7 @@ export default function CollectiveScorePage({ page }: CollectiveScorePageProps) 
       const targetReached = newTotal >= (config.targetScore ?? 1000);
 
       const idx = prev.contributors.findIndex((c) => c.name === myUserName);
-      let newContributors = [...prev.contributors];
+      const newContributors = [...prev.contributors];
       if (idx >= 0) {
         newContributors[idx] = {
           ...newContributors[idx],

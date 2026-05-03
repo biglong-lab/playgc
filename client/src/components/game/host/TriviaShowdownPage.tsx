@@ -90,7 +90,7 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
       };
 
       // 答對 → 依現有「正確答對」次序給分
-      let newScores = { ...baseState.scores };
+      const newScores = { ...baseState.scores };
       const isCorrect = p.choice === currentQ.correctIdx;
       if (isCorrect) {
         const prevCorrectCount = Object.entries(baseState.answered).filter(([, a]) => a.choice === currentQ.correctIdx).length;
