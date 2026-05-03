@@ -1,7 +1,7 @@
 # Host Screen Components — 大螢幕互動元件總覽
 
 > **更新日期**：2026-05-03
-> **元件總數**：13 個（W18 完整版）
+> **元件總數**：14 個（W19 + TeamBattleScore）
 > **設計依據**：[ADR-0004 host-screen-axis](../decisions/0004-host-screen-axis.md) + [ADR-0013 W18 元件擴充](../decisions/0013-w18-component-expansion.md)
 
 ---
@@ -23,7 +23,7 @@
 
 ---
 
-## 📋 13 個元件總覽
+## 📋 14 個元件總覽
 
 | # | 元件 | pageType | 玩家互動 | 主要場景 |
 |---|------|----------|----------|----------|
@@ -40,6 +40,7 @@
 | 11 | LotteryWheel | `host_lottery_wheel` | 報名 + 旋轉 | 抽獎、隨機選擇 |
 | 12 | ProgressQuest | `host_progress_quest` | 完成回報 | 任務進度、團隊里程碑 |
 | 13 | WordCloud | `host_word_cloud` | 提交詞彙 | 關鍵字蒐集、發想互動 |
+| 14 | **TeamBattleScore** | `host_team_battle_score` | 加分（雙隊） | **紅藍對抗、團體競賽、男女組互動** |
 
 ---
 
@@ -50,6 +51,7 @@
 | 元件 | 適配 | 用法 |
 |------|------|------|
 | **KnowledgeMap** | ⭐⭐⭐ | 街區走讀打卡、景點互動 |
+| **TeamBattleScore** | ⭐⭐ | 商圈陣營對抗、街區紅藍隊集點 |
 | CrowdGather | ⭐⭐ | 達標報到、活動計人數 |
 | LiveLeaderboard | ⭐⭐ | 商圈集點競賽 |
 | PolaroidCollage | ⭐ | 街區紀念回憶 |
@@ -63,6 +65,7 @@
 |------|------|------|
 | **TriviaShowdown** | ⭐⭐⭐ | 知識考核、訓練評估 |
 | **ProgressQuest** | ⭐⭐⭐ | 團隊里程碑、進度可視化 |
+| **TeamBattleScore** | ⭐⭐⭐ | **部門對抗賽、團建紅藍隊**（多市場核心元件）|
 | LiveLeaderboard | ⭐⭐ | 部門 / 小組競賽 |
 | ScoreboardAnnouncement | ⭐⭐ | 表揚 / 頒獎播報 |
 | EmojiReact | ⭐ | 講者即時反饋 |
@@ -77,6 +80,7 @@
 | **WaveResponse** | ⭐⭐⭐ | 熱場、群體應援 |
 | **EmojiReact** | ⭐⭐⭐ | 破冰、即時情緒 |
 | **LotteryWheel** | ⭐⭐⭐ | 抽獎、園遊會主節目 |
+| **TeamBattleScore** | ⭐⭐⭐ | 派對紅藍對抗、男女組互動 |
 | WordCloud | ⭐⭐ | 群體腦力激盪 |
 | TriviaShowdown | ⭐⭐ | 競賽答題 |
 
@@ -101,6 +105,7 @@
 | **PolaroidCollage** | ⭐⭐⭐ | 拍照拼貼、回憶牆 |
 | **GuestbookDigital** | ⭐⭐⭐ | 數位簽名祝福 |
 | **EmojiReact** | ⭐⭐⭐ | 即時情緒分享 |
+| **TeamBattleScore** | ⭐⭐⭐ | 婚禮男女組互動、生日壽星陣營 |
 | LotteryWheel | ⭐⭐ | 婚禮抽獎、生日禮物分配 |
 | WaveResponse | ⭐⭐ | 主秀應援 |
 | ScoreboardAnnouncement | ⭐ | 公告播報 |
@@ -136,6 +141,12 @@
 1. ProgressQuest（章節進度）
 2. TriviaShowdown（解謎答題）
 3. WordCloud（線索收集）
+
+### 組合 F：「紅藍對抗套餐」（多市場通用）
+1. TeamBattleScore（雙隊計分主軸）
+2. TriviaShowdown（搶答得分）
+3. WaveResponse（陣營應援）
+4. LotteryWheel（勝隊抽獎）
 
 ---
 
@@ -174,9 +185,10 @@ const { state, sendPulse, broadcastState, hostMode } =
 
 ## 🚀 未來擴充方向
 
-依商業需求，可優先考慮新增：
-1. **TeamBattleScore** — 紅藍對抗即時計分（多市場通用：團建 / 婚禮 / 生日）
+依商業需求，可優先考慮新增（按 ROI 排序）：
+1. ~~**TeamBattleScore**~~ ✅ 已完成（W19、commit a98781b4 + 6aee8f3e）
 2. **PhotoMosaic** — 玩家拍照即時拼貼大馬賽克（婚禮 / 場域）
 3. **TimeAuction** — 限時搶購 / 競標（活動 / 商圈）
 4. **EmotionFlow** — 多階段情緒曲線回饋（內訓 / 演講後評估）
 5. **InteractiveQuestion** — 玩家提問 + 票選 + admin 回答（演講 / 教育）
+6. **ChainReaction** — 玩家接力傳遞（破冰、團建）
