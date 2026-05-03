@@ -20,6 +20,7 @@ import {
 import { eq, and, desc, sql } from "drizzle-orm";
 import { isAuthenticated } from "../firebaseAuth";
 import { requireAdminAuth } from "../adminAuth";
+import { hotPathLimiter } from "../utils/rate-limiters";
 import type { AuthenticatedRequest } from "./types";
 import { z } from "zod";
 import {
@@ -238,8 +239,9 @@ export function registerSquadInvitesRoutes(app: Express) {
 
   // ============================================================================
   // POST /api/invites/:token/click — 紀錄點擊（前端 invite 頁載入時打）
+  // 加 hotPathLimiter 防 abuse 灌假點擊數（每 IP 每分鐘 120 次、合法重新整理 OK）
   // ============================================================================
-  app.post("/api/invites/:token/click", async (req, res) => {
+  app.post("/api/invites/:token/click", hotPathLimiter, async (req, res) => {
     try {
       const token = req.params.token;
       if (!isValidInviteToken(token)) {

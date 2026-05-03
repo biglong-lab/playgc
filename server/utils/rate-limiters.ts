@@ -64,3 +64,16 @@ export const aiLimiter = rateLimit({
   keyGenerator: (req) => `ai:${getUserKey(req)}`,
   message: { message: "AI 驗證請求過於頻繁，請稍後再試" },
 });
+
+/**
+ * 公開寫入端點（無 auth、寫 DB）
+ * 每 IP 每小時 10 次 — 防 spam（如 /api/apply 場域申請、防 abuse 灌假申請）
+ */
+export const publicWriteLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 小時
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `pubwrite:ip:${req.ip}`,
+  message: { message: "請求過於頻繁，請稍後再試" },
+});

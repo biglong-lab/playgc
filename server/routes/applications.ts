@@ -9,14 +9,16 @@ import {
   publicApplicationSchema,
 } from "@shared/schema";
 import { requirePlatformAdmin } from "../platformAuth";
+import { publicWriteLimiter } from "../utils/rate-limiters";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 
 export function registerApplicationRoutes(app: Express): void {
   // ============================================================================
   // POST /api/apply — 公開申請（不需登入）
+  // 加 publicWriteLimiter 防 spam abuse 灌假申請（每 IP 每小時 10 次）
   // ============================================================================
-  app.post("/api/apply", async (req, res) => {
+  app.post("/api/apply", publicWriteLimiter, async (req, res) => {
     const parsed = publicApplicationSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({
