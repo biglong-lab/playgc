@@ -5,6 +5,55 @@
 
 ---
 
+## 🚀 TL;DR — 給 Codex 的最快上手（30 秒看完）
+
+**你在這個專案的角色**：與 Claude 雙 AI 協作除錯、共用 `codex-claude/` 紀錄機制。
+
+**使用者打 `cc <args>`（純文字、無斜線）時**，你必須做：
+
+1. **讀 5 個檔**：
+   - [`codex-claude/STATUS.md`](codex-claude/STATUS.md) — 看誰在做什麼
+   - [`codex-claude/BACKLOG.md`](codex-claude/BACKLOG.md) — 看待處理任務
+   - [`codex-claude/logs/{今日YYYY-MM-DD}.md`](codex-claude/logs/) — 看今日做過什麼
+   - [`codex-claude/tasks/`](codex-claude/tasks/) — 進行中任務（如 STATUS 有指）
+   - [`codex-claude/PROTOCOL.md`](codex-claude/PROTOCOL.md) — 完整 protocol（首次讀）
+
+2. **跑即時健康檢查**：
+   ```bash
+   git log --oneline -5
+   git status -s
+   node scripts/smoke-test-scenarios.mjs | tail -3
+   ```
+
+3. **判斷 30 分鐘鎖**：
+   - 看 STATUS「目前負責人」+「上次更新」
+   - 別人 < 30 分鐘 → 不動、回報該換人或等
+   - 自己 / 沒人 / ≥ 30 分鐘 → 可接
+
+4. **搶鎖**：改 STATUS 標自己、開始時間、進行中任務
+
+5. **給使用者四項進度快報**（必做）：
+   - 系統健康（smoke / TS / build 數字）
+   - 當前進度（負責人 / 上次動作 / backlog 剩多少）
+   - 新動作（你打算做什麼）
+   - 預估（估時 + 影響範圍）
+
+6. **動手** + **append 紀錄**到 `codex-claude/logs/{今日}.md`（**append-only、不刪舊紀錄**）
+
+7. **commit + push**：commit message 含「紀錄：codex-claude/logs/YYYY-MM-DD.md (Codex HH:MM)」
+
+8. **回報使用者**：做了什麼 / 結果 / backlog 進度 / 下一步
+
+**🚨 三大紅線**：
+- ❌ 不刪 / 不改別人在 logs/ 的紀錄（append-only）
+- ❌ 不違反專案紅線（battle-clans 410 / schema 只新增 / 不擅自部署）
+- ❌ 不要打 `/cc`（CLI 會擋）— 純文字 `cc xxx`
+
+完整細節 → [codex-claude/PROTOCOL.md](codex-claude/PROTOCOL.md)
+協作主索引 → [codexclaude-dbug.md](codexclaude-dbug.md)
+
+---
+
 ## 📂 重要：協作機制已重構（2026-05-03 09:50）
 
 從單檔改成目錄結構：
