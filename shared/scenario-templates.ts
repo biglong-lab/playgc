@@ -540,6 +540,97 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "民宿 / 餐廳長期訂閱。月費 NT$ 800-2,500 + 活動分潤。",
     status: "live",
   },
+
+  // ════════════════════════════════════════════
+  // W22 新增 — 用 BingoBoard + BlessingWall
+  // ════════════════════════════════════════════
+  {
+    id: "wedding-deluxe",
+    name: "婚禮派對 ✨ 升級版",
+    tagline: "祝福瀑布 + 拍立得牆 + 賓客 Bingo + 情緒池",
+    description:
+      "婚禮現場的數位互動完整升級方案。除了拍立得 + 簽名簿，加上「祝福瀑布」讓賓客留言即時飛上大螢幕、賓客 Bingo（如「找到穿紅衣的賓客」）讓現場互動更熱絡。\n適合大型婚宴、海外婚禮、戶外證婚等高互動需求場合。",
+    useCases: ["大型婚宴主桌投影", "海外婚禮現場直播", "戶外證婚台", "二次戶外婚禮"],
+    category: "social",
+    icon: "Heart",
+    gradient: "from-rose-500/30 to-fuchsia-500/30",
+    estimatedPlayers: "50-300 人",
+    estimatedDuration: "3-5 小時",
+    components: [
+      {
+        pageType: "host_blessing_wall",
+        label: "祝福瀑布牆",
+        role: "賓客留言即時飛上螢幕、戒指交換時刻全場飄",
+        axis: "host",
+      },
+      {
+        pageType: "host_polaroid_collage",
+        label: "拍立得紀念牆",
+        role: "賓客合照即時上牆",
+        axis: "host",
+        demoMode: "polaroid-host",
+      },
+      {
+        pageType: "host_bingo_board",
+        label: "賓客 Bingo",
+        role: "「找到穿紅衣賓客」「跟新郎合照」等情境集章",
+        axis: "host",
+      },
+      {
+        pageType: "host_emoji_react",
+        label: "情緒池應援",
+        role: "戒指交換、拋捧花時的 emoji 雨",
+        axis: "host",
+        demoMode: "emoji-host",
+      },
+    ],
+    valueProposition: "婚禮升級版 — 4 元件互動體驗、適合追求記憶深刻的新人。NT$ 12,000-20,000 / 場。",
+    status: "live",
+  },
+  {
+    id: "carnival-bingo",
+    name: "園遊會 Bingo 集章嘉年華",
+    tagline: "Bingo 集章 + 即時排行 + 跑馬燈 + 全場應援",
+    description:
+      "園遊會主舞台升級版本。把分散的攤位用 Bingo 連起來、賓客必須走訪不同攤位才能集章解鎖獎勵。\n大螢幕呈現所有人 Bingo 進度、達成連線的賓客排上前 10。",
+    useCases: ["大學校慶園遊會", "百貨週年慶活動", "夜市夏日祭", "社區園遊嘉年華"],
+    category: "event",
+    icon: "PartyPopper",
+    gradient: "from-orange-500/30 to-yellow-500/30",
+    estimatedPlayers: "100-500 人",
+    estimatedDuration: "2-4 小時",
+    components: [
+      {
+        pageType: "host_bingo_board",
+        label: "Bingo 集章板",
+        role: "25 個攤位、走訪不同攤位即時打勾",
+        axis: "host",
+      },
+      {
+        pageType: "host_live_leaderboard",
+        label: "Bingo 排行榜",
+        role: "達成連線的賓客排前 10",
+        axis: "host",
+        demoMode: "leaderboard-host",
+      },
+      {
+        pageType: "host_scoreboard_announcement",
+        label: "跑馬燈播報",
+        role: "「X 攤位剛達成連線」插播",
+        axis: "host",
+        demoMode: "scoreboard-host",
+      },
+      {
+        pageType: "host_wave_response",
+        label: "全場應援",
+        role: "節目高潮時人浪湧現",
+        axis: "host",
+        demoMode: "wave-host",
+      },
+    ],
+    valueProposition: "園遊會升級版 — 把分散攤位串起來、提升賓客整場參與率。包套 NT$ 25,000-50,000 / 場。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

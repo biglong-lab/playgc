@@ -1,4 +1,4 @@
-# 🎬 情境模板 — 12 個（5 大市場全覆蓋）
+# 🎬 情境模板 — 14 個（5 大市場全覆蓋）
 
 > 預設好的元件組合包、客戶選一個就能 30 分鐘現場可玩
 > 設計依據：[Phase 2 W6 一鍵建場 ADR](../changes/2026-05-02-phase2-complete.md)
@@ -274,7 +274,51 @@ A4 列印 QR → 婚禮現場貼桌卡 → 賓客掃 + 互動
 
 ---
 
-## 📊 12 情境一覽表
+## ✨ W22 新增情境（2 個）
+
+### 13. wedding-deluxe — 婚禮派對 ✨ 升級版 ✅ live
+
+| 項目 | 內容 |
+|------|------|
+| **Tagline** | 祝福瀑布 + 拍立得牆 + 賓客 Bingo + 情緒池 |
+| **適用** | 大型婚宴主桌投影、海外婚禮現場直播、戶外證婚台、二次戶外婚禮 |
+| **人數** | 50-300 人 |
+| **時長** | 3-5 小時 |
+| **收費** | NT$ 12,000-20,000 / 場 |
+| **狀態** | ✅ live |
+
+**含元件**（4 個）：
+- BlessingWall（祝福瀑布牆、W22 新增）— 戒指交換時刻全場飄
+- PolaroidCollage（拍立得紀念牆）
+- BingoBoard（賓客 Bingo、W22 新增）— 「找穿紅衣賓客」「跟新郎合照」
+- EmojiReact（情緒池）— 拋捧花時 emoji 雨
+
+**商業價值**：婚禮升級版、4 元件互動體驗、適合追求記憶深刻的新人
+
+---
+
+### 14. carnival-bingo — 園遊會 Bingo 集章嘉年華 ✅ live
+
+| 項目 | 內容 |
+|------|------|
+| **Tagline** | Bingo 集章 + 即時排行 + 跑馬燈 + 全場應援 |
+| **適用** | 大學校慶園遊會、百貨週年慶、夜市夏日祭、社區園遊嘉年華 |
+| **人數** | 100-500 人 |
+| **時長** | 2-4 小時 |
+| **收費** | NT$ 25,000-50,000 / 場（包套） |
+| **狀態** | ✅ live |
+
+**含元件**（4 個）：
+- BingoBoard（25 個攤位、W22 新增）— 走訪攤位即時集章
+- LiveLeaderboard（Bingo 排行榜）— 達成連線排前 10
+- ScoreboardAnnouncement（跑馬燈）— 「X 攤位剛達成連線」插播
+- WaveResponse（全場應援）— 節目高潮人浪
+
+**商業價值**：園遊會升級版、把分散攤位串起來、提升賓客整場參與率
+
+---
+
+## 📊 14 情境一覽表
 
 | ID | 名稱 | 類別 | 狀態 | 收費 | 主元件 |
 |----|------|------|------|------|--------|
@@ -290,6 +334,8 @@ A4 列印 QR → 婚禮現場貼桌卡 → 賓客掃 + 互動
 | corporate-training | 企業內訓 | 💼 corporate | ✅ | 1.5K-5K/月 | Trivia + Poll + RoleAssign |
 | company-trip | 員工旅遊 | 💼 corporate | 🟡 | 10K-30K | Photo + GpsTeam + Guestbook |
 | venue-storyline | 場域故事 | 🏠 venue | ✅ | 800-2.5K/月 | Dialogue + Treasure + Polaroid |
+| **wedding-deluxe** ✨ | **婚禮 ✨ 升級版** | 💝 social | ✅ | 12K-20K | Blessing + Polaroid + Bingo + Emoji |
+| **carnival-bingo** ✨ | **園遊會 Bingo 嘉年華** | 🎉 event | ✅ | 25K-50K | Bingo + Leaderboard + Scoreboard + Wave |
 
 ✅ = live、🟡 = preview（待真實活動驗證）
 
