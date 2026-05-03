@@ -4,15 +4,14 @@
 //   - ChoiceVerifyRace（純 UI）的容器層
 //   - 從 gameId 自動找隊伍 + 隊員清單
 //   - 用 useTeamWebSocket 接 race_answered 訊息累積 answerRecords
-//   - 玩家答題時呼叫 sendRaceAnswer（透過 WebSocket 自訂訊息或 POST API）
-//
-// 後端 TODO（Phase 3.1 part 3）：
-//   - server WebSocket 處理 race_answered 訊息（含 timestamp 防 client clock skew）
-//   - 廣播 race_answered 給同隊全員
+//   - 玩家答題時呼叫 sendRaceAnswer 透過 WebSocket 廣播給同隊全員
 //
 // 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.6
 //
-// 目前 MVP：用 useState 本地累積 answerRecords，等 server 實作後改用 WebSocket 同步
+// realtime 鏈路（2026-05-03 Phase 3.1 part 3 補完）：
+//   1. client send "race_answer"（useTeamWebSocket.sendRaceAnswer）
+//   2. server case "race_answer" → broadcastToTeam(teamId, "race_answered")
+//   3. 隊員收到 → handleWsMessage 累積 answerRecords
 
 import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -88,8 +87,7 @@ export default function ChoiceVerifyRacePage({
     enabled: !!gameId && !!user,
   });
 
-  // MVP：本地累積 answerRecords
-  // Phase 3.1 part 3 會改用 WebSocket race_answered 同步
+  // 本地累積 answerRecords（含自己 handleAnswer + 隊友 race_answered 廣播）
   const [answerRecords, setAnswerRecords] = useState<RaceAnswerRecord[]>([]);
 
   const myDisplayName = useMemo(() => {
@@ -109,7 +107,7 @@ export default function ChoiceVerifyRacePage({
     [myTeam],
   );
 
-  // 訂閱 WebSocket race_answered 訊息（server 端 endpoint 待 part 3 補完）
+  // 訂閱 WebSocket race_answered 訊息
   // 收到隊友答題訊息 → 加進 answerRecords（本地 + 隊友統一管理）
   const handleWsMessage = useCallback(
     (msg: { type: string }) => {
@@ -143,14 +141,14 @@ export default function ChoiceVerifyRacePage({
     [user],
   );
 
-  useTeamWebSocket({
+  const { sendRaceAnswer } = useTeamWebSocket({
     teamId: myTeam?.id,
     userId: user?.id,
     userName: myDisplayName,
     onMessage: handleWsMessage,
   });
 
-  // 處理玩家答題（MVP：本地計算 + 廣播 — server 端 broadcast endpoint 待補）
+  // 處理玩家答題：本地累積 + 透過 WebSocket 廣播給同隊全員
   const handleAnswer = useCallback(
     (questionIndex: number, optionIndex: number) => {
       if (!user) return;
@@ -171,9 +169,16 @@ export default function ChoiceVerifyRacePage({
       };
       setAnswerRecords((prev) => [...prev, record]);
 
-      // TODO Phase 3.1 part 3：呼叫 server API + WebSocket 廣播
+      // 透過 WebSocket race_answer 廣播給同隊（server 廣播為 race_answered）
+      sendRaceAnswer({
+        displayName: myDisplayName,
+        questionIndex,
+        selectedOption: optionIndex,
+        isCorrect,
+        points,
+      });
     },
-    [user, config, myDisplayName],
+    [user, config, myDisplayName, sendRaceAnswer],
   );
 
   // ============================================================================

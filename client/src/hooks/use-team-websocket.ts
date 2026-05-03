@@ -427,6 +427,36 @@ export function useTeamWebSocket({
     [userId],
   );
 
+  /**
+   * 🆕 Phase 3.1 part 3 補完：ChoiceVerifyRace 玩家答題即時同步給同隊
+   *   client send "race_answer" → server broadcast "race_answered" 給同隊全員
+   */
+  const sendRaceAnswer = useCallback(
+    (record: {
+      displayName: string;
+      questionIndex: number;
+      selectedOption: number;
+      isCorrect: boolean;
+      points: number;
+    }) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "race_answer",
+            userId,
+            displayName: record.displayName,
+            questionIndex: record.questionIndex,
+            selectedOption: record.selectedOption,
+            isCorrect: record.isCorrect,
+            points: record.points,
+            answeredAt: new Date().toISOString(),
+          }),
+        );
+      }
+    },
+    [userId],
+  );
+
   return {
     isConnected,
     memberLocations,
@@ -437,5 +467,6 @@ export function useTeamWebSocket({
     sendLockCoopSync,
     sendRelaySync,
     sendTerritorySync,
+    sendRaceAnswer,
   };
 }

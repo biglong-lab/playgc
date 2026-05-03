@@ -372,6 +372,25 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
+          // 🆕 Phase 3.1 part 3 補完：ChoiceVerifyRace 答題即時廣播給同隊全員
+          //   client send: race_answer / server broadcast: race_answered
+          //   設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.6
+          //   無 DB 寫入（race 是即時遊戲、不持久化）；用 broadcastToTeam 限制範圍
+          case "race_answer":
+            if (ws.teamId) {
+              broadcastToTeam(ws.teamId, {
+                type: "race_answered",
+                userId: message.userId,
+                displayName: message.displayName,
+                questionIndex: message.questionIndex,
+                selectedOption: message.selectedOption,
+                isCorrect: message.isCorrect,
+                points: message.points,
+                answeredAt: message.answeredAt ?? new Date().toISOString(),
+              });
+            }
+            break;
+
           // 🆕 Phase 3.2 LockCoop：協作解鎖共享輸入 + 嘗試 + 解鎖/失敗廣播
           //   action: "code" | "attempt" | "unlocked" | "failed"
           //   payload 結構依 action 而定（純廣播，client 端各自處理）
