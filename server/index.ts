@@ -5,6 +5,7 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import cluster from "cluster";
 import os from "os";
+import { randomUUID } from "crypto";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -304,6 +305,19 @@ app.use(express.urlencoded({ extended: false }));
 
   // log 使用頂層宣告的 _log（同名避免 refactor 影響）
 
+// 🆕 X-Request-Id middleware（2026-05-03 Stage 1 #2 + #5）
+//   每個 request 注入 requestId、用於 error_logs 串接 + 使用者報修可追蹤
+app.use((req, res, next) => {
+  const incoming = req.headers["x-request-id"];
+  const reqId = (typeof incoming === "string" && incoming.length > 0 && incoming.length <= 100)
+    ? incoming
+    : randomUUID();
+  // 注入 req（後續 handler 可讀）+ response header（client 端 errorReport 可帶回）
+  (req as Request & { requestId?: string }).requestId = reqId;
+  res.setHeader("X-Request-Id", reqId);
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -333,14 +347,47 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
-  app.use((err: Error & { status?: number; statusCode?: number }, _req: Request, res: Response, _next: NextFunction) => {
+  app.use((err: Error & { status?: number; statusCode?: number }, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
+    const requestId = (req as Request & { requestId?: string }).requestId;
 
     if (!res.headersSent) {
-      res.status(status).json({ message });
+      // 5xx 不洩漏 raw message（保留 message 但不洩漏 stack）
+      // 4xx 業務錯誤通常已由 route handler 處理；走到這裡多半是中間件 throw
+      const safeMessage = status >= 500 && process.env.NODE_ENV === "production"
+        ? "伺服器錯誤、請稍後再試"
+        : message;
+      res.status(status).json({
+        message: safeMessage,
+        // 給使用者報修用：requestId 可以對到 server logs
+        requestId,
+      });
     }
-    log(`錯誤: ${status} - ${message}`, "error");
+    log(`錯誤: ${status} - ${message}${requestId ? ` [reqId=${requestId}]` : ""}`, "error");
+
+    // 🆕 寫入 error_logs（5xx 才寫、4xx 多半業務正常）
+    if (status >= 500) {
+      const userId = (req as Request & { user?: { claims?: { sub?: string } } }).user?.claims?.sub;
+      const fieldId = (req as Request & { admin?: { fieldId?: string } }).admin?.fieldId;
+      void import("./lib/error-logger").then(({ logError }) =>
+        logError({
+          level: "error",
+          message,
+          stack: err.stack,
+          source: "server-middleware",
+          platform: "server",
+          requestId,
+          method: req.method,
+          route: req.path,
+          statusCode: status,
+          userId,
+          fieldId,
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        }),
+      ).catch(() => {/* fail-silent */});
+    }
   });
 
   // importantly only setup vite in development and after
