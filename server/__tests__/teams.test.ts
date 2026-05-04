@@ -688,9 +688,11 @@ describe("隊伍路由 (teams)", () => {
       expect(res.body.name).toBe("我的隊伍");
     });
 
-    // 🆕 Phase 2a Fix：team.status='playing' 但找不到 active session → 回 null
-    //   避免玩家在「遊戲已結束但 team status 沒改」時被困在 ghost lobby
-    it("team status='playing' 但無 active session → 回 null（避免迷路）", async () => {
+    // 🛡️ 2026-05-04 重設計：team.status='playing' 但找不到 active session
+    //   原行為（2026-05-02）：回 null（玩家被困在 ghost lobby、被誤導重新組隊）
+    //   新行為（2026-05-04）：回 team + sessionInterrupted=true、UI 顯示「中斷恢復」banner
+    //   設計依據：docs/changes/2026-05-04-team-flow-redesign.md
+    it("team status='playing' 但無 active session → 回 team + sessionInterrupted=true（中斷恢復）", async () => {
       const { app } = createApp();
       const mockTeam = {
         id: "team-1",
@@ -713,7 +715,11 @@ describe("隊伍路由 (teams)", () => {
         .set(AUTH_HEADER);
 
       expect(res.status).toBe(200);
-      expect(res.body).toBeNull();
+      // 新邏輯：回傳 team 物件、含 sessionInterrupted=true
+      expect(res.body).not.toBeNull();
+      expect(res.body.id).toBe("team-1");
+      expect(res.body.sessionInterrupted).toBe(true);
+      expect(res.body.activeSessionId).toBeNull();
     });
   });
 });

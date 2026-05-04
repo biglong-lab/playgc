@@ -1,15 +1,19 @@
 // 隊伍大廳主頁面
 //   重連邏輯（status='playing' + activeSessionId）已整合進 useTeamLobby，
 //   會觸發 3 秒倒數讓玩家確認狀態後再進遊戲。
+import { useState } from "react";
 import { useTeamLobby } from "./team-lobby/useTeamLobby";
 import {
   LoadingView, GameNotFoundView, SoloModeView,
   JoinOrCreateView, TeamLobbyView, StartingCountdownView,
 } from "./team-lobby/LobbyViews";
 import LeaderDecideDialog from "@/components/team/LeaderDecideDialog";
+import KeepSquadDialog from "@/components/team/KeepSquadDialog";
 
 export default function TeamLobby() {
   const ctx = useTeamLobby();
+  // 🆕 2026-05-04: 保留為長期隊伍對話框
+  const [showKeepDialog, setShowKeepDialog] = useState(false);
 
   if (ctx.gameLoading || ctx.teamLoading) {
     return <LoadingView />;
@@ -50,6 +54,8 @@ export default function TeamLobby() {
         onBack={() => ctx.navigate("/home")}
         createPending={ctx.createPending}
         joinPending={ctx.joinPending}
+        mySquads={ctx.mySquads}
+        mySquadsLoading={ctx.mySquadsLoading}
       />
     );
   }
@@ -73,6 +79,8 @@ export default function TeamLobby() {
         readyPending={ctx.readyPending}
         startPending={ctx.startPending}
         leavePending={ctx.leavePending}
+        isLeader={ctx.isLeader}
+        onShowKeepDialog={() => setShowKeepDialog(true)}
       />
       {/* 🆕 Phase 2c+ leader-decide：寬限期過時隊長決定 dialog */}
       <LeaderDecideDialog
@@ -81,6 +89,19 @@ export default function TeamLobby() {
         onWait={() => ctx.decideLeader("wait")}
         onContinue={() => ctx.decideLeader("continue")}
         onCancel={() => ctx.setPendingDecisionTarget(null)}
+      />
+      {/* 🆕 2026-05-04: 保留為長期隊伍 dialog */}
+      <KeepSquadDialog
+        open={showKeepDialog}
+        onOpenChange={(open) => {
+          setShowKeepDialog(open);
+        }}
+        defaultName={ctx.myTeam.name}
+        pending={ctx.promotePending}
+        onConfirm={(data) => {
+          ctx.promoteToSquad(data);
+          setShowKeepDialog(false);
+        }}
       />
     </>
   );

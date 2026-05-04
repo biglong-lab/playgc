@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import VoiceNotificationToggle from "@/components/shared/VoiceNotificationToggle";
 import type { Game, TeamMember, User } from "@shared/schema";
-import type { TeamWithDetails } from "./useTeamLobby";
+import type { TeamWithDetails, MySquadOption } from "./useTeamLobby";
+import { Shield, Plus } from "lucide-react";
 
 // 🆕 開始遊戲緩衝畫面（兩種模式）：
 //   - mode='starting' (5 秒倒數)：隊長按開始 → 全員看到，等大家對講機就緒
@@ -174,18 +175,29 @@ interface JoinOrCreateProps {
   setAccessCode: (v: string) => void;
   showJoinForm: boolean;
   setShowJoinForm: (v: boolean) => void;
-  onCreateTeam: () => void;
+  /** 🆕 2026-05-04: 接受 squadId（從「用 X 出戰」按鈕傳入） */
+  onCreateTeam: (squadId?: string) => void;
   onJoinTeam: () => void;
   onBack: () => void;
   createPending: boolean;
   joinPending: boolean;
+  /** 🆕 2026-05-04: 使用者已保留的 Squad 清單（決定顯示三狀態 UI） */
+  mySquads: MySquadOption[];
+  mySquadsLoading: boolean;
 }
 
 export function JoinOrCreateView({
   game, teamName, setTeamName, accessCode, setAccessCode,
   showJoinForm, setShowJoinForm, onCreateTeam, onJoinTeam,
   onBack, createPending, joinPending,
+  mySquads, mySquadsLoading,
 }: JoinOrCreateProps) {
+  // 🆕 2026-05-04: 三狀態判斷
+  //   - mySquadsLoading：先 spin，避免閃爍
+  //   - mySquads.length === 0：顯示「+ 建新隊」+「輸入碼」（無「用 X」）
+  //   - mySquads.length >= 1：顯示「用 X 出戰」+「+ 建另一隊」+「輸入碼」
+  const hasSquads = !mySquadsLoading && mySquads.length > 0;
+
   return (
     <div className="min-h-screen bg-background">
       <LobbyHeader
@@ -198,7 +210,7 @@ export function JoinOrCreateView({
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="w-5 h-5 text-primary" />
-              加入或創建隊伍
+              {hasSquads ? "選擇出戰隊伍" : "加入或創建隊伍"}
             </CardTitle>
             <CardDescription>
               此遊戲需要 {game.minTeamPlayers || 2} 至 {game.maxTeamPlayers || 6} 位玩家一起進行
@@ -220,6 +232,8 @@ export function JoinOrCreateView({
                 onCreate={onCreateTeam}
                 onShowJoin={() => setShowJoinForm(true)}
                 createPending={createPending}
+                mySquads={mySquads}
+                mySquadsLoading={mySquadsLoading}
               />
             )}
           </CardContent>
@@ -247,6 +261,9 @@ interface TeamLobbyViewProps {
   readyPending: boolean;
   startPending: boolean;
   leavePending: boolean;
+  /** 🆕 2026-05-04: 隊長 + team 還沒升級為 Squad 時可呼叫 */
+  isLeader: boolean;
+  onShowKeepDialog: () => void;
 }
 
 export function TeamLobbyView({
@@ -254,7 +271,12 @@ export function TeamLobbyView({
   allReady, hasEnoughPlayers,
   onBack, onRefresh, onCopyCode, onToggleReady, onStartGame, onLeaveTeam,
   readyPending, startPending, leavePending,
+  isLeader, onShowKeepDialog,
 }: TeamLobbyViewProps) {
+  /** 🆕 2026-05-04: 中斷恢復 banner — server 回 sessionInterrupted=true 時 */
+  const sessionInterrupted = (team as TeamWithDetails).sessionInterrupted;
+  /** 🆕 2026-05-04: 顯示「保留為長期隊伍」CTA — 隊長 + team 未升級 + 非中斷狀態 */
+  const showKeepCta = isLeader && !team.squadId && !sessionInterrupted;
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b">
@@ -283,6 +305,19 @@ export function TeamLobbyView({
       </header>
 
       <main className="container mx-auto max-w-md py-6 space-y-6">
+        {/* 🆕 2026-05-04: 中斷恢復 banner */}
+        {sessionInterrupted && (
+          <Alert className="border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800/50">
+            <RefreshCw className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-900 dark:text-amber-100">
+              <div className="font-semibold mb-1">遊戲場次中斷了</div>
+              <div className="text-xs">
+                這個隊伍上一場沒正常結束。{isLeader ? "你可以解散重組、或繼續用這隊再玩一場。" : "請等待隊長解散重組、或主動離開隊伍。"}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         <AccessCodeCard code={team.accessCode} status={team.status} copied={copied} onCopy={onCopyCode} />
         <MemberListCard team={team} />
 
@@ -307,6 +342,38 @@ export function TeamLobbyView({
           startPending={startPending}
           leavePending={leavePending}
         />
+
+        {/* 🆕 2026-05-04: 隊長保留為長期隊伍 CTA（小卡片、放底部） */}
+        {showKeepCta && (
+          <Card
+            className="border-amber-200 dark:border-amber-800/50 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 cursor-pointer hover:shadow-md transition-shadow"
+            onClick={onShowKeepDialog}
+            data-testid="card-keep-as-squad"
+          >
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="text-3xl">✨</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm text-amber-900 dark:text-amber-100">
+                  玩得開心？保留為長期隊伍
+                </div>
+                <div className="text-xs text-amber-800 dark:text-amber-200 mt-1">
+                  下次活動可直接用這隊、戰績累積到隊伍名下
+                </div>
+              </div>
+              <Button size="sm" variant="outline" data-testid="btn-keep-cta">
+                保留 →
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 🆕 2026-05-04: 已是永久隊伍的徽章顯示 */}
+        {team.squadId && (
+          <div className="text-center text-xs text-emerald-700 dark:text-emerald-400 flex items-center justify-center gap-1.5" data-testid="squad-bound-badge">
+            <Shield className="w-3.5 h-3.5" />
+            此隊伍是長期隊伍、戰績累積中
+          </div>
+        )}
       </main>
     </div>
   );
@@ -369,26 +436,94 @@ function JoinTeamForm({
 
 function CreateTeamForm({
   teamName, setTeamName, onCreate, onShowJoin, createPending,
+  mySquads, mySquadsLoading,
 }: {
   teamName: string; setTeamName: (v: string) => void;
-  onCreate: () => void; onShowJoin: () => void; createPending: boolean;
+  onCreate: (squadId?: string) => void; onShowJoin: () => void; createPending: boolean;
+  mySquads: MySquadOption[]; mySquadsLoading: boolean;
 }) {
+  // 🆕 2026-05-04: 載入中先 spin、避免閃爍
+  if (mySquadsLoading) {
+    return (
+      <div className="flex items-center justify-center py-8" data-testid="lobby-loading">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const hasSquads = mySquads.length > 0;
+
   return (
     <div className="space-y-4">
+      {/* 🆕 三狀態 UI 第一段：已保留的 Squad 列表（有就顯示） */}
+      {hasSquads && (
+        <div className="space-y-2" data-testid="my-squads-list">
+          <p className="text-xs text-muted-foreground">用既有隊伍出戰：</p>
+          {mySquads.map((squad) => (
+            <Button
+              key={squad.id}
+              variant="default"
+              className="w-full justify-start gap-3 h-auto py-3"
+              onClick={() => onCreate(squad.id)}
+              disabled={createPending}
+              data-testid={`btn-use-squad-${squad.id}`}
+            >
+              <div
+                className="w-8 h-8 rounded flex items-center justify-center font-bold text-xs flex-shrink-0"
+                style={{
+                  backgroundColor: squad.primaryColor ?? "#888",
+                  color: "white",
+                }}
+              >
+                {squad.tag.slice(0, 2)}
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <div className="font-semibold truncate">{squad.name}</div>
+                <div className="text-[11px] opacity-80">
+                  {squad.myRole === "leader" ? "👑 隊長" : squad.myRole === "officer" ? "🛡 幹部" : "隊員"} · 點選用此隊出戰
+                </div>
+              </div>
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* 🆕 三狀態 UI 第二段：建新隊（沒 Squad 必顯、有 Squad 也可建另一隊）*/}
+      {hasSquads && (
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">或</span>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-2">
-        <label className="text-sm font-medium">隊伍名稱（選填）</label>
+        <label className="text-sm font-medium">
+          {hasSquads ? "建另一個隊伍" : "新隊伍名稱（選填）"}
+        </label>
         <Input
-          placeholder="例如：勇者小隊"
+          placeholder={hasSquads ? "例如：午餐戰隊" : "例如：勇者小隊"}
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
           maxLength={50}
           data-testid="input-team-name"
         />
       </div>
-      <Button className="w-full gap-2" onClick={() => onCreate()} disabled={createPending} data-testid="button-create-team">
-        {createPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
-        創建隊伍
+      <Button
+        variant={hasSquads ? "outline" : "default"}
+        className="w-full gap-2"
+        onClick={() => onCreate()}
+        disabled={createPending}
+        data-testid="button-create-team"
+      >
+        {createPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+        {hasSquads ? "建立另一個新隊伍" : "建立新隊伍"}
       </Button>
+
+      {/* 🆕 三狀態 UI 第三段：輸入別人的組隊碼（永遠在最下方）*/}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -397,9 +532,9 @@ function CreateTeamForm({
           <span className="bg-card px-2 text-muted-foreground">或</span>
         </div>
       </div>
-      <Button variant="outline" className="w-full gap-2" onClick={onShowJoin} data-testid="button-show-join">
+      <Button variant="ghost" className="w-full gap-2" onClick={onShowJoin} data-testid="button-show-join">
         <UserPlus className="w-4 h-4" />
-        輸入組隊碼加入
+        輸入別人的組隊碼加入
       </Button>
     </div>
   );

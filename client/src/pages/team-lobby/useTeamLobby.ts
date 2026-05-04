@@ -66,6 +66,17 @@ export interface TeamWithDetails extends Team {
   leader: User;
   /** 🆕 status='playing' 時 server 補上正在進行的 sessionId（重連用） */
   activeSessionId?: string | null;
+  /** 🆕 2026-05-04: status='playing' 但找不到 active session（中斷），UI 提示「等待重連 / 解散」 */
+  sessionInterrupted?: boolean;
+}
+
+/** 🆕 2026-05-04: 我參與的所有 Squad（精簡版、用於進場時選擇出戰） */
+export interface MySquadOption {
+  id: string;
+  name: string;
+  tag: string;
+  primaryColor: string | null;
+  myRole: "leader" | "officer" | "member";
 }
 
 export interface TeamLobbyReturn {
@@ -73,6 +84,9 @@ export interface TeamLobbyReturn {
   game: Game | undefined;
   myTeam: TeamWithDetails | null | undefined;
   currentUserId: string | undefined;
+  /** 🆕 2026-05-04: 使用者已保留的 Squad 清單（給「用 X 出戰」UI 用） */
+  mySquads: MySquadOption[];
+  mySquadsLoading: boolean;
   // 狀態
   gameLoading: boolean;
   teamLoading: boolean;
@@ -99,12 +113,16 @@ export interface TeamLobbyReturn {
   toggleReady: () => void;
   startGame: () => void;
   leaveTeam: () => void;
+  /** 🆕 2026-05-04: 把當前 team 升級為永久 Squad（保留下次再用） */
+  promoteToSquad: (data: { name: string; tag?: string; primaryColor?: string }) => void;
   // Mutation 狀態
   createPending: boolean;
   joinPending: boolean;
   readyPending: boolean;
   startPending: boolean;
   leavePending: boolean;
+  /** 🆕 2026-05-04 */
+  promotePending: boolean;
   // 🆕 開始遊戲倒數狀態
   startingCountdown: number | null;
   /** 區分「全員開始倒數（5 秒）」vs「掉線重連 flash（1 秒）」— UI 顯示不同畫面 */
@@ -157,6 +175,13 @@ export function useTeamLobby(): TeamLobbyReturn {
     enabled: !!gameId,
     refetchInterval: 5000,
   });
+
+  // 🆕 2026-05-04: 載入使用者已保留的 Squad（進場時選擇出戰用）
+  const { data: mySquadsData, isLoading: mySquadsLoading } = useQuery<{ memberships: MySquadOption[] }>({
+    queryKey: ["/api/me/squads"],
+    enabled: !!currentUserId && !myTeam,  // 沒既有 team 才需要 — 已有 team 直接顯示大廳
+  });
+  const mySquads = mySquadsData?.memberships ?? [];
 
   // 🔗 偵測到 ?code= 邀請碼時提示使用者「您被邀請了」
   useEffect(() => {
@@ -357,6 +382,26 @@ export function useTeamLobby(): TeamLobbyReturn {
     },
   });
 
+  // 🆕 2026-05-04: 把臨時 team 升級為永久 Squad（保留下次再用）
+  const promoteToSquadMutation = useMutation({
+    mutationFn: async (data: { name: string; tag?: string; primaryColor?: string }) => {
+      const response = await apiRequest("POST", `/api/teams/${myTeam?.id}/promote-to-squad`, data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "✨ 隊伍已保留",
+        description: data?.message ?? "下次進活動可直接使用這隊伍出戰",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/me/squads"] });
+    },
+    onError: (error: unknown) => {
+      const msg = error instanceof Error ? error.message : "保留隊伍失敗";
+      toast({ title: "保留失敗", description: msg, variant: "destructive" });
+    },
+  });
+
   const startGameMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", `/api/teams/${myTeam?.id}/start`, {});
@@ -438,6 +483,8 @@ export function useTeamLobby(): TeamLobbyReturn {
     game,
     myTeam,
     currentUserId,
+    mySquads,
+    mySquadsLoading,
     gameLoading,
     teamLoading,
     wsConnected,
@@ -461,11 +508,13 @@ export function useTeamLobby(): TeamLobbyReturn {
     toggleReady: () => updateReadyMutation.mutate({ isReady: !myMembership?.isReady }),
     startGame: () => startGameMutation.mutate(),
     leaveTeam: () => leaveTeamMutation.mutate(),
+    promoteToSquad: (data) => promoteToSquadMutation.mutate(data),
     createPending: createTeamMutation.isPending,
     joinPending: joinTeamMutation.isPending,
     readyPending: updateReadyMutation.isPending,
     startPending: startGameMutation.isPending,
     leavePending: leaveTeamMutation.isPending,
+    promotePending: promoteToSquadMutation.isPending,
     startingCountdown,
     startingMode,
     pendingDecisionTarget,

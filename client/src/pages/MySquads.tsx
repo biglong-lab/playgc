@@ -120,15 +120,20 @@ export default function MySquads() {
                 <Shield className="w-8 h-8 text-primary" />
               </div>
               <div>
-                <h2 className="font-display font-semibold mb-1">還沒加入任何隊伍</h2>
+                <h2 className="font-display font-semibold mb-1">還沒有長期隊伍</h2>
                 <p className="text-sm text-muted-foreground">
-                  建立隊伍累積跨遊戲戰績，或透過邀請連結加入朋友的隊伍
+                  進活動組隊後、可選擇「✨ 保留為長期隊伍」、下次直接出戰、戰績持續累積。
                 </p>
               </div>
+              <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-200 text-left space-y-1">
+                <div>💡 <strong>怎麼來的</strong>：玩完一場遊戲、隊長按「保留為長期隊伍」即可。</div>
+                <div>🏆 <strong>有什麼用</strong>：下次活動直接點選使用、戰績跨遊戲累積。</div>
+                <div>🤝 <strong>朋友邀你</strong>：用組隊碼加入是「臨時」、想長期可請隊長保留並邀請。</div>
+              </div>
               <Link href="/squad/create">
-                <Button size="lg" className="w-full" data-testid="btn-create-squad-empty">
+                <Button size="lg" variant="outline" className="w-full" data-testid="btn-create-squad-empty">
                   <Plus className="w-4 h-4 mr-2" />
-                  建立第一支隊伍
+                  或直接建立空隊伍
                 </Button>
               </Link>
             </CardContent>
@@ -177,12 +182,13 @@ export default function MySquads() {
           </div>
         )}
 
-        {/* 說明卡 */}
+        {/* 說明卡 — 2026-05-04 重新整理 */}
         <Card className="bg-muted/30 border-dashed">
-          <CardContent className="p-4 text-xs text-muted-foreground space-y-1">
-            <p>💡 一個玩家可以加入多個隊伍，但只能擔任一個隊伍的隊長</p>
-            <p>🏆 隊伍戰績跨遊戲累積（一般冒險、水彈對戰、競賽接力都算）</p>
-            <p>🔗 透過邀請連結加入隊伍，不需要場域限制</p>
+          <CardContent className="p-4 text-xs text-muted-foreground space-y-1.5">
+            <p>💡 <strong>長期隊伍 vs 臨時組隊</strong>：這頁顯示的是「保留下來」的長期隊伍、玩活動時可直接點選用。</p>
+            <p>🏆 戰績跨遊戲累積（水彈、冒險、競賽、接力、解謎、體驗、合作、個人挑戰各類獨立 rating）</p>
+            <p>👥 一玩家最多加入 5 個長期隊伍（軟上限）；隊伍人數不限、出戰人數依遊戲設定</p>
+            <p>🔗 透過邀請連結 / 組隊碼加入「臨時」這場、想長期需請隊長把整隊保留</p>
           </CardContent>
         </Card>
       </main>

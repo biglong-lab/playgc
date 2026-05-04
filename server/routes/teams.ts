@@ -7,8 +7,10 @@ import {
   teamMembers,
   teamSessions,
   gameSessions,
+  squads,
+  squadMembers,
 } from "@shared/schema";
-import { eq, and, isNull, desc } from "drizzle-orm"; // desc 用於 activeSessionId 查詢
+import { eq, and, isNull, desc, sql } from "drizzle-orm"; // desc 用於 activeSessionId 查詢
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { registerTeamVoteRoutes } from "./team-votes";
@@ -376,17 +378,120 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           }
         }
 
-        // 🆕 Fix（2026-05-02）：team.status='playing' 但找不到 active session
-        //   → 視為已結束（遊戲結束流程沒改 team status，或 session 自然 completed）
-        //   → 回 null 讓 lobby 顯示「創建/加入隊伍」，避免玩家被困在 ghost lobby
-        //   只 forming/ready 狀態下沒 session 是正常（還沒開打），不過濾
-        if (team.status === "playing" && !activeSessionId) {
-          return res.json(null);
-        }
-
-        res.json({ ...team, activeSessionId });
+        // 🛡️ Fix（2026-05-04）：移除過激 ghost-lobby 防護
+        //   原邏輯（2026-05-02）：team.status='playing' 但無 active session → 回 null
+        //   問題：玩家中途退出 / 切 tab 後再進、被誤殺看到「創建/加入」表單
+        //   新策略：保留 team 並加 sessionInterrupted flag、由 client UI 顯示
+        //     - 隊長可選「解散重組」或「等待重連」
+        //     - 隊員可選「離開隊伍」回首頁
+        //   forming/ready 狀態下沒 session 是正常（還沒開打）、不影響
+        const sessionInterrupted = team.status === "playing" && !activeSessionId;
+        res.json({ ...team, activeSessionId, sessionInterrupted });
       } catch (error) {
         res.status(500).json({ message: "取得隊伍資料失敗" });
+      }
+    },
+  );
+
+  // 🆕 2026-05-04: 把 team 升級為永久 Squad（「保留隊伍下次再用」）
+  // 設計依據：docs/changes/2026-05-04-team-flow-redesign.md
+  // 流程：
+  //   1. 驗證 user 是 team leader
+  //   2. 驗證 team.squadId 為 null（避免重複升級）
+  //   3. 檢查 user 已參與的 active squad 數量（< 5 個軟上限）
+  //   4. 建 Squad（leaderId = user.id）
+  //   5. 把 team_members 全部寫入 squad_members（leader role 對應）
+  //   6. UPDATE teams SET squad_id = newSquadId
+  app.post(
+    "/api/teams/:teamId/promote-to-squad",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { teamId } = req.params;
+        const userId = req.user?.claims?.sub;
+        if (!userId) return res.status(401).json({ message: "請先登入" });
+
+        const promoteSchema = z.object({
+          name: z.string().min(1, "請輸入隊名").max(50),
+          tag: z.string().min(2, "TAG 至少 2 字").max(10).optional(),
+          primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/, "色碼格式錯誤").optional(),
+        });
+        const parsed = promoteSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ message: parsed.error.errors[0]?.message ?? "輸入格式錯誤" });
+        }
+        const { name, tag, primaryColor } = parsed.data;
+
+        // 1. 取 team + 檢查 leader
+        const [team] = await db.select().from(teams).where(eq(teams.id, teamId)).limit(1);
+        if (!team) return res.status(404).json({ message: "隊伍不存在" });
+        if (team.leaderId !== userId) {
+          return res.status(403).json({ message: "只有隊長能保留隊伍" });
+        }
+        if (team.squadId) {
+          return res.status(409).json({ message: "此隊伍已是永久隊伍" });
+        }
+
+        // 2. 軟上限：使用者最多 5 個 active squad
+        const activeSquadCount = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(squadMembers)
+          .where(and(eq(squadMembers.userId, userId), isNull(squadMembers.leftAt)));
+        const count = activeSquadCount[0]?.count ?? 0;
+        if (count >= 5) {
+          return res.status(409).json({
+            message: "你已加入 5 個隊伍（上限）。先到「我的隊伍」解散舊的、或加入別人的隊伍。",
+          });
+        }
+
+        // 3. 取 team_members
+        const memberships = await db
+          .select()
+          .from(teamMembers)
+          .where(and(eq(teamMembers.teamId, teamId), isNull(teamMembers.leftAt)));
+
+        // 4. 建 Squad
+        const finalTag = (tag ?? name.slice(0, 4)).toUpperCase();
+        const finalColor = primaryColor ?? "#be723c";
+        const [newSquad] = await db
+          .insert(squads)
+          .values({
+            name,
+            tag: finalTag,
+            leaderId: userId,
+            homeFieldId: null,
+            isPublic: true,
+            primaryColor: finalColor,
+          })
+          .returning();
+
+        if (!newSquad) {
+          return res.status(500).json({ message: "建立 Squad 失敗" });
+        }
+
+        // 5. 寫 squad_members（依 team role 對應）
+        if (memberships.length > 0) {
+          await db.insert(squadMembers).values(
+            memberships.map((m) => ({
+              squadId: newSquad.id,
+              userId: m.userId,
+              role: m.role === "leader" ? "leader" : "member",
+              joinSource: "self",
+            })),
+          );
+        }
+
+        // 6. teams.squadId bridge
+        await db.update(teams).set({ squadId: newSquad.id }).where(eq(teams.id, teamId));
+
+        return res.json({
+          squad: newSquad,
+          squadId: newSquad.id,
+          message: `隊伍「${name}」已保留、下次可直接使用`,
+        });
+      } catch (error) {
+        console.error("[teams] promote-to-squad 失敗:", error);
+        return res.status(500).json({ message: "保留隊伍失敗" });
       }
     },
   );
