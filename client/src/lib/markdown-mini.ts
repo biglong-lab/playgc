@@ -8,6 +8,38 @@ const escapeHtml = (s: string): string =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+/** 解析 markdown 連結 — 安全策略：
+ *  - 純 manual 內 .md filename → 內部 tab 切換
+ *  - `../` 跨目錄 .md → plain text（不變超連結，避免洩露 repo 結構或外連 private repo）
+ *  - http/https → 維持外連（白名單未實作、由內容把關）
+ *  - 錨點 #xxx → 內部錨點
+ */
+function resolveLink(url: string): { href: string; manualFile?: string; external: boolean; plainText?: boolean } {
+  // 1. 完整 URL（http/https）→ 維持外連（內容自身把關不指向 private repo）
+  if (/^https?:\/\//.test(url)) {
+    // 額外保險：阻擋指向 github.com 的 private repo 連結
+    if (/github\.com\/[\w-]+\/[\w-]+/.test(url)) {
+      return { href: url, external: false, plainText: true };
+    }
+    return { href: url, external: true };
+  }
+  // 2. 錨點（#xxx）→ 內部錨點
+  if (url.startsWith("#")) {
+    return { href: url, external: false };
+  }
+  // 3. 純 .md filename（不含 /）→ 內部 manual 切換
+  if (/^[^/]+\.md(#.*)?$/.test(url)) {
+    const file = url.split("#")[0];
+    return { href: "#", manualFile: file, external: false };
+  }
+  // 4. 含 ../ 或 / 的 .md 連結 → plain text（不可外連 private repo）
+  if (url.endsWith(".md") || /\.md#/.test(url)) {
+    return { href: "#", external: false, plainText: true };
+  }
+  // 5. 其他（非 .md、非 http）→ plain text 安全處理
+  return { href: "#", external: false, plainText: true };
+}
+
 const inlineMarkdown = (s: string): string => {
   // inline code 先處理（不被其他規則影響）
   s = s.replace(/`([^`]+)`/g, (_, code) => `<code class="px-1 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-xs">${escapeHtml(code)}</code>`);
@@ -15,11 +47,22 @@ const inlineMarkdown = (s: string): string => {
   s = s.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-semibold">$1</strong>');
   // 斜體
   s = s.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em class="italic">$1</em>');
-  // 連結
-  s = s.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    (_, text, url) => `<a href="${escapeHtml(url)}" class="text-amber-700 dark:text-amber-400 underline hover:text-amber-900" target="_blank" rel="noreferrer">${text}</a>`,
-  );
+  // 連結（內部 / 外部 / plain text 三類）
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, text, url) => {
+    const { href, manualFile, external, plainText } = resolveLink(url);
+    const cls = "text-amber-700 dark:text-amber-400 underline hover:text-amber-900";
+    if (manualFile) {
+      return `<a href="${escapeHtml(href)}" class="${cls}" data-manual-file="${escapeHtml(manualFile)}">${text}</a>`;
+    }
+    if (plainText) {
+      // 不變超連結、保持原文字（避免外連 private repo / 洩露結構）
+      return `<span class="text-zinc-600 dark:text-zinc-400">${text}</span>`;
+    }
+    if (external) {
+      return `<a href="${escapeHtml(href)}" class="${cls}" target="_blank" rel="noreferrer">${text}</a>`;
+    }
+    return `<a href="${escapeHtml(href)}" class="${cls}">${text}</a>`;
+  });
   return s;
 };
 

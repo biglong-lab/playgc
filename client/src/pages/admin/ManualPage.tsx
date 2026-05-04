@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 import { parseMarkdown } from "@/lib/markdown-mini";
 
 interface ManualSection {
@@ -63,49 +63,44 @@ const SECTIONS: ManualSection[] = [
   },
 ];
 
-interface ExternalDoc {
+interface InternalDoc {
   title: string;
   description: string;
-  url: string;
   emoji: string;
+  audience: string;
 }
 
-const EXTERNAL_DOCS: ExternalDoc[] = [
+/** 內部維護的延伸文件清單（純列表、不外連 — 需閱讀請聯絡工程團隊） */
+const INTERNAL_DOCS: InternalDoc[] = [
   {
     title: "客戶 onboarding SOP",
     description: "新客戶從接觸到開帳號的完整流程",
-    url: "https://github.com/biglong-lab/playgc/blob/main/docs/runbooks/customer-onboarding.md",
     emoji: "🚀",
+    audience: "業務 / 客服",
   },
   {
     title: "代理商接入指南",
     description: "API key 申請、環境變數、整合範例",
-    url: "https://github.com/biglong-lab/playgc/blob/main/docs/runbooks/agency-onboarding.md",
     emoji: "🔗",
+    audience: "技術夥伴 / API 接入方",
   },
   {
     title: "QA 測試確認清單",
     description: "新功能上線前的測試 checklist",
-    url: "https://github.com/biglong-lab/playgc/blob/main/docs/runbooks/2026-05-03-qa-test-checklist.md",
     emoji: "✅",
+    audience: "QA / 工程團隊",
   },
   {
     title: "錯誤處理政策（ADR-0016）",
     description: "Stage 1+2+3 錯誤處理體系設計依據",
-    url: "https://github.com/biglong-lab/playgc/blob/main/docs/decisions/0016-error-handling-policy.md",
     emoji: "🛡️",
+    audience: "工程團隊內部",
   },
   {
     title: "版本紀錄 CHANGELOG",
     description: "歷次部署紀錄、新功能上線時序",
-    url: "https://github.com/biglong-lab/playgc/blob/main/docs/CHANGELOG.md",
     emoji: "📋",
-  },
-  {
-    title: "GitHub repo",
-    description: "完整原始碼、issue 追蹤、PR 紀錄",
-    url: "https://github.com/biglong-lab/playgc",
-    emoji: "💻",
+    audience: "全員 / 工程",
   },
 ];
 
@@ -197,59 +192,64 @@ export default function ManualPage() {
               <div className="text-red-600 dark:text-red-400 text-sm">
                 ⚠️ 載入失敗：{error}
                 <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-                  你可以前往 GitHub 查看原始檔：
-                  <a
-                    href={`https://github.com/biglong-lab/playgc/blob/main/docs/manual/${activeSection.filename}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-amber-700 underline ml-1"
-                  >
-                    {activeSection.filename}
-                  </a>
+                  請重新整理頁面、或聯絡工程團隊取得 <code className="px-1 bg-zinc-100 dark:bg-zinc-800 rounded">{activeSection.filename}</code> 內容。
                 </p>
               </div>
             ) : (
               <div
                 data-testid="manual-content"
                 className="prose-mini text-zinc-800 dark:text-zinc-200"
+                onClick={(e) => {
+                  const target = e.target as HTMLElement;
+                  const link = target.closest("a[data-manual-file]") as HTMLAnchorElement | null;
+                  if (!link) return;
+                  e.preventDefault();
+                  const file = link.dataset.manualFile;
+                  if (!file) return;
+                  const section = SECTIONS.find((s) => s.filename === file);
+                  if (section) {
+                    setActiveSlug(section.slug);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
                 dangerouslySetInnerHTML={{ __html: html }}
               />
             )}
           </CardContent>
         </Card>
 
-        {/* External docs */}
+        {/* Internal docs — 純列表、不外連（repo 為 private、避免洩露結構）*/}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <ExternalLink className="w-5 h-5 text-amber-600" />
-              其他重要文件（GitHub）
+              <BookOpen className="w-5 h-5 text-amber-600" />
+              延伸文件清單（工程團隊維護）
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-3">
+              下列文件由工程團隊內部維護、需閱讀請聯絡管理員或工程窗口取得。
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {EXTERNAL_DOCS.map((doc) => (
-                <a
+              {INTERNAL_DOCS.map((doc) => (
+                <div
                   key={doc.title}
-                  href={doc.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  data-testid={`external-doc-${doc.title}`}
-                  className="block p-3 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                  data-testid={`internal-doc-${doc.title}`}
+                  className="block p-3 rounded-lg border border-zinc-200 dark:border-zinc-700"
                 >
                   <div className="flex items-start gap-3">
                     <div className="text-2xl">{doc.emoji}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm flex items-center gap-1">
-                        {doc.title}
-                        <ExternalLink className="w-3 h-3 opacity-50" />
-                      </div>
+                      <div className="font-semibold text-sm">{doc.title}</div>
                       <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
                         {doc.description}
                       </div>
+                      <div className="text-xs text-amber-700 dark:text-amber-400 mt-1">
+                        對象：{doc.audience}
+                      </div>
                     </div>
                   </div>
-                </a>
+                </div>
               ))}
             </div>
           </CardContent>
@@ -258,16 +258,7 @@ export default function ManualPage() {
         {/* Footer note */}
         <div className="mt-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-800 dark:text-amber-200">
           💡 <strong>提示</strong>：手冊內容隨平台更新會同步更新。
-          技術同事可在{" "}
-          <a
-            href="https://github.com/biglong-lab/playgc/tree/main/docs/manual"
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            GitHub docs/manual/
-          </a>{" "}
-          編輯 markdown 原始檔；遇到問題請聯絡管理員。
+          需要更新內容、新增文件、或回報手冊錯誤、請聯絡工程團隊。
         </div>
       </div>
     </div>
