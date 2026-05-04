@@ -385,7 +385,7 @@ function CreateTeamForm({
           data-testid="input-team-name"
         />
       </div>
-      <Button className="w-full gap-2" onClick={onCreate} disabled={createPending} data-testid="button-create-team">
+      <Button className="w-full gap-2" onClick={() => onCreate()} disabled={createPending} data-testid="button-create-team">
         {createPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Users className="w-4 h-4" />}
         創建隊伍
       </Button>

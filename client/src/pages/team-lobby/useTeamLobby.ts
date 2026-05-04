@@ -390,7 +390,9 @@ export function useTeamLobby(): TeamLobbyReturn {
 
   const handleCreateTeam = (squadId?: string) => {
     // 🆕 PR4：傳入的 squadId 優先；沒傳則用上次用過的（若存在）
-    const finalSquadId = squadId ?? getLastUsedSquadId() ?? undefined;
+    // 🛡️ 防護：squadId 必須是 string（避免 React event 物件被當參數傳入造成 JSON circular）
+    const safeSquadId = typeof squadId === "string" ? squadId : undefined;
+    const finalSquadId = safeSquadId ?? getLastUsedSquadId() ?? undefined;
     createTeamMutation.mutate({
       name: teamName || "",
       squadId: finalSquadId,
