@@ -17,9 +17,15 @@ import { registerTeamVoteRoutes } from "./team-votes";
 import { registerTeamScoreRoutes } from "./team-scores";
 import { registerTeamLifecycleRoutes } from "./team-lifecycle";
 
-/** 建立隊伍的請求驗證 */
+/** 建立隊伍的請求驗證
+ * 🛡️ 2026-05-04: name 接受空字串（轉 undefined）— 用既有 Squad 出戰時不必輸入名字、由 server fallback 用 squad name
+ */
 const createTeamBodySchema = z.object({
-  name: z.string().min(1).max(50).optional(),
+  name: z
+    .string()
+    .max(50)
+    .optional()
+    .transform((v) => (v && v.trim().length > 0 ? v.trim() : undefined)),
   // 🆕 PR4：以「永久隊伍」身份開場
   squadId: z.string().uuid().optional(),
 });

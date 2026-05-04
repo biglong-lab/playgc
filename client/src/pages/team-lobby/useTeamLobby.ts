@@ -322,7 +322,7 @@ export function useTeamLobby(): TeamLobbyReturn {
 
   // Mutations
   const createTeamMutation = useMutation({
-    mutationFn: async (data: { name: string; squadId?: string }) => {
+    mutationFn: async (data: { name?: string; squadId?: string }) => {
       const response = await apiRequest("POST", `/api/games/${gameId}/teams`, data);
       return response.json();
     },
@@ -434,13 +434,17 @@ export function useTeamLobby(): TeamLobbyReturn {
   }, [myTeam?.accessCode, toast]);
 
   const handleCreateTeam = (squadId?: string) => {
-    // 🆕 PR4：傳入的 squadId 優先；沒傳則用上次用過的（若存在）
-    // 🛡️ 防護：squadId 必須是 string（避免 React event 物件被當參數傳入造成 JSON circular）
+    // 🛡️ 2026-05-04: 新 flow（先玩、想留再留）— 顯式 squadId-only：
+    //   - 點「用 X 出戰」→ 明確帶 squadId
+    //   - 點「+ 建另一隊」→ 不帶 squadId（建純新 team）
+    //   不再 fallback 上次用過的 squadId（避免「建新隊」時誤帶舊 squad 造成 403）
+    //   PR4 原 fallback 在新 mySquads 列表 UI 露出後已是多餘
     const safeSquadId = typeof squadId === "string" ? squadId : undefined;
-    const finalSquadId = safeSquadId ?? getLastUsedSquadId() ?? undefined;
+    // 🛡️ 空 name 不送、避免 schema 驗證 too_small；server 會 fallback 用 squad name 或 access code
+    const trimmedName = teamName.trim();
     createTeamMutation.mutate({
-      name: teamName || "",
-      squadId: finalSquadId,
+      ...(trimmedName ? { name: trimmedName } : {}),
+      ...(safeSquadId ? { squadId: safeSquadId } : {}),
     });
   };
 
