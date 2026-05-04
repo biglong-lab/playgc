@@ -35,6 +35,7 @@ import {
   AlertTriangle,
   ArrowLeft,
 } from "lucide-react";
+import DisbandSquadDialog from "@/components/squad/DisbandSquadDialog";
 
 interface SquadDetail {
   squad: {
@@ -63,6 +64,30 @@ export default function SquadSettings() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // 🆕 2026-05-04: 解散對話框（防誤刪 — 需重新輸入隊名）
+  const [showDisbandDialog, setShowDisbandDialog] = useState(false);
+
+  // 🆕 2026-05-04: 解散 mutation — 成功後 invalidate /me/squads 確保列表立即更新
+  const disbandMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("DELETE", `/api/squads/${squadId}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "解散失敗");
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ title: "✅ 隊伍已解散", description: data.message });
+      // 🛡️ 修「解散後仍顯示」bug：清快取讓 /me/squads 不再顯示已解散隊伍
+      qc.invalidateQueries({ queryKey: ["/api/me/squads"] });
+      qc.invalidateQueries({ queryKey: ["/api/squads", squadId] });
+      setShowDisbandDialog(false);
+      navigate("/me/squads");
+    },
+    onError: (e: unknown) => {
+      const msg = e instanceof Error ? e.message : "解散失敗";
+      toast({ title: "解散失敗", description: msg, variant: "destructive" });
+    },
+  });
 
   const { data, isLoading } = useQuery<SquadDetail>({
     queryKey: ["/api/squads", squadId],
@@ -402,36 +427,8 @@ export default function SquadSettings() {
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={async () => {
-                    if (
-                      !window.confirm(
-                        `確定要解散「${merged.name}」嗎？\n\n隊名將鎖定 180 天無法重複使用，所有成員會自動退出。\n\n此操作無法復原。`,
-                      )
-                    ) {
-                      return;
-                    }
-                    try {
-                      const res = await apiRequest(
-                        "DELETE",
-                        `/api/squads/${squadId}`,
-                      );
-                      const data = await res.json();
-                      if (!res.ok) {
-                        throw new Error(data.error ?? "解散失敗");
-                      }
-                      toast({
-                        title: "✅ 隊伍已解散",
-                        description: data.message,
-                      });
-                      navigate("/me");
-                    } catch (e: any) {
-                      toast({
-                        title: "解散失敗",
-                        description: e.message,
-                        variant: "destructive",
-                      });
-                    }
-                  }}
+                  onClick={() => setShowDisbandDialog(true)}
+                  data-testid="btn-open-disband"
                 >
                   解散隊伍
                 </Button>
@@ -440,6 +437,15 @@ export default function SquadSettings() {
           </Card>
         )}
       </div>
+
+      {/* 🆕 2026-05-04: 解散確認對話框（需重新輸入隊名防誤刪） */}
+      <DisbandSquadDialog
+        open={showDisbandDialog}
+        onOpenChange={setShowDisbandDialog}
+        squadName={merged.name}
+        pending={disbandMutation.isPending}
+        onConfirm={() => disbandMutation.mutate()}
+      />
     </div>
   );
 }
