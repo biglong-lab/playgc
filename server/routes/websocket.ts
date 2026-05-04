@@ -7,6 +7,16 @@ import { db } from "../db";
 import { gameMatches, matchParticipants, teamMembers } from "@shared/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
+import {
+  ensureRaceState,
+  getRaceState,
+  recordAnswer,
+  advanceQuestion,
+  cleanupRaceState,
+  getStateSnapshot,
+  getAllScores,
+  type RaceState,
+} from "../lib/race-state";
 
 // 🆕 Phase 2c：寬限期常數（單位 ms）
 //   30s = 短斷線寬限期（換頁/網路抖）
@@ -397,21 +407,83 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
-          // 🆕 Phase 3.1 part 3 補完：ChoiceVerifyRace 答題即時廣播給同隊全員
-          //   client send: race_answer / server broadcast: race_answered
-          //   設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.6
-          //   無 DB 寫入（race 是即時遊戲、不持久化）；用 broadcastToTeam 限制範圍
+          // 🆕 2026-05-04 重設計：ChoiceVerifyRace 同步機制
+          //   背景：原本各 client 各自管理 currentQIndex、玩家進場時機不同 → 看到不同題、無法計分
+          //   新設計：server 統一推進、依 secondsPerQuestion timer
+          //
+          //   訊息流：
+          //     client → race_init     {pageId, totalQuestions, secondsPerQuestion}
+          //     server → race_state    （該 user 收到當前題進度）
+          //     client → race_answer   {questionIndex, selectedOption, isCorrect, points}
+          //     server → race_answered （broadcast 該題誰答了）
+          //     server → race_question_advanced (timer 到、推下一題、含 startAt)
+          //     server → race_complete (最後一題結束)
+          case "race_init":
+            if (ws.teamId && ws.sessionId && ws.userId) {
+              const pageId = String(message.pageId ?? "");
+              const totalQuestions = Math.max(1, Number(message.totalQuestions ?? 1));
+              const secondsPerQuestion = Number(message.secondsPerQuestion ?? 20);
+              const displayName = String(message.displayName ?? ws.userName ?? "玩家");
+
+              const state = ensureRaceState(
+                {
+                  sessionId: ws.sessionId,
+                  teamId: ws.teamId,
+                  pageId,
+                  totalQuestions,
+                  secondsPerQuestion,
+                  member: { userId: ws.userId, displayName },
+                },
+                handleRaceAdvance, // 注入 advance callback（下面定義）
+              );
+
+              // 回傳當前 state（給該 client，不 broadcast）
+              try {
+                ws.send(JSON.stringify({
+                  type: "race_state",
+                  ...getStateSnapshot(state),
+                }));
+              } catch {
+                /* 連線中斷忽略 */
+              }
+            }
+            break;
+
           case "race_answer":
-            if (ws.teamId) {
+            if (ws.teamId && ws.userId && ws.sessionId) {
+              const userId = ws.userId; // 強制用認證身份
+              const displayName = String(message.displayName ?? ws.userName ?? "玩家");
+              const questionIndex = Number(message.questionIndex);
+              const selectedOption = Number(message.selectedOption);
+              const isCorrect = Boolean(message.isCorrect);
+              const points = Math.max(0, Number(message.points ?? 0));
+              const answeredAt = new Date().toISOString();
+              const pageId = String(message.pageId ?? "");
+
+              // server 端記錄分數（不依賴 client）
+              const state = pageId ? getRaceState(ws.sessionId, ws.teamId, pageId) : undefined;
+              if (state) {
+                recordAnswer(state, {
+                  userId,
+                  displayName,
+                  questionIndex,
+                  selectedOption,
+                  isCorrect,
+                  points,
+                  answeredAt,
+                });
+              }
+
+              // 廣播給全隊
               broadcastToTeam(ws.teamId, {
                 type: "race_answered",
-                userId: message.userId,
-                displayName: message.displayName,
-                questionIndex: message.questionIndex,
-                selectedOption: message.selectedOption,
-                isCorrect: message.isCorrect,
-                points: message.points,
-                answeredAt: message.answeredAt ?? new Date().toISOString(),
+                userId,
+                displayName,
+                questionIndex,
+                selectedOption,
+                isCorrect,
+                points,
+                answeredAt,
               });
             }
             break;
@@ -848,6 +920,31 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           client.send(payload);
         }
       });
+    }
+  }
+
+  // 🆕 2026-05-04: ChoiceVerifyRace 推進 callback
+  //   被 race-state.ts 內的 timer 呼叫；推進下一題或完成、各自 broadcast 給全隊
+  function handleRaceAdvance(state: RaceState) {
+    const result = advanceQuestion(state, handleRaceAdvance);
+    if (result.advanced) {
+      broadcastToTeam(state.teamId, {
+        type: "race_question_advanced",
+        currentQuestionIndex: state.currentQuestionIndex,
+        totalQuestions: state.totalQuestions,
+        secondsPerQuestion: state.secondsPerQuestion,
+        startAt: state.startAt,
+        endAt: state.endAt,
+      });
+    } else if (result.completed) {
+      // 廣播 race 完成（含每位玩家總分）
+      broadcastToTeam(state.teamId, {
+        type: "race_complete",
+        totalQuestions: state.totalQuestions,
+        scores: getAllScores(state),
+        members: state.members,
+      });
+      cleanupRaceState(state);
     }
   }
 

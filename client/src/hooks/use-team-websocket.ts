@@ -430,6 +430,7 @@ export function useTeamWebSocket({
   /**
    * 🆕 Phase 3.1 part 3 補完：ChoiceVerifyRace 玩家答題即時同步給同隊
    *   client send "race_answer" → server broadcast "race_answered" 給同隊全員
+   *   2026-05-04 補：含 pageId 給 server 找對應 race state 寫入分數
    */
   const sendRaceAnswer = useCallback(
     (record: {
@@ -438,6 +439,7 @@ export function useTeamWebSocket({
       selectedOption: number;
       isCorrect: boolean;
       points: number;
+      pageId?: string;
     }) => {
       if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
         wsRef.current.send(
@@ -449,7 +451,35 @@ export function useTeamWebSocket({
             selectedOption: record.selectedOption,
             isCorrect: record.isCorrect,
             points: record.points,
+            pageId: record.pageId,
             answeredAt: new Date().toISOString(),
+          }),
+        );
+      }
+    },
+    [userId],
+  );
+
+  /**
+   * 🆕 2026-05-04: ChoiceVerifyRace 玩家進場時通知 server
+   *   server 取或建立 race state、回傳 race_state（含當前題、startAt、剩餘秒數）
+   */
+  const sendRaceInit = useCallback(
+    (args: {
+      displayName: string;
+      pageId: string;
+      totalQuestions: number;
+      secondsPerQuestion: number;
+    }) => {
+      if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
+        wsRef.current.send(
+          JSON.stringify({
+            type: "race_init",
+            userId,
+            displayName: args.displayName,
+            pageId: args.pageId,
+            totalQuestions: args.totalQuestions,
+            secondsPerQuestion: args.secondsPerQuestion,
           }),
         );
       }
@@ -468,5 +498,6 @@ export function useTeamWebSocket({
     sendRelaySync,
     sendTerritorySync,
     sendRaceAnswer,
+    sendRaceInit,
   };
 }

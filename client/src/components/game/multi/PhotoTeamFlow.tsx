@@ -68,12 +68,16 @@ export default function PhotoTeamFlow({
   const finishedRef = useRef(false);
   const cancelRef = useRef(false);
 
-  // 相機拍完後暫存到 members
-  useEffect(() => {
-    if (stage !== "shooting") return;
-    if (camera.mode !== "preview") return;
+  // 🛡️ 2026-05-04: 改為 imperative — 玩家在 PhotoPreview 點「確認」才存進 members
+  //   原 useEffect 監聽 camera.capturedImage 有 race 問題：
+  //   切換到下一位時 capturedImage 還沒被 React 清乾淨、useEffect 誤觸發又存一張、
+  //   造成「選 2 人但每人拍 2 張」的 bug。
+  //   改 imperative + ref 雙重防重複（即時 lock、不等 React state batching）
+  const confirmingRef = useRef(false);
+  const handleConfirmShot = () => {
+    if (confirmingRef.current) return;
     if (!camera.capturedImage) return;
-    // 存到 members
+    confirmingRef.current = true;
     const next: MemberShot = {
       name: currentName.trim() || `隊員 ${currentIdx + 1}`,
       imageData: camera.capturedImage,
@@ -83,12 +87,14 @@ export default function PhotoTeamFlow({
       updated[currentIdx] = next;
       return updated;
     });
-    // 關相機進 transition
     camera.stopCamera();
     camera.setCapturedImage(null);
     setStage("transition");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [camera.capturedImage, camera.mode, stage]);
+    // 切換完釋放 lock（下一位會重新進 shooting → 重置）
+    setTimeout(() => {
+      confirmingRef.current = false;
+    }, 200);
+  };
 
   // 上傳 + 合成
   const compositeMutation = useMutation({
@@ -171,9 +177,13 @@ export default function PhotoTeamFlow({
     },
   });
 
+  // 🆕 2026-05-04: 合成倒數計時（讓使用者看到「還有幾秒會自動 fallback」）
+  const [compositeRemaining, setCompositeRemaining] = useState<number | null>(null);
+
   // 上傳階段：所有照片上傳到 Cloudinary → 合成
   // 🐛 修：加 timeout + 改進 fallback 邏輯（不再呼叫同一個壞掉的端點）
   // 🆕 加 AbortController（背景 tab 也能 abort）+ 進度顯示 + 取消按鈕
+  // 🛡️ 2026-05-04 加：合成階段 hard timeout 30s 強制 fallback（保證不卡住）
   useEffect(() => {
     if (stage !== "uploading") return;
     let cancelled = false;
@@ -216,14 +226,44 @@ export default function PhotoTeamFlow({
         setStage("compositing");
         setProgressMessage("合成團體照中...");
 
-        // 🛡️ 合成 timeout 30 秒
+        // 🛡️ 2026-05-04 hard timeout 30 秒倒數 + 強制 fallback
+        //   原 30s timeout 仰賴 apiRequestWithTimeout AbortController、但 Cloudinary
+        //   偶發 hang 時 fetch 不一定 abort → 用獨立 setTimeout 保證 fallback 觸發
+        setCompositeRemaining(30);
+        const tickTimer = setInterval(() => {
+          setCompositeRemaining((s) => (s === null ? null : Math.max(s - 1, 0)));
+        }, 1000);
+        const hardTimer = setTimeout(() => {
+          if (cancelled || cancelRef.current) return;
+          clearInterval(tickTimer);
+          // 強制 fallback：用第一張上傳的 url
+          if (uploaded.length > 0) {
+            setCompositeUrl(uploaded[0].url);
+            toast({
+              title: "合成超時，使用首張代替",
+              description: "已逾 30 秒、自動用首張隊員照片繼續",
+            });
+            setStage("done");
+          } else if (firstMemberDataUrl) {
+            setCompositeUrl(firstMemberDataUrl);
+            setStage("done");
+          }
+          cancelRef.current = true; // 阻止後續 mutate 結果再覆蓋 state
+        }, 30_000);
+
         try {
           const comp = await compositeMutation.mutateAsync(
             uploaded.map((u) => u.publicId),
           );
+          clearInterval(tickTimer);
+          clearTimeout(hardTimer);
+          setCompositeRemaining(null);
           if (cancelled || cancelRef.current) return;
           setCompositeUrl(comp.compositeUrl);
         } catch (err) {
+          clearInterval(tickTimer);
+          clearTimeout(hardTimer);
+          setCompositeRemaining(null);
           console.warn("[Team] 合成失敗，用第一張當紀念:", err);
           // 🐛 修：fallback 直接用第一張的原始 URL，不再呼叫 composite-photo
           // （避免端點本身掛掉時 fallback 也卡住）
@@ -396,6 +436,15 @@ export default function PhotoTeamFlow({
         <p className="text-xs text-muted-foreground text-center px-4">
           請保持網路連線；單張上傳上限 25 秒、合成上限 30 秒，逾時會自動使用首張代替
         </p>
+        {/* 🆕 2026-05-04: 合成階段顯示倒數秒數讓使用者知道何時 fallback */}
+        {stage === "compositing" && compositeRemaining !== null && compositeRemaining > 0 && (
+          <p
+            className="text-xs text-amber-600 dark:text-amber-400 text-center font-medium tabular-nums"
+            data-testid="composite-countdown"
+          >
+            ⏱ {compositeRemaining} 秒後自動使用首張照片
+          </p>
+        )}
         <Button
           variant="outline"
           size="sm"
@@ -437,7 +486,7 @@ export default function PhotoTeamFlow({
         <PhotoPreview
           imageSrc={camera.capturedImage!}
           onRetake={camera.retake}
-          onSubmit={() => { /* effect 處理 */ }}
+          onSubmit={handleConfirmShot}
         />
       );
     }

@@ -208,12 +208,14 @@ export default function GamePageRenderer({
 
   // 記憶化 commonProps 避免每次渲染都建立新物件
   // 🎨 P2 變體池：把 page.variantPool 統一傳下去，玩家端用 pickVariant 抽訊息
+  // 🆕 2026-05-04：補 pageId 給 ChoiceVerifyRacePage（race state server 端 key）
   const commonProps = useMemo(() => ({
     config,
     onComplete: wrappedOnComplete, // 🎁 統一處理 rewardItems
     onVariableUpdate,
     sessionId,
     gameId,
+    pageId: page.id,
     variables,
     variantPool: (page as { variantPool?: unknown }).variantPool ?? null,
   }), [config, wrappedOnComplete, onVariableUpdate, sessionId, gameId, variables, page]);
