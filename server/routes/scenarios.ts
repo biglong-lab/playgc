@@ -931,6 +931,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "emoji_check_in":
+      return {
+        title: "😊 表情打卡",
+        question: "現在的心情/狀態是？",
+        emojiOptions: ["😄", "🙂", "😐", "😴", "🤔", "😤", "🥳", "😰"],
+        maxNoteLength: 60,
+        noteRequired: false,
+        showAuthor: true,
+      };
+
     case "truth_or_myth":
       return {
         title: "🤔 真偽大考驗",

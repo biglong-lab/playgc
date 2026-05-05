@@ -96,6 +96,7 @@ const SentenceCompletionPage = lazy(() => import("@/components/game/multi/Senten
 const ActionPledgePage = lazy(() => import("@/components/game/multi/ActionPledgePage"));
 const ThinkingHatsPage = lazy(() => import("@/components/game/multi/ThinkingHatsPage"));
 const TruthOrMythPage = lazy(() => import("@/components/game/multi/TruthOrMythPage"));
+const EmojiCheckInPage = lazy(() => import("@/components/game/multi/EmojiCheckInPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -496,6 +497,8 @@ export default function GamePageRenderer({
         return <ThinkingHatsPage {...commonProps} page={page} pageId={page.id} />;
       case "truth_or_myth":
         return <TruthOrMythPage {...commonProps} page={page} pageId={page.id} />;
+      case "emoji_check_in":
+        return <EmojiCheckInPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

@@ -178,6 +178,9 @@ ${componentDescriptions}
 - "truth_or_myth": { title, statements: [{ stmtId, text, isTrue }...2-10個] }
   二選一真假題遊戲，全員投票後揭曉答案，最後計分，適合知識趣味問答/熱場/訓練測評/認識彼此的趣味挑戰
 
+- "emoji_check_in": { title, question, emojiOptions: string[], maxNoteLength: 30-100, noteRequired: boolean, showAuthor: boolean }
+  快速表情打卡，選一個 emoji 代表當下狀態，可選填一行備註，揭曉後以表情雲呈現全體分布，適合課前/課後暖場/每日站立會議/隨時心情脈搏
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

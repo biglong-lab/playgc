@@ -253,6 +253,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "「最有可能在 10 年後當老闆的人？」全員投票，揭曉瞬間歡笑連連",
         axis: "multi",
       },
+      {
+        pageType: "emoji_check_in",
+        label: "重逢心情打卡",
+        role: "見到老朋友的第一個 emoji 是什麼？一鍵打卡，揭曉後超溫馨的表情雲讓全場感受重逢的喜悅",
+        axis: "multi",
+      },
     ],
     valueProposition: "輕量、不複雜，主辦方一人就能搞定。NT$ 2,000-5,000。",
     status: "live",
