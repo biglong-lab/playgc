@@ -616,6 +616,12 @@ ${componentDescriptions}
 - "thought_bubble": { title, prompt, placeholder }
   思緒泡泡：每人送出一句心裡話，揭曉後以彩色泡泡形狀展示全隊想法，適合開場暖身/活動收尾/情緒疏通
 
+- "energy_level": { title, prompt }
+  能量值：每人選 1-5 級能量（附顏色與 emoji），可補充說明，揭曉後顯示團隊平均值與個人列表，適合開場暖身/疲勞度確認/活動前後對比
+
+- "team_vision": { title, prompt, maxLength: 5-20 }
+  團隊願景：每人送出一個關鍵詞（≤20字），揭曉後以彩色文字拼貼成願景牆，適合目標設定/文化塑造/年度啟動
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

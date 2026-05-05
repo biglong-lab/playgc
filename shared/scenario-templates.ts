@@ -3550,6 +3550,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "反饋問卷套組 NT$ 1,500-4,500 / 場。培訓/活動後快速蒐集有價值的參與者反饋。",
     status: "live",
   },
+  {
+    id: "energy-vision-pack",
+    name: "能量願景套組",
+    tagline: "能量值 + 團隊願景，從感受出發共同描繪未來",
+    description: "先以能量值掌握全隊當前狀態，再用團隊願景關鍵詞共同拼貼出對未來的期望，從「我現在怎麼了」到「我們要去哪裡」的完整旅程。",
+    useCases: ["年度啟動大會", "季度回顧", "新團隊破冰", "目標設定工作坊"],
+    category: "corporate",
+    icon: "⚡",
+    gradient: "from-yellow-500 to-green-500",
+    estimatedPlayers: "4-40 人",
+    estimatedDuration: "8-12 分鐘",
+    components: [
+      {
+        pageType: "energy_level",
+        label: "能量值",
+        role: "當前狀態感知",
+        axis: "multi",
+      },
+      {
+        pageType: "team_vision",
+        label: "團隊願景",
+        role: "未來願景共創",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "能量願景套組 NT$ 1,500-4,500 / 場。讓每個人的感受與期望都被看見，凝聚團隊共同方向。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

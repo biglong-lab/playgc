@@ -2089,6 +2089,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         placeholder: "說出你的想法...",
       };
 
+    case "energy_level":
+      return {
+        title: "⚡ 能量值",
+        prompt: `現在你在「${scenarioName}」中的能量值是幾分？（1 = 很低，5 = 很高）`,
+      };
+
+    case "team_vision":
+      return {
+        title: "🌟 團隊願景",
+        prompt: `用一個關鍵詞描述你對「${scenarioName}」的期望或願景？`,
+        maxLength: 20,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
