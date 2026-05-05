@@ -2,7 +2,11 @@
 //
 // 路徑：/admin/dev-tools
 // 用途：admin 建立 / 列出 / 刪除 / impersonate 測試玩家、用 1 台電腦模擬多人遊戲測試
-// 設計依據：使用者反饋「不可能用真的很多人來做測試」
+//
+// 2026-05-05 重做（A+B+C）：
+//   A. cascade 刪除（server 端清關聯）
+//   B. per-admin 隔離（每位 admin 各自有自己的 10 個玩家）
+//   C. 自動場域綁定（建立時 INSERT field_membership 進該 admin 場域）
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import {
-  ArrowLeft, Loader2, Plus, Trash2, ExternalLink, Copy, FlaskConical, Users,
+  ArrowLeft, Loader2, Plus, Trash2, ExternalLink, FlaskConical, Users, MapPin,
 } from "lucide-react";
 
 interface TestPlayer {
@@ -23,12 +27,19 @@ interface TestPlayer {
   createdAt: string;
 }
 
+interface ListResponse {
+  players: TestPlayer[];
+  adminShortId?: string;
+  fieldId?: string;
+  fieldName?: string;
+}
+
 export default function DevTools() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [count, setCount] = useState(3);
 
-  const { data, isLoading } = useQuery<{ players: TestPlayer[] }>({
+  const { data, isLoading } = useQuery<ListResponse>({
     queryKey: ["/api/admin/dev-tools/test-players"],
     queryFn: async () => {
       const res = await apiRequest("GET", "/api/admin/dev-tools/test-players");
@@ -44,7 +55,9 @@ export default function DevTools() {
     onSuccess: (data) => {
       toast({
         title: "✅ 測試玩家已建立",
-        description: `${data.totalCreated} 個玩家就緒`,
+        description: data.fieldName
+          ? `${data.totalCreated} 個玩家、已加入「${data.fieldName}」場域`
+          : `${data.totalCreated} 個玩家就緒`,
       });
       qc.invalidateQueries({ queryKey: ["/api/admin/dev-tools/test-players"] });
     },
@@ -63,7 +76,6 @@ export default function DevTools() {
       return res.json();
     },
     onSuccess: (data) => {
-      // 開新分頁、URL 帶 token、新分頁會自動 signInWithCustomToken
       const url = `${window.location.origin}/test-impersonate?token=${encodeURIComponent(data.customToken)}`;
       window.open(url, "_blank", "noopener,noreferrer");
       toast({
@@ -85,6 +97,30 @@ export default function DevTools() {
     onSuccess: () => {
       toast({ title: "🗑 已刪除" });
       qc.invalidateQueries({ queryKey: ["/api/admin/dev-tools/test-players"] });
+    },
+    onError: (e: unknown) => {
+      const msg = e instanceof Error ? e.message : "刪除失敗";
+      toast({ title: "刪除失敗", description: msg, variant: "destructive" });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("DELETE", "/api/admin/dev-tools/test-players");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      const failedCount = data.failed?.length ?? 0;
+      toast({
+        title: failedCount === 0 ? "🧹 已全部清空" : "⚠️ 部分清除失敗",
+        description: `成功 ${data.deletedCount}/${data.totalRequested}${failedCount > 0 ? `、失敗 ${failedCount}` : ""}`,
+        variant: failedCount === 0 ? "default" : "destructive",
+      });
+      qc.invalidateQueries({ queryKey: ["/api/admin/dev-tools/test-players"] });
+    },
+    onError: (e: unknown) => {
+      const msg = e instanceof Error ? e.message : "全清失敗";
+      toast({ title: "全清失敗", description: msg, variant: "destructive" });
     },
   });
 
@@ -108,6 +144,19 @@ export default function DevTools() {
       </header>
 
       <main className="container mx-auto p-4 max-w-2xl space-y-4">
+        {/* 你的場域提示卡 — 玩家會自動加入這個場域 */}
+        {data?.fieldName && (
+          <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/50">
+            <CardContent className="p-3 flex items-center gap-2 text-sm">
+              <MapPin className="w-4 h-4 text-blue-600" />
+              <span className="text-blue-900 dark:text-blue-100">
+                建立的測試玩家會自動加入：
+                <span className="font-semibold ml-1">{data.fieldName}</span>
+              </span>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 說明卡 */}
         <Card className="border-amber-200 dark:border-amber-800/50 bg-amber-50/50 dark:bg-amber-950/20">
           <CardContent className="p-4 text-sm space-y-2">
@@ -116,11 +165,12 @@ export default function DevTools() {
             </div>
             <ol className="text-xs text-amber-800 dark:text-amber-200 space-y-1 list-decimal pl-4">
               <li>輸入想建立的玩家數（最多 10）→ 點「建立」</li>
+              <li>玩家會自動加入你的場域、可直接玩你場域的遊戲</li>
               <li>列表中每個玩家有「以此玩家身份開新分頁」按鈕</li>
-              <li>點下去會開新分頁、自動以該玩家身份登入</li>
               <li>建議用 incognito（無痕）視窗開、避免 cookie 衝突</li>
               <li>用 1 台電腦開 N 個 incognito 視窗 = 模擬 N 人多人遊戲</li>
-              <li>測試完可一鍵刪除（限 @test.local 玩家）</li>
+              <li>測試完可一鍵全清（清關聯資料、不再被外鍵擋）</li>
+              <li>每位 admin 有自己的測試玩家池、互不干擾</li>
             </ol>
           </CardContent>
         </Card>
@@ -164,8 +214,31 @@ export default function DevTools() {
 
         {/* 玩家列表 */}
         <Card>
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-base">已建立的測試玩家（{players.length}）</CardTitle>
+          <CardHeader className="pb-3 flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-base">
+              我的測試玩家（{players.length}）
+            </CardTitle>
+            {players.length > 0 && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  if (confirm(`確定刪除你的全部 ${players.length} 個測試玩家？\n會自動清除所有遊戲紀錄、隊伍、互動資料、無法復原`)) {
+                    bulkDeleteMutation.mutate();
+                  }
+                }}
+                disabled={bulkDeleteMutation.isPending}
+                className="gap-1.5"
+                data-testid="btn-bulk-delete"
+              >
+                {bulkDeleteMutation.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                一鍵全清
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -202,7 +275,7 @@ export default function DevTools() {
                       size="sm"
                       variant="ghost"
                       onClick={() => {
-                        if (confirm(`確定刪除「${p.displayName}」？此動作不可復原`)) {
+                        if (confirm(`確定刪除「${p.displayName}」？此動作不可復原（會清關聯資料）`)) {
                           deleteMutation.mutate(p.id);
                         }
                       }}
@@ -221,8 +294,9 @@ export default function DevTools() {
         {/* 安全提示 */}
         <Card className="bg-muted/30">
           <CardContent className="p-3 text-xs text-muted-foreground space-y-1">
-            <p>🔒 安全：限 super_admin、僅可操作 @test.local 玩家、不影響真實玩家</p>
-            <p>🧹 清理：每次測試完建議刪除、避免累積太多測試帳號</p>
+            <p>🔒 安全：每位 admin 有獨立的測試玩家池（email pattern：testN-yourId@test.local）</p>
+            <p>🗺 場域：建立時自動加入你的場域、可直接測場域內的遊戲流程</p>
+            <p>🧹 清理：刪除會自動清關聯（隊伍、Squad、Battle、互動紀錄、不再被外鍵擋）</p>
             <p>📦 customToken 1 小時有效、過期再點一次「開新分頁」即可</p>
           </CardContent>
         </Card>
