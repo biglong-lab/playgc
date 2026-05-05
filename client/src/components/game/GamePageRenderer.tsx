@@ -109,6 +109,8 @@ const HopeFearPage = lazy(() => import("@/components/game/multi/HopeFearPage"));
 const NumberGuessPage = lazy(() => import("@/components/game/multi/NumberGuessPage"));
 const NeverHaveIEverPage = lazy(() => import("@/components/game/multi/NeverHaveIEverPage"));
 const ReactionWallPage = lazy(() => import("@/components/game/multi/ReactionWallPage"));
+const DesertIslandPage = lazy(() => import("@/components/game/multi/DesertIslandPage"));
+const CategoryChallengePage = lazy(() => import("@/components/game/multi/CategoryChallengePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -535,6 +537,10 @@ export default function GamePageRenderer({
         return <NeverHaveIEverPage {...commonProps} page={page} pageId={page.id} />;
       case "reaction_wall":
         return <ReactionWallPage {...commonProps} page={page} pageId={page.id} />;
+      case "desert_island":
+        return <DesertIslandPage {...commonProps} page={page} pageId={page.id} />;
+      case "category_challenge":
+        return <CategoryChallengePage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

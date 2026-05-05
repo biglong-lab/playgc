@@ -1367,6 +1367,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "主持人出一個問題（如：你每週開幾小時的會？），全員輸入數字後揭曉分布圖，差異引發討論",
         axis: "multi",
       },
+      {
+        pageType: "desert_island",
+        label: "荒島求生清單",
+        role: "每人列出帶去荒島的 3 樣東西，揭曉後看大家的選擇，話題十足",
+        axis: "multi",
+      },
+      {
+        pageType: "category_challenge",
+        label: "分類大挑戰",
+        role: "大家搶著列出同一分類下的項目，揭曉共同選擇，引發共鳴",
+        axis: "multi",
+      },
     ],
     valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",
     status: "live",

@@ -1082,6 +1082,25 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showNames: false,
       };
 
+    case "desert_island":
+      return {
+        title: "🏝️ 荒島求生",
+        scenario: `如果參加「${scenarioName}」的你被困在荒島，你會帶哪 3 樣東西？`,
+        numItems: 3,
+        maxItemLength: 20,
+        showAuthor: true,
+      };
+
+    case "category_challenge":
+      return {
+        title: "🗂️ 分類大挑戰",
+        category: scenarioName,
+        prompt: `盡可能列出你覺得屬於「${scenarioName}」的項目！`,
+        maxItemsPerPerson: 5,
+        maxItemLength: 15,
+        showCommon: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

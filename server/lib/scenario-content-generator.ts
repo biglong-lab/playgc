@@ -337,6 +337,12 @@ ${componentDescriptions}
 - "reaction_wall": { title, content, emojis: [...4-8個 emoji], showNames: boolean }
   content 是展示的問題/情境描述（如：聽到這個消息你的第一反應是？），emojis 選與活動氛圍相關的表情，showNames=true 顯示誰選了什麼
 
+- "desert_island": { title, scenario, numItems: 3-5, maxItemLength: 15-25, showAuthor: boolean }
+  scenario 是荒島求生的假設情境（如：如果你被困在荒島 3 天，你會帶哪 3 樣東西？），與活動主題相關，showAuthor=true 顯示誰帶了什麼
+
+- "category_challenge": { title, category, prompt, maxItemsPerPerson: 3-8, maxItemLength: 10-20, showCommon: true }
+  category 是挑戰的分類主題（如：台灣在地美食），prompt 引導大家列出項目，showCommon=true 揭曉時標示多人共選的項目
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
