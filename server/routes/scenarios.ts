@@ -677,6 +677,26 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResults: true,
       };
 
+    case "category_sort":
+      return {
+        title: "🗂️ 卡片分類",
+        instructions: "請將每個項目拖放到最合適的分類",
+        items: [
+          { id: "i1", label: "每日站立會議" },
+          { id: "i2", label: "衝刺規劃" },
+          { id: "i3", label: "系統架構圖" },
+          { id: "i4", label: "程式碼審查" },
+          { id: "i5", label: "部署流程" },
+          { id: "i6", label: "回顧會議" },
+        ],
+        categories: [
+          { id: "c1", label: "流程", color: "#3B82F6" },
+          { id: "c2", label: "技術", color: "#10B981" },
+          { id: "c3", label: "團隊", color: "#F59E0B" },
+        ],
+        showConsensus: true,
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {
