@@ -391,6 +391,12 @@ ${componentDescriptions}
 - "personal_fact": { title, prompt, maxLength: 50-100, showAuthor: boolean }
   趣味自我揭秘：每人說一個關於自己的趣事/特點，揭曉後大家按愛心投票最驚喜的事實，適合破冰/認識新朋友/聚會
 
+- "quiz_blitz": { title, questions: [{ questionId, text, options: string[4], correctIndex }], showLeaderboard: boolean }
+  快問快答：主持人預設問題，全員同時作答，最後排行榜揭曉誰最厲害，適合知識競賽/學習驗收/趣味問答
+
+- "word_cloud": { title, prompt, maxWords: 1-5, maxWordLength: 5-15, showAuthor: boolean }
+  文字雲：每人送出 1-N 個詞，揭曉後按出現頻率顯示大小不同的詞語雲，適合收集感受/集體總結/活動回顧
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

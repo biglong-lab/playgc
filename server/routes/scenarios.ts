@@ -1240,6 +1240,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "quiz_blitz":
+      return {
+        title: "⚡ 快問快答",
+        prompt: `關於「${scenarioName}」的趣味問答`,
+        questions: [],
+        showLeaderboard: true,
+      };
+
+    case "word_cloud":
+      return {
+        title: "💬 文字雲",
+        prompt: `用一到三個詞描述你在「${scenarioName}」的感受`,
+        maxWords: 3,
+        maxWordLength: 10,
+        showAuthor: false,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
