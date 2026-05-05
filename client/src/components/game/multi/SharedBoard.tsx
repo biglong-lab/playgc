@@ -83,11 +83,11 @@ export default function SharedBoard({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="shared-board-root">
       {/* 標題與說明 */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">{config.title ?? "📋 共識牆"}</CardTitle>
+          <CardTitle className="text-lg" data-testid="shared-board-title">{config.title ?? "📋 共識牆"}</CardTitle>
           {config.prompt && (
             <p className="text-sm text-muted-foreground">{config.prompt}</p>
           )}
@@ -141,18 +141,19 @@ export default function SharedBoard({
 
       {/* 卡片牆 */}
       {state.cards.length === 0 ? (
-        <Card>
+        <Card data-testid="shared-board-empty">
           <CardContent className="p-8 text-center text-muted-foreground text-sm">
             還沒有人張貼，快成為第一個！
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3" data-testid="shared-board-cards">
           {[...state.cards]
             .sort((a, b) => a.createdAt - b.createdAt)
             .map((card) => (
               <div
                 key={card.id}
+                data-testid={`board-card-${card.id}`}
                 className="relative rounded-lg p-3 shadow-sm min-h-[80px] flex flex-col gap-1"
                 style={{ backgroundColor: card.color }}
               >

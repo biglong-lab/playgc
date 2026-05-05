@@ -78,12 +78,12 @@ export default function Bingo({ config, state, onMark }: BingoProps) {
   }[gridSize];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="bingo-root">
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">{config.title ?? "🎱 賓果"}</CardTitle>
-            <Badge variant="outline">
+            <CardTitle className="text-lg" data-testid="bingo-title">{config.title ?? "🎱 賓果"}</CardTitle>
+            <Badge variant="outline" data-testid="bingo-progress">
               {markedCount}/{items.length}
             </Badge>
           </div>
@@ -93,7 +93,7 @@ export default function Bingo({ config, state, onMark }: BingoProps) {
         </CardHeader>
         <CardContent>
           {hasWon ? (
-            <div className="text-center py-6 space-y-2">
+            <div className="text-center py-6 space-y-2" data-testid="bingo-win">
               <div className="text-4xl">🎉</div>
               <p className="text-lg font-bold text-green-600">BINGO！</p>
               <p className="text-sm text-muted-foreground">
@@ -101,12 +101,13 @@ export default function Bingo({ config, state, onMark }: BingoProps) {
               </p>
             </div>
           ) : (
-            <div className={cn("grid gap-2", gridCols)}>
+            <div className={cn("grid gap-2", gridCols)} data-testid="bingo-grid">
               {items.map((item) => {
                 const isMarked = markedSet.has(item);
                 return (
                   <button
                     key={item}
+                    data-testid={`bingo-cell-${item}`}
                     onClick={() => handleMark(item)}
                     disabled={isMarked}
                     className={cn(
