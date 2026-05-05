@@ -388,6 +388,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("photo_contest");
     expect(allPageTypes).toContain("photo_team");
     expect(allPageTypes).toContain("photo_wall");
+
+    // Round 86 補全批次 9（PitchVote + PointsAuction + PopQuiz + Prediction + PresenceMap + Priority + Progress + Project + Quest + Question）
+    expect(allPageTypes).toContain("pitch_vote");
+    expect(allPageTypes).toContain("points_auction");
+    expect(allPageTypes).toContain("pop_quiz");
+    expect(allPageTypes).toContain("prediction_poll");
+    expect(allPageTypes).toContain("presence_map");
+    expect(allPageTypes).toContain("priority_rank");
+    expect(allPageTypes).toContain("progress_check");
+    expect(allPageTypes).toContain("project_showcase");
+    expect(allPageTypes).toContain("quest_chain");
+    expect(allPageTypes).toContain("question_box");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -554,6 +566,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "photo_contest",
       "photo_team",
       "photo_wall",
+      "pitch_vote",
+      "points_auction",
+      "pop_quiz",
+      "prediction_poll",
+      "presence_map",
+      "priority_rank",
+      "progress_check",
+      "project_showcase",
+      "quest_chain",
+      "question_box",
     ];
 
     for (const t of newTypes) {
