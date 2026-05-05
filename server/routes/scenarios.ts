@@ -531,6 +531,17 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         allowSwitch: true,
       };
 
+    case "gratitude_wall":
+      return {
+        title: "💖 感恩塗鴉牆",
+        prompt: "寫下你的感謝，讓溫暖傳遞！",
+        placeholder: "感謝…",
+        maxLength: 80,
+        maxCardsPerPerson: 3,
+        showAuthor: true,
+        cardColors: ["bg-yellow-100", "bg-pink-100", "bg-blue-100", "bg-green-100", "bg-purple-100", "bg-orange-100"],
+      };
+
     case "bucket_list":
       return {
         title: "⭐ 集體願望清單",

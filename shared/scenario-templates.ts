@@ -121,6 +121,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "gratitude_wall",
+        label: "感恩塗鴉牆",
+        role: "賓客用彩色卡片寫下對新人的感謝與祝福，貼滿整面感恩牆",
+        axis: "multi",
+      },
+      {
         pageType: "host_emoji_react",
         label: "情緒池應援",
         role: "高潮時刻按 emoji（如戒指交換）",

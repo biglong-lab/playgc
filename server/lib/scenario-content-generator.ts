@@ -199,6 +199,9 @@ ${componentDescriptions}
 - "photo_contest": { title, prompt?, theme?, maxPhotosPerPerson: 1-3, allowVoteOwn: false, showAuthor: true, maxCaptionLength: 40-80 }
   theme 是競賽主題（如：最美金門一角），prompt 是引導語
 
+- "gratitude_wall": { title, prompt?, placeholder?, maxLength: 50-120, maxCardsPerPerson: 2-5, showAuthor: true, cardColors: [...] }
+  prompt 是引導語（如：寫下你的感謝），placeholder 是輸入框提示（如：感謝…）
+
 - "bucket_list": { title, prompt?, placeholder?, maxItemsPerPerson: 2-5, maxItemLength: 20-50, allowSupport: true }
   prompt 是引導語（如：寫下你想在這次活動實現的事！），allowSupport 讓他人按讚共鳴
 
