@@ -1360,6 +1360,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "bucket_list",
+        label: "新年願望清單",
+        role: "每人寫下對明年的期許，同事互相加一共鳴，迎接新年",
+        axis: "multi",
+      },
+      {
         pageType: "photo_wall",
         label: "年終合影牆",
         role: "每人上傳今晚最難忘的照片，共同留念",

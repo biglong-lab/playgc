@@ -531,6 +531,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         allowSwitch: true,
       };
 
+    case "bucket_list":
+      return {
+        title: "⭐ 集體願望清單",
+        prompt: "寫下你想在這次活動實現的事！",
+        placeholder: "我想要…",
+        maxItemsPerPerson: 3,
+        maxItemLength: 40,
+        allowSupport: true,
+      };
+
     case "challenge_board":
       return {
         title: "⚡ 挑戰公告欄",

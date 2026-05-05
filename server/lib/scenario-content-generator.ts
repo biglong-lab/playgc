@@ -199,6 +199,9 @@ ${componentDescriptions}
 - "photo_contest": { title, prompt?, theme?, maxPhotosPerPerson: 1-3, allowVoteOwn: false, showAuthor: true, maxCaptionLength: 40-80 }
   theme 是競賽主題（如：最美金門一角），prompt 是引導語
 
+- "bucket_list": { title, prompt?, placeholder?, maxItemsPerPerson: 2-5, maxItemLength: 20-50, allowSupport: true }
+  prompt 是引導語（如：寫下你想在這次活動實現的事！），allowSupport 讓他人按讚共鳴
+
 - "challenge_board": { title, prompt?, maxChallengesPerPerson: 1-3, maxChallengeLength: 20-60, rewardEmoji?: string }
   prompt 是引導語，rewardEmoji 是每個挑戰前的裝飾（如：⚡🎯🎉）
 

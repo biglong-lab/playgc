@@ -65,6 +65,7 @@ const SpeedNetworkingPage = lazy(() => import("@/components/game/multi/SpeedNetw
 const PhotoContestPage = lazy(() => import("@/components/game/multi/PhotoContestPage"));
 const EmojiBattlePage = lazy(() => import("@/components/game/multi/EmojiBattlePage"));
 const ChallengeBoardPage = lazy(() => import("@/components/game/multi/ChallengeBoardPage"));
+const BucketListPage = lazy(() => import("@/components/game/multi/BucketListPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -403,6 +404,8 @@ export default function GamePageRenderer({
         return <EmojiBattlePage {...commonProps} page={page} pageId={page.id} />;
       case "challenge_board":
         return <ChallengeBoardPage {...commonProps} page={page} pageId={page.id} />;
+      case "bucket_list":
+        return <BucketListPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
