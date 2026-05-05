@@ -531,6 +531,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         allowSwitch: true,
       };
 
+    case "challenge_board":
+      return {
+        title: "⚡ 挑戰公告欄",
+        prompt: "發布挑戰，看誰敢接！",
+        maxChallengesPerPerson: 2,
+        maxChallengeLength: 50,
+        rewardEmoji: "⚡",
+      };
+
     case "emoji_battle":
       return {
         title: "🎭 Emoji 表情大戰",

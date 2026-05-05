@@ -199,6 +199,9 @@ ${componentDescriptions}
 - "photo_contest": { title, prompt?, theme?, maxPhotosPerPerson: 1-3, allowVoteOwn: false, showAuthor: true, maxCaptionLength: 40-80 }
   theme 是競賽主題（如：最美金門一角），prompt 是引導語
 
+- "challenge_board": { title, prompt?, maxChallengesPerPerson: 1-3, maxChallengeLength: 20-60, rewardEmoji?: string }
+  prompt 是引導語，rewardEmoji 是每個挑戰前的裝飾（如：⚡🎯🎉）
+
 - "emoji_battle": { title, question, emojis: [{emoji, label}...4-9個], allowMultiSelect: false, showResults: true }
   question 是要大家表達的問題（如：現在你的心情是？），emojis 選與活動氛圍相關的表情組合
 

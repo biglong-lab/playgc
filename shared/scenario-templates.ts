@@ -632,6 +632,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "shared-board",
       },
       {
+        pageType: "challenge_board",
+        label: "旅遊挑戰公告欄",
+        role: "發布景點或趣味任務挑戰，接受並完成後記錄，讓旅遊更有趣",
+        axis: "multi",
+      },
+      {
         pageType: "photo_contest",
         label: "最佳旅遊照片競賽",
         role: "每人上傳今日最佳照片說明，全員投票選出最具代表性的旅遊瞬間",
