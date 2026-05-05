@@ -118,6 +118,9 @@ ${componentDescriptions}
 - "check_in": { title, message, targetCount?: number, showNames: true }
   message 是提示語（如：歡迎簽到！），targetCount 是預期人數（如：30）
 
+- "group_timer": { title, durationSeconds: 60-3600, completedText? }
+  durationSeconds 是倒數秒數（如：300 = 5 分鐘），completedText 是結束提示
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

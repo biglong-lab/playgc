@@ -36,6 +36,7 @@ const TeamChecklistPage = lazy(() => import("@/components/game/multi/TeamCheckli
 const FeedbackStarPage = lazy(() => import("@/components/game/multi/FeedbackStarPage"));
 const TeamWordCloudPage = lazy(() => import("@/components/game/multi/TeamWordCloudPage"));
 const CheckInPage = lazy(() => import("@/components/game/multi/CheckInPage"));
+const GroupTimerPage = lazy(() => import("@/components/game/multi/GroupTimerPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -316,6 +317,8 @@ export default function GamePageRenderer({
         return <TeamWordCloudPage {...commonProps} page={page} pageId={page.id} />;
       case "check_in":
         return <CheckInPage {...commonProps} page={page} pageId={page.id} />;
+      case "group_timer":
+        return <GroupTimerPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

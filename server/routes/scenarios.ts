@@ -287,6 +287,12 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         message: "點擊簽到，讓主持人知道你已到場！",
         showNames: true,
       };
+    case "group_timer":
+      return {
+        title: "⏱️ 限時倒數",
+        durationSeconds: 300,
+        completedText: "時間到，請回到集合點！",
+      };
 
     // ─── shared / solo（簡單預設）───
     case "dialogue":
