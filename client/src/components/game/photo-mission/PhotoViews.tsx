@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -158,6 +159,13 @@ export function CameraInitializingView({
   videoRef,
   onCancel,
 }: CameraInitializingViewProps) {
+  // 🆕 2026-05-05: 5 秒沒就緒顯示「卡住了？」提示 + 取消按鈕變顯眼
+  const [stuckHint, setStuckHint] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setStuckHint(true), 5000);
+    return () => clearTimeout(t);
+  }, []);
+
   return (
     <div className="flex-1 flex flex-col">
       <div className="flex-1 relative bg-black rounded-lg overflow-hidden flex items-center justify-center">
@@ -169,15 +177,28 @@ export function CameraInitializingView({
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <div className="text-center text-white">
+          <div className="text-center text-white px-4">
             <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
             <p className="text-lg">正在啟動相機...</p>
             <p className="text-sm text-white/60 mt-2">請允許相機權限</p>
+            {/* 🆕 5 秒後顯示卡住提示 */}
+            {stuckHint && (
+              <div className="mt-4 px-4 py-3 rounded-lg bg-amber-500/20 border border-amber-400/40 text-sm text-amber-100" data-testid="camera-stuck-hint">
+                <p className="font-medium mb-1">⚠️ 相機啟動較久？</p>
+                <p className="text-xs leading-relaxed">
+                  請檢查瀏覽器是否阻擋相機權限、或點下方「取消」改用其他方式
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-center">
-        <Button variant="outline" onClick={onCancel} data-testid="button-cancel-init">
+      <div className="mt-4 flex items-center justify-center gap-2">
+        <Button
+          variant={stuckHint ? "default" : "outline"}
+          onClick={onCancel}
+          data-testid="button-cancel-init"
+        >
           取消
         </Button>
       </div>
