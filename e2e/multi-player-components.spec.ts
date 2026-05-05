@@ -292,6 +292,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 77 新元件
     expect(allPageTypes).toContain("obstacle_map");
     expect(allPageTypes).toContain("common_ground");
+
+    // Round 78 補全批次 1（已存在於模板）
+    expect(allPageTypes).toContain("check_in");
+    expect(allPageTypes).toContain("gratitude_wall");
+    expect(allPageTypes).toContain("bucket_list");
+    expect(allPageTypes).toContain("feedback_star");
+    expect(allPageTypes).toContain("group_mood");
+    expect(allPageTypes).toContain("celebration_wall");
+    expect(allPageTypes).toContain("word_cloud");
+    expect(allPageTypes).toContain("emoji_check_in");
+    expect(allPageTypes).toContain("challenge_board");
+    expect(allPageTypes).toContain("daily_intention");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -378,6 +390,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "wonder_board",
       "obstacle_map",
       "common_ground",
+      "check_in",
+      "gratitude_wall",
+      "bucket_list",
+      "feedback_star",
+      "group_mood",
+      "celebration_wall",
+      "word_cloud",
+      "emoji_check_in",
+      "challenge_board",
+      "daily_intention",
     ];
 
     for (const t of newTypes) {
