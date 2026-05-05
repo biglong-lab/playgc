@@ -309,6 +309,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "photo_wall":
+      return {
+        title: "📸 活動照片牆",
+        prompt: "上傳一張今天的照片！",
+        allowCaption: true,
+        showAuthor: true,
+      };
+
     case "multi_vote":
       return {
         title: "🗳️ 即時投票",

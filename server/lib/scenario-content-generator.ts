@@ -133,6 +133,9 @@ ${componentDescriptions}
 - "multi_vote": { title, question, options: [{ id, label, emoji }...3-6個], showResultsAfterVote: true, showVoterCount: true }
   question 是投票問題（如：哪個攤位最受歡迎？），options 是候選選項
 
+- "photo_wall": { title, prompt?, allowCaption: true, showAuthor: true }
+  prompt 是引導語（如：上傳一張今天最有意義的照片！）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

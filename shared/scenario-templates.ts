@@ -540,6 +540,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "photo_wall",
+        label: "旅遊照片牆",
+        role: "每人上傳一張今天最有意義的照片，形成共同相簿",
+        axis: "multi",
+      },
+      {
         pageType: "shared_board",
         label: "旅遊心得牆",
         role: "每人貼出今天最有趣的瞬間",
