@@ -10,7 +10,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import {
-  Camera, CheckCircle2, Download, Share2, Users, ArrowRight, Eye,
+  Camera, CheckCircle2, Download, Share2, Users, ArrowRight, AlertTriangle, Image as ImageIcon, RotateCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,6 @@ import {
   CameraInitializingView, CameraView, PhotoPreview, UploadingView,
 } from "../photo-mission/PhotoViews";
 import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
-import { usePreview } from "@/contexts/PreviewContext";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoTeamFlowProps {
@@ -50,8 +49,6 @@ export default function PhotoTeamFlow({
 }: PhotoTeamFlowProps) {
   const { toast } = useToast();
   const camera = usePhotoCamera();
-  // 🆕 2026-05-05: 預覽模式偵測 — admin 預覽不能開相機（沒實際遊戲 session、可能桌面無 webcam）
-  const { isPreview } = usePreview();
   const team = config.teamConfig;
 
   const minMembers = team?.minMembers ?? 2;
@@ -393,57 +390,6 @@ export default function PhotoTeamFlow({
   // Render
   // ═══════════════════════════════════════════════════════════════
 
-  // 🆕 2026-05-05: 預覽模式（admin 預覽元件）— 不開相機、顯示預覽說明
-  //   原本進到 stage="shooting" 會卡在「正在啟動相機...」（admin 桌面 / 無 webcam / 無權限）
-  //   預覽模式下顯示功能說明 + 模擬完成按鈕、admin 看流程不卡住
-  if (isPreview) {
-    return (
-      <div
-        className="h-full w-full flex flex-col items-center justify-center p-6 space-y-5 max-w-md mx-auto"
-        data-testid="photo-team-preview-info"
-      >
-        <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center">
-          <Eye className="w-8 h-8 text-primary" />
-        </div>
-        <div className="text-center space-y-2">
-          <h2 className="text-xl font-bold">📸 團體合影元件</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            玩家進入此元件後會：
-          </p>
-        </div>
-        <div className="w-full rounded-lg border bg-muted/30 p-4 text-sm space-y-2">
-          <div className="flex items-start gap-2">
-            <span className="text-primary font-semibold shrink-0">1.</span>
-            <span>選擇實際隊員人數（{team?.minMembers ?? 2} ~ {team?.maxMembers ?? 6} 位）</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-primary font-semibold shrink-0">2.</span>
-            <span>依序為每位隊員拍一張照（每人 1 張、共 N 張）</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-primary font-semibold shrink-0">3.</span>
-            <span>系統自動上傳 Cloudinary 並合成 {team?.layoutMode ?? "grid"} 拼貼</span>
-          </div>
-          <div className="flex items-start gap-2">
-            <span className="text-primary font-semibold shrink-0">4.</span>
-            <span>顯示合成結果、可下載 / 分享給隊員</span>
-          </div>
-        </div>
-        <div className="w-full rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 p-3 text-xs text-amber-800 dark:text-amber-200 space-y-1">
-          <div>💡 <strong>預覽模式不啟動相機</strong>（admin 桌面通常無 webcam）</div>
-          <div>📱 玩家在手機端會正常進入相機流程</div>
-          <div>⏱ 單張上傳上限 25 秒、合成上限 30 秒、逾時自動使用首張代替</div>
-        </div>
-        <Button
-          onClick={() => onComplete()}
-          className="w-full"
-          data-testid="btn-preview-skip"
-        >
-          模擬完成 →
-        </Button>
-      </div>
-    );
-  }
 
   // 🔧 fix（2026-05-02）：teamConfig 是 schema optional，admin 拖元件但沒填欄位時
   //   不應該整個畫面 reject，下面流程已用 ?? defaults 給合理預設值（minMembers=2, maxMembers=6, layoutMode='grid'）
@@ -513,10 +459,67 @@ export default function PhotoTeamFlow({
   }
 
   // 相機狀態
+  // 🛡️ 2026-05-05 重構：依 camera.mode 細分、避免「mode='instruction' 但 cameraReady=false」誤觸 InitializingView 卡死
+  //   原 bug：`mode==='initializing' || !cameraReady` 條件太寬、相機啟動失敗後仍卡在 InitializingView
+  //   新邏輯：有 cameraError → 顯示錯誤救援 UI；mode 各狀態獨立處理
   if (stage === "shooting") {
-    if (camera.mode === "initializing" || !camera.cameraReady) {
+    // 1. 啟動失敗（有 cameraError 或 mode='instruction' 沒 ready）→ 救援 UI
+    if (camera.cameraError) {
+      return (
+        <div className="h-full w-full flex flex-col items-center justify-center p-6 space-y-5 max-w-md mx-auto" data-testid="camera-error-rescue">
+          <div className="w-16 h-16 rounded-full bg-destructive/15 flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-destructive" />
+          </div>
+          <div className="text-center space-y-2">
+            <h2 className="text-lg font-bold">相機無法啟動</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+              {camera.cameraError}
+            </p>
+          </div>
+          <div className="w-full rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 p-3 text-xs text-amber-800 dark:text-amber-200">
+            常見原因：瀏覽器阻擋相機權限 / 桌面無 webcam / 已有其他 App 佔用相機
+          </div>
+          <div className="w-full grid grid-cols-1 gap-2">
+            <Button
+              onClick={() => camera.startCamera()}
+              className="w-full gap-2"
+              data-testid="btn-retry-camera"
+            >
+              <RotateCw className="w-4 h-4" /> 重試啟動相機
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => camera.fileInputRef.current?.click()}
+              className="w-full gap-2"
+              data-testid="btn-pick-from-gallery"
+            >
+              <ImageIcon className="w-4 h-4" /> 從相簿選擇照片
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={camera.cancelCamera}
+              className="w-full"
+              data-testid="btn-cancel-shooting"
+            >
+              取消、回上一步
+            </Button>
+          </div>
+          {/* 隱藏的 file input，「從相簿選擇」按鈕觸發 */}
+          <input
+            ref={camera.fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={camera.handleFileUpload}
+            className="hidden"
+          />
+        </div>
+      );
+    }
+    // 2. 啟動中（真正的 initializing）→ Loader UI（含 5 秒卡住提示、見 PhotoViews）
+    if (camera.mode === "initializing") {
       return <CameraInitializingView videoRef={camera.videoRef} onCancel={camera.cancelCamera} />;
     }
+    // 3. 相機就緒 → 拍攝 UI
     if (camera.mode === "camera") {
       return (
         <div className="relative h-full w-full">
@@ -536,6 +539,7 @@ export default function PhotoTeamFlow({
         </div>
       );
     }
+    // 4. 拍完預覽
     if (camera.mode === "preview") {
       return (
         <PhotoPreview
@@ -545,6 +549,8 @@ export default function PhotoTeamFlow({
         />
       );
     }
+    // 5. mode='idle' 或 'instruction'（剛 stop 還沒 start）→ Loader fallback、稍候會自動切換
+    return <CameraInitializingView videoRef={camera.videoRef} onCancel={camera.cancelCamera} />;
   }
 
   // 過場：拍完一位 → 預覽 → 下一位 / 完成

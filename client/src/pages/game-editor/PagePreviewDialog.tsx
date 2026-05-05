@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { X, Eye } from "lucide-react";
 import type { Page } from "@shared/schema";
 import GamePageRenderer from "@/components/game/GamePageRenderer";
-import { PreviewProvider } from "@/contexts/PreviewContext";
 
 interface PagePreviewDialogProps {
   page: Page | null;
@@ -59,26 +58,24 @@ export default function PagePreviewDialog({ page, onClose, gameId }: PagePreview
         </DialogHeader>
 
         {/* 預覽 container — 模擬手機尺寸 */}
-        {/* 🆕 2026-05-05: 包 PreviewProvider 讓子元件（如 PhotoTeamFlow）能偵測 isPreview */}
-        <PreviewProvider isPreview gameId={gameId || "preview-game"}>
-          <div className="flex-1 overflow-auto bg-background">
-            <div className="min-h-full">
-              <GamePageRenderer
-                page={page}
-                onComplete={mockHandlers.onComplete}
-                onVariableUpdate={mockHandlers.onVariableUpdate}
-                sessionId="preview-session"
-                // 🔑 傳真實 gameId 才能讓 AI 評分 / OCR 找到場域 API key
-                // 沒有 gameId 時 fallback 到字串（後端會用全域 key 或回 503）
-                gameId={gameId || "preview-game"}
-                variables={{}}
-                inventory={[]}
-                score={0}
-                visitedLocations={[]}
-              />
-            </div>
+        {/* 🎯 2026-05-05 設計原則：預覽 = 實際 100% 一樣（不拆分、確保 admin 真實測試） */}
+        <div className="flex-1 overflow-auto bg-background">
+          <div className="min-h-full">
+            <GamePageRenderer
+              page={page}
+              onComplete={mockHandlers.onComplete}
+              onVariableUpdate={mockHandlers.onVariableUpdate}
+              sessionId="preview-session"
+              // 🔑 傳真實 gameId 才能讓 AI 評分 / OCR 找到場域 API key
+              // 沒有 gameId 時 fallback 到字串（後端會用全域 key 或回 503）
+              gameId={gameId || "preview-game"}
+              variables={{}}
+              inventory={[]}
+              score={0}
+              visitedLocations={[]}
+            />
           </div>
-        </PreviewProvider>
+        </div>
       </DialogContent>
     </Dialog>
   );
