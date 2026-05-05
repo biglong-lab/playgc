@@ -163,6 +163,9 @@ ${componentDescriptions}
 - "random_team": { title, subtitle?, teams: [{ id, name, emoji, color }...2-6個], startText? }
   teams 是分組方案（如：A/B/C/D 組，或以主題命名），emoji/color 讓各組有視覺辨識度
 
+- "dot_vote": { title, question, options: [{ id, label, emoji }...3-6個], dotsPerPerson: 3-5, showResultsLive: true }
+  question 是引導玩家分配點數的問題（如：哪個議題最需要優先解決？），options 是候選選項，每個點代表一票的權重
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

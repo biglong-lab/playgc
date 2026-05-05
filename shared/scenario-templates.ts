@@ -509,6 +509,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "team-word-cloud",
       },
       {
+        pageType: "dot_vote",
+        label: "議題點點投票",
+        role: "每人分配 3 個點給最重要的學習議題或改善方向，共識即時呈現",
+        axis: "multi",
+      },
+      {
         pageType: "question_box",
         label: "課程提問箱",
         role: "學員匿名提問，最多 3 題，其他人可對問題按讚推高優先",
@@ -1004,6 +1010,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "活動結束每人貢獻 1-3 個詞，形成今日集體詞雲",
         axis: "multi",
         demoMode: "team-word-cloud",
+      },
+      {
+        pageType: "dot_vote",
+        label: "後續重點投票",
+        role: "每人分配 3 個點給最想繼續深入的主題，群體共識即時可見",
+        axis: "multi",
       },
       {
         pageType: "feedback_star",

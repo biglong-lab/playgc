@@ -444,6 +444,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "dot_vote":
+      return {
+        title: "🔵 點點投票",
+        question: "把你的點數分給最重要的選項",
+        options: [
+          { id: "o1", label: "選項 A", emoji: "🅰️" },
+          { id: "o2", label: "選項 B", emoji: "🅱️" },
+          { id: "o3", label: "選項 C", emoji: "🆑" },
+        ],
+        dotsPerPerson: 3,
+        showResultsLive: true,
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {
