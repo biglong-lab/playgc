@@ -2974,6 +2974,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "培訓評估套餐 NT$ 3,500-8,000 / 場。適合企業內訓、定期回顧、onboarding 工作坊。",
     status: "live",
   },
+
+  // ── Round 61 ────────────────────────────────────────────────────────────────
+  {
+    id: "creative-readiness-check",
+    name: "創意就緒確認",
+    tagline: "快速腦激盪 + 交通燈確認 + 行動項目",
+    description:
+      "把工作坊的「創意發散」和「準備確認」串成一氣。先用「快速腦力激盪」設定 60 秒計時，所有人拼命輸入想法、想法全程隱藏防止互相影響，時間到後一口氣揭曉滿滿的創意卡片牆，製造視覺震撼；接著用「交通燈狀態確認」讓每人選擇 🟢/🟡/🔴 並附上簡短說明，主持人一眼看清全隊對下一步的準備程度；最後用「行動項目」讓每人領取一個具體的跟進任務。三段設計把創意發想、準備確認、行動分工一次完成，30 分鐘內從零到有行動計畫。",
+    useCases: [
+      "工作坊開場創意熱身",
+      "產品功能集思廣益",
+      "問題解決快速發散",
+      "Sprint Planning 前置確認",
+      "跨部門協作啟動會",
+    ],
+    category: "corporate",
+    icon: "Zap",
+    gradient: "from-yellow-400/20 to-green-500/20",
+    estimatedPlayers: "5-30 人",
+    estimatedDuration: "20-30 分鐘",
+    components: [
+      {
+        pageType: "speed_brainstorm",
+        label: "快速腦激盪",
+        role: "60 秒計時，想法全程隱藏，時間到後揭曉全隊創意牆",
+        axis: "multi",
+      },
+      {
+        pageType: "signal_map",
+        label: "準備就緒確認",
+        role: "每人用交通燈選擇準備程度，揭曉後顯示三色分佈與說明",
+        axis: "multi",
+      },
+      {
+        pageType: "action_item",
+        label: "行動領取",
+        role: "每人認領一個具體跟進任務",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "創意工作坊套餐 NT$ 2,500-6,000 / 場。適合產品發想、問題解決、跨部門創新工作坊。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

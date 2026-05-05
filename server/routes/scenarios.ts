@@ -1813,6 +1813,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "speed_brainstorm":
+      return {
+        title: "⚡ 快速腦力激盪",
+        prompt: `關於「${scenarioName}」，在時限內盡量提出你的想法！`,
+        timerSeconds: 60,
+        maxIdeas: 5,
+        maxLength: 40,
+      };
+
+    case "signal_map":
+      return {
+        title: "🚦 交通燈狀態確認",
+        prompt: `你對「${scenarioName}」的準備程度是？`,
+        greenLabel: "準備好了 🟢",
+        yellowLabel: "還需要確認 🟡",
+        redLabel: "還沒準備好 🔴",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

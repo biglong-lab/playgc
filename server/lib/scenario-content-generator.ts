@@ -508,6 +508,12 @@ ${componentDescriptions}
 - "flash_card": { title, cards: FlashCardItem[] } FlashCardItem={ cardId, front, back }
   閃卡測驗：主持人準備正反面卡片，玩家先寫作答，主持人翻牌揭曉答案，玩家自評是否答對，最後顯示每人得分統計，適合教育培訓/知識測驗/學習型工作坊
 
+- "speed_brainstorm": { title, prompt, timerSeconds: 30-180, maxIdeas: 1-10, maxLength: 20-80 }
+  快速腦力激盪：設定倒數計時（60-90秒），計時期間想法全部隱藏（防止錨定效應），時間到後揭曉全隊想法牆，適合創意發想/問題解決/產品功能集思
+
+- "signal_map": { title, prompt, greenLabel, yellowLabel, redLabel }
+  交通燈狀態確認：每人選擇 🟢/🟡/🔴 三種狀態加選填評論，揭曉後顯示三色分佈統計與每人評論，適合會議前 go/no-go 確認/準備程度評估/敏捷每日站會
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 
