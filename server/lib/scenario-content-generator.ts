@@ -130,6 +130,9 @@ ${componentDescriptions}
 - "stamp_card": { title, subtitle?, slots: [{ id, label, emoji }...4-9個], rewardText?, celebrationText? }
   slots 是需完成的任務清單，每個任務 3-10 字，emoji 選與任務相關的圖示
 
+- "multi_vote": { title, question, options: [{ id, label, emoji }...3-6個], showResultsAfterVote: true, showVoterCount: true }
+  question 是投票問題（如：哪個攤位最受歡迎？），options 是候選選項
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

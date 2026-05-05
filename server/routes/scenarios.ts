@@ -309,6 +309,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "multi_vote":
+      return {
+        title: "🗳️ 即時投票",
+        question: "你的選擇是？",
+        options: [
+          { id: "a", label: "選項 A", emoji: "🔵" },
+          { id: "b", label: "選項 B", emoji: "🟢" },
+          { id: "c", label: "選項 C", emoji: "🔴" },
+        ],
+        showResultsAfterVote: true,
+        showVoterCount: true,
+      };
+
     case "stamp_card":
       return {
         title: "🎴 集點卡",

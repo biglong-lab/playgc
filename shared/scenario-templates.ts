@@ -236,6 +236,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "wave-host",
       },
       {
+        pageType: "multi_vote",
+        label: "最佳攤位票選",
+        role: "現場掃 QR 投票、即時看結果",
+        axis: "multi",
+      },
+      {
         pageType: "host_scoreboard_announcement",
         label: "跑馬燈播報",
         role: "得分插播、活動公告",
