@@ -148,6 +148,9 @@ ${componentDescriptions}
 - "rating_wall": { title, subtitle?, items: [{ id, label, emoji?, description? }...2-8個], maxStars: 5, showResults: true }
   items 是所有待評分的對象（如：各組作品、各個提案），label 清楚說明評分對象
 
+- "pop_quiz": { title, questions: [{ id, prompt, options: [...4 個], correctIdx: 0-3, timeLimitSec: 15-30 }] }
+  questions 至少 3 題、與活動主題高度相關的知識題或趣味題，prompt 用問號結尾
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

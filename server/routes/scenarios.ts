@@ -390,6 +390,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         celebrationText: "恭喜集滿！",
       };
 
+    case "pop_quiz":
+      return {
+        title: "🧠 快問快答",
+        questions: [
+          { id: "q1", prompt: "問題一：（請 admin 修改）", options: ["A", "B", "C", "D"], correctIdx: 0, timeLimitSec: 20 },
+          { id: "q2", prompt: "問題二：（請 admin 修改）", options: ["A", "B", "C", "D"], correctIdx: 1, timeLimitSec: 20 },
+          { id: "q3", prompt: "問題三：（請 admin 修改）", options: ["A", "B", "C", "D"], correctIdx: 2, timeLimitSec: 20 },
+        ],
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {
