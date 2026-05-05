@@ -538,6 +538,12 @@ ${componentDescriptions}
 - "group_norm": { title, prompt, maxLength: 40-100 }
   團隊工作約定：每人提出希望共同遵守的工作規範，所有人可對規範按讚表示認同，揭曉後按讚數排序，適合新團隊破冰/工作坊開場/跨部門協作建立共識/新成員融入
 
+- "hope_fear": { title, hopePrompt, fearPrompt, maxLength: 40-150 }
+  希望與恐懼：每人填寫對即將發生的事（專案/變化/活動）的一個希望和一個恐懼，揭曉後以雙欄格式展示所有人的期待與擔憂，適合專案啟動/組織變革/新計畫對齊/轉型工作坊
+
+- "story_wall": { title, prompt, maxTitleLength: 20-60, maxLength: 100-300 }
+  故事牆：每人貢獻一個帶標題的小故事或親身經歷，揭曉後以彩色卡片牆展示所有故事，適合個人旅程分享/文化建設/入職融入/年度回顧/破冰聚會
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

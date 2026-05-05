@@ -1,17 +1,9 @@
-import React from "react";
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
+import { Loader2 } from "lucide-react";
 
-export interface HopeFearConfig {
-  title: string;
-  topic: string;
-  hopeLabel: string;
-  hopePrompt: string;
-  fearLabel: string;
-  fearPrompt: string;
-  maxLength: number;
-  showAuthor: boolean;
-}
-
-export interface HopeFearEntry {
+export interface HfEntry extends Record<string, unknown> {
   entryId: string;
   userId: string;
   userName: string;
@@ -19,169 +11,176 @@ export interface HopeFearEntry {
   fear: string;
 }
 
+export interface HopeFearConfig extends Record<string, unknown> {
+  title: string;
+  hopePrompt: string;
+  fearPrompt: string;
+  maxLength: number;
+}
+
 export interface HopeFearState extends Record<string, unknown> {
-  entries: HopeFearEntry[];
+  entries: HfEntry[];
   revealed: boolean;
 }
 
-interface Draft {
-  hope: string;
-  fear: string;
+function extractConfig(raw: Record<string, unknown>): HopeFearConfig {
+  return {
+    title: (raw.title as string) || "🌟 希望與恐懼",
+    hopePrompt: (raw.hopePrompt as string) || "🌟 希望：我期待...",
+    fearPrompt: (raw.fearPrompt as string) || "😨 恐懼：我擔心...",
+    maxLength: (raw.maxLength as number) ?? 100,
+  };
 }
 
 interface Props {
-  config: HopeFearConfig;
-  state: HopeFearState;
-  myUserId: string;
-  draft: Draft;
-  onDraftChange: (field: keyof Draft, value: string) => void;
-  onSubmit: () => void;
-  onReveal: () => void;
+  gameId: string;
+  sessionId: string;
+  pageId: string;
+  config?: Record<string, unknown>;
+  isTeamLead?: boolean;
 }
 
-const SIDES = [
-  {
-    key: "hope" as const,
-    configLabel: "hopeLabel" as const,
-    configPrompt: "hopePrompt" as const,
-    emoji: "🌟",
-    bg: "bg-sky-50",
-    border: "border-sky-200",
-    text: "text-sky-700",
-    divider: "border-sky-100",
-  },
-  {
-    key: "fear" as const,
-    configLabel: "fearLabel" as const,
-    configPrompt: "fearPrompt" as const,
-    emoji: "⚡",
-    bg: "bg-orange-50",
-    border: "border-orange-200",
-    text: "text-orange-700",
-    divider: "border-orange-100",
-  },
-] as const;
+export function HopeFear({ gameId, sessionId, pageId, config: rawConfig, isTeamLead }: Props) {
+  const { user } = useAuth();
+  const cfg = extractConfig(rawConfig ?? {});
+  const userId = user?.id ?? user?.email?.split("@")[0] ?? "anon";
+  const userName = user?.firstName ?? user?.email?.split("@")[0] ?? "匿名";
 
-export default function HopeFear({
-  config,
-  state,
-  myUserId,
-  draft,
-  onDraftChange,
-  onSubmit,
-  onReveal,
-}: Props) {
-  const { title, topic, maxLength, showAuthor } = config;
-  const { entries, revealed } = state;
+  const defaultState: HopeFearState = { entries: [], revealed: false };
+  const { state, updateState, isLoaded } = useTeamPagePersistence<HopeFearState>({
+    gameId,
+    sessionId,
+    pageId,
+    type: "hope_fear",
+    defaultState,
+  });
 
-  const myEntry = entries.find((e) => e.userId === myUserId);
-  const hasSubmitted = !!myEntry;
-  const canSubmit = draft.hope.trim().length > 0 && draft.fear.trim().length > 0;
+  const [hope, setHope] = useState("");
+  const [fear, setFear] = useState("");
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="animate-spin" data-testid="hf-loading" />
+      </div>
+    );
+  }
+
+  const myEntry = state.entries.find((e) => e.userId === userId);
+
+  function handleSubmit() {
+    if (!hope.trim() || !fear.trim() || myEntry) return;
+    const entryId = `${userId}-${Date.now()}`;
+    updateState({
+      ...state,
+      entries: [...state.entries, { entryId, userId, userName, hope: hope.trim(), fear: fear.trim() }],
+    });
+    setHope("");
+    setFear("");
+  }
+
+  function handleReveal() {
+    updateState({ ...state, revealed: true });
+  }
 
   return (
-    <div data-testid="hf-root" className="flex flex-col gap-4 p-4 max-w-lg mx-auto">
-      <h2 data-testid="hf-title" className="text-lg font-bold text-center">{title}</h2>
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-bold" data-testid="hf-title">{cfg.title}</h2>
+      <p className="text-sm text-gray-400" data-testid="hf-count">已提交：{state.entries.length} 人</p>
 
-      {/* 主題說明 */}
-      <div className="rounded-xl bg-gray-50 border border-gray-200 p-3 text-center">
-        <p className="text-xs text-gray-400 font-medium">關於</p>
-        <p data-testid="hf-topic" className="text-sm font-bold text-gray-700">{topic}</p>
-      </div>
-
-      {/* 輸入區：兩欄並列 */}
-      {!hasSubmitted && !revealed && (
-        <div className="flex flex-col gap-3">
-          {SIDES.map((side) => (
-            <div key={side.key} className={`rounded-xl border ${side.border} ${side.bg} overflow-hidden`}>
-              <div className={`px-3 py-2 flex items-center gap-2 border-b ${side.border}`}>
-                <span>{side.emoji}</span>
-                <span className={`text-sm font-bold ${side.text}`}>{config[side.configLabel]}</span>
-                <span className="text-xs text-gray-400 ml-1">{config[side.configPrompt]}</span>
-              </div>
-              <textarea
-                data-testid={`hf-input-${side.key}`}
-                value={draft[side.key]}
-                onChange={(e) => onDraftChange(side.key, e.target.value)}
-                maxLength={maxLength}
-                rows={2}
-                placeholder="寫下你的想法…"
-                className="w-full px-3 py-2 text-sm resize-none focus:outline-none bg-transparent"
-              />
-            </div>
-          ))}
-
+      {!myEntry && !state.revealed && (
+        <div className="space-y-3">
+          <div>
+            <label className="text-sm font-semibold text-amber-700">{cfg.hopePrompt}</label>
+            <textarea
+              className="w-full border border-amber-200 rounded px-3 py-2 h-20 mt-1 focus:border-amber-400 text-sm"
+              placeholder="寫下你的期待或希望..."
+              value={hope}
+              onChange={(e) => setHope(e.target.value)}
+              maxLength={cfg.maxLength}
+              data-testid="hf-hope-input"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-semibold text-slate-600">{cfg.fearPrompt}</label>
+            <textarea
+              className="w-full border border-slate-200 rounded px-3 py-2 h-20 mt-1 focus:border-slate-400 text-sm"
+              placeholder="寫下你的擔憂或恐懼..."
+              value={fear}
+              onChange={(e) => setFear(e.target.value)}
+              maxLength={cfg.maxLength}
+              data-testid="hf-fear-input"
+            />
+          </div>
           <button
+            className="w-full py-2 bg-amber-600 text-white rounded disabled:opacity-50"
+            disabled={!hope.trim() || !fear.trim()}
+            onClick={handleSubmit}
             data-testid="hf-submit-btn"
-            onClick={onSubmit}
-            disabled={!canSubmit}
-            className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-600 disabled:opacity-40 text-white text-sm font-semibold transition-colors self-end"
           >
-            送出
+            提交
           </button>
         </div>
       )}
 
-      {/* 已送出 */}
-      {hasSubmitted && !revealed && (
-        <div data-testid="hf-submitted-msg" className="rounded-xl bg-indigo-50 border border-indigo-200 p-3">
-          <p className="text-sm font-semibold text-indigo-700">✅ 已送出！</p>
-          <p className="text-xs text-indigo-400 mt-1">等待所有人完成後揭曉</p>
+      {myEntry && (
+        <div className="grid grid-cols-2 gap-2" data-testid="hf-my-entry">
+          <div className="p-3 bg-amber-50 border border-amber-200 rounded text-sm">
+            <p className="font-semibold text-amber-700 mb-1">🌟 希望</p>
+            <p className="text-gray-700">{myEntry.hope}</p>
+          </div>
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded text-sm">
+            <p className="font-semibold text-slate-600 mb-1">😨 恐懼</p>
+            <p className="text-gray-700">{myEntry.fear}</p>
+          </div>
         </div>
       )}
 
-      {/* 揭曉控制 */}
-      {!revealed && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-400">
-            <span data-testid="hf-count">{entries.length}</span> 人已送出
-          </p>
-          <button
-            data-testid="hf-reveal-btn"
-            onClick={onReveal}
-            className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors"
-          >
-            揭曉全體期待與擔憂
-          </button>
-        </div>
+      {isTeamLead && !state.revealed && (
+        <button
+          className="w-full py-2 bg-amber-600 text-white rounded"
+          onClick={handleReveal}
+          data-testid="hf-reveal-btn"
+        >
+          揭曉所有回饋
+        </button>
       )}
 
-      {/* 揭曉後：兩欄呈現 */}
-      {revealed && (
-        <div data-testid="hf-result" className="flex flex-col gap-4">
-          <p className="text-center text-indigo-600 text-sm font-semibold">
-            📊 共 {entries.length} 人參與
-          </p>
-          {entries.length === 0 ? (
-            <p data-testid="hf-empty" className="text-center text-gray-400 text-sm py-4">
-              還沒有人送出
-            </p>
+      {state.revealed && (
+        <div data-testid="hf-result">
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            <h3 className="text-center text-sm font-bold text-amber-700">🌟 希望</h3>
+            <h3 className="text-center text-sm font-bold text-slate-600">😨 恐懼</h3>
+          </div>
+          {state.entries.length === 0 ? (
+            <p className="text-gray-400 text-center py-4 text-sm" data-testid="hf-empty">沒有人提交</p>
           ) : (
-            SIDES.map((side) => (
-              <div key={side.key} data-testid={`hf-section-${side.key}`} className="flex flex-col gap-2">
-                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${side.bg} ${side.border}`}>
-                  <span>{side.emoji}</span>
-                  <span className={`text-sm font-bold ${side.text}`}>{config[side.configLabel]}</span>
-                  <span className="ml-auto text-xs text-gray-400">{entries.length} 則</span>
-                </div>
-                {entries.map((entry) => (
-                  <div
-                    key={`${side.key}-${entry.entryId}`}
-                    data-testid={`hf-${side.key}-${entry.entryId}`}
-                    className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm ml-2"
-                  >
-                    {showAuthor && (
-                      <p data-testid={`hf-author-${side.key}-${entry.entryId}`} className="text-xs text-gray-400 mb-1 font-semibold">
-                        {entry.userName}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-700">{entry[side.key]}</p>
+            <div className="space-y-2">
+              {state.entries.map((entry) => (
+                <div
+                  key={entry.entryId}
+                  className="border rounded-lg overflow-hidden"
+                  data-testid={`hf-entry-${entry.entryId}`}
+                >
+                  <div className="px-3 py-1 bg-gray-100 text-xs font-semibold text-gray-600">
+                    👤 {entry.userName}
                   </div>
-                ))}
-              </div>
-            ))
+                  <div className="grid grid-cols-2 divide-x text-sm">
+                    <div className="p-2 bg-amber-50">
+                      <p className="text-gray-700">{entry.hope}</p>
+                    </div>
+                    <div className="p-2 bg-slate-50">
+                      <p className="text-gray-700">{entry.fear}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
     </div>
   );
 }
+
+export default HopeFear;

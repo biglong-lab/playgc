@@ -3162,6 +3162,40 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "啟動對齊套餐 NT$ 4,000-10,000 / 場。適合新團隊、跨部門協作、年度啟動大會。",
     status: "live",
   },
+  {
+    id: "change-journey-workshop",
+    name: "變革旅程工作坊",
+    tagline: "安全表達期待與恐懼，共同構建變革敘事",
+    description: "透過希望與恐懼雙欄分享，讓每個人說出心聲；再透過故事牆分享親身經歷，建立集體智慧與情感連結。",
+    useCases: ["組織變革啟動", "新計畫對齊會議", "文化建設工作坊", "新成員入職融入"],
+    category: "corporate",
+    icon: "🌟",
+    gradient: "from-amber-500 to-orange-400",
+    estimatedPlayers: "8-30 人",
+    estimatedDuration: "30-50 分鐘",
+    components: [
+      {
+        pageType: "hope_fear",
+        label: "希望與恐懼",
+        role: "每人分享期待與擔憂，建立心理安全感",
+        axis: "multi",
+      },
+      {
+        pageType: "story_wall",
+        label: "故事牆",
+        role: "每人貢獻一個相關經歷，形成集體敘事",
+        axis: "multi",
+      },
+      {
+        pageType: "action_item",
+        label: "行動清單",
+        role: "基於共識制定具體下一步",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "變革工作坊套餐 NT$ 5,000-15,000 / 場。適合組織變革、企業轉型、新計畫啟動。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

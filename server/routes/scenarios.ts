@@ -1892,6 +1892,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 80,
       };
 
+    case "hope_fear":
+      return {
+        title: "🌟 希望與恐懼",
+        hopePrompt: `🌟 希望：關於「${scenarioName}」，我期待...`,
+        fearPrompt: `😨 恐懼：關於「${scenarioName}」，我擔心...`,
+        maxLength: 100,
+      };
+
+    case "story_wall":
+      return {
+        title: "📖 故事牆",
+        prompt: `關於「${scenarioName}」，分享一段你的親身經歷或故事`,
+        maxTitleLength: 40,
+        maxLength: 200,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

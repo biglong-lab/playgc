@@ -209,6 +209,7 @@ const RoseBudThornPage = lazy(() => import("@/components/game/multi/RoseBudThorn
 const EventTimelinePage = lazy(() => import("@/components/game/multi/EventTimelinePage"));
 const YesNoMaybePage = lazy(() => import("@/components/game/multi/YesNoMaybePage"));
 const GroupNormPage = lazy(() => import("@/components/game/multi/GroupNormPage"));
+const StoryWallPage = lazy(() => import("@/components/game/multi/StoryWallPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -628,7 +629,7 @@ export default function GamePageRenderer({
       case "word_ladder":
         return <WordLadderPage {...commonProps} page={page} pageId={page.id} />;
       case "hope_fear":
-        return <HopeFearPage {...commonProps} page={page} pageId={page.id} />;
+        return <HopeFearPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "number_guess":
         return <NumberGuessPage {...commonProps} page={page} pageId={page.id} />;
       case "never_have_i_ever":
@@ -835,6 +836,8 @@ export default function GamePageRenderer({
         return <YesNoMaybePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "group_norm":
         return <GroupNormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "story_wall":
+        return <StoryWallPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
