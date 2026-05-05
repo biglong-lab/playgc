@@ -309,6 +309,17 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "name_card":
+      return {
+        title: "🏷️ 自我介紹牌",
+        subtitle: "填寫你的名牌，讓大家認識你",
+        fields: [
+          { key: "name", label: "姓名", placeholder: "你的名字", maxLength: 20 },
+          { key: "role", label: "角色 / 職位", placeholder: "如：工程師、學生…", maxLength: 30 },
+          { key: "fact", label: "一件有趣的事", placeholder: "如：我養了一隻貓…（選填）", maxLength: 40 },
+        ],
+      };
+
     case "seat_draw":
       return {
         title: "🎲 抽籤分組",

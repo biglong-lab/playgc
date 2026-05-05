@@ -920,6 +920,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "check-in",
       },
       {
+        pageType: "name_card",
+        label: "自我介紹名牌",
+        role: "每人建立名牌（姓名 + 角色 + 有趣事實），形成名牌牆",
+        axis: "multi",
+      },
+      {
         pageType: "quick_question",
         label: "一句話破冰",
         role: "用一句話介紹自己，匿名展示，輕鬆開場",

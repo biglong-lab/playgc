@@ -142,6 +142,9 @@ ${componentDescriptions}
 - "seat_draw": { title, subtitle?, slots: [{ id, label, emoji }...3-10個], shuffleText? }
   slots 是可抽到的選項（座位號/組別/角色），每個 label 清楚說明（如：A 組 / 1 號桌）
 
+- "name_card": { title, subtitle?, fields: [{ key, label, placeholder?, maxLength? }...2-4個], emojiOptions?: string[] }
+  fields 是每人要填寫的欄位（如：姓名、職位、一件有趣的事），至少一個必填欄位
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
