@@ -340,6 +340,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("feedback_sandwich");
     expect(allPageTypes).toContain("freeze_frame");
     expect(allPageTypes).toContain("glow_grow");
+
+    // Round 82 補全批次 5（GPS + GroupXxx + HostScreen 類型）
+    expect(allPageTypes).toContain("gps_cascade");
+    expect(allPageTypes).toContain("gps_team_mission");
+    expect(allPageTypes).toContain("group_cheer");
+    expect(allPageTypes).toContain("group_contract");
+    expect(allPageTypes).toContain("group_promise");
+    expect(allPageTypes).toContain("host_crowd_gather");
+    expect(allPageTypes).toContain("host_emoji_react");
+    expect(allPageTypes).toContain("host_guestbook_digital");
+    expect(allPageTypes).toContain("host_knowledge_map");
+    expect(allPageTypes).toContain("host_live_leaderboard");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -466,6 +478,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "feedback_sandwich",
       "freeze_frame",
       "glow_grow",
+      "gps_cascade",
+      "gps_team_mission",
+      "group_cheer",
+      "group_contract",
+      "group_promise",
+      "host_crowd_gather",
+      "host_emoji_react",
+      "host_guestbook_digital",
+      "host_knowledge_map",
+      "host_live_leaderboard",
     ];
 
     for (const t of newTypes) {
