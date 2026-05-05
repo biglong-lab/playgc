@@ -133,6 +133,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "host",
         demoMode: "emoji-host",
       },
+      {
+        pageType: "mad_libs",
+        label: "瘋狂祝福故事",
+        role: "賓客合力填入空格，完成一篇搞笑溫馨的婚禮故事，成為最特別的紀念品",
+        axis: "multi",
+      },
     ],
     valueProposition:
       "替代傳統紙本簽名簿、提供拍照分享素材、活動結束後新人可下載完整紀錄。一場婚禮 NT$ 8,000-15,000 服務費。",

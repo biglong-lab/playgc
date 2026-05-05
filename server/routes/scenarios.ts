@@ -677,6 +677,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResults: true,
       };
 
+    case "mad_libs":
+      return {
+        title: "🎭 我們的故事",
+        story: "今天 {hero} 帶著一隻 {animal} 來到 {place}，大家都說這是 {year} 年最 {adj} 的一天！",
+        blanks: [
+          { id: "hero", label: "主角名字", hint: "填一個人名" },
+          { id: "animal", label: "動物", hint: "任意動物" },
+          { id: "place", label: "地點", hint: "真實或虛構地點" },
+          { id: "year", label: "年份", hint: "數字" },
+          { id: "adj", label: "形容詞", hint: "任意形容詞" },
+        ],
+        revealWhenFull: true,
+      };
+
     case "agreement_matrix":
       return {
         title: "📊 觀點評分",

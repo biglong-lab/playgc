@@ -124,6 +124,9 @@ ${componentDescriptions}
 - "project_showcase": { title, prompt?, maxProjectsPerPerson: 1-3, maxTitleLength: 20-40, maxDescLength: 80-200, allowVoteOwn: false, emojiReactions: [...4-6個], showVoteCount: true }
   emojiReactions 是觀眾可以給出的反應 emoji（如：🔥⭐💡👏🏆），適合 Demo Day / 黑客松 / 成果發表
 
+- "mad_libs": { title, story, blanks: [{ id, label, hint? }...3-8個], revealWhenFull: true }
+  story 是填空模板，用 {id} 代表空格位置（如「今天 {hero} 去了 {place}」），blanks 定義每個空格的說明，全填完後揭曉完整搞笑故事，適合婚禮/生日/聚會
+
 - "agreement_matrix": { title, instructions?, statements: [{ id, text }...3-8個], showResults: true }
   statements 是多個陳述句，每人對每句評分（👍同意/😐普通/👎不同意），集體分布以橫條圖呈現，適合回顧、訓練後問卷、意見調查
 
