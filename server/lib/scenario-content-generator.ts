@@ -496,6 +496,12 @@ ${componentDescriptions}
 - "number_line": { title, question, min: 1-100, max: 1-100, unit, lowLabel, highLabel }
   數字定位：每人在數字軸上標記自己的位置（如 1-10 分），揭曉後顯示分佈直方圖與全隊平均值，適合信心調查/滿意度調查/理解程度確認/快速數字評估
 
+- "two_by_two": { title, prompt, xLowLabel, xHighLabel, yLowLabel, yHighLabel, itemLabel }
+  2x2 優先矩陣：每人將一個想法或計畫放置在 2x2 象限中，揭曉後以散點圖顯示全隊分佈，適合策略規劃/優先排序工作坊/決策分析
+
+- "countdown_pledge": { title, challengeText, durationMinutes: 1-30, pledgePrompt }
+  倒數承諾挑戰：每人寫下承諾，主持人啟動倒數計時，完成者點擊完成，適合行動計畫/學習挑戰/活動激勵
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

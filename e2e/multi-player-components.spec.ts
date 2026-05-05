@@ -216,6 +216,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 58 新元件
     expect(allPageTypes).toContain("collab_canvas");
     expect(allPageTypes).toContain("number_line");
+
+    // Round 59 新元件
+    expect(allPageTypes).toContain("two_by_two");
+    expect(allPageTypes).toContain("countdown_pledge");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -264,6 +268,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "vibe_check",
       "collab_canvas",
       "number_line",
+      "two_by_two",
+      "countdown_pledge",
     ];
 
     for (const t of newTypes) {

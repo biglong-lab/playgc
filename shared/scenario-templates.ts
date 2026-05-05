@@ -2888,6 +2888,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "敏捷回顧套餐 NT$ 2,500-6,000 / 場。適合軟體團隊、專案管理、持續改善文化。",
     status: "live",
   },
+
+  // ── Round 59 ────────────────────────────────────────────────────────────────
+  {
+    id: "priority-action-lab",
+    name: "優先行動實驗室",
+    tagline: "2×2 矩陣 + 倒數承諾 + 共識投票",
+    description:
+      "讓工作坊從「討論」真正走向「行動」。先用「2×2 優先矩陣」請每人將提案放置在「影響力 vs 執行難度」象限中，揭曉後一眼看見全隊哪些是高影響、易執行的黃金機會；接著用「倒數承諾挑戰」讓每人寫下具體承諾，主持人啟動 5 分鐘倒數，完成者立刻點擊「Done！」，製造即時行動感；最後用「共識地圖」確認全隊在優先項目上的最終共識。三段設計把優先排序、個人承諾、團隊共識一次完成，最適合策略會議結尾或行動計畫啟動。",
+    useCases: [
+      "策略規劃工作坊結尾",
+      "年度目標設定會議",
+      "產品路線圖優先排序",
+      "跨部門行動計畫啟動",
+      "敏捷 PI Planning 行動承諾",
+    ],
+    category: "corporate",
+    icon: "Target",
+    gradient: "from-orange-500/20 to-purple-500/20",
+    estimatedPlayers: "5-30 人",
+    estimatedDuration: "20-35 分鐘",
+    components: [
+      {
+        pageType: "two_by_two",
+        label: "優先矩陣",
+        role: "每人將提案放置在影響力 vs 執行難度的 2x2 象限，揭曉後以散點圖顯示全隊策略分佈",
+        axis: "multi",
+      },
+      {
+        pageType: "countdown_pledge",
+        label: "倒數承諾",
+        role: "每人寫下具體行動承諾，主持人啟動倒數計時，完成者點擊 Done！製造即時行動感",
+        axis: "multi",
+      },
+      {
+        pageType: "consensus_map",
+        label: "共識確認",
+        role: "最後確認全隊在優先行動項目上的共識與分歧",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "策略行動套餐 NT$ 3,000-8,000 / 場。適合策略規劃、年度計畫、產品管理工作坊。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

@@ -1772,6 +1772,25 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         highLabel: "完全有把握",
       };
 
+    case "two_by_two":
+      return {
+        title: "⊞ 2×2 優先矩陣",
+        prompt: `關於「${scenarioName}」，請將你的想法放到最合適的位置`,
+        xLowLabel: "難以執行",
+        xHighLabel: "容易執行",
+        yLowLabel: "低影響",
+        yHighLabel: "高影響",
+        itemLabel: "想法 / 計畫名稱",
+      };
+
+    case "countdown_pledge":
+      return {
+        title: "⏱️ 倒數承諾挑戰",
+        challengeText: `挑戰：在時間內完成你的「${scenarioName}」承諾！`,
+        durationMinutes: 5,
+        pledgePrompt: "我在這個活動中承諾要...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
