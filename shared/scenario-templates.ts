@@ -3774,6 +3774,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "活動評估套組 NT$ 800-2,000 / 場。讓每場活動都有數據佐證、文化傳承。",
     status: "live",
   },
+  {
+    id: "learning-appreciation-pack",
+    name: "💌 學習感恩套組",
+    tagline: "從設定目標到送出感謝，完整學習閉環",
+    description: "學習目標 + 感謝便條，課程開始前各自設定目標，課程結束後互送感謝便條並標記目標達成狀態，形成完整的學習體驗閉環。",
+    useCases: ["企業培訓完整流程", "工作坊全程陪伴", "新人入職引導", "跨部門學習社群"],
+    category: "corporate",
+    icon: "BookOpen",
+    gradient: "from-sky-400 to-rose-400",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "20-35 分鐘",
+    components: [
+      {
+        pageType: "learning_objective",
+        label: "學習目標",
+        role: "開場目標設定",
+        axis: "multi",
+      },
+      {
+        pageType: "appreciation_note",
+        label: "感謝便條",
+        role: "收尾感謝儀式",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "學習感恩套組 NT$ 1,500-4,000 / 場。讓學習有始有終，讓感謝看得見。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

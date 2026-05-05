@@ -664,6 +664,12 @@ ${componentDescriptions}
 - "team_flag": { title, prompt, maxWords, suggestions: string[] }
   團隊旗幟：每人從建議詞清單中選或自輸入最多 3 個代表團隊精神的關鍵詞，揭曉後以詞雲顯示全隊最高頻詞彙，適合文化建立/新團隊定調/品牌工作坊
 
+- "learning_objective": { title, prompt, placeholder }
+  學習目標：每人在活動開始前設定一個個人學習目標（≥3字），揭曉後可自行標記已達成/部分達成/進行中，建立個人學習責任感，適合培訓課程/工作坊開場/新技能學習
+
+- "appreciation_note": { title, prompt, placeholder }
+  感謝便條：每人從參與者清單中選一位隊友（或自輸入名字）+寫感謝便條，揭曉後以彩色便利貼網格呈現感謝關係網，適合活動收尾/頒獎慶祝/跨部門感謝文化
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

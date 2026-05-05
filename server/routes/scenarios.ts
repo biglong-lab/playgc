@@ -2210,6 +2210,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `選或輸入最多 3 個詞，代表「${scenarioName}」這個團隊的文化或精神：`,
       };
 
+    case "learning_objective":
+      return {
+        title: "📚 學習目標",
+        prompt: `在「${scenarioName}」這次活動中，你最想達成的一個學習目標是什麼？`,
+        placeholder: "我想要學會 / 理解 / 體驗...",
+      };
+
+    case "appreciation_note":
+      return {
+        title: "💌 感謝便條",
+        prompt: `在「${scenarioName}」結束前，寫一張感謝便條給一位讓你印象深刻的隊友：`,
+        placeholder: "謝謝你的...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
