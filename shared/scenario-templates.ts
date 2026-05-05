@@ -1114,6 +1114,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "check-in",
       },
       {
+        pageType: "name_card",
+        label: "數位名牌",
+        role: "填寫姓名、部門、一件有趣的事，自我介紹名牌牆",
+        axis: "multi",
+      },
+      {
+        pageType: "random_team",
+        label: "隨機分組破冰",
+        role: "新舊員工隨機混組，打破部門隔閡",
+        axis: "multi",
+      },
+      {
         pageType: "role_assign",
         label: "部門角色分配",
         role: "隨機或指定分配部門代表角色，增添趣味感",
