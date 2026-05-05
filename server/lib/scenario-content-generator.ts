@@ -124,6 +124,9 @@ ${componentDescriptions}
 - "project_showcase": { title, prompt?, maxProjectsPerPerson: 1-3, maxTitleLength: 20-40, maxDescLength: 80-200, allowVoteOwn: false, emojiReactions: [...4-6個], showVoteCount: true }
   emojiReactions 是觀眾可以給出的反應 emoji（如：🔥⭐💡👏🏆），適合 Demo Day / 黑客松 / 成果發表
 
+- "photo_caption": { title, photoUrl, prompt?, maxCaptionLength: 40-120, maxCaptionsPerPerson: 1-3, showVotes: true }
+  photoUrl 是展示給所有人看的同一張照片，每人提交創意配文，互相投票，最高票桂冠標記，適合年終/旅遊/派對趣味互動
+
 - "spectrum_line": { title, instructions?, questions: [{ id, leftLabel, rightLabel, leftEmoji?, rightEmoji? }...2-6個], showResults: true, showNames: true }
   questions 是兩極光譜問題（如：內向↔外向、計畫型↔即興型），每人拖動滑桿定位0-100，結果顯示群體分布點與平均值，適合破冰/了解工作風格/個性揭曉
 

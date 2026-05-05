@@ -677,6 +677,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResults: true,
       };
 
+    case "photo_caption":
+      return {
+        title: "📸 最佳配文大賽",
+        photoUrl: "",
+        prompt: "看到這張照片，你的第一個念頭是？",
+        maxCaptionLength: 80,
+        maxCaptionsPerPerson: 2,
+        showVotes: true,
+      };
+
     case "spectrum_line":
       return {
         title: "🎯 你在光譜的哪裡？",

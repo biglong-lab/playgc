@@ -680,6 +680,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "photo_caption",
+        label: "搞笑配文大賽",
+        role: "展示一張旅遊趣味照，全員搶著提交最佳配文，投票角逐最佳創意獎",
+        axis: "multi",
+      },
+      {
         pageType: "host_guestbook_digital",
         label: "團隊簽名簿",
         role: "活動結束時的留念",
