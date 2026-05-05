@@ -1531,6 +1531,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         pairingMode: "random",
       };
 
+    case "song_wall":
+      return {
+        title: "🎵 歌曲牆",
+        prompt: `選一首代表你在「${scenarioName}」心情的歌`,
+        maxLength: 50,
+        songPlaceholder: "歌曲名稱",
+        artistPlaceholder: "歌手 / 樂團",
+      };
+
+    case "personal_compass":
+      return {
+        title: "🧭 個人指南針",
+        northLabel: "N 優勢",
+        southLabel: "S 挑戰",
+        eastLabel: "E 機會",
+        westLabel: "W 障礙",
+      };
+
     case "team_snapshot":
       return {
         title: "📸 團隊快照",

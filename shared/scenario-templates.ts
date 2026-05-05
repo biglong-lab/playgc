@@ -1050,6 +1050,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "song_wall",
+        label: "歌曲牆",
+        role: "每人選一首代表心情的歌（歌名+歌手+可選備注），揭曉後顯示全員歌單，適合派對暖場/情感核對/團隊破冰",
+        axis: "multi",
+      },
+      {
+        pageType: "personal_compass",
+        label: "個人指南針",
+        role: "每人在四個方向（優勢/挑戰/機會/障礙）各填一項，揭曉後呈現全員四方向分析，適合職涯規劃/內訓回顧/團隊健診",
+        axis: "multi",
+      },
+      {
         pageType: "freeze_frame",
         label: "現況快照",
         role: "每人選 🟢🟡🔴 狀態 + 一句現況描述，公布後依狀態分群，讓主持人快速掌握全場進度，適合站會或活動中期確認",

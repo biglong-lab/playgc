@@ -502,6 +502,12 @@ ${componentDescriptions}
 - "team_snapshot": { title, fields: string[3-5], maxLength: 40-60 }
   團隊快照：每位玩家填寫多個欄位（如 開心/擔心/需要支援），揭曉後形成全隊情緒速覽，適合每日站立/回顧/情感核對
 
+- "song_wall": { title, prompt, maxLength: 40-60, songPlaceholder, artistPlaceholder }
+  歌曲牆：每人選一首代表心情/主題的歌，填寫歌名+歌手+可選備注，揭曉後顯示全員歌單，適合派對暖場/情感核對/聚會破冰
+
+- "personal_compass": { title, northLabel, southLabel, eastLabel, westLabel }
+  個人指南針：每人在四個方向（優勢/挑戰/機會/障礙）各填一項，形成個人 SWOT 快照，揭曉後呈現全員四方向分析
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
