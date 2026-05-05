@@ -515,6 +515,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "confirm_it",
+        label: "信心投票",
+        role: "主持人丟出一個真假陳述，玩家投票並標記信心度，公布後對比群體認知差異，比一般問卷更有深度",
+        axis: "multi",
+      },
+      {
         pageType: "word_ladder",
         label: "詞語接龍",
         role: "每人輪流接龍一個詞，限時完成整條鏈；輕鬆趣味，讓陌生人瞬間找到共同話題",
@@ -951,6 +957,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         pageType: "points_auction",
         label: "虛擬競標",
         role: "每人有等量代幣競標資源/優先權，反映真實偏好；優先順序決策工作坊用此取代舉手投票更直覺",
+        axis: "multi",
+      },
+      {
+        pageType: "rate_idea",
+        label: "想法評分",
+        role: "列出 3-5 個解決方案或創意，玩家各別打星星；公布後依平均分排名，快速找出最受歡迎的方向",
         axis: "multi",
       },
       {

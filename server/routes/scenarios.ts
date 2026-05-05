@@ -1188,6 +1188,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxNote: 30,
       };
 
+    case "confirm_it":
+      return {
+        title: "✅ 信心投票",
+        statement: `關於「${scenarioName}」的這個說法，你認為正確嗎？`,
+        showConfidence: true,
+      };
+
+    case "rate_idea":
+      return {
+        title: "⭐ 想法評分",
+        prompt: `為「${scenarioName}」中的每個想法打星星（1-5 星）`,
+        ideas: [
+          { ideaId: "idea-1", text: "想法一" },
+          { ideaId: "idea-2", text: "想法二" },
+          { ideaId: "idea-3", text: "想法三" },
+        ],
+      };
+
     case "skill_swap":
       return {
         title: "🔄 技能交換牆",

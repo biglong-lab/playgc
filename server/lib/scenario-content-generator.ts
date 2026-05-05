@@ -373,6 +373,12 @@ ${componentDescriptions}
 - "emoji_reaction": { title, prompt, maxNote: 20-50 }
   玩家選一個 Emoji 表達感受並附短備註，公布後依 Emoji 分組顯示，適合活動暖場/課程開場/情緒確認
 
+- "confirm_it": { title, statement, showConfidence: boolean }
+  玩家對一個陳述投票「正確/錯誤」並選信心程度（50-100%），公布後顯示雙方人數+平均信心，適合知識測試/事實確認/辯論前暖場
+
+- "rate_idea": { title, prompt, ideas: [{ideaId, text}] }
+  玩家對 2-6 個想法各打 1-5 星，公布後依平均分排名並顯示進度條，適合方案評選/優先順序決策/創意評鑑
+
 - "skill_swap": { title, offerPrompt, wantPrompt, maxLength: 15-25, showAuthor: boolean }
   offerPrompt 引導說明自己的技能（如：我能提供什麼？），wantPrompt 引導說明想學什麼，揭曉後自動顯示配對，適合網絡活動/企業訓練
 
