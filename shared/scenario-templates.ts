@@ -2931,6 +2931,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "策略行動套餐 NT$ 3,000-8,000 / 場。適合策略規劃、年度計畫、產品管理工作坊。",
     status: "live",
   },
+
+  // ── Round 60 ────────────────────────────────────────────────────────────────
+  {
+    id: "team-health-learning",
+    name: "團隊健康學習站",
+    tagline: "星圖評估 + 閃卡測驗 + 即時心跳",
+    description:
+      "把「學習」和「健康評估」合而為一。先用「團隊星圖」請每人在溝通、信任、效率、士氣四個維度打分，揭曉後以多色長條圖呈現全隊健康狀態，一眼識別強項與改善空間；接著用「閃卡測驗」讓主持人出 3-5 張知識卡片，玩家作答、翻牌對答案、自評得分，製造輕鬆的學習氛圍；最後用「即時心跳」確認每個人當下的能量與情緒，為工作坊收尾做最後確認。三段設計把評估、學習、情緒感知一次完成，特別適合定期回顧與培訓場景。",
+    useCases: [
+      "月度/季度團隊健康回顧",
+      "企業內訓知識驗收",
+      "新員工 onboarding 評估",
+      "工作坊結尾回顧確認",
+      "跨部門協作培訓",
+    ],
+    category: "corporate",
+    icon: "Star",
+    gradient: "from-yellow-500/20 to-teal-500/20",
+    estimatedPlayers: "5-40 人",
+    estimatedDuration: "25-40 分鐘",
+    components: [
+      {
+        pageType: "star_map",
+        label: "團隊健康星圖",
+        role: "每人在溝通/信任/效率/士氣四個維度評分，揭曉後顯示全隊平均長條圖",
+        axis: "multi",
+      },
+      {
+        pageType: "flash_card",
+        label: "知識閃卡測驗",
+        role: "主持人出題，玩家作答後翻牌對答案、自評得分，輕鬆的學習確認方式",
+        axis: "multi",
+      },
+      {
+        pageType: "live_pulse",
+        label: "即時心跳確認",
+        role: "工作坊結尾，確認每人當下的能量與情緒狀態",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "培訓評估套餐 NT$ 3,500-8,000 / 場。適合企業內訓、定期回顧、onboarding 工作坊。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

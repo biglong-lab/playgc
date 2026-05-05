@@ -502,6 +502,12 @@ ${componentDescriptions}
 - "countdown_pledge": { title, challengeText, durationMinutes: 1-30, pledgePrompt }
   倒數承諾挑戰：每人寫下承諾，主持人啟動倒數計時，完成者點擊完成，適合行動計畫/學習挑戰/活動激勵
 
+- "star_map": { title, prompt, dimensions: StarDimension[], max: 3-10 } StarDimension={ id, label }
+  團隊星圖：每人在多個維度（溝通/信任/效率/士氣等）用滑桿評分，揭曉後顯示每個維度的全隊平均長條圖，適合團隊健康檢查/季度回顧/新團隊破冰評估
+
+- "flash_card": { title, cards: FlashCardItem[] } FlashCardItem={ cardId, front, back }
+  閃卡測驗：主持人準備正反面卡片，玩家先寫作答，主持人翻牌揭曉答案，玩家自評是否答對，最後顯示每人得分統計，適合教育培訓/知識測驗/學習型工作坊
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

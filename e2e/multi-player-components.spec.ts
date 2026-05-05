@@ -220,6 +220,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 59 新元件
     expect(allPageTypes).toContain("two_by_two");
     expect(allPageTypes).toContain("countdown_pledge");
+
+    // Round 60 新元件
+    expect(allPageTypes).toContain("star_map");
+    expect(allPageTypes).toContain("flash_card");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -270,6 +274,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "number_line",
       "two_by_two",
       "countdown_pledge",
+      "star_map",
+      "flash_card",
     ];
 
     for (const t of newTypes) {

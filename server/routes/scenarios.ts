@@ -1791,6 +1791,28 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         pledgePrompt: "我在這個活動中承諾要...",
       };
 
+    case "star_map":
+      return {
+        title: "⭐ 團隊星圖評估",
+        prompt: `請針對「${scenarioName}」為每個維度評分`,
+        dimensions: [
+          { id: "comm", label: "溝通" },
+          { id: "trust", label: "信任" },
+          { id: "eff", label: "效率" },
+          { id: "morale", label: "士氣" },
+        ],
+        max: 5,
+      };
+
+    case "flash_card":
+      return {
+        title: "🃏 閃卡測驗",
+        cards: [
+          { cardId: "c1", front: `${scenarioName}的核心是什麼？`, back: "請主持人填入正確答案" },
+          { cardId: "c2", front: `說出一個關於「${scenarioName}」的重要概念`, back: "請主持人填入正確答案" },
+        ],
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
