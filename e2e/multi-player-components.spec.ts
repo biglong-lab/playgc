@@ -424,6 +424,33 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("spectrum_line");
     expect(allPageTypes).toContain("speed_networking");
     expect(allPageTypes).toContain("speed_typing");
+
+    // Round 89 補全批次 12（SpinWheel + StampCard + StoryXxx + TastingNotes + TeamXxx）
+    expect(allPageTypes).toContain("spin_wheel");
+    expect(allPageTypes).toContain("stamp_card");
+    expect(allPageTypes).toContain("story_branch");
+    expect(allPageTypes).toContain("story_chain");
+    expect(allPageTypes).toContain("tasting_notes");
+    expect(allPageTypes).toContain("team_checklist");
+    expect(allPageTypes).toContain("team_contract");
+    expect(allPageTypes).toContain("team_health_check");
+    expect(allPageTypes).toContain("team_poll");
+    expect(allPageTypes).toContain("team_word_cloud");
+
+    // Round 89 補全批次 13（ThinkingHats + TimeXxx + TreasureHunt + TruthOrMyth + TwoColumn + ValueRank + WishWall + WordXxx + WouldYouRather）
+    expect(allPageTypes).toContain("thinking_hats");
+    expect(allPageTypes).toContain("time_capture");
+    expect(allPageTypes).toContain("time_vault");
+    expect(allPageTypes).toContain("timed_challenge");
+    expect(allPageTypes).toContain("treasure_hunt");
+    expect(allPageTypes).toContain("truth_or_myth");
+    expect(allPageTypes).toContain("two_column");
+    expect(allPageTypes).toContain("value_rank");
+    expect(allPageTypes).toContain("wish_wall");
+    expect(allPageTypes).toContain("word_association");
+    expect(allPageTypes).toContain("word_bid");
+    expect(allPageTypes).toContain("word_ladder");
+    expect(allPageTypes).toContain("would_you_rather");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -620,6 +647,29 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "spectrum_line",
       "speed_networking",
       "speed_typing",
+      "spin_wheel",
+      "stamp_card",
+      "story_branch",
+      "story_chain",
+      "tasting_notes",
+      "team_checklist",
+      "team_contract",
+      "team_health_check",
+      "team_poll",
+      "team_word_cloud",
+      "thinking_hats",
+      "time_capture",
+      "time_vault",
+      "timed_challenge",
+      "treasure_hunt",
+      "truth_or_myth",
+      "two_column",
+      "value_rank",
+      "wish_wall",
+      "word_association",
+      "word_bid",
+      "word_ladder",
+      "would_you_rather",
     ];
 
     for (const t of newTypes) {
