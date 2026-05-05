@@ -670,6 +670,12 @@ ${componentDescriptions}
 - "appreciation_note": { title, prompt, placeholder }
   感謝便條：每人從參與者清單中選一位隊友（或自輸入名字）+寫感謝便條，揭曉後以彩色便利貼網格呈現感謝關係網，適合活動收尾/頒獎慶祝/跨部門感謝文化
 
+- "meeting_rating": { title, meetingName, feedbackPlaceholder, dimensions?: RatingDimension[] } RatingDimension={ id, label, emoji }
+  會議評分：每人對會議的多個維度（有價值/聚焦/實作/時間）以 emoji 1-5 分評分＋選填回饋，揭曉後顯示每個維度平均分長條圖及文字回饋，適合會議後即時回饋/工作坊評估/培訓效果量化
+
+- "skill_showcase": { title, offerLabel, learnLabel, suggestions?: string[] }
+  技能交流：每人從建議清單中選或自輸入「我能教的技能」與「我想學的技能」，揭曉後以技能卡片交流板顯示全隊技能地圖及熱門技能統計，適合新成員破冰/跨部門交流/學習型組織建立
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

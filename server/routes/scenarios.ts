@@ -2224,6 +2224,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         placeholder: "謝謝你的...",
       };
 
+    case "meeting_rating":
+      return {
+        title: "📋 會議評分",
+        meetingName: scenarioName,
+        feedbackPlaceholder: "有什麼想補充的嗎？（選填）",
+      };
+
+    case "skill_showcase":
+      return {
+        title: "⭐ 技能交流",
+        offerLabel: "我能教大家",
+        learnLabel: "我想學習",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

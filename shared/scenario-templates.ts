@@ -3802,6 +3802,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "學習感恩套組 NT$ 1,500-4,000 / 場。讓學習有始有終，讓感謝看得見。",
     status: "live",
   },
+  {
+    id: "meeting-feedback-pack",
+    name: "📋 會議回饋套組",
+    tagline: "會後即評、技能互換，把會議變成連結的起點",
+    description: "會議評分 + 技能交流，會議結束立刻對會議品質評分，再透過技能交流找到可以互助的夥伴，讓每次會議都有後續行動。",
+    useCases: ["週會 / 月會結束後評估", "跨部門協作啟動", "企業培訓後交流", "社群活動破冰"],
+    category: "corporate",
+    icon: "Star",
+    gradient: "from-amber-400 to-teal-400",
+    estimatedPlayers: "4-40 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "meeting_rating",
+        label: "會議評分",
+        role: "即時評估會議品質",
+        axis: "multi",
+      },
+      {
+        pageType: "skill_showcase",
+        label: "技能交流",
+        role: "探索彼此的技能地圖",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "會議回饋套組 NT$ 1,000-3,000 / 場。讓每場會議都有具體產出與人際連結。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
