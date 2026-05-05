@@ -352,6 +352,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("host_guestbook_digital");
     expect(allPageTypes).toContain("host_knowledge_map");
     expect(allPageTypes).toContain("host_live_leaderboard");
+
+    // Round 83 補全批次 6（HostScreen + HotXxx + IdeaWall + 知識類）
+    expect(allPageTypes).toContain("host_polaroid_collage");
+    expect(allPageTypes).toContain("host_poll_live");
+    expect(allPageTypes).toContain("host_scoreboard_announcement");
+    expect(allPageTypes).toContain("host_trivia_showdown");
+    expect(allPageTypes).toContain("host_wave_response");
+    expect(allPageTypes).toContain("hot_seat");
+    expect(allPageTypes).toContain("hot_take");
+    expect(allPageTypes).toContain("idea_wall");
+    expect(allPageTypes).toContain("knowledge_check");
+    expect(allPageTypes).toContain("kudos_wall");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -488,6 +500,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "host_guestbook_digital",
       "host_knowledge_map",
       "host_live_leaderboard",
+      "host_polaroid_collage",
+      "host_poll_live",
+      "host_scoreboard_announcement",
+      "host_trivia_showdown",
+      "host_wave_response",
+      "hot_seat",
+      "hot_take",
+      "idea_wall",
+      "knowledge_check",
+      "kudos_wall",
     ];
 
     for (const t of newTypes) {
