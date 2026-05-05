@@ -17,6 +17,8 @@ export interface WebSocketClient extends WebSocket {
   // 🆕 ADR-0015 (2026-05-03)：WS-level rate limit（防腳本灌訊息）
   rateWindowStart?: number;      // 當前秒級窗口起始 timestamp
   rateMsgCount?: number;         // 當前窗口內已收訊息數
+  // 🆕 2026-05-05: heartbeat missed pong 計數（連續 2 次未回 pong 才 terminate）
+  missedPings?: number;
 }
 
 /** WebSocket 廣播訊息型別 */

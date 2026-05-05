@@ -378,17 +378,34 @@ export function useTeamWebSocket({
     };
 
     // 🆕 2026-05-05: 切回 app / 解鎖時、若已斷線 → 立即重連（不等 backoff）
+    //   也順便發 keepalive 通知 server「我還活著」（即使連線正常、避免被 terminate）
     const onVisibilityChange = () => {
       if (document.visibilityState !== "visible") return;
       const ws = wsRef.current;
       if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
-        // 重設 attempts 讓 delay 短、立即試
         reconnectAttemptsRef.current = 0;
         if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
         connect();
+      } else if (ws.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: "keepalive" }));
+        } catch { /* ignore */ }
       }
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
+
+    // 🆕 2026-05-05: 主動 keepalive 每 25 秒送 — 對抗 browser tab background throttle
+    //   原問題：玩家看 tab 還開、但 browser throttle 沒及時回 pong → server terminate
+    //   修法：client 主動送 message、server 視為「還活著」（重置 missedPings）
+    //   25s < server ping interval (30s)、確保至少每個 ping 週期內有訊號
+    const keepaliveInterval = setInterval(() => {
+      const ws = wsRef.current;
+      if (ws?.readyState === WebSocket.OPEN) {
+        try {
+          ws.send(JSON.stringify({ type: "keepalive" }));
+        } catch { /* ignore */ }
+      }
+    }, 25_000);
 
     // 第一次連線
     connect();
@@ -396,6 +413,7 @@ export function useTeamWebSocket({
     return () => {
       intentionalCloseRef.current = true;
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      clearInterval(keepaliveInterval);
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;

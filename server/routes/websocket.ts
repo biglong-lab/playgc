@@ -206,10 +206,16 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
     ws.on("pong", () => {
       ws.isAlive = true;
+      ws.missedPings = 0; // 🛡️ 2026-05-05: pong 收到 → 重置 missed 計數
     });
 
     ws.on("message", async (data) => {
       try {
+        // 🛡️ 2026-05-05: 任何 message 收到 → 視為 client 還活著（重置 missedPings）
+        // 即使 browser 沒及時回 pong、只要 client 主動送任何 message（含 keepalive）
+        // 就避免被 terminate
+        ws.missedPings = 0;
+
         // 🔒 ADR-0015 WS-level rate limit：每 ws 每秒 10 個訊息（防腳本灌、防 abuse）
         // 正常玩家頻率：1-3 訊息/秒（位置上報、互動）；10/秒留充足 buffer
         // 超過 → silent drop（不斷連、不報錯、不洩漏限制細節）
@@ -222,7 +228,10 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           if (ws.rateMsgCount > 10) return; // silent drop
         }
 
+
         const message = JSON.parse(data.toString());
+        // 🆕 2026-05-05: keepalive — 純「還活著」訊號（missedPings 已在最上方重置）
+        if (message.type === "keepalive") return;
 
         switch (message.type) {
           case "join": {
@@ -878,13 +887,24 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     });
   });
 
+  // 🛡️ 2026-05-05 改寬容：原 30s 沒回 pong 直接 terminate、太敏感
+  //   - Browser background tab 被 throttle、可能 30s 內來不及回 pong
+  //   - 玩家看 tab 還開、卻收到 grace_expired → 體驗很差
+  //   - 改：missedPings 計數、連續 2 次（90 秒）才 terminate（更寬容）
+  //   - Heartbeat 仍 30s 一次、accept message / pong / 自定義 keepalive 都重置
+  const MISSED_PING_THRESHOLD = 2;
   const heartbeatInterval = setInterval(() => {
     wss.clients.forEach((ws: WebSocketClient) => {
-      if (ws.isAlive === false) {
+      const missed = (ws.missedPings ?? 0) + 1;
+      if (missed > MISSED_PING_THRESHOLD) {
         return ws.terminate();
       }
-      ws.isAlive = false;
-      ws.ping();
+      ws.missedPings = missed;
+      try {
+        ws.ping();
+      } catch {
+        /* ws may be closing */
+      }
     });
   }, 30000);
 

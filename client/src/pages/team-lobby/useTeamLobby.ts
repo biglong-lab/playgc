@@ -155,6 +155,8 @@ export function useTeamLobby(): TeamLobbyReturn {
   // 🆕 區分模式：starting = 全員開始 5 秒倒數；reconnecting = 掉線回來 1 秒 flash
   const [startingMode, setStartingMode] = useState<"starting" | "reconnecting" | null>(null);
   const startSessionIdRef = useRef<string | null>(null);
+  // 🆕 2026-05-05: 同 user grace dialog dedup（60 秒內只跳一次）
+  const lastGraceShownRef = useRef<Map<string, number>>(new Map());
 
   // 🆕 leader-decide：寬限期過的玩家（隊長收到時設值，顯示 dialog）
   const [pendingDecisionTarget, setPendingDecisionTarget] = useState<
@@ -246,6 +248,14 @@ export function useTeamLobby(): TeamLobbyReturn {
     },
     // 🆕 Phase 2c：寬限期過了 — 顯示倒數提醒（autoLeaveInMs 後自動 leave）
     onGraceExpired: (userId, userName, autoLeaveInMs) => {
+      // 🛡️ 2026-05-05: dedup — 同 user 60 秒內只跳一次
+      //   原問題：browser tab throttle 反覆觸發 → server 反覆 grace_expired → toast 一直跳
+      //   修法：client side 60s 內同 userId 只觸發一次
+      const lastShown = lastGraceShownRef.current.get(userId) ?? 0;
+      const now = Date.now();
+      if (now - lastShown < 60_000) return; // skip dedup
+      lastGraceShownRef.current.set(userId, now);
+
       const seconds = Math.round(autoLeaveInMs / 1000);
       toast({
         title: `⏳ ${userName} 寬限期已過`,
