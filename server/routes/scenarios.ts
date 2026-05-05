@@ -255,6 +255,12 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         winCondition: "line",
         celebrationText: "🎉 恭喜完成賓果！",
       };
+    case "mood_meter":
+      return {
+        title: "🌡️ 活力確認",
+        question: "你現在的狀態是？",
+        allowChange: true,
+      };
 
     // ─── shared / solo（簡單預設）───
     case "dialogue":

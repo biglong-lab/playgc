@@ -807,6 +807,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedDuration: "20-45 分鐘",
     components: [
       {
+        pageType: "mood_meter",
+        label: "開場活力確認",
+        role: "進場時先確認每個人的能量，讓主持人掌握現場狀態",
+        axis: "multi",
+        demoMode: "mood-meter",
+      },
+      {
         pageType: "shared_board",
         label: "共識牆",
         role: "每人寫下一件別人不知道的事，即時展示",
@@ -826,6 +833,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "全班一起衝積分強化凝聚感",
         axis: "multi",
         demoMode: "collective-score",
+      },
+      {
+        pageType: "mood_meter",
+        label: "結尾活力回顧",
+        role: "活動結束後再量一次，對比開場分佈看成效",
+        axis: "multi",
+        demoMode: "mood-meter",
       },
     ],
     valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",

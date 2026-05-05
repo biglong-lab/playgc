@@ -103,6 +103,9 @@ ${componentDescriptions}
 - "bingo": { title, subtitle?, items: [...9-16 個詞彙], gridSize: 3-4, winCondition: "line"|"full", celebrationText? }
   items 必須與活動/場域相關，每個詞彙 4-10 字
 
+- "mood_meter": { title, question }
+  question 是引導玩家選擇活力的提問（如：你現在的狀態是？）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
