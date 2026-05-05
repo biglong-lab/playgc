@@ -531,6 +531,17 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         allowSwitch: true,
       };
 
+    case "photo_contest":
+      return {
+        title: "📸 照片競賽",
+        prompt: "上傳你的最佳作品，讓大家投票！",
+        theme: "",
+        maxPhotosPerPerson: 2,
+        allowVoteOwn: false,
+        showAuthor: true,
+        maxCaptionLength: 60,
+      };
+
     case "speed_networking":
       return {
         title: "⚡ 速配社交",

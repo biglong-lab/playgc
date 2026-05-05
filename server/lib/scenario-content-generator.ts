@@ -196,6 +196,9 @@ ${componentDescriptions}
 - "speed_networking": { title, prompt?, roundDurationSeconds: 60-300, questions: [...2-5個問題], showMatchedCount: true }
   questions 是每輪的話題引導問題（如：你現在最專注的一件事是什麼？），roundDurationSeconds 是每輪時間
 
+- "photo_contest": { title, prompt?, theme?, maxPhotosPerPerson: 1-3, allowVoteOwn: false, showAuthor: true, maxCaptionLength: 40-80 }
+  theme 是競賽主題（如：最美金門一角），prompt 是引導語
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

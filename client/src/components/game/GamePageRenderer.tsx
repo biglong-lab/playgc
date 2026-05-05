@@ -62,6 +62,7 @@ const PeerRecognitionPage = lazy(() => import("@/components/game/multi/PeerRecog
 const ConsensusScalePage = lazy(() => import("@/components/game/multi/ConsensusScalePage"));
 const IdeaWallPage = lazy(() => import("@/components/game/multi/IdeaWallPage"));
 const SpeedNetworkingPage = lazy(() => import("@/components/game/multi/SpeedNetworkingPage"));
+const PhotoContestPage = lazy(() => import("@/components/game/multi/PhotoContestPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -394,6 +395,8 @@ export default function GamePageRenderer({
         return <IdeaWallPage {...commonProps} page={page} pageId={page.id} />;
       case "speed_networking":
         return <SpeedNetworkingPage {...commonProps} page={page} pageId={page.id} />;
+      case "photo_contest":
+        return <PhotoContestPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

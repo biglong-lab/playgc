@@ -632,6 +632,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "shared-board",
       },
       {
+        pageType: "photo_contest",
+        label: "最佳旅遊照片競賽",
+        role: "每人上傳今日最佳照片說明，全員投票選出最具代表性的旅遊瞬間",
+        axis: "multi",
+      },
+      {
         pageType: "host_guestbook_digital",
         label: "團隊簽名簿",
         role: "活動結束時的留念",
