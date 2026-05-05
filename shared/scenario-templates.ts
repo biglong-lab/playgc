@@ -766,6 +766,50 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "講者輕鬆、觀眾投入、主辦掌握民意。NT$ 8,000-25,000 / 場 + 大型場域包套。",
     status: "live",
   },
+  {
+    id: "icebreaker-workshop",
+    name: "破冰工作坊情境包",
+    tagline: "共識牆 + 賓果 + 集體達標",
+    description:
+      "適合新組成的團隊或研習工作坊。先用共識牆讓每個人寫下「一件別人不知道的事」，所有卡片即時展示；接著玩人物特徵賓果深化認識；最後集體達標強化凝聚感。\n純手機操作，主持人零準備，30 分鐘輕鬆破冰。",
+    useCases: [
+      "企業新人訓練",
+      "研習工作坊開場",
+      "讀書會 / 社群首次聚會",
+      "夏令營分組活動",
+      "校園班級破冰",
+    ],
+    category: "event",
+    icon: "Sparkles",
+    gradient: "from-pink-500/20 to-purple-500/20",
+    estimatedPlayers: "10-60 人",
+    estimatedDuration: "20-45 分鐘",
+    components: [
+      {
+        pageType: "shared_board",
+        label: "共識牆",
+        role: "每人寫下一件別人不知道的事，即時展示",
+        axis: "multi",
+        demoMode: "shared-board",
+      },
+      {
+        pageType: "bingo",
+        label: "人物賓果",
+        role: "格子填寫特徵，找到符合的人就標記",
+        axis: "multi",
+        demoMode: "bingo",
+      },
+      {
+        pageType: "collective_score",
+        label: "集體達標",
+        role: "全班一起衝積分強化凝聚感",
+        axis: "multi",
+        demoMode: "collective-score",
+      },
+    ],
+    valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
