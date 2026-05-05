@@ -931,6 +931,17 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "feedback_sandwich":
+      return {
+        title: "🥪 三明治反饋",
+        targetName: "今天的訓練課程",
+        goodPrompt: "最有收穫的是…",
+        betterPrompt: "可以做得更好的是…",
+        goPrompt: "回去之後我會…",
+        maxLength: 150,
+        showAuthor: false,
+      };
+
     case "word_association":
       return {
         title: "💭 自由聯想",

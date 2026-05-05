@@ -184,6 +184,9 @@ ${componentDescriptions}
 - "word_association": { title, words: string[], maxResponseLength: 10-30, showAuthor: boolean }
   每次出一個關鍵詞，所有人寫下第一個聯想詞，揭曉後按詞彙分組展示（相同聯想集中顯示）；多輪進行，探索群體思維模式，適合創意workshop/場域介紹/品牌聯想/破冰
 
+- "feedback_sandwich": { title, targetName, goodPrompt, betterPrompt, goPrompt, maxLength: 80-200, showAuthor: boolean }
+  三明治反饋（Good→Better→Go），每人匿名填寫三欄，揭曉後按三個面向聚合展示全體意見，適合訓練結尾評估/方案回顧/表演後反思
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 
