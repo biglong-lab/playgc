@@ -343,6 +343,12 @@ ${componentDescriptions}
 - "category_challenge": { title, category, prompt, maxItemsPerPerson: 3-8, maxItemLength: 10-20, showCommon: true }
   category 是挑戰的分類主題（如：台灣在地美食），prompt 引導大家列出項目，showCommon=true 揭曉時標示多人共選的項目
 
+- "word_bid": { title, topic, prompt, maxWordLength: 6-10, maxVotesPerPerson: 1-3 }
+  topic 是競標的主題詞（如：今天的活動），prompt 引導大家提交代表詞語，最後投票選最佳代言詞
+
+- "memory_lane": { title, question, maxLength: 80-200, showAuthor: boolean }
+  question 是引導分享回憶的問題（如：你最難忘的一個瞬間是什麼？），適合溫馨活動/聚會/婚禮/畢業，showAuthor=true 顯示是誰的回憶
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

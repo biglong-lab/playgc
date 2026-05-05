@@ -283,6 +283,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "同學會必玩！「我從來沒有在課堂上睡著過」讓大家舉手承認，笑聲不斷、陳年秘密一一揭露",
         axis: "multi",
       },
+      {
+        pageType: "memory_lane",
+        label: "記憶走廊",
+        role: "每人分享一個最難忘的共同回憶，揭曉後大家點愛心，溫馨感動收場",
+        axis: "multi",
+      },
+      {
+        pageType: "word_bid",
+        label: "字詞競標",
+        role: "用一個詞代表這次聚會，大家投票選最佳代言詞，結果公布後笑聲連連",
+        axis: "multi",
+      },
     ],
     valueProposition: "輕量、不複雜，主辦方一人就能搞定。NT$ 2,000-5,000。",
     status: "live",

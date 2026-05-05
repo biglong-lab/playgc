@@ -1101,6 +1101,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showCommon: true,
       };
 
+    case "word_bid":
+      return {
+        title: "🏷️ 字詞競標",
+        topic: scenarioName,
+        prompt: `用一個詞代表「${scenarioName}」！大家投票選最佳代言詞。`,
+        maxWordLength: 8,
+        maxVotesPerPerson: 2,
+      };
+
+    case "memory_lane":
+      return {
+        title: "💭 記憶走廊",
+        question: `關於「${scenarioName}」，你最難忘的一個瞬間是什麼？`,
+        maxLength: 150,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
