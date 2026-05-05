@@ -187,6 +187,8 @@ const PersonalScorePage = lazy(() => import("@/components/game/multi/PersonalSco
 const TimeCheckPage = lazy(() => import("@/components/game/multi/TimeCheckPage"));
 const TokenVotePage = lazy(() => import("@/components/game/multi/TokenVotePage"));
 const GalleryVotePage = lazy(() => import("@/components/game/multi/GalleryVotePage"));
+const SentenceStemPage = lazy(() => import("@/components/game/multi/SentenceStemPage"));
+const PixelMoodPage = lazy(() => import("@/components/game/multi/PixelMoodPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -769,6 +771,10 @@ export default function GamePageRenderer({
         return <TokenVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "gallery_vote":
         return <GalleryVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "sentence_stem":
+        return <SentenceStemPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "pixel_mood":
+        return <PixelMoodPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

@@ -490,6 +490,12 @@ ${componentDescriptions}
 - "random_pick": { title, prompt, pickCount: 1-5, joinLabel, pickLabel }
   隨機抽選：參與者自願報名，主持人觸發隨機抽選指定人數，中獎者看到恭喜訊息，可重複抽選，適合抽獎/隨機點名/分組/挑戰邀請
 
+- "sentence_stem": { title, stemText, placeholder, maxLength: 40-120 }
+  句子接龍：主持人提供句子開頭（如「如果我能飛，我要...」），每人完成句子，揭曉後顯示所有人的創意答案，適合破冰/創意發想/自我揭示/情感共鳴
+
+- "pixel_mood": { title, prompt, moods: MoodOption[] } MoodOption={ id, emoji, label, color }
+  心情馬賽克：每人選一個顏色/心情選項，揭曉後以彩色像素格拼成馬賽克，並顯示各心情人數統計，適合開場心情確認/團隊情緒觀察/活動結尾回顧
+
 - "personal_fact": { title, prompt, maxLength: 50-100, showAuthor: boolean }
   趣味自我揭秘：每人說一個關於自己的趣事/特點，揭曉後大家按愛心投票最驚喜的事實，適合破冰/認識新朋友/聚會
 

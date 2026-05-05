@@ -2724,6 +2724,47 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "創意工作坊套餐 NT$ 4,000-10,000 / 場。適合新產品開發、品牌重塑、文化建設。",
     status: "live",
   },
+  {
+    id: "heart-open-circle",
+    name: "心情開場圈",
+    tagline: "句子接龍 + 心情馬賽克 + 開放分享",
+    description:
+      "讓每個人帶著真實狀態進入活動。先用「句子接龍」讓每人完成一個共同的句子開頭（如「今天我帶來了...」），低門檻破冰，聽見每人的獨特聲音；再用「心情馬賽克」讓每人選一個顏色代表當下心情，揭曉後拼成美麗的馬賽克圖，一眼看見整個團隊的情緒全貌；最後用「開放麥克風」讓有話想說的人自由登記分享，整場活動從感性連結開始，建立安全發言的氛圍。",
+    useCases: [
+      "工作坊開場暖身",
+      "企業內訓情緒確認",
+      "團隊週會開場",
+      "年度回顧心情盤點",
+      "新成員融入活動",
+    ],
+    category: "corporate",
+    icon: "Heart",
+    gradient: "from-pink-500/20 to-yellow-500/20",
+    estimatedPlayers: "8-50 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "sentence_stem",
+        label: "句子接龍",
+        role: "每人完成共同句子開頭，低門檻自我揭示，聽見每人獨特聲音，揭曉後顯示所有完成句",
+        axis: "multi",
+      },
+      {
+        pageType: "pixel_mood",
+        label: "心情馬賽克",
+        role: "每人選一個顏色心情，揭曉後拼成彩色馬賽克，一眼看見全隊情緒全貌",
+        axis: "multi",
+      },
+      {
+        pageType: "open_mic",
+        label: "自由分享",
+        role: "邀請有話想說的人登記搶麥，主持人按順序邀請上麥分享",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "開場儀式套餐 NT$ 2,000-5,000 / 場。適合任何想讓活動從溫暖連結開始的場合。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

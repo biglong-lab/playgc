@@ -1752,6 +1752,28 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         pickLabel: "開始抽選",
       };
 
+    case "sentence_stem":
+      return {
+        title: "✍️ 句子接龍",
+        stemText: `「${scenarioName}」讓我想到...`,
+        placeholder: "繼續這個句子...",
+        maxLength: 80,
+      };
+
+    case "pixel_mood":
+      return {
+        title: "🎨 心情馬賽克",
+        prompt: `用一個顏色代表你對「${scenarioName}」的心情`,
+        moods: [
+          { id: "happy", emoji: "😊", label: "開心", color: "#FFD700" },
+          { id: "excited", emoji: "🚀", label: "興奮", color: "#FF6B35" },
+          { id: "calm", emoji: "😌", label: "平靜", color: "#4ECDC4" },
+          { id: "tired", emoji: "😴", label: "疲倦", color: "#95A5A6" },
+          { id: "curious", emoji: "🤔", label: "好奇", color: "#9B59B6" },
+          { id: "nervous", emoji: "😬", label: "緊張", color: "#E74C3C" },
+        ],
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
