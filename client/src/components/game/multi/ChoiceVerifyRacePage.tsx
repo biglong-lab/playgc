@@ -150,6 +150,35 @@ export default function ChoiceVerifyRacePage({
   const advanceFiredRef = useRef<Set<number>>(new Set()); // 已送 advance 的題號（防重複送）
   const onCompleteFiredRef = useRef(false);
 
+  // 🛡️ 2026-05-05: state 衝突解決 — 比較 updatedAt + answers 數量
+  //   POST /state（fetch）跟 ws broadcast（push）可能 race
+  //   原則：採 (currentQuestionIndex 較新 OR updatedAt 較新 OR answers 較多) 的版本
+  //   避免 fetch v1 蓋掉 broadcast v2 造成 state 倒退
+  const applyServerStateIfNewer = useCallback(
+    (incomingState: RaceStateFromServer | null, incomingAnswers: RaceAnswerFromServer[]) => {
+      if (!incomingState) return;
+      setServerState((prev) => {
+        if (!prev) return incomingState;
+        const prevUpdated = new Date(prev.updatedAt).getTime();
+        const incomingUpdated = new Date(incomingState.updatedAt).getTime();
+        // 進度較新 → 取新；progress 一樣但 updatedAt 較新 → 取新
+        if (incomingState.currentQuestionIndex > prev.currentQuestionIndex) return incomingState;
+        if (incomingState.currentQuestionIndex < prev.currentQuestionIndex) return prev;
+        if (incomingState.status === "completed" && prev.status !== "completed") return incomingState;
+        if (incomingState.status !== "completed" && prev.status === "completed") return prev;
+        return incomingUpdated >= prevUpdated ? incomingState : prev;
+      });
+      setServerAnswers((prev) => {
+        // answers 採「聯集」— 不丟舊紀錄、補新紀錄（防 fetch race 把已收到的新 answer 蓋回去）
+        const map = new Map<string, RaceAnswerFromServer>();
+        for (const a of prev) map.set(a.id, a);
+        for (const a of incomingAnswers) map.set(a.id, a);
+        return Array.from(map.values());
+      });
+    },
+    [],
+  );
+
   const myDisplayName = useMemo(() => {
     if (!user) return "我";
     const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
@@ -199,8 +228,7 @@ export default function ChoiceVerifyRacePage({
       .mutateAsync({ teamId, sessionId, pageId: effectivePageId })
       .then((data) => {
         if (cancelled) return;
-        setServerState(data.state);
-        setServerAnswers(data.answers);
+        applyServerStateIfNewer(data.state, data.answers);
         setStateLoading(false);
       })
       .catch((err) => {
@@ -223,11 +251,9 @@ export default function ChoiceVerifyRacePage({
         state: RaceStateFromServer;
         answers: RaceAnswerFromServer[];
       };
-      // server 廣播只發給該 team、不需多驗
-      setServerState(m.state);
-      setServerAnswers(m.answers);
+      applyServerStateIfNewer(m.state, m.answers);
     },
-    [],
+    [applyServerStateIfNewer],
   );
 
   const { isConnected: wsConnected, isReconnecting } = useTeamWebSocket({
@@ -238,20 +264,33 @@ export default function ChoiceVerifyRacePage({
   });
 
   // === ws reconnect 後重新 fetch state（保證接回最新）===
+  // 🛡️ 2026-05-05: 用 ref 標記是否真的「斷掉再連」（不是 mount 第一次連）
+  //   原 bug：mount 時 wsConnected 可能 false→true 觸發 fetch、跟 mount-time fetch 重複
+  //   修法：只在 prev=true → cur=false → cur=true 的軌跡才 fire
+  const wsHadConnectedRef = useRef(false);
+  const wsLastDisconnectAtRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!wsConnected || !teamId || !sessionId || !effectivePageId) return;
-    if (totalQuestions === 0) return;
-    initStateMutation
-      .mutateAsync({ teamId, sessionId, pageId: effectivePageId })
-      .then((data) => {
-        setServerState(data.state);
-        setServerAnswers(data.answers);
-      })
-      .catch(() => {
-        /* 失敗不阻塞、下次 ws 訊息會更新 */
-      });
+    if (!teamId || !sessionId || !effectivePageId || totalQuestions === 0) return;
+    if (wsConnected) {
+      // 連上：若曾斷過 → fetch state（接回最新）
+      if (wsHadConnectedRef.current && wsLastDisconnectAtRef.current !== null) {
+        initStateMutation
+          .mutateAsync({ teamId, sessionId, pageId: effectivePageId })
+          .then((data) => applyServerStateIfNewer(data.state, data.answers))
+          .catch(() => {
+            /* 失敗不阻塞、下次 ws 訊息會更新 */
+          });
+        wsLastDisconnectAtRef.current = null;
+      }
+      wsHadConnectedRef.current = true;
+    } else {
+      // 斷線：標記時間（ws 有連過才標、避免 mount 時 false 也標）
+      if (wsHadConnectedRef.current) {
+        wsLastDisconnectAtRef.current = Date.now();
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wsConnected]);
+  }, [wsConnected, teamId, sessionId, effectivePageId, totalQuestions]);
 
   // === 答題 ===
   const answerMutation = useMutation({
@@ -273,8 +312,7 @@ export default function ChoiceVerifyRacePage({
     },
     onSuccess: (data) => {
       // 立即更新 local（雖 ws broadcast 也會送、雙保險）
-      if (data.state) setServerState(data.state);
-      if (data.answers) setServerAnswers(data.answers);
+      applyServerStateIfNewer(data.state, data.answers);
     },
     onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : "答題失敗";
@@ -318,8 +356,7 @@ export default function ChoiceVerifyRacePage({
       return res.json();
     },
     onSuccess: (data) => {
-      if (data.state) setServerState(data.state);
-      if (data.answers) setServerAnswers(data.answers);
+      applyServerStateIfNewer(data.state, data.answers);
     },
   });
 
