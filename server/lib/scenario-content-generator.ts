@@ -622,6 +622,12 @@ ${componentDescriptions}
 - "team_vision": { title, prompt, maxLength: 5-20 }
   團隊願景：每人送出一個關鍵詞（≤20字），揭曉後以彩色文字拼貼成願景牆，適合目標設定/文化塑造/年度啟動
 
+- "future_me": { title, prompt, horizons: string[] }
+  給未來的我：每人選時間軸（1/3/5年後）並寫信給未來自己，揭曉後展示所有信件，適合年度啟動/培訓收尾/目標承諾
+
+- "growth_edge": { title, prompt }
+  成長邊界：每人分享一個想成長的領域 + 第一步行動，揭曉後組成彩色成長地圖，適合工作坊收尾/個人發展計畫/培訓成果
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

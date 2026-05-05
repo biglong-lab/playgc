@@ -3578,6 +3578,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "能量願景套組 NT$ 1,500-4,500 / 場。讓每個人的感受與期望都被看見，凝聚團隊共同方向。",
     status: "live",
   },
+  {
+    id: "growth-commitment-pack",
+    name: "成長承諾套組",
+    tagline: "給未來的我 + 成長邊界，從許諾到行動的閉環",
+    description: "以「給未來的我」封存當下的期望與承諾，再以「成長邊界」明確化每人的成長方向與第一步行動，讓每場活動都留下具體的後續動能。",
+    useCases: ["培訓結業式", "年度啟動", "個人發展工作坊", "季度回顧收尾"],
+    category: "corporate",
+    icon: "🚀",
+    gradient: "from-lime-500 to-violet-500",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "10-15 分鐘",
+    components: [
+      {
+        pageType: "future_me",
+        label: "給未來的我",
+        role: "承諾封存",
+        axis: "multi",
+      },
+      {
+        pageType: "growth_edge",
+        label: "成長邊界",
+        role: "行動計畫",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "成長承諾套組 NT$ 1,500-4,500 / 場。讓每個參與者帶著具體承諾與行動計畫離場。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

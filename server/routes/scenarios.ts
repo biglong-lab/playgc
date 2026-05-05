@@ -2102,6 +2102,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 20,
       };
 
+    case "future_me":
+      return {
+        title: "🚀 給未來的我",
+        prompt: `寫一段話給在「${scenarioName}」結束後的未來自己，一個提醒或一個承諾。`,
+        horizons: ["1 年後", "3 年後", "5 年後"],
+      };
+
+    case "growth_edge":
+      return {
+        title: "📈 成長邊界",
+        prompt: `透過「${scenarioName}」，你發現自己最想成長的一個領域是什麼？打算採取什麼行動？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
