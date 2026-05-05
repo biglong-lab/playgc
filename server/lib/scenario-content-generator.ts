@@ -349,6 +349,12 @@ ${componentDescriptions}
 - "memory_lane": { title, question, maxLength: 80-200, showAuthor: boolean }
   question 是引導分享回憶的問題（如：你最難忘的一個瞬間是什麼？），適合溫馨活動/聚會/婚禮/畢業，showAuthor=true 顯示是誰的回憶
 
+- "emoji_story": { title, prompt, emojiOptions: string[], maxEmojis: 2-5, captionMaxLength: 20-50, showAuthor: boolean }
+  prompt 引導大家用 emoji 說故事（如：用 3 個 emoji 描述你今天的心情），emojiOptions 為空陣列代表使用預設 emoji 庫，showAuthor=true 顯示創作者名字
+
+- "mind_sync": { title, description, questions: string[], maxAnswerLength: 10-20 }
+  questions 是 2-4 個獨立作答的問題（如：最想去哪？最愛什麼食物？），揭曉時顯示誰的答案一樣，description 引導玩家獨立作答
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

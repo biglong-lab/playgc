@@ -113,6 +113,8 @@ const DesertIslandPage = lazy(() => import("@/components/game/multi/DesertIsland
 const CategoryChallengePage = lazy(() => import("@/components/game/multi/CategoryChallengePage"));
 const WordBidPage = lazy(() => import("@/components/game/multi/WordBidPage"));
 const MemoryLanePage = lazy(() => import("@/components/game/multi/MemoryLanePage"));
+const EmojiStoryPage = lazy(() => import("@/components/game/multi/EmojiStoryPage"));
+const MindSyncPage = lazy(() => import("@/components/game/multi/MindSyncPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -547,6 +549,10 @@ export default function GamePageRenderer({
         return <WordBidPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_lane":
         return <MemoryLanePage {...commonProps} page={page} pageId={page.id} />;
+      case "emoji_story":
+        return <EmojiStoryPage {...commonProps} page={page} pageId={page.id} />;
+      case "mind_sync":
+        return <MindSyncPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

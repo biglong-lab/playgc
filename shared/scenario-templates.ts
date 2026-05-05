@@ -151,6 +151,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "每位賓客匿名寫一封信，揭曉後隨機打開一個個漂流瓶，讀到意外的真誠祝福，讓婚禮更有溫度與驚喜",
         axis: "multi",
       },
+      {
+        pageType: "emoji_story",
+        label: "Emoji 愛情故事",
+        role: "用 3 個 emoji 說出你眼中的新人愛情故事，揭曉後大家投愛心選最甜蜜的詮釋",
+        axis: "multi",
+      },
+      {
+        pageType: "mind_sync",
+        label: "新人默契測試",
+        role: "賓客猜猜新人的答案，揭曉後看看誰最了解新人！笑點十足",
+        axis: "multi",
+      },
     ],
     valueProposition:
       "替代傳統紙本簽名簿、提供拍照分享素材、活動結束後新人可下載完整紀錄。一場婚禮 NT$ 8,000-15,000 服務費。",
@@ -293,6 +305,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         pageType: "word_bid",
         label: "字詞競標",
         role: "用一個詞代表這次聚會，大家投票選最佳代言詞，結果公布後笑聲連連",
+        axis: "multi",
+      },
+      {
+        pageType: "emoji_story",
+        label: "Emoji 故事創作",
+        role: "用 3 個 emoji 說出你的同學會心情，揭曉後大家點愛心選最有共鳴的故事",
+        axis: "multi",
+      },
+      {
+        pageType: "mind_sync",
+        label: "默契大考驗",
+        role: "各自回答同一組問題，揭曉時看看誰和你答案一樣，默契度一目了然",
         axis: "multi",
       },
     ],

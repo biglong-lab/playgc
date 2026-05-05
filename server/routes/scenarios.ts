@@ -1118,6 +1118,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "emoji_story":
+      return {
+        title: "🎭 Emoji 故事創作",
+        prompt: `用 3 個 Emoji 說出你在「${scenarioName}」的心情或故事`,
+        emojiOptions: [],
+        maxEmojis: 3,
+        captionMaxLength: 30,
+        showAuthor: true,
+      };
+
+    case "mind_sync":
+      return {
+        title: "🧠 默契大考驗",
+        description: `看看大家在「${scenarioName}」中想法有多一致！`,
+        questions: ["最想做的一件事？", "最難忘的瞬間？", "最想感謝誰？"],
+        maxAnswerLength: 15,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
