@@ -738,6 +738,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAllEstimates: true,
       };
 
+    case "scaled_feedback":
+      return {
+        title: "📊 量表評分",
+        instructions: "請為以下項目評分",
+        questions: [
+          { id: "q1", text: "整體活動滿意度", minLabel: "非常不滿意", maxLabel: "非常滿意" },
+          { id: "q2", text: "活動流程順暢程度", minLabel: "非常不順", maxLabel: "非常流暢" },
+          { id: "q3", text: "您的參與投入程度", minLabel: "完全沒投入", maxLabel: "完全投入" },
+        ],
+        scale: 5,
+        showResults: true,
+      };
+
     case "would_you_rather":
       return {
         title: "🤔 你選哪個？",

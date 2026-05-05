@@ -605,6 +605,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "各成員隱藏估算後同時揭曉，差異一目瞭然，有效推動討論共識",
         axis: "multi",
       },
+      {
+        pageType: "scaled_feedback",
+        label: "課後量表評分",
+        role: "1-5 分量表快速收集學員對課程各面向的滿意度，即時呈現全員分布圖",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",
