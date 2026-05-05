@@ -884,6 +884,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "check-in",
       },
       {
+        pageType: "quick_question",
+        label: "一句話破冰",
+        role: "用一句話介紹自己，匿名展示，輕鬆開場",
+        axis: "multi",
+        demoMode: "quick-question",
+      },
+      {
         pageType: "mood_meter",
         label: "開場活力確認",
         role: "進場時先確認每個人的能量，讓主持人掌握現場狀態",
