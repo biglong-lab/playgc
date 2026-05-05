@@ -1470,6 +1470,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
         demoMode: "feedback-star",
       },
+      {
+        pageType: "project_showcase",
+        label: "專案展示牆",
+        role: "各組提交專案摘要，觀眾用 emoji 即時反應，人氣最高的置頂高亮",
+        axis: "multi",
+      },
     ],
     valueProposition: "企業 Demo Day / 成果展每季舉辦。一場 NT$ 8,000-20,000，月訂閱顧問 NT$ 3,000-6,000。",
     status: "live",

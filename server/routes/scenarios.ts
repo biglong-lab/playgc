@@ -650,6 +650,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxQuestionsPerRound: 5,
       };
 
+    case "project_showcase":
+      return {
+        title: "🚀 專案展示",
+        prompt: "展示你的成果，讓大家投票！",
+        maxProjectsPerPerson: 1,
+        maxTitleLength: 30,
+        maxDescLength: 150,
+        allowVoteOwn: false,
+        emojiReactions: ["🔥", "⭐", "💡", "👏", "🏆"],
+        showVoteCount: true,
+      };
+
     case "team_health_check":
       return {
         title: "💪 團隊健康評估",

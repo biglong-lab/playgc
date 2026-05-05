@@ -121,6 +121,9 @@ ${componentDescriptions}
 - "team_health_check": { title, dimensions: [{ id, label, emoji, description? }...3-6個], scaleMin: 1, scaleMax: 5, anonymous: true, showResults: true }
   dimensions 是評估維度（如：心理安全感/溝通透明度/互相信任/團隊能量），每個維度對應一個1-5評分，結果以進度條呈現
 
+- "project_showcase": { title, prompt?, maxProjectsPerPerson: 1-3, maxTitleLength: 20-40, maxDescLength: 80-200, allowVoteOwn: false, emojiReactions: [...4-6個], showVoteCount: true }
+  emojiReactions 是觀眾可以給出的反應 emoji（如：🔥⭐💡👏🏆），適合 Demo Day / 黑客松 / 成果發表
+
 - "feedback_star": { title, question, allowComment: true }
   question 是引導玩家評分的問題（如：你對這次活動的整體感受如何？）
 
