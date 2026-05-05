@@ -846,6 +846,17 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         character: { name: "主持人" },
         messages: [{ text: `歡迎來到 ${scenarioName}` }],
       };
+    case "most_likely":
+      return {
+        title: "👑 最有可能",
+        questions: [
+          "最有可能熬夜打遊戲的人？",
+          "最有可能在會議上打瞌睡的人？",
+          "最有可能帶大家去好吃餐廳的人？",
+        ],
+        showResults: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

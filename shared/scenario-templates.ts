@@ -247,6 +247,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "誰說畢業後誰最成功？誰最意外？大家匿名發表大膽看法，emoji 表態，笑聲不斷",
         axis: "multi",
       },
+      {
+        pageType: "most_likely",
+        label: "最有可能王者",
+        role: "「最有可能在 10 年後當老闆的人？」全員投票，揭曉瞬間歡笑連連",
+        axis: "multi",
+      },
     ],
     valueProposition: "輕量、不複雜，主辦方一人就能搞定。NT$ 2,000-5,000。",
     status: "live",

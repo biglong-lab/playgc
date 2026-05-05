@@ -145,6 +145,9 @@ ${componentDescriptions}
 - "knowledge_check": { title, questions: [{ id, text, options: [string...4個], correctIndex: 0-3, explanation? }], showExplanation: true, pointsPerCorrect: number }
   主持人出題→全員搶答→主持人揭曉正確答案+解析+百分比，適合企業內訓知識測驗/活動闖關/學習確認
 
+- "most_likely": { title, questions: [string...3-10條], showResults: true }
+  派對遊戲「最有可能⋯」，玩家先加入再提名他人，主持人揭曉後顯示得票排名＋桂冠，適合聚會/破冰/婚禮/員工旅遊暖場
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 
