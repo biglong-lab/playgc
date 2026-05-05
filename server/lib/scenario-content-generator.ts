@@ -556,6 +556,12 @@ ${componentDescriptions}
 - "confidence_vote": { title, question, maxScore: 3-10 }
   信心投票：每人以 1-5 星為決定/行動/計畫打出信心分數，揭曉後顯示團隊平均信心及分佈長條圖，適合決策確認/計畫審核/風險評估/共識建立
 
+- "team_goal": { title, prompt, placeholder }
+  團隊目標：每人提交一個他們認為最重要的季度/專案目標，揭曉後以彩色卡片牆展示所有目標，促進優先順序對話，適合季度規劃/OKR 設定/新專案啟動/策略對齊
+
+- "start_stop_continue": { title, startLabel, stopLabel, continueLabel }
+  Start/Stop/Continue：每人在三欄填寫「開始做」「停止做」「繼續做」（至少一欄即可），揭曉後以三欄對比格式展示，適合組織行為改善/敏捷回顧/學習回顧/文化建設
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

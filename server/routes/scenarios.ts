@@ -1936,6 +1936,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxScore: 5,
       };
 
+    case "team_goal":
+      return {
+        title: "🎯 團隊目標",
+        prompt: `關於「${scenarioName}」，你認為最重要的一個團隊目標是什麼？`,
+        placeholder: "輸入你的目標...",
+      };
+
+    case "start_stop_continue":
+      return {
+        title: "🔁 Start / Stop / Continue",
+        startLabel: "Start（開始做）",
+        stopLabel: "Stop（停止做）",
+        continueLabel: "Continue（繼續做）",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

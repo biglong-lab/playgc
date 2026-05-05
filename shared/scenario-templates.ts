@@ -3264,6 +3264,40 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "敏捷回顧套餐 NT$ 3,000-8,000 / 場。適合軟體團隊、專案管理、組織改善。",
     status: "live",
   },
+  {
+    id: "quarterly-planning-workshop",
+    name: "季度規劃工作坊",
+    tagline: "從目標到行為改善，完整的季度啟動流程",
+    description: "先由每人提交季度目標，凝聚方向共識；再用 Start/Stop/Continue 收集行為改善建議；最後信心投票確認執行信心，完整完成季度規劃。",
+    useCases: ["季度規劃會議", "OKR 設定工作坊", "新年度啟動", "策略對齊會議"],
+    category: "corporate",
+    icon: "📅",
+    gradient: "from-teal-500 to-cyan-600",
+    estimatedPlayers: "8-25 人",
+    estimatedDuration: "35-55 分鐘",
+    components: [
+      {
+        pageType: "team_goal",
+        label: "團隊目標",
+        role: "每人提交最重要的一個季度目標",
+        axis: "multi",
+      },
+      {
+        pageType: "start_stop_continue",
+        label: "Start / Stop / Continue",
+        role: "三欄收集行為改善建議",
+        axis: "multi",
+      },
+      {
+        pageType: "confidence_vote",
+        label: "信心投票",
+        role: "評估對季度計畫的信心程度",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "季度規劃套餐 NT$ 5,000-15,000 / 場。適合企業季度規劃、策略工作坊。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
