@@ -1257,6 +1257,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         minCluesBeforeGuess: 1,
       };
 
+    case "role_play_card":
+      return {
+        title: "🎭 角色扮演卡",
+        roles: ["領導者", "觀察者", "挑戰者", "支持者", "記錄者"],
+      };
+
+    case "group_decision":
+      return {
+        title: "🗳️ 群體決策",
+        question: `在「${scenarioName}」中，你支持哪個方向？`,
+        options: ["繼續推進", "暫時觀望", "重新討論"],
+      };
+
     case "heat_map":
       return {
         title: "🔥 熱區投票",

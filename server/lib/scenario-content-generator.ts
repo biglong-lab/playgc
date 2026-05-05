@@ -400,6 +400,12 @@ ${componentDescriptions}
 - "clue_reveal": { title, clues: string[], minCluesBeforeGuess: 1-2 }
   clues 陣列 3-6 條、由模糊到具體排序，minCluesBeforeGuess 設幾條線索後才開放猜答，適合破冰猜謎/知識挑戰/場域解謎
 
+- "role_play_card": { title, roles: string[3-8] }
+  roles 是角色名稱陣列，玩家抽取隨機角色（不重複直到角色用完），揭曉後顯示全員角色分配，適合劇本遊戲/破冰/角色扮演工作坊
+
+- "group_decision": { title, question, options: string[2-5] }
+  question 是要決策的問題，options 是 2-5 個選項，每人選一個，揭曉後顯示票數分布+勝出選項，適合共識形成/民主決策/活動方向選擇
+
 - "heat_map": { title, rowLabels: string[2-4], colLabels: string[2-4] }
   rowLabels/colLabels 分別是 2-4 個選項，玩家點選矩陣中的一格，揭曉後以熱圖顯示每格票數，適合重要性-緊急性矩陣/優先順序/決策工具
 

@@ -978,6 +978,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "role_play_card",
+        label: "角色扮演卡",
+        role: "玩家隨機抽取角色（領導者/觀察者等），揭曉後顯示全員分配，適合劇本遊戲/角色扮演工作坊/破冰活動",
+        axis: "multi",
+      },
+      {
+        pageType: "group_decision",
+        label: "群體決策",
+        role: "提出問題讓大家選擇（2-5 選項），揭曉後顯示票數分布與勝出選項，適合共識形成/民主決策/活動方向選擇",
+        axis: "multi",
+      },
+      {
         pageType: "heat_map",
         label: "熱區投票",
         role: "玩家點選矩陣格（如重要/不重要 × 緊急/不緊急），揭曉後熱圖顯示每格票數，適合優先順序決策/共識形成",

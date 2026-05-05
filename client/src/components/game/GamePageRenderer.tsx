@@ -135,6 +135,8 @@ const AhaBoardPage = lazy(() => import("@/components/game/multi/AhaBoardPage"));
 const OneLineStoryPage = lazy(() => import("@/components/game/multi/OneLineStoryPage"));
 const HeatMapPage = lazy(() => import("@/components/game/multi/HeatMapPage"));
 const EnergyBoostPage = lazy(() => import("@/components/game/multi/EnergyBoostPage"));
+const RolePlayCardPage = lazy(() => import("@/components/game/multi/RolePlayCardPage"));
+const GroupDecisionPage = lazy(() => import("@/components/game/multi/GroupDecisionPage"));
 const SkillSwapPage = lazy(() => import("@/components/game/multi/SkillSwapPage"));
 const AnonymousVoicePage = lazy(() => import("@/components/game/multi/AnonymousVoicePage"));
 const PitchVotePage = lazy(() => import("@/components/game/multi/PitchVotePage"));
@@ -632,6 +634,10 @@ export default function GamePageRenderer({
         return <HeatMapPage {...commonProps} page={page} pageId={page.id} />;
       case "energy_boost":
         return <EnergyBoostPage {...commonProps} page={page} pageId={page.id} />;
+      case "role_play_card":
+        return <RolePlayCardPage {...commonProps} page={page} pageId={page.id} />;
+      case "group_decision":
+        return <GroupDecisionPage {...commonProps} page={page} pageId={page.id} />;
       case "speed_typing":
         return <SpeedTypingPage {...commonProps} page={page} pageId={page.id} />;
       case "skill_swap":
