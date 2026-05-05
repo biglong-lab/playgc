@@ -83,7 +83,7 @@ export default function TruthOrMyth({
   const totalVoters = truthVoters.length + mythVoters.length;
 
   // Unique user scoreboard
-  const allUserIds = [...new Set(votes.map((v) => v.userId))];
+  const allUserIds = Array.from(new Set(votes.map((v) => v.userId)));
   const userNames = Object.fromEntries(
     votes.map((v) => [v.userId, v.userName])
   );
