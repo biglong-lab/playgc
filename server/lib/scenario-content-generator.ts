@@ -373,6 +373,12 @@ ${componentDescriptions}
 - "pitch_vote": { title, prompt, maxLength: 40-80, showAuthor: boolean }
   prompt 引導提案（如：用一句話說出你的創意點子），三階段：提案→星星評分（1-5）→排名結果，適合創意工作坊/創業活動/腦力激盪
 
+- "prediction_poll": { title, question, options: [{ optionId, label }] }
+  question 是問「大家最常選哪個？」的問題，options 3-5 個選項（需有 optionId 與 label），三階段：預測→作答→揭曉誰猜對，適合破冰/熱場/趣味猜題
+
+- "audience_q": { title, prompt, maxLength: 80-150, showAuthor: boolean }
+  prompt 引導觀眾提問（如：有什麼想問的嗎？），支援按讚排序 + 標記已回答，適合演講/工作坊/說明會/Q&A 環節
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

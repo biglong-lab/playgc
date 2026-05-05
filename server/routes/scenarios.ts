@@ -1185,6 +1185,25 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "prediction_poll":
+      return {
+        title: "🔮 預測投票",
+        question: `你覺得「${scenarioName}」中，大家最常選哪個？`,
+        options: [
+          { optionId: "a", label: "選項 A" },
+          { optionId: "b", label: "選項 B" },
+          { optionId: "c", label: "選項 C" },
+        ],
+      };
+
+    case "audience_q":
+      return {
+        title: "🎤 現場提問",
+        prompt: `有關於「${scenarioName}」想問的問題嗎？`,
+        maxLength: 100,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
