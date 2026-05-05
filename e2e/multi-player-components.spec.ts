@@ -412,6 +412,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("relay_mission");
     expect(allPageTypes).toContain("role_assign");
     expect(allPageTypes).toContain("scaled_feedback");
+
+    // Round 88 補全批次 11（SceneVote + SeatDraw + SentenceCompletion + SharedBoard + SilentXxx + SkillSwap + SpectrumLine + SpeedXxx）
+    expect(allPageTypes).toContain("scene_vote");
+    expect(allPageTypes).toContain("seat_draw");
+    expect(allPageTypes).toContain("sentence_completion");
+    expect(allPageTypes).toContain("shared_board");
+    expect(allPageTypes).toContain("silent_brainstorm");
+    expect(allPageTypes).toContain("silent_debate");
+    expect(allPageTypes).toContain("skill_swap");
+    expect(allPageTypes).toContain("spectrum_line");
+    expect(allPageTypes).toContain("speed_networking");
+    expect(allPageTypes).toContain("speed_typing");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -598,6 +610,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "relay_mission",
       "role_assign",
       "scaled_feedback",
+      "scene_vote",
+      "seat_draw",
+      "sentence_completion",
+      "shared_board",
+      "silent_brainstorm",
+      "silent_debate",
+      "skill_swap",
+      "spectrum_line",
+      "speed_networking",
+      "speed_typing",
     ];
 
     for (const t of newTypes) {
