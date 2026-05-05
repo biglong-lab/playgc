@@ -357,10 +357,26 @@ export function useTeamLobby(): TeamLobbyReturn {
       const response = await apiRequest("POST", "/api/teams/join", data);
       return response.json();
     },
-    onSuccess: () => {
-      toast({ title: "已加入隊伍" });
+    onSuccess: (data) => {
       setAccessCode("");
       setShowJoinForm(false);
+
+      // 🛡️ 2026-05-05 fix：加入跨遊戲的組隊碼會卡頁
+      //   原 bug：使用者在遊戲 A 頁面輸入遊戲 B 的組隊碼 → server 寫入成功（team.gameId=B）
+      //          但 GET /api/games/A/my-team 找不到（gameId 不匹配）→ myTeam 持續 null
+      //          頁面繼續顯示 JoinOrCreateView、第二次按 → 「您已經在此隊伍中」
+      //   修法：拿 returned team.gameId 比對、不同 → 跳轉到正確 lobby
+      const returnedGameId = (data as { gameId?: string } | null)?.gameId;
+      if (returnedGameId && returnedGameId !== gameId) {
+        toast({
+          title: "已加入隊伍",
+          description: "此組隊碼屬於另一場遊戲，正在帶您過去...",
+        });
+        setLocation(link(`/team/${returnedGameId}`));
+        return;
+      }
+
+      toast({ title: "已加入隊伍" });
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
     onError: (error: unknown) => {

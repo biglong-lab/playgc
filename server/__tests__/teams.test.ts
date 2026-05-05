@@ -262,22 +262,36 @@ describe("隊伍路由 (teams)", () => {
       expect(res.body.message).toBe("此隊伍正在遊戲中，無法加入");
     });
 
-    it("已在隊伍中時回傳 400", async () => {
+    it("已在隊伍中時 idempotent — 200 回傳 team", async () => {
+      // 🛡️ 2026-05-05 fix：原本 400 → 改 idempotent 200
+      //   原因：跨遊戲組隊碼第一次寫入後 my-team query 找不到（gameId 不匹配）
+      //   → client 卡頁、第二次按又 400 → toast 報錯
+      //   修法：existingMember 也 200 + return team；client 統一處理跳轉
       const { app } = createApp();
-      mockDb.query.teams.findFirst.mockResolvedValue({
-        id: "team-1",
-        status: "forming",
-        maxPlayers: 4,
-        members: [{ userId: "user-1" }],
-      });
+      mockDb.query.teams.findFirst
+        .mockResolvedValueOnce({
+          id: "team-1",
+          status: "forming",
+          maxPlayers: 4,
+          members: [{ userId: "user-1" }],
+        })
+        .mockResolvedValueOnce({
+          id: "team-1",
+          gameId: "game-x",
+          status: "forming",
+          members: [{ userId: "user-1", user: {} }],
+          game: { id: "game-x" },
+          leader: { id: "user-1" },
+        });
 
       const res = await request(app)
         .post("/api/teams/join")
         .set(AUTH_HEADER)
         .send({ accessCode: "ABC123" });
 
-      expect(res.status).toBe(400);
-      expect(res.body.message).toBe("您已經在此隊伍中");
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe("team-1");
+      expect(res.body.gameId).toBe("game-x");
     });
 
     it("隊伍已滿員時回傳 400", async () => {

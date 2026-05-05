@@ -226,20 +226,23 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         }
 
         const existingMember = team.members.find((m) => m.userId === userId);
-        if (existingMember) {
-          return res.status(400).json({ message: "您已經在此隊伍中" });
-        }
 
-        if (team.members.length >= (team.maxPlayers || 6)) {
-          return res.status(400).json({ message: "隊伍已滿員" });
-        }
+        // 🛡️ 2026-05-05 fix：「已在此隊伍中」改 idempotent — 直接回 team data
+        //   原 bug：第一次 join 寫入成功但 client 沒跳頁（跨遊戲組隊碼）→
+        //          第二次按 → 400 → toast 報錯、體驗很差
+        //   修法：existingMember 也回 200 + team；client onSuccess 統一跳轉處理
+        if (!existingMember) {
+          if (team.members.length >= (team.maxPlayers || 6)) {
+            return res.status(400).json({ message: "隊伍已滿員" });
+          }
 
-        await db.insert(teamMembers).values({
-          teamId: team.id,
-          userId,
-          role: "member",
-          isReady: false,
-        });
+          await db.insert(teamMembers).values({
+            teamId: team.id,
+            userId,
+            role: "member",
+            isReady: false,
+          });
+        }
 
         const updatedTeam = await db.query.teams.findFirst({
           where: eq(teams.id, team.id),
@@ -257,11 +260,14 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
         // 用 broadcastToTeam（teamClients map）對齊 client 的 team_join；之前用 broadcastToSession
         // 廣播到不存在的 session room "team_${id}" → client 收不到（房間 + 名稱雙錯）
-        ctx.broadcastToTeam(team.id, {
-          type: "team_member_joined",
-          userId,
-          team: updatedTeam,
-        });
+        // existingMember 場景跳過廣播（避免重複通知）
+        if (!existingMember) {
+          ctx.broadcastToTeam(team.id, {
+            type: "team_member_joined",
+            userId,
+            team: updatedTeam,
+          });
+        }
 
         res.json(updatedTeam);
       } catch (error) {
