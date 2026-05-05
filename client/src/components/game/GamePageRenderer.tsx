@@ -123,6 +123,8 @@ const AnonymousVoicePage = lazy(() => import("@/components/game/multi/AnonymousV
 const PitchVotePage = lazy(() => import("@/components/game/multi/PitchVotePage"));
 const PredictionPollPage = lazy(() => import("@/components/game/multi/PredictionPollPage"));
 const AudienceQPage = lazy(() => import("@/components/game/multi/AudienceQPage"));
+const TastingNotesPage = lazy(() => import("@/components/game/multi/TastingNotesPage"));
+const TimeVaultPage = lazy(() => import("@/components/game/multi/TimeVaultPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -577,6 +579,10 @@ export default function GamePageRenderer({
         return <PredictionPollPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "audience_q":
         return <AudienceQPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "tasting_notes":
+        return <TastingNotesPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "time_vault":
+        return <TimeVaultPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

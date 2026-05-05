@@ -163,6 +163,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "賓客猜猜新人的答案，揭曉後看看誰最了解新人！笑點十足",
         axis: "multi",
       },
+      {
+        pageType: "time_vault",
+        label: "婚禮時光膠囊",
+        role: "賓客寫下對新人的話，婚禮當天封存，等到一週年或十週年再開啟，跨越時間的祝福讓婚禮更有意義",
+        axis: "multi",
+      },
     ],
     valueProposition:
       "替代傳統紙本簽名簿、提供拍照分享素材、活動結束後新人可下載完整紀錄。一場婚禮 NT$ 8,000-15,000 服務費。",
@@ -849,6 +855,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         pageType: "pitch_vote",
         label: "創意提案評分",
         role: "每人提出一個改善點子，進入評分階段後用 1-5 星評選，冠軍提案獲得認可",
+        axis: "multi",
+      },
+      {
+        pageType: "tasting_notes",
+        label: "研討品鑑",
+        role: "培訓課程中試用產品或案例素材後，每人填寫品鑑筆記，揭曉後按愛心投票，讓學習更有記憶點",
         axis: "multi",
       },
     ],

@@ -379,6 +379,12 @@ ${componentDescriptions}
 - "audience_q": { title, prompt, maxLength: 80-150, showAuthor: boolean }
   prompt 引導觀眾提問（如：有什麼想問的嗎？），支援按讚排序 + 標記已回答，適合演講/工作坊/說明會/Q&A 環節
 
+- "tasting_notes": { title, prompt, itemLabel: string, showItemName: boolean, maxNotesLength: 80-150, showAuthor: boolean }
+  品鑑/試吃活動記錄，每人填品項名稱 + 1-5 星評分 + 文字描述，揭曉後按愛心排序，適合品酒/美食/產品試用活動
+
+- "time_vault": { title, prompt, revealLabel: string, maxLength: 100-200, showAuthor: boolean }
+  時光膠囊：大家寫訊息後封存，等到特定時機由主持人開封揭曉，revealLabel 說明何時開封，適合聚會/畢業/跨年/年會
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

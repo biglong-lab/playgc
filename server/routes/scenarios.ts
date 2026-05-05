@@ -1204,6 +1204,25 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "tasting_notes":
+      return {
+        title: "🍷 品鑑筆記",
+        prompt: `分享你對這次「${scenarioName}」品項的感受`,
+        itemLabel: "品項名稱",
+        showItemName: true,
+        maxNotesLength: 100,
+        showAuthor: true,
+      };
+
+    case "time_vault":
+      return {
+        title: "⏳ 時光膠囊",
+        prompt: `寫下你想在「${scenarioName}」結束後回頭看的話`,
+        revealLabel: "活動結束後開封",
+        maxLength: 150,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
