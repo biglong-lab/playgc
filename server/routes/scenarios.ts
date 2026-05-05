@@ -390,6 +390,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         celebrationText: "恭喜集滿！",
       };
 
+    case "story_chain":
+      return {
+        title: "📖 接龍故事",
+        opening: "從前從前，有一個很特別的地方…",
+        maxWordsPerContribution: 20,
+        maxContributions: 10,
+        finishText: "感謝所有創作者！",
+      };
+
     case "question_box":
       return {
         title: "📬 提問箱",

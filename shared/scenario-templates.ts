@@ -109,6 +109,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "story_chain",
+        label: "愛情接龍故事",
+        role: "所有賓客合力創作新人愛情故事，留下獨一無二的紀念",
+        axis: "multi",
+      },
+      {
         pageType: "host_emoji_react",
         label: "情緒池應援",
         role: "高潮時刻按 emoji（如戒指交換）",

@@ -157,6 +157,9 @@ ${componentDescriptions}
 - "question_box": { title, prompt?, allowAnonymous: true, maxQuestionsPerPerson: 1-5, maxQuestionLength: 50-150 }
   prompt 是引導玩家提問的句子（如：對這次訓練有什麼想法？），allowAnonymous 通常 true
 
+- "story_chain": { title, opening, maxWordsPerContribution: 10-30, maxContributions: 5-20, finishText? }
+  opening 是故事開頭句（如：從前從前，有一對相愛的人…），要與活動情境相關且有創意
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
