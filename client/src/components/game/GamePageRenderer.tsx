@@ -210,6 +210,8 @@ const EventTimelinePage = lazy(() => import("@/components/game/multi/EventTimeli
 const YesNoMaybePage = lazy(() => import("@/components/game/multi/YesNoMaybePage"));
 const GroupNormPage = lazy(() => import("@/components/game/multi/GroupNormPage"));
 const StoryWallPage = lazy(() => import("@/components/game/multi/StoryWallPage"));
+const QuickReactionPage = lazy(() => import("@/components/game/multi/QuickReactionPage"));
+const PersonalHighlightPage = lazy(() => import("@/components/game/multi/PersonalHighlightPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -838,6 +840,10 @@ export default function GamePageRenderer({
         return <GroupNormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "story_wall":
         return <StoryWallPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "quick_reaction":
+        return <QuickReactionPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "personal_highlight":
+        return <PersonalHighlightPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

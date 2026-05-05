@@ -1908,6 +1908,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 200,
       };
 
+    case "quick_reaction":
+      return {
+        title: "⚡ 快速反應",
+        prompt: `對於「${scenarioName}」，用一個 emoji 表達你的感受！`,
+      };
+
+    case "personal_highlight":
+      return {
+        title: "⭐ 個人亮點",
+        prompt: `在「${scenarioName}」這個主題上，分享你最值得驕傲的成就或亮點`,
+        detailLabel: "補充說明（選填）",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

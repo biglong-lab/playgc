@@ -3196,6 +3196,40 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "變革工作坊套餐 NT$ 5,000-15,000 / 場。適合組織變革、企業轉型、新計畫啟動。",
     status: "live",
   },
+  {
+    id: "emoji-pulse-highlights",
+    name: "Emoji 快拍 + 個人亮點",
+    tagline: "一個 emoji 破冰，一句話秀出你的成就",
+    description: "先用 emoji 快速表達當下感受，暖場開場；再讓每人分享一個個人亮點或成就，以彩色卡片牆展示全隊精彩。",
+    useCases: ["會議暖場", "季度回顧", "成就慶祝", "新人破冰"],
+    category: "corporate",
+    icon: "⭐",
+    gradient: "from-yellow-400 to-amber-500",
+    estimatedPlayers: "5-25 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "quick_reaction",
+        label: "快速反應",
+        role: "每人選一個 emoji 表達當下感受",
+        axis: "multi",
+      },
+      {
+        pageType: "personal_highlight",
+        label: "個人亮點",
+        role: "每人分享一個值得驕傲的成就",
+        axis: "multi",
+      },
+      {
+        pageType: "peer_recognition",
+        label: "同伴認可",
+        role: "互相給予讚美，強化正向文化",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "快速暖場套餐 NT$ 2,000-6,000 / 場。適合會議開場、慶功宴、季度回顧。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

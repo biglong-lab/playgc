@@ -544,6 +544,12 @@ ${componentDescriptions}
 - "story_wall": { title, prompt, maxTitleLength: 20-60, maxLength: 100-300 }
   故事牆：每人貢獻一個帶標題的小故事或親身經歷，揭曉後以彩色卡片牆展示所有故事，適合個人旅程分享/文化建設/入職融入/年度回顧/破冰聚會
 
+- "quick_reaction": { title, prompt }
+  快速反應：每人從 8 個 emoji 中選一個表達對問題/聲明的即時感受，揭曉後以橫向長條圖顯示各 emoji 的票數比例，適合即興調查/氛圍確認/快速投票/暖場活動
+
+- "personal_highlight": { title, prompt, detailLabel }
+  個人亮點：每人分享一個自己在該主題下的成就或亮點（標題必填 + 補充說明選填），揭曉後以漸層彩色卡片牆展示全隊亮點，適合成就慶祝/年度回顧/成就展示/增強團隊信心
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 
