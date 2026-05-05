@@ -385,6 +385,12 @@ ${componentDescriptions}
 - "time_vault": { title, prompt, revealLabel: string, maxLength: 100-200, showAuthor: boolean }
   時光膠囊：大家寫訊息後封存，等到特定時機由主持人開封揭曉，revealLabel 說明何時開封，適合聚會/畢業/跨年/年會
 
+- "idea_market": { title, prompt, tokenBudget: 3-7, maxIdeaLength: 40-80, showAuthor: boolean }
+  創意市集：每人提出一個點子，然後每人有固定代幣可分配投資各點子，最後揭曉哪個點子獲得最多支持，適合創意激發/腦力激盪/活動規劃
+
+- "personal_fact": { title, prompt, maxLength: 50-100, showAuthor: boolean }
+  趣味自我揭秘：每人說一個關於自己的趣事/特點，揭曉後大家按愛心投票最驚喜的事實，適合破冰/認識新朋友/聚會
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

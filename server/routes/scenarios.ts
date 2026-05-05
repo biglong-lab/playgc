@@ -1223,6 +1223,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "idea_market":
+      return {
+        title: "💡 創意市集",
+        prompt: `用一句話說出你在「${scenarioName}」中想到的點子`,
+        tokenBudget: 5,
+        maxIdeaLength: 60,
+        showAuthor: true,
+      };
+
+    case "personal_fact":
+      return {
+        title: "🎭 趣味自我揭秘",
+        prompt: `說一個關於你自己、讓大家驚訝的小事`,
+        maxLength: 80,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
