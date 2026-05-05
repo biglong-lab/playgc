@@ -3606,6 +3606,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "成長承諾套組 NT$ 1,500-4,500 / 場。讓每個參與者帶著具體承諾與行動計畫離場。",
     status: "live",
   },
+  {
+    id: "values-dialogue-pack",
+    name: "價值觀對話套組",
+    tagline: "價值觀卡 + 意見滑桿，從共同價值到觀點碰撞",
+    description: "先以價值觀卡找出全隊共同重視的核心，再以意見滑桿探索大家在關鍵議題上的多元立場，讓深度對話自然發生。",
+    useCases: ["組織文化工作坊", "策略討論前熱場", "多元視角探索", "新員工融合"],
+    category: "corporate",
+    icon: "💎",
+    gradient: "from-rose-500 to-indigo-500",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "10-15 分鐘",
+    components: [
+      {
+        pageType: "values_card",
+        label: "價值觀卡",
+        role: "共同核心探索",
+        axis: "multi",
+      },
+      {
+        pageType: "opinion_slider",
+        label: "意見滑桿",
+        role: "觀點光譜顯示",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "價值觀對話套組 NT$ 1,500-4,500 / 場。讓隱性的文化共識與差異都浮現檯面。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

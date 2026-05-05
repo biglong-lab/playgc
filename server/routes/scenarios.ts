@@ -2115,6 +2115,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `透過「${scenarioName}」，你發現自己最想成長的一個領域是什麼？打算採取什麼行動？`,
       };
 
+    case "values_card":
+      return {
+        title: "💎 價值觀卡",
+        prompt: `從以下選項中，選出最能代表你在「${scenarioName}」中展現的 3 個核心價值觀。`,
+        maxSelect: 3,
+      };
+
+    case "opinion_slider":
+      return {
+        title: "📊 意見滑桿",
+        question: `對於「${scenarioName}」的核心理念，你的立場在哪裡？`,
+        leftLabel: "完全不同意",
+        rightLabel: "完全同意",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

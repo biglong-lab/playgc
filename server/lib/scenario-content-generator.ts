@@ -628,6 +628,12 @@ ${componentDescriptions}
 - "growth_edge": { title, prompt }
   成長邊界：每人分享一個想成長的領域 + 第一步行動，揭曉後組成彩色成長地圖，適合工作坊收尾/個人發展計畫/培訓成果
 
+- "values_card": { title, prompt, values: string[], maxSelect: 1-5 }
+  價值觀卡：從預設清單選 1-N 個核心價值觀，揭曉後顯示全隊頻率長條圖，適合文化塑造/團隊共識/入職培訓
+
+- "opinion_slider": { title, question, leftLabel, rightLabel }
+  意見滑桿：每人在左右兩個對立觀點間拖曳滑桿定位，揭曉後在光譜條上顯示所有人的位置與平均值，適合爭議討論/決策前評估/意見多元化展示
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 
