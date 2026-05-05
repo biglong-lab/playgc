@@ -1115,6 +1115,72 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "HR 的必備神器。月訂閱 NT$ 1,500-5,000 / 帳號，活動數不限。",
     status: "live",
   },
+
+  // ════════════════════════════════════════════
+  // 尾牙 / 年會
+  // ════════════════════════════════════════════
+  {
+    id: "annual-meeting",
+    name: "尾牙 / 年會情境包",
+    tagline: "熱場破冰 + 集體簽到 + 大獎揭曉 + 全員投票",
+    description:
+      "台灣年度最重要的企業活動。從開場熱場、集體簽到、年度回顧投票，到最後的最佳員工倒數揭曉，\n讓全員參與、大螢幕同步呈現，留下最難忘的尾牙記憶。",
+    useCases: ["企業尾牙", "年度頒獎典禮", "部門年度回顧", "公司週年紀念"],
+    category: "corporate",
+    icon: "Trophy",
+    gradient: "from-amber-500/20 to-yellow-500/20",
+    estimatedPlayers: "30-500 人",
+    estimatedDuration: "2-4 小時",
+    components: [
+      {
+        pageType: "check_in",
+        label: "入場簽到",
+        role: "全員掃 QR 簽到，大螢幕顯示到場人數",
+        axis: "multi",
+        demoMode: "check-in",
+      },
+      {
+        pageType: "host_crowd_gather",
+        label: "人氣熱場",
+        role: "倒數集齊，大螢幕 banner 升起",
+        axis: "host",
+        demoMode: "crowd-host",
+      },
+      {
+        pageType: "multi_vote",
+        label: "年度最佳票選",
+        role: "全員投票選出今年最有成就感的時刻",
+        axis: "multi",
+      },
+      {
+        pageType: "wish_wall",
+        label: "對公司的話",
+        role: "每人寫下對公司 / 同事的一句話",
+        axis: "multi",
+      },
+      {
+        pageType: "countdown_reveal",
+        label: "大獎倒數揭曉",
+        role: "緊張刺激的倒數揭曉最佳員工 / 年度獎項",
+        axis: "multi",
+      },
+      {
+        pageType: "host_emoji_react",
+        label: "全場慶祝",
+        role: "揭曉後全場 emoji 應援",
+        axis: "host",
+        demoMode: "emoji-host",
+      },
+      {
+        pageType: "photo_wall",
+        label: "年終合影牆",
+        role: "每人上傳今晚最難忘的照片，共同留念",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "尾牙市場每年 11-12 月爆量。一場 NT$ 15,000-50,000 服務費，月訂閱制每帳號 NT$ 3,000-8,000。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

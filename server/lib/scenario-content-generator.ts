@@ -136,6 +136,9 @@ ${componentDescriptions}
 - "photo_wall": { title, prompt?, allowCaption: true, showAuthor: true }
   prompt 是引導語（如：上傳一張今天最有意義的照片！）
 
+- "countdown_reveal": { title, revealText, revealEmoji?, durationSeconds: 3-10, suspenseMessage? }
+  revealText 是揭曉的核心訊息（如：年度最佳員工：張小明），revealEmoji 是搭配的 emoji
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

@@ -309,6 +309,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "countdown_reveal":
+      return {
+        title: "🎯 倒數揭曉",
+        revealText: "🎉 恭喜！",
+        revealEmoji: "🎉",
+        durationSeconds: 5,
+        suspenseMessage: "準備好了嗎？倒數即將開始…",
+      };
+
     case "photo_wall":
       return {
         title: "📸 活動照片牆",
