@@ -403,6 +403,12 @@ ${componentDescriptions}
 - "open_mic": { title, prompt, maxTopicLength: 30-80 }
   開放麥克風：任何人可登記搶麥，說明想分享的主題，主持人按順序呼叫上場，講完後移至已完成，適合聚會/工作坊結尾分享/年會
 
+- "fast_buzz": { title, questions: string[] }
+  搶答競賽：主持人逐題開放搶答，玩家競相按鈴，最快者由主持人判斷答對/答錯，適合知識問答競賽/破冰問答/教育訓練評估
+
+- "crowd_answer": { title, question: string, unit: string, correctAnswer: number }
+  猜猜看：全員提交一個數字猜測，公布正確答案後排列由近到遠，適合猜年份/猜數量/猜里程/破冰暖場
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

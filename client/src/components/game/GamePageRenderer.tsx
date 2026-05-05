@@ -131,6 +131,8 @@ const QuizBlitzPage = lazy(() => import("@/components/game/multi/QuizBlitzPage")
 const PlayerWordCloudPage = lazy(() => import("@/components/game/multi/WordCloudPage"));
 const SpinWheelPage = lazy(() => import("@/components/game/multi/SpinWheelPage"));
 const OpenMicPage = lazy(() => import("@/components/game/multi/OpenMicPage"));
+const FastBuzzPage = lazy(() => import("@/components/game/multi/FastBuzzPage"));
+const CrowdAnswerPage = lazy(() => import("@/components/game/multi/CrowdAnswerPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -601,6 +603,10 @@ export default function GamePageRenderer({
         return <SpinWheelPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "open_mic":
         return <OpenMicPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "fast_buzz":
+        return <FastBuzzPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "crowd_answer":
+        return <CrowdAnswerPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

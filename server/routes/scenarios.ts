@@ -1271,6 +1271,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxTopicLength: 60,
       };
 
+    case "fast_buzz":
+      return {
+        title: "🔔 搶答競賽",
+        questions: [`${scenarioName}相關知識問答第一題？`, `${scenarioName}相關知識問答第二題？`],
+      };
+
+    case "crowd_answer":
+      return {
+        title: "🔢 猜猜看",
+        question: `你猜「${scenarioName}」相關的數字是多少？`,
+        unit: "",
+        correctAnswer: 0,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
