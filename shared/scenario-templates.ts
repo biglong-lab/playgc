@@ -587,6 +587,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "每人獨立排列最重要的改善議題，集體共識即時呈現",
         axis: "multi",
       },
+      {
+        pageType: "estimation_game",
+        label: "規劃撲克估點",
+        role: "各成員隱藏估算後同時揭曉，差異一目瞭然，有效推動討論共識",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",

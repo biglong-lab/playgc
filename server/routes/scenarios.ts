@@ -677,6 +677,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResults: true,
       };
 
+    case "estimation_game":
+      return {
+        title: "🃏 規劃撲克",
+        question: "這個功能需要多少天完成？",
+        unit: "天",
+        options: ["1", "2", "3", "5", "8", "13", "21", "?"],
+        showAverage: true,
+        showAllEstimates: true,
+      };
+
     case "category_sort":
       return {
         title: "🗂️ 卡片分類",

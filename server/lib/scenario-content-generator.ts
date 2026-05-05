@@ -124,6 +124,9 @@ ${componentDescriptions}
 - "project_showcase": { title, prompt?, maxProjectsPerPerson: 1-3, maxTitleLength: 20-40, maxDescLength: 80-200, allowVoteOwn: false, emojiReactions: [...4-6個], showVoteCount: true }
   emojiReactions 是觀眾可以給出的反應 emoji（如：🔥⭐💡👏🏆），適合 Demo Day / 黑客松 / 成果發表
 
+- "estimation_game": { title, question, unit?, options?: [...], showAverage: true, showAllEstimates: true }
+  options 是估算選項（如 Fibonacci: 1/2/3/5/8/13/21/?，T-shirt: XS/S/M/L/XL）。揭曉前保密，任何人提交後可點擊揭曉顯示分佈圖與平均值，適合規劃撲克、敏捷估點
+
 - "category_sort": { title, instructions?, items: [{ id, label }...4-8個], categories: [{ id, label, color }...2-5個], showConsensus: true }
   items 是待分類的卡片，categories 是可選分類（每個分類有 hex color），showConsensus 顯示群體分佈條形圖，適合資訊架構/工作坊/共識建立
 
