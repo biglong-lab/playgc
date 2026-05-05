@@ -375,6 +375,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedDuration: "1-3 小時",
     components: [
       {
+        pageType: "stamp_card",
+        label: "商家集章卡",
+        role: "每到一家店完成任務蓋章，集滿兌換獎勵",
+        axis: "multi",
+      },
+      {
         pageType: "treasure_hunt",
         label: "尋寶任務",
         role: "店家線索拼密碼",
@@ -567,6 +573,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedPlayers: "5-50 組親子",
     estimatedDuration: "60-120 分鐘",
     components: [
+      {
+        pageType: "stamp_card",
+        label: "冒險集章卡",
+        role: "每完成一站任務獲得一枚章，集滿領獎",
+        axis: "multi",
+      },
       {
         pageType: "treasure_hunt",
         label: "尋寶任務",

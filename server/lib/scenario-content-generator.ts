@@ -127,6 +127,9 @@ ${componentDescriptions}
 - "wish_wall": { title, recipientName?, prompt?, maxLength: 50-150, showAuthor: true }
   recipientName 是收件人名稱（如：Hung 與 Anita），prompt 是引導語（如：寫下你對他們的祝福…）
 
+- "stamp_card": { title, subtitle?, slots: [{ id, label, emoji }...4-9個], rewardText?, celebrationText? }
+  slots 是需完成的任務清單，每個任務 3-10 字，emoji 選與任務相關的圖示
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

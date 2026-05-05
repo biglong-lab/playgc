@@ -309,6 +309,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "stamp_card":
+      return {
+        title: "🎴 集點卡",
+        slots: [
+          { id: "s1", label: "任務一", emoji: "⭐" },
+          { id: "s2", label: "任務二", emoji: "⭐" },
+          { id: "s3", label: "任務三", emoji: "⭐" },
+          { id: "s4", label: "任務四", emoji: "⭐" },
+          { id: "s5", label: "任務五", emoji: "⭐" },
+          { id: "s6", label: "任務六", emoji: "⭐" },
+        ],
+        rewardText: "集滿兌換獎勵",
+        celebrationText: "恭喜集滿！",
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {
