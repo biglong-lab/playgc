@@ -1572,6 +1572,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 50,
       };
 
+    case "success_story":
+      return {
+        title: "🏆 成功故事牆",
+        prompt: `分享一個在「${scenarioName}」中讓你感到驕傲的成就`,
+        achievementLabel: "成就名稱",
+        detailLabel: "故事細節（可選）",
+        maxLength: 150,
+      };
+
+    case "future_idea":
+      return {
+        title: "🔭 未來願景",
+        prompt: `想像「${scenarioName}」結束後的一年，描述你看到的改變`,
+        horizon: "一年後",
+        maxLength: 200,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

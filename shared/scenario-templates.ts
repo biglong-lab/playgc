@@ -2270,6 +2270,59 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "HR 工具月訂閱 NT$ 1,500-3,000。企業買斷方案 NT$ 30,000-80,000/年。",
     status: "live",
   },
+  {
+    id: "achievement-celebration",
+    name: "成就慶功儀式",
+    tagline: "成功故事 + 未來願景 + 共識",
+    description:
+      "適合專案達成里程碑、年度表彰或尾牙收尾。先用「成功故事牆」讓每人分享一個驕傲的成就；接著「未來願景」描繪各自對一年後的期待；最後「群體決策」對下一階段的方向投票達成共識。\n45 分鐘慶功 + 前瞻，喜慶氛圍十足。",
+    useCases: [
+      "專案里程碑慶功",
+      "年度表彰尾牙",
+      "新年目標啟動",
+      "培訓結尾激勵",
+      "團隊慶生聚會",
+    ],
+    category: "corporate",
+    icon: "Trophy",
+    gradient: "from-yellow-500/20 to-orange-500/20",
+    estimatedPlayers: "8-50 人",
+    estimatedDuration: "45-70 分鐘",
+    components: [
+      {
+        pageType: "success_story",
+        label: "成功故事牆",
+        role: "每人分享一個讓自己驕傲的成就（標題+細節），揭曉後形成全隊成就展覽館",
+        axis: "multi",
+      },
+      {
+        pageType: "future_idea",
+        label: "未來願景牆",
+        role: "每人描述一年後想看到的改變，揭曉後展示全隊未來圖景，共同激勵",
+        axis: "multi",
+      },
+      {
+        pageType: "peer_recognition",
+        label: "夥伴認可",
+        role: "選一位最支持你的夥伴給予感謝，揭曉後形成互相認可的關係圖",
+        axis: "multi",
+      },
+      {
+        pageType: "group_decision",
+        label: "下一步共識",
+        role: "對下一個里程碑投票，形成全隊共識方向",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "承諾牆",
+        role: "每人寫下對未來一年的公開承諾，揭曉後互相見證",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "企業表彰活動 NT$ 5,000-12,000 / 場。年度儀式設計 NT$ 20,000-50,000。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

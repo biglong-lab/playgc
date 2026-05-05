@@ -514,6 +514,12 @@ ${componentDescriptions}
 - "personal_compass": { title, northLabel, southLabel, eastLabel, westLabel }
   個人指南針：每人在四個方向（優勢/挑戰/機會/障礙）各填一項，形成個人 SWOT 快照，揭曉後呈現全員四方向分析
 
+- "success_story": { title, prompt, achievementLabel, detailLabel, maxLength: 80-200 }
+  成功故事牆：每人分享一個成就（標題 + 可選細節），揭曉後呈現全員成就牆，適合培訓結尾/旅遊回顧/激勵頒獎
+
+- "future_idea": { title, prompt, horizon, maxLength: 100-250 }
+  未來願景：每人描述對未來（horizon 如「半年後」「一年後」）的想像，揭曉後展示全員未來圖景，適合年度規劃/目標啟動/工作坊收尾
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
