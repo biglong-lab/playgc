@@ -265,7 +265,7 @@ export default function GamePageRenderer({
       case "gps_team_mission":
         return <GpsTeamMissionPage {...commonProps} />;
       case "choice_verify_race":
-        return <ChoiceVerifyRacePage {...commonProps} />;
+        return <ChoiceVerifyRacePage {...commonProps} pageId={page.id} />;
       case "lock_coop":
         return <LockCoopPage {...commonProps} />;
       case "relay_mission":

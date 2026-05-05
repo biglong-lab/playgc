@@ -55,3 +55,4 @@ export * from "./error-logs";
 export * from "./platform-security";
 export * from "./notifications";
 export * from "./platform-menu";
+export * from "./team-race";

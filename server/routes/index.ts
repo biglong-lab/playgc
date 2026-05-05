@@ -77,6 +77,7 @@ import { registerRewardsRoutes } from "./rewards";
 import { registerAdminRewardsRoutes } from "./admin-rewards";
 import { registerAdminEngagementRoutes } from "./admin-engagement";
 import { registerAdminAbExperimentsRoutes } from "./admin-ab-experiments";
+import { registerTeamRaceRoutes, ensureTeamRaceSchema } from "./team-race";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -118,6 +119,9 @@ export async function registerRoutes(
   registerMediaRoutes(app);
   registerLocationRoutes(app, ctx);
   registerTeamRoutes(app, ctx);
+  // 🆕 2026-05-05: 多人搶答 server-side 持久化（state + answers）
+  await ensureTeamRaceSchema();
+  registerTeamRaceRoutes(app, ctx);
   registerPlayerChapterRoutes(app);
   registerAdminChapterRoutes(app);
   registerAdminChapterTemplateRoutes(app);

@@ -22,7 +22,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle, XCircle, Trophy, Timer, Flame, Award,
 } from "lucide-react";
-import { useGameTimer } from "../shared/hooks/useGameTimer";
 import type { ChoiceVerifyConfig } from "@shared/schema";
 
 // ============================================================================
@@ -51,17 +50,26 @@ export interface ChoiceVerifyRaceProps {
   myUserId: string;
   /** 隊員清單（用於排行榜顯示無答題者） */
   members: RaceMemberInfo[];
-  /** 全部答題紀錄（從 server WebSocket 累積） */
+  /** 全部答題紀錄（server-driven） */
   answerRecords: RaceAnswerRecord[];
+  /** 🆕 2026-05-05: server-driven props（替代 client-side useState） */
+  /** 當前題號（server 統一推進） */
+  currentQuestionIndex: number;
+  /** 該題開始時間（ISO string）— client 用此算 timer remaining */
+  questionStartedAt: string;
+  /** 每題時限（秒） */
+  secondsPerQuestion: number;
+  /** 有人答對後的冷卻時間（秒）— UI 顯示「N 秒後下一題」倒數 */
+  advanceCooldownSeconds: number;
+  /** 第一個答對的時間戳（ISO string）；null = 該題尚未解決 */
+  resolvedAt: string | null;
   /** 玩家答題（呼叫 server API） */
   onAnswer: (questionIndex: number, optionIndex: number) => void;
-  /** 全部題目完成後呼叫 */
+  /** 全部題目完成後呼叫（由父元件管、不再內部觸發） */
   onComplete: (
     reward?: { points?: number; items?: string[] },
     nextPageId?: string,
   ) => void;
-  /** 每題時限（秒，預設 30） */
-  questionTimeLimit?: number;
 }
 
 // ============================================================================
@@ -181,67 +189,51 @@ export default function ChoiceVerifyRace({
   myUserId,
   members,
   answerRecords,
+  currentQuestionIndex,
+  questionStartedAt,
+  secondsPerQuestion,
+  advanceCooldownSeconds,
+  resolvedAt,
   onAnswer,
-  onComplete,
-  questionTimeLimit = 30,
+  // onComplete 由父元件處理（接 server status='completed' 廣播）
 }: ChoiceVerifyRaceProps) {
   const questions = config.questions ?? [];
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [hasCompleted, setHasCompleted] = useState(false);
 
+  const currentQIndex = currentQuestionIndex;
   const currentQuestion = questions[currentQIndex];
-  const isResolved = useMemo(
-    () => isQuestionResolved(answerRecords, currentQIndex, members.length),
-    [answerRecords, currentQIndex, members.length],
-  );
+  const isResolved = !!resolvedAt;
 
-  // 每題計時器
-  const { remaining, formatted, reset: resetTimer } = useGameTimer({
-    durationSec: questionTimeLimit,
-    onExpired: () => {
-      // 時限到 → 推進下題（但要等所有人或第一個答對才推進，這裡是 fallback）
-    },
-  });
-
-  // 偵測題目「結束」（有人答對 / 全員答過 / 時限到）→ 1.5 秒後切下題
+  // === Server-driven timer ===
+  // 用 questionStartedAt + secondsPerQuestion 算題目剩餘時間
+  // resolvedAt 有值時改顯示「N 秒後下一題」倒數
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
-    if (!isResolved && remaining > 0) return;
-    if (currentQIndex >= questions.length - 1) return;
+    const t = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(t);
+  }, []);
 
-    const timer = setTimeout(() => {
-      setCurrentQIndex((prev) => prev + 1);
-      resetTimer();
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [isResolved, remaining, currentQIndex, questions.length, resetTimer]);
-
-  // 全部題目完成 → onComplete（用 useEffect 而非 inline，避免重複觸發）
-  useEffect(() => {
-    if (hasCompleted) return;
-    const isLastQuestion = currentQIndex >= questions.length - 1;
-    const lastResolved = isQuestionResolved(
-      answerRecords,
-      questions.length - 1,
-      members.length,
-    );
-    if (!isLastQuestion || !lastResolved) return;
-
-    const myScore = calcUserScore(answerRecords, myUserId);
-    const timer = setTimeout(() => {
-      setHasCompleted(true);
-      onComplete({ points: myScore }, config.nextPageId);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [
-    answerRecords,
-    currentQIndex,
-    questions.length,
-    members.length,
-    hasCompleted,
-    myUserId,
-    onComplete,
-    config.nextPageId,
-  ]);
+  const timerInfo = useMemo(() => {
+    if (resolvedAt) {
+      const resolvedTs = new Date(resolvedAt).getTime();
+      const cooldownMs = advanceCooldownSeconds * 1000;
+      const remainingMs = Math.max(0, cooldownMs - (now - resolvedTs));
+      const remainingSec = Math.ceil(remainingMs / 1000);
+      return {
+        mode: "cooldown" as const,
+        remainingSec,
+        formatted: `下一題：${remainingSec}s`,
+      };
+    }
+    const startTs = new Date(questionStartedAt).getTime();
+    const limitMs = secondsPerQuestion * 1000;
+    const remainingMs = Math.max(0, limitMs - (now - startTs));
+    const remainingSec = Math.ceil(remainingMs / 1000);
+    return {
+      mode: "playing" as const,
+      remainingSec,
+      formatted: `${remainingSec}s`,
+    };
+  }, [resolvedAt, questionStartedAt, secondsPerQuestion, advanceCooldownSeconds, now]);
 
   // ============================================================================
   // Fallback UI
@@ -293,9 +285,11 @@ export default function ChoiceVerifyRace({
               第 {currentQIndex + 1} / {questions.length} 題
             </Badge>
           </div>
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div className={`flex items-center gap-1 text-sm font-number tabular-nums ${
+            timerInfo.mode === "cooldown" ? "text-emerald-600 dark:text-emerald-400 font-semibold" : "text-muted-foreground"
+          }`}>
             <Timer className="w-4 h-4" />
-            <span className="font-number tabular-nums">{formatted}</span>
+            <span>{timerInfo.formatted}</span>
           </div>
         </CardContent>
       </Card>

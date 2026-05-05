@@ -1,42 +1,70 @@
-// 🏃 ChoiceVerifyRacePage — ChoiceVerifyRace 元件的容器
+// 🏃 ChoiceVerifyRacePage — ChoiceVerifyRace 容器（2026-05-05 重寫）
 //
-// 角色：
-//   - ChoiceVerifyRace（純 UI）的容器層
-//   - 從 gameId 自動找隊伍 + 隊員清單
-//   - 用 useTeamWebSocket 接 race_answered 訊息累積 answerRecords
-//   - 玩家答題時呼叫 sendRaceAnswer 透過 WebSocket 廣播給同隊全員
+// 解決問題（用戶實測痛點）：
+//   ✓ 重整 → state 從 server DB 拉回（不會重來）
+//   ✓ 答題進度同步 → server 統一 currentQuestionIndex、ws broadcast
+//   ✓ 防重答 → DB UNIQUE 約束（client UI 也 disable）
+//   ✓ 5 秒推進 → 第一個答對 → server 設 resolvedAt → client 倒數 5s → POST advance
 //
-// 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.6
+// 架構：
+//   1. mount 時 POST /api/team-race/state 建立或讀取 state（idempotent）
+//   2. 訂閱 ws race_state_updated → 更新 local state
+//   3. 答題：POST /api/team-race/answer（server 寫 DB + broadcast）
+//   4. 第一個答對 → server resolvedAt 設、client UI 顯示倒數 5s
+//   5. 5s 結束 → POST /api/team-race/advance（server conditional UPDATE 防 race）
 //
-// realtime 鏈路（2026-05-03 Phase 3.1 part 3 補完）：
-//   1. client send "race_answer"（useTeamWebSocket.sendRaceAnswer）
-//   2. server case "race_answer" → broadcastToTeam(teamId, "race_answered")
-//   3. 隊員收到 → handleWsMessage 累積 answerRecords
+// reconnect / refresh 處理：
+//   - 任何時候 mount 都會 GET state、拿最新 currentQuestionIndex + answers
+//   - ws reconnect → 訂閱 race_state_updated 自動更新
+//   - 不會丟資料（DB 是 source of truth）
 
-import { useCallback, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, AlertCircle } from "lucide-react";
+import { Users, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { useToast } from "@/hooks/use-toast";
-import { reportClientEvent } from "@/lib/event-report";
+import { apiRequest } from "@/lib/queryClient";
 import ChoiceVerifyRace, {
   type RaceAnswerRecord,
   type RaceMemberInfo,
 } from "./ChoiceVerifyRace";
 import type { ChoiceVerifyConfig } from "@shared/schema";
 
-/** Server 廣播 race_answered 訊息格式（part 3 client 準備接收，server 端 endpoint 待補） */
-interface RaceAnsweredWsMessage {
-  type: "race_answered";
+interface RaceStateFromServer {
+  id: string;
+  teamId: string;
+  sessionId: string;
+  pageId: string;
+  currentQuestionIndex: number;
+  totalQuestions: number;
+  secondsPerQuestion: number;
+  advanceCooldownSeconds: number;
+  questionStartedAt: string;
+  resolvedAt: string | null;
+  status: "playing" | "completed";
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface RaceAnswerFromServer {
+  id: string;
+  teamId: string;
+  sessionId: string;
+  pageId: string;
   userId: string;
   displayName: string;
   questionIndex: number;
   selectedOption: number;
   isCorrect: boolean;
-  answeredAt: string;
   points: number;
+  answeredAt: string;
+}
+
+interface RaceStateResponse {
+  state: RaceStateFromServer | null;
+  answers: RaceAnswerFromServer[];
 }
 
 export interface ChoiceVerifyRacePageProps {
@@ -47,6 +75,7 @@ export interface ChoiceVerifyRacePageProps {
   ) => void;
   sessionId: string;
   gameId: string;
+  pageId?: string;
 }
 
 interface MyTeamResponse {
@@ -73,15 +102,34 @@ function deriveDisplayName(
   return u.id.slice(0, 8);
 }
 
+/** server answer → client RaceAnswerRecord */
+function toRecord(a: RaceAnswerFromServer): RaceAnswerRecord {
+  return {
+    userId: a.userId,
+    displayName: a.displayName,
+    questionIndex: a.questionIndex,
+    selectedOption: a.selectedOption,
+    isCorrect: a.isCorrect,
+    answeredAt: a.answeredAt,
+    points: a.points,
+  };
+}
+
 export default function ChoiceVerifyRacePage({
   config,
   onComplete,
   sessionId,
   gameId,
+  pageId,
 }: ChoiceVerifyRacePageProps) {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  const totalQuestions = config.questions?.length ?? 0;
+  const secondsPerQuestion = config.questionTimeLimit ?? 30;
+  const advanceCooldownSeconds = config.advanceCooldownSeconds ?? 5;
+
+  // 從 useQuery 取 myTeam
   const {
     data: myTeam,
     isLoading: teamLoading,
@@ -91,8 +139,16 @@ export default function ChoiceVerifyRacePage({
     enabled: !!gameId && !!user,
   });
 
-  // 本地累積 answerRecords（含自己 handleAnswer + 隊友 race_answered 廣播）
-  const [answerRecords, setAnswerRecords] = useState<RaceAnswerRecord[]>([]);
+  const teamId = myTeam?.id;
+  const effectivePageId = pageId ?? "default";
+
+  // === Server-driven state ===
+  const [serverState, setServerState] = useState<RaceStateFromServer | null>(null);
+  const [serverAnswers, setServerAnswers] = useState<RaceAnswerFromServer[]>([]);
+  const [stateLoading, setStateLoading] = useState(true);
+  const [stateError, setStateError] = useState<string | null>(null);
+  const advanceFiredRef = useRef<Set<number>>(new Set()); // 已送 advance 的題號（防重複送）
+  const onCompleteFiredRef = useRef(false);
 
   const myDisplayName = useMemo(() => {
     if (!user) return "我";
@@ -111,107 +167,243 @@ export default function ChoiceVerifyRacePage({
     [myTeam],
   );
 
-  // 訂閱 WebSocket race_answered 訊息
-  // 收到隊友答題訊息 → 加進 answerRecords（本地 + 隊友統一管理）
-  const handleWsMessage = useCallback(
-    (msg: { type: string }) => {
-      if (msg.type !== "race_answered") return;
-      const m = msg as unknown as RaceAnsweredWsMessage;
-      // 自己的訊息不重複加（handleAnswer 本地已加）
-      if (m.userId === user?.id) return;
-      setAnswerRecords((prev) => {
-        // 防重：同 user 同題不重複
-        if (
-          prev.some(
-            (r) => r.userId === m.userId && r.questionIndex === m.questionIndex,
-          )
-        ) {
-          return prev;
-        }
-        return [
-          ...prev,
-          {
-            userId: m.userId,
-            displayName: m.displayName,
-            questionIndex: m.questionIndex,
-            selectedOption: m.selectedOption,
-            isCorrect: m.isCorrect,
-            answeredAt: m.answeredAt,
-            points: m.points,
-          },
-        ];
-      });
-    },
-    [user],
+  const answerRecords: RaceAnswerRecord[] = useMemo(
+    () => serverAnswers.map(toRecord),
+    [serverAnswers],
   );
 
-  const { isConnected: wsConnected, isReconnecting, sendRaceAnswer } = useTeamWebSocket({
-    teamId: myTeam?.id,
+  // === Mount: POST /state（idempotent upsert + 拉初始 state）===
+  // teamId / sessionId / effectivePageId 一齊就 POST。重整也會走這條。
+  const initStateMutation = useMutation({
+    mutationFn: async (vars: {
+      teamId: string;
+      sessionId: string;
+      pageId: string;
+    }): Promise<RaceStateResponse> => {
+      const res = await apiRequest("POST", "/api/team-race/state", {
+        ...vars,
+        totalQuestions,
+        secondsPerQuestion,
+        advanceCooldownSeconds,
+      });
+      return res.json();
+    },
+  });
+
+  useEffect(() => {
+    if (!teamId || !sessionId || !effectivePageId || totalQuestions === 0) return;
+    let cancelled = false;
+    setStateLoading(true);
+    setStateError(null);
+    initStateMutation
+      .mutateAsync({ teamId, sessionId, pageId: effectivePageId })
+      .then((data) => {
+        if (cancelled) return;
+        setServerState(data.state);
+        setServerAnswers(data.answers);
+        setStateLoading(false);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        setStateError(err instanceof Error ? err.message : "載入狀態失敗");
+        setStateLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamId, sessionId, effectivePageId, totalQuestions]);
+
+  // === WebSocket：race_state_updated 廣播 → 更新 state + answers ===
+  const handleWsMessage = useCallback(
+    (msg: { type: string }) => {
+      if (msg.type !== "race_state_updated") return;
+      const m = msg as unknown as {
+        type: string;
+        state: RaceStateFromServer;
+        answers: RaceAnswerFromServer[];
+      };
+      // server 廣播只發給該 team、不需多驗
+      setServerState(m.state);
+      setServerAnswers(m.answers);
+    },
+    [],
+  );
+
+  const { isConnected: wsConnected, isReconnecting } = useTeamWebSocket({
+    teamId,
     userId: user?.id,
     userName: myDisplayName,
     onMessage: handleWsMessage,
   });
 
-  // 處理玩家答題：本地累積 + 透過 WebSocket 廣播給同隊全員
+  // === ws reconnect 後重新 fetch state（保證接回最新）===
+  useEffect(() => {
+    if (!wsConnected || !teamId || !sessionId || !effectivePageId) return;
+    if (totalQuestions === 0) return;
+    initStateMutation
+      .mutateAsync({ teamId, sessionId, pageId: effectivePageId })
+      .then((data) => {
+        setServerState(data.state);
+        setServerAnswers(data.answers);
+      })
+      .catch(() => {
+        /* 失敗不阻塞、下次 ws 訊息會更新 */
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsConnected]);
+
+  // === 答題 ===
+  const answerMutation = useMutation({
+    mutationFn: async (vars: {
+      questionIndex: number;
+      selectedOption: number;
+      isCorrect: boolean;
+      points: number;
+    }): Promise<RaceStateResponse> => {
+      if (!teamId) throw new Error("缺 teamId");
+      const res = await apiRequest("POST", "/api/team-race/answer", {
+        teamId,
+        sessionId,
+        pageId: effectivePageId,
+        displayName: myDisplayName,
+        ...vars,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      // 立即更新 local（雖 ws broadcast 也會送、雙保險）
+      if (data.state) setServerState(data.state);
+      if (data.answers) setServerAnswers(data.answers);
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "答題失敗";
+      toast({
+        title: "答題失敗",
+        description: msg,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAnswer = useCallback(
     (questionIndex: number, optionIndex: number) => {
-      if (!user) return;
+      if (!user || !teamId) return;
       const question = config.questions?.[questionIndex];
       if (!question) return;
-
       const isCorrect = question.correctAnswer === optionIndex;
       const points = isCorrect ? (config.rewardPerQuestion ?? 10) : 0;
-
-      const record: RaceAnswerRecord = {
-        userId: user.id,
-        displayName: myDisplayName,
-        questionIndex,
-        selectedOption: optionIndex,
-        isCorrect,
-        answeredAt: new Date().toISOString(),
-        points,
-      };
-      setAnswerRecords((prev) => [...prev, record]);
-
-      // 🛡️ 2026-05-05: ws 未連 → 警告玩家「對方可能看不到」+ 上報事件
-      //   sendRaceAnswer 內部 ws.OPEN check、沒連會 silently fail → 對方收不到 race_answered
-      //   → 對方 isResolved 永遠 false → 兩邊都能答 + 都計分（用戶實測 bug）
-      if (!wsConnected) {
-        toast({
-          title: "⚠️ 連線異常",
-          description: "你的答題可能沒同步給隊友、稍候自動重連",
-          variant: "destructive",
-          duration: 4000,
-        });
-        reportClientEvent({
-          event: "race_answer_ws_disconnected",
-          message: "玩家答題時 WS 未連線、廣播失敗",
-          context: {
-            gameId,
-            sessionId,
-            teamId: myTeam?.id,
-            questionIndex,
-            isReconnecting,
-          },
-        });
-        return;
-      }
-
-      // 透過 WebSocket race_answer 廣播給同隊（server 廣播為 race_answered）
-      sendRaceAnswer({
-        displayName: myDisplayName,
+      answerMutation.mutate({
         questionIndex,
         selectedOption: optionIndex,
         isCorrect,
         points,
       });
     },
-    [
-      user, config, myDisplayName, sendRaceAnswer,
-      wsConnected, isReconnecting, toast,
-      gameId, sessionId, myTeam?.id,
-    ],
+    [user, teamId, config, answerMutation],
   );
+
+  // === 5 秒推進 ===
+  // 觸發條件：state.resolvedAt 有值 + 還未 advance（防重複）
+  // 任一 client 5 秒後送 POST advance；server conditional UPDATE 防 race
+  const advanceMutation = useMutation({
+    mutationFn: async (vars: { expectedQuestionIndex: number }): Promise<RaceStateResponse> => {
+      if (!teamId) throw new Error("缺 teamId");
+      const res = await apiRequest("POST", "/api/team-race/advance", {
+        teamId,
+        sessionId,
+        pageId: effectivePageId,
+        ...vars,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.state) setServerState(data.state);
+      if (data.answers) setServerAnswers(data.answers);
+    },
+  });
+
+  useEffect(() => {
+    if (!serverState || !teamId) return;
+    if (serverState.status === "completed") return;
+    if (!serverState.resolvedAt) return;
+
+    const qIdx = serverState.currentQuestionIndex;
+    if (advanceFiredRef.current.has(qIdx)) return;
+
+    const resolvedAt = new Date(serverState.resolvedAt).getTime();
+    const cooldownMs = (serverState.advanceCooldownSeconds ?? 5) * 1000;
+    const elapsed = Date.now() - resolvedAt;
+    const remaining = Math.max(0, cooldownMs - elapsed);
+
+    advanceFiredRef.current.add(qIdx);
+    const timer = setTimeout(() => {
+      advanceMutation.mutate({ expectedQuestionIndex: qIdx });
+    }, remaining);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    serverState?.resolvedAt,
+    serverState?.currentQuestionIndex,
+    serverState?.status,
+    teamId,
+  ]);
+
+  // === 題目時限到（無人答對的 fallback）===
+  // server 端沒做 server-side timer、由 client 監測 questionStartedAt + secondsPerQuestion
+  // 過了時限仍沒人答對 → 任一 client 送 advance（純超時推進）
+  useEffect(() => {
+    if (!serverState || !teamId) return;
+    if (serverState.status === "completed") return;
+    if (serverState.resolvedAt) return; // 有人答對由上面 useEffect 處理
+    const qIdx = serverState.currentQuestionIndex;
+    if (advanceFiredRef.current.has(qIdx)) return;
+
+    const startedAt = new Date(serverState.questionStartedAt).getTime();
+    const limitMs = (serverState.secondsPerQuestion ?? 30) * 1000;
+    const elapsed = Date.now() - startedAt;
+    const remaining = Math.max(0, limitMs - elapsed);
+
+    const timer = setTimeout(() => {
+      // 再次確認狀態還沒變（race condition）
+      if (advanceFiredRef.current.has(qIdx)) return;
+      advanceFiredRef.current.add(qIdx);
+      advanceMutation.mutate({ expectedQuestionIndex: qIdx });
+    }, remaining + 200); // +200ms buffer 給 server 時鐘漂移
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    serverState?.questionStartedAt,
+    serverState?.currentQuestionIndex,
+    serverState?.resolvedAt,
+    serverState?.status,
+    teamId,
+  ]);
+
+  // === completed → onComplete（只觸發一次）===
+  useEffect(() => {
+    if (!serverState || !user) return;
+    if (serverState.status !== "completed") return;
+    if (onCompleteFiredRef.current) return;
+    onCompleteFiredRef.current = true;
+    // 計算自己的總分
+    const myScore = serverAnswers
+      .filter((a) => a.userId === user.id && a.isCorrect)
+      .reduce((sum, a) => {
+        // 只算「該題第一個答對」的分
+        const sortedQAnswers = serverAnswers
+          .filter((x) => x.questionIndex === a.questionIndex && x.isCorrect)
+          .sort(
+            (l, r) =>
+              new Date(l.answeredAt).getTime() - new Date(r.answeredAt).getTime(),
+          );
+        if (sortedQAnswers[0]?.userId === user.id) return sum + a.points;
+        return sum;
+      }, 0);
+    setTimeout(() => {
+      onComplete({ points: myScore }, config.nextPageId);
+    }, 1500);
+  }, [serverState?.status, serverAnswers, user, onComplete, config.nextPageId]);
 
   // ============================================================================
   // Fallback UI
@@ -252,9 +444,31 @@ export default function ChoiceVerifyRacePage({
     );
   }
 
+  if (stateLoading) {
+    return (
+      <Card data-testid="race-page-state-loading">
+        <CardContent className="p-6 text-center space-y-2">
+          <Loader2 className="w-6 h-6 mx-auto animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">同步隊伍進度中...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (stateError || !serverState) {
+    return (
+      <Card data-testid="race-page-state-error">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="w-8 h-8 mx-auto mb-2 text-destructive" />
+          <p className="text-sm text-muted-foreground">{stateError ?? "狀態載入失敗"}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-3">
-      {/* 🛡️ 2026-05-05: WS 連線狀態 banner — 顯示給玩家看「對手是否同步看得到」 */}
+      {/* WS 連線狀態 banner */}
       {!wsConnected && (
         <Card
           className="border-amber-300 bg-amber-50/80 dark:bg-amber-950/30"
@@ -264,8 +478,8 @@ export default function ChoiceVerifyRacePage({
             <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
             <span className="text-amber-900 dark:text-amber-100">
               {isReconnecting
-                ? "重新連線中…你的答題暫時無法同步給隊友"
-                : "連線中斷、無法與隊友同步"}
+                ? "重新連線中…剛才的答題仍會自動同步"
+                : "連線中斷、答題進度會在重連後自動同步"}
             </span>
           </CardContent>
         </Card>
@@ -275,6 +489,11 @@ export default function ChoiceVerifyRacePage({
         myUserId={user.id}
         members={members}
         answerRecords={answerRecords}
+        currentQuestionIndex={serverState.currentQuestionIndex}
+        questionStartedAt={serverState.questionStartedAt}
+        secondsPerQuestion={serverState.secondsPerQuestion}
+        advanceCooldownSeconds={serverState.advanceCooldownSeconds}
+        resolvedAt={serverState.resolvedAt}
         onAnswer={handleAnswer}
         onComplete={onComplete}
       />

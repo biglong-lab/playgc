@@ -226,6 +226,12 @@ const baseProps = {
   myUserId: "me",
   members: baseMembers,
   answerRecords: [] as RaceAnswerRecord[],
+  // 🆕 2026-05-05: server-driven props
+  currentQuestionIndex: 0,
+  questionStartedAt: "2026-05-05T10:00:00Z",
+  secondsPerQuestion: 30,
+  advanceCooldownSeconds: 5,
+  resolvedAt: null as string | null,
   onAnswer: vi.fn(),
   onComplete: vi.fn(),
 };
@@ -266,6 +272,7 @@ describe("ChoiceVerifyRace 元件", () => {
   });
 
   it("題目已 resolved 時顯示先答對者", () => {
+    // 🆕 2026-05-05: server-driven、需傳 resolvedAt 才會顯示 resolved UI
     const records: RaceAnswerRecord[] = [
       makeRecord({
         userId: "u2",
@@ -274,17 +281,24 @@ describe("ChoiceVerifyRace 元件", () => {
         selectedOption: 0,
         isCorrect: true,
         points: 10,
+        answeredAt: "2026-05-05T10:00:01Z",
       }),
     ];
-    render(<ChoiceVerifyRace {...baseProps} answerRecords={records} />);
+    render(
+      <ChoiceVerifyRace
+        {...baseProps}
+        answerRecords={records}
+        resolvedAt="2026-05-05T10:00:01Z"
+      />,
+    );
     const resolvedSection = screen.getByTestId("race-resolved");
     expect(resolvedSection).toBeInTheDocument();
-    // 用 within 限定範圍，避免跟排行榜的「隊友」字串撞名
     expect(within(resolvedSection).getByText(/隊友/)).toBeInTheDocument();
     expect(within(resolvedSection).getByText(/先答對了/)).toBeInTheDocument();
   });
 
   it("已答題後選項全部 disabled", () => {
+    // 自己已答 → myAlreadyAnswered=true → 全選項 disabled
     const records: RaceAnswerRecord[] = [
       makeRecord({
         userId: "me",

@@ -337,6 +337,16 @@ export interface ChoiceVerifyConfig {
   rewardPerQuestion?: number;
   /** 🆕 答題後顯示的全域解釋（showExplanation=true 時用，說明正確答案由來） */
   explanation?: string;
+  /**
+   * 🆕 2026-05-05 Race 模式專用：每題時限（秒、預設 30）
+   * 沒人答對 → 此時間後自動推下一題（fallback 超時推進）
+   */
+  questionTimeLimit?: number;
+  /**
+   * 🆕 2026-05-05 Race 模式專用：有人答對後的冷卻時間（秒、預設 5）
+   * 第一個答對 → server 設 resolvedAt → UI 倒數 N 秒 → 自動推下一題
+   */
+  advanceCooldownSeconds?: number;
 }
 
 // ============================================================================
