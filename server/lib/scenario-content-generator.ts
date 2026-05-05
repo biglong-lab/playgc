@@ -514,6 +514,12 @@ ${componentDescriptions}
 - "signal_map": { title, prompt, greenLabel, yellowLabel, redLabel }
   交通燈狀態確認：每人選擇 🟢/🟡/🔴 三種狀態加選填評論，揭曉後顯示三色分佈統計與每人評論，適合會議前 go/no-go 確認/準備程度評估/敏捷每日站會
 
+- "team_time_capsule": { title, prompt, openingDate: string }
+  團隊時光膠囊：每人寫下留給未來的話語或心情，訊息全程隱藏，主持人在特定時刻「開啟」膠囊一次揭曉所有留言，適合離職感謝/年末回顧/里程碑紀念/新生代入職
+
+- "warm_cool": { title, target, warmPrompt, coolPrompt, maxLength: 40-200 }
+  暖涼回饋：每人提交一個「暖」（正面肯定）和一個「涼」（建設性改善）的意見，揭曉後成對顯示每人的暖涼組合，適合活動結束回顧/工作坊收尾/產品 sprint 回顧/教育培訓評估
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

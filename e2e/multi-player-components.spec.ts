@@ -228,6 +228,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 61 新元件
     expect(allPageTypes).toContain("speed_brainstorm");
     expect(allPageTypes).toContain("signal_map");
+
+    // Round 62 新元件
+    expect(allPageTypes).toContain("team_time_capsule");
+    expect(allPageTypes).toContain("warm_cool");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -282,6 +286,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "flash_card",
       "speed_brainstorm",
       "signal_map",
+      "team_time_capsule",
+      "warm_cool",
     ];
 
     for (const t of newTypes) {

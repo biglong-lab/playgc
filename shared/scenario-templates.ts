@@ -3017,6 +3017,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "創意工作坊套餐 NT$ 2,500-6,000 / 場。適合產品發想、問題解決、跨部門創新工作坊。",
     status: "live",
   },
+
+  // ── Round 62 ────────────────────────────────────────────────────────────────
+  {
+    id: "farewell-reflection",
+    name: "告別深度回顧",
+    tagline: "時光膠囊 + 暖涼回饋 + 同學錄留言",
+    description:
+      "為重要的告別時刻設計最有溫度的收尾。「時光膠囊」讓每人寫下留給未來的話，所有訊息封存在膠囊裡，主持人在最後一刻開啟，震撼的揭曉讓整場情緒達到高峰；「暖涼回饋」讓每人提交一個正面肯定和一個建設性改善，成對顯示的視覺設計比單純文字更有質感；「同學錄留言」讓每人對其他成員寫下一句祝福或鼓勵，收尾在最溫暖的集體感謝中。三段設計特別適合員工離職感謝會、訓練課程結業、年度旅遊尾牙，讓結束成為最美的句點。",
+    useCases: [
+      "員工離職感謝送別會",
+      "培訓課程結業典禮",
+      "年度尾牙感謝時光",
+      "學期末班級回顧",
+      "重要里程碑紀念儀式",
+    ],
+    category: "social",
+    icon: "Heart",
+    gradient: "from-rose-500/20 to-amber-500/20",
+    estimatedPlayers: "5-50 人",
+    estimatedDuration: "25-40 分鐘",
+    components: [
+      {
+        pageType: "team_time_capsule",
+        label: "時光膠囊",
+        role: "每人寫下留給未來的話，封存至主持人開啟那一刻",
+        axis: "multi",
+      },
+      {
+        pageType: "warm_cool",
+        label: "暖涼回饋",
+        role: "每人提交一個正面肯定與一個改善建議，成對揭曉",
+        axis: "multi",
+      },
+      {
+        pageType: "peer_recognition",
+        label: "同學錄感謝",
+        role: "對每位成員寫下一句祝福或感謝，最溫暖的收尾",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "告別感謝套餐 NT$ 3,000-8,000 / 場。適合離職感謝、結業典禮、年度紀念活動。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

@@ -201,6 +201,8 @@ const StarMapPage = lazy(() => import("@/components/game/multi/StarMapPage"));
 const FlashCardPage = lazy(() => import("@/components/game/multi/FlashCardPage"));
 const SpeedBrainstormPage = lazy(() => import("@/components/game/multi/SpeedBrainstormPage"));
 const SignalMapPage = lazy(() => import("@/components/game/multi/SignalMapPage"));
+const TeamTimeCapsulePage = lazy(() => import("@/components/game/multi/TeamTimeCapsulePage"));
+const WarmCoolPage = lazy(() => import("@/components/game/multi/WarmCoolPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -811,6 +813,10 @@ export default function GamePageRenderer({
         return <SpeedBrainstormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "signal_map":
         return <SignalMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "team_time_capsule":
+        return <TeamTimeCapsulePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "warm_cool":
+        return <WarmCoolPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

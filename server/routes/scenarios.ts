@@ -1831,6 +1831,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         redLabel: "還沒準備好 🔴",
       };
 
+    case "team_time_capsule":
+      return {
+        title: "📦 團隊時光膠囊",
+        prompt: `關於「${scenarioName}」，寫下你想留給未來的話語或心情...`,
+        openingDate: "活動結束後一個月",
+      };
+
+    case "warm_cool":
+      return {
+        title: "🔥❄️ 暖涼回饋",
+        target: scenarioName,
+        warmPrompt: "🔥 暖：什麼做得很好？",
+        coolPrompt: "❄️ 涼：什麼可以改善？",
+        maxLength: 100,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
