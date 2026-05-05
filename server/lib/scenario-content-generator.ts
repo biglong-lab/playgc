@@ -181,6 +181,9 @@ ${componentDescriptions}
 - "live_pulse": { title, subtitle?, prompt?: string, maxLevel: 50-500 }
   prompt 是點擊按鈕上的提示文字（如：點擊為他加油！），maxLevel 是顯示上限（依人數與預期活躍度）
 
+- "debate_vote": { title, topic, proLabel, conLabel, proEmoji?: string, conEmoji?: string, showVoterCount: true, allowSwitch: true }
+  topic 是辯論主題（如：AI 將取代大多數人類工作），proLabel/conLabel 是正反方標籤（如：正方：同意/反方：不同意）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

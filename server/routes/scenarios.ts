@@ -497,6 +497,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResultsLive: true,
       };
 
+    case "debate_vote":
+      return {
+        title: "🗳️ 即時辯論投票",
+        topic: `${scenarioName} — 你的立場是？`,
+        proLabel: "正方：同意",
+        conLabel: "反方：不同意",
+        proEmoji: "👍",
+        conEmoji: "👎",
+        showVoterCount: true,
+        allowSwitch: true,
+      };
+
     case "live_pulse":
       return {
         title: "⚡ 即時活力計",

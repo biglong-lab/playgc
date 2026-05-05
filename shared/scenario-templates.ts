@@ -1060,6 +1060,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "debate_vote",
+        label: "觀點辯論熱身",
+        role: "主持人提出一個有趣問題（如：遠端工作比進辦公室更有效率？），正反即時表態，活絡討論氣氛",
+        axis: "multi",
+      },
+      {
         pageType: "feedback_star",
         label: "活動評分",
         role: "玩家為整場破冰活動評分，讓主持人看到成效",
