@@ -96,6 +96,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "guestbook-host",
       },
       {
+        pageType: "shared_board",
+        label: "來賓祝福牆",
+        role: "賓客從手機張貼彩色祝福卡、即時同步",
+        axis: "multi",
+        demoMode: "shared-board",
+      },
+      {
         pageType: "host_emoji_react",
         label: "情緒池應援",
         role: "高潮時刻按 emoji（如戒指交換）",
@@ -686,6 +693,20 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedPlayers: "20-80 人 / 場",
     estimatedDuration: "半天 - 1 天",
     components: [
+      {
+        pageType: "shared_board",
+        label: "開場共識牆",
+        role: "每人寫下對今天的一個期待或關鍵字",
+        axis: "multi",
+        demoMode: "shared-board",
+      },
+      {
+        pageType: "bingo",
+        label: "人物特徵賓果",
+        role: "找到符合描述的隊友就標記、快速認識彼此",
+        axis: "multi",
+        demoMode: "bingo",
+      },
       {
         pageType: "role_assign",
         label: "角色分派",
