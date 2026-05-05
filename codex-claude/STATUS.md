@@ -7,11 +7,11 @@
 
 ## 📊 當前
 
-- **目前負責人**：Claude（/loop dynamic mode 持續進行中）
-- **開始時間**：2026-05-03 19:30
-- **進行中任務**：🚀 **Phase 6 W22 部署上線完成** — 21 commits / 全功能正式生效
-- **阻塞項**：無（24h 觀察期）
-- **上次更新**：2026-05-03 21:00+ [Claude]（**🚀 Phase 6 W22 部署上線（21 commits、c1ab07d6..df245aa3、生產 e2e 11 端點全綠、CPU 1% / MEM 25%）**）
+- **目前負責人**：（無、session 暫停、24h 觀察期）
+- **開始時間**：—
+- **進行中任務**：—（多人搶答 race state 觀察 + 拍照流程觀察 + Squad「先玩想留再留」採用率觀察）
+- **阻塞項**：無
+- **上次更新**：2026-05-05 [Claude]（**🎯 多人遊戲 3 問題修補 + 完整 e2e 全綠（commit `1121e2b3`、test 163/2287、生產 11 端點全綠、CPU 0.16% / MEM 25%）**）
 
 ---
 
@@ -19,11 +19,14 @@
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 20:45 [Claude] |
-| TypeScript | 零錯誤 ✅ | 20:45 [Claude] |
-| **完整 test:run** | **160 檔 / 2250 tests 全綠** ✅ | 20:45 [Claude] |
+| Smoke test | 51/51 ✅ | 22:23 [Claude] 2026-05-05 |
+| TypeScript | 零錯誤 ✅ | 22:23 [Claude] 2026-05-05 |
+| **完整 test:run** | **163 檔 / 2287 tests 全綠** ✅ | 22:23 [Claude] 2026-05-05 |
 | **Host 元件** | **17 個（W22 +3：BingoBoard/BlessingWall/MicroQa）** ✅ | 20:45 [Claude] |
 | **情境模板** | **17 個（W22 +5）** ✅ | 20:45 [Claude] |
+| **Race state（多人搶答）** | server 統一推進、預設 20s、admin 可設 5-120s ✅ | 22:23 [Claude] 2026-05-05 |
+| **Squad 流程** | 先玩想留再留、5 個軟上限、防誤刪 dialog ✅ | 22:23 [Claude] 2026-05-05 |
+| **PWA 立即更新** | 按一次就好 + visual feedback ✅ | 22:23 [Claude] 2026-05-05 |
 | **🚀 生產端部署** | **commit 28218cdb 已上線** | 14:25 [Claude] |
 | 生產 e2e 5 endpoints | scenarios + openapi + line + cron + 主頁全 200 ✅ | 14:35 [Claude] |
 | 生產資源 | CPU 0% / Memory 327MiB (21%) | 14:35 [Claude] |
@@ -56,6 +59,11 @@
 
 | 時間 | 角色 | 動作 |
 |------|------|------|
+| 2026-05-05 | Claude | 🎯 **多人遊戲 3 問題修補 + 完整 e2e**（PhotoTeamFlow 合成 hard timeout + race 修 / ChoiceVerifyRace 改 server-driven / admin 每題秒數 UI、commit `1121e2b3`、test 163/2287、生產 11 端點全綠）|
+| 2026-05-05 | Claude | 🐛 **PWA 立即更新修**（按一次就好 + Loader2 spinner + ref 即時 lock、commit `efe304b5`）|
+| 2026-05-05 | Claude | 🛡️ **解散隊伍防誤刪 + 修列表殘留**（DisbandSquadDialog 重輸隊名 + invalidateQueries、commit `05751302`）|
+| 2026-05-05 | Claude | 🐛 **修「用既有隊伍出戰」400 + 「建新隊伍」誤帶 squadId 403**（commit `15f19728`）|
+| 2026-05-05 | Claude | 🎯 **組隊系統「先玩、想留再留」全套部署**（11 檔 / 751 行、KeepSquadDialog + 5 個軟上限 + LobbyViews 三狀態 UI、commits `9f2acdb2` + `c3025bc2`）|
 | 21:00+ | Claude | 🚀 **Phase 6 W22 部署上線**（21 commits push main / SSH git pull + docker compose 重建 52s / 生產 e2e 11 端點全綠 / /admin/manual 上線可用 / CPU 1% / MEM 25%）|
 | 20:40+ | Claude | 🏁 **Phase 6 W22 完整收尾**（lecture-conference 情境 + docs/changes 收尾報告、commit `556aacb0`、累計 8 階段 / Host 14→17 / 情境 12→17 / Tests 109→149）|
 | 20:35+ | Claude | **✅ Phase 6 W22 階段 7 MicroQa**（第 17 host 元件、即時 Q&A、會議類核心、commit `5c307424`、雙 renderer + 13 tests + 3 種 pulse handler + 防作弊 throttle）|
