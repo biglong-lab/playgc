@@ -379,6 +379,12 @@ ${componentDescriptions}
 - "rate_idea": { title, prompt, ideas: [{ideaId, text}] }
   玩家對 2-6 個想法各打 1-5 星，公布後依平均分排名並顯示進度條，適合方案評選/優先順序決策/創意評鑑
 
+- "group_mood": { title, prompt, minLabel: 低/差, maxLabel: 高/好 }
+  prompt 詢問目前能量/心情，玩家按 1-10 評分，公布後顯示長條分佈圖+平均值，適合活動開場暖身/訓練前能量掌握/會後反饋
+
+- "daily_intention": { title, prompt, maxLength: 40-80 }
+  prompt 引導寫下一句今日意圖，揭曉後以卡片牆呈現所有人意圖，適合工作坊開場/企業內訓聚焦/活動共識
+
 - "clue_reveal": { title, clues: string[], minCluesBeforeGuess: 1-2 }
   clues 陣列 3-6 條、由模糊到具體排序，minCluesBeforeGuess 設幾條線索後才開放猜答，適合破冰猜謎/知識挑戰/場域解謎
 

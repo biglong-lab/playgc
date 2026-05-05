@@ -966,6 +966,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "group_mood",
+        label: "團隊能量儀表",
+        role: "活動前用 1-10 量表測量團隊整體能量/心情，公布分佈+平均值，讓主持人掌握現場氛圍並即時調整節奏",
+        axis: "multi",
+      },
+      {
+        pageType: "daily_intention",
+        label: "今日意圖",
+        role: "每人寫下一句今天的意圖或聚焦點，公布後呈現彩色卡片牆，適合工作坊開場/企業訓練凝聚共識",
+        axis: "multi",
+      },
+      {
         pageType: "clue_reveal",
         label: "線索解謎",
         role: "主持人逐條揭示線索，玩家猜答案；主持人可標記正確/錯誤，適合訓練前知識暖場或場域解謎活動",

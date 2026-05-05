@@ -1206,6 +1206,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "group_mood":
+      return {
+        title: "😊 團隊能量儀表",
+        prompt: `「${scenarioName}」開始前，大家的能量如何？`,
+        minLabel: "很低落",
+        maxLabel: "超亢奮",
+      };
+
+    case "daily_intention":
+      return {
+        title: "🎯 今日意圖",
+        prompt: `在「${scenarioName}」中，你最想專注在什麼上面？`,
+        maxLength: 60,
+      };
+
     case "clue_reveal":
       return {
         title: "🔍 解謎線索",
