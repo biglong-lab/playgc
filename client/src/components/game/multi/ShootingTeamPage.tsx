@@ -12,7 +12,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, AlertCircle } from "lucide-react";
+import { Users, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useWalkieSuggestion } from "@/hooks/useWalkieSuggestion";
 import { useTeamShootingSync } from "../shared/hooks/useTeamShootingSync";
@@ -77,7 +77,7 @@ export default function ShootingTeamPage({
   const enabled = !!teamId && !!user;
 
   // 訂閱 WebSocket 累積全隊 hits + L3 DB 持久化
-  const { teamHits } = useTeamShootingSync({
+  const { teamHits, isLoaded: hitsLoaded } = useTeamShootingSync({
     sessionId,
     myUserId: user?.id ?? "",
     myDisplayName,
@@ -129,6 +129,16 @@ export default function ShootingTeamPage({
           <p className="text-xs text-muted-foreground">
             請回到場域首頁建立或加入隊伍
           </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hitsLoaded) {
+    return (
+      <Card data-testid="shooting-team-page-state-loading">
+        <CardContent className="p-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
     );

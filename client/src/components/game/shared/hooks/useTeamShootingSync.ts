@@ -64,6 +64,8 @@ export interface UseTeamShootingSyncOptions {
 export interface UseTeamShootingSyncResult {
   /** 全隊命中紀錄（按時序） */
   teamHits: TeamShootingHit[];
+  /** DB 歷史命中已載入完成 */
+  isLoaded: boolean;
   /** WebSocket 是否連線中 */
   isConnected: boolean;
   /** 錯誤訊息 */
@@ -121,6 +123,7 @@ export function useTeamShootingSync({
   const [teamHits, setTeamHits] = useState<TeamShootingHit[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   // WS-only hits（還沒存入 DB 的即時事件）
   const wsHitsRef = useRef<TeamShootingHit[]>([]);
 
@@ -161,6 +164,8 @@ export function useTeamShootingSync({
       setTeamHits(mergeHits(dbHits, wsHitsRef.current));
     } catch {
       // ignore
+    } finally {
+      setIsLoaded(true);
     }
   }, [teamId, pageId, sessionId]);
 
@@ -260,5 +265,5 @@ export function useTeamShootingSync({
     };
   }, [enabled, sessionId, myUserId, myDisplayName]);
 
-  return { teamHits, isConnected, error, clearHits, injectHit };
+  return { teamHits, isLoaded, isConnected, error, clearHits, injectHit };
 }
