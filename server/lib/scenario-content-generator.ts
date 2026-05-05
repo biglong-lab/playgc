@@ -106,6 +106,9 @@ ${componentDescriptions}
 - "mood_meter": { title, question }
   question 是引導玩家選擇活力的提問（如：你現在的狀態是？）
 
+- "team_checklist": { title, items: [...3-8 個任務], celebrationText? }
+  items 是與活動相關的具體任務清單，每項 6-20 字
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

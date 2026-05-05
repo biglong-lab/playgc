@@ -441,6 +441,20 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedDuration: "半天 - 1 天",
     components: [
       {
+        pageType: "mood_meter",
+        label: "開場活力確認",
+        role: "旅途開始前確認全員狀態",
+        axis: "multi",
+        demoMode: "mood-meter",
+      },
+      {
+        pageType: "team_checklist",
+        label: "旅遊任務清單",
+        role: "全員一起勾選完成的景點與任務",
+        axis: "multi",
+        demoMode: "team-checklist",
+      },
+      {
         pageType: "photo_team",
         label: "團體合影",
         role: "分組拍照、自動合成",
@@ -451,6 +465,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "GPS 隊伍任務",
         role: "拓荒、找特定地標",
         axis: "multi",
+      },
+      {
+        pageType: "shared_board",
+        label: "旅遊心得牆",
+        role: "每人貼出今天最有趣的瞬間",
+        axis: "multi",
+        demoMode: "shared-board",
       },
       {
         pageType: "host_guestbook_digital",

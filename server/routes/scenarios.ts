@@ -261,6 +261,13 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         question: "你現在的狀態是？",
         allowChange: true,
       };
+    case "team_checklist":
+      return {
+        title: `${scenarioName} 任務清單`,
+        items: ["完成第一項任務", "完成第二項任務", "完成第三項任務"],
+        winOnComplete: true,
+        celebrationText: "🎉 全隊任務全部完成！",
+      };
 
     // ─── shared / solo（簡單預設）───
     case "dialogue":
