@@ -846,6 +846,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         character: { name: "主持人" },
         messages: [{ text: `歡迎來到 ${scenarioName}` }],
       };
+    case "card_draw":
+      return {
+        title: "🎴 抽牌任務",
+        cards: [
+          { cardId: "c1", label: "破冰發問者", emoji: "🎤", description: "負責提出第一個問題" },
+          { cardId: "c2", label: "記錄者", emoji: "📝", description: "負責記錄討論重點" },
+          { cardId: "c3", label: "時間守護者", emoji: "⏱️", description: "負責提醒時間" },
+          { cardId: "c4", label: "魔鬼代言人", emoji: "😈", description: "負責提出反對意見" },
+          { cardId: "c5", label: "總結者", emoji: "🎯", description: "負責最後整理結論" },
+        ],
+        allowReveal: true,
+      };
+
     case "silent_brainstorm":
       return {
         title: "🧠 靜默腦力激盪",

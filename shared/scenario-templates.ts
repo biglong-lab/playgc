@@ -746,6 +746,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "card_draw",
+        label: "角色抽牌",
+        role: "抽到什麼角色就扮什麼，今天的隊長/嚮導/搞笑咖由天決定，氣氛超輕鬆",
+        axis: "multi",
+      },
+      {
         pageType: "host_guestbook_digital",
         label: "團隊簽名簿",
         role: "活動結束時的留念",
