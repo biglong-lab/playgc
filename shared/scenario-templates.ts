@@ -3230,6 +3230,40 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "快速暖場套餐 NT$ 2,000-6,000 / 場。適合會議開場、慶功宴、季度回顧。",
     status: "live",
   },
+  {
+    id: "agile-sprint-retro",
+    name: "敏捷衝刺回顧",
+    tagline: "KPT 三欄聚焦問題，信心投票確認方向",
+    description: "用 KPT（Keep/Problem/Try）收集全員回饋，再用信心投票評估團隊對下一步的信心程度，完整結束每個衝刺週期。",
+    useCases: ["敏捷 Sprint 回顧", "專案複盤", "季度回顧會議", "學習型工作坊"],
+    category: "corporate",
+    icon: "🔄",
+    gradient: "from-violet-500 to-purple-600",
+    estimatedPlayers: "5-20 人",
+    estimatedDuration: "25-45 分鐘",
+    components: [
+      {
+        pageType: "kpt_retro",
+        label: "KPT 回顧",
+        role: "每人填寫 Keep/Problem/Try 三欄回饋",
+        axis: "multi",
+      },
+      {
+        pageType: "confidence_vote",
+        label: "信心投票",
+        role: "用 1-5 星評估對下一步的信心程度",
+        axis: "multi",
+      },
+      {
+        pageType: "action_item",
+        label: "行動清單",
+        role: "根據 Problem 和 Try 制定具體行動",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "敏捷回顧套餐 NT$ 3,000-8,000 / 場。適合軟體團隊、專案管理、組織改善。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

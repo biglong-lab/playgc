@@ -1921,6 +1921,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         detailLabel: "補充說明（選填）",
       };
 
+    case "kpt_retro":
+      return {
+        title: "🔄 KPT 回顧",
+        keepLabel: "Keep（繼續保持）",
+        problemLabel: "Problem（遇到問題）",
+        tryLabel: "Try（下次嘗試）",
+      };
+
+    case "confidence_vote":
+      return {
+        title: "⭐ 信心投票",
+        question: `對於「${scenarioName}」這個決定，你的信心程度是？`,
+        maxScore: 5,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

@@ -212,6 +212,8 @@ const GroupNormPage = lazy(() => import("@/components/game/multi/GroupNormPage")
 const StoryWallPage = lazy(() => import("@/components/game/multi/StoryWallPage"));
 const QuickReactionPage = lazy(() => import("@/components/game/multi/QuickReactionPage"));
 const PersonalHighlightPage = lazy(() => import("@/components/game/multi/PersonalHighlightPage"));
+const KptRetroPage = lazy(() => import("@/components/game/multi/KptRetroPage"));
+const ConfidenceVotePage = lazy(() => import("@/components/game/multi/ConfidenceVotePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -844,6 +846,10 @@ export default function GamePageRenderer({
         return <QuickReactionPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "personal_highlight":
         return <PersonalHighlightPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "kpt_retro":
+        return <KptRetroPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "confidence_vote":
+        return <ConfidenceVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

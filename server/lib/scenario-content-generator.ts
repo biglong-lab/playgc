@@ -550,6 +550,12 @@ ${componentDescriptions}
 - "personal_highlight": { title, prompt, detailLabel }
   個人亮點：每人分享一個自己在該主題下的成就或亮點（標題必填 + 補充說明選填），揭曉後以漸層彩色卡片牆展示全隊亮點，適合成就慶祝/年度回顧/成就展示/增強團隊信心
 
+- "kpt_retro": { title, keepLabel, problemLabel, tryLabel }
+  KPT 回顧：每人填寫 Keep（繼續保持）/ Problem（遇到問題）/ Try（下次嘗試）三欄，至少填一欄即可，揭曉後以三欄對比格式展示全隊回饋，適合敏捷衝刺回顧/工作坊收尾/專案複盤/學習回顧
+
+- "confidence_vote": { title, question, maxScore: 3-10 }
+  信心投票：每人以 1-5 星為決定/行動/計畫打出信心分數，揭曉後顯示團隊平均信心及分佈長條圖，適合決策確認/計畫審核/風險評估/共識建立
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 
