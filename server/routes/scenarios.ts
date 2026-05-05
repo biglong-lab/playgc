@@ -301,6 +301,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         anonymous: true,
       };
 
+    case "wish_wall":
+      return {
+        title: "💌 祝福牆",
+        prompt: "寫下你的祝福…",
+        maxLength: 100,
+        showAuthor: true,
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {

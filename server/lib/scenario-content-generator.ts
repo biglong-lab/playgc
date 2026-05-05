@@ -124,6 +124,9 @@ ${componentDescriptions}
 - "quick_question": { title, question, maxLength: 20-60, anonymous: true, emoji? }
   question 是所有人共同回答的問題（如：用一句話描述今天？）
 
+- "wish_wall": { title, recipientName?, prompt?, maxLength: 50-150, showAuthor: true }
+  recipientName 是收件人名稱（如：Hung 與 Anita），prompt 是引導語（如：寫下你對他們的祝福…）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

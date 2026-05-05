@@ -103,6 +103,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "shared-board",
       },
       {
+        pageType: "wish_wall",
+        label: "新人祝福卡牆",
+        role: "每位賓客送出一張專屬祝福卡，附 emoji 與署名",
+        axis: "multi",
+      },
+      {
         pageType: "host_emoji_react",
         label: "情緒池應援",
         role: "高潮時刻按 emoji（如戒指交換）",
@@ -138,6 +144,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "生日留言簿",
         role: "電子簽名 + 文字祝福",
         axis: "host",
+      },
+      {
+        pageType: "wish_wall",
+        label: "壽星祝福卡牆",
+        role: "每位賓客送出一張祝福卡給壽星，附 emoji 與署名",
+        axis: "multi",
       },
       {
         pageType: "host_emoji_react",
