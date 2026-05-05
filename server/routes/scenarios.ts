@@ -390,6 +390,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         celebrationText: "恭喜集滿！",
       };
 
+    case "question_box":
+      return {
+        title: "📬 提問箱",
+        prompt: "你有什麼問題想問？",
+        allowAnonymous: true,
+        maxQuestionsPerPerson: 3,
+        maxQuestionLength: 100,
+      };
+
     case "lucky_draw":
       return {
         title: "🎰 幸運抽獎",

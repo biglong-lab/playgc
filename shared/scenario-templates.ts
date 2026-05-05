@@ -497,6 +497,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "team-word-cloud",
       },
       {
+        pageType: "question_box",
+        label: "課程提問箱",
+        role: "學員匿名提問，最多 3 題，其他人可對問題按讚推高優先",
+        axis: "multi",
+      },
+      {
         pageType: "feedback_star",
         label: "課程評分",
         role: "學員為整場訓練評分並留下意見，講師即時掌握滿意度",
@@ -1250,6 +1256,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "每人用一個詞描述最大收穫，即時詞雲浮現",
         axis: "multi",
         demoMode: "team-word-cloud",
+      },
+      {
+        pageType: "question_box",
+        label: "評審提問箱",
+        role: "評審 / 觀眾匿名向各組提問，最熱門問題浮到最上面",
+        axis: "multi",
       },
       {
         pageType: "countdown_reveal",
