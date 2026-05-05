@@ -1257,6 +1257,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         minCluesBeforeGuess: 1,
       };
 
+    case "quote_wall":
+      return {
+        title: "📜 名言牆",
+        prompt: `在「${scenarioName}」中，分享一句你最喜歡的話`,
+        maxLength: 100,
+        placeholder: "例如：凡走過，必留下痕跡",
+      };
+
+    case "action_item":
+      return {
+        title: "✅ 行動承諾",
+        prompt: `完成「${scenarioName}」後，你打算採取什麼行動？`,
+        maxLength: 60,
+        timeOptions: ["今天", "本週", "本月"],
+      };
+
     case "role_play_card":
       return {
         title: "🎭 角色扮演卡",

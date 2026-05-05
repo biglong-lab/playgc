@@ -400,6 +400,12 @@ ${componentDescriptions}
 - "clue_reveal": { title, clues: string[], minCluesBeforeGuess: 1-2 }
   clues 陣列 3-6 條、由模糊到具體排序，minCluesBeforeGuess 設幾條線索後才開放猜答，適合破冰猜謎/知識挑戰/場域解謎
 
+- "quote_wall": { title, prompt, maxLength: 60-120, placeholder }
+  prompt 引導分享名言，placeholder 給範例提示，每人提交名言+出處，揭曉後顯示精美卡片牆，適合開場暖場/分享座右銘/價值觀討論
+
+- "action_item": { title, prompt, maxLength: 40-80, timeOptions: string[2-4] }
+  prompt 引導承諾行動，timeOptions 是時間框架（今天/本週/本月），揭曉後依時間分群顯示，適合工作坊結尾/訓練後行動計畫/共識轉化執行
+
 - "role_play_card": { title, roles: string[3-8] }
   roles 是角色名稱陣列，玩家抽取隨機角色（不重複直到角色用完），揭曉後顯示全員角色分配，適合劇本遊戲/破冰/角色扮演工作坊
 

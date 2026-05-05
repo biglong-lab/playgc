@@ -978,6 +978,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "quote_wall",
+        label: "名言牆",
+        role: "每人分享一句名言+出處，揭曉後精美卡片牆呈現，適合開場暖場/分享座右銘/價值觀討論/活動開幕",
+        axis: "multi",
+      },
+      {
+        pageType: "action_item",
+        label: "行動承諾",
+        role: "每人填一個行動承諾+時間框架（今天/本週/本月），揭曉後依時間分群，適合工作坊結尾/訓練後行動計畫",
+        axis: "multi",
+      },
+      {
         pageType: "role_play_card",
         label: "角色扮演卡",
         role: "玩家隨機抽取角色（領導者/觀察者等），揭曉後顯示全員分配，適合劇本遊戲/角色扮演工作坊/破冰活動",
