@@ -157,6 +157,9 @@ ${componentDescriptions}
 - "group_cheer": { title, goal: 數字, tapEmoji: "👏"|"🔥"|"⚡", celebrateMessage }
   全員瘋狂點擊累積集體應援數，達到目標觸發慶祝，顯示貢獻排行，適合暖場/能量爆發/開場熱身
 
+- "silent_brainstorm": { title, question, maxLength: 50-200, maxIdeasPerPerson: 1-5, showAuthor: false }
+  同步靜默輸入想法（揭曉前看不到他人），揭曉後可對想法投票，防止從眾效應，適合決策/回顧/問題分析
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

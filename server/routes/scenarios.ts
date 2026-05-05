@@ -846,6 +846,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         character: { name: "主持人" },
         messages: [{ text: `歡迎來到 ${scenarioName}` }],
       };
+    case "silent_brainstorm":
+      return {
+        title: "🧠 靜默腦力激盪",
+        question: "如何提升團隊協作效率？",
+        maxLength: 100,
+        maxIdeasPerPerson: 3,
+        showAuthor: false,
+      };
+
     case "group_cheer":
       return {
         title: "💪 集體應援",

@@ -593,6 +593,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "silent_brainstorm",
+        label: "靜默腦力激盪",
+        role: "同步靜默輸入想法，揭曉前看不到他人，防止從眾，揭曉後對想法投票，真實反映集體智慧",
+        axis: "multi",
+      },
+      {
         pageType: "dot_vote",
         label: "議題點點投票",
         role: "每人分配 3 個點給最重要的學習議題或改善方向，共識即時呈現",
