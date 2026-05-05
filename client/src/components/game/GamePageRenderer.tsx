@@ -226,6 +226,8 @@ const ImpactCardPage = lazy(() => import("@/components/game/multi/ImpactCardPage
 const OpenQuizPage = lazy(() => import("@/components/game/multi/OpenQuizPage"));
 const MicroBioPage = lazy(() => import("@/components/game/multi/MicroBioPage"));
 const AfterActionPage = lazy(() => import("@/components/game/multi/AfterActionPage"));
+const TeamAnimalPage = lazy(() => import("@/components/game/multi/TeamAnimalPage"));
+const ReverseBrainstormPage = lazy(() => import("@/components/game/multi/ReverseBrainstormPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -886,6 +888,10 @@ export default function GamePageRenderer({
         return <MicroBioPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "after_action":
         return <AfterActionPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "team_animal":
+        return <TeamAnimalPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "reverse_brainstorm":
+        return <ReverseBrainstormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

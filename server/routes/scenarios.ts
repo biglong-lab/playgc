@@ -2028,6 +2028,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         lessonsLabel: "💡 學到的教訓",
       };
 
+    case "team_animal":
+      return {
+        title: "🦁 團隊隱喻",
+        prompt: `如果「${scenarioName}」的團隊是一種動物（電影/歌曲/食物），會是什麼？`,
+        subjectLabel: "🦁 你選的隱喻",
+        reasonLabel: "💬 理由（30 字以內）",
+      };
+
+    case "reverse_brainstorm":
+      return {
+        title: "🙃 反向腦力激盪",
+        prompt: `關於「${scenarioName}」——如何讓它變得更糟？提出一個反向觀點！`,
+        placeholder: "最糟糕的做法是...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

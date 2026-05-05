@@ -592,6 +592,12 @@ ${componentDescriptions}
 - "after_action": { title, prompt, wellLabel, wrongLabel, lessonsLabel }
   事後覆盤：每人填寫做得好/出了問題/學到的教訓（至少一項），揭曉後以三欄顯示全隊觀察，適合活動/專案/訓練課程結束後的反思覆盤
 
+- "team_animal": { title, prompt, subjectLabel, reasonLabel }
+  團隊隱喻：每人選一個隱喻（動物/電影/歌曲/食物）代表自己眼中的團隊並說明理由，揭曉後展示多彩隱喻卡片牆，適合創意工作坊/團隊認同建立/輕鬆破冰
+
+- "reverse_brainstorm": { title, prompt, placeholder }
+  反向腦力激盪：每人提出一個「讓它變更糟」的反向觀點，揭曉後顯示全隊壞主意集，引導團隊透過反向思考發現真正問題，適合創新工作坊/問題分析/策略討論
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

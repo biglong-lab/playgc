@@ -3438,6 +3438,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "自我介紹與覆盤工作坊 NT$ 2,500-8,000 / 場。完整活動閉環，適合企業培訓、工作坊設計。",
     status: "live",
   },
+  {
+    id: "creative-metaphor-workshop",
+    name: "創意隱喻工作坊",
+    tagline: "團隊隱喻 + 反向腦力激盪，解放創意思維的黃金組合",
+    description: "先用團隊隱喻讓成員探索對團隊的直覺認知，再以反向腦力激盪透過「如何讓它更糟」發現真正問題所在，形成強大的創意雙引擎。",
+    useCases: ["創意工作坊", "問題分析會議", "策略規劃啟動", "設計思維訓練"],
+    category: "corporate",
+    icon: "🎨",
+    gradient: "from-amber-500 to-red-500",
+    estimatedPlayers: "4-24 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "team_animal",
+        label: "團隊隱喻",
+        role: "創意認同探索",
+        axis: "multi",
+      },
+      {
+        pageType: "reverse_brainstorm",
+        label: "反向腦力激盪",
+        role: "反向思考問題發現",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "創意隱喻工作坊 NT$ 2,000-7,000 / 場。創意思維訓練，適合設計思維課程、策略工作坊。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
