@@ -139,6 +139,8 @@ const RolePlayCardPage = lazy(() => import("@/components/game/multi/RolePlayCard
 const GroupDecisionPage = lazy(() => import("@/components/game/multi/GroupDecisionPage"));
 const QuoteWallPage = lazy(() => import("@/components/game/multi/QuoteWallPage"));
 const ActionItemPage = lazy(() => import("@/components/game/multi/ActionItemPage"));
+const TableGroupPage = lazy(() => import("@/components/game/multi/TableGroupPage"));
+const FeedbackFormPage = lazy(() => import("@/components/game/multi/FeedbackFormPage"));
 const SkillSwapPage = lazy(() => import("@/components/game/multi/SkillSwapPage"));
 const AnonymousVoicePage = lazy(() => import("@/components/game/multi/AnonymousVoicePage"));
 const PitchVotePage = lazy(() => import("@/components/game/multi/PitchVotePage"));
@@ -644,6 +646,10 @@ export default function GamePageRenderer({
         return <QuoteWallPage {...commonProps} page={page} pageId={page.id} />;
       case "action_item":
         return <ActionItemPage {...commonProps} page={page} pageId={page.id} />;
+      case "table_group":
+        return <TableGroupPage {...commonProps} page={page} pageId={page.id} />;
+      case "feedback_form":
+        return <FeedbackFormPage {...commonProps} page={page} pageId={page.id} />;
       case "speed_typing":
         return <SpeedTypingPage {...commonProps} page={page} pageId={page.id} />;
       case "skill_swap":

@@ -1257,6 +1257,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         minCluesBeforeGuess: 1,
       };
 
+    case "table_group":
+      return {
+        title: "🪑 桌組分配",
+        tableCount: 4,
+        tableNames: ["桌 A", "桌 B", "桌 C", "桌 D"],
+      };
+
+    case "feedback_form":
+      return {
+        title: "📋 活動回饋單",
+        prompt: `請對「${scenarioName}」的各項進行評分`,
+        dimensions: ["內容品質", "主持引導", "互動體驗", "整體滿意"],
+      };
+
     case "quote_wall":
       return {
         title: "📜 名言牆",

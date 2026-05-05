@@ -400,6 +400,12 @@ ${componentDescriptions}
 - "clue_reveal": { title, clues: string[], minCluesBeforeGuess: 1-2 }
   clues 陣列 3-6 條、由模糊到具體排序，minCluesBeforeGuess 設幾條線索後才開放猜答，適合破冰猜謎/知識挑戰/場域解謎
 
+- "table_group": { title, tableCount: 2-8, tableNames: string[] }
+  tableCount 是桌次數量，tableNames 是桌次名稱陣列（長度需 = tableCount），玩家自選桌次，揭曉後顯示各桌成員名單，適合世界咖啡館/小組討論/分組工作坊
+
+- "feedback_form": { title, prompt, dimensions: string[2-6] }
+  dimensions 是評分向度（如：內容/講師/環境），玩家對每個向度評 1-5 分，揭曉後顯示各向度平均分+進度條，適合課後評估/活動回饋/訓練滿意度調查
+
 - "quote_wall": { title, prompt, maxLength: 60-120, placeholder }
   prompt 引導分享名言，placeholder 給範例提示，每人提交名言+出處，揭曉後顯示精美卡片牆，適合開場暖場/分享座右銘/價值觀討論
 

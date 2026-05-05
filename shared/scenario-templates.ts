@@ -978,6 +978,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "table_group",
+        label: "桌組分配",
+        role: "玩家自選桌次（世界咖啡館風格），揭曉後顯示各桌成員名單，適合小組討論/分組工作坊/世界咖啡館",
+        axis: "multi",
+      },
+      {
+        pageType: "feedback_form",
+        label: "多向度回饋單",
+        role: "主持人設定評分向度（如內容/講師/環境），玩家各評 1-5 分，揭曉後顯示各向度平均，適合課後評估/活動回饋",
+        axis: "multi",
+      },
+      {
         pageType: "quote_wall",
         label: "名言牆",
         role: "每人分享一句名言+出處，揭曉後精美卡片牆呈現，適合開場暖場/分享座右銘/價值觀討論/活動開幕",
