@@ -2180,6 +2180,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         feelingPlaceholder: "當時的感受（一個詞或一句話）",
       };
 
+    case "safety_check":
+      return {
+        title: "🛡️ 心理安全感",
+        prompt: `評估你目前在「${scenarioName}」這個團隊中的感受（1=非常低，5=非常高）`,
+      };
+
+    case "expectation_board":
+      return {
+        title: "🎯 期望看板",
+        expectLabel: "🎯 我對這次活動的期望",
+        contributeLabel: "🤝 我可以貢獻的是",
+        expectPlaceholder: `我希望「${scenarioName}」能夠...`,
+        contributePlaceholder: "我可以帶來...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

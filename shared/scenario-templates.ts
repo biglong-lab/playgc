@@ -3718,6 +3718,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "深度回顧套組 NT$ 1,000-3,000 / 場。幫助學員帶走洞見、留住高光記憶。",
     status: "live",
   },
+  {
+    id: "team-kickoff-pack",
+    name: "🚀 團隊啟動套組",
+    tagline: "開場即破冰，期望對齊、安全感建立一步到位",
+    description: "期望看板 + 心理安全感，讓每位成員在活動開始前就明確表達期望與貢獻，並評估當前心理安全感，為後續深度協作打好基礎。",
+    useCases: ["新課程開場", "跨部門合作啟動", "OKR 工作坊", "新成員加入儀式"],
+    category: "corporate",
+    icon: "Rocket",
+    gradient: "from-sky-400 to-blue-600",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "expectation_board",
+        label: "期望看板",
+        role: "對齊目標與貢獻",
+        axis: "multi",
+      },
+      {
+        pageType: "safety_check",
+        label: "心理安全感",
+        role: "診斷團隊心理安全",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "團隊啟動套組 NT$ 1,500-4,000 / 場。讓每次合作從清晰期望與心理安全感開始。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

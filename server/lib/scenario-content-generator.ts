@@ -652,6 +652,12 @@ ${componentDescriptions}
 - "peak_moment": { title, prompt, momentPlaceholder, feelingPlaceholder }
   最高光時刻：每人分享一個最印象深刻的高光時刻＋當時感受（一個詞），揭曉後以彩色邊框卡片展示全隊高光集錦，適合活動收尾/頒獎慶祝/強化正向記憶
 
+- "safety_check": { title, prompt, dimensions?: [{id, label}]×4 }
+  心理安全感：每人在四個維度（敢說出意見/接受反饋/勇於嘗試/信任夥伴）各評 1-5 分，揭曉後顯示各維度全隊平均值長條圖，適合新團隊開場/組織文化健診/OKR 啟動
+
+- "expectation_board": { title, expectLabel, contributeLabel, expectPlaceholder, contributePlaceholder }
+  期望看板：每人填寫「對這次活動的期望」與「我可以貢獻的是」兩欄至少一欄，揭曉後以彩色卡片格狀排列，適合課程/工作坊開場/新項目啟動/跨部門協作
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 
