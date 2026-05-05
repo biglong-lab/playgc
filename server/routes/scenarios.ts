@@ -1257,6 +1257,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         minCluesBeforeGuess: 1,
       };
 
+    case "heat_map":
+      return {
+        title: "🔥 熱區投票",
+        rowLabels: ["重要", "不重要"],
+        colLabels: ["緊急", "不緊急"],
+      };
+
+    case "energy_boost":
+      return {
+        title: "⚡ 能量加速器",
+        prompt: `在「${scenarioName}」中，送出你的能量鼓勵給某人！`,
+        maxLength: 40,
+        emojis: ["⚡", "🔥", "💪", "🌟", "❤️"],
+      };
+
     case "aha_board":
       return {
         title: "💡 啊哈時刻牆",

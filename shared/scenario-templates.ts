@@ -978,6 +978,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "heat_map",
+        label: "熱區投票",
+        role: "玩家點選矩陣格（如重要/不重要 × 緊急/不緊急），揭曉後熱圖顯示每格票數，適合優先順序決策/共識形成",
+        axis: "multi",
+      },
+      {
+        pageType: "energy_boost",
+        label: "能量加速器",
+        role: "每人填寫收件人+emoji+一句鼓勵，揭曉後顯示各人收到的能量卡，適合暖場/感謝/活動結尾創造正向氛圍",
+        axis: "multi",
+      },
+      {
         pageType: "aha_board",
         label: "啊哈時刻牆",
         role: "每人提交一條學習頓悟，揭曉後以卡片牆呈現，適合課程回顧/工作坊結尾/學習分享場合",
