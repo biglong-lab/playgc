@@ -358,6 +358,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "拖動滑桿揭曉自己的工作風格，群體分布一目瞭然，立刻打開話匣子",
         axis: "multi",
       },
+      {
+        pageType: "group_cheer",
+        label: "集體應援衝刺",
+        role: "全員瘋狂點擊達成目標數，能量爆棚，笑聲連連，把氣氛拉到最高點",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問入場前 30 分鐘暖身。NT$ 5,000-12,000 一場。",
     status: "live",

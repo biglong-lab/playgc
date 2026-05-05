@@ -154,6 +154,9 @@ ${componentDescriptions}
 - "letter_to_self": { title, prompt, maxLength: 100-500, showAuthor: false }
   每人寫信給未來自己，主持人揭曉時集體閱讀，適合訓練結尾/年終反思/畢業典禮/退休歡送/轉型期
 
+- "group_cheer": { title, goal: 數字, tapEmoji: "👏"|"🔥"|"⚡", celebrateMessage }
+  全員瘋狂點擊累積集體應援數，達到目標觸發慶祝，顯示貢獻排行，適合暖場/能量爆發/開場熱身
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

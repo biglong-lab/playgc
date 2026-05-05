@@ -846,6 +846,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         character: { name: "主持人" },
         messages: [{ text: `歡迎來到 ${scenarioName}` }],
       };
+    case "group_cheer":
+      return {
+        title: "💪 集體應援",
+        goal: 500,
+        tapEmoji: "👏",
+        celebrateMessage: "太厲害了！大家一起做到了！",
+      };
+
     case "letter_to_self":
       return {
         title: "✉️ 給未來自己的信",
