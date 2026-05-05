@@ -316,6 +316,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("category_challenge");
     expect(allPageTypes).toContain("category_sort");
     expect(allPageTypes).toContain("consensus_scale");
+
+    // Round 80 補全批次 3
+    expect(allPageTypes).toContain("choice_verify_race");
+    expect(allPageTypes).toContain("clue_reveal");
+    expect(allPageTypes).toContain("collective_poem");
+    expect(allPageTypes).toContain("collective_score");
+    expect(allPageTypes).toContain("color_pulse");
+    expect(allPageTypes).toContain("confirm_it");
+    expect(allPageTypes).toContain("countdown_challenge");
+    expect(allPageTypes).toContain("countdown_reveal");
+    expect(allPageTypes).toContain("crowd_answer");
+    expect(allPageTypes).toContain("desert_island");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -422,6 +434,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "category_challenge",
       "category_sort",
       "consensus_scale",
+      "choice_verify_race",
+      "clue_reveal",
+      "collective_poem",
+      "collective_score",
+      "color_pulse",
+      "confirm_it",
+      "countdown_challenge",
+      "countdown_reveal",
+      "crowd_answer",
+      "desert_island",
     ];
 
     for (const t of newTypes) {
