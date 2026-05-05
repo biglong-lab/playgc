@@ -97,6 +97,12 @@ ${componentDescriptions}
 
 - "gps_cascade": { title, points: [{ id, name, hint, story? }] }
 
+- "shared_board": { title, prompt, maxCardsPerPerson: 2-5 }
+  prompt 是引導玩家張貼的問題（如：寫下一件關於你的有趣事實）
+
+- "bingo": { title, subtitle?, items: [...9-16 個詞彙], gridSize: 3-4, winCondition: "line"|"full", celebrationText? }
+  items 必須與活動/場域相關，每個詞彙 4-10 字
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

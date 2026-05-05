@@ -235,6 +235,27 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         timeLimitSec: 20,
       };
 
+    case "shared_board":
+      return {
+        title: `${scenarioName} 共識牆`,
+        prompt: "寫下一件關於你的有趣事實，讓大家認識你！",
+        maxCardsPerPerson: 3,
+      };
+    case "bingo":
+      return {
+        title: `${scenarioName} 賓果`,
+        subtitle: "點格子，連成一線就 BINGO！",
+        items: [
+          "去過日本", "有養寵物", "是長子女", "喜歡咖啡", "會騎機車",
+          "喜歡唱歌", "有學過樂器", "最近看過電影", "喜歡健行", "會游泳",
+          "有出國旅遊", "喜歡下廚", "是夜貓子", "有運動習慣", "喜歡閱讀",
+          "喜歡看漫畫",
+        ],
+        gridSize: 4,
+        winCondition: "line",
+        celebrationText: "🎉 恭喜完成賓果！",
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {
