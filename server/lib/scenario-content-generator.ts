@@ -460,6 +460,12 @@ ${componentDescriptions}
 - "consensus_map": { title, prompt, topics: string[2-6], xLabel, yLabel, axisMin: 1, axisMax: 5 }
   共識地圖：每人選一個主題並在可行性（X）× 重要性（Y）矩陣上評分，揭曉後依四象限（優先/規劃/快速/擱置）分組顯示，適合策略規劃/優先序決策/議題評估
 
+- "speed_round": { title, question, correctAnswer, answerLabel, maxLength: 20-80, hint }
+  限時搶答：主持人出一道題（question）+ 正確答案（correctAnswer），玩家搶先輸入答案，依作答順序排名，揭曉後顯示誰答對、排名第幾，適合知識競答/活動熱場/趣味競賽
+
+- "scale_vote": { title, question, minLabel, maxLabel, scaleMin: 0, scaleMax: 100, defaultValue: 50 }
+  滑桿投票：每人拖動滑桿在 scaleMin-scaleMax 間選一個值，揭曉後顯示平均分數和分佈圖，適合滿意度調查/立場測量/溫度計問題
+
 - "personal_fact": { title, prompt, maxLength: 50-100, showAuthor: boolean }
   趣味自我揭秘：每人說一個關於自己的趣事/特點，揭曉後大家按愛心投票最驚喜的事實，適合破冰/認識新朋友/聚會
 

@@ -180,6 +180,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 49 新元件
     expect(allPageTypes).toContain("idea_market");
     expect(allPageTypes).toContain("consensus_map");
+
+    // Round 50 新元件
+    expect(allPageTypes).toContain("speed_round");
+    expect(allPageTypes).toContain("scale_vote");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -210,6 +214,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "stand_point",
       "idea_market",
       "consensus_map",
+      "speed_round",
+      "scale_vote",
     ];
 
     for (const t of newTypes) {

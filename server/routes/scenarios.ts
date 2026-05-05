@@ -1664,6 +1664,27 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         axisMax: 5,
       };
 
+    case "speed_round":
+      return {
+        title: "⚡ 限時搶答",
+        question: `關於「${scenarioName}」的搶答題目（請 admin 編輯）`,
+        correctAnswer: "（請 admin 設定正確答案）",
+        answerLabel: "輸入你的答案",
+        maxLength: 60,
+        hint: "",
+      };
+
+    case "scale_vote":
+      return {
+        title: "📊 滑桿投票",
+        question: `你對「${scenarioName}」這個議題的支持程度？`,
+        minLabel: "完全不支持",
+        maxLabel: "完全支持",
+        scaleMin: 0,
+        scaleMax: 100,
+        defaultValue: 50,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

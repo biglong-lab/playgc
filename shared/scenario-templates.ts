@@ -2430,6 +2430,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     status: "live",
   },
 
+  // ── Round 50：知識競答派對 ──────────────
+  {
+    id: "quiz-party",
+    name: "知識競答派對",
+    tagline: "搶答熱身 + 滑桿測溫 + 立場辯論",
+    description:
+      "活動開場的完美熱場三段式。先用「限時搶答」讓大家搶先作答，製造緊張刺激的競賽氛圍，立即分出知識達人；接著用「滑桿投票」測量全場對某個趨勢/議題的支持溫度，讓隱性分歧立即可視化；最後用「立場陳述」讓持不同看法的人說出理由，引發有建設性的群體對話。全程 30 分鐘，適合開場熱場、課間轉換、或活動中段提振精神。",
+    useCases: [
+      "年會/大型活動開場暖身",
+      "課程中場提振注意力",
+      "部門聚會知識競賽",
+      "校園活動闖關遊戲",
+      "產品發表前暖場",
+    ],
+    category: "event",
+    icon: "Zap",
+    gradient: "from-orange-500/20 to-yellow-500/20",
+    estimatedPlayers: "10-100 人",
+    estimatedDuration: "30-45 分鐘",
+    components: [
+      {
+        pageType: "speed_round",
+        label: "搶答開場",
+        role: "主持人出一道關於今天主題的題目，全場搶答，按作答順序排名，揭曉後看誰最快答對，製造競賽氛圍",
+        axis: "multi",
+      },
+      {
+        pageType: "scale_vote",
+        label: "溫度計投票",
+        role: "出一個關鍵議題讓全場在 0-100 滑桿上表態，揭曉後看平均分和分佈，找到全場「公約數」",
+        axis: "multi",
+      },
+      {
+        pageType: "stand_point",
+        label: "立場大辯論",
+        role: "根據滑桿投票結果，設定一個爭議問題，支持/中立/反對各方說明理由，揭曉後引發群體對話",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "活動熱場套餐 NT$ 2,000-5,000 / 場。月訂閱無限次使用 NT$ 1,500-3,000。",
+    status: "live",
+  },
+
   // ── Round 49：策略規劃工作坊 ──────────────
   {
     id: "strategy-workshop",

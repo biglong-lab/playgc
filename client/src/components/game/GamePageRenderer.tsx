@@ -177,6 +177,8 @@ const MoodBoardPage = lazy(() => import("@/components/game/multi/MoodBoardPage")
 const LearningCheckPage = lazy(() => import("@/components/game/multi/LearningCheckPage"));
 const StandPointPage = lazy(() => import("@/components/game/multi/StandPointPage"));
 const ConsensusMapPage = lazy(() => import("@/components/game/multi/ConsensusMapPage"));
+const SpeedRoundPage = lazy(() => import("@/components/game/multi/SpeedRoundPage"));
+const ScaleVotePage = lazy(() => import("@/components/game/multi/ScaleVotePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -739,6 +741,10 @@ export default function GamePageRenderer({
         return <StandPointPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "consensus_map":
         return <ConsensusMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "speed_round":
+        return <SpeedRoundPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "scale_vote":
+        return <ScaleVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
