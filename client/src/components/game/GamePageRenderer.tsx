@@ -207,6 +207,8 @@ const GiveGetPage = lazy(() => import("@/components/game/multi/GiveGetPage"));
 const AskMeAnythingPage = lazy(() => import("@/components/game/multi/AskMeAnythingPage"));
 const RoseBudThornPage = lazy(() => import("@/components/game/multi/RoseBudThornPage"));
 const EventTimelinePage = lazy(() => import("@/components/game/multi/EventTimelinePage"));
+const YesNoMaybePage = lazy(() => import("@/components/game/multi/YesNoMaybePage"));
+const GroupNormPage = lazy(() => import("@/components/game/multi/GroupNormPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -829,6 +831,10 @@ export default function GamePageRenderer({
         return <RoseBudThornPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "event_timeline":
         return <EventTimelinePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "yes_no_maybe":
+        return <YesNoMaybePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "group_norm":
+        return <GroupNormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

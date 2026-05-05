@@ -532,6 +532,12 @@ ${componentDescriptions}
 - "event_timeline": { title, prompt, timePlaceholder, maxLength: 40-120 }
   共享時間軸：每人加入帶時間標記的重要事件，系統按時間排序，揭曉後呈現所有人共同構建的時間軸，適合團隊歷程回顧/個人旅程分享/年度回顧/計畫里程碑梳理
 
+- "yes_no_maybe": { title, question }
+  快速共識確認：針對一個問題，每人選擇 ✅ 同意 / ❌ 不同意 / 🤔 待定，揭曉後顯示三色分佈長條圖，適合快速決策/方向確認/提案投票/會議前對齊
+
+- "group_norm": { title, prompt, maxLength: 40-100 }
+  團隊工作約定：每人提出希望共同遵守的工作規範，所有人可對規範按讚表示認同，揭曉後按讚數排序，適合新團隊破冰/工作坊開場/跨部門協作建立共識/新成員融入
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

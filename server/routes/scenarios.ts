@@ -1879,6 +1879,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 80,
       };
 
+    case "yes_no_maybe":
+      return {
+        title: "✅ 快速共識確認",
+        question: `關於「${scenarioName}」，你同意這個方向嗎？`,
+      };
+
+    case "group_norm":
+      return {
+        title: "📜 團隊工作約定",
+        prompt: `針對「${scenarioName}」，提出一條你希望團隊遵守的工作約定`,
+        maxLength: 80,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

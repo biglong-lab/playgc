@@ -3128,6 +3128,40 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "回顧套餐 NT$ 5,000-12,000 / 場。適合 Agile 團隊、工作坊、季度盤點。",
     status: "live",
   },
+  {
+    id: "team-kickoff-alignment",
+    name: "團隊啟動對齊工作坊",
+    tagline: "快速建立共識、制定工作約定，讓新團隊從第一天就對齊",
+    description: "結合快速共識投票與共建工作約定，幫助新團隊或跨部門協作快速建立共同語言和工作規範。",
+    useCases: ["新團隊啟動", "跨部門專案開場", "年度計畫對齊", "工作坊破冰"],
+    category: "corporate",
+    icon: "🤝",
+    gradient: "from-indigo-500 to-violet-400",
+    estimatedPlayers: "6-25 人",
+    estimatedDuration: "20-35 分鐘",
+    components: [
+      {
+        pageType: "yes_no_maybe",
+        label: "快速共識確認",
+        role: "對方向提案進行 Yes/No/Maybe 投票確認",
+        axis: "multi",
+      },
+      {
+        pageType: "group_norm",
+        label: "工作約定共建",
+        role: "每人提出約定，按讚投票選出最重要的規範",
+        axis: "multi",
+      },
+      {
+        pageType: "give_get",
+        label: "技能供需配對",
+        role: "揭示每人的能力與需求，促進互助",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "啟動對齊套餐 NT$ 4,000-10,000 / 場。適合新團隊、跨部門協作、年度啟動大會。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
