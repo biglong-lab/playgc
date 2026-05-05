@@ -421,6 +421,12 @@ ${componentDescriptions}
 - "rank_choice": { title, question: string, items: RankItem[] }
   排序投票：每人拖排 N 個項目的優先順序，公布後以 Borda 積分法聚合全員偏好，適合議程優先排序/功能需求排序/價值觀討論
 
+- "story_branch": { title, segments: StorySegment[] }
+  故事分支：主持人設計有分叉的故事段落，玩家集體投票決定故事走向，適合派對創意遊戲/教育情境模擬/品牌故事體驗
+
+- "mood_map": { title, prompt, xLow, xHigh, yLow, yHigh }
+  心情地圖：玩家在 2D 座標地圖上點擊標記自己的心情位置（X=能量，Y=情緒），揭曉後主持人一眼看見全員情緒分布，適合開場暖身/工作坊情緒確認/心理健康活動
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

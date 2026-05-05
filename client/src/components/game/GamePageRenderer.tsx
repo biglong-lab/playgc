@@ -137,6 +137,8 @@ const EmojiSliderPage = lazy(() => import("@/components/game/multi/EmojiSliderPa
 const SceneVotePage = lazy(() => import("@/components/game/multi/SceneVotePage"));
 const TimedChallengePage = lazy(() => import("@/components/game/multi/TimedChallengePage"));
 const RankChoicePage = lazy(() => import("@/components/game/multi/RankChoicePage"));
+const StoryBranchPage = lazy(() => import("@/components/game/multi/StoryBranchPage"));
+const MoodMapPage = lazy(() => import("@/components/game/multi/MoodMapPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -619,6 +621,10 @@ export default function GamePageRenderer({
         return <TimedChallengePage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "rank_choice":
         return <RankChoicePage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "story_branch":
+        return <StoryBranchPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "mood_map":
+        return <MoodMapPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

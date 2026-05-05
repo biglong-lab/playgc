@@ -1324,6 +1324,31 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "story_branch":
+      return {
+        title: "📖 故事分支",
+        segments: [
+          {
+            segmentId: "s1",
+            text: `「${scenarioName}」的冒險開始了！你面臨第一個選擇。`,
+            choices: [
+              { choiceId: "s1a", label: "選項 A", nextSegmentId: null },
+              { choiceId: "s1b", label: "選項 B", nextSegmentId: null },
+            ],
+          },
+        ],
+      };
+
+    case "mood_map":
+      return {
+        title: "🗺️ 心情地圖",
+        prompt: `在「${scenarioName}」中，點擊地圖標記你現在的心情位置`,
+        xLow: "低能量",
+        xHigh: "高能量",
+        yLow: "負面",
+        yHigh: "正面",
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
