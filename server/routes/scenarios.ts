@@ -846,6 +846,13 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         character: { name: "主持人" },
         messages: [{ text: `歡迎來到 ${scenarioName}` }],
       };
+    case "group_promise":
+      return {
+        title: "🤝 集體承諾宣言",
+        pledgeText: "我承諾將今天學到的知識，落實應用在工作中，並在一個月內回報成果。",
+        goalSigners: 20,
+      };
+
     case "card_draw":
       return {
         title: "🎴 抽牌任務",

@@ -163,6 +163,9 @@ ${componentDescriptions}
 - "card_draw": { title, cards: [{ cardId, label, emoji, description? }...], allowReveal: true }
   隨機抽角色/任務牌，揭曉前只看自己，揭曉後顯示所有人的牌，適合角色扮演/任務分配/討論暖身
 
+- "group_promise": { title, pledgeText, goalSigners?: number }
+  全員點擊「我承諾」宣誓，顯示名單+進度條+達標慶祝，適合訓練結尾/團隊宣言/新年承諾/開幕誓師
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

@@ -659,6 +659,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "課程結束前，每人寫信給三個月後的自己，主持人揭曉，感性收尾讓學員帶著承諾離開",
         axis: "multi",
       },
+      {
+        pageType: "group_promise",
+        label: "集體承諾宣言",
+        role: "全員同步點擊承諾，即時看到所有人的名字出現在宣言牆，達標觸發慶祝，讓承諾有儀式感",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",
