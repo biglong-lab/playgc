@@ -1004,6 +1004,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLinesPerUser: 1,
       };
 
+    case "bottle_letter":
+      return {
+        title: "🍾 漂流瓶",
+        prompt: "寫下一句話或一個心願，讓它漂向陌生人",
+        maxLength: 200,
+        showAuthor: false,
+      };
+
+    case "time_capture":
+      return {
+        title: "🕰️ 時空膠囊",
+        prompt: "寫下你現在的感受，封存給未來的自己",
+        maxLength: 200,
+        showAuthor: false,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

@@ -145,6 +145,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "每位賓客提交一句祝福或人生建議，形成獨一無二的集體智慧牆",
         axis: "multi",
       },
+      {
+        pageType: "bottle_letter",
+        label: "漂流瓶祝福",
+        role: "每位賓客匿名寫一封信，揭曉後隨機打開一個個漂流瓶，讀到意外的真誠祝福，讓婚禮更有溫度與驚喜",
+        axis: "multi",
+      },
     ],
     valueProposition:
       "替代傳統紙本簽名簿、提供拍照分享素材、活動結束後新人可下載完整紀錄。一場婚禮 NT$ 8,000-15,000 服務費。",
@@ -191,6 +197,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         pageType: "countdown_challenge",
         label: "派對限時挑戰",
         role: "30 秒說出壽星 5 個特色！全員計時比賽，完成者排行榜，氣氛瞬間炸裂",
+        axis: "multi",
+      },
+      {
+        pageType: "time_capture",
+        label: "時空膠囊",
+        role: "每位賓客寫下對壽星的話，封存至下個生日再開啟，每年都有跨越時間的驚喜",
         axis: "multi",
       },
     ],

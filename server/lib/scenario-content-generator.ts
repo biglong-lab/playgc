@@ -193,6 +193,12 @@ ${componentDescriptions}
 - "collective_poem": { title, prompt, starter?: string, maxLength: 20-80, showAuthor: boolean, maxLinesPerUser: 1-3 }
   每人加入一行詩句（含選填開篇句），提交後即顯示於預覽（未揭曉狀態），揭曉後呈現完整詩篇；適合創意結尾/交誼活動/詩意熱場/學習收尾儀式
 
+- "bottle_letter": { title, prompt, maxLength: 80-300, showAuthor: boolean }
+  每人寫一封匿名信，揭曉後按隨機順序展示所有漂流瓶（deterministic shuffle），打開信件有儀式感；適合聚會暖場/末日儀式/破冰書寫/交誼互動
+
+- "time_capture": { title, prompt, openDate?: string（ISO date，選填開啟日期）, maxLength: 80-300, showAuthor: boolean }
+  每人寫下給未來自己的訊息，支援設定開啟日期（倒計時顯示），揭曉後一起閱讀集體記錄；適合結業典禮收尾/年度回顧/訓練後承諾書/生日/婚禮留言牆
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

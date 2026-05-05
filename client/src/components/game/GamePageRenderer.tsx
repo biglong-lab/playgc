@@ -101,6 +101,8 @@ const WordAssociationPage = lazy(() => import("@/components/game/multi/WordAssoc
 const FeedbackSandwichPage = lazy(() => import("@/components/game/multi/FeedbackSandwichPage"));
 const ValueRankPage = lazy(() => import("@/components/game/multi/ValueRankPage"));
 const CollectivePoemPage = lazy(() => import("@/components/game/multi/CollectivePoemPage"));
+const BottleLetterPage = lazy(() => import("@/components/game/multi/BottleLetterPage"));
+const TimeCapturePage = lazy(() => import("@/components/game/multi/TimeCapturePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -511,6 +513,10 @@ export default function GamePageRenderer({
         return <ValueRankPage {...commonProps} page={page} pageId={page.id} />;
       case "collective_poem":
         return <CollectivePoemPage {...commonProps} page={page} pageId={page.id} />;
+      case "bottle_letter":
+        return <BottleLetterPage {...commonProps} page={page} pageId={page.id} />;
+      case "time_capture":
+        return <TimeCapturePage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
