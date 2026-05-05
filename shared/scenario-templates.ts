@@ -2683,6 +2683,47 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "培訓評估套餐 NT$ 3,000-8,000 / 場，取代紙本問卷，資料即時可視化。",
     status: "live",
   },
+  {
+    id: "creative-competition",
+    name: "創意競賽派對",
+    tagline: "作品票選 + 代幣分配 + 公開承諾",
+    description:
+      "讓創意有被看見和被評價的舞台。先用「作品票選」讓每人提交一個創意答案（團隊名稱、活動口號、產品命名等），大家互相投票選出最有創意的；接著用「代幣投票」讓大家用有限代幣為最想推進的創意方案分配資源，模擬真實的資源分配決策；最後用「公開承諾」讓創意贏家或全體宣示如何推動這個創意。從創意生成到資源決策到行動承諾，一氣呵成。",
+    useCases: [
+      "新產品命名大賽",
+      "團隊標語設計",
+      "創新想法競賽",
+      "公司文化創意",
+      "活動主題票選",
+    ],
+    category: "corporate",
+    icon: "Lightbulb",
+    gradient: "from-purple-500/20 to-pink-500/20",
+    estimatedPlayers: "10-60 人",
+    estimatedDuration: "25-40 分鐘",
+    components: [
+      {
+        pageType: "gallery_vote",
+        label: "創意提案",
+        role: "每人提交一個創意答案（命名/口號/方案），提交後可為別人的投票，揭曉後依票數排序，創意之王誕生",
+        axis: "multi",
+      },
+      {
+        pageType: "token_vote",
+        label: "資源分配",
+        role: "將票選出的前三個方案列為選項，每人分配 10 枚代幣，揭曉後看到全隊集體決策結果",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "執行承諾",
+        role: "為獲選方案寫下各自的執行承諾，讓創意落地",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "創意工作坊套餐 NT$ 4,000-10,000 / 場。適合新產品開發、品牌重塑、文化建設。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

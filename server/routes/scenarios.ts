@@ -1702,6 +1702,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 40,
       };
 
+    case "token_vote":
+      return {
+        title: "🪙 代幣投票",
+        question: `請將 10 枚代幣分配給「${scenarioName}」的重點項目`,
+        options: ["第一優先", "第二優先", "第三優先"],
+        totalTokens: 10,
+      };
+
+    case "gallery_vote":
+      return {
+        title: "🖼 作品票選",
+        prompt: `提交你對「${scenarioName}」的創意答案，並為最喜歡的投票`,
+        galleryLabel: "作品內容",
+        placeholder: "輸入你的創意答案...",
+        maxLength: 100,
+      };
+
     case "personal_score":
       return {
         title: "⭐ 個人自評",

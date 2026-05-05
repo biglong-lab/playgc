@@ -196,6 +196,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 53 新元件
     expect(allPageTypes).toContain("personal_score");
     expect(allPageTypes).toContain("time_check");
+
+    // Round 54 新元件
+    expect(allPageTypes).toContain("token_vote");
+    expect(allPageTypes).toContain("gallery_vote");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -234,6 +238,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "random_pick",
       "personal_score",
       "time_check",
+      "token_vote",
+      "gallery_vote",
     ];
 
     for (const t of newTypes) {

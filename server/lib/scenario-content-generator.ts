@@ -472,6 +472,12 @@ ${componentDescriptions}
 - "quick_poll": { title, question, options: string[2-6], maxLength: 20-60 }
   快速民調：提供 2-6 個選項讓每人投一票（單選），揭曉後顯示各選項票數和百分比長條圖，適合偏好調查/決策輔助/意見蒐集
 
+- "token_vote": { title, question, options: string[2-8], totalTokens: 5-20 }
+  代幣投票：每人有固定數量代幣，用加減按鈕分配給各選項，所有代幣分配完才能提交，揭曉後顯示各選項獲得總代幣，適合資源分配決策/優先序制定/預算分配討論
+
+- "gallery_vote": { title, prompt, galleryLabel, placeholder, maxLength: 30-200 }
+  作品票選：所有人提交一段創意內容（名字/標語/答案/作品描述），提交後可為別人的作品投票，揭曉後依票數排序展示，適合命名大賽/創意競賽/破冰自我介紹互評
+
 - "personal_score": { title, prompt, criteria: string[2-8], maxScore: 3-10 }
   個人自評量表：每人對多個指標用滑桿自評分數，揭曉後顯示各指標團隊平均與分布，適合培訓後評估/技能盤點/360度回饋前置/自我反思
 
