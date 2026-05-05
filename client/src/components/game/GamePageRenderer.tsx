@@ -181,6 +181,8 @@ const SpeedRoundPage = lazy(() => import("@/components/game/multi/SpeedRoundPage
 const ScaleVotePage = lazy(() => import("@/components/game/multi/ScaleVotePage"));
 const WishBucketPage = lazy(() => import("@/components/game/multi/WishBucketPage"));
 const QuickPollPage = lazy(() => import("@/components/game/multi/QuickPollPage"));
+const EmojiWallPage = lazy(() => import("@/components/game/multi/EmojiWallPage"));
+const RandomPickPage = lazy(() => import("@/components/game/multi/RandomPickPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -751,6 +753,10 @@ export default function GamePageRenderer({
         return <WishBucketPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "quick_poll":
         return <QuickPollPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "emoji_wall":
+        return <EmojiWallPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "random_pick":
+        return <RandomPickPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

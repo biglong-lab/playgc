@@ -2601,6 +2601,47 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "企業培訓收尾模組 NT$ 3,000-8,000 / 場。月訂閱包含無限次收尾評估 NT$ 2,000-5,000。",
     status: "live",
   },
+  {
+    id: "lucky-draw-party",
+    name: "幸運抽獎派對",
+    tagline: "表情暖場 + 現場票選 + 隨機抽獎",
+    description:
+      "活動現場最受歡迎的三段式互動。先用「表情牆」讓所有人選一個表情代表此刻心情，瞬間活絡現場氣氛；接著用「快速民調」票選大家最期待的環節或最喜愛的選項，製造懸念與話題；壓軸用「隨機抽選」讓全場自願報名，主持人一鍵抽出幸運得主，手機即時顯示恭喜，全場歡呼。全程 20 分鐘，零門檻、高參與、百分百記憶點。",
+    useCases: [
+      "年會抽獎環節",
+      "園遊會特別活動",
+      "開幕典禮暖場",
+      "校慶活動互動",
+      "企業尾牙主秀",
+    ],
+    category: "event",
+    icon: "Gift",
+    gradient: "from-amber-500/20 to-orange-500/20",
+    estimatedPlayers: "20-500 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "emoji_wall",
+        label: "心情簽到",
+        role: "活動開始前，每人選一個表情代表現在的心情，揭曉後主持人逐一唸出各表情人數，帶動現場氛圍",
+        axis: "multi",
+      },
+      {
+        pageType: "quick_poll",
+        label: "現場票選",
+        role: "對本次活動最期待的環節進行票選，結果即時顯示，製造懸念與參與感",
+        axis: "multi",
+      },
+      {
+        pageType: "random_pick",
+        label: "幸運抽獎",
+        role: "全場自願報名，主持人按下抽選按鈕，隨機抽出幸運得主，中獎者手機顯示恭喜訊息，全場目睹誰中獎",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "活動暖場 + 抽獎套餐 NT$ 2,000-5,000 / 場。月訂閱可無限次活動使用 NT$ 1,500-3,000。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

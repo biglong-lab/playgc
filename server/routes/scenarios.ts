@@ -1702,6 +1702,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 40,
       };
 
+    case "emoji_wall":
+      return {
+        title: "😊 表情牆",
+        prompt: `用一個表情代表你對「${scenarioName}」的感受`,
+        emojis: ["😊", "😎", "🤔", "😅", "🔥", "💪", "😴", "🤩", "😰", "🥳"],
+        reasonLabel: "為什麼選這個？（選填）",
+        askReason: true,
+      };
+
+    case "random_pick":
+      return {
+        title: "🎲 隨機抽選",
+        prompt: "點擊下方按鈕參加抽選",
+        pickCount: 1,
+        joinLabel: "我要參加",
+        pickLabel: "開始抽選",
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

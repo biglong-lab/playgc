@@ -472,6 +472,12 @@ ${componentDescriptions}
 - "quick_poll": { title, question, options: string[2-6], maxLength: 20-60 }
   快速民調：提供 2-6 個選項讓每人投一票（單選），揭曉後顯示各選項票數和百分比長條圖，適合偏好調查/決策輔助/意見蒐集
 
+- "emoji_wall": { title, prompt, emojis: string[5-12], reasonLabel, askReason: boolean }
+  表情牆：每人從表情符號庫中選一個代表自己感受的表情並可附上理由，揭曉後依表情分組顯示，適合暖場/心情check-in/結束回顧
+
+- "random_pick": { title, prompt, pickCount: 1-5, joinLabel, pickLabel }
+  隨機抽選：參與者自願報名，主持人觸發隨機抽選指定人數，中獎者看到恭喜訊息，可重複抽選，適合抽獎/隨機點名/分組/挑戰邀請
+
 - "personal_fact": { title, prompt, maxLength: 50-100, showAuthor: boolean }
   趣味自我揭秘：每人說一個關於自己的趣事/特點，揭曉後大家按愛心投票最驚喜的事實，適合破冰/認識新朋友/聚會
 
