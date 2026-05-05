@@ -29,6 +29,7 @@ const TreasureHuntPage = lazy(() => import("@/components/game/multi/TreasureHunt
 const GpsCascadePage = lazy(() => import("@/components/game/multi/GpsCascadePage"));
 const CollectiveScorePage = lazy(() => import("@/components/game/multi/CollectiveScorePage"));
 const RoleAssignPage = lazy(() => import("@/components/game/multi/RoleAssignPage"));
+const SharedBoardPage = lazy(() => import("@/components/game/multi/SharedBoardPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -295,6 +296,8 @@ export default function GamePageRenderer({
         return <WordCloudPage page={page} />;
       case "quest_chain":
         return <QuestChainPage {...commonProps} page={page} pageId={page.id} />;
+      case "shared_board":
+        return <SharedBoardPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
