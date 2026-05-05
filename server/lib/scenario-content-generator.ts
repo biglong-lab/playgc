@@ -520,6 +520,12 @@ ${componentDescriptions}
 - "warm_cool": { title, target, warmPrompt, coolPrompt, maxLength: 40-200 }
   暖涼回饋：每人提交一個「暖」（正面肯定）和一個「涼」（建設性改善）的意見，揭曉後成對顯示每人的暖涼組合，適合活動結束回顧/工作坊收尾/產品 sprint 回顧/教育培訓評估
 
+- "give_get": { title, givePrompt, getPrompt, maxLength: 40-120 }
+  技能交換板：每人填寫自己能提供什麼（Give）和需要什麼幫助（Get），揭曉後以雙欄看板顯示所有人的技能供需配對，適合內訓開場/社群聚會/跨部門協作/新創網絡活動
+
+- "ask_me_anything": { title, prompt, maxLength: 40-200 }
+  AMA 問答板：任何人隨時提問，所有問題立即公開可見，參與者可對問題按讚投票，問題自動按票數高低排序，適合講師 Q&A/主管對話/知識分享會/想法釐清
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

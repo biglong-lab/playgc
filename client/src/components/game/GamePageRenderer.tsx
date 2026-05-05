@@ -203,6 +203,8 @@ const SpeedBrainstormPage = lazy(() => import("@/components/game/multi/SpeedBrai
 const SignalMapPage = lazy(() => import("@/components/game/multi/SignalMapPage"));
 const TeamTimeCapsulePage = lazy(() => import("@/components/game/multi/TeamTimeCapsulePage"));
 const WarmCoolPage = lazy(() => import("@/components/game/multi/WarmCoolPage"));
+const GiveGetPage = lazy(() => import("@/components/game/multi/GiveGetPage"));
+const AskMeAnythingPage = lazy(() => import("@/components/game/multi/AskMeAnythingPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -817,6 +819,10 @@ export default function GamePageRenderer({
         return <TeamTimeCapsulePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "warm_cool":
         return <WarmCoolPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "give_get":
+        return <GiveGetPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "ask_me_anything":
+        return <AskMeAnythingPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

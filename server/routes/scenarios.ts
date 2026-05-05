@@ -1847,6 +1847,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 100,
       };
 
+    case "give_get":
+      return {
+        title: "🤝 技能交換板",
+        givePrompt: "💪 我可以提供...",
+        getPrompt: "🙏 我需要幫助...",
+        maxLength: 80,
+      };
+
+    case "ask_me_anything":
+      return {
+        title: "🙋 Ask Me Anything",
+        prompt: `關於「${scenarioName}」，有什麼想問的嗎？`,
+        maxLength: 120,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

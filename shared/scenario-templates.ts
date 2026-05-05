@@ -3060,6 +3060,40 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "告別感謝套餐 NT$ 3,000-8,000 / 場。適合離職感謝、結業典禮、年度紀念活動。",
     status: "live",
   },
+  {
+    id: "skill-exchange-ama",
+    name: "技能交換與問答工作坊",
+    tagline: "連結彼此、分享所知，讓每個人的智慧都被看見",
+    description: "透過技能交換板讓成員互相發現彼此的資源與需求，再以 AMA 問答板深化對話，形成真正的互助網絡。",
+    useCases: ["內部知識交流", "跨部門協作開場", "社群聚會破冰", "新創網絡活動"],
+    category: "corporate",
+    icon: "🤝",
+    gradient: "from-teal-500 to-cyan-400",
+    estimatedPlayers: "8-30 人",
+    estimatedDuration: "25-40 分鐘",
+    components: [
+      {
+        pageType: "give_get",
+        label: "技能交換板",
+        role: "每人填寫能給予什麼、需要什麼，揭曉後配對供需",
+        axis: "multi",
+      },
+      {
+        pageType: "ask_me_anything",
+        label: "AMA 問答板",
+        role: "開放提問，按讚投票排序，深化對話",
+        axis: "multi",
+      },
+      {
+        pageType: "peer_recognition",
+        label: "夥伴感謝牆",
+        role: "對幫助你的人送上感謝，強化網絡連結",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "互助連結套餐 NT$ 4,000-10,000 / 場。適合企業內訓、知識分享會、社群聚會。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
