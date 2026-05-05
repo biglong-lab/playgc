@@ -274,6 +274,13 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         question: "你對這次活動的評分？",
         allowComment: true,
       };
+    case "team_word_cloud":
+      return {
+        title: "🌐 團隊詞雲",
+        question: "一個詞描述你現在的感受？",
+        maxWordsPerPerson: 3,
+        maxWordLength: 15,
+      };
 
     // ─── shared / solo（簡單預設）───
     case "dialogue":

@@ -112,6 +112,9 @@ ${componentDescriptions}
 - "feedback_star": { title, question, allowComment: true }
   question 是引導玩家評分的問題（如：你對這次活動的整體感受如何？）
 
+- "team_word_cloud": { title, question, maxWordsPerPerson: 1-3 }
+  question 是引導玩家輸入詞彙的提示（如：一個詞描述今天的收穫？）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

@@ -453,6 +453,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "mood-meter",
       },
       {
+        pageType: "team_word_cloud",
+        label: "學習詞雲",
+        role: "每人用一個詞描述今日最大收穫，集體詞雲即時呈現",
+        axis: "multi",
+        demoMode: "team-word-cloud",
+      },
+      {
         pageType: "feedback_star",
         label: "課程評分",
         role: "學員為整場訓練評分並留下意見，講師即時掌握滿意度",
@@ -896,6 +903,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "活動結束後再量一次，對比開場分佈看成效",
         axis: "multi",
         demoMode: "mood-meter",
+      },
+      {
+        pageType: "team_word_cloud",
+        label: "一詞回顧",
+        role: "活動結束每人貢獻 1-3 個詞，形成今日集體詞雲",
+        axis: "multi",
+        demoMode: "team-word-cloud",
       },
       {
         pageType: "feedback_star",
