@@ -1020,6 +1020,26 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: false,
       };
 
+    case "glow_grow":
+      return {
+        title: "✨🌱 閃光點 & 成長點",
+        prompt: "回顧這段時間，寫下你個人的閃光點與想繼續成長的地方",
+        glowLabel: "閃光點",
+        glowPrompt: "我做得很好的是…",
+        growLabel: "成長點",
+        growPrompt: "我想繼續改善的是…",
+        maxLength: 150,
+        showAuthor: false,
+      };
+
+    case "word_ladder":
+      return {
+        title: "🔗 詞語接龍",
+        prompt: "每人輪流接龍，下一個詞必須以上一個詞的最後一字開頭",
+        startWord: "金門",
+        maxWordLength: 10,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

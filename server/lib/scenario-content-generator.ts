@@ -199,6 +199,12 @@ ${componentDescriptions}
 - "time_capture": { title, prompt, openDate?: string（ISO date，選填開啟日期）, maxLength: 80-300, showAuthor: boolean }
   每人寫下給未來自己的訊息，支援設定開啟日期（倒計時顯示），揭曉後一起閱讀集體記錄；適合結業典禮收尾/年度回顧/訓練後承諾書/生日/婚禮留言牆
 
+- "glow_grow": { title, prompt, glowLabel, glowPrompt, growLabel, growPrompt, maxLength: 80-200, showAuthor: boolean }
+  每人填寫個人閃光點（Glow）與成長點（Grow）兩欄，揭曉後分組聚合展示，幫助團隊看見整體模式；適合訓練結業/团隊回顧/績效反思/季末總結
+
+- "word_ladder": { title, prompt, startWord, maxWordLength: 4-15 }
+  經典詞語接龍，每人填入一個詞（必須以上一個詞的最後一字開頭），形成一條集體創作的詞鏈；適合輕鬆熱場/中文語文課/語言學習/派對遊戲
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 
