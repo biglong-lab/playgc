@@ -677,6 +677,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "每人填寫自己的行動承諾 + 期限，揭曉後全員看見彼此的承諾牆，增加問責感讓學習延伸到工作中",
         axis: "multi",
       },
+      {
+        pageType: "thinking_hats",
+        label: "六頂思考帽",
+        role: "每人選一頂帽子從不同角度思考課題，揭曉後按帽子分組呈現多元觀點，激發深度討論",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",

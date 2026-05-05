@@ -931,6 +931,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "thinking_hats":
+      return {
+        title: "🎩 六頂思考帽",
+        topic: "今天課程中最讓你印象深刻的一件事",
+        hats: [
+          { hatId: "white", color: "bg-gray-100 border-gray-300 text-gray-700", emoji: "⚪", name: "白帽", description: "事實與數據" },
+          { hatId: "red", color: "bg-red-100 border-red-300 text-red-700", emoji: "🔴", name: "紅帽", description: "情感與直覺" },
+          { hatId: "black", color: "bg-gray-800 border-gray-600 text-white", emoji: "⚫", name: "黑帽", description: "批判與風險" },
+          { hatId: "yellow", color: "bg-yellow-100 border-yellow-300 text-yellow-700", emoji: "🟡", name: "黃帽", description: "樂觀與優勢" },
+          { hatId: "green", color: "bg-green-100 border-green-300 text-green-700", emoji: "🟢", name: "綠帽", description: "創意與可能" },
+          { hatId: "blue", color: "bg-blue-100 border-blue-300 text-blue-700", emoji: "🔵", name: "藍帽", description: "流程與總結" },
+        ],
+        maxLength: 120,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

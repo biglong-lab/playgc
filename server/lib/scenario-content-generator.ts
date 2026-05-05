@@ -172,6 +172,9 @@ ${componentDescriptions}
 - "action_pledge": { title, prompt, actionLabel, timelineOptions: string[], showAuthor: boolean }
   每人填寫自己的具體行動承諾（action）+ 期限（timeline），揭曉後牆上展示所有人的承諾卡，增加問責感，適合訓練結尾/團隊共識/新年計畫
 
+- "thinking_hats": { title, topic, hats: [{ hatId, color, emoji, name, description }], maxLength: 60-200, showAuthor: boolean }
+  六頂思考帽（白/紅/黑/黃/綠/藍），每人選一頂帽子代表思考角度，寫下對應觀點，揭曉後按帽子分組展示，適合決策分析/問題回顧/創意workshop
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 
