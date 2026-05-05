@@ -1062,6 +1062,26 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: false,
       };
 
+    case "never_have_i_ever":
+      return {
+        title: "🙅 我從來沒有…",
+        prompt: "誠實作答，更好玩！",
+        statements: [
+          "在會議中偷滑手機",
+          "把別人的功勞說成自己的",
+          "在上班時間追劇",
+        ],
+        showWhoAdmitted: false,
+      };
+
+    case "reaction_wall":
+      return {
+        title: "🎭 你的反應是？",
+        content: `${scenarioName} — 用 emoji 告訴大家你的感受！`,
+        emojis: ["😊", "🤔", "😴", "🔥", "😎", "🥰"],
+        showNames: false,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

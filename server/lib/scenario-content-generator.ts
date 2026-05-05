@@ -331,6 +331,12 @@ ${componentDescriptions}
 - "emoji_battle": { title, question, emojis: [{emoji, label}...4-9個], allowMultiSelect: false, showResults: true }
   question 是要大家表達的問題（如：現在你的心情是？），emojis 選與活動氛圍相關的表情組合
 
+- "never_have_i_ever": { title, prompt?, statements: [...3-8個], showWhoAdmitted: boolean }
+  statements 是「我從來沒有…」後的句子（如：在會議中偷滑手機），showWhoAdmitted=true 揭曉後顯示誰有做過，適合聚會/破冰/輕鬆派對場景
+
+- "reaction_wall": { title, content, emojis: [...4-8個 emoji], showNames: boolean }
+  content 是展示的問題/情境描述（如：聽到這個消息你的第一反應是？），emojis 選與活動氛圍相關的表情，showNames=true 顯示誰選了什麼
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

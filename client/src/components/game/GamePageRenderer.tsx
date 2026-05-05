@@ -107,6 +107,8 @@ const GlowGrowPage = lazy(() => import("@/components/game/multi/GlowGrowPage"));
 const WordLadderPage = lazy(() => import("@/components/game/multi/WordLadderPage"));
 const HopeFearPage = lazy(() => import("@/components/game/multi/HopeFearPage"));
 const NumberGuessPage = lazy(() => import("@/components/game/multi/NumberGuessPage"));
+const NeverHaveIEverPage = lazy(() => import("@/components/game/multi/NeverHaveIEverPage"));
+const ReactionWallPage = lazy(() => import("@/components/game/multi/ReactionWallPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -529,6 +531,10 @@ export default function GamePageRenderer({
         return <HopeFearPage {...commonProps} page={page} pageId={page.id} />;
       case "number_guess":
         return <NumberGuessPage {...commonProps} page={page} pageId={page.id} />;
+      case "never_have_i_ever":
+        return <NeverHaveIEverPage {...commonProps} page={page} pageId={page.id} />;
+      case "reaction_wall":
+        return <ReactionWallPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
