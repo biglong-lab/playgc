@@ -3466,6 +3466,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "創意隱喻工作坊 NT$ 2,000-7,000 / 場。創意思維訓練，適合設計思維課程、策略工作坊。",
     status: "live",
   },
+  {
+    id: "agile-retro-pack",
+    name: "敏捷回顧套組",
+    tagline: "四 L 覆盤 + 好奇探索板，完整的敏捷回顧體驗",
+    description: "先以四 L（Liked/Learned/Lacked/Longed for）從多維度覆盤，再以好奇探索板收集全隊對未來的好奇心，形成完整的反思→展望閉環。",
+    useCases: ["敏捷回顧", "Sprint Review", "課程結尾", "培訓收尾"],
+    category: "corporate",
+    icon: "🔄",
+    gradient: "from-blue-500 to-sky-500",
+    estimatedPlayers: "3-20 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "four_ls",
+        label: "四 L 覆盤",
+        role: "四維度回顧反思",
+        axis: "multi",
+      },
+      {
+        pageType: "wonder_board",
+        label: "好奇探索板",
+        role: "未來展望與好奇心",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "敏捷回顧套組 NT$ 1,500-5,000 / 場。適合敏捷團隊、培訓課程、工作坊收尾。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

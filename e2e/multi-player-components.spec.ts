@@ -284,6 +284,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 75 新元件
     expect(allPageTypes).toContain("team_animal");
     expect(allPageTypes).toContain("reverse_brainstorm");
+
+    // Round 76 新元件
+    expect(allPageTypes).toContain("four_ls");
+    expect(allPageTypes).toContain("wonder_board");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -366,6 +370,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "after_action",
       "team_animal",
       "reverse_brainstorm",
+      "four_ls",
+      "wonder_board",
     ];
 
     for (const t of newTypes) {

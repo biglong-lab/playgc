@@ -2043,6 +2043,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         placeholder: "最糟糕的做法是...",
       };
 
+    case "four_ls":
+      return {
+        title: "🔄 四 L 覆盤",
+        prompt: `從四個角度反思「${scenarioName}」，至少填寫一項`,
+        likedLabel: "👍 Liked（喜歡的）",
+        learnedLabel: "💡 Learned（學到的）",
+        lackedLabel: "❓ Lacked（缺少的）",
+        longedLabel: "🌟 Longed for（期待的）",
+      };
+
+    case "wonder_board":
+      return {
+        title: "🤔 好奇探索板",
+        prompt: `關於「${scenarioName}」，說一件你好奇的事——用「我好奇...」開頭`,
+        placeholder: "我好奇...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

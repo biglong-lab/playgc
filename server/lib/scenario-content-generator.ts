@@ -598,6 +598,12 @@ ${componentDescriptions}
 - "reverse_brainstorm": { title, prompt, placeholder }
   反向腦力激盪：每人提出一個「讓它變更糟」的反向觀點，揭曉後顯示全隊壞主意集，引導團隊透過反向思考發現真正問題，適合創新工作坊/問題分析/策略討論
 
+- "four_ls": { title, prompt, likedLabel, learnedLabel, lackedLabel, longedLabel }
+  四L覆盤：每人從 Liked/Learned/Lacked/Longed for 四個維度反思（至少一項），揭曉後以四欄顯示全隊觀察，適合敏捷回顧/培訓課程結尾/專案覆盤
+
+- "wonder_board": { title, prompt, placeholder }
+  好奇探索板：每人提交一個「我好奇...」句子，揭曉後以漸層卡片牆展示全隊集體好奇心，適合學習型活動/創新思維訓練/開放式討論開場
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 
