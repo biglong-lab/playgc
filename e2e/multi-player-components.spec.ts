@@ -127,4 +127,52 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     );
     expect(criticalErrors).toHaveLength(0);
   });
+
+  test("新情境模板包含 Phase 5 新元件", async ({ page }) => {
+    const response = await page.request.get("/api/scenarios");
+    const scenarios = await response.json();
+    expect(Array.isArray(scenarios)).toBe(true);
+
+    const allPageTypes = scenarios.flatMap((s: { components?: { pageType: string }[] }) =>
+      (s.components ?? []).map((c: { pageType: string }) => c.pageType),
+    );
+
+    // 確認新元件已加入情境模板
+    expect(allPageTypes).toContain("dot_vote");
+    expect(allPageTypes).toContain("timeline_wall");
+    expect(allPageTypes).toContain("two_truths");
+    expect(allPageTypes).toContain("retro_board");
+    expect(allPageTypes).toContain("pledge_wall");
+    expect(allPageTypes).toContain("live_pulse");
+    expect(allPageTypes).toContain("debate_vote");
+    expect(allPageTypes).toContain("peer_recognition");
+  });
+
+  test("Find-scenario 頁面可以顯示（工作坊破冰場景）", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
+    await page.goto("/find-scenario");
+    await page.waitForTimeout(2000);
+
+    const criticalErrors = errors.filter(
+      (e) => !e.includes("Firebase") && !e.includes("auth") && !e.includes("network"),
+    );
+    expect(criticalErrors).toHaveLength(0);
+  });
+
+  test("Template market 年會情境頁可以顯示", async ({ page }) => {
+    const errors: string[] = [];
+    page.on("pageerror", (err) => errors.push(err.message));
+
+    await page.goto("/template-market/annual-meeting");
+    await page.waitForTimeout(2000);
+
+    const criticalErrors = errors.filter(
+      (e) => !e.includes("Firebase") && !e.includes("auth") && !e.includes("network"),
+    );
+    expect(criticalErrors).toHaveLength(0);
+    const bodyText = await page.locator("body").textContent();
+    expect(bodyText && bodyText.length > 50).toBeTruthy();
+  });
 });
