@@ -3298,6 +3298,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "季度規劃套餐 NT$ 5,000-15,000 / 場。適合企業季度規劃、策略工作坊。",
     status: "live",
   },
+  {
+    id: "training-feedback-pack",
+    name: "培訓反饋套組",
+    tagline: "Plus/Even Better + 會議確認，輕量收尾兩件組",
+    description: "培訓或工作坊結束時，先用 Plus/Even Better 收集結構化回饋，再用會議確認取得整體評分和收穫清單，高效完成反饋收集。",
+    useCases: ["企業內訓收尾", "工作坊評估", "培訓課程反饋", "活動結束確認"],
+    category: "corporate",
+    icon: "📋",
+    gradient: "from-green-500 to-emerald-600",
+    estimatedPlayers: "5-40 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "plus_even_better",
+        label: "Plus / Even Better",
+        role: "收集優點和改善建議",
+        axis: "multi",
+      },
+      {
+        pageType: "meeting_check",
+        label: "會議結束確認",
+        role: "1-5 星評分 + 最大收穫",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "培訓反饋套組 NT$ 1,500-4,000 / 場。適合企業培訓、工作坊、課程結束評估。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

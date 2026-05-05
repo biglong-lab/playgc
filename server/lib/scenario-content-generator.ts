@@ -562,6 +562,12 @@ ${componentDescriptions}
 - "start_stop_continue": { title, startLabel, stopLabel, continueLabel }
   Start/Stop/Continue：每人在三欄填寫「開始做」「停止做」「繼續做」（至少一欄即可），揭曉後以三欄對比格式展示，適合組織行為改善/敏捷回顧/學習回顧/文化建設
 
+- "plus_even_better": { title, plusLabel, evenBetterLabel }
+  Plus/Even Better：每人填寫「做得好的地方」和「可以更好的地方」（至少一欄即可），揭曉後以雙欄對比展示，適合輕量回顧/工作坊收尾/培訓後反饋/演講後評估
+
+- "meeting_check": { title, prompt, takeawayLabel }
+  會議結束確認：每人以 1-5 星評分本次會議 + 一句最大收穫，揭曉後顯示平均分及所有收穫清單，適合會議復盤/工作坊收尾/培訓後評估/活動反饋
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

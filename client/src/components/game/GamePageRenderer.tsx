@@ -216,6 +216,8 @@ const KptRetroPage = lazy(() => import("@/components/game/multi/KptRetroPage"));
 const ConfidenceVotePage = lazy(() => import("@/components/game/multi/ConfidenceVotePage"));
 const TeamGoalPage = lazy(() => import("@/components/game/multi/TeamGoalPage"));
 const StartStopContinuePage = lazy(() => import("@/components/game/multi/StartStopContinuePage"));
+const PlusEvenBetterPage = lazy(() => import("@/components/game/multi/PlusEvenBetterPage"));
+const MeetingCheckPage = lazy(() => import("@/components/game/multi/MeetingCheckPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -856,6 +858,10 @@ export default function GamePageRenderer({
         return <TeamGoalPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "start_stop_continue":
         return <StartStopContinuePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "plus_even_better":
+        return <PlusEvenBetterPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "meeting_check":
+        return <MeetingCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

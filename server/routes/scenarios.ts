@@ -1951,6 +1951,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         continueLabel: "Continue（繼續做）",
       };
 
+    case "plus_even_better":
+      return {
+        title: "➕ Plus / Even Better",
+        plusLabel: "➕ Plus（做得好的地方）",
+        evenBetterLabel: "💡 Even Better（可以更好的地方）",
+      };
+
+    case "meeting_check":
+      return {
+        title: "✅ 會議結束確認",
+        prompt: `關於「${scenarioName}」這次活動，你的評分是？`,
+        takeawayLabel: "你最大的收穫是什麼？",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
