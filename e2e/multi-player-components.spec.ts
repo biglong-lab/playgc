@@ -304,6 +304,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("emoji_check_in");
     expect(allPageTypes).toContain("challenge_board");
     expect(allPageTypes).toContain("daily_intention");
+
+    // Round 79 補全批次 2
+    expect(allPageTypes).toContain("action_pledge");
+    expect(allPageTypes).toContain("agreement_matrix");
+    expect(allPageTypes).toContain("anonymous_voice");
+    expect(allPageTypes).toContain("audience_q");
+    expect(allPageTypes).toContain("bingo");
+    expect(allPageTypes).toContain("bottle_letter");
+    expect(allPageTypes).toContain("card_draw");
+    expect(allPageTypes).toContain("category_challenge");
+    expect(allPageTypes).toContain("category_sort");
+    expect(allPageTypes).toContain("consensus_scale");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -400,6 +412,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "emoji_check_in",
       "challenge_board",
       "daily_intention",
+      "action_pledge",
+      "agreement_matrix",
+      "anonymous_voice",
+      "audience_q",
+      "bingo",
+      "bottle_letter",
+      "card_draw",
+      "category_challenge",
+      "category_sort",
+      "consensus_scale",
     ];
 
     for (const t of newTypes) {
