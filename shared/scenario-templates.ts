@@ -936,6 +936,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "silent_debate",
+        label: "靜默辯論",
+        role: "提出議題讓成員選正反方並靜默輸入論點，公布後對比觀點差異，適合訓練前議題暖場",
+        axis: "multi",
+      },
+      {
         pageType: "skill_swap",
         label: "技能交換牆",
         role: "每人寫下能提供的技能和想學的技能，揭曉自動配對，引發後續交流",

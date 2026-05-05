@@ -1161,6 +1161,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         topN: 3,
       };
 
+    case "silent_debate":
+      return {
+        title: "🤫 靜默辯論",
+        topic: `關於「${scenarioName}」你有什麼看法？`,
+        proLabel: "正方",
+        conLabel: "反方",
+        maxLength: 100,
+      };
+
     case "skill_swap":
       return {
         title: "🔄 技能交換牆",

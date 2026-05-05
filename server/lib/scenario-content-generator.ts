@@ -364,6 +364,9 @@ ${componentDescriptions}
 - "group_contract": { title, prompt, maxRuleLength: 30-50, topN: 3-5 }
   prompt 引導提出規則（如：提出你認為最重要的一條團隊規範），三階段：提案→投票→確立公約，適合工作坊/新團隊建立共識
 
+- "silent_debate": { title, topic, proLabel: 正方, conLabel: 反方, maxLength: 80-150 }
+  topic 辯論主題（如：遠端工作讓人更有效率嗎？），玩家選正反方並靜默輸入論點，公布後可互相點愛心，適合工作坊/議題討論/課堂辯論
+
 - "skill_swap": { title, offerPrompt, wantPrompt, maxLength: 15-25, showAuthor: boolean }
   offerPrompt 引導說明自己的技能（如：我能提供什麼？），wantPrompt 引導說明想學什麼，揭曉後自動顯示配對，適合網絡活動/企業訓練
 

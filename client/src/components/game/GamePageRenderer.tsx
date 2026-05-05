@@ -118,6 +118,7 @@ const MindSyncPage = lazy(() => import("@/components/game/multi/MindSyncPage"));
 const ColorPulsePage = lazy(() => import("@/components/game/multi/ColorPulsePage"));
 const CelebrationWallPage = lazy(() => import("@/components/game/multi/CelebrationWallPage"));
 const GroupContractPage = lazy(() => import("@/components/game/multi/GroupContractPage"));
+const SilentDebatePage = lazy(() => import("@/components/game/multi/SilentDebatePage"));
 const SkillSwapPage = lazy(() => import("@/components/game/multi/SkillSwapPage"));
 const AnonymousVoicePage = lazy(() => import("@/components/game/multi/AnonymousVoicePage"));
 const PitchVotePage = lazy(() => import("@/components/game/multi/PitchVotePage"));
@@ -583,6 +584,8 @@ export default function GamePageRenderer({
         return <CelebrationWallPage {...commonProps} page={page} pageId={page.id} />;
       case "group_contract":
         return <GroupContractPage {...commonProps} page={page} pageId={page.id} />;
+      case "silent_debate":
+        return <SilentDebatePage {...commonProps} page={page} pageId={page.id} />;
       case "skill_swap":
         return <SkillSwapPage {...commonProps} page={page} pageId={page.id} />;
       case "anonymous_voice":
