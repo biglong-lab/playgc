@@ -1,6 +1,8 @@
 // 🧩 JigsawPuzzlePage — pageType="jigsaw_puzzle" 容器（L3 持久化版 2026-05-05）
 
 import { useCallback, useMemo } from "react";
+import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import JigsawPuzzle, { type JigsawPuzzleConfig } from "./JigsawPuzzle";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
@@ -53,7 +55,7 @@ export default function JigsawPuzzlePage({ page, sessionId, gameId, pageId }: Ji
 
   const defaultState: JigsawState = { slots: initialSlots, isComplete: false };
 
-  const { state, updateState } = useTeamPagePersistence<JigsawState>({
+  const { state, updateState, isLoaded } = useTeamPagePersistence<JigsawState>({
     gameId, sessionId, pageId, type: "jigsaw_puzzle", defaultState,
   });
 
@@ -67,6 +69,16 @@ export default function JigsawPuzzlePage({ page, sessionId, gameId, pageId }: Ji
     const isComplete = newSlots.every((s: JigsawSlot) => !!s.filledBy);
     await updateState({ slots: newSlots, isComplete });
   }, [slots, myUserName, updateState]);
+
+  if (!isLoaded) {
+    return (
+      <Card data-testid="jigsaw-puzzle-loading">
+        <CardContent className="p-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <JigsawPuzzle

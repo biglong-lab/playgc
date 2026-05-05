@@ -1,6 +1,8 @@
 // 🗺 GpsCascadePage — pageType="gps_cascade" 容器（L3 持久化版 2026-05-05）
 
 import { useCallback } from "react";
+import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import GpsCascade, { type GpsCascadeConfig } from "./GpsCascade";
 import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
 import type { Page } from "@shared/schema";
@@ -32,7 +34,7 @@ export default function GpsCascadePage({ page, sessionId, gameId, pageId }: GpsC
 
   const defaultState: GpsCascadeState = { reachedPointIds: [] };
 
-  const { state, updateState } = useTeamPagePersistence<GpsCascadeState>({
+  const { state, updateState, isLoaded } = useTeamPagePersistence<GpsCascadeState>({
     gameId, sessionId, pageId, type: "gps_cascade", defaultState,
   });
 
@@ -40,6 +42,16 @@ export default function GpsCascadePage({ page, sessionId, gameId, pageId }: GpsC
     if (state.reachedPointIds.includes(pointId)) return;
     await updateState({ reachedPointIds: [...state.reachedPointIds, pointId] });
   }, [state.reachedPointIds, updateState]);
+
+  if (!isLoaded) {
+    return (
+      <Card data-testid="gps-cascade-loading">
+        <CardContent className="p-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return <GpsCascade config={config} state={state} onReachPoint={handleReach} />;
 }

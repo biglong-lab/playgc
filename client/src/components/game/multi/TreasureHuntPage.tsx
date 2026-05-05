@@ -1,6 +1,8 @@
 // 💎 TreasureHuntPage — pageType="treasure_hunt" 容器（L3 持久化版 2026-05-05）
 
 import { useCallback } from "react";
+import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import TreasureHunt, { type TreasureHuntConfig } from "./TreasureHunt";
 import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
 import type { Page } from "@shared/schema";
@@ -32,7 +34,7 @@ export default function TreasureHuntPage({ page, sessionId, gameId, pageId }: Tr
 
   const defaultState: TreasureState = { unlockedClueIds: [] };
 
-  const { state, updateState } = useTeamPagePersistence<TreasureState>({
+  const { state, updateState, isLoaded } = useTeamPagePersistence<TreasureState>({
     gameId, sessionId, pageId, type: "treasure_hunt", defaultState,
   });
 
@@ -40,6 +42,16 @@ export default function TreasureHuntPage({ page, sessionId, gameId, pageId }: Tr
     if (state.unlockedClueIds.includes(clueId)) return;
     await updateState({ unlockedClueIds: [...state.unlockedClueIds, clueId] });
   }, [state.unlockedClueIds, updateState]);
+
+  if (!isLoaded) {
+    return (
+      <Card data-testid="treasure-hunt-loading">
+        <CardContent className="p-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return <TreasureHunt config={config} state={state} onUnlockClue={handleUnlock} />;
 }

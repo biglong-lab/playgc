@@ -1,6 +1,8 @@
 // 🎯 CollectiveScorePage — pageType="collective_score" 容器（L3 持久化版 2026-05-05）
 
 import { useCallback } from "react";
+import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import CollectiveScore, { type CollectiveScoreConfig } from "./CollectiveScore";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
@@ -41,7 +43,7 @@ export default function CollectiveScorePage({ page, sessionId, gameId, pageId }:
 
   const defaultState: CollectiveScoreState = { totalScore: 0, contributors: [], isReached: false };
 
-  const { state, updateState } = useTeamPagePersistence<CollectiveScoreState>({
+  const { state, updateState, isLoaded } = useTeamPagePersistence<CollectiveScoreState>({
     gameId, sessionId, pageId, type: "collective_score", defaultState,
   });
 
@@ -56,6 +58,16 @@ export default function CollectiveScorePage({ page, sessionId, gameId, pageId }:
     if (!existing) newContributors.push({ userId: myUserId, name: myUserName, total: delta });
     await updateState({ totalScore: newTotal, contributors: newContributors, isReached: targetReached });
   }, [state, config.targetScore, myUserId, myUserName, updateState]);
+
+  if (!isLoaded) {
+    return (
+      <Card data-testid="collective-score-loading">
+        <CardContent className="p-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   const contributors = state.contributors.map((c) => ({ name: c.name, total: c.total }));
 

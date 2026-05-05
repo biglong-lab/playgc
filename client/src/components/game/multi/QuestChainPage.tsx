@@ -5,6 +5,8 @@
 //   - 重整後狀態自動回復，多玩家進度共享
 
 import { useCallback } from "react";
+import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import QuestChain, { type QuestChainConfig, checkStationAnswer } from "./QuestChain";
 import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
 import type { Page } from "@shared/schema";
@@ -30,7 +32,7 @@ export default function QuestChainPage({ page, sessionId, gameId, pageId, onComp
   const config: QuestChainConfig =
     (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as QuestChainConfig | null)) ?? {};
 
-  const { state, updateState } = useTeamPagePersistence<ProgressState>({
+  const { state, updateState, isLoaded } = useTeamPagePersistence<ProgressState>({
     gameId, sessionId, pageId, type: "quest_chain", defaultState,
   });
 
@@ -49,6 +51,16 @@ export default function QuestChainPage({ page, sessionId, gameId, pageId, onComp
     const newCurrentIndex = Math.min(state.currentIndex + 1, stations.length);
     await updateState({ ...state, completedIds: newCompleted, currentIndex: newCurrentIndex });
   }, [config.stations, state, updateState]);
+
+  if (!isLoaded) {
+    return (
+      <Card data-testid="quest-chain-loading">
+        <CardContent className="p-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <QuestChain

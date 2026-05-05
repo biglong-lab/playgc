@@ -1,6 +1,8 @@
 // 🎭 RoleAssignPage — pageType="role_assign" 容器（L3 持久化版 2026-05-05）
 
 import { useCallback } from "react";
+import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import RoleAssign, { type RoleAssignConfig } from "./RoleAssign";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
@@ -37,7 +39,7 @@ export default function RoleAssignPage({ page, sessionId, gameId, pageId }: Role
 
   const defaultState: RoleAssignState = { assignments: {} };
 
-  const { state, updateState } = useTeamPagePersistence<RoleAssignState>({
+  const { state, updateState, isLoaded } = useTeamPagePersistence<RoleAssignState>({
     gameId, sessionId, pageId, type: "role_assign", defaultState,
   });
 
@@ -51,6 +53,16 @@ export default function RoleAssignPage({ page, sessionId, gameId, pageId }: Role
     delete next[myUserName];
     await updateState({ assignments: next });
   }, [state.assignments, myUserName, updateState]);
+
+  if (!isLoaded) {
+    return (
+      <Card data-testid="role-assign-loading">
+        <CardContent className="p-8 flex justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <RoleAssign
