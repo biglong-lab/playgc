@@ -580,6 +580,12 @@ ${componentDescriptions}
 - "win_win": { title, prompt, teamWinLabel, myWinLabel }
   雙贏回顧：每人分別填寫「團隊贏了什麼」和「個人贏了什麼」（至少一項即可），揭曉後以雙欄展示，適合工作坊收尾/培訓後回顧/活動成果彙整/正向強化
 
+- "impact_card": { title, prompt, achievementLabel, skillLabel }
+  影響力卡片：每人建立個人影響力卡片（一個成就 + 一個技能/特質），揭曉後以漸層卡片牆展示，適合團隊組建/破冰認識/自我介紹/成員展示
+
+- "open_quiz": { title, prompt, questionLabel, answerLabel }
+  開放問答：每人提出一個問題並同時給出自己的答案，揭曉後顯示所有 Q&A 卡片，適合知識分享/討論前暖身/創意發想/互相學習
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

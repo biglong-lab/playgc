@@ -1994,6 +1994,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         myWinLabel: "⭐ 我個人贏了…",
       };
 
+    case "impact_card":
+      return {
+        title: "⭐ 影響力卡片",
+        prompt: `在「${scenarioName}」中，你帶來什麼影響？`,
+        achievementLabel: "🏅 你的一個成就",
+        skillLabel: "💪 你帶來的技能/特質",
+      };
+
+    case "open_quiz":
+      return {
+        title: "❓ 開放問答",
+        prompt: `關於「${scenarioName}」，提一個問題並給出你自己的答案`,
+        questionLabel: "你的問題",
+        answerLabel: "你的答案",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

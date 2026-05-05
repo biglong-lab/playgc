@@ -3382,6 +3382,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "極簡收尾套組 NT$ 1,000-3,000 / 場。適合任何需要快速有效收尾的活動。",
     status: "live",
   },
+  {
+    id: "team-intro-knowledge-pack",
+    name: "團隊破冰知識套組",
+    tagline: "影響力卡片 + 開放問答，互相了解的完整暖身套組",
+    description: "先用影響力卡片讓每人展示自己的成就與特質，再透過開放問答激發知識分享，完整建立團隊成員相互認識的基礎。",
+    useCases: ["新團隊破冰", "跨部門認識", "課程開場暖身", "知識型活動導入"],
+    category: "corporate",
+    icon: "🌟",
+    gradient: "from-violet-500 to-blue-600",
+    estimatedPlayers: "5-25 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "impact_card",
+        label: "影響力卡片",
+        role: "個人成就 + 技能展示",
+        axis: "multi",
+      },
+      {
+        pageType: "open_quiz",
+        label: "開放問答",
+        role: "提問 + 自答分享知識",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "團隊破冰知識套組 NT$ 2,000-6,000 / 場。適合企業新進訓練、跨團隊合作啟動。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
