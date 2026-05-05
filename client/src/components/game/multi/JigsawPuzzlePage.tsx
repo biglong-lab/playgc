@@ -1,17 +1,20 @@
-// 🧩 JigsawPuzzlePage — GamePageRenderer 對應 pageType="jigsaw_puzzle"
-//
-// W4 D1 簡化版：本地 state，下輪 D2 接 useTeamJigsawSync hook（WS 同步隊友 fill）
+// 🧩 JigsawPuzzlePage — pageType="jigsaw_puzzle" 容器（L3 持久化版 2026-05-05）
 
-import { useState, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import JigsawPuzzle, { type JigsawPuzzleConfig } from "./JigsawPuzzle";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
 import type { Page } from "@shared/schema";
 
 interface JigsawPuzzlePageProps {
   page: Page;
+  sessionId: string;
+  gameId: string;
+  pageId: string;
+  onComplete?: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
 }
 
-interface JigsawSlot {
+interface JigsawSlot extends Record<string, unknown> {
   id: string;
   row: number;
   col: number;
@@ -21,12 +24,12 @@ interface JigsawSlot {
   color?: string;
 }
 
-interface JigsawState {
+interface JigsawState extends Record<string, unknown> {
   slots: JigsawSlot[];
   isComplete: boolean;
 }
 
-export default function JigsawPuzzlePage({ page }: JigsawPuzzlePageProps) {
+export default function JigsawPuzzlePage({ page, sessionId, gameId, pageId }: JigsawPuzzlePageProps) {
   const { user } = useAuth();
   const myUserId = user?.id ?? "anonymous";
   const myUserName = user?.firstName || user?.email?.split("@")[0] || "玩家";
@@ -38,7 +41,6 @@ export default function JigsawPuzzlePage({ page }: JigsawPuzzlePageProps) {
   const cols = config.cols ?? 2;
   const totalSlots = rows * cols;
 
-  // 初始 slots
   const initialSlots = useMemo<JigsawSlot[]>(() => {
     const prompts = config.prompts ?? [];
     return Array.from({ length: totalSlots }, (_, i) => ({
@@ -49,26 +51,27 @@ export default function JigsawPuzzlePage({ page }: JigsawPuzzlePageProps) {
     }));
   }, [config.prompts, totalSlots, cols]);
 
-  const [state, setState] = useState<JigsawState>({
-    slots: initialSlots,
-    isComplete: false,
+  const defaultState: JigsawState = { slots: initialSlots, isComplete: false };
+
+  const { state, updateState } = useTeamPagePersistence<JigsawState>({
+    gameId, sessionId, pageId, type: "jigsaw_puzzle", defaultState,
   });
 
-  const handleFillSlot = (slotId: string, text: string, color: string) => {
-    setState((prev) => {
-      const newSlots = prev.slots.map((s) =>
-        s.id === slotId ? { ...s, filledBy: myUserName, text, color } : s,
-      );
-      const isComplete = newSlots.every((s) => s.filledBy);
-      return { slots: newSlots, isComplete };
-    });
-    // TODO W4 D2：透過 useTeamJigsawSync 廣播給隊友
-  };
+  // 若 server 無資料，使用 initialSlots 初始化
+  const slots = state.slots.length > 0 ? state.slots : initialSlots;
+
+  const handleFillSlot = useCallback(async (slotId: string, text: string, color: string) => {
+    const newSlots = slots.map((s: JigsawSlot) =>
+      s.id === slotId ? { ...s, filledBy: myUserName, text, color } : s,
+    );
+    const isComplete = newSlots.every((s: JigsawSlot) => !!s.filledBy);
+    await updateState({ slots: newSlots, isComplete });
+  }, [slots, myUserName, updateState]);
 
   return (
     <JigsawPuzzle
       config={config}
-      state={state}
+      state={{ slots, isComplete: state.isComplete }}
       myUserId={myUserId}
       myUserName={myUserName}
       onFillSlot={handleFillSlot}

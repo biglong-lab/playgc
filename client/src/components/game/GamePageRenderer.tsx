@@ -261,27 +261,27 @@ export default function GamePageRenderer({
       case "vote_team":
         return <VoteTeamPage {...commonProps} pageId={page.id} />;
       case "shooting_team":
-        return <ShootingTeamPage {...commonProps} />;
+        return <ShootingTeamPage {...commonProps} pageId={page.id} />;
       case "gps_team_mission":
         return <GpsTeamMissionPage {...commonProps} />;
       case "choice_verify_race":
         return <ChoiceVerifyRacePage {...commonProps} pageId={page.id} />;
       case "lock_coop":
-        return <LockCoopPage {...commonProps} />;
+        return <LockCoopPage {...commonProps} pageId={page.id} />;
       case "relay_mission":
-        return <RelayMissionPage {...commonProps} />;
+        return <RelayMissionPage {...commonProps} pageId={page.id} />;
       case "territory_capture":
-        return <TerritoryCapturePage {...commonProps} />;
+        return <TerritoryCapturePage {...commonProps} pageId={page.id} />;
       case "jigsaw_puzzle":
-        return <JigsawPuzzlePage page={page} />;
+        return <JigsawPuzzlePage {...commonProps} page={page} pageId={page.id} />;
       case "treasure_hunt":
-        return <TreasureHuntPage page={page} />;
+        return <TreasureHuntPage {...commonProps} page={page} pageId={page.id} />;
       case "gps_cascade":
-        return <GpsCascadePage page={page} />;
+        return <GpsCascadePage {...commonProps} page={page} pageId={page.id} />;
       case "collective_score":
-        return <CollectiveScorePage page={page} />;
+        return <CollectiveScorePage {...commonProps} page={page} pageId={page.id} />;
       case "role_assign":
-        return <RoleAssignPage page={page} />;
+        return <RoleAssignPage {...commonProps} page={page} pageId={page.id} />;
       // 📺 HostScreen 軸線（ADR-0004）
       case "host_poll_live":
         return <PollLivePage page={page} />;
@@ -294,7 +294,7 @@ export default function GamePageRenderer({
       case "host_word_cloud":
         return <WordCloudPage page={page} />;
       case "quest_chain":
-        return <QuestChainPage page={page} onComplete={commonProps.onComplete} />;
+        return <QuestChainPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

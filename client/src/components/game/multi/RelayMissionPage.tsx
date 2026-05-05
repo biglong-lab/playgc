@@ -29,6 +29,7 @@ export interface RelayMissionPageProps {
   ) => void;
   sessionId: string;
   gameId: string;
+  pageId: string;
 }
 
 interface MyTeamResponse {
@@ -44,6 +45,7 @@ export default function RelayMissionPage({
   onComplete,
   sessionId,
   gameId,
+  pageId,
 }: RelayMissionPageProps) {
   const { user } = useAuth();
 
@@ -70,6 +72,8 @@ export default function RelayMissionPage({
 
   const relayState = useTeamRelaySync({
     teamId,
+    sessionId,
+    pageId,
     userId: user?.id,
     userName: myDisplayName,
     config,

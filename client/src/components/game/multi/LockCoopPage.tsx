@@ -28,6 +28,7 @@ export interface LockCoopPageProps {
   ) => void;
   sessionId: string;
   gameId: string;
+  pageId: string;
 }
 
 interface MyTeamResponse {
@@ -52,6 +53,7 @@ export default function LockCoopPage({
   onComplete,
   sessionId,
   gameId,
+  pageId,
 }: LockCoopPageProps) {
   const { user } = useAuth();
 
@@ -73,9 +75,11 @@ export default function LockCoopPage({
       || user.id.slice(0, 8)
     : "我";
 
-  // 隊伍同步狀態（共享輸入 / 嘗試 / 解鎖）
+  // 隊伍同步狀態（共享輸入 / 嘗試 / 解鎖）— L3 持久化
   const lockState = useTeamLockCoopSync({
     teamId,
+    sessionId,
+    pageId,
     userId: user?.id,
     userName: myDisplayName,
     config,

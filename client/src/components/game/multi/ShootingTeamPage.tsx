@@ -27,6 +27,7 @@ export interface ShootingTeamPageProps {
   ) => void;
   sessionId: string;
   gameId: string;
+  pageId?: string;
 }
 
 interface MyTeamResponse {
@@ -52,6 +53,7 @@ export default function ShootingTeamPage({
   onComplete,
   sessionId,
   gameId,
+  pageId,
 }: ShootingTeamPageProps) {
   const { user } = useAuth();
 
@@ -74,11 +76,13 @@ export default function ShootingTeamPage({
   const teamId = myTeam?.id;
   const enabled = !!teamId && !!user;
 
-  // 訂閱 WebSocket 累積全隊 hits
+  // 訂閱 WebSocket 累積全隊 hits + L3 DB 持久化
   const { teamHits } = useTeamShootingSync({
     sessionId,
     myUserId: user?.id ?? "",
     myDisplayName,
+    teamId,
+    pageId,
     enabled,
   });
 

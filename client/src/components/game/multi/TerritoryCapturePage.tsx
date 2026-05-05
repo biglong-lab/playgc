@@ -31,6 +31,7 @@ export interface TerritoryCapturePageProps {
   ) => void;
   sessionId: string;
   gameId: string;
+  pageId: string;
 }
 
 interface MyTeamResponse {
@@ -46,6 +47,7 @@ export default function TerritoryCapturePage({
   onComplete,
   sessionId,
   gameId,
+  pageId,
 }: TerritoryCapturePageProps) {
   const { user } = useAuth();
 
@@ -71,12 +73,13 @@ export default function TerritoryCapturePage({
     ? { lat: position.lat, lng: position.lng }
     : null;
 
-  // session 範圍同步（多隊共享）
+  // session 範圍同步（多隊共享）+ L3 DB 持久化
   const { captures, onCapture } = useTeamTerritorySync({
     teamId,
     sessionId,
     userId: user?.id,
     userName: myDisplayName,
+    pageId,
     enabled: !!teamId && !!user && !!sessionId,
   });
 

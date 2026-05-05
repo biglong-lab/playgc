@@ -145,6 +145,18 @@ export function useTeamVoteSync({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ensuredRef = useRef(false);
+  const voteIdRef = useRef<string | undefined>();
+  voteIdRef.current = voteId;
+
+  // 從 server 拉最新 ballots（用在 polling / reconnect）
+  const fetchLatestBallots = useCallback(async (vid: string) => {
+    try {
+      const listRes = await apiRequest("GET", `/api/teams/${teamId}/votes`);
+      const list = (await listRes.json()) as Array<ServerVote & { ballots: ServerBallot[] }>;
+      const found = list.find((v) => v.id === vid);
+      if (found) setBallots(found.ballots ?? []);
+    } catch {}
+  }, [teamId]);
 
   // 從 server 取現況或建立投票（idempotent）
   const ensureVote = useCallback(async () => {
@@ -160,7 +172,7 @@ export function useTeamVoteSync({
         ServerVote & { ballots: ServerBallot[] }
       >;
       const found = existing.find(
-        (v) => v.pageId === pageId && v.status === "active",
+        (v) => v.pageId === pageId && (v.status === "active" || v.status === "completed"),
       );
 
       if (found) {
@@ -191,6 +203,15 @@ export function useTeamVoteSync({
     }
   }, [enabled, teamId, pageId, config, votingMode]);
 
+  // 10s polling fallback（防 WS 漏訊息）
+  useEffect(() => {
+    if (!enabled || !voteId) return;
+    const id = setInterval(() => {
+      void fetchLatestBallots(voteId);
+    }, 10_000);
+    return () => clearInterval(id);
+  }, [enabled, voteId, fetchLatestBallots]);
+
   // 投票
   const castVote = useCallback(
     async (optionIndex: number) => {
@@ -220,13 +241,12 @@ export function useTeamVoteSync({
         if (msg.vote.pageId === pageId) {
           setVoteId(msg.vote.id);
           setBallots([]);
-          ensuredRef.current = true; // 不要再重複建立
+          ensuredRef.current = true;
         }
-      } else if (msg.type === "vote_cast" && msg.voteId === voteId) {
+      } else if (msg.type === "vote_cast" && msg.voteId === voteIdRef.current) {
         // 隊員投票了 — 加進 ballots
         if (msg.userId && msg.optionId) {
           setBallots((prev) => {
-            // 防重：同 user 不重複加
             if (prev.some((b) => b.userId === msg.userId)) return prev;
             return [
               ...prev,
@@ -239,10 +259,13 @@ export function useTeamVoteSync({
               },
             ];
           });
+        } else if (msg.voteId) {
+          // 廣播不含明細時 fallback 拉一次最新
+          void fetchLatestBallots(msg.voteId);
         }
       }
     },
-    [voteId, pageId],
+    [pageId, fetchLatestBallots],
   );
 
   // 失活時 reset

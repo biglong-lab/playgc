@@ -79,6 +79,9 @@ import { registerAdminEngagementRoutes } from "./admin-engagement";
 import { registerAdminAbExperimentsRoutes } from "./admin-ab-experiments";
 import { registerTeamRaceRoutes, ensureTeamRaceSchema } from "./team-race";
 import { registerTeamPhotoGatherRoutes, ensureTeamPhotoGatherSchema } from "./team-photo-gather";
+import { registerTeamShootingRoutes, ensureTeamShootingSchema } from "./team-shooting";
+import { registerTeamLockCoopRoutes, ensureTeamLockCoopSchema } from "./team-lock-coop";
+import { registerTeamGameStateRoutes, ensureTeamGameStateSchema } from "./team-game-state";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -126,6 +129,15 @@ export async function registerRoutes(
   // 🆕 2026-05-05: 集合模式合照 server-side 持久化（隊長一人拍、全隊共享）
   await ensureTeamPhotoGatherSchema();
   registerTeamPhotoGatherRoutes(app, ctx);
+  // 🆕 2026-05-05: ShootingTeam 命中持久化
+  await ensureTeamShootingSchema();
+  registerTeamShootingRoutes(app, ctx);
+  // 🆕 2026-05-05: LockCoop 協作解鎖持久化
+  await ensureTeamLockCoopSchema();
+  registerTeamLockCoopRoutes(app, ctx);
+  // 🆕 2026-05-05: 通用多人遊戲狀態（RelayMission/TerritoryCapture/CollectiveScore/RoleAssign/QuestChain 等）
+  await ensureTeamGameStateSchema();
+  registerTeamGameStateRoutes(app, ctx);
   registerPlayerChapterRoutes(app);
   registerAdminChapterRoutes(app);
   registerAdminChapterTemplateRoutes(app);

@@ -1,20 +1,24 @@
-// 🎭 RoleAssignPage — pageType="role_assign" 對應容器
-// W4 D3 簡化版：本地 state（W4 D5 整合 useTeamRoleAssignSync）
+// 🎭 RoleAssignPage — pageType="role_assign" 容器（L3 持久化版 2026-05-05）
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import RoleAssign, { type RoleAssignConfig } from "./RoleAssign";
 import { useAuth } from "@/hooks/useAuth";
+import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
 import type { Page } from "@shared/schema";
 
 interface RoleAssignPageProps {
   page: Page;
+  sessionId: string;
+  gameId: string;
+  pageId: string;
+  onComplete?: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
 }
 
-interface RoleAssignState {
+interface RoleAssignState extends Record<string, unknown> {
   assignments: Record<string, string>;
 }
 
-export default function RoleAssignPage({ page }: RoleAssignPageProps) {
+export default function RoleAssignPage({ page, sessionId, gameId, pageId }: RoleAssignPageProps) {
   const { user } = useAuth();
   const myUserName = user?.firstName || user?.email?.split("@")[0] || "玩家";
 
@@ -25,47 +29,28 @@ export default function RoleAssignPage({ page }: RoleAssignPageProps) {
       subtitle: "推理遊戲開始 — 你扮演誰？",
       allowReroll: false,
       roles: [
-        {
-          id: "detective",
-          name: "偵探",
-          emoji: "🕵️",
-          description: "你是案件的偵探。\n仔細聽嫌犯與證人的描述，找出真相。\n你可以詢問任何問題。",
-          color: "#3b82f6",
-        },
-        {
-          id: "suspect",
-          name: "嫌犯",
-          emoji: "🎭",
-          description: "你被懷疑了！\n但你是無辜的（也可能不是）。\n撒謊或誠實由你決定。",
-          color: "#ef4444",
-          isSecret: true,
-        },
-        {
-          id: "witness",
-          name: "證人",
-          emoji: "👁",
-          description: "你看到事發經過。\n但你的記憶可能不完整。\n誠實回答偵探的問題。",
-          color: "#10b981",
-        },
+        { id: "detective", name: "偵探", emoji: "🕵️", description: "你是案件的偵探。", color: "#3b82f6" },
+        { id: "suspect", name: "嫌犯", emoji: "🎭", description: "你被懷疑了！", color: "#ef4444", isSecret: true },
+        { id: "witness", name: "證人", emoji: "👁", description: "你看到事發經過。", color: "#10b981" },
       ],
     };
 
-  const [state, setState] = useState<RoleAssignState>({ assignments: {} });
+  const defaultState: RoleAssignState = { assignments: {} };
 
-  const handleAssign = useCallback((userName: string, roleId: string) => {
-    setState((prev) => {
-      if (prev.assignments[userName]) return prev; // 已分配，不重複
-      return { assignments: { ...prev.assignments, [userName]: roleId } };
-    });
-  }, []);
+  const { state, updateState } = useTeamPagePersistence<RoleAssignState>({
+    gameId, sessionId, pageId, type: "role_assign", defaultState,
+  });
 
-  const handleReroll = useCallback(() => {
-    setState((prev) => {
-      const next = { ...prev.assignments };
-      delete next[myUserName];
-      return { assignments: next };
-    });
-  }, [myUserName]);
+  const handleAssign = useCallback(async (userName: string, roleId: string) => {
+    if (state.assignments[userName]) return;
+    await updateState({ assignments: { ...state.assignments, [userName]: roleId } });
+  }, [state.assignments, updateState]);
+
+  const handleReroll = useCallback(async () => {
+    const next = { ...state.assignments };
+    delete next[myUserName];
+    await updateState({ assignments: next });
+  }, [state.assignments, myUserName, updateState]);
 
   return (
     <RoleAssign

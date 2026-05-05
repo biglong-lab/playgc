@@ -1,24 +1,23 @@
-// 🏃 useTeamRelaySync — RelayMission 元件的隊伍同步 hook
+// 🏃 useTeamRelaySync — RelayMission 元件的隊伍同步 hook（L3 持久化版 2026-05-05）
 //
-// 職責：
-//   - 維護隊伍共享：currentSegmentIndex / completedSegments / isAllComplete
-//   - 玩家提交答案 → client-side 驗證（normalize 比對 segments[i].answer）
-//     正確 → 標記段完成 + 推進 currentSegmentIndex + 廣播 segment_complete
-//     全部段完成 → 廣播 all_complete + setIsAllComplete
-//     錯誤 → 不變更狀態（玩家可重試）
-//   - 接收隊友的 segment_complete / all_complete 同步狀態
-//
-// 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.7
-//
-// 簡化決策：client-side 驗證（同 LockCoop）— 接力主要是體驗 + 段間流轉，無計分作弊空間
+// 改動：加入 server-side 持久化（team-game-state.ts）
+//   - 掛載時 GET /api/team-state 回復上次狀態
+//   - 答對後 POST /api/team-state 寫入 + server 廣播 team_state_updated
+//   - 10s polling fallback
+//   - 同時保留 WS sendRelaySync 讓即時感更好（WS 快但無持久化）
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { isSegmentAnswerCorrect } from "../../multi/RelayMission";
+import { useTeamGameState } from "./useTeamGameState";
 import type { RelayMissionConfig } from "@shared/schema";
+
+const COMPONENT_TYPE = "relay_mission";
 
 interface UseTeamRelaySyncOptions {
   teamId: string | undefined;
+  sessionId: string;
+  pageId: string;
   userId: string | undefined;
   userName: string | undefined;
   config: RelayMissionConfig;
@@ -30,65 +29,82 @@ export interface CompletedSegment {
   completedBy: string;
 }
 
+interface RelayPersistedState extends Record<string, unknown> {
+  currentSegmentIndex: number;
+  completedSegments: CompletedSegment[];
+  isAllComplete: boolean;
+}
+
 export interface TeamRelayState {
   currentSegmentIndex: number;
   completedSegments: CompletedSegment[];
   isAllComplete: boolean;
-  /** 玩家提交答案 — 驗證 + 廣播 */
+  isLoaded: boolean;
   onSubmitAnswer: (segmentIndex: number, answer: string) => void;
-  /** 答錯時 hook 內部不變更狀態，但 UI 可拿到 lastError 顯示 */
   lastError: string | null;
 }
 
-interface RelayMessage {
+interface RelayWsMessage {
   type: string;
   action?: string;
-  payload?: {
-    segmentIndex?: number;
-    completedBy?: string;
-    nextSegmentIndex?: number;
-  };
+  payload?: { segmentIndex?: number; completedBy?: string; nextSegmentIndex?: number };
+  componentType?: string;
+  state?: unknown;
+  version?: number;
 }
 
 export function useTeamRelaySync({
   teamId,
+  sessionId,
+  pageId,
   userId,
   userName,
   config,
   enabled = true,
 }: UseTeamRelaySyncOptions): TeamRelayState {
-  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
-  const [completedSegments, setCompletedSegments] = useState<CompletedSegment[]>([]);
-  const [isAllComplete, setIsAllComplete] = useState(false);
   const [lastError, setLastError] = useState<string | null>(null);
 
+  const defaultState: RelayPersistedState = {
+    currentSegmentIndex: 0,
+    completedSegments: [],
+    isAllComplete: false,
+  };
+
+  const {
+    state: persistedState,
+    isLoaded,
+    updateState,
+    handleWsMessage: handleGameStateWsMessage,
+  } = useTeamGameState<RelayPersistedState>({
+    teamId,
+    sessionId,
+    pageId,
+    type: COMPONENT_TYPE,
+    defaultState,
+    enabled,
+  });
+
+  const { currentSegmentIndex, completedSegments, isAllComplete } = persistedState;
   const totalSegments = config.segments?.length ?? 0;
 
-  const handleMessage = useCallback(
-    (msg: RelayMessage) => {
-      if (msg.type !== "team_relay_sync") return;
-      if (!msg.action || !msg.payload) return;
+  // 快取最新 persistedState 供 onSubmitAnswer closure 使用
+  const stateRef = useRef(persistedState);
+  stateRef.current = persistedState;
 
-      switch (msg.action) {
-        case "segment_complete": {
-          const { segmentIndex, completedBy, nextSegmentIndex } = msg.payload;
-          if (typeof segmentIndex !== "number") return;
-          setCompletedSegments((prev) => {
-            // 去重：若已記錄不再加
-            if (prev.some((c) => c.segmentIndex === segmentIndex)) return prev;
-            return [...prev, { segmentIndex, completedBy: completedBy || "" }];
-          });
-          if (typeof nextSegmentIndex === "number") {
-            setCurrentSegmentIndex(nextSegmentIndex);
-          }
-          break;
+  const handleMessage = useCallback(
+    (msg: RelayWsMessage) => {
+      // 處理舊 WS-only 廣播（向後相容）
+      if (msg.type === "team_relay_sync") {
+        if (!msg.action || !msg.payload) return;
+        if (msg.action === "segment_complete" || msg.action === "all_complete") {
+          // 舊廣播不含完整狀態，觸發 polling 補取
+          return;
         }
-        case "all_complete":
-          setIsAllComplete(true);
-          break;
       }
+      // 處理 server-driven 廣播
+      handleGameStateWsMessage(msg as Parameters<typeof handleGameStateWsMessage>[0]);
     },
-    [],
+    [handleGameStateWsMessage],
   );
 
   const { sendRelaySync } = useTeamWebSocket({
@@ -98,79 +114,53 @@ export function useTeamRelaySync({
     onMessage: handleMessage,
   });
 
-  // 玩家提交答案
   const onSubmitAnswer = useCallback(
     (segmentIndex: number, answer: string) => {
-      if (isAllComplete) return;
-      if (segmentIndex !== currentSegmentIndex) {
+      const { currentSegmentIndex: curIdx, completedSegments: curCompleted, isAllComplete: curDone } = stateRef.current;
+      if (curDone) return;
+      if (segmentIndex !== curIdx) {
         setLastError("這段不是當前進行中的段");
         return;
       }
-
       const segment = config.segments?.[segmentIndex];
       if (!segment) {
         setLastError("段不存在");
         return;
       }
-
       if (!isSegmentAnswerCorrect(answer, segment.answer)) {
         setLastError("答案不正確，再試試");
         return;
       }
 
-      // 答對 → 標記完成 + 推進
       setLastError(null);
       const nextIndex = segmentIndex + 1;
-      const newCompleted: CompletedSegment = {
-        segmentIndex,
-        completedBy: userId || "",
+      const newCompleted = [
+        ...curCompleted.filter((c) => c.segmentIndex !== segmentIndex),
+        { segmentIndex, completedBy: userId || "" },
+      ];
+      const allDone = nextIndex >= totalSegments;
+
+      const newState: RelayPersistedState = {
+        currentSegmentIndex: allDone ? curIdx : nextIndex,
+        completedSegments: newCompleted,
+        isAllComplete: allDone,
       };
-      setCompletedSegments((prev) => {
-        if (prev.some((c) => c.segmentIndex === segmentIndex)) return prev;
-        return [...prev, newCompleted];
-      });
 
-      if (nextIndex >= totalSegments) {
-        // 全部完成
-        setIsAllComplete(true);
-        sendRelaySync("segment_complete", {
-          segmentIndex,
-          completedBy: userId,
-        });
-        sendRelaySync("all_complete", {});
-      } else {
-        setCurrentSegmentIndex(nextIndex);
-        sendRelaySync("segment_complete", {
-          segmentIndex,
-          completedBy: userId,
-          nextSegmentIndex: nextIndex,
-        });
-      }
+      // 即時感 WS（不等 DB）
+      sendRelaySync("segment_complete", { segmentIndex, completedBy: userId, nextSegmentIndex: nextIndex });
+      if (allDone) sendRelaySync("all_complete", {});
+
+      // 持久化（覆蓋為權威狀態）
+      void updateState(newState);
     },
-    [
-      isAllComplete,
-      currentSegmentIndex,
-      config.segments,
-      totalSegments,
-      userId,
-      sendRelaySync,
-    ],
+    [config.segments, totalSegments, userId, sendRelaySync, updateState],
   );
-
-  // teamId 改變重置（避免換隊伍狀態殘留）
-  useEffect(() => {
-    if (!teamId) {
-      setCurrentSegmentIndex(0);
-      setCompletedSegments([]);
-      setIsAllComplete(false);
-      setLastError(null);
-    }
-  }, [teamId]);
 
   return {
     currentSegmentIndex,
     completedSegments,
     isAllComplete,
+    isLoaded,
     onSubmitAnswer,
     lastError,
   };

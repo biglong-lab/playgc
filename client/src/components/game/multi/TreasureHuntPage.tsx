@@ -1,19 +1,23 @@
-// 💎 TreasureHuntPage — GamePageRenderer 對應 pageType="treasure_hunt"
-// W4 D2 簡化版：本地 state，下輪 D5 接 useTeamTreasureSync hook
+// 💎 TreasureHuntPage — pageType="treasure_hunt" 容器（L3 持久化版 2026-05-05）
 
-import { useState } from "react";
+import { useCallback } from "react";
 import TreasureHunt, { type TreasureHuntConfig } from "./TreasureHunt";
+import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
 import type { Page } from "@shared/schema";
 
 interface TreasureHuntPageProps {
   page: Page;
+  sessionId: string;
+  gameId: string;
+  pageId: string;
+  onComplete?: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
 }
 
-interface TreasureState {
+interface TreasureState extends Record<string, unknown> {
   unlockedClueIds: string[];
 }
 
-export default function TreasureHuntPage({ page }: TreasureHuntPageProps) {
+export default function TreasureHuntPage({ page, sessionId, gameId, pageId }: TreasureHuntPageProps) {
   const rawConfig = (page.config as { config?: TreasureHuntConfig } | TreasureHuntConfig | null) ?? null;
   const config: TreasureHuntConfig =
     (rawConfig && "config" in rawConfig ? rawConfig.config : (rawConfig as TreasureHuntConfig | null)) ?? {
@@ -26,15 +30,16 @@ export default function TreasureHuntPage({ page }: TreasureHuntPageProps) {
       finalReward: "🏆 你解開了密碼 800！",
     };
 
-  const [state, setState] = useState<TreasureState>({ unlockedClueIds: [] });
+  const defaultState: TreasureState = { unlockedClueIds: [] };
 
-  const handleUnlock = (clueId: string) => {
-    setState((prev) => ({
-      unlockedClueIds: prev.unlockedClueIds.includes(clueId)
-        ? prev.unlockedClueIds
-        : [...prev.unlockedClueIds, clueId],
-    }));
-  };
+  const { state, updateState } = useTeamPagePersistence<TreasureState>({
+    gameId, sessionId, pageId, type: "treasure_hunt", defaultState,
+  });
+
+  const handleUnlock = useCallback(async (clueId: string) => {
+    if (state.unlockedClueIds.includes(clueId)) return;
+    await updateState({ unlockedClueIds: [...state.unlockedClueIds, clueId] });
+  }, [state.unlockedClueIds, updateState]);
 
   return <TreasureHunt config={config} state={state} onUnlockClue={handleUnlock} />;
 }

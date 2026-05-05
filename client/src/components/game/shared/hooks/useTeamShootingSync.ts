@@ -1,16 +1,13 @@
-// 🎯 useTeamShootingSync — 隊伍射擊同步 hook
+// 🎯 useTeamShootingSync — 隊伍射擊同步 hook（L3 持久化版 2026-05-05）
 //
 // 用途：訂閱 WebSocket shooting_hit 事件，累積全隊命中紀錄，給 ShootingTeam 元件使用
 //
 // 實作：
-//   - 連 ws://host/ws，發 join session 訊息
+//   - 連 ws://host/ws，發 join session 訊息（保留原有 WS 實作）
 //   - onmessage 過濾 shooting_hit → 解析 record → 推進 teamHits
-//   - record 中嘗試取 userId / displayName（server 端 TODO 補）
-//   - 自動重連（最多 5 次，指數退避）
-//
-// 後端 TODO（part 3）：
-//   - mqttService 接 hit 時要附 userId（依玩家綁定的 deviceId 反查）
-//   - websocket.ts broadcastToSession 訊息加 userId / displayName 欄位
+//   - 挂載時從 DB 拉歷史 hits（page refresh survival）
+//   - 10s polling fallback 補齊錯過的 hits
+//   - DB 去重：以 hit_at timestamp 為 key，避免 WS + DB 重複顯示
 //
 // 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.3 + §7.1
 
@@ -23,18 +20,14 @@ import type { TeamShootingHit } from "../../multi/ShootingTeam";
 
 /** Server 廣播的 hit record（隨後端 schema 演進，欄位採彈性） */
 interface ServerHitRecord {
-  // 基本欄位
   userId?: string;
   displayName?: string;
   hitZone?: string;
   targetZone?: string;
-  // 位置（多種格式）
   hitPosition?: string | { x: number; y: number };
-  // 分數（多種命名）
   score?: number;
   hitScore?: number;
   points?: number;
-  // 時序
   timestamp?: string;
   hitAt?: string;
 }
@@ -44,6 +37,15 @@ interface WsShootingMessage {
   record?: ServerHitRecord;
 }
 
+/** DB 命中紀錄格式（snake_case，server 回傳） */
+interface DbHitRow {
+  user_id: string;
+  display_name: string;
+  hit_zone: string;
+  score: number;
+  hit_at: string;
+}
+
 export interface UseTeamShootingSyncOptions {
   /** 場次 id（連 WebSocket 用） */
   sessionId: string;
@@ -51,6 +53,10 @@ export interface UseTeamShootingSyncOptions {
   myUserId: string;
   /** 我自己的 displayName（fallback 給沒帶 userId 的紀錄） */
   myDisplayName: string;
+  /** 隊伍 id（DB 查詢用）*/
+  teamId?: string;
+  /** 頁面 id（DB 查詢用） */
+  pageId?: string;
   /** 是否啟用 */
   enabled?: boolean;
 }
@@ -72,7 +78,7 @@ export interface UseTeamShootingSyncResult {
 // 純函式 helpers
 // ============================================================================
 
-/** 解析 record 為 TeamShootingHit（彈性欄位處理） */
+/** 解析 WS record 為 TeamShootingHit（彈性欄位處理） */
 export function parseHitRecord(
   record: ServerHitRecord,
   fallbackUserId: string,
@@ -86,6 +92,18 @@ export function parseHitRecord(
   return { userId, displayName, hitZone, score, timestamp };
 }
 
+/** 合併 DB hits 和 WS hits，以 timestamp 去重 */
+function mergeHits(
+  dbHits: TeamShootingHit[],
+  wsHits: TeamShootingHit[],
+): TeamShootingHit[] {
+  const dbTimestamps = new Set(dbHits.map((h) => h.timestamp));
+  const wsOnly = wsHits.filter((h) => !dbTimestamps.has(h.timestamp));
+  return [...dbHits, ...wsOnly].sort((a, b) =>
+    a.timestamp < b.timestamp ? -1 : a.timestamp > b.timestamp ? 1 : 0,
+  );
+}
+
 // ============================================================================
 // Hook
 // ============================================================================
@@ -96,24 +114,68 @@ export function useTeamShootingSync({
   sessionId,
   myUserId,
   myDisplayName,
+  teamId,
+  pageId,
   enabled = true,
 }: UseTeamShootingSyncOptions): UseTeamShootingSyncResult {
   const [teamHits, setTeamHits] = useState<TeamShootingHit[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // WS-only hits（還沒存入 DB 的即時事件）
+  const wsHitsRef = useRef<TeamShootingHit[]>([]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchedRef = useRef(false);
 
   const clearHits = useCallback(() => {
+    wsHitsRef.current = [];
     setTeamHits([]);
   }, []);
 
   const injectHit = useCallback((hit: TeamShootingHit) => {
+    wsHitsRef.current = [...wsHitsRef.current, hit];
     setTeamHits((prev) => [...prev, hit]);
   }, []);
 
+  // 從 DB 拉歷史 hits
+  const fetchHitsFromDb = useCallback(async () => {
+    if (!teamId || !pageId || !sessionId) return;
+    try {
+      const resp = await fetch(
+        `/api/team-shooting/hits?teamId=${encodeURIComponent(teamId)}&sessionId=${encodeURIComponent(sessionId)}&pageId=${encodeURIComponent(pageId)}`,
+      );
+      if (!resp.ok) return;
+      const rows = await resp.json() as DbHitRow[];
+      const dbHits = rows.map((r) => ({
+        userId: r.user_id,
+        displayName: r.display_name,
+        hitZone: r.hit_zone,
+        score: r.score,
+        timestamp: r.hit_at,
+      }));
+      setTeamHits(mergeHits(dbHits, wsHitsRef.current));
+    } catch {
+      // ignore
+    }
+  }, [teamId, pageId, sessionId]);
+
+  // mount 時拉一次
+  useEffect(() => {
+    if (!enabled || fetchedRef.current) return;
+    fetchedRef.current = true;
+    void fetchHitsFromDb();
+  }, [enabled, fetchHitsFromDb]);
+
+  // 10s polling fallback
+  useEffect(() => {
+    if (!enabled || !teamId || !pageId) return;
+    const id = setInterval(() => void fetchHitsFromDb(), 10_000);
+    return () => clearInterval(id);
+  }, [enabled, teamId, pageId, fetchHitsFromDb]);
+
+  // WebSocket 即時接收（保留原有 WS 邏輯）
   useEffect(() => {
     if (!enabled || !sessionId) return;
 
@@ -128,7 +190,6 @@ export function useTeamShootingSync({
           setIsConnected(true);
           setError(null);
           reconnectAttemptsRef.current = 0;
-          // 加入 session（用 server case "join"、之前送 "session_join" 是協定錯誤、server 沒對應 case → 收不到 shooting_hit 廣播）
           ws.send(
             JSON.stringify({
               type: "join",
@@ -144,9 +205,15 @@ export function useTeamShootingSync({
             const data = JSON.parse(event.data) as WsShootingMessage;
             if (data.type === "shooting_hit" && data.record) {
               const hit = parseHitRecord(data.record, myUserId, myDisplayName);
-              setTeamHits((prev) => [...prev, hit]);
+              wsHitsRef.current = [...wsHitsRef.current, hit];
+              setTeamHits((prev) => {
+                // 以 timestamp 去重（DB polling 可能已加入）
+                const existingTs = new Set(prev.map((h) => h.timestamp));
+                if (existingTs.has(hit.timestamp)) return prev;
+                return [...prev, hit];
+              });
             }
-          } catch (err) {
+          } catch {
             // ignore parse errors
           }
         };
@@ -158,7 +225,6 @@ export function useTeamShootingSync({
         ws.onclose = () => {
           setIsConnected(false);
           wsRef.current = null;
-          // 自動重連（指數退避）
           if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
             const delay = Math.min(
               1000 * 2 ** reconnectAttemptsRef.current,

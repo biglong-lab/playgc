@@ -231,10 +231,12 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
             .where(eq(teamVotes.id, voteId));
         }
 
-        // 用 broadcastToTeam 對齊 client team_join 房間（事件名 vote_cast 已對應 useTeamVoteSync）
+        // 廣播含 userId + optionId，讓 client 可直接更新 ballots
         ctx.broadcastToTeam(vote.teamId, {
           type: "vote_cast",
           voteId,
+          userId,
+          optionId: body.optionId,
           voteCounts: Object.fromEntries(voteCounts),
           isComplete,
           winningOptionId,
