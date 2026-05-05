@@ -1136,6 +1136,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxAnswerLength: 15,
       };
 
+    case "color_pulse":
+      return {
+        title: "🎨 色彩心情牆",
+        prompt: `選一個最能代表你在「${scenarioName}」心情的顏色`,
+        colors: [],
+        maxNoteLength: 25,
+        showAuthor: true,
+      };
+
+    case "celebration_wall":
+      return {
+        title: "🎉 勝利分享牆",
+        prompt: `分享一件你在「${scenarioName}」中想慶祝的事！`,
+        maxLength: 80,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

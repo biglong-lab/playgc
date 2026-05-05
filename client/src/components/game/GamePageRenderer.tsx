@@ -115,6 +115,8 @@ const WordBidPage = lazy(() => import("@/components/game/multi/WordBidPage"));
 const MemoryLanePage = lazy(() => import("@/components/game/multi/MemoryLanePage"));
 const EmojiStoryPage = lazy(() => import("@/components/game/multi/EmojiStoryPage"));
 const MindSyncPage = lazy(() => import("@/components/game/multi/MindSyncPage"));
+const ColorPulsePage = lazy(() => import("@/components/game/multi/ColorPulsePage"));
+const CelebrationWallPage = lazy(() => import("@/components/game/multi/CelebrationWallPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -553,6 +555,10 @@ export default function GamePageRenderer({
         return <EmojiStoryPage {...commonProps} page={page} pageId={page.id} />;
       case "mind_sync":
         return <MindSyncPage {...commonProps} page={page} pageId={page.id} />;
+      case "color_pulse":
+        return <ColorPulsePage {...commonProps} page={page} pageId={page.id} />;
+      case "celebration_wall":
+        return <CelebrationWallPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

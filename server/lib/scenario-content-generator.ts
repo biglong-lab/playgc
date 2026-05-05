@@ -355,6 +355,12 @@ ${componentDescriptions}
 - "mind_sync": { title, description, questions: string[], maxAnswerLength: 10-20 }
   questions 是 2-4 個獨立作答的問題（如：最想去哪？最愛什麼食物？），揭曉時顯示誰的答案一樣，description 引導玩家獨立作答
 
+- "color_pulse": { title, prompt, colors: [], maxNoteLength: 15-30, showAuthor: boolean }
+  prompt 引導選色（如：選一個代表你今天心情的顏色），colors 為空陣列代表用預設 10 色盤，適合開場暖身/心情溫度計/活動結尾
+
+- "celebration_wall": { title, prompt, maxLength: 50-100, showAuthor: boolean }
+  prompt 引導分享成就（如：分享一件你想慶祝的事），揭曉後大家可以點愛心，適合訓練結尾/聚會/成果展示
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
