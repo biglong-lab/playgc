@@ -117,6 +117,8 @@ const EmojiStoryPage = lazy(() => import("@/components/game/multi/EmojiStoryPage
 const MindSyncPage = lazy(() => import("@/components/game/multi/MindSyncPage"));
 const ColorPulsePage = lazy(() => import("@/components/game/multi/ColorPulsePage"));
 const CelebrationWallPage = lazy(() => import("@/components/game/multi/CelebrationWallPage"));
+const GroupContractPage = lazy(() => import("@/components/game/multi/GroupContractPage"));
+const SkillSwapPage = lazy(() => import("@/components/game/multi/SkillSwapPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -559,6 +561,10 @@ export default function GamePageRenderer({
         return <ColorPulsePage {...commonProps} page={page} pageId={page.id} />;
       case "celebration_wall":
         return <CelebrationWallPage {...commonProps} page={page} pageId={page.id} />;
+      case "group_contract":
+        return <GroupContractPage {...commonProps} page={page} pageId={page.id} />;
+      case "skill_swap":
+        return <SkillSwapPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

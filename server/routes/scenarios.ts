@@ -1153,6 +1153,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "group_contract":
+      return {
+        title: "📜 共識公約制定",
+        prompt: `提出你認為「${scenarioName}」最重要的一條規則`,
+        maxRuleLength: 40,
+        topN: 3,
+      };
+
+    case "skill_swap":
+      return {
+        title: "🔄 技能交換牆",
+        offerPrompt: `在「${scenarioName}」中我能提供什麼？`,
+        wantPrompt: `我想向大家學什麼？`,
+        maxLength: 20,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

@@ -361,6 +361,12 @@ ${componentDescriptions}
 - "celebration_wall": { title, prompt, maxLength: 50-100, showAuthor: boolean }
   prompt 引導分享成就（如：分享一件你想慶祝的事），揭曉後大家可以點愛心，適合訓練結尾/聚會/成果展示
 
+- "group_contract": { title, prompt, maxRuleLength: 30-50, topN: 3-5 }
+  prompt 引導提出規則（如：提出你認為最重要的一條團隊規範），三階段：提案→投票→確立公約，適合工作坊/新團隊建立共識
+
+- "skill_swap": { title, offerPrompt, wantPrompt, maxLength: 15-25, showAuthor: boolean }
+  offerPrompt 引導說明自己的技能（如：我能提供什麼？），wantPrompt 引導說明想學什麼，揭曉後自動顯示配對，適合網絡活動/企業訓練
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

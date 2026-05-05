@@ -803,6 +803,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "訓練前後各做一次色彩心情，對比群體情緒變化，讓效果視覺化",
         axis: "multi",
       },
+      {
+        pageType: "group_contract",
+        label: "共識公約制定",
+        role: "三階段：提案規則→投票→確立公約，讓團隊共同制定工作規範，承諾感更強",
+        axis: "multi",
+      },
+      {
+        pageType: "skill_swap",
+        label: "技能交換牆",
+        role: "每人寫下能提供的技能和想學的技能，揭曉自動配對，引發後續交流",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",
