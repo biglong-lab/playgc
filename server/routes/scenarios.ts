@@ -738,6 +738,31 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAllEstimates: true,
       };
 
+    case "hot_take":
+      return {
+        title: "🔥 熱議話題",
+        instructions: "說出你最有爭議的看法，讓大家用 emoji 表態！",
+        maxLength: 80,
+        maxTakesPerPerson: 2,
+        reactions: ["🔥", "💯", "🤔", "❄️", "💀"],
+      };
+
+    case "knowledge_check":
+      return {
+        title: "🧠 知識確認",
+        questions: [
+          {
+            id: "q1",
+            text: "今天課程中最重要的概念是什麼？",
+            options: ["概念 A", "概念 B", "概念 C", "概念 D"],
+            correctIndex: 0,
+            explanation: "請依照實際課程內容修改。",
+          },
+        ],
+        showExplanation: true,
+        pointsPerCorrect: 10,
+      };
+
     case "open_question":
       return {
         title: "💬 開放提問",

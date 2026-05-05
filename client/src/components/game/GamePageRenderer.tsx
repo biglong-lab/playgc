@@ -83,6 +83,8 @@ const ScaledFeedbackPage = lazy(() => import("@/components/game/multi/ScaledFeed
 const TeamPollPage = lazy(() => import("@/components/game/multi/TeamPollPage"));
 const OpenQuestionPage = lazy(() => import("@/components/game/multi/OpenQuestionPage"));
 const CountdownChallengePage = lazy(() => import("@/components/game/multi/CountdownChallengePage"));
+const HotTakePage = lazy(() => import("@/components/game/multi/HotTakePage"));
+const KnowledgeCheckPage = lazy(() => import("@/components/game/multi/KnowledgeCheckPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -457,6 +459,10 @@ export default function GamePageRenderer({
         return <OpenQuestionPage {...commonProps} page={page} pageId={page.id} />;
       case "countdown_challenge":
         return <CountdownChallengePage {...commonProps} page={page} pageId={page.id} />;
+      case "hot_take":
+        return <HotTakePage {...commonProps} page={page} pageId={page.id} />;
+      case "knowledge_check":
+        return <KnowledgeCheckPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

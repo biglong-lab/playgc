@@ -139,6 +139,12 @@ ${componentDescriptions}
 - "estimation_game": { title, question, unit?, options?: [...], showAverage: true, showAllEstimates: true }
   options 是估算選項（如 Fibonacci: 1/2/3/5/8/13/21/?，T-shirt: XS/S/M/L/XL）。揭曉前保密，任何人提交後可點擊揭曉顯示分佈圖與平均值，適合規劃撲克、敏捷估點
 
+- "hot_take": { title, instructions?, maxLength: 30-100, maxTakesPerPerson: 1-3, reactions: ["🔥","💯","🤔","❄️","💀"] }
+  每人提交有爭議的觀點，他人用 emoji 反應，按反應總數排行，適合社群討論/派對/破冰辯論環節
+
+- "knowledge_check": { title, questions: [{ id, text, options: [string...4個], correctIndex: 0-3, explanation? }], showExplanation: true, pointsPerCorrect: number }
+  主持人出題→全員搶答→主持人揭曉正確答案+解析+百分比，適合企業內訓知識測驗/活動闖關/學習確認
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 
