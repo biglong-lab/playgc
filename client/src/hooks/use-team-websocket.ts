@@ -542,6 +542,7 @@ export function useTeamWebSocket({
    * 🆕 Phase 3.1 part 3 補完：ChoiceVerifyRace 玩家答題即時同步給同隊
    *   client send "race_answer" → server broadcast "race_answered" 給同隊全員
    *   2026-05-04 補：含 pageId 給 server 找對應 race state 寫入分數
+   *   2026-05-05 補：sessionId 必填（server 端用 message.sessionId 找 state）
    */
   const sendRaceAnswer = useCallback(
     (record: {
@@ -550,7 +551,8 @@ export function useTeamWebSocket({
       selectedOption: number;
       isCorrect: boolean;
       points: number;
-      pageId?: string;
+      sessionId: string;
+      pageId: string;
     }) => {
       if (wsRef.current?.readyState === WebSocket.OPEN && userId) {
         wsRef.current.send(
@@ -562,6 +564,7 @@ export function useTeamWebSocket({
             selectedOption: record.selectedOption,
             isCorrect: record.isCorrect,
             points: record.points,
+            sessionId: record.sessionId,
             pageId: record.pageId,
             answeredAt: new Date().toISOString(),
           }),
@@ -574,10 +577,12 @@ export function useTeamWebSocket({
   /**
    * 🆕 2026-05-04: ChoiceVerifyRace 玩家進場時通知 server
    *   server 取或建立 race state、回傳 race_state（含當前題、startAt、剩餘秒數）
+   *   2026-05-05 補：sessionId 必填（server 端用 message.sessionId 而非 ws.sessionId）
    */
   const sendRaceInit = useCallback(
     (args: {
       displayName: string;
+      sessionId: string;
       pageId: string;
       totalQuestions: number;
       secondsPerQuestion: number;
@@ -588,6 +593,7 @@ export function useTeamWebSocket({
             type: "race_init",
             userId,
             displayName: args.displayName,
+            sessionId: args.sessionId,
             pageId: args.pageId,
             totalQuestions: args.totalQuestions,
             secondsPerQuestion: args.secondsPerQuestion,

@@ -97,6 +97,7 @@ function deriveDisplayName(
 export default function ChoiceVerifyRacePage({
   config,
   onComplete,
+  sessionId,
   gameId,
   pageId,
 }: ChoiceVerifyRacePageProps) {
@@ -210,11 +211,12 @@ export default function ChoiceVerifyRacePage({
     );
     sendRaceInit({
       displayName: myDisplayName,
+      sessionId,
       pageId,
       totalQuestions,
       secondsPerQuestion,
     });
-  }, [isConnected, user, myTeam, config, pageId, myDisplayName, sendRaceInit]);
+  }, [isConnected, user, myTeam, config, sessionId, pageId, myDisplayName, sendRaceInit]);
 
   // 🆕 2026-05-04: race 完成 → 等 1.5 秒讓玩家看分數 → onComplete
   useEffect(() => {
@@ -253,10 +255,11 @@ export default function ChoiceVerifyRacePage({
         selectedOption: optionIndex,
         isCorrect,
         points,
+        sessionId,
         pageId,
       });
     },
-    [user, config, myDisplayName, sendRaceAnswer, pageId],
+    [user, config, myDisplayName, sendRaceAnswer, sessionId, pageId],
   );
 
   if (!user) {

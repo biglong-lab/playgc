@@ -428,15 +428,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           //     server → race_question_advanced (timer 到、推下一題、含 startAt)
           //     server → race_complete (最後一題結束)
           case "race_init":
-            if (ws.teamId && ws.sessionId && ws.userId) {
+            if (ws.teamId && ws.userId) {
+              // 🛡️ 2026-05-05 fix：用 message.sessionId 而非 ws.sessionId
+              //   ws.sessionId 只在玩家送 "join" message 時設、ChoiceVerifyRacePage 沒送 → 永遠 undefined
+              //   原 bug：條件 `ws.sessionId` 不滿足、整個 case 不執行 → race state 從沒被建
+              //   結果：玩家各自跑 client state（不同步）、倒數 0:00、答完卡住、兩邊都判得分
+              const sessionId = String(message.sessionId ?? "");
               const pageId = String(message.pageId ?? "");
+              if (!sessionId || !pageId) break;
               const totalQuestions = Math.max(1, Number(message.totalQuestions ?? 1));
               const secondsPerQuestion = Number(message.secondsPerQuestion ?? 20);
               const displayName = String(message.displayName ?? ws.userName ?? "玩家");
 
               const state = ensureRaceState(
                 {
-                  sessionId: ws.sessionId,
+                  sessionId,
                   teamId: ws.teamId,
                   pageId,
                   totalQuestions,
@@ -459,7 +465,8 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
 
           case "race_answer":
-            if (ws.teamId && ws.userId && ws.sessionId) {
+            if (ws.teamId && ws.userId) {
+              // 🛡️ 2026-05-05 fix：用 message.sessionId（同 race_init 修法）
               const userId = ws.userId; // 強制用認證身份
               const displayName = String(message.displayName ?? ws.userName ?? "玩家");
               const questionIndex = Number(message.questionIndex);
@@ -467,10 +474,13 @@ export function setupWebSocket(httpServer: Server): RouteContext {
               const isCorrect = Boolean(message.isCorrect);
               const points = Math.max(0, Number(message.points ?? 0));
               const answeredAt = new Date().toISOString();
+              const sessionId = String(message.sessionId ?? "");
               const pageId = String(message.pageId ?? "");
 
-              // server 端記錄分數（不依賴 client）
-              const state = pageId ? getRaceState(ws.sessionId, ws.teamId, pageId) : undefined;
+              // server 端記錄分數（不依賴 client 算分）
+              const state = sessionId && pageId
+                ? getRaceState(sessionId, ws.teamId, pageId)
+                : undefined;
               if (state) {
                 recordAnswer(state, {
                   userId,
