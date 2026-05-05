@@ -581,6 +581,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "訓練結束後全員共同簽署行動承諾，讓學習成果落地",
         axis: "multi",
       },
+      {
+        pageType: "priority_rank",
+        label: "議題優先化排名",
+        role: "每人獨立排列最重要的改善議題，集體共識即時呈現",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",

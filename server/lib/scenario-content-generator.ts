@@ -112,6 +112,9 @@ ${componentDescriptions}
 - "team_contract": { title, contractText, pledgeLabel?, showSigners: true, targetCount?, celebrationText? }
   contractText 是全員共同承諾的宣言文字（如：我們承諾彼此尊重、積極合作），pledgeLabel 是簽署按鈕文字，targetCount 是預期簽署人數
 
+- "priority_rank": { title, question, items: [{ id, label, emoji }...3-8個], showConsensus: true }
+  question 是引導語（如：請依重要程度排列以下項目），items 是待排序的選項清單（如：提升效率、降低成本、增加收入），showConsensus 顯示群體共識排名
+
 - "feedback_star": { title, question, allowComment: true }
   question 是引導玩家評分的問題（如：你對這次活動的整體感受如何？）
 

@@ -629,6 +629,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         celebrationText: "全員完成簽署！",
       };
 
+    case "priority_rank":
+      return {
+        title: "🏆 優先順序排名",
+        question: "請依重要程度排列以下項目（1 = 最重要）",
+        items: [
+          { id: "a", label: "項目 A", emoji: "🔵" },
+          { id: "b", label: "項目 B", emoji: "🟢" },
+          { id: "c", label: "項目 C", emoji: "🟡" },
+          { id: "d", label: "項目 D", emoji: "🔴" },
+        ],
+        showConsensus: true,
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {
