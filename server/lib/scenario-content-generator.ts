@@ -409,6 +409,12 @@ ${componentDescriptions}
 - "crowd_answer": { title, question: string, unit: string, correctAnswer: number }
   猜猜看：全員提交一個數字猜測，公布正確答案後排列由近到遠，適合猜年份/猜數量/猜里程/破冰暖場
 
+- "emoji_slider": { title, question: string, leftEmoji, rightEmoji, leftLabel, rightLabel }
+  情緒滑桿：玩家拖動 0-100 滑桿表達情緒強度，揭曉後顯示分佈長條圖和平均值，適合開場暖身/情緒確認/滿意度調查
+
+- "scene_vote": { title, question: string, scenes: SceneOption[] }
+  場景投票：玩家選一個最符合自己的場景描述，揭曉後顯示各選項票數排行，適合破冰自我揭示/性格分類/故事情境選擇
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

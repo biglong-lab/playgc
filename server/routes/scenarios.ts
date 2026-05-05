@@ -1285,6 +1285,27 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         correctAnswer: 0,
       };
 
+    case "emoji_slider":
+      return {
+        title: "😊 情緒滑桿",
+        question: `參加「${scenarioName}」，你現在的感受是？`,
+        leftEmoji: "😞",
+        rightEmoji: "😄",
+        leftLabel: "很低落",
+        rightLabel: "很開心",
+      };
+
+    case "scene_vote":
+      return {
+        title: "🎭 你是哪種人",
+        question: `在「${scenarioName}」中，你最像哪種角色？`,
+        scenes: [
+          { sceneId: "s1", label: "積極型", emoji: "🚀", description: "衝第一個報名" },
+          { sceneId: "s2", label: "觀望型", emoji: "🔭", description: "先看看再說" },
+          { sceneId: "s3", label: "享樂型", emoji: "🎉", description: "只要好玩就對了" },
+        ],
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

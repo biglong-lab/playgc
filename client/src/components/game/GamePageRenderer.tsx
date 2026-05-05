@@ -133,6 +133,8 @@ const SpinWheelPage = lazy(() => import("@/components/game/multi/SpinWheelPage")
 const OpenMicPage = lazy(() => import("@/components/game/multi/OpenMicPage"));
 const FastBuzzPage = lazy(() => import("@/components/game/multi/FastBuzzPage"));
 const CrowdAnswerPage = lazy(() => import("@/components/game/multi/CrowdAnswerPage"));
+const EmojiSliderPage = lazy(() => import("@/components/game/multi/EmojiSliderPage"));
+const SceneVotePage = lazy(() => import("@/components/game/multi/SceneVotePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -607,6 +609,10 @@ export default function GamePageRenderer({
         return <FastBuzzPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "crowd_answer":
         return <CrowdAnswerPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "emoji_slider":
+        return <EmojiSliderPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "scene_vote":
+        return <SceneVotePage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
