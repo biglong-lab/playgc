@@ -1685,6 +1685,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         defaultValue: 50,
       };
 
+    case "wish_bucket":
+      return {
+        title: "🌟 許願桶",
+        prompt: `把你對「${scenarioName}」的期望投入桶中`,
+        placeholder: "寫下你的願望或期望...",
+        maxLength: 150,
+        anonymous: false,
+      };
+
+    case "quick_poll":
+      return {
+        title: "📊 快速民調",
+        question: `關於「${scenarioName}」，你的選擇是？`,
+        options: ["非常同意", "同意", "不確定", "不同意", "非常不同意"],
+        maxLength: 40,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

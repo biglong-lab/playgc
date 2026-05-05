@@ -2430,6 +2430,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     status: "live",
   },
 
+  // ── Round 51：婚禮/聚會許願牆 ──────────────
+  {
+    id: "wedding-wishes",
+    name: "婚禮許願牆",
+    tagline: "投票祝福 + 許願牆 + 承諾見證",
+    description:
+      "婚禮或重要慶典中的互動儀式。先用「快速民調」讓賓客投票選出對新人最重要的祝福關鍵字；接著「許願桶」讓每位賓客寫下給新人的專屬祝福和建議，揭曉時一一顯示製造感動；最後「公開承諾」讓重要嘉賓宣示對新人的支持。全程讓賓客從觀眾變成參與者，打造難忘的互動儀式感。",
+    useCases: [
+      "婚禮賓客互動",
+      "重要生日慶典",
+      "退休歡送儀式",
+      "畢業典禮",
+      "週年紀念派對",
+    ],
+    category: "social",
+    icon: "Heart",
+    gradient: "from-pink-500/20 to-rose-500/20",
+    estimatedPlayers: "20-200 人",
+    estimatedDuration: "20-40 分鐘",
+    components: [
+      {
+        pageType: "quick_poll",
+        label: "祝福關鍵字",
+        role: "主持人列出幾個祝福選項（健康長壽/幸福美滿/財源廣進等），賓客投票選最重要的，揭曉後形成現場共識祝福語",
+        axis: "multi",
+      },
+      {
+        pageType: "wish_bucket",
+        label: "祝福許願桶",
+        role: "每位賓客寫下一句話祝福，揭曉後一次展示所有祝福，主持人可依序朗讀或投影在大螢幕上",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "見證承諾",
+        role: "邀請重要嘉賓（長輩/好友）公開承諾對新人的支持與祝福，形成永久的數位見證",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "婚禮/慶典互動套餐 NT$ 3,000-8,000 / 場。一次性授權 NT$ 5,000 永久使用。",
+    status: "live",
+  },
+
   // ── Round 50：知識競答派對 ──────────────
   {
     id: "quiz-party",

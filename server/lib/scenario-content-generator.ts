@@ -466,6 +466,12 @@ ${componentDescriptions}
 - "scale_vote": { title, question, minLabel, maxLabel, scaleMin: 0, scaleMax: 100, defaultValue: 50 }
   滑桿投票：每人拖動滑桿在 scaleMin-scaleMax 間選一個值，揭曉後顯示平均分數和分佈圖，適合滿意度調查/立場測量/溫度計問題
 
+- "wish_bucket": { title, prompt, placeholder, maxLength: 50-200, anonymous: boolean }
+  許願桶：每人匿名或具名投入一個願望/期望/建議，揭曉後所有願望一次性顯示，製造驚喜感，適合結業典禮/聚會/開幕祝福
+
+- "quick_poll": { title, question, options: string[2-6], maxLength: 20-60 }
+  快速民調：提供 2-6 個選項讓每人投一票（單選），揭曉後顯示各選項票數和百分比長條圖，適合偏好調查/決策輔助/意見蒐集
+
 - "personal_fact": { title, prompt, maxLength: 50-100, showAuthor: boolean }
   趣味自我揭秘：每人說一個關於自己的趣事/特點，揭曉後大家按愛心投票最驚喜的事實，適合破冰/認識新朋友/聚會
 
