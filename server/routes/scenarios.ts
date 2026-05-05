@@ -281,6 +281,12 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxWordsPerPerson: 3,
         maxWordLength: 15,
       };
+    case "check_in":
+      return {
+        title: "✅ 活動簽到",
+        message: "點擊簽到，讓主持人知道你已到場！",
+        showNames: true,
+      };
 
     // ─── shared / solo（簡單預設）───
     case "dialogue":

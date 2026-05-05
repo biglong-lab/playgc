@@ -483,6 +483,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedDuration: "半天 - 1 天",
     components: [
       {
+        pageType: "check_in",
+        label: "集合簽到",
+        role: "出發前全員簽到確認人數到齊",
+        axis: "multi",
+        demoMode: "check-in",
+      },
+      {
         pageType: "mood_meter",
         label: "開場活力確認",
         role: "旅途開始前確認全員狀態",
@@ -869,6 +876,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedPlayers: "10-60 人",
     estimatedDuration: "20-45 分鐘",
     components: [
+      {
+        pageType: "check_in",
+        label: "報到簽到",
+        role: "玩家點擊「我到了！」，主持人即時掌握到場人數",
+        axis: "multi",
+        demoMode: "check-in",
+      },
       {
         pageType: "mood_meter",
         label: "開場活力確認",

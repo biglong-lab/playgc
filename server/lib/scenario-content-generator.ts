@@ -115,6 +115,9 @@ ${componentDescriptions}
 - "team_word_cloud": { title, question, maxWordsPerPerson: 1-3 }
   question 是引導玩家輸入詞彙的提示（如：一個詞描述今天的收穫？）
 
+- "check_in": { title, message, targetCount?: number, showNames: true }
+  message 是提示語（如：歡迎簽到！），targetCount 是預期人數（如：30）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
