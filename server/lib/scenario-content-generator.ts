@@ -640,6 +640,12 @@ ${componentDescriptions}
 - "challenge_flag": { title, prompt, placeholder }
   挑戰旗幟：每人說出當前最大挑戰，揭曉後顯示挑戰牆，其他成員可用 emoji 表達支持（💪🤝❤️🌟👍），適合回顧/心理安全感建立/互助文化
 
+- "question_jar": { title, prompt, placeholder, anonymous: boolean }
+  問題罐：每人匿名投入問題，揭曉後顯示所有問題，支持 👍 投票，主持人可選「現在討論這題」，適合 Q&A 場合/反向 FAQ/開放討論
+
+- "work_style": { title, prompt, collabLow, collabHigh, structureLow, structureHigh }
+  工作風格：每人在「獨立↔協作」和「彈性↔結構」兩個軸上拖滑桿，揭曉後顯示全隊平均值與每人所屬象限，適合新團隊認識/協作模式討論/OKR 啟動
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

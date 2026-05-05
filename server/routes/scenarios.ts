@@ -2143,6 +2143,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         placeholder: "說出你的挑戰，讓團隊知道...",
       };
 
+    case "question_jar":
+      return {
+        title: "🫙 問題罐",
+        prompt: `關於「${scenarioName}」，把你最想問的問題投進罐子裡！`,
+        placeholder: "你的問題（匿名送出）...",
+        anonymous: true,
+      };
+
+    case "work_style":
+      return {
+        title: "💼 工作風格",
+        prompt: `拖曳滑桿，定位你在「${scenarioName}」中的工作風格偏好。`,
+        collabLow: "獨立作業",
+        collabHigh: "協作共創",
+        structureLow: "彈性自由",
+        structureHigh: "結構清晰",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

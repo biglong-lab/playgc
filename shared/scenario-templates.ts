@@ -3662,6 +3662,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "團隊健康套組 NT$ 2,000-6,000 / 場。讓團隊真正了解彼此的強項與困境。",
     status: "live",
   },
+  {
+    id: "know-your-team-pack",
+    name: "認識你的團隊套組",
+    tagline: "工作風格 + 問題罐，從偏好到疑惑全面揭露",
+    description: "先用工作風格滑桿讓每人定位自己的作業偏好，揭曉後呈現全隊風格地圖；再用問題罐讓大家匿名投入最想了解的問題，投票決定討論順序，讓初識的團隊快速深度連結。",
+    useCases: ["新團隊破冰", "跨部門合作啟動", "組織融合工作坊", "入職培訓第一天"],
+    category: "corporate",
+    icon: "💼",
+    gradient: "from-sky-500 to-teal-500",
+    estimatedPlayers: "4-25 人",
+    estimatedDuration: "12-18 分鐘",
+    components: [
+      {
+        pageType: "work_style",
+        label: "工作風格",
+        role: "風格象限定位",
+        axis: "multi",
+      },
+      {
+        pageType: "question_jar",
+        label: "問題罐",
+        role: "匿名 Q&A 收集",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "認識你的團隊套組 NT$ 1,500-4,500 / 場。讓陌生的同事在 20 分鐘內真正了解彼此。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
