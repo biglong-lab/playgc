@@ -1295,6 +1295,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "全員在 2D 軸線圖放置自己的標記，一眼看出團隊個性分布，引發有趣討論",
         axis: "multi",
       },
+      {
+        pageType: "word_association",
+        label: "自由聯想破冰",
+        role: "主持人出一個詞，大家寫第一個聯想，揭曉後看群體思維模式，笑點多、話題多",
+        axis: "multi",
+      },
     ],
     valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",
     status: "live",

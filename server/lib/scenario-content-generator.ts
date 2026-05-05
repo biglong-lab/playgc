@@ -181,6 +181,9 @@ ${componentDescriptions}
 - "emoji_check_in": { title, question, emojiOptions: string[], maxNoteLength: 30-100, noteRequired: boolean, showAuthor: boolean }
   快速表情打卡，選一個 emoji 代表當下狀態，可選填一行備註，揭曉後以表情雲呈現全體分布，適合課前/課後暖場/每日站立會議/隨時心情脈搏
 
+- "word_association": { title, words: string[], maxResponseLength: 10-30, showAuthor: boolean }
+  每次出一個關鍵詞，所有人寫下第一個聯想詞，揭曉後按詞彙分組展示（相同聯想集中顯示）；多輪進行，探索群體思維模式，適合創意workshop/場域介紹/品牌聯想/破冰
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

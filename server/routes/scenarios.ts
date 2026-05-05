@@ -931,6 +931,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "word_association":
+      return {
+        title: "💭 自由聯想",
+        words: ["金門", "海邊", "旅行", "回憶", "美食"],
+        maxResponseLength: 20,
+        showAuthor: true,
+      };
+
     case "emoji_check_in":
       return {
         title: "😊 表情打卡",
