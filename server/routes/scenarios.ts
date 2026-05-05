@@ -986,6 +986,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "value_rank":
+      return {
+        title: "🏆 價值排序",
+        prompt: "請依重要性排列以下價值觀（第一名最重要）",
+        items: ["創新", "協作", "效率", "誠信", "學習"],
+        showAuthor: false,
+      };
+
+    case "collective_poem":
+      return {
+        title: "📜 集體詩",
+        prompt: "每人加入一行，共同寫一首詩",
+        starter: "在那遙遠的地方，",
+        maxLength: 50,
+        showAuthor: false,
+        maxLinesPerUser: 1,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

@@ -187,6 +187,12 @@ ${componentDescriptions}
 - "feedback_sandwich": { title, targetName, goodPrompt, betterPrompt, goPrompt, maxLength: 80-200, showAuthor: boolean }
   三明治反饋（Good→Better→Go），每人匿名填寫三欄，揭曉後按三個面向聚合展示全體意見，適合訓練結尾評估/方案回顧/表演後反思
 
+- "value_rank": { title, prompt, items: string[]（3-8 個），showAuthor: boolean }
+  每人對同一組選項進行重要性排序，揭曉後用 Borda 計分法算出集體排名（第一名得 N-1 分…末位得 0 分，加總），適合企業文化探討/研習共識/優先級決策/破冰了解彼此價值觀
+
+- "collective_poem": { title, prompt, starter?: string, maxLength: 20-80, showAuthor: boolean, maxLinesPerUser: 1-3 }
+  每人加入一行詩句（含選填開篇句），提交後即顯示於預覽（未揭曉狀態），揭曉後呈現完整詩篇；適合創意結尾/交誼活動/詩意熱場/學習收尾儀式
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

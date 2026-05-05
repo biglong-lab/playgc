@@ -99,6 +99,8 @@ const TruthOrMythPage = lazy(() => import("@/components/game/multi/TruthOrMythPa
 const EmojiCheckInPage = lazy(() => import("@/components/game/multi/EmojiCheckInPage"));
 const WordAssociationPage = lazy(() => import("@/components/game/multi/WordAssociationPage"));
 const FeedbackSandwichPage = lazy(() => import("@/components/game/multi/FeedbackSandwichPage"));
+const ValueRankPage = lazy(() => import("@/components/game/multi/ValueRankPage"));
+const CollectivePoemPage = lazy(() => import("@/components/game/multi/CollectivePoemPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -505,6 +507,10 @@ export default function GamePageRenderer({
         return <WordAssociationPage {...commonProps} page={page} pageId={page.id} />;
       case "feedback_sandwich":
         return <FeedbackSandwichPage {...commonProps} page={page} pageId={page.id} />;
+      case "value_rank":
+        return <ValueRankPage {...commonProps} page={page} pageId={page.id} />;
+      case "collective_poem":
+        return <CollectivePoemPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
