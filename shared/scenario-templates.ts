@@ -1030,6 +1030,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "team-word-cloud",
       },
       {
+        pageType: "two_truths",
+        label: "兩真一假破冰",
+        role: "每人寫 2 個真實陳述 + 1 個謊言，大家互相猜測，笑聲中快速認識彼此",
+        axis: "multi",
+      },
+      {
         pageType: "dot_vote",
         label: "後續重點投票",
         role: "每人分配 3 個點給最想繼續深入的主題，群體共識即時可見",

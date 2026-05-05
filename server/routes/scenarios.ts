@@ -444,6 +444,13 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "two_truths":
+      return {
+        title: "🤥 兩真一假",
+        instructions: "寫下 2 個真實陳述和 1 個謊言，讓大家猜哪個是假的！",
+        showScores: true,
+      };
+
     case "timeline_wall":
       return {
         title: "📅 集體時間軸",
