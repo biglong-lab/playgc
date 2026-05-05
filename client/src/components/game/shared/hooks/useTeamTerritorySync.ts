@@ -16,6 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
+import { apiRequest } from "@/lib/queryClient";
 import type { TerritoryCapture } from "../../multi/TerritoryCapture";
 
 interface UseTeamTerritorySyncOptions {
@@ -67,17 +68,13 @@ export function useTeamTerritorySync({
   const persistSnapshot = useCallback(
     (nextCaptures: TerritoryCapture[]) => {
       if (!teamId || !sessionId || !pageId) return;
-      void fetch("/api/team-state", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          teamId,
-          sessionId,
-          pageId,
-          componentType: "territory_capture",
-          state: { captures: nextCaptures },
-          version: ++versionRef.current,
-        }),
+      void apiRequest("POST", "/api/team-state", {
+        teamId,
+        sessionId,
+        pageId,
+        type: "territory_capture",
+        state: { captures: nextCaptures },
+        version: ++versionRef.current,
       });
     },
     [teamId, sessionId, pageId],
@@ -87,13 +84,14 @@ export function useTeamTerritorySync({
   const fetchCaptures = useCallback(async () => {
     if (!teamId || !sessionId || !pageId) return;
     try {
-      const resp = await fetch(
+      const resp = await apiRequest(
+        "GET",
         `/api/team-state?teamId=${encodeURIComponent(teamId)}&sessionId=${encodeURIComponent(sessionId)}&pageId=${encodeURIComponent(pageId)}&type=territory_capture`,
       );
-      if (!resp.ok) return;
-      const data = await resp.json() as { state_json?: { captures?: TerritoryCapture[] }; version?: number };
-      const saved = data?.state_json?.captures;
-      const savedVersion = data?.version ?? 0;
+      // server 回傳格式：{ state: { state_json: { captures: [...] }, version: N } | null }
+      const data = await resp.json() as { state?: { state_json?: { captures?: TerritoryCapture[] }; version?: number } | null };
+      const saved = data?.state?.state_json?.captures;
+      const savedVersion = data?.state?.version ?? 0;
       if (Array.isArray(saved) && savedVersion >= versionRef.current) {
         versionRef.current = savedVersion;
         setCaptures(saved);

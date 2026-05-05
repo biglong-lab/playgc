@@ -145,9 +145,12 @@ export function useTeamShootingSync({
     try {
       const resp = await fetch(
         `/api/team-shooting/hits?teamId=${encodeURIComponent(teamId)}&sessionId=${encodeURIComponent(sessionId)}&pageId=${encodeURIComponent(pageId)}`,
+        { credentials: "include" },
       );
       if (!resp.ok) return;
-      const rows = await resp.json() as DbHitRow[];
+      // server 回傳格式：{ hits: [...] }
+      const data = await resp.json() as { hits: DbHitRow[] };
+      const rows = data.hits ?? [];
       const dbHits = rows.map((r) => ({
         userId: r.user_id,
         displayName: r.display_name,
