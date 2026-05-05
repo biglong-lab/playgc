@@ -514,6 +514,12 @@ ${componentDescriptions}
 - "personal_compass": { title, northLabel, southLabel, eastLabel, westLabel }
   個人指南針：每人在四個方向（優勢/挑戰/機會/障礙）各填一項，形成個人 SWOT 快照，揭曉後呈現全員四方向分析
 
+- "learning_check": { title, prompt, topics: string[2-5], selfRateLabel, maxLength: 60-120 }
+  學習確認：每人對一組主題（topics）自評掌握度 1-5，揭曉後顯示各主題平均分布圖，適合培訓結尾/知識評估/技能盤點
+
+- "stand_point": { title, issue, stances: string[2-5], reasonLabel, maxLength: 80-200 }
+  立場陳述：每人選一個立場（支持/中立/反對等）並說明理由，揭曉後依立場分組展示，適合辯論熱場/政策討論/議題探索
+
 - "skill_map": { title, prompt, offerLabel, needLabel, maxLength: 50-100 }
   技能地圖：每人填「我能提供」和「我需要」兩欄，揭曉後形成全隊技能互補圖，適合新專案組隊/跨部門合作啟動/工作坊開場
 

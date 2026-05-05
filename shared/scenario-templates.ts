@@ -2429,6 +2429,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "企業培訓/新專案啟動 NT$ 5,000-15,000 / 場。月訂閱包含 3 場啟動 NT$ 3,000-8,000。",
     status: "live",
   },
+
+  // ── Round 48：培訓評估工作坊 ──────────────
+  {
+    id: "training-assessment",
+    name: "培訓評估工作坊",
+    tagline: "學習確認 + 立場辯論 + 承諾行動",
+    description:
+      "培訓課程結束後的黃金 40 分鐘收尾。先用「學習確認」讓學員自評各主題掌握程度，主持人即時看到平均分了解哪裡需要加強；接著「立場陳述」設定一個爭議性問題讓學員表態並說明理由，引發批判性思考；最後「公開承諾」讓每人寫下回去後要採取的具體行動。三階段設計讓培訓不只停留在課堂，而是真正內化成行為改變。",
+    useCases: [
+      "企業內訓課程結尾",
+      "管理幹部培訓收尾",
+      "工作坊閉幕反思",
+      "線上課程結業儀式",
+      "新員工訓練評估",
+    ],
+    category: "corporate",
+    icon: "GraduationCap",
+    gradient: "from-blue-500/20 to-indigo-500/20",
+    estimatedPlayers: "10-40 人",
+    estimatedDuration: "40-60 分鐘",
+    components: [
+      {
+        pageType: "learning_check",
+        label: "學習確認",
+        role: "學員對各主題自評 1-5 分掌握度，可加補充說明。主持人揭曉後看到全班平均，決定是否需要補充說明或 Q&A",
+        axis: "multi",
+      },
+      {
+        pageType: "stand_point",
+        label: "立場辯論",
+        role: "主持人提出課程核心爭議問題，學員選擇支持/中立/反對並說明理由。揭曉後看到立場分佈與各方觀點，促進深度討論",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "行動承諾",
+        role: "每人寫下課後 7 天內要執行的一個具體行動，揭曉後形成公開承諾，增加執行動力",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "企業培訓收尾模組 NT$ 3,000-8,000 / 場。月訂閱包含無限次收尾評估 NT$ 2,000-5,000。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

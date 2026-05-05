@@ -1625,6 +1625,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 60,
       };
 
+    case "learning_check":
+      return {
+        title: "📊 學習確認",
+        prompt: `「${scenarioName}」結束，評估自己對各主題的掌握程度`,
+        topics: ["概念理解", "實作能力", "應用情境"],
+        selfRateLabel: "掌握度 1-5",
+        maxLength: 100,
+      };
+
+    case "stand_point":
+      return {
+        title: "🗣️ 立場陳述",
+        issue: `關於「${scenarioName}」的核心議題，你的立場是？`,
+        stances: ["支持", "中立", "反對"],
+        reasonLabel: "說明你的理由",
+        maxLength: 150,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

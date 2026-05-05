@@ -172,6 +172,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("thank_you_note");
     expect(allPageTypes).toContain("skill_map");
     expect(allPageTypes).toContain("mood_board");
+
+    // Round 48 新元件
+    expect(allPageTypes).toContain("learning_check");
+    expect(allPageTypes).toContain("stand_point");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -198,6 +202,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "thank_you_note",
       "skill_map",
       "mood_board",
+      "learning_check",
+      "stand_point",
     ];
 
     for (const t of newTypes) {
