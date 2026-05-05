@@ -367,6 +367,12 @@ ${componentDescriptions}
 - "silent_debate": { title, topic, proLabel: 正方, conLabel: 反方, maxLength: 80-150 }
   topic 辯論主題（如：遠端工作讓人更有效率嗎？），玩家選正反方並靜默輸入論點，公布後可互相點愛心，適合工作坊/議題討論/課堂辯論
 
+- "points_auction": { title, items: [{itemId, label, description}], startingCoins: 50-200 }
+  每人有固定代幣，多輪競標，每輪最高出價者獲得標的，適合優先順序決策/資源分配工作坊/趣味競賽
+
+- "emoji_reaction": { title, prompt, maxNote: 20-50 }
+  玩家選一個 Emoji 表達感受並附短備註，公布後依 Emoji 分組顯示，適合活動暖場/課程開場/情緒確認
+
 - "skill_swap": { title, offerPrompt, wantPrompt, maxLength: 15-25, showAuthor: boolean }
   offerPrompt 引導說明自己的技能（如：我能提供什麼？），wantPrompt 引導說明想學什麼，揭曉後自動顯示配對，適合網絡活動/企業訓練
 

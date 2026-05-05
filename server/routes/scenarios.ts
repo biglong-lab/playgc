@@ -1170,6 +1170,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 100,
       };
 
+    case "points_auction":
+      return {
+        title: "🪙 虛擬競標",
+        items: [
+          { itemId: "item-1", label: "優先發言權", description: "下一輪優先發言" },
+          { itemId: "item-2", label: "題目選擇權", description: "選擇下一道題目" },
+          { itemId: "item-3", label: "加分機會", description: "額外加 10 分" },
+        ],
+        startingCoins: 100,
+      };
+
+    case "emoji_reaction":
+      return {
+        title: "🎭 Emoji 情緒反應",
+        prompt: `對於「${scenarioName}」，用一個 Emoji 表達你現在的感受`,
+        maxNote: 30,
+      };
+
     case "skill_swap":
       return {
         title: "🔄 技能交換牆",

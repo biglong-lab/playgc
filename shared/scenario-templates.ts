@@ -296,6 +296,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "emoji_reaction",
+        label: "Emoji 情緒反應",
+        role: "用一個 emoji 加一句話，記錄當下的真實感受，比打卡更豐富，聚會開場最輕鬆的熱身",
+        axis: "multi",
+      },
+      {
         pageType: "collective_poem",
         label: "集體詩",
         role: "每人寫一行，共同完成一首聚會詩篇，揭曉後朗讀儀式感十足，成為這場聚會最獨特的紀念",
@@ -939,6 +945,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         pageType: "silent_debate",
         label: "靜默辯論",
         role: "提出議題讓成員選正反方並靜默輸入論點，公布後對比觀點差異，適合訓練前議題暖場",
+        axis: "multi",
+      },
+      {
+        pageType: "points_auction",
+        label: "虛擬競標",
+        role: "每人有等量代幣競標資源/優先權，反映真實偏好；優先順序決策工作坊用此取代舉手投票更直覺",
         axis: "multi",
       },
       {
