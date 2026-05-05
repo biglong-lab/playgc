@@ -1,33 +1,32 @@
-// 👥 PhotoTeamGather — 集合模式團體合照（2026-05-05 新增）
+// 👥 PhotoTeamGather — 集合模式團體合照（2026-05-05 新增 + server-driven）
 //
-// 設計依據：使用者反饋「合成易卡 86%、希望改成集合 → 拍 1 張就好」
+// 解決使用者問題：
+//   ✓ 隊長拍完、其他人按合照題自動跳過（不再每人重拍）
+//   ✓ 重整後合照不丟（DB 持久化、跨重整 / 跨裝置）
 //
 // 流程：
-//   1. intro：說明「集合大家」+ 開始按鈕
-//   2. countdown：5 秒倒數（提醒就位、語音通知）
-//   3. shooting：拍 1 張（可重拍）
-//   4. review：「拍好了、要再多拍幾張留念嗎？」
-//      ├─ 再拍一張（max 5 張）→ 回 shooting
-//      └─ 完成 → 上傳第一張 + 顯示成果
-//   5. done：PhotoSuccessView（含主照 + 副照預覽）
+//   進場時 GET /state：
+//     - state 已存在（隊長已拍）→ 直接跳「已合照」畫面 + 「繼續」按鈕
+//     - state 不存在 → intro → countdown → shooting → review → 上傳 → POST /complete
+//   ws 訂 photo_gather_updated → 別人拍完了即時更新 UI
 //
-// 與舊 PhotoTeamFlow（collage 模式）差異：
-//   - 不分玩家、不輸入名字、不合成拼貼
-//   - 隊長一台手機拍即可（用前/後鏡頭看現場）
-//   - 上傳僅 1 張主照、副照可選不上傳（純本地留念）
-//
-// 端點依賴：
-//   - POST /api/cloudinary/player-photo（上傳主照、儲存）
+// 端點：
+//   GET  /api/team-photo-gather/state
+//   POST /api/team-photo-gather/complete
+// WS：
+//   photo_gather_updated
 
-import { useState, useEffect, useRef } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  Camera, CheckCircle2, Users, ArrowRight, AlertTriangle, Image as ImageIcon, RotateCw, Plus, X,
+  Camera, CheckCircle2, Users, ArrowRight, AlertTriangle, Image as ImageIcon, RotateCw, Plus, X, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequestWithTimeout } from "@/lib/queryClient";
+import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import { CameraInitializingView, CameraView, PhotoPreview } from "../photo-mission/PhotoViews";
 import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
@@ -38,21 +37,114 @@ interface PhotoTeamGatherProps {
   onComplete: (reward?: { points?: number; items?: string[] }, nextPageId?: string) => void;
   sessionId: string;
   gameId: string;
+  pageId?: string;
+}
+
+interface TeamGatherState {
+  id: string;
+  team_id: string;
+  session_id: string;
+  page_id: string;
+  completed_by_user_id: string;
+  completed_by_display_name: string;
+  main_photo_url: string;
+  shot_count: number;
+  completed_at: string;
+}
+
+interface MyTeamResponse {
+  id: string;
+  members: Array<{ userId: string; user?: { firstName?: string | null; lastName?: string | null; email?: string } }>;
 }
 
 type Stage = "intro" | "countdown" | "shooting" | "review" | "uploading" | "done";
 
-export default function PhotoTeamGather({ config, onComplete, sessionId, gameId }: PhotoTeamGatherProps) {
+export default function PhotoTeamGather({ config, onComplete, sessionId, gameId, pageId }: PhotoTeamGatherProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const camera = usePhotoCamera();
   const team = config.teamConfig;
   const maxShots = Math.max(1, Math.min(5, team?.gatherMaxShots ?? 3));
+  const effectivePageId = pageId ?? "default";
 
   const [stage, setStage] = useState<Stage>("intro");
   const [countdown, setCountdown] = useState(5);
   const [shots, setShots] = useState<string[]>([]);   // 已拍到的照片 dataURL
   const [mainUrl, setMainUrl] = useState<string | null>(null);
   const finishedRef = useRef(false);
+
+  // === 取得 myTeam（拿 teamId）===
+  const { data: myTeam } = useQuery<MyTeamResponse | null>({
+    queryKey: [`/api/games/${gameId}/my-team`],
+    enabled: !!gameId && !!user,
+  });
+  const teamId = myTeam?.id;
+
+  const myDisplayName = user
+    ? [user.firstName, user.lastName].filter(Boolean).join(" ").trim() ||
+      user.email?.split("@")[0] ||
+      user.id.slice(0, 8)
+    : "我";
+
+  // === Team-level 合照狀態（隊長拍完全隊看到）===
+  const [teamGatherState, setTeamGatherState] = useState<TeamGatherState | null>(null);
+  const [stateLoaded, setStateLoaded] = useState(false);
+
+  // mount 時拉 team gather state
+  useEffect(() => {
+    if (!teamId) return;
+    let cancelled = false;
+    apiRequest(
+      "GET",
+      `/api/team-photo-gather/state?teamId=${encodeURIComponent(teamId)}` +
+        `&sessionId=${encodeURIComponent(sessionId)}` +
+        `&pageId=${encodeURIComponent(effectivePageId)}`,
+    )
+      .then((r) => r.json())
+      .then((data: { state: TeamGatherState | null }) => {
+        if (cancelled) return;
+        setTeamGatherState(data.state);
+        setStateLoaded(true);
+        // 已有合照 → 直接跳 done
+        if (data.state) {
+          setMainUrl(data.state.main_photo_url);
+          setStage("done");
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setStateLoaded(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [teamId, sessionId, effectivePageId]);
+
+  // ws 訂閱 photo_gather_updated → 別人拍完即時更新
+  const handleWsMessage = useCallback(
+    (msg: { type: string }) => {
+      if (msg.type !== "photo_gather_updated") return;
+      const m = msg as unknown as { type: string; state: TeamGatherState };
+      // 已 done 不蓋（避免自己剛拍完被別人廣播覆蓋）— 但 main_photo_url 仍要更新
+      setTeamGatherState(m.state);
+      // 自己還沒拍 → 跳到 done 顯示別人拍的
+      if (stage !== "done" && stage !== "uploading") {
+        setMainUrl(m.state.main_photo_url);
+        camera.stopCamera();
+        camera.setCapturedImage(null);
+        setStage("done");
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [stage],
+  );
+
+  useTeamWebSocket({
+    teamId,
+    userId: user?.id,
+    userName: myDisplayName,
+    onMessage: handleWsMessage,
+  });
 
   // ===== Countdown 邏輯 =====
   useEffect(() => {
@@ -97,17 +189,41 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId 
     if (shots.length === 0) return;
     setStage("uploading");
     const main = shots[0];
+    let finalUrl = main; // fallback dataURL
     try {
       const data = await uploadMutation.mutateAsync(main);
-      setMainUrl(data.url);
+      finalUrl = data.url;
     } catch (err) {
-      // 上傳失敗 fallback 用 dataURL（純本地留念也 OK）
-      console.warn("[Gather] 上傳失敗、用本地 dataURL:", err);
+      console.warn("[Gather] cloudinary 上傳失敗、用本地 dataURL:", err);
       toast({
         title: "上傳失敗",
         description: "已使用本地照片繼續",
       });
-      setMainUrl(main);
+    }
+    setMainUrl(finalUrl);
+
+    // 🆕 寫進 team_photo_gather DB（idempotent — 第一個寫成功、其他人 ws 收到自動跳 done）
+    if (teamId) {
+      try {
+        const res = await apiRequest("POST", "/api/team-photo-gather/complete", {
+          teamId,
+          sessionId,
+          pageId: effectivePageId,
+          mainPhotoUrl: finalUrl,
+          shotCount: shots.length,
+          displayName: myDisplayName,
+        });
+        const data = (await res.json()) as { state: TeamGatherState | null };
+        if (data.state) {
+          setTeamGatherState(data.state);
+          // 若 server 回的 state 不是自己（被別人搶先 INSERT）→ 採對方的主照
+          if (data.state.completed_by_user_id !== user?.id) {
+            setMainUrl(data.state.main_photo_url);
+          }
+        }
+      } catch (err) {
+        console.warn("[Gather] 寫 team-photo-gather 失敗（不阻塞流程）:", err);
+      }
     }
     setStage("done");
   };
@@ -140,13 +256,20 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId 
 
   // ===== Render =====
 
-  // 完成
+  // 完成 — 顯示主照 + 拍照者姓名（若不是自己）
   if (stage === "done" && mainUrl) {
+    const tookByOther =
+      teamGatherState && teamGatherState.completed_by_user_id !== user?.id;
+    const subtitle = tookByOther
+      ? `${teamGatherState.completed_by_display_name} 拍下了團體合照`
+      : shots.length > 1
+        ? `共 ${shots.length} 張留念`
+        : undefined;
     return (
       <PhotoSuccessView
         imageUrl={mainUrl}
-        title="團體合照完成！"
-        subtitle={shots.length > 1 ? `共 ${shots.length} 張留念` : undefined}
+        title={tookByOther ? "團體合照已完成！" : "團體合照完成！"}
+        subtitle={subtitle}
         downloadPrefix="chito-team-gather"
         onContinue={handleContinue}
         testId="photo-gather-done"
@@ -278,6 +401,16 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId 
             完成 <ArrowRight className="w-5 h-5" />
           </Button>
         </div>
+      </div>
+    );
+  }
+
+  // 等待 team gather state 載入（避免 race：剛進來就拍、但其實隊長已拍過）
+  if (teamId && !stateLoaded) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center p-6 space-y-3" data-testid="photo-gather-state-loading">
+        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">同步隊伍合照狀態...</p>
       </div>
     );
   }

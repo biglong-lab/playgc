@@ -257,7 +257,7 @@ export default function GamePageRenderer({
       case "photo_ar":
         return <PhotoArStickerFlow {...commonProps} />;
       case "photo_team":
-        return <PhotoTeamFlow {...commonProps} />;
+        return <PhotoTeamFlow {...commonProps} pageId={page.id} />;
       case "vote_team":
         return <VoteTeamPage {...commonProps} pageId={page.id} />;
       case "shooting_team":

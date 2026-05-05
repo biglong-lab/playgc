@@ -39,6 +39,8 @@ interface PhotoTeamFlowProps {
   gameId: string;
   variables?: Record<string, unknown>;
   onVariableUpdate?: (key: string, value: unknown) => void;
+  /** 🆕 2026-05-05: gather 模式 server-driven 持久化用 */
+  pageId?: string;
 }
 
 type Stage = "intro" | "select_count" | "shooting" | "transition" | "uploading" | "compositing" | "done";
@@ -61,6 +63,7 @@ export default function PhotoTeamFlow(props: PhotoTeamFlowProps) {
         onComplete={props.onComplete}
         sessionId={props.sessionId}
         gameId={props.gameId}
+        pageId={(props as { pageId?: string }).pageId}
       />
     );
   }

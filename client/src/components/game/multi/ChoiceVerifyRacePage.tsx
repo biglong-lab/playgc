@@ -263,6 +263,32 @@ export default function ChoiceVerifyRacePage({
     onMessage: handleWsMessage,
   });
 
+  // === Polling fallback（10s 一次主動 GET state）===
+  // 🛡️ 2026-05-05: 即使 ws 死、cache 卡、broadcast 漏 — 都能自動 reconcile
+  //   只要該頁面活著就跑、status='completed' 後停
+  //   合併用 applyServerStateIfNewer、不會蓋掉較新的 ws push
+  useEffect(() => {
+    if (!teamId || !sessionId || !effectivePageId) return;
+    if (totalQuestions === 0) return;
+    if (serverState?.status === "completed") return;
+    const interval = setInterval(() => {
+      apiRequest(
+        "GET",
+        `/api/team-race/state?teamId=${encodeURIComponent(teamId)}` +
+          `&sessionId=${encodeURIComponent(sessionId)}` +
+          `&pageId=${encodeURIComponent(effectivePageId)}`,
+      )
+        .then((r) => r.json())
+        .then((data: RaceStateResponse) => {
+          applyServerStateIfNewer(data.state, data.answers);
+        })
+        .catch(() => {
+          /* 失敗忽略、下次 poll 會再試 */
+        });
+    }, 10_000);
+    return () => clearInterval(interval);
+  }, [teamId, sessionId, effectivePageId, totalQuestions, serverState?.status, applyServerStateIfNewer]);
+
   // === ws reconnect 後重新 fetch state（保證接回最新）===
   // 🛡️ 2026-05-05: 用 ref 標記是否真的「斷掉再連」（不是 mount 第一次連）
   //   原 bug：mount 時 wsConnected 可能 false→true 觸發 fetch、跟 mount-time fetch 重複
