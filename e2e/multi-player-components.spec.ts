@@ -451,6 +451,13 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("word_bid");
     expect(allPageTypes).toContain("word_ladder");
     expect(allPageTypes).toContain("would_you_rather");
+
+    // Round 90 補全最終批次（HostBingo + HostBlessing + HostMicroQa + HostWordCloud + JigsawPuzzle）
+    expect(allPageTypes).toContain("host_bingo_board");
+    expect(allPageTypes).toContain("host_blessing_wall");
+    expect(allPageTypes).toContain("host_micro_qa");
+    expect(allPageTypes).toContain("host_word_cloud");
+    expect(allPageTypes).toContain("jigsaw_puzzle");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -670,6 +677,11 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "word_bid",
       "word_ladder",
       "would_you_rather",
+      "host_bingo_board",
+      "host_blessing_wall",
+      "host_micro_qa",
+      "host_word_cloud",
+      "jigsaw_puzzle",
     ];
 
     for (const t of newTypes) {
