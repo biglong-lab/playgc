@@ -394,8 +394,8 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   {
     id: "corporate-training",
     name: "企業內訓情境包",
-    tagline: "搶答 + 即時投票 + 角色分派",
-    description: "企業內訓的互動模組。搶答測驗、決策投票、模擬情境角色扮演 — 講師輕鬆、學員投入。",
+    tagline: "搶答 + 即時投票 + 角色分派 + 任務清單",
+    description: "企業內訓的互動模組。搶答測驗、決策投票、模擬情境角色扮演、任務清單驗收 — 講師輕鬆、學員投入。",
     useCases: ["新進員工訓練", "中階主管培訓", "業務技能訓練", "顧問講座"],
     category: "corporate",
     icon: "Briefcase",
@@ -403,6 +403,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedPlayers: "10-50 人",
     estimatedDuration: "2-4 小時",
     components: [
+      {
+        pageType: "mood_meter",
+        label: "開場活力確認",
+        role: "訓練前先確認學員狀態，讓講師掌握現場",
+        axis: "multi",
+        demoMode: "mood-meter",
+      },
       {
         pageType: "host_trivia_showdown",
         label: "知識搶答",
@@ -423,6 +430,27 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "情境模擬、劇本演練",
         axis: "multi",
         demoMode: "role-assign",
+      },
+      {
+        pageType: "team_checklist",
+        label: "訓練任務驗收",
+        role: "全員勾選完成的學習任務或課後行動",
+        axis: "multi",
+        demoMode: "team-checklist",
+      },
+      {
+        pageType: "shared_board",
+        label: "學習心得牆",
+        role: "每人貼出一個今天最大的收穫",
+        axis: "multi",
+        demoMode: "shared-board",
+      },
+      {
+        pageType: "mood_meter",
+        label: "結尾能量回顧",
+        role: "對比開場活力，看訓練成效",
+        axis: "multi",
+        demoMode: "mood-meter",
       },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
