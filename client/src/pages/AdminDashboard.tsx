@@ -13,6 +13,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useMemo } from "react";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import MetricCard from "@/components/shared/MetricCard";
+import SystemHealthCard from "@/components/admin/SystemHealthCard";
 import { useCurrentField, type FieldModules } from "@/providers/FieldThemeProvider";
 import type { Game, GameSession, ArduinoDevice, FieldSettings } from "@shared/schema";
 import { daysUntilDate } from "@/lib/date-utils";
@@ -159,6 +160,9 @@ export default function AdminDashboard() {
 
       {/* 🆕 場域模組狀態 — 一眼看出本場域啟用了哪些功能 */}
       <FieldModulesCard />
+
+      {/* 📊 2026-05-05: 系統健康儀表 — 過去 1 小時錯誤聚合（不等客訴就知道）*/}
+      <SystemHealthCard />
 
       {/* 📖 使用說明手冊入口 — Phase 6 W22 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">

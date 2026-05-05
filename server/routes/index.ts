@@ -11,6 +11,7 @@ import { registerExemplarRoutes } from "./admin-exemplar";
 import { registerGameGeneratorRoutes } from "./admin-game-generator";
 import { registerAdminCopilotRoutes } from "./admin-copilot";
 import { registerAdminDevToolsRoutes } from "./admin-dev-tools";
+import { registerAdminSystemHealthRoutes } from "./admin-system-health";
 import { registerAdminGameRoutesRoutes } from "./admin-game-routes";
 import { registerPlayerFeedbackRoutes } from "./player-feedback";
 import { registerVariantPickerServerRoutes } from "./variant-picker-server";
@@ -106,6 +107,7 @@ export async function registerRoutes(
   registerGameGeneratorRoutes(app);
   registerAdminCopilotRoutes(app);
   registerAdminDevToolsRoutes(app);
+  registerAdminSystemHealthRoutes(app);
   registerAdminGameRoutesRoutes(app);
   registerPlayerFeedbackRoutes(app);
   registerVariantPickerServerRoutes(app);

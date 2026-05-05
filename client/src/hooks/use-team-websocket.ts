@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from "react";
+import { reportClientEvent } from "@/lib/event-report";
 
 interface TeamMemberLocation {
   userId: string;
@@ -351,6 +352,19 @@ export function useTeamWebSocket({
         if (!intentionalCloseRef.current) {
           if (reconnectAttemptsRef.current >= 1) {
             statsRef.current.reconnectFailCount += 1;
+          }
+          // 🆕 連 3 次重連失敗 → 上報事件（網路長時間不通）
+          if (reconnectAttemptsRef.current === 3) {
+            reportClientEvent({
+              event: "ws_reconnect_failed",
+              message: `WS 重連失敗 ${reconnectAttemptsRef.current} 次`,
+              context: {
+                teamId,
+                userId,
+                disconnectCount: statsRef.current.disconnectCount,
+                reconnectFailCount: statsRef.current.reconnectFailCount,
+              },
+            });
           }
           scheduleReconnect();
         }

@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
 import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
+import { reportClientEvent } from "@/lib/event-report";
 import {
   CameraInitializingView, CameraView, PhotoPreview, UploadingView,
 } from "../photo-mission/PhotoViews";
@@ -249,6 +250,12 @@ export default function PhotoTeamFlow({
             setStage("done");
           }
           cancelRef.current = true; // 阻止後續 mutate 結果再覆蓋 state
+          // 🆕 2026-05-05: 上報「合成超時」事件
+          reportClientEvent({
+            event: "cloudinary_composite_timeout",
+            message: `團體合成 30s 超時、用首張代替`,
+            context: { gameId, sessionId, memberCount: members.length },
+          });
         }, 30_000);
 
         try {
