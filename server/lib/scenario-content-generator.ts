@@ -646,6 +646,12 @@ ${componentDescriptions}
 - "work_style": { title, prompt, collabLow, collabHigh, structureLow, structureHigh }
   工作風格：每人在「獨立↔協作」和「彈性↔結構」兩個軸上拖滑桿，揭曉後顯示全隊平均值與每人所屬象限，適合新團隊認識/協作模式討論/OKR 啟動
 
+- "reflection_card": { title, workedLabel, improveLabel, actionLabel, workedPlaceholder, improvePlaceholder, actionPlaceholder }
+  回顧反思：三欄式反思卡（做得好/可改善/下一步行動），至少填一欄即可送出，揭曉後顯示全隊回顧牆，適合 Sprint 回顧/活動收尾/學習型工作坊
+
+- "peak_moment": { title, prompt, momentPlaceholder, feelingPlaceholder }
+  最高光時刻：每人分享一個最印象深刻的高光時刻＋當時感受（一個詞），揭曉後以彩色邊框卡片展示全隊高光集錦，適合活動收尾/頒獎慶祝/強化正向記憶
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

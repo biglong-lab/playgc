@@ -3690,6 +3690,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "認識你的團隊套組 NT$ 1,500-4,500 / 場。讓陌生的同事在 20 分鐘內真正了解彼此。",
     status: "live",
   },
+  {
+    id: "reflection-retrospective",
+    name: "💡 深度回顧套組",
+    tagline: "帶走洞見、留住高光記憶",
+    description: "三欄反思卡 + 高光時刻，幫助團隊從活動中提煉洞見與正向記憶，適合 Sprint 收尾、訓練課程結束、年度回顧。",
+    useCases: ["Sprint 回顧", "企業內訓收尾", "工作坊學習總結", "年度回顧活動"],
+    category: "corporate",
+    icon: "Lightbulb",
+    gradient: "from-yellow-400 to-amber-500",
+    estimatedPlayers: "2-40 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "reflection_card",
+        label: "回顧反思卡",
+        role: "三欄結構反思",
+        axis: "multi",
+      },
+      {
+        pageType: "peak_moment",
+        label: "最高光時刻",
+        role: "強化正向記憶",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "深度回顧套組 NT$ 1,000-3,000 / 場。幫助學員帶走洞見、留住高光記憶。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

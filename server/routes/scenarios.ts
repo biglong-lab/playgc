@@ -2161,6 +2161,25 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         structureHigh: "結構清晰",
       };
 
+    case "reflection_card":
+      return {
+        title: "💡 回顧反思",
+        workedLabel: "✅ 做得好的地方",
+        improveLabel: "💡 可以改善的地方",
+        actionLabel: "🚀 下一步行動",
+        workedPlaceholder: `在「${scenarioName}」中做得不錯的是...`,
+        improvePlaceholder: "如果重來，我會...",
+        actionPlaceholder: "我接下來要做的是...",
+      };
+
+    case "peak_moment":
+      return {
+        title: "🏔️ 最高光時刻",
+        prompt: `在「${scenarioName}」中，你印象最深刻的一個高光時刻是什麼？`,
+        momentPlaceholder: "最難忘的一個時刻...",
+        feelingPlaceholder: "當時的感受（一個詞或一句話）",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
