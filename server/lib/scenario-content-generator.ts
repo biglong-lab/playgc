@@ -139,6 +139,9 @@ ${componentDescriptions}
 - "estimation_game": { title, question, unit?, options?: [...], showAverage: true, showAllEstimates: true }
   options 是估算選項（如 Fibonacci: 1/2/3/5/8/13/21/?，T-shirt: XS/S/M/L/XL）。揭曉前保密，任何人提交後可點擊揭曉顯示分佈圖與平均值，適合規劃撲克、敏捷估點
 
+- "team_poll": { title, question, options: [{ id, label, emoji? }...2-8個], multiSelect: boolean, maxSelections?: number, showResults: true, showVoterNames: true }
+  multiSelect=false 為單選，true 為多選（可設 maxSelections 上限），結果顯示背景條形圖+百分比，適合快速決策/活動規劃/即時問卷
+
 - "scaled_feedback": { title, instructions?, questions: [{ id, text, minLabel?, maxLabel? }...2-8個], scale: 5|10, showResults: true }
   scale 是量表範圍（5 分或 10 分），每題顯示數字按鈕，提交後顯示全員分布直方圖與平均值，適合訓練後測評、活動滿意度調查、團隊健康評估
 

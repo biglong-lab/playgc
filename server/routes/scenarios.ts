@@ -738,6 +738,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAllEstimates: true,
       };
 
+    case "team_poll":
+      return {
+        title: "🗳️ 快速投票",
+        question: "你最支持哪個方案？",
+        options: [
+          { id: "o1", label: "方案 A", emoji: "🅰️" },
+          { id: "o2", label: "方案 B", emoji: "🅱️" },
+          { id: "o3", label: "方案 C", emoji: "🆎" },
+        ],
+        multiSelect: false,
+        showResults: true,
+        showVoterNames: true,
+      };
+
     case "scaled_feedback":
       return {
         title: "📊 量表評分",

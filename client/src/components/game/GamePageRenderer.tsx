@@ -80,6 +80,7 @@ const SpectrumLinePage = lazy(() => import("@/components/game/multi/SpectrumLine
 const PhotoCaptionPage = lazy(() => import("@/components/game/multi/PhotoCaptionPage"));
 const WouldYouRatherPage = lazy(() => import("@/components/game/multi/WouldYouRatherPage"));
 const ScaledFeedbackPage = lazy(() => import("@/components/game/multi/ScaledFeedbackPage"));
+const TeamPollPage = lazy(() => import("@/components/game/multi/TeamPollPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -448,6 +449,8 @@ export default function GamePageRenderer({
         return <WouldYouRatherPage {...commonProps} page={page} pageId={page.id} />;
       case "scaled_feedback":
         return <ScaledFeedbackPage {...commonProps} page={page} pageId={page.id} />;
+      case "team_poll":
+        return <TeamPollPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

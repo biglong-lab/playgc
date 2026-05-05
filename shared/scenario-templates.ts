@@ -1193,6 +1193,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "活動結束前快速收集參與者對各面向的感受，即時看見群體共識",
         axis: "multi",
       },
+      {
+        pageType: "team_poll",
+        label: "即時決策投票",
+        role: "需要快速決定活動走向時，全員即時投票，背景條形圖呈現共識走向",
+        axis: "multi",
+      },
     ],
     valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",
     status: "live",
