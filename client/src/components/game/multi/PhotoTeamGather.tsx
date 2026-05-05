@@ -290,6 +290,17 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
 
   // 拍攝
   if (stage === "shooting") {
+    // 🛡️ 2026-05-05: 統一的「取消 → 回 intro」處理（避免按了沒反應）
+    //   原 bug：onCancel 只呼叫 camera.cancelCamera() 把 mode 設 instruction、
+    //   但 stage 還是 'shooting'、UI fallback 又 render 同個 InitializingView →
+    //   使用者體感「按取消沒反應、卡住」
+    //   修法：所有取消按鈕都 stopCamera() + setCapturedImage(null) + setStage('intro')
+    const cancelToIntro = () => {
+      camera.stopCamera();
+      camera.setCapturedImage(null);
+      setStage("intro");
+    };
+
     if (camera.cameraError) {
       return (
         <div className="h-full w-full flex flex-col items-center justify-center p-6 space-y-5 max-w-md mx-auto" data-testid="gather-camera-error">
@@ -307,14 +318,14 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
             <Button variant="outline" onClick={() => camera.fileInputRef.current?.click()} className="w-full gap-2">
               <ImageIcon className="w-4 h-4" /> 從相簿選
             </Button>
-            <Button variant="ghost" onClick={() => setStage("intro")}>取消</Button>
+            <Button variant="ghost" onClick={cancelToIntro}>取消</Button>
           </div>
           <input ref={camera.fileInputRef} type="file" accept="image/*" onChange={camera.handleFileUpload} className="hidden" />
         </div>
       );
     }
     if (camera.mode === "initializing") {
-      return <CameraInitializingView videoRef={camera.videoRef} onCancel={camera.cancelCamera} />;
+      return <CameraInitializingView videoRef={camera.videoRef} onCancel={cancelToIntro} />;
     }
     if (camera.mode === "camera") {
       return (
@@ -324,7 +335,7 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
             cameraReady={camera.cameraReady}
             fileInputRef={camera.fileInputRef}
             onCapture={camera.capturePhoto}
-            onCancel={camera.cancelCamera}
+            onCancel={cancelToIntro}
             onRestart={() => camera.startCamera()}
             onSwitchCamera={camera.switchCamera}
             facingMode={camera.facingMode}
@@ -338,7 +349,7 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
     if (camera.mode === "preview") {
       return <PhotoPreview imageSrc={camera.capturedImage!} onRetake={camera.retake} onSubmit={handleConfirmShot} />;
     }
-    return <CameraInitializingView videoRef={camera.videoRef} onCancel={camera.cancelCamera} />;
+    return <CameraInitializingView videoRef={camera.videoRef} onCancel={cancelToIntro} />;
   }
 
   // 倒數

@@ -550,9 +550,17 @@ function PhotoTeamCollage({
         </div>
       );
     }
+    // 🛡️ 2026-05-05: 統一取消處理 — 避免「按取消沒反應」
+    //   原 bug：camera.cancelCamera() 把 mode 設 instruction、但 stage 仍 'shooting'
+    //   → fallback 又 render InitializingView → 看起來「卡住」
+    const cancelToIntro = () => {
+      camera.stopCamera();
+      camera.setCapturedImage(null);
+      setStage("intro");
+    };
     // 2. 啟動中（真正的 initializing）→ Loader UI（含 5 秒卡住提示、見 PhotoViews）
     if (camera.mode === "initializing") {
-      return <CameraInitializingView videoRef={camera.videoRef} onCancel={camera.cancelCamera} />;
+      return <CameraInitializingView videoRef={camera.videoRef} onCancel={cancelToIntro} />;
     }
     // 3. 相機就緒 → 拍攝 UI
     if (camera.mode === "camera") {
@@ -563,7 +571,7 @@ function PhotoTeamCollage({
             cameraReady={camera.cameraReady}
             fileInputRef={camera.fileInputRef}
             onCapture={camera.capturePhoto}
-            onCancel={camera.cancelCamera}
+            onCancel={cancelToIntro}
             onRestart={() => camera.startCamera()}
             onSwitchCamera={camera.switchCamera}
             facingMode={camera.facingMode}
@@ -585,7 +593,7 @@ function PhotoTeamCollage({
       );
     }
     // 5. mode='idle' 或 'instruction'（剛 stop 還沒 start）→ Loader fallback、稍候會自動切換
-    return <CameraInitializingView videoRef={camera.videoRef} onCancel={camera.cancelCamera} />;
+    return <CameraInitializingView videoRef={camera.videoRef} onCancel={cancelToIntro} />;
   }
 
   // 過場：拍完一位 → 預覽 → 下一位 / 完成
