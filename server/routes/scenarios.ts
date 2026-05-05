@@ -642,6 +642,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showConsensus: true,
       };
 
+    case "hot_seat":
+      return {
+        title: "🔥 熱烤椅",
+        instructions: "一人上場，全場提問！舉手準備好了嗎？",
+        durationSeconds: 180,
+        maxQuestionsPerRound: 5,
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {

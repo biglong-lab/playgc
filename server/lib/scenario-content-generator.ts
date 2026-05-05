@@ -115,6 +115,9 @@ ${componentDescriptions}
 - "priority_rank": { title, question, items: [{ id, label, emoji }...3-8個], showConsensus: true }
   question 是引導語（如：請依重要程度排列以下項目），items 是待排序的選項清單（如：提升效率、降低成本、增加收入），showConsensus 顯示群體共識排名
 
+- "hot_seat": { title, instructions?, durationSeconds: 60-300, maxQuestionsPerRound: 3-8 }
+  instructions 是說明語（如：一人上場，全場提問！），durationSeconds 是每輪時間，maxQuestionsPerRound 是每輪最多問題數
+
 - "feedback_star": { title, question, allowComment: true }
   question 是引導玩家評分的問題（如：你對這次活動的整體感受如何？）
 

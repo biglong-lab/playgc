@@ -1139,6 +1139,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
         demoMode: "feedback-star",
       },
+      {
+        pageType: "hot_seat",
+        label: "熱烤椅",
+        role: "自願上場者接受全場 5 個問題，透明分享讓大家更了解你",
+        axis: "multi",
+      },
     ],
     valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",
     status: "live",

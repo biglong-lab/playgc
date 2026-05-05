@@ -69,6 +69,7 @@ const BucketListPage = lazy(() => import("@/components/game/multi/BucketListPage
 const GratitudeWallPage = lazy(() => import("@/components/game/multi/GratitudeWallPage"));
 const TeamContractPage = lazy(() => import("@/components/game/multi/TeamContractPage"));
 const PriorityRankPage = lazy(() => import("@/components/game/multi/PriorityRankPage"));
+const HotSeatPage = lazy(() => import("@/components/game/multi/HotSeatPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -415,6 +416,8 @@ export default function GamePageRenderer({
         return <TeamContractPage {...commonProps} page={page} pageId={page.id} />;
       case "priority_rank":
         return <PriorityRankPage {...commonProps} page={page} pageId={page.id} />;
+      case "hot_seat":
+        return <HotSeatPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
