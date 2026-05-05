@@ -738,6 +738,26 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAllEstimates: true,
       };
 
+    case "open_question":
+      return {
+        title: "💬 開放提問",
+        question: "你今天最大的收穫是什麼？",
+        maxLength: 100,
+        maxAnswersPerPerson: 1,
+        showAuthor: true,
+        placeholder: "分享你的想法…",
+      };
+
+    case "countdown_challenge":
+      return {
+        title: "⏱️ 限時挑戰",
+        challenge: "在 30 秒內說出 5 種台灣小吃！",
+        durationSeconds: 30,
+        successLabel: "完成了！",
+        failLabel: "放棄",
+        showLeaderboard: true,
+      };
+
     case "team_poll":
       return {
         title: "🗳️ 快速投票",
