@@ -169,6 +169,9 @@ ${componentDescriptions}
 - "sentence_completion": { title, starter, maxLength: 40-120, maxPerPerson: 1-2, reactions: ["❤️","😂","👏"], showAuthor: boolean }
   給一個句子開頭（starter），所有人接龍補完，揭曉後牆上顯示完整句子+emoji反應，適合反思/破冰/創意發想
 
+- "action_pledge": { title, prompt, actionLabel, timelineOptions: string[], showAuthor: boolean }
+  每人填寫自己的具體行動承諾（action）+ 期限（timeline），揭曉後牆上展示所有人的承諾卡，增加問責感，適合訓練結尾/團隊共識/新年計畫
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

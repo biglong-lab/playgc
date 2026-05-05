@@ -671,6 +671,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "全員同步點擊承諾，即時看到所有人的名字出現在宣言牆，達標觸發慶祝，讓承諾有儀式感",
         axis: "multi",
       },
+      {
+        pageType: "action_pledge",
+        label: "行動宣誓牆",
+        role: "每人填寫自己的行動承諾 + 期限，揭曉後全員看見彼此的承諾牆，增加問責感讓學習延伸到工作中",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",

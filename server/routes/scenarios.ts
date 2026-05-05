@@ -922,6 +922,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "action_pledge":
+      return {
+        title: "🎯 行動宣誓牆",
+        prompt: "這次課程結束後，你最想落實的一件事是什麼？",
+        actionLabel: "我承諾會…",
+        timelineOptions: ["1週內", "2週內", "1個月內", "3個月內"],
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
