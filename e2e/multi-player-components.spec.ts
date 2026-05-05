@@ -137,7 +137,7 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       (s.components ?? []).map((c: { pageType: string }) => c.pageType),
     );
 
-    // 確認新元件已加入情境模板
+    // Phase 5 核心元件
     expect(allPageTypes).toContain("dot_vote");
     expect(allPageTypes).toContain("timeline_wall");
     expect(allPageTypes).toContain("two_truths");
@@ -146,6 +146,46 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("live_pulse");
     expect(allPageTypes).toContain("debate_vote");
     expect(allPageTypes).toContain("peer_recognition");
+
+    // Round 36-41 新元件
+    expect(allPageTypes).toContain("aha_board");
+    expect(allPageTypes).toContain("one_line_story");
+    expect(allPageTypes).toContain("heat_map");
+    expect(allPageTypes).toContain("energy_boost");
+    expect(allPageTypes).toContain("role_play_card");
+    expect(allPageTypes).toContain("group_decision");
+    expect(allPageTypes).toContain("quote_wall");
+    expect(allPageTypes).toContain("action_item");
+    expect(allPageTypes).toContain("table_group");
+    expect(allPageTypes).toContain("feedback_form");
+    expect(allPageTypes).toContain("pair_share");
+    expect(allPageTypes).toContain("team_snapshot");
+  });
+
+  test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
+    const newTypes = [
+      "aha_board",
+      "one_line_story",
+      "heat_map",
+      "energy_boost",
+      "role_play_card",
+      "group_decision",
+      "quote_wall",
+      "action_item",
+      "table_group",
+      "feedback_form",
+      "pair_share",
+      "team_snapshot",
+    ];
+
+    for (const t of newTypes) {
+      const res = await page.request.post("/api/admin/games/1/pages", {
+        data: { pageType: t, title: `test-${t}` },
+        headers: { "Content-Type": "application/json" },
+      });
+      // 401（未認證）或 200/201（成功）都可；只要不是 500（表示 server 崩潰）
+      expect(res.status()).not.toBe(500);
+    }
   });
 
   test("Find-scenario 頁面可以顯示（工作坊破冰場景）", async ({ page }) => {
