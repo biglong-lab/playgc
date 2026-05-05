@@ -2130,6 +2130,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         rightLabel: "完全同意",
       };
 
+    case "strength_spot":
+      return {
+        title: "⭐ 優勢聚焦",
+        prompt: `在「${scenarioName}」的情境中，你最能發揮的一個優勢是什麼？`,
+      };
+
+    case "challenge_flag":
+      return {
+        title: "🚩 挑戰旗幟",
+        prompt: `在「${scenarioName}」的過程中，你目前面臨的最大挑戰是什麼？`,
+        placeholder: "說出你的挑戰，讓團隊知道...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

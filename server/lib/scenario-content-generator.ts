@@ -634,6 +634,12 @@ ${componentDescriptions}
 - "opinion_slider": { title, question, leftLabel, rightLabel }
   意見滑桿：每人在左右兩個對立觀點間拖曳滑桿定位，揭曉後在光譜條上顯示所有人的位置與平均值，適合爭議討論/決策前評估/意見多元化展示
 
+- "strength_spot": { title, prompt, strengthPlaceholder, descPlaceholder }
+  優勢聚焦：每人填寫一個強項（標題）+ 說明，揭曉後以彩色漸層卡片組成團隊優勢全景牆，適合團隊建立/新成員融合/優勢互補探索
+
+- "challenge_flag": { title, prompt, placeholder }
+  挑戰旗幟：每人說出當前最大挑戰，揭曉後顯示挑戰牆，其他成員可用 emoji 表達支持（💪🤝❤️🌟👍），適合回顧/心理安全感建立/互助文化
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

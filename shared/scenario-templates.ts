@@ -3634,6 +3634,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "價值觀對話套組 NT$ 1,500-4,500 / 場。讓隱性的文化共識與差異都浮現檯面。",
     status: "live",
   },
+  {
+    id: "team-health-pack",
+    name: "團隊健康套組",
+    tagline: "優勢聚焦 + 挑戰旗幟，看見彼此、互相支持",
+    description: "先讓每個人亮出自己的優勢，再讓大家說出當前挑戰，其他成員以 emoji 表達支持。從「我能做什麼」到「我需要什麼」，建立真正的心理安全感。",
+    useCases: ["新團隊融合", "季度回顧", "心理安全感工作坊", "跨部門協作啟動"],
+    category: "corporate",
+    icon: "💪",
+    gradient: "from-amber-500 to-red-500",
+    estimatedPlayers: "4-20 人",
+    estimatedDuration: "12-20 分鐘",
+    components: [
+      {
+        pageType: "strength_spot",
+        label: "優勢聚焦",
+        role: "優勢展示",
+        axis: "multi",
+      },
+      {
+        pageType: "challenge_flag",
+        label: "挑戰旗幟",
+        role: "挑戰分享 + 互助",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "團隊健康套組 NT$ 2,000-6,000 / 場。讓團隊真正了解彼此的強項與困境。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
