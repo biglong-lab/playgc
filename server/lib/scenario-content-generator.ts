@@ -124,6 +124,9 @@ ${componentDescriptions}
 - "project_showcase": { title, prompt?, maxProjectsPerPerson: 1-3, maxTitleLength: 20-40, maxDescLength: 80-200, allowVoteOwn: false, emojiReactions: [...4-6個], showVoteCount: true }
   emojiReactions 是觀眾可以給出的反應 emoji（如：🔥⭐💡👏🏆），適合 Demo Day / 黑客松 / 成果發表
 
+- "agreement_matrix": { title, instructions?, statements: [{ id, text }...3-8個], showResults: true }
+  statements 是多個陳述句，每人對每句評分（👍同意/😐普通/👎不同意），集體分布以橫條圖呈現，適合回顧、訓練後問卷、意見調查
+
 - "estimation_game": { title, question, unit?, options?: [...], showAverage: true, showAllEstimates: true }
   options 是估算選項（如 Fibonacci: 1/2/3/5/8/13/21/?，T-shirt: XS/S/M/L/XL）。揭曉前保密，任何人提交後可點擊揭曉顯示分佈圖與平均值，適合規劃撲克、敏捷估點
 

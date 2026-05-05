@@ -677,6 +677,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResults: true,
       };
 
+    case "agreement_matrix":
+      return {
+        title: "📊 觀點評分",
+        instructions: "請對以下陳述表達你的意見",
+        statements: [
+          { id: "s1", text: "團隊溝通暢通，資訊透明" },
+          { id: "s2", text: "工作流程效率高，少有阻礙" },
+          { id: "s3", text: "個人成長機會充足" },
+          { id: "s4", text: "整體工作環境讓我感到滿意" },
+        ],
+        showResults: true,
+      };
+
     case "estimation_game":
       return {
         title: "🃏 規劃撲克",

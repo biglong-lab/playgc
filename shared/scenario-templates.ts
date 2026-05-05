@@ -1157,6 +1157,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "自願上場者接受全場 5 個問題，透明分享讓大家更了解你",
         axis: "multi",
       },
+      {
+        pageType: "agreement_matrix",
+        label: "破冰後問卷",
+        role: "活動結束前快速收集參與者對各面向的感受，即時看見群體共識",
+        axis: "multi",
+      },
     ],
     valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",
     status: "live",
