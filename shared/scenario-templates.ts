@@ -1299,6 +1299,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "emoji-host",
       },
       {
+        pageType: "peer_recognition",
+        label: "同事感謝牆",
+        role: "感謝過去一年幫助過你的同事，公開表揚，溫暖收尾",
+        axis: "multi",
+      },
+      {
+        pageType: "live_pulse",
+        label: "全場活力爆發",
+        role: "尾牙 high 點讓全場同步點擊，能量衝爆！",
+        axis: "multi",
+      },
+      {
         pageType: "photo_wall",
         label: "年終合影牆",
         role: "每人上傳今晚最難忘的照片，共同留念",

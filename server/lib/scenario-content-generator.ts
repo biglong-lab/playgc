@@ -184,6 +184,9 @@ ${componentDescriptions}
 - "debate_vote": { title, topic, proLabel, conLabel, proEmoji?: string, conEmoji?: string, showVoterCount: true, allowSwitch: true }
   topic 是辯論主題（如：AI 將取代大多數人類工作），proLabel/conLabel 是正反方標籤（如：正方：同意/反方：不同意）
 
+- "peer_recognition": { title, prompt?, placeholder?, maxLength: 50-150, allowAnonymous: true, emojiOptions: [...8-12個 emoji] }
+  prompt 是引導語（如：寫下你想感謝的人…），emojiOptions 選與場景正向氛圍相關的 emoji（如：🌟🙌💪❤️👏）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

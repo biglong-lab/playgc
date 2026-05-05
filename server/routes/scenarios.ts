@@ -497,6 +497,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResultsLive: true,
       };
 
+    case "peer_recognition":
+      return {
+        title: "🌟 同伴表揚牆",
+        prompt: "寫下你想感謝的人",
+        placeholder: "感謝你在這次活動中…",
+        maxLength: 100,
+        allowAnonymous: true,
+        emojiOptions: ["🌟", "🙌", "💪", "❤️", "👏", "🎉", "🔥", "💡", "🤝", "✨"],
+      };
+
     case "debate_vote":
       return {
         title: "🗳️ 即時辯論投票",
