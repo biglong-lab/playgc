@@ -199,6 +199,9 @@ ${componentDescriptions}
 - "photo_contest": { title, prompt?, theme?, maxPhotosPerPerson: 1-3, allowVoteOwn: false, showAuthor: true, maxCaptionLength: 40-80 }
   theme 是競賽主題（如：最美金門一角），prompt 是引導語
 
+- "emoji_battle": { title, question, emojis: [{emoji, label}...4-9個], allowMultiSelect: false, showResults: true }
+  question 是要大家表達的問題（如：現在你的心情是？），emojis 選與活動氛圍相關的表情組合
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

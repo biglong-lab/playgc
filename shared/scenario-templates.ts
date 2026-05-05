@@ -1091,6 +1091,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "emoji_battle",
+        label: "Emoji 開場熱身",
+        role: "用 emoji 表達現在的心情，即時統計讓主持人掌握全場狀態",
+        axis: "multi",
+      },
+      {
         pageType: "speed_networking",
         label: "速配社交",
         role: "計時輪流配對，每人和不同人聊 2 分鐘，快速認識全場",

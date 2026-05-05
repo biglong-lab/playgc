@@ -531,6 +531,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         allowSwitch: true,
       };
 
+    case "emoji_battle":
+      return {
+        title: "🎭 Emoji 表情大戰",
+        question: "現在你的心情是？",
+        emojis: [
+          { emoji: "😄", label: "超開心" },
+          { emoji: "😎", label: "很酷" },
+          { emoji: "🤔", label: "在想" },
+          { emoji: "😴", label: "有點累" },
+          { emoji: "🔥", label: "超燃" },
+          { emoji: "💪", label: "準備好了" },
+        ],
+        allowMultiSelect: false,
+        showResults: true,
+      };
+
     case "photo_contest":
       return {
         title: "📸 照片競賽",
