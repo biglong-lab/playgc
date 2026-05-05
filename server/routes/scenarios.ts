@@ -1306,6 +1306,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "timed_challenge":
+      return {
+        title: "⏱️ 限時挑戰",
+        challengeText: `「${scenarioName}」限時挑戰：完成任務後按下按鈕！`,
+        durationSeconds: 60,
+      };
+
+    case "rank_choice":
+      return {
+        title: "📊 優先排序",
+        question: `請依重要性排列「${scenarioName}」的關鍵要素`,
+        items: [
+          { itemId: "r1", label: "第一選項" },
+          { itemId: "r2", label: "第二選項" },
+          { itemId: "r3", label: "第三選項" },
+        ],
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

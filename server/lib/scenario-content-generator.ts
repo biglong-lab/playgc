@@ -415,6 +415,12 @@ ${componentDescriptions}
 - "scene_vote": { title, question: string, scenes: SceneOption[] }
   場景投票：玩家選一個最符合自己的場景描述，揭曉後顯示各選項票數排行，適合破冰自我揭示/性格分類/故事情境選擇
 
+- "timed_challenge": { title, challengeText: string, durationSeconds: 60-300 }
+  限時挑戰：主持人設定倒數計時，玩家在時限內完成任務後按「完成」，結算時顯示完成順序排名，適合體能挑戰/任務競速/創意發揮計時
+
+- "rank_choice": { title, question: string, items: RankItem[] }
+  排序投票：每人拖排 N 個項目的優先順序，公布後以 Borda 積分法聚合全員偏好，適合議程優先排序/功能需求排序/價值觀討論
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
