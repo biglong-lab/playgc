@@ -283,12 +283,28 @@ export default function ChoiceVerifyRacePage({
   if (teamError || !myTeam) {
     return (
       <Card data-testid="race-page-no-team">
-        <CardContent className="p-6 text-center">
-          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm font-medium mb-1">此元件需要組隊使用</p>
+        <CardContent className="p-6 text-center space-y-3">
+          <Users className="w-8 h-8 mx-auto text-muted-foreground" />
+          <p className="text-sm font-medium">此元件需要組隊使用</p>
           <p className="text-xs text-muted-foreground">
             請回到場域首頁建立或加入隊伍
           </p>
+          {/* 🆕 2026-05-05: admin 預覽 / 測試時直接連到 DevTools 模擬玩家 */}
+          <div className="rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 p-3 text-left text-xs space-y-1">
+            <p className="font-semibold text-purple-900 dark:text-purple-100">🧪 admin 測試多人？</p>
+            <p className="text-purple-800 dark:text-purple-200">
+              用「開發者工具」建測試玩家、用 N 個 incognito 視窗模擬完整多人流程
+            </p>
+            <a
+              href="/admin/dev-tools"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block mt-1 text-purple-700 dark:text-purple-400 underline"
+              data-testid="link-to-dev-tools"
+            >
+              → 開啟開發者工具
+            </a>
+          </div>
         </CardContent>
       </Card>
     );

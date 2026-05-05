@@ -239,6 +239,10 @@ export function useTeamLobby(): TeamLobbyReturn {
         duration: 2000,
       });
       speakTeamEvent(userId, userName, "reconnected");
+      // 🛡️ 2026-05-05: 若該玩家正卡在隊長 grace dialog 中、自動關閉（玩家已回、不需手動處理）
+      //   原 bug：玩家斷線 30s → grace_expired → 隊長 dialog 跳；玩家 reconnect 後 dialog 還在
+      //   server 端 cancelDisconnectTimer 邏輯正確、只是 client 沒同步關 UI
+      setPendingDecisionTarget((prev) => (prev?.userId === userId ? null : prev));
     },
     // 🆕 Phase 2c：寬限期過了 — 顯示倒數提醒（autoLeaveInMs 後自動 leave）
     onGraceExpired: (userId, userName, autoLeaveInMs) => {
