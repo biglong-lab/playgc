@@ -268,6 +268,12 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         winOnComplete: true,
         celebrationText: "🎉 全隊任務全部完成！",
       };
+    case "feedback_star":
+      return {
+        title: "⭐ 活動評分",
+        question: "你對這次活動的評分？",
+        allowComment: true,
+      };
 
     // ─── shared / solo（簡單預設）───
     case "dialogue":

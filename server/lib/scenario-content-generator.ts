@@ -109,6 +109,9 @@ ${componentDescriptions}
 - "team_checklist": { title, items: [...3-8 個任務], celebrationText? }
   items 是與活動相關的具體任務清單，每項 6-20 字
 
+- "feedback_star": { title, question, allowComment: true }
+  question 是引導玩家評分的問題（如：你對這次活動的整體感受如何？）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
