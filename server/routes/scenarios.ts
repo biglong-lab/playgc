@@ -293,6 +293,13 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         durationSeconds: 300,
         completedText: "時間到，請回到集合點！",
       };
+    case "quick_question":
+      return {
+        title: "💬 快問快答",
+        question: "用一句話描述你現在的心情？",
+        maxLength: 40,
+        anonymous: true,
+      };
 
     // ─── shared / solo（簡單預設）───
     case "dialogue":

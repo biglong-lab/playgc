@@ -121,6 +121,9 @@ ${componentDescriptions}
 - "group_timer": { title, durationSeconds: 60-3600, completedText? }
   durationSeconds 是倒數秒數（如：300 = 5 分鐘），completedText 是結束提示
 
+- "quick_question": { title, question, maxLength: 20-60, anonymous: true, emoji? }
+  question 是所有人共同回答的問題（如：用一句話描述今天？）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
