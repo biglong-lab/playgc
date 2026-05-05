@@ -1531,6 +1531,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         pairingMode: "random",
       };
 
+    case "brain_dump":
+      return {
+        title: "💡 腦力傾瀉",
+        prompt: `盡量多寫！每行一個和「${scenarioName}」相關的想法`,
+        maxItems: 5,
+        maxLength: 40,
+      };
+
+    case "checkbox_vote":
+      return {
+        title: "☑️ 複選投票",
+        question: `在「${scenarioName}」中，請選擇所有符合你想法的選項`,
+        options: ["非常同意", "同意", "中立", "不同意", "有待討論"],
+        maxChoices: 3,
+      };
+
     case "song_wall":
       return {
         title: "🎵 歌曲牆",

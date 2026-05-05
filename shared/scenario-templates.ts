@@ -1050,6 +1050,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "brain_dump",
+        label: "腦力傾瀉",
+        role: "每人快速輸入 1-5 條想法（一行一個），揭曉後集體匯總所有創意，適合腦力激盪/工作坊開場/需求蒐集",
+        axis: "multi",
+      },
+      {
+        pageType: "checkbox_vote",
+        label: "複選投票",
+        role: "每人可選多個選項（上限可設），揭曉後顯示各選項被選人數，適合多維度偏好/議題篩選/意見調查",
+        axis: "multi",
+      },
+      {
         pageType: "song_wall",
         label: "歌曲牆",
         role: "每人選一首代表心情的歌（歌名+歌手+可選備注），揭曉後顯示全員歌單，適合派對暖場/情感核對/團隊破冰",

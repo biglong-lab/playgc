@@ -166,6 +166,8 @@ const PairSharePage = lazy(() => import("@/components/game/multi/PairSharePage")
 const TeamSnapshotPage = lazy(() => import("@/components/game/multi/TeamSnapshotPage"));
 const SongWallPage = lazy(() => import("@/components/game/multi/SongWallPage"));
 const PersonalCompassPage = lazy(() => import("@/components/game/multi/PersonalCompassPage"));
+const BrainDumpPage = lazy(() => import("@/components/game/multi/BrainDumpPage"));
+const CheckboxVotePage = lazy(() => import("@/components/game/multi/CheckboxVotePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -706,6 +708,10 @@ export default function GamePageRenderer({
         return <SongWallPage {...commonProps} page={page} pageId={page.id} />;
       case "personal_compass":
         return <PersonalCompassPage {...commonProps} page={page} pageId={page.id} />;
+      case "brain_dump":
+        return <BrainDumpPage {...commonProps} page={page} pageId={page.id} />;
+      case "checkbox_vote":
+        return <CheckboxVotePage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

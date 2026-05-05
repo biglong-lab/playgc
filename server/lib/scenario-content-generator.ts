@@ -502,6 +502,12 @@ ${componentDescriptions}
 - "team_snapshot": { title, fields: string[3-5], maxLength: 40-60 }
   團隊快照：每位玩家填寫多個欄位（如 開心/擔心/需要支援），揭曉後形成全隊情緒速覽，適合每日站立/回顧/情感核對
 
+- "brain_dump": { title, prompt, maxItems: 3-7, maxLength: 30-60 }
+  腦力傾瀉：每人輸入 1 至 maxItems 條想法（可動態新增），揭曉後按人分組顯示，適合集思廣益/工作坊開場/快速發散
+
+- "checkbox_vote": { title, question, options: string[3-6], maxChoices: 1-N }
+  複選投票：每人可選多個選項（上限 maxChoices），揭曉後顯示各選項被選人數與比例，適合多維度偏好調查/方案篩選
+
 - "song_wall": { title, prompt, maxLength: 40-60, songPlaceholder, artistPlaceholder }
   歌曲牆：每人選一首代表心情/主題的歌，填寫歌名+歌手+可選備注，揭曉後顯示全員歌單，適合派對暖場/情感核對/聚會破冰
 
