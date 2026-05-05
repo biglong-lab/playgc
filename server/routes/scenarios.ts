@@ -738,6 +738,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAllEstimates: true,
       };
 
+    case "would_you_rather":
+      return {
+        title: "🤔 你選哪個？",
+        optionA: "永遠只能在家工作",
+        emojiA: "🏠",
+        optionB: "永遠只能在辦公室工作",
+        emojiB: "🏢",
+        showVoterNames: true,
+      };
+
     case "category_sort":
       return {
         title: "🗂️ 卡片分類",

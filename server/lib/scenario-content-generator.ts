@@ -139,6 +139,9 @@ ${componentDescriptions}
 - "estimation_game": { title, question, unit?, options?: [...], showAverage: true, showAllEstimates: true }
   options 是估算選項（如 Fibonacci: 1/2/3/5/8/13/21/?，T-shirt: XS/S/M/L/XL）。揭曉前保密，任何人提交後可點擊揭曉顯示分佈圖與平均值，適合規劃撲克、敏捷估點
 
+- "would_you_rather": { title, optionA, emojiA?, optionB, emojiB?, showVoterNames: true }
+  optionA/B 是二選一選項，揭曉前保密票數，任何人可點擊揭曉看百分比分布與投票者名單，適合破冰/派對/旅遊車上娛樂/快速了解團隊偏好
+
 - "category_sort": { title, instructions?, items: [{ id, label }...4-8個], categories: [{ id, label, color }...2-5個], showConsensus: true }
   items 是待分類的卡片，categories 是可選分類（每個分類有 hex color），showConsensus 顯示群體分佈條形圖，適合資訊架構/工作坊/共識建立
 

@@ -686,6 +686,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "would_you_rather",
+        label: "旅途選擇題",
+        role: "輕鬆二選一：沙灘還是山林？一個人旅行還是揪團出發？邊搭車邊玩邊認識彼此",
+        axis: "multi",
+      },
+      {
         pageType: "host_guestbook_digital",
         label: "團隊簽名簿",
         role: "活動結束時的留念",
