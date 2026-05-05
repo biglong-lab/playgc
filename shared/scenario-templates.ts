@@ -966,6 +966,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "freeze_frame",
+        label: "現況快照",
+        role: "每人選 🟢🟡🔴 狀態 + 一句現況描述，公布後依狀態分群，讓主持人快速掌握全場進度，適合站會或活動中期確認",
+        axis: "multi",
+      },
+      {
+        pageType: "two_column",
+        label: "雙欄分類",
+        role: "玩家自由新增内容到兩欄（優缺點、挑戰解法等），揭曉後左右並列對比，適合回顧討論/集體決策/訓練後反思",
+        axis: "multi",
+      },
+      {
         pageType: "group_mood",
         label: "團隊能量儀表",
         role: "活動前用 1-10 量表測量團隊整體能量/心情，公布分佈+平均值，讓主持人掌握現場氛圍並即時調整節奏",

@@ -379,6 +379,12 @@ ${componentDescriptions}
 - "rate_idea": { title, prompt, ideas: [{ideaId, text}] }
   玩家對 2-6 個想法各打 1-5 星，公布後依平均分排名並顯示進度條，適合方案評選/優先順序決策/創意評鑑
 
+- "freeze_frame": { title, prompt, maxLength: 60-100 }
+  prompt 引導描述目前工作現況（一句話），搭配🟢🟡🔴狀態選擇，公布後依狀態分群顯示，適合站立會議/活動進度確認/遠端團隊同步
+
+- "two_column": { title, leftLabel, rightLabel, maxLength: 40-80 }
+  玩家可分別新增到兩欄（如優點/缺點、挑戰/解法、同意/不同意），揭曉後左右並列，適合決策討論/回顧/pros-cons分析
+
 - "group_mood": { title, prompt, minLabel: 低/差, maxLabel: 高/好 }
   prompt 詢問目前能量/心情，玩家按 1-10 評分，公布後顯示長條分佈圖+平均值，適合活動開場暖身/訓練前能量掌握/會後反饋
 

@@ -1206,6 +1206,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "freeze_frame":
+      return {
+        title: "📸 現況快照",
+        prompt: `「${scenarioName}」中，你現在在做什麼？進度如何？`,
+        maxLength: 80,
+      };
+
+    case "two_column":
+      return {
+        title: "⚖️ 雙欄分類",
+        leftLabel: "優點 / 支持",
+        rightLabel: "缺點 / 反對",
+        maxLength: 60,
+      };
+
     case "group_mood":
       return {
         title: "😊 團隊能量儀表",

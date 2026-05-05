@@ -127,6 +127,8 @@ const ClueRevealPage = lazy(() => import("@/components/game/multi/ClueRevealPage
 const SpeedTypingPage = lazy(() => import("@/components/game/multi/SpeedTypingPage"));
 const GroupMoodPage = lazy(() => import("@/components/game/multi/GroupMoodPage"));
 const DailyIntentionPage = lazy(() => import("@/components/game/multi/DailyIntentionPage"));
+const FreezeFramePage = lazy(() => import("@/components/game/multi/FreezeFramePage"));
+const TwoColumnPage = lazy(() => import("@/components/game/multi/TwoColumnPage"));
 const SkillSwapPage = lazy(() => import("@/components/game/multi/SkillSwapPage"));
 const AnonymousVoicePage = lazy(() => import("@/components/game/multi/AnonymousVoicePage"));
 const PitchVotePage = lazy(() => import("@/components/game/multi/PitchVotePage"));
@@ -608,6 +610,10 @@ export default function GamePageRenderer({
         return <GroupMoodPage {...commonProps} page={page} pageId={page.id} />;
       case "daily_intention":
         return <DailyIntentionPage {...commonProps} page={page} pageId={page.id} />;
+      case "freeze_frame":
+        return <FreezeFramePage {...commonProps} page={page} pageId={page.id} />;
+      case "two_column":
+        return <TwoColumnPage {...commonProps} page={page} pageId={page.id} />;
       case "speed_typing":
         return <SpeedTypingPage {...commonProps} page={page} pageId={page.id} />;
       case "skill_swap":
