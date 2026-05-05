@@ -161,26 +161,42 @@ export default function AdminDashboard() {
       <FieldModulesCard />
 
       {/* 📖 使用說明手冊入口 — Phase 6 W22 */}
-      <Link href="/admin/manual" className="block mb-6" data-testid="link-admin-manual">
-        <Card className="hover-elevate cursor-pointer transition-all bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/50">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="text-4xl">📖</div>
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold text-amber-900 dark:text-amber-100 flex items-center gap-2">
-                使用說明手冊
-                <span className="px-2 py-0.5 text-[10px] rounded-full bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 font-normal">NEW</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+        <Link href="/admin/manual" className="block" data-testid="link-admin-manual">
+          <Card className="hover-elevate cursor-pointer transition-all bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border-amber-200 dark:border-amber-800/50 h-full">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="text-3xl">📖</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-amber-900 dark:text-amber-100">
+                  使用說明手冊
+                </div>
+                <div className="text-xs text-amber-800 dark:text-amber-200 mt-0.5">
+                  28 元件 · 17 情境 · 11 業務頁 · 完整流程
+                </div>
               </div>
-              <div className="text-sm text-amber-800 dark:text-amber-200 mt-1">
-                28 個元件 · 12 情境 · 11 業務工具頁 · 整體運作流程 — 一頁讀懂平台
+              <BookOpen className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            </CardContent>
+          </Card>
+        </Link>
+
+        {/* 🧪 2026-05-05: 開發者工具入口 — 模擬玩家、多用戶測試 */}
+        <Link href="/admin/dev-tools" className="block" data-testid="link-admin-dev-tools">
+          <Card className="hover-elevate cursor-pointer transition-all bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/20 border-purple-200 dark:border-purple-800/50 h-full">
+            <CardContent className="p-4 flex items-center gap-3">
+              <div className="text-3xl">🧪</div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-purple-900 dark:text-purple-100 flex items-center gap-2">
+                  開發者工具
+                  <span className="px-2 py-0.5 text-[10px] rounded-full bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100 font-normal">NEW</span>
+                </div>
+                <div className="text-xs text-purple-800 dark:text-purple-200 mt-0.5">
+                  模擬玩家、多用戶測試（不必找真人）
+                </div>
               </div>
-              <div className="text-xs text-amber-700 dark:text-amber-300 mt-1 opacity-70">
-                適合：業務、行銷、客戶 onboarding、新進工程師
-              </div>
-            </div>
-            <BookOpen className="w-5 h-5 text-amber-600 flex-shrink-0" />
-          </CardContent>
-        </Card>
-      </Link>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* 🆕 stats 卡片改用共用 MetricCard（Link-wrapped navigation shortcut） */}

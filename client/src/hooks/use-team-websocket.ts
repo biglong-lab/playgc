@@ -99,7 +99,21 @@ export function useTeamWebSocket({
 }: UseTeamWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  // 🆕 2026-05-05: reconnect 狀態（給 UI 顯示「重連中」用）
+  const [isReconnecting, setIsReconnecting] = useState(false);
   const [memberLocations, setMemberLocations] = useState<Map<string, TeamMemberLocation>>(new Map());
+  // 🆕 2026-05-05: reconnect with exponential backoff
+  //   原本 onclose 只 setIsConnected(false)、永不重連 → 玩家切 tab / 鎖屏 / 短暫斷網就死
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intentionalCloseRef = useRef(false); // unmount 時設 true、避免 cleanup 後仍嘗試重連
+  // 🆕 統計給 P1 觀測用（每場 session 結束時上報）
+  const statsRef = useRef({
+    connectAt: 0,
+    disconnectCount: 0,
+    reconnectSuccessCount: 0,
+    reconnectFailCount: 0,
+  });
 
   // 🔧 Fix（2026-05-02）：把 callback 放進 ref，避免父元件 re-render 時
   //   產生新 reference 觸發 useEffect 重跑 → WebSocket 重連 →
@@ -144,12 +158,44 @@ export function useTeamWebSocket({
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
+    intentionalCloseRef.current = false;
+
+    /** 🆕 2026-05-05: backoff 計算 — 1s → 2s → 4s → 8s → 16s → max 30s */
+    const computeBackoff = (attempts: number): number => {
+      const base = 1000;
+      const ms = Math.min(base * Math.pow(2, attempts), 30_000);
+      // 加 ±20% jitter 避免大量 client 同時重連衝擊 server
+      const jitter = ms * 0.2 * (Math.random() * 2 - 1);
+      return Math.max(500, Math.floor(ms + jitter));
+    };
+
+    /** 🆕 2026-05-05: 排定下次重連 */
+    const scheduleReconnect = () => {
+      if (intentionalCloseRef.current) return;
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      const delay = computeBackoff(reconnectAttemptsRef.current);
+      reconnectAttemptsRef.current += 1;
+      setIsReconnecting(true);
+      reconnectTimerRef.current = setTimeout(connect, delay);
+    };
+
+    /** 🆕 2026-05-05: 包裝建立 ws + handlers（重連時會多次呼叫） */
+    const connect = () => {
+      if (intentionalCloseRef.current) return;
 
     try {
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
         setIsConnected(true);
+        setIsReconnecting(false);
+        statsRef.current.connectAt = Date.now();
+        // 🆕 重連成功（attempts > 0）→ 統計
+        if (reconnectAttemptsRef.current > 0) {
+          statsRef.current.reconnectSuccessCount += 1;
+        }
+        reconnectAttemptsRef.current = 0;
+
         ws.send(JSON.stringify({
           type: "team_join",
           teamId,
@@ -300,18 +346,51 @@ export function useTeamWebSocket({
 
       ws.onclose = () => {
         setIsConnected(false);
+        // 🆕 2026-05-05: 統計 + 排重連（除非 unmount 主動關）
+        statsRef.current.disconnectCount += 1;
+        if (!intentionalCloseRef.current) {
+          if (reconnectAttemptsRef.current >= 1) {
+            statsRef.current.reconnectFailCount += 1;
+          }
+          scheduleReconnect();
+        }
       };
 
       wsRef.current = ws;
-
-      return () => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        }
-      };
     } catch {
-      // WebSocket 連線建立失敗
+      // WebSocket 連線建立失敗 → 也排重連
+      if (!intentionalCloseRef.current) scheduleReconnect();
     }
+    };
+
+    // 🆕 2026-05-05: 切回 app / 解鎖時、若已斷線 → 立即重連（不等 backoff）
+    const onVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      const ws = wsRef.current;
+      if (!ws || ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+        // 重設 attempts 讓 delay 短、立即試
+        reconnectAttemptsRef.current = 0;
+        if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+        connect();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    // 第一次連線
+    connect();
+
+    return () => {
+      intentionalCloseRef.current = true;
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+    };
   }, [teamId, userId, userName, alsoJoinSessionId]); // ⚠️ 不放 callback：用 callbacksRef.current 取代
 
   const sendChat = useCallback((message: string, messageType: string = "text") => {
@@ -487,8 +566,17 @@ export function useTeamWebSocket({
     [userId],
   );
 
+  /** 🆕 2026-05-05: 取連線統計 snapshot（給觀測 / 上報用） */
+  const getConnectionStats = useCallback(() => ({
+    ...statsRef.current,
+    isConnected,
+    isReconnecting,
+    currentAttempts: reconnectAttemptsRef.current,
+  }), [isConnected, isReconnecting]);
+
   return {
     isConnected,
+    isReconnecting,  // 🆕 2026-05-05: UI 顯示「重連中」用
     memberLocations,
     sendChat,
     sendLocation,
@@ -499,5 +587,6 @@ export function useTeamWebSocket({
     sendTerritorySync,
     sendRaceAnswer,
     sendRaceInit,
+    getConnectionStats,
   };
 }
