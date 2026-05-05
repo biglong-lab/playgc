@@ -497,6 +497,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResultsLive: true,
       };
 
+    case "live_pulse":
+      return {
+        title: "⚡ 即時活力計",
+        subtitle: "一起點擊，感受全場能量！",
+        prompt: "點擊提升活力！",
+        maxLevel: 200,
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {

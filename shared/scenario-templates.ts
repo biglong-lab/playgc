@@ -266,6 +266,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "live_pulse",
+        label: "全場活力爆發",
+        role: "節目高潮讓所有人同步點擊，活力計即時拉升，感受集體爆發！",
+        axis: "multi",
+      },
+      {
         pageType: "host_scoreboard_announcement",
         label: "跑馬燈播報",
         role: "得分插播、活動公告",
@@ -346,6 +352,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "觀眾為每組作品評 1-5 顆星，即時顯示平均分",
         axis: "multi",
         demoMode: "rating-wall",
+      },
+      {
+        pageType: "live_pulse",
+        label: "全場鼓掌活力計",
+        role: "得獎揭曉後，全場同步點擊衝活力值，感受集體能量爆發",
+        axis: "multi",
       },
       {
         pageType: "host_emoji_react",
