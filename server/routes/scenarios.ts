@@ -620,6 +620,15 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLevel: 200,
       };
 
+    case "team_contract":
+      return {
+        title: "📜 團隊承諾書",
+        contractText: "我們承諾彼此尊重、積極合作，共同達成目標！",
+        pledgeLabel: "我承諾！",
+        showSigners: true,
+        celebrationText: "全員完成簽署！",
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {

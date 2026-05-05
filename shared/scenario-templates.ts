@@ -575,6 +575,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
         demoMode: "feedback-star",
       },
+      {
+        pageType: "team_contract",
+        label: "學習承諾書",
+        role: "訓練結束後全員共同簽署行動承諾，讓學習成果落地",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",

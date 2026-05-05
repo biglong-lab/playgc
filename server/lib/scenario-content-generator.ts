@@ -109,6 +109,9 @@ ${componentDescriptions}
 - "team_checklist": { title, items: [...3-8 個任務], celebrationText? }
   items 是與活動相關的具體任務清單，每項 6-20 字
 
+- "team_contract": { title, contractText, pledgeLabel?, showSigners: true, targetCount?, celebrationText? }
+  contractText 是全員共同承諾的宣言文字（如：我們承諾彼此尊重、積極合作），pledgeLabel 是簽署按鈕文字，targetCount 是預期簽署人數
+
 - "feedback_star": { title, question, allowComment: true }
   question 是引導玩家評分的問題（如：你對這次活動的整體感受如何？）
 
