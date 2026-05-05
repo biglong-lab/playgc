@@ -60,16 +60,8 @@ export interface ChoiceVerifyRaceProps {
     reward?: { points?: number; items?: string[] },
     nextPageId?: string,
   ) => void;
-  /** 每題時限（秒，預設 20）— 2026-05-04 改 server 同步、此值僅 fallback */
+  /** 每題時限（秒，預設 30） */
   questionTimeLimit?: number;
-  /** 🆕 2026-05-04: server 推進的當前題 index（若提供 → 走 server 同步模式）*/
-  serverCurrentQIndex?: number;
-  /** 🆕 2026-05-04: server 給的該題結束時間 (epoch ms)；倒數依此計算 */
-  serverEndAt?: number | null;
-  /** 🆕 2026-05-04: race 完成 flag */
-  raceCompleted?: boolean;
-  /** 🆕 2026-05-04: 最終各玩家總分（race_complete 時收到）*/
-  finalScores?: Record<string, number> | null;
 }
 
 // ============================================================================
@@ -191,17 +183,10 @@ export default function ChoiceVerifyRace({
   answerRecords,
   onAnswer,
   onComplete,
-  questionTimeLimit = 20,
-  serverCurrentQIndex,
-  serverEndAt,
-  raceCompleted,
-  finalScores,
+  questionTimeLimit = 30,
 }: ChoiceVerifyRaceProps) {
   const questions = config.questions ?? [];
-  // 🆕 2026-05-04: server 同步模式（若 serverCurrentQIndex 提供 → 用 server、不再 client 自管）
-  const isServerSynced = typeof serverCurrentQIndex === "number";
-  const [localQIndex, setLocalQIndex] = useState(0);
-  const currentQIndex = isServerSynced ? serverCurrentQIndex : localQIndex;
+  const [currentQIndex, setCurrentQIndex] = useState(0);
   const [hasCompleted, setHasCompleted] = useState(false);
 
   const currentQuestion = questions[currentQIndex];
@@ -210,61 +195,30 @@ export default function ChoiceVerifyRace({
     [answerRecords, currentQIndex, members.length],
   );
 
-  // 🆕 2026-05-04: 倒數時間 — server 同步模式用 serverEndAt 即時計算、否則走 fallback timer
-  const [serverRemaining, setServerRemaining] = useState<number>(0);
-  useEffect(() => {
-    if (!isServerSynced || !serverEndAt) return;
-    const tick = () => {
-      const r = Math.max(0, Math.floor((serverEndAt - Date.now()) / 1000));
-      setServerRemaining(r);
-    };
-    tick();
-    const id = setInterval(tick, 250);
-    return () => clearInterval(id);
-  }, [isServerSynced, serverEndAt]);
-
-  // Fallback timer（非 server 同步、給單機測試 / 既有測試用）
-  const { remaining: fallbackRemaining, formatted: fallbackFormatted, reset: resetTimer } = useGameTimer({
+  // 每題計時器
+  const { remaining, formatted, reset: resetTimer } = useGameTimer({
     durationSec: questionTimeLimit,
     onExpired: () => {
-      // 時限到 → 推進下題（fallback mode 用）
+      // 時限到 → 推進下題（但要等所有人或第一個答對才推進，這裡是 fallback）
     },
   });
-  const remaining = isServerSynced ? serverRemaining : fallbackRemaining;
-  const formatted = isServerSynced
-    ? `${Math.floor(serverRemaining / 60)}:${String(serverRemaining % 60).padStart(2, "0")}`
-    : fallbackFormatted;
 
-  // 🆕 2026-05-04: 非 server 模式才走原 advance 邏輯（server 模式由 server timer 推進）
+  // 偵測題目「結束」（有人答對 / 全員答過 / 時限到）→ 1.5 秒後切下題
   useEffect(() => {
-    if (isServerSynced) return;
-    if (!isResolved && fallbackRemaining > 0) return;
-    if (localQIndex >= questions.length - 1) return;
+    if (!isResolved && remaining > 0) return;
+    if (currentQIndex >= questions.length - 1) return;
 
     const timer = setTimeout(() => {
-      setLocalQIndex((prev) => prev + 1);
+      setCurrentQIndex((prev) => prev + 1);
       resetTimer();
     }, 1500);
     return () => clearTimeout(timer);
-  }, [isServerSynced, isResolved, fallbackRemaining, localQIndex, questions.length, resetTimer]);
+  }, [isResolved, remaining, currentQIndex, questions.length, resetTimer]);
 
-  // 🆕 2026-05-04: 完成 onComplete
-  // - server 模式：依 raceCompleted + finalScores
-  // - 非 server 模式（既有 fallback）：依 last question resolved
+  // 全部題目完成 → onComplete（用 useEffect 而非 inline，避免重複觸發）
   useEffect(() => {
     if (hasCompleted) return;
-
-    if (isServerSynced) {
-      if (!raceCompleted) return;
-      const myScore = finalScores?.[myUserId] ?? calcUserScore(answerRecords, myUserId);
-      // ChoiceVerifyRacePage 會自己處理 onComplete（有 1.5s delay）
-      // 此處只標記 hasCompleted 避免重複
-      setHasCompleted(true);
-      return;
-    }
-
-    // 非 server 模式（fallback）
-    const isLastQuestion = localQIndex >= questions.length - 1;
+    const isLastQuestion = currentQIndex >= questions.length - 1;
     const lastResolved = isQuestionResolved(
       answerRecords,
       questions.length - 1,
@@ -279,11 +233,8 @@ export default function ChoiceVerifyRace({
     }, 1500);
     return () => clearTimeout(timer);
   }, [
-    isServerSynced,
-    raceCompleted,
-    finalScores,
     answerRecords,
-    localQIndex,
+    currentQIndex,
     questions.length,
     members.length,
     hasCompleted,

@@ -1,13 +1,19 @@
 // 🏃 ChoiceVerifyRacePage — ChoiceVerifyRace 元件的容器
 //
-// 2026-05-04 重設計：「server 統一推進、確保所有玩家同一時間看到題目」
-//   - 玩家進場 → sendRaceInit → server 取或建 state、回 race_state（含 startAt）
-//   - server 統一 timer 推進（依 secondsPerQuestion）→ broadcast race_question_advanced
-//   - 玩家答題 → server 記分數、broadcast race_answered
-//   - 最後一題結束 → server broadcast race_complete + 全員分數
-//   - 答完留在最後畫面繼續倒數、時間到一起進下一題（不卡住）
+// 角色：
+//   - ChoiceVerifyRace（純 UI）的容器層
+//   - 從 gameId 自動找隊伍 + 隊員清單
+//   - 用 useTeamWebSocket 接 race_answered 訊息累積 answerRecords
+//   - 玩家答題時呼叫 sendRaceAnswer 透過 WebSocket 廣播給同隊全員
+//
+// 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.6
+//
+// realtime 鏈路（2026-05-03 Phase 3.1 part 3 補完）：
+//   1. client send "race_answer"（useTeamWebSocket.sendRaceAnswer）
+//   2. server case "race_answer" → broadcastToTeam(teamId, "race_answered")
+//   3. 隊員收到 → handleWsMessage 累積 answerRecords
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
@@ -19,6 +25,7 @@ import ChoiceVerifyRace, {
 } from "./ChoiceVerifyRace";
 import type { ChoiceVerifyConfig } from "@shared/schema";
 
+/** Server 廣播 race_answered 訊息格式（part 3 client 準備接收，server 端 endpoint 待補） */
 interface RaceAnsweredWsMessage {
   type: "race_answered";
   userId: string;
@@ -30,34 +37,6 @@ interface RaceAnsweredWsMessage {
   points: number;
 }
 
-interface RaceStateWsMessage {
-  type: "race_state";
-  currentQuestionIndex: number;
-  totalQuestions: number;
-  secondsPerQuestion: number;
-  startAt: number;
-  endAt: number;
-  answers: RaceAnswerRecord[];
-  members: { userId: string; displayName: string }[];
-  completed: boolean;
-}
-
-interface RaceQuestionAdvancedWsMessage {
-  type: "race_question_advanced";
-  currentQuestionIndex: number;
-  totalQuestions: number;
-  secondsPerQuestion: number;
-  startAt: number;
-  endAt: number;
-}
-
-interface RaceCompleteWsMessage {
-  type: "race_complete";
-  totalQuestions: number;
-  scores: Record<string, number>;
-  members: { userId: string; displayName: string }[];
-}
-
 export interface ChoiceVerifyRacePageProps {
   config: ChoiceVerifyConfig;
   onComplete: (
@@ -66,8 +45,6 @@ export interface ChoiceVerifyRacePageProps {
   ) => void;
   sessionId: string;
   gameId: string;
-  /** 🆕 2026-05-04: 給 server race state 當 key */
-  pageId: string;
 }
 
 interface MyTeamResponse {
@@ -97,9 +74,7 @@ function deriveDisplayName(
 export default function ChoiceVerifyRacePage({
   config,
   onComplete,
-  sessionId,
   gameId,
-  pageId,
 }: ChoiceVerifyRacePageProps) {
   const { user } = useAuth();
 
@@ -112,14 +87,8 @@ export default function ChoiceVerifyRacePage({
     enabled: !!gameId && !!user,
   });
 
+  // 本地累積 answerRecords（含自己 handleAnswer + 隊友 race_answered 廣播）
   const [answerRecords, setAnswerRecords] = useState<RaceAnswerRecord[]>([]);
-  // 🆕 2026-05-04: server-driven race state（取代 client 自管 currentQIndex）
-  const [serverCurrentQIndex, setServerCurrentQIndex] = useState(0);
-  const [serverEndAt, setServerEndAt] = useState<number | null>(null);
-  const [raceCompleted, setRaceCompleted] = useState(false);
-  const [finalScores, setFinalScores] = useState<Record<string, number> | null>(null);
-  const initSentRef = useRef(false);
-  const completeFiredRef = useRef(false);
 
   const myDisplayName = useMemo(() => {
     if (!user) return "我";
@@ -138,97 +107,48 @@ export default function ChoiceVerifyRacePage({
     [myTeam],
   );
 
-  // 訂閱 WebSocket race_* 訊息
+  // 訂閱 WebSocket race_answered 訊息
+  // 收到隊友答題訊息 → 加進 answerRecords（本地 + 隊友統一管理）
   const handleWsMessage = useCallback(
     (msg: { type: string }) => {
-      if (msg.type === "race_state") {
-        const m = msg as unknown as RaceStateWsMessage;
-        setServerCurrentQIndex(m.currentQuestionIndex);
-        setServerEndAt(m.endAt);
-        if (m.answers.length > 0) setAnswerRecords(m.answers); // catch up 中途進場
-        if (m.completed) setRaceCompleted(true);
-        return;
-      }
-      if (msg.type === "race_question_advanced") {
-        const m = msg as unknown as RaceQuestionAdvancedWsMessage;
-        setServerCurrentQIndex(m.currentQuestionIndex);
-        setServerEndAt(m.endAt);
-        return;
-      }
-      if (msg.type === "race_complete") {
-        const m = msg as unknown as RaceCompleteWsMessage;
-        setRaceCompleted(true);
-        setFinalScores(m.scores);
-        return;
-      }
-      if (msg.type === "race_answered") {
-        const m = msg as unknown as RaceAnsweredWsMessage;
-        if (m.userId === user?.id) return; // 自己的答題已 local 加進
-        setAnswerRecords((prev) => {
-          if (
-            prev.some(
-              (r) => r.userId === m.userId && r.questionIndex === m.questionIndex,
-            )
-          ) {
-            return prev;
-          }
-          return [
-            ...prev,
-            {
-              userId: m.userId,
-              displayName: m.displayName,
-              questionIndex: m.questionIndex,
-              selectedOption: m.selectedOption,
-              isCorrect: m.isCorrect,
-              answeredAt: m.answeredAt,
-              points: m.points,
-            },
-          ];
-        });
-      }
+      if (msg.type !== "race_answered") return;
+      const m = msg as unknown as RaceAnsweredWsMessage;
+      // 自己的訊息不重複加（handleAnswer 本地已加）
+      if (m.userId === user?.id) return;
+      setAnswerRecords((prev) => {
+        // 防重：同 user 同題不重複
+        if (
+          prev.some(
+            (r) => r.userId === m.userId && r.questionIndex === m.questionIndex,
+          )
+        ) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            userId: m.userId,
+            displayName: m.displayName,
+            questionIndex: m.questionIndex,
+            selectedOption: m.selectedOption,
+            isCorrect: m.isCorrect,
+            answeredAt: m.answeredAt,
+            points: m.points,
+          },
+        ];
+      });
     },
     [user],
   );
 
-  const { sendRaceAnswer, sendRaceInit, isConnected } = useTeamWebSocket({
+  const { sendRaceAnswer } = useTeamWebSocket({
     teamId: myTeam?.id,
     userId: user?.id,
     userName: myDisplayName,
     onMessage: handleWsMessage,
   });
 
-  // 🆕 2026-05-04: 連線後立即發 race_init 通知 server（server 取或建 state）
-  useEffect(() => {
-    if (!isConnected) return;
-    if (!user || !myTeam) return;
-    if (initSentRef.current) return;
-    initSentRef.current = true;
-    const totalQuestions = config.questions?.length ?? 1;
-    // 🆕 預設 20 秒、admin 可在 config.questionTimeLimit 覆寫（5-120 軟邊界）
-    const secondsPerQuestion = Math.max(
-      5,
-      Math.min(config.questionTimeLimit ?? 20, 120),
-    );
-    sendRaceInit({
-      displayName: myDisplayName,
-      sessionId,
-      pageId,
-      totalQuestions,
-      secondsPerQuestion,
-    });
-  }, [isConnected, user, myTeam, config, sessionId, pageId, myDisplayName, sendRaceInit]);
-
-  // 🆕 2026-05-04: race 完成 → 等 1.5 秒讓玩家看分數 → onComplete
-  useEffect(() => {
-    if (!raceCompleted || completeFiredRef.current || !user) return;
-    completeFiredRef.current = true;
-    const myScore = finalScores?.[user.id] ?? 0;
-    const timer = setTimeout(() => {
-      onComplete({ points: myScore }, config.nextPageId);
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, [raceCompleted, finalScores, user, onComplete, config.nextPageId]);
-
+  // 處理玩家答題：本地累積 + 透過 WebSocket 廣播給同隊全員
   const handleAnswer = useCallback(
     (questionIndex: number, optionIndex: number) => {
       if (!user) return;
@@ -249,18 +169,21 @@ export default function ChoiceVerifyRacePage({
       };
       setAnswerRecords((prev) => [...prev, record]);
 
+      // 透過 WebSocket race_answer 廣播給同隊（server 廣播為 race_answered）
       sendRaceAnswer({
         displayName: myDisplayName,
         questionIndex,
         selectedOption: optionIndex,
         isCorrect,
         points,
-        sessionId,
-        pageId,
       });
     },
-    [user, config, myDisplayName, sendRaceAnswer, sessionId, pageId],
+    [user, config, myDisplayName, sendRaceAnswer],
   );
+
+  // ============================================================================
+  // Fallback UI
+  // ============================================================================
 
   if (!user) {
     return (
@@ -286,28 +209,12 @@ export default function ChoiceVerifyRacePage({
   if (teamError || !myTeam) {
     return (
       <Card data-testid="race-page-no-team">
-        <CardContent className="p-6 text-center space-y-3">
-          <Users className="w-8 h-8 mx-auto text-muted-foreground" />
-          <p className="text-sm font-medium">此元件需要組隊使用</p>
+        <CardContent className="p-6 text-center">
+          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+          <p className="text-sm font-medium mb-1">此元件需要組隊使用</p>
           <p className="text-xs text-muted-foreground">
             請回到場域首頁建立或加入隊伍
           </p>
-          {/* 🆕 2026-05-05: admin 預覽 / 測試時直接連到 DevTools 模擬玩家 */}
-          <div className="rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 p-3 text-left text-xs space-y-1">
-            <p className="font-semibold text-purple-900 dark:text-purple-100">🧪 admin 測試多人？</p>
-            <p className="text-purple-800 dark:text-purple-200">
-              用「開發者工具」建測試玩家、用 N 個 incognito 視窗模擬完整多人流程
-            </p>
-            <a
-              href="/admin/dev-tools"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block mt-1 text-purple-700 dark:text-purple-400 underline"
-              data-testid="link-to-dev-tools"
-            >
-              → 開啟開發者工具
-            </a>
-          </div>
         </CardContent>
       </Card>
     );
@@ -321,11 +228,6 @@ export default function ChoiceVerifyRacePage({
       answerRecords={answerRecords}
       onAnswer={handleAnswer}
       onComplete={onComplete}
-      // 🆕 2026-05-04: server-driven 同步
-      serverCurrentQIndex={serverCurrentQIndex}
-      serverEndAt={serverEndAt}
-      raceCompleted={raceCompleted}
-      finalScores={finalScores}
     />
   );
 }

@@ -337,13 +337,6 @@ export interface ChoiceVerifyConfig {
   rewardPerQuestion?: number;
   /** 🆕 答題後顯示的全域解釋（showExplanation=true 時用，說明正確答案由來） */
   explanation?: string;
-  /** 🆕 2026-05-04: 多人搶答（ChoiceVerifyRace）每題秒數
-   *  - 預設 20 秒
-   *  - admin 可設 5-120 秒（軟邊界）
-   *  - server 統一推進、確保所有玩家同一時間看到題目
-   *  - 時間到一起進下一題（沒答也走、不卡住）
-   */
-  questionTimeLimit?: number;
 }
 
 // ============================================================================

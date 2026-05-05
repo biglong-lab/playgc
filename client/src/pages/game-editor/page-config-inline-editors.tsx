@@ -1185,28 +1185,6 @@ export function ChoiceVerifyEditor({
               placeholder="10"
             />
           </div>
-          {/* 🆕 2026-05-04: 多人搶答（choice_verify_race）每題秒數 */}
-          <div>
-            <label className="text-xs text-muted-foreground mb-1 block">
-              每題秒數（多人搶答用）
-            </label>
-            <Input
-              type="number"
-              value={(config.questionTimeLimit as number | undefined) ?? 20}
-              onChange={(e) => {
-                const n = parseInt(e.target.value, 10);
-                const clamped = Number.isFinite(n) ? Math.max(5, Math.min(n, 120)) : 20;
-                updateField("questionTimeLimit", clamped);
-              }}
-              min={5}
-              max={120}
-              className="h-8"
-              placeholder="20"
-            />
-            <p className="text-[10px] text-muted-foreground mt-1">
-              預設 20 秒、範圍 5-120 秒；server 統一推進、所有玩家同時看到題目
-            </p>
-          </div>
         </div>
       )}
 
