@@ -367,6 +367,12 @@ ${componentDescriptions}
 - "skill_swap": { title, offerPrompt, wantPrompt, maxLength: 15-25, showAuthor: boolean }
   offerPrompt 引導說明自己的技能（如：我能提供什麼？），wantPrompt 引導說明想學什麼，揭曉後自動顯示配對，適合網絡活動/企業訓練
 
+- "anonymous_voice": { title, prompt, maxLength: 80-150 }
+  prompt 引導匿名發言（如：有什麼話想說？），完全匿名（不顯示作者），適合匿名回饋/安全發言空間/活動後評價
+
+- "pitch_vote": { title, prompt, maxLength: 40-80, showAuthor: boolean }
+  prompt 引導提案（如：用一句話說出你的創意點子），三階段：提案→星星評分（1-5）→排名結果，適合創意工作坊/創業活動/腦力激盪
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

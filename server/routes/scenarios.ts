@@ -1170,6 +1170,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "anonymous_voice":
+      return {
+        title: "🗣️ 匿名心聲",
+        prompt: `關於「${scenarioName}」，你有什麼話想匿名說出來？`,
+        maxLength: 120,
+      };
+
+    case "pitch_vote":
+      return {
+        title: "💡 創意提案評分",
+        prompt: `為「${scenarioName}」提出一個創意點子，讓大家來評分！`,
+        maxLength: 60,
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

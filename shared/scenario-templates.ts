@@ -815,6 +815,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "每人寫下能提供的技能和想學的技能，揭曉自動配對，引發後續交流",
         axis: "multi",
       },
+      {
+        pageType: "anonymous_voice",
+        label: "匿名心聲",
+        role: "訓練結尾匿名收集真實回饋，揭曉後主持人可當場回應，比問卷更即時",
+        axis: "multi",
+      },
+      {
+        pageType: "pitch_vote",
+        label: "創意提案評分",
+        role: "每人提出一個改善點子，進入評分階段後用 1-5 星評選，冠軍提案獲得認可",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",
