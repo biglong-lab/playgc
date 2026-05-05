@@ -444,6 +444,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "timeline_wall":
+      return {
+        title: "📅 集體時間軸",
+        prompt: "寫下你的回憶，一起拼出共同的故事",
+        placeholder: "描述這一年發生了什麼…",
+        maxEntriesPerPerson: 2,
+        maxTextLength: 60,
+        showAuthor: true,
+      };
+
     case "dot_vote":
       return {
         title: "🔵 點點投票",

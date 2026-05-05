@@ -115,6 +115,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "timeline_wall",
+        label: "相識時間軸",
+        role: "賓客寫下「第一次認識新人」的年份與故事，拼出一段有溫度的集體記憶",
+        axis: "multi",
+      },
+      {
         pageType: "host_emoji_react",
         label: "情緒池應援",
         role: "高潮時刻按 emoji（如戒指交換）",
@@ -198,6 +204,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "重逢拍立得",
         role: "現場合照即時上牆",
         axis: "host",
+      },
+      {
+        pageType: "timeline_wall",
+        label: "集體回憶軸",
+        role: "每人寫下「那一年我們一起做過的事」，按年份排序展示集體故事",
+        axis: "multi",
+      },
+      {
+        pageType: "wish_wall",
+        label: "許願牆",
+        role: "離別前每人留下一句話或祝福，作為聚會的溫暖結尾",
+        axis: "multi",
       },
     ],
     valueProposition: "輕量、不複雜，主辦方一人就能搞定。NT$ 2,000-5,000。",

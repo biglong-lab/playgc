@@ -166,6 +166,9 @@ ${componentDescriptions}
 - "dot_vote": { title, question, options: [{ id, label, emoji }...3-6個], dotsPerPerson: 3-5, showResultsLive: true }
   question 是引導玩家分配點數的問題（如：哪個議題最需要優先解決？），options 是候選選項，每個點代表一票的權重
 
+- "timeline_wall": { title, prompt?, placeholder?, maxEntriesPerPerson: 1-3, maxTextLength: 30-80, showAuthor: true }
+  prompt 是引導語（如：寫下你對新郎新娘的回憶…），placeholder 是輸入框提示（如：2015 年的那次旅行…）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

@@ -52,6 +52,7 @@ const QuestionBoxPage = lazy(() => import("@/components/game/multi/QuestionBoxPa
 const StoryChainPage = lazy(() => import("@/components/game/multi/StoryChainPage"));
 const RandomTeamPage = lazy(() => import("@/components/game/multi/RandomTeamPage"));
 const DotVotePage = lazy(() => import("@/components/game/multi/DotVotePage"));
+const TimelineWallPage = lazy(() => import("@/components/game/multi/TimelineWallPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -364,6 +365,8 @@ export default function GamePageRenderer({
         return <RandomTeamPage {...commonProps} page={page} pageId={page.id} />;
       case "dot_vote":
         return <DotVotePage {...commonProps} page={page} pageId={page.id} />;
+      case "timeline_wall":
+        return <TimelineWallPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
