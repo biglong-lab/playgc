@@ -514,6 +514,12 @@ ${componentDescriptions}
 - "personal_compass": { title, northLabel, southLabel, eastLabel, westLabel }
   個人指南針：每人在四個方向（優勢/挑戰/機會/障礙）各填一項，形成個人 SWOT 快照，揭曉後呈現全員四方向分析
 
+- "value_card": { title, prompt, cardPool: string[6-12], maxSelect: 2-4 }
+  價值卡選單：每人從預設卡片池中選出最重要的幾張，揭曉後統計各張票數分布，適合企業文化建立/入職破冰/年度方向確認
+
+- "thank_you_note": { title, prompt, recipientLabel, messageLabel, maxLength: 80-200, anonymous: boolean }
+  感謝便條：每人指定一位收件人並寫下感謝語，揭曉後依收件人分組展示，適合培訓結尾/旅遊感謝/表彰儀式
+
 - "success_story": { title, prompt, achievementLabel, detailLabel, maxLength: 80-200 }
   成功故事牆：每人分享一個成就（標題 + 可選細節），揭曉後呈現全員成就牆，適合培訓結尾/旅遊回顧/激勵頒獎
 

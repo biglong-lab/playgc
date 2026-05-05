@@ -2323,6 +2323,59 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "企業表彰活動 NT$ 5,000-12,000 / 場。年度儀式設計 NT$ 20,000-50,000。",
     status: "live",
   },
+  {
+    id: "culture-alignment",
+    name: "企業文化對齊工作坊",
+    tagline: "價值卡 + 感謝便條 + 共識",
+    description:
+      "幫助新團隊或跨部門組織快速凝聚文化認同。先用「價值卡選單」讓每人選出最重要的 3 個核心價值，統計全隊優先排名；接著「感謝便條」互送感謝彰顯文化行為；最後「群體決策」確認下季重點。\n適合新主管接手、企業重組、年度策略啟動，60 分鐘內完成文化對齊。",
+    useCases: [
+      "新主管接手文化確立",
+      "跨部門合作啟動",
+      "企業重組凝聚共識",
+      "年度策略價值觀確認",
+      "新員工集體入職破冰",
+    ],
+    category: "corporate",
+    icon: "Star",
+    gradient: "from-violet-500/20 to-purple-500/20",
+    estimatedPlayers: "10-60 人",
+    estimatedDuration: "60-90 分鐘",
+    components: [
+      {
+        pageType: "value_card",
+        label: "價值卡選單",
+        role: "從預設卡片池選出最重要的 3 個核心價值，揭曉後統計全隊排名，形成文化共識基底",
+        axis: "multi",
+      },
+      {
+        pageType: "thank_you_note",
+        label: "感謝便條牆",
+        role: "寫一張感謝便條給最支持你文化行為的夥伴，揭曉後依收件人分組展示感謝浪潮",
+        axis: "multi",
+      },
+      {
+        pageType: "one_line_story",
+        label: "一句描述文化",
+        role: "每人用一句話描述理想中的團隊文化，形成集體文化宣言牆",
+        axis: "multi",
+      },
+      {
+        pageType: "group_decision",
+        label: "下季文化焦點",
+        role: "對哪個價值觀需要最多行動投票，形成下季文化行動優先共識",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "文化承諾牆",
+        role: "每人寫下一個具體的文化行為承諾，公開宣示讓夥伴見證",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "企業文化建立 NT$ 8,000-20,000 / 場。季度文化檢核訂閱 NT$ 3,000-6,000/月。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

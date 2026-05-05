@@ -1589,6 +1589,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 200,
       };
 
+    case "value_card":
+      return {
+        title: "🃏 價值卡選單",
+        prompt: `在「${scenarioName}」中，選出最能代表你的核心價值`,
+        cardPool: ["誠信", "創新", "團隊合作", "顧客導向", "卓越", "學習成長", "責任", "多元包容", "永續發展", "服務精神"],
+        maxSelect: 3,
+      };
+
+    case "thank_you_note":
+      return {
+        title: "💌 感謝便條",
+        prompt: `「${scenarioName}」結束前，寫一張感謝便條給最支持你的夥伴`,
+        recipientLabel: "感謝誰",
+        messageLabel: "感謝的話",
+        maxLength: 150,
+        anonymous: false,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
