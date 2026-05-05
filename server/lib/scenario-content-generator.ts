@@ -379,6 +379,12 @@ ${componentDescriptions}
 - "rate_idea": { title, prompt, ideas: [{ideaId, text}] }
   玩家對 2-6 個想法各打 1-5 星，公布後依平均分排名並顯示進度條，適合方案評選/優先順序決策/創意評鑑
 
+- "clue_reveal": { title, clues: string[], minCluesBeforeGuess: 1-2 }
+  clues 陣列 3-6 條、由模糊到具體排序，minCluesBeforeGuess 設幾條線索後才開放猜答，適合破冰猜謎/知識挑戰/場域解謎
+
+- "speed_typing": { title, phrase, maxSeconds: 20-60 }
+  phrase 是要玩家打的文字（20-60 字），maxSeconds 倒數時間，公布後依最短秒數排名，適合熱場比賽/破冰競速/活動暖場
+
 - "skill_swap": { title, offerPrompt, wantPrompt, maxLength: 15-25, showAuthor: boolean }
   offerPrompt 引導說明自己的技能（如：我能提供什麼？），wantPrompt 引導說明想學什麼，揭曉後自動顯示配對，適合網絡活動/企業訓練
 

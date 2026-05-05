@@ -1206,6 +1206,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "clue_reveal":
+      return {
+        title: "🔍 解謎線索",
+        clues: ["第一條線索", "第二條線索", "第三條線索"],
+        minCluesBeforeGuess: 1,
+      };
+
+    case "speed_typing":
+      return {
+        title: "⌨️ 競速打字",
+        phrase: `快速輸入這段關於${scenarioName}的文字`,
+        maxSeconds: 30,
+      };
+
     case "skill_swap":
       return {
         title: "🔄 技能交換牆",

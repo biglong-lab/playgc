@@ -966,6 +966,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "clue_reveal",
+        label: "線索解謎",
+        role: "主持人逐條揭示線索，玩家猜答案；主持人可標記正確/錯誤，適合訓練前知識暖場或場域解謎活動",
+        axis: "multi",
+      },
+      {
+        pageType: "speed_typing",
+        label: "競速打字",
+        role: "所有人同時輸入指定文字，比誰最快又最準；公布後依秒數排名，適合熱場破冰競速挑戰",
+        axis: "multi",
+      },
+      {
         pageType: "skill_swap",
         label: "技能交換牆",
         role: "每人寫下能提供的技能和想學的技能，揭曉自動配對，引發後續交流",
