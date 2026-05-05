@@ -1085,6 +1085,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "speed_networking",
+        label: "速配社交",
+        role: "計時輪流配對，每人和不同人聊 2 分鐘，快速認識全場",
+        axis: "multi",
+      },
+      {
         pageType: "idea_wall",
         label: "共創點子牆",
         role: "每人提出活動改善建議或下次想玩的主題，大家投票讓最好的點子浮現",

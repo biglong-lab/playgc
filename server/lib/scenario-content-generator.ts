@@ -193,6 +193,9 @@ ${componentDescriptions}
 - "idea_wall": { title, prompt?, placeholder?, maxLength: 40-100, maxIdeasPerPerson: 1-5, showAuthor: true, allowVoteOwn: false }
   prompt 是引導大家投稿點子的問題（如：對這次活動你有什麼建議？），placeholder 是輸入框提示
 
+- "speed_networking": { title, prompt?, roundDurationSeconds: 60-300, questions: [...2-5個問題], showMatchedCount: true }
+  questions 是每輪的話題引導問題（如：你現在最專注的一件事是什麼？），roundDurationSeconds 是每輪時間
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

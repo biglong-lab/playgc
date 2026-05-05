@@ -531,6 +531,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         allowSwitch: true,
       };
 
+    case "speed_networking":
+      return {
+        title: "⚡ 速配社交",
+        prompt: "輪流和不同人對話，認識新朋友！",
+        roundDurationSeconds: 120,
+        questions: [
+          "你現在最專注的一件事是什麼？",
+          "這次活動你最期待什麼？",
+          "用一個詞描述你自己？",
+        ],
+        showMatchedCount: true,
+      };
+
     case "idea_wall":
       return {
         title: "💡 創意投票牆",
