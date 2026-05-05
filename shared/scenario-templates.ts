@@ -2376,6 +2376,59 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "企業文化建立 NT$ 8,000-20,000 / 場。季度文化檢核訂閱 NT$ 3,000-6,000/月。",
     status: "live",
   },
+  {
+    id: "project-kickoff",
+    name: "專案啟動工作坊",
+    tagline: "技能地圖 + 情緒確認 + 承諾",
+    description:
+      "新專案或跨部門組隊的第一次相見歡。先用「情緒看板」確認每人的當下心情狀態；接著「技能地圖」揭示誰能提供什麼、誰需要什麼，建立互補協作基礎；最後「承諾牆」讓每人公開宣示在這個專案中的承諾。\n60 分鐘完成信任建立 + 技能盤點 + 公開承諾，新團隊快速凝聚。",
+    useCases: [
+      "跨部門新專案啟動",
+      "新員工與舊員工混合組隊",
+      "外包/供應商合作啟動",
+      "新主管接手現有團隊",
+      "工作坊/培訓第一天",
+    ],
+    category: "corporate",
+    icon: "Rocket",
+    gradient: "from-emerald-500/20 to-teal-500/20",
+    estimatedPlayers: "8-30 人",
+    estimatedDuration: "60-80 分鐘",
+    components: [
+      {
+        pageType: "mood_board",
+        label: "情緒暖身",
+        role: "選一個 emoji + 一句話開啟對話，主持人即時看到全員心理狀態，決定是否先做輕鬆活動",
+        axis: "multi",
+      },
+      {
+        pageType: "skill_map",
+        label: "技能地圖",
+        role: "每人填「我能提供」和「我需要」，揭曉後展示全隊互補技能圖，找到潛在協作夥伴",
+        axis: "multi",
+      },
+      {
+        pageType: "value_card",
+        label: "專案價值觀",
+        role: "從卡片池選出這個專案最重要的核心價值（誠信/創新/效率等），凝聚共同文化基底",
+        axis: "multi",
+      },
+      {
+        pageType: "group_decision",
+        label: "工作方式共識",
+        role: "對工作模式（非同步優先/同步為主/彈性）投票，早早達成協作共識",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "公開承諾",
+        role: "每人寫下在此專案中的個人承諾，揭曉後形成團隊契約，增加責任感",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "企業培訓/新專案啟動 NT$ 5,000-15,000 / 場。月訂閱包含 3 場啟動 NT$ 3,000-8,000。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

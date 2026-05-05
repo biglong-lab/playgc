@@ -161,7 +161,7 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("pair_share");
     expect(allPageTypes).toContain("team_snapshot");
 
-    // Round 43-46 新元件
+    // Round 43-47 新元件
     expect(allPageTypes).toContain("song_wall");
     expect(allPageTypes).toContain("personal_compass");
     expect(allPageTypes).toContain("brain_dump");
@@ -170,6 +170,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("future_idea");
     expect(allPageTypes).toContain("value_card");
     expect(allPageTypes).toContain("thank_you_note");
+    expect(allPageTypes).toContain("skill_map");
+    expect(allPageTypes).toContain("mood_board");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -194,6 +196,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "future_idea",
       "value_card",
       "thank_you_note",
+      "skill_map",
+      "mood_board",
     ];
 
     for (const t of newTypes) {

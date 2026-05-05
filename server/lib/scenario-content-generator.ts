@@ -514,6 +514,12 @@ ${componentDescriptions}
 - "personal_compass": { title, northLabel, southLabel, eastLabel, westLabel }
   個人指南針：每人在四個方向（優勢/挑戰/機會/障礙）各填一項，形成個人 SWOT 快照，揭曉後呈現全員四方向分析
 
+- "skill_map": { title, prompt, offerLabel, needLabel, maxLength: 50-100 }
+  技能地圖：每人填「我能提供」和「我需要」兩欄，揭曉後形成全隊技能互補圖，適合新專案組隊/跨部門合作啟動/工作坊開場
+
+- "mood_board": { title, prompt, emojiPool: string[8-16], notePlaceholder, maxLength: 40-80 }
+  情緒看板：每人從 emoji 池選一個代表心情並附一句話，揭曉後展示全員情緒分布與統計，適合會議開場/工作坊熱身/日常關懷
+
 - "value_card": { title, prompt, cardPool: string[6-12], maxSelect: 2-4 }
   價值卡選單：每人從預設卡片池中選出最重要的幾張，揭曉後統計各張票數分布，適合企業文化建立/入職破冰/年度方向確認
 

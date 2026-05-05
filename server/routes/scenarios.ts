@@ -1607,6 +1607,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         anonymous: false,
       };
 
+    case "skill_map":
+      return {
+        title: "🗺️ 技能地圖",
+        prompt: `在「${scenarioName}」中，告訴夥伴你能提供什麼、你需要什麼`,
+        offerLabel: "我能提供",
+        needLabel: "我需要幫助",
+        maxLength: 80,
+      };
+
+    case "mood_board":
+      return {
+        title: "🎨 情緒看板",
+        prompt: `「${scenarioName}」開始，選一個 emoji 代表你現在的心情`,
+        emojiPool: ["😊", "😌", "🤔", "😤", "😴", "🥳", "😰", "🔥", "💪", "🌈", "⚡", "🫶"],
+        notePlaceholder: "說說為什麼...",
+        maxLength: 60,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
