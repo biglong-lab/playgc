@@ -370,6 +370,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "給出一個句子開頭，所有人接龍補完，揭曉後牆上顯示完整句子讓大家看見彼此的想法",
         axis: "multi",
       },
+      {
+        pageType: "truth_or_myth",
+        label: "真偽大考驗",
+        role: "一系列趣味真假題，全員搶答投票，揭曉答案後看誰答對最多，笑聲連連熱場超快",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問入場前 30 分鐘暖身。NT$ 5,000-12,000 一場。",
     status: "live",

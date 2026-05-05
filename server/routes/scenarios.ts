@@ -931,6 +931,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "truth_or_myth":
+      return {
+        title: "🤔 真偽大考驗",
+        statements: [
+          { stmtId: "s1", text: "章魚有三顆心臟", isTrue: true },
+          { stmtId: "s2", text: "人類只使用了大腦的 10%", isTrue: false },
+          { stmtId: "s3", text: "蜂鳥是唯一能倒著飛行的鳥類", isTrue: true },
+        ],
+      };
+
     case "thinking_hats":
       return {
         title: "🎩 六頂思考帽",

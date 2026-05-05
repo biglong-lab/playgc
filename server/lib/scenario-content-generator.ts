@@ -175,6 +175,9 @@ ${componentDescriptions}
 - "thinking_hats": { title, topic, hats: [{ hatId, color, emoji, name, description }], maxLength: 60-200, showAuthor: boolean }
   六頂思考帽（白/紅/黑/黃/綠/藍），每人選一頂帽子代表思考角度，寫下對應觀點，揭曉後按帽子分組展示，適合決策分析/問題回顧/創意workshop
 
+- "truth_or_myth": { title, statements: [{ stmtId, text, isTrue }...2-10個] }
+  二選一真假題遊戲，全員投票後揭曉答案，最後計分，適合知識趣味問答/熱場/訓練測評/認識彼此的趣味挑戰
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 
