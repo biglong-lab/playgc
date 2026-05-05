@@ -1,343 +1,227 @@
 import { useState } from "react";
+import { Lightbulb, ShoppingCart, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
-export interface MarketIdea extends Record<string, unknown> {
+// ── 型別 ──────────────────────────────────────────────
+export interface IdeaEntry extends Record<string, unknown> {
   ideaId: string;
   userId: string;
   userName: string;
-  text: string;
-}
-
-export interface TokenAlloc extends Record<string, unknown> {
-  investorId: string;
-  ideaId: string;
-  tokens: number;
+  title: string;
+  description: string;
+  votes: number;
+  voters: string[];
 }
 
 export interface IdeaMarketConfig extends Record<string, unknown> {
   title: string;
   prompt: string;
-  tokenBudget: number;
-  maxIdeaLength: number;
-  showAuthor: boolean;
+  voteLabel: string;
+  votesPerPlayer: number;
+  maxLength: number;
+  submissionLabel: string;
 }
 
 export interface IdeaMarketState extends Record<string, unknown> {
-  ideas: MarketIdea[];
-  allocations: TokenAlloc[];
-  phase: "pitch" | "invest" | "result";
+  ideas: IdeaEntry[];
+  revealed: boolean;
 }
-
-const DEFAULT_CONFIG: IdeaMarketConfig = {
-  title: "創意市集",
-  prompt: "用一句話說出你的創意點子",
-  tokenBudget: 5,
-  maxIdeaLength: 80,
-  showAuthor: true,
-};
-
-const PHASE_LABELS: Record<IdeaMarketState["phase"], string> = {
-  pitch: "提案",
-  invest: "投資",
-  result: "結果",
-};
-
-const ADVANCE_LABELS: Partial<Record<IdeaMarketState["phase"], string>> = {
-  pitch: "開始投資",
-  invest: "揭曉結果",
-};
 
 interface Props {
   config: IdeaMarketConfig;
   state: IdeaMarketState;
-  myUserId: string;
-  onSubmitIdea: (text: string) => void;
-  onInvest: (ideaId: string, delta: number) => void;
-  onAdvancePhase: () => void;
+  userId: string;
+  isTeamLead?: boolean;
+  onSubmit: (title: string, description: string) => void;
+  onVote: (ideaId: string) => void;
+  onReveal: () => void;
 }
 
-export default function IdeaMarket({
+// ── 元件 ──────────────────────────────────────────────
+export function IdeaMarket({
   config,
   state,
-  myUserId,
-  onSubmitIdea,
-  onInvest,
-  onAdvancePhase,
+  userId,
+  isTeamLead,
+  onSubmit,
+  onVote,
+  onReveal,
 }: Props) {
-  const [text, setText] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-  const tokenBudget = config.tokenBudget ?? DEFAULT_CONFIG.tokenBudget;
-  const maxIdeaLength =
-    config.maxIdeaLength ?? DEFAULT_CONFIG.maxIdeaLength;
-  const showAuthor = config.showAuthor ?? DEFAULT_CONFIG.showAuthor;
-  const { ideas, allocations, phase } = state;
+  const myEntry = state.ideas.find((i) => i.userId === userId);
+  const hasSubmitted = !!myEntry;
 
-  const myIdea = ideas.find((i) => i.userId === myUserId);
-  const overLimit = text.length > maxIdeaLength;
-  const canSubmit =
-    text.trim().length > 0 && !overLimit && !myIdea;
-
-  // Investment helpers
-  function myTokensFor(ideaId: string): number {
-    return (
-      allocations.find(
-        (a) => a.investorId === myUserId && a.ideaId === ideaId
-      )?.tokens ?? 0
-    );
-  }
-
-  function myTotalInvested(): number {
-    return allocations
-      .filter((a) => a.investorId === myUserId)
-      .reduce((s, a) => s + a.tokens, 0);
-  }
-
-  function totalTokensFor(ideaId: string): number {
-    return allocations
-      .filter((a) => a.ideaId === ideaId)
-      .reduce((s, a) => s + a.tokens, 0);
-  }
-
-  const budgetRemaining = tokenBudget - myTotalInvested();
-
-  // Result helpers
-  function getSortedIdeas(): Array<MarketIdea & { total: number }> {
-    return [...ideas]
-      .map((i) => ({ ...i, total: totalTokensFor(i.ideaId) }))
-      .sort((a, b) => b.total - a.total);
-  }
-
-  function maxTotal(): number {
-    const totals = ideas.map((i) => totalTokensFor(i.ideaId));
-    return Math.max(1, ...totals);
-  }
-
-  const othersIdeas = ideas.filter((i) => i.userId !== myUserId);
+  const usedVotes = state.ideas.reduce(
+    (sum, i) => sum + (i.voters.includes(userId) ? 1 : 0),
+    0,
+  );
+  const remainingVotes = config.votesPerPlayer - usedVotes;
 
   function handleSubmit() {
-    if (!canSubmit) return;
-    onSubmitIdea(text.trim());
-    setText("");
+    if (!title.trim()) return;
+    onSubmit(title.trim(), description.trim());
+    setTitle("");
+    setDescription("");
   }
 
+  const sorted = [...state.ideas].sort((a, b) => b.votes - a.votes);
+
   return (
-    <div className="p-4 max-w-lg mx-auto space-y-4">
-      <h2
-        data-testid="im-title"
-        className="text-xl font-bold text-center"
-      >
-        {config.title || DEFAULT_CONFIG.title}
-      </h2>
-      <div
-        data-testid="im-phase"
-        className="text-sm text-center text-gray-500"
-      >
-        {PHASE_LABELS[phase]}
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Lightbulb className="h-5 w-5 text-yellow-500" />
+        <h3 className="font-bold text-lg" data-testid="im-title">
+          {config.title}
+        </h3>
       </div>
-      <p
-        data-testid="im-prompt"
-        className="text-center text-gray-600"
-      >
-        {config.prompt || DEFAULT_CONFIG.prompt}
+      <p className="text-sm text-muted-foreground" data-testid="im-prompt">
+        {config.prompt}
       </p>
 
-      {/* Pitch phase */}
-      {phase === "pitch" && (
-        <div className="space-y-3">
-          {!myIdea && (
-            <div className="space-y-2">
-              <textarea
-                data-testid="im-pitch-input"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="輸入你的創意點子…"
-                rows={3}
-                className="w-full border rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-300"
-              />
+      <div className="flex items-center gap-2">
+        <Badge variant="secondary" data-testid="im-votes-left">
+          <ShoppingCart className="h-3 w-3 mr-1" />
+          剩餘票數：{remainingVotes}/{config.votesPerPlayer}
+        </Badge>
+        <Badge variant="outline" data-testid="im-count">
+          {state.ideas.length} 個點子
+        </Badge>
+      </div>
+
+      {!hasSubmitted && (
+        <div className="space-y-2 border rounded-lg p-4">
+          <p className="text-sm font-medium">{config.submissionLabel}</p>
+          <Input
+            placeholder="點子標題（必填）"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            maxLength={config.maxLength}
+            data-testid="im-title-input"
+          />
+          <Textarea
+            placeholder="詳細說明（選填）"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            maxLength={config.maxLength * 2}
+            rows={2}
+            data-testid="im-desc-input"
+          />
+          <Button
+            onClick={handleSubmit}
+            disabled={!title.trim()}
+            className="w-full"
+            data-testid="im-submit-btn"
+          >
+            提交點子
+          </Button>
+        </div>
+      )}
+
+      {hasSubmitted && (
+        <div
+          className="border rounded-lg p-3 bg-yellow-50 dark:bg-yellow-900/20"
+          data-testid="im-my-idea"
+        >
+          <p className="text-xs text-muted-foreground mb-1">我的點子</p>
+          <p className="font-medium">{myEntry!.title}</p>
+          {myEntry!.description && (
+            <p className="text-sm text-muted-foreground">{myEntry!.description}</p>
+          )}
+        </div>
+      )}
+
+      {!state.revealed && state.ideas.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-4" data-testid="im-empty">
+          還沒有人提交點子
+        </p>
+      )}
+
+      {!state.revealed && state.ideas.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium">為你喜歡的點子投票</p>
+          {state.ideas.map((idea) => {
+            const voted = idea.voters.includes(userId);
+            const isOwn = idea.userId === userId;
+            return (
+              <div
+                key={idea.ideaId}
+                className="border rounded-lg p-3 flex items-start gap-3"
+                data-testid={`im-idea-${idea.ideaId}`}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm">{idea.title}</p>
+                  {idea.description && (
+                    <p className="text-xs text-muted-foreground">{idea.description}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">{idea.userName}</p>
+                </div>
+                <Button
+                  size="sm"
+                  variant={voted ? "default" : "outline"}
+                  onClick={() => onVote(idea.ideaId)}
+                  disabled={isOwn || (remainingVotes <= 0 && !voted)}
+                  data-testid={`im-vote-${idea.ideaId}`}
+                >
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  {idea.votes}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {state.revealed && (
+        <div className="space-y-2" data-testid="im-result">
+          <p className="text-sm font-semibold flex items-center gap-1">
+            <TrendingUp className="h-4 w-4 text-yellow-500" />
+            點子排行榜
+          </p>
+          {sorted.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-4" data-testid="im-empty">
+              沒有提交的點子
+            </p>
+          )}
+          {sorted.map((idea, idx) => (
+            <div
+              key={idea.ideaId}
+              className="border rounded-lg p-3"
+              data-testid={`im-ranked-${idea.ideaId}`}
+            >
               <div className="flex items-center justify-between">
-                <span
-                  data-testid="im-pitch-char-count"
-                  className={`text-xs ${
-                    overLimit ? "text-red-500" : "text-gray-400"
-                  }`}
-                >
-                  {text.length}/{maxIdeaLength}
+                <span className="font-bold text-lg text-muted-foreground mr-2">
+                  #{idx + 1}
                 </span>
-                <button
-                  data-testid="im-pitch-submit"
-                  onClick={handleSubmit}
-                  disabled={!canSubmit}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm disabled:opacity-40 hover:bg-emerald-700"
-                >
-                  送出點子
-                </button>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm">{idea.title}</p>
+                  {idea.description && (
+                    <p className="text-xs text-muted-foreground">{idea.description}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">{idea.userName}</p>
+                </div>
+                <Badge className="ml-2">{idea.votes} 票</Badge>
               </div>
             </div>
-          )}
-          {myIdea && (
-            <div
-              data-testid="im-submitted-msg"
-              className="text-center p-3 bg-emerald-50 rounded-lg"
-            >
-              <p className="text-emerald-700 font-medium">
-                ✅ 已送出你的點子
-              </p>
-            </div>
-          )}
-          <div className="flex items-center justify-between">
-            <p
-              data-testid="im-pitch-count"
-              className="text-xs text-gray-400"
-            >
-              已提案：{ideas.length} 個
-            </p>
-            <button
-              data-testid="im-advance-btn"
-              onClick={onAdvancePhase}
-              className="px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-            >
-              {ADVANCE_LABELS[phase]}
-            </button>
-          </div>
+          ))}
         </div>
       )}
 
-      {/* Invest phase */}
-      {phase === "invest" && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between bg-yellow-50 rounded-lg p-3">
-            <span className="text-sm font-medium text-yellow-800">
-              💰 剩餘代幣
-            </span>
-            <span
-              data-testid="im-budget-remaining"
-              className="text-2xl font-bold text-yellow-700"
-            >
-              {budgetRemaining}
-            </span>
-          </div>
-          {othersIdeas.length === 0 ? (
-            <p className="text-center text-gray-400 text-sm py-4">
-              目前還沒有其他人的點子
-            </p>
-          ) : (
-            othersIdeas.map((idea) => {
-              const myTokens = myTokensFor(idea.ideaId);
-              const canAdd = budgetRemaining > 0;
-              const canRemove = myTokens > 0;
-              return (
-                <div
-                  key={idea.ideaId}
-                  data-testid={`im-idea-${idea.ideaId}`}
-                  className="p-3 border rounded-lg bg-white space-y-2"
-                >
-                  <p className="text-sm">{idea.text}</p>
-                  {showAuthor && (
-                    <p className="text-xs text-gray-400">
-                      — {idea.userName}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <button
-                      data-testid={`im-disinvest-${idea.ideaId}`}
-                      onClick={() => onInvest(idea.ideaId, -1)}
-                      disabled={!canRemove}
-                      className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 hover:bg-red-100 disabled:opacity-30 text-lg"
-                    >
-                      -
-                    </button>
-                    <span
-                      data-testid={`im-tokens-${idea.ideaId}`}
-                      className="w-8 text-center font-bold text-emerald-700"
-                    >
-                      {myTokens}
-                    </span>
-                    <button
-                      data-testid={`im-invest-${idea.ideaId}`}
-                      onClick={() => onInvest(idea.ideaId, 1)}
-                      disabled={!canAdd}
-                      className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 hover:bg-emerald-200 disabled:opacity-30 text-lg"
-                    >
-                      +
-                    </button>
-                    <span className="text-xs text-gray-400">代幣</span>
-                  </div>
-                </div>
-              );
-            })
-          )}
-          <button
-            data-testid="im-advance-btn"
-            onClick={onAdvancePhase}
-            className="w-full py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
-          >
-            {ADVANCE_LABELS[phase]}
-          </button>
-        </div>
-      )}
-
-      {/* Result phase */}
-      {phase === "result" && (
-        <div className="space-y-3">
-          {ideas.length === 0 ? (
-            <div
-              data-testid="im-empty"
-              className="text-center text-gray-400 py-8"
-            >
-              尚無提案
-            </div>
-          ) : (
-            <>
-              {getSortedIdeas().map((idea, idx) => {
-                const pct =
-                  Math.round((idea.total / maxTotal()) * 100);
-                return (
-                  <div
-                    key={idea.ideaId}
-                    data-testid={`im-result-${idea.ideaId}`}
-                    className={`p-3 rounded-lg border ${
-                      idx === 0
-                        ? "border-yellow-300 bg-yellow-50"
-                        : "border-gray-200 bg-white"
-                    }`}
-                  >
-                    {idx === 0 && (
-                      <div
-                        data-testid="im-winner"
-                        className="text-xs font-bold text-yellow-700 mb-1"
-                      >
-                        🏆 最高投資
-                      </div>
-                    )}
-                    <p className="text-sm">{idea.text}</p>
-                    {showAuthor && (
-                      <p className="text-xs text-gray-400">
-                        — {idea.userName}
-                      </p>
-                    )}
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span
-                          data-testid={`im-total-tokens-${idea.ideaId}`}
-                          className="text-emerald-700 font-medium"
-                        >
-                          💰 {idea.total} 代幣
-                        </span>
-                        <span className="text-gray-400">{pct}%</span>
-                      </div>
-                      <div className="w-full bg-gray-100 rounded-full h-2">
-                        <div
-                          className="bg-emerald-500 h-2 rounded-full"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </>
-          )}
-        </div>
+      {isTeamLead && !state.revealed && state.ideas.length > 0 && (
+        <Button
+          onClick={onReveal}
+          className="w-full"
+          data-testid="im-reveal-btn"
+        >
+          揭曉結果
+        </Button>
       )}
     </div>
   );
 }
+
+export default IdeaMarket;

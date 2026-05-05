@@ -1643,6 +1643,27 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 150,
       };
 
+    case "idea_market":
+      return {
+        title: "💡 創意市場",
+        prompt: `為「${scenarioName}」提交你的點子，並為最喜歡的點子投票`,
+        voteLabel: "投票",
+        votesPerPlayer: 3,
+        maxLength: 80,
+        submissionLabel: "提交你的點子",
+      };
+
+    case "consensus_map":
+      return {
+        title: "🗺️ 共識地圖",
+        prompt: `評估「${scenarioName}」中各選項的可行性與重要性`,
+        topics: ["選項 A", "選項 B", "選項 C"],
+        xLabel: "可行性",
+        yLabel: "重要性",
+        axisMin: 1,
+        axisMax: 5,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

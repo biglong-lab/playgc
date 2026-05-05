@@ -176,6 +176,7 @@ const SkillMapPage = lazy(() => import("@/components/game/multi/SkillMapPage"));
 const MoodBoardPage = lazy(() => import("@/components/game/multi/MoodBoardPage"));
 const LearningCheckPage = lazy(() => import("@/components/game/multi/LearningCheckPage"));
 const StandPointPage = lazy(() => import("@/components/game/multi/StandPointPage"));
+const ConsensusMapPage = lazy(() => import("@/components/game/multi/ConsensusMapPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -681,7 +682,7 @@ export default function GamePageRenderer({
       case "time_vault":
         return <TimeVaultPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "idea_market":
-        return <IdeaMarketPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+        return <IdeaMarketPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "personal_fact":
         return <PersonalFactPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "quiz_blitz":
@@ -736,6 +737,8 @@ export default function GamePageRenderer({
         return <LearningCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "stand_point":
         return <StandPointPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "consensus_map":
+        return <ConsensusMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

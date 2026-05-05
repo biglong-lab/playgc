@@ -1,133 +1,99 @@
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
-import { Loader2 } from "lucide-react";
-import IdeaMarket, {
-  IdeaMarketConfig,
-  IdeaMarketState,
-  MarketIdea,
-  TokenAlloc,
-} from "./IdeaMarket";
+import { IdeaMarket } from "./IdeaMarket";
+import type { IdeaMarketConfig, IdeaMarketState, IdeaEntry } from "./IdeaMarket";
 
 interface Props {
   gameId: string;
   sessionId: string;
   pageId: string;
-  page: { config?: unknown };
+  config?: Record<string, unknown>;
+  isTeamLead?: boolean;
 }
 
 const DEFAULT_CONFIG: IdeaMarketConfig = {
-  title: "創意市集",
-  prompt: "用一句話說出你的創意點子",
-  tokenBudget: 5,
-  maxIdeaLength: 80,
-  showAuthor: true,
+  title: "💡 創意市場",
+  prompt: "提交你的點子並為最佳點子投票",
+  voteLabel: "投票",
+  votesPerPlayer: 3,
+  maxLength: 80,
+  submissionLabel: "提交你的點子",
 };
 
-const DEFAULT_STATE: IdeaMarketState = {
-  ideas: [],
-  allocations: [],
-  phase: "pitch",
-};
+function extractConfig(raw: Record<string, unknown>): IdeaMarketConfig {
+  return {
+    title: typeof raw.title === "string" ? raw.title : DEFAULT_CONFIG.title,
+    prompt: typeof raw.prompt === "string" ? raw.prompt : DEFAULT_CONFIG.prompt,
+    voteLabel: typeof raw.voteLabel === "string" ? raw.voteLabel : DEFAULT_CONFIG.voteLabel,
+    votesPerPlayer: typeof raw.votesPerPlayer === "number" ? raw.votesPerPlayer : DEFAULT_CONFIG.votesPerPlayer,
+    maxLength: typeof raw.maxLength === "number" ? raw.maxLength : DEFAULT_CONFIG.maxLength,
+    submissionLabel: typeof raw.submissionLabel === "string" ? raw.submissionLabel : DEFAULT_CONFIG.submissionLabel,
+  };
+}
 
-export default function IdeaMarketPage({
-  gameId,
-  sessionId,
-  pageId,
-  page,
-}: Props) {
+const DEFAULT_STATE: IdeaMarketState = { ideas: [], revealed: false };
+
+export default function IdeaMarketPage({ gameId, sessionId, pageId, config, isTeamLead }: Props) {
   const { user } = useAuth();
+  const userId = user?.id ? String(user.id) : "anonymous";
+  const userName = user?.firstName ?? user?.email?.split("@")[0] ?? "玩家";
+  const resolvedConfig = extractConfig(config ?? {});
 
-  const raw = page?.config;
-  const config: IdeaMarketConfig =
-    raw && typeof raw === "object" && "tokenBudget" in raw
-      ? (raw as IdeaMarketConfig)
-      : raw && typeof raw === "object" && "config" in raw
-      ? (raw as { config: IdeaMarketConfig }).config
-      : DEFAULT_CONFIG;
-
-  const { state, updateState, isLoaded } =
-    useTeamPagePersistence<IdeaMarketState>({
-      gameId,
-      sessionId,
-      pageId,
-      type: "idea_market",
-      defaultState: DEFAULT_STATE,
-    });
+  const { state, updateState, isLoaded } = useTeamPagePersistence<IdeaMarketState>({
+    gameId,
+    sessionId,
+    pageId,
+    type: "idea_market",
+    defaultState: DEFAULT_STATE,
+  });
 
   if (!isLoaded) {
     return (
-      <div className="flex justify-center items-center p-8">
-        <Loader2 className="animate-spin w-6 h-6 text-slate-500" />
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
       </div>
     );
   }
 
-  const myUserId = user?.id ?? "";
-  const myUserName =
-    user?.firstName ?? user?.email?.split("@")[0] ?? "玩家";
-
-  function handleSubmitIdea(text: string) {
-    if (state.ideas.find((i: MarketIdea) => i.userId === myUserId))
-      return;
-    const newIdea: MarketIdea = {
-      ideaId: `idea-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 7)}`,
-      userId: myUserId,
-      userName: myUserName,
-      text,
+  function handleSubmit(title: string, description: string) {
+    const newIdea: IdeaEntry = {
+      ideaId: `idea-${Date.now()}-${userId}`,
+      userId,
+      userName,
+      title,
+      description,
+      votes: 0,
+      voters: [],
     };
     updateState({ ...state, ideas: [...state.ideas, newIdea] });
   }
 
-  function handleInvest(ideaId: string, delta: number) {
-    const tokenBudget =
-      config.tokenBudget ?? DEFAULT_CONFIG.tokenBudget;
-    const existing = state.allocations.find(
-      (a: TokenAlloc) =>
-        a.investorId === myUserId && a.ideaId === ideaId
-    );
-    const currentTokens = existing?.tokens ?? 0;
-    const newTokens = Math.max(0, currentTokens + delta);
-    const myTotal = state.allocations
-      .filter(
-        (a: TokenAlloc) =>
-          a.investorId === myUserId && a.ideaId !== ideaId
-      )
-      .reduce((s: number, a: TokenAlloc) => s + a.tokens, 0);
-    if (delta > 0 && myTotal + newTokens > tokenBudget) return;
-    const withoutOld = state.allocations.filter(
-      (a: TokenAlloc) =>
-        !(a.investorId === myUserId && a.ideaId === ideaId)
-    );
-    const updated =
-      newTokens > 0
-        ? [
-            ...withoutOld,
-            {
-              investorId: myUserId,
-              ideaId,
-              tokens: newTokens,
-            },
-          ]
-        : withoutOld;
-    updateState({ ...state, allocations: updated });
+  function handleVote(ideaId: string) {
+    const updated = state.ideas.map((idea: IdeaEntry) => {
+      if (idea.ideaId !== ideaId) return idea;
+      const voted = idea.voters.includes(userId);
+      if (voted) {
+        return { ...idea, votes: idea.votes - 1, voters: idea.voters.filter((v: string) => v !== userId) };
+      }
+      return { ...idea, votes: idea.votes + 1, voters: [...idea.voters, userId] };
+    });
+    updateState({ ...state, ideas: updated });
   }
 
-  function handleAdvancePhase() {
-    const next: IdeaMarketState["phase"] =
-      state.phase === "pitch" ? "invest" : "result";
-    updateState({ ...state, phase: next });
+  function handleReveal() {
+    updateState({ ...state, revealed: true });
   }
 
   return (
     <IdeaMarket
-      config={config}
+      config={resolvedConfig}
       state={state}
-      myUserId={myUserId}
-      onSubmitIdea={handleSubmitIdea}
-      onInvest={handleInvest}
-      onAdvancePhase={handleAdvancePhase}
+      userId={userId}
+      isTeamLead={isTeamLead}
+      onSubmit={handleSubmit}
+      onVote={handleVote}
+      onReveal={handleReveal}
     />
   );
 }

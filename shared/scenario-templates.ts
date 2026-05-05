@@ -2430,6 +2430,49 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     status: "live",
   },
 
+  // ── Round 49：策略規劃工作坊 ──────────────
+  {
+    id: "strategy-workshop",
+    name: "策略規劃工作坊",
+    tagline: "創意發散 + 共識收斂 + 優先決策",
+    description:
+      "企業策略或活動規劃工作坊的核心流程。先用「創意市場」讓所有人自由提點子並互相投票，找出最受歡迎的方向；接著用「共識地圖」把候選方案放到可行性×重要性矩陣，讓團隊用數據找到共識優先序；最後「公開承諾」讓每人宣示自己在策略執行中的角色。全程 60 分鐘，從發散到收斂，產出可執行的行動清單。",
+    useCases: [
+      "年度策略規劃工作坊",
+      "新產品功能優先序決策",
+      "部門目標設定會議",
+      "專案啟動方案選擇",
+      "活動企劃腦力激盪",
+    ],
+    category: "corporate",
+    icon: "BarChart3",
+    gradient: "from-violet-500/20 to-purple-500/20",
+    estimatedPlayers: "8-30 人",
+    estimatedDuration: "60-90 分鐘",
+    components: [
+      {
+        pageType: "idea_market",
+        label: "創意市場",
+        role: "每人提交一個策略點子，然後用有限票數為喜歡的點子投票，主持人揭曉後找出最受歡迎的 3-5 個方向",
+        axis: "multi",
+      },
+      {
+        pageType: "consensus_map",
+        label: "共識地圖",
+        role: "將候選方案放到可行性×重要性矩陣評估，揭曉後看四象限分佈，找到「高重要+高可行」的最優先項目",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "執行承諾",
+        role: "確定優先策略後，每人公開宣示自己負責的執行項目，形成可追蹤的責任清單",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "策略規劃工作坊 NT$ 8,000-20,000 / 場。月訂閱包含季度策略規劃 NT$ 5,000-10,000。",
+    status: "live",
+  },
+
   // ── Round 48：培訓評估工作坊 ──────────────
   {
     id: "training-assessment",
