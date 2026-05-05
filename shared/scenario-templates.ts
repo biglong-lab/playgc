@@ -1229,6 +1229,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "需要快速決定活動走向時，全員即時投票，背景條形圖呈現共識走向",
         axis: "multi",
       },
+      {
+        pageType: "presence_map",
+        label: "個性地圖",
+        role: "全員在 2D 軸線圖放置自己的標記，一眼看出團隊個性分布，引發有趣討論",
+        axis: "multi",
+      },
     ],
     valueProposition: "30 分鐘破冰神器 — 不尷尬、不無聊、全員參與。NT$ 3,000-8,000 / 場。",
     status: "live",

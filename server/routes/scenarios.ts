@@ -846,6 +846,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         character: { name: "主持人" },
         messages: [{ text: `歡迎來到 ${scenarioName}` }],
       };
+    case "presence_map":
+      return {
+        title: "🗺️ 個性地圖",
+        xAxisLeft: "內向",
+        xAxisRight: "外向",
+        yAxisTop: "理性",
+        yAxisBottom: "感性",
+        showNames: true,
+      };
+
     case "most_likely":
       return {
         title: "👑 最有可能",

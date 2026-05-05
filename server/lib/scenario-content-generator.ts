@@ -148,6 +148,9 @@ ${componentDescriptions}
 - "most_likely": { title, questions: [string...3-10條], showResults: true }
   派對遊戲「最有可能⋯」，玩家先加入再提名他人，主持人揭曉後顯示得票排名＋桂冠，適合聚會/破冰/婚禮/員工旅遊暖場
 
+- "presence_map": { title, xAxisLeft, xAxisRight, yAxisTop, yAxisBottom, showNames: true }
+  2D 個性地圖，每人點擊放置自己的標記，即時看到所有人的位置分布，適合破冰/員工認識/個性可視化/團隊了解
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 
