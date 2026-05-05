@@ -1206,6 +1206,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "kudos_wall":
+      return {
+        title: "💌 感謝牆",
+        prompt: `在「${scenarioName}」結束前，向誰說一句感謝？`,
+        maxLength: 80,
+      };
+
+    case "progress_check":
+      return {
+        title: "📊 進度確認",
+        prompt: `「${scenarioName}」的任務，你完成了多少？`,
+        showNotes: true,
+      };
+
     case "freeze_frame":
       return {
         title: "📸 現況快照",

@@ -379,6 +379,12 @@ ${componentDescriptions}
 - "rate_idea": { title, prompt, ideas: [{ideaId, text}] }
   玩家對 2-6 個想法各打 1-5 星，公布後依平均分排名並顯示進度條，適合方案評選/優先順序決策/創意評鑑
 
+- "kudos_wall": { title, prompt, maxLength: 60-100 }
+  prompt 引導送出感謝卡（填對象姓名+感謝話語），揭曉後以彩色卡片呈現所有感謝，適合活動/訓練結束的感謝時間
+
+- "progress_check": { title, prompt, showNotes: boolean }
+  showNotes=true 則可附文字說明，玩家選 0/25/50/75/100% 回報進度，揭曉後顯示長條圖+團隊平均，適合訓練/專案進度追蹤
+
 - "freeze_frame": { title, prompt, maxLength: 60-100 }
   prompt 引導描述目前工作現況（一句話），搭配🟢🟡🔴狀態選擇，公布後依狀態分群顯示，適合站立會議/活動進度確認/遠端團隊同步
 

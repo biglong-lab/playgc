@@ -966,6 +966,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "kudos_wall",
+        label: "感謝牆",
+        role: "活動/訓練結束時，每人向特定對象送感謝卡，揭曉後彩色卡片呈現所有感謝，適合創造正向結尾",
+        axis: "multi",
+      },
+      {
+        pageType: "progress_check",
+        label: "進度確認",
+        role: "每人回報 0-100% 進度，揭曉後顯示長條圖+團隊平均，讓主持人快速掌握整體完成情況，適合訓練/任務追蹤",
+        axis: "multi",
+      },
+      {
         pageType: "freeze_frame",
         label: "現況快照",
         role: "每人選 🟢🟡🔴 狀態 + 一句現況描述，公布後依狀態分群，讓主持人快速掌握全場進度，適合站會或活動中期確認",
