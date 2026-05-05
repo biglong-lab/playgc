@@ -264,6 +264,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 70 新元件
     expect(allPageTypes).toContain("plus_even_better");
     expect(allPageTypes).toContain("meeting_check");
+
+    // Round 71 新元件
+    expect(allPageTypes).toContain("headline_news");
+    expect(allPageTypes).toContain("risk_radar");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -336,6 +340,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "start_stop_continue",
       "plus_even_better",
       "meeting_check",
+      "headline_news",
+      "risk_radar",
     ];
 
     for (const t of newTypes) {

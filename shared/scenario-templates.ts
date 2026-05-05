@@ -3326,6 +3326,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "培訓反饋套組 NT$ 1,500-4,000 / 場。適合企業培訓、工作坊、課程結束評估。",
     status: "live",
   },
+  {
+    id: "future-vision-risk-workshop",
+    name: "願景風險工作坊",
+    tagline: "未來頭條 + 風險雷達，雙向思維激發套組",
+    description: "先用未來頭條讓參與者描繪理想成功願景，再透過風險雷達識別達成路上的挑戰，正向想像與現實風險並列，激發完整的策略思考。",
+    useCases: ["專案啟動工作坊", "策略規劃會議", "創業團隊討論", "年度目標設定"],
+    category: "corporate",
+    icon: "🔭",
+    gradient: "from-indigo-500 to-purple-600",
+    estimatedPlayers: "5-30 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "headline_news",
+        label: "未來頭條",
+        role: "描繪成功願景的報紙標題",
+        axis: "multi",
+      },
+      {
+        pageType: "risk_radar",
+        label: "風險雷達",
+        role: "識別高中低等級風險",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "願景風險工作坊 NT$ 3,000-8,000 / 場。適合企業策略規劃、新專案啟動、創業加速器。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

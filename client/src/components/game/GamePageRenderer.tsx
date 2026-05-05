@@ -218,6 +218,8 @@ const TeamGoalPage = lazy(() => import("@/components/game/multi/TeamGoalPage"));
 const StartStopContinuePage = lazy(() => import("@/components/game/multi/StartStopContinuePage"));
 const PlusEvenBetterPage = lazy(() => import("@/components/game/multi/PlusEvenBetterPage"));
 const MeetingCheckPage = lazy(() => import("@/components/game/multi/MeetingCheckPage"));
+const HeadlineNewsPage = lazy(() => import("@/components/game/multi/HeadlineNewsPage"));
+const RiskRadarPage = lazy(() => import("@/components/game/multi/RiskRadarPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -862,6 +864,10 @@ export default function GamePageRenderer({
         return <PlusEvenBetterPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "meeting_check":
         return <MeetingCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "headline_news":
+        return <HeadlineNewsPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "risk_radar":
+        return <RiskRadarPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

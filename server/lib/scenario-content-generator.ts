@@ -568,6 +568,12 @@ ${componentDescriptions}
 - "meeting_check": { title, prompt, takeawayLabel }
   會議結束確認：每人以 1-5 星評分本次會議 + 一句最大收穫，揭曉後顯示平均分及所有收穫清單，適合會議復盤/工作坊收尾/培訓後評估/活動反饋
 
+- "headline_news": { title, prompt, timeframe }
+  未來頭條：每人撰寫一個想像中的未來新聞標題（含選填副標），揭曉後以報紙風格卡片牆展示所有頭條，適合願景工作坊/目標設定/創意激發/未來規劃
+
+- "risk_radar": { title, prompt }
+  風險雷達：每人回報一個風險並標記高/中/低等級，揭曉後以三個嚴重等級分區展示，適合專案啟動/風險盤點/敏捷計畫/決策工作坊
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

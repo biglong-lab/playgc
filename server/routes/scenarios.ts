@@ -1965,6 +1965,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         takeawayLabel: "你最大的收穫是什麼？",
       };
 
+    case "headline_news":
+      return {
+        title: "📰 未來頭條",
+        prompt: `想像六個月後，你希望看到什麼關於「${scenarioName}」的新聞標題？`,
+        timeframe: "6 個月後",
+      };
+
+    case "risk_radar":
+      return {
+        title: "⚠️ 風險雷達",
+        prompt: `關於「${scenarioName}」，你認為最大的風險是什麼？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
