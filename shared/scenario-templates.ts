@@ -1038,6 +1038,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "pair_share",
+        label: "配對分享",
+        role: "玩家加入後系統隨機兩兩配對，奇數人單獨留下，主持人公布配對讓夥伴互相分享，適合破冰/小組討論/內訓交流",
+        axis: "multi",
+      },
+      {
+        pageType: "team_snapshot",
+        label: "團隊快照",
+        role: "每人填寫多個欄位（開心/擔心/需要支援等），揭曉後形成全隊情緒速覽卡片，適合每日站立/工作坊情緒核對/回顧",
+        axis: "multi",
+      },
+      {
         pageType: "freeze_frame",
         label: "現況快照",
         role: "每人選 🟢🟡🔴 狀態 + 一句現況描述，公布後依狀態分群，讓主持人快速掌握全場進度，適合站會或活動中期確認",

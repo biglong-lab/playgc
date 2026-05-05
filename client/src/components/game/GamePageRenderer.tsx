@@ -162,6 +162,8 @@ const TimedChallengePage = lazy(() => import("@/components/game/multi/TimedChall
 const RankChoicePage = lazy(() => import("@/components/game/multi/RankChoicePage"));
 const StoryBranchPage = lazy(() => import("@/components/game/multi/StoryBranchPage"));
 const MoodMapPage = lazy(() => import("@/components/game/multi/MoodMapPage"));
+const PairSharePage = lazy(() => import("@/components/game/multi/PairSharePage"));
+const TeamSnapshotPage = lazy(() => import("@/components/game/multi/TeamSnapshotPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -694,6 +696,10 @@ export default function GamePageRenderer({
         return <StoryBranchPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "mood_map":
         return <MoodMapPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
+      case "pair_share":
+        return <PairSharePage {...commonProps} page={page} pageId={page.id} />;
+      case "team_snapshot":
+        return <TeamSnapshotPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

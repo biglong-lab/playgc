@@ -496,6 +496,12 @@ ${componentDescriptions}
 - "mood_map": { title, prompt, xLow, xHigh, yLow, yHigh }
   心情地圖：玩家在 2D 座標地圖上點擊標記自己的心情位置（X=能量，Y=情緒），揭曉後主持人一眼看見全員情緒分布，適合開場暖身/工作坊情緒確認/心理健康活動
 
+- "pair_share": { title, prompt, pairingMode: "random" }
+  配對分享：玩家加入後系統隨機配對，兩人一組互相分享指定話題，奇數人單獨留下，適合破冰/內訓討論/拓展人際
+
+- "team_snapshot": { title, fields: string[3-5], maxLength: 40-60 }
+  團隊快照：每位玩家填寫多個欄位（如 開心/擔心/需要支援），揭曉後形成全隊情緒速覽，適合每日站立/回顧/情感核對
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

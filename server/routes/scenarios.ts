@@ -1524,6 +1524,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         yHigh: "正面",
       };
 
+    case "pair_share":
+      return {
+        title: "🤝 配對分享",
+        prompt: `在「${scenarioName}」中加入配對，系統會隨機幫你找一位夥伴分享`,
+        pairingMode: "random",
+      };
+
+    case "team_snapshot":
+      return {
+        title: "📸 團隊快照",
+        fields: ["開心的事", "擔心的事", "需要支援"],
+        maxLength: 50,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
