@@ -574,6 +574,12 @@ ${componentDescriptions}
 - "risk_radar": { title, prompt }
   風險雷達：每人回報一個風險並標記高/中/低等級，揭曉後以三個嚴重等級分區展示，適合專案啟動/風險盤點/敏捷計畫/決策工作坊
 
+- "two_words": { title, prompt, wordALabel, wordBLabel }
+  兩個字：每人用兩個獨立的字描述主題，有趣的最小表達約束，揭曉後以彩色雙欄卡片牆展示，適合破冰/活動收尾/創意聯想/快速感受收集
+
+- "win_win": { title, prompt, teamWinLabel, myWinLabel }
+  雙贏回顧：每人分別填寫「團隊贏了什麼」和「個人贏了什麼」（至少一項即可），揭曉後以雙欄展示，適合工作坊收尾/培訓後回顧/活動成果彙整/正向強化
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

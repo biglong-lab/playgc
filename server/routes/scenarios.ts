@@ -1978,6 +1978,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `關於「${scenarioName}」，你認為最大的風險是什麼？`,
       };
 
+    case "two_words":
+      return {
+        title: "✌️ 兩個字",
+        prompt: `用兩個字描述「${scenarioName}」這次活動`,
+        wordALabel: "第一個字",
+        wordBLabel: "第二個字",
+      };
+
+    case "win_win":
+      return {
+        title: "🏆 雙贏回顧",
+        prompt: `關於「${scenarioName}」，團隊贏了什麼？你個人贏了什麼？`,
+        teamWinLabel: "🏆 團隊贏了…",
+        myWinLabel: "⭐ 我個人贏了…",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

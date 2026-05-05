@@ -3354,6 +3354,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "願景風險工作坊 NT$ 3,000-8,000 / 場。適合企業策略規劃、新專案啟動、創業加速器。",
     status: "live",
   },
+  {
+    id: "minimal-debrief-pack",
+    name: "極簡收尾套組",
+    tagline: "兩個字 + 雙贏回顧，最省時的活動收尾方案",
+    description: "活動最後10分鐘：先用兩個字讓每人快速表達感受，再用雙贏回顧分別記錄團隊與個人的收穫，整個流程僅需5-10分鐘即可完美收尾。",
+    useCases: ["活動快速收尾", "培訓後反饋", "工作坊結尾", "會議回顧"],
+    category: "event",
+    icon: "✌️",
+    gradient: "from-violet-500 to-blue-600",
+    estimatedPlayers: "5-50 人",
+    estimatedDuration: "5-10 分鐘",
+    components: [
+      {
+        pageType: "two_words",
+        label: "兩個字",
+        role: "快速感受表達（最小約束）",
+        axis: "multi",
+      },
+      {
+        pageType: "win_win",
+        label: "雙贏回顧",
+        role: "團隊+個人收穫雙欄",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "極簡收尾套組 NT$ 1,000-3,000 / 場。適合任何需要快速有效收尾的活動。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
