@@ -526,6 +526,12 @@ ${componentDescriptions}
 - "ask_me_anything": { title, prompt, maxLength: 40-200 }
   AMA 問答板：任何人隨時提問，所有問題立即公開可見，參與者可對問題按讚投票，問題自動按票數高低排序，適合講師 Q&A/主管對話/知識分享會/想法釐清
 
+- "rose_bud_thorn": { title, rosePrompt, budPrompt, thornPrompt, maxLength: 40-120 }
+  Rose-Bud-Thorn 回顧：每人填寫三個面向（Rose=好事、Bud=潛力、Thorn=問題），揭曉後以三欄格式顯示每人的完整回顧，適合 sprint 回顧/活動結束評估/學習工作坊/團隊健康檢查
+
+- "event_timeline": { title, prompt, timePlaceholder, maxLength: 40-120 }
+  共享時間軸：每人加入帶時間標記的重要事件，系統按時間排序，揭曉後呈現所有人共同構建的時間軸，適合團隊歷程回顧/個人旅程分享/年度回顧/計畫里程碑梳理
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

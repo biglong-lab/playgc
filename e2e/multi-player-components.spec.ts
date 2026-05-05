@@ -236,6 +236,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 63 新元件
     expect(allPageTypes).toContain("give_get");
     expect(allPageTypes).toContain("ask_me_anything");
+
+    // Round 64 新元件
+    expect(allPageTypes).toContain("rose_bud_thorn");
+    expect(allPageTypes).toContain("event_timeline");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -294,6 +298,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "warm_cool",
       "give_get",
       "ask_me_anything",
+      "rose_bud_thorn",
+      "event_timeline",
     ];
 
     for (const t of newTypes) {

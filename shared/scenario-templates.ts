@@ -3094,6 +3094,40 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "互助連結套餐 NT$ 4,000-10,000 / 場。適合企業內訓、知識分享會、社群聚會。",
     status: "live",
   },
+  {
+    id: "sprint-retrospective",
+    name: "Sprint 回顧工作坊",
+    tagline: "用 Rose-Bud-Thorn 深度回顧、時間軸梳理團隊歷程",
+    description: "結合 Rose-Bud-Thorn 三欄回顧法與共享時間軸，幫助團隊系統性地回顧過去、展望未來，形成可行動的改善計畫。",
+    useCases: ["Agile Sprint 回顧", "活動結束檢討", "季度回顧", "學習工作坊收尾"],
+    category: "corporate",
+    icon: "🌹",
+    gradient: "from-rose-500 to-pink-400",
+    estimatedPlayers: "5-20 人",
+    estimatedDuration: "30-50 分鐘",
+    components: [
+      {
+        pageType: "rose_bud_thorn",
+        label: "Rose Bud Thorn 回顧",
+        role: "每人填寫三欄回顧，揭曉後呈現完整樣貌",
+        axis: "multi",
+      },
+      {
+        pageType: "event_timeline",
+        label: "共享時間軸",
+        role: "每人加入重要里程碑，共同構建團隊歷程",
+        axis: "multi",
+      },
+      {
+        pageType: "action_item",
+        label: "行動清單",
+        role: "基於回顧制定具體改善行動",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "回顧套餐 NT$ 5,000-12,000 / 場。適合 Agile 團隊、工作坊、季度盤點。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

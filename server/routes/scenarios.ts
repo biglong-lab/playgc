@@ -1862,6 +1862,23 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 120,
       };
 
+    case "rose_bud_thorn":
+      return {
+        title: "🌹 Rose Bud Thorn 回顧",
+        rosePrompt: "🌹 Rose：值得慶祝的事",
+        budPrompt: "🌱 Bud：值得期待的潛力",
+        thornPrompt: "🌵 Thorn：遇到的困難或阻礙",
+        maxLength: 80,
+      };
+
+    case "event_timeline":
+      return {
+        title: "📅 共享時間軸",
+        prompt: `關於「${scenarioName}」，寫下一個你認為重要的時間點與事件`,
+        timePlaceholder: "例：2024年、第3個月、Q2...",
+        maxLength: 80,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
