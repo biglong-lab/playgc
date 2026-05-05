@@ -400,6 +400,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("project_showcase");
     expect(allPageTypes).toContain("quest_chain");
     expect(allPageTypes).toContain("question_box");
+
+    // Round 87 補全批次 10（QuickQuestion + QuizBlitz + RandomTeam + RankChoice + Rate + Rating + Reaction + Relay + Role + ScaledFeedback）
+    expect(allPageTypes).toContain("quick_question");
+    expect(allPageTypes).toContain("quiz_blitz");
+    expect(allPageTypes).toContain("random_team");
+    expect(allPageTypes).toContain("rank_choice");
+    expect(allPageTypes).toContain("rate_idea");
+    expect(allPageTypes).toContain("rating_wall");
+    expect(allPageTypes).toContain("reaction_wall");
+    expect(allPageTypes).toContain("relay_mission");
+    expect(allPageTypes).toContain("role_assign");
+    expect(allPageTypes).toContain("scaled_feedback");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -576,6 +588,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "project_showcase",
       "quest_chain",
       "question_box",
+      "quick_question",
+      "quiz_blitz",
+      "random_team",
+      "rank_choice",
+      "rate_idea",
+      "rating_wall",
+      "reaction_wall",
+      "relay_mission",
+      "role_assign",
+      "scaled_feedback",
     ];
 
     for (const t of newTypes) {
