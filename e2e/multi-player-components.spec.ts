@@ -328,6 +328,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("countdown_reveal");
     expect(allPageTypes).toContain("crowd_answer");
     expect(allPageTypes).toContain("desert_island");
+
+    // Round 81 補全批次 4
+    expect(allPageTypes).toContain("dialogue");
+    expect(allPageTypes).toContain("emoji_battle");
+    expect(allPageTypes).toContain("emoji_reaction");
+    expect(allPageTypes).toContain("emoji_slider");
+    expect(allPageTypes).toContain("emoji_story");
+    expect(allPageTypes).toContain("estimation_game");
+    expect(allPageTypes).toContain("fast_buzz");
+    expect(allPageTypes).toContain("feedback_sandwich");
+    expect(allPageTypes).toContain("freeze_frame");
+    expect(allPageTypes).toContain("glow_grow");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -444,6 +456,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "countdown_reveal",
       "crowd_answer",
       "desert_island",
+      "dialogue",
+      "emoji_battle",
+      "emoji_reaction",
+      "emoji_slider",
+      "emoji_story",
+      "estimation_game",
+      "fast_buzz",
+      "feedback_sandwich",
+      "freeze_frame",
+      "glow_grow",
     ];
 
     for (const t of newTypes) {
