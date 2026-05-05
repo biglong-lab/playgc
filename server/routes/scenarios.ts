@@ -309,6 +309,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "seat_draw":
+      return {
+        title: "🎲 抽籤分組",
+        slots: [
+          { id: "g1", label: "A 組", emoji: "🔵" },
+          { id: "g2", label: "B 組", emoji: "🔴" },
+          { id: "g3", label: "C 組", emoji: "🟢" },
+          { id: "g4", label: "D 組", emoji: "🟡" },
+        ],
+        shuffleText: "我要抽！",
+      };
+
     case "countdown_reveal":
       return {
         title: "🎯 倒數揭曉",

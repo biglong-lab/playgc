@@ -139,6 +139,9 @@ ${componentDescriptions}
 - "countdown_reveal": { title, revealText, revealEmoji?, durationSeconds: 3-10, suspenseMessage? }
   revealText 是揭曉的核心訊息（如：年度最佳員工：張小明），revealEmoji 是搭配的 emoji
 
+- "seat_draw": { title, subtitle?, slots: [{ id, label, emoji }...3-10個], shuffleText? }
+  slots 是可抽到的選項（座位號/組別/角色），每個 label 清楚說明（如：A 組 / 1 號桌）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

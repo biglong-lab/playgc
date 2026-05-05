@@ -1140,6 +1140,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "check-in",
       },
       {
+        pageType: "seat_draw",
+        label: "座位抽籤",
+        role: "現場抽座位號或桌次，公平分配",
+        axis: "multi",
+      },
+      {
         pageType: "host_crowd_gather",
         label: "人氣熱場",
         role: "倒數集齊，大螢幕 banner 升起",
