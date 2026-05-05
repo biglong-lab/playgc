@@ -1752,6 +1752,26 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         pickLabel: "開始抽選",
       };
 
+    case "curiosity_map":
+      return {
+        title: "🗺️ 好奇心地圖",
+        prompt: `關於「${scenarioName}」，你最想深入了解或探索的問題是什麼？`,
+        placeholder: "輸入你的好奇心問題...",
+        maxLength: 80,
+      };
+
+    case "vibe_check":
+      return {
+        title: "🌡️ 氛圍感測",
+        prompt: `請感受一下你對「${scenarioName}」的狀態`,
+        dimensions: [
+          { id: "energy", label: "能量", lowEmoji: "😴", highEmoji: "⚡" },
+          { id: "focus", label: "專注", lowEmoji: "🌀", highEmoji: "🎯" },
+          { id: "connect", label: "連結", lowEmoji: "🤐", highEmoji: "🤝" },
+          { id: "confidence", label: "信心", lowEmoji: "😟", highEmoji: "💪" },
+        ],
+      };
+
     case "cascade_vote":
       return {
         title: "🗳️ 連續投票",

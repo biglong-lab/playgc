@@ -191,6 +191,8 @@ const SentenceStemPage = lazy(() => import("@/components/game/multi/SentenceStem
 const PixelMoodPage = lazy(() => import("@/components/game/multi/PixelMoodPage"));
 const CascadeVotePage = lazy(() => import("@/components/game/multi/CascadeVotePage"));
 const TeamManifestoPage = lazy(() => import("@/components/game/multi/TeamManifestoPage"));
+const CuriosityMapPage = lazy(() => import("@/components/game/multi/CuriosityMapPage"));
+const VibeCheckPage = lazy(() => import("@/components/game/multi/VibeCheckPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -781,6 +783,10 @@ export default function GamePageRenderer({
         return <CascadeVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "team_manifesto":
         return <TeamManifestoPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "curiosity_map":
+        return <CuriosityMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "vibe_check":
+        return <VibeCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

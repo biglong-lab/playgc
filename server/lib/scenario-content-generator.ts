@@ -490,6 +490,12 @@ ${componentDescriptions}
 - "random_pick": { title, prompt, pickCount: 1-5, joinLabel, pickLabel }
   隨機抽選：參與者自願報名，主持人觸發隨機抽選指定人數，中獎者看到恭喜訊息，可重複抽選，適合抽獎/隨機點名/分組/挑戰邀請
 
+- "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
+  好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
+
+- "vibe_check": { title, prompt, dimensions: VibeDimension[] } VibeDimension={ id, label, lowEmoji, highEmoji }
+  氛圍感測：每人在多個維度（能量/專注/連結/信心等）用滑桿標記自己的感受，揭曉後顯示每個維度的全隊平均值長條圖，適合工作坊開場/會議前確認/情緒健康追蹤
+
 - "cascade_vote": { title, questions: CascadeQuestion[] } CascadeQuestion={ questionId, text, options: string[2-5] }
   連續投票：主持人預設多輪問題，每輪開放玩家選擇，主持人控制進度推進到下一題，最後顯示所有問題的匯總統計，適合快速調查/情緒掃描/多面向回饋
 

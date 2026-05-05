@@ -2806,6 +2806,47 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "組織健診套餐 NT$ 5,000-15,000 / 場。適合季度會議、年度規劃、新團隊組建。",
     status: "live",
   },
+  {
+    id: "learning-exploration",
+    name: "學習探索之旅",
+    tagline: "好奇心地圖 + 氛圍感測 + 腦力傾瀉",
+    description:
+      "讓學習型活動從真實的好奇心出發。先用「好奇心地圖」收集每個人帶來的問題和想探索的主題，讓主持人即時掌握全場學習需求；接著用「氛圍感測」確認整體學習狀態（能量/專注/連結），幫助主持人即時調整節奏；最後用「腦力傾瀉」讓每人快速倒出對主題的所有想法，作為後續討論的素材。三個環節串聯「你想學什麼 → 你現在的狀態 → 你已經知道什麼」，讓學習設計更有依據，讓參與者感受被尊重的學習體驗。",
+    useCases: [
+      "企業內訓開場",
+      "知識分享工作坊",
+      "讀書會引導",
+      "新技能培訓",
+      "跨部門知識交流",
+    ],
+    category: "corporate",
+    icon: "BookOpen",
+    gradient: "from-sky-500/20 to-violet-500/20",
+    estimatedPlayers: "8-60 人",
+    estimatedDuration: "20-30 分鐘",
+    components: [
+      {
+        pageType: "curiosity_map",
+        label: "好奇心收集",
+        role: "每人提交一個最想了解的問題或主題，揭曉後顯示全隊集體好奇心地圖",
+        axis: "multi",
+      },
+      {
+        pageType: "vibe_check",
+        label: "學習狀態感測",
+        role: "在能量/專注/連結/信心四個維度標記當下狀態，幫助主持人了解全場氛圍",
+        axis: "multi",
+      },
+      {
+        pageType: "brain_dump",
+        label: "腦力傾瀉",
+        role: "每人快速輸入對主題的所有已有想法，揭曉後按人分組顯示，作為討論素材",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "學習工作坊套餐 NT$ 3,000-8,000 / 場。適合企業培訓、社群學習、知識型活動。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
