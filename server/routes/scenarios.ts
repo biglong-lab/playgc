@@ -444,6 +444,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "retro_board":
+      return {
+        title: "📋 回顧版",
+        prompt: "分享你對這次活動的想法",
+        columns: [
+          { id: "keep", label: "繼續做", emoji: "✅", color: "green" },
+          { id: "stop", label: "停止做", emoji: "🛑", color: "red" },
+          { id: "start", label: "開始做", emoji: "🚀", color: "blue" },
+        ],
+        maxCardsPerColumn: 3,
+        allowVoting: true,
+      };
+
     case "two_truths":
       return {
         title: "🤥 兩真一假",

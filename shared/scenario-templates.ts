@@ -527,6 +527,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "team-word-cloud",
       },
       {
+        pageType: "retro_board",
+        label: "課程回顧版",
+        role: "分別在「繼續做/停止做/開始做」三欄寫下想法，投票找出最有共識的行動",
+        axis: "multi",
+      },
+      {
         pageType: "dot_vote",
         label: "議題點點投票",
         role: "每人分配 3 個點給最重要的學習議題或改善方向，共識即時呈現",

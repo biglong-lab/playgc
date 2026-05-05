@@ -172,6 +172,9 @@ ${componentDescriptions}
 - "two_truths": { title, instructions?, showScores: true }
   instructions 是引導語（如：寫下 2 個真實陳述和 1 個謊言，讓大家猜哪個是假的！）
 
+- "retro_board": { title, prompt?, columns: [{ id, label, emoji, color }...2-4個], maxCardsPerColumn: 2-5, allowVoting: true }
+  columns 是回顧欄位（如：繼續做/停止做/開始做 或 讚/可改善/建議），color 可選 green/red/blue/yellow/purple/orange
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
