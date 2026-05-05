@@ -949,6 +949,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "host",
         demoMode: "leaderboard-host",
       },
+      {
+        pageType: "team_health_check",
+        label: "團隊健康評估",
+        role: "匿名評估心理安全/溝通/信任/能量四個維度，結果報告幫 HR 掌握團隊現況",
+        axis: "multi",
+      },
     ],
     valueProposition: "私部門年度團建活動主推。HR 不用準備、一鍵建場。NT$ 15,000-40,000 / 場。",
     status: "live",

@@ -650,6 +650,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxQuestionsPerRound: 5,
       };
 
+    case "team_health_check":
+      return {
+        title: "💪 團隊健康評估",
+        dimensions: [
+          { id: "safety", label: "心理安全感", emoji: "🛡️", description: "可以自由表達意見" },
+          { id: "comm", label: "溝通透明度", emoji: "💬", description: "資訊流通順暢" },
+          { id: "trust", label: "互相信任", emoji: "🤝", description: "信任彼此的專業" },
+          { id: "energy", label: "團隊能量", emoji: "⚡", description: "充滿活力與動力" },
+        ],
+        scaleMin: 1,
+        scaleMax: 5,
+        anonymous: true,
+        showResults: true,
+      };
+
     // ─── shared / solo（簡單預設）───
     case "dialogue":
       return {

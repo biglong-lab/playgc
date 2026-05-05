@@ -118,6 +118,9 @@ ${componentDescriptions}
 - "hot_seat": { title, instructions?, durationSeconds: 60-300, maxQuestionsPerRound: 3-8 }
   instructions 是說明語（如：一人上場，全場提問！），durationSeconds 是每輪時間，maxQuestionsPerRound 是每輪最多問題數
 
+- "team_health_check": { title, dimensions: [{ id, label, emoji, description? }...3-6個], scaleMin: 1, scaleMax: 5, anonymous: true, showResults: true }
+  dimensions 是評估維度（如：心理安全感/溝通透明度/互相信任/團隊能量），每個維度對應一個1-5評分，結果以進度條呈現
+
 - "feedback_star": { title, question, allowComment: true }
   question 是引導玩家評分的問題（如：你對這次活動的整體感受如何？）
 
