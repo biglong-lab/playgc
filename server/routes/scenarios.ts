@@ -1702,6 +1702,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 40,
       };
 
+    case "personal_score":
+      return {
+        title: "⭐ 個人自評",
+        prompt: `請針對「${scenarioName}」相關項目進行自我評分`,
+        criteria: ["溝通能力", "團隊合作", "問題解決", "創意思維"],
+        maxScore: 5,
+      };
+
+    case "time_check":
+      return {
+        title: "📍 進度回報",
+        question: "你目前在哪個階段？",
+        milestones: ["剛開始", "進行中", "快完成", "已完成"],
+      };
+
     case "emoji_wall":
       return {
         title: "😊 表情牆",

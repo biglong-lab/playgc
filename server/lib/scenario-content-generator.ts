@@ -472,6 +472,12 @@ ${componentDescriptions}
 - "quick_poll": { title, question, options: string[2-6], maxLength: 20-60 }
   快速民調：提供 2-6 個選項讓每人投一票（單選），揭曉後顯示各選項票數和百分比長條圖，適合偏好調查/決策輔助/意見蒐集
 
+- "personal_score": { title, prompt, criteria: string[2-8], maxScore: 3-10 }
+  個人自評量表：每人對多個指標用滑桿自評分數，揭曉後顯示各指標團隊平均與分布，適合培訓後評估/技能盤點/360度回饋前置/自我反思
+
+- "time_check": { title, question, milestones: string[2-8] }
+  進度回報：每人選擇自己目前所在的進度里程碑（可自定義 2-8 個階段），揭曉後顯示全隊進度分布，適合工作坊進度確認/課程理解程度check-in/任務分工後狀態同步
+
 - "emoji_wall": { title, prompt, emojis: string[5-12], reasonLabel, askReason: boolean }
   表情牆：每人從表情符號庫中選一個代表自己感受的表情並可附上理由，揭曉後依表情分組顯示，適合暖場/心情check-in/結束回顧
 

@@ -2642,6 +2642,47 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "活動暖場 + 抽獎套餐 NT$ 2,000-5,000 / 場。月訂閱可無限次活動使用 NT$ 1,500-3,000。",
     status: "live",
   },
+  {
+    id: "training-assessment",
+    name: "培訓成效評估套餐",
+    tagline: "進度回報 + 自評量表 + 行動承諾",
+    description:
+      "企業培訓或工作坊結束前的完整評估流程。先用「進度回報」讓學員在時間軸上標記自己的學習進度，主持人即時掌握全班狀況；接著用「個人自評量表」讓每人對課程目標技能進行多維度評分，揭曉後顯示團隊平均，引導大家看見落差；最後用「行動承諾」讓每人寫下課後要採取的具體行動。三個互動合計 20 分鐘，取代枯燥問卷，讓評估本身也變成一場有意義的學習體驗。",
+    useCases: [
+      "企業內訓結束評估",
+      "工作坊成效回顧",
+      "技能培訓驗收",
+      "主管教練課後反思",
+      "讀書會心得整理",
+    ],
+    category: "corporate",
+    icon: "ClipboardCheck",
+    gradient: "from-orange-500/20 to-amber-500/20",
+    estimatedPlayers: "8-50 人",
+    estimatedDuration: "20-30 分鐘",
+    components: [
+      {
+        pageType: "time_check",
+        label: "進度確認",
+        role: "課程結束前，讓學員選擇自己對課程內容的掌握程度（完全不懂/有點了解/大致掌握/完全理解），主持人看到全班分布後決定是否補充",
+        axis: "multi",
+      },
+      {
+        pageType: "personal_score",
+        label: "技能自評",
+        role: "讓學員對本課程目標的 4 個核心技能進行 1-5 分自評，揭曉後看到全班平均，識別最需要加強的方向",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "行動承諾",
+        role: "每人寫下課後 7 天內要執行的一個具體行動，公開承諾增加執行動力，也成為後續追蹤依據",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "培訓評估套餐 NT$ 3,000-8,000 / 場，取代紙本問卷，資料即時可視化。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
