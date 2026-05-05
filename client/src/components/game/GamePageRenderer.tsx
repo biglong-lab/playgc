@@ -131,6 +131,8 @@ const FreezeFramePage = lazy(() => import("@/components/game/multi/FreezeFramePa
 const TwoColumnPage = lazy(() => import("@/components/game/multi/TwoColumnPage"));
 const KudosWallPage = lazy(() => import("@/components/game/multi/KudosWallPage"));
 const ProgressCheckPage = lazy(() => import("@/components/game/multi/ProgressCheckPage"));
+const AhaBoardPage = lazy(() => import("@/components/game/multi/AhaBoardPage"));
+const OneLineStoryPage = lazy(() => import("@/components/game/multi/OneLineStoryPage"));
 const SkillSwapPage = lazy(() => import("@/components/game/multi/SkillSwapPage"));
 const AnonymousVoicePage = lazy(() => import("@/components/game/multi/AnonymousVoicePage"));
 const PitchVotePage = lazy(() => import("@/components/game/multi/PitchVotePage"));
@@ -620,6 +622,10 @@ export default function GamePageRenderer({
         return <KudosWallPage {...commonProps} page={page} pageId={page.id} />;
       case "progress_check":
         return <ProgressCheckPage {...commonProps} page={page} pageId={page.id} />;
+      case "aha_board":
+        return <AhaBoardPage {...commonProps} page={page} pageId={page.id} />;
+      case "one_line_story":
+        return <OneLineStoryPage {...commonProps} page={page} pageId={page.id} />;
       case "speed_typing":
         return <SpeedTypingPage {...commonProps} page={page} pageId={page.id} />;
       case "skill_swap":

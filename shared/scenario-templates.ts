@@ -978,6 +978,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "aha_board",
+        label: "啊哈時刻牆",
+        role: "每人提交一條學習頓悟，揭曉後以卡片牆呈現，適合課程回顧/工作坊結尾/學習分享場合",
+        axis: "multi",
+      },
+      {
+        pageType: "one_line_story",
+        label: "一句故事",
+        role: "每人用一句話說故事，揭曉後按提交順序排列，第一條顯示金色徽章，適合破冰感想/聚會開場/活動結尾",
+        axis: "multi",
+      },
+      {
         pageType: "freeze_frame",
         label: "現況快照",
         role: "每人選 🟢🟡🔴 狀態 + 一句現況描述，公布後依狀態分群，讓主持人快速掌握全場進度，適合站會或活動中期確認",

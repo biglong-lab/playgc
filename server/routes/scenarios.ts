@@ -1257,6 +1257,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         minCluesBeforeGuess: 1,
       };
 
+    case "aha_board":
+      return {
+        title: "💡 啊哈時刻牆",
+        prompt: `在「${scenarioName}」中，你最大的啊哈頓悟是什麼？`,
+        maxLength: 80,
+      };
+
+    case "one_line_story":
+      return {
+        title: "✍️ 一句故事",
+        prompt: `用一句話，說出你對「${scenarioName}」的感受或故事`,
+        maxLength: 60,
+      };
+
     case "speed_typing":
       return {
         title: "⌨️ 競速打字",

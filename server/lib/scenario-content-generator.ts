@@ -400,6 +400,12 @@ ${componentDescriptions}
 - "clue_reveal": { title, clues: string[], minCluesBeforeGuess: 1-2 }
   clues 陣列 3-6 條、由模糊到具體排序，minCluesBeforeGuess 設幾條線索後才開放猜答，適合破冰猜謎/知識挑戰/場域解謎
 
+- "aha_board": { title, prompt, maxLength: 60-100 }
+  prompt 引導分享學習頓悟（如：你最大的啊哈時刻是什麼？），每人提交一條，揭曉後顯示卡片牆，適合課程回顧/學習分享/工作坊結尾
+
+- "one_line_story": { title, prompt, maxLength: 40-80 }
+  prompt 引導用一句話說故事（如：用一句話說出你今天的感受），每人提交一句，揭曉後第一條顯示金色徽章，適合破冰/感想分享/聚會開場
+
 - "speed_typing": { title, phrase, maxSeconds: 20-60 }
   phrase 是要玩家打的文字（20-60 字），maxSeconds 倒數時間，公布後依最短秒數排名，適合熱場比賽/破冰競速/活動暖場
 
