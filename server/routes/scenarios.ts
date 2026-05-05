@@ -2060,6 +2060,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         placeholder: "我好奇...",
       };
 
+    case "obstacle_map":
+      return {
+        title: "🚧 障礙地圖",
+        prompt: `在「${scenarioName}」中，說出一件正在阻礙你或我們前進的事`,
+        placeholder: "我被...卡住了",
+      };
+
+    case "common_ground":
+      return {
+        title: "🤝 共同點地圖",
+        prompt: `在「${scenarioName}」中，說一件你和這個團隊有共同點的事！`,
+        placeholder: "我和大家的共同點是...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

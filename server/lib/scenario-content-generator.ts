@@ -604,6 +604,12 @@ ${componentDescriptions}
 - "wonder_board": { title, prompt, placeholder }
   好奇探索板：每人提交一個「我好奇...」句子，揭曉後以漸層卡片牆展示全隊集體好奇心，適合學習型活動/創新思維訓練/開放式討論開場
 
+- "obstacle_map": { title, prompt, placeholder }
+  障礙地圖：每人說出一件正在阻礙自己或團隊前進的事，揭曉後集中顯示所有障礙，適合每日站會/回顧會議/項目復盤障礙識別
+
+- "common_ground": { title, prompt, placeholder }
+  共同點地圖：每人說出一件和團隊的共同點，揭曉後以漸層卡片牆展示全隊共鳴，適合跨部門認識/新團隊破冰/多元背景融合
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

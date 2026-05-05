@@ -3494,6 +3494,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "敏捷回顧套組 NT$ 1,500-5,000 / 場。適合敏捷團隊、培訓課程、工作坊收尾。",
     status: "live",
   },
+  {
+    id: "team-connect-pack",
+    name: "團隊連結套組",
+    tagline: "共同點地圖 + 障礙地圖，建立連結、解決阻礙的雙引擎",
+    description: "先以共同點地圖找到彼此的共鳴拉近距離，再以障礙地圖讓團隊坦誠說出真正的阻礙，在信任基礎上共同面對挑戰。",
+    useCases: ["跨部門建立連結", "新團隊融合", "問題識別工作坊", "心理安全感建立"],
+    category: "corporate",
+    icon: "🤝",
+    gradient: "from-teal-500 to-blue-500",
+    estimatedPlayers: "4-20 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "common_ground",
+        label: "共同點地圖",
+        role: "建立連結與共鳴",
+        axis: "multi",
+      },
+      {
+        pageType: "obstacle_map",
+        label: "障礙地圖",
+        role: "障礙識別與透明化",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "團隊連結套組 NT$ 1,500-4,500 / 場。快速建立心理安全感，適合新團隊、跨部門合作啟動。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
