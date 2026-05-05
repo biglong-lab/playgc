@@ -2195,6 +2195,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         contributePlaceholder: "我可以帶來...",
       };
 
+    case "satisfaction_meter":
+      return {
+        title: "📊 滿意度量表",
+        question: `你有多大可能向朋友推薦「${scenarioName}」這樣的活動？（0 = 完全不會，10 = 非常會）`,
+        lowLabel: "完全不會",
+        highLabel: "非常會",
+        commentPlaceholder: "有什麼想說的嗎？（選填）",
+      };
+
+    case "team_flag":
+      return {
+        title: "🏴 團隊旗幟",
+        prompt: `選或輸入最多 3 個詞，代表「${scenarioName}」這個團隊的文化或精神：`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

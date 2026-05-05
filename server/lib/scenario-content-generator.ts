@@ -658,6 +658,12 @@ ${componentDescriptions}
 - "expectation_board": { title, expectLabel, contributeLabel, expectPlaceholder, contributePlaceholder }
   期望看板：每人填寫「對這次活動的期望」與「我可以貢獻的是」兩欄至少一欄，揭曉後以彩色卡片格狀排列，適合課程/工作坊開場/新項目啟動/跨部門協作
 
+- "satisfaction_meter": { title, question, lowLabel, highLabel, commentPlaceholder }
+  滿意度量表：NPS 風格 0-10 評分＋選填留言，揭曉後自動計算 NPS 分數與推薦者/被動者/批評者三類分佈，適合課程結束評估/活動效果量化/服務品質追蹤
+
+- "team_flag": { title, prompt, maxWords, suggestions: string[] }
+  團隊旗幟：每人從建議詞清單中選或自輸入最多 3 個代表團隊精神的關鍵詞，揭曉後以詞雲顯示全隊最高頻詞彙，適合文化建立/新團隊定調/品牌工作坊
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

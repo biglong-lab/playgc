@@ -248,6 +248,8 @@ const ReflectionCardPage = lazy(() => import("@/components/game/multi/Reflection
 const PeakMomentPage = lazy(() => import("@/components/game/multi/PeakMomentPage"));
 const SafetyCheckPage = lazy(() => import("@/components/game/multi/SafetyCheckPage"));
 const ExpectationBoardPage = lazy(() => import("@/components/game/multi/ExpectationBoardPage"));
+const SatisfactionMeterPage = lazy(() => import("@/components/game/multi/SatisfactionMeterPage"));
+const TeamFlagPage = lazy(() => import("@/components/game/multi/TeamFlagPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -952,6 +954,10 @@ export default function GamePageRenderer({
         return <SafetyCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "expectation_board":
         return <ExpectationBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "satisfaction_meter":
+        return <SatisfactionMeterPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "team_flag":
+        return <TeamFlagPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

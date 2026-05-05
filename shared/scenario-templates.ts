@@ -3746,6 +3746,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "團隊啟動套組 NT$ 1,500-4,000 / 場。讓每次合作從清晰期望與心理安全感開始。",
     status: "live",
   },
+  {
+    id: "evaluation-pack",
+    name: "📊 活動評估套組",
+    tagline: "數據說話，NPS + 文化基因一次掌握",
+    description: "滿意度量表（NPS）+ 團隊旗幟，活動結束後立即收集量化評分與質性文化關鍵詞，提供主辦方完整的成效回饋報告。",
+    useCases: ["企業訓練效果評估", "工作坊滿意度調查", "活動後收尾", "文化建立工作坊"],
+    category: "corporate",
+    icon: "BarChart3",
+    gradient: "from-indigo-400 to-violet-600",
+    estimatedPlayers: "5-100 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "satisfaction_meter",
+        label: "滿意度量表",
+        role: "NPS 量化評分",
+        axis: "multi",
+      },
+      {
+        pageType: "team_flag",
+        label: "團隊旗幟",
+        role: "文化關鍵詞定錨",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "活動評估套組 NT$ 800-2,000 / 場。讓每場活動都有數據佐證、文化傳承。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
