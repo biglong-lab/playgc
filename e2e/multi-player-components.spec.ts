@@ -376,6 +376,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("mood_meter");
     expect(allPageTypes).toContain("most_likely");
     expect(allPageTypes).toContain("multi_vote");
+
+    // Round 85 補全批次 8（NameCard + NeverHaveIEver + NumberGuess + OpenXxx + PersonalFact + Photo）
+    expect(allPageTypes).toContain("name_card");
+    expect(allPageTypes).toContain("never_have_i_ever");
+    expect(allPageTypes).toContain("number_guess");
+    expect(allPageTypes).toContain("open_mic");
+    expect(allPageTypes).toContain("open_question");
+    expect(allPageTypes).toContain("personal_fact");
+    expect(allPageTypes).toContain("photo_caption");
+    expect(allPageTypes).toContain("photo_contest");
+    expect(allPageTypes).toContain("photo_team");
+    expect(allPageTypes).toContain("photo_wall");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -532,6 +544,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "mood_meter",
       "most_likely",
       "multi_vote",
+      "name_card",
+      "never_have_i_ever",
+      "number_guess",
+      "open_mic",
+      "open_question",
+      "personal_fact",
+      "photo_caption",
+      "photo_contest",
+      "photo_team",
+      "photo_wall",
     ];
 
     for (const t of newTypes) {
