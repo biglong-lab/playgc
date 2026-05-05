@@ -846,6 +846,14 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         character: { name: "主持人" },
         messages: [{ text: `歡迎來到 ${scenarioName}` }],
       };
+    case "letter_to_self":
+      return {
+        title: "✉️ 給未來自己的信",
+        prompt: "課程結束了，你想對三個月後的自己說什麼？",
+        maxLength: 300,
+        showAuthor: false,
+      };
+
     case "presence_map":
       return {
         title: "🗺️ 個性地圖",

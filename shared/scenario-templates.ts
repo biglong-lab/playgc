@@ -641,6 +641,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "主持人出選擇題，全員搶答，揭曉正確答案+解析+百分比，即時確認學習成效",
         axis: "multi",
       },
+      {
+        pageType: "letter_to_self",
+        label: "給自己的信",
+        role: "課程結束前，每人寫信給三個月後的自己，主持人揭曉，感性收尾讓學員帶著承諾離開",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
     status: "live",

@@ -151,6 +151,9 @@ ${componentDescriptions}
 - "presence_map": { title, xAxisLeft, xAxisRight, yAxisTop, yAxisBottom, showNames: true }
   2D 個性地圖，每人點擊放置自己的標記，即時看到所有人的位置分布，適合破冰/員工認識/個性可視化/團隊了解
 
+- "letter_to_self": { title, prompt, maxLength: 100-500, showAuthor: false }
+  每人寫信給未來自己，主持人揭曉時集體閱讀，適合訓練結尾/年終反思/畢業典禮/退休歡送/轉型期
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

@@ -87,6 +87,7 @@ const HotTakePage = lazy(() => import("@/components/game/multi/HotTakePage"));
 const KnowledgeCheckPage = lazy(() => import("@/components/game/multi/KnowledgeCheckPage"));
 const MostLikelyPage = lazy(() => import("@/components/game/multi/MostLikelyPage"));
 const PresenceMapPage = lazy(() => import("@/components/game/multi/PresenceMapPage"));
+const LetterToSelfPage = lazy(() => import("@/components/game/multi/LetterToSelfPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -469,6 +470,8 @@ export default function GamePageRenderer({
         return <MostLikelyPage {...commonProps} page={page} pageId={page.id} />;
       case "presence_map":
         return <PresenceMapPage {...commonProps} page={page} pageId={page.id} />;
+      case "letter_to_self":
+        return <LetterToSelfPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
