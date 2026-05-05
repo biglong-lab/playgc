@@ -397,6 +397,12 @@ ${componentDescriptions}
 - "word_cloud": { title, prompt, maxWords: 1-5, maxWordLength: 5-15, showAuthor: boolean }
   文字雲：每人送出 1-N 個詞，揭曉後按出現頻率顯示大小不同的詞語雲，適合收集感受/集體總結/活動回顧
 
+- "spin_wheel": { title, prompt, allowPlayerAdd: boolean }
+  幸運轉盤：玩家自行加入名字/項目，主持人點轉動隨機選出一個，歷史紀錄保留所有選中過的結果，適合抽獎/分配任務/隨機點名
+
+- "open_mic": { title, prompt, maxTopicLength: 30-80 }
+  開放麥克風：任何人可登記搶麥，說明想分享的主題，主持人按順序呼叫上場，講完後移至已完成，適合聚會/工作坊結尾分享/年會
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

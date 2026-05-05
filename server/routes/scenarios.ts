@@ -1257,6 +1257,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: false,
       };
 
+    case "spin_wheel":
+      return {
+        title: "🎡 幸運轉盤",
+        prompt: `把你的名字加入「${scenarioName}」轉盤，看誰幸運被選中！`,
+        allowPlayerAdd: true,
+      };
+
+    case "open_mic":
+      return {
+        title: "🎤 開放麥克風",
+        prompt: `在「${scenarioName}」尾聲，有什麼話想說嗎？`,
+        maxTopicLength: 60,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
