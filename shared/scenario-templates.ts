@@ -557,6 +557,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "idea_wall",
+        label: "改善點子投票",
+        role: "學員提出課程改善或業務創新點子，大家投票選最有價值的方向",
+        axis: "multi",
+      },
+      {
         pageType: "feedback_star",
         label: "課程評分",
         role: "學員為整場訓練評分並留下意見，講師即時掌握滿意度",
@@ -1076,6 +1082,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         pageType: "debate_vote",
         label: "觀點辯論熱身",
         role: "主持人提出一個有趣問題（如：遠端工作比進辦公室更有效率？），正反即時表態，活絡討論氣氛",
+        axis: "multi",
+      },
+      {
+        pageType: "idea_wall",
+        label: "共創點子牆",
+        role: "每人提出活動改善建議或下次想玩的主題，大家投票讓最好的點子浮現",
         axis: "multi",
       },
       {

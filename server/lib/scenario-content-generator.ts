@@ -190,6 +190,9 @@ ${componentDescriptions}
 - "consensus_scale": { title, question, scaleMin: 1, scaleMax: 5-7, minLabel?, maxLabel?, showAverage: true, showDistribution: true }
   question 是要大家評分的核心議題（如：你對這個提案的支持程度？），minLabel/maxLabel 是量表兩端說明（如：完全不同意/完全同意）
 
+- "idea_wall": { title, prompt?, placeholder?, maxLength: 40-100, maxIdeasPerPerson: 1-5, showAuthor: true, allowVoteOwn: false }
+  prompt 是引導大家投稿點子的問題（如：對這次活動你有什麼建議？），placeholder 是輸入框提示
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

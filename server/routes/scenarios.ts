@@ -531,6 +531,17 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         allowSwitch: true,
       };
 
+    case "idea_wall":
+      return {
+        title: "💡 創意投票牆",
+        prompt: "分享你的點子，大家投票選最好的！",
+        placeholder: "寫下你的想法…",
+        maxLength: 80,
+        maxIdeasPerPerson: 3,
+        showAuthor: true,
+        allowVoteOwn: false,
+      };
+
     case "live_pulse":
       return {
         title: "⚡ 即時活力計",
