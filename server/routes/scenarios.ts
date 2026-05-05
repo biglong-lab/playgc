@@ -1040,6 +1040,28 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxWordLength: 10,
       };
 
+    case "hope_fear":
+      return {
+        title: "🌟⚡ 期待與擔憂",
+        topic: "這次活動 / 計畫",
+        hopeLabel: "期待",
+        hopePrompt: "我希望能…",
+        fearLabel: "擔憂",
+        fearPrompt: "我擔心…",
+        maxLength: 150,
+        showAuthor: false,
+      };
+
+    case "number_guess":
+      return {
+        title: "🔢 數字競猜",
+        question: "你每週花多少小時在開會上？",
+        unit: "小時",
+        minValue: 0,
+        maxValue: 40,
+        showAuthor: false,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":

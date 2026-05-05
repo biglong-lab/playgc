@@ -205,6 +205,12 @@ ${componentDescriptions}
 - "word_ladder": { title, prompt, startWord, maxWordLength: 4-15 }
   經典詞語接龍，每人填入一個詞（必須以上一個詞的最後一字開頭），形成一條集體創作的詞鏈；適合輕鬆熱場/中文語文課/語言學習/派對遊戲
 
+- "hope_fear": { title, topic, hopeLabel, hopePrompt, fearLabel, fearPrompt, maxLength: 80-200, showAuthor: boolean }
+  專案/活動啟動前，每人填寫「期待」與「擔憂」兩欄，揭曉後分兩側展示全體聲音；適合新專案啟動/課程開場/團隊合作前的心理契約
+
+- "number_guess": { title, question, unit?: string, minValue: number, maxValue: number, showAuthor: boolean }
+  每人對一個量化問題提交數字，揭曉後顯示直方圖分布 + 平均/中位/最小/最大值統計；適合揭示團隊認知差距/工作習慣調查/趣味猜謎/自我評估
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

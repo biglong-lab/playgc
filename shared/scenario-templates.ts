@@ -574,6 +574,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "mood-meter",
       },
       {
+        pageType: "hope_fear",
+        label: "開訓希望與擔憂",
+        role: "訓前每人填寫對本次訓練的期待與擔憂，揭曉後讓講師了解全場心態，調整課程節奏",
+        axis: "multi",
+      },
+      {
         pageType: "pop_quiz",
         label: "知識快問快答",
         role: "全員同步搶答，即時掌握學習狀況",
@@ -1341,6 +1347,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         pageType: "word_association",
         label: "自由聯想破冰",
         role: "主持人出一個詞，大家寫第一個聯想，揭曉後看群體思維模式，笑點多、話題多",
+        axis: "multi",
+      },
+      {
+        pageType: "number_guess",
+        label: "數字競猜破冰",
+        role: "主持人出一個問題（如：你每週開幾小時的會？），全員輸入數字後揭曉分布圖，差異引發討論",
         axis: "multi",
       },
     ],
