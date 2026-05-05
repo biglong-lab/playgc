@@ -232,6 +232,8 @@ const FourLsPage = lazy(() => import("@/components/game/multi/FourLsPage"));
 const WonderBoardPage = lazy(() => import("@/components/game/multi/WonderBoardPage"));
 const ObstacleMapPage = lazy(() => import("@/components/game/multi/ObstacleMapPage"));
 const CommonGroundPage = lazy(() => import("@/components/game/multi/CommonGroundPage"));
+const SurveyBlockPage = lazy(() => import("@/components/game/multi/SurveyBlockPage"));
+const ThoughtBubblePage = lazy(() => import("@/components/game/multi/ThoughtBubblePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -904,6 +906,10 @@ export default function GamePageRenderer({
         return <ObstacleMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "common_ground":
         return <CommonGroundPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "survey_block":
+        return <SurveyBlockPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "thought_bubble":
+        return <ThoughtBubblePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

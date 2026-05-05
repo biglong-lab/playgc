@@ -610,6 +610,12 @@ ${componentDescriptions}
 - "common_ground": { title, prompt, placeholder }
   共同點地圖：每人說出一件和團隊的共同點，揭曉後以漸層卡片牆展示全隊共鳴，適合跨部門認識/新團隊破冰/多元背景融合
 
+- "survey_block": { title, prompt, questions: string[], options: string[] }
+  快速問卷：多題單選問卷，每人選答後揭曉統計長條圖（各選項人數佔比），適合培訓評估/活動後反饋/決策前民調
+
+- "thought_bubble": { title, prompt, placeholder }
+  思緒泡泡：每人送出一句心裡話，揭曉後以彩色泡泡形狀展示全隊想法，適合開場暖身/活動收尾/情緒疏通
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

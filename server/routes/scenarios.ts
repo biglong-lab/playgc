@@ -2074,6 +2074,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         placeholder: "我和大家的共同點是...",
       };
 
+    case "survey_block":
+      return {
+        title: "📋 快速問卷",
+        prompt: `完成「${scenarioName}」後，請回答以下問題`,
+        questions: ["整體體驗如何？", "團隊合作順暢嗎？", "有什麼想改善的地方？"],
+        options: ["非常好", "還不錯", "有待改善"],
+      };
+
+    case "thought_bubble":
+      return {
+        title: "💭 思緒泡泡",
+        prompt: `在「${scenarioName}」的此刻，你腦海中最想說的一句話是什麼？`,
+        placeholder: "說出你的想法...",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

@@ -3522,6 +3522,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "團隊連結套組 NT$ 1,500-4,500 / 場。快速建立心理安全感，適合新團隊、跨部門合作啟動。",
     status: "live",
   },
+  {
+    id: "feedback-survey-pack",
+    name: "反饋問卷套組",
+    tagline: "快速問卷 + 思緒泡泡，量化數據與質性感受的雙向收集",
+    description: "以快速問卷收集結構化反饋數據，再以思緒泡泡讓每個人說出內心最真實的想法，實現量化與質性反饋的完美結合。",
+    useCases: ["培訓後評估", "活動收尾反思", "會議結束回顧", "決策前民調"],
+    category: "corporate",
+    icon: "📋",
+    gradient: "from-indigo-500 to-sky-500",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "8-15 分鐘",
+    components: [
+      {
+        pageType: "survey_block",
+        label: "快速問卷",
+        role: "量化反饋收集",
+        axis: "multi",
+      },
+      {
+        pageType: "thought_bubble",
+        label: "思緒泡泡",
+        role: "質性心聲分享",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "反饋問卷套組 NT$ 1,500-4,500 / 場。培訓/活動後快速蒐集有價值的參與者反饋。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

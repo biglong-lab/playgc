@@ -458,6 +458,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("host_micro_qa");
     expect(allPageTypes).toContain("host_word_cloud");
     expect(allPageTypes).toContain("jigsaw_puzzle");
+
+    // Round 91 新元件
+    expect(allPageTypes).toContain("survey_block");
+    expect(allPageTypes).toContain("thought_bubble");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -682,6 +686,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "host_micro_qa",
       "host_word_cloud",
       "jigsaw_puzzle",
+      "survey_block",
+      "thought_bubble",
     ];
 
     for (const t of newTypes) {
