@@ -189,6 +189,8 @@ const TokenVotePage = lazy(() => import("@/components/game/multi/TokenVotePage")
 const GalleryVotePage = lazy(() => import("@/components/game/multi/GalleryVotePage"));
 const SentenceStemPage = lazy(() => import("@/components/game/multi/SentenceStemPage"));
 const PixelMoodPage = lazy(() => import("@/components/game/multi/PixelMoodPage"));
+const CascadeVotePage = lazy(() => import("@/components/game/multi/CascadeVotePage"));
+const TeamManifestoPage = lazy(() => import("@/components/game/multi/TeamManifestoPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -775,6 +777,10 @@ export default function GamePageRenderer({
         return <SentenceStemPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "pixel_mood":
         return <PixelMoodPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "cascade_vote":
+        return <CascadeVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "team_manifesto":
+        return <TeamManifestoPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

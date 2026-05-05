@@ -2765,6 +2765,47 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "開場儀式套餐 NT$ 2,000-5,000 / 場。適合任何想讓活動從溫暖連結開始的場合。",
     status: "live",
   },
+  {
+    id: "team-pulse-survey",
+    name: "團隊脈動調查",
+    tagline: "連續問卷 + 團隊宣言 + 承諾牆",
+    description:
+      "快速掌握團隊整體狀態，並在資料基礎上凝聚共識。先用「連續投票」對團隊當前狀態、優先事項、期望進行 3-5 輪快速調查，主持人逐題推進並即時看到每輪結果；接著用「團隊宣言」讓所有人貢獻關鍵詞，協力拼出一份代表這個團隊共同精神的宣言；最後用「承諾牆」讓每人寫下自己對宣言的一項行動承諾，從口號到行動。整場活動把「聽聲音」和「造共識」串連在一起，讓管理者看到全貌，讓員工感受到被聽見。",
+    useCases: [
+      "季度團隊健康檢查",
+      "新團隊組建開場",
+      "年度目標共識會",
+      "跨部門協作啟動",
+      "組織文化塑造",
+    ],
+    category: "corporate",
+    icon: "Activity",
+    gradient: "from-blue-500/20 to-emerald-500/20",
+    estimatedPlayers: "10-80 人",
+    estimatedDuration: "25-40 分鐘",
+    components: [
+      {
+        pageType: "cascade_vote",
+        label: "脈動問卷",
+        role: "3-5 輪快速調查，主持人逐題推進，每題揭曉後進入下一題，最後顯示全場統計摘要",
+        axis: "multi",
+      },
+      {
+        pageType: "team_manifesto",
+        label: "團隊宣言",
+        role: "每人貢獻 1-3 個描述團隊精神的關鍵詞，揭曉後拼成彩色標籤宣言雲",
+        axis: "multi",
+      },
+      {
+        pageType: "pledge_wall",
+        label: "行動承諾",
+        role: "每人寫下一個具體的行動承諾，讓宣言落地成真",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "組織健診套餐 NT$ 5,000-15,000 / 場。適合季度會議、年度規劃、新團隊組建。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

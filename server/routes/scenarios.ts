@@ -1752,6 +1752,32 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         pickLabel: "開始抽選",
       };
 
+    case "cascade_vote":
+      return {
+        title: "🗳️ 連續投票",
+        questions: [
+          {
+            questionId: "q1",
+            text: `你對「${scenarioName}」的整體感受？`,
+            options: ["非常好", "還不錯", "有待改進"],
+          },
+          {
+            questionId: "q2",
+            text: `你認為「${scenarioName}」最需要加強的是？`,
+            options: ["溝通", "合作", "創意", "執行力"],
+          },
+        ],
+      };
+
+    case "team_manifesto":
+      return {
+        title: "📜 團隊宣言",
+        stem: `「${scenarioName}」的我們是...`,
+        placeholder: "輸入一個關鍵詞",
+        maxLength: 20,
+        maxPerUser: 3,
+      };
+
     case "sentence_stem":
       return {
         title: "✍️ 句子接龍",

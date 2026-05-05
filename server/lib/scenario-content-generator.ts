@@ -490,6 +490,12 @@ ${componentDescriptions}
 - "random_pick": { title, prompt, pickCount: 1-5, joinLabel, pickLabel }
   隨機抽選：參與者自願報名，主持人觸發隨機抽選指定人數，中獎者看到恭喜訊息，可重複抽選，適合抽獎/隨機點名/分組/挑戰邀請
 
+- "cascade_vote": { title, questions: CascadeQuestion[] } CascadeQuestion={ questionId, text, options: string[2-5] }
+  連續投票：主持人預設多輪問題，每輪開放玩家選擇，主持人控制進度推進到下一題，最後顯示所有問題的匯總統計，適合快速調查/情緒掃描/多面向回饋
+
+- "team_manifesto": { title, stem, placeholder, maxLength: 5-30, maxPerUser: 1-5 }
+  團隊宣言：以「我們是...」為句子開頭，每人貢獻 1-N 個關鍵詞或短句，揭曉後以彩色標籤雲形式拼出全隊共同宣言，適合開場凝聚/團隊建立/文化塑造
+
 - "sentence_stem": { title, stemText, placeholder, maxLength: 40-120 }
   句子接龍：主持人提供句子開頭（如「如果我能飛，我要...」），每人完成句子，揭曉後顯示所有人的創意答案，適合破冰/創意發想/自我揭示/情感共鳴
 
