@@ -497,6 +497,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResultsLive: true,
       };
 
+    case "consensus_scale":
+      return {
+        title: "📊 共識量表",
+        question: "你對這個提案的支持程度？",
+        scaleMin: 1,
+        scaleMax: 5,
+        minLabel: "完全不同意",
+        maxLabel: "完全同意",
+        showAverage: true,
+        showDistribution: true,
+      };
+
     case "peer_recognition":
       return {
         title: "🌟 同伴表揚牆",

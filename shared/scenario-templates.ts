@@ -956,6 +956,19 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "host",
       },
       {
+        pageType: "consensus_scale",
+        label: "觀點共識量表",
+        role: "對某一核心論點讓每位觀眾從 1-5 打分，即時看分佈和平均，讓講者掌握聽眾真實立場",
+        axis: "multi",
+      },
+      {
+        pageType: "feedback_star",
+        label: "講座評分",
+        role: "結束後玩家對整場評分並留下心得",
+        axis: "multi",
+        demoMode: "feedback-star",
+      },
+      {
         pageType: "host_emoji_react",
         label: "全場應援",
         role: "認同金句即時應援",

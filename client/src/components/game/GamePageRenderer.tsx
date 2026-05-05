@@ -59,6 +59,7 @@ const PledgeWallPage = lazy(() => import("@/components/game/multi/PledgeWallPage
 const LivePulsePage = lazy(() => import("@/components/game/multi/LivePulsePage"));
 const DebateVotePage = lazy(() => import("@/components/game/multi/DebateVotePage"));
 const PeerRecognitionPage = lazy(() => import("@/components/game/multi/PeerRecognitionPage"));
+const ConsensusScalePage = lazy(() => import("@/components/game/multi/ConsensusScalePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -385,6 +386,8 @@ export default function GamePageRenderer({
         return <DebateVotePage {...commonProps} page={page} pageId={page.id} />;
       case "peer_recognition":
         return <PeerRecognitionPage {...commonProps} page={page} pageId={page.id} />;
+      case "consensus_scale":
+        return <ConsensusScalePage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

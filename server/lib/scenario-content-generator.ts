@@ -187,6 +187,9 @@ ${componentDescriptions}
 - "peer_recognition": { title, prompt?, placeholder?, maxLength: 50-150, allowAnonymous: true, emojiOptions: [...8-12個 emoji] }
   prompt 是引導語（如：寫下你想感謝的人…），emojiOptions 選與場景正向氛圍相關的 emoji（如：🌟🙌💪❤️👏）
 
+- "consensus_scale": { title, question, scaleMin: 1, scaleMax: 5-7, minLabel?, maxLabel?, showAverage: true, showDistribution: true }
+  question 是要大家評分的核心議題（如：你對這個提案的支持程度？），minLabel/maxLabel 是量表兩端說明（如：完全不同意/完全同意）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
