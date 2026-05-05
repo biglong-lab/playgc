@@ -1,11 +1,17 @@
-// 👥 PhotoTeamFlow — 團體合影（簡化版：隊長主控連續拍所有隊員）
+// 👥 PhotoTeamFlow — 團體合影路由元件
 //
-// 實作策略（不用 WebSocket，避免多人同步複雜度）：
+// 2026-05-05 重構：依 captureMode 路由到不同實作
+//   'gather'（新預設）：→ PhotoTeamGather（集合 → 5 秒倒數 → 拍 1-5 張、不合成）
+//   'collage'（舊）：→ 現檔內邏輯（逐位拍 N 張、Cloudinary 合成拼貼）
+//   undefined（既有遊戲）：fallback 'collage'（向後兼容）
+//
+// 舊版註解（collage 模式）：
 //   1. 介紹 + 選擇實際隊員數（minMembers ~ maxMembers）
-//   2. 依序為每個隊員拍一張（顯示「第 X 位：______」可輸入名稱）
+//   2. 依序為每個隊員拍一張
 //   3. 每張拍完按「下一位」
-//   4. 全拍完上傳 → 合成拼貼圖（2x2 / 3x2 / 3x3 等）
+//   4. 全拍完上傳 → 合成拼貼圖
 //   5. 顯示結果 + 下載 / 分享 / 繼續
+// （collage 已知問題：cloudinary 偶發卡 86%、有 30s timeout fallback）
 
 import { useState, useEffect, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -23,6 +29,7 @@ import {
   CameraInitializingView, CameraView, PhotoPreview, UploadingView,
 } from "../photo-mission/PhotoViews";
 import PhotoSuccessView from "../photo-mission/PhotoSuccessView";
+import PhotoTeamGather from "./PhotoTeamGather";
 import type { PhotoMissionConfig } from "@shared/schema";
 
 interface PhotoTeamFlowProps {
@@ -42,7 +49,25 @@ interface MemberShot {
   publicId?: string;
 }
 
-export default function PhotoTeamFlow({
+export default function PhotoTeamFlow(props: PhotoTeamFlowProps) {
+  // 🆕 2026-05-05: captureMode 路由
+  //   'gather'（預設新建）→ PhotoTeamGather 簡化流程
+  //   'collage'（既有遊戲）→ 走下面舊邏輯
+  const captureMode = props.config.teamConfig?.captureMode ?? "gather";
+  if (captureMode === "gather") {
+    return (
+      <PhotoTeamGather
+        config={props.config}
+        onComplete={props.onComplete}
+        sessionId={props.sessionId}
+        gameId={props.gameId}
+      />
+    );
+  }
+  return <PhotoTeamCollage {...props} />;
+}
+
+function PhotoTeamCollage({
   config,
   onComplete,
   sessionId,

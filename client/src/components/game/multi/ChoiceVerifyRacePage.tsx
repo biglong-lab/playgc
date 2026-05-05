@@ -19,6 +19,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
+import { useToast } from "@/hooks/use-toast";
+import { reportClientEvent } from "@/lib/event-report";
 import ChoiceVerifyRace, {
   type RaceAnswerRecord,
   type RaceMemberInfo,
@@ -74,9 +76,11 @@ function deriveDisplayName(
 export default function ChoiceVerifyRacePage({
   config,
   onComplete,
+  sessionId,
   gameId,
 }: ChoiceVerifyRacePageProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const {
     data: myTeam,
@@ -141,7 +145,7 @@ export default function ChoiceVerifyRacePage({
     [user],
   );
 
-  const { sendRaceAnswer } = useTeamWebSocket({
+  const { isConnected: wsConnected, isReconnecting, sendRaceAnswer } = useTeamWebSocket({
     teamId: myTeam?.id,
     userId: user?.id,
     userName: myDisplayName,
@@ -169,6 +173,30 @@ export default function ChoiceVerifyRacePage({
       };
       setAnswerRecords((prev) => [...prev, record]);
 
+      // 🛡️ 2026-05-05: ws 未連 → 警告玩家「對方可能看不到」+ 上報事件
+      //   sendRaceAnswer 內部 ws.OPEN check、沒連會 silently fail → 對方收不到 race_answered
+      //   → 對方 isResolved 永遠 false → 兩邊都能答 + 都計分（用戶實測 bug）
+      if (!wsConnected) {
+        toast({
+          title: "⚠️ 連線異常",
+          description: "你的答題可能沒同步給隊友、稍候自動重連",
+          variant: "destructive",
+          duration: 4000,
+        });
+        reportClientEvent({
+          event: "race_answer_ws_disconnected",
+          message: "玩家答題時 WS 未連線、廣播失敗",
+          context: {
+            gameId,
+            sessionId,
+            teamId: myTeam?.id,
+            questionIndex,
+            isReconnecting,
+          },
+        });
+        return;
+      }
+
       // 透過 WebSocket race_answer 廣播給同隊（server 廣播為 race_answered）
       sendRaceAnswer({
         displayName: myDisplayName,
@@ -178,7 +206,11 @@ export default function ChoiceVerifyRacePage({
         points,
       });
     },
-    [user, config, myDisplayName, sendRaceAnswer],
+    [
+      user, config, myDisplayName, sendRaceAnswer,
+      wsConnected, isReconnecting, toast,
+      gameId, sessionId, myTeam?.id,
+    ],
   );
 
   // ============================================================================
@@ -221,13 +253,31 @@ export default function ChoiceVerifyRacePage({
   }
 
   return (
-    <ChoiceVerifyRace
-      config={config}
-      myUserId={user.id}
-      members={members}
-      answerRecords={answerRecords}
-      onAnswer={handleAnswer}
-      onComplete={onComplete}
-    />
+    <div className="space-y-3">
+      {/* 🛡️ 2026-05-05: WS 連線狀態 banner — 顯示給玩家看「對手是否同步看得到」 */}
+      {!wsConnected && (
+        <Card
+          className="border-amber-300 bg-amber-50/80 dark:bg-amber-950/30"
+          data-testid="race-ws-disconnected-banner"
+        >
+          <CardContent className="p-3 flex items-center gap-2 text-sm">
+            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span className="text-amber-900 dark:text-amber-100">
+              {isReconnecting
+                ? "重新連線中…你的答題暫時無法同步給隊友"
+                : "連線中斷、無法與隊友同步"}
+            </span>
+          </CardContent>
+        </Card>
+      )}
+      <ChoiceVerifyRace
+        config={config}
+        myUserId={user.id}
+        members={members}
+        answerRecords={answerRecords}
+        onAnswer={handleAnswer}
+        onComplete={onComplete}
+      />
+    </div>
   );
 }

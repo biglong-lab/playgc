@@ -226,7 +226,14 @@ export function useTeamLobby(): TeamLobbyReturn {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
     // 🆕 Phase 2a：暫時離線（socket 斷）— 提示但不刷新成員（人還在）
+    // 🛡️ 2026-05-05: dedup 60s（同 user 60s 內只跳一次 toast + 語音）
+    //   原問題：browser tab throttle 反覆 close→reconnect → 反覆觸發 disconnected
+    //   server 端已加 5s 延遲廣播緩解、client 再加 60s dedup 雙重保險
     onMemberDisconnected: (userId, userName) => {
+      const lastShown = lastGraceShownRef.current.get(`disc:${userId}`) ?? 0;
+      const now = Date.now();
+      if (now - lastShown < 60_000) return;
+      lastGraceShownRef.current.set(`disc:${userId}`, now);
       toast({
         title: `⚠️ ${userName} 暫時離線`,
         description: "30 秒寬限期內回來不影響",

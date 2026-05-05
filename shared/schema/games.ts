@@ -524,6 +524,15 @@ export interface PhotoTeamSubConfig {
   timeoutSeconds?: number;
   enableComposite?: boolean;
   overlayTemplateId?: string;
+  /**
+   * 🆕 2026-05-05: 拍攝模式
+   *   'gather'（預設）：集合 → 隊長 5 秒倒數 → 拍 1 張、可選再拍 1-4 張留念（簡單、不卡）
+   *   'collage'（舊）：逐位拍 N 張、Cloudinary 合成拼貼（複雜、易卡 86%）
+   * 預設 'gather' — admin 想用舊拼貼模式可顯式設 'collage'
+   */
+  captureMode?: 'gather' | 'collage';
+  /** 'gather' 模式總張數（1-5、預設 3） */
+  gatherMaxShots?: number;
 }
 
 /** 連拍 GIF（burst_gif）子配置 */

@@ -76,6 +76,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   const disconnectTimers: Map<string, NodeJS.Timeout> = new Map();
   const autoLeaveTimers: Map<string, NodeJS.Timeout> = new Map();
 
+  // 🛡️ 2026-05-05: disconnect 延遲廣播計時器（key=`${teamId}:${userId}`）
+  //   原問題：ws.close 立即廣播 team_member_disconnected → toast + 語音「XXX 暫時離線」
+  //   但 client 端 keepalive + reconnect 通常 < 5s 內就接回 → 卻已驚動全隊
+  //   修法：close 後延遲 5s 再廣播；若 user 在這 5s 內重連（team_join）→ 取消廣播
+  const DISCONNECT_BROADCAST_DELAY_MS = 5_000;
+  const pendingDisconnectBroadcast: Map<string, NodeJS.Timeout> = new Map();
+  function cancelPendingDisconnectBroadcast(teamId: string, userId: string) {
+    const key = timerKey(teamId, userId);
+    const t = pendingDisconnectBroadcast.get(key);
+    if (t) {
+      clearTimeout(t);
+      pendingDisconnectBroadcast.delete(key);
+    }
+  }
+
   // 🆕 Phase 3 WS Reconnect 狀態恢復（依 docs §7.4）
   //   maintain per-team last-state cache：每個 team 的每種 sync 訊息保留最新 payload
   //   team_*_sync 廣播時 cache.set(teamId, type, payload)
@@ -302,15 +317,25 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
             if (userAlreadyConnected) {
               // 同 user 多 socket，不廣播
+              // 🛡️ 2026-05-05: 仍要取消 pending disconnected 廣播
+              //   情境：A socket close → 5s 延遲廣播啟動 → 同 user B socket join → 此分支
+              cancelPendingDisconnectBroadcast(message.teamId, effectiveUserId);
             } else if (hasReconnected) {
               // 🆕 Phase 2c：重連回來 → 取消寬限期計時器（grace + auto-leave）
               cancelDisconnectTimer(message.teamId, effectiveUserId);
-              broadcastToTeam(message.teamId, {
-                type: "team_member_reconnected",
-                userId: effectiveUserId,
-                userName: message.userName,
-                timestamp: new Date().toISOString(),
-              });
+              // 🛡️ 2026-05-05: 取消 pending disconnected 廣播
+              //   若 < 5s 內重連 → disconnected 從未廣播 → 對應 reconnected 也不該廣播（無感重連）
+              //   若 ≥ 5s → disconnected 已廣播 + grace timer 走 → 此處仍廣播 reconnected 通知大家
+              const hadPending = pendingDisconnectBroadcast.has(timerKey(message.teamId, effectiveUserId));
+              cancelPendingDisconnectBroadcast(message.teamId, effectiveUserId);
+              if (!hadPending) {
+                broadcastToTeam(message.teamId, {
+                  type: "team_member_reconnected",
+                  userId: effectiveUserId,
+                  userName: message.userName,
+                  timestamp: new Date().toISOString(),
+                });
+              }
             } else {
               broadcastToTeam(message.teamId, {
                 type: "team_member_joined",
@@ -759,18 +784,30 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           teamClients.delete(ws.teamId);
         }
 
-        if (!userStillConnected) {
-          broadcastToTeam(ws.teamId, {
-            type: "team_member_disconnected",
-            userId: ws.userId,
-            userName: ws.userName,
-            graceInMs: GRACE_PERIOD_MS,
-            timestamp: new Date().toISOString(),
-          });
-          // 🆕 Phase 2c：啟動寬限期計時器（30s 後若仍未回 → 廣播 grace_expired）
-          if (ws.userId && ws.userName) {
-            startGraceTimer(ws.teamId, ws.userId, ws.userName);
-          }
+        if (!userStillConnected && ws.userId && ws.userName && ws.teamId) {
+          // 🛡️ 2026-05-05: 延遲 5s 廣播 disconnected（避免短暫 reconnect 驚動全隊）
+          //   若 user 在 5s 內 team_join 回來 → cancelPendingDisconnectBroadcast 取消
+          //   若沒回來 → 廣播 disconnected + startGraceTimer 走 30s 寬限期流程
+          const teamId = ws.teamId;
+          const userId = ws.userId;
+          const userName = ws.userName;
+          const key = timerKey(teamId, userId);
+          // 清掉舊的（罕見：connection close 二次觸發）
+          cancelPendingDisconnectBroadcast(teamId, userId);
+          const t = setTimeout(() => {
+            pendingDisconnectBroadcast.delete(key);
+            // 5s 到再確認一次：仍未重連才廣播
+            if (isUserStillConnected(teamId, userId)) return;
+            broadcastToTeam(teamId, {
+              type: "team_member_disconnected",
+              userId,
+              userName,
+              graceInMs: GRACE_PERIOD_MS,
+              timestamp: new Date().toISOString(),
+            });
+            startGraceTimer(teamId, userId, userName);
+          }, DISCONNECT_BROADCAST_DELAY_MS);
+          pendingDisconnectBroadcast.set(key, t);
         }
       }
 
