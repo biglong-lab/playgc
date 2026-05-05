@@ -3410,6 +3410,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "團隊破冰知識套組 NT$ 2,000-6,000 / 場。適合企業新進訓練、跨團隊合作啟動。",
     status: "live",
   },
+  {
+    id: "intro-aar-workshop",
+    name: "自我介紹與覆盤工作坊",
+    tagline: "迷你履歷開場 + 事後覆盤收尾，活動完整體驗套組",
+    description: "以迷你履歷讓每位成員快速自我介紹，活動結束後以事後覆盤三欄引導全隊反思做得好的、出了問題的與學到的教訓，形成完整閉環。",
+    useCases: ["工作坊完整體驗", "企業訓練課程", "新人入職活動", "季度回顧會議"],
+    category: "corporate",
+    icon: "🔄",
+    gradient: "from-violet-500 to-teal-500",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "20-35 分鐘",
+    components: [
+      {
+        pageType: "micro_bio",
+        label: "迷你履歷",
+        role: "破冰自我介紹",
+        axis: "multi",
+      },
+      {
+        pageType: "after_action",
+        label: "事後覆盤",
+        role: "三欄反思總結",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "自我介紹與覆盤工作坊 NT$ 2,500-8,000 / 場。完整活動閉環，適合企業培訓、工作坊設計。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

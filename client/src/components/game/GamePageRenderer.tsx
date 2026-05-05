@@ -224,6 +224,8 @@ const TwoWordsPage = lazy(() => import("@/components/game/multi/TwoWordsPage"));
 const WinWinPage = lazy(() => import("@/components/game/multi/WinWinPage"));
 const ImpactCardPage = lazy(() => import("@/components/game/multi/ImpactCardPage"));
 const OpenQuizPage = lazy(() => import("@/components/game/multi/OpenQuizPage"));
+const MicroBioPage = lazy(() => import("@/components/game/multi/MicroBioPage"));
+const AfterActionPage = lazy(() => import("@/components/game/multi/AfterActionPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -880,6 +882,10 @@ export default function GamePageRenderer({
         return <ImpactCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "open_quiz":
         return <OpenQuizPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "micro_bio":
+        return <MicroBioPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "after_action":
+        return <AfterActionPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

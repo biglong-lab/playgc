@@ -586,6 +586,12 @@ ${componentDescriptions}
 - "open_quiz": { title, prompt, questionLabel, answerLabel }
   開放問答：每人提出一個問題並同時給出自己的答案，揭曉後顯示所有 Q&A 卡片，適合知識分享/討論前暖身/創意發想/互相學習
 
+- "micro_bio": { title, prompt, superpowerLabel, funFactLabel, goalLabel }
+  迷你履歷：每人填寫超能力/冷知識/目標三個關鍵詞，揭曉後以漸層卡片牆展示全隊迷你履歷，適合破冰認識/新人自我介紹/跨部門互動
+
+- "after_action": { title, prompt, wellLabel, wrongLabel, lessonsLabel }
+  事後覆盤：每人填寫做得好/出了問題/學到的教訓（至少一項），揭曉後以三欄顯示全隊觀察，適合活動/專案/訓練課程結束後的反思覆盤
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

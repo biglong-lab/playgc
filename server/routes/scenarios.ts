@@ -2010,6 +2010,24 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         answerLabel: "你的答案",
       };
 
+    case "micro_bio":
+      return {
+        title: "👤 迷你履歷",
+        prompt: `在「${scenarioName}」中，用三個關鍵詞介紹自己！`,
+        superpowerLabel: "⚡ 我的超能力",
+        funFactLabel: "🎲 一個冷知識",
+        goalLabel: "🎯 今天的目標",
+      };
+
+    case "after_action":
+      return {
+        title: "🔍 事後覆盤",
+        prompt: `「${scenarioName}」結束後——哪些做對了？哪些出了問題？學到了什麼？`,
+        wellLabel: "✅ 做得好的",
+        wrongLabel: "❌ 出了問題的",
+        lessonsLabel: "💡 學到的教訓",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

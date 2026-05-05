@@ -276,6 +276,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 73 新元件
     expect(allPageTypes).toContain("impact_card");
     expect(allPageTypes).toContain("open_quiz");
+
+    // Round 74 新元件
+    expect(allPageTypes).toContain("micro_bio");
+    expect(allPageTypes).toContain("after_action");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -354,6 +358,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "win_win",
       "impact_card",
       "open_quiz",
+      "micro_bio",
+      "after_action",
     ];
 
     for (const t of newTypes) {
