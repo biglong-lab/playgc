@@ -166,6 +166,9 @@ ${componentDescriptions}
 - "group_promise": { title, pledgeText, goalSigners?: number }
   全員點擊「我承諾」宣誓，顯示名單+進度條+達標慶祝，適合訓練結尾/團隊宣言/新年承諾/開幕誓師
 
+- "sentence_completion": { title, starter, maxLength: 40-120, maxPerPerson: 1-2, reactions: ["❤️","😂","👏"], showAuthor: boolean }
+  給一個句子開頭（starter），所有人接龍補完，揭曉後牆上顯示完整句子+emoji反應，適合反思/破冰/創意發想
+
 - "open_question": { title, question, maxLength: 40-200, maxAnswersPerPerson: 1-3, showAuthor: true, placeholder? }
   所有人回答同一道開放式問題，答案即時出現在牆上（可帶名字），適合反思/分享/訓練後整合
 

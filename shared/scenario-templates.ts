@@ -364,6 +364,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "全員瘋狂點擊達成目標數，能量爆棚，笑聲連連，把氣氛拉到最高點",
         axis: "multi",
       },
+      {
+        pageType: "sentence_completion",
+        label: "句子接龍",
+        role: "給出一個句子開頭，所有人接龍補完，揭曉後牆上顯示完整句子讓大家看見彼此的想法",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問入場前 30 分鐘暖身。NT$ 5,000-12,000 一場。",
     status: "live",

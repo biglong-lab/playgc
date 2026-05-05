@@ -912,6 +912,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResults: true,
       };
 
+    case "sentence_completion":
+      return {
+        title: "💬 句子接龍",
+        starter: "我認為這次活動…",
+        maxLength: 80,
+        maxPerPerson: 1,
+        reactions: ["❤️", "😂", "👏"],
+        showAuthor: true,
+      };
+
     case "text_card":
       return { title: scenarioName, content: "請 admin 編輯內容" };
     case "video":
