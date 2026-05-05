@@ -364,6 +364,18 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     expect(allPageTypes).toContain("idea_wall");
     expect(allPageTypes).toContain("knowledge_check");
     expect(allPageTypes).toContain("kudos_wall");
+
+    // Round 84 補全批次 7（Letter + Lock + Lucky + MadLibs + Memory + MoodXxx）
+    expect(allPageTypes).toContain("letter_to_self");
+    expect(allPageTypes).toContain("lock_coop");
+    expect(allPageTypes).toContain("lucky_draw");
+    expect(allPageTypes).toContain("mad_libs");
+    expect(allPageTypes).toContain("memory_lane");
+    expect(allPageTypes).toContain("mind_sync");
+    expect(allPageTypes).toContain("mood_map");
+    expect(allPageTypes).toContain("mood_meter");
+    expect(allPageTypes).toContain("most_likely");
+    expect(allPageTypes).toContain("multi_vote");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -510,6 +522,16 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "idea_wall",
       "knowledge_check",
       "kudos_wall",
+      "letter_to_self",
+      "lock_coop",
+      "lucky_draw",
+      "mad_libs",
+      "memory_lane",
+      "mind_sync",
+      "mood_map",
+      "mood_meter",
+      "most_likely",
+      "multi_vote",
     ];
 
     for (const t of newTypes) {
