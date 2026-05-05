@@ -441,6 +441,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedDuration: "2-4 小時",
     components: [
       {
+        pageType: "random_team",
+        label: "隨機分組",
+        role: "公平隨機分配學員到各組，一鍵完成",
+        axis: "multi",
+      },
+      {
         pageType: "mood_meter",
         label: "開場活力確認",
         role: "訓練前先確認學員狀態，讓講師掌握現場",

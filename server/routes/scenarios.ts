@@ -390,6 +390,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         celebrationText: "恭喜集滿！",
       };
 
+    case "random_team":
+      return {
+        title: "🎲 隨機分組",
+        subtitle: "加入等待，一鍵隨機分配隊伍！",
+        teams: [
+          { id: "t1", name: "A 組", emoji: "🔵", color: "blue" },
+          { id: "t2", name: "B 組", emoji: "🔴", color: "red" },
+          { id: "t3", name: "C 組", emoji: "🟢", color: "green" },
+          { id: "t4", name: "D 組", emoji: "🟡", color: "yellow" },
+        ],
+        startText: "開始分組！",
+      };
+
     case "story_chain":
       return {
         title: "📖 接龍故事",

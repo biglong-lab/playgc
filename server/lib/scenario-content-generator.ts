@@ -160,6 +160,9 @@ ${componentDescriptions}
 - "story_chain": { title, opening, maxWordsPerContribution: 10-30, maxContributions: 5-20, finishText? }
   opening 是故事開頭句（如：從前從前，有一對相愛的人…），要與活動情境相關且有創意
 
+- "random_team": { title, subtitle?, teams: [{ id, name, emoji, color }...2-6個], startText? }
+  teams 是分組方案（如：A/B/C/D 組，或以主題命名），emoji/color 讓各組有視覺辨識度
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
