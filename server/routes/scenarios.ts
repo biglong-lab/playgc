@@ -390,6 +390,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         celebrationText: "恭喜集滿！",
       };
 
+    case "lucky_draw":
+      return {
+        title: "🎰 幸運抽獎",
+        subtitle: "期待您的大獎！",
+        prizes: [
+          { id: "p1", name: "一等獎", emoji: "🏆", quantity: 1 },
+          { id: "p2", name: "二等獎", emoji: "🎁", quantity: 2 },
+          { id: "p3", name: "三等獎", emoji: "🎀", quantity: 3 },
+        ],
+        drawText: "抽！",
+        suspenseText: "幸運兒是…",
+      };
+
     case "pop_quiz":
       return {
         title: "🧠 快問快答",

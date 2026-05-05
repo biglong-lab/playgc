@@ -151,6 +151,9 @@ ${componentDescriptions}
 - "pop_quiz": { title, questions: [{ id, prompt, options: [...4 個], correctIdx: 0-3, timeLimitSec: 15-30 }] }
   questions 至少 3 題、與活動主題高度相關的知識題或趣味題，prompt 用問號結尾
 
+- "lucky_draw": { title, subtitle?, prizes: [{ id, name, emoji, quantity }...2-5個], drawText?, suspenseText? }
+  prizes 是抽獎獎品清單，emoji 選與獎品性質相關的圖示，quantity 是數量（1等獎少、3等獎多）
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感

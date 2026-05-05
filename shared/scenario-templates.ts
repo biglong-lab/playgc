@@ -1184,6 +1184,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "multi",
       },
       {
+        pageType: "lucky_draw",
+        label: "幸運大抽獎",
+        role: "全員加入抽獎池，現場即時抽出幸運兒",
+        axis: "multi",
+      },
+      {
         pageType: "countdown_reveal",
         label: "大獎倒數揭曉",
         role: "緊張刺激的倒數揭曉最佳員工 / 年度獎項",
