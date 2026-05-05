@@ -76,6 +76,7 @@ const CategorySortPage = lazy(() => import("@/components/game/multi/CategorySort
 const EstimationGamePage = lazy(() => import("@/components/game/multi/EstimationGamePage"));
 const AgreementMatrixPage = lazy(() => import("@/components/game/multi/AgreementMatrixPage"));
 const MadLibsPage = lazy(() => import("@/components/game/multi/MadLibsPage"));
+const SpectrumLinePage = lazy(() => import("@/components/game/multi/SpectrumLinePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -436,6 +437,8 @@ export default function GamePageRenderer({
         return <AgreementMatrixPage {...commonProps} page={page} pageId={page.id} />;
       case "mad_libs":
         return <MadLibsPage {...commonProps} page={page} pageId={page.id} />;
+      case "spectrum_line":
+        return <SpectrumLinePage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

@@ -328,6 +328,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "host",
         demoMode: "emoji-host",
       },
+      {
+        pageType: "spectrum_line",
+        label: "個性光譜定位",
+        role: "拖動滑桿揭曉自己的工作風格，群體分布一目瞭然，立刻打開話匣子",
+        axis: "multi",
+      },
     ],
     valueProposition: "顧問入場前 30 分鐘暖身。NT$ 5,000-12,000 一場。",
     status: "live",

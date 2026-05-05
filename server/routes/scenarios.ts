@@ -677,6 +677,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showResults: true,
       };
 
+    case "spectrum_line":
+      return {
+        title: "🎯 你在光譜的哪裡？",
+        instructions: "拖動滑桿，告訴大家你的風格",
+        questions: [
+          { id: "q1", leftLabel: "內向", rightLabel: "外向", leftEmoji: "🤫", rightEmoji: "📢" },
+          { id: "q2", leftLabel: "計畫型", rightLabel: "即興型", leftEmoji: "📋", rightEmoji: "🎲" },
+          { id: "q3", leftLabel: "細節控", rightLabel: "大方向派", leftEmoji: "🔍", rightEmoji: "🌍" },
+          { id: "q4", leftLabel: "獨立作業", rightLabel: "團隊合作", leftEmoji: "🧘", rightEmoji: "🤝" },
+        ],
+        showResults: true,
+        showNames: true,
+      };
+
     case "mad_libs":
       return {
         title: "🎭 我們的故事",
