@@ -317,6 +317,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "scoreboard-host",
       },
       {
+        pageType: "rating_wall",
+        label: "作品評分牆",
+        role: "觀眾為每組作品評 1-5 顆星，即時顯示平均分",
+        axis: "multi",
+        demoMode: "rating-wall",
+      },
+      {
         pageType: "host_emoji_react",
         label: "全場應援",
         role: "得獎時的 emoji 雨",
@@ -325,7 +332,7 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
       },
     ],
     valueProposition: "頒獎場合的觀眾參與機制。NT$ 8,000-20,000。",
-    status: "preview",
+    status: "live",
   },
 
   // ════════════════════════════════════════════

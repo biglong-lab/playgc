@@ -309,6 +309,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         showAuthor: true,
       };
 
+    case "rating_wall":
+      return {
+        title: "⭐ 作品評分",
+        subtitle: "為每個作品評 1-5 顆星",
+        items: [
+          { id: "i1", label: "第一組", emoji: "🔵" },
+          { id: "i2", label: "第二組", emoji: "🔴" },
+          { id: "i3", label: "第三組", emoji: "🟢" },
+        ],
+        maxStars: 5,
+        showResults: true,
+      };
+
     case "name_card":
       return {
         title: "🏷️ 自我介紹牌",

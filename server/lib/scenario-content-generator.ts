@@ -145,6 +145,9 @@ ${componentDescriptions}
 - "name_card": { title, subtitle?, fields: [{ key, label, placeholder?, maxLength? }...2-4個], emojiOptions?: string[] }
   fields 是每人要填寫的欄位（如：姓名、職位、一件有趣的事），至少一個必填欄位
 
+- "rating_wall": { title, subtitle?, items: [{ id, label, emoji?, description? }...2-8個], maxStars: 5, showResults: true }
+  items 是所有待評分的對象（如：各組作品、各個提案），label 清楚說明評分對象
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
