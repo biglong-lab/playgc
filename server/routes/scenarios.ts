@@ -444,6 +444,16 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
       };
 
+    case "pledge_wall":
+      return {
+        title: "🤝 承諾牆",
+        prompt: "許下你的承諾，讓大家一起見證",
+        placeholder: "我承諾…",
+        maxLength: 80,
+        showSupport: true,
+        emojiOptions: ["🌱", "♻️", "🤝", "💪", "🌍", "❤️", "✨", "🎯", "📚", "🏃"],
+      };
+
     case "retro_board":
       return {
         title: "📋 回顧版",

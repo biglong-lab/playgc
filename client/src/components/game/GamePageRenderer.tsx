@@ -55,6 +55,7 @@ const DotVotePage = lazy(() => import("@/components/game/multi/DotVotePage"));
 const TimelineWallPage = lazy(() => import("@/components/game/multi/TimelineWallPage"));
 const TwoTruthsPage = lazy(() => import("@/components/game/multi/TwoTruthsPage"));
 const RetroBoardPage = lazy(() => import("@/components/game/multi/RetroBoardPage"));
+const PledgeWallPage = lazy(() => import("@/components/game/multi/PledgeWallPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -373,6 +374,8 @@ export default function GamePageRenderer({
         return <TwoTruthsPage {...commonProps} page={page} pageId={page.id} />;
       case "retro_board":
         return <RetroBoardPage {...commonProps} page={page} pageId={page.id} />;
+      case "pledge_wall":
+        return <PledgeWallPage {...commonProps} page={page} pageId={page.id} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

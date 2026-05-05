@@ -1119,6 +1119,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "team-word-cloud",
       },
       {
+        pageType: "pledge_wall",
+        label: "在地承諾牆",
+        role: "每位參與者公開許下一個對社區 / 空間的承諾，彼此見證、互相支持",
+        axis: "multi",
+      },
+      {
         pageType: "feedback_star",
         label: "活動評分",
         role: "收集參與者對本次活動的評分與回饋",

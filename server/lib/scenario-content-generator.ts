@@ -175,6 +175,9 @@ ${componentDescriptions}
 - "retro_board": { title, prompt?, columns: [{ id, label, emoji, color }...2-4個], maxCardsPerColumn: 2-5, allowVoting: true }
   columns 是回顧欄位（如：繼續做/停止做/開始做 或 讚/可改善/建議），color 可選 green/red/blue/yellow/purple/orange
 
+- "pledge_wall": { title, prompt?, placeholder?, maxLength: 40-100, showSupport: true, emojiOptions: [...8-12個適合場景的 emoji] }
+  prompt 是引導語（如：許下你對社區的承諾…），emojiOptions 選與活動主題相關的 emoji
+
 要求：
 1. 內容必須跟 ${context} 緊密相關（提及人名、地點、活動性質）
 2. 文字溫度感、避免機械感
