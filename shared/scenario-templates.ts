@@ -2847,6 +2847,47 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "學習工作坊套餐 NT$ 3,000-8,000 / 場。適合企業培訓、社群學習、知識型活動。",
     status: "live",
   },
+  {
+    id: "retro-action-sprint",
+    name: "回顧行動衝刺",
+    tagline: "協作畫布 + 數字定位 + 行動項目",
+    description:
+      "把回顧會議從「說說而已」變成真正的行動承諾。先用「協作畫布」讓每人把 Keep/Drop/Improve 想法貼在對應的看板區，5 分鐘就完成全隊回顧意見收集；接著用「數字定位」讓每人在 1-10 數字軸上標記對當前狀態的滿意程度，揭曉後一眼看見全隊溫度；最後用「行動項目」讓每個參與者各自認領一個改善行動，指定完成時間。從回顧意見到量化確認到行動分工，整場 30 分鐘完成高效回顧，避免「說完就忘」的回顧陷阱。",
+    useCases: [
+      "敏捷 Sprint 回顧",
+      "季度團隊回顧",
+      "專案結束後回顧",
+      "工作坊結尾行動規劃",
+      "跨部門協作改善",
+    ],
+    category: "corporate",
+    icon: "RefreshCw",
+    gradient: "from-amber-500/20 to-indigo-500/20",
+    estimatedPlayers: "5-40 人",
+    estimatedDuration: "25-40 分鐘",
+    components: [
+      {
+        pageType: "collab_canvas",
+        label: "KDI 看板",
+        role: "每人將想法貼在 Keep/Drop/Improve 三個區域，5 分鐘收集全隊改善意見",
+        axis: "multi",
+      },
+      {
+        pageType: "number_line",
+        label: "滿意度定位",
+        role: "每人在 1-10 數字軸上標記對當前狀態的滿意程度，揭曉後顯示全隊分佈與平均值",
+        axis: "multi",
+      },
+      {
+        pageType: "action_item",
+        label: "行動認領",
+        role: "基於回顧結果，每人認領一個具體改善行動，指定完成時間",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "敏捷回顧套餐 NT$ 2,500-6,000 / 場。適合軟體團隊、專案管理、持續改善文化。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

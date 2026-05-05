@@ -1752,6 +1752,26 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         pickLabel: "開始抽選",
       };
 
+    case "collab_canvas":
+      return {
+        title: "📋 協作畫布",
+        prompt: `將你對「${scenarioName}」的想法貼在對應的區域`,
+        zones: ["Keep（保留）", "Drop（捨棄）", "Improve（改善）"],
+        maxPerUser: 3,
+        maxLength: 40,
+      };
+
+    case "number_line":
+      return {
+        title: "📍 數字定位",
+        question: `關於「${scenarioName}」，你有幾分把握？`,
+        min: 1,
+        max: 10,
+        unit: "分",
+        lowLabel: "完全不確定",
+        highLabel: "完全有把握",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

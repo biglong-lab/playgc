@@ -490,6 +490,12 @@ ${componentDescriptions}
 - "random_pick": { title, prompt, pickCount: 1-5, joinLabel, pickLabel }
   隨機抽選：參與者自願報名，主持人觸發隨機抽選指定人數，中獎者看到恭喜訊息，可重複抽選，適合抽獎/隨機點名/分組/挑戰邀請
 
+- "collab_canvas": { title, prompt, zones: string[2-5], maxPerUser: 1-5, maxLength: 20-60 }
+  協作畫布：每人將便利貼貼在對應的分區（如 Keep/Drop/Improve 或 Now/Next/Later），揭曉後以看板形式顯示各區便利貼，適合回顧/決策/創意分類/優先排序工作坊
+
+- "number_line": { title, question, min: 1-100, max: 1-100, unit, lowLabel, highLabel }
+  數字定位：每人在數字軸上標記自己的位置（如 1-10 分），揭曉後顯示分佈直方圖與全隊平均值，適合信心調查/滿意度調查/理解程度確認/快速數字評估
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

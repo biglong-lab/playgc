@@ -212,6 +212,10 @@ test.describe("多人遊戲元件 Smoke Test", () => {
     // Round 57 新元件
     expect(allPageTypes).toContain("curiosity_map");
     expect(allPageTypes).toContain("vibe_check");
+
+    // Round 58 新元件
+    expect(allPageTypes).toContain("collab_canvas");
+    expect(allPageTypes).toContain("number_line");
   });
 
   test("defaultConfigForType API 能為 Round 36-41 新元件回傳有效 config", async ({ page }) => {
@@ -258,6 +262,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "team_manifesto",
       "curiosity_map",
       "vibe_check",
+      "collab_canvas",
+      "number_line",
     ];
 
     for (const t of newTypes) {
