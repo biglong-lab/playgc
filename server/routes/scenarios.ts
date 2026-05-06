@@ -2712,6 +2712,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一種舞蹈，你最像哪種？說說你的舞蹈個性！`,
       };
 
+    case "architecture_style":
+      return {
+        title: "🏛️ 我是哪種建築風格",
+        prompt: `在「${scenarioName}」的場合，如果你是一種建築風格，你最像哪種？說說你的建築個性！`,
+      };
+
+    case "cheese_type":
+      return {
+        title: "🧀 我是哪種起司",
+        prompt: `在「${scenarioName}」的場合，如果你是一種起司，你最像哪種？說說你的起司個性！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

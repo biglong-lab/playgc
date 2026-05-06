@@ -4906,6 +4906,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "神話舞蹈藝術套組 NT$ 1,200-3,500 / 場。奇幻與活力的個性探索，適合藝術活動、年會尾牙、創意工作坊。",
     status: "live",
   },
+  {
+    id: "arch-cheese-culture-pack",
+    name: "🏛️ 建築起司文化套組",
+    tagline: "用建築美學與起司個性探索團隊品味",
+    description: "ArchitectureStyle 讓每人選出最像自己的建築風格並說原因，揭曉全隊建築展；CheeseType 讓每人選出最像自己的起司並說原因，揭曉全隊起司盤。適合設計活動、美食主題、歐洲文化探索，充滿品味與創意的個性對話。",
+    useCases: ["設計創意工作坊", "美食文化活動", "空間活化體驗", "歐洲文化交流"],
+    category: "corporate",
+    icon: "Building2",
+    gradient: "from-stone-500 to-yellow-500",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "architecture_style",
+        label: "我是哪種建築風格",
+        role: "9種建築風格選擇＋個性說明，揭曉全隊建築展",
+        axis: "multi",
+      },
+      {
+        pageType: "cheese_type",
+        label: "我是哪種起司",
+        role: "9種起司選擇＋個性說明，揭曉全隊起司盤",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "建築起司文化套組 NT$ 1,200-3,500 / 場。品味十足的設計美食探索，適合設計工作坊、美食主題活動、文化交流場合。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
