@@ -22,6 +22,13 @@ import { gameChapters } from "./chapters";
 export const gameModeEnum = ["individual", "team", "competitive", "relay"] as const;
 export type GameMode = typeof gameModeEnum[number];
 
+// 🆕 Editor mode（2026-05-07）— 軟分流階段 1：admin 後台兩條獨立路徑
+//   - "game"     路線 I：玩家手機闖關（要 Firebase 登入、可組隊）
+//   - "activity" 路線 II/III：活動現場互動（玩家匿名掃 QR、host 大螢幕配對）
+// 詳見：docs/architecture/three-paths.md + docs/changes/2026-05-07-admin-editor-split.md
+export const editorModeEnum = ["game", "activity"] as const;
+export type EditorMode = typeof editorModeEnum[number];
+
 export const games = pgTable("games", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: varchar("title", { length: 200 }).notNull(),
