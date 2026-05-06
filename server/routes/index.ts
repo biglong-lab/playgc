@@ -3,6 +3,7 @@ import type { Server } from "http";
 import { adminAuthMiddleware } from "../adminAuth";
 import { setupWebSocket } from "./websocket";
 import { registerAuthRoutes } from "./auth";
+import { registerTestOnlyRoutes } from "./test-only";
 import { registerAdminFieldRoutes } from "./admin-fields";
 import { registerAdminRoleRoutes } from "./admin-roles";
 import { registerAdminGameRoutes } from "./admin-games";
@@ -101,6 +102,10 @@ export async function registerRoutes(
 
   // WebSocket 設定
   const ctx = setupWebSocket(httpServer);
+
+  // 🧪 E2E 測試專用路由（僅本地 / CI 啟用，生產禁用）
+  // 必須先註冊（不依賴 admin auth），給 Playwright 自包含建測試資料
+  registerTestOnlyRoutes(app);
 
   // 註冊各模組路由
   registerAuthRoutes(app);
