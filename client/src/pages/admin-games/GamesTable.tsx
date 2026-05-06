@@ -376,3 +376,47 @@ function PublishButton({
 
   return null;
 }
+
+// 🆕 2026-05-07：首頁可見 toggle button（綁 isIsolated 反向）
+// isIsolated=true（schema default）= QR-only 防亂入、不在首頁
+// isIsolated=false = 首頁可見
+function HomeVisibleButton({
+  gameId, isIsolated, onToggle, pending,
+}: {
+  gameId: string;
+  isIsolated: boolean;
+  onToggle: (id: string, isIsolated: boolean) => void;
+  pending: boolean;
+}) {
+  if (isIsolated) {
+    // 目前是 QR-only、按了之後變成「首頁可見」
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => onToggle(gameId, false)}
+        disabled={pending}
+        data-testid={`button-home-show-${gameId}`}
+        title="目前 QR-only 防亂入、點擊讓首頁也看得到"
+      >
+        <Home className="h-4 w-4 mr-1" />
+        首頁可見
+      </Button>
+    );
+  }
+
+  // 目前已首頁可見、按了之後藏回 QR-only
+  return (
+    <Button
+      variant="default"
+      size="sm"
+      onClick={() => onToggle(gameId, true)}
+      disabled={pending}
+      data-testid={`button-home-hide-${gameId}`}
+      title="目前首頁可見、點擊改 QR-only 防亂入"
+    >
+      <EyeOff className="h-4 w-4 mr-1" />
+      從首頁隱藏
+    </Button>
+  );
+}
