@@ -422,6 +422,8 @@ const PaperCranePage = lazy(() => import("@/components/game/multi/PaperCranePage
 const LanternFloatPage = lazy(() => import("@/components/game/multi/LanternFloatPage"));
 const KoiPondPage = lazy(() => import("@/components/game/multi/KoiPondPage"));
 const InkBrushPage = lazy(() => import("@/components/game/multi/InkBrushPage"));
+const FireflyDancePage = lazy(() => import("@/components/game/multi/FireflyDancePage"));
+const LotusBloomPage = lazy(() => import("@/components/game/multi/LotusBloomPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1474,6 +1476,10 @@ export default function GamePageRenderer({
         return <KoiPondPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "ink_brush":
         return <InkBrushPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "firefly_dance":
+        return <FireflyDancePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "lotus_bloom":
+        return <LotusBloomPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
