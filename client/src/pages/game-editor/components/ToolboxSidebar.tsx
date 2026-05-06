@@ -8,7 +8,10 @@ import {
   PAGE_TYPES,
   PAGE_TEMPLATES,
   CATEGORY_INFO,
+  EDITOR_MODE_INFO,
+  filterPageTypesByEditorMode,
   groupPageTypesByCategory,
+  type EditorMode,
   type PageCategory,
 } from "../constants";
 import { isComponentAllowedForGameMode } from "@shared/multiplayer-component-types";
@@ -19,6 +22,13 @@ interface ToolboxSidebarProps {
   readonly onAddTemplate: (templateId: string) => void;
   /** 當前遊戲的 gameMode（用於過濾 multi 元件）— 個人遊戲不顯示 multi 專用元件 */
   readonly gameMode?: string | null;
+  /**
+   * 🆕 軟分流階段 1：當前 game 的 editorMode（'game' / 'activity'）
+   * - 'game'     → 顯示 narrative + mission + photo + multi_coop（路線 I）
+   * - 'activity' → 顯示 narrative + host_screen + interactive（路線 II/III）
+   * - 未指定（既有舊 game / 建立中）→ 全部顯示
+   */
+  readonly editorMode?: EditorMode | null;
 }
 
 export default function ToolboxSidebar({
@@ -26,17 +36,24 @@ export default function ToolboxSidebar({
   onDragEnd,
   onAddTemplate,
   gameMode,
+  editorMode,
 }: ToolboxSidebarProps) {
   // 依 gameMode 過濾元件清單
   // - individual → 隱藏 multi 元件
   // - team / competitive / relay → 全部顯示（不對稱規則 v1.2）
   // - 未指定（建立新遊戲時）→ 全部顯示，server 約束會擋下不合規組合
   const visiblePageTypes = useMemo(() => {
-    if (!gameMode) return PAGE_TYPES;
-    return PAGE_TYPES.filter((type) =>
+    // 🆕 軟分流階段 1：先依 editorMode 過濾（最高優先）
+    let filtered: typeof PAGE_TYPES | (typeof PAGE_TYPES)[number][] = PAGE_TYPES;
+    if (editorMode) {
+      filtered = filterPageTypesByEditorMode(PAGE_TYPES, editorMode);
+    }
+    // 再依 gameMode 過濾（既有 multi 元件邏輯）
+    if (!gameMode) return filtered;
+    return filtered.filter((type) =>
       isComponentAllowedForGameMode(type.value, gameMode),
     );
-  }, [gameMode]);
+  }, [editorMode, gameMode]);
 
   // 🆕 D3 (2026-05-07)：搜尋 + 按 category 分組
   const [searchQuery, setSearchQuery] = useState("");
