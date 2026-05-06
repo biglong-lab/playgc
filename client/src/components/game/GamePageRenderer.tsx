@@ -318,6 +318,8 @@ const VehicleTypePage = lazy(() => import("@/components/game/multi/VehicleTypePa
 const WeatherTypePage = lazy(() => import("@/components/game/multi/WeatherTypePage"));
 const BookGenrePage = lazy(() => import("@/components/game/multi/BookGenrePage"));
 const FlowerTypePage = lazy(() => import("@/components/game/multi/FlowerTypePage"));
+const CoffeeTypePage = lazy(() => import("@/components/game/multi/CoffeeTypePage"));
+const TreeTypePage = lazy(() => import("@/components/game/multi/TreeTypePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1162,6 +1164,10 @@ export default function GamePageRenderer({
         return <BookGenrePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "flower_type":
         return <FlowerTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "coffee_type":
+        return <CoffeeTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "tree_type":
+        return <TreeTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

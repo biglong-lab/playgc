@@ -4738,6 +4738,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "書香花語文化套組 NT$ 1,200-3,500 / 場。詩意優雅的個性探索，適合文化活動、婚禮、讀書會等精緻場合。",
     status: "live",
   },
+  {
+    id: "coffee-tree-nature-pack",
+    name: "☕ 咖啡森林自然套組",
+    tagline: "用咖啡風味與樹木象徵探索個性",
+    description: "CoffeeType 讓每人選出最像自己的咖啡類型並說原因，揭曉全隊咖啡館；TreeType 讓每人選出最像自己的樹木並說原因，揭曉全隊森林。適合企業早餐會、戶外活動、自然主題、咖啡文化場合，生活感強且引發豐富個性對話。",
+    useCases: ["企業早餐會", "戶外活動破冰", "咖啡文化活動", "自然主題聚會"],
+    category: "corporate",
+    icon: "Coffee",
+    gradient: "from-amber-600 to-green-600",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "coffee_type",
+        label: "我是哪種咖啡",
+        role: "9種咖啡類型選擇＋個性說明，揭曉全隊咖啡館",
+        axis: "multi",
+      },
+      {
+        pageType: "tree_type",
+        label: "我是哪種樹",
+        role: "9種樹木選擇＋象徵說明，揭曉全隊森林",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "咖啡森林自然套組 NT$ 1,200-3,500 / 場。生活感十足的自然探索，適合企業活動、戶外聚會、咖啡文化場合。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
