@@ -4402,6 +4402,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "動物懷舊套組 NT$ 1,500-4,000 / 場。輕鬆破冰讓笑聲不斷。",
     status: "live",
   },
+  {
+    id: "vibe-cinema-pack",
+    name: "🌤️ 氛圍電影套組",
+    tagline: "心情天氣 + 電影類型，用隱喻說出今天的自己",
+    description: "MoodWeather 讓大家用天氣描述今天的心情狀態並說明原因，揭曉全隊天氣地圖；MovieGenre 讓每人用電影類型比喻今天的自己，揭曉電影院全貌。適合每日開場、工作坊暖身、情緒確認、創意破冰，讓開場更有趣深刻。",
+    useCases: ["每日開場", "工作坊暖身", "情緒確認", "創意破冰"],
+    category: "corporate",
+    icon: "CloudSun",
+    gradient: "from-sky-400 to-purple-400",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "8-15 分鐘",
+    components: [
+      {
+        pageType: "mood_weather",
+        label: "今日心情天氣",
+        role: "10種天氣選擇＋原因，揭曉全隊天氣地圖",
+        axis: "multi",
+      },
+      {
+        pageType: "movie_genre",
+        label: "我是哪種電影",
+        role: "9種電影類型選擇＋原因，揭曉電影院全貌",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "氛圍電影套組 NT$ 1,500-3,500 / 場。用隱喻說出今天的自己。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

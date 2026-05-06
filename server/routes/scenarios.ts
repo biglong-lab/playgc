@@ -2496,6 +2496,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，說說你童年最喜歡的遊戲，勾起大家的美好回憶！`,
       };
 
+    case "mood_weather":
+      return {
+        title: "🌤️ 今日心情天氣",
+        prompt: `在「${scenarioName}」的場合，如果你今天的心情是一種天氣，你會是哪種？`,
+      };
+
+    case "movie_genre":
+      return {
+        title: "🎬 我是哪種電影",
+        prompt: `在「${scenarioName}」的場合，如果今天的你是一部電影，會是哪個類型？說說為什麼！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
