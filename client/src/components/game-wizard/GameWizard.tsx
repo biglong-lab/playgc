@@ -156,9 +156,19 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">🎮</span>
-            建立新遊戲
+            <span className="text-2xl">{editorMode === "activity" ? "🎉" : "🎮"}</span>
+            {editorMode === "activity" ? "建立新活動" : "建立新遊戲"}
           </DialogTitle>
+          {editorMode === "activity" && (
+            <p className="text-xs text-muted-foreground -mt-1">
+              路線 II/III：活動現場互動 / 大螢幕（玩家匿名掃 QR）
+            </p>
+          )}
+          {editorMode === "game" && (
+            <p className="text-xs text-muted-foreground -mt-1">
+              路線 I：玩家手機闖關 / 多人協作（要登入）
+            </p>
+          )}
         </DialogHeader>
 
         {/* 步驟指示器 */}
