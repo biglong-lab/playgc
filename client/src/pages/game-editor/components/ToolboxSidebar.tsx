@@ -82,6 +82,22 @@ export default function ToolboxSidebar({
 
   return (
     <aside className="w-56 border-r border-border bg-card/50 flex flex-col min-h-0 shrink-0">
+      {/* 🆕 軟分流階段 1：editor mode 標籤（清楚標明當前 editor 屬路線 I 還是 II/III）*/}
+      {editorMode && (
+        <div
+          className="px-3 py-2 border-b shrink-0 bg-muted/30"
+          data-testid="toolbox-editor-mode-badge"
+        >
+          <div className="flex items-center gap-1.5 text-xs">
+            <span>{EDITOR_MODE_INFO[editorMode].emoji}</span>
+            <span className="font-medium">{EDITOR_MODE_INFO[editorMode].label}</span>
+            <span className="text-muted-foreground">編輯器</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
+            {EDITOR_MODE_INFO[editorMode].description}
+          </p>
+        </div>
+      )}
       {/* 🔧 Tabs 嵌套 flex 高度鏈：Tabs / TabsContent 都要加 min-h-0 讓 overflow-auto 生效 */}
       <Tabs defaultValue="elements" className="flex-1 flex flex-col min-h-0">
         <TabsList className="w-full rounded-none border-b shrink-0">
