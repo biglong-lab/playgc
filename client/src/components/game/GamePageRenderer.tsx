@@ -290,6 +290,8 @@ const MottoBoardPage = lazy(() => import("@/components/game/multi/MottoBoardPage
 const TimeCapacityPage = lazy(() => import("@/components/game/multi/TimeCapacityPage"));
 const WishListPage = lazy(() => import("@/components/game/multi/WishListPage"));
 const StrengthMapPage = lazy(() => import("@/components/game/multi/StrengthMapPage"));
+const SecretTalentPage = lazy(() => import("@/components/game/multi/SecretTalentPage"));
+const LifeLessonPage = lazy(() => import("@/components/game/multi/LifeLessonPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1078,6 +1080,10 @@ export default function GamePageRenderer({
         return <WishListPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "strength_map":
         return <StrengthMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "secret_talent":
+        return <SecretTalentPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "life_lesson":
+        return <LifeLessonPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

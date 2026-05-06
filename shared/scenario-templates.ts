@@ -4346,6 +4346,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "願望強項套組 NT$ 2,500-6,000 / 場。讓每個人看見自己的夢想與力量。",
     status: "live",
   },
+  {
+    id: "talent-wisdom-pack",
+    name: "🎭 才能智慧套組",
+    tagline: "隱藏才能 + 人生功課，讓每個人都成為最有趣的存在",
+    description: "SecretTalent 讓大家揭曉平時不為人知的隱藏才能並選等級，揭曉彩色才能牆；LifeLesson 讓每人從6個領域分享一個真實的人生智慧，揭曉跨域智慧牆。適合公司尾牙、大型聚會、跨世代交流，讓每個人都成為話題中心。",
+    useCases: ["公司尾牙", "大型聚會", "跨世代交流", "新員工破冰"],
+    category: "social",
+    icon: "Sparkles",
+    gradient: "from-cyan-400 to-emerald-400",
+    estimatedPlayers: "6-100 人",
+    estimatedDuration: "15-30 分鐘",
+    components: [
+      {
+        pageType: "secret_talent",
+        label: "隱藏才能大揭密",
+        role: "才能揭曉＋等級選擇，揭曉彩色才能牆",
+        axis: "multi",
+      },
+      {
+        pageType: "life_lesson",
+        label: "人生一堂課",
+        role: "6領域人生智慧分享，揭曉跨域智慧牆",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "才能智慧套組 NT$ 2,500-6,000 / 場。讓每個人都成為最有趣的存在。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

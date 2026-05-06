@@ -2472,6 +2472,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，選出你最核心的強項，並分享一個發揮它的真實故事！`,
       };
 
+    case "secret_talent":
+      return {
+        title: "🎭 隱藏才能大揭密",
+        prompt: `在「${scenarioName}」的場合，揭曉你的隱藏才能，讓大家大吃一驚！`,
+      };
+
+    case "life_lesson":
+      return {
+        title: "🌿 人生一堂課",
+        prompt: `在「${scenarioName}」的場合，分享一個你從人生經歷中學到的寶貴功課！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
