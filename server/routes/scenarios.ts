@@ -2556,6 +2556,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的今天，哪種音樂風格最符合你的狀態？說說感受！`,
       };
 
+    case "elemental_type":
+      return {
+        title: "⚡ 我是哪種元素",
+        prompt: `在「${scenarioName}」的場合，如果你是一種自然元素，你最像哪個？說說原因！`,
+      };
+
+    case "coffee_order":
+      return {
+        title: "☕ 我今天的飲料訂單",
+        prompt: `在「${scenarioName}」的今天，哪杯飲料最像你的狀態？說說感覺！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

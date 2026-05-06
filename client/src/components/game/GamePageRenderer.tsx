@@ -304,6 +304,8 @@ const ColorPersonalityPage = lazy(() => import("@/components/game/multi/ColorPer
 const HeroTypePage = lazy(() => import("@/components/game/multi/HeroTypePage"));
 const PetPersonalityPage = lazy(() => import("@/components/game/multi/PetPersonalityPage"));
 const MusicGenrePage = lazy(() => import("@/components/game/multi/MusicGenrePage"));
+const ElementalTypePage = lazy(() => import("@/components/game/multi/ElementalTypePage"));
+const CoffeeOrderPage = lazy(() => import("@/components/game/multi/CoffeeOrderPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1120,6 +1122,10 @@ export default function GamePageRenderer({
         return <PetPersonalityPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "music_genre":
         return <MusicGenrePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "elemental_type":
+        return <ElementalTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "coffee_order":
+        return <CoffeeOrderPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

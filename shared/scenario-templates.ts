@@ -4542,6 +4542,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "寵物音樂暖場套組 NT$ 1,000-3,000 / 場。輕鬆愉快的開場暖身，讓陌生人瞬間打開話匣子。",
     status: "live",
   },
+  {
+    id: "elemental-coffee-daily-pack",
+    name: "⚡ 元素咖啡日常套組",
+    tagline: "元素屬性 + 飲料訂單，探索今日能量與狀態",
+    description: "ElementalType 讓每人選出最像自己的自然元素並說明原因，揭曉全隊元素圖鑑；CoffeeOrder 讓每人點出最像今日狀態的飲品並說感受，揭曉全隊今日飲料菜單。適合晨會暖場、辦公室下午茶、奇幻主題活動，輕鬆又有深度的話題引發器。",
+    useCases: ["晨會暖場", "辦公室活動", "奇幻主題", "日常破冰"],
+    category: "corporate",
+    icon: "Zap",
+    gradient: "from-indigo-400 to-amber-400",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "8-15 分鐘",
+    components: [
+      {
+        pageType: "elemental_type",
+        label: "我是哪種元素",
+        role: "8種元素選擇＋原因說明，揭曉全隊元素圖鑑",
+        axis: "multi",
+      },
+      {
+        pageType: "coffee_order",
+        label: "我今天的飲料訂單",
+        role: "9種飲品選擇＋今日狀態，揭曉全隊飲料菜單",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "元素咖啡日常套組 NT$ 1,000-3,000 / 場。輕鬆有趣的日常暖場，讓同事更了解彼此今日狀態。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
