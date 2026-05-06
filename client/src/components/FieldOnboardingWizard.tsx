@@ -22,9 +22,14 @@ import {
   DollarSign,
   Package,
   ArrowRight,
+  Search,
+  Store,
+  Zap,
 } from "lucide-react";
 
-const STORAGE_KEY = "field_onboarding_done_v1";
+// 🆕 D2-b (2026-05-07)：bump 到 v2，加 30 分鐘建場捷徑步驟
+//   舊使用者（v1 done）會再看一次新版 wizard，了解新流程
+const STORAGE_KEY = "field_onboarding_done_v2";
 
 interface Step {
   title: string;
@@ -37,7 +42,7 @@ interface Step {
 const STEPS: Step[] = [
   {
     title: "歡迎使用 CHITO SaaS",
-    description: "讓我們用 3 步認識你的新管理後台",
+    description: "讓我們用 4 步認識你的新管理後台",
     emoji: "🎉",
     items: [
       { icon: Gamepad2, label: "🎮 遊戲中心", desc: "建立、編輯、發布 QR Code 遊戲" },
@@ -55,15 +60,28 @@ const STEPS: Step[] = [
     ],
     cta: { label: "前往我的方案", href: "/admin/field/subscription" },
   },
+  // 🆕 D2-b (2026-05-07)：30 分鐘建場捷徑 — 平台核心商業情境流程
   {
-    title: "一切就緒！",
-    description: "管理後台已經準備好，開始建立你的第一個遊戲或對戰場地吧",
+    title: "30 分鐘建一場活動 ⚡",
+    description: "5 大商業情境（破冰／團建／婚禮／生日／頒獎）有現成模板，一鍵建場 + 列印 QR",
     emoji: "🚀",
     items: [
-      { icon: Gamepad2, label: "建立第一個遊戲", desc: "從模組庫挑選範本或從零開始" },
+      { icon: Search, label: "1️⃣ 找情境", desc: "/find-scenario 用 3 個問題推薦最適合的情境模板" },
+      { icon: Store, label: "2️⃣ 看模板", desc: "/template-market 瀏覽 12+ 個現成模板（婚禮、頒獎、破冰...）" },
+      { icon: Zap, label: "3️⃣ 一鍵建場", desc: "點「使用此模板」自動建好 game + 場次、列印 QR 給玩家" },
+    ],
+    cta: { label: "🔍 3 問找情境", href: "/find-scenario" },
+  },
+  {
+    title: "一切就緒！",
+    description: "兩條建場路徑：用模板（30 分鐘）或從零開始（深度客製）",
+    emoji: "✅",
+    items: [
+      { icon: Store, label: "推薦：模板市集", desc: "/template-market — 5 大情境一鍵建場、最快 30 分鐘 QR 上線" },
+      { icon: Gamepad2, label: "進階：從零建立", desc: "/admin/games — 自己拖拉組合 60+ 種互動元件" },
       { icon: Sparkles, label: "按 ⌘K 快速跳轉", desc: "隨時搜尋任何功能頁面" },
     ],
-    cta: { label: "開始使用", href: "/admin/games" },
+    cta: { label: "📦 看模板市集", href: "/template-market" },
   },
 ];
 
