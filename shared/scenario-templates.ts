@@ -4233,6 +4233,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "顏色好消息套組 NT$ 1,500-3,000 / 場。用顏色和好消息為團隊注入正能量。",
     status: "live",
   },
+
+  {
+    id: "love-memory-pack",
+    name: "💕 愛與回憶套組",
+    tagline: "愛的建議 + 最愛回憶，婚禮生日最暖心的互動時刻",
+    description: "LoveAdvice 讓賓客從 6 個類別選一個送上最真摯的祝福建議，揭曉美麗建議牆；FavMemory 讓大家按時間軸分享與主角的最難忘回憶，揭曉感人回憶牆。適合婚禮、生日派對、同學會、團隊告別，讓每個場合都留下珍貴記錄。",
+    useCases: ["婚禮賓客互動", "生日派對", "同學會", "告別歡送會"],
+    category: "social",
+    icon: "Heart",
+    gradient: "from-rose-400 to-pink-400",
+    estimatedPlayers: "4-100 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "love_advice",
+        label: "愛的建議",
+        role: "6類別真摯祝福，揭曉浪漫建議牆",
+        axis: "multi",
+      },
+      {
+        pageType: "fav_memory",
+        label: "最愛回憶",
+        role: "時間軸回憶分享，揭曉感人回憶牆",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "愛與回憶套組 NT$ 2,000-5,000 / 場。讓每個重要時刻都留下永恆記錄。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

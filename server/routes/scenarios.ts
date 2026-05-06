@@ -2424,6 +2424,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的大家庭裡，分享一個最近讓你開心的好消息或美好事物！`,
       };
 
+    case "love_advice":
+      return {
+        title: "💕 愛的建議",
+        prompt: `給「${scenarioName}」的主角，送上你最真摯的一句話建議或祝福！`,
+      };
+
+    case "fav_memory":
+      return {
+        title: "📸 最愛回憶",
+        prompt: `關於「${scenarioName}」，分享一個你最珍惜、最難忘的共同回憶！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
