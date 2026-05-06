@@ -344,6 +344,8 @@ const VenueRatingPage = lazy(() => import("@/components/game/multi/VenueRatingPa
 const PartyMenuPage = lazy(() => import("@/components/game/multi/PartyMenuPage"));
 const AnchorPointPage = lazy(() => import("@/components/game/multi/AnchorPointPage"));
 const FirstWordPage = lazy(() => import("@/components/game/multi/FirstWordPage"));
+const LegacyWordPage = lazy(() => import("@/components/game/multi/LegacyWordPage"));
+const SafetyLevelPage = lazy(() => import("@/components/game/multi/SafetyLevelPage"));
 const MythicalCreaturePage = lazy(() => import("@/components/game/multi/MythicalCreaturePage"));
 const DanceStylePage = lazy(() => import("@/components/game/multi/DanceStylePage"));
 const ArchitectureStylePage = lazy(() => import("@/components/game/multi/ArchitectureStylePage"));
@@ -1254,6 +1256,10 @@ export default function GamePageRenderer({
         return <AnchorPointPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "first_word":
         return <FirstWordPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "legacy_word":
+        return <LegacyWordPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "safety_level":
+        return <SafetyLevelPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "mythical_creature":
         return <MythicalCreaturePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "dance_style":
