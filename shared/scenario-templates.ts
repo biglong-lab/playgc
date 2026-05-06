@@ -4088,6 +4088,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "互照動力套組 NT$ 2,500-7,000 / 場。讓每個人看見自己的優點，也看見驅動自己的力量。",
     status: "live",
   },
+
+  {
+    id: "story-learning-pack",
+    name: "⭐ 故事學習套組",
+    tagline: "英雄故事 + 學習風格，用故事認識彼此的學習旅程",
+    description: "HeroStory 讓每人分享一個克服困難的小故事（標題＋挑戰＋洞見），以漸層卡片牆呈現集體智慧；LearningStyle 用VARK四型揭露全隊學習偏好，幫助設計更有效的學習互動。適合教育培訓、年會開場、課程設計工作坊。",
+    useCases: ["培訓課程破冰", "年會開場暖身", "師資培訓", "課程設計工作坊"],
+    category: "corporate",
+    icon: "GraduationCap",
+    gradient: "from-amber-400 to-green-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "25-35 分鐘",
+    components: [
+      {
+        pageType: "hero_story",
+        label: "英雄故事",
+        role: "分享克服困難的故事，漸層卡片牆呈現",
+        axis: "multi",
+      },
+      {
+        pageType: "learning_style",
+        label: "學習風格",
+        role: "VARK四型揭露全隊學習偏好",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "故事學習套組 NT$ 2,000-6,000 / 場。用故事連結人，用風格設計學習。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

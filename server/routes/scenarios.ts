@@ -2364,6 +2364,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的旅程中，最驅動你前進的核心動力是什麼？`,
       };
 
+    case "hero_story":
+      return {
+        title: "⭐ 英雄故事",
+        prompt: `在「${scenarioName}」的脈絡下，分享一個你克服困難、讓自己引以為傲的小故事`,
+      };
+
+    case "learning_style":
+      return {
+        title: "📚 學習風格",
+        prompt: `在「${scenarioName}」中，你最容易吸收知識的方式是哪一種？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
