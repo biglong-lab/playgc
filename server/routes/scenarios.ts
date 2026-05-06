@@ -2568,6 +2568,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的今天，哪杯飲料最像你的狀態？說說感覺！`,
       };
 
+    case "plant_type":
+      return {
+        title: "🌿 我是哪種植物",
+        prompt: `在「${scenarioName}」的場合，如果你是一種植物，你最像哪一種？說說你的個性！`,
+      };
+
+    case "city_type":
+      return {
+        title: "🌏 我是哪種城市",
+        prompt: `在「${scenarioName}」的場合，如果你是一座城市，你最像哪個？說說你的氣質！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

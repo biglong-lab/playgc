@@ -4570,6 +4570,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "元素咖啡日常套組 NT$ 1,000-3,000 / 場。輕鬆有趣的日常暖場，讓同事更了解彼此今日狀態。",
     status: "live",
   },
+  {
+    id: "plant-city-world-pack",
+    name: "🌿 植物城市世界套組",
+    tagline: "植物性格 + 城市氣質，探索你的生命哲學",
+    description: "PlantType 讓每人選出最像自己的植物並說明原因，揭曉全隊植物花園；CityType 讓每人選出最像自己氣質的城市並說原因，揭曉全隊世界地圖。適合旅遊主題、國際企業、文化探索工作坊，輕鬆引發關於生活哲學與個人特質的深度對話。",
+    useCases: ["旅遊主題", "國際企業", "文化探索", "心靈工作坊"],
+    category: "venue",
+    icon: "Globe",
+    gradient: "from-green-400 to-sky-400",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-18 分鐘",
+    components: [
+      {
+        pageType: "plant_type",
+        label: "我是哪種植物",
+        role: "10種植物選擇＋原因說明，揭曉全隊植物花園",
+        axis: "multi",
+      },
+      {
+        pageType: "city_type",
+        label: "我是哪種城市",
+        role: "10座城市選擇＋氣質說明，揭曉全隊世界地圖",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "植物城市世界套組 NT$ 1,500-4,000 / 場。深度有趣的自我探索，適合注重文化與個性的活動場合。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
