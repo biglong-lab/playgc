@@ -372,6 +372,8 @@ const SupportCirclePage = lazy(() => import("@/components/game/multi/SupportCirc
 const WhyCardPage = lazy(() => import("@/components/game/multi/WhyCardPage"));
 const ResilienceCardPage = lazy(() => import("@/components/game/multi/ResilienceCardPage"));
 const MoonPhasePage = lazy(() => import("@/components/game/multi/MoonPhasePage"));
+const ZenModePage = lazy(() => import("@/components/game/multi/ZenModePage"));
+const HeartBeatPage = lazy(() => import("@/components/game/multi/HeartBeatPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1324,6 +1326,10 @@ export default function GamePageRenderer({
         return <ResilienceCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "moon_phase":
         return <MoonPhasePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "zen_mode":
+        return <ZenModePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "heart_beat":
+        return <HeartBeatPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
