@@ -161,12 +161,19 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
     }
   };
 
-  // 步驟指示器
-  const steps = [
-    { key: "select_template", label: "選擇模板" },
-    { key: "game_info", label: "填寫名稱" },
-    { key: "complete", label: "完成" },
-  ];
+  // 步驟指示器（依 editorMode 決定是否含 select_game_mode）
+  const steps = editorMode === "game"
+    ? [
+        { key: "select_game_mode", label: "個人 / 多人" },
+        { key: "select_template", label: "選擇模板" },
+        { key: "game_info", label: "填寫名稱" },
+        { key: "complete", label: "完成" },
+      ]
+    : [
+        { key: "select_template", label: "選擇模板" },
+        { key: "game_info", label: "填寫名稱" },
+        { key: "complete", label: "完成" },
+      ];
 
   const currentStepIndex = steps.findIndex((s) => s.key === step);
 
