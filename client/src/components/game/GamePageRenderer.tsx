@@ -266,6 +266,8 @@ const GiftBoxPage = lazy(() => import("@/components/game/multi/GiftBoxPage"));
 const TimeCapsulePage = lazy(() => import("@/components/game/multi/TimeCapsulePage"));
 const TeamPactPage = lazy(() => import("@/components/game/multi/TeamPactPage"));
 const EnergyMapPage = lazy(() => import("@/components/game/multi/EnergyMapPage"));
+const ChallengeMapPage = lazy(() => import("@/components/game/multi/ChallengeMapPage"));
+const ActionPlanPage = lazy(() => import("@/components/game/multi/ActionPlanPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1006,6 +1008,10 @@ export default function GamePageRenderer({
         return <TeamPactPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "energy_map":
         return <EnergyMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "challenge_map":
+        return <ChallengeMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "action_plan":
+        return <ActionPlanPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

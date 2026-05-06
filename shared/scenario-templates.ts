@@ -4001,6 +4001,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "新隊啟動套組 NT$ 1,500-5,000 / 場。讓新團隊從第一天就有共識。",
     status: "live",
   },
+
+  {
+    id: "problem-action-pack",
+    name: "🎯 問題轉行動套組",
+    tagline: "挑戰地圖 + 行動計畫，把問題變成下一步",
+    description: "ChallengeMap 讓全隊標記當前挑戰（6類別×3嚴重程度），看見集體困難的全貌；ActionPlan 讓每人承諾一個具體行動，配上截止時間和支援需求，從問題直達行動。適合工作坊收尾、季度回顧、專案後記。",
+    useCases: ["工作坊問題到行動", "季度回顧會議", "專案後記", "年初目標設定"],
+    category: "corporate",
+    icon: "ClipboardList",
+    gradient: "from-orange-400 to-violet-400",
+    estimatedPlayers: "4-25 人",
+    estimatedDuration: "20-30 分鐘",
+    components: [
+      {
+        pageType: "challenge_map",
+        label: "挑戰地圖",
+        role: "標記當前挑戰，看見集體困難",
+        axis: "multi",
+      },
+      {
+        pageType: "action_plan",
+        label: "行動計畫",
+        role: "承諾具體行動，從問題直達行動",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "問題轉行動套組 NT$ 2,000-6,000 / 場。把問題清單變成行動清單。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

@@ -2327,6 +2327,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」中，你現在的能量和意願各在哪個象限？`,
       };
 
+    case "challenge_map":
+      return {
+        title: "🗺️ 挑戰地圖",
+        prompt: `在「${scenarioName}」中，你目前面對的最大挑戰是什麼？`,
+        placeholder: "描述你的挑戰…（≥5字）",
+      };
+
+    case "action_plan":
+      return {
+        title: "✅ 行動計畫",
+        prompt: `完成「${scenarioName}」後，你打算採取的第一個具體行動是什麼？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
