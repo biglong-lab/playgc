@@ -54,6 +54,11 @@ export const games = pgTable("games", {
   lockLongitude: decimal("lock_longitude", { precision: 11, scale: 8 }),
   lockRadius: integer("lock_radius").default(50), // meters
   lockLocationName: varchar("lock_location_name", { length: 200 }),
+  // 🆕 Editor mode（2026-05-07）— 軟分流階段 1
+  //   game     路線 I（要登入要組隊）
+  //   activity 路線 II/III（玩家匿名 + host 大螢幕）
+  // 影響 admin editor 顯示元件清單 + session 建立流程（host_session vs 普通 session）
+  editorMode: varchar("editor_mode", { length: 20 }).notNull().default("game"),
   // Game mode settings - individual or team
   gameMode: varchar("game_mode", { length: 20 }).default("individual"), // individual, team
   minTeamPlayers: integer("min_team_players").default(2), // Minimum players required for team mode
