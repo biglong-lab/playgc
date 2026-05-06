@@ -55,6 +55,8 @@ interface AdminGame {
   title: string;
   fieldId: string | null;
   status: string | null;
+  editorMode?: "game" | "activity" | null;
+  description?: string | null;
 }
 
 export default function AdminHostSessions() {
