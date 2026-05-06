@@ -3286,6 +3286,9 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
   const isHost = component.axis === "host";
   const gameMode = getGameModeForComponent(component);
   const slug = isHost ? null : generateSlug();
+  // 🆕 軟分流階段 1：依 axis 自動推導 editorMode
+  // host 軸 → 活動現場（不登入）/ 其他 → 遊戲（要登入）
+  const editorMode = isHost ? "activity" : "game";
 
   // W9 D2: AI 生成的 config 優先、fallback 到 default
   const config = aiConfig ?? getDefaultConfigForPageType(component.pageType, scenarioDisplayName);
@@ -3299,6 +3302,7 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
       maxPlayers: 100,
       status: "published",
       gameMode,
+      editorMode,
       publicSlug: slug,
     })
     .returning();
