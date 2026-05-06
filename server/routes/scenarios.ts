@@ -2520,6 +2520,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，你小時候最想成為什麼？說說當時的夢想故事！`,
       };
 
+    case "travel_style":
+      return {
+        title: "✈️ 我的旅行風格",
+        prompt: `在「${scenarioName}」的場合，你是哪種旅行者？說說你的夢想旅行地！`,
+      };
+
+    case "season_person":
+      return {
+        title: "🌸 我是哪個季節的人",
+        prompt: `在「${scenarioName}」的場合，如果你是一個季節，你最像哪一個？說說原因！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

@@ -4458,6 +4458,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "美食夢想套組 NT$ 1,500-4,000 / 場。美食話題加上懷舊夢想，天然破冰好聊不停。",
     status: "live",
   },
+  {
+    id: "travel-season-pack",
+    name: "✈️ 旅行四季套組",
+    tagline: "旅行風格 + 四季性格，探索彼此的生活哲學",
+    description: "TravelStyle 讓大家分享自己的旅行者類型與夢想目的地，揭曉全隊旅行地圖；SeasonPerson 讓每人選出最代表自己的季節並說明原因，揭曉四季圖鑑。適合員工旅遊前的破冰、旅遊主題活動、認識新朋友，輕鬆引發深度話題。",
+    useCases: ["員工旅遊", "旅遊主題活動", "認識新朋友", "破冰活動"],
+    category: "event",
+    icon: "Plane",
+    gradient: "from-cyan-400 to-emerald-400",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-18 分鐘",
+    components: [
+      {
+        pageType: "travel_style",
+        label: "我的旅行風格",
+        role: "8種旅行風格選擇＋夢想旅行地，揭曉旅行地圖",
+        axis: "multi",
+      },
+      {
+        pageType: "season_person",
+        label: "我是哪個季節的人",
+        role: "4季節選擇＋原因，揭曉四季圖鑑",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "旅行四季套組 NT$ 1,500-4,000 / 場。探索彼此的生活哲學，輕鬆引發深度話題。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
