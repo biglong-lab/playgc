@@ -286,6 +286,8 @@ const LoveAdvicePage = lazy(() => import("@/components/game/multi/LoveAdvicePage
 const FavMemoryPage = lazy(() => import("@/components/game/multi/FavMemoryPage"));
 const DreamTripPage = lazy(() => import("@/components/game/multi/DreamTripPage"));
 const BookRecPage = lazy(() => import("@/components/game/multi/BookRecPage"));
+const MottoBoardPage = lazy(() => import("@/components/game/multi/MottoBoardPage"));
+const TimeCapacityPage = lazy(() => import("@/components/game/multi/TimeCapacityPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1066,6 +1068,10 @@ export default function GamePageRenderer({
         return <DreamTripPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "book_rec":
         return <BookRecPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "motto_board":
+        return <MottoBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "time_capacity":
+        return <TimeCapacityPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

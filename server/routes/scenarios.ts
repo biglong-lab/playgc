@@ -2448,6 +2448,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `推薦一本書、一部電影或任何讓你收穫滿滿的好內容給「${scenarioName}」的夥伴！`,
       };
 
+    case "motto_board":
+      return {
+        title: "💬 人生座右銘",
+        prompt: `在「${scenarioName}」的場合，分享一句支撐你前行的座右銘或人生信條！`,
+      };
+
+    case "time_capacity":
+      return {
+        title: "⏰ 時間分配",
+        prompt: `在「${scenarioName}」的主題下，分享你理想中的一週 168 小時時間分配！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

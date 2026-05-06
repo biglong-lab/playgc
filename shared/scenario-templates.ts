@@ -4290,6 +4290,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "旅行好物套組 NT$ 2,000-5,000 / 場。讓話題自然從旅行流向生活品味。",
     status: "live",
   },
+  {
+    id: "motto-time-pack",
+    name: "🧭 信條時間套組",
+    tagline: "人生座右銘 + 時間分配，深度了解團隊的價值觀與生活方式",
+    description: "MottoBoard 讓大家從6種人生態度選擇並分享座右銘，揭曉彩色信條牆；TimeCapacity 讓每人分配168小時到6個生活領域，揭曉全隊平均時間圖表。適合企業內訓、新員工破冰、工作生活平衡討論，讓彼此深度了解，建立真實的連結。",
+    useCases: ["企業內訓", "新員工破冰", "職涯規劃工作坊", "年度啟動"],
+    category: "corporate",
+    icon: "Compass",
+    gradient: "from-orange-400 to-blue-400",
+    estimatedPlayers: "4-60 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "motto_board",
+        label: "人生座右銘",
+        role: "6種人生態度，揭曉彩色信條牆",
+        axis: "multi",
+      },
+      {
+        pageType: "time_capacity",
+        label: "時間分配",
+        role: "168小時6領域分配，揭曉全隊平均圖表",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "信條時間套組 NT$ 2,500-6,000 / 場。讓團隊深度認識彼此的價值觀與生活方式。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
