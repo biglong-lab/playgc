@@ -4934,6 +4934,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "建築起司文化套組 NT$ 1,200-3,500 / 場。品味十足的設計美食探索，適合設計工作坊、美食主題活動、文化交流場合。",
     status: "live",
   },
+  {
+    id: "mushroom-pasta-food-pack",
+    name: "🍄 菇菇義麵美食套組",
+    tagline: "用菇類個性與義大利麵風格探索團隊口味",
+    description: "MushroomType 讓每人選出最像自己的菇類並說原因，揭曉全隊菇菇園；PastaType 讓每人選出最像自己的義大利麵並說原因，揭曉全隊義大利麵館。適合美食主題、旅遊分享、聚餐破冰，充滿趣味的飲食個性對話。",
+    useCases: ["美食主題活動", "義式旅遊聚會", "餐廳用餐破冰", "輕鬆美食個性探索"],
+    category: "social",
+    icon: "UtensilsCrossed",
+    gradient: "from-amber-600 to-orange-500",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "mushroom_type",
+        label: "我是哪種菇類",
+        role: "9種菇類選擇＋個性說明，揭曉全隊菇菇園",
+        axis: "multi",
+      },
+      {
+        pageType: "pasta_type",
+        label: "我是哪種義大利麵",
+        role: "9種義大利麵選擇＋個性說明，揭曉全隊義大利麵館",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "菇菇義麵美食套組 NT$ 1,200-3,500 / 場。美味十足的個性探索，適合美食主題活動、義式餐廳、旅遊聚會破冰。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
