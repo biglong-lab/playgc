@@ -2676,6 +2676,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一種桌遊，你最像哪種？說說你的遊戲個性！`,
       };
 
+    case "landscape_type":
+      return {
+        title: "🏔️ 我是哪種地景",
+        prompt: `在「${scenarioName}」的場合，如果你是一種地景，你最像哪種？說說你的地景個性！`,
+      };
+
+    case "art_style":
+      return {
+        title: "🎨 我是哪種藝術風格",
+        prompt: `在「${scenarioName}」的場合，如果你是一種藝術風格，你最像哪種？說說你的藝術個性！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

@@ -4822,6 +4822,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "香料桌遊風味套組 NT$ 1,200-3,500 / 場。風味十足的個性探索，適合美食文化活動、桌遊聚會、企業破冰場合。",
     status: "live",
   },
+  {
+    id: "landscape-art-creative-pack",
+    name: "🏔️ 地景藝術創意套組",
+    tagline: "用地景個性與藝術風格探索團隊美感",
+    description: "LandscapeType 讓每人選出最像自己的地景並說原因，揭曉全隊地圖；ArtStyle 讓每人選出最像自己的藝術風格並說原因，揭曉全隊藝廊。適合藝文活動、創意工作坊、空間活化，激發豐富的美感個性對話。",
+    useCases: ["藝文活動破冰", "創意工作坊", "空間活化體驗", "設計團隊個性探索"],
+    category: "venue",
+    icon: "Palette",
+    gradient: "from-teal-500 to-violet-600",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "landscape_type",
+        label: "我是哪種地景",
+        role: "9種地景選擇＋個性說明，揭曉全隊地圖",
+        axis: "multi",
+      },
+      {
+        pageType: "art_style",
+        label: "我是哪種藝術風格",
+        role: "9種藝術風格選擇＋個性說明，揭曉全隊藝廊",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "地景藝術創意套組 NT$ 1,200-3,500 / 場。美感十足的個性探索，適合藝文空間、創意工作坊、文化場域活化。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
