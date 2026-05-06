@@ -7,6 +7,26 @@
 
 ## 2026-05-07
 
+### 🎯 軟分流階段 1 — admin editor 入口分流（B2 架構重做）
+**主題**：解決「遊戲腳本 vs 活動互動混在一起」核心架構問題（使用者抓到的痛點）
+**狀態**：🟢 程式碼層完成、e2e 72/72 全綠、待實機驗證
+**詳情** → [changes/2026-05-07-admin-editor-split.md](changes/2026-05-07-admin-editor-split.md)
+
+**核心**：games 表加 editorMode 欄位（'game' / 'activity'）、admin 兩個獨立入口建場、editor 自動過濾元件清單。
+
+**修改**：
+- DB schema：games.editorMode（NOT NULL DEFAULT 'game'、向後相容）
+- AdminGames：兩個並排按鈕（🎮 建立遊戲 / 🎉 建立活動）+ filter UI
+- ToolboxSidebar：依 editorMode 過濾元件（game 35 個 / activity 68 個）
+- AdminHostSessions：select 只列 activity mode game
+- SCENARIO instantiate：依 axis 自動設 editorMode（host → activity / 其他 → game）
+
+**為什麼軟分流（不硬分流）**：同 codebase、共用 schema、修 bug 改一處、未來客戶要「年會 = 遊戲段 + 大螢幕段」混搭時可在同 SCENARIO 跑兩種 session。詳見 architecture/three-paths.md。
+
+**E2E 驗證**：黃金路徑 17 + A2 18 + Host 34 + 階段 1 分流 3 = 72/72
+
+---
+
 ### 📺 補接 16 個 host 元件到 admin editor + 三路線架構文件
 **主題**：B2 重做 — 修「admin editor 看不到 host 元件」根因
 **狀態**：🟢 程式碼層 + e2e smoke 完成、PAGE_TYPES 17/17、e2e 69/69 全綠
