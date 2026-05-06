@@ -2592,6 +2592,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是故事裡的角色，你最像哪一種？說說原因！`,
       };
 
+    case "gem_stone":
+      return {
+        title: "💎 我是哪種寶石",
+        prompt: `在「${scenarioName}」的場合，如果你是一種寶石，你最像哪一種？說說你代表的特質！`,
+      };
+
+    case "myth_animal":
+      return {
+        title: "🐉 我是哪種神話神獸",
+        prompt: `在「${scenarioName}」的場合，如果你是一種神話神獸，你最像哪一種？說說你的神獸特質！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

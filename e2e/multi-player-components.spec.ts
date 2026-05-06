@@ -800,6 +800,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "city_type",
       "sport_vibes",
       "movie_role",
+      "gem_stone",
+      "myth_animal",
     ];
 
     for (const t of newTypes) {

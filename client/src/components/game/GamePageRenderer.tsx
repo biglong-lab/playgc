@@ -310,6 +310,8 @@ const PlantTypePage = lazy(() => import("@/components/game/multi/PlantTypePage")
 const CityTypePage = lazy(() => import("@/components/game/multi/CityTypePage"));
 const SportVibesPage = lazy(() => import("@/components/game/multi/SportVibesPage"));
 const MovieRolePage = lazy(() => import("@/components/game/multi/MovieRolePage"));
+const GemStonePage = lazy(() => import("@/components/game/multi/GemStonePage"));
+const MythAnimalPage = lazy(() => import("@/components/game/multi/MythAnimalPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1138,6 +1140,10 @@ export default function GamePageRenderer({
         return <SportVibesPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "movie_role":
         return <MovieRolePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "gem_stone":
+        return <GemStonePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "myth_animal":
+        return <MythAnimalPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
