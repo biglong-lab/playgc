@@ -4,9 +4,11 @@
 // 生產環境（NODE_ENV === "production"）強制 disabled，即使 ENABLE_E2E_HELPERS=true
 //
 // 端點：
-//   POST /api/_test/seed-game        建立測試 game + 5 pages + session（回傳 IDs）
-//   POST /api/_test/cleanup/:gameId  清理測試 game（連同 sessions / pages）
-//   POST /api/_test/seed-multi-game  建立多人模式 game + vote_team 頁
+//   POST /api/_test/seed-game                  建立測試 game + 5 pages + session（回傳 IDs）
+//   POST /api/_test/seed-multi-game            建立多人模式 game + vote_team 頁
+//   POST /api/_test/seed-multi-game-with-page  建立多人 game 含指定 pageType（A2 L3 驗證用）
+//   POST /api/_test/cleanup/:gameId            清理測試 game（連同 sessions / pages）
+//   GET  /api/_test/games/:gameId              查詢測試 game 狀態
 //
 // 用途：給 Playwright e2e 自包含建立資料、跳過 admin Firebase auth
 //
@@ -144,6 +146,76 @@ export function registerTestOnlyRoutes(app: Express) {
     }
   });
 
+  // POST /api/_test/seed-multi-game-with-page — 建多人 game 含指定 pageType（A2 L3 驗證用）
+  // body: { pageType: string, config?: object }
+  // 回傳：gameId / sessionId / publicSlug / pageId / pageType / config
+  //
+  // 支援 9 個 L3 持久化元件：
+  //   lock_coop / relay_mission / territory_capture（ws 即時同步 + DB 持久化）
+  //   collective_score / role_assign / quest_chain（DB 持久化，2026-05-05 升級）
+  //   jigsaw_puzzle / treasure_hunt / gps_cascade（DB 持久化，2026-05-05 升級）
+  app.post("/api/_test/seed-multi-game-with-page", async (req, res) => {
+    try {
+      const { pageType, config: customConfig } = (req.body ?? {}) as {
+        pageType?: string;
+        config?: Record<string, unknown>;
+      };
+
+      if (!pageType || typeof pageType !== "string") {
+        return res.status(400).json({ error: "pageType 必填" });
+      }
+
+      const defaultConfig = getMultiPageDefaultConfig(pageType);
+      if (!defaultConfig) {
+        return res.status(400).json({
+          error: `不支援的 pageType: ${pageType}`,
+          supported: Object.keys(MULTI_L3_DEFAULT_CONFIGS),
+        });
+      }
+
+      const finalConfig = { ...defaultConfig, ...(customConfig ?? {}) };
+
+      const [game] = await db.insert(games).values({
+        title: `E2E A2 ${pageType} 測試`,
+        description: `Playwright A2 L3 持久化驗證 — ${pageType}`,
+        difficulty: "medium",
+        estimatedTime: 5,
+        maxPlayers: 6,
+        status: "published",
+        gameMode: "team",
+        minTeamPlayers: 2,
+        maxTeamPlayers: 4,
+        publicSlug: `e2e-a2-${pageType}-${Date.now()}`,
+      }).returning();
+
+      const [insertedPage] = await db.insert(pages).values({
+        gameId: game.id,
+        pageOrder: 1,
+        pageType,
+        config: finalConfig,
+      }).returning();
+
+      const [session] = await db.insert(gameSessions).values({
+        gameId: game.id,
+        teamName: `e2e-a2-${pageType}`,
+        playerCount: 2,
+        status: "playing",
+      }).returning();
+
+      res.json({
+        gameId: game.id,
+        sessionId: session.id,
+        publicSlug: game.publicSlug,
+        pageId: insertedPage.id,
+        pageType: insertedPage.pageType,
+        config: finalConfig,
+      });
+    } catch (err) {
+      console.error("[test-only seed-multi-game-with-page] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
   // POST /api/_test/cleanup/:gameId — 清除測試 game
   app.post("/api/_test/cleanup/:gameId", async (req, res) => {
     try {
@@ -167,4 +239,81 @@ export function registerTestOnlyRoutes(app: Express) {
       res.status(500).json({ error: String(err) });
     }
   });
+}
+
+// 9 個 L3 持久化元件的最小可用 default config（給 seed-multi-game-with-page 用）
+// 來源：shared/schema/games.ts 各 *Config interface + client/src/pages/game-editor/getDefaultConfig.ts
+const MULTI_L3_DEFAULT_CONFIGS: Record<string, Record<string, unknown>> = {
+  // ws 即時同步 + DB 持久化（3 個高風險）
+  lock_coop: {
+    title: "E2E 協作解鎖",
+    digits: 4,
+    combination: "1234",
+    clues: [
+      { text: "前兩位是 12", label: "線索 A" },
+      { text: "後兩位是 34", label: "線索 B" },
+    ],
+    maxAttempts: 5,
+  },
+  relay_mission: {
+    title: "E2E 接力任務",
+    segments: [
+      { title: "第一段", prompt: "答 A", answer: "A" },
+      { title: "第二段", prompt: "答 B", answer: "B" },
+    ],
+    segmentOrder: "sequential",
+  },
+  territory_capture: {
+    title: "E2E 地盤戰",
+    points: [
+      { id: "p1", name: "點 1", lat: 24.4, lng: 118.3, radius: 30 },
+      { id: "p2", name: "點 2", lat: 24.5, lng: 118.4, radius: 30 },
+    ],
+    timeLimitSec: 300,
+    capturePoints: 5,
+  },
+
+  // DB 持久化（2026-05-05 L3 升級）
+  collective_score: {
+    title: "E2E 集體分數",
+    goal: 100,
+    mode: "additive",
+  },
+  role_assign: {
+    title: "E2E 角色分派",
+    roles: ["隊長", "記錄", "計時", "發言"],
+  },
+  quest_chain: {
+    title: "E2E 任務鏈",
+    prompt: "依序完成連鎖任務",
+    quests: [
+      { id: "q1", title: "任務 1", question: "答 X", answer: "X" },
+      { id: "q2", title: "任務 2", question: "答 Y", answer: "Y" },
+    ],
+  },
+  jigsaw_puzzle: {
+    title: "E2E 拼圖協作",
+    pieces: 9,
+    timeLimit: 300,
+  },
+  treasure_hunt: {
+    title: "E2E 尋寶任務",
+    clues: [
+      { id: "c1", text: "線索 1", answer: "A" },
+      { id: "c2", text: "線索 2", answer: "B" },
+    ],
+    timeLimit: 600,
+  },
+  gps_cascade: {
+    title: "E2E GPS 連鎖",
+    checkpoints: [
+      { id: "g1", name: "點 1", lat: 24.4, lng: 118.3 },
+      { id: "g2", name: "點 2", lat: 24.5, lng: 118.4 },
+    ],
+    radius: 30,
+  },
+};
+
+function getMultiPageDefaultConfig(pageType: string): Record<string, unknown> | null {
+  return MULTI_L3_DEFAULT_CONFIGS[pageType] ?? null;
 }
