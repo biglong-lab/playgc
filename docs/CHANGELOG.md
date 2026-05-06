@@ -5,6 +5,41 @@
 
 ---
 
+## 2026-05-07
+
+### 🚀 Phase 1 (DBAC 路徑) 完整收尾 — D4 + D2 + D1 + D3 全套
+**主題**：補 e2e 真實測試 / 30 分鐘建場流程優化 / 元件分類 + 搜尋
+**狀態**：🟢 14 commits 全部部署、CI e2e 17/17 全綠
+**部署 commit 範圍**：`1c4b9075..e7647c82`
+
+**D4 — e2e 真實測試**：
+- 新增 dev-only seed endpoint（生產禁用）
+- 17 個黃金路徑 e2e（A 單人 5 / B 多人 6 / C 活動 6）
+- CI workflow 啟動 server + ENABLE_E2E_HELPERS
+
+**D2 — 30 分鐘建場流程**：
+- D2-c 4 痛點修復（admin 未登入 / 複製 fallback / 列印重列 / toast 引導）
+- D2-b onboarding wizard 加 30 分鐘建場捷徑步驟
+- 插隊：text_card audioAutoplay 設定（admin 反映）
+
+**D1 — host + multi 配對 spec**：
+- 17 個 host 元件完整配對表 + 5 大商業情境組合範例
+- `docs/domains/host-multi-pairing.md`
+
+**D3 — 元件三軸 category 分組**：
+- 81 個 page_type 分 5 大類（敘事/驗證/拍照/多人協作/活動互動）
+- ToolboxSidebar 摺疊式分組 + 搜尋
+
+**整體影響**：e2e smoke test → 真實 e2e；30 分鐘建場流程 4 痛點全修；
+admin editor 元件 81 個從平鋪改成分組+搜尋。
+
+**細節** → [changes/2026-05-07-phase-1-complete.md](changes/2026-05-07-phase-1-complete.md)
+**規劃** → [changes/2026-05-07-phase-dbac-plan.md](changes/2026-05-07-phase-dbac-plan.md)
+
+⏭ 下一步：Phase 2 (B 結構優化) — 情境模板組合、AI 推薦引擎
+
+---
+
 ## 2026-05-06
 
 ### 🧹 多人元件大清理（416 → 60）+ Loop 安全護欄 ADR
