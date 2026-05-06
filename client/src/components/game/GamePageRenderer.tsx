@@ -378,6 +378,8 @@ const GratitudeTreePage = lazy(() => import("@/components/game/multi/GratitudeTr
 const ColorMoodPage = lazy(() => import("@/components/game/multi/ColorMoodPage"));
 const LifeTreePage = lazy(() => import("@/components/game/multi/LifeTreePage"));
 const EmotionWheelPage = lazy(() => import("@/components/game/multi/EmotionWheelPage"));
+const BodyCompassPage = lazy(() => import("@/components/game/multi/BodyCompassPage"));
+const ContextCardPage = lazy(() => import("@/components/game/multi/ContextCardPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1342,6 +1344,10 @@ export default function GamePageRenderer({
         return <LifeTreePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "emotion_wheel":
         return <EmotionWheelPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "body_compass":
+        return <BodyCompassPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "context_card":
+        return <ContextCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
