@@ -314,6 +314,8 @@ const GemStonePage = lazy(() => import("@/components/game/multi/GemStonePage"));
 const MythAnimalPage = lazy(() => import("@/components/game/multi/MythAnimalPage"));
 const TeaTypePage = lazy(() => import("@/components/game/multi/TeaTypePage"));
 const PlanetTypePage = lazy(() => import("@/components/game/multi/PlanetTypePage"));
+const VehicleTypePage = lazy(() => import("@/components/game/multi/VehicleTypePage"));
+const WeatherTypePage = lazy(() => import("@/components/game/multi/WeatherTypePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1150,6 +1152,10 @@ export default function GamePageRenderer({
         return <TeaTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "planet_type":
         return <PlanetTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "vehicle_type":
+        return <VehicleTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "weather_type":
+        return <WeatherTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

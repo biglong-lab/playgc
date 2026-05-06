@@ -2616,6 +2616,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是太陽系的一顆星球，你最像哪一顆？說說你的星球特質！`,
       };
 
+    case "vehicle_type":
+      return {
+        title: "🚂 我是哪種交通工具",
+        prompt: `在「${scenarioName}」的場合，如果你是一種交通工具，你最像哪一種？說說你的移動風格！`,
+      };
+
+    case "weather_type":
+      return {
+        title: "⛅ 我是哪種天氣",
+        prompt: `在「${scenarioName}」的場合，如果你是一種天氣，你最像哪一種？說說你的天氣個性！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
