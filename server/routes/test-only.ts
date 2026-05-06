@@ -165,27 +165,32 @@ export function registerTestOnlyRoutes(app: Express) {
         return res.status(400).json({ error: "pageType 必填" });
       }
 
+      // 優先用內建 default、否則用 caller 提供的 customConfig、都沒有才報錯
       const defaultConfig = getMultiPageDefaultConfig(pageType);
-      if (!defaultConfig) {
+      if (!defaultConfig && !customConfig) {
         return res.status(400).json({
-          error: `不支援的 pageType: ${pageType}`,
+          error: `不支援的 pageType: ${pageType}（無內建 default、需在 body.config 提供）`,
           supported: Object.keys(MULTI_L3_DEFAULT_CONFIGS),
         });
       }
 
-      const finalConfig = { ...defaultConfig, ...(customConfig ?? {}) };
+      const finalConfig = { ...(defaultConfig ?? {}), ...(customConfig ?? {}) };
+
+      // host_ 開頭的 pageType 走 ADR-0004 host 軸線（gameMode=individual、玩家匿名）
+      // 其他走 multi 軸（gameMode=team、要登入要組隊）
+      const isHostAxis = pageType.startsWith("host_");
 
       const [game] = await db.insert(games).values({
-        title: `E2E A2 ${pageType} 測試`,
-        description: `Playwright A2 L3 持久化驗證 — ${pageType}`,
+        title: `E2E ${pageType} 測試`,
+        description: `Playwright e2e — ${pageType}`,
         difficulty: "medium",
         estimatedTime: 5,
         maxPlayers: 6,
         status: "published",
-        gameMode: "team",
-        minTeamPlayers: 2,
-        maxTeamPlayers: 4,
-        publicSlug: `e2e-a2-${pageType}-${Date.now()}`,
+        gameMode: isHostAxis ? "individual" : "team",
+        minTeamPlayers: isHostAxis ? null : 2,
+        maxTeamPlayers: isHostAxis ? null : 4,
+        publicSlug: `e2e-${pageType}-${Date.now()}`,
       }).returning();
 
       const [insertedPage] = await db.insert(pages).values({
@@ -195,11 +200,13 @@ export function registerTestOnlyRoutes(app: Express) {
         config: finalConfig,
       }).returning();
 
+      // host 軸 session 加 hostMode=true（ADR-0004：HostScreen 模式）
       const [session] = await db.insert(gameSessions).values({
         gameId: game.id,
-        teamName: `e2e-a2-${pageType}`,
-        playerCount: 2,
+        teamName: isHostAxis ? null : `e2e-${pageType}`,
+        playerCount: isHostAxis ? 0 : 2,
         status: "playing",
+        hostMode: isHostAxis,
       }).returning();
 
       res.json({
