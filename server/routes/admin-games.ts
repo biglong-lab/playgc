@@ -298,6 +298,10 @@ export function registerAdminGameRoutes(app: Express) {
     enableTeamVoice: z.boolean().optional(),
     enableTeamLocation: z.boolean().optional(),
     teamScoreMode: z.enum(["shared", "individual", "hybrid"]).optional(),
+    // 🆕 2026-05-07：首頁可見 toggle（綁 isIsolated 反向）
+    // isIsolated=true（schema default）= QR-only 防亂入、不在首頁
+    // isIsolated=false = 首頁可見
+    isIsolated: z.boolean().optional(),
     // 🤖 P6-4: AI 實測時戳（admin 點「已完成 AI 實測」按鈕時帶當前時間）
     lastLiveTestedAt: z.coerce.date().nullable().optional(),
   }).strict(); // strict() 拒絕未定義的欄位
