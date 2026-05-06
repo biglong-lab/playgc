@@ -676,6 +676,12 @@ ${componentDescriptions}
 - "skill_showcase": { title, offerLabel, learnLabel, suggestions?: string[] }
   技能交流：每人從建議清單中選或自輸入「我能教的技能」與「我想學的技能」，揭曉後以技能卡片交流板顯示全隊技能地圖及熱門技能統計，適合新成員破冰/跨部門交流/學習型組織建立
 
+- "habit_tracker": { title, prompt, habitPlaceholder, whyPlaceholder, categories?: string[] }
+  習慣追蹤：每人選擇類別（健康/學習/工作/人際等）並分享一個想建立的新習慣及原因，揭曉後以類別統計卡片牆呈現全隊習慣分佈，適合個人成長工作坊/新年啟動/團隊文化建立
+
+- "career_highlight": { title, prompt, achievementPlaceholder, impactPlaceholder }
+  職涯亮點：每人選擇年份並分享一個職涯中最自豪的成就及影響，揭曉後以年份降序時間軸呈現全隊職涯歷程，適合新人破冰/跨世代交流/領導力培訓
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

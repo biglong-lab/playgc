@@ -2238,6 +2238,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         learnLabel: "我想學習",
       };
 
+    case "habit_tracker":
+      return {
+        title: "🔄 習慣追蹤",
+        prompt: `在「${scenarioName}」中，你最想建立的一個新習慣是什麼？`,
+        habitPlaceholder: "例如：每天閱讀 30 分鐘",
+        whyPlaceholder: "為什麼這個習慣對你重要？（選填）",
+      };
+
+    case "career_highlight":
+      return {
+        title: "🏆 職涯亮點",
+        prompt: `在「${scenarioName}」中，分享你職涯中最自豪的一個成就：`,
+        achievementPlaceholder: "例如：主導首次跨部門整合，成功讓三個團隊協作…",
+        impactPlaceholder: "這個成就帶來什麼影響？（選填）",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

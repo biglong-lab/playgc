@@ -3830,6 +3830,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "會議回饋套組 NT$ 1,000-3,000 / 場。讓每場會議都有具體產出與人際連結。",
     status: "live",
   },
+  {
+    id: "growth-journey-pack",
+    name: "🌱 成長旅程套組",
+    tagline: "從職涯亮點到習慣建立，完整的個人成長對話",
+    description: "職涯亮點 + 習慣追蹤，先以時間軸分享個人職涯里程碑，再設定想建立的新習慣，形成過去回顧與未來行動的完整閉環。",
+    useCases: ["新人入職交流", "年度回顧工作坊", "跨世代對話活動", "領導力培訓收尾"],
+    category: "corporate",
+    icon: "Briefcase",
+    gradient: "from-indigo-400 to-green-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "career_highlight",
+        label: "職涯亮點",
+        role: "分享個人里程碑時間軸",
+        axis: "multi",
+      },
+      {
+        pageType: "habit_tracker",
+        label: "習慣追蹤",
+        role: "設定未來行動習慣",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "成長旅程套組 NT$ 1,500-4,000 / 場。讓職涯故事激發彼此，讓習慣承諾公開成真。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
