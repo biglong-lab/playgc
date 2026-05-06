@@ -4204,6 +4204,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "感受事實套組 NT$ 1,500-3,000 / 場。5 分鐘讓陌生人變成老朋友。",
     status: "live",
   },
+
+  {
+    id: "vibe-news-pack",
+    name: "🎨 顏色好消息套組",
+    tagline: "顏色心情 + 好消息分享，正能量開場的完美組合",
+    description: "ColorVibe 讓每人選一個顏色代表當下心情，揭曉全隊色彩泡泡地圖；GoodNews 讓每人分享最近的一則好消息（6 大類別），揭曉彩色好消息牆。適合員工關懷、季度啟動會、正向文化建立。",
+    useCases: ["員工關懷活動", "季度啟動會", "正向文化建立", "聚會開場"],
+    category: "corporate",
+    icon: "Palette",
+    gradient: "from-emerald-400 to-cyan-400",
+    estimatedPlayers: "4-40 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "color_vibe",
+        label: "顏色心情",
+        role: "8色情緒選擇，揭曉全隊色彩調色盤",
+        axis: "multi",
+      },
+      {
+        pageType: "good_news",
+        label: "好消息分享",
+        role: "6類別好消息，揭曉彩色好消息牆",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "顏色好消息套組 NT$ 1,500-3,000 / 場。用顏色和好消息為團隊注入正能量。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

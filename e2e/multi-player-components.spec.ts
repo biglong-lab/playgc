@@ -770,6 +770,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "team_radar",
       "today_feel",
       "speed_fact",
+      "color_vibe",
+      "good_news",
     ];
 
     for (const t of newTypes) {

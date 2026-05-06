@@ -2412,6 +2412,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的大家面前，分享一個讓人意想不到的關於你的小事實！`,
       };
 
+    case "color_vibe":
+      return {
+        title: "🎨 顏色心情",
+        prompt: `參與「${scenarioName}」的你，現在的心情是什麼顏色？選一個最貼近的！`,
+      };
+
+    case "good_news":
+      return {
+        title: "🎉 好消息分享",
+        prompt: `在「${scenarioName}」的大家庭裡，分享一個最近讓你開心的好消息或美好事物！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
