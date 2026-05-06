@@ -276,6 +276,8 @@ const HeroStoryPage = lazy(() => import("@/components/game/multi/HeroStoryPage")
 const LearningStylePage = lazy(() => import("@/components/game/multi/LearningStylePage"));
 const StressSignalPage = lazy(() => import("@/components/game/multi/StressSignalPage"));
 const DecisionStylePage = lazy(() => import("@/components/game/multi/DecisionStylePage"));
+const ThreeWordsPage = lazy(() => import("@/components/game/multi/ThreeWordsPage"));
+const TeamRadarPage = lazy(() => import("@/components/game/multi/TeamRadarPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1036,6 +1038,10 @@ export default function GamePageRenderer({
         return <StressSignalPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "decision_style":
         return <DecisionStylePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "three_words":
+        return <ThreeWordsPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "team_radar":
+        return <TeamRadarPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

@@ -4146,6 +4146,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "壓力決策套組 NT$ 2,000-5,000 / 場。看見壓力，也看見決策智慧。",
     status: "live",
   },
+
+  {
+    id: "words-radar-pack",
+    name: "✍️ 詞語雷達套組",
+    tagline: "三個字 + 團隊雷達，直覺感受與立體評分同步揭曉",
+    description: "ThreeWords 讓每人用三個詞語描述當下感受，拼出全隊的集體語彙牆；TeamRadar 對五個面向（成效/溝通/信任/活力/創新）評分，揭曉全隊雷達平均圖。感性與理性並用，適合回顧會議、季度檢討、組織健康盤點。",
+    useCases: ["回顧會議", "季度檢討", "組織健康盤點", "企業內訓開場"],
+    category: "corporate",
+    icon: "Radar",
+    gradient: "from-cyan-400 to-indigo-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "three_words",
+        label: "三個字",
+        role: "每人三個詞語，拼出全隊集體語彙牆",
+        axis: "multi",
+      },
+      {
+        pageType: "team_radar",
+        label: "團隊雷達",
+        role: "五面向評分，揭曉全隊雷達平均值",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "詞語雷達套組 NT$ 2,000-5,000 / 場。感性詞語 + 理性評分，看見團隊全貌。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

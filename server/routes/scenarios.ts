@@ -2388,6 +2388,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」中面對重要決定時，你最傾向哪種方式？`,
       };
 
+    case "three_words":
+      return {
+        title: "✍️ 三個字",
+        prompt: `用三個詞語描述你對「${scenarioName}」此刻的感受或期待。`,
+      };
+
+    case "team_radar":
+      return {
+        title: "📡 團隊雷達",
+        prompt: `請對「${scenarioName}」中的團隊五個面向各給一個分數（1-5），讓大家看見整體狀態！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
