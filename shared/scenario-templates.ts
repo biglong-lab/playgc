@@ -4990,6 +4990,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "壽司材質身份套組 NT$ 1,200-3,500 / 場。日式美食與材質設計的雙重個性探索，適合日式主題、設計工作坊、企業破冰。",
     status: "live",
   },
+  {
+    id: "fruit-chocolate-sweet-pack",
+    name: "🍎 水果巧克力甜蜜套組",
+    tagline: "用水果個性與巧克力風格雙重探索團隊甜蜜指數",
+    description: "FruitType 讓每人選出最像自己的水果並說原因，揭曉全隊果籃；ChocolateType 讓每人選出最像自己的巧克力並說原因，揭曉全隊巧克力盒。清甜水果與濃郁巧克力的雙重美食個性探索，充滿歡笑。",
+    useCases: ["甜點主題活動", "情人節聚會", "夏日派對", "美食個性破冰"],
+    category: "social",
+    icon: "Cherry",
+    gradient: "from-green-500 to-amber-700",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "fruit_type",
+        label: "我是哪種水果",
+        role: "9種水果選擇＋個性說明，揭曉全隊果籃",
+        axis: "multi",
+      },
+      {
+        pageType: "chocolate_type",
+        label: "我是哪種巧克力",
+        role: "9種巧克力選擇＋個性說明，揭曉全隊巧克力盒",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "水果巧克力甜蜜套組 NT$ 1,200-3,500 / 場。甜蜜十足的雙重美食個性探索，適合甜點主題、情人節、派對破冰。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

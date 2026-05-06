@@ -826,6 +826,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "pasta_type",
       "sushi_type",
       "material_type",
+      "fruit_type",
+      "chocolate_type",
     ];
 
     for (const t of newTypes) {
