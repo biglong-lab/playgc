@@ -750,6 +750,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "origin_story",
       "wisdom_pool",
       "blind_spot",
+      "life_line",
+      "talent_swap",
     ];
 
     for (const t of newTypes) {

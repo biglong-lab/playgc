@@ -694,6 +694,12 @@ ${componentDescriptions}
 - "blind_spot": { title, prompt, blindPlaceholder, selfPlaceholder, actionPlaceholder }
   盲點揭示：每人選意識程度（剛意識到/努力改善中/逐漸突破）並分享一個盲點及改善行動，揭曉後以左側邊框卡片牆呈現，適合深度工作坊/領導力培訓/心理安全感建立/自我成長活動
 
+- "life_line": { title, prompt, theme, maxEvents: 1-5 }
+  人生時間軸：每人記錄最多 5 個關鍵人生事件（年份+描述+影響程度 high/medium/low），提交時按年份排序，揭曉後顯示全隊時間軸卡片，適合破冰/同學會/生涯探索/人才培育
+
+- "talent_swap": { title, teachPrompt, learnPrompt }
+  技能交換市集：每人填寫可教給哪位隊友什麼技能、以及想向哪位隊友學什麼，揭曉後以交換卡片＋被點名地圖呈現，適合團建/知識分享/配對學習/社群活動
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

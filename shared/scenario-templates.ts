@@ -3914,6 +3914,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "深度成長套組 NT$ 2,000-6,000 / 場。讓團隊在安全氛圍中真正成長。",
     status: "live",
   },
+
+  {
+    id: "story-exchange-pack",
+    name: "📖 故事交換套組",
+    tagline: "人生時間軸 + 技能交換，在故事中看見彼此、連結彼此",
+    description: "LifeLine 人生時間軸讓每人分享 3 個關鍵時刻，TalentSwap 技能交換市集則讓隊友互相指名想教和想學的技能，雙元件組合創造深度連結與學習動力，適合破冰、社群建立、長期培訓開場。",
+    useCases: ["新進員工破冰", "社群聚會", "師徒制啟動", "長期培訓開場"],
+    category: "corporate",
+    icon: "Repeat2",
+    gradient: "from-teal-400 to-indigo-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "25-40 分鐘",
+    components: [
+      {
+        pageType: "life_line",
+        label: "人生時間軸",
+        role: "分享關鍵人生時刻，建立真實連結",
+        axis: "multi",
+      },
+      {
+        pageType: "talent_swap",
+        label: "技能交換市集",
+        role: "配對學習，激發互助動力",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "故事交換套組 NT$ 2,500-7,000 / 場。用真實故事連結人心。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

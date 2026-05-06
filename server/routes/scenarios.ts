@@ -2284,6 +2284,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         actionPlaceholder: "我打算怎麼改善？（選填）",
       };
 
+    case "life_line":
+      return {
+        title: "📈 人生時間軸",
+        prompt: `在「${scenarioName}」中，哪 3 個時刻對你影響最深？`,
+        theme: "關鍵時刻",
+        maxEvents: 3,
+      };
+
+    case "talent_swap":
+      return {
+        title: "🔄 技能交換市集",
+        teachPrompt: `在「${scenarioName}」中，你可以教哪位隊友什麼技能？`,
+        learnPrompt: `你最想向哪位隊友學習什麼？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
