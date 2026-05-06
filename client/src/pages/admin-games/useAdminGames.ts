@@ -378,9 +378,11 @@ export function useAdminGames(): AdminGamesReturn {
     updatePending: updateMutation.isPending,
     deletePending: deleteMutation.isPending,
     publishPending: publishMutation.isPending,
+    homeVisiblePending: homeVisibleMutation.isPending,
     generateQRPending: generateQRMutation.isPending,
     onDelete: () => deleteGame && deleteMutation.mutate(deleteGame.id),
     onPublish: (id, status) => publishMutation.mutate({ id, status }),
+    onToggleHomeVisible: (id, isIsolated) => homeVisibleMutation.mutate({ id, isIsolated }),
     onGenerateQR: (id, regenerateSlug) => generateQRMutation.mutate({ id, regenerateSlug }),
   };
 }
