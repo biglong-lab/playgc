@@ -254,7 +254,8 @@ function QRCodeCell({
 // 操作按鈕群組
 function ActionButtons({
   game, status, onNavigate, onEdit, onDelete,
-  onPublish, onCoverUpload, onMoveField, publishPending,
+  onPublish, onToggleHomeVisible, onCoverUpload, onMoveField,
+  publishPending, homeVisiblePending,
 }: {
   game: Game;
   status: string;
@@ -262,9 +263,11 @@ function ActionButtons({
   onEdit: (game: Game) => void;
   onDelete: (game: Game) => void;
   onPublish: (id: string, status: string) => void;
+  onToggleHomeVisible: (id: string, isIsolated: boolean) => void;
   onCoverUpload: (game: Game) => void;
   onMoveField?: (game: Game) => void;
   publishPending: boolean;
+  homeVisiblePending: boolean;
 }) {
   return (
     <div className="flex justify-end gap-2">
@@ -283,6 +286,14 @@ function ActionButtons({
         onPublish={onPublish}
         publishPending={publishPending}
       />
+      {status === "published" && (
+        <HomeVisibleButton
+          gameId={game.id}
+          isIsolated={game.isIsolated ?? true}
+          onToggle={onToggleHomeVisible}
+          pending={homeVisiblePending}
+        />
+      )}
       <Button
         variant="ghost"
         size="icon"
