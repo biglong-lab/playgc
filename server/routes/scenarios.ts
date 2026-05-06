@@ -2508,6 +2508,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果今天的你是一部電影，會是哪個類型？說說為什麼！`,
       };
 
+    case "food_mood":
+      return {
+        title: "🍜 今天我是哪道料理",
+        prompt: `在「${scenarioName}」的場合，如果今天的你是一道料理，你會是哪種？說說原因！`,
+      };
+
+    case "dream_job":
+      return {
+        title: "🚀 童年夢想職業",
+        prompt: `在「${scenarioName}」的場合，你小時候最想成為什麼？說說當時的夢想故事！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

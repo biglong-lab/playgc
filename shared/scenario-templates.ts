@@ -4430,6 +4430,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "氛圍電影套組 NT$ 1,500-3,500 / 場。用隱喻說出今天的自己。",
     status: "live",
   },
+  {
+    id: "food-dream-pack",
+    name: "🍜 美食夢想套組",
+    tagline: "今日料理 + 童年夢想，美食與夢想激起歡笑",
+    description: "FoodMood 讓大家用料理比喻今天的自己並說原因，揭曉全隊料理台；DreamJob 讓每人分享童年夢想職業與故事，揭曉夢想職業牆。適合輕鬆聚會、同學會、公司聯誼，美食話題加上懷舊夢想，天然破冰好聊不停。",
+    useCases: ["輕鬆聚會", "同學會", "公司聯誼", "破冰活動"],
+    category: "social",
+    icon: "Utensils",
+    gradient: "from-orange-400 to-indigo-400",
+    estimatedPlayers: "4-60 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "food_mood",
+        label: "今天我是哪道料理",
+        role: "10種料理選擇＋原因，揭曉全隊料理台",
+        axis: "multi",
+      },
+      {
+        pageType: "dream_job",
+        label: "童年夢想職業",
+        role: "12種職業＋年齡段＋故事，揭曉夢想職業牆",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "美食夢想套組 NT$ 1,500-4,000 / 場。美食話題加上懷舊夢想，天然破冰好聊不停。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
