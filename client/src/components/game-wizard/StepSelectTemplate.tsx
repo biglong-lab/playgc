@@ -1,15 +1,23 @@
 // 步驟 1：選擇模板
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import { GAME_TEMPLATES, type GameTemplate } from "./templates";
 import TemplateCard from "./TemplateCard";
 
 interface StepSelectTemplateProps {
   selectedTemplate: GameTemplate | null;
   onSelectTemplate: (template: GameTemplate) => void;
+  /** 🆕 軟分流：選擇 game mode 後回退按鈕（activity wizard 沒此步驟、不顯示）*/
+  onBack?: () => void;
+  /** 🆕 顯示當前選擇的 game mode（提示 user）*/
+  selectedGameMode?: "individual" | "team";
 }
 
 export default function StepSelectTemplate({
   selectedTemplate,
   onSelectTemplate,
+  onBack,
+  selectedGameMode,
 }: StepSelectTemplateProps) {
   return (
     <div className="space-y-6">
@@ -21,6 +29,22 @@ export default function StepSelectTemplate({
         <p className="text-muted-foreground">
           選擇適合的模板，或從空白開始自訂
         </p>
+        {selectedGameMode && (
+          <div className="mt-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-xs">
+            <span>{selectedGameMode === "team" ? "👥 多人協作" : "🧍 個人遊戲"}</span>
+            {onBack && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onBack}
+                className="h-5 px-1 text-xs"
+                data-testid="btn-back-to-game-mode"
+              >
+                變更
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 模板網格 */}

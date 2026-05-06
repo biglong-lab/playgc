@@ -237,6 +237,59 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
 
         {/* 步驟內容 */}
         <div className="py-4">
+          {/* 🆕 軟分流階段 1.5：個人 vs 多人 mode 選擇（只 game editorMode 顯示）*/}
+          {step === "select_game_mode" && (
+            <div className="space-y-4">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold mb-2">這是個人遊戲還是多人協作？</h3>
+                <p className="text-sm text-muted-foreground">
+                  決定後可在編輯器中看到對應的元件清單
+                </p>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={() => handleSelectGameMode("individual")}
+                  className={cn(
+                    "p-6 rounded-lg border-2 text-left transition-all hover:border-primary hover:shadow-md",
+                    selectedGameMode === "individual" ? "border-primary bg-primary/5" : "border-border",
+                  )}
+                  data-testid="button-mode-individual"
+                >
+                  <div className="text-3xl mb-2">🧍</div>
+                  <h4 className="font-semibold mb-1">個人遊戲</h4>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    玩家獨自闖關、累積分數
+                  </p>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="block">✓ 個人挑戰、密室解謎</span>
+                    <span className="block">✓ 22 個元件可選</span>
+                    <span className="block">✗ 不含多人協作元件</span>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSelectGameMode("team")}
+                  className={cn(
+                    "p-6 rounded-lg border-2 text-left transition-all hover:border-primary hover:shadow-md",
+                    selectedGameMode === "team" ? "border-primary bg-primary/5" : "border-border",
+                  )}
+                  data-testid="button-mode-team"
+                >
+                  <div className="text-3xl mb-2">👥</div>
+                  <h4 className="font-semibold mb-1">多人協作</h4>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    隊伍合作、共享進度
+                  </p>
+                  <div className="text-xs text-muted-foreground">
+                    <span className="block">✓ 隊伍闖關、團隊競賽</span>
+                    <span className="block">✓ 35 個元件可選（含 13 多人）</span>
+                    <span className="block">✓ 含 lock_coop / relay 等</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
           {step === "select_template" && (
             <StepSelectTemplate
               selectedTemplate={selectedTemplate}
