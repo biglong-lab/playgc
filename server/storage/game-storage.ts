@@ -6,6 +6,9 @@ import {
   pages,
   items,
   events,
+  gameSessions,
+  leaderboard,
+  paymentTransactions,
   type Game,
   type InsertGame,
   type Page,
@@ -103,8 +106,12 @@ export const gameStorageMethods = {
     return updated;
   },
 
-  /** 刪除遊戲 */
+  /** 刪除遊戲（先 SET NULL FK 參照避免 constraint violation） */
   async deleteGame(id: string): Promise<void> {
+    const nullStr = null as unknown as string;
+    await db.update(gameSessions).set({ gameId: nullStr }).where(eq(gameSessions.gameId, id));
+    await db.update(leaderboard).set({ gameId: nullStr }).where(eq(leaderboard.gameId, id));
+    await db.update(paymentTransactions).set({ gameId: nullStr }).where(eq(paymentTransactions.gameId, id));
     await db.delete(games).where(eq(games.id, id));
   },
 

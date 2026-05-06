@@ -126,8 +126,8 @@ export async function generateGameFromScript(
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: userPrompt },
     ],
-    true,  // jsonResponse
-    3000,  // maxTokens：遊戲 JSON 可能很長，500 會截斷
+    true,   // jsonResponse
+    8000,   // maxTokens：30 分鐘遊戲 20+ 頁面，3000 不夠用
   );
 
   // 解析 + 容錯

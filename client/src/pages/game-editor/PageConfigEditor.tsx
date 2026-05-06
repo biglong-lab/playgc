@@ -1992,10 +1992,11 @@ export default function PageConfigEditor({
         />
       </div>
 
-      {/* 🆕 G1: 預覽 Dialog（帶真 gameId 讓 AI 評分能找到場域 key）*/}
+      {/* 🆕 G1: 預覽 Dialog（帶真 gameId 讓 AI 評分能找到場域 key + allPages 讓跳轉能顯示目標頁名）*/}
       <PagePreviewDialog
         page={previewOpen ? page : null}
         gameId={gameId}
+        allPages={allPages}
         onClose={() => setPreviewOpen(false)}
       />
 

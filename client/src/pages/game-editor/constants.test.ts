@@ -3,11 +3,11 @@ import { describe, it, expect } from "vitest";
 import { PAGE_TYPES, PAGE_TEMPLATES, EVENT_TYPES, REWARD_TYPES, getPageTypeInfo } from "./constants";
 
 describe("PAGE_TYPES", () => {
-  it("定義 30 種頁面類型（含 photo_* 子類型 + flow_router + 8 個 multi 元件）", () => {
-    expect(PAGE_TYPES).toHaveLength(30);
+  it("定義 81 種頁面類型（30 既有 + 21 階段A + 30 階段B 互動模組擴充 2026-05-06）", () => {
+    expect(PAGE_TYPES).toHaveLength(81);
   });
 
-  it("包含 8 個多人專用元件（Phase 2 + 3.1 + 3.2 + 3.3 + 4）", () => {
+  it("包含 8 個多人核心工具元件（Phase 2 + 3.1 + 3.2 + 3.3 + 4）", () => {
     const values = PAGE_TYPES.map((pt) => pt.value);
     const multiTypes = [
       "photo_team",
@@ -20,6 +20,37 @@ describe("PAGE_TYPES", () => {
       "territory_capture",
     ];
     for (const v of multiTypes) {
+      expect(values).toContain(v);
+    }
+  });
+
+  it("包含階段 A 的 21 個互動模組（婚禮/破冰/團建/頒獎等商業情境）", () => {
+    const values = PAGE_TYPES.map((pt) => pt.value);
+    const phaseA = [
+      "spot_vote", "team_dream", "group_nickname", "activity_memo",
+      "peer_praise", "scale_check", "venue_rating", "micro_commit",
+      "closing_thought", "gift_to_team", "ability_badge", "wedding_vow",
+      "birthday_candle", "award_ceremony", "gratitude_tree", "dinner_table",
+      "high_low_card", "role_board", "discovery_card", "flag_design", "party_menu",
+    ];
+    for (const v of phaseA) {
+      expect(values).toContain(v);
+    }
+  });
+
+  it("包含階段 B 的 30 個工作坊／回顧／投票工具", () => {
+    const values = PAGE_TYPES.map((pt) => pt.value);
+    const phaseB = [
+      "jigsaw_puzzle", "treasure_hunt", "gps_cascade", "collective_score", "role_assign",
+      "never_have_i_ever", "would_you_rather", "two_truths", "check_in", "speed_networking",
+      "kpt_retro", "four_ls", "rose_bud_thorn",
+      "team_pact", "team_health_check", "team_radar",
+      "safety_check", "energy_map",
+      "wish_wall", "idea_wall", "story_wall", "brain_dump",
+      "dot_vote", "rank_choice", "multi_vote", "scaled_feedback",
+      "thinking_hats", "host_word_cloud", "mad_libs", "quest_chain",
+    ];
+    for (const v of phaseB) {
       expect(values).toContain(v);
     }
   });

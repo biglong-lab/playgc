@@ -2,25 +2,45 @@
 // 讓管理員不用發布遊戲就能看 player-side 渲染效果
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, Eye } from "lucide-react";
+import { X, Eye, ArrowRight } from "lucide-react";
 import type { Page } from "@shared/schema";
 import GamePageRenderer from "@/components/game/GamePageRenderer";
+import { useToast } from "@/hooks/use-toast";
 
 interface PagePreviewDialogProps {
   page: Page | null;
   onClose: () => void;
   /** 🆕 真實 gameId（讓 AI 評分等 API 能找到對應場域的 API key）*/
   gameId?: string;
+  /** 🆕 全部頁面（讓預覽能顯示「會跳到哪一頁」）*/
+  allPages?: Page[];
 }
 
-export default function PagePreviewDialog({ page, onClose, gameId }: PagePreviewDialogProps) {
+export default function PagePreviewDialog({ page, onClose, gameId, allPages }: PagePreviewDialogProps) {
+  const { toast } = useToast();
   if (!page) return null;
 
-  // 預覽模式的 mock props — 提供安全的預設值讓元件能渲染
-  // onComplete / onVariableUpdate 都是 no-op（預覽不產生實際副作用）
+  // 預覽模式的 mock props — 顯示跳轉目標讓 admin 驗證設定
+  // 不實際導航（避免污染 admin 編輯狀態），但用 toast 顯示「將跳到 #X 頁名」
   const mockHandlers = {
-    onComplete: () => {
-      /* preview mode — no-op */
+    onComplete: (_reward?: unknown, nextPageId?: string) => {
+      if (nextPageId && allPages) {
+        const target = allPages.find((p) => p.id === nextPageId);
+        if (target) {
+          const idx = allPages.indexOf(target) + 1;
+          const name = target.customName || target.pageType;
+          toast({
+            title: "✅ 跳轉預覽",
+            description: `將跳至 #${idx} ${name}`,
+          });
+          return;
+        }
+      }
+      // 無指定 nextPageId → 預設「下一頁」
+      toast({
+        title: "▶️ 完成此頁",
+        description: nextPageId ? `跳至頁面 ID: ${nextPageId}（找不到對應頁面）` : "預設行為：下一頁",
+      });
     },
     onVariableUpdate: () => {
       /* preview mode — no-op */
@@ -53,7 +73,9 @@ export default function PagePreviewDialog({ page, onClose, gameId }: PagePreview
             </Button>
           </div>
           <DialogDescription className="text-xs">
-            預覽模式 · 答題、分數、進度都不會被記錄
+            預覽模式 · 答題、分數、進度都不會被記錄 · 跳轉會以 toast 顯示
+            <ArrowRight className="inline w-3 h-3 mx-1" />
+            音訊請點擊頁面任意處啟動
           </DialogDescription>
         </DialogHeader>
 
