@@ -4962,6 +4962,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "菇菇義麵美食套組 NT$ 1,200-3,500 / 場。美味十足的個性探索，適合美食主題活動、義式餐廳、旅遊聚會破冰。",
     status: "live",
   },
+  {
+    id: "sushi-material-identity-pack",
+    name: "🍣 壽司材質身份套組",
+    tagline: "用壽司風格與材質個性雙維度探索自我",
+    description: "SushiType 讓每人選出最像自己的壽司並說原因，揭曉全隊壽司台；MaterialType 讓每人選出最像自己的材質並說原因，揭曉全隊材料庫。日式美食與設計材質的雙重維度，帶來豐富的個性對話。",
+    useCases: ["日式主題活動", "設計創意工作坊", "企業個性探索", "空間規劃聚會"],
+    category: "event",
+    icon: "Layers",
+    gradient: "from-red-500 to-stone-600",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "sushi_type",
+        label: "我是哪種壽司",
+        role: "9種壽司選擇＋個性說明，揭曉全隊壽司台",
+        axis: "multi",
+      },
+      {
+        pageType: "material_type",
+        label: "我是哪種材質",
+        role: "9種材質選擇＋個性說明，揭曉全隊材料庫",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "壽司材質身份套組 NT$ 1,200-3,500 / 場。日式美食與材質設計的雙重個性探索，適合日式主題、設計工作坊、企業破冰。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
