@@ -115,6 +115,11 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
     setStep("select_template");
   };
 
+  // 🆕 從 select_template 退回 select_game_mode（只 game editorMode 有此步驟）
+  const handleBackToGameMode = () => {
+    setStep("select_game_mode");
+  };
+
   // 提交建立
   const handleSubmit = () => {
     if (!selectedTemplate || !gameName.trim()) return;
@@ -126,6 +131,7 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
       estimatedTime: selectedTemplate.estimatedTime,
       maxPlayers: selectedTemplate.maxPlayers,
       editorMode,
+      gameMode: selectedGameMode,
     });
   };
 
