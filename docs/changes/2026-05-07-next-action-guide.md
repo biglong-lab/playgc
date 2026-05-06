@@ -34,6 +34,7 @@
 | admin editor PAGE_TYPES | 81 種（30 既有 + 21 階段A + 30 階段B） |
 | host 元件 | 17 種 |
 | e2e 黃金路徑 | 17 個 test 全綠（CI 自動跑） |
+| **e2e A2 多人 L3 smoke** | **18 個 test 全綠**（2026-05-07 加） |
 | Phase 1 commits | 14 個（1c4b9075..e7647c82） |
 
 ---
@@ -80,10 +81,12 @@
 | 項目 | 內容 |
 |------|------|
 | A1 | 工作坊 30 個再篩選 → 真正常用的 ~15 個 |
-| **A2** | **多人持久化補完**（重要！）：LockCoop / RelayMission / TerritoryCapture L1→L3 升級 + CollectiveScore / RoleAssign / QuestChain L0→L3 + JigsawPuzzle / TreasureHunt / GpsCascade 補完 |
+| ~~**A2**~~ | ~~**多人持久化補完**~~ ✅ **2026-05-07 驗證完成**（程式碼層 2026-05-05 已升級、e2e 18/18 通過、實機 checklist 已寫待驗）→ 詳見 [2026-05-07-a2-l3-validation.md](2026-05-07-a2-l3-validation.md) |
 | A3 | 單人關卡無障礙 / 行動 UX 優化 |
 
-**A2 是最關鍵**：這些是 Phase 3 真實規劃的多人協作元件，目前 L3 持久化未完整。沒這個多人活動跑不穩。
+**A2 接地驗證紀錄**：原 plan「L0/L1→L3 升級」實為已完成（Phase 5 W18）。本次補的是「驗證 L3 真實可用」：
+- 自動 e2e 18/18 ✅（建場 + 載入 + DB schema）
+- 實機 checklist 待跑（驗 ws 即時推送 + 重整還原）→ `docs/runbooks/a2-l3-manual-verification.md`
 
 ### 🥉 優先 3：Phase 4（C 補齊缺口）— 2-3 週、最謹慎
 

@@ -7,6 +7,23 @@
 
 ## 2026-05-07
 
+### 🧪 Phase 3 A2 — 多人元件 L3 持久化驗證（接地）
+**主題**：驗證 9 個 L3 元件程式碼層真實可用 + 補實機 checklist
+**狀態**：🟢 自動 e2e 18/18 全綠、實機 checklist 待跑
+**詳情** → [changes/2026-05-07-a2-l3-validation.md](changes/2026-05-07-a2-l3-validation.md)
+
+**接地發現**：原 plan「L0/L1→L3 升級」實為 2026-05-05 已完成（Phase 5 W18）。本次補的是「驗證 L3 真實可用」。
+
+**新增**：
+- `server/routes/test-only.ts`：`seed-multi-game-with-page` 端點（9 元件 default config）
+- `e2e/a2-multi-l3-smoke.spec.ts`：18 個 smoke e2e（建場 + 載入 + DB schema）
+- `docs/runbooks/a2-l3-manual-verification.md`：實機 checklist（補 e2e 不能驗的 ws + 重整還原）
+- CI grep 加入 `A2 多人元件`（黃金路徑 17 + A2 18 = 35/35）
+
+**順便修**：本地 dev DB schema drift（補 game_sessions.host_mode / host_token / host_token_expires_at）
+
+---
+
 ### 🚀 Phase 1 (DBAC 路徑) 完整收尾 — D4 + D2 + D1 + D3 全套
 **主題**：補 e2e 真實測試 / 30 分鐘建場流程優化 / 元件分類 + 搜尋
 **狀態**：🟢 14 commits 全部部署、CI e2e 17/17 全綠

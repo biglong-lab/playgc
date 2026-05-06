@@ -123,9 +123,9 @@ jobs:
           # 確認 health 通過
           curl -f http://localhost:3333/api/health || (cat /tmp/server.log && exit 1)
 
-      - name: 執行 E2E 黃金路徑（grep golden-path）
-        run: npx playwright test --project="Desktop Chrome" --grep "黃金路徑"
-        # 注：暫時只跑黃金路徑、其他既有 e2e 視同 smoke、之後 phase 1 D4 全套接地後再放開
+      - name: 執行 E2E 黃金路徑 + A2 多人元件 smoke
+        run: npx playwright test --project="Desktop Chrome" --grep "黃金路徑|A2 多人元件"
+        # 注：黃金路徑 = Phase 1 D4 接地驗證，A2 多人元件 = Phase 3 A2 L3 持久化驗證
 
       - name: 收集 server log（debug 用）
         if: always()
