@@ -277,6 +277,125 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
       return { title: "填詞遊戲", prompt: "依提示填入詞彙，組成有趣的句子", template: "" };
     case "quest_chain":
       return { title: "任務鏈", prompt: "依序完成連鎖任務", quests: [] };
+
+    // 📺 HostScreen 軸線元件 default config（2026-05-07 補）
+    // schema 來源：client/src/components/game/host/*Config interface
+    // 設計原則：所有欄位都給合理 default、admin 拖入後不需立即設定也能用
+    case "host_poll_live":
+      return {
+        question: "請投票選一個",
+        options: [
+          { id: "a", label: "選項 A" },
+          { id: "b", label: "選項 B" },
+        ],
+        durationSec: 60,
+      };
+    case "host_emoji_react":
+      return {
+        title: "Emoji 反應",
+        subtitle: "點擊送出 emoji",
+        emojis: ["❤️", "👏", "😂", "🔥", "🎉"],
+        maxFlyingOnScreen: 50,
+      };
+    case "host_wave_response":
+      return {
+        title: "舉手熱力",
+        buttonLabel: "我在！",
+      };
+    case "host_crowd_gather":
+      return {
+        title: "簽到熱場",
+        targetCount: 10,
+        celebrationText: "🎉 全員到齊！",
+      };
+    case "host_trivia_showdown":
+      return {
+        title: "搶答秀",
+        questions: [],
+        scoreByRank: [100, 75, 50, 25],
+      };
+    case "host_live_leaderboard":
+      return {
+        title: "即時排行榜",
+        topN: 10,
+        acceptPlayerPulse: false,
+      };
+    case "host_team_battle_score":
+      return {
+        title: "隊伍對戰",
+        teams: [
+          { id: "team-a", name: "A 隊", score: 0 },
+          { id: "team-b", name: "B 隊", score: 0 },
+        ],
+        targetScore: 100,
+        mode: "first_to_target",
+        showRecentEvents: true,
+        acceptPlayerPulse: false,
+      };
+    case "host_progress_quest":
+      return {
+        title: "進度任務",
+        totalTasks: 100,
+        milestones: [25, 50, 75, 100],
+        celebrationLevel: "auto",
+      };
+    case "host_polaroid_collage":
+      return {
+        title: "拍立得紀念牆",
+        maxOnScreen: 50,
+        emojis: ["❤️", "🥂", "🎉", "💐"],
+      };
+    case "host_guestbook_digital":
+      return {
+        title: "數位簽名簿",
+        maxEntries: 200,
+      };
+    case "host_blessing_wall":
+      return {
+        title: "祝福牆",
+        theme: "default",
+        emojis: ["❤️", "🎉", "🥂"],
+        maxLength: 30,
+      };
+    case "host_knowledge_map":
+      return {
+        title: "場域全景圖",
+        points: [],
+        allowMessage: true,
+        marqueeLimit: 8,
+        maxVisits: 200,
+      };
+    case "host_scoreboard_announcement":
+      return {
+        title: "跑馬燈宣告",
+        maxEntries: 50,
+        displayDurationMs: 8000,
+      };
+    case "host_lottery_wheel":
+      return {
+        title: "抽獎轉盤",
+        items: [],
+        spinDurationMs: 5000,
+        allowJoin: true,
+      };
+    case "host_bingo_board":
+      return {
+        title: "賓果牆",
+        rows: 5,
+        cols: 5,
+        tasks: Array.from({ length: 25 }, (_, i) => ({
+          id: `task-${i + 1}`,
+          label: i === 12 ? "自由" : `任務 ${i + 1}`,
+        })),
+        freeCellLabel: "自由",
+      };
+    case "host_micro_qa":
+      return {
+        title: "Q&A 微提問",
+        maxLength: 140,
+        allowAnonymous: true,
+      };
+
     default:
       return {};
   }

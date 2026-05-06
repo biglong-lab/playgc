@@ -117,9 +117,33 @@ export const PAGE_TYPES = [
   { value: "scaled_feedback", label: "量表回饋 👥", icon: SlidersHorizontal, color: "bg-cyan-600/20 text-cyan-300" },
   // 經典思考工具
   { value: "thinking_hats", label: "六頂思考帽 👥", icon: Sparkles, color: "bg-violet-600/20 text-violet-300" },
-  { value: "host_word_cloud", label: "文字雲 👥", icon: Cloud, color: "bg-blue-500/20 text-blue-300" },
+  { value: "host_word_cloud", label: "文字雲 📺", icon: Cloud, color: "bg-blue-500/20 text-blue-300" },
   { value: "mad_libs", label: "填詞遊戲 👥", icon: Pencil, color: "bg-rose-600/20 text-rose-300" },
   { value: "quest_chain", label: "任務鏈 👥", icon: Link2, color: "bg-amber-500/20 text-amber-300" },
+
+  // 📺 HostScreen 軸線元件（ADR-0004 大螢幕主控）— 2026-05-07 補接入 admin editor
+  // 之前只有 host_word_cloud 接入、其餘 16 個只能透過 SCENARIO_TEMPLATES 用、admin 無法自由建場
+  // 標尾「📺」明確區分 host 軸（無玩家登入需求、配對大螢幕展示）
+  // 即時互動類
+  { value: "host_poll_live", label: "即時投票 📺", icon: BarChart, color: "bg-emerald-500/20 text-emerald-400" },
+  { value: "host_emoji_react", label: "Emoji 反應 📺", icon: Sparkles, color: "bg-pink-500/20 text-pink-400" },
+  { value: "host_wave_response", label: "舉手熱力 📺", icon: ThumbsUp, color: "bg-orange-500/20 text-orange-400" },
+  { value: "host_crowd_gather", label: "簽到熱場 📺", icon: UsersIcon, color: "bg-cyan-500/20 text-cyan-400" },
+  // 競賽類
+  { value: "host_trivia_showdown", label: "搶答秀 📺", icon: MessageCircleQuestion, color: "bg-amber-500/20 text-amber-400" },
+  { value: "host_live_leaderboard", label: "即時排行榜 📺", icon: Trophy, color: "bg-yellow-500/20 text-yellow-400" },
+  { value: "host_team_battle_score", label: "隊伍對戰計分 📺", icon: Star, color: "bg-rose-500/20 text-rose-400" },
+  { value: "host_progress_quest", label: "進度任務 📺", icon: ListTodo, color: "bg-indigo-500/20 text-indigo-400" },
+  // 紀念類（婚禮/生日/聚會）
+  { value: "host_polaroid_collage", label: "拍立得紀念牆 📺", icon: Camera, color: "bg-fuchsia-500/20 text-fuchsia-400" },
+  { value: "host_guestbook_digital", label: "數位簽名簿 📺", icon: BookOpen, color: "bg-violet-500/20 text-violet-400" },
+  { value: "host_blessing_wall", label: "祝福牆 📺", icon: Heart, color: "bg-rose-500/20 text-rose-400" },
+  // 場域/活動類
+  { value: "host_knowledge_map", label: "場域全景圖 📺", icon: MapPin, color: "bg-teal-500/20 text-teal-400" },
+  { value: "host_scoreboard_announcement", label: "跑馬燈宣告 📺", icon: Activity, color: "bg-purple-500/20 text-purple-400" },
+  { value: "host_lottery_wheel", label: "抽獎轉盤 📺", icon: Shuffle, color: "bg-yellow-600/20 text-yellow-400" },
+  { value: "host_bingo_board", label: "賓果牆 📺", icon: Grid, color: "bg-lime-500/20 text-lime-400" },
+  { value: "host_micro_qa", label: "Q&A 微提問 📺", icon: HelpCircle, color: "bg-sky-500/20 text-sky-400" },
 ] as const;
 
 export const PAGE_TEMPLATES = [
@@ -207,12 +231,14 @@ export function getPageTypeInfo(type: string) {
 }
 
 // 🆕 D3 (2026-05-07) — 元件三軸 category 分組
-// 把 81 個 page_type 依「功能類型」分 5 大類，admin editor 側邊欄按組顯示
+// 把 page_type 依「功能類型」分 6 大類，admin editor 側邊欄按組顯示
+// 2026-05-07 補：加 host_screen 第 6 類（ADR-0004 host 軸線、無需玩家登入）
 export type PageCategory =
   | "narrative" // 📝 敘事呈現（5）
   | "mission" // ✅ 驗證任務（10，含 vote）
   | "photo" // 📷 拍照系列（7）
   | "multi_coop" // 👥 多人協作關卡（13）
+  | "host_screen" // 📺 大螢幕主控（17，2026-05-07 加）
   | "interactive"; // 🎉 活動互動（46）
 
 export const CATEGORY_INFO: Record<
@@ -238,6 +264,11 @@ export const CATEGORY_INFO: Record<
     label: "多人協作關卡",
     emoji: "👥",
     description: "隊伍投票/搶答/解鎖/接力/地盤戰、拼圖、尋寶、集體分數",
+  },
+  host_screen: {
+    label: "大螢幕主控",
+    emoji: "📺",
+    description: "投票/Emoji/排行榜/拍立得/簽名簿/賓果/搶答/抽獎（活動現場、玩家匿名可）",
   },
   interactive: {
     label: "活動互動",
@@ -291,6 +322,25 @@ const PAGE_TYPE_CATEGORY: Record<string, PageCategory> = {
   collective_score: "multi_coop",
   role_assign: "multi_coop",
 
+  // 📺 大螢幕主控（17）— 2026-05-07 補入 admin editor，ADR-0004 host 軸線
+  host_poll_live: "host_screen",
+  host_emoji_react: "host_screen",
+  host_wave_response: "host_screen",
+  host_crowd_gather: "host_screen",
+  host_trivia_showdown: "host_screen",
+  host_live_leaderboard: "host_screen",
+  host_team_battle_score: "host_screen",
+  host_progress_quest: "host_screen",
+  host_polaroid_collage: "host_screen",
+  host_guestbook_digital: "host_screen",
+  host_blessing_wall: "host_screen",
+  host_knowledge_map: "host_screen",
+  host_scoreboard_announcement: "host_screen",
+  host_lottery_wheel: "host_screen",
+  host_bingo_board: "host_screen",
+  host_micro_qa: "host_screen",
+  host_word_cloud: "host_screen", // 從 multi_coop 改 host_screen（屬第三軸、不是隊伍協作）
+
   // 🎉 活動互動（46）— 預設 fallback，所有未列入上方的都歸這類
 };
 
@@ -308,13 +358,14 @@ export function groupPageTypesByCategory(
     mission: [],
     photo: [],
     multi_coop: [],
+    host_screen: [],
     interactive: [],
   };
   for (const t of types) {
     groups[getPageCategory(t.value)].push(t);
   }
-  // 依固定順序：敘事 → 驗證 → 拍照 → 多人 → 活動互動
-  return (["narrative", "mission", "photo", "multi_coop", "interactive"] as PageCategory[])
+  // 依固定順序：敘事 → 驗證 → 拍照 → 多人協作 → 大螢幕主控 → 活動互動
+  return (["narrative", "mission", "photo", "multi_coop", "host_screen", "interactive"] as PageCategory[])
     .map((cat) => ({ category: cat, types: groups[cat] }))
     .filter((g) => g.types.length > 0);
 }
