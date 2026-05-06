@@ -4059,6 +4059,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "願景風格套組 NT$ 2,500-7,000 / 場。看見願景，也看見風格。",
     status: "live",
   },
+
+  {
+    id: "mirror-motivation-pack",
+    name: "🔮 互照動力套組",
+    tagline: "同伴之鏡 + 動力地圖，看見彼此、認識自己",
+    description: "PeerMirror 讓每人挑一位隊友並送出一個具體優點觀察，揭曉後以收件人分組讓大家看見他人眼中的自己；MotivationMap 以六大動力類別一鍵揭露全隊驅動力分布，找到團隊能量的核心。適合管理培訓、感謝文化推動、新進人員融合。",
+    useCases: ["管理培訓工作坊", "感謝文化推動", "新進人員融合", "職涯發展探索"],
+    category: "corporate",
+    icon: "HeartHandshake",
+    gradient: "from-indigo-400 to-yellow-400",
+    estimatedPlayers: "4-25 人",
+    estimatedDuration: "20-30 分鐘",
+    components: [
+      {
+        pageType: "peer_mirror",
+        label: "同伴之鏡",
+        role: "送出優點觀察，看見他人眼中的自己",
+        axis: "multi",
+      },
+      {
+        pageType: "motivation_map",
+        label: "動力地圖",
+        role: "六大動力一鍵揭露全隊驅動力分布",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "互照動力套組 NT$ 2,500-7,000 / 場。讓每個人看見自己的優點，也看見驅動自己的力量。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

@@ -270,6 +270,8 @@ const ChallengeMapPage = lazy(() => import("@/components/game/multi/ChallengeMap
 const ActionPlanPage = lazy(() => import("@/components/game/multi/ActionPlanPage"));
 const VisionBoardPage = lazy(() => import("@/components/game/multi/VisionBoardPage"));
 const ConflictStylePage = lazy(() => import("@/components/game/multi/ConflictStylePage"));
+const PeerMirrorPage = lazy(() => import("@/components/game/multi/PeerMirrorPage"));
+const MotivationMapPage = lazy(() => import("@/components/game/multi/MotivationMapPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1018,6 +1020,10 @@ export default function GamePageRenderer({
         return <VisionBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "conflict_style":
         return <ConflictStylePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "peer_mirror":
+        return <PeerMirrorPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "motivation_map":
+        return <MotivationMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

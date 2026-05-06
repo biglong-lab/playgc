@@ -2352,6 +2352,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」情境中，面對意見分歧你最常用哪種應對方式？`,
       };
 
+    case "peer_mirror":
+      return {
+        title: "🔮 同伴之鏡",
+        prompt: `在「${scenarioName}」裡，你觀察到哪位隊友的哪個優點讓你印象深刻？`,
+      };
+
+    case "motivation_map":
+      return {
+        title: "⚡ 動力地圖",
+        prompt: `在「${scenarioName}」的旅程中，最驅動你前進的核心動力是什麼？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
