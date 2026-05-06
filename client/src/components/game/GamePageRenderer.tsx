@@ -426,6 +426,8 @@ const FireflyDancePage = lazy(() => import("@/components/game/multi/FireflyDance
 const LotusBloomPage = lazy(() => import("@/components/game/multi/LotusBloomPage"));
 const MapleDriftPage = lazy(() => import("@/components/game/multi/MapleDriftPage"));
 const SpiralShellPage = lazy(() => import("@/components/game/multi/SpiralShellPage"));
+const WisteriaVinePage = lazy(() => import("@/components/game/multi/WisteriaVinePage"));
+const NightBloomPage = lazy(() => import("@/components/game/multi/NightBloomPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1486,6 +1488,10 @@ export default function GamePageRenderer({
         return <MapleDriftPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "spiral_shell":
         return <SpiralShellPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "wisteria_vine":
+        return <WisteriaVinePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "night_bloom":
+        return <NightBloomPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
