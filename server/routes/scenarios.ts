@@ -2400,6 +2400,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `請對「${scenarioName}」中的團隊五個面向各給一個分數（1-5），讓大家看見整體狀態！`,
       };
 
+    case "today_feel":
+      return {
+        title: "💫 今天感覺",
+        prompt: `參與「${scenarioName}」時，用一個詞語＋一個 emoji 描述你現在的感受！`,
+      };
+
+    case "speed_fact":
+      return {
+        title: "⚡ 閃速事實",
+        prompt: `在「${scenarioName}」的大家面前，分享一個讓人意想不到的關於你的小事實！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

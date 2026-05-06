@@ -4175,6 +4175,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "詞語雷達套組 NT$ 2,000-5,000 / 場。感性詞語 + 理性評分，看見團隊全貌。",
     status: "live",
   },
+
+  {
+    id: "feel-fact-pack",
+    name: "💫 感受事實套組",
+    tagline: "今天感覺 + 閃速事實，暖場開場的黃金搭檔",
+    description: "TodayFeel 讓每人用一詞+一 emoji 表達當下感受，即時拼出全隊情緒牆；SpeedFact 讓每人揭露一個驚人小事實（6 大類別），創造歡笑與驚喜。適合活動開場、新人融入、破冰暖場，讓陌生人在 5 分鐘內拉近距離。",
+    useCases: ["活動開場暖場", "新人融入", "破冰認識", "企業旅遊"],
+    category: "event",
+    icon: "Zap",
+    gradient: "from-yellow-400 to-orange-400",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "today_feel",
+        label: "今天感覺",
+        role: "一詞+emoji 描述感受，即時情緒牆",
+        axis: "multi",
+      },
+      {
+        pageType: "speed_fact",
+        label: "閃速事實",
+        role: "6類別驚人小事實卡片牆",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "感受事實套組 NT$ 1,500-3,000 / 場。5 分鐘讓陌生人變成老朋友。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
