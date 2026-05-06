@@ -112,6 +112,7 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
       difficulty: selectedTemplate.difficulty,
       estimatedTime: selectedTemplate.estimatedTime,
       maxPlayers: selectedTemplate.maxPlayers,
+      editorMode,
     });
   };
 
