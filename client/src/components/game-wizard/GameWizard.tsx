@@ -22,9 +22,16 @@ type WizardStep = "select_template" | "game_info" | "complete";
 interface GameWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * 🆕 軟分流階段 1：當前 wizard 屬「建立遊戲」還是「建立活動」
+   * 'game'     → 路線 I（玩家手機闖關、要登入）
+   * 'activity' → 路線 II/III（活動現場、玩家匿名）
+   * 預設 'game'（向後相容、舊入口都走遊戲）
+   */
+  editorMode?: "game" | "activity";
 }
 
-export default function GameWizard({ open, onOpenChange }: GameWizardProps) {
+export default function GameWizard({ open, onOpenChange, editorMode = "game" }: GameWizardProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [step, setStep] = useState<WizardStep>("select_template");
