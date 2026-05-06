@@ -17,7 +17,9 @@ import StepComplete from "./StepComplete";
 import type { GameTemplate } from "./templates";
 import type { Game } from "@shared/schema";
 
-type WizardStep = "select_template" | "game_info" | "complete";
+type WizardStep = "select_game_mode" | "select_template" | "game_info" | "complete";
+
+type SelectableGameMode = "individual" | "team";
 
 interface GameWizardProps {
   open: boolean;
