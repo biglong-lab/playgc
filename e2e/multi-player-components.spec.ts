@@ -816,6 +816,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "board_game",
       "landscape_type",
       "art_style",
+      "insect_type",
+      "gemstone_type",
     ];
 
     for (const t of newTypes) {

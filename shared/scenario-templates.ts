@@ -4850,6 +4850,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "地景藝術創意套組 NT$ 1,200-3,500 / 場。美感十足的個性探索，適合藝文空間、創意工作坊、文化場域活化。",
     status: "live",
   },
+  {
+    id: "insect-gemstone-nature-pack",
+    name: "🦋 昆蟲寶石自然套組",
+    tagline: "用昆蟲個性與寶石光芒探索團隊特質",
+    description: "InsectType 讓每人選出最像自己的昆蟲並說原因，揭曉全隊昆蟲園；GemstoneType 讓每人選出最像自己的寶石並說原因，揭曉全隊珠寶盒。適合自然主題、高端活動、婚禮場合，充滿趣味與光芒的個性對話。",
+    useCases: ["自然環境主題活動", "婚禮破冰", "高端企業活動", "個性閃耀探索"],
+    category: "social",
+    icon: "Sparkles",
+    gradient: "from-green-500 to-blue-600",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "insect_type",
+        label: "我是哪種昆蟲",
+        role: "9種昆蟲選擇＋個性說明，揭曉全隊昆蟲園",
+        axis: "multi",
+      },
+      {
+        pageType: "gemstone_type",
+        label: "我是哪種寶石",
+        role: "9種寶石選擇＋個性說明，揭曉全隊珠寶盒",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "昆蟲寶石自然套組 NT$ 1,200-3,500 / 場。自然與璀璨的個性探索，適合婚禮、高端活動、自然主題場域。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

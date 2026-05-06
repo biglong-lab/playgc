@@ -2688,6 +2688,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一種藝術風格，你最像哪種？說說你的藝術個性！`,
       };
 
+    case "insect_type":
+      return {
+        title: "🦋 我是哪種昆蟲",
+        prompt: `在「${scenarioName}」的場合，如果你是一種昆蟲，你最像哪種？說說你的昆蟲個性！`,
+      };
+
+    case "gemstone_type":
+      return {
+        title: "💎 我是哪種寶石",
+        prompt: `在「${scenarioName}」的場合，如果你是一種寶石，你最像哪種？說說你的珠寶個性！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
