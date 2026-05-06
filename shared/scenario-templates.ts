@@ -5046,6 +5046,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "鳥類魚族自然套組 NT$ 1,200-3,500 / 場。天空與海洋的雙重自然個性探索，適合自然館、生態活動、探索主題破冰。",
     status: "live",
   },
+  {
+    id: "icecream-pizza-food-festival",
+    name: "🍦 冰淇淋披薩美食節套組",
+    tagline: "用冰淇淋口味與披薩風格雙重探索舌尖個性",
+    description: "IceCreamType 讓每人選出最像自己的冰淇淋並說原因，揭曉全隊冰淇淋車；PizzaType 讓每人選出最像自己的披薩並說原因，揭曉全隊披薩窯。冰涼與熱呼的美食雙重個性探索，充滿歡笑。",
+    useCases: ["美食節活動", "義式餐廳合作", "夏日派對", "美食主題破冰"],
+    category: "event",
+    icon: "IceCream",
+    gradient: "from-pink-400 to-orange-500",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "ice_cream_type",
+        label: "我是哪種冰淇淋",
+        role: "9種冰淇淋選擇＋個性說明，揭曉全隊冰淇淋車",
+        axis: "multi",
+      },
+      {
+        pageType: "pizza_type",
+        label: "我是哪種披薩",
+        role: "9種披薩選擇＋個性說明，揭曉全隊披薩窯",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "冰淇淋披薩美食節套組 NT$ 1,200-3,500 / 場。冰涼與熱呼的美食雙重個性探索，適合美食節、義式主題、派對破冰。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
