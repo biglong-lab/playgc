@@ -3858,6 +3858,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "成長旅程套組 NT$ 1,500-4,000 / 場。讓職涯故事激發彼此，讓習慣承諾公開成真。",
     status: "live",
   },
+  {
+    id: "hero-identity-pack",
+    name: "🦸 英雄身份套組",
+    tagline: "用超能力和起源故事，認識真實的彼此",
+    description: "超能力卡片 + 起源故事，先以英雄卡片揭露每人的核心能力與弱點，再深入分享造就這個人的轉折點，打造深度而有趣的自我介紹體驗。",
+    useCases: ["新成員破冰", "跨部門合作啟動", "創意工作坊暖場", "領導力培訓開場"],
+    category: "corporate",
+    icon: "Zap",
+    gradient: "from-yellow-400 to-rose-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "superpower_card",
+        label: "超能力卡片",
+        role: "輕鬆揭露個人特質",
+        axis: "multi",
+      },
+      {
+        pageType: "origin_story",
+        label: "起源故事",
+        role: "深入分享關鍵轉折",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "英雄身份套組 NT$ 1,500-4,000 / 場。讓自我介紹從無聊變成難忘的體驗。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

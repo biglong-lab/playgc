@@ -746,6 +746,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "skill_showcase",
       "habit_tracker",
       "career_highlight",
+      "superpower_card",
+      "origin_story",
     ];
 
     for (const t of newTypes) {

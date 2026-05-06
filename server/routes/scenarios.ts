@@ -2254,6 +2254,20 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         impactPlaceholder: "這個成就帶來什麼影響？（選填）",
       };
 
+    case "superpower_card":
+      return {
+        title: "⚡ 超能力卡片",
+        prompt: `在「${scenarioName}」中，如果你是超級英雄，你的超能力是什麼？`,
+      };
+
+    case "origin_story":
+      return {
+        title: "📖 起源故事",
+        prompt: `在「${scenarioName}」中，分享一個讓你成為現在這個人的關鍵轉折點：`,
+        turningPlaceholder: "那個改變你的時刻或事件是什麼？（≥5字）",
+        lessonPlaceholder: "你從中學到了什麼？（選填）",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

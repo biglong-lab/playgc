@@ -682,6 +682,12 @@ ${componentDescriptions}
 - "career_highlight": { title, prompt, achievementPlaceholder, impactPlaceholder }
   職涯亮點：每人選擇年份並分享一個職涯中最自豪的成就及影響，揭曉後以年份降序時間軸呈現全隊職涯歷程，適合新人破冰/跨世代交流/領導力培訓
 
+- "superpower_card": { title, prompt, superpowerLabel, kryptoniteLabel, originLabel, suggestions?: string[] }
+  超能力卡片：每人從預設清單中選或自填一個超能力，再填入自己的「弱點/氪星石」及起源故事，揭曉後以彩色漸層英雄卡片牆展示，適合破冰/自我介紹/角色扮演培訓/創意工作坊
+
+- "origin_story": { title, prompt, turningPlaceholder, lessonPlaceholder }
+  起源故事：每人選 emoji 情緒符號並分享一個職涯或人生的關鍵轉折點及所學，揭曉後以 emoji + 文字的故事牆呈現，適合深度破冰/領導力培訓/年度回顧/跨世代對話
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 
