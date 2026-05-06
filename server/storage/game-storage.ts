@@ -43,7 +43,14 @@ export const gameStorageMethods = {
    *  @deprecated 多場域情境下建議改用 getPublishedGamesByFieldCode 以保隔離
    */
   async getPublishedGames(): Promise<Game[]> {
-    return db.select().from(games).where(eq(games.status, "published")).orderBy(desc(games.createdAt));
+    // 🆕 2026-05-07：首頁只列「published + isIsolated=false」
+    // isIsolated=true（schema default）= QR-only 防亂入、不在首頁顯示
+    // admin 在 AdminGames 切「首頁可見」toggle 才出現在首頁
+    return db
+      .select()
+      .from(games)
+      .where(and(eq(games.status, "published"), eq(games.isIsolated, false)))
+      .orderBy(desc(games.createdAt));
   },
 
   /** 🔒 取得指定場域（by code）的已發布遊戲 — 多場域隔離用 */
@@ -54,10 +61,17 @@ export const gameStorageMethods = {
       where: eq(fields.code, fieldCode.toUpperCase()),
     });
     if (!field) return [];
+    // 🆕 同上：加 isIsolated=false 過濾
     return db
       .select()
       .from(games)
-      .where(and(eq(games.status, "published"), eq(games.fieldId, field.id)))
+      .where(
+        and(
+          eq(games.status, "published"),
+          eq(games.fieldId, field.id),
+          eq(games.isIsolated, false),
+        ),
+      )
       .orderBy(desc(games.createdAt));
   },
 
