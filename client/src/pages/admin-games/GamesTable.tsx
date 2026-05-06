@@ -203,9 +203,11 @@ function GameRow({
           onEdit={onEdit}
           onDelete={onDelete}
           onPublish={onPublish}
+          onToggleHomeVisible={onToggleHomeVisible}
           onCoverUpload={onCoverUpload}
           onMoveField={onMoveField}
           publishPending={publishPending}
+          homeVisiblePending={homeVisiblePending}
         />
       </TableCell>
     </TableRow>
