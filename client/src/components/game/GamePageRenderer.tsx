@@ -348,6 +348,8 @@ const LegacyWordPage = lazy(() => import("@/components/game/multi/LegacyWordPage
 const SafetyLevelPage = lazy(() => import("@/components/game/multi/SafetyLevelPage"));
 const SparkCapturePage = lazy(() => import("@/components/game/multi/SparkCapturePage"));
 const MicroCommitPage = lazy(() => import("@/components/game/multi/MicroCommitPage"));
+const ClosingThoughtPage = lazy(() => import("@/components/game/multi/ClosingThoughtPage"));
+const GiftToTeamPage = lazy(() => import("@/components/game/multi/GiftToTeamPage"));
 const MythicalCreaturePage = lazy(() => import("@/components/game/multi/MythicalCreaturePage"));
 const DanceStylePage = lazy(() => import("@/components/game/multi/DanceStylePage"));
 const ArchitectureStylePage = lazy(() => import("@/components/game/multi/ArchitectureStylePage"));
@@ -1266,6 +1268,10 @@ export default function GamePageRenderer({
         return <SparkCapturePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "micro_commit":
         return <MicroCommitPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "closing_thought":
+        return <ClosingThoughtPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "gift_to_team":
+        return <GiftToTeamPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "mythical_creature":
         return <MythicalCreaturePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "dance_style":
