@@ -369,3 +369,41 @@ export function groupPageTypesByCategory(
     .map((cat) => ({ category: cat, types: groups[cat] }))
     .filter((g) => g.types.length > 0);
 }
+
+// 🆕 軟分流階段 1（2026-05-07）— 依 editor_mode 過濾元件
+// game     路線 I：narrative + mission + photo + multi_coop（35 個）
+// activity 路線 II/III：narrative + host_screen + interactive（68 個）
+// 共用：narrative（5 個）— 兩個 mode 都看得到
+//
+// 設計原則：嚴格分流、不留模糊地帶
+//   - photo_team 等隊伍協作元件 → 純 game（要登入要組隊）
+//   - host_word_cloud 等大螢幕主控 → 純 activity（玩家匿名）
+//   - 模糊地帶會回到「混在一起」的混亂
+export type EditorMode = "game" | "activity";
+
+export const EDITOR_MODE_VISIBLE_CATEGORIES: Record<EditorMode, PageCategory[]> = {
+  game: ["narrative", "mission", "photo", "multi_coop"],
+  activity: ["narrative", "host_screen", "interactive"],
+};
+
+export const EDITOR_MODE_INFO: Record<EditorMode, { label: string; emoji: string; description: string }> = {
+  game: {
+    label: "遊戲",
+    emoji: "🎮",
+    description: "玩家手機闖關 / 副本 / 多人協作（要 Firebase 登入、可組隊）",
+  },
+  activity: {
+    label: "活動",
+    emoji: "🎉",
+    description: "活動現場互動 / 大螢幕配對（玩家匿名掃 QR、不登入）",
+  },
+};
+
+/** 依 editorMode 過濾 PAGE_TYPES、回傳該 mode 可見的元件 */
+export function filterPageTypesByEditorMode(
+  types: typeof PAGE_TYPES | readonly (typeof PAGE_TYPES)[number][],
+  editorMode: EditorMode,
+): (typeof PAGE_TYPES)[number][] {
+  const visibleCategories = new Set(EDITOR_MODE_VISIBLE_CATEGORIES[editorMode]);
+  return types.filter((t) => visibleCategories.has(getPageCategory(t.value)));
+}
