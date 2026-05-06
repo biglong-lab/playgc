@@ -2436,6 +2436,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `關於「${scenarioName}」，分享一個你最珍惜、最難忘的共同回憶！`,
       };
 
+    case "dream_trip":
+      return {
+        title: "✈️ 夢想旅行",
+        prompt: `如果可以去任何地方，你最想去的夢想旅遊目的地是哪裡？`,
+      };
+
+    case "book_rec":
+      return {
+        title: "📚 好物推薦",
+        prompt: `推薦一本書、一部電影或任何讓你收穫滿滿的好內容給「${scenarioName}」的夥伴！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

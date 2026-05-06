@@ -4262,6 +4262,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "愛與回憶套組 NT$ 2,000-5,000 / 場。讓每個重要時刻都留下永恆記錄。",
     status: "live",
   },
+  {
+    id: "trip-rec-pack",
+    name: "✈️ 旅行好物套組",
+    tagline: "夢想旅行 + 好物推薦，讓話題從旅行延伸到生活品味",
+    description: "DreamTrip 讓團隊成員分享心中的夢想旅遊目的地與類型，揭曉繽紛旅行夢想牆；BookRec 讓大家推薦一本書、電影或任何好內容，揭曉知識好物牆。適合企業員工旅遊前暖場、交誼聚會、內訓破冰，讓大家互相了解彼此的興趣品味。",
+    useCases: ["企業員工旅遊", "交誼聚會", "內訓破冰", "社群活動"],
+    category: "corporate",
+    icon: "Plane",
+    gradient: "from-sky-400 to-indigo-400",
+    estimatedPlayers: "4-80 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "dream_trip",
+        label: "夢想旅行",
+        role: "6種旅遊類型，揭曉繽紛旅行夢想牆",
+        axis: "multi",
+      },
+      {
+        pageType: "book_rec",
+        label: "好物推薦",
+        role: "書影音遊推薦，揭曉知識好物牆",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "旅行好物套組 NT$ 2,000-5,000 / 場。讓話題自然從旅行流向生活品味。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
