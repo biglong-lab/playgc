@@ -802,6 +802,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "movie_role",
       "gem_stone",
       "myth_animal",
+      "tea_type",
+      "planet_type",
     ];
 
     for (const t of newTypes) {

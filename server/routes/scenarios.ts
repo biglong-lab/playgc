@@ -2604,6 +2604,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一種神話神獸，你最像哪一種？說說你的神獸特質！`,
       };
 
+    case "tea_type":
+      return {
+        title: "🍵 我是哪種茶",
+        prompt: `在「${scenarioName}」的場合，如果你是一種茶，你最像哪一種？說說你的茶道個性！`,
+      };
+
+    case "planet_type":
+      return {
+        title: "🪐 我是哪顆星球",
+        prompt: `在「${scenarioName}」的場合，如果你是太陽系的一顆星球，你最像哪一顆？說說你的星球特質！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
