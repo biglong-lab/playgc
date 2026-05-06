@@ -3886,6 +3886,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "英雄身份套組 NT$ 1,500-4,000 / 場。讓自我介紹從無聊變成難忘的體驗。",
     status: "live",
   },
+  {
+    id: "deep-growth-pack",
+    name: "🌊 深度成長套組",
+    tagline: "從盲點揭示到智慧池，創造心理安全的深度對話",
+    description: "盲點揭示 + 智慧池，先安全地揭露個人盲點並提出改善計畫，再用集體智慧相互激勵，適合心理安全感強的成熟團隊。",
+    useCases: ["高績效團隊深度工作坊", "領導力培訓", "年度回顧", "教練式領導訓練"],
+    category: "corporate",
+    icon: "Eye",
+    gradient: "from-indigo-400 to-purple-400",
+    estimatedPlayers: "4-25 人",
+    estimatedDuration: "20-35 分鐘",
+    components: [
+      {
+        pageType: "blind_spot",
+        label: "盲點揭示",
+        role: "安全分享個人成長盲區",
+        axis: "multi",
+      },
+      {
+        pageType: "wisdom_pool",
+        label: "智慧池",
+        role: "集體智慧相互激勵",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "深度成長套組 NT$ 2,000-6,000 / 場。讓團隊在安全氛圍中真正成長。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

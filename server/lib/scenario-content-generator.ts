@@ -688,6 +688,12 @@ ${componentDescriptions}
 - "origin_story": { title, prompt, turningPlaceholder, lessonPlaceholder }
   起源故事：每人選 emoji 情緒符號並分享一個職涯或人生的關鍵轉折點及所學，揭曉後以 emoji + 文字的故事牆呈現，適合深度破冰/領導力培訓/年度回顧/跨世代對話
 
+- "wisdom_pool": { title, prompt, wisdomPlaceholder, sourcePlaceholder, tags?: string[] }
+  智慧池：每人選類別（人生智慧/工作心得/領導力等7類）並分享一句智慧話語及來源，揭曉後以引言卡片牆＋類別統計呈現集體智慧，適合培訓開場/年度回顧/知識分享/導師分享
+
+- "blind_spot": { title, prompt, blindPlaceholder, selfPlaceholder, actionPlaceholder }
+  盲點揭示：每人選意識程度（剛意識到/努力改善中/逐漸突破）並分享一個盲點及改善行動，揭曉後以左側邊框卡片牆呈現，適合深度工作坊/領導力培訓/心理安全感建立/自我成長活動
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

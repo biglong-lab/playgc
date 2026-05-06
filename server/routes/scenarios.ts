@@ -2268,6 +2268,22 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         lessonPlaceholder: "你從中學到了什麼？（選填）",
       };
 
+    case "wisdom_pool":
+      return {
+        title: "💡 智慧池",
+        prompt: `在「${scenarioName}」中，分享一句改變你思維或行動的智慧話語：`,
+        wisdomPlaceholder: "這句話是什麼？（≥5字）",
+        sourcePlaceholder: "來源：書籍、前輩、親身體驗…（選填）",
+      };
+
+    case "blind_spot":
+      return {
+        title: "👁 盲點揭示",
+        prompt: `在「${scenarioName}」中，你的一個可能影響表現的盲點或習慣是什麼？`,
+        blindPlaceholder: "我的盲點是…（≥5字）",
+        actionPlaceholder: "我打算怎麼改善？（選填）",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
