@@ -327,7 +327,10 @@ export function useAdminGames(): AdminGamesReturn {
   return {
     admin, authLoading, isAuthenticated,
     games, filteredGames, gameCounts, gamesLoading,
-    statusFilter, setStatusFilter, searchQuery, setSearchQuery,
+    statusFilter, setStatusFilter,
+    editorModeFilter, setEditorModeFilter,
+    showScenarioInstances, setShowScenarioInstances,
+    searchQuery, setSearchQuery,
     formData, setFormData, editingGame,
     isDialogOpen, setIsDialogOpen,
     isQRDialogOpen, setIsQRDialogOpen,
