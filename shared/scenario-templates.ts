@@ -5018,6 +5018,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "水果巧克力甜蜜套組 NT$ 1,200-3,500 / 場。甜蜜十足的雙重美食個性探索，適合甜點主題、情人節、派對破冰。",
     status: "live",
   },
+  {
+    id: "bird-fish-nature-pack",
+    name: "🦅 鳥類魚族自然套組",
+    tagline: "用鳥類天性與魚族個性雙維度探索自我",
+    description: "BirdType 讓每人選出最像自己的鳥類並說原因，揭曉全隊鳥類圖鑑；FishType 讓每人選出最像自己的魚並說原因，揭曉全隊水族館。天空與海洋的雙重自然個性探索，豐富有趣。",
+    useCases: ["自然主題活動", "海洋館合作", "生態教育", "個性探索破冰"],
+    category: "venue",
+    icon: "Bird",
+    gradient: "from-teal-500 to-blue-600",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "bird_type",
+        label: "我是哪種鳥類",
+        role: "9種鳥類選擇＋個性說明，揭曉全隊鳥類圖鑑",
+        axis: "multi",
+      },
+      {
+        pageType: "fish_type",
+        label: "我是哪種魚",
+        role: "9種魚類選擇＋個性說明，揭曉全隊水族館",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "鳥類魚族自然套組 NT$ 1,200-3,500 / 場。天空與海洋的雙重自然個性探索，適合自然館、生態活動、探索主題破冰。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
