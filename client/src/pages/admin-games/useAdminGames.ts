@@ -217,6 +217,36 @@ export function useAdminGames(): AdminGamesReturn {
     onError: (error: Error) => toast({ title: "更新失敗", description: error.message, variant: "destructive" }),
   });
 
+  // 🆕 2026-05-07：首頁可見 toggle（綁 isIsolated 反向）
+  // isIsolated=true（schema default）= QR-only 防亂入、不在首頁
+  // isIsolated=false = 首頁可見
+  const homeVisibleMutation = useMutation({
+    mutationFn: async ({ id, isIsolated }: { id: string; isIsolated: boolean }) => {
+      const response = await fetch(`/api/admin/games/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ isIsolated }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "更新失敗");
+      }
+      return response.json();
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/games"] });
+      toast({
+        title: vars.isIsolated ? "已從首頁隱藏" : "✅ 已設為首頁可見",
+        description: vars.isIsolated
+          ? "玩家現在只能透過 QR / 直接連結進入"
+          : "玩家現在可在首頁看到此遊戲",
+      });
+    },
+    onError: (error: Error) =>
+      toast({ title: "更新失敗", description: error.message, variant: "destructive" }),
+  });
+
   const generateQRMutation = useMutation({
     mutationFn: async ({ id, regenerateSlug }: { id: string; regenerateSlug?: boolean }) => {
       const response = await fetch(`/api/admin/games/${id}/qrcode`, {
