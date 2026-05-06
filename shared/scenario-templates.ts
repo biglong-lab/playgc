@@ -4598,6 +4598,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "植物城市世界套組 NT$ 1,500-4,000 / 場。深度有趣的自我探索，適合注重文化與個性的活動場合。",
     status: "live",
   },
+  {
+    id: "sport-movie-role-pack",
+    name: "🏃 運動電影角色套組",
+    tagline: "用運動感與故事原型認識彼此",
+    description: "SportVibes 讓每人選出今天最像自己的運動並說感受，揭曉全隊運動能量分布；MovieRole 讓每人選出最像自己的故事原型角色並說原因，揭曉全隊角色組合。適合活動開場暖身、企業團建、創意工作坊，活潑有趣且引發深度自我探索。",
+    useCases: ["活動開場暖身", "企業團建", "創意工作坊", "角色探索"],
+    category: "event",
+    icon: "Clapperboard",
+    gradient: "from-rose-400 to-violet-400",
+    estimatedPlayers: "4-60 人",
+    estimatedDuration: "10-18 分鐘",
+    components: [
+      {
+        pageType: "sport_vibes",
+        label: "我今天的運動感",
+        role: "9種運動選擇＋今日感受，揭曉全隊運動能量分布",
+        axis: "multi",
+      },
+      {
+        pageType: "movie_role",
+        label: "我在故事中的角色",
+        role: "8種故事原型選擇＋原因說明，揭曉全隊角色組合",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "運動電影角色套組 NT$ 1,200-3,500 / 場。活力十足的活動暖身，適合各類型活動開場與破冰環節。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

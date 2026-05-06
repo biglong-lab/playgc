@@ -2580,6 +2580,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一座城市，你最像哪個？說說你的氣質！`,
       };
 
+    case "sport_vibes":
+      return {
+        title: "🏃 我今天的運動感",
+        prompt: `在「${scenarioName}」的今天，哪種運動最符合你的狀態或個性？說說感受！`,
+      };
+
+    case "movie_role":
+      return {
+        title: "⭐ 我在故事中的角色",
+        prompt: `在「${scenarioName}」的場合，如果你是故事裡的角色，你最像哪一種？說說原因！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
