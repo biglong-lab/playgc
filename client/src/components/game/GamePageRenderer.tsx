@@ -394,6 +394,8 @@ const VolcanoReportPage = lazy(() => import("@/components/game/multi/VolcanoRepo
 const PuzzlePiecePage = lazy(() => import("@/components/game/multi/PuzzlePiecePage"));
 const TreeRingPage = lazy(() => import("@/components/game/multi/TreeRingPage"));
 const BookmarkCardPage = lazy(() => import("@/components/game/multi/BookmarkCardPage"));
+const PortalDoorPage = lazy(() => import("@/components/game/multi/PortalDoorPage"));
+const LampLightPage = lazy(() => import("@/components/game/multi/LampLightPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1390,6 +1392,10 @@ export default function GamePageRenderer({
         return <TreeRingPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "bookmark_card":
         return <BookmarkCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "portal_door":
+        return <PortalDoorPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "lamp_light":
+        return <LampLightPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
