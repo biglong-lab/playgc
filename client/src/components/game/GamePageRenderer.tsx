@@ -380,6 +380,8 @@ const LifeTreePage = lazy(() => import("@/components/game/multi/LifeTreePage"));
 const EmotionWheelPage = lazy(() => import("@/components/game/multi/EmotionWheelPage"));
 const BodyCompassPage = lazy(() => import("@/components/game/multi/BodyCompassPage"));
 const ContextCardPage = lazy(() => import("@/components/game/multi/ContextCardPage"));
+const WeddingVowPage = lazy(() => import("@/components/game/multi/WeddingVowPage"));
+const BirthdayCandlePage = lazy(() => import("@/components/game/multi/BirthdayCandlePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1348,6 +1350,10 @@ export default function GamePageRenderer({
         return <BodyCompassPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "context_card":
         return <ContextCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "wedding_vow":
+        return <WeddingVowPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "birthday_candle":
+        return <BirthdayCandlePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
