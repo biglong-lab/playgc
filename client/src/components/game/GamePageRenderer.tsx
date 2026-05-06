@@ -386,6 +386,8 @@ const HeroJourneyPage = lazy(() => import("@/components/game/multi/HeroJourneyPa
 const MagicWandPage = lazy(() => import("@/components/game/multi/MagicWandPage"));
 const AwardCeremonyPage = lazy(() => import("@/components/game/multi/AwardCeremonyPage"));
 const DinnerTablePage = lazy(() => import("@/components/game/multi/DinnerTablePage"));
+const TimeTravelPage = lazy(() => import("@/components/game/multi/TimeTravelPage"));
+const MuseumCardPage = lazy(() => import("@/components/game/multi/MuseumCardPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1366,6 +1368,10 @@ export default function GamePageRenderer({
         return <AwardCeremonyPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "dinner_table":
         return <DinnerTablePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "time_travel":
+        return <TimeTravelPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "museum_card":
+        return <MuseumCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
