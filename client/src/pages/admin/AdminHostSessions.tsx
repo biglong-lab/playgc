@@ -170,7 +170,13 @@ export default function AdminHostSessions() {
   };
 
   const sessions = data?.sessions ?? [];
-  const games = gamesData ?? [];
+  // 🆕 軟分流階段 1：只顯示 editorMode='activity' 的 game（host session 專用）
+  // 排除 SCENARIO 實例（已透過 instantiate 自動建好 session、不需手動再建）
+  const games = (gamesData ?? []).filter((g) => {
+    if (g.editorMode !== "activity") return false;
+    if (g.description?.includes("[scenario:")) return false;
+    return true;
+  });
 
   return (
     <UnifiedAdminLayout title="📺 主控大螢幕 Sessions">
