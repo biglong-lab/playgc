@@ -14,6 +14,15 @@ import { useMemo } from "react";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import MetricCard from "@/components/shared/MetricCard";
 import SystemHealthCard from "@/components/admin/SystemHealthCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useState } from "react";
 import { useCurrentField, type FieldModules } from "@/providers/FieldThemeProvider";
 import type { Game, GameSession, ArduinoDevice, FieldSettings } from "@shared/schema";
 import { daysUntilDate } from "@/lib/date-utils";
