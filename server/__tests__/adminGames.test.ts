@@ -87,6 +87,10 @@ vi.mock("@shared/schema", () => ({
   pages: { id: "pages.id", gameId: "pages.gameId", pageOrder: "pages.pageOrder" },
   games: { id: "games.id", fieldId: "games.fieldId", createdAt: "games.createdAt" },
   fields: { id: "fields.id", settings: "fields.settings" },
+  // 🆕 cb75e893: DELETE handler SET NULL 用到的 FK 表（gameId 欄位）
+  gameSessions: { id: "game_sessions.id", gameId: "game_sessions.gameId" },
+  leaderboard: { id: "leaderboard.id", gameId: "leaderboard.gameId" },
+  paymentTransactions: { id: "payment_transactions.id", gameId: "payment_transactions.gameId" },
   parseFieldSettings: vi.fn().mockReturnValue({}),
 }));
 

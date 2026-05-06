@@ -2643,7 +2643,7 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     status: "live",
   },
   {
-    id: "training-assessment",
+    id: "training-assessment-pack",
     name: "培訓成效評估套餐",
     tagline: "進度回報 + 自評量表 + 行動承諾",
     description:

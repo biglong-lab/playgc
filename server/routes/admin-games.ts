@@ -397,7 +397,8 @@ export function registerAdminGameRoutes(app: Express) {
 
       res.json({ success: true });
     } catch (error) {
-      res.status(500).json({ message: "Failed to delete game" });
+      console.error("[admin-games] DELETE failed:", error);
+      res.status(500).json({ message: "Failed to delete game", error: String(error) });
     }
   });
 
