@@ -112,6 +112,7 @@ battle_clans = 寫入凍結（POST 410 Gone），舊資料只讀保留
 | 版本紀錄 | [docs/CHANGELOG.md](docs/CHANGELOG.md) |
 | 過時 / 完成的舊計畫 | [docs/archive/](docs/archive/) |
 | 文件機制與規則 | [docs/README.md](docs/README.md) |
+| **🎯 下次行動快速指南**（必讀）| [docs/changes/2026-05-07-next-action-guide.md](docs/changes/2026-05-07-next-action-guide.md) |
 
 ---
 
