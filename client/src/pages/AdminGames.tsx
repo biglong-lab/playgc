@@ -151,12 +151,31 @@ export default function AdminGames() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          {/* 🆕 軟分流階段 1：兩個並排按鈕、明確區分路線 I 跟 II/III */}
           <Button
-            onClick={() => ctx.setIsWizardOpen(true)}
+            onClick={() => {
+              setWizardEditorMode("game");
+              ctx.setIsWizardOpen(true);
+            }}
             data-testid="button-create-game"
+            title="路線 I：玩家手機闖關 / 多人協作（要登入）"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            新增遊戲
+            🎮
+            <Plus className="h-4 w-4 mx-1" />
+            建立遊戲
+          </Button>
+          <Button
+            onClick={() => {
+              setWizardEditorMode("activity");
+              ctx.setIsWizardOpen(true);
+            }}
+            data-testid="button-create-activity"
+            variant="secondary"
+            title="路線 II/III：活動現場互動 / 大螢幕（玩家匿名）"
+          >
+            🎉
+            <Plus className="h-4 w-4 mx-1" />
+            建立活動
           </Button>
         </div>
       }
