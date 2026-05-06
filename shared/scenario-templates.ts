@@ -4318,6 +4318,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "信條時間套組 NT$ 2,500-6,000 / 場。讓團隊深度認識彼此的價值觀與生活方式。",
     status: "live",
   },
+  {
+    id: "wish-strength-pack",
+    name: "🌟 願望強項套組",
+    tagline: "願望清單 + 強項地圖，讓每個人都找到方向與力量",
+    description: "WishList 讓大家從6個類別選一個並許下最想實現的願望，揭曉彩色願望牆；StrengthMap 讓每人選出核心強項並分享真實故事，揭曉強項摘要與故事牆。適合新年啟動、年度目標設定、職涯探索工作坊，讓夢想與實力同時浮現。",
+    useCases: ["新年啟動", "年度目標設定", "職涯探索工作坊", "個人成長活動"],
+    category: "event",
+    icon: "Star",
+    gradient: "from-pink-400 to-yellow-400",
+    estimatedPlayers: "4-80 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "wish_list",
+        label: "願望清單",
+        role: "6類別願望分享，揭曉彩色願望牆",
+        axis: "multi",
+      },
+      {
+        pageType: "strength_map",
+        label: "強項地圖",
+        role: "8種強項選擇＋真實故事，揭曉強項地圖",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "願望強項套組 NT$ 2,500-6,000 / 場。讓每個人看見自己的夢想與力量。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

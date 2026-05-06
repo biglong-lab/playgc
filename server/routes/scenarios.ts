@@ -2460,6 +2460,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的主題下，分享你理想中的一週 168 小時時間分配！`,
       };
 
+    case "wish_list":
+      return {
+        title: "✨ 願望清單",
+        prompt: `在「${scenarioName}」的場合，許下一個你最想實現的願望，讓大家見證你的夢想！`,
+      };
+
+    case "strength_map":
+      return {
+        title: "💪 強項地圖",
+        prompt: `在「${scenarioName}」的場合，選出你最核心的強項，並分享一個發揮它的真實故事！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
