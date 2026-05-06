@@ -2484,6 +2484,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，分享一個你從人生經歷中學到的寶貴功課！`,
       };
 
+    case "animal_spirit":
+      return {
+        title: "🦁 精神動物",
+        prompt: `在「${scenarioName}」的場合，如果你今天是一隻動物，你會是哪一隻？說說原因！`,
+      };
+
+    case "childhood_game":
+      return {
+        title: "🎮 童年遊戲記憶",
+        prompt: `在「${scenarioName}」的場合，說說你童年最喜歡的遊戲，勾起大家的美好回憶！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

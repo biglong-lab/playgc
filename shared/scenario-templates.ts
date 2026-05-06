@@ -4374,6 +4374,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "才能智慧套組 NT$ 2,500-6,000 / 場。讓每個人都成為最有趣的存在。",
     status: "live",
   },
+  {
+    id: "animal-nostalgia-pack",
+    name: "🦁 動物懷舊套組",
+    tagline: "精神動物 + 童年遊戲，輕鬆破冰讓笑聲不斷",
+    description: "AnimalSpirit 讓大家從12隻動物選出今日精神象徵並說原因，揭曉動物王國全貌；ChildhoodGame 讓每人分享童年最愛的遊戲與回憶，喚起世代共鳴。適合同學會、公司尾牙、世代交流活動，輕鬆自然地打破陌生感。",
+    useCases: ["同學會", "公司尾牙", "破冰活動", "世代交流"],
+    category: "social",
+    icon: "PawPrint",
+    gradient: "from-amber-400 to-orange-400",
+    estimatedPlayers: "4-60 人",
+    estimatedDuration: "10-20 分鐘",
+    components: [
+      {
+        pageType: "animal_spirit",
+        label: "精神動物",
+        role: "12隻動物選擇＋原因分享，揭曉動物王國",
+        axis: "multi",
+      },
+      {
+        pageType: "childhood_game",
+        label: "童年遊戲記憶",
+        role: "遊戲名稱＋年代＋回憶分享，揭曉彩色遊戲牆",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "動物懷舊套組 NT$ 1,500-4,000 / 場。輕鬆破冰讓笑聲不斷。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
