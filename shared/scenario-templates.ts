@@ -3972,6 +3972,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "感恩收尾套組 NT$ 2,000-8,000 / 場。用感謝和承諾留下美好印記。",
     status: "live",
   },
+
+  {
+    id: "team-launch-pack",
+    name: "🚀 新隊啟動套組",
+    tagline: "能量地圖 + 隊伍公約，讓每個新團隊快速凝聚",
+    description: "EnergyMap 讓每人標記現在的能量和意願象限，快速感知全隊狀態；TeamPact 讓大家共同訂定隊伍公約，建立心理契約。雙元件組合讓新團隊從第一天就有共識，適合新生訓練、企業培訓開場、社群建立。",
+    useCases: ["新生訓練開場", "企業培訓第一天", "社群建立活動", "跨部門協作啟動"],
+    category: "corporate",
+    icon: "FileCheck",
+    gradient: "from-emerald-400 to-yellow-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "energy_map",
+        label: "能量地圖",
+        role: "快速感知全隊目前狀態",
+        axis: "multi",
+      },
+      {
+        pageType: "team_pact",
+        label: "隊伍公約",
+        role: "共同訂定規則，建立心理契約",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "新隊啟動套組 NT$ 1,500-5,000 / 場。讓新團隊從第一天就有共識。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

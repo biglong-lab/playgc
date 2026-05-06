@@ -2314,6 +2314,19 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         openLabel: "下次聚會時",
       };
 
+    case "team_pact":
+      return {
+        title: "📜 隊伍公約",
+        prompt: `為「${scenarioName}」的隊伍提出一條共同遵守的規則或精神`,
+        pactTitle: `${scenarioName} 公約`,
+      };
+
+    case "energy_map":
+      return {
+        title: "⚡ 能量地圖",
+        prompt: `在「${scenarioName}」中，你現在的能量和意願各在哪個象限？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
