@@ -84,20 +84,35 @@ export function useAdminGames(): AdminGamesReturn {
     enabled: isAuthenticated,
   });
 
-  const filteredGames = games.filter((game) => {
+  // 🆕 軟分流階段 1：editor mode filter（all / game / activity）
+  // 預設過濾掉 SCENARIO 實例（description 含 [scenario:）— admin 列表不爆炸
+  const [editorModeFilter, setEditorModeFilter] = useState<"all" | "game" | "activity">("all");
+  const [showScenarioInstances, setShowScenarioInstances] = useState(false);
+
+  const isScenarioInstance = (g: Game): boolean =>
+    !!g.description?.includes("[scenario:");
+
+  const visibleGames = games.filter((g) => showScenarioInstances || !isScenarioInstance(g));
+
+  const filteredGames = visibleGames.filter((game) => {
     const gameStatus = normalizeStatus(game.status);
     const matchesStatus = statusFilter === "all" || gameStatus === statusFilter;
+    const matchesEditorMode =
+      editorModeFilter === "all" || (game.editorMode ?? "game") === editorModeFilter;
     const matchesSearch = !searchQuery ||
       game.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (game.description?.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesEditorMode && matchesSearch;
   });
 
   const gameCounts = {
-    all: games.length,
-    draft: games.filter(g => normalizeStatus(g.status) === "draft").length,
-    published: games.filter(g => normalizeStatus(g.status) === "published").length,
-    archived: games.filter(g => normalizeStatus(g.status) === "archived").length,
+    all: visibleGames.length,
+    draft: visibleGames.filter(g => normalizeStatus(g.status) === "draft").length,
+    published: visibleGames.filter(g => normalizeStatus(g.status) === "published").length,
+    archived: visibleGames.filter(g => normalizeStatus(g.status) === "archived").length,
+    game: visibleGames.filter(g => (g.editorMode ?? "game") === "game").length,
+    activity: visibleGames.filter(g => g.editorMode === "activity").length,
+    scenarioInstances: games.filter(isScenarioInstance).length,
   };
 
   // Mutations
