@@ -2532,6 +2532,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一個季節，你最像哪一個？說說原因！`,
       };
 
+    case "color_personality":
+      return {
+        title: "🎨 我是哪種顏色",
+        prompt: `在「${scenarioName}」的場合，哪個顏色最代表你今天的狀態？說說原因！`,
+      };
+
+    case "hero_type":
+      return {
+        title: "⚔️ 我的英雄職業",
+        prompt: `在「${scenarioName}」的冒險中，你會選哪種英雄職業？說說為什麼！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

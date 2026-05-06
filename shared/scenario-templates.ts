@@ -4486,6 +4486,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "旅行四季套組 NT$ 1,500-4,000 / 場。探索彼此的生活哲學，輕鬆引發深度話題。",
     status: "live",
   },
+  {
+    id: "color-hero-identity-pack",
+    name: "🎨 顏色英雄身份套組",
+    tagline: "顏色人格 + 英雄職業，探索今日狀態與角色定位",
+    description: "ColorPersonality 讓每人選出代表今日心情的顏色並說明原因，揭曉全隊顏色光譜；HeroType 讓每人從8種RPG職業選出最像自己的英雄並說原因，揭曉全隊冒險者名冊。適合企業內訓、遊戲主題破冰、輕鬆有趣的自我介紹場合。",
+    useCases: ["企業內訓", "遊戲主題活動", "破冰活動", "自我介紹"],
+    category: "corporate",
+    icon: "Sword",
+    gradient: "from-purple-400 to-amber-400",
+    estimatedPlayers: "4-40 人",
+    estimatedDuration: "10-18 分鐘",
+    components: [
+      {
+        pageType: "color_personality",
+        label: "我是哪種顏色",
+        role: "8種顏色選擇＋今日狀態說明，揭曉全隊顏色光譜",
+        axis: "multi",
+      },
+      {
+        pageType: "hero_type",
+        label: "我的英雄職業",
+        role: "8種RPG職業選擇＋原因說明，揭曉冒險者名冊",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "顏色英雄身份套組 NT$ 1,500-4,000 / 場。輕鬆有趣的自我探索，讓團隊成員快速認識彼此。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
