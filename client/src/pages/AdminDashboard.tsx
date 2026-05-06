@@ -1457,3 +1457,130 @@ function ProviderRow({
     </div>
   );
 }
+
+// 🆕 2026-05-07：系統更新紀錄 Card
+// 顯示最新 5 條變動、點「查看完整紀錄」開 Dialog 看全部
+interface ChangelogEntry {
+  date: string;
+  title: string;
+  body: string;
+}
+
+interface ChangelogResponse {
+  total: number;
+  entries: ChangelogEntry[];
+}
+
+function ChangelogCard() {
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { data, isLoading } = useQuery<ChangelogResponse>({
+    queryKey: ["/api/admin/changelog"],
+  });
+
+  const previewEntries = data?.entries?.slice(0, 5) ?? [];
+  const totalEntries = data?.total ?? 0;
+
+  return (
+    <Card data-testid="card-changelog">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BookOpen className="w-5 h-5" />
+          系統更新紀錄
+          {totalEntries > 0 && (
+            <Badge variant="secondary" className="ml-auto">
+              共 {totalEntries} 條
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {isLoading && (
+          <div className="text-sm text-muted-foreground">載入中...</div>
+        )}
+        {!isLoading && previewEntries.length === 0 && (
+          <div className="text-sm text-muted-foreground">尚無更新紀錄</div>
+        )}
+        {!isLoading && previewEntries.length > 0 && (
+          <>
+            <div className="space-y-3">
+              {previewEntries.map((entry, idx) => (
+                <ChangelogPreviewItem
+                  key={`${entry.date}-${idx}`}
+                  entry={entry}
+                />
+              ))}
+            </div>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 w-full"
+                  data-testid="btn-changelog-view-all"
+                >
+                  查看完整紀錄（{totalEntries}）
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <BookOpen className="w-5 h-5" />
+                    系統更新紀錄
+                  </DialogTitle>
+                  <DialogDescription>
+                    完整版本歷史（共 {totalEntries} 條）
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 mt-4">
+                  {data?.entries.map((entry, idx) => (
+                    <ChangelogFullItem
+                      key={`full-${entry.date}-${idx}`}
+                      entry={entry}
+                    />
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ChangelogPreviewItem({ entry }: { entry: ChangelogEntry }) {
+  const firstLine = entry.body.split("\n").find((l) => l.trim().length > 0) ?? "";
+  const summary = firstLine.replace(/^\*\*(.+?)\*\*\s*[:：]\s*/, "$1：").slice(0, 80);
+
+  return (
+    <div className="border-l-2 border-primary/30 pl-3 py-1">
+      <div className="flex items-baseline gap-2">
+        <span className="text-xs text-muted-foreground font-mono">
+          {entry.date}
+        </span>
+        <span className="text-sm font-medium line-clamp-1">{entry.title}</span>
+      </div>
+      {summary && (
+        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+          {summary}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ChangelogFullItem({ entry }: { entry: ChangelogEntry }) {
+  return (
+    <div className="border-l-4 border-primary pl-4 py-2">
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-xs text-muted-foreground font-mono">
+          {entry.date}
+        </span>
+        <h4 className="text-base font-semibold">{entry.title}</h4>
+      </div>
+      <div className="text-sm text-muted-foreground whitespace-pre-wrap font-sans leading-relaxed">
+        {entry.body}
+      </div>
+    </div>
+  );
+}
