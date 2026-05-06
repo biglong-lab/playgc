@@ -4117,6 +4117,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "故事學習套組 NT$ 2,000-6,000 / 場。用故事連結人，用風格設計學習。",
     status: "live",
   },
+
+  {
+    id: "stress-decision-pack",
+    name: "📊 壓力決策套組",
+    tagline: "壓力信號 + 決策風格，了解當下狀態與思維模式",
+    description: "StressSignal 讓全隊即時回報壓力等級（1-5）與主要壓力來源，揭曉全隊健康概覽；DecisionStyle 揭露5種決策偏好分布，幫助團隊理解決策多樣性。適合輔導介入、壓力管理工作坊、高效決策培訓。",
+    useCases: ["壓力管理工作坊", "高效決策培訓", "輔導介入評估", "組織健康盤點"],
+    category: "corporate",
+    icon: "BarChart2",
+    gradient: "from-orange-400 to-purple-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "15-25 分鐘",
+    components: [
+      {
+        pageType: "stress_signal",
+        label: "壓力信號",
+        role: "即時壓力等級與來源，全隊健康概覽",
+        axis: "multi",
+      },
+      {
+        pageType: "decision_style",
+        label: "決策風格",
+        role: "5種決策偏好揭露全隊決策多樣性",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "壓力決策套組 NT$ 2,000-5,000 / 場。看見壓力，也看見決策智慧。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

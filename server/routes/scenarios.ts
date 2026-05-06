@@ -2376,6 +2376,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」中，你最容易吸收知識的方式是哪一種？`,
       };
 
+    case "stress_signal":
+      return {
+        title: "📊 壓力信號",
+        prompt: `在「${scenarioName}」進行中，現在的你壓力狀態如何？主要來自哪裡？`,
+      };
+
+    case "decision_style":
+      return {
+        title: "⚖️ 決策風格",
+        prompt: `在「${scenarioName}」中面對重要決定時，你最傾向哪種方式？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
