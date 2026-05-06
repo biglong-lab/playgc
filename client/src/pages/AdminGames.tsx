@@ -399,7 +399,9 @@ function GamesTableContent({
         ctx.setIsCoverDialogOpen(true);
       }}
       onMoveField={onMoveField}
+      onToggleHomeVisible={ctx.onToggleHomeVisible}
       publishPending={ctx.publishPending}
+      homeVisiblePending={ctx.homeVisiblePending}
       generateQRPending={ctx.generateQRPending}
     />
   );
