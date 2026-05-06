@@ -188,7 +188,11 @@ export default function AdminHostSessions() {
               <Plus className="w-5 h-5" /> 建立新 Session
             </CardTitle>
             <CardDescription>
-              選一個含 host_* 頁面的遊戲，系統簽發 12 小時有效的大螢幕網址
+              選一個「🎉 活動」mode 的遊戲、系統簽發 12 小時有效的大螢幕網址。
+              <br />
+              <span className="text-xs text-muted-foreground">
+                🆕 軟分流階段 1：只列出 editorMode='activity' 的遊戲（路線 II/III、玩家匿名）
+              </span>
             </CardDescription>
           </CardHeader>
           <CardContent className="flex gap-3 items-center">
