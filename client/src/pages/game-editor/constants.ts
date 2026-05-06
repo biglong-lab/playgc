@@ -11,6 +11,12 @@ import {
   TreePine, Utensils, BarChart3, UserCircle,
   Sparkle, MessageSquare, ThumbsUp, BookOpen,
   PartyPopper, Lightbulb, Gauge, Wand2,
+  Compass, Search, Activity, ListChecks, Shuffle,
+  Coffee, MessageCircleQuestion, RefreshCw, ListTodo,
+  ShieldCheck, BatteryCharging, ClipboardList,
+  Brain, CircleDot, BarChart, ListOrdered,
+  CheckSquare, SlidersHorizontal, Network, Cloud,
+  Pencil, Link2,
 } from "lucide-react";
 
 export const PAGE_TYPES = [
@@ -75,6 +81,45 @@ export const PAGE_TYPES = [
   { value: "discovery_card", label: "發現卡 👥", icon: Lightbulb, color: "bg-lime-500/20 text-lime-300" },
   { value: "flag_design", label: "隊旗設計 👥", icon: Flag, color: "bg-sky-500/20 text-sky-300" },
   { value: "party_menu", label: "派對選單 👥", icon: PartyPopper, color: "bg-pink-600/20 text-pink-300" },
+  // 🎯 階段 B 精選互動工具（2026-05-06）— 30 個（5 協作關卡 + 25 互動工具）
+  // 協作任務遊戲關卡（Phase 3 真實規劃）
+  { value: "jigsaw_puzzle", label: "拼圖協作 👥", icon: Puzzle, color: "bg-emerald-500/20 text-emerald-300" },
+  { value: "treasure_hunt", label: "尋寶任務 👥", icon: Search, color: "bg-amber-500/20 text-amber-300" },
+  { value: "gps_cascade", label: "GPS 連鎖 👥", icon: Network, color: "bg-red-500/20 text-red-300" },
+  { value: "collective_score", label: "集體分數 👥", icon: BarChart, color: "bg-blue-500/20 text-blue-300" },
+  { value: "role_assign", label: "角色分派 👥", icon: Shuffle, color: "bg-purple-500/20 text-purple-300" },
+  // 工作坊／破冰經典
+  { value: "never_have_i_ever", label: "我從沒... 👥", icon: MessageCircleQuestion, color: "bg-fuchsia-500/20 text-fuchsia-300" },
+  { value: "would_you_rather", label: "你會選哪個 👥", icon: GitBranch, color: "bg-violet-500/20 text-violet-300" },
+  { value: "two_truths", label: "兩真一假 👥", icon: HelpCircle, color: "bg-indigo-500/20 text-indigo-300" },
+  { value: "check_in", label: "簽到 👥", icon: CheckSquare, color: "bg-teal-500/20 text-teal-300" },
+  { value: "speed_networking", label: "快速交誼 👥", icon: Coffee, color: "bg-orange-500/20 text-orange-300" },
+  // 敏捷回顧框架
+  { value: "kpt_retro", label: "KPT 回顧 👥", icon: RefreshCw, color: "bg-cyan-500/20 text-cyan-300" },
+  { value: "four_ls", label: "4Ls 回顧 👥", icon: ListChecks, color: "bg-sky-500/20 text-sky-300" },
+  { value: "rose_bud_thorn", label: "玫瑰花苞刺 👥", icon: Activity, color: "bg-rose-500/20 text-rose-300" },
+  // 團隊建構
+  { value: "team_pact", label: "團隊公約 👥", icon: ListTodo, color: "bg-blue-600/20 text-blue-300" },
+  { value: "team_health_check", label: "團隊健康檢查 👥", icon: Activity, color: "bg-emerald-600/20 text-emerald-300" },
+  { value: "team_radar", label: "團隊雷達圖 👥", icon: Compass, color: "bg-purple-600/20 text-purple-300" },
+  // 簽到能量
+  { value: "safety_check", label: "心理安全檢查 👥", icon: ShieldCheck, color: "bg-green-600/20 text-green-300" },
+  { value: "energy_map", label: "能量地圖 👥", icon: BatteryCharging, color: "bg-yellow-600/20 text-yellow-300" },
+  // 互動牆／共筆板
+  { value: "wish_wall", label: "許願牆 👥", icon: Sparkle, color: "bg-pink-500/20 text-pink-300" },
+  { value: "idea_wall", label: "點子牆 👥", icon: Lightbulb, color: "bg-amber-600/20 text-amber-300" },
+  { value: "story_wall", label: "故事牆 👥", icon: BookOpen, color: "bg-stone-500/20 text-stone-300" },
+  { value: "brain_dump", label: "腦力傾倒 👥", icon: Brain, color: "bg-fuchsia-600/20 text-fuchsia-300" },
+  // 投票工具
+  { value: "dot_vote", label: "圓點投票 👥", icon: CircleDot, color: "bg-emerald-600/20 text-emerald-300" },
+  { value: "rank_choice", label: "排序投票 👥", icon: ListOrdered, color: "bg-indigo-600/20 text-indigo-300" },
+  { value: "multi_vote", label: "多選投票 👥", icon: ClipboardList, color: "bg-teal-600/20 text-teal-300" },
+  { value: "scaled_feedback", label: "量表回饋 👥", icon: SlidersHorizontal, color: "bg-cyan-600/20 text-cyan-300" },
+  // 經典思考工具
+  { value: "thinking_hats", label: "六頂思考帽 👥", icon: Sparkles, color: "bg-violet-600/20 text-violet-300" },
+  { value: "host_word_cloud", label: "文字雲 👥", icon: Cloud, color: "bg-blue-500/20 text-blue-300" },
+  { value: "mad_libs", label: "填詞遊戲 👥", icon: Pencil, color: "bg-rose-600/20 text-rose-300" },
+  { value: "quest_chain", label: "任務鏈 👥", icon: Link2, color: "bg-amber-500/20 text-amber-300" },
 ] as const;
 
 export const PAGE_TEMPLATES = [

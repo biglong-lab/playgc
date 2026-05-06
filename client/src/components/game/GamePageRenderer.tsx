@@ -29,121 +29,30 @@ const TreasureHuntPage = lazy(() => import("@/components/game/multi/TreasureHunt
 const GpsCascadePage = lazy(() => import("@/components/game/multi/GpsCascadePage"));
 const CollectiveScorePage = lazy(() => import("@/components/game/multi/CollectiveScorePage"));
 const RoleAssignPage = lazy(() => import("@/components/game/multi/RoleAssignPage"));
-const SharedBoardPage = lazy(() => import("@/components/game/multi/SharedBoardPage"));
-const MoodMeterPage = lazy(() => import("@/components/game/multi/MoodMeterPage"));
-const TeamChecklistPage = lazy(() => import("@/components/game/multi/TeamChecklistPage"));
-const TeamWordCloudPage = lazy(() => import("@/components/game/multi/TeamWordCloudPage"));
 const CheckInPage = lazy(() => import("@/components/game/multi/CheckInPage"));
-const GroupTimerPage = lazy(() => import("@/components/game/multi/GroupTimerPage"));
 const WishWallPage = lazy(() => import("@/components/game/multi/WishWallPage"));
 const MultiVotePage = lazy(() => import("@/components/game/multi/MultiVotePage"));
-const PhotoWallPage = lazy(() => import("@/components/game/multi/PhotoWallPage"));
-const RatingWallPage = lazy(() => import("@/components/game/multi/RatingWallPage"));
 const DotVotePage = lazy(() => import("@/components/game/multi/DotVotePage"));
-const TimelineWallPage = lazy(() => import("@/components/game/multi/TimelineWallPage"));
 const TwoTruthsPage = lazy(() => import("@/components/game/multi/TwoTruthsPage"));
-const RetroBoardPage = lazy(() => import("@/components/game/multi/RetroBoardPage"));
-const PledgeWallPage = lazy(() => import("@/components/game/multi/PledgeWallPage"));
-const LivePulsePage = lazy(() => import("@/components/game/multi/LivePulsePage"));
 const IdeaWallPage = lazy(() => import("@/components/game/multi/IdeaWallPage"));
 const SpeedNetworkingPage = lazy(() => import("@/components/game/multi/SpeedNetworkingPage"));
-const ChallengeBoardPage = lazy(() => import("@/components/game/multi/ChallengeBoardPage"));
-const GratitudeWallPage = lazy(() => import("@/components/game/multi/GratitudeWallPage"));
-const TeamContractPage = lazy(() => import("@/components/game/multi/TeamContractPage"));
-const HotSeatPage = lazy(() => import("@/components/game/multi/HotSeatPage"));
 const TeamHealthCheckPage = lazy(() => import("@/components/game/multi/TeamHealthCheckPage"));
 const MadLibsPage = lazy(() => import("@/components/game/multi/MadLibsPage"));
 const WouldYouRatherPage = lazy(() => import("@/components/game/multi/WouldYouRatherPage"));
 const ScaledFeedbackPage = lazy(() => import("@/components/game/multi/ScaledFeedbackPage"));
-const TeamPollPage = lazy(() => import("@/components/game/multi/TeamPollPage"));
-const OpenQuestionPage = lazy(() => import("@/components/game/multi/OpenQuestionPage"));
-const MostLikelyPage = lazy(() => import("@/components/game/multi/MostLikelyPage"));
-const PresenceMapPage = lazy(() => import("@/components/game/multi/PresenceMapPage"));
-const GroupCheerPage = lazy(() => import("@/components/game/multi/GroupCheerPage"));
-const SilentBrainstormPage = lazy(() => import("@/components/game/multi/SilentBrainstormPage"));
-const GroupPromisePage = lazy(() => import("@/components/game/multi/GroupPromisePage"));
 const ThinkingHatsPage = lazy(() => import("@/components/game/multi/ThinkingHatsPage"));
-const EmojiCheckInPage = lazy(() => import("@/components/game/multi/EmojiCheckInPage"));
-const WordAssociationPage = lazy(() => import("@/components/game/multi/WordAssociationPage"));
-const FeedbackSandwichPage = lazy(() => import("@/components/game/multi/FeedbackSandwichPage"));
-const ValueRankPage = lazy(() => import("@/components/game/multi/ValueRankPage"));
-const HopeFearPage = lazy(() => import("@/components/game/multi/HopeFearPage"));
 const NeverHaveIEverPage = lazy(() => import("@/components/game/multi/NeverHaveIEverPage"));
-const ReactionWallPage = lazy(() => import("@/components/game/multi/ReactionWallPage"));
-const DesertIslandPage = lazy(() => import("@/components/game/multi/DesertIslandPage"));
-const EmojiStoryPage = lazy(() => import("@/components/game/multi/EmojiStoryPage"));
-const MindSyncPage = lazy(() => import("@/components/game/multi/MindSyncPage"));
-const CelebrationWallPage = lazy(() => import("@/components/game/multi/CelebrationWallPage"));
-const GroupContractPage = lazy(() => import("@/components/game/multi/GroupContractPage"));
-const RateIdeaPage = lazy(() => import("@/components/game/multi/RateIdeaPage"));
-const GroupMoodPage = lazy(() => import("@/components/game/multi/GroupMoodPage"));
-const KudosWallPage = lazy(() => import("@/components/game/multi/KudosWallPage"));
-const ProgressCheckPage = lazy(() => import("@/components/game/multi/ProgressCheckPage"));
-const AhaBoardPage = lazy(() => import("@/components/game/multi/AhaBoardPage"));
-const EnergyBoostPage = lazy(() => import("@/components/game/multi/EnergyBoostPage"));
-const GroupDecisionPage = lazy(() => import("@/components/game/multi/GroupDecisionPage"));
-const QuoteWallPage = lazy(() => import("@/components/game/multi/QuoteWallPage"));
-const ActionItemPage = lazy(() => import("@/components/game/multi/ActionItemPage"));
-const FeedbackFormPage = lazy(() => import("@/components/game/multi/FeedbackFormPage"));
-const SkillSwapPage = lazy(() => import("@/components/game/multi/SkillSwapPage"));
-const AnonymousVoicePage = lazy(() => import("@/components/game/multi/AnonymousVoicePage"));
-const PitchVotePage = lazy(() => import("@/components/game/multi/PitchVotePage"));
-const IdeaMarketPage = lazy(() => import("@/components/game/multi/IdeaMarketPage"));
 const PlayerWordCloudPage = lazy(() => import("@/components/game/multi/WordCloudPage"));
-const OpenMicPage = lazy(() => import("@/components/game/multi/OpenMicPage"));
 const RankChoicePage = lazy(() => import("@/components/game/multi/RankChoicePage"));
-const MoodMapPage = lazy(() => import("@/components/game/multi/MoodMapPage"));
-const PairSharePage = lazy(() => import("@/components/game/multi/PairSharePage"));
-const TeamSnapshotPage = lazy(() => import("@/components/game/multi/TeamSnapshotPage"));
 const BrainDumpPage = lazy(() => import("@/components/game/multi/BrainDumpPage"));
-const ValueCardPage = lazy(() => import("@/components/game/multi/ValueCardPage"));
-const ThankYouNotePage = lazy(() => import("@/components/game/multi/ThankYouNotePage"));
-const MoodBoardPage = lazy(() => import("@/components/game/multi/MoodBoardPage"));
-const LearningCheckPage = lazy(() => import("@/components/game/multi/LearningCheckPage"));
-const ConsensusMapPage = lazy(() => import("@/components/game/multi/ConsensusMapPage"));
-const QuickPollPage = lazy(() => import("@/components/game/multi/QuickPollPage"));
-const EmojiWallPage = lazy(() => import("@/components/game/multi/EmojiWallPage"));
-const TokenVotePage = lazy(() => import("@/components/game/multi/TokenVotePage"));
-const TeamManifestoPage = lazy(() => import("@/components/game/multi/TeamManifestoPage"));
-const VibeCheckPage = lazy(() => import("@/components/game/multi/VibeCheckPage"));
-const SpeedBrainstormPage = lazy(() => import("@/components/game/multi/SpeedBrainstormPage"));
-const TeamTimeCapsulePage = lazy(() => import("@/components/game/multi/TeamTimeCapsulePage"));
-const GiveGetPage = lazy(() => import("@/components/game/multi/GiveGetPage"));
-const AskMeAnythingPage = lazy(() => import("@/components/game/multi/AskMeAnythingPage"));
 const RoseBudThornPage = lazy(() => import("@/components/game/multi/RoseBudThornPage"));
-const GroupNormPage = lazy(() => import("@/components/game/multi/GroupNormPage"));
 const StoryWallPage = lazy(() => import("@/components/game/multi/StoryWallPage"));
 const KptRetroPage = lazy(() => import("@/components/game/multi/KptRetroPage"));
-const ConfidenceVotePage = lazy(() => import("@/components/game/multi/ConfidenceVotePage"));
-const TeamGoalPage = lazy(() => import("@/components/game/multi/TeamGoalPage"));
-const StartStopContinuePage = lazy(() => import("@/components/game/multi/StartStopContinuePage"));
-const PlusEvenBetterPage = lazy(() => import("@/components/game/multi/PlusEvenBetterPage"));
-const MeetingCheckPage = lazy(() => import("@/components/game/multi/MeetingCheckPage"));
-const TwoWordsPage = lazy(() => import("@/components/game/multi/TwoWordsPage"));
-const WinWinPage = lazy(() => import("@/components/game/multi/WinWinPage"));
-const OpenQuizPage = lazy(() => import("@/components/game/multi/OpenQuizPage"));
-const AfterActionPage = lazy(() => import("@/components/game/multi/AfterActionPage"));
-const TeamAnimalPage = lazy(() => import("@/components/game/multi/TeamAnimalPage"));
-const ReverseBrainstormPage = lazy(() => import("@/components/game/multi/ReverseBrainstormPage"));
 const FourLsPage = lazy(() => import("@/components/game/multi/FourLsPage"));
-const WonderBoardPage = lazy(() => import("@/components/game/multi/WonderBoardPage"));
-const CommonGroundPage = lazy(() => import("@/components/game/multi/CommonGroundPage"));
-const EnergyLevelPage = lazy(() => import("@/components/game/multi/EnergyLevelPage"));
-const TeamVisionPage = lazy(() => import("@/components/game/multi/TeamVisionPage"));
-const ValuesCardPage = lazy(() => import("@/components/game/multi/ValuesCardPage"));
-const ReflectionCardPage = lazy(() => import("@/components/game/multi/ReflectionCardPage"));
 const SafetyCheckPage = lazy(() => import("@/components/game/multi/SafetyCheckPage"));
-const SatisfactionMeterPage = lazy(() => import("@/components/game/multi/SatisfactionMeterPage"));
-const TeamFlagPage = lazy(() => import("@/components/game/multi/TeamFlagPage"));
-const MeetingRatingPage = lazy(() => import("@/components/game/multi/MeetingRatingPage"));
-const BlindSpotPage = lazy(() => import("@/components/game/multi/BlindSpotPage"));
 const TeamPactPage = lazy(() => import("@/components/game/multi/TeamPactPage"));
 const EnergyMapPage = lazy(() => import("@/components/game/multi/EnergyMapPage"));
-const VisionBoardPage = lazy(() => import("@/components/game/multi/VisionBoardPage"));
-const ThreeWordsPage = lazy(() => import("@/components/game/multi/ThreeWordsPage"));
 const TeamRadarPage = lazy(() => import("@/components/game/multi/TeamRadarPage"));
-const TodayFeelPage = lazy(() => import("@/components/game/multi/TodayFeelPage"));
-const MottoBoardPage = lazy(() => import("@/components/game/multi/MottoBoardPage"));
 const SpotVotePage = lazy(() => import("@/components/game/multi/SpotVotePage"));
 const TeamDreamPage = lazy(() => import("@/components/game/multi/TeamDreamPage"));
 const GroupNicknamePage = lazy(() => import("@/components/game/multi/GroupNicknamePage"));
@@ -431,50 +340,20 @@ export default function GamePageRenderer({
         return <WordCloudPage page={page} />;
       case "quest_chain":
         return <QuestChainPage {...commonProps} page={page} pageId={page.id} />;
-      case "shared_board":
-        return <SharedBoardPage {...commonProps} page={page} pageId={page.id} />;
-      case "mood_meter":
-        return <MoodMeterPage {...commonProps} page={page} pageId={page.id} />;
-      case "team_checklist":
-        return <TeamChecklistPage {...commonProps} page={page} pageId={page.id} />;
-      case "team_word_cloud":
-        return <TeamWordCloudPage {...commonProps} page={page} pageId={page.id} />;
       case "check_in":
         return <CheckInPage {...commonProps} page={page} pageId={page.id} />;
-      case "group_timer":
-        return <GroupTimerPage {...commonProps} page={page} pageId={page.id} />;
       case "wish_wall":
         return <WishWallPage {...commonProps} page={page} pageId={page.id} />;
       case "multi_vote":
         return <MultiVotePage {...commonProps} page={page} pageId={page.id} />;
-      case "photo_wall":
-        return <PhotoWallPage {...commonProps} page={page} pageId={page.id} />;
-      case "rating_wall":
-        return <RatingWallPage {...commonProps} page={page} pageId={page.id} />;
       case "dot_vote":
         return <DotVotePage {...commonProps} page={page} pageId={page.id} />;
-      case "timeline_wall":
-        return <TimelineWallPage {...commonProps} page={page} pageId={page.id} />;
       case "two_truths":
         return <TwoTruthsPage {...commonProps} page={page} pageId={page.id} />;
-      case "retro_board":
-        return <RetroBoardPage {...commonProps} page={page} pageId={page.id} />;
-      case "pledge_wall":
-        return <PledgeWallPage {...commonProps} page={page} pageId={page.id} />;
-      case "live_pulse":
-        return <LivePulsePage {...commonProps} page={page} pageId={page.id} />;
       case "idea_wall":
         return <IdeaWallPage {...commonProps} page={page} pageId={page.id} />;
       case "speed_networking":
         return <SpeedNetworkingPage {...commonProps} page={page} pageId={page.id} />;
-      case "challenge_board":
-        return <ChallengeBoardPage {...commonProps} page={page} pageId={page.id} />;
-      case "gratitude_wall":
-        return <GratitudeWallPage {...commonProps} page={page} pageId={page.id} />;
-      case "team_contract":
-        return <TeamContractPage {...commonProps} page={page} pageId={page.id} />;
-      case "hot_seat":
-        return <HotSeatPage {...commonProps} page={page} pageId={page.id} />;
       case "team_health_check":
         return <TeamHealthCheckPage {...commonProps} page={page} pageId={page.id} />;
       case "mad_libs":
@@ -483,184 +362,32 @@ export default function GamePageRenderer({
         return <WouldYouRatherPage {...commonProps} page={page} pageId={page.id} />;
       case "scaled_feedback":
         return <ScaledFeedbackPage {...commonProps} page={page} pageId={page.id} />;
-      case "team_poll":
-        return <TeamPollPage {...commonProps} page={page} pageId={page.id} />;
-      case "open_question":
-        return <OpenQuestionPage {...commonProps} page={page} pageId={page.id} />;
-      case "most_likely":
-        return <MostLikelyPage {...commonProps} page={page} pageId={page.id} />;
-      case "presence_map":
-        return <PresenceMapPage {...commonProps} page={page} pageId={page.id} />;
-      case "group_cheer":
-        return <GroupCheerPage {...commonProps} page={page} pageId={page.id} />;
-      case "silent_brainstorm":
-        return <SilentBrainstormPage {...commonProps} page={page} pageId={page.id} />;
-      case "group_promise":
-        return <GroupPromisePage {...commonProps} page={page} pageId={page.id} />;
       case "thinking_hats":
         return <ThinkingHatsPage {...commonProps} page={page} pageId={page.id} />;
-      case "emoji_check_in":
-        return <EmojiCheckInPage {...commonProps} page={page} pageId={page.id} />;
-      case "word_association":
-        return <WordAssociationPage {...commonProps} page={page} pageId={page.id} />;
-      case "feedback_sandwich":
-        return <FeedbackSandwichPage {...commonProps} page={page} pageId={page.id} />;
-      case "value_rank":
-        return <ValueRankPage {...commonProps} page={page} pageId={page.id} />;
-      case "hope_fear":
-        return <HopeFearPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "never_have_i_ever":
         return <NeverHaveIEverPage {...commonProps} page={page} pageId={page.id} />;
-      case "reaction_wall":
-        return <ReactionWallPage {...commonProps} page={page} pageId={page.id} />;
-      case "desert_island":
-        return <DesertIslandPage {...commonProps} page={page} pageId={page.id} />;
-      case "emoji_story":
-        return <EmojiStoryPage {...commonProps} page={page} pageId={page.id} />;
-      case "mind_sync":
-        return <MindSyncPage {...commonProps} page={page} pageId={page.id} />;
-      case "celebration_wall":
-        return <CelebrationWallPage {...commonProps} page={page} pageId={page.id} />;
-      case "group_contract":
-        return <GroupContractPage {...commonProps} page={page} pageId={page.id} />;
-      case "rate_idea":
-        return <RateIdeaPage {...commonProps} page={page} pageId={page.id} />;
-      case "group_mood":
-        return <GroupMoodPage {...commonProps} page={page} pageId={page.id} />;
-      case "kudos_wall":
-        return <KudosWallPage {...commonProps} page={page} pageId={page.id} />;
-      case "progress_check":
-        return <ProgressCheckPage {...commonProps} page={page} pageId={page.id} />;
-      case "aha_board":
-        return <AhaBoardPage {...commonProps} page={page} pageId={page.id} />;
-      case "energy_boost":
-        return <EnergyBoostPage {...commonProps} page={page} pageId={page.id} />;
-      case "group_decision":
-        return <GroupDecisionPage {...commonProps} page={page} pageId={page.id} />;
-      case "quote_wall":
-        return <QuoteWallPage {...commonProps} page={page} pageId={page.id} />;
-      case "action_item":
-        return <ActionItemPage {...commonProps} page={page} pageId={page.id} />;
-      case "feedback_form":
-        return <FeedbackFormPage {...commonProps} page={page} pageId={page.id} />;
-      case "skill_swap":
-        return <SkillSwapPage {...commonProps} page={page} pageId={page.id} />;
-      case "anonymous_voice":
-        return <AnonymousVoicePage {...commonProps} page={page} pageId={page.id} />;
-      case "pitch_vote":
-        return <PitchVotePage {...commonProps} page={page} pageId={page.id} />;
-      case "idea_market":
-        return <IdeaMarketPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "word_cloud":
         return <PlayerWordCloudPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
-      case "open_mic":
-        return <OpenMicPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
       case "rank_choice":
         return <RankChoicePage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
-      case "mood_map":
-        return <MoodMapPage gameId={commonProps.gameId} sessionId={commonProps.sessionId} page={page} pageId={page.id} />;
-      case "pair_share":
-        return <PairSharePage {...commonProps} page={page} pageId={page.id} />;
-      case "team_snapshot":
-        return <TeamSnapshotPage {...commonProps} page={page} pageId={page.id} />;
       case "brain_dump":
         return <BrainDumpPage {...commonProps} page={page} pageId={page.id} />;
-      case "value_card":
-        return <ValueCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "thank_you_note":
-        return <ThankYouNotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "mood_board":
-        return <MoodBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "learning_check":
-        return <LearningCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "consensus_map":
-        return <ConsensusMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "quick_poll":
-        return <QuickPollPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "emoji_wall":
-        return <EmojiWallPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "token_vote":
-        return <TokenVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "team_manifesto":
-        return <TeamManifestoPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "vibe_check":
-        return <VibeCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "speed_brainstorm":
-        return <SpeedBrainstormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "team_time_capsule":
-        return <TeamTimeCapsulePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "give_get":
-        return <GiveGetPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "ask_me_anything":
-        return <AskMeAnythingPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "rose_bud_thorn":
         return <RoseBudThornPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "group_norm":
-        return <GroupNormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "story_wall":
         return <StoryWallPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "kpt_retro":
         return <KptRetroPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "confidence_vote":
-        return <ConfidenceVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "team_goal":
-        return <TeamGoalPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "start_stop_continue":
-        return <StartStopContinuePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "plus_even_better":
-        return <PlusEvenBetterPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "meeting_check":
-        return <MeetingCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "two_words":
-        return <TwoWordsPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "win_win":
-        return <WinWinPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "open_quiz":
-        return <OpenQuizPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "after_action":
-        return <AfterActionPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "team_animal":
-        return <TeamAnimalPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "reverse_brainstorm":
-        return <ReverseBrainstormPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "four_ls":
         return <FourLsPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "wonder_board":
-        return <WonderBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "common_ground":
-        return <CommonGroundPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "energy_level":
-        return <EnergyLevelPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "team_vision":
-        return <TeamVisionPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "values_card":
-        return <ValuesCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "reflection_card":
-        return <ReflectionCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "safety_check":
         return <SafetyCheckPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "satisfaction_meter":
-        return <SatisfactionMeterPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "team_flag":
-        return <TeamFlagPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "meeting_rating":
-        return <MeetingRatingPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "blind_spot":
-        return <BlindSpotPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "team_pact":
         return <TeamPactPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "energy_map":
         return <EnergyMapPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "vision_board":
-        return <VisionBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "three_words":
-        return <ThreeWordsPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "team_radar":
         return <TeamRadarPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "today_feel":
-        return <TodayFeelPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
-      case "motto_board":
-        return <MottoBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "spot_vote":
         return <SpotVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "team_dream":

@@ -216,6 +216,67 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
       return { title: "隊旗設計", prompt: "為你們的隊伍設計一面旗幟" };
     case "party_menu":
       return { title: "派對選單", prompt: "選出今晚最想要的派對元素" };
+    // 階段 B 精選互動工具（2026-05-06）— 30 個
+    case "jigsaw_puzzle":
+      return { title: "拼圖協作", pieces: 9, timeLimit: 300 };
+    case "treasure_hunt":
+      return { title: "尋寶任務", clues: [], timeLimit: 600 };
+    case "gps_cascade":
+      return { title: "GPS 連鎖", checkpoints: [], radius: 30 };
+    case "collective_score":
+      return { title: "集體分數", goal: 100, mode: "additive" };
+    case "role_assign":
+      return { title: "角色分派", roles: ["隊長", "記錄", "計時", "發言"] };
+    case "never_have_i_ever":
+      return { title: "我從沒...", prompt: "輪流說出一件你沒做過、可能別人做過的事" };
+    case "would_you_rather":
+      return { title: "你會選哪個", optionA: "選項 A", optionB: "選項 B" };
+    case "two_truths":
+      return { title: "兩真一假", prompt: "說三件事，其中一件是假的，讓夥伴猜" };
+    case "check_in":
+      return { title: "簽到", prompt: "用一個詞描述現在的你" };
+    case "speed_networking":
+      return { title: "快速交誼", prompt: "兩分鐘認識一位新夥伴", roundSeconds: 120 };
+    case "kpt_retro":
+      return { title: "KPT 回顧", prompt: "Keep（持續）／Problem（問題）／Try（嘗試）" };
+    case "four_ls":
+      return { title: "4Ls 回顧", prompt: "Liked／Lacked／Learned／Longed for" };
+    case "rose_bud_thorn":
+      return { title: "玫瑰花苞刺", prompt: "玫瑰（亮點）／花苞（潛能）／刺（挑戰）" };
+    case "team_pact":
+      return { title: "團隊公約", prompt: "我們約定好的工作方式" };
+    case "team_health_check":
+      return { title: "團隊健康檢查", prompt: "為各面向打分數" };
+    case "team_radar":
+      return { title: "團隊雷達圖", prompt: "標出團隊在各維度的能量" };
+    case "safety_check":
+      return { title: "心理安全檢查", prompt: "你在這個團隊中感到安全嗎？" };
+    case "energy_map":
+      return { title: "能量地圖", prompt: "標出此刻你的能量水位" };
+    case "wish_wall":
+      return { title: "許願牆", prompt: "把你的願望貼上牆" };
+    case "idea_wall":
+      return { title: "點子牆", prompt: "拋出你最想實現的點子" };
+    case "story_wall":
+      return { title: "故事牆", prompt: "分享一個值得被記住的故事" };
+    case "brain_dump":
+      return { title: "腦力傾倒", prompt: "三分鐘盡可能寫下所有相關想法" };
+    case "dot_vote":
+      return { title: "圓點投票", prompt: "把你的點貼到最喜歡的選項上", dotsPerPerson: 3 };
+    case "rank_choice":
+      return { title: "排序投票", prompt: "依優先順序排列你的選擇" };
+    case "multi_vote":
+      return { title: "多選投票", prompt: "選出你支持的所有選項" };
+    case "scaled_feedback":
+      return { title: "量表回饋", prompt: "在量表上標出你的看法", scaleMin: 1, scaleMax: 10 };
+    case "thinking_hats":
+      return { title: "六頂思考帽", prompt: "白／紅／黑／黃／綠／藍 不同角度思考" };
+    case "host_word_cloud":
+      return { title: "文字雲", prompt: "輸入你心中浮現的詞彙" };
+    case "mad_libs":
+      return { title: "填詞遊戲", prompt: "依提示填入詞彙，組成有趣的句子", template: "" };
+    case "quest_chain":
+      return { title: "任務鏈", prompt: "依序完成連鎖任務", quests: [] };
     default:
       return {};
   }
