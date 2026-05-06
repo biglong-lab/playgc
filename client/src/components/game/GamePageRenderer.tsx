@@ -364,6 +364,8 @@ const BirdTypePage = lazy(() => import("@/components/game/multi/BirdTypePage"));
 const FishTypePage = lazy(() => import("@/components/game/multi/FishTypePage"));
 const IceCreamTypePage = lazy(() => import("@/components/game/multi/IceCreamTypePage"));
 const PizzaTypePage = lazy(() => import("@/components/game/multi/PizzaTypePage"));
+const AbilityBadgePage = lazy(() => import("@/components/game/multi/AbilityBadgePage"));
+const PowerWordPage = lazy(() => import("@/components/game/multi/PowerWordPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1300,6 +1302,10 @@ export default function GamePageRenderer({
         return <IceCreamTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "pizza_type":
         return <PizzaTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "ability_badge":
+        return <AbilityBadgePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "power_word":
+        return <PowerWordPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
