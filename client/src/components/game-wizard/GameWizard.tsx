@@ -47,6 +47,7 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
       difficulty: string;
       estimatedTime: number | null;
       maxPlayers: number;
+      editorMode: "game" | "activity";
     }) => {
       const response = await fetch("/api/admin/games", {
         method: "POST",
