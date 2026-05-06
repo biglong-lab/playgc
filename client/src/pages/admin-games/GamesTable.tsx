@@ -121,6 +121,14 @@ function GameMobileCard({
             </Button>
           )}
           <PublishButton gameId={game.id} status={status} onPublish={onPublish} publishPending={publishPending} />
+          {status === "published" && (
+            <HomeVisibleButton
+              gameId={game.id}
+              isIsolated={game.isIsolated ?? true}
+              onToggle={onToggleHomeVisible}
+              pending={homeVisiblePending}
+            />
+          )}
           <Button variant="ghost" size="icon" onClick={() => onCoverUpload(game)} aria-label="上傳封面" data-testid={`button-cover-m-${game.id}`}>
             <ImageIcon className="h-4 w-4" />
           </Button>
