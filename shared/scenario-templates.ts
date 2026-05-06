@@ -4794,6 +4794,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "海洋糖果趣味套組 NT$ 1,200-3,500 / 場。輕鬆有趣的個性探索，適合各類型歡樂活動、家庭聚會、兒童活動。",
     status: "live",
   },
+  {
+    id: "spice-boardgame-fun-pack",
+    name: "🌶️ 香料桌遊風味套組",
+    tagline: "用香料個性與桌遊類型探索團隊風格",
+    description: "SpiceType 讓每人選出最像自己的香料並說原因，揭曉全隊香料架；BoardGame 讓每人選出最像自己的桌遊並說原因，揭曉全隊遊戲室。適合美食主題活動、桌遊聚會、企業破冰，充滿趣味且引發豐富個性對話。",
+    useCases: ["美食主題活動", "桌遊聚會破冰", "企業團建", "輕鬆個性探索"],
+    category: "event",
+    icon: "Gamepad2",
+    gradient: "from-red-500 to-slate-600",
+    estimatedPlayers: "4-50 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "spice_type",
+        label: "我是哪種香料",
+        role: "9種香料選擇＋風味個性說明，揭曉全隊香料架",
+        axis: "multi",
+      },
+      {
+        pageType: "board_game",
+        label: "我是哪種桌遊",
+        role: "9種桌遊選擇＋遊戲個性說明，揭曉全隊遊戲室",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "香料桌遊風味套組 NT$ 1,200-3,500 / 場。風味十足的個性探索，適合美食文化活動、桌遊聚會、企業破冰場合。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
