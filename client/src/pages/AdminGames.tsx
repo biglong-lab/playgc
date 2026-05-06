@@ -35,6 +35,8 @@ export default function AdminGames() {
   // 🚚 搬移場域 Dialog state（僅 super_admin 可用）
   const [moveFieldGame, setMoveFieldGame] = useState<Game | null>(null);
   const isSuperAdmin = ctx.admin?.systemRole === "super_admin";
+  // 🆕 軟分流階段 1：wizard 開啟時的 editor mode（建立遊戲 / 建立活動）
+  const [wizardEditorMode, setWizardEditorMode] = useState<"game" | "activity">("game");
   // 🆕 搜尋框鍵盤 shortcut（只綁 `/` 和 Esc，⌘K 讓給 CommandPalette）
   const { inputRef: searchInputRef, handleEscape } = useSearchShortcut<HTMLInputElement>({ disableCmdK: true });
 
