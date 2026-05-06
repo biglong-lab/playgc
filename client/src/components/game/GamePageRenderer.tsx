@@ -382,6 +382,8 @@ const BodyCompassPage = lazy(() => import("@/components/game/multi/BodyCompassPa
 const ContextCardPage = lazy(() => import("@/components/game/multi/ContextCardPage"));
 const WeddingVowPage = lazy(() => import("@/components/game/multi/WeddingVowPage"));
 const BirthdayCandlePage = lazy(() => import("@/components/game/multi/BirthdayCandlePage"));
+const HeroJourneyPage = lazy(() => import("@/components/game/multi/HeroJourneyPage"));
+const MagicWandPage = lazy(() => import("@/components/game/multi/MagicWandPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1354,6 +1356,10 @@ export default function GamePageRenderer({
         return <WeddingVowPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "birthday_candle":
         return <BirthdayCandlePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "hero_journey":
+        return <HeroJourneyPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "magic_wand":
+        return <MagicWandPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
