@@ -98,6 +98,19 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
           console.error("[TextCard] 背景音訊載入失敗:", err);
         },
       });
+
+      // 🎵 audioAutoplay (2026-05-07)：預設 true 進頁立即嘗試自動播放
+      // 瀏覽器擋掉時依然靠 onClick={tryAutoPlayAudio} fallback
+      // false 時玩家須手動點音訊按鈕才播
+      const shouldAutoplay = config.audioAutoplay !== false;
+      const audioEl = audioRef.current;
+      if (shouldAutoplay && audioEl) {
+        Promise.resolve(audioEl.play())
+          .then(() => setAudioPlaying(true))
+          .catch(() => {
+            /* 被瀏覽器擋 — 等 user gesture（onClick）觸發 */
+          });
+      }
     }
     return () => {
       if (audioRef.current) {
@@ -105,7 +118,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
         audioRef.current = null;
       }
     };
-  }, [config.backgroundAudio]);
+  }, [config.backgroundAudio, config.audioAutoplay]);
 
   const toggleAudio = () => {
     if (!audioRef.current) return;
@@ -121,9 +134,11 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
 
   /** 首次任何 user gesture（點擊頁面、按繼續等）嘗試自動播放背景音樂。
    * 瀏覽器政策：autoplay audio 必須在 user gesture 同步堆疊中觸發。
-   * 無 backgroundAudio 或已播放則 no-op。 */
+   * 無 backgroundAudio 或已播放則 no-op。
+   * audioAutoplay = false 時不嘗試（玩家明確要關閉） */
   const tryAutoPlayAudio = () => {
     if (!audioRef.current || audioPlaying) return;
+    if (config.audioAutoplay === false) return;
     Promise.resolve(audioRef.current.play())
       .then(() => setAudioPlaying(true))
       .catch(() => {

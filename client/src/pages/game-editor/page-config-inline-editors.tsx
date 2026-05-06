@@ -199,6 +199,21 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
         {Boolean(config.backgroundAudio) && (
           <AudioPreviewWithStatus url={config.backgroundAudio as string} />
         )}
+        {Boolean(config.backgroundAudio) && (
+          <div className="mt-2 flex items-center gap-2 p-2 rounded bg-muted/40">
+            <Switch
+              checked={config.audioAutoplay !== false}
+              onCheckedChange={(v) => updateField("audioAutoplay", v)}
+              data-testid="switch-audio-autoplay"
+            />
+            <label className="text-sm cursor-pointer select-none">
+              {config.audioAutoplay !== false ? "🔊 進頁自動播放" : "🔇 預設關閉，玩家手動開"}
+            </label>
+            <span className="text-xs text-muted-foreground ml-auto">
+              （瀏覽器擋 autoplay 時靠首次點擊觸發）
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 視覺 & 效果 */}

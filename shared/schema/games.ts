@@ -151,6 +151,11 @@ export interface TextCardConfig {
   typewriterEffect?: boolean;
   typewriterSpeed?: number; // ms per character
   backgroundAudio?: string; // audio URL
+  /** 背景音訊預設行為（2026-05-07）：
+   *   true（預設）= 進頁立即嘗試自動播放（瀏覽器擋掉時靠 user gesture fallback）
+   *   false       = 預設關閉，玩家須手動點音訊按鈕才播
+   */
+  audioAutoplay?: boolean;
   timeLimit?: number; // seconds, auto-advance after time
   highlightKeywords?: string[]; // words to highlight in content
   locationSettings?: LocationSettings;
