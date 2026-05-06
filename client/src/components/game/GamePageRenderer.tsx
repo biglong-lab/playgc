@@ -328,6 +328,8 @@ const LandscapeTypePage = lazy(() => import("@/components/game/multi/LandscapeTy
 const ArtStylePage = lazy(() => import("@/components/game/multi/ArtStylePage"));
 const InsectTypePage = lazy(() => import("@/components/game/multi/InsectTypePage"));
 const GemstoneTypePage = lazy(() => import("@/components/game/multi/GemstoneTypePage"));
+const MythicalCreaturePage = lazy(() => import("@/components/game/multi/MythicalCreaturePage"));
+const DanceStylePage = lazy(() => import("@/components/game/multi/DanceStylePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1192,6 +1194,10 @@ export default function GamePageRenderer({
         return <InsectTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "gemstone_type":
         return <GemstoneTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "mythical_creature":
+        return <MythicalCreaturePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "dance_style":
+        return <DanceStylePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":

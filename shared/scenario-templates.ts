@@ -4878,6 +4878,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "昆蟲寶石自然套組 NT$ 1,200-3,500 / 場。自然與璀璨的個性探索，適合婚禮、高端活動、自然主題場域。",
     status: "live",
   },
+  {
+    id: "myth-dance-arts-pack",
+    name: "🐉 神話舞蹈藝術套組",
+    tagline: "用神話個性與舞蹈風格探索團隊靈魂",
+    description: "MythicalCreature 讓每人選出最像自己的神話生物並說原因，揭曉全隊神話圖鑑；DanceStyle 讓每人選出最像自己的舞蹈並說原因，揭曉全隊舞台。適合創意活動、藝術工作坊、年會尾牙，充滿想像力與活力的個性對話。",
+    useCases: ["創意奇幻主題活動", "藝術工作坊", "年會尾牙破冰", "多元文化交流"],
+    category: "event",
+    icon: "Wand2",
+    gradient: "from-purple-600 to-orange-500",
+    estimatedPlayers: "4-60 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "mythical_creature",
+        label: "我是哪種神話生物",
+        role: "9種神話生物選擇＋個性說明，揭曉全隊神話圖鑑",
+        axis: "multi",
+      },
+      {
+        pageType: "dance_style",
+        label: "我是哪種舞蹈",
+        role: "9種舞蹈選擇＋個性說明，揭曉全隊舞台",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "神話舞蹈藝術套組 NT$ 1,200-3,500 / 場。奇幻與活力的個性探索，適合藝術活動、年會尾牙、創意工作坊。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
