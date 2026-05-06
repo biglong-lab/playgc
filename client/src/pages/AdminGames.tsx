@@ -203,6 +203,45 @@ export default function AdminGames() {
                 {!ctx.searchQuery && <SearchKbdHint mode="slash" />}
               </div>
             </div>
+            {/* 🆕 軟分流階段 1：editor mode filter（全部 / 遊戲 / 活動） */}
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="text-xs text-muted-foreground">類型：</span>
+              <Button
+                size="sm"
+                variant={ctx.editorModeFilter === "all" ? "default" : "outline"}
+                onClick={() => ctx.setEditorModeFilter("all")}
+                data-testid="filter-mode-all"
+              >
+                全部 ({ctx.gameCounts.all})
+              </Button>
+              <Button
+                size="sm"
+                variant={ctx.editorModeFilter === "game" ? "default" : "outline"}
+                onClick={() => ctx.setEditorModeFilter("game")}
+                data-testid="filter-mode-game"
+              >
+                🎮 遊戲 ({ctx.gameCounts.game})
+              </Button>
+              <Button
+                size="sm"
+                variant={ctx.editorModeFilter === "activity" ? "default" : "outline"}
+                onClick={() => ctx.setEditorModeFilter("activity")}
+                data-testid="filter-mode-activity"
+              >
+                🎉 活動 ({ctx.gameCounts.activity})
+              </Button>
+              {ctx.gameCounts.scenarioInstances > 0 && (
+                <Button
+                  size="sm"
+                  variant={ctx.showScenarioInstances ? "secondary" : "ghost"}
+                  onClick={() => ctx.setShowScenarioInstances(!ctx.showScenarioInstances)}
+                  data-testid="toggle-scenario-instances"
+                  title={ctx.showScenarioInstances ? "點擊隱藏 SCENARIO 實例" : "點擊顯示 SCENARIO 實例（情境模板建出的 game）"}
+                >
+                  {ctx.showScenarioInstances ? "✓" : ""} 含情境實例 ({ctx.gameCounts.scenarioInstances})
+                </Button>
+              )}
+            </div>
             <StatusTabs
               statusFilter={ctx.statusFilter}
               onFilterChange={ctx.setStatusFilter}
