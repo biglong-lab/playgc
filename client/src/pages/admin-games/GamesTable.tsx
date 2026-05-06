@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Trash2, QrCode, Check, X, Workflow,
-  Settings, Image as ImageIcon, Move,
+  Settings, Image as ImageIcon, Move, Home, EyeOff,
 } from "lucide-react";
 import type { Game } from "@shared/schema";
 import {
