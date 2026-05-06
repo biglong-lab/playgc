@@ -84,10 +84,17 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
 
   // 重置精靈狀態
   const resetWizard = () => {
-    setStep("select_template");
+    setStep(initialStep);
+    setSelectedGameMode("individual");
     setSelectedTemplate(null);
     setGameName("");
     setCreatedGame(null);
+  };
+
+  // 🆕 選擇 game mode（個人 / 多人）→ 推進到 select_template
+  const handleSelectGameMode = (mode: SelectableGameMode) => {
+    setSelectedGameMode(mode);
+    setStep("select_template");
   };
 
   // 關閉精靈
