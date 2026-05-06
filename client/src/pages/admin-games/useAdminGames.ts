@@ -66,6 +66,9 @@ export interface AdminGamesReturn {
   updatePending: boolean;
   deletePending: boolean;
   publishPending: boolean;
+  // 🆕 首頁可見 toggle
+  homeVisiblePending: boolean;
+  onToggleHomeVisible: (id: string, isIsolated: boolean) => void;
   generateQRPending: boolean;
   onDelete: () => void;
   onPublish: (id: string, status: string) => void;
