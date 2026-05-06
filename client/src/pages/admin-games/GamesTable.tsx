@@ -40,12 +40,12 @@ interface GamesTableProps extends GameActionProps {
 
 export function GamesTable({
   games, onNavigate, onEdit, onDelete,
-  onPublish, onGenerateQR, onViewQR, onCoverUpload, onMoveField,
-  publishPending, generateQRPending,
+  onPublish, onToggleHomeVisible, onGenerateQR, onViewQR, onCoverUpload, onMoveField,
+  publishPending, homeVisiblePending, generateQRPending,
 }: GamesTableProps) {
   const actionProps = {
-    onNavigate, onEdit, onDelete, onPublish, onGenerateQR,
-    onViewQR, onCoverUpload, onMoveField, publishPending, generateQRPending,
+    onNavigate, onEdit, onDelete, onPublish, onToggleHomeVisible, onGenerateQR,
+    onViewQR, onCoverUpload, onMoveField, publishPending, homeVisiblePending, generateQRPending,
   };
 
   return (
