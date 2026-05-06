@@ -54,6 +54,8 @@ export default function TemplateMarketDetail() {
   const { admin } = useAdminAuth();
   const [launching, setLaunching] = useState(false);
   const [launchResult, setLaunchResult] = useState<InstantiateResponse | null>(null);
+  // 🆕 D2-c (2026-05-07)：dialog 關閉時 launchResult 不清掉、admin 可重開「再列印 / 看 URL」
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // W9 D2: AI 預覽 state
   const [aiContext, setAiContext] = useState("");
@@ -99,8 +101,12 @@ export default function TemplateMarketDetail() {
       });
       const data: InstantiateResponse = await res.json();
       setLaunchResult(data);
+      setDialogOpen(true);
       setAiPreview(null);
-      toast({ title: "✅ 用 AI 內容建場成功" });
+      toast({
+        title: "✅ 用 AI 內容建場成功",
+        description: `已建立 ${data.totalCreated} 個元件、視窗已開啟。請複製 URL 給玩家或點「列印 QR」`,
+      });
     } catch (err) {
       toast({
         title: "❌ 建場失敗",
@@ -119,9 +125,10 @@ export default function TemplateMarketDetail() {
       const res = await apiRequest("POST", `/api/admin/scenarios/${scenarioId}/instantiate`, {});
       const data: InstantiateResponse = await res.json();
       setLaunchResult(data);
+      setDialogOpen(true);
       toast({
-        title: "✅ 建立成功",
-        description: `為「${data.scenario.name}」建立了 ${data.totalCreated} 個大螢幕場次`,
+        title: "✅ 建場成功！",
+        description: `已建立 ${data.totalCreated} 個元件、視窗已開啟。請複製 URL 給玩家或點「列印 QR」`,
       });
     } catch (err) {
       toast({
@@ -330,17 +337,18 @@ export default function TemplateMarketDetail() {
         )}
 
         {/* Admin 一鍵建場（W6 D2 + D3 含混合情境）*/}
-        {admin && (
-          <Card className="bg-emerald-500/10 border-emerald-500/30">
-            <CardContent className="p-6 space-y-3 text-center">
-              <h3 className="font-display font-bold text-lg flex items-center justify-center gap-2">
-                <Zap className="w-5 h-5 text-emerald-600" />
-                Admin 一鍵建場（用 default 內容）
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                為這個情境的 {scenario.components.length} 個元件，一次建好所有 game + 場次。<br />
-                <span className="text-xs">不用 AI、用 default 範例 — 適合快速 demo 或 admin 自己改內容</span>
-              </p>
+        {/* 🆕 D2-c (2026-05-07)：未登入也顯示同樣 Card 但 disabled，讓使用者一眼知道「就在這裡可建場、要先登入」 */}
+        <Card className={admin ? "bg-emerald-500/10 border-emerald-500/30" : "bg-amber-500/10 border-amber-500/30"}>
+          <CardContent className="p-6 space-y-3 text-center">
+            <h3 className="font-display font-bold text-lg flex items-center justify-center gap-2">
+              <Zap className={`w-5 h-5 ${admin ? "text-emerald-600" : "text-amber-600"}`} />
+              {admin ? "Admin 一鍵建場（用 default 內容）" : "一鍵建場（需 Admin 登入）"}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              為這個情境的 {scenario.components.length} 個元件，一次建好所有 game + 場次。<br />
+              <span className="text-xs">不用 AI、用 default 範例 — 適合快速 demo 或 admin 自己改內容</span>
+            </p>
+            {admin ? (
               <Button
                 size="lg"
                 onClick={handleLaunch}
@@ -360,24 +368,39 @@ export default function TemplateMarketDetail() {
                   </>
                 )}
               </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {!admin && (
-          <Card className="bg-amber-500/10 border-amber-500/30">
-            <CardContent className="p-5 text-center space-y-2">
-              <p className="text-sm">
-                💡 Admin 登入後可看到「一鍵建場」按鈕，自動為這個情境建好所有元件實例
-              </p>
-              <Link href="/admin/login">
-                <Button size="sm" variant="outline">
-                  Admin 登入
+            ) : (
+              <div className="space-y-2">
+                <Button size="lg" disabled className="bg-amber-600">
+                  <Zap className="w-4 h-4 mr-1" />
+                  立即建立 {scenario.components.length} 個元件實例（需先登入）
                 </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
+                <div>
+                  <Link href="/admin/login">
+                    <Button variant="outline" className="border-amber-500" data-testid="btn-go-admin-login">
+                      🔐 前往 Admin 登入
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* 🆕 D2-c：建場完成後保留「再次查看」按鈕，避免關 dialog 後找不到 URL */}
+            {admin && launchResult && !dialogOpen && (
+              <div className="pt-2 border-t border-emerald-500/20">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDialogOpen(true)}
+                  data-testid="btn-reopen-launch-result"
+                  className="border-emerald-500/50"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 mr-1" />
+                  再次查看上次建場結果（URLs / 列印 QR）
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* CTA */}
         <section className="text-center space-y-4 py-6">
@@ -404,7 +427,8 @@ export default function TemplateMarketDetail() {
       </main>
 
       {/* 一鍵建場結果 Dialog */}
-      <Dialog open={launchResult !== null} onOpenChange={(open) => !open && setLaunchResult(null)}>
+      {/* 🆕 D2-c (2026-05-07)：dialog 關閉只 hide、launchResult 不清掉、admin 可重開 */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
@@ -438,8 +462,8 @@ export default function TemplateMarketDetail() {
                 ))}
               </div>
               <div className="flex justify-between pt-4 border-t flex-wrap gap-2">
-                <Button variant="outline" onClick={() => setLaunchResult(null)}>
-                  關閉
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                  關閉（資料保留、可再次查看）
                 </Button>
                 <div className="flex gap-2 flex-wrap">
                   <Button
@@ -488,13 +512,42 @@ function openPrintPage(result: InstantiateResponse) {
 }
 
 function InstanceRow({ instance }: { instance: ScenarioInstance }) {
+  // 🆕 D2-c (2026-05-07)：複製 fallback — Safari/HTTP 環境 navigator.clipboard 不穩
+  // 失敗時用 document.execCommand 備援，再失敗則顯示明文供手動複製
   const handleCopy = async (url: string, label: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      toast({ title: `✅ 已複製 ${label} 網址` });
-    } catch {
-      toast({ title: "❌ 複製失敗", variant: "destructive" });
+    // 嘗試 navigator.clipboard（HTTPS + 現代瀏覽器）
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({ title: `✅ 已複製 ${label} 網址` });
+        return;
+      } catch {
+        // fall through 到 fallback
+      }
     }
+    // Fallback：document.execCommand("copy")（舊瀏覽器 / Safari / HTTP）
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = url;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      if (ok) {
+        toast({ title: `✅ 已複製 ${label} 網址（fallback）` });
+        return;
+      }
+    } catch {
+      // fall through 到最終 fallback
+    }
+    // 最終：複製失敗，提示玩家手動複製
+    toast({
+      title: "❌ 自動複製失敗",
+      description: `請手動長按下方網址複製：${url}`,
+      variant: "destructive",
+    });
   };
 
   const axisLabel = {
