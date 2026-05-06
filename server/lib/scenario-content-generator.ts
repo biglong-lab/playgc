@@ -700,6 +700,12 @@ ${componentDescriptions}
 - "talent_swap": { title, teachPrompt, learnPrompt }
   技能交換市集：每人填寫可教給哪位隊友什麼技能、以及想向哪位隊友學什麼，揭曉後以交換卡片＋被點名地圖呈現，適合團建/知識分享/配對學習/社群活動
 
+- "gift_box": { title, prompt, giftPlaceholder, messagePlaceholder }
+  禮物盒：每人送給一位指名隊友一個「看見的禮物」（特質標籤＋emoji選擇＋留言），揭曉後以收件人為軸心分組展示，適合結業式/感恩活動/企業年度回顧/婚禮
+
+- "time_capsule": { title, prompt, openLabel }
+  時光膠囊：每人填寫期望（≥5字）與承諾（≥5字）並選擇開封時間（1月/3月/6月/1年/結束時），揭曉後顯示全隊膠囊卡片，適合長期培訓收尾/新生入學/專案啟動/年初立志
+
 - "curiosity_map": { title, prompt, placeholder, maxLength: 30-120 }
   好奇心地圖：每人提交一個好奇心問題或想深入探索的主題，揭曉後以彩色卡片牆顯示全隊集體好奇心全貌，適合學習型工作坊/知識分享會/團隊探索
 

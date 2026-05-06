@@ -3943,6 +3943,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "故事交換套組 NT$ 2,500-7,000 / 場。用真實故事連結人心。",
     status: "live",
   },
+
+  {
+    id: "gratitude-closure-pack",
+    name: "🎁 感恩收尾套組",
+    tagline: "禮物盒 + 時光膠囊，讓每個結束都成為新的開始",
+    description: "GiftBox 讓每人指名送出一份「看見的禮物」，TimeCapsule 讓全隊封存對未來的期望與承諾，雙元件組合創造溫暖有力的活動收尾，適合培訓結業、年度頒獎、專案收官、婚禮感謝。",
+    useCases: ["培訓結業典禮", "年度尾牙", "專案收官慶功", "婚禮感謝環節"],
+    category: "social",
+    icon: "Gift",
+    gradient: "from-rose-400 to-amber-400",
+    estimatedPlayers: "4-40 人",
+    estimatedDuration: "20-35 分鐘",
+    components: [
+      {
+        pageType: "gift_box",
+        label: "禮物盒",
+        role: "指名送出看見的禮物，溫暖收尾",
+        axis: "multi",
+      },
+      {
+        pageType: "time_capsule",
+        label: "時光膠囊",
+        role: "封存承諾，迎向未來",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "感恩收尾套組 NT$ 2,000-8,000 / 場。用感謝和承諾留下美好印記。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

@@ -2299,6 +2299,21 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         learnPrompt: `你最想向哪位隊友學習什麼？`,
       };
 
+    case "gift_box":
+      return {
+        title: "🎁 禮物盒",
+        prompt: `在「${scenarioName}」中，你在哪位隊友身上看見了什麼珍貴特質？`,
+        giftPlaceholder: "禮物名稱（如：傾聽的力量…）",
+        messagePlaceholder: "給對方的一句話（選填）",
+      };
+
+    case "time_capsule":
+      return {
+        title: "⏳ 時光膠囊",
+        prompt: `在「${scenarioName}」旅程結束時，寫下對未來團隊的期望與個人承諾`,
+        openLabel: "下次聚會時",
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
