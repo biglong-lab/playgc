@@ -7,6 +7,27 @@
 
 ## 2026-05-07
 
+### 📺 補接 16 個 host 元件到 admin editor + 三路線架構文件
+**主題**：B2 重做 — 修「admin editor 看不到 host 元件」根因
+**狀態**：🟢 程式碼層 + e2e smoke 完成、PAGE_TYPES 17/17、e2e 69/69 全綠
+**詳情** → [changes/2026-05-07-host-component-admin-integration.md](changes/2026-05-07-host-component-admin-integration.md)
+
+**接地調查發現**：admin editor PAGE_TYPES 只接入 1/17 個 host 元件（只有 host_word_cloud），導致 admin 自由建場時 99% host 元件選不到，逼迫 SCENARIO_TEMPLATES 91% 元件用 multi 軸（要登入），跟「現場活動不該登入」本意違背。
+
+**修正**：
+- `client/src/pages/game-editor/constants.ts`：補 16 個 host_* PAGE_TYPES + PageCategory 加第 6 類「host_screen 📺」
+- `client/src/pages/game-editor/getDefaultConfig.ts`：補 16 個 case
+- `server/routes/test-only.ts`：seed-multi-game-with-page 支援 host 軸（gameMode=individual + hostMode=true）
+- `e2e/host-components-smoke.spec.ts`：17 元件 × 2 = 34 個 smoke（全綠）
+- `docs/architecture/three-paths.md`（新）：三條路線架構文件、避免將來再混亂
+
+**架構釐清**：
+- 路線 I（GamePlay）：solo + multi 軸、要登入、傳統 game
+- 路線 II（HostPlay）：host 軸玩家手機端、可匿名、活動互動
+- 路線 III（HostScreen）：host 軸大螢幕、hostToken、配對路線 II
+
+---
+
 ### 🧪 Phase 3 A2 — 多人元件 L3 持久化驗證（接地）
 **主題**：驗證 9 個 L3 元件程式碼層真實可用 + 補實機 checklist
 **狀態**：🟢 自動 e2e 18/18 全綠、實機 checklist 待跑

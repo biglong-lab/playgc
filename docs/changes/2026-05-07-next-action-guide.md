@@ -35,6 +35,10 @@
 | host 元件 | 17 種 |
 | e2e 黃金路徑 | 17 個 test 全綠（CI 自動跑） |
 | **e2e A2 多人 L3 smoke** | **18 個 test 全綠**（2026-05-07 加） |
+| **e2e Host 軸線 smoke** | **34 個 test 全綠**（2026-05-07 加，17 元件接 admin editor 後）|
+| **e2e 總計** | **69/69 全綠** |
+| **PAGE_TYPES host 元件** | **17/17 接入**（從 1/17 修正）|
+| **PageCategory** | **6 大類**（加 host_screen 📺）|
 | Phase 1 commits | 14 個（1c4b9075..e7647c82） |
 
 ---
@@ -70,11 +74,12 @@
 | 項目 | 內容 | 估時 |
 |------|------|------|
 | ~~B1~~ | ~~編輯器分組顯示~~ ✅ 已在 D3 順便完成 | 0 |
-| **B2** | **情境模板組合**：預設搭配 5-10 個元件變成「婚禮收尾包」「破冰套組」「敏捷回顧包」直接套用 | 3-4 天 |
+| ~~**B2**~~ | ~~情境模板組合~~ ⚠️ **2026-05-07 重新評估**：原 plan「擴 PAGE_TEMPLATES 加 8 個商業套組」設計衝突（路線 II/III 性質塞路線 I 容器）。改先補根因：admin editor 接 16 個 host 元件 ✅ 已完成 → [2026-05-07-host-component-admin-integration.md](2026-05-07-host-component-admin-integration.md)。重組 SCENARIO_TEMPLATES 為 II/III 版未做。 | — |
 | **B3** | **AI 推薦引擎**：依輸入情境自動建議元件組合（不是 AI 生內容、是 AI 推架構） | 2-3 天 |
 | **B4** | 預覽支援「真實跳轉路徑」（沿用 Phase 1 的 toast 機制） | 1-2 天 |
+| **B5（新）** | **重組 SCENARIO_TEMPLATES**：拆「路線 I 版（要登入）」+「路線 II/III 版（純 host 元件、不登入）」 | 3-4 天 |
 
-**起手任務**：B2 情境模板組合 — 商業價值最大、可直接做為銷售素材。
+**架構文件**：[docs/architecture/three-paths.md](../architecture/three-paths.md) — 三條路線對照（避免再混淆）
 
 ### 🥈 優先 2：Phase 3（A 品質深耕）— 2 週
 
