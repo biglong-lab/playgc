@@ -2652,6 +2652,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一棵樹，你最像哪種？說說你的樹木個性！`,
       };
 
+    case "ocean_creature":
+      return {
+        title: "🐬 我是哪種海洋生物",
+        prompt: `在「${scenarioName}」的場合，如果你是一種海洋生物，你最像哪種？說說你的海洋個性！`,
+      };
+
+    case "candy_type":
+      return {
+        title: "🍬 我是哪種糖果",
+        prompt: `在「${scenarioName}」的場合，如果你是一種糖果，你最像哪種？說說你的甜蜜個性！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

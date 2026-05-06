@@ -4766,6 +4766,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "咖啡森林自然套組 NT$ 1,200-3,500 / 場。生活感十足的自然探索，適合企業活動、戶外聚會、咖啡文化場合。",
     status: "live",
   },
+  {
+    id: "ocean-candy-fun-pack",
+    name: "🐬 海洋糖果趣味套組",
+    tagline: "用海洋生物與糖果甜蜜探索個性",
+    description: "OceanCreature 讓每人選出最像自己的海洋生物並說原因，揭曉全隊海洋圖鑑；CandyType 讓每人選出最像自己的糖果並說原因，揭曉全隊糖果罐。適合海洋主題、兒童活動、生日派對、輕鬆有趣的破冰場合，充滿想像力且老少咸宜。",
+    useCases: ["海洋主題活動", "兒童生日派對", "輕鬆趣味破冰", "自然教育"],
+    category: "event",
+    icon: "Waves",
+    gradient: "from-blue-400 to-pink-400",
+    estimatedPlayers: "4-60 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "ocean_creature",
+        label: "我是哪種海洋生物",
+        role: "9種海洋生物選擇＋個性說明，揭曉全隊海洋圖鑑",
+        axis: "multi",
+      },
+      {
+        pageType: "candy_type",
+        label: "我是哪種糖果",
+        role: "9種糖果選擇＋甜蜜個性說明，揭曉全隊糖果罐",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "海洋糖果趣味套組 NT$ 1,200-3,500 / 場。輕鬆有趣的個性探索，適合各類型歡樂活動、家庭聚會、兒童活動。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
