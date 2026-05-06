@@ -22,12 +22,15 @@ interface GameActionProps {
   onEdit: (game: Game) => void;
   onDelete: (game: Game) => void;
   onPublish: (id: string, status: string) => void;
+  /** 🆕 首頁可見 toggle（綁 isIsolated 反向）*/
+  onToggleHomeVisible: (id: string, isIsolated: boolean) => void;
   onGenerateQR: (id: string) => void;
   onViewQR: (game: Game) => void;
   onCoverUpload: (game: Game) => void;
   /** 🚚 搬移遊戲到其他場域（只給 super_admin，optional；未傳則隱藏按鈕） */
   onMoveField?: (game: Game) => void;
   publishPending: boolean;
+  homeVisiblePending: boolean;
   generateQRPending: boolean;
 }
 
