@@ -256,6 +256,7 @@ export default function AdminGames() {
         <GameWizard
           open={ctx.isWizardOpen}
           onOpenChange={ctx.setIsWizardOpen}
+          editorMode={wizardEditorMode}
         />
 
         {/* 🚚 搬移場域對話框（super_admin only） */}
