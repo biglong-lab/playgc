@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-05-06
+
+### 🧹 多人元件大清理（416 → 60）+ Loop 安全護欄 ADR
+**主題**：清理跨多 session loop 累積的不可用元件、接入 admin editor、寫入預防機制
+**狀態**：🟢 TypeScript 編譯通過 / 取樣測試 255/255 全綠 / 待部署
+**部署 commit 範圍**：`9d634b21 .. 8762d5da`（2 commits）
+
+關鍵 commits：
+- `9d634b21` 階段 A：刪除 265 個空轉元件 + 接入 21 個保留元件到 admin editor
+- `8762d5da` 階段 B：精選 30 個接入 + 刪除 91 個重複工具
+
+**規模**：
+- 變更檔案：1,060 / 刪除程式碼：-141,040 行
+- multi/ 元件：416 → 60 / GamePageRenderer：1602 → 540 行
+- admin editor 可選 page type：30 → 60
+
+**根因**：跨多 session `/loop` 模式失控（任務翻譯誤解 + 缺接地驗證 + 模板成功陷阱）
+
+**新 ADR**：[ADR-0017 Loop 模式安全護欄](decisions/0017-loop-mode-safeguards.md)
+**新紅線**：CLAUDE.md #9-#12（loop 5 輪驗證 / e2e 真實性 / 商業情境對照 / 模糊詞彙確認）
+
+**細節** → [changes/2026-05-06-multi-component-cleanup.md](changes/2026-05-06-multi-component-cleanup.md)
+
+⏭ 下一步：手動測試 admin editor 拖拉新 page type、用真實 session 跑 e2e 流程
+
+---
+
 ## 2026-05-03
 
 ### 🐛 錯誤處理體系 3 階段（Stage 1+2+3#8、追查能力 / 不迷路 / 回報）
