@@ -294,6 +294,8 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
             <StepSelectTemplate
               selectedTemplate={selectedTemplate}
               onSelectTemplate={handleSelectTemplate}
+              onBack={editorMode === "game" ? handleBackToGameMode : undefined}
+              selectedGameMode={editorMode === "game" ? selectedGameMode : undefined}
             />
           )}
           {step === "game_info" && selectedTemplate && (
