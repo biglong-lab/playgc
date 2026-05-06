@@ -205,3 +205,116 @@ export const REWARD_TYPES = [
 export function getPageTypeInfo(type: string) {
   return PAGE_TYPES.find(t => t.value === type) || { label: type, icon: FileText, color: "bg-gray-500/20 text-gray-400" };
 }
+
+// 🆕 D3 (2026-05-07) — 元件三軸 category 分組
+// 把 81 個 page_type 依「功能類型」分 5 大類，admin editor 側邊欄按組顯示
+export type PageCategory =
+  | "narrative" // 📝 敘事呈現（5）
+  | "mission" // ✅ 驗證任務（10，含 vote）
+  | "photo" // 📷 拍照系列（7）
+  | "multi_coop" // 👥 多人協作關卡（13）
+  | "interactive"; // 🎉 活動互動（46）
+
+export const CATEGORY_INFO: Record<
+  PageCategory,
+  { label: string; emoji: string; description: string }
+> = {
+  narrative: {
+    label: "敘事呈現",
+    emoji: "📝",
+    description: "字卡、對話、影片、按鈕、流程路由",
+  },
+  mission: {
+    label: "驗證任務",
+    emoji: "✅",
+    description: "驗證、射擊、GPS、QR、拆彈、密碼鎖、體感、投票",
+  },
+  photo: {
+    label: "拍照系列",
+    emoji: "📷",
+    description: "拍照任務、指定點、前後對比、AR、團體合影、招牌辨識",
+  },
+  multi_coop: {
+    label: "多人協作關卡",
+    emoji: "👥",
+    description: "隊伍投票/搶答/解鎖/接力/地盤戰、拼圖、尋寶、集體分數",
+  },
+  interactive: {
+    label: "活動互動",
+    emoji: "🎉",
+    description: "婚禮/破冰/團建/頒獎/工作坊/敏捷回顧/投票工具",
+  },
+};
+
+// page_type → category 映射表
+const PAGE_TYPE_CATEGORY: Record<string, PageCategory> = {
+  // 📝 敘事呈現（5）
+  text_card: "narrative",
+  dialogue: "narrative",
+  video: "narrative",
+  button: "narrative",
+  flow_router: "narrative",
+
+  // ✅ 驗證任務（10）
+  text_verify: "mission",
+  choice_verify: "mission",
+  conditional_verify: "mission",
+  shooting_mission: "mission",
+  gps_mission: "mission",
+  qr_scan: "mission",
+  time_bomb: "mission",
+  lock: "mission",
+  motion_challenge: "mission",
+  vote: "mission",
+
+  // 📷 拍照系列（7）
+  photo_mission: "photo",
+  photo_spot: "photo",
+  photo_compare: "photo",
+  photo_before_after: "photo",
+  photo_burst: "photo",
+  photo_ar: "photo",
+  photo_ocr: "photo",
+
+  // 👥 多人協作關卡（13）
+  photo_team: "multi_coop",
+  vote_team: "multi_coop",
+  shooting_team: "multi_coop",
+  gps_team_mission: "multi_coop",
+  choice_verify_race: "multi_coop",
+  lock_coop: "multi_coop",
+  relay_mission: "multi_coop",
+  territory_capture: "multi_coop",
+  jigsaw_puzzle: "multi_coop",
+  treasure_hunt: "multi_coop",
+  gps_cascade: "multi_coop",
+  collective_score: "multi_coop",
+  role_assign: "multi_coop",
+
+  // 🎉 活動互動（46）— 預設 fallback，所有未列入上方的都歸這類
+};
+
+/** 根據 pageType 取得 category（fallback 為 interactive） */
+export function getPageCategory(pageType: string): PageCategory {
+  return PAGE_TYPE_CATEGORY[pageType] ?? "interactive";
+}
+
+/** 把 PAGE_TYPES 按 category 分組 */
+export function groupPageTypesByCategory(
+  types: typeof PAGE_TYPES | readonly (typeof PAGE_TYPES)[number][],
+): Array<{ category: PageCategory; types: (typeof PAGE_TYPES)[number][] }> {
+  const groups: Record<PageCategory, (typeof PAGE_TYPES)[number][]> = {
+    narrative: [],
+    mission: [],
+    photo: [],
+    multi_coop: [],
+    interactive: [],
+  };
+  for (const t of types) {
+    groups[getPageCategory(t.value)].push(t);
+  }
+  // 依固定順序：敘事 → 驗證 → 拍照 → 多人 → 活動互動
+  return (["narrative", "mission", "photo", "multi_coop", "interactive"] as PageCategory[])
+    .map((cat) => ({ category: cat, types: groups[cat] }))
+    .filter((g) => g.types.length > 0);
+}
