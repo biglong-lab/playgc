@@ -7,6 +7,10 @@ import {
   ImageIcon, ScanSearch, LayoutGrid, Sparkles,
   ScanText,
   Users as UsersIcon,
+  Heart, Star, Flag, Trophy, Cake, Award,
+  TreePine, Utensils, BarChart3, UserCircle,
+  Sparkle, MessageSquare, ThumbsUp, BookOpen,
+  PartyPopper, Lightbulb, Gauge, Wand2,
 } from "lucide-react";
 
 export const PAGE_TYPES = [
@@ -48,6 +52,29 @@ export const PAGE_TYPES = [
   { value: "relay_mission", label: "接力任務 👥", icon: ArrowRight, color: "bg-purple-600/30 text-purple-300" },
   // Phase 4（2026-05-02）— 地盤戰（多隊爭奪 GPS 點）
   { value: "territory_capture", label: "地盤戰 👥", icon: MapPin, color: "bg-rose-600/30 text-rose-300" },
+  // 🎉 互動模組庫（2026-05-06）— 21 個跨情境通用互動元件 👥
+  // 對應商業情境：破冰／團建／婚禮／生日／頒獎／場域反饋等
+  { value: "spot_vote", label: "現場投票 👥", icon: Vote, color: "bg-emerald-500/20 text-emerald-300" },
+  { value: "team_dream", label: "團隊願景 👥", icon: Sparkle, color: "bg-indigo-500/20 text-indigo-300" },
+  { value: "group_nickname", label: "隊伍命名 👥", icon: UsersIcon, color: "bg-blue-500/20 text-blue-300" },
+  { value: "activity_memo", label: "活動筆記 👥", icon: BookOpen, color: "bg-slate-500/20 text-slate-300" },
+  { value: "peer_praise", label: "同伴讚美 👥", icon: ThumbsUp, color: "bg-pink-500/20 text-pink-300" },
+  { value: "scale_check", label: "心情尺度 👥", icon: Gauge, color: "bg-cyan-500/20 text-cyan-300" },
+  { value: "venue_rating", label: "場地評分 👥", icon: Star, color: "bg-yellow-500/20 text-yellow-300" },
+  { value: "micro_commit", label: "微承諾 👥", icon: Flag, color: "bg-purple-500/20 text-purple-300" },
+  { value: "closing_thought", label: "結語 👥", icon: MessageSquare, color: "bg-stone-500/20 text-stone-300" },
+  { value: "gift_to_team", label: "給隊伍的禮物 👥", icon: Gift, color: "bg-rose-500/20 text-rose-300" },
+  { value: "ability_badge", label: "能力徽章 👥", icon: Award, color: "bg-amber-500/20 text-amber-300" },
+  { value: "wedding_vow", label: "婚禮祝福卡 👥", icon: Heart, color: "bg-red-500/20 text-red-300" },
+  { value: "birthday_candle", label: "生日許願 👥", icon: Cake, color: "bg-fuchsia-500/20 text-fuchsia-300" },
+  { value: "award_ceremony", label: "頒獎典禮 👥", icon: Trophy, color: "bg-yellow-600/20 text-yellow-300" },
+  { value: "gratitude_tree", label: "感恩之樹 👥", icon: TreePine, color: "bg-green-500/20 text-green-300" },
+  { value: "dinner_table", label: "餐桌話題 👥", icon: Utensils, color: "bg-orange-500/20 text-orange-300" },
+  { value: "high_low_card", label: "高低時刻 👥", icon: BarChart3, color: "bg-violet-500/20 text-violet-300" },
+  { value: "role_board", label: "角色板 👥", icon: UserCircle, color: "bg-teal-500/20 text-teal-300" },
+  { value: "discovery_card", label: "發現卡 👥", icon: Lightbulb, color: "bg-lime-500/20 text-lime-300" },
+  { value: "flag_design", label: "隊旗設計 👥", icon: Flag, color: "bg-sky-500/20 text-sky-300" },
+  { value: "party_menu", label: "派對選單 👥", icon: PartyPopper, color: "bg-pink-600/20 text-pink-300" },
 ] as const;
 
 export const PAGE_TEMPLATES = [
