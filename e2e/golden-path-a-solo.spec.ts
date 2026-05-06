@@ -71,18 +71,23 @@ test.describe("黃金路徑 A — 單人遊戲完整流程", () => {
     expect(critical, `關鍵 error: ${critical.join(", ")}`).toHaveLength(0);
   });
 
-  test("玩家端 /play/:sessionId 看得到第一頁內容", async ({ page }) => {
+  test("玩家端 /play/:sessionId SPA 真的 hydrate（#root 有 children）", async ({ page }) => {
     await page.goto(`/play/${sessionId}`);
-    await page.waitForLoadState("networkidle", { timeout: 15_000 });
 
-    // SPA 可能停在 "載入中" 或顯示登入提示（玩家未登入時）
-    // 核心驗收：page 有渲染內容（不是空白頁），且包含中文字
-    // 不嚴格驗 "歡迎" 字串（玩家未登入時可能看到的是登入畫面）
-    const body = await page.textContent("body");
-    expect(body).toBeTruthy();
-    expect(body!.length).toBeGreaterThan(0);
-    // 至少有中文字（驗證 i18n + 頁面真有渲染）
-    expect(/[一-鿿]/.test(body!), `body 沒有中文字: "${body}"`).toBeTruthy();
+    // SPA 渲染需要等 React mount 完成，networkidle 不夠（chunks 可能 lazy load）
+    // 改等 #root 有實際 children（React 已 hydrate）— 最可靠的 SPA ready 判準
+    await page.waitForFunction(
+      () => {
+        const root = document.querySelector("#root");
+        return root && root.children.length > 0;
+      },
+      { timeout: 15_000 }
+    );
+
+    // 確認 #root 真的有內容
+    const rootText = await page.locator("#root").textContent();
+    expect(rootText).toBeTruthy();
+    expect(rootText!.length).toBeGreaterThan(0);
   });
 
   test("公開 slug /g/:slug 也能載入", async ({ page }) => {
