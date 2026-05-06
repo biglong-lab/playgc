@@ -330,6 +330,8 @@ const InsectTypePage = lazy(() => import("@/components/game/multi/InsectTypePage
 const GemstoneTypePage = lazy(() => import("@/components/game/multi/GemstoneTypePage"));
 const MusicTypePage = lazy(() => import("@/components/game/multi/MusicTypePage"));
 const BookTypePage = lazy(() => import("@/components/game/multi/BookTypePage"));
+const SpotVotePage = lazy(() => import("@/components/game/multi/SpotVotePage"));
+const TeamDreamPage = lazy(() => import("@/components/game/multi/TeamDreamPage"));
 const MythicalCreaturePage = lazy(() => import("@/components/game/multi/MythicalCreaturePage"));
 const DanceStylePage = lazy(() => import("@/components/game/multi/DanceStylePage"));
 const ArchitectureStylePage = lazy(() => import("@/components/game/multi/ArchitectureStylePage"));
@@ -1212,6 +1214,10 @@ export default function GamePageRenderer({
         return <MusicTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "book_type":
         return <BookTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "spot_vote":
+        return <SpotVotePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "team_dream":
+        return <TeamDreamPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "mythical_creature":
         return <MythicalCreaturePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "dance_style":
