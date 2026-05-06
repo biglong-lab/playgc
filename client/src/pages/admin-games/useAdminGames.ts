@@ -15,11 +15,24 @@ export interface AdminGamesReturn {
   // 遊戲資料
   games: Game[];
   filteredGames: Game[];
-  gameCounts: { all: number; draft: number; published: number; archived: number };
+  gameCounts: {
+    all: number;
+    draft: number;
+    published: number;
+    archived: number;
+    game: number;
+    activity: number;
+    scenarioInstances: number;
+  };
   gamesLoading: boolean;
   // 搜尋/篩選
   statusFilter: string;
   setStatusFilter: (v: string) => void;
+  // 🆕 軟分流階段 1：editor mode filter
+  editorModeFilter: "all" | "game" | "activity";
+  setEditorModeFilter: (v: "all" | "game" | "activity") => void;
+  showScenarioInstances: boolean;
+  setShowScenarioInstances: (v: boolean) => void;
   searchQuery: string;
   setSearchQuery: (v: string) => void;
   // 表單
