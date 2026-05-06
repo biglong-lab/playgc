@@ -36,7 +36,10 @@ interface GameWizardProps {
 export default function GameWizard({ open, onOpenChange, editorMode = "game" }: GameWizardProps) {
   const { toast } = useToast();
   const [, navigate] = useLocation();
-  const [step, setStep] = useState<WizardStep>("select_template");
+  // 🆕 軟分流階段 1.5：editorMode='game' 從 select_game_mode 開始；'activity' 直接跳 select_template
+  const initialStep: WizardStep = editorMode === "game" ? "select_game_mode" : "select_template";
+  const [step, setStep] = useState<WizardStep>(initialStep);
+  const [selectedGameMode, setSelectedGameMode] = useState<SelectableGameMode>("individual");
   const [selectedTemplate, setSelectedTemplate] = useState<GameTemplate | null>(null);
   const [gameName, setGameName] = useState("");
   const [createdGame, setCreatedGame] = useState<Game | null>(null);
@@ -50,6 +53,7 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
       estimatedTime: number | null;
       maxPlayers: number;
       editorMode: "game" | "activity";
+      gameMode: SelectableGameMode;
     }) => {
       const response = await fetch("/api/admin/games", {
         method: "POST",
