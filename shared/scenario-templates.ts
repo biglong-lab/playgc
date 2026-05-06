@@ -4030,6 +4030,35 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "問題轉行動套組 NT$ 2,000-6,000 / 場。把問題清單變成行動清單。",
     status: "live",
   },
+
+  {
+    id: "vision-style-pack",
+    name: "🔮 願景風格套組",
+    tagline: "願景板 + 衝突風格，認識自己也認識彼此",
+    description: "VisionBoard 讓每人用關鍵詞＋一句話描繪未來願景，時間跨度從3個月到5年；ConflictStyle 用TKI五型一鍵揭露全隊衝突應對偏好，看見多元風格的美。適合新創啟動、年度規劃、管理培訓、組織文化盤點。",
+    useCases: ["年度規劃會議", "新創啟動會", "管理培訓工作坊", "團隊文化盤點"],
+    category: "corporate",
+    icon: "Sparkles",
+    gradient: "from-violet-400 to-cyan-400",
+    estimatedPlayers: "4-30 人",
+    estimatedDuration: "20-30 分鐘",
+    components: [
+      {
+        pageType: "vision_board",
+        label: "願景板",
+        role: "用關鍵詞＋一句話描繪個人願景",
+        axis: "multi",
+      },
+      {
+        pageType: "conflict_style",
+        label: "衝突風格",
+        role: "TKI五型揭露全隊應對偏好",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "願景風格套組 NT$ 2,500-7,000 / 場。看見願景，也看見風格。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

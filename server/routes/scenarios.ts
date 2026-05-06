@@ -2340,6 +2340,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `完成「${scenarioName}」後，你打算採取的第一個具體行動是什麼？`,
       };
 
+    case "vision_board":
+      return {
+        title: "🌟 願景板",
+        prompt: `在「${scenarioName}」的脈絡下，你對未來的願景是什麼？`,
+      };
+
+    case "conflict_style":
+      return {
+        title: "⚡ 衝突風格",
+        prompt: `在「${scenarioName}」情境中，面對意見分歧你最常用哪種應對方式？`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",
