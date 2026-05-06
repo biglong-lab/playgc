@@ -2,25 +2,28 @@
 import { apiRequest } from "@/lib/queryClient";
 import type { Page } from "@shared/schema";
 
-/** 更新頁面 ID 參照（如按鈕跳轉目標），處理 temp ID → 真實 ID 的映射 */
+/**
+ * 更新頁面 ID 參照（所有頁型的 nextPageId），處理 temp ID → 真實 ID 的映射
+ * 用 JSON 字串替換涵蓋所有頁型：button、choice_verify、vote、dialogue 等
+ */
 export function updatePageIdReferences(
   pagesToUpdate: Page[],
   idMapping: Map<string, string>
 ): Page[] {
+  if (idMapping.size === 0) return pagesToUpdate;
   return pagesToUpdate.map((page) => {
-    const config = page.config as Record<string, unknown>;
-    if (page.pageType === "button" && config.buttons) {
-      const buttons = config.buttons as Array<Record<string, unknown>>;
-      const updatedButtons = buttons.map((btn) => ({
-        ...btn,
-        nextPageId:
-          btn.nextPageId && idMapping.has(btn.nextPageId as string)
-            ? idMapping.get(btn.nextPageId as string)
-            : btn.nextPageId,
-      }));
-      return { ...page, config: { ...config, buttons: updatedButtons } };
+    let configStr = JSON.stringify(page.config);
+    let changed = false;
+    for (const [tempId, realId] of Array.from(idMapping.entries())) {
+      const jsonTempId = JSON.stringify(tempId);   // 含引號：`"temp-xxx"`
+      const jsonRealId = JSON.stringify(realId);
+      const next = configStr.split(jsonTempId).join(jsonRealId);
+      if (next !== configStr) {
+        configStr = next;
+        changed = true;
+      }
     }
-    return page;
+    return changed ? { ...page, config: JSON.parse(configStr) as Record<string, unknown> } : page;
   });
 }
 

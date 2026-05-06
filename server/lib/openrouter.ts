@@ -136,12 +136,13 @@ async function callOpenRouterOnce(
   model: string,
   messages: ChatMessage[],
   jsonResponse: boolean,
+  maxTokens = 500,
 ): Promise<{ ok: true; content: string } | { ok: false; status: number; body: string }> {
   const body: Record<string, unknown> = {
     model,
     messages,
     temperature: 0.2,
-    max_tokens: 500,
+    max_tokens: maxTokens,
   };
   if (jsonResponse) {
     body.response_format = { type: "json_object" };
@@ -197,6 +198,7 @@ export async function callOpenRouter(
   model: string,
   messages: ChatMessage[],
   jsonResponse = true,
+  maxTokens = 500,
 ): Promise<string> {
   const chain = getFallbackChain(model);
   let lastError = `沒有可用模型（chain: ${chain.join(", ")}）`;
@@ -207,7 +209,7 @@ export async function callOpenRouter(
       console.warn(`[openrouter] 降級嘗試 #${i}：使用模型 "${m}"`);
     }
 
-    const result = await callOpenRouterOnce(apiKey, m, messages, jsonResponse);
+    const result = await callOpenRouterOnce(apiKey, m, messages, jsonResponse, maxTokens);
     if (result.ok) {
       if (i > 0) {
         console.log(`[openrouter] ✅ Fallback 成功（用 "${m}" 完成）`);

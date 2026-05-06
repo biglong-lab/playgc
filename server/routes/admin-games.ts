@@ -34,9 +34,8 @@ import {
 import {
   ObjectStorageService,
 } from "../objectStorage";
-import { insertGameSchema, getTemplateById, pages, fields, parseFieldSettings } from "@shared/schema";
+import { insertGameSchema, getTemplateById, pages, fields, parseFieldSettings, games, gameSessions, leaderboard, paymentTransactions } from "@shared/schema";
 import { db } from "../db";
-import { games } from "@shared/schema";
 import { z } from "zod";
 import { eq, desc, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
@@ -371,6 +370,11 @@ export function registerAdminGameRoutes(app: Express) {
         return res.status(403).json({ message: "無權限刪除此遊戲" });
       }
 
+      // 先清除 FK 參照（無 CASCADE，需手動 SET NULL；欄位 DB 允許 null 但 TS 型別未標 nullable，用 unknown 轉型）
+      const nullStr = null as unknown as string;
+      await db.update(gameSessions).set({ gameId: nullStr }).where(eq(gameSessions.gameId, req.params.id));
+      await db.update(leaderboard).set({ gameId: nullStr }).where(eq(leaderboard.gameId, req.params.id));
+      await db.update(paymentTransactions).set({ gameId: nullStr }).where(eq(paymentTransactions.gameId, req.params.id));
       await db.delete(games).where(eq(games.id, req.params.id));
 
       await logAuditAction({

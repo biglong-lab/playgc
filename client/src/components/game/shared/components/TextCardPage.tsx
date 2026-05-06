@@ -225,7 +225,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   };
 
   const renderCenterLayout = () => (
-    <div className="min-h-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-full flex flex-col items-center justify-center p-6 relative overflow-hidden" onClick={tryAutoPlayAudio}>
       <div className="absolute inset-0 bg-tactical-gradient" />
       <div className="absolute inset-0 bg-radial-glow opacity-30" />
       
@@ -269,7 +269,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   );
 
   const renderImageTopLayout = () => (
-    <div className="min-h-full flex flex-col relative overflow-hidden">
+    <div className="min-h-full flex flex-col relative overflow-hidden" onClick={tryAutoPlayAudio}>
       {config.backgroundImage && (
         <div className="relative h-48 md:h-64 w-full">
           <OptimizedImage
@@ -316,7 +316,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   );
 
   const renderImageLeftLayout = () => (
-    <div className="min-h-full flex flex-col md:flex-row relative overflow-hidden">
+    <div className="min-h-full flex flex-col md:flex-row relative overflow-hidden" onClick={tryAutoPlayAudio}>
       {config.backgroundImage && (
         <div className="relative w-full md:w-1/2 h-48 md:h-full">
           <OptimizedImage
@@ -364,7 +364,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   );
 
   const renderFullscreenLayout = () => (
-    <div className="min-h-full relative overflow-hidden">
+    <div className="min-h-full relative overflow-hidden" onClick={tryAutoPlayAudio}>
       {config.backgroundImage && (
         <div 
           className="absolute inset-0 bg-cover bg-center"

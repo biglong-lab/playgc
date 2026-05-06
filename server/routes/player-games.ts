@@ -255,7 +255,10 @@ export function registerPlayerGameRoutes(app: Express, ctx?: RouteContext) {
             .json({ message: auth.message });
         }
 
-        const data = insertGameSchema.partial().parse(req.body);
+        const data = insertGameSchema
+          .extend({ lastLiveTestedAt: z.coerce.date().nullable().optional() })
+          .partial()
+          .parse(req.body);
         const game = await storage.updateGame(req.params.id, data);
         if (!game) {
           return res.status(404).json({ message: "Game not found" });
