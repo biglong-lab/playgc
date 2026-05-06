@@ -334,6 +334,8 @@ const SpotVotePage = lazy(() => import("@/components/game/multi/SpotVotePage"));
 const TeamDreamPage = lazy(() => import("@/components/game/multi/TeamDreamPage"));
 const GroupNicknamePage = lazy(() => import("@/components/game/multi/GroupNicknamePage"));
 const ActivityMemoPage = lazy(() => import("@/components/game/multi/ActivityMemoPage"));
+const RoleBoardPage = lazy(() => import("@/components/game/multi/RoleBoardPage"));
+const DiscoveryCardPage = lazy(() => import("@/components/game/multi/DiscoveryCardPage"));
 const MythicalCreaturePage = lazy(() => import("@/components/game/multi/MythicalCreaturePage"));
 const DanceStylePage = lazy(() => import("@/components/game/multi/DanceStylePage"));
 const ArchitectureStylePage = lazy(() => import("@/components/game/multi/ArchitectureStylePage"));
@@ -1224,6 +1226,10 @@ export default function GamePageRenderer({
         return <GroupNicknamePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "activity_memo":
         return <ActivityMemoPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "role_board":
+        return <RoleBoardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "discovery_card":
+        return <DiscoveryCardPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "mythical_creature":
         return <MythicalCreaturePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "dance_style":
