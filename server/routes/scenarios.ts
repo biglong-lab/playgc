@@ -2544,6 +2544,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的冒險中，你會選哪種英雄職業？說說為什麼！`,
       };
 
+    case "pet_personality":
+      return {
+        title: "🐾 我是哪種寵物",
+        prompt: `在「${scenarioName}」的場合，如果你是一隻寵物，你最像哪一種？說說你的個性！`,
+      };
+
+    case "music_genre":
+      return {
+        title: "🎵 我今天的音樂風格",
+        prompt: `在「${scenarioName}」的今天，哪種音樂風格最符合你的狀態？說說感受！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

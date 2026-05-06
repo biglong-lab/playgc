@@ -4514,6 +4514,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "顏色英雄身份套組 NT$ 1,500-4,000 / 場。輕鬆有趣的自我探索，讓團隊成員快速認識彼此。",
     status: "live",
   },
+  {
+    id: "pet-music-vibe-pack",
+    name: "🐾 寵物音樂暖場套組",
+    tagline: "寵物性格 + 音樂風格，輕鬆有趣的自我介紹",
+    description: "PetPersonality 讓每人選出最像自己性格的寵物並說原因，揭曉全隊動物園；MusicGenre 讓每人選出今天最符合心情的音樂風格並說感受，揭曉全隊今日播放清單。適合活動暖場、創意工作坊開場、親子活動，輕鬆愉快容易引發共鳴。",
+    useCases: ["活動暖場", "創意工作坊", "親子活動", "輕鬆破冰"],
+    category: "social",
+    icon: "Music",
+    gradient: "from-orange-400 to-fuchsia-400",
+    estimatedPlayers: "4-60 人",
+    estimatedDuration: "8-15 分鐘",
+    components: [
+      {
+        pageType: "pet_personality",
+        label: "我是哪種寵物",
+        role: "10種寵物選擇＋性格說明，揭曉全隊動物園",
+        axis: "multi",
+      },
+      {
+        pageType: "music_genre",
+        label: "我今天的音樂風格",
+        role: "9種音樂風格選擇＋今日感受，揭曉今日播放清單",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "寵物音樂暖場套組 NT$ 1,000-3,000 / 場。輕鬆愉快的開場暖身，讓陌生人瞬間打開話匣子。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════

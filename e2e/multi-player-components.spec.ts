@@ -792,6 +792,8 @@ test.describe("多人遊戲元件 Smoke Test", () => {
       "season_person",
       "color_personality",
       "hero_type",
+      "pet_personality",
+      "music_genre",
     ];
 
     for (const t of newTypes) {

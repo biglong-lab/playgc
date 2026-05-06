@@ -302,6 +302,8 @@ const TravelStylePage = lazy(() => import("@/components/game/multi/TravelStylePa
 const SeasonPersonPage = lazy(() => import("@/components/game/multi/SeasonPersonPage"));
 const ColorPersonalityPage = lazy(() => import("@/components/game/multi/ColorPersonalityPage"));
 const HeroTypePage = lazy(() => import("@/components/game/multi/HeroTypePage"));
+const PetPersonalityPage = lazy(() => import("@/components/game/multi/PetPersonalityPage"));
+const MusicGenrePage = lazy(() => import("@/components/game/multi/MusicGenrePage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1114,6 +1116,10 @@ export default function GamePageRenderer({
         return <ColorPersonalityPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "hero_type":
         return <HeroTypePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "pet_personality":
+        return <PetPersonalityPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "music_genre":
+        return <MusicGenrePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
