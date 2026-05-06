@@ -398,6 +398,8 @@ const PortalDoorPage = lazy(() => import("@/components/game/multi/PortalDoorPage
 const LampLightPage = lazy(() => import("@/components/game/multi/LampLightPage"));
 const OceanWavePage = lazy(() => import("@/components/game/multi/OceanWavePage"));
 const FireworkBurstPage = lazy(() => import("@/components/game/multi/FireworkBurstPage"));
+const SeedGardenPage = lazy(() => import("@/components/game/multi/SeedGardenPage"));
+const CloudDriftPage = lazy(() => import("@/components/game/multi/CloudDriftPage"));
 
 // 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
 const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
@@ -1402,6 +1404,10 @@ export default function GamePageRenderer({
         return <OceanWavePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "firework_burst":
         return <FireworkBurstPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "seed_garden":
+        return <SeedGardenPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
+      case "cloud_drift":
+        return <CloudDriftPage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
       case "host_wave_response":
