@@ -36,9 +36,11 @@
 | e2e 黃金路徑 | 17 個 test 全綠（CI 自動跑） |
 | **e2e A2 多人 L3 smoke** | **18 個 test 全綠**（2026-05-07 加） |
 | **e2e Host 軸線 smoke** | **34 個 test 全綠**（2026-05-07 加，17 元件接 admin editor 後）|
-| **e2e 總計** | **69/69 全綠** |
+| **e2e 軟分流階段 1** | **3 個 test 全綠**（2026-05-07 加，editor mode 分流）|
+| **e2e 總計** | **72/72 全綠** |
 | **PAGE_TYPES host 元件** | **17/17 接入**（從 1/17 修正）|
 | **PageCategory** | **6 大類**（加 host_screen 📺）|
+| **games.editorMode** | 'game' / 'activity'（軟分流階段 1）|
 | Phase 1 commits | 14 個（1c4b9075..e7647c82） |
 
 ---
