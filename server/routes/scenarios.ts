@@ -2628,6 +2628,18 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         prompt: `在「${scenarioName}」的場合，如果你是一種天氣，你最像哪一種？說說你的天氣個性！`,
       };
 
+    case "book_genre":
+      return {
+        title: "📚 我是哪種書",
+        prompt: `在「${scenarioName}」的場合，如果你是一本書，你最像哪種類型？說說你的閱讀個性！`,
+      };
+
+    case "flower_type":
+      return {
+        title: "🌸 我是哪種花",
+        prompt: `在「${scenarioName}」的場合，如果你是一朵花，你最像哪種？說說你的花語個性！`,
+      };
+
     case "curiosity_map":
       return {
         title: "🗺️ 好奇心地圖",

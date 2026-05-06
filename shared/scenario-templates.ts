@@ -4710,6 +4710,34 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     valueProposition: "運動電影角色套組 NT$ 1,200-3,500 / 場。活力十足的活動暖身，適合各類型活動開場與破冰環節。",
     status: "live",
   },
+  {
+    id: "book-flower-culture-pack",
+    name: "📚 書香花語文化套組",
+    tagline: "用閱讀個性與花朵花語深度認識彼此",
+    description: "BookGenre 讓每人選出最像自己的書籍類型並說原因，揭曉全隊閱讀個性圖譜；FlowerType 讓每人選出最像自己的花朵並說原因，揭曉全隊花園。適合讀書會、婚禮、文化活動、優雅場合，充滿詩意且引發豐富的個性對話。",
+    useCases: ["讀書會", "婚禮活動", "文化交流", "優雅聚會破冰"],
+    category: "social",
+    icon: "BookOpen",
+    gradient: "from-amber-400 to-rose-400",
+    estimatedPlayers: "4-40 人",
+    estimatedDuration: "10-16 分鐘",
+    components: [
+      {
+        pageType: "book_genre",
+        label: "我是哪種書",
+        role: "9種書籍類型選擇＋閱讀個性說明，揭曉全隊書架",
+        axis: "multi",
+      },
+      {
+        pageType: "flower_type",
+        label: "我是哪種花",
+        role: "9種花朵選擇＋花語個性說明，揭曉全隊花園",
+        axis: "multi",
+      },
+    ],
+    valueProposition: "書香花語文化套組 NT$ 1,200-3,500 / 場。詩意優雅的個性探索，適合文化活動、婚禮、讀書會等精緻場合。",
+    status: "live",
+  },
 ];
 
 // ════════════════════════════════════════════
