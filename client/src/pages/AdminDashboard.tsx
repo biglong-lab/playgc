@@ -562,6 +562,9 @@ export default function AdminDashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* 🆕 2026-05-07：系統更新紀錄（最下方）*/}
+        <ChangelogCard />
       </div>
     </UnifiedAdminLayout>
   );
