@@ -1,80 +1,145 @@
-// 🔄 App 版本自動檢查器
+// 🔄 App 版本自動檢查器（v2 — 2026-05-07 重寫）
 //
-// 問題：每次推新版，使用者瀏覽器的 PWA Service Worker 不一定立刻更新，
-//      導致看到舊 bundle 甚至 TypeError，必須手動「清除快取重新載入」。
+// 為什麼重寫：
+//   舊版用 HTML bundle hash 比對（fetch /、抽 script src 的 hash）。
+//   問題：service worker 攔截 navigation request、SW cache 的 /index.html 跟
+//        DOM 上 script src 的 hash 永遠 mismatch，導致使用者按 10+ 次「立即更新」
+//        都還在跳 toast。
 //
-// 解法：
-//   1. 每 5 分鐘 fetch 最新 /（cache: "no-store"）
-//   2. 解析出 <script src="/assets/index-XXX.js"> 的 hash
-//   3. 若跟當前執行的 bundle hash 不同 → 顯示「立即更新」Toast
-//   4. 使用者點更新 → registration.update() + window.location.reload()
+// 新做法：
+//   1. 用 /api/version 比對 commit（跟 main.tsx 同一套機制、不受 SW HTML cache 影響）
+//   2. localStorage 冷卻：使用者按過更新後 1 小時內若仍是同一個 server commit
+//      就視為「更新失敗或剛更新完」、不再跳
+//   3. retry 上限：同一個 server commit 連續超過 3 次都還跳 → 強制清 SW + caches reload
 //
-// 為什麼不用 vite-plugin-pwa 的 useRegisterSW？
-//   那個 hook 依賴 navigator.serviceWorker.register 的內建更新，
-//   但瀏覽器有時 24h 才檢查一次 SW update。
-//   主動 poll HTML bundle hash 才是最可靠的版本判定。
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, RotateCw, X } from "lucide-react";
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 分鐘
-const INITIAL_CHECK_DELAY_MS = 5 * 1000; // 🆕 改為 5 秒（剛上線時快速提示使用者點更新，30s 太久）
-const BUNDLE_HASH_REGEX = /index-([A-Za-z0-9_-]+)\.js/;
+const INITIAL_CHECK_DELAY_MS = 5 * 1000;
+const COOLDOWN_MS = 60 * 60 * 1000; // 🆕 1 小時冷卻：同一個目標 commit 在這時間內不再跳
+const MAX_PROMPT_PER_COMMIT = 3; // 🆕 同一 commit 跳超過 3 次 → 強制清 SW
 
-/** 從 HTML 字串抽出 bundle hash */
-function extractBundleHash(html: string): string | null {
-  const m = html.match(BUNDLE_HASH_REGEX);
-  return m ? m[1] : null;
+const COOLDOWN_KEY = "chito_app_update_cooldown_v2";
+const PROMPT_COUNT_KEY = "chito_app_update_prompt_count_v2";
+
+const CLIENT_COMMIT = (import.meta.env.VITE_APP_COMMIT as string | undefined) || "unknown";
+
+interface CooldownEntry {
+  commit: string;
+  /** 開始冷卻時間（ms） */
+  startedAt: number;
 }
 
-/** 取得當前執行中的 bundle hash（從 DOM） */
-function getCurrentBundleHash(): string | null {
-  if (typeof document === "undefined") return null;
-  const script = document.querySelector<HTMLScriptElement>(
-    'script[type="module"][src*="/assets/index-"]',
-  );
-  if (!script) return null;
-  const m = script.src.match(BUNDLE_HASH_REGEX);
-  return m ? m[1] : null;
+interface PromptCountEntry {
+  commit: string;
+  count: number;
+}
+
+function readJson<T>(key: string): T | null {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeJson(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* localStorage full / private mode — 忽略 */
+  }
+}
+
+/** 是否還在冷卻期內（針對該 server commit） */
+function isInCooldown(serverCommit: string): boolean {
+  const entry = readJson<CooldownEntry>(COOLDOWN_KEY);
+  if (!entry) return false;
+  if (entry.commit !== serverCommit) return false;
+  return Date.now() - entry.startedAt < COOLDOWN_MS;
+}
+
+function setCooldown(serverCommit: string): void {
+  writeJson(COOLDOWN_KEY, { commit: serverCommit, startedAt: Date.now() });
+}
+
+function bumpPromptCount(serverCommit: string): number {
+  const entry = readJson<PromptCountEntry>(PROMPT_COUNT_KEY);
+  const count = entry?.commit === serverCommit ? entry.count + 1 : 1;
+  writeJson(PROMPT_COUNT_KEY, { commit: serverCommit, count });
+  return count;
+}
+
+function resetPromptCount(): void {
+  try {
+    localStorage.removeItem(PROMPT_COUNT_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** 強制清 SW + caches + reload（loop 救援用） */
+async function nuclearReload(): Promise<void> {
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {
+    /* ignore */
+  }
+  window.location.reload();
 }
 
 export default function AppUpdateChecker() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [dismissed, setDismissed] = useState(false);
-  // 🆕 2026-05-04: 防止「按了沒反應、要按很多下」 — 點擊後立即 lock + 顯示 loading
   const [isUpdating, setIsUpdating] = useState(false);
-  const updatingRef = useRef(false);  // ref 雙重保險（即時 lock、不等 React state 更新）
+  const updatingRef = useRef(false);
 
   useEffect(() => {
-    const currentHash = getCurrentBundleHash();
-    if (!currentHash) return; // dev mode 或 bundle 結構不符 → 不檢查
+    if (CLIENT_COMMIT === "unknown") return; // dev / build 沒注入 commit → 不檢查
 
     const check = async () => {
       try {
-        const res = await fetch(`/?_v=${Date.now()}`, {
-          cache: "no-store",
-          credentials: "omit",
-        });
+        const res = await fetch("/api/version", { cache: "no-store", credentials: "omit" });
         if (!res.ok) return;
-        const html = await res.text();
-        const latestHash = extractBundleHash(html);
-        if (!latestHash) return;
-        if (latestHash !== currentHash) {
-          setUpdateAvailable(true);
+        const data = (await res.json()) as { commit?: string };
+        const serverCommit = data.commit;
+        if (!serverCommit || serverCommit === "unknown") return;
+        if (serverCommit === CLIENT_COMMIT) {
+          // 版本一致 → 重置冷卻 + count（避免下次新版來時被舊冷卻擋住）
+          resetPromptCount();
+          return;
         }
+        // 版本不一致 → 檢查冷卻
+        if (isInCooldown(serverCommit)) return;
+
+        // 連續跳超過上限 → 不再煩、直接 nuclear reload 一次救
+        const count = bumpPromptCount(serverCommit);
+        if (count > MAX_PROMPT_PER_COMMIT) {
+          setCooldown(serverCommit); // 設冷卻、避免無限 reload loop
+          await nuclearReload();
+          return;
+        }
+
+        setUpdateAvailable(true);
       } catch {
-        /* 網路斷線或 CORS — 下次再試 */
+        /* 網路 / CORS — 下次再試 */
       }
     };
 
     const initialTimer = setTimeout(check, INITIAL_CHECK_DELAY_MS);
     const intervalTimer = setInterval(check, CHECK_INTERVAL_MS);
-
-    // 每次使用者切回 tab 時也檢查一次（可能離開久了）
     const onVisibility = () => {
-      if (document.visibilityState === "visible") {
-        check();
-      }
+      if (document.visibilityState === "visible") check();
     };
     document.addEventListener("visibilitychange", onVisibility);
 
@@ -88,16 +153,22 @@ export default function AppUpdateChecker() {
   if (!updateAvailable || dismissed) return null;
 
   const handleUpdate = async () => {
-    // 🛡️ 2026-05-04: 防雙觸發
-    //   原問題：使用者按 N 次 → N 次 reg.update() + N 個 setTimeout 排隊 →
-    //          SW state race + 看起來「按了沒反應、要按很多下才有反應」
-    //   修法：updatingRef 雙重保險（即時 lock、不等 React state batching）
     if (updatingRef.current) return;
     updatingRef.current = true;
     setIsUpdating(true);
 
-    // 🛡️ 最終保險：5 秒內若 controllerchange 沒觸發 reload、強制 reload
-    //   避免 SW message 丟失 / iOS Safari 偶發 stuck 狀態
+    // 🛡️ 設冷卻：使用者按過更新後 1 小時內、即使 server commit 沒變也不再跳
+    //   防止 reload 後 SW 還沒換、版本檢查又把 toast 跳出來的循環
+    try {
+      const res = await fetch("/api/version", { cache: "no-store", credentials: "omit" });
+      if (res.ok) {
+        const data = (await res.json()) as { commit?: string };
+        if (data.commit) setCooldown(data.commit);
+      }
+    } catch {
+      /* ignore — 仍要 reload */
+    }
+
     const hardReloadTimer = setTimeout(() => {
       window.location.reload();
     }, 5000);
@@ -106,17 +177,14 @@ export default function AppUpdateChecker() {
       if ("serviceWorker" in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
         await reg?.update();
-        // 方案 A（首選）：waiting SW 存在 → SKIP_WAITING → controllerchange → main.tsx 自動 reload
         if (reg?.waiting) {
           reg.waiting.postMessage({ type: "SKIP_WAITING" });
-          // controllerchange 應在 < 1 秒內觸發；800ms 後 fallback reload（縮短自原 2000ms）
           setTimeout(() => {
             clearTimeout(hardReloadTimer);
             window.location.reload();
           }, 800);
           return;
         }
-        // 方案 B：沒 waiting（罕見）→ 強制 unregister + 清 caches
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map((r) => r.unregister()));
       }
@@ -125,10 +193,24 @@ export default function AppUpdateChecker() {
         await Promise.all(keys.map((k) => caches.delete(k)));
       }
     } catch {
-      /* 失敗時直接 reload */
+      /* fall through to reload */
     }
     clearTimeout(hardReloadTimer);
     window.location.reload();
+  };
+
+  const handleDismiss = async () => {
+    // 🆕 使用者按 X：也設冷卻 1 小時（avoiding 同一版又被跳到煩）
+    try {
+      const res = await fetch("/api/version", { cache: "no-store", credentials: "omit" });
+      if (res.ok) {
+        const data = (await res.json()) as { commit?: string };
+        if (data.commit) setCooldown(data.commit);
+      }
+    } catch {
+      /* ignore */
+    }
+    setDismissed(true);
   };
 
   return (
@@ -137,10 +219,9 @@ export default function AppUpdateChecker() {
       role="alert"
       data-testid="app-update-toast"
     >
-      {/* 右上角關閉（小 X）— 更新中時 disable 避免誤觸 */}
       <button
         type="button"
-        onClick={() => setDismissed(true)}
+        onClick={handleDismiss}
         disabled={isUpdating}
         className="absolute top-2 right-2 text-muted-foreground/50 hover:text-muted-foreground p-1.5 rounded hover:bg-muted/60 disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="關閉（稍後再更新）"
@@ -149,7 +230,6 @@ export default function AppUpdateChecker() {
         <X className="w-4 h-4" />
       </button>
 
-      {/* 內容區（頂部 icon + 文字） */}
       <div className="flex items-start gap-3 pr-8 mb-3">
         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
           {isUpdating ? (
@@ -168,7 +248,6 @@ export default function AppUpdateChecker() {
         </div>
       </div>
 
-      {/* 🆕 立即更新按鈕 — 點擊後立即 disable + 顯示 loading（防多次觸發 race） */}
       <Button
         onClick={handleUpdate}
         disabled={isUpdating}
