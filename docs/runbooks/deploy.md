@@ -88,7 +88,8 @@ curl -sI https://game.homi.cc/ | head -3
 
 # 3. API 健康
 curl -s https://game.homi.cc/api/version
-# 預期：{"commit":"...","timestamp":...}
+# 預期：{"commit":"<真實 git hash>","timestamp":...}
+# ⚠️ 若 commit 是 "unknown" → AppUpdateChecker 會失效，重跑 deploy 並帶 GIT_SHA
 ```
 
 ---
