@@ -11,10 +11,13 @@ const ToastViewport = React.forwardRef<
   React.ElementRef<typeof ToastPrimitives.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
 >(({ className, ...props }, ref) => (
+  // 🆕 2026-05-07：viewport 加 pointer-events-none、不擋玩家互動
+  // 個別 toast 內部仍 pointer-events-auto（onClose 可按）
+  // 手機從滿版改成置中、不擋遊戲畫面
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      "pointer-events-none fixed top-0 z-[100] flex max-h-screen w-full max-w-md mx-auto flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:left-auto sm:top-auto sm:mx-0 sm:flex-col md:max-w-[420px]",
       className
     )}
     {...props}
