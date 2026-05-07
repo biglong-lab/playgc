@@ -575,6 +575,7 @@ function PhotoTeamCollage({
             onRestart={() => camera.startCamera()}
             onSwitchCamera={camera.switchCamera}
             facingMode={camera.facingMode}
+            stream={camera.stream}
           />
           <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium">
             拍第 {currentIdx + 1} / {memberCount} 位：{currentName.trim() || `隊員 ${currentIdx + 1}`}
