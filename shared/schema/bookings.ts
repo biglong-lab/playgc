@@ -303,7 +303,7 @@ export const bookingNotificationTemplateKeyEnum = [
 ] as const;
 export type BookingNotificationTemplateKey = (typeof bookingNotificationTemplateKeyEnum)[number];
 
-export const bookingBookingNotificationTemplates = pgTable(
+export const bookingNotificationTemplates = pgTable(
   "booking_notification_templates",
   {
     id: serial("id").primaryKey(),
@@ -326,11 +326,11 @@ export const bookingBookingNotificationTemplates = pgTable(
   }),
 );
 
-export const insertBookingNotificationTemplateSchema = createInsertSchema(bookingBookingNotificationTemplates).omit({
+export const insertBookingNotificationTemplateSchema = createInsertSchema(bookingNotificationTemplates).omit({
   id: true,
   updatedAt: true,
 });
-export type BookingNotificationTemplate = typeof bookingBookingNotificationTemplates.$inferSelect;
+export type BookingNotificationTemplate = typeof bookingNotificationTemplates.$inferSelect;
 export type InsertBookingNotificationTemplate = z.infer<typeof insertBookingNotificationTemplateSchema>;
 
 // ============================================================================
