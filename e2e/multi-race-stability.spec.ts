@@ -249,4 +249,202 @@ test.describe("🧪 多人 race condition stability", () => {
       expect(data.state.version).toBeGreaterThanOrEqual(2);
     });
   });
+
+  // 🆕 P.2: A2 useTeamGameState 衝突回應驗證
+  test.describe("A2: team_game_states 衝突 + retry", () => {
+    let seed: SeedResult;
+
+    test.beforeEach(async ({ request }) => {
+      const res = await request.post("/api/_test/seed-team-with-members");
+      seed = await res.json();
+    });
+
+    test.afterEach(async ({ request }) => {
+      if (seed?.gameId) {
+        await request.post("/api/_test/cleanup-team", {
+          data: { gameId: seed.gameId, userIds: seed.userIds },
+        });
+      }
+    });
+
+    test("第一次寫入 → 200 + 拿回 saved state", async ({ request }) => {
+      const res = await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "collective_score",
+          state: { score: 10 },
+          version: 2,
+        },
+      });
+      expect(res.status()).toBe(200);
+      const data = await res.json();
+      expect(data.state.version).toBe(2);
+    });
+
+    test("舊 version 寫入 → 409 + 拿回 server 最新", async ({ request }) => {
+      // 先寫 version=5
+      await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "collective_score",
+          state: { score: 50 },
+          version: 5,
+        },
+      });
+      // 再用 version=3 寫（過舊）
+      const res = await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "collective_score",
+          state: { score: 30 },
+          version: 3,
+        },
+      });
+      expect(res.status()).toBe(409);
+      const data = await res.json();
+      expect(data.conflict).toBe(true);
+      expect(data.state.version).toBe(5);
+    });
+
+    test("用更高 version 重送 → 200（retry 流程）", async ({ request }) => {
+      await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "collective_score",
+          state: { score: 50 },
+          version: 5,
+        },
+      });
+      // retry 用 version=6
+      const res = await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "collective_score",
+          state: { score: 70 },
+          version: 6,
+        },
+      });
+      expect(res.status()).toBe(200);
+      const data = await res.json();
+      expect(data.state.version).toBe(6);
+    });
+  });
+
+  // 🆕 P.2: A3 GpsTeamMission 持久化驗證（reachedUserIds）
+  test.describe("A3: GpsTeamMission 持久化", () => {
+    let seed: SeedResult;
+
+    test.beforeEach(async ({ request }) => {
+      const res = await request.post("/api/_test/seed-team-with-members");
+      seed = await res.json();
+    });
+
+    test.afterEach(async ({ request }) => {
+      if (seed?.gameId) {
+        await request.post("/api/_test/cleanup-team", {
+          data: { gameId: seed.gameId, userIds: seed.userIds },
+        });
+      }
+    });
+
+    test("玩家 A 抵達 → reachedUserIds 含 A、玩家 B 重整能讀到", async ({ request }) => {
+      // 玩家 A 完成（reachedUserIds 加入 A）
+      const userA = seed.userIds[0];
+      await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "gps_team_mission",
+          state: { reachedUserIds: [userA] },
+        },
+      });
+      // 玩家 B 重整、讀回 state
+      const res = await request.get("/api/_test/team-state", {
+        params: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "gps_team_mission",
+        },
+      });
+      expect(res.ok()).toBeTruthy();
+      const data = await res.json();
+      expect(data.state.state_json.reachedUserIds).toContain(userA);
+    });
+
+    test("兩員都抵達 → reachedUserIds 都在", async ({ request }) => {
+      const [userA, userB] = seed.userIds;
+      // A 先到
+      await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "gps_team_mission",
+          state: { reachedUserIds: [userA] },
+        },
+      });
+      // B 後到（client 邏輯：拉舊 state、append、寫回）
+      await request.post("/api/_test/team-state-update", {
+        data: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "gps_team_mission",
+          state: { reachedUserIds: [userA, userB] },
+        },
+      });
+      const res = await request.get("/api/_test/team-state", {
+        params: {
+          teamId: seed.teamId,
+          sessionId: seed.sessionId,
+          pageId: seed.pageId,
+          type: "gps_team_mission",
+        },
+      });
+      const data = await res.json();
+      expect(data.state.state_json.reachedUserIds).toContain(userA);
+      expect(data.state.state_json.reachedUserIds).toContain(userB);
+    });
+  });
+
+  // 🆕 P.2: A4 leaveTeam → leftAt（DB 標記）
+  test.describe("A4: leaveTeam 標 leftAt", () => {
+    let seed: SeedResult;
+
+    test.beforeAll(async ({ request }) => {
+      const res = await request.post("/api/_test/seed-team-with-members");
+      seed = await res.json();
+    });
+
+    test.afterAll(async ({ request }) => {
+      if (seed?.gameId) {
+        await request.post("/api/_test/cleanup-team", {
+          data: { gameId: seed.gameId, userIds: seed.userIds },
+        });
+      }
+    });
+
+    test("leave-team → DB 該 member.leftAt 不再 NULL", async ({ request }) => {
+      const userB = seed.userIds[1];
+      const res = await request.post("/api/_test/leave-team", {
+        data: { teamId: seed.teamId, userId: userB },
+      });
+      expect(res.ok()).toBeTruthy();
+      const data = await res.json();
+      expect(data.member).toBeTruthy();
+      expect(data.member.left_at).toBeTruthy();
+    });
+  });
 });
