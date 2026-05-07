@@ -230,6 +230,12 @@ export function useQrScanner(
         try { await visitLocationMutation.mutateAsync(locationId); } catch { /* 可忽略 */ }
       }
       setMode("success");
+      // 🆕 2026-05-07：成功掃碼震動回饋（success pattern 50ms）
+      try {
+        if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+          navigator.vibrate(50);
+        }
+      } catch { /* iOS Safari 不支援、noop */ }
       toast({ title: config.onSuccess?.message || config.successMessage || "QR Code 驗證成功!", description: "任務完成!" });
 
       const grantItems = config.onSuccess?.grantItem
