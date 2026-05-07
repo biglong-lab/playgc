@@ -443,3 +443,83 @@ export async function listBookings(opts: ListBookingsOptions): Promise<Booking[]
     .limit(opts.limit ?? 100)
     .offset(opts.offset ?? 0);
 }
+
+// ============================================================================
+// 標記到場 / 完成（admin 操作、活動結束時觸發）
+// ============================================================================
+
+export interface MarkCompletedInput {
+  bookingCode: string;
+  /** 是否同時推送 game_completed LINE 通知（含優惠券連結等）*/
+  sendNotification?: boolean;
+  /** 自訂 actionUrl 覆蓋模板的（例：本次活動專屬優惠券）*/
+  customActionUrl?: string;
+}
+
+export async function markBookingCompleted(
+  input: MarkCompletedInput,
+): Promise<Booking> {
+  const rows = await db
+    .select()
+    .from(bookings)
+    .where(eq(bookings.bookingCode, input.bookingCode))
+    .limit(1);
+  const booking = rows[0];
+  if (!booking) throw new BookingError("not_found", "找不到此預約", 404);
+
+  if (booking.status === "completed") {
+    return booking; // idempotent
+  }
+  if (booking.status === "cancelled") {
+    throw new BookingError("cannot_complete", "已取消的預約無法標記完成", 400);
+  }
+
+  const updated = await db
+    .update(bookings)
+    .set({
+      status: "completed",
+      updatedAt: new Date(),
+    })
+    .where(eq(bookings.id, booking.id))
+    .returning();
+
+  // 🔔 推 LINE 通知（含優惠券連結 / 圖片、用 game_completed template）
+  if (input.sendNotification !== false && updated[0]) {
+    notifyGameCompleted(updated[0].id, {
+      actionUrl: input.customActionUrl,
+    }).catch((err) =>
+      console.error("[markBookingCompleted] notify failed:", err),
+    );
+  }
+
+  return updated[0]!;
+}
+
+export async function markBookingNoShow(bookingCode: string): Promise<Booking> {
+  const rows = await db
+    .select()
+    .from(bookings)
+    .where(eq(bookings.bookingCode, bookingCode))
+    .limit(1);
+  const booking = rows[0];
+  if (!booking) throw new BookingError("not_found", "找不到此預約", 404);
+
+  if (booking.status === "no_show") return booking;
+  if (booking.status === "cancelled") {
+    throw new BookingError("cannot_mark", "已取消的預約無法標記未到場", 400);
+  }
+  if (booking.status === "completed") {
+    throw new BookingError("cannot_mark", "已完成的預約無法標記未到場", 400);
+  }
+
+  const updated = await db
+    .update(bookings)
+    .set({
+      status: "no_show",
+      updatedAt: new Date(),
+    })
+    .where(eq(bookings.id, booking.id))
+    .returning();
+
+  return updated[0]!;
+}
