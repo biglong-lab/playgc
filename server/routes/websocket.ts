@@ -908,6 +908,47 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
+  // 🆕 2026-05-07 A4：把指定 user 從某 team 的 ws connections 中踢掉
+  // 用途：玩家被踢出隊伍（leaveTeam / removeMember）後立即斷 ws、避免幽靈占位
+  // 流程：
+  //   1. 找該 team 中該 userId 的所有 ws clients（一個 user 可能多裝置）
+  //   2. 先送 team_kicked 訊息（client 收後跳「你已被移出隊伍」）
+  //   3. 短延遲後 close ws（讓訊息來得及送）
+  //   4. 從 teamClients / clients map 移除
+  function kickUserFromTeam(teamId: string, userId: string, reason: string = "leave") {
+    const teamClientSet = teamClients.get(teamId);
+    if (!teamClientSet) return;
+    const targets: WebSocketClient[] = [];
+    teamClientSet.forEach((c) => {
+      if ((c as WebSocketClient).userId === userId) targets.push(c as WebSocketClient);
+    });
+    if (targets.length === 0) return;
+
+    const payload = JSON.stringify({
+      type: "team_kicked",
+      teamId,
+      userId,
+      reason,
+      message: "你已被移出隊伍",
+      timestamp: new Date().toISOString(),
+    });
+
+    targets.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        try { client.send(payload); } catch { /* ignore */ }
+      }
+      teamClientSet.delete(client);
+      // 短延遲後 close（讓 send 完成）
+      setTimeout(() => {
+        try { client.close(4000, reason); } catch { /* ignore */ }
+      }, 200);
+    });
+
+    if (teamClientSet.size === 0) {
+      teamClients.delete(teamId);
+    }
+  }
+
   function broadcastToMatch(matchId: string, message: WsBroadcastMessage) {
     const matchClientSet = matchClients.get(matchId);
     if (matchClientSet) {
