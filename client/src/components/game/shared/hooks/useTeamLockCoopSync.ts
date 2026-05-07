@@ -48,6 +48,8 @@ interface ServerLockState {
   attempts: number;
   is_unlocked: boolean;
   is_failed: boolean;
+  // 🆕 2026-05-07 A1：樂觀鎖 version
+  version?: number;
 }
 
 export function useTeamLockCoopSync({
