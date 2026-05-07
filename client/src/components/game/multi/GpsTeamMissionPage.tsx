@@ -11,7 +11,7 @@
 //
 // 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.4
 
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
@@ -23,6 +23,7 @@ import GpsTeamMission, {
   type TeammateLocation,
   type GpsTriggerMode,
 } from "./GpsTeamMission";
+import { useTeamPagePersistence } from "../shared/hooks/useTeamPagePersistence";
 import type { GpsMissionConfig } from "@shared/schema";
 
 export interface GpsTeamMissionPageProps {
@@ -33,7 +34,21 @@ export interface GpsTeamMissionPageProps {
   ) => void;
   sessionId: string;
   gameId: string;
+  /** 🆕 2026-05-07 A3：頁面 ID（持久化 reachedUserIds 用）*/
+  pageId: string;
 }
+
+/**
+ * 🆕 2026-05-07 A3：GpsTeamMission 持久化狀態
+ * reachedUserIds 用陣列存（JSON 友好、Set 不能直接序列化）
+ */
+interface GpsTeamMissionPersistState {
+  reachedUserIds: string[];
+}
+
+const DEFAULT_GPS_TEAM_STATE: GpsTeamMissionPersistState = {
+  reachedUserIds: [],
+};
 
 interface MyTeamResponse {
   id: string;
