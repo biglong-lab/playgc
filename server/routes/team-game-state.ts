@@ -127,9 +127,12 @@ export function registerTeamGameStateRoutes(app: Express, ctx: RouteContext): vo
 
         const stateJson = JSON.stringify(state);
 
+        // 🆕 2026-05-07 A2：用 RETURNING 看是否真的更新、衝突時回 409
+        let upsertResult: { rowCount?: number | null } | undefined;
+
         if (version !== undefined) {
           // 有 version：只在 version > current 時更新（防止舊狀態覆蓋）
-          await db.execute(sql`
+          upsertResult = await db.execute(sql`
             INSERT INTO team_game_states (team_id, session_id, page_id, component_type, state_json, version)
             VALUES (${teamId}, ${sessionId}, ${pageId}, ${type}, ${stateJson}::jsonb, ${version})
             ON CONFLICT (team_id, session_id, page_id, component_type) DO UPDATE
@@ -137,20 +140,34 @@ export function registerTeamGameStateRoutes(app: Express, ctx: RouteContext): vo
                   version = EXCLUDED.version,
                   updated_at = NOW()
               WHERE team_game_states.version < EXCLUDED.version
+            RETURNING id
           `);
         } else {
           // 沒有 version：直接覆寫 + version+1
-          await db.execute(sql`
+          upsertResult = await db.execute(sql`
             INSERT INTO team_game_states (team_id, session_id, page_id, component_type, state_json, version)
             VALUES (${teamId}, ${sessionId}, ${pageId}, ${type}, ${stateJson}::jsonb, 1)
             ON CONFLICT (team_id, session_id, page_id, component_type) DO UPDATE
               SET state_json = EXCLUDED.state_json,
                   version = team_game_states.version + 1,
                   updated_at = NOW()
+            RETURNING id
           `);
         }
 
         const saved = await fetchState(teamId, sessionId, pageId, type);
+
+        // 🆕 A2 樂觀鎖衝突檢查：rowCount 0 表示 version 不夠新、UPDATE 被 WHERE 擋
+        // 只在帶 version 時才檢（沒帶 version 是「直接覆寫」流程）
+        const rowCount = upsertResult?.rowCount ?? 0;
+        if (version !== undefined && rowCount === 0) {
+          return res.status(409).json({
+            message: "狀態已被隊友更新（version 過舊）、請拉取最新狀態後重試",
+            state: saved,
+            conflict: true,
+          });
+        }
+
         if (saved) {
           ctx.broadcastToTeam(teamId, {
             type: "team_state_updated",
