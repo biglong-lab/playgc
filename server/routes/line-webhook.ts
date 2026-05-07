@@ -489,8 +489,44 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
     return;
   }
 
-  // 一般訊息：echo bot + quick reply（admin 也方便直接點按鈕）
+  // 一般訊息：先 dispatcher 試各關鍵字、未命中再 echo
   const lineUserId = event.source?.userId;
+
+  // 📅 預約系統關鍵字：「開始遊戲」「我要玩」「玩遊戲」「來玩」
+  //    用 reply（不扣 quota）回玩家、含遊戲連結
+  if (lineUserId && /(開始遊戲|我要玩|玩遊戲|來玩|start game)/i.test(text)) {
+    try {
+      const { buildGameStartReply } = await import("../booking/booking-notifier");
+      const result = await buildGameStartReply(lineUserId);
+      if (result) {
+        await replyMessage({
+          accessToken: ACCESS_TOKEN,
+          replyToken,
+          messages: result.messages,
+        });
+        return;
+      }
+      // 沒找到近期預約 → 提醒先預約
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text:
+              "🤔 找不到您近期的預約。\n\n" +
+              "請先預約場次、活動開始時再傳「開始遊戲」喔！",
+          },
+        ],
+      });
+      return;
+    } catch (err) {
+      console.error("[line-webhook] game start dispatcher 失敗:", err);
+      // fall through to echo
+    }
+  }
+
+  // 預設 echo + admin quick reply
   const isAdmin = isLineUserAdmin(lineUserId);
   await replyMessage({
     accessToken: ACCESS_TOKEN,
