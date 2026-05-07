@@ -459,6 +459,8 @@ function App() {
   //   hook 程式碼已含 rate limit / dedup / fail-silent / keepalive 保險、
   //   後台 PlatformErrorLogs 等待此資料才能查 client crash）
   useErrorReport();
+  // 🆕 2026-05-07：初始化文字大小縮放（從 localStorage 讀、套到 :root --font-scale）
+  useFontScale();
 
   return (
     <ErrorBoundary>
