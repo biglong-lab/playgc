@@ -269,6 +269,7 @@ export default function PhotoMissionPage({
           }}
           onSwitchCamera={camera.switchCamera}
           facingMode={camera.facingMode}
+          stream={camera.stream}
         />
       )}
 
