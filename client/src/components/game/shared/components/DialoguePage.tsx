@@ -54,6 +54,9 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
     ((config as unknown as { typewriterSoundType?: TypewriterSoundType }).typewriterSoundType ?? "none");
   const playCharSound = useTypewriterSound(typewriterSoundType);
 
+  // 🆕 2026-05-07：對話音檔（角色配音）
+  const messageAudioRef = useRef<HTMLAudioElement | null>(null);
+
   const messages = config?.messages || [];
   const currentMessage = messages[currentMessageIndex] as DialogueMessage | undefined;
   const isLastMessage = currentMessageIndex === messages.length - 1;
