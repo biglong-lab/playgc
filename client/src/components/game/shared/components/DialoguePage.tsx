@@ -49,6 +49,11 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
   const [isTyping, setIsTyping] = useState(true);
   const [bubbleVisible, setBubbleVisible] = useState(false);
 
+  // 🆕 2026-05-07：打字機音效
+  const typewriterSoundType =
+    ((config as unknown as { typewriterSoundType?: TypewriterSoundType }).typewriterSoundType ?? "none");
+  const playCharSound = useTypewriterSound(typewriterSoundType);
+
   const messages = config?.messages || [];
   const currentMessage = messages[currentMessageIndex] as DialogueMessage | undefined;
   const isLastMessage = currentMessageIndex === messages.length - 1;
