@@ -8,6 +8,7 @@ import { checkAndUnlockAchievements } from "../services/battle-achievement-check
 import type { RouteContext } from "./types";
 import { z } from "zod";
 import { buildDisplayName } from "../utils/display-name";
+import { notifyBattleCompleted } from "../lib/internal-notifier";
 
 export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
   // ============================================================================
