@@ -425,6 +425,10 @@ app.use((req, res, next) => {
         startMonthlyResetScheduler();
         startRewardRetryWorker();
       }
+      // 🔔 Telegram boot notification（fire-and-forget）
+      import("./lib/internal-notifier")
+        .then((m) => m.notifyServerBoot())
+        .catch(() => {/* ignore */});
     },
   );
 })();
