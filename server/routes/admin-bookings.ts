@@ -31,6 +31,8 @@ import { requireAdminAuth, requirePermission } from "../adminAuth";
 import {
   cancelBooking,
   listBookings,
+  markBookingCompleted,
+  markBookingNoShow,
   BookingError,
 } from "../booking/booking-service";
 import {
