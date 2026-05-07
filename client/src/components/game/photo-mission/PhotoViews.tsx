@@ -279,51 +279,31 @@ export function CameraView({
       </div>
 
       <div
-        className="py-4 px-4 flex items-center justify-center gap-6 bg-black"
+        className="py-4 px-4 flex flex-col items-center gap-3 bg-black"
         style={{ paddingBottom: "max(1rem, env(safe-area-inset-bottom))" }}
       >
-        <Button
-          variant="outline"
+        {/* 🆕 2026-05-07：使用統一 CameraToolbar（閃光燈 / 拍照 / 切換 / 相簿）*/}
+        <CameraToolbar
+          stream={stream}
+          facingMode={facingMode}
+          onCapture={onCapture}
+          onSwitchCamera={onSwitchCamera}
+          onPickFromGallery={onPickFromGallery}
+          disabled={!cameraReady}
+        />
+
+        {/* 取消按鈕（保留、但放在 toolbar 下方變成次要動作）*/}
+        <button
+          type="button"
           onClick={onCancel}
           data-testid="button-cancel-camera"
-          className="min-h-12 px-5 bg-white/10 border-white/30 text-white hover:bg-white/20"
+          className="text-white/70 text-sm hover:text-white py-1 px-3"
         >
           取消
-        </Button>
-        {/* 📱 快門 80px 大圓形 — disabled 時明顯變灰 + 縮小 */}
-        <Button
-          size="lg"
-          onClick={onCapture}
-          disabled={!cameraReady}
-          className={`w-20 h-20 md:w-20 md:h-20 rounded-full shadow-lg active:scale-95 transition-all bg-white text-black hover:bg-white/90 ${
-            !cameraReady ? "opacity-30 scale-90 cursor-not-allowed" : ""
-          }`}
-          data-testid="button-capture"
-          title={!cameraReady ? "相機載入中，請稍候" : "按下拍照"}
-        >
-          <Camera className="w-9 h-9" />
-        </Button>
-        {/* 🆕 切換前後鏡頭 — 取代原本的相簿選擇（強制現場拍攝）*/}
-        {onSwitchCamera ? (
-          <Button
-            variant="outline"
-            onClick={onSwitchCamera}
-            data-testid="btn-camera-switch"
-            className="min-h-12 px-3 gap-1.5 bg-emerald-600/90 border-emerald-400/50 text-white hover:bg-emerald-700"
-            aria-label={isMirror ? "切到後鏡頭" : "切到前鏡頭"}
-            title={isMirror ? "切到後鏡頭" : "切到前鏡頭（自拍）"}
-          >
-            <RefreshCw className="w-5 h-5" />
-            <span className="text-xs font-medium hidden sm:inline">
-              {isMirror ? "後鏡頭" : "前鏡頭"}
-            </span>
-          </Button>
-        ) : (
-          <div className="min-h-12 w-12" /> // 保留版面對齊
-        )}
+        </button>
       </div>
 
-      <p className="text-center text-sm text-muted-foreground mt-2">
+      <p className="text-center text-sm text-muted-foreground mt-1 pb-2">
         {cameraReady
           ? "將拍攝對象對準框內，然後按下快門"
           : "⏳ 相機啟動中，快門暫不可用..."}
