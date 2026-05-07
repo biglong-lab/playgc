@@ -25,8 +25,14 @@ export async function ensureTeamLockCoopSchema(): Promise<void> {
       attempts INTEGER NOT NULL DEFAULT 0,
       is_unlocked BOOLEAN NOT NULL DEFAULT FALSE,
       is_failed BOOLEAN NOT NULL DEFAULT FALSE,
+      version INTEGER NOT NULL DEFAULT 1,
       updated_at TIMESTAMP NOT NULL DEFAULT NOW()
     )
+  `);
+  // 🆕 2026-05-07：A1 加 version 欄位（樂觀鎖、解 R1 race condition）
+  // 既有 table 沒此欄位、ALTER 補上（IF NOT EXISTS）
+  await db.execute(sql`
+    ALTER TABLE team_lock_states ADD COLUMN IF NOT EXISTS version INTEGER NOT NULL DEFAULT 1
   `);
   await db.execute(sql`
     CREATE UNIQUE INDEX IF NOT EXISTS uniq_team_lock_states
