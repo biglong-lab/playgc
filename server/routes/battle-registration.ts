@@ -6,6 +6,11 @@ import { battleStorageMethods, getUpcomingRegistrationsWithDetails } from "../st
 import type { AuthenticatedRequest } from "./types";
 import { insertRegistrationSchema, insertPremadeGroupSchema } from "@shared/schema";
 import { z } from "zod";
+import {
+  notifyBattleRegistered,
+  notifyBattleSlotConfirmed,
+  notifyBattleSlotFull,
+} from "../lib/internal-notifier";
 
 /** 產生 6 碼英數大寫邀請碼 */
 function generateAccessCode(): string {
