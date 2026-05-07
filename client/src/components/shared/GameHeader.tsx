@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, MessageCircle, Map, Backpack, Star } from "lucide-react";
+import { ChevronLeft, MessageCircle, Map, Backpack, Star, MoreVertical } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import FontScaleSwitcher from "./FontScaleSwitcher";
 
 interface GameHeaderProps {
   title: string;
