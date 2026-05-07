@@ -28,6 +28,16 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
   const [errorDetail, setErrorDetail] = useState<string>("");
   const retryCountRef = useRef(0);
 
+  // 🆕 2026-05-07 K.3：影片播放時 BGM 自動減弱、影片結束/離開時恢復
+  const bgm = useBgmPlayer();
+  useEffect(() => {
+    bgm.duck();
+    return () => {
+      bgm.unduck();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const videoUrl = (config.videoUrl || "").trim();
   const hasValidUrl = videoUrl.length > 0;
   // forceWatch=true 時禁止跳過（影片結束才能繼續）
