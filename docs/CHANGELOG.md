@@ -5,6 +5,32 @@
 
 ---
 
+## 2026-05-08
+
+### 📅 預約系統 + LINE 通知 + Telegram 內部通知 + Rich Menu（Phase δ W1-W3）
+**主題**：完整預約迴圈：客戶預約 → 30 分前 LINE 提醒 → 現場「開始遊戲」關鍵字 → 結束送禮
+**狀態**：🟢 完整鏈路上線、生產 commit `0e45a875`、賈村已 init
+**部署**：生產 schema migrated + jiacun init + TZ=Asia/Taipei + Telegram chat_id 5858549388
+
+**核心交付**：
+- DB：4 個新表（booking_configs / bookings / booking_blackouts / booking_notification_templates）
+- 客戶端：`/book/:fieldCode` LIFF 預約頁（14 天 picker / slot grid / 人數 / 備註）
+- Admin 端：`/admin/bookings` 4 tab（列表 / 設定 / 黑名單 / 通知模板）
+- LINE 通知 service：5 種訊息（confirmed / reminder cron / game start reply / completed / cancelled）
+- 規則引擎：rule-based + 優先級（特定日 100 > 區間 50 > 平假日 0）
+- Rich Menu：6 鍵 postback dispatcher（reply 不扣 quota）
+- Telegram bot：10 個事件（boot / booking / payment / smoke / 早報 / quota 告警）
+
+**LINE quota 設計**（每客戶 ≤ 3 push）：
+- booking_confirmed = 1 push / reminder_30min = 1 push / game_completed = 1 push
+- game_start_keyword = 0（reply）
+- → 200 free / 月 ≈ 67-200 客戶/月
+
+**16 + 14 endpoints + 3 LIFF 頁面 + admin 管理頁**
+**詳情** → [changes/2026-05-07-coupon-integration-spec.md](changes/2026-05-07-coupon-integration-spec.md)
+
+---
+
 ## 2026-05-07
 
 ### 🎯 軟分流階段 1 — admin editor 入口分流（B2 架構重做）
