@@ -106,8 +106,8 @@ export default function GameHeader({
           )}
 
           {onChat && (
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               size="icon"
               onClick={onChat}
               data-testid="button-chat"
@@ -115,6 +115,26 @@ export default function GameHeader({
               <MessageCircle className="w-5 h-5" />
             </Button>
           )}
+
+          {/* 🆕 2026-05-07：偏好設定 popover（文字大小切換、未來可加更多）*/}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                data-testid="button-game-prefs"
+                aria-label="偏好設定"
+              >
+                <MoreVertical className="w-5 h-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-auto p-3">
+              <div className="space-y-2">
+                <div className="text-xs font-medium text-muted-foreground">文字大小</div>
+                <FontScaleSwitcher showLabel />
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </header>
