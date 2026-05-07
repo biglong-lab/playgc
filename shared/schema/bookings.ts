@@ -55,25 +55,82 @@ export interface BookingSlotWindow {
 }
 
 /**
- * 場域預約時段模板
+ * 規則適用範圍 — 哪些日期 match 此規則
  *
- * - weekday/weekend：基本兩種模板
- * - customDays：特定日期覆寫（例如國定假日特殊安排）
- * - blackoutDates：完全關閉（休假日）
+ * 多個 condition 同時設定時、屬於 OR 關係（任一 match 即套用）
+ *
+ * 範例：
+ *   - "週一到週五同樣時段" → { weekdays: [1,2,3,4,5] }
+ *   - "六日同樣時段"        → { weekdays: [0, 6] }
+ *   - "暑假特別時段"        → { dateRanges: [{ from: "2026-07-01", to: "2026-08-31" }] }
+ *   - "週三+特定幾天"       → { weekdays: [3], specificDates: ["2026-05-15", "2026-06-01"] }
+ *   - "整個 5 月"           → { dateRanges: [{ from: "2026-05-01", to: "2026-05-31" }] }
+ */
+export interface BookingApplyRange {
+  /** 個別週天：0=週日, 1=週一, ..., 6=週六 */
+  weekdays?: number[];
+  /** 日期區間（YYYY-MM-DD）*/
+  dateRanges?: { from: string; to: string }[];
+  /** 特定日期（YYYY-MM-DD）— 用於日曆勾選的多日選擇 */
+  specificDates?: string[];
+  /** 國定假日是否視為週六日的範疇（影響 weekdays:[0,6] 判定）*/
+  treatHolidaysAsWeekend?: boolean;
+}
+
+/**
+ * 單一預約規則
+ *
+ * 業主可建多條規則、用 priority 解決衝突。
+ * 例：
+ *   - rule A: 平日 14-18 / 12 人 / NT$300（priority 0、預設）
+ *   - rule B: 假日 10-18 / 12 人 / NT$500（priority 0、預設）
+ *   - rule C: 暑假 (7/1-8/31) 全天 9-21 / 16 人 / NT$700（priority 50、覆蓋）
+ *   - rule D: 老闆生日 8/15 完全關閉（priority 100）
+ *
+ * 同一天多條規則 match 時、取 priority 最高者。
+ */
+export interface BookingRule {
+  /** 規則唯一 ID（UI 用、可隨機產）*/
+  id: string;
+  /** 規則名稱（業主自取、UI 顯示用）*/
+  name: string;
+  /** 優先級（數字越大越優先；同優先級依新 → 舊）*/
+  priority: number;
+  /** 是否啟用（暫關此規則但不刪）*/
+  enabled: boolean;
+  /** 適用範圍 */
+  applyTo: BookingApplyRange;
+  /** 此規則的時段安排（空陣列 = 此天完全關閉、不開放預約）*/
+  slots: BookingSlotWindow[];
+  /** 此規則的單梯費用（覆蓋 booking_configs.pricePerSlotCents；undefined = 用 config 預設）*/
+  pricePerSlotCentsOverride?: number;
+  /** 此規則的容量（覆蓋 slots 內的 capacity；undefined = 用 slots 各自設定）*/
+  capacityOverride?: number;
+  /** 業主備註（私人）*/
+  adminNotes?: string;
+}
+
+/**
+ * 場域預約時段模板（rule-based）
+ *
+ * 設計目的：支援業主彈性自訂、UI 對應日曆勾選 + 批次設定
+ *
+ * 解析優先序（給定日期 X）：
+ *   1. blackoutDates 包含 X → 關閉
+ *   2. 過濾 enabled rules 中 applyTo match X 的
+ *   3. 取 priority 最高者（同 priority 取最後新增）
+ *   4. 若無任何 rule match → 此天無時段（不開放）
+ *   5. 若 match rule 的 slots 為空 → 此天關閉（rule 主動標記休假日）
  */
 export interface BookingScheduleTemplate {
-  /** 平日時段（週一到週五） */
-  weekday: BookingSlotWindow[];
-  /** 假日時段（週六、週日） */
-  weekend: BookingSlotWindow[];
-  /** 國定假日視為假日（true）或平日（false） */
-  treatHolidaysAsWeekend?: boolean;
-  /** 特定日期專案安排：{ "2026-05-15": [...] } */
-  customDays?: Record<string, BookingSlotWindow[]>;
-  /** 完全關閉的日期 ["2026-05-10", ...] */
+  /** 規則陣列（業主在 admin 後台用日曆勾選 + 批次設定產生）*/
+  rules: BookingRule[];
+  /** 完全關閉的特定日期（休假、突發狀況、優先度最高）*/
   blackoutDates?: string[];
-  /** 賈村預設模組可附帶其他需求注記 */
+  /** 全域備註（顯示於預約頁底部）*/
   notes?: string;
+  /** schema 版本 — 未來擴充時 backward-compat 標記 */
+  version?: number;
 }
 
 // ============================================================================
