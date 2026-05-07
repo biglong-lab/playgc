@@ -156,6 +156,14 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         timeLimit: 30,
         rewardPoints: 15,
       };
+    // 🆕 2026-05-07：手電筒元件
+    case "flashlight":
+      return {
+        title: "點亮手電筒",
+        description: "請點亮手電筒、看清楚周圍環境",
+        requiredOnSeconds: 0, // 0 = 點一下就完成
+        rewardPoints: 5,
+      };
     case "vote":
     case "vote_team": // 多人版共用 config schema
       return {
