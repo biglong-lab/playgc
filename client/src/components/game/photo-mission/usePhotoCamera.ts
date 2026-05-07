@@ -532,6 +532,8 @@ export function usePhotoCamera(): PhotoCameraState {
     handleFileUpload,
     cancelCamera,
     retake,
+    // 🆕 2026-05-07：暴露 stream 給 CameraToolbar 算 torch capability
+    stream,
   };
 }
 
