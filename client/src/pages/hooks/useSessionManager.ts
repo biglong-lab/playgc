@@ -263,5 +263,7 @@ export function useSessionManager({
     setState,
     createSessionMutation,
     resetAndCreateNew,
+    // 🆕 2026-05-07：暴露 hasRestoredProgress 給 GamePlay 顯示 ResumeDialog
+    hasRestoredProgress,
   };
 }
