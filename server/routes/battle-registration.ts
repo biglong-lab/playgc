@@ -12,6 +12,16 @@ import {
   notifyBattleSlotFull,
 } from "../lib/internal-notifier";
 
+/** 組合 slotDate + startTime 成 Date（用於 LINE / Telegram 通知顯示）*/
+function combineSlotDateTime(slot: { slotDate: string | Date; startTime: string }): Date {
+  const dateStr =
+    typeof slot.slotDate === "string"
+      ? slot.slotDate
+      : slot.slotDate.toISOString().slice(0, 10);
+  const timeStr = String(slot.startTime).slice(0, 5); // "HH:MM"
+  return new Date(`${dateStr}T${timeStr}:00+08:00`);
+}
+
 /** 產生 6 碼英數大寫邀請碼 */
 function generateAccessCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
