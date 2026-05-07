@@ -341,7 +341,8 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   const renderImageLeftLayout = () => (
     <div className="min-h-full flex flex-col md:flex-row relative overflow-hidden" onClick={tryAutoPlayAudio}>
       {config.backgroundImage && (
-        <div className="relative w-full md:w-1/2 h-48 md:h-full">
+        // 🆕 2026-05-07 RWD：手機 aspect-video 不裁切 / 桌面用 1/2 寬度填滿
+        <div className="relative w-full md:w-1/2 aspect-video md:aspect-auto md:h-full bg-muted">
           <OptimizedImage
             src={config.backgroundImage}
             alt=""
