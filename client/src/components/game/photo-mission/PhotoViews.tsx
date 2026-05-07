@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { PhotoMissionConfig } from "@shared/schema";
 import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
+import CameraToolbar from "./CameraToolbar";
 
 // ===========================================
 // 指令畫面 - 顯示任務說明 + 拍照/相簿按鈕
