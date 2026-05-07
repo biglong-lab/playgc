@@ -99,6 +99,7 @@ export function useTeamWebSocket({
   onGraceExpired,
   onLeaderDecide,
   onReadyStatusChanged,
+  onSelfKicked,
 }: UseTeamWebSocketOptions) {
   const wsRef = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
