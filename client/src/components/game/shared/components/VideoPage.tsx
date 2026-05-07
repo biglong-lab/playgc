@@ -4,6 +4,7 @@ import { Progress } from "@/components/ui/progress";
 import { Play, Pause, SkipForward, ChevronRight, Volume2, VolumeX } from "lucide-react";
 import type { VideoConfig } from "@shared/schema";
 import GameErrorView from "../../photo-mission/GameErrorView";
+import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 
 interface VideoPageProps {
   config: VideoConfig;
