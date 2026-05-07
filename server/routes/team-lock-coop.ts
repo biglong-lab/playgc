@@ -117,7 +117,7 @@ export function registerTeamLockCoopRoutes(app: Express, ctx: RouteContext): voi
         if (!parsed.success) return res.status(400).json({ message: "參數錯誤" });
         const userId = req.user?.claims?.sub;
         if (!userId) return res.status(401).json({ message: "請先登入" });
-        const { teamId, sessionId, pageId, action, payload } = parsed.data;
+        const { teamId, sessionId, pageId, action, payload, expectedVersion } = parsed.data;
         if (!(await isTeamMember(teamId, userId))) return res.status(403).json({ message: "非隊伍成員" });
 
         // 先確保記錄存在
@@ -127,26 +127,65 @@ export function registerTeamLockCoopRoutes(app: Express, ctx: RouteContext): voi
           ON CONFLICT (team_id, session_id, page_id) DO NOTHING
         `);
 
+        // 🆕 2026-05-07 A1：樂觀鎖
+        //   - 帶 expectedVersion → WHERE version=expectedVersion 防 race
+        //   - 沒帶（舊 client）→ 走原邏輯（盲寫）但 log warn
+        //   - UPDATE 影響 0 row 表示 version 不對 → 回 409 + currentState
+        let updateResult: { rowCount?: number | null } | undefined;
+
         if (action === "code" && payload?.code !== undefined) {
-          await db.execute(sql`
-            UPDATE team_lock_states SET shared_code=${payload.code}, updated_at=NOW()
-            WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
-          `);
+          if (expectedVersion !== undefined) {
+            updateResult = await db.execute(sql`
+              UPDATE team_lock_states SET shared_code=${payload.code}, version=version+1, updated_at=NOW()
+              WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
+                AND version=${expectedVersion}
+            `);
+          } else {
+            console.warn("[team-lock-coop] update 沒帶 expectedVersion、舊 client 盲寫 race risk");
+            updateResult = await db.execute(sql`
+              UPDATE team_lock_states SET shared_code=${payload.code}, version=version+1, updated_at=NOW()
+              WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
+            `);
+          }
         } else if (action === "attempt" && payload?.attempts !== undefined) {
-          await db.execute(sql`
-            UPDATE team_lock_states SET attempts=${payload.attempts}, updated_at=NOW()
-            WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
-          `);
+          if (expectedVersion !== undefined) {
+            updateResult = await db.execute(sql`
+              UPDATE team_lock_states SET attempts=${payload.attempts}, version=version+1, updated_at=NOW()
+              WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
+                AND version=${expectedVersion}
+            `);
+          } else {
+            updateResult = await db.execute(sql`
+              UPDATE team_lock_states SET attempts=${payload.attempts}, version=version+1, updated_at=NOW()
+              WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
+            `);
+          }
         } else if (action === "unlocked") {
-          await db.execute(sql`
-            UPDATE team_lock_states SET is_unlocked=TRUE, updated_at=NOW()
+          // unlocked / failed 是 terminal state、不檢樂觀鎖（誰先到誰算）
+          updateResult = await db.execute(sql`
+            UPDATE team_lock_states SET is_unlocked=TRUE, version=version+1, updated_at=NOW()
             WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
           `);
         } else if (action === "failed") {
-          await db.execute(sql`
-            UPDATE team_lock_states SET is_failed=TRUE, updated_at=NOW()
+          updateResult = await db.execute(sql`
+            UPDATE team_lock_states SET is_failed=TRUE, version=version+1, updated_at=NOW()
             WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
           `);
+        }
+
+        // 🆕 樂觀鎖衝突檢查：UPDATE 0 row 表示 version 不對
+        const rowCount = updateResult?.rowCount ?? 0;
+        if (
+          expectedVersion !== undefined &&
+          (action === "code" || action === "attempt") &&
+          rowCount === 0
+        ) {
+          const latest = await fetchState(teamId, sessionId, pageId);
+          return res.status(409).json({
+            message: "狀態已被隊友更新、請拉取最新狀態後重試",
+            state: latest,
+            conflict: true,
+          });
         }
 
         const state = await fetchState(teamId, sessionId, pageId);
