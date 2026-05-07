@@ -223,6 +223,22 @@ export default function BookPage() {
     );
   }
 
+  // 場域 config 查不到 → 場域不存在 / 未開通預約
+  if (!configLoading && config === null && !configError) {
+    return (
+      <div className="container-player py-8 text-center">
+        <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+        <h2 className="text-lg font-semibold mb-2">此場域尚未開通預約功能</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          場域代碼：<code>{fieldId}</code>
+        </p>
+        <p className="text-xs text-muted-foreground">
+          若您是業主、請至 admin 後台「預約管理」初始化此場域。
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="container-player py-4 pb-24">
       {/* Header */}
