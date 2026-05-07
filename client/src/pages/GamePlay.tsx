@@ -169,6 +169,18 @@ export default function GamePlay() {
   const totalPages = activePages.length;
   const progressPercent = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
 
+  // 🆕 2026-05-07 K.2：玩家進場時啟動 game.bgmUrl 的 BGM
+  const bgm = useBgmPlayer();
+  useEffect(() => {
+    const url = (game as { bgmUrl?: string | null } | undefined)?.bgmUrl ?? null;
+    bgm.setBgmUrl(url);
+    // 玩家離開 game（unmount）→ 停止 BGM
+    return () => {
+      bgm.setBgmUrl(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [(game as { bgmUrl?: string | null } | undefined)?.bgmUrl]);
+
   // 🆕 Phase 3：首次掛載時 prime SpeechSynthesis voices（Chrome 需要）
   useEffect(() => {
     primeVoices();
