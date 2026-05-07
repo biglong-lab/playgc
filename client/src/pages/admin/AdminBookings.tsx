@@ -174,6 +174,43 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
     },
   });
 
+  const completeMutation = useMutation({
+    mutationFn: async ({ code, customActionUrl }: { code: string; customActionUrl?: string }) => {
+      return await fetchWithAdminAuth(`/api/admin/bookings/${code}/mark-completed`, {
+        method: "POST",
+        body: JSON.stringify({ sendNotification: true, customActionUrl }),
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "已標記完成、玩家已收到 LINE 訊息（含優惠券連結）" });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err) =>
+      toast({
+        title: "標記失敗",
+        description: err instanceof Error ? err.message : "",
+        variant: "destructive",
+      }),
+  });
+
+  const noShowMutation = useMutation({
+    mutationFn: async (code: string) => {
+      return await fetchWithAdminAuth(`/api/admin/bookings/${code}/mark-no-show`, {
+        method: "POST",
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "已標記未到場" });
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err) =>
+      toast({
+        title: "標記失敗",
+        description: err instanceof Error ? err.message : "",
+        variant: "destructive",
+      }),
+  });
+
   return (
     <Card>
       <CardHeader>
