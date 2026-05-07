@@ -305,6 +305,12 @@ export function registerLineWebhookRoutes(app: Express) {
 async function handleEvent(event: LineWebhookEvent): Promise<void> {
   if (!ACCESS_TOKEN) return;
 
+  // ✨ 2026-05-08：rich menu postback dispatcher（W3 D5）
+  if (event.type === "postback" && event.replyToken && event.postback?.data) {
+    await handleRichMenuPostback(event);
+    return;
+  }
+
   // 目前只處理 text message
   if (event.type !== "message" || event.message?.type !== "text") {
     console.log(`[line-webhook] 略過 ${event.type} event`);
