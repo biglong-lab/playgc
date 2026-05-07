@@ -484,6 +484,7 @@ function App() {
                 <AppUpdateChecker />
                 <WelcomeSquadsTrigger />
               </TooltipProvider>
+              </BgmPlayerProvider>
             </I18nProvider>
           </FieldThemeProvider>
         </AuthProvider>
