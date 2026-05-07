@@ -28,6 +28,7 @@ import {
 import {
   notifyBookingConfirmed,
   notifyBookingCancelled,
+  notifyGameCompleted,
 } from "./booking-notifier";
 import {
   notifyBookingCreated as tgNotifyBookingCreated,
