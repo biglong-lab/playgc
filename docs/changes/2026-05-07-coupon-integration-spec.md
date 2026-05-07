@@ -398,11 +398,84 @@ CREATE TABLE vouchers (
 
 ---
 
-## 13. 變動紀錄
+## 13. 對方平台問題回覆（v1.1 補充）
+
+對方提了 6 個對接問題、我方答覆如下。
+
+### Q1: L2 通路型 vs L3 深度整合型 → API Key 還是 OAuth？
+
+**我方屬於 L2 通路型** — 不直接管理商家、僅負責依玩家行為觸發發券。
+
+→ **採 API Key**、雙方互發一把（我方呼叫 issue API、對方呼叫 webhook）。
+
+### Q2: 發券模式 → claim_token 還是 grant？
+
+**第一期採 grant 模式**：
+- 我方產生 `voucher_token`、呼叫 issue API 直接帶 template_id
+- 對方產生 voucher_url + QR、回我方
+- 我方推 LINE 把 voucher_url 給玩家
+
+不採 claim_token、因為玩家獲券 100% 由遊戲事件即時觸發、無批量 / 離線需求。
+
+未來「活動現場大量發 QR 讓人領」場景再加 claim_token（第二期以後）。
+
+### Q3: Webhook 事件清單 → 哪些 / 優先序
+
+**第一期必要**：
+- `redeemed` — 兌換完成（推 LINE 通知玩家、紀錄商業迴圈）
+- `expired` — 過期（對帳用）
+
+**第二期擴充**：
+- `cancelled` / `refunded` / `failed`
+
+簽章機制 + 重試政策見本文 §3.3 / §5.5。
+
+### Q4: 預期發券量級
+
+| 期間 | 月發券 | 月兌換（假設 50%）|
+|------|-------|------------------|
+| 第 1 個月（上線）| ~50 張 | ~25 張 |
+| 第 3 個月 | ~200 張 | ~100 張 |
+| 第 6 個月 | ~700 張 | ~350 張 |
+| 第 12 個月（樂觀）| ~1500 張 | ~750 張 |
+
+每秒 < 1 req/sec、burst 建議 ~10 req/sec。基礎設施規格不需高。
+
+### Q5: 白標 / Widget？
+
+**第一期不需要**。玩家從 LINE 點 voucher_url 跳對方平台看券即可。
+
+未來可能需要的（不急、第二期）：
+- 「列出某 voucher_token list 持有的所有券」API
+  → 我方自組「我的券包」頁面在 game.homi.cc 顯示
+- 不需要 iframe / JS widget
+
+### Q6: 對帳頻率與格式
+
+**頻率**：月對帳（每月 1 號出上月對帳檔）
+
+**最低需求 — API**：
+```http
+GET /api/v1/reconciliation?from=YYYY-MM-DD&to=YYYY-MM-DD
+```
+
+**欄位**：voucher_token / template_id / issued_at / valid_until / status / redeemed_at / merchant_id / merchant_name / amount
+
+**理想需求**：加上 dashboard 下載 CSV 按鈕（人工查方便）。
+
+**對帳邏輯**：
+- 我方發出 N 張 vs 對方收到 N 張 → 抓 missing
+- 對方兌換 M 張 vs 我方 webhook 收 M' 張 → 抓 webhook 漏收
+- 過期 P 張、雙方狀態應一致
+
+---
+
+## 14. 變動紀錄
 
 | 版本 | 日期 | 變動 |
 |------|------|------|
-| v1 (草案) | 2026-05-07 | 初版、待對方平台 review |
+| v1（草案）| 2026-05-07 | 初版、待對方平台 review |
+| v1.1 | 2026-05-07 | 新增 §13 — 答覆對方平台 6 個對接問題 |
 
 ---
 
