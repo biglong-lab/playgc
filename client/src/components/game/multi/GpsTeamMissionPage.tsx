@@ -94,6 +94,36 @@ export default function GpsTeamMissionPage({
 
   const teamId = myTeam?.id;
   const myUserId = user?.id ?? "";
+
+  // 🆕 2026-05-07 A3：團隊持久化 reachedUserIds（解 R4：戶外活動重整不丟進度）
+  const persistence = useTeamPagePersistence<GpsTeamMissionPersistState>({
+    teamId: teamId ?? "",
+    sessionId,
+    pageId,
+    componentType: "gps_team_mission",
+    defaultState: DEFAULT_GPS_TEAM_STATE,
+    enabled: !!teamId && !!user,
+  });
+
+  // 🆕 包裝 onComplete：完成時把 myUserId 加進 reachedUserIds（DB 持久化）
+  // 玩家手機重整 → 載入 reachedUserIds → 不從零再跑一次
+  const handleComplete = useCallback(
+    (
+      reward?: { points?: number; items?: string[] },
+      nextPageId?: string,
+    ) => {
+      if (myUserId && persistence.isLoaded) {
+        const current = persistence.state.reachedUserIds ?? [];
+        if (!current.includes(myUserId)) {
+          void persistence.updateState({
+            reachedUserIds: [...current, myUserId],
+          });
+        }
+      }
+      onComplete(reward, nextPageId);
+    },
+    [myUserId, persistence, onComplete],
+  );
   const myDisplayName = useMemo(() => {
     if (!user) return "我";
     const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
