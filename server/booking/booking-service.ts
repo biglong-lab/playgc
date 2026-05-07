@@ -342,6 +342,14 @@ export async function cancelBooking(input: CancelBookingInput): Promise<Booking>
     })
     .where(eq(bookings.id, booking.id))
     .returning();
+
+  // 🔔 admin 取消才推播玩家（自助取消他自己知道、不必再通知）
+  if (input.cancelBy.type === "admin" && updated[0]) {
+    notifyBookingCancelled(updated[0]).catch((err) =>
+      console.error("[cancelBooking] notify failed:", err),
+    );
+  }
+
   return updated[0]!;
 }
 
