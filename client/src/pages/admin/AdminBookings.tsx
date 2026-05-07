@@ -489,15 +489,16 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
           />
         </div>
 
-        <details className="border rounded p-3 text-sm">
-          <summary className="cursor-pointer font-medium">場次模板（schedule_template）</summary>
-          <pre className="text-xs mt-2 bg-muted p-2 rounded overflow-x-auto">
-            {JSON.stringify(data.scheduleTemplate, null, 2)}
-          </pre>
-          <p className="text-xs text-muted-foreground mt-2">
-            ※ 完整月曆勾選編輯器（W1 D5 開發中）。目前需 SQL 直接編輯或用 PUT API。
-          </p>
-        </details>
+        <div className="border-t pt-4">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            📅 場次規則編輯器
+          </h3>
+          <ScheduleEditor
+            template={data.scheduleTemplate as ScheduleTemplate}
+            onChange={(t) => updateMutation.mutate({ scheduleTemplate: t as unknown as ConfigRow["scheduleTemplate"] })}
+            isSaving={updateMutation.isPending}
+          />
+        </div>
       </CardContent>
     </Card>
   );
