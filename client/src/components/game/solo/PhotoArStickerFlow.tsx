@@ -103,9 +103,12 @@ function computeStickerRect(
   canvasH: number,
   stickerNaturalRatio: number,  // w/h
 ): { x: number; y: number; w: number; h: number } {
+  // 🆕 2026-05-07：fixed position 模式下、sizeRatio cap 到 1.0（避免超出 canvas）
+  // face tracking 模式（用 anchorW）才允許 >1.0（相對臉部大小）
+  const ratio = Math.min(sizeRatio, 1.0);
   // 用短邊計算寬度，保持比例
   const shortSide = Math.min(canvasW, canvasH);
-  const w = shortSide * sizeRatio;
+  const w = shortSide * ratio;
   const h = w / stickerNaturalRatio;
   const margin = shortSide * 0.05;
 
