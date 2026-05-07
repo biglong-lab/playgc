@@ -56,6 +56,8 @@ import { registerRevenueRoutes } from "./revenue";
 import { registerFieldRoutes } from "./field";
 import { registerApplicationRoutes } from "./applications";
 import { registerFieldMembershipRoutes } from "./field-memberships";
+import { registerBookingRoutes } from "./bookings";
+import { registerAdminBookingRoutes } from "./admin-bookings";
 import { registerWalkieRoutes } from "./walkie";
 import { registerAdminWalkieRoutes } from "./admin-walkie";
 import { registerClientLogsRoutes, startClientLogsCleanup } from "./client-logs";
