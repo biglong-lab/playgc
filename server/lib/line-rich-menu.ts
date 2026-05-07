@@ -38,10 +38,10 @@ interface RichMenuButton {
 }
 
 const BOOKING_BUTTONS: RichMenuButton[] = [
-  { action: "booking_book", emoji: "📅", label: "我要預約", hint: "選日期 / 時段", bgColor: "#3b82f6" },
+  { action: "booking_book", emoji: "📅", label: "預約場次", hint: "體驗活動", bgColor: "#3b82f6" },
+  { action: "battle_register", emoji: "🎯", label: "水彈報名", hint: "PK 賽事", bgColor: "#ef4444" },
+  { action: "game_start", emoji: "🎮", label: "開始遊戲", hint: "現場進場後", bgColor: "#10b981" },
   { action: "booking_my", emoji: "🎫", label: "我的預約", hint: "查看 / 取消", bgColor: "#8b5cf6" },
-  { action: "game_start", emoji: "🎮", label: "開始遊戲", hint: "現場進場後使用", bgColor: "#10b981" },
-  { action: "points_my", emoji: "⭐", label: "我的點數", hint: "累積 / 兌換", bgColor: "#f59e0b" },
   { action: "coupons_my", emoji: "🎁", label: "我的優惠券", hint: "查看券包", bgColor: "#ec4899" },
   { action: "help", emoji: "❓", label: "客服 / 說明", hint: "問題反映", bgColor: "#6b7280" },
 ];
