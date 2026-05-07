@@ -72,12 +72,16 @@ if (typeof window !== "undefined" && !localStorage.getItem(CACHE_PURGE_FLAG)) {
 //   3. 每 60 秒定期檢查
 //   任一時機偵測到 server commit 不符 → 清快取 reload
 const checkVersion = async () => {
-  if (CLIENT_COMMIT === "unknown") return;
+  // 🆕 2026-05-07：CLIENT_COMMIT === "unknown" 也檢查
+  //   原本這行是 "unknown 時直接 return"、結果舊版 client（之前 deploy 漏注入 GIT_SHA）
+  //   永遠卡在 "unknown"、永遠不檢查更新、被 AppUpdateChecker 的 toast 一直騷擾。
+  //   改成：unknown 時也比對；若 server 是真實 commit 就視為版本不符、自動 reload。
   try {
     const res = await fetch("/api/version", { cache: "no-store" });
     if (!res.ok) return;
     const { commit: serverCommit } = await res.json();
-    if (!serverCommit || serverCommit === CLIENT_COMMIT) {
+    if (!serverCommit || serverCommit === "unknown") return; // server 也是 unknown → 沒法判斷
+    if (serverCommit === CLIENT_COMMIT) {
       localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
       sessionStorage.removeItem("chito_version_reloaded");
       return;
@@ -103,7 +107,7 @@ const checkVersion = async () => {
   }
 };
 
-if (typeof window !== "undefined" && CLIENT_COMMIT !== "unknown") {
+if (typeof window !== "undefined") {
   // 1. 啟動後 1 秒檢查
   setTimeout(checkVersion, 1000);
   // 2. 每 60 秒檢查一次（使用者持續用 app 也能自動更新）
