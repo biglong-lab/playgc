@@ -141,6 +141,35 @@ export default function GameFormDialog({
               />
             </div>
           </div>
+
+          {/* 🆕 2026-05-07 BGM：整場背景音樂 URL */}
+          <div className="space-y-2 pt-3 border-t">
+            <Label htmlFor="bgmUrl" className="flex items-center gap-1">
+              🎵 整場 BGM 音樂網址
+              <span className="text-xs text-muted-foreground font-normal">（選填）</span>
+            </Label>
+            <Input
+              id="bgmUrl"
+              type="url"
+              value={formData.bgmUrl}
+              onChange={(e) => setFormData({ ...formData, bgmUrl: e.target.value })}
+              placeholder="https://res.cloudinary.com/.../audio.mp3"
+              data-testid="input-bgm-url"
+            />
+            <p className="text-xs text-muted-foreground">
+              玩家進場自動播放、影片元件時自動減弱、玩家可手動靜音
+            </p>
+            {formData.bgmUrl && (
+              <audio
+                controls
+                src={formData.bgmUrl}
+                className="w-full mt-2"
+                preload="none"
+                data-testid="audio-bgm-preview"
+              />
+            )}
+          </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onReset}>
               取消
