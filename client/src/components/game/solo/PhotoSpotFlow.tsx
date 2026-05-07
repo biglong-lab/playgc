@@ -360,6 +360,7 @@ export default function PhotoSpotFlow({
         onRestart={() => camera.startCamera()}
         onSwitchCamera={camera.switchCamera}
         facingMode={camera.facingMode}
+        stream={camera.stream}
       />
     );
   }
