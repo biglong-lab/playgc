@@ -187,6 +187,10 @@ const PitchDeck = lazy(() => import("@/pages/PitchDeck"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
 // 📖 ApiDocs 公開 API 文件頁（W11 D4）
 const ApiDocs = lazy(() => import("@/pages/ApiDocs"));
+// 📅 預約系統（Phase δ W1 — 2026-05-07）
+const BookPage = lazy(() => import("@/pages/booking/BookPage"));
+const BookDonePage = lazy(() => import("@/pages/booking/BookDonePage"));
+const MyBookingsPage = lazy(() => import("@/pages/booking/MyBookingsPage"));
 // 📱 PlayLiff LINE LIFF 玩家入口（W14 D1）
 const PlayLiff = lazy(() => import("@/pages/PlayLiff"));
 // ❓ Faq 公開常見問題頁（W17 D2）
