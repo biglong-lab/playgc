@@ -137,6 +137,7 @@ export function useTeamWebSocket({
     onGraceExpired,
     onLeaderDecide,
     onReadyStatusChanged,
+    onSelfKicked,
   });
   useEffect(() => {
     callbacksRef.current = {
@@ -154,8 +155,9 @@ export function useTeamWebSocket({
       onGraceExpired,
       onLeaderDecide,
       onReadyStatusChanged,
+      onSelfKicked,
     };
-  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance, onGraceExpired, onLeaderDecide, onReadyStatusChanged]);
+  }, [onMessage, onMemberJoined, onMemberLeft, onMemberDisconnected, onMemberReconnected, onLocationUpdate, onVoteCast, onScoreUpdate, onReadyUpdate, onGameStarted, onProgressAdvance, onGraceExpired, onLeaderDecide, onReadyStatusChanged, onSelfKicked]);
 
   useEffect(() => {
     if (!teamId || !userId || !userName) return;
