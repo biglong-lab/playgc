@@ -1362,8 +1362,13 @@ export default function PageConfigEditor({
                     </Select>
                   </div>
                   <div>
+                    {/* 🆕 2026-05-07：修 sizeRatio 標籤跟實際不一致
+                       face tracking 模式下：sizeRatio × 臉寬 才是實際大小（不是占畫面）
+                       例：臉佔畫面 30%、sizeRatio=0.8 → 實際貼圖佔畫面 24%
+                       改成「相對臉部大小」、max 提到 300% 讓 admin 可拉到「貼圖蓋過臉」 */}
                     <label className="text-xs text-muted-foreground mb-1 block">
-                      大小（佔畫面 {Math.round(s.sizeRatio * 100)}%）
+                      大小（相對臉部 {Math.round(s.sizeRatio * 100)}%）
+                      <span className="ml-1 text-[10px] opacity-70">100% = 跟臉一樣大</span>
                     </label>
                     <Slider
                       value={[s.sizeRatio * 100]}
@@ -1374,7 +1379,7 @@ export default function PageConfigEditor({
                           stickers: current.map((x, i) => i === idx ? { ...x, sizeRatio: v / 100 } : x),
                         });
                       }}
-                      min={5} max={80} step={5}
+                      min={10} max={300} step={10}
                       data-testid={`config-ar-sticker-size-${idx}`}
                     />
                   </div>
