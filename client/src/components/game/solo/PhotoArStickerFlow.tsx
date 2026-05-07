@@ -627,55 +627,32 @@ export default function PhotoArStickerFlow({
           })
         )}
 
-        {/* 🎨 底部沉浸式按鈕列（含 safe-area + 清楚的返回/快門） */}
+        {/* 🎨 底部沉浸式按鈕列（CameraToolbar + safe-area） */}
         <div
-          className="absolute bottom-0 left-0 right-0 py-6 px-6 flex justify-between items-center gap-4 bg-gradient-to-t from-black/80 to-transparent"
+          className="absolute bottom-0 left-0 right-0 py-4 px-4 flex flex-col items-center gap-3 bg-gradient-to-t from-black/80 to-transparent"
           style={{ paddingBottom: "max(1.5rem, env(safe-area-inset-bottom))" }}
         >
-          <Button
-            variant="outline"
+          {/* 🆕 2026-05-07：用 CameraToolbar 統一外觀（拍照含臉部追蹤檢查）*/}
+          <CameraToolbar
+            stream={camera.stream}
+            facingMode={camera.facingMode}
+            onCapture={handleCapture}
+            onSwitchCamera={camera.switchCamera}
+            disabled={!preloadDone || (useFaceTracking && !faceAnchor)}
+          />
+          {useFaceTracking && !faceAnchor && (
+            <span className="text-amber-400 text-xs bg-black/50 px-2 py-0.5 rounded animate-pulse">
+              等找到臉才能拍
+            </span>
+          )}
+          <button
+            type="button"
             onClick={() => { camera.cancelCamera(); setStage("intro"); }}
-            className="bg-white/15 border-white/40 text-white hover:bg-white/25 backdrop-blur px-5"
+            className="text-white/70 text-sm hover:text-white py-1 px-3"
             data-testid="btn-ar-cancel"
           >
             ✕ 返回
-          </Button>
-          <div className="flex flex-col items-center">
-            <Button
-              size="icon"
-              onClick={handleCapture}
-              disabled={!preloadDone || (useFaceTracking && !faceAnchor)}
-              className={`bg-white text-black hover:bg-white/90 w-20 h-20 rounded-full shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.92] ${
-                useFaceTracking && !faceAnchor
-                  ? "ring-4 ring-amber-400/50"
-                  : useFaceTracking && faceAnchor
-                    ? "ring-4 ring-emerald-400/60 ring-offset-2 ring-offset-transparent"
-                    : "ring-4 ring-white/30"
-              }`}
-              data-testid="btn-ar-capture"
-              title={!faceAnchor && useFaceTracking ? "請讓臉入鏡" : "拍照"}
-            >
-              <Camera className="w-9 h-9" />
-            </Button>
-            {useFaceTracking && !faceAnchor && (
-              <span className="text-amber-400 text-xs mt-1 bg-black/50 px-2 py-0.5 rounded animate-pulse">
-                等找到臉才能拍
-              </span>
-            )}
-          </div>
-          {/* 🆕 切鏡頭按鈕（取代原本 spacer）*/}
-          <Button
-            variant="outline"
-            onClick={() => camera.switchCamera()}
-            className="bg-emerald-600/90 border-emerald-400/50 text-white hover:bg-emerald-700 px-3 h-12 gap-1.5"
-            data-testid="btn-ar-switch-camera"
-            title={camera.facingMode === "user" ? "切到後鏡頭" : "切到前鏡頭"}
-          >
-            <RefreshCw className="w-5 h-5" />
-            <span className="text-xs font-medium hidden sm:inline">
-              {camera.facingMode === "user" ? "後鏡頭" : "前鏡頭"}
-            </span>
-          </Button>
+          </button>
         </div>
       </div>
     );
