@@ -38,6 +38,8 @@ import {
   Save,
   AlertTriangle,
   RefreshCw,
+  CheckCircle2,
+  UserX,
 } from "lucide-react";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 
