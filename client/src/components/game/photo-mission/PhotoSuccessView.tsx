@@ -175,17 +175,26 @@ export default function PhotoSuccessView({
           ) : (
             <img
               key={retryKey} // 🆕 改 key 強制重 mount 觸發新請求
-              src={imageUrl}
+              src={currentUrl}
               alt="遊戲紀念照"
               className="w-full h-auto block"
               data-testid="photo-success-image"
               loading="eager"
               onError={() => {
                 console.error("[PhotoSuccessView] 圖片載入失敗:", {
-                  imageUrl: imageUrl?.slice(0, 80),
-                  isDataUrl: imageUrl?.startsWith("data:"),
+                  imageUrl: currentUrl?.slice(0, 80),
+                  isDataUrl: currentUrl?.startsWith("data:"),
                   retryKey,
+                  hasFallback: !!fallbackImageUrl,
+                  isOnFallback: currentUrl === fallbackImageUrl,
                 });
+                // 🆕 2026-05-07：合成 URL 失敗 → 自動 fallback 到原圖（若有提供）
+                if (fallbackImageUrl && currentUrl !== fallbackImageUrl) {
+                  console.log("[PhotoSuccessView] 切換到 fallback 原圖");
+                  setCurrentUrl(fallbackImageUrl);
+                  setRetryKey((k) => k + 1);
+                  return;
+                }
                 setImageError(true);
               }}
             />
