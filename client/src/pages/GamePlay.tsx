@@ -169,17 +169,23 @@ export default function GamePlay() {
   const totalPages = activePages.length;
   const progressPercent = totalPages > 0 ? ((currentPageIndex + 1) / totalPages) * 100 : 0;
 
-  // 🆕 2026-05-07 K.2：玩家進場時啟動 game.bgmUrl 的 BGM
+  // 🆕 2026-05-07 K.2 + N.1：BGM 兩層覆蓋
+  //   game.bgmUrl 整場 BGM（fallback）
+  //   currentPage.config.bgmUrl 元件個別 BGM（覆蓋 game、優先）
+  //   兩者皆無 → 停 BGM
   const bgm = useBgmPlayer();
+  const gameBgmUrl = (game as { bgmUrl?: string | null } | undefined)?.bgmUrl ?? null;
+  const pageBgmUrl =
+    (currentPage?.config as { bgmUrl?: string | null } | undefined)?.bgmUrl ?? null;
   useEffect(() => {
-    const url = (game as { bgmUrl?: string | null } | undefined)?.bgmUrl ?? null;
+    // page 級優先、否則用 game 級
+    const url = pageBgmUrl || gameBgmUrl || null;
     bgm.setBgmUrl(url);
-    // 玩家離開 game（unmount）→ 停止 BGM
     return () => {
       bgm.setBgmUrl(null);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [(game as { bgmUrl?: string | null } | undefined)?.bgmUrl]);
+  }, [gameBgmUrl, pageBgmUrl]);
 
   // 🆕 Phase 3：首次掛載時 prime SpeechSynthesis voices（Chrome 需要）
   useEffect(() => {
