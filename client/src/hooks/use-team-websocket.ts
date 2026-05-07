@@ -76,6 +76,8 @@ interface UseTeamWebSocketOptions {
   onLeaderDecide?: (action: "wait" | "continue", targetUserId: string, leaderUserId: string) => void;
   /** 🆕 ready_status_changed：team-lifecycle REST 廣播完整 team 物件、含 members */
   onReadyStatusChanged?: (team: unknown) => void;
+  /** 🆕 2026-05-07 A4：自己被踢出隊伍（leaveTeam 後 server 主動斷 ws）*/
+  onSelfKicked?: (reason: string) => void;
 }
 
 export function useTeamWebSocket({
