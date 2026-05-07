@@ -268,20 +268,39 @@ export function TextCardEditor({ config, updateField, gameId, MediaUploadButton 
         </div>
       </div>
       {config.typewriterEffect === true && (
-        <div>
-          <label className="text-xs text-muted-foreground mb-1 block">打字速度 (ms/字)</label>
-          <Input
-            type="number"
-            value={(config.typewriterSpeed as number | undefined) ?? 30}
-            onChange={(e) => {
-              const n = parseInt(e.target.value, 10);
-              updateField("typewriterSpeed", Number.isFinite(n) && n > 0 ? n : 30);
-            }}
-            min={5}
-            max={500}
-            className="h-9"
-          />
-        </div>
+        <>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">打字速度 (ms/字)</label>
+            <Input
+              type="number"
+              value={(config.typewriterSpeed as number | undefined) ?? 30}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10);
+                updateField("typewriterSpeed", Number.isFinite(n) && n > 0 ? n : 30);
+              }}
+              min={5}
+              max={500}
+              className="h-9"
+            />
+          </div>
+          {/* 🆕 2026-05-07：打字機音效（5 種程式合成）*/}
+          <div>
+            <label className="text-xs text-muted-foreground mb-1 block">打字音效</label>
+            <select
+              value={(config.typewriterSoundType as string | undefined) ?? "none"}
+              onChange={(e) => updateField("typewriterSoundType", e.target.value)}
+              className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+              data-testid="select-typewriter-sound"
+            >
+              <option value="none">🔇 無音效</option>
+              <option value="mechanical">⌨️ 機械打字機（咔嗒）</option>
+              <option value="soft">💧 柔軟（叮叮）</option>
+              <option value="digital">📟 數位（嗶嗶）</option>
+              <option value="typewriter">📝 傳統打字機（噠）</option>
+              <option value="bell">🔔 鐘聲</option>
+            </select>
+          </div>
+        </>
       )}
       <div>
         <label className="text-xs text-muted-foreground mb-1 block">
