@@ -158,6 +158,9 @@
     /* 📱 避免橫向滾動 + 文字不隨手機方向被自動放大 */
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
+    /* 🆕 2026-05-07：文字縮放支援（useFontScale hook 寫入此 variable） */
+    --font-scale: 1;
+    font-size: calc(16px * var(--font-scale));
   }
 
   body {
