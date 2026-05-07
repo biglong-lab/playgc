@@ -237,6 +237,15 @@ export function useTeamWebSocket({
               });
               break;
 
+            // 🆕 2026-05-07 A4：自己被踢出隊伍
+            // server 在 leaveTeam 後立即送此訊息 + close ws
+            // client 跳彈窗 + redirect 大廳（避免繼續占位 / 困惑）
+            case "team_kicked":
+              callbacksRef.current.onSelfKicked?.(
+                (data as { reason?: string }).reason || "left_team",
+              );
+              break;
+
             // 🆕 Phase 2a：socket 斷線（暫時離線）
             case "team_member_disconnected":
               callbacksRef.current.onMemberDisconnected?.(data.userId || "", data.userName || "");
