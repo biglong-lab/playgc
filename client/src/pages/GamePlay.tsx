@@ -672,6 +672,19 @@ export default function GamePlay() {
         />
       )}
 
+      {/* 🆕 2026-05-07：偵測既有進度時的選擇對話框 */}
+      <ResumeDialog
+        open={showResumeDialog}
+        onContinue={() => setShowResumeDialog(false)}
+        onReset={() => {
+          setShowResumeDialog(false);
+          resetAndCreateNew();
+        }}
+        currentPageIndex={currentPageIndex}
+        totalPages={totalPages}
+        score={score}
+      />
+
       {(() => {
         // 🔒 導航規則：
         // - 上一頁：只要不是第 0 頁就能回顧（已完成或進行中都行）
