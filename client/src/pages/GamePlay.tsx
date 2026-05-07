@@ -18,6 +18,7 @@ import GamePageRenderer from "@/components/game/GamePageRenderer";
 import GamePageErrorBoundary from "@/components/game/GamePageErrorBoundary";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import ResumeDialog from "@/components/game/ResumeDialog";
+import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 import { useSessionManager } from "./hooks/useSessionManager";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { WsConnectionBadge } from "@/components/shared/WsConnectionBadge";
