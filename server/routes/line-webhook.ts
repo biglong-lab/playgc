@@ -302,6 +302,136 @@ export function registerLineWebhookRoutes(app: Express) {
  * W15 D1：預設 echo bot
  * W15 D3：加 admin NLU（@chito 婚禮 → 建場）
  */
+// ============================================================================
+// Rich Menu postback dispatcher（W3 D5 — 2026-05-08）
+// ============================================================================
+async function handleRichMenuPostback(event: LineWebhookEvent): Promise<void> {
+  if (!ACCESS_TOKEN || !event.replyToken || !event.postback?.data) return;
+  const data = event.postback.data;
+  const params = new URLSearchParams(data);
+  const action = params.get("action");
+  const lineUserId = event.source?.userId;
+  const replyToken = event.replyToken;
+
+  switch (action) {
+    case "booking_book": {
+      // 引導到預約頁（LIFF 內開啟最佳體驗）
+      const url = `${APP_BASE_URL}/book/jiacun`;
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: `📅 開始預約\n\n點此選擇日期 / 時段：\n${url}`,
+          },
+        ],
+      });
+      return;
+    }
+    case "booking_my": {
+      const url = `${APP_BASE_URL}/book/jiacun/mine`;
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: `🎫 您的所有預約：\n${url}`,
+          },
+        ],
+      });
+      return;
+    }
+    case "game_start": {
+      // 重用既有 buildGameStartReply（找最近預約 → reply 遊戲連結）
+      try {
+        const { buildGameStartReply } = await import("../booking/booking-notifier");
+        const result = lineUserId ? await buildGameStartReply(lineUserId) : null;
+        if (result) {
+          await replyMessage({
+            accessToken: ACCESS_TOKEN,
+            replyToken,
+            messages: result.messages,
+          });
+          return;
+        }
+      } catch (err) {
+        console.error("[richmenu] game_start dispatcher 失敗:", err);
+      }
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: "🤔 找不到您近期的預約。\n\n請先完成預約、活動開始時再點此按鈕。",
+          },
+        ],
+      });
+      return;
+    }
+    case "points_my": {
+      // Phase β 才實作 — 暫時 placeholder
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: "⭐ 點數系統建置中、敬請期待！\n\n玩遊戲就能累積、未來可兌換金門好康券 🎁",
+          },
+        ],
+      });
+      return;
+    }
+    case "coupons_my": {
+      // 第一期跳到 coupon 平台首頁
+      const url = "https://coupon.aihomi.cc/";
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: `🎁 您的優惠券：\n${url}`,
+          },
+        ],
+      });
+      return;
+    }
+    case "help": {
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text:
+              "❓ 客服 / 說明\n\n" +
+              "・問預約：「我的預約」\n" +
+              "・現場開始：「開始遊戲」\n" +
+              "・其他問題請直接傳訊息、客服將盡快回覆",
+          },
+        ],
+      });
+      return;
+    }
+    default: {
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text: `🤔 未知按鈕：${action}\n請點選底部選單其他功能`,
+          },
+        ],
+      });
+    }
+  }
+}
+
 async function handleEvent(event: LineWebhookEvent): Promise<void> {
   if (!ACCESS_TOKEN) return;
 
