@@ -160,6 +160,19 @@ export function registerBattleResultRoutes(app: Express, ctx: RouteContext) {
           await battleStorageMethods.updateSlot(slotId, { status: "completed" });
         }
 
+        // 🔔 Telegram 內部通知（對戰結束）
+        try {
+          const venueForNotify = await battleStorageMethods.getVenue(slot.venueId);
+          notifyBattleCompleted({
+            slotId,
+            venueName: venueForNotify?.name ?? slot.venueId,
+            winnerTeam: resultData.isDraw ? "平手" : resultData.winningTeam,
+            participantCount: playerResultInserts.length,
+          });
+        } catch (err) {
+          console.error("[battle-result] notifyBattleCompleted failed:", err);
+        }
+
         // WebSocket 廣播結果
         ctx.broadcastToBattleSlot(slotId, {
           type: "battle_result_published",
