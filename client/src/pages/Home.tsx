@@ -425,8 +425,9 @@ export default function Home() {
                   <Gamepad2 className="w-5 h-5 text-primary" />
                 </div>
               )}
-              <div>
-                <h1 className="font-display font-bold text-lg truncate max-w-[200px]" title={fieldName}>
+              <div className="min-w-0 flex-1">
+                {/* 🆕 2026-05-07 RWD：max-w 改 sm 以下不限、避免小手機長場域名被截過早 */}
+                <h1 className="font-display font-bold text-lg truncate" title={fieldName}>
                   {fieldName}
                 </h1>
                 <p className="text-xs text-muted-foreground flex items-center gap-1" data-testid="home-greeting">
