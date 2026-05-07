@@ -173,6 +173,23 @@
     /* 📱 iPhone 瀏海 / Home Indicator 安全區域 */
     min-height: 100vh;
     min-height: 100dvh; /* dynamic viewport height — 避開手機瀏覽器 UI */
+    /* 🆕 2026-05-07 RWD：防 horizontal scroll（任何元件超出視窗都不該水平捲）*/
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  /* 🆕 2026-05-07 RWD：圖片 default 不會 overflow + 不裁切失真 */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  /* 但有 .object-cover / .object-contain class 時、保留作者意圖 */
+  img.object-cover,
+  img.object-contain,
+  img.object-fill,
+  img.object-none,
+  img.object-scale-down {
+    max-width: none;
   }
 
   /* 📱 iOS 輸入欄位字體 16px 以上才不會自動 zoom in */
