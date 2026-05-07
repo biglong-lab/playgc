@@ -314,6 +314,8 @@ export default function PhotoCompareFlow({
     return (
       <PhotoSuccessView
         imageUrl={compositeUrl}
+        // 🆕 2026-05-07：合成 URL 載入失敗 → 自動切到玩家原圖（不會「紀念照載入失敗」全死掉）
+        fallbackImageUrl={originalUrl ?? undefined}
         title="比對通過！"
         subtitle={simText}
         downloadPrefix="chito-compare"
