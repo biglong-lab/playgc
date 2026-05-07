@@ -114,6 +114,35 @@ function handleErr(res: import("express").Response, err: unknown) {
 // ── Routes ──────────────────────────────────────────────
 
 export function registerAdminBookingRoutes(app: Express) {
+  // ─ Telegram bot 狀態 + 測試訊息 ───────────────────────
+  app.get(
+    "/api/admin/telegram/status",
+    requireAdminAuth,
+    async (_req, res) => {
+      try {
+        const status = getTelegramStatus();
+        const info = await getBotInfo();
+        res.json({ ...status, botInfo: info });
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
+  app.post(
+    "/api/admin/telegram/test",
+    requireAdminAuth,
+    async (req, res) => {
+      try {
+        const text = String(req.body?.text || "🧪 測試訊息");
+        const result = await tgSendMessage({ text });
+        res.json({ result });
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
   // GET config
   app.get(
     "/api/admin/bookings/:fieldId/config",
