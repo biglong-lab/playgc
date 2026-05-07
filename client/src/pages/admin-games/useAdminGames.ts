@@ -289,6 +289,7 @@ export function useAdminGames(): AdminGamesReturn {
       estimatedTime: game.estimatedTime?.toString() || "",
       maxPlayers: game.maxPlayers?.toString() || "6",
       gameMode: game.gameMode || "individual",
+      bgmUrl: (game as { bgmUrl?: string | null }).bgmUrl || "",
     });
     setIsDialogOpen(true);
   }
