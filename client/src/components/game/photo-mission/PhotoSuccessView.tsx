@@ -45,6 +45,7 @@ export interface PhotoSuccessViewProps {
 
 export default function PhotoSuccessView({
   imageUrl,
+  fallbackImageUrl,
   title = "拍照完成！",
   subtitle,
   downloadPrefix = "chito",
@@ -55,12 +56,29 @@ export default function PhotoSuccessView({
   const [imageError, setImageError] = useState(false);
   // 🆕 自動 retry 機制（暫時的網路波動 / Cloudinary CDN 同步延遲）
   const [retryKey, setRetryKey] = useState(0);
+  // 🆕 2026-05-07：當前用哪個 URL（合成失敗自動 fallback 到原圖）
+  const [currentUrl, setCurrentUrl] = useState(imageUrl);
+  const [autoRetryDone, setAutoRetryDone] = useState(false);
 
   // 🆕 imageUrl 變動時重置錯誤狀態（避免從失敗的 URL 切到新 URL 仍顯示破圖）
   React.useEffect(() => {
     setImageError(false);
     setRetryKey(0);
+    setCurrentUrl(imageUrl);
+    setAutoRetryDone(false);
   }, [imageUrl]);
+
+  // 🆕 2026-05-07：圖片首次失敗時、5 秒後自動 retry 一次
+  // 因為 Cloudinary CDN 同步偶有延遲（剛 transform 完還沒 propagate）
+  React.useEffect(() => {
+    if (!imageError || autoRetryDone) return;
+    const timer = setTimeout(() => {
+      setImageError(false);
+      setRetryKey((k) => k + 1);
+      setAutoRetryDone(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [imageError, autoRetryDone]);
 
   // 🆕 主要動作：一鍵保存到手機相簿
   // 失敗 fallback：開全螢幕燈箱讓使用者長按存圖
