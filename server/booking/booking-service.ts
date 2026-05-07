@@ -268,6 +268,13 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     })
     .returning();
 
+  // 🔔 fire-and-forget：發 LINE 預約成功通知（status=confirmed 才發、pending 等付款後再發）
+  if (inserted[0] && inserted[0].status === "confirmed") {
+    notifyBookingConfirmed(inserted[0]).catch((err) =>
+      console.error("[createBooking] notify failed:", err),
+    );
+  }
+
   return { booking: inserted[0]! };
 }
 
