@@ -126,6 +126,8 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
     const intervalId = setInterval(() => {
       if (charIndex < text.length) {
         setDisplayedText(text.slice(0, charIndex + 1));
+        // 🆕 2026-05-07：打字機音效
+        playCharSound();
         charIndex++;
       } else {
         setIsTyping(false);
