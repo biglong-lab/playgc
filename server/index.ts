@@ -347,6 +347,14 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
+  // 📅 啟動預約提醒 cron（每分鐘掃即將開始的預約 → 推 LINE）
+  try {
+    const { startBookingReminderCron } = await import("./booking/booking-reminder-cron");
+    startBookingReminderCron();
+  } catch (err) {
+    console.error("[boot] startBookingReminderCron 失敗:", err);
+  }
+
   app.use((err: Error & { status?: number; statusCode?: number }, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
