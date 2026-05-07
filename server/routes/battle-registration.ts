@@ -103,14 +103,37 @@ export function registerBattleRegistrationRoutes(app: Express) {
         // 更新時段計數
         await battleStorageMethods.updateSlotCount(slotId, 1);
 
+        // 🔔 Telegram 內部通知（個人報名）
+        const slotDateTime = combineSlotDateTime(slot);
+        notifyBattleRegistered({
+          slotId,
+          venueName: venue.name,
+          slotDateTime,
+          playerName: req.user.dbUser.displayName ?? undefined,
+          isPremade: false,
+        });
+
         // 檢查是否達到最低人數 → 自動更新狀態為 confirmed
         const minPlayers = slot.minPlayersOverride ?? venue.minPlayers;
         if (activeCount + 1 >= minPlayers && slot.status === "open") {
           await battleStorageMethods.updateSlot(slotId, { status: "confirmed" });
+          notifyBattleSlotConfirmed({
+            slotId,
+            venueName: venue.name,
+            slotDateTime,
+            registeredCount: activeCount + 1,
+            minPlayers,
+          });
         }
         // 檢查是否已滿
         if (activeCount + 1 >= maxPlayers) {
           await battleStorageMethods.updateSlot(slotId, { status: "full" });
+          notifyBattleSlotFull({
+            slotId,
+            venueName: venue.name,
+            slotDateTime,
+            maxPlayers,
+          });
         }
 
         res.status(201).json(registration);
