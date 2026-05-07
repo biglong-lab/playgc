@@ -23,6 +23,7 @@ import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useAuth } from "@/hooks/useAuth";
 import { useErrorReport } from "@/hooks/useErrorReport";
 import { useFontScale } from "@/hooks/useFontScale";
+import { BgmPlayerProvider } from "@/hooks/useBgmPlayer";
 
 // 首屏路由 — 靜態 import（不需 lazy）
 import Landing from "@/pages/Landing";
