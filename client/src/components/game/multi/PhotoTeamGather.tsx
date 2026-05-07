@@ -339,6 +339,7 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
             onRestart={() => camera.startCamera()}
             onSwitchCamera={camera.switchCamera}
             facingMode={camera.facingMode}
+            stream={camera.stream}
           />
           <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm font-medium">
             第 {shots.length + 1} 張 / 最多 {maxShots} 張
