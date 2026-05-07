@@ -149,6 +149,11 @@ export interface LineWebhookEvent {
     type: "text" | "image" | "sticker" | "video" | "audio" | "location";
     text?: string;
   };
+  /** postback event payload（rich menu / quick reply 點擊）*/
+  postback?: {
+    data: string;
+    params?: Record<string, string>;
+  };
 }
 
 export interface LineWebhookBody {
