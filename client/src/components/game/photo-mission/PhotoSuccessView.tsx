@@ -183,19 +183,51 @@ export default function PhotoSuccessView({
               loading="eager"
               onError={() => {
                 console.error("[PhotoSuccessView] 圖片載入失敗:", {
-                  imageUrl: currentUrl?.slice(0, 80),
+                  imageUrl: currentUrl?.slice(0, 120),
                   isDataUrl: currentUrl?.startsWith("data:"),
                   retryKey,
                   hasFallback: !!fallbackImageUrl,
                   isOnFallback: currentUrl === fallbackImageUrl,
                 });
-                // 🆕 2026-05-07：合成 URL 失敗 → 自動 fallback 到原圖（若有提供）
+
+                // 🆕 2026-05-07 二次強化：cloudinary URL 載入失敗時自動 strip transformation
+                // URL 模式：https://res.cloudinary.com/<cloud>/image/upload/<transformations>/<publicId>
+                // 例如：https://res.cloudinary.com/xxx/image/upload/c_fill,w_1234,h_700/jiachun-game/abc.jpg
+                // 失敗原因可能：URL 過長 / transformation 參數錯 / CDN 同步延遲
+                // 解法：移除 transformation 段、變 raw URL 直接拿原圖
+                const stripTransformation = (url: string): string | null => {
+                  // 抓 /upload/ 後第一段（含 c_xxx, l_xxx 等變換）→ 移除
+                  // 但需要保留 v123 版本號（若有）
+                  const m = url.match(/^(https?:\/\/res\.cloudinary\.com\/[^/]+\/(?:image|video)\/upload\/)([^/]+)\/(.*)$/);
+                  if (!m) return null;
+                  const [, prefix, transform, rest] = m;
+                  // transform 看起來像 transformation（含逗號、底線、固定 prefix）→ strip
+                  // 看起來像 publicId / version → 不 strip
+                  const isTransform =
+                    /[,_]/.test(transform) ||
+                    /^(c_|w_|h_|l_|f_|q_|g_|x_|y_|r_|b_|co_|t_|fl_|so_|du_|eo_|af_|ar_|fps_|kf_)/.test(transform);
+                  if (!isTransform) return null;
+                  return `${prefix}${rest}`;
+                };
+
+                // 1. 先試 strip transformation（常見 case）
+                const stripped = stripTransformation(currentUrl);
+                if (stripped && stripped !== currentUrl) {
+                  console.log("[PhotoSuccessView] strip transformation 重試:", stripped.slice(0, 100));
+                  setCurrentUrl(stripped);
+                  setRetryKey((k) => k + 1);
+                  return;
+                }
+
+                // 2. 再試 caller 提供的 fallback（如玩家原圖）
                 if (fallbackImageUrl && currentUrl !== fallbackImageUrl) {
                   console.log("[PhotoSuccessView] 切換到 fallback 原圖");
                   setCurrentUrl(fallbackImageUrl);
                   setRetryKey((k) => k + 1);
                   return;
                 }
+
+                // 3. 都沒救 → 顯示 error UI
                 setImageError(true);
               }}
             />
