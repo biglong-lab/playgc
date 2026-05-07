@@ -469,6 +469,8 @@ export default function GamePageRenderer({
         return <LockPage {...commonProps} />;
       case "motion_challenge":
         return <MotionChallengePage {...commonProps} />;
+      case "flashlight":
+        return <FlashlightPage {...commonProps} />;
       case "vote":
         return <VotePage {...commonProps} />;
       case "flow_router":
