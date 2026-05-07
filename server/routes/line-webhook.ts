@@ -329,6 +329,24 @@ async function handleRichMenuPostback(event: LineWebhookEvent): Promise<void> {
       });
       return;
     }
+    case "battle_register": {
+      // 引導到水彈對戰中心
+      const url = `${APP_BASE_URL}/battle`;
+      await replyMessage({
+        accessToken: ACCESS_TOKEN,
+        replyToken,
+        messages: [
+          {
+            type: "text",
+            text:
+              `🎯 水彈對戰報名\n\n` +
+              `點此查看開放場次：\n${url}\n\n` +
+              `（個人散客 / 預組隊伍 / Squad 戰隊均可報名）`,
+          },
+        ],
+      });
+      return;
+    }
     case "booking_my": {
       const url = `${APP_BASE_URL}/book/jiacun/mine`;
       await replyMessage({
