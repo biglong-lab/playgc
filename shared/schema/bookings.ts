@@ -334,34 +334,51 @@ export type BookingNotificationTemplate = typeof bookingBookingNotificationTempl
 export type InsertBookingNotificationTemplate = z.infer<typeof insertBookingNotificationTemplateSchema>;
 
 // ============================================================================
-// 賈村預設配置（種子資料用）
+// 賈村預設配置（種子資料用、示範 rule-based 用法）
 // ============================================================================
 
 /**
- * 賈村模組一預設預約設定：
- *   - 平日 14:00-18:00 / 假日 10:00-18:00
- *   - 每 30 分鐘一梯次、每梯 12 人
+ * 賈村模組一預設預約設定（rule-based 表達）：
+ *   - rule A: 平日（一二三四五）14-18 / 30 分一梯 / 12 人
+ *   - rule B: 假日（六日）10-18 / 30 分一梯 / 12 人
+ *   - 國定假日視為假日
  *   - 預設免費、可隨時取消、開始前 30 分鐘提醒
  */
 export const JIACUN_DEFAULT_SCHEDULE: BookingScheduleTemplate = {
-  weekday: [
+  version: 1,
+  rules: [
     {
-      startTime: "14:00",
-      endTime: "18:00",
-      intervalMinutes: 30,
-      capacity: 12,
-      gameDurationMinutes: 30,
+      id: "default-weekday",
+      name: "平日（一到五）",
+      priority: 0,
+      enabled: true,
+      applyTo: { weekdays: [1, 2, 3, 4, 5] },
+      slots: [
+        {
+          startTime: "14:00",
+          endTime: "18:00",
+          intervalMinutes: 30,
+          capacity: 12,
+          gameDurationMinutes: 30,
+        },
+      ],
+    },
+    {
+      id: "default-weekend",
+      name: "假日（六日）",
+      priority: 0,
+      enabled: true,
+      applyTo: { weekdays: [0, 6], treatHolidaysAsWeekend: true },
+      slots: [
+        {
+          startTime: "10:00",
+          endTime: "18:00",
+          intervalMinutes: 30,
+          capacity: 12,
+          gameDurationMinutes: 30,
+        },
+      ],
     },
   ],
-  weekend: [
-    {
-      startTime: "10:00",
-      endTime: "18:00",
-      intervalMinutes: 30,
-      capacity: 12,
-      gameDurationMinutes: 30,
-    },
-  ],
-  treatHolidaysAsWeekend: true,
   notes: "其他需求請在預約備註留言、業主將討論專案處理",
 };
