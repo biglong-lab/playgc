@@ -149,6 +149,61 @@ export function registerAdminBookingRoutes(app: Express) {
     },
   );
 
+  // ─ LINE Rich Menu 一鍵設定 ───────────────────────────
+  app.get(
+    "/api/admin/line/rich-menu/preview",
+    requireAdminAuth,
+    async (_req, res) => {
+      try {
+        const buf = await generateRichMenuImage();
+        res.setHeader("Content-Type", "image/png");
+        res.setHeader("Cache-Control", "no-store");
+        res.send(buf);
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
+  app.post(
+    "/api/admin/line/rich-menu/setup",
+    requireAdminAuth,
+    async (_req, res) => {
+      try {
+        const result = await setupBookingRichMenu();
+        res.json({ ok: true, ...result });
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
+  app.get(
+    "/api/admin/line/rich-menu/list",
+    requireAdminAuth,
+    async (_req, res) => {
+      try {
+        const list = await listRichMenus();
+        res.json({ richMenus: list });
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
+  app.delete(
+    "/api/admin/line/rich-menu/:richMenuId",
+    requireAdminAuth,
+    async (req, res) => {
+      try {
+        await deleteRichMenu(req.params.richMenuId);
+        res.status(204).end();
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
   // GET config
   app.get(
     "/api/admin/bookings/:fieldId/config",
