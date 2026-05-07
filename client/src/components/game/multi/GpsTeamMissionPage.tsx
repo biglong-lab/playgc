@@ -77,6 +77,8 @@ export default function GpsTeamMissionPage({
   config,
   onComplete,
   gameId,
+  sessionId,
+  pageId,
 }: GpsTeamMissionPageProps) {
   const { user } = useAuth();
 
