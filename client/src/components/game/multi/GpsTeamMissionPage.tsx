@@ -241,7 +241,7 @@ export default function GpsTeamMissionPage({
       myUserId={myUserId}
       teammates={teammates}
       triggerMode={triggerMode}
-      onComplete={onComplete}
+      onComplete={handleComplete}
     />
   );
 }
