@@ -33,6 +33,11 @@ import {
   listBookings,
   BookingError,
 } from "../booking/booking-service";
+import {
+  getTelegramStatus,
+  sendMessage as tgSendMessage,
+  getBotInfo,
+} from "../lib/telegram-bot";
 
 // ── Validators ──────────────────────────────────────────
 
