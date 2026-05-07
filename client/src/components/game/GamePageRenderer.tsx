@@ -308,7 +308,7 @@ export default function GamePageRenderer({
       case "shooting_team":
         return <ShootingTeamPage {...commonProps} pageId={page.id} />;
       case "gps_team_mission":
-        return <GpsTeamMissionPage {...commonProps} />;
+        return <GpsTeamMissionPage {...commonProps} pageId={page.id} />;
       case "choice_verify_race":
         return <ChoiceVerifyRacePage {...commonProps} pageId={page.id} />;
       case "lock_coop":
