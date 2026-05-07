@@ -38,6 +38,12 @@ import {
   sendMessage as tgSendMessage,
   getBotInfo,
 } from "../lib/telegram-bot";
+import {
+  setupBookingRichMenu,
+  generateRichMenuImage,
+  listRichMenus,
+  deleteRichMenu,
+} from "../lib/line-rich-menu";
 
 // ── Validators ──────────────────────────────────────────
 
