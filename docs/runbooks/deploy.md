@@ -142,6 +142,7 @@ docker compose -f docker-compose.prod.yml up -d --build  # 必須加 --build
 
 - [ ] 容器 `(healthy)` 狀態
 - [ ] 網站 HTTPS 200
+- [ ] **`/api/version` 回真實 commit hash**（不是 `"unknown"`）— AppUpdateChecker 必要
 - [ ] 抽查關鍵頁面（首頁 / 遊戲列表 / Admin 登入）
 - [ ] 測試本次新功能（看 commit 訊息列出的範圍）
 - [ ] 確認舊資料完整保留（玩家紀錄、遊戲、QR）
