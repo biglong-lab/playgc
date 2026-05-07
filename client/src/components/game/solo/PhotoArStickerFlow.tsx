@@ -78,7 +78,8 @@ interface StickerConfigItem {
 
 // 位置 → CSS style 對照（配合 absolute overlay）
 function positionToStyle(pos: StickerPosition, sizeRatio: number): React.CSSProperties {
-  const sizePct = `${sizeRatio * 100}%`;
+  // 🆕 2026-05-07：fixed position 模式下 cap 到 100%（避免超出 preview 容器）
+  const sizePct = `${Math.min(sizeRatio, 1.0) * 100}%`;
   const commonStyle: React.CSSProperties = {
     position: "absolute",
     width: sizePct,
