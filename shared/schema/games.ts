@@ -219,6 +219,11 @@ export interface DialogueMessage {
    * （未填 = 用 character.avatar / emotionAvatars）
    */
   speakerAvatar?: string;
+  /**
+   * 🆕 2026-05-07：對話音檔（角色配音）
+   * 訊息出現時自動播放、跟打字機效果同步
+   */
+  audioUrl?: string;
 }
 
 export interface DialogueConfig {
