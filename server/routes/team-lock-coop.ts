@@ -58,6 +58,7 @@ type LockStateRow = {
   attempts: number;
   is_unlocked: boolean;
   is_failed: boolean;
+  version: number;
   updated_at: string;
 } & Record<string, unknown>;
 
@@ -73,6 +74,9 @@ const updateSchema = keySchema.extend({
     code: z.string().optional(),
     attempts: z.number().int().min(0).optional(),
   }).optional(),
+  // 🆕 2026-05-07 A1：client 帶當前 version、server 樂觀鎖
+  // 沒帶（舊 client）→ 退回原邏輯（盲寫）但 server log 警告
+  expectedVersion: z.number().int().min(1).optional(),
 });
 
 async function fetchState(teamId: string, sessionId: string, pageId: string): Promise<LockStateRow | null> {
