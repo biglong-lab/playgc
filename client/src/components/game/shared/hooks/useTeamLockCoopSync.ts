@@ -111,18 +111,28 @@ export function useTeamLockCoopSync({
   }, [enabled, teamId, fetchState]);
 
   // persist action to server（server 廣播 lock_coop_updated）
+  // 🆕 2026-05-07 A1：帶 expectedVersion 樂觀鎖、收 409 → 拉新狀態 + console.warn
   const persistAction = useCallback(
     async (action: "code" | "attempt" | "unlocked" | "failed", payload?: { code?: string; attempts?: number }) => {
       if (!teamId) return;
       try {
-        await apiRequest("POST", "/api/team-lock-coop/update", {
+        const res = await apiRequest("POST", "/api/team-lock-coop/update", {
           teamId, sessionId, pageId, action, payload,
+          expectedVersion: versionRef.current,
         });
+        if (res.status === 409) {
+          // 樂觀鎖衝突：另一玩家先寫入了新值
+          const data = (await res.json()) as { state?: ServerLockState };
+          if (data.state) applyServerState(data.state);
+          console.warn("[LockCoopSync] 樂觀鎖衝突、已拉取最新狀態", action);
+          // 不重試：UI 顯示新狀態、user 看到後可重新輸入
+          return;
+        }
       } catch (err) {
         console.error("[LockCoopSync] persist 失敗:", err);
       }
     },
-    [teamId, sessionId, pageId],
+    [teamId, sessionId, pageId, applyServerState],
   );
 
   const handleMessage = useCallback((msg: LockCoopWsMessage) => {
