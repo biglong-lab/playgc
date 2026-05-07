@@ -220,6 +220,10 @@ interface CameraViewProps {
   /** 🆕 切換前後鏡頭（若提供則顯示按鈕）*/
   onSwitchCamera?: () => void;
   facingMode?: "user" | "environment";
+  /** 🆕 2026-05-07：當前 camera stream（給 CameraToolbar 算 torch capability）*/
+  stream?: MediaStream | null;
+  /** 🆕 2026-05-07：從相簿選圖（提供則 toolbar 多顯示一顆相簿按鈕）*/
+  onPickFromGallery?: () => void;
 }
 
 export function CameraView({
@@ -231,6 +235,8 @@ export function CameraView({
   onRestart,
   onSwitchCamera,
   facingMode = "environment",
+  stream = null,
+  onPickFromGallery,
 }: CameraViewProps) {
   const isMirror = facingMode === "user";
   // 🆕 拍照時告訴全域元件「我在拍照」→ Walkie Pill 等浮動 UI 自動隱藏
