@@ -4,6 +4,7 @@ import { ChevronRight, Clock, Volume2, VolumeX } from "lucide-react";
 import type { TextCardConfig } from "@shared/schema";
 import { createReliableAudio } from "@/lib/cloudinary-audio";
 import OptimizedImage from "@/components/shared/OptimizedImage";
+import { useTypewriterSound, type TypewriterSoundType } from "@/hooks/useTypewriterSound";
 
 interface TextCardPageProps {
   config: TextCardConfig;
