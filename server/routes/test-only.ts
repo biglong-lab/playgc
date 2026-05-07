@@ -362,6 +362,99 @@ export function registerTestOnlyRoutes(app: Express) {
     }
   });
 
+  // 🆕 P.2 A2 互動級 e2e：bypass auth 操作 team_game_states
+  // POST /api/_test/team-state-update
+  // 跑跟正式 endpoint 同邏輯（version < EXCLUDED.version 才更新 / 0 row → 409）
+  app.post("/api/_test/team-state-update", async (req, res) => {
+    try {
+      const { teamId, sessionId, pageId, type, state, version } = req.body ?? {};
+      if (!teamId || !sessionId || !pageId || !type) {
+        return res.status(400).json({ error: "missing params" });
+      }
+      const stateJson = JSON.stringify(state ?? {});
+      let upsertResult: { rowCount?: number | null } | undefined;
+      if (typeof version === "number") {
+        upsertResult = await db.execute(sql`
+          INSERT INTO team_game_states (team_id, session_id, page_id, component_type, state_json, version)
+          VALUES (${teamId}, ${sessionId}, ${pageId}, ${type}, ${stateJson}::jsonb, ${version})
+          ON CONFLICT (team_id, session_id, page_id, component_type) DO UPDATE
+            SET state_json = EXCLUDED.state_json,
+                version = EXCLUDED.version,
+                updated_at = NOW()
+            WHERE team_game_states.version < EXCLUDED.version
+          RETURNING id
+        `);
+      } else {
+        upsertResult = await db.execute(sql`
+          INSERT INTO team_game_states (team_id, session_id, page_id, component_type, state_json, version)
+          VALUES (${teamId}, ${sessionId}, ${pageId}, ${type}, ${stateJson}::jsonb, 1)
+          ON CONFLICT (team_id, session_id, page_id, component_type) DO UPDATE
+            SET state_json = EXCLUDED.state_json,
+                version = team_game_states.version + 1,
+                updated_at = NOW()
+          RETURNING id
+        `);
+      }
+      const fetchResult = await db.execute(sql`
+        SELECT * FROM team_game_states
+        WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId} AND component_type=${type}
+        LIMIT 1
+      `);
+      const rows = (fetchResult as unknown as { rows?: unknown[] }).rows ?? [];
+      const saved = rows[0] ?? null;
+      const rowCount = upsertResult?.rowCount ?? 0;
+      if (typeof version === "number" && rowCount === 0) {
+        return res.status(409).json({ conflict: true, state: saved });
+      }
+      res.json({ state: saved });
+    } catch (err) {
+      console.error("[test-only team-state-update] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
+  // GET /api/_test/team-state — 直接讀（A2 / A3 用）
+  app.get("/api/_test/team-state", async (req, res) => {
+    try {
+      const { teamId, sessionId, pageId, type } = req.query as Record<string, string>;
+      if (!teamId || !sessionId || !pageId || !type) {
+        return res.status(400).json({ error: "missing query" });
+      }
+      const result = await db.execute(sql`
+        SELECT * FROM team_game_states
+        WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId} AND component_type=${type}
+        LIMIT 1
+      `);
+      const rows = (result as unknown as { rows?: unknown[] }).rows ?? [];
+      res.json({ state: rows[0] ?? null });
+    } catch (err) {
+      console.error("[test-only team-state] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
+  // 🆕 P.2 A4 互動級 e2e：模擬 leaveTeam（標 leftAt）
+  // POST /api/_test/leave-team
+  app.post("/api/_test/leave-team", async (req, res) => {
+    try {
+      const { teamId, userId } = req.body ?? {};
+      if (!teamId || !userId) return res.status(400).json({ error: "missing params" });
+      await db.execute(sql`
+        UPDATE team_members SET left_at=NOW()
+        WHERE team_id=${teamId} AND user_id=${userId} AND left_at IS NULL
+      `);
+      const result = await db.execute(sql`
+        SELECT id, role, joined_at, left_at FROM team_members
+        WHERE team_id=${teamId} AND user_id=${userId} LIMIT 1
+      `);
+      const rows = (result as unknown as { rows?: unknown[] }).rows ?? [];
+      res.json({ member: rows[0] ?? null });
+    } catch (err) {
+      console.error("[test-only leave-team] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
   // GET /api/_test/team-lock-state — 直接讀（驗 A1 寫入有沒有真的進 DB）
   app.get("/api/_test/team-lock-state", async (req, res) => {
     try {
