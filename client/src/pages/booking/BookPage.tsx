@@ -124,7 +124,7 @@ export default function BookPage() {
     enabled: !!fieldId,
   });
 
-  const { data: config } = useQuery({
+  const { data: config, isLoading: configLoading, error: configError } = useQuery({
     queryKey: ["booking-config", fieldId],
     queryFn: async () => {
       const res = await fetch(`/api/bookings/config/${fieldId}`);
@@ -135,6 +135,7 @@ export default function BookPage() {
       return (await res.json()) as BookingConfigPublic;
     },
     enabled: !!fieldId,
+    retry: false,
   });
 
   // 整理日期 → slot list
