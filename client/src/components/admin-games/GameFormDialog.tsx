@@ -1,10 +1,8 @@
 // 遊戲建立/編輯表單對話框
-import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -20,15 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 import type { GameFormData } from "./types";
 
 interface GameFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   isEditing: boolean;
-  /** 🆕 編輯模式：傳入 game.id 給 BGM 上傳用（建立模式為 null）*/
-  editingGameId?: string | null;
   formData: GameFormData;
   setFormData: React.Dispatch<React.SetStateAction<GameFormData>>;
   onSubmit: (e: React.FormEvent) => void;
