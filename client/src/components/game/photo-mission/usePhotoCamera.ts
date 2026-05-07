@@ -33,6 +33,8 @@ export interface PhotoCameraState {
   handleFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   cancelCamera: () => void;
   retake: () => void;
+  /** 🆕 2026-05-07：當前 MediaStream（給 CameraToolbar / useTorch 用）*/
+  stream: MediaStream | null;
 }
 
 /**
