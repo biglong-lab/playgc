@@ -302,6 +302,8 @@ export function registerAdminGameRoutes(app: Express) {
     // isIsolated=true（schema default）= QR-only 防亂入、不在首頁
     // isIsolated=false = 首頁可見
     isIsolated: z.boolean().optional(),
+    // 🆕 2026-05-07：整場 BGM URL（玩家進場自動播）
+    bgmUrl: z.string().nullable().optional(),
     // 🤖 P6-4: AI 實測時戳（admin 點「已完成 AI 實測」按鈕時帶當前時間）
     lastLiveTestedAt: z.coerce.date().nullable().optional(),
   }).strict(); // strict() 拒絕未定義的欄位
