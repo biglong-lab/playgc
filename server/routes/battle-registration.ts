@@ -119,7 +119,8 @@ export function registerBattleRegistrationRoutes(app: Express) {
           slotId,
           venueName: venue.name,
           slotDateTime,
-          playerName: req.user.dbUser.displayName ?? undefined,
+          playerName:
+            req.user.dbUser.firstName ?? req.user.dbUser.email?.split("@")[0] ?? undefined,
           isPremade: false,
         });
 
