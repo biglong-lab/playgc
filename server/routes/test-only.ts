@@ -19,8 +19,8 @@
 
 import type { Express } from "express";
 import { db } from "../db";
-import { games, pages, gameSessions } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { games, pages, gameSessions, teams, teamMembers, users } from "@shared/schema";
+import { eq, sql } from "drizzle-orm";
 import { storage } from "../storage";
 
 export function registerTestOnlyRoutes(app: Express) {
