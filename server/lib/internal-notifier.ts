@@ -289,6 +289,99 @@ export function notifyLineBotCreated(opts: {
 }
 
 // ============================================================================
+// 事件 11-13：水彈對戰（Battle）
+// ============================================================================
+
+export function notifyBattleRegistered(opts: {
+  slotId: string;
+  venueName: string;
+  slotDateTime: Date;
+  playerName?: string;
+  squadName?: string;
+  isPremade?: boolean;
+}): void {
+  if (!isTelegramEnabled()) return;
+  const slotStr = opts.slotDateTime.toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    month: "numeric",
+    day: "numeric",
+    weekday: "narrow",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const text =
+    `🎯 水彈報名\n` +
+    `${opts.venueName} · ${slotStr}\n` +
+    (opts.playerName ? `玩家：${opts.playerName}\n` : "") +
+    (opts.squadName ? `戰隊：${opts.squadName}\n` : "") +
+    (opts.isPremade ? `（預組隊伍）` : `（散客）`);
+  fireForget(sendMessage({ text, parseMode: "Markdown", silent: true }));
+}
+
+export function notifyBattleSlotConfirmed(opts: {
+  slotId: string;
+  venueName: string;
+  slotDateTime: Date;
+  registeredCount: number;
+  minPlayers: number;
+}): void {
+  if (!isTelegramEnabled()) return;
+  if (!shouldSend(`battle-confirmed-${opts.slotId}`)) return;
+  const slotStr = opts.slotDateTime.toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    month: "numeric",
+    day: "numeric",
+    weekday: "narrow",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const text =
+    `✅ *水彈場次成局*\n` +
+    `${opts.venueName} · ${slotStr}\n` +
+    `已報名 ${opts.registeredCount} 人（最低 ${opts.minPlayers}）`;
+  fireForget(sendMessage({ text, parseMode: "Markdown" }));
+}
+
+export function notifyBattleSlotFull(opts: {
+  slotId: string;
+  venueName: string;
+  slotDateTime: Date;
+  maxPlayers: number;
+}): void {
+  if (!isTelegramEnabled()) return;
+  if (!shouldSend(`battle-full-${opts.slotId}`)) return;
+  const slotStr = opts.slotDateTime.toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    month: "numeric",
+    day: "numeric",
+    weekday: "narrow",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const text =
+    `🔥 *水彈場次額滿*\n` +
+    `${opts.venueName} · ${slotStr}\n` +
+    `${opts.maxPlayers}/${opts.maxPlayers} 人滿`;
+  fireForget(sendMessage({ text, parseMode: "Markdown" }));
+}
+
+export function notifyBattleCompleted(opts: {
+  slotId: string;
+  venueName: string;
+  winnerTeam?: string;
+  participantCount?: number;
+}): void {
+  if (!isTelegramEnabled()) return;
+  if (!shouldSend(`battle-completed-${opts.slotId}`)) return;
+  const text =
+    `🏆 *水彈對戰結束*\n` +
+    `${opts.venueName}\n` +
+    (opts.winnerTeam ? `勝隊：${opts.winnerTeam}\n` : "") +
+    (opts.participantCount ? `${opts.participantCount} 人參戰` : "");
+  fireForget(sendMessage({ text, parseMode: "Markdown" }));
+}
+
+// ============================================================================
 // 啟動通知（server boot）
 // ============================================================================
 
