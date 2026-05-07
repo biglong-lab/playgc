@@ -67,6 +67,8 @@ export function useTeamLockCoopSync({
   const [isFailed, setIsFailed] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const fetchedRef = useRef(false);
+  // 🆕 2026-05-07 A1：當前 server 版本（樂觀鎖用）
+  const versionRef = useRef<number>(1);
 
   // 套用 server 回傳的狀態
   const applyServerState = useCallback((s: ServerLockState) => {
@@ -74,6 +76,7 @@ export function useTeamLockCoopSync({
     setAttempts(s.attempts ?? 0);
     setIsUnlocked(!!s.is_unlocked);
     setIsFailed(!!s.is_failed);
+    if (typeof s.version === "number") versionRef.current = s.version;
   }, []);
 
   // 拉 server 狀態
