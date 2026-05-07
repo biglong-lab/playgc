@@ -279,6 +279,18 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     );
   }
 
+  // 🔔 Telegram 內部通知（admin 即時知道有新預約）
+  if (inserted[0]) {
+    tgNotifyBookingCreated({
+      fieldId: inserted[0].fieldId,
+      bookingCode: inserted[0].bookingCode,
+      displayName: inserted[0].displayName ?? undefined,
+      slotStart: inserted[0].slotStart,
+      partySize: inserted[0].partySize,
+      amountCents: inserted[0].amountCents,
+    });
+  }
+
   return { booking: inserted[0]! };
 }
 
