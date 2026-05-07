@@ -25,6 +25,12 @@ import {
 export interface PhotoSuccessViewProps {
   /** 最終照片 URL（通常是 Cloudinary URL 或合成紀念照）*/
   imageUrl: string;
+  /**
+   * 🆕 2026-05-07：原始照片 URL（合成失敗時 fallback 用）
+   * 例如 PhotoCompare 的 composite URL 載入失敗 → 自動切回 originalUrl
+   * 沒提供則沒有 fallback、走原 retry 流程
+   */
+  fallbackImageUrl?: string;
   /** 成功文字標題，如「拍照成功！」「AR 拍照完成！」 */
   title?: string;
   /** 可選的副說明（如「已加入相簿」或「相似度 92%」）*/
