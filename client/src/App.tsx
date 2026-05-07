@@ -481,6 +481,7 @@ function App() {
                 <PlayerBottomNav />
                 <FloatingHomeButton />
                 <FloatingFontScale />
+                <FloatingBgmMute />
                 <PWAInstallPrompt />
                 <AppUpdateChecker />
                 <WelcomeSquadsTrigger />
