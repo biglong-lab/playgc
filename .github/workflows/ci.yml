@@ -123,9 +123,13 @@ jobs:
           # 確認 health 通過
           curl -f http://localhost:3333/api/health || (cat /tmp/server.log && exit 1)
 
-      - name: 執行 E2E 黃金路徑 + A2 多人元件 smoke
-        run: npx playwright test --project="Desktop Chrome" --grep "黃金路徑|A2 多人元件"
-        # 注：黃金路徑 = Phase 1 D4 接地驗證，A2 多人元件 = Phase 3 A2 L3 持久化驗證
+      - name: 執行 E2E 黃金路徑 + 多人元件 smoke + race condition
+        run: npx playwright test --project="Desktop Chrome" --grep "黃金路徑|A2 多人元件|Host 軸線|軟分流階段 1|race condition"
+        # 黃金路徑 = Phase 1 D4 接地驗證
+        # A2 多人元件 = Phase 3 A2 L3 持久化驗證
+        # Host 軸線 = host 元件接 admin editor smoke
+        # 軟分流階段 1 = editor mode 分流 e2e
+        # race condition = Phase A 樂觀鎖 / 衝突回應驗證（互動級多人 e2e）
 
       - name: 收集 server log（debug 用）
         if: always()
