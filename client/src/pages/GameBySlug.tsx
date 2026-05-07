@@ -142,7 +142,7 @@ export default function GameBySlug() {
   return (
     <div className="min-h-screen bg-background">
       {game.coverImageUrl && (
-        {/* 🆕 2026-05-07 RWD：使用 aspect-video 避免不同設備裁切不同 */}
+        // 🆕 2026-05-07 RWD：使用 aspect-video 避免不同設備裁切不同
         <div className="aspect-video sm:aspect-[21/9] relative bg-muted">
           <OptimizedImage
             src={game.coverImageUrl}
