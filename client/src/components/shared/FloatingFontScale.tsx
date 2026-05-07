@@ -24,8 +24,9 @@ export default function FloatingFontScale() {
   if (shouldHide(location)) return null;
   return (
     <div
-      className="fixed top-2 right-2 z-40 pointer-events-auto print:hidden"
-      style={{ paddingTop: "env(safe-area-inset-top)" }}
+      // 🆕 2026-05-07 RWD：top 加 safe-area、避開 iPhone 瀏海 / 狀態列
+      className="fixed right-2 z-40 pointer-events-auto print:hidden"
+      style={{ top: "calc(0.5rem + env(safe-area-inset-top))" }}
       data-testid="floating-font-scale"
     >
       <FontScaleSwitcher />
