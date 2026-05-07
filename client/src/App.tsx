@@ -471,6 +471,7 @@ function App() {
         <AuthProvider>
           <FieldThemeProvider>
             <I18nProvider>
+              <BgmPlayerProvider>
               <TooltipProvider>
                 <ThemePreviewBanner />
                 <OfflineBanner isOnline={isOnline} />
