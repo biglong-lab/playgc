@@ -135,6 +135,7 @@ export default function GamePlay() {
     currentPageIndex, isCompleted, completedPageIds,
     stateRef, activePagesRef,
     setState, resetAndCreateNew,
+    hasRestoredProgress,
   } = useSessionManager({
     gameId,
     userId: user?.id,
@@ -142,6 +143,25 @@ export default function GamePlay() {
     activePages,
     userName: user?.firstName || "玩家",
   });
+
+  // 🆕 2026-05-07：偵測有進度時顯示 ResumeDialog
+  // - hasRestoredProgress = true 表示 useSessionManager 自動載入了 existingSession
+  // - currentPageIndex > 0 表示真有進度（不是剛開始）
+  // - !isCompleted 排除「已通關」（完成的 session 不需要選）
+  const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [resumeDialogShown, setResumeDialogShown] = useState(false);
+  useEffect(() => {
+    if (
+      !resumeDialogShown &&
+      hasRestoredProgress &&
+      currentPageIndex > 0 &&
+      !isCompleted &&
+      !isReplayMode
+    ) {
+      setShowResumeDialog(true);
+      setResumeDialogShown(true);
+    }
+  }, [hasRestoredProgress, currentPageIndex, isCompleted, isReplayMode, resumeDialogShown]);
 
   const currentPage = activePages[currentPageIndex];
   const totalPages = activePages.length;
