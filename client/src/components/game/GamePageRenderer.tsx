@@ -114,6 +114,7 @@ const QrScanPage = lazy(() => import("@/components/game/solo/QrScanPage"));
 const TimeBombPage = lazy(() => import("@/components/game/solo/TimeBombPage"));
 const LockPage = lazy(() => import("@/components/game/solo/LockPage"));
 const MotionChallengePage = lazy(() => import("@/components/game/solo/MotionChallengePage"));
+const FlashlightPage = lazy(() => import("@/components/game/solo/FlashlightPage"));
 const VotePage = lazy(() => import("@/components/game/solo/VotePage"));
 
 // 📦 模組層級常數（避免每次 render 重新建立 Set）
