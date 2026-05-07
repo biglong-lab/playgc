@@ -194,6 +194,11 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
           timestamp: new Date().toISOString(),
         });
 
+        // 🆕 2026-05-07 A4：踢該 user 的 ws connection（避免幽靈占位）
+        // - 先 broadcast team_member_left 讓隊友收到
+        // - 再 kick 該 user：他會收到 team_kicked + ws close
+        ctx.kickUserFromTeam?.(teamId, userId, "left_team");
+
         res.json({ message: "已離開隊伍" });
       } catch (error) {
         res.status(500).json({ message: "離開隊伍失敗" });
