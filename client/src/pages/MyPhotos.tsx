@@ -244,7 +244,7 @@ export default function MyPhotos() {
 
       <main className="p-4">
         {isLoading ? (
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
               <div key={i} className="aspect-square rounded bg-muted animate-pulse" />
             ))}
@@ -271,7 +271,7 @@ export default function MyPhotos() {
                     {group.length} 張
                   </span>
                 </header>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
                   {group.map((photo, idx) => (
                     <button
                       key={photo.publicId}
