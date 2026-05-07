@@ -305,21 +305,56 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                         {b.customerNote || ""}
                       </td>
                       <td className="py-2 px-2">
-                        {b.status === "confirmed" || b.status === "pending" ? (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              const reason = window.prompt(`取消原因（玩家會看到）`);
-                              if (reason !== null) {
-                                cancelMutation.mutate({ code: b.bookingCode, reason });
-                              }
-                            }}
-                            data-testid={`button-cancel-${b.bookingCode}`}
-                          >
-                            <Trash2 className="w-3 h-3 text-destructive" />
-                          </Button>
-                        ) : null}
+                        {(b.status === "confirmed" || b.status === "pending") && (
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="標記完成（推 LINE 含優惠券）"
+                              onClick={() => {
+                                const customUrl = window.prompt(
+                                  "活動專屬優惠券連結（選填、空白則用預設模板的）：",
+                                  "",
+                                );
+                                if (customUrl === null) return;
+                                completeMutation.mutate({
+                                  code: b.bookingCode,
+                                  customActionUrl: customUrl || undefined,
+                                });
+                              }}
+                              data-testid={`button-complete-${b.bookingCode}`}
+                            >
+                              <CheckCircle2 className="w-3 h-3 text-green-600" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="標記未到場"
+                              onClick={() => {
+                                if (window.confirm("確定標記未到場？")) {
+                                  noShowMutation.mutate(b.bookingCode);
+                                }
+                              }}
+                              data-testid={`button-noshow-${b.bookingCode}`}
+                            >
+                              <UserX className="w-3 h-3 text-amber-600" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="取消預約（推 LINE 通知）"
+                              onClick={() => {
+                                const reason = window.prompt(`取消原因（玩家會看到）`);
+                                if (reason !== null) {
+                                  cancelMutation.mutate({ code: b.bookingCode, reason });
+                                }
+                              }}
+                              data-testid={`button-cancel-${b.bookingCode}`}
+                            >
+                              <Trash2 className="w-3 h-3 text-destructive" />
+                            </Button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
