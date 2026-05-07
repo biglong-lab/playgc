@@ -112,7 +112,7 @@ export default function BookPage() {
       const today = new Date();
       const fromStr = formatYMD(today);
       const toDate = new Date(today);
-      toDate.setDate(toDate.getDate() + 13);
+      toDate.setDate(toDate.getDate() + 29); // 14 → 30 天（2026-05-08 修）
       const toStr = formatYMD(toDate);
       const res = await fetch(
         `/api/bookings/availability/${fieldId}?from=${fromStr}&to=${toStr}`,
