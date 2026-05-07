@@ -43,6 +43,8 @@ export const PAGE_TYPES = [
   { value: "time_bomb", label: "拆彈任務", icon: Bomb, color: "bg-red-600/20 text-red-500" },
   { value: "lock", label: "密碼鎖", icon: Lock, color: "bg-amber-500/20 text-amber-400" },
   { value: "motion_challenge", label: "體感挑戰", icon: Smartphone, color: "bg-violet-500/20 text-violet-400" },
+  // 🆕 2026-05-07：手電筒元件（場域故事 / 解謎用）
+  { value: "flashlight", label: "手電筒", icon: Sparkles, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "vote", label: "投票（個人）", icon: Vote, color: "bg-emerald-500/20 text-emerald-400" },
   { value: "flow_router", label: "流程路由", icon: GitBranch, color: "bg-gray-500/20 text-gray-400" },
   // 🆕 多人專用元件（Phase 2，2026-05-02）— 只在 gameMode != "individual" 的遊戲顯示
