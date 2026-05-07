@@ -267,6 +267,11 @@ function Router() {
         <Route path="/host/:sessionId" component={HostScreen} />
         <Route path="/play/:sessionId" component={HostPlay} />
 
+        {/* 📅 預約系統 Phase δ W1 (2026-05-07) — 公開頁、LIFF 內運作 */}
+        <Route path="/book/:fieldCode/done/:bookingCode" component={BookDonePage} />
+        <Route path="/book/:fieldCode/mine" component={MyBookingsPage} />
+        <Route path="/book/:fieldCode" component={BookPage} />
+
         {/* 🎬 元件展示館（公開頁，銷售工具）*/}
         <Route path="/showcase" component={ShowcaseHub} />
 
