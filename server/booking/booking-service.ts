@@ -29,6 +29,10 @@ import {
   notifyBookingConfirmed,
   notifyBookingCancelled,
 } from "./booking-notifier";
+import {
+  notifyBookingCreated as tgNotifyBookingCreated,
+  notifyBookingCancelled as tgNotifyBookingCancelled,
+} from "../lib/internal-notifier";
 import { randomBytes } from "crypto";
 
 // 短碼字符集（避開易混淆 0/O、1/I/l）
