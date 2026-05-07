@@ -366,6 +366,18 @@ export async function cancelBooking(input: CancelBookingInput): Promise<Booking>
     );
   }
 
+  // 🔔 Telegram 內部通知（admin 知道有玩家取消）
+  if (updated[0]) {
+    tgNotifyBookingCancelled({
+      fieldId: updated[0].fieldId,
+      bookingCode: updated[0].bookingCode,
+      displayName: updated[0].displayName ?? undefined,
+      slotStart: updated[0].slotStart,
+      byAdmin: input.cancelBy.type === "admin",
+      reason: input.reason,
+    });
+  }
+
   return updated[0]!;
 }
 
