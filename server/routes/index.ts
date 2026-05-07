@@ -217,5 +217,9 @@ export async function registerRoutes(
   // 🎫 場域會員（玩家身份 + 管理員授權開關）
   registerFieldMembershipRoutes(app);
 
+  // 📅 預約系統（Phase δ — 2026-05-07）
+  registerBookingRoutes(app);
+  registerAdminBookingRoutes(app);
+
   return httpServer;
 }
