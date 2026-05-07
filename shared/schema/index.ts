@@ -56,3 +56,6 @@ export * from "./platform-security";
 export * from "./notifications";
 export * from "./platform-menu";
 export * from "./team-race";
+
+// 預約系統（Phase δ W1 — 2026-05-07）
+export * from "./bookings";
