@@ -42,7 +42,7 @@ export interface GpsTeamMissionPageProps {
  * 🆕 2026-05-07 A3：GpsTeamMission 持久化狀態
  * reachedUserIds 用陣列存（JSON 友好、Set 不能直接序列化）
  */
-interface GpsTeamMissionPersistState {
+interface GpsTeamMissionPersistState extends Record<string, unknown> {
   reachedUserIds: string[];
 }
 
