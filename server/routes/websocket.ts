@@ -1003,5 +1003,6 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     broadcastToBattleSlot,
     broadcastToHostSession,
     cancelDisconnectTimer,
+    kickUserFromTeam,
   };
 }
