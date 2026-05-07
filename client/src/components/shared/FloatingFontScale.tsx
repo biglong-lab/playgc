@@ -13,9 +13,12 @@ function shouldHide(pathname: string): boolean {
   return (
     pathname.startsWith("/admin") ||
     pathname.startsWith("/platform") ||
-    // 拍照沉浸頁（PhotoBurst/PhotoAr 進 fullscreen）由元件自行隱藏 Floating 全域 UI
-    // 此處 path 級別只擋 admin 系列
-    false
+    // 🆕 2026-05-07：遊戲頁 / 活動頁 / 公開分享有自己的 header
+    // FloatingFontScale 右上角會跟 header 重疊 → 這些頁面隱藏
+    /\/game\/|\/map\/|\/team\/|\/match\//.test(pathname) ||
+    /^\/play\//.test(pathname) ||
+    /^\/g\//.test(pathname) ||
+    pathname.startsWith("/squad/")
   );
 }
 
