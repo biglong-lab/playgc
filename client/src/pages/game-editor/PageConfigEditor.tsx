@@ -2001,6 +2001,35 @@ export default function PageConfigEditor({
       />
 
       {renderPageConfig()}
+
+      {/* 🆕 2026-05-07 N.1：頁面個別 BGM（覆蓋 game.bgmUrl、優先播） */}
+      <div className="space-y-2 p-3 border rounded-md bg-muted/20">
+        <label className="text-sm font-medium flex items-center gap-1">
+          🎵 此頁面 BGM 音樂網址
+          <span className="text-xs text-muted-foreground font-normal">（選填、覆蓋整場 BGM）</span>
+        </label>
+        <Input
+          type="url"
+          value={(config.bgmUrl as string | undefined) ?? ""}
+          onChange={(e) => updateField("bgmUrl", e.target.value || null)}
+          placeholder="https://res.cloudinary.com/.../audio.mp3"
+          data-testid="input-page-bgm-url"
+          className="h-9"
+        />
+        <p className="text-[11px] text-muted-foreground">
+          進此頁時切到此音樂、離開恢復整場 BGM。空白則用整場 BGM。
+        </p>
+        {(config.bgmUrl as string | undefined) && (
+          <audio
+            controls
+            src={config.bgmUrl as string}
+            className="w-full mt-1"
+            preload="none"
+            data-testid="audio-page-bgm-preview"
+          />
+        )}
+      </div>
+
       {/* 通用：下一頁導向 + 完成獎勵（依 pageType 自動判斷是否顯示） */}
       <CommonNavigationEditor
         config={config}
