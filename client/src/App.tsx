@@ -477,6 +477,7 @@ function App() {
                 <Router />
                 <PlayerBottomNav />
                 <FloatingHomeButton />
+                <FloatingFontScale />
                 <PWAInstallPrompt />
                 <AppUpdateChecker />
                 <WelcomeSquadsTrigger />
