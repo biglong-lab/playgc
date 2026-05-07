@@ -223,6 +223,184 @@ export function registerTestOnlyRoutes(app: Express) {
     }
   });
 
+  // 🆕 2026-05-07 多人 e2e 補強用端點群（O.1 ~ O.2）
+
+  // POST /api/_test/seed-team-with-members — 建 game + team + 2 dummy users + members
+  // 回傳：gameId / sessionId / teamId / userIds[]
+  // 用途：測 A1 LockCoop race / A2 team_game_state 衝突 / A3 GpsTeamMission 持久化
+  app.post("/api/_test/seed-team-with-members", async (_req, res) => {
+    try {
+      const ts = Date.now();
+      // 1. game (team 模式)
+      const [game] = await db.insert(games).values({
+        title: `E2E race test ${ts}`,
+        description: "Playwright multi e2e",
+        difficulty: "medium",
+        estimatedTime: 5,
+        maxPlayers: 6,
+        status: "published",
+        gameMode: "team",
+        minTeamPlayers: 2,
+        maxTeamPlayers: 4,
+        publicSlug: `e2e-team-${ts}`,
+      }).returning();
+
+      // 2. 兩個 dummy users
+      const [u1] = await db.insert(users).values({
+        id: `e2e-u1-${ts}`,
+        email: `e2e-u1-${ts}@test`,
+        firstName: "玩家A",
+      }).returning();
+      const [u2] = await db.insert(users).values({
+        id: `e2e-u2-${ts}`,
+        email: `e2e-u2-${ts}@test`,
+        firstName: "玩家B",
+      }).returning();
+
+      // 3. team
+      const [team] = await db.insert(teams).values({
+        gameId: game.id,
+        name: `e2e-team-${ts}`,
+        accessCode: `E${ts.toString().slice(-5)}`,
+        leaderId: u1.id,
+        status: "playing",
+      }).returning();
+
+      // 4. team members
+      await db.insert(teamMembers).values([
+        { teamId: team.id, userId: u1.id, role: "leader" },
+        { teamId: team.id, userId: u2.id, role: "member" },
+      ]);
+
+      // 5. session
+      const [session] = await db.insert(gameSessions).values({
+        gameId: game.id,
+        teamName: team.name,
+        playerCount: 2,
+        status: "playing",
+      }).returning();
+
+      // 6. 一個 page（lock_coop 測 race 用）
+      const [page] = await db.insert(pages).values({
+        gameId: game.id,
+        pageOrder: 1,
+        pageType: "lock_coop",
+        config: {
+          title: "E2E race test",
+          digits: 4,
+          combination: "1234",
+          clues: [{ text: "前 12" }, { text: "後 34" }],
+        },
+      }).returning();
+
+      res.json({
+        gameId: game.id,
+        sessionId: session.id,
+        teamId: team.id,
+        pageId: page.id,
+        userIds: [u1.id, u2.id],
+      });
+    } catch (err) {
+      console.error("[test-only seed-team-with-members] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
+  // POST /api/_test/lock-coop-update — bypass auth 直接寫 team_lock_states
+  // body: { teamId, sessionId, pageId, userId, action, payload?, expectedVersion? }
+  // 模擬「玩家 X 透過 server 寫狀態」、不需 Firebase JWT
+  // 跑跟正式 endpoint 同樣的樂觀鎖邏輯（驗 A1）
+  app.post("/api/_test/lock-coop-update", async (req, res) => {
+    try {
+      const { teamId, sessionId, pageId, action, payload, expectedVersion } = req.body ?? {};
+      if (!teamId || !sessionId || !pageId || !action) {
+        return res.status(400).json({ error: "missing params" });
+      }
+
+      // 確保記錄存在
+      await db.execute(sql`
+        INSERT INTO team_lock_states (team_id, session_id, page_id)
+        VALUES (${teamId}, ${sessionId}, ${pageId})
+        ON CONFLICT (team_id, session_id, page_id) DO NOTHING
+      `);
+
+      let updateResult: { rowCount?: number | null } | undefined;
+      if (action === "code" && payload?.code !== undefined) {
+        if (expectedVersion !== undefined) {
+          updateResult = await db.execute(sql`
+            UPDATE team_lock_states SET shared_code=${payload.code}, version=version+1, updated_at=NOW()
+            WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
+              AND version=${expectedVersion}
+          `);
+        } else {
+          updateResult = await db.execute(sql`
+            UPDATE team_lock_states SET shared_code=${payload.code}, version=version+1, updated_at=NOW()
+            WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId}
+          `);
+        }
+      } else {
+        return res.status(400).json({ error: `unsupported action: ${action}` });
+      }
+
+      const rowCount = updateResult?.rowCount ?? 0;
+      if (expectedVersion !== undefined && rowCount === 0) {
+        const result = await db.execute(sql`
+          SELECT * FROM team_lock_states WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId} LIMIT 1
+        `);
+        const rows = (result as unknown as { rows?: unknown[] }).rows ?? [];
+        return res.status(409).json({ conflict: true, state: rows[0] ?? null });
+      }
+
+      const result = await db.execute(sql`
+        SELECT * FROM team_lock_states WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId} LIMIT 1
+      `);
+      const rows = (result as unknown as { rows?: unknown[] }).rows ?? [];
+      res.json({ state: rows[0] ?? null });
+    } catch (err) {
+      console.error("[test-only lock-coop-update] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
+  // GET /api/_test/team-lock-state — 直接讀（驗 A1 寫入有沒有真的進 DB）
+  app.get("/api/_test/team-lock-state", async (req, res) => {
+    try {
+      const { teamId, sessionId, pageId } = req.query as Record<string, string>;
+      if (!teamId || !sessionId || !pageId) return res.status(400).json({ error: "missing query" });
+      const result = await db.execute(sql`
+        SELECT * FROM team_lock_states WHERE team_id=${teamId} AND session_id=${sessionId} AND page_id=${pageId} LIMIT 1
+      `);
+      const rows = (result as unknown as { rows?: unknown[] }).rows ?? [];
+      res.json({ state: rows[0] ?? null });
+    } catch (err) {
+      console.error("[test-only team-lock-state] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
+  // POST /api/_test/cleanup-team — 清測試 team / users（含關聯 game）
+  // 用 gameId cascade 刪到 teams / teamMembers / sessions / pages
+  // 額外清 dummy users（避免累積）
+  app.post("/api/_test/cleanup-team", async (req, res) => {
+    try {
+      const { gameId, userIds } = req.body ?? {};
+      if (gameId) {
+        await storage.deleteGame(gameId);
+      }
+      if (Array.isArray(userIds)) {
+        for (const uid of userIds) {
+          if (typeof uid === "string") {
+            await db.delete(users).where(eq(users.id, uid));
+          }
+        }
+      }
+      res.json({ ok: true });
+    } catch (err) {
+      console.error("[test-only cleanup-team] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
   // POST /api/_test/cleanup/:gameId — 清除測試 game
   app.post("/api/_test/cleanup/:gameId", async (req, res) => {
     try {
