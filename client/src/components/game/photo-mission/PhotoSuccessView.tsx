@@ -177,7 +177,8 @@ export default function PhotoSuccessView({
               key={retryKey} // 🆕 改 key 強制重 mount 觸發新請求
               src={currentUrl}
               alt="遊戲紀念照"
-              className="w-full h-auto block"
+              // 🆕 2026-05-07 RWD：max-h 限制紀念照不超過視窗 70%、避免短螢幕被擋
+              className="w-full h-auto max-h-[70vh] object-contain block"
               data-testid="photo-success-image"
               loading="eager"
               onError={() => {
