@@ -553,7 +553,8 @@ export default function GameCompletionScreen({
               <img
                 src={cardUrl}
                 alt="紀念卡"
-                className="w-full h-full object-cover"
+                // 🆕 2026-05-07 RWD：紀念卡用 contain 不裁切（玩家要看完整卡）
+                className="w-full h-full object-contain"
                 data-testid="achievement-card-image"
                 onError={(e) => {
                   // 載入失敗就把 img 藏起來顯示 fallback text
