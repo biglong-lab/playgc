@@ -36,6 +36,8 @@ export interface RouteContext {
   cancelDisconnectTimer?: (teamId: string, userId: string) => void;
   /** 🆕 ADR-0004：HostScreen 主控大螢幕廣播 */
   broadcastToHostSession?: (sessionId: string, message: WsBroadcastMessage, hostOnly?: boolean) => void;
+  /** 🆕 2026-05-07 A4：把指定 user 從 team ws connections 踢掉（玩家被移出隊伍時用）*/
+  kickUserFromTeam?: (teamId: string, userId: string, reason?: string) => void;
 }
 
 // 經 Firebase 認證後的 Request 型別
