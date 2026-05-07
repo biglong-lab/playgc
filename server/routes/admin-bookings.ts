@@ -343,6 +343,40 @@ export function registerAdminBookingRoutes(app: Express) {
     },
   );
 
+  // POST mark-completed（活動結束、業主標記完成 + 推送 game_completed 訊息）
+  app.post(
+    "/api/admin/bookings/:bookingCode/mark-completed",
+    requireAdminAuth,
+    requirePermission("game:edit"),
+    async (req, res) => {
+      try {
+        const result = await markBookingCompleted({
+          bookingCode: req.params.bookingCode,
+          sendNotification: req.body?.sendNotification !== false,
+          customActionUrl: req.body?.customActionUrl,
+        });
+        res.json({ booking: result });
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
+  // POST mark-no-show（玩家未到場）
+  app.post(
+    "/api/admin/bookings/:bookingCode/mark-no-show",
+    requireAdminAuth,
+    requirePermission("game:edit"),
+    async (req, res) => {
+      try {
+        const result = await markBookingNoShow(req.params.bookingCode);
+        res.json({ booking: result });
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
   // GET blackouts
   app.get(
     "/api/admin/bookings/:fieldId/blackouts",
