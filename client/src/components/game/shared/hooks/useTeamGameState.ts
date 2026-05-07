@@ -95,29 +95,54 @@ export function useTeamGameState<T extends Record<string, unknown>>({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
-  // 更新狀態（POST 到 server，WS 廣播由 server 處理）
+  // 更新狀態（POST 到 server、WS 廣播由 server 處理）
+  // 🆕 2026-05-07 A2：收 409 → 拉新狀態 + retry 1 次（newState 套到最新 base）
   const updateState = useCallback(
     async (newState: T) => {
       if (!teamId || !enabled) return;
-      const nextVersion = versionRef.current + 1;
-      try {
-        const res = await apiRequest("POST", "/api/team-state", {
-          teamId,
-          sessionId,
-          pageId,
-          type,
-          state: newState,
-          version: nextVersion,
-        });
-        const data = (await res.json()) as { state: { state_json: T; version: number } | null };
-        if (data.state) {
-          versionRef.current = data.state.version;
-          setVersion(data.state.version);
-          setState(data.state.state_json as T);
+
+      const attempt = async (retry: boolean): Promise<void> => {
+        const nextVersion = versionRef.current + 1;
+        try {
+          const res = await apiRequest("POST", "/api/team-state", {
+            teamId,
+            sessionId,
+            pageId,
+            type,
+            state: newState,
+            version: nextVersion,
+          });
+
+          if (res.status === 409) {
+            // 樂觀鎖衝突：拉最新 → retry 一次（自動 merge 後再送）
+            const data = (await res.json()) as { state?: { state_json: T; version: number } | null };
+            if (data.state) {
+              versionRef.current = data.state.version;
+              setVersion(data.state.version);
+              setState(data.state.state_json as T);
+            }
+            if (retry) {
+              console.warn("[useTeamGameState] 樂觀鎖衝突、retry 1 次", type);
+              await new Promise((r) => setTimeout(r, 200));
+              await attempt(false);
+            } else {
+              console.warn("[useTeamGameState] 樂觀鎖衝突、retry 失敗、放棄此次寫入", type);
+            }
+            return;
+          }
+
+          const data = (await res.json()) as { state: { state_json: T; version: number } | null };
+          if (data.state) {
+            versionRef.current = data.state.version;
+            setVersion(data.state.version);
+            setState(data.state.state_json as T);
+          }
+        } catch (err) {
+          console.error("[useTeamGameState] updateState 失敗:", err);
         }
-      } catch (err) {
-        console.error("[useTeamGameState] updateState 失敗:", err);
-      }
+      };
+
+      await attempt(true);
     },
     [teamId, sessionId, pageId, type, enabled],
   );
