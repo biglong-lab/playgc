@@ -286,6 +286,7 @@ export default function PhotoOcrFlow({
         onRestart={() => camera.startCamera()}
         onSwitchCamera={camera.switchCamera}
         facingMode={camera.facingMode}
+        stream={camera.stream}
       />
     );
   }
