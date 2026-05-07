@@ -33,6 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
+import CameraToolbar from "../photo-mission/CameraToolbar";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 import {
