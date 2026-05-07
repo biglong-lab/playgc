@@ -27,6 +27,10 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   const content = config.content || "";
   const useTypewriter = config.typewriterEffect ?? false;
   const typeSpeed = config.typewriterSpeed ?? 30;
+  // 🆕 2026-05-07 K.5：打字機音效（5 種預設、預設 none）
+  const typewriterSoundType =
+    ((config as unknown as { typewriterSoundType?: TypewriterSoundType }).typewriterSoundType ?? "none");
+  const playCharSound = useTypewriterSound(typewriterSoundType);
 
   useEffect(() => {
     if (useTypewriter && content) {
@@ -37,6 +41,8 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
       const intervalId = setInterval(() => {
         if (charIndex < content.length) {
           setDisplayedText(content.slice(0, charIndex + 1));
+          // 🆕 K.5：每打一字觸發音效
+          playCharSound();
           charIndex++;
         } else {
           setIsTyping(false);
@@ -49,7 +55,7 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
       setDisplayedText(content);
       setIsTyping(false);
     }
-  }, [content, useTypewriter, typeSpeed]);
+  }, [content, useTypewriter, typeSpeed, playCharSound]);
 
   // isTyping ref 避免 deps 變動觸發 effect 重跑時，cleanup 把 finishTimeoutId 清掉
   const isTypingRef = useRef(isTyping);
