@@ -127,6 +127,21 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
     setDisplayedText("");
     setIsTyping(true);
 
+    // 🆕 2026-05-07：訊息切換時播 audioUrl（角色配音）
+    if (messageAudioRef.current) {
+      try { messageAudioRef.current.pause(); } catch { /* noop */ }
+      messageAudioRef.current = null;
+    }
+    const audioUrl = (currentMessage as { audioUrl?: string }).audioUrl;
+    if (audioUrl) {
+      try {
+        const a = new Audio(audioUrl);
+        a.volume = 0.9;
+        void a.play().catch(() => { /* iOS autoplay 可能擋 */ });
+        messageAudioRef.current = a;
+      } catch { /* noop */ }
+    }
+
     let charIndex = 0;
     const text = currentMessage.text || "";
     const typingSpeed = config?.typingSpeed ?? 30;
