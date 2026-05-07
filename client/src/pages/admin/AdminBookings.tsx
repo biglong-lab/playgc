@@ -39,6 +39,7 @@ import {
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
+import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 
 const DEFAULT_FIELD = "jiacun";
 
