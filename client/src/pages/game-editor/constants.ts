@@ -298,6 +298,7 @@ const PAGE_TYPE_CATEGORY: Record<string, PageCategory> = {
   time_bomb: "mission",
   lock: "mission",
   motion_challenge: "mission",
+  flashlight: "mission",
   vote: "mission",
 
   // 📷 拍照系列（7）
