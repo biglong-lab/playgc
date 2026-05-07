@@ -306,6 +306,8 @@ export function useAdminGames(): AdminGamesReturn {
           estimatedTime: formData.estimatedTime ? parseInt(formData.estimatedTime) : null,
           maxPlayers: formData.maxPlayers ? parseInt(formData.maxPlayers) : 6,
           gameMode: formData.gameMode || "individual",
+          // 🆕 2026-05-07：BGM URL（可清空）
+          bgmUrl: formData.bgmUrl || null,
         },
       });
     } else {
