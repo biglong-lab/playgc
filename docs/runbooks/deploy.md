@@ -31,14 +31,43 @@ cd /www/wwwroot/game.homi.cc
 # 3. 拉取最新程式碼
 git pull origin main
 
-# 4. 重新 build + restart 容器
-docker compose -f docker-compose.prod.yml up -d --build
+# 4. 注入 GIT_SHA 並重新 build + restart 容器（下方說明注意）
+export GIT_SHA=$(git rev-parse HEAD)
+docker compose -f docker-compose.prod.yml up -d --build app
 ```
 
-**單行版本**（從本地直接執行）：
+### ⚠️ 必須帶 `GIT_SHA` 的原因（2026-05-07 加固）
+
+`GIT_SHA` 是 docker build arg、會被注入兩個地方：
+1. **client bundle**（`VITE_APP_COMMIT`）— 前端版本檢查（AppUpdateChecker）
+2. **server runtime**（`process.env.GIT_SHA`）— `/api/version` 回的 commit
+
+**沒帶 `GIT_SHA` → server 回 `commit: "unknown"` → AppUpdateChecker 失效**（client 看到 "unknown" 就 return、不檢查更新），玩家無法收到「有新版本可用」通知。
+
+`docker-compose.prod.yml` 設了 `${GIT_SHA:-unknown}` fallback、所以**忘記 export 不會 build 失敗，但會默默損壞版本檢查**。每次都要記得 export。
+
+### 標準單行版本（從本地直接執行）— **推薦**
+
 ```bash
-ssh root@172.233.89.147 "cd /www/wwwroot/game.homi.cc && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build"
+ssh root@172.233.89.147 "cd /www/wwwroot/game.homi.cc \
+  && git pull origin main \
+  && export GIT_SHA=\$(git rev-parse HEAD) \
+  && docker compose -f docker-compose.prod.yml up -d --build app"
 ```
+
+注意：
+- `\$(git rev-parse HEAD)` 的 `\$` 跳脫，讓 SSH session 內才執行（否則本地 shell 先 expand 會抓到本地 commit）
+- 只 build `app`（不 build `db`/`livekit`，加快 build 時間）
+
+### 部署後驗證 commit 注入成功
+
+```bash
+# 應該回真實 commit hash、不是 "unknown"
+curl -s https://game.homi.cc/api/version
+# 預期：{"commit":"80198d4dc7c6...","buildTime":"unknown","timestamp":...}
+```
+
+如果回 `"unknown"` → 重新跑一次部署、確認有 `export GIT_SHA=$(git rev-parse HEAD)`。
 
 ---
 
