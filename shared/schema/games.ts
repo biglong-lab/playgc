@@ -79,6 +79,8 @@ export const games = pgTable("games", {
   // 🤖 AI 實測標記（P6-4 / Preview Mode）— admin 在發布前點「已完成 AI 實測」會更新此時戳
   // null = 從未實測；timestamp 記錄最近一次標記時間（提醒用，不阻擋發布）
   lastLiveTestedAt: timestamp("last_live_tested_at"),
+  // 🆕 2026-05-07：整場 BGM URL（玩家進場時 BgmPlayer 自動播）
+  bgmUrl: text("bgm_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
