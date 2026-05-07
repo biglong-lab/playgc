@@ -192,6 +192,33 @@
     max-width: none;
   }
 
+  /* 🆕 2026-05-07 RWD utility class（共用、避免重寫）*/
+
+  /* 拍照預覽 / 紀念照固定比例（4:3 接近自然手機拍照）*/
+  .aspect-photo { aspect-ratio: 4 / 3; }
+  .aspect-photo-portrait { aspect-ratio: 3 / 4; }
+
+  /* 玩家頁主容器：max-w + auto + 兩側 padding */
+  .container-player {
+    max-width: 42rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  @media (min-width: 768px) {
+    .container-player {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  /* 防止超長詞撐爆容器 */
+  .text-balance-safe {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
   /* 📱 iOS 輸入欄位字體 16px 以上才不會自動 zoom in */
   @media (max-width: 768px) {
     input,
