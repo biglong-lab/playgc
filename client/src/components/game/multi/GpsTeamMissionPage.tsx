@@ -97,12 +97,11 @@ export default function GpsTeamMissionPage({
 
   // 🆕 2026-05-07 A3：團隊持久化 reachedUserIds（解 R4：戶外活動重整不丟進度）
   const persistence = useTeamPagePersistence<GpsTeamMissionPersistState>({
-    teamId: teamId ?? "",
+    gameId,
     sessionId,
     pageId,
-    componentType: "gps_team_mission",
+    type: "gps_team_mission",
     defaultState: DEFAULT_GPS_TEAM_STATE,
-    enabled: !!teamId && !!user,
   });
 
   // 🆕 包裝 onComplete：完成時把 myUserId 加進 reachedUserIds（DB 持久化）
