@@ -1021,6 +1021,16 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     });
     if (targets.length === 0) return;
 
+    // 🔭 Phase 0.2：log kick 事件
+    logWsEvent({
+      eventType: "kick",
+      direction: "system",
+      teamId,
+      userId,
+      reason,
+      recipientCount: targets.length,
+    });
+
     const payload = JSON.stringify({
       type: "team_kicked",
       teamId,
