@@ -101,6 +101,88 @@
 | `7571d65e..e5cc435b` | Home.tsx 套用 PullToRefresh（4 個 auto save） |
 | `c4d9c60f` | vite.config.ts manifest shortcuts |
 | `5ecabf2f` | **feat 本體**：新增 PullToRefresh hook + 元件 |
+| `4be64f6a..95a7e5b5` | **🔥 Hot fix**：Home.tsx useCallback 移到 early return 之前 |
+
+---
+
+## 🔥 Hot Fix：iPhone PWA #310 hooks rule 違反（部署當晚）
+
+### 業主回報
+- 時間：2026-05-09 凌晨 ~01:36（部署 5ecabf2f 後幾小時）
+- 裝置：iPhone iOS 18.7 Safari 26.5（PWA standalone 模式）
+- 頁面：`/f/JIACHUN/home?launch=pwa`
+- 錯誤：`Minified React error #310 — Rendered more hooks than during the previous render`
+
+### 根因
+我把 `handlePullRefresh` 的 `useCallback` 加在 Home.tsx **line 412**（`getContinueLabel` 之後），但 Home.tsx 在 **line 340 / 351** 已有兩處 early return（`authLoading || !isSignedIn` / `!user`）。
+
+```
+第一次 render（auth loading）→ early return → 跳過 useCallback → N hooks
+第二次 render（auth ready）→ 跑到 useCallback → N+1 hooks
+React: ❌ #310
+```
+
+只在 **iPhone PWA 場景** 觸發、因為 PWA 啟動 + Firebase auth 需要 ~200ms buffer、玩家會經歷 auth loading state（電腦/Android boot 較快、不易撞）。
+
+### 修復
+把 `handlePullRefresh` `useCallback` 移到 Home.tsx **line 339**（最後一個 `useEffect` 之後、第一個 early return 之前），符合 React Rules of Hooks。
+
+```typescript
+}, [authLoading, isSignedIn, setLocation]);   // ← 最後一個 useEffect
+
+// 📲 下拉重整：重抽玩家主頁的 4 個 queries
+// ⚠️ 必須在 early return 之前宣告（React Hooks 規則 — 否則 #310）
+const handlePullRefresh = useCallback(async () => { ... }, [...]);
+
+// Loading 狀態：Firebase 還在 init...     ← line 339 之後才 early return
+if (authLoading || !isSignedIn) {
+  return ...;
+}
+```
+
+### 雙保險（業主補丁同步部署）
+業主同步 push 了 `ErrorBoundary.tsx` 強化（commit `b5068633`）：
+- 加 `isReactMinifiedError(error)` 偵測（regex `/Minified React error #\d+/i`）
+- React minified error 走跟 chunk error 一樣的 `clearPwaCachesAndReload()` 自動恢復路徑
+- 顯示「🔄 版本更新中…」改善 UX
+
+未來若再有類似 React minified 錯誤、ErrorBoundary 會自動清快取 reload、玩家不會卡死。
+
+### 教訓
+- **加 hook 進已存在的 component 必須先確認 early return 位置**
+- **Home.tsx 已經在註解標明「difficultyCount 已在 early return 前宣告（React hook 規則）」**、表示這檔曾經中過同樣問題、我沒讀到該註解就改檔
+- 下次：用 grep 找 `^  if.*return\|^  return (` 在 component function 內部、確認位置再加 hook
+
+---
+
+## 下次接續事項（給未來 session）
+
+### ✅ 已完成
+- PWA/RWD 全套優化部署上線
+- iPhone PWA #310 hot fix 部署上線
+- ErrorBoundary 補丁雙保險
+- TypeScript 通過
+
+### ⏸ 待業主實機驗證
+1. 開 iPhone PWA 訪問 `https://game.homi.cc/f/JIACHUN/home?launch=pwa` → **不應再出現 #310**
+2. Home 下拉 80px → 看到「重整中」轉圈 → toast「已更新」
+3. 邊緣 swipe back / 中段下拉等防呆測試（細節在「驗證」段）
+4. 重新安裝 PWA → 長按 icon → 看到 3 個 shortcuts
+
+### 📋 待擴大套用 PTR（業主說 OK 後）
+候選頁面（每頁追加 ~5-10 行）：
+- `client/src/pages/BattleMyProfile.tsx`（玩家戰績）
+- `client/src/pages/MySquads.tsx`（我的隊伍）
+- `client/src/pages/SquadPublic.tsx`（Squad 詳情）
+- `client/src/pages/AdminSessions.tsx`（admin 列表，PTR 收益較小）
+
+**套用 SOP**（避免再撞 #310）：
+1. 找該頁的 component function
+2. grep 找 early return 位置（`^  if.*return`）
+3. `useCallback(handlePullRefresh)` 一定加在最後一個 hook 之後、第一個 early return 之前
+4. 找該頁的 useQuery / queryKey
+5. handlePullRefresh 內 invalidateQueries 對應 queryKey
+6. 在 return 外層 wrap `<PullToRefresh onRefresh={handlePullRefresh}>`
 
 ---
 
