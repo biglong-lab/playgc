@@ -2008,19 +2008,27 @@ export default function PageConfigEditor({
       {renderPageConfig()}
 
       {/* 🆕 2026-05-07 N.1：頁面個別 BGM（覆蓋 game.bgmUrl、優先播） */}
+      {/* 🆕 D2-c+ (2026-05-09)：加 MediaUploadButton 支援檔案上傳 */}
       <div className="space-y-2 p-3 border rounded-md bg-muted/20">
         <label className="text-sm font-medium flex items-center gap-1">
           🎵 此頁面 BGM 音樂網址
           <span className="text-xs text-muted-foreground font-normal">（選填、覆蓋整場 BGM）</span>
         </label>
-        <Input
-          type="url"
-          value={(config.bgmUrl as string | undefined) ?? ""}
-          onChange={(e) => updateField("bgmUrl", e.target.value || null)}
-          placeholder="https://res.cloudinary.com/.../audio.mp3"
-          data-testid="input-page-bgm-url"
-          className="h-9"
-        />
+        <div className="flex gap-2">
+          <Input
+            type="url"
+            value={(config.bgmUrl as string | undefined) ?? ""}
+            onChange={(e) => updateField("bgmUrl", e.target.value || null)}
+            placeholder="https://res.cloudinary.com/.../audio.mp3"
+            data-testid="input-page-bgm-url"
+            className="h-9 flex-1"
+          />
+          <MediaUploadButton
+            id="page-bgm-upload"
+            accept="audio/*"
+            onUploaded={(url) => updateField("bgmUrl", url)}
+          />
+        </div>
         <p className="text-[11px] text-muted-foreground">
           進此頁時切到此音樂、離開恢復整場 BGM。空白則用整場 BGM。
         </p>
