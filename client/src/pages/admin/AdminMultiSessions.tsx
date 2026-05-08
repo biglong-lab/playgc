@@ -720,13 +720,20 @@ function SessionDetail({ gameId, sessionId }: { gameId: string; sessionId: strin
         windowMinutes={detailSession.timelineWindowMinutes}
       />
 
-      {/* 訊息流統計 */}
-      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+      {/* 訊息流統計 + P3-15 broadcast/min */}
+      <div className="flex items-center gap-3 text-[11px] text-muted-foreground flex-wrap">
         <span>
           📩 inbound：<strong className="text-foreground">{detailSession.health.messageCount}</strong>
         </span>
         <span>
           📡 broadcast：<strong className="text-foreground">{detailSession.health.broadcastCount}</strong>
+        </span>
+        <span className="flex items-center gap-1">
+          <TrendingUp className="w-3 h-3" />
+          <strong className="text-foreground">
+            {Math.round(detailSession.health.broadcastCount / Math.max(1, detailSession.timelineWindowMinutes))}
+          </strong>
+          /min
         </span>
         <span className="text-muted-foreground/70">（過去 5 分鐘）</span>
       </div>
