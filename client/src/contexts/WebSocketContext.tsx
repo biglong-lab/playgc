@@ -382,6 +382,46 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
+  // 🆕 Phase 2：ensureConnected — ref counting
+  // 第 1 個呼叫 → 觸發 connect（如尚未連）
+  // 後續呼叫 → 計數 += 1、不重連
+  // release → 計數 -= 1（目前不主動關 ws、Provider 全期間保留）
+  const ensureConnected = useCallback((): (() => void) => {
+    connectionRefCountRef.current += 1;
+    // 沒 active ws 且沒 config → 嘗試連（無 team_join、靠 onConnect handler 發 join）
+    if (!wsRef.current || wsRef.current.readyState === WebSocket.CLOSED) {
+      // 用 dummy config 觸發 connect（onopen 內 c 為 null 時不發 team_join）
+      // 直接呼 connect()
+      intentionalCloseRef.current = false;
+      reconnectAttemptsRef.current = 0;
+      connect();
+    }
+    return () => {
+      connectionRefCountRef.current = Math.max(0, connectionRefCountRef.current - 1);
+      // 不主動關 ws（避免換頁 close-reopen）、Provider 全期間保留
+    };
+  }, [connect]);
+
+  // 🆕 Phase 2：registerOnConnect — 註冊 ws 連到 OPEN 時要發的 join 訊息
+  const registerOnConnect = useCallback(
+    (key: string, handler: (ws: WebSocket) => void): (() => void) => {
+      onConnectHandlersRef.current.set(key, handler);
+      // 若 ws 已連、立即執行一次（補上 reconnect 場景）
+      const ws = wsRef.current;
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        try {
+          handler(ws);
+        } catch {
+          /* ignore */
+        }
+      }
+      return () => {
+        onConnectHandlersRef.current.delete(key);
+      };
+    },
+    [],
+  );
+
   const send = useCallback((msg: object): boolean => {
     const ws = wsRef.current;
     if (ws?.readyState === WebSocket.OPEN) {
