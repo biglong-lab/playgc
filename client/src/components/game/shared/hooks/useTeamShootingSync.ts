@@ -13,10 +13,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TeamShootingHit } from "../../multi/ShootingTeam";
-// 🌐 Phase 2 (2026-05-08)：feature flag — Provider 共用 ws
+// 🌐 Phase 3 (2026-05-08)：永遠走全域 WS Provider
 import { useWebSocket } from "@/contexts/WebSocketContext";
-
-const USE_GLOBAL_WS_PROVIDER = (import.meta.env.VITE_USE_GLOBAL_WS as string | undefined) === "true";
 
 // ============================================================================
 // 型別
