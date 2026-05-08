@@ -125,6 +125,13 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
   // 多 subscriber：所有 hook 都收到 message
   const handlersRef = useRef<Set<(msg: TeamMessage) => void>>(new Set());
 
+  // 🆕 Phase 2：on-connect handlers（每次 ws 連到 OPEN 都呼叫、reconnect 也會）
+  // 用 Map<key, handler> 達成 dedupe（同 hook 重複 register 只保留最新）
+  const onConnectHandlersRef = useRef<Map<string, (ws: WebSocket) => void>>(new Map());
+
+  // 🆕 Phase 2：ensureConnected ref counting
+  const connectionRefCountRef = useRef(0);
+
   // 當前 connection 對應的 config（teamId/userId/userName）
   const configRef = useRef<AcquireConfig | null>(null);
 
