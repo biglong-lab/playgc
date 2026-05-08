@@ -103,10 +103,71 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
           membersByTeam.get(m.teamId)!.push(m);
         }
 
-        // 4. batch 拉所有 player progress（看 online 狀態）
+        // 4. 🆕 P0-3 (2026-05-08)：用 ws_event_log 算真實 online 狀態
+        //    每個 user 取最後一個事件、判斷是否仍 online
         const sessionIds = visibleSessions
           .map((s) => s.sessionId)
           .filter((id): id is string => id !== null);
+        const healthCutoff = new Date(Date.now() - HEALTH_WINDOW_MS);
+        const recentCutoff = new Date(Date.now() - ONLINE_RECENT_MS);
+
+        // 過去 5 分鐘的所有 ws 事件（用於 online 判斷 + 健康指標聚合）
+        const wsEvents = sessionIds.length > 0
+          ? await db
+              .select({
+                sessionId: wsEventLog.sessionId,
+                userId: wsEventLog.userId,
+                eventType: wsEventLog.eventType,
+                timestamp: wsEventLog.timestamp,
+              })
+              .from(wsEventLog)
+              .where(
+                and(
+                  inArray(wsEventLog.sessionId, sessionIds),
+                  gte(wsEventLog.timestamp, healthCutoff),
+                ),
+              )
+          : [];
+
+        // 4a. 計算每個 (sessionId, userId) 的最後事件
+        type LastEvent = { eventType: string; timestamp: Date };
+        const lastEventMap = new Map<string, LastEvent>(); // key = sessionId|userId
+        for (const e of wsEvents) {
+          if (!e.sessionId || !e.userId || !e.timestamp) continue;
+          const key = `${e.sessionId}|${e.userId}`;
+          const existing = lastEventMap.get(key);
+          if (!existing || e.timestamp > existing.timestamp) {
+            lastEventMap.set(key, { eventType: e.eventType, timestamp: e.timestamp });
+          }
+        }
+
+        // 4b. 健康指標聚合（per session）
+        type SessionHealth = {
+          graceCount: number;
+          autoLeaveCount: number;
+          kickCount: number;
+          reconnectCount: number;
+          errorCount: number;
+        };
+        const healthBySession = new Map<string, SessionHealth>();
+        for (const e of wsEvents) {
+          if (!e.sessionId) continue;
+          const h = healthBySession.get(e.sessionId) ?? {
+            graceCount: 0,
+            autoLeaveCount: 0,
+            kickCount: 0,
+            reconnectCount: 0,
+            errorCount: 0,
+          };
+          if (e.eventType === "grace_expired") h.graceCount += 1;
+          else if (e.eventType === "auto_leave") h.autoLeaveCount += 1;
+          else if (e.eventType === "kick") h.kickCount += 1;
+          else if (e.eventType === "reconnect") h.reconnectCount += 1;
+          else if (e.eventType === "error") h.errorCount += 1;
+          healthBySession.set(e.sessionId, h);
+        }
+
+        // 4c. fallback：若 ws_event_log 沒事件（可能 event log 還沒啟用）→ 用舊的 player_progress 邏輯
         const allProgress = sessionIds.length > 0
           ? await db
               .select({
@@ -122,12 +183,11 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
                 ),
               )
           : [];
-
-        const onlineSetBySession = new Map<string, Set<string>>();
+        const fallbackOnlineSet = new Map<string, Set<string>>();
         for (const p of allProgress) {
           if (!p.sessionId || !p.userId) continue;
-          if (!onlineSetBySession.has(p.sessionId)) onlineSetBySession.set(p.sessionId, new Set());
-          onlineSetBySession.get(p.sessionId)!.add(p.userId);
+          if (!fallbackOnlineSet.has(p.sessionId)) fallbackOnlineSet.set(p.sessionId, new Set());
+          fallbackOnlineSet.get(p.sessionId)!.add(p.userId);
         }
 
         // 5. 組裝 lightweight session list
@@ -137,11 +197,53 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
             (sum, t) => sum + (membersByTeam.get(t.id)?.length ?? 0),
             0,
           );
-          const onlineSet = onlineSetBySession.get(s.sessionId) ?? new Set();
-          const onlineMembers = sessionTeams.reduce((sum, t) => {
+
+          // 🆕 真實 online：依 ws_event_log 最後事件
+          let onlineMembers = 0;
+          let recentMembers = 0;       // 30s 內活動 = 真 online
+          let awayMembers = 0;          // 暫離（30s~5min 內活動）
+          for (const t of sessionTeams) {
             const teamMems = membersByTeam.get(t.id) ?? [];
-            return sum + teamMems.filter((m) => onlineSet.has(m.userId)).length;
-          }, 0);
+            for (const m of teamMems) {
+              const last = lastEventMap.get(`${s.sessionId}|${m.userId}`);
+              if (last && last.eventType !== "close" && last.eventType !== "auto_leave") {
+                onlineMembers += 1;
+                if (last.timestamp >= recentCutoff) {
+                  recentMembers += 1;
+                } else {
+                  awayMembers += 1;
+                }
+              }
+            }
+          }
+
+          // fallback：若 ws_event_log 完全沒事件、退回 player_progress 5 分鐘判斷
+          const hasWsEvents = wsEvents.some((e) => e.sessionId === s.sessionId);
+          if (!hasWsEvents) {
+            const fbSet = fallbackOnlineSet.get(s.sessionId ?? "") ?? new Set();
+            onlineMembers = sessionTeams.reduce((sum, t) => {
+              const teamMems = membersByTeam.get(t.id) ?? [];
+              return sum + teamMems.filter((m) => fbSet.has(m.userId)).length;
+            }, 0);
+            recentMembers = onlineMembers;
+            awayMembers = 0;
+          }
+
+          const health = healthBySession.get(s.sessionId ?? "") ?? {
+            graceCount: 0,
+            autoLeaveCount: 0,
+            kickCount: 0,
+            reconnectCount: 0,
+            errorCount: 0,
+          };
+
+          // 異常分數（給前端排序用、越高越異常）
+          const anomalyScore =
+            health.graceCount * 5 +
+            health.autoLeaveCount * 10 +
+            health.errorCount * 8 +
+            health.kickCount * 3 +
+            (totalMembers > 0 ? Math.round(((totalMembers - onlineMembers) / totalMembers) * 5) : 0);
 
           return {
             sessionId: s.sessionId,
@@ -153,13 +255,23 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
             teamCount: sessionTeams.length,
             totalMembers,
             onlineMembers,
+            recentMembers,        // 🆕 真 online（30s 內）
+            awayMembers,          // 🆕 暫離（30s~5min）
             offlineMembers: totalMembers - onlineMembers,
+            // 🆕 P0-4 ws 健康指標（過去 5 分鐘）
+            health,
+            anomalyScore,
+            usingRealtimeData: hasWsEvents, // 給前端標示「資料來源」
           };
         });
+
+        // 🆕 P0-5 異常排序到頂
+        result.sort((a, b) => b.anomalyScore - a.anomalyScore);
 
         res.json({
           sessions: result,
           totalActive: result.length,
+          healthWindowMinutes: Math.round(HEALTH_WINDOW_MS / 60_000),
           generatedAt: new Date().toISOString(),
         });
       } catch (err) {
