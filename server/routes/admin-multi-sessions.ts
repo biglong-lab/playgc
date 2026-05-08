@@ -65,11 +65,16 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
         }
 
         // 2. batch 拉所有相關 game 的 teams（避免 N+1 query）
-        const gameIds = Array.from(new Set(visibleSessions.map((s) => s.gameId)));
-        const allTeams = await db
-          .select({ id: teams.id, gameId: teams.gameId })
-          .from(teams)
-          .where(inArray(teams.gameId, gameIds));
+        // gameSessions.gameId 雖在 schema 是 nullable join 結果、實務必有值（過濾 null 安全）
+        const gameIds = Array.from(
+          new Set(visibleSessions.map((s) => s.gameId).filter((id): id is string => id !== null)),
+        );
+        const allTeams = gameIds.length > 0
+          ? await db
+              .select({ id: teams.id, gameId: teams.gameId })
+              .from(teams)
+              .where(inArray(teams.gameId, gameIds))
+          : [];
 
         const teamsByGame = new Map<string, typeof allTeams>();
         for (const t of allTeams) {
