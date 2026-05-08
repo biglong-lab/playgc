@@ -22,9 +22,15 @@ interface ChatPanelProps {
 
 export default function ChatPanel({ sessionId, userId, userName, onClose }: ChatPanelProps) {
   const [message, setMessage] = useState("");
-  const [isWsConnected, setIsWsConnected] = useState(false);
+  const [isWsConnectedLegacy, setIsWsConnectedLegacy] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
+
+  // 🌐 Phase 2：Provider 版用 context state；Legacy 版用本地 state
+  // (條件 hook 但 USE_GLOBAL_WS_PROVIDER 為 module 常數、不會變動 → 安全)
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const wsProvider = USE_GLOBAL_WS_PROVIDER ? useWebSocket() : null;
+  const isWsConnected = USE_GLOBAL_WS_PROVIDER ? (wsProvider?.isConnected ?? false) : isWsConnectedLegacy;
 
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat", sessionId],
@@ -43,7 +49,37 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
     },
   });
 
+  // 🌐 Phase 2：Provider 版 — 用 ensureConnected + registerOnConnect + subscribe
   useEffect(() => {
+    if (!USE_GLOBAL_WS_PROVIDER || !wsProvider) return;
+    const release = wsProvider.ensureConnected();
+    const releaseJoin = wsProvider.registerOnConnect(`chat:${sessionId}:${userId}`, (ws) => {
+      ws.send(
+        JSON.stringify({
+          type: "join",
+          sessionId,
+          userId,
+          userName,
+        }),
+      );
+    });
+    const unsubscribe = wsProvider.subscribe((data) => {
+      const d = data as { type?: string; sessionId?: string };
+      if (d.type === "chat" && d.sessionId === sessionId) {
+        queryClient.invalidateQueries({ queryKey: ["/api/chat", sessionId] });
+      }
+    });
+    return () => {
+      releaseJoin();
+      unsubscribe();
+      release();
+    };
+  }, [sessionId, userId, userName, wsProvider]);
+
+  // ↓↓↓ Legacy 版（feature flag = false）：原 new WebSocket 實作
+  useEffect(() => {
+    if (USE_GLOBAL_WS_PROVIDER) return;
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
 
@@ -51,7 +87,7 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
-        setIsWsConnected(true);
+        setIsWsConnectedLegacy(true);
         ws.send(JSON.stringify({
           type: "join",
           sessionId,
@@ -76,7 +112,7 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
       };
 
       ws.onclose = () => {
-        setIsWsConnected(false);
+        setIsWsConnectedLegacy(false);
       };
 
       wsRef.current = ws;
@@ -85,7 +121,7 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
         if (ws.readyState === WebSocket.OPEN) {
           ws.close();
         }
-        setIsWsConnected(false);
+        setIsWsConnectedLegacy(false);
       };
     } catch {
       // WebSocket 連線建立失敗
