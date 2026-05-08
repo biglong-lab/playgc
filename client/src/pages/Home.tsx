@@ -962,6 +962,7 @@ export default function Home() {
         initialName={savedAnonName}
       />
     </div>
+    </PullToRefresh>
   );
 }
 
