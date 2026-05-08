@@ -28,9 +28,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, Users, Wifi, WifiOff, RefreshCw, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Activity, Users, Wifi, WifiOff, RefreshCw, ChevronDown, ChevronUp, Loader2, History } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { Link } from "wouter";
 
 interface SessionListItem {
   sessionId: string;
