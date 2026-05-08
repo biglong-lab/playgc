@@ -96,10 +96,34 @@ export default function TriviaShowdown({ config, hostMode, state, myUserName, se
 
   const myAnswer = myUserName ? effectiveState.answered[myUserName] : undefined;
 
-  const handleAnswer = useCallback((choice: number) => {
+  const handleAnswer = useCallback(async (choice: number) => {
     if (effectiveState.status !== "answering" || myAnswer) return;
-    onPulse?.("answer", { choice, ts: Date.now() });
-  }, [effectiveState.status, myAnswer, onPulse]);
+    // 🆕 Phase 4 (2026-05-08)：server-side scoring
+    // 玩家答題直接 POST 給 server、server 寫 DB + 算 rank/score + broadcast 新 state
+    // ADR-0018 規則 4：計分必須 server-side source-of-truth
+    if (sessionId && myUserId && myUserName && currentQ) {
+      try {
+        await fetch(`/api/trivia/${sessionId}/answer`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            questionId: currentQ.id,
+            choice,
+            correctIdx: currentQ.correctIdx,
+            scoreByRank: config.scoreByRank,
+            userId: myUserId,
+            userName: myUserName,
+          }),
+        });
+      } catch (err) {
+        console.error("[TriviaShowdown] POST answer failed:", err);
+      }
+    } else {
+      // Fallback：缺 sessionId/userId 時走原 ws pulse（測試環境 / dev）
+      onPulse?.("answer", { choice, ts: Date.now() });
+    }
+  }, [effectiveState.status, myAnswer, onPulse, sessionId, myUserId, myUserName, currentQ, config.scoreByRank]);
 
   // 大螢幕主控按鈕（host 才用）
   const handleStart = useCallback(() => {
