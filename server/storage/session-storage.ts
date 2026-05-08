@@ -51,34 +51,20 @@ export const sessionStorageMethods = {
       .where(and(eq(gameSessions.gameId, gameId), eq(gameSessions.status, "playing")));
   },
 
-  /** 取得使用者在某遊戲中的活躍工作階段（含進度） */
+  /** 取得使用者在某遊戲中的活躍工作階段（含進度）
+   *
+   * 🆕 D2-c+ (2026-05-09)：邏輯改為「completed 優先」
+   *   舊邏輯：playing 優先 → 玩家通關後又開新 session 中途離開、第三次進入會接續
+   *           incomplete session、彈 ResumeDialog「上次玩到第 2 頁」造成困惑
+   *   新邏輯：先查 completed（玩家曾通關過 → 進通關狀態、不再彈 dialog）
+   *           沒 completed 才查 playing（接續未通關進度）
+   *   行為：通關 = 結束。再進入 = 看到通關狀態。要重玩請點「重新開始」。
+   */
   async getActiveSessionByUserAndGame(
     userId: string,
     gameId: string
   ): Promise<{ session: GameSession; progress: PlayerProgress } | null> {
-    // 先查詢進行中的工作階段
-    const playingResults = await db
-      .select({
-        session: gameSessions,
-        progress: playerProgress,
-      })
-      .from(playerProgress)
-      .innerJoin(gameSessions, eq(playerProgress.sessionId, gameSessions.id))
-      .where(
-        and(
-          eq(playerProgress.userId, userId),
-          eq(gameSessions.gameId, gameId),
-          eq(gameSessions.status, "playing")
-        )
-      )
-      .orderBy(desc(gameSessions.startedAt))
-      .limit(1);
-
-    if (playingResults.length > 0) {
-      return playingResults[0];
-    }
-
-    // 若無進行中，則查詢最近的已完成工作階段
+    // 🆕 先查最新已完成的 session（玩家曾通關過、語意 = 結束）
     const completedResults = await db
       .select({
         session: gameSessions,
@@ -98,6 +84,28 @@ export const sessionStorageMethods = {
 
     if (completedResults.length > 0) {
       return completedResults[0];
+    }
+
+    // 沒通關過 → 查最近進行中的 session（接續未完成進度）
+    const playingResults = await db
+      .select({
+        session: gameSessions,
+        progress: playerProgress,
+      })
+      .from(playerProgress)
+      .innerJoin(gameSessions, eq(playerProgress.sessionId, gameSessions.id))
+      .where(
+        and(
+          eq(playerProgress.userId, userId),
+          eq(gameSessions.gameId, gameId),
+          eq(gameSessions.status, "playing")
+        )
+      )
+      .orderBy(desc(gameSessions.startedAt))
+      .limit(1);
+
+    if (playingResults.length > 0) {
+      return playingResults[0];
     }
 
     return null;
