@@ -355,6 +355,15 @@ app.use((req, res, next) => {
     console.error("[boot] startBookingReminderCron 失敗:", err);
   }
 
+  // 🔭 啟動 observability 清理 cron（Phase 0.2 / 2026-05-08）
+  // 每天 03:00 跑、刪 90 天前的 ws_event_log + db_write_log
+  try {
+    const { startObservabilityCleanupCron } = await import("./lib/observability-cleanup-cron");
+    startObservabilityCleanupCron();
+  } catch (err) {
+    console.error("[boot] startObservabilityCleanupCron 失敗:", err);
+  }
+
   app.use((err: Error & { status?: number; statusCode?: number }, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
