@@ -55,6 +55,9 @@ export interface TriviaShowdownProps {
   hostMode: boolean;
   state?: TriviaShowdownState | null;
   myUserName?: string;
+  /** 🆕 Phase 4 (2026-05-08)：server-side scoring 用、玩家答題直接 POST */
+  sessionId?: string;
+  myUserId?: string;
   onPulse?: (pulseType: string, payload: unknown) => void;
   onBroadcastState?: (state: TriviaShowdownState) => void;
 }
