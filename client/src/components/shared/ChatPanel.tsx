@@ -7,6 +7,11 @@ import { X, Send, Users } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { ChatMessage } from "@shared/schema";
+// 🌐 Phase 2 (2026-05-08)：改用全域 WS Provider（feature flag 控）
+import { useWebSocket } from "@/contexts/WebSocketContext";
+
+// Phase 2 feature flag — 與 useTeamWebSocket 同 flag
+const USE_GLOBAL_WS_PROVIDER = (import.meta.env.VITE_USE_GLOBAL_WS as string | undefined) === "true";
 
 interface ChatPanelProps {
   sessionId: string;
