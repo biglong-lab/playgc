@@ -451,6 +451,8 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
         isConnected,
         isReconnecting,
         acquire,
+        ensureConnected,
+        registerOnConnect,
         subscribe,
         send,
         getConnectionStats,
