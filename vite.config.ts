@@ -101,6 +101,31 @@ export default defineConfig({
           { src: "/icons/pwa-512.png", sizes: "512x512", type: "image/png" },
           { src: "/icons/pwa-512-maskable.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
+        // 🆕 2026-05-09 App Shortcuts — 長按 PWA icon 跳出快捷選單（Android / iOS 16.4+）
+        //   url 帶 ?launch=pwa-shortcut-* 給 pwa-analytics 區分點擊來源
+        shortcuts: [
+          {
+            name: "場域首頁",
+            short_name: "場域",
+            description: "回到上次玩過的場域",
+            url: "/home?launch=pwa-shortcut-home",
+            icons: [{ src: "/icons/pwa-192.png", sizes: "192x192", type: "image/png" }],
+          },
+          {
+            name: "對戰擂台",
+            short_name: "對戰",
+            description: "查看對戰時段與排行榜",
+            url: "/battle?launch=pwa-shortcut-battle",
+            icons: [{ src: "/icons/pwa-192.png", sizes: "192x192", type: "image/png" }],
+          },
+          {
+            name: "找適合的情境",
+            short_name: "找情境",
+            description: "3 問找出最適合的活動情境",
+            url: "/find-scenario?launch=pwa-shortcut-find",
+            icons: [{ src: "/icons/pwa-192.png", sizes: "192x192", type: "image/png" }],
+          },
+        ],
       },
       devOptions: {
         enabled: false,
