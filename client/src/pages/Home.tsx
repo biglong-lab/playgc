@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchShortcut } from "@/hooks/useSearchShortcut";
 import SearchKbdHint from "@/components/shared/SearchKbdHint";
 import { Link, useLocation, useParams } from "wouter";
