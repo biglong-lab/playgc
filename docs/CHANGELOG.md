@@ -5,16 +5,50 @@
 
 ---
 
+## 2026-05-08（晚上）
+
+### 🎨 AdminMultiSessions v2 — 16 項完整打磨（已上線）
+**主題**：使用者反映「排版比照 /admin/sessions、資料是否真實、解決問題、不要浪費」、針對即時連線監控做完整打磨
+**狀態**：🟢 已上線生產、commit `550d60bc`
+**詳情** → [changes/2026-05-08-admin-multi-sessions-v2.md](changes/2026-05-08-admin-multi-sessions-v2.md)
+
+**P0 核心改造**（5 項）：
+- 三列卡片佈局（grid-cols-1 md:2 lg:3）
+- 頂部 4 MetricCard（共用元件、可點 filter）
+- **真實 online**：用 ws_event_log 取代 5 分鐘 polling 假象（三態：online/away/offline）
+- ws 健康指標（grace / auto_leave / kick / error 過去 5 分鐘聚合）
+- 異常 session 自動排序到頂（anomalyScore = grace×5 + autoLeave×10 + ...）
+
+**P1 工具增強**（4 項）：
+- 篩選列（搜尋 / 場域 / 健康度）
+- 玩家詳情真實 ws 狀態（連線時間 / 重連次數 / IP / UA / lastReason）
+- 迷你連線時間軸（30 格、紅橘綠標事件分布）
+- CSV 匯出（16 欄）
+
+**P2/P3 加分**（7 項）：
+- game 進度指標 / sessionId 點擊複製 / refresh 倒數
+- **Telegram 異常告警 cron**（critical → notify + Replay 連結 + 30min cooldown）
+- **玩家 cross-session 歷史 dialog**（1/7/30/90 天 + 多 IP 偵測）
+- broadcast/min 統計 / 鍵盤導航
+
+**新 server endpoint**：`GET /api/admin/players/:userId/connection-history`
+**新 server cron**：`server/lib/multi-sessions-alert-cron.ts`
+
+**明確拒絕**（避免浪費）：大型趨勢圖 / emoji 動畫 / server CPU metrics / 漏接偵測
+
+---
+
 ## 2026-05-08（下午）
 
-### 🌐 多人遊戲穩定性架構重構（Phase 0-4 全套完成）
+### 🌐 多人遊戲穩定性架構重構（Phase 0-4 全套完成、已上線）
 **主題**：自寫 WS + 全域單例 + 完整監測 + 規範訂定，徹底解決 user 回報「進入遊戲斷線 + 對講機離線 + 猜謎不公平」
-**狀態**：🟢 程式碼完成、tsc 0 / smoke 51/51 / ADR-0018 通過、待生產部署
+**狀態**：🟢 已上線生產、含真實多人 e2e
 **規劃** → [changes/2026-05-08-multi-stability-refactor-plan.md](changes/2026-05-08-multi-stability-refactor-plan.md)
+**全日總結** → [changes/2026-05-08-summary.md](changes/2026-05-08-summary.md)
 
 **根因**：演進累積 4 條獨立 ws connection（useTeamWebSocket / useHostScreenSync / useTeamShootingSync / ChatPanel），同玩家瀏覽器同時開、互相干擾、isUserStillConnected 競態誤判。
 
-**核心交付**（7 個 commit、~4750 行新增、~700 行 Legacy 清理）：
+**核心交付**（8 個 commit、~5380 行新增、~700 行 Legacy 清理）：
 - **Phase 0.1** admin/multi-sessions 即時連線監控 UI（5s refresh）
 - **Phase 0.2** ws_event_log + db_write_log + 90 天 retention（爭議仲裁基礎）
 - **Phase 0.3** Session Replay UI + CSV export（爭議仲裁工具）
@@ -22,6 +56,7 @@
 - **Phase 2** 合併 ChatPanel / useHostScreenSync / useTeamShootingSync 到 Provider
 - **Phase 3** 移除 feature flag + ADR-0018 + CI script + e2e
 - **Phase 4** TriviaShowdown server-side scoring（DB persistence）
+- **e2e 補完** 真實多人 e2e（16 tests、填補 CLAUDE.md 紅線第 10 條）
 
 **完成後**：
 - 1 user = 1 條 ws（4 條 → 1 條）
@@ -31,9 +66,9 @@
 - 90 天事件 log 任何時間可溯源（爭議仲裁）
 - CI 規範防回頭（grep new WebSocket）
 
-**部署需求**：2 個 migration（observability + trivia_answers）+ docker rebuild
+**部署完成**：2 個 migration（observability + trivia_answers）+ docker rebuild、生產驗證 401/JSON
 
-**Commits**：`13d1c594` / `a8a9d27c` / `57b89812` / `0cb06f09` / `d268f351` / `66be6625` / `26ffd996`
+**Commits**：`13d1c594` Phase 0.1 / `a8a9d27c` Phase 0.2 / `57b89812` Phase 0.3 / `0cb06f09` Phase 1 / `d268f351` Phase 2 / `66be6625` Phase 3 / `26ffd996` Phase 4 / `f457c085` e2e
 **ADR** → [decisions/0018-realtime-architecture.md](decisions/0018-realtime-architecture.md)
 
 ---
