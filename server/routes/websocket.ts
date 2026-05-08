@@ -259,6 +259,18 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         // 🆕 2026-05-05: keepalive — 純「還活著」訊號（missedPings 已在最上方重置）
         if (message.type === "keepalive") return;
 
+        // 🔭 Phase 0.2：log inbound message（除 keepalive 外、避免 log 噪音）
+        logWsEvent({
+          eventType: "message",
+          direction: "inbound",
+          messageType: message.type,
+          payload: message,
+          sessionId: ws.sessionId ?? message.sessionId ?? null,
+          teamId: ws.teamId ?? message.teamId ?? null,
+          userId: ws.userId ?? message.userId ?? null,
+          userName: ws.userName ?? message.userName ?? null,
+        });
+
         switch (message.type) {
           case "join": {
             // 驗證：如果有認證的 userId，確保訊息中的 userId 匹配
