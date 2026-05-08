@@ -511,6 +511,7 @@ function App() {
               </BgmPlayerProvider>
             </I18nProvider>
           </FieldThemeProvider>
+          </WebSocketProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
