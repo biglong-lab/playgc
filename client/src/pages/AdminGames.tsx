@@ -263,6 +263,7 @@ export default function AdminGames() {
           onSubmit={ctx.handleSubmit}
           isPending={ctx.createPending || ctx.updatePending}
           onReset={ctx.resetForm}
+          editingGameId={ctx.editingGame?.id}
         />
 
         <QRCodeDialog
