@@ -193,6 +193,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
 
       const isChunkError = this.state.error && isChunkLoadError(this.state.error);
+      // 🆕 D2-c+ (2026-05-09)：React minified 錯誤跟 chunk 錯誤一樣 — 多半是部署後新舊不一致
+      const isReactErr = this.state.error && isReactMinifiedError(this.state.error);
+      const isVersionMismatch = isChunkError || isReactErr;
 
       return (
         <div className="min-h-screen-dynamic bg-background flex items-center justify-center p-4">
@@ -205,11 +208,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
             <div className="space-y-2">
               <h1 className="text-xl font-semibold text-foreground">
-                {isChunkError ? "需要更新版本" : "發生錯誤"}
+                {isVersionMismatch ? "🔄 版本更新中…" : "發生錯誤"}
               </h1>
               <p className="text-muted-foreground">
-                {isChunkError
-                  ? "偵測到版本已更新，請點下方「清除快取重新載入」以取得最新版本。"
+                {isVersionMismatch
+                  ? "偵測到版本已更新、即將自動重新載入以取得最新版本。若沒有自動恢復、請點下方按鈕。"
                   : "應用程式遇到了一個問題，請嘗試重新整理頁面。"}
               </p>
             </div>
