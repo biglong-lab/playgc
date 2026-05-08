@@ -783,7 +783,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
       }
     });
 
-    ws.on("close", () => {
+    ws.on("close", (closeCode?: number, reasonBuffer?: Buffer) => {
+      // 🔭 Phase 0.2：log close 事件
+      const reasonStr = reasonBuffer?.toString().slice(0, 200) ?? null;
+      logWsEvent({
+        eventType: "close",
+        direction: "system",
+        sessionId: ws.sessionId ?? null,
+        teamId: ws.teamId ?? null,
+        userId: ws.userId ?? null,
+        userName: ws.userName ?? null,
+        closeCode: closeCode ?? null,
+        reason: reasonStr,
+        clientIp: (ws as WebSocketClient & { __clientIp?: string }).__clientIp ?? null,
+      });
+
       if (ws.sessionId) {
         clients.get(ws.sessionId)?.delete(ws);
         if (clients.get(ws.sessionId)?.size === 0) {
