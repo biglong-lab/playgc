@@ -74,7 +74,7 @@ function buildInitialState(): TriviaShowdownState {
   };
 }
 
-export default function TriviaShowdown({ config, hostMode, state, myUserName, onPulse, onBroadcastState }: TriviaShowdownProps) {
+export default function TriviaShowdown({ config, hostMode, state, myUserName, sessionId, myUserId, onPulse, onBroadcastState }: TriviaShowdownProps) {
   const questions = config.questions ?? [];
   const effectiveState = state ?? buildInitialState();
   const currentQ = questions[effectiveState.currentQuestionIdx];
