@@ -178,26 +178,37 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
         }
         reconnectAttemptsRef.current = 0;
 
+        // legacy team config（給 useTeamWebSocketViaProvider 用）
         const c = configRef.current;
-        if (!c) return;
-        ws.send(
-          JSON.stringify({
-            type: "team_join",
-            teamId: c.teamId,
-            userId: c.userId,
-            userName: c.userName,
-          }),
-        );
-        if (c.alsoJoinSessionId) {
+        if (c) {
           ws.send(
             JSON.stringify({
-              type: "join",
-              sessionId: c.alsoJoinSessionId,
+              type: "team_join",
+              teamId: c.teamId,
               userId: c.userId,
               userName: c.userName,
             }),
           );
+          if (c.alsoJoinSessionId) {
+            ws.send(
+              JSON.stringify({
+                type: "join",
+                sessionId: c.alsoJoinSessionId,
+                userId: c.userId,
+                userName: c.userName,
+              }),
+            );
+          }
         }
+
+        // 🆕 Phase 2：所有 onConnect handlers（ChatPanel / HostScreen 等發自己的 join）
+        onConnectHandlersRef.current.forEach((handler) => {
+          try {
+            handler(ws);
+          } catch {
+            // handler error 不影響其他
+          }
+        });
       };
 
       ws.onmessage = (event) => {
