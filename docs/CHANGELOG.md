@@ -5,6 +5,30 @@
 
 ---
 
+## 2026-05-09
+
+### 🎯 4 項實機 UX 優化（PhotoTeam / Lock / BGM × 2）
+**主題**：業主實機測試後反映的 4 項 UX 痛點
+**狀態**：🟢 部署生產 / TS 通過 / 1061 單元測試全綠
+**部署 commit**：`32750517`
+
+**變更**：
+1. **PhotoTeam 加「先跳過」按鈕** — 隊長不拍也能跳、稍後可回來補拍
+   `PhotoTeamGather.tsx` intro 加 ghost button + 文字引導
+2. **Lock 轉盤鎖修復** — 數字顛倒（兩層 div 修字體朝上）+「下一位」復歸 dialRotation
+3. **頁面 BGM 加上傳按鈕** — `PageConfigEditor.tsx` 加 MediaUploadButton
+4. **整場 BGM 加上傳按鈕** — 新 `useGameMediaUpload` hook + `GameFormDialog` 編輯模式上傳
+
+**規模**：7 檔修改 / 241 行新增 / 43 行刪除 / 1 個新 hook
+
+**未做**：PhotoTeam 隊長重拍（風險高）、新建遊戲時上傳 BGM（需後端臨時 folder 端點）
+
+**細節** → [changes/2026-05-09-ux-polish-4-items.md](changes/2026-05-09-ux-polish-4-items.md)
+
+⏭ 下一步：等業主實機驗證 / 或進 next-action-guide A1 ws_event_log Dashboard
+
+---
+
 ## 2026-05-08（晚上）
 
 ### 🎨 AdminMultiSessions v2 — 16 項完整打磨（已上線）
