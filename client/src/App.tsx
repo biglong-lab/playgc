@@ -402,6 +402,7 @@ function Router() {
         <Route path="/admin/invites/cohort">{() => <ProtectedAdminRoute><AdminInvitesCohort /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/pwa-analytics">{() => <ProtectedAdminRoute><PwaUsageAnalytics /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/host-sessions">{() => <ProtectedAdminRoute><AdminHostSessions /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/multi-sessions">{() => <ProtectedAdminRoute><AdminMultiSessions /></ProtectedAdminRoute>}</Route>
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>
