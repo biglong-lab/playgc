@@ -142,11 +142,30 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
   function startGraceTimer(teamId: string, userId: string, userName: string) {
     cancelDisconnectTimer(teamId, userId); // 先 clear 殘留
+    // 🔭 Phase 0.2：log grace_start
+    logWsEvent({
+      eventType: "grace_start",
+      direction: "system",
+      teamId,
+      userId,
+      userName,
+      reason: `grace=${GRACE_PERIOD_MS}ms`,
+    });
     const key = timerKey(teamId, userId);
     const timer = setTimeout(() => {
       disconnectTimers.delete(key);
       // 寬限期到，再確認一次該 user 還沒回來
       if (isUserStillConnected(teamId, userId)) return;
+
+      // 🔭 Phase 0.2：log grace_expired
+      logWsEvent({
+        eventType: "grace_expired",
+        direction: "system",
+        teamId,
+        userId,
+        userName,
+        reason: `auto_leave_in=${AUTO_LEAVE_AFTER_GRACE_MS}ms`,
+      });
 
       broadcastToTeam(teamId, {
         type: "team_member_grace_expired",
@@ -172,6 +191,15 @@ export function setupWebSocket(httpServer: Server): RouteContext {
                 isNull(teamMembers.leftAt),
               ),
             );
+          // 🔭 Phase 0.2：log auto_leave
+          logWsEvent({
+            eventType: "auto_leave",
+            direction: "system",
+            teamId,
+            userId,
+            userName,
+            reason: "auto_leave_after_grace",
+          });
           broadcastToTeam(teamId, {
             type: "team_member_left",
             userId,
