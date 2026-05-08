@@ -11,14 +11,12 @@
 //   - /host/:sessionId → role='host'，需 ?token=xxx
 //   - /play/:sessionId → role='player'
 //
-// 🌐 Phase 2 (2026-05-08)：feature flag 分流
-//   - VITE_USE_GLOBAL_WS=true → 走 Provider 版（共用全域 ws、自動 reconnect）
-//   - 預設 false → 走 Legacy 版（自己 new WebSocket、無 reconnect）
+// 🌐 Phase 3 (2026-05-08)：永遠走全域 WebSocketProvider
+//   - 共用全域 ws connection（與 useTeamWebSocket / ChatPanel 等同條 ws）
+//   - 自動 reconnect / keepalive / visibilitychange（Provider 統一管）
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useWebSocket } from "@/contexts/WebSocketContext";
-
-const USE_GLOBAL_WS_PROVIDER = (import.meta.env.VITE_USE_GLOBAL_WS as string | undefined) === "true";
 
 export interface HostScreenSyncResult<TState> {
   /** 當前 state（從 host_screen_state 廣播取得，初始 null） */
@@ -56,225 +54,9 @@ function parseRouteFromUrl(): RouteParts {
 }
 
 // ====================================================================
-// 入口 — feature flag 分流
+// useHostScreenSync — 基本版（沒處理玩家 pulse 計算）
 // ====================================================================
 export function useHostScreenSync<TState = unknown>(): HostScreenSyncResult<TState> {
-  if (USE_GLOBAL_WS_PROVIDER) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useHostScreenSyncProvider<TState>();
-  }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useHostScreenSyncLegacy<TState>();
-}
-
-export function useHostScreenSyncWithPulse<TState>(opts: {
-  /** 大螢幕端收到玩家 pulse 時的處理（須回傳新 state，hook 自動 broadcast） */
-  onPulse?: (pulseType: string, payload: unknown, currentState: TState | null) => TState | null;
-}): HostScreenSyncResult<TState> {
-  if (USE_GLOBAL_WS_PROVIDER) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useHostScreenSyncWithPulseProvider<TState>(opts);
-  }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  return useHostScreenSyncWithPulseLegacy<TState>(opts);
-}
-
-// ====================================================================
-// Legacy 版（原行為、feature flag = false 時使用）
-// ====================================================================
-function useHostScreenSyncLegacy<TState = unknown>(): HostScreenSyncResult<TState> {
-  const wsRef = useRef<WebSocket | null>(null);
-  const [state, setState] = useState<TState | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const route = useRef(parseRouteFromUrl()).current;
-
-  useEffect(() => {
-    if (!route.sessionId) return;
-
-    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      const registerMsg: Record<string, unknown> = {
-        type: "host_screen_register",
-        sessionId: route.sessionId,
-        role: route.hostMode ? "host" : "player",
-      };
-      if (route.hostMode && route.hostToken) {
-        registerMsg.hostToken = route.hostToken;
-      }
-      ws.send(JSON.stringify(registerMsg));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === "host_screen_error") {
-          setError(msg.message);
-          setConnected(false);
-          return;
-        }
-        if (msg.type === "host_screen_state" && msg.sessionId === route.sessionId) {
-          setState(msg.state as TState);
-          setConnected(true);
-        }
-      } catch {
-        /* ignore parse error */
-      }
-    };
-
-    ws.onclose = () => setConnected(false);
-    ws.onerror = () => setError("WebSocket 連線失敗");
-
-    return () => {
-      ws.close();
-    };
-  }, [route.sessionId, route.hostMode, route.hostToken]);
-
-  const sendPulse = useCallback((pulseType: string, payload: unknown) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    if (route.hostMode) return; // 只有玩家端能送 pulse
-    wsRef.current.send(JSON.stringify({
-      type: "host_screen_pulse",
-      sessionId: route.sessionId,
-      pulseType,
-      payload,
-    }));
-  }, [route.sessionId, route.hostMode]);
-
-  const broadcastState = useCallback((newState: TState) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    if (!route.hostMode) return; // 只有大螢幕端能廣播
-    setState(newState); // 樂觀更新
-    wsRef.current.send(JSON.stringify({
-      type: "host_screen_state",
-      sessionId: route.sessionId,
-      state: newState,
-    }));
-  }, [route.sessionId, route.hostMode]);
-
-  return {
-    state,
-    connected,
-    error,
-    sendPulse,
-    broadcastState,
-    hostMode: route.hostMode,
-  };
-}
-
-function useHostScreenSyncWithPulseLegacy<TState>(opts: {
-  onPulse?: (pulseType: string, payload: unknown, currentState: TState | null) => TState | null;
-}): HostScreenSyncResult<TState> {
-  const wsRef = useRef<WebSocket | null>(null);
-  const [state, setState] = useState<TState | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const route = useRef(parseRouteFromUrl()).current;
-  const stateRef = useRef<TState | null>(null);
-  stateRef.current = state;
-
-  // 用 ref 存最新 onPulse、避免 effect 依賴整個 opts 物件
-  const onPulseRef = useRef(opts.onPulse);
-  useEffect(() => {
-    onPulseRef.current = opts.onPulse;
-  }, [opts.onPulse]);
-
-  useEffect(() => {
-    if (!route.sessionId) return;
-
-    const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const ws = new WebSocket(`${wsProtocol}//${window.location.host}/ws`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      const registerMsg: Record<string, unknown> = {
-        type: "host_screen_register",
-        sessionId: route.sessionId,
-        role: route.hostMode ? "host" : "player",
-      };
-      if (route.hostMode && route.hostToken) {
-        registerMsg.hostToken = route.hostToken;
-      }
-      ws.send(JSON.stringify(registerMsg));
-    };
-
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.type === "host_screen_error") {
-          setError(msg.message);
-          setConnected(false);
-          return;
-        }
-        if (msg.type === "host_screen_state" && msg.sessionId === route.sessionId) {
-          setState(msg.state as TState);
-          setConnected(true);
-        }
-        // 大螢幕端：收到玩家 pulse → 用 onPulse 計算新 state → broadcast
-        const onPulse = onPulseRef.current;
-        if (msg.type === "host_screen_pulse" && route.hostMode && onPulse) {
-          const newState = onPulse(msg.pulseType, msg.payload, stateRef.current);
-          if (newState !== null) {
-            setState(newState);
-            ws.send(JSON.stringify({
-              type: "host_screen_state",
-              sessionId: route.sessionId,
-              state: newState,
-            }));
-          }
-        }
-      } catch {
-        /* ignore parse error */
-      }
-    };
-
-    ws.onclose = () => setConnected(false);
-    ws.onerror = () => setError("WebSocket 連線失敗");
-
-    return () => {
-      ws.close();
-    };
-  }, [route.sessionId, route.hostMode, route.hostToken]);
-
-  const sendPulse = useCallback((pulseType: string, payload: unknown) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    if (route.hostMode) return;
-    wsRef.current.send(JSON.stringify({
-      type: "host_screen_pulse",
-      sessionId: route.sessionId,
-      pulseType,
-      payload,
-    }));
-  }, [route.sessionId, route.hostMode]);
-
-  const broadcastState = useCallback((newState: TState) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-    if (!route.hostMode) return;
-    setState(newState);
-    wsRef.current.send(JSON.stringify({
-      type: "host_screen_state",
-      sessionId: route.sessionId,
-      state: newState,
-    }));
-  }, [route.sessionId, route.hostMode]);
-
-  return {
-    state,
-    connected,
-    error,
-    sendPulse,
-    broadcastState,
-    hostMode: route.hostMode,
-  };
-}
-
-// ====================================================================
-// 🌐 Provider 版（Phase 2 — feature flag = true 時使用）
-// ====================================================================
-function useHostScreenSyncProvider<TState = unknown>(): HostScreenSyncResult<TState> {
   const wsApi = useWebSocket();
   const [state, setState] = useState<TState | null>(null);
   const [connected, setConnected] = useState(false);
@@ -360,7 +142,13 @@ function useHostScreenSyncProvider<TState = unknown>(): HostScreenSyncResult<TSt
   };
 }
 
-function useHostScreenSyncWithPulseProvider<TState>(opts: {
+// ====================================================================
+// useHostScreenSyncWithPulse — 進階版（大螢幕端含 onPulse 處理）
+// 大螢幕端收到玩家 pulse → 用 onPulse 計算新 state → 自動 broadcast
+// （TriviaShowdown 猜謎用）
+// ====================================================================
+export function useHostScreenSyncWithPulse<TState>(opts: {
+  /** 大螢幕端收到玩家 pulse 時的處理（須回傳新 state，hook 自動 broadcast） */
   onPulse?: (pulseType: string, payload: unknown, currentState: TState | null) => TState | null;
 }): HostScreenSyncResult<TState> {
   const wsApi = useWebSocket();
@@ -371,6 +159,7 @@ function useHostScreenSyncWithPulseProvider<TState>(opts: {
   const stateRef = useRef<TState | null>(null);
   stateRef.current = state;
 
+  // 用 ref 存最新 onPulse、避免 effect 依賴整個 opts 物件
   const onPulseRef = useRef(opts.onPulse);
   useEffect(() => {
     onPulseRef.current = opts.onPulse;
