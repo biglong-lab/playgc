@@ -10,8 +10,15 @@
 // 路徑判斷：
 //   - /host/:sessionId → role='host'，需 ?token=xxx
 //   - /play/:sessionId → role='player'
+//
+// 🌐 Phase 2 (2026-05-08)：feature flag 分流
+//   - VITE_USE_GLOBAL_WS=true → 走 Provider 版（共用全域 ws、自動 reconnect）
+//   - 預設 false → 走 Legacy 版（自己 new WebSocket、無 reconnect）
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useWebSocket } from "@/contexts/WebSocketContext";
+
+const USE_GLOBAL_WS_PROVIDER = (import.meta.env.VITE_USE_GLOBAL_WS as string | undefined) === "true";
 
 export interface HostScreenSyncResult<TState> {
   /** 當前 state（從 host_screen_state 廣播取得，初始 null） */
@@ -48,7 +55,34 @@ function parseRouteFromUrl(): RouteParts {
   return { hostMode: false, sessionId: "", hostToken: null };
 }
 
+// ====================================================================
+// 入口 — feature flag 分流
+// ====================================================================
 export function useHostScreenSync<TState = unknown>(): HostScreenSyncResult<TState> {
+  if (USE_GLOBAL_WS_PROVIDER) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useHostScreenSyncProvider<TState>();
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useHostScreenSyncLegacy<TState>();
+}
+
+export function useHostScreenSyncWithPulse<TState>(opts: {
+  /** 大螢幕端收到玩家 pulse 時的處理（須回傳新 state，hook 自動 broadcast） */
+  onPulse?: (pulseType: string, payload: unknown, currentState: TState | null) => TState | null;
+}): HostScreenSyncResult<TState> {
+  if (USE_GLOBAL_WS_PROVIDER) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useHostScreenSyncWithPulseProvider<TState>(opts);
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useHostScreenSyncWithPulseLegacy<TState>(opts);
+}
+
+// ====================================================================
+// Legacy 版（原行為、feature flag = false 時使用）
+// ====================================================================
+function useHostScreenSyncLegacy<TState = unknown>(): HostScreenSyncResult<TState> {
   const wsRef = useRef<WebSocket | null>(null);
   const [state, setState] = useState<TState | null>(null);
   const [connected, setConnected] = useState(false);
@@ -86,7 +120,6 @@ export function useHostScreenSync<TState = unknown>(): HostScreenSyncResult<TSta
           setState(msg.state as TState);
           setConnected(true);
         }
-        // host_screen_pulse 會送給大螢幕端 — 元件層自己處理（透過後續加的 onPulseReceived）
       } catch {
         /* ignore parse error */
       }
@@ -132,12 +165,7 @@ export function useHostScreenSync<TState = unknown>(): HostScreenSyncResult<TSta
   };
 }
 
-/**
- * 大螢幕端進階版：除了 broadcastState 外，提供「處理玩家 pulse」的 callback。
- * 元件層用此計票 / 累計 emoji / 排行等。
- */
-export function useHostScreenSyncWithPulse<TState>(opts: {
-  /** 大螢幕端收到玩家 pulse 時的處理（須回傳新 state，hook 自動 broadcast） */
+function useHostScreenSyncWithPulseLegacy<TState>(opts: {
   onPulse?: (pulseType: string, payload: unknown, currentState: TState | null) => TState | null;
 }): HostScreenSyncResult<TState> {
   const wsRef = useRef<WebSocket | null>(null);
@@ -149,8 +177,6 @@ export function useHostScreenSyncWithPulse<TState>(opts: {
   stateRef.current = state;
 
   // 用 ref 存最新 onPulse、避免 effect 依賴整個 opts 物件
-  // 呼叫端通常用 inline `{ onPulse: handlePulse }`，opts 物件 identity 每次 render 都是新的
-  // 若 effect 直接依賴 opts → 會反覆 teardown + reconnect WebSocket（重複註冊 + cache snapshot 抖動）
   const onPulseRef = useRef(opts.onPulse);
   useEffect(() => {
     onPulseRef.current = opts.onPulse;
@@ -234,6 +260,209 @@ export function useHostScreenSyncWithPulse<TState>(opts: {
       state: newState,
     }));
   }, [route.sessionId, route.hostMode]);
+
+  return {
+    state,
+    connected,
+    error,
+    sendPulse,
+    broadcastState,
+    hostMode: route.hostMode,
+  };
+}
+
+// ====================================================================
+// 🌐 Provider 版（Phase 2 — feature flag = true 時使用）
+// ====================================================================
+function useHostScreenSyncProvider<TState = unknown>(): HostScreenSyncResult<TState> {
+  const wsApi = useWebSocket();
+  const [state, setState] = useState<TState | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const route = useRef(parseRouteFromUrl()).current;
+
+  useEffect(() => {
+    if (!route.sessionId) return;
+
+    const release = wsApi.ensureConnected();
+    const releaseJoin = wsApi.registerOnConnect(
+      `hostScreen:${route.sessionId}:${route.hostMode ? "host" : "player"}`,
+      (ws) => {
+        const registerMsg: Record<string, unknown> = {
+          type: "host_screen_register",
+          sessionId: route.sessionId,
+          role: route.hostMode ? "host" : "player",
+        };
+        if (route.hostMode && route.hostToken) {
+          registerMsg.hostToken = route.hostToken;
+        }
+        ws.send(JSON.stringify(registerMsg));
+      },
+    );
+    const unsubscribe = wsApi.subscribe((data) => {
+      const msg = data as {
+        type?: string;
+        message?: string;
+        sessionId?: string;
+        state?: unknown;
+      };
+      if (msg.type === "host_screen_error") {
+        setError(msg.message ?? "host_screen_error");
+        setConnected(false);
+        return;
+      }
+      if (msg.type === "host_screen_state" && msg.sessionId === route.sessionId) {
+        setState(msg.state as TState);
+        setConnected(true);
+      }
+    });
+
+    return () => {
+      releaseJoin();
+      unsubscribe();
+      release();
+    };
+  }, [route.sessionId, route.hostMode, route.hostToken, wsApi]);
+
+  const sendPulse = useCallback(
+    (pulseType: string, payload: unknown) => {
+      if (route.hostMode) return; // 只有玩家端能送 pulse
+      wsApi.send({
+        type: "host_screen_pulse",
+        sessionId: route.sessionId,
+        pulseType,
+        payload,
+      });
+    },
+    [route.sessionId, route.hostMode, wsApi],
+  );
+
+  const broadcastState = useCallback(
+    (newState: TState) => {
+      if (!route.hostMode) return; // 只有大螢幕端能廣播
+      setState(newState); // 樂觀更新
+      wsApi.send({
+        type: "host_screen_state",
+        sessionId: route.sessionId,
+        state: newState,
+      });
+    },
+    [route.sessionId, route.hostMode, wsApi],
+  );
+
+  return {
+    state,
+    connected,
+    error,
+    sendPulse,
+    broadcastState,
+    hostMode: route.hostMode,
+  };
+}
+
+function useHostScreenSyncWithPulseProvider<TState>(opts: {
+  onPulse?: (pulseType: string, payload: unknown, currentState: TState | null) => TState | null;
+}): HostScreenSyncResult<TState> {
+  const wsApi = useWebSocket();
+  const [state, setState] = useState<TState | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const route = useRef(parseRouteFromUrl()).current;
+  const stateRef = useRef<TState | null>(null);
+  stateRef.current = state;
+
+  const onPulseRef = useRef(opts.onPulse);
+  useEffect(() => {
+    onPulseRef.current = opts.onPulse;
+  }, [opts.onPulse]);
+
+  useEffect(() => {
+    if (!route.sessionId) return;
+
+    const release = wsApi.ensureConnected();
+    const releaseJoin = wsApi.registerOnConnect(
+      `hostScreen:${route.sessionId}:${route.hostMode ? "host" : "player"}`,
+      (ws) => {
+        const registerMsg: Record<string, unknown> = {
+          type: "host_screen_register",
+          sessionId: route.sessionId,
+          role: route.hostMode ? "host" : "player",
+        };
+        if (route.hostMode && route.hostToken) {
+          registerMsg.hostToken = route.hostToken;
+        }
+        ws.send(JSON.stringify(registerMsg));
+      },
+    );
+    const unsubscribe = wsApi.subscribe((data) => {
+      const msg = data as {
+        type?: string;
+        message?: string;
+        sessionId?: string;
+        state?: unknown;
+        pulseType?: string;
+        payload?: unknown;
+      };
+      if (msg.type === "host_screen_error") {
+        setError(msg.message ?? "host_screen_error");
+        setConnected(false);
+        return;
+      }
+      if (msg.type === "host_screen_state" && msg.sessionId === route.sessionId) {
+        setState(msg.state as TState);
+        setConnected(true);
+      }
+      // 大螢幕端：收到玩家 pulse → 計算新 state → broadcast
+      const onPulse = onPulseRef.current;
+      if (msg.type === "host_screen_pulse" && route.hostMode && onPulse) {
+        const newState = onPulse(
+          msg.pulseType ?? "",
+          msg.payload,
+          stateRef.current,
+        );
+        if (newState !== null) {
+          setState(newState);
+          wsApi.send({
+            type: "host_screen_state",
+            sessionId: route.sessionId,
+            state: newState,
+          });
+        }
+      }
+    });
+
+    return () => {
+      releaseJoin();
+      unsubscribe();
+      release();
+    };
+  }, [route.sessionId, route.hostMode, route.hostToken, wsApi]);
+
+  const sendPulse = useCallback(
+    (pulseType: string, payload: unknown) => {
+      if (route.hostMode) return;
+      wsApi.send({
+        type: "host_screen_pulse",
+        sessionId: route.sessionId,
+        pulseType,
+        payload,
+      });
+    },
+    [route.sessionId, route.hostMode, wsApi],
+  );
+
+  const broadcastState = useCallback(
+    (newState: TState) => {
+      if (!route.hostMode) return;
+      setState(newState);
+      wsApi.send({
+        type: "host_screen_state",
+        sessionId: route.sessionId,
+        state: newState,
+      });
+    },
+    [route.sessionId, route.hostMode, wsApi],
+  );
 
   return {
     state,
