@@ -98,7 +98,9 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
         }
 
         // 4. batch 拉所有 player progress（看 online 狀態）
-        const sessionIds = visibleSessions.map((s) => s.sessionId);
+        const sessionIds = visibleSessions
+          .map((s) => s.sessionId)
+          .filter((id): id is string => id !== null);
         const allProgress = sessionIds.length > 0
           ? await db
               .select({
