@@ -187,8 +187,59 @@ export function useTeamShootingSync({
     return () => clearInterval(id);
   }, [enabled, teamId, pageId, fetchHitsFromDb]);
 
-  // WebSocket 即時接收（保留原有 WS 邏輯）
+  // 🌐 Phase 2：Provider 版 — 透過全域 ws 訂閱 shooting_hit
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const wsProvider = USE_GLOBAL_WS_PROVIDER ? useWebSocket() : null;
+
   useEffect(() => {
+    if (!USE_GLOBAL_WS_PROVIDER || !wsProvider) return;
+    if (!enabled || !sessionId) return;
+
+    const release = wsProvider.ensureConnected();
+    const releaseJoin = wsProvider.registerOnConnect(
+      `shooting:${sessionId}:${myUserId}`,
+      (ws) => {
+        ws.send(
+          JSON.stringify({
+            type: "join",
+            sessionId,
+            userId: myUserId,
+            userName: myDisplayName,
+          }),
+        );
+      },
+    );
+    const unsubscribe = wsProvider.subscribe((data) => {
+      const msg = data as WsShootingMessage;
+      if (msg.type === "shooting_hit" && msg.record) {
+        const hit = parseHitRecord(msg.record, myUserId, myDisplayName);
+        wsHitsRef.current = [...wsHitsRef.current, hit];
+        setTeamHits((prev) => {
+          const existingTs = new Set(prev.map((h) => h.timestamp));
+          if (existingTs.has(hit.timestamp)) return prev;
+          return [...prev, hit];
+        });
+      }
+    });
+    setIsConnected(wsProvider.isConnected);
+
+    return () => {
+      releaseJoin();
+      unsubscribe();
+      release();
+      setIsConnected(false);
+    };
+  }, [enabled, sessionId, myUserId, myDisplayName, wsProvider]);
+
+  // 同步 isConnected from provider（Provider 版本用）
+  useEffect(() => {
+    if (!USE_GLOBAL_WS_PROVIDER || !wsProvider) return;
+    setIsConnected(wsProvider.isConnected);
+  }, [wsProvider?.isConnected, wsProvider]);
+
+  // ↓↓↓ Legacy 版（feature flag = false）：保留原有 WS 實作
+  useEffect(() => {
+    if (USE_GLOBAL_WS_PROVIDER) return;
     if (!enabled || !sessionId) return;
 
     const connect = () => {
