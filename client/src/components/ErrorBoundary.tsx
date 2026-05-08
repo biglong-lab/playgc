@@ -31,6 +31,26 @@ function isChunkLoadError(error: Error): boolean {
   );
 }
 
+/** 偵測是否為「React minified error」— production 部署後常見、通常表示
+ *  client 拿到舊 chunk 但 server 已部署新版（hook 順序變化、props 結構變動等）
+ *  常見編號：
+ *    #310 — Rendered more hooks than during the previous render
+ *    #185 — Maximum update depth exceeded
+ *    #418/#423/#425 — Hydration mismatch
+ *  → 跟 chunk error 一樣自動清快取 reload
+ *
+ *  🆕 D2-c+ (2026-05-09)
+ */
+function isReactMinifiedError(error: Error): boolean {
+  const msg = `${error.name} ${error.message}`;
+  return /Minified React error #\d+/i.test(msg);
+}
+
+/** 一個錯誤值得自動清快取 reload */
+function shouldAutoRecover(error: Error): boolean {
+  return isChunkLoadError(error) || isReactMinifiedError(error);
+}
+
 /** 清除 Service Worker 與所有 cache，然後重新載入頁面 */
 async function clearPwaCachesAndReload(): Promise<void> {
   try {
