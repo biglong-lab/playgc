@@ -1,5 +1,10 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { reportClientEvent } from "@/lib/event-report";
+// 🌐 Phase 1 (2026-05-08)：全域 WS Provider 分支（feature flag 控）
+import { useWebSocket as useWsProvider, type TeamMessage as ProviderTeamMessage } from "@/contexts/WebSocketContext";
+
+// 🌐 Phase 1 feature flag — 預設 false（用舊行為）；env VITE_USE_GLOBAL_WS=true → 走 Provider
+const USE_GLOBAL_WS_PROVIDER = (import.meta.env.VITE_USE_GLOBAL_WS as string | undefined) === "true";
 
 interface TeamMemberLocation {
   userId: string;
