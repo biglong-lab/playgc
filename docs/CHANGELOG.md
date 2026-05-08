@@ -27,6 +27,37 @@
 
 ---
 
+## 2026-05-09（下午）
+
+### 📲 PWA / RWD 體感優化（PTR 下拉重整 + safe-area + dvh + App Shortcuts）
+**主題**：業主提出 RWD/PWA 全面體感打磨、要穩定好用不過於笨重
+**狀態**：🟢 部署生產 / TS 通過 / 業主待實機測試 PTR
+**部署 commit**：`5ecabf2f`（feat 本體）/ commits `31565415..5ecabf2f`
+
+**新增**：
+1. **`usePullToRefresh` hook**（155 行）— window scroll 監聽 / 邊緣保留 iOS swipe-back / 阻尼 / haptic / 至少 600ms
+2. **`PullToRefresh` 元件**（70 行）— fixed indicator 配 `safe-area-inset-top`、不改 layout
+
+**RWD 補強**：
+- `tailwind.config` 加 `safe-{top,bottom,left,right}` spacing + `dvh/svh/lvh` height extend
+- 6 個 layout/loader（Unified/Platform/PageLoader/SmartRedirect/Forbidden/ErrorBoundary）`min-h-screen` → `min-h-screen-dynamic`
+
+**PWA 補強**：
+- `Home.tsx` 套用 PTR：軟重整 4 個 query（games/stats/sessions/battle slots）、不硬 reload
+- `vite.config.ts` manifest 加 3 個 App Shortcuts（場域/對戰/找情境）
+
+**審計後跳過**（避免重工）：ErrorBoundary 已超完善、Workbox / WebSocket / OfflineBanner / A2HS 已實作完整、不動
+
+**規模**：2 個新檔 / 8 個修改 / ~280 行新增
+
+**未做（避免笨重）**：Web Push / Background Sync / 動態 splash / share_target / 長按選單
+
+**細節** → [changes/2026-05-09-pwa-rwd-optimization.md](changes/2026-05-09-pwa-rwd-optimization.md)
+
+⏭ 待業主實機測試 PTR 體感、確認 OK 後擴大套用到 BattleMyProfile / MySquads / SquadPublic
+
+---
+
 ## 2026-05-09
 
 ### 🎯 4 項實機 UX 優化（PhotoTeam / Lock / BGM × 2）
