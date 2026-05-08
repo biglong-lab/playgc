@@ -168,6 +168,27 @@ export default {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "tactical-gradient": "linear-gradient(135deg, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%)",
       },
+      // 🆕 2026-05-09 RWD/PWA 體感優化
+      //   spacing: 給 padding / margin / top / bottom 等用 safe-area
+      //     用法：pt-safe-top / pb-safe-bottom / mt-safe-top / top-safe-top
+      //   height/minHeight: 動態視口高度（解 iOS 工具列縮放跳動）
+      //     用法：h-dvh / min-h-dvh / h-svh / min-h-svh / h-lvh / min-h-lvh
+      spacing: {
+        "safe-top": "env(safe-area-inset-top)",
+        "safe-bottom": "env(safe-area-inset-bottom)",
+        "safe-left": "env(safe-area-inset-left)",
+        "safe-right": "env(safe-area-inset-right)",
+      },
+      height: {
+        dvh: "100dvh",
+        svh: "100svh",
+        lvh: "100lvh",
+      },
+      minHeight: {
+        dvh: "100dvh",
+        svh: "100svh",
+        lvh: "100lvh",
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
