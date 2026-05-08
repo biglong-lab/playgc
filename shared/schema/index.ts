@@ -57,5 +57,8 @@ export * from "./notifications";
 export * from "./platform-menu";
 export * from "./team-race";
 
+// 🔭 Observability — WS event log + DB write log（Phase 0.2 / 2026-05-08）
+export * from "./observability";
+
 // 預約系統（Phase δ W1 — 2026-05-07）
 export * from "./bookings";
