@@ -226,24 +226,38 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
 
   const renderDial = () => (
     <div className="flex flex-col items-center">
-      <div 
+      <div
         className="w-40 h-40 rounded-full border-4 border-primary relative mb-4 transition-transform duration-200"
         style={{ transform: `rotate(${dialRotation}deg)` }}
       >
+        {/* 指針（固定朝上、不跟著轉盤旋轉相對位置）*/}
         <div className="absolute top-2 left-1/2 -translate-x-1/2 w-1 h-6 bg-primary rounded" />
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-          <div
-            key={num}
-            className="absolute text-sm font-mono"
-            style={{
-              top: "50%",
-              left: "50%",
-              transform: `rotate(${num * 36}deg) translateY(-60px) rotate(-${num * 36}deg) translate(-50%, -50%)`,
-            }}
-          >
-            {num}
-          </div>
-        ))}
+        {/* 🆕 D2-c+ (2026-05-09)：修數字顛倒 bug — 用兩層 div，外層繞父中心轉、內層自轉補正字體朝上 */}
+        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => {
+          const angle = num * 36;
+          return (
+            <div
+              key={num}
+              className="absolute top-1/2 left-1/2"
+              style={{
+                width: 0,
+                height: 0,
+                transform: `rotate(${angle}deg)`,
+              }}
+            >
+              <span
+                className="absolute text-sm font-mono font-semibold"
+                style={{
+                  top: "-60px",
+                  left: 0,
+                  transform: `translate(-50%, 0) rotate(${-angle}deg)`,
+                }}
+              >
+                {num}
+              </span>
+            </div>
+          );
+        })}
       </div>
       <div className="flex gap-4">
         <Button
@@ -261,6 +275,8 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
           onClick={() => {
             if (activeIndex < digits - 1) {
               setActiveIndex(activeIndex + 1);
+              // 🆕 D2-c+ (2026-05-09)：切下一位時轉盤復歸 0 — UX 一致性、重新開始
+              setDialRotation(0);
             }
           }}
           disabled={isUnlocked || isFailed}
