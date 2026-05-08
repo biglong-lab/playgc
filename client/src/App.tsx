@@ -491,6 +491,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
+          <WebSocketProvider>
           <FieldThemeProvider>
             <I18nProvider>
               <BgmPlayerProvider>
