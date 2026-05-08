@@ -437,27 +437,42 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
       )}
       <Card className="w-full max-w-md bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/50">
         <CardContent className="p-4 text-sm space-y-2 text-amber-900 dark:text-amber-100">
-          <p className="font-semibold">📸 怎麼拍</p>
+          <p className="font-semibold">📸 怎麼拍（只需要一個人拍、整隊共享）</p>
           <ol className="text-xs space-y-1 list-decimal pl-4">
             <li>對講機叫大家集合到隊長身邊</li>
             <li>按下「開始拍照」→ 5 秒倒數</li>
             <li>倒數結束會切到相機畫面、按快門即可</li>
             <li>可選再多拍 1-{maxShots} 張留念（不上傳，本地保留）</li>
           </ol>
+          <p className="text-xs italic mt-2 opacity-80">
+            💡 想留個人照？可以先「跳過此題」、之後在原頁面用相機拍個人留念。
+          </p>
         </CardContent>
       </Card>
-      <Button
-        size="lg"
-        className="gap-2"
-        onClick={() => {
-          setCountdown(5);
-          setStage("countdown");
-        }}
-        data-testid="btn-gather-start"
-      >
-        <Camera className="w-5 h-5" />
-        開始拍照（5 秒倒數）
-      </Button>
+      <div className="w-full max-w-md grid gap-2">
+        <Button
+          size="lg"
+          className="gap-2"
+          onClick={() => {
+            setCountdown(5);
+            setStage("countdown");
+          }}
+          data-testid="btn-gather-start"
+        >
+          <Camera className="w-5 h-5" />
+          開始拍照（5 秒倒數）
+        </Button>
+        {/* 🆕 D2-c+ (2026-05-09)：先跳過此題、之後可回來補拍 — 不強制完成 */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleContinue}
+          data-testid="btn-gather-skip"
+          className="text-muted-foreground"
+        >
+          先跳過此題、稍後再拍 →
+        </Button>
+      </div>
     </div>
   );
 }
