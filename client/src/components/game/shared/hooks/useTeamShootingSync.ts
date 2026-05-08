@@ -112,8 +112,6 @@ function mergeHits(
 // Hook
 // ============================================================================
 
-const MAX_RECONNECT_ATTEMPTS = 5;
-
 export function useTeamShootingSync({
   sessionId,
   myUserId,
@@ -124,14 +122,11 @@ export function useTeamShootingSync({
 }: UseTeamShootingSyncOptions): UseTeamShootingSyncResult {
   const [teamHits, setTeamHits] = useState<TeamShootingHit[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   // WS-only hits（還沒存入 DB 的即時事件）
   const wsHitsRef = useRef<TeamShootingHit[]>([]);
 
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectAttemptsRef = useRef(0);
-  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchedRef = useRef(false);
 
   const clearHits = useCallback(() => {
