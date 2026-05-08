@@ -1,8 +1,14 @@
 // 📺 TriviaShowdownPage — GamePageRenderer 對應 pageType="host_trivia_showdown"
+//
+// 🆕 Phase 4 (2026-05-08)：server-side scoring
+//   - 玩家答題改 POST /api/trivia/:sessionId/answer（不走 ws pulse）
+//   - server 寫 DB + 算 rank + score + broadcast host_screen_state
+//   - client 端 onPulse 不再算分（保留接收 server 廣播的 state）
+//   - ADR-0018 規則 4：計分 → server-side source-of-truth
 
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import TriviaShowdown, { type TriviaShowdownConfig } from "./TriviaShowdown";
-import { useHostScreenSyncWithPulse } from "../shared/hooks/useHostScreenSync";
+import { useHostScreenSync } from "../shared/hooks/useHostScreenSync";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyUserName } from "@/hooks/useMyUserName";
 import type { Page } from "@shared/schema";
@@ -24,13 +30,23 @@ interface TriviaShowdownStateShape {
   questionStartedAt?: number;
 }
 
-const DEFAULT_SCORE_BY_RANK = [100, 75, 50, 25];
+/**
+ * 從 URL 解析 sessionId（與 useHostScreenSync 內部相同邏輯、避免改 hook 介面）
+ */
+function parseSessionIdFromUrl(): string {
+  const path = window.location.pathname;
+  const hostMatch = path.match(/^\/host\/([^/]+)/);
+  const playMatch = path.match(/^\/play\/([^/]+)/);
+  return hostMatch?.[1] ?? playMatch?.[1] ?? "";
+}
 
 export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
   // W14 D3: LINE 名字優先 → admin 帳號 fallback → 匿名
   const lineName = useMyUserName();
   const { user } = useAuth();
   const myUserName = lineName || user?.firstName || user?.email?.split("@")[0] || "匿名";
+  const myUserId = user?.id ?? "";
+  const sessionId = useMemo(() => parseSessionIdFromUrl(), []);
 
   // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
   const config = useMemo<TriviaShowdownConfig>(() => {
@@ -56,59 +72,11 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
     };
   }, [page.config]);
 
-  const handlePulse = useCallback(
-    (
-      pulseType: string,
-      payload: unknown,
-      currentState: TriviaShowdownStateShape | null,
-    ): TriviaShowdownStateShape | null => {
-      if (pulseType !== "answer") return null;
-
-      const baseState: TriviaShowdownStateShape = currentState ?? {
-        currentQuestionIdx: 0,
-        status: "intro",
-        answered: {},
-        scores: {},
-      };
-
-      // 只在 answering 階段接受答案
-      if (baseState.status !== "answering") return baseState;
-
-      const p = payload as { choice?: number };
-      if (typeof p?.choice !== "number") return baseState;
-
-      // 該玩家本題已答 → 拒絕（一人一題）
-      // 注意：我們無法從 pulse payload 取 fromUserId（hook 沒暴露），
-      // 簡化版用 myUserName，正式版應從 ws message.fromUserId 來
-      if (baseState.answered[myUserName]) return baseState;
-
-      const questions = config.questions ?? [];
-      const currentQ = questions[baseState.currentQuestionIdx];
-      if (!currentQ) return baseState;
-
-      const newAnswered = {
-        ...baseState.answered,
-        [myUserName]: { choice: p.choice, ts: Date.now() },
-      };
-
-      // 答對 → 依現有「正確答對」次序給分
-      const newScores = { ...baseState.scores };
-      const isCorrect = p.choice === currentQ.correctIdx;
-      if (isCorrect) {
-        const prevCorrectCount = Object.entries(baseState.answered).filter(([, a]) => a.choice === currentQ.correctIdx).length;
-        const scoreByRank = config.scoreByRank ?? DEFAULT_SCORE_BY_RANK;
-        const score = scoreByRank[prevCorrectCount] ?? scoreByRank[scoreByRank.length - 1];
-        newScores[myUserName] = (newScores[myUserName] ?? 0) + score;
-      }
-
-      return { ...baseState, answered: newAnswered, scores: newScores };
-    },
-    [config, myUserName],
-  );
-
-  const { state, sendPulse, broadcastState, hostMode } = useHostScreenSyncWithPulse<TriviaShowdownStateShape>({
-    onPulse: handlePulse,
-  });
+  // 🆕 Phase 4：用基本版 useHostScreenSync（不再需要 onPulse 算分）
+  // 玩家答題直接 POST 給 server、server 端算分 + broadcast host_screen_state
+  // 大螢幕 host 端從 state（server 廣播）拿到 answered + scores
+  const { state, sendPulse, broadcastState, hostMode } =
+    useHostScreenSync<TriviaShowdownStateShape>();
 
   return (
     <TriviaShowdown
@@ -116,6 +84,8 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
       hostMode={hostMode}
       state={state}
       myUserName={myUserName}
+      sessionId={sessionId}
+      myUserId={myUserId}
       onPulse={sendPulse}
       onBroadcastState={broadcastState}
     />
