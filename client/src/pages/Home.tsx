@@ -336,6 +336,27 @@ export default function Home() {
     }
   }, [authLoading, isSignedIn, setLocation]);
 
+  // 📲 下拉重整：重抽玩家主頁的 4 個 queries（遊戲、統計、session、對戰時段）
+  // ⚠️ 必須在 early return 之前宣告（React Hooks 規則 — 否則 #310 hooks 數量不一致）
+  const handlePullRefresh = useCallback(async () => {
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: gamesQueryKey }),
+        queryClient.invalidateQueries({ queryKey: statsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: ["/api/sessions"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/battle/slots/open"] }),
+      ]);
+      toast({ title: "已更新", duration: 1500 });
+    } catch {
+      toast({
+        title: "更新失敗",
+        description: "請檢查網路連線後再試",
+        variant: "destructive",
+        duration: 2500,
+      });
+    }
+  }, [queryClient, gamesQueryKey, statsQueryKey, toast]);
+
   // Loading 狀態：Firebase 還在 init、或剛登入等 auth state 同步
   if (authLoading || !isSignedIn) {
     return (
