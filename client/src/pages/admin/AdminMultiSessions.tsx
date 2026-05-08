@@ -288,22 +288,22 @@ export default function AdminMultiSessions() {
   // 🆕 P1-9 CSV 匯出
   const handleExport = () => {
     const cols: CsvColumn<SessionListItem>[] = [
-      { header: "sessionId", value: (s) => s.sessionId },
-      { header: "gameTitle", value: (s) => s.gameTitle },
-      { header: "fieldId", value: (s) => s.fieldId ?? "" },
-      { header: "startedAt", value: (s) => formatCsvDateTime(s.startedAt) },
-      { header: "teamCount", value: (s) => s.teamCount },
-      { header: "totalMembers", value: (s) => s.totalMembers },
-      { header: "onlineMembers", value: (s) => s.onlineMembers },
-      { header: "recentMembers", value: (s) => s.recentMembers },
-      { header: "awayMembers", value: (s) => s.awayMembers },
-      { header: "offlineMembers", value: (s) => s.offlineMembers },
-      { header: "graceCount", value: (s) => s.health.graceCount },
-      { header: "autoLeaveCount", value: (s) => s.health.autoLeaveCount },
-      { header: "kickCount", value: (s) => s.health.kickCount },
-      { header: "errorCount", value: (s) => s.health.errorCount },
-      { header: "anomalyScore", value: (s) => s.anomalyScore },
-      { header: "usingRealtimeData", value: (s) => (s.usingRealtimeData ? "yes" : "no") },
+      { header: "sessionId", get: (s) => s.sessionId },
+      { header: "gameTitle", get: (s) => s.gameTitle },
+      { header: "fieldId", get: (s) => s.fieldId ?? "" },
+      { header: "startedAt", get: (s) => formatCsvDateTime(s.startedAt) },
+      { header: "teamCount", get: (s) => s.teamCount },
+      { header: "totalMembers", get: (s) => s.totalMembers },
+      { header: "onlineMembers", get: (s) => s.onlineMembers },
+      { header: "recentMembers", get: (s) => s.recentMembers },
+      { header: "awayMembers", get: (s) => s.awayMembers },
+      { header: "offlineMembers", get: (s) => s.offlineMembers },
+      { header: "graceCount", get: (s) => s.health.graceCount },
+      { header: "autoLeaveCount", get: (s) => s.health.autoLeaveCount },
+      { header: "kickCount", get: (s) => s.health.kickCount },
+      { header: "errorCount", get: (s) => s.health.errorCount },
+      { header: "anomalyScore", get: (s) => s.anomalyScore },
+      { header: "usingRealtimeData", get: (s) => (s.usingRealtimeData ? "yes" : "no") },
     ];
     exportToCsv(cols, filteredSessions, "multi-sessions");
     toast({ title: "CSV 已匯出", description: `${filteredSessions.length} 場 session` });
