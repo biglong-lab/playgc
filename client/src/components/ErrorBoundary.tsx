@@ -107,9 +107,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       // 上報失敗不可 block render
     }
 
-    // 若是 chunk / MIME 載入錯誤且尚未嘗試過自動恢復 → 清 SW + cache + reload
+    // 若是 chunk / MIME / React minified 錯誤且尚未嘗試過自動恢復 → 清 SW + cache + reload
     // 用 sessionStorage 避免無限迴圈（若 reload 後還是錯就停止自動恢復，改顯示給使用者）
-    if (isChunkLoadError(error)) {
+    // 🆕 D2-c+ (2026-05-09)：擴展到 React minified error（#310 等、部署後常見）
+    if (shouldAutoRecover(error)) {
       try {
         const attempted = sessionStorage.getItem(AUTO_RECOVERY_FLAG);
         if (!attempted) {
