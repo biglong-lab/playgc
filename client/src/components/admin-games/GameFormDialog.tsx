@@ -150,21 +150,56 @@ export default function GameFormDialog({
           </div>
 
           {/* 🆕 2026-05-07 BGM：整場背景音樂 URL */}
+          {/* 🆕 D2-c+ (2026-05-09)：編輯模式可上傳檔案、新建模式只能 URL */}
           <div className="space-y-2 pt-3 border-t">
             <Label htmlFor="bgmUrl" className="flex items-center gap-1">
               🎵 整場 BGM 音樂網址
               <span className="text-xs text-muted-foreground font-normal">（選填）</span>
             </Label>
-            <Input
-              id="bgmUrl"
-              type="url"
-              value={formData.bgmUrl}
-              onChange={(e) => setFormData({ ...formData, bgmUrl: e.target.value })}
-              placeholder="https://res.cloudinary.com/.../audio.mp3"
-              data-testid="input-bgm-url"
-            />
+            <div className="flex gap-2">
+              <Input
+                id="bgmUrl"
+                type="url"
+                value={formData.bgmUrl}
+                onChange={(e) => setFormData({ ...formData, bgmUrl: e.target.value })}
+                placeholder="https://res.cloudinary.com/.../audio.mp3"
+                data-testid="input-bgm-url"
+                className="flex-1"
+              />
+              {/* 編輯模式才顯示上傳按鈕（需要 gameId） */}
+              {isEditing && editingGameId && (
+                <>
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    className="hidden"
+                    id="bgm-file-upload"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const url = await handleUpload(file, "audio");
+                        if (url) setFormData({ ...formData, bgmUrl: url });
+                      }
+                      e.target.value = "";
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    disabled={isUploading}
+                    onClick={() => document.getElementById("bgm-file-upload")?.click()}
+                    data-testid="button-upload-bgm"
+                    title="上傳音訊檔（≤ 30MB）"
+                  >
+                    {isUploading ? <span className="animate-spin">⏳</span> : <Upload className="w-4 h-4" />}
+                  </Button>
+                </>
+              )}
+            </div>
             <p className="text-xs text-muted-foreground">
               玩家進場自動播放、影片元件時自動減弱、玩家可手動靜音
+              {!isEditing && " · 上傳檔案請先儲存遊戲、再回編輯模式"}
             </p>
             {formData.bgmUrl && (
               <audio
