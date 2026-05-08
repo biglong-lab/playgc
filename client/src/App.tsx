@@ -202,6 +202,9 @@ const RoiCalculator = lazy(() => import("@/pages/RoiCalculator"));
 // 📺 Admin Host Session 管理（W2 D5）
 const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
 
+// 📡 Admin Multi-Sessions 即時連線監控（Phase 0.1 / 2026-05-08）
+const AdminMultiSessions = lazy(() => import("@/pages/admin/AdminMultiSessions"));
+
 // ⚙️ 場域行銷設定（Squad System Phase 12.6）
 const AdminEngagementSettings = lazy(() => import("@/pages/admin/AdminEngagementSettings"));
 
