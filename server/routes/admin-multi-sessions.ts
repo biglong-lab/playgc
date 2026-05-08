@@ -413,8 +413,17 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
 
             const memberStatus = members.map((m) => {
               const prog = progressRows.find((p) => p.userId === m.userId);
-              const online =
-                prog?.updatedAt instanceof Date && prog.updatedAt > cutoff;
+              const conn = playerConnMap.get(`${s.id}|${m.userId}`);
+
+              // 🆕 真實 online：依 ws_event_log 最後事件
+              let connectionStatus: "online" | "away" | "offline" = "offline";
+              if (conn && conn.lastEventAt && conn.lastEventType !== "close" && conn.lastEventType !== "auto_leave") {
+                connectionStatus = conn.lastEventAt >= detailRecentCutoff ? "online" : "away";
+              }
+              // fallback：若無 ws 事件、用 player_progress 5 分鐘
+              const fallbackOnline = prog?.updatedAt instanceof Date && prog.updatedAt > cutoff;
+              if (!conn?.lastEventAt && fallbackOnline) connectionStatus = "online";
+
               const currentPageOrder = prog?.currentPageId
                 ? (pageOrderMap.get(prog.currentPageId) ?? 0)
                 : 0;
@@ -425,12 +434,26 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
                   [m.user?.firstName, m.user?.lastName].filter(Boolean).join(" ").trim() ||
                   m.user?.email?.split("@")[0] ||
                   m.userId.slice(0, 8),
-                online,
+                online: connectionStatus !== "offline", // 向後相容
+                connectionStatus,
                 updatedAt: prog?.updatedAt?.toISOString?.() ?? null,
                 currentPageId: prog?.currentPageId ?? null,
                 currentPageOrder,
                 progressPercent: totalPages > 0 ? Math.round((currentPageOrder / totalPages) * 100) : 0,
                 score: prog?.score ?? 0,
+                // 🆕 P1-7 真實 ws 狀態
+                wsConn: conn ? {
+                  firstConnectAt: conn.firstConnectAt?.toISOString() ?? null,
+                  lastEventAt: conn.lastEventAt?.toISOString() ?? null,
+                  lastEventType: conn.lastEventType,
+                  connectCount: conn.connectCount,
+                  closeCount: conn.closeCount,
+                  messageCount: conn.messageCount,
+                  reconnectCount: Math.max(0, conn.connectCount - 1),
+                  clientIp: conn.lastIp,
+                  userAgent: conn.lastUserAgent ? conn.lastUserAgent.slice(0, 80) : null,
+                  lastReason: conn.lastReason,
+                } : null,
               };
             });
 
