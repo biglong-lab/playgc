@@ -311,9 +311,78 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
         const totalPages = allPages.length;
         const pageOrderMap = new Map(allPages.map((p) => [p.id, p.pageOrder]));
 
+        // 🆕 P1-7 (2026-05-08)：拉過去 5 分鐘 ws_event_log（detail 用、含 client_ip / user_agent）
+        const sessionIds = sessions.map((s) => s.id);
+        const detailHealthCutoff = new Date(Date.now() - HEALTH_WINDOW_MS);
+        const detailWsEvents = sessionIds.length > 0
+          ? await db
+              .select({
+                sessionId: wsEventLog.sessionId,
+                userId: wsEventLog.userId,
+                eventType: wsEventLog.eventType,
+                timestamp: wsEventLog.timestamp,
+                clientIp: wsEventLog.clientIp,
+                userAgent: wsEventLog.userAgent,
+                reason: wsEventLog.reason,
+              })
+              .from(wsEventLog)
+              .where(
+                and(
+                  inArray(wsEventLog.sessionId, sessionIds),
+                  gte(wsEventLog.timestamp, detailHealthCutoff),
+                ),
+              )
+          : [];
+
+        // 玩家連線統計：(sessionId, userId) → { firstConnect, lastEvent, connectCount, closeCount, lastIp, lastUA }
+        type PlayerConn = {
+          firstConnectAt: Date | null;
+          lastEventAt: Date | null;
+          lastEventType: string | null;
+          connectCount: number;
+          closeCount: number;
+          messageCount: number;
+          lastIp: string | null;
+          lastUserAgent: string | null;
+          lastReason: string | null;
+        };
+        const playerConnMap = new Map<string, PlayerConn>();
+        for (const e of detailWsEvents) {
+          if (!e.sessionId || !e.userId || !e.timestamp) continue;
+          const key = `${e.sessionId}|${e.userId}`;
+          const c = playerConnMap.get(key) ?? {
+            firstConnectAt: null,
+            lastEventAt: null,
+            lastEventType: null,
+            connectCount: 0,
+            closeCount: 0,
+            messageCount: 0,
+            lastIp: null,
+            lastUserAgent: null,
+            lastReason: null,
+          };
+          if (e.eventType === "connect") {
+            c.connectCount += 1;
+            if (!c.firstConnectAt || e.timestamp < c.firstConnectAt) c.firstConnectAt = e.timestamp;
+          } else if (e.eventType === "close") {
+            c.closeCount += 1;
+          } else if (e.eventType === "message") {
+            c.messageCount += 1;
+          }
+          if (!c.lastEventAt || e.timestamp > c.lastEventAt) {
+            c.lastEventAt = e.timestamp;
+            c.lastEventType = e.eventType;
+            if (e.clientIp) c.lastIp = e.clientIp;
+            if (e.userAgent) c.lastUserAgent = e.userAgent;
+            if (e.reason) c.lastReason = e.reason;
+          }
+          playerConnMap.set(key, c);
+        }
+
         // 3. 每 session 的 teams + members + progress + persistence
         const result = [];
         const cutoff = new Date(Date.now() - ONLINE_THRESHOLD_MS);
+        const detailRecentCutoff = new Date(Date.now() - ONLINE_RECENT_MS);
 
         for (const s of sessions) {
           // teams 在這個 game（不是 session、teams 屬 game level）
