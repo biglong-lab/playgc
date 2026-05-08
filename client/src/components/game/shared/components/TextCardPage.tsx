@@ -292,7 +292,8 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   );
 
   const renderImageTopLayout = () => (
-    <div className="min-h-full flex flex-col relative overflow-hidden" onClick={tryAutoPlayAudio}>
+    // 🆕 D2-c+ (2026-05-09)：overflow-hidden → overflow-y-auto
+    <div className="min-h-full flex flex-col relative overflow-y-auto overflow-x-hidden pb-8" onClick={tryAutoPlayAudio}>
       {config.backgroundImage && (
         // 🆕 2026-05-07 RWD：用 aspect-ratio 取代固定 h-48、各設備比例一致不裁切
         <div className="relative aspect-video sm:aspect-[21/9] w-full bg-muted">
