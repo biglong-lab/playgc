@@ -205,8 +205,8 @@ function SessionCard({
   return (
     <Card>
       <CardHeader className="cursor-pointer" onClick={onToggleExpand}>
-        <div className="flex items-center justify-between">
-          <div className="flex-1">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
             <CardTitle className="text-lg flex items-center gap-2">
               {session.gameTitle}
               {session.hostMode && (
@@ -222,7 +222,18 @@ function SessionCard({
               )}
             </CardDescription>
           </div>
-          {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href={`/admin/sessions/${session.sessionId}/replay`}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <History className="w-3.5 h-3.5 mr-1" /> Replay
+              </Button>
+            </Link>
+            {expanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
