@@ -391,7 +391,8 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   );
 
   const renderFullscreenLayout = () => (
-    <div className="min-h-full relative overflow-hidden" onClick={tryAutoPlayAudio}>
+    // 🆕 D2-c+ (2026-05-09)：overflow-hidden → overflow-y-auto
+    <div className="min-h-full relative overflow-y-auto overflow-x-hidden" onClick={tryAutoPlayAudio}>
       {config.backgroundImage && (
         <div 
           className="absolute inset-0 bg-cover bg-center"
