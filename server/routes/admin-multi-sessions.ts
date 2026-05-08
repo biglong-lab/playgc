@@ -550,4 +550,166 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
       }
     },
   );
+
+  // 🆕 P3-14 (2026-05-08)：玩家 cross-session 連線歷史
+  //   GET /api/admin/players/:userId/connection-history?days=7
+  //   回傳：過去 N 天該 userId 的所有 session 連線統計
+  app.get(
+    "/api/admin/players/:userId/connection-history",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+        const { userId } = req.params;
+        const days = Math.min(Math.max(Number(req.query.days) || 7, 1), 90);
+        const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+        // 該 userId 過去 N 天所有 ws 事件
+        const events = await db
+          .select({
+            sessionId: wsEventLog.sessionId,
+            eventType: wsEventLog.eventType,
+            timestamp: wsEventLog.timestamp,
+            clientIp: wsEventLog.clientIp,
+            reason: wsEventLog.reason,
+          })
+          .from(wsEventLog)
+          .where(
+            and(
+              eq(wsEventLog.userId, userId),
+              gte(wsEventLog.timestamp, cutoff),
+            ),
+          );
+
+        if (events.length === 0) {
+          return res.json({
+            userId,
+            windowDays: days,
+            totalSessions: 0,
+            totalConnects: 0,
+            totalReconnects: 0,
+            totalGraceExpired: 0,
+            totalAutoLeaves: 0,
+            totalErrors: 0,
+            sessions: [],
+            generatedAt: new Date().toISOString(),
+          });
+        }
+
+        // 場域權限過濾（super_admin 看全部、其他 admin 限自己場域）
+        const sessionIds = Array.from(new Set(events.map((e) => e.sessionId).filter((s): s is string => s !== null)));
+        const sessionGameMap = sessionIds.length > 0
+          ? await db
+              .select({
+                sessionId: gameSessions.id,
+                gameId: gameSessions.gameId,
+                gameTitle: games.title,
+                fieldId: games.fieldId,
+                startedAt: gameSessions.startedAt,
+                status: gameSessions.status,
+              })
+              .from(gameSessions)
+              .leftJoin(games, eq(games.id, gameSessions.gameId))
+              .where(inArray(gameSessions.id, sessionIds))
+          : [];
+
+        const isSuperAdmin = req.admin.systemRole === "super_admin";
+        const visibleSessionIds = new Set(
+          sessionGameMap
+            .filter((s) => isSuperAdmin || s.fieldId === req.admin!.fieldId)
+            .map((s) => s.sessionId),
+        );
+
+        // per session 聚合
+        type SessionStat = {
+          sessionId: string;
+          gameTitle: string;
+          startedAt: Date | null;
+          status: string | null;
+          connectCount: number;
+          closeCount: number;
+          graceExpired: number;
+          autoLeave: number;
+          error: number;
+          firstEventAt: Date | null;
+          lastEventAt: Date | null;
+          uniqueIps: Set<string>;
+        };
+        const statBySession = new Map<string, SessionStat>();
+        const sessionMetaMap = new Map(sessionGameMap.map((s) => [s.sessionId, s]));
+
+        for (const e of events) {
+          if (!e.sessionId || !visibleSessionIds.has(e.sessionId)) continue;
+          const meta = sessionMetaMap.get(e.sessionId);
+          const stat = statBySession.get(e.sessionId) ?? {
+            sessionId: e.sessionId,
+            gameTitle: meta?.gameTitle ?? "(unknown)",
+            startedAt: meta?.startedAt ?? null,
+            status: meta?.status ?? null,
+            connectCount: 0,
+            closeCount: 0,
+            graceExpired: 0,
+            autoLeave: 0,
+            error: 0,
+            firstEventAt: null,
+            lastEventAt: null,
+            uniqueIps: new Set<string>(),
+          };
+          if (e.eventType === "connect") stat.connectCount += 1;
+          else if (e.eventType === "close") stat.closeCount += 1;
+          else if (e.eventType === "grace_expired") stat.graceExpired += 1;
+          else if (e.eventType === "auto_leave") stat.autoLeave += 1;
+          else if (e.eventType === "error") stat.error += 1;
+          if (e.timestamp) {
+            if (!stat.firstEventAt || e.timestamp < stat.firstEventAt) stat.firstEventAt = e.timestamp;
+            if (!stat.lastEventAt || e.timestamp > stat.lastEventAt) stat.lastEventAt = e.timestamp;
+          }
+          if (e.clientIp) stat.uniqueIps.add(e.clientIp);
+          statBySession.set(e.sessionId, stat);
+        }
+
+        // 總計
+        const sessionsArr = Array.from(statBySession.values()).map((s) => ({
+          sessionId: s.sessionId,
+          gameTitle: s.gameTitle,
+          startedAt: s.startedAt?.toISOString() ?? null,
+          status: s.status,
+          connectCount: s.connectCount,
+          closeCount: s.closeCount,
+          reconnectCount: Math.max(0, s.connectCount - 1),
+          graceExpired: s.graceExpired,
+          autoLeave: s.autoLeave,
+          error: s.error,
+          firstEventAt: s.firstEventAt?.toISOString() ?? null,
+          lastEventAt: s.lastEventAt?.toISOString() ?? null,
+          uniqueIps: Array.from(s.uniqueIps),
+        }));
+        sessionsArr.sort((a, b) => (b.firstEventAt ?? "").localeCompare(a.firstEventAt ?? ""));
+
+        const totals = sessionsArr.reduce(
+          (acc, s) => ({
+            totalConnects: acc.totalConnects + s.connectCount,
+            totalReconnects: acc.totalReconnects + s.reconnectCount,
+            totalGraceExpired: acc.totalGraceExpired + s.graceExpired,
+            totalAutoLeaves: acc.totalAutoLeaves + s.autoLeave,
+            totalErrors: acc.totalErrors + s.error,
+          }),
+          { totalConnects: 0, totalReconnects: 0, totalGraceExpired: 0, totalAutoLeaves: 0, totalErrors: 0 },
+        );
+
+        res.json({
+          userId,
+          windowDays: days,
+          totalSessions: sessionsArr.length,
+          ...totals,
+          sessions: sessionsArr,
+          generatedAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error("[admin-player-history] failed:", err);
+        res.status(500).json({ error: err instanceof Error ? err.message : "查詢失敗" });
+      }
+    },
+  );
 }
