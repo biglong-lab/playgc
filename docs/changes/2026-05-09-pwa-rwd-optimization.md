@@ -1,8 +1,8 @@
 # PWA / RWD 體感優化（PTR 下拉重整 + safe-area + dvh + App Shortcuts）— 2026-05-09
 
 > 範圍：客戶端 PWA / RWD 全面體感補強
-> 狀態：🟢 已部署生產（commits `31565415..5ecabf2f`）/ TS 通過
-> 部署 commit：`5ecabf2f`（feat 本體）
+> 狀態：🟢 已部署生產（首次 `5ecabf2f` + Hot fix `95a7e5b5`）/ TS 通過
+> 部署 commit：`5ecabf2f`（feat 本體）+ `95a7e5b5`（#310 hot fix）
 
 ---
 
