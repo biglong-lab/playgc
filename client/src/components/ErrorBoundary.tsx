@@ -174,7 +174,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       const isChunkError = this.state.error && isChunkLoadError(this.state.error);
 
       return (
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="min-h-screen-dynamic bg-background flex items-center justify-center p-4">
           <div className="max-w-md w-full text-center space-y-6">
             <div className="flex justify-center">
               <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
