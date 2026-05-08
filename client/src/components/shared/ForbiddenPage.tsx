@@ -22,7 +22,7 @@ export default function ForbiddenPage({
   suggestedLabel = "返回管理後台",
 }: ForbiddenPageProps) {
   return (
-    <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+    <div className="min-h-screen-dynamic bg-muted/30 flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardContent className="pt-10 pb-6 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 text-amber-600 mb-4">
