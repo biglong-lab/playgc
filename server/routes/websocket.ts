@@ -7,6 +7,8 @@ import { db } from "../db";
 import { gameMatches, matchParticipants, teamMembers } from "@shared/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
+// 🔭 Phase 0.2 (2026-05-08)：完整事件 log（fire-and-forget、不阻塞 ws）
+import { logWsEvent } from "../lib/ws-event-logger";
 
 // 🆕 Phase 2c：寬限期常數（單位 ms）
 //   30s = 短斷線寬限期（換頁/網路抖）
