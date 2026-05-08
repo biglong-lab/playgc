@@ -5,7 +5,40 @@
 
 ---
 
-## 2026-05-08
+## 2026-05-08（下午）
+
+### 🌐 多人遊戲穩定性架構重構（Phase 0-4 全套完成）
+**主題**：自寫 WS + 全域單例 + 完整監測 + 規範訂定，徹底解決 user 回報「進入遊戲斷線 + 對講機離線 + 猜謎不公平」
+**狀態**：🟢 程式碼完成、tsc 0 / smoke 51/51 / ADR-0018 通過、待生產部署
+**規劃** → [changes/2026-05-08-multi-stability-refactor-plan.md](changes/2026-05-08-multi-stability-refactor-plan.md)
+
+**根因**：演進累積 4 條獨立 ws connection（useTeamWebSocket / useHostScreenSync / useTeamShootingSync / ChatPanel），同玩家瀏覽器同時開、互相干擾、isUserStillConnected 競態誤判。
+
+**核心交付**（7 個 commit、~4750 行新增、~700 行 Legacy 清理）：
+- **Phase 0.1** admin/multi-sessions 即時連線監控 UI（5s refresh）
+- **Phase 0.2** ws_event_log + db_write_log + 90 天 retention（爭議仲裁基礎）
+- **Phase 0.3** Session Replay UI + CSV export（爭議仲裁工具）
+- **Phase 1** WebSocketProvider 全域單例（feature flag 控）
+- **Phase 2** 合併 ChatPanel / useHostScreenSync / useTeamShootingSync 到 Provider
+- **Phase 3** 移除 feature flag + ADR-0018 + CI script + e2e
+- **Phase 4** TriviaShowdown server-side scoring（DB persistence）
+
+**完成後**：
+- 1 user = 1 條 ws（4 條 → 1 條）
+- 進入遊戲不斷線、page 切換無 close
+- 對講機自動繼承 reconnect
+- 猜謎絕對公平（server-side source-of-truth）
+- 90 天事件 log 任何時間可溯源（爭議仲裁）
+- CI 規範防回頭（grep new WebSocket）
+
+**部署需求**：2 個 migration（observability + trivia_answers）+ docker rebuild
+
+**Commits**：`13d1c594` / `a8a9d27c` / `57b89812` / `0cb06f09` / `d268f351` / `66be6625` / `26ffd996`
+**ADR** → [decisions/0018-realtime-architecture.md](decisions/0018-realtime-architecture.md)
+
+---
+
+## 2026-05-08（上午）
 
 ### 📅 預約系統 + LINE 通知 + Telegram 內部通知 + Rich Menu（Phase δ W1-W3）
 **主題**：完整預約迴圈：客戶預約 → 30 分前 LINE 提醒 → 現場「開始遊戲」關鍵字 → 結束送禮
