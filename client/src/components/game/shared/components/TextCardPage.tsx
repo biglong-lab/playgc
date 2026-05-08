@@ -247,7 +247,8 @@ export default function TextCardPage({ config, onComplete }: TextCardPageProps) 
   };
 
   const renderCenterLayout = () => (
-    <div className="min-h-full flex flex-col items-center justify-center p-6 relative overflow-hidden" onClick={tryAutoPlayAudio}>
+    // 🆕 D2-c+ (2026-05-09)：overflow-hidden → overflow-y-auto，長內容可 scroll、不再截斷
+    <div className="min-h-full flex flex-col items-center justify-center p-6 py-12 relative overflow-y-auto overflow-x-hidden" onClick={tryAutoPlayAudio}>
       <div className="absolute inset-0 bg-tactical-gradient" />
       <div className="absolute inset-0 bg-radial-glow opacity-30" />
       
