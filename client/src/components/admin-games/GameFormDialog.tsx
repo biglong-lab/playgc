@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Upload } from "lucide-react";
+import { useGameMediaUpload } from "@/hooks/useGameMediaUpload";
 import type { GameFormData } from "./types";
 
 interface GameFormDialogProps {
@@ -29,6 +31,8 @@ interface GameFormDialogProps {
   onSubmit: (e: React.FormEvent) => void;
   isPending: boolean;
   onReset: () => void;
+  /** 🆕 D2-c+ (2026-05-09)：編輯模式下傳入 gameId、可上傳 BGM 檔案；新建模式為空 */
+  editingGameId?: string | null;
 }
 
 export default function GameFormDialog({
@@ -40,7 +44,10 @@ export default function GameFormDialog({
   onSubmit,
   isPending,
   onReset,
+  editingGameId,
 }: GameFormDialogProps) {
+  // 🆕 D2-c+ (2026-05-09)：BGM 檔案上傳支援（編輯模式才能用）
+  const { handleUpload, isUploading } = useGameMediaUpload(editingGameId);
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onReset()}>
       <DialogContent className="sm:max-w-[500px]">
