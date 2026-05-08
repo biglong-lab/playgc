@@ -52,9 +52,15 @@
 
 **未做（避免笨重）**：Web Push / Background Sync / 動態 splash / share_target / 長按選單
 
+**🔥 Hot Fix（同日深夜）**：iPhone PWA 撞 React #310（Minified hooks rule violation）
+- 根因：我把 `useCallback` 加在 Home.tsx early return 之後、第一次 render auth loading 跳過、第二次跑到 → hooks 數量不一致
+- 修復：useCallback 移到 line 339（最後一個 useEffect 後、所有 early return 前）
+- 雙保險：業主同步補 `ErrorBoundary.isReactMinifiedError` 偵測 + 自動清快取 reload（commit `b5068633`）
+- 部署 commit：`95a7e5b5`
+
 **細節** → [changes/2026-05-09-pwa-rwd-optimization.md](changes/2026-05-09-pwa-rwd-optimization.md)
 
-⏭ 待業主實機測試 PTR 體感、確認 OK 後擴大套用到 BattleMyProfile / MySquads / SquadPublic
+⏭ 待業主實機驗證：iPhone PWA 不再 #310 / Home PTR 體感對 / 體感 OK 後擴大套用 BattleMyProfile / MySquads / SquadPublic
 
 ---
 
