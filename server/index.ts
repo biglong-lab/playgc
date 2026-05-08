@@ -364,6 +364,15 @@ app.use((req, res, next) => {
     console.error("[boot] startObservabilityCleanupCron 失敗:", err);
   }
 
+  // 🚨 啟動 multi-sessions 異常告警 cron（P3-13 / 2026-05-08）
+  // 每 5 分鐘掃 active sessions、anomalyScore >= 20 → Telegram + Replay 連結
+  try {
+    const { startMultiSessionsAlertCron } = await import("./lib/multi-sessions-alert-cron");
+    startMultiSessionsAlertCron();
+  } catch (err) {
+    console.error("[boot] startMultiSessionsAlertCron 失敗:", err);
+  }
+
   app.use((err: Error & { status?: number; statusCode?: number }, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
