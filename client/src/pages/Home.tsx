@@ -26,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { setLastVisitedField } from "@/lib/last-visited-field";
 import InAppQrScanFAB from "@/components/shared/InAppQrScanFAB";
+import PullToRefresh from "@/components/shared/PullToRefresh";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
 import OptimizedImage from "@/components/shared/OptimizedImage";
