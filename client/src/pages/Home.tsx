@@ -409,8 +409,29 @@ export default function Home() {
     return "返回遊戲";
   };
 
+  // 📲 下拉重整：重抽玩家主頁的 4 個 queries（遊戲、統計、session、對戰時段）
+  const handlePullRefresh = useCallback(async () => {
+    try {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: gamesQueryKey }),
+        queryClient.invalidateQueries({ queryKey: statsQueryKey }),
+        queryClient.invalidateQueries({ queryKey: ["/api/sessions"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/battle/slots/open"] }),
+      ]);
+      toast({ title: "已更新", duration: 1500 });
+    } catch {
+      toast({
+        title: "更新失敗",
+        description: "請檢查網路連線後再試",
+        variant: "destructive",
+        duration: 2500,
+      });
+    }
+  }, [queryClient, gamesQueryKey, statsQueryKey, toast]);
+
   return (
-    <div className="min-h-screen bg-background pb-bottom-nav md:pb-0">
+    <PullToRefresh onRefresh={handlePullRefresh} enabled={!!currentFieldCode}>
+    <div className="min-h-screen-dynamic bg-background pb-bottom-nav md:pb-0">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
