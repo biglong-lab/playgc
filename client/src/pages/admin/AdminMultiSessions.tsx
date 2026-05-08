@@ -763,6 +763,7 @@ function SessionDetail({ gameId, sessionId }: { gameId: string; sessionId: strin
 // ============================================================================
 
 function PlayerRow({ member }: { member: SessionDetailMember }) {
+  const [historyOpen, setHistoryOpen] = useState(false);
   const status = member.connectionStatus;
   const StatusIcon = status === "online" ? Wifi : status === "away" ? Zap : WifiOff;
   const statusColor =
@@ -775,7 +776,12 @@ function PlayerRow({ member }: { member: SessionDetailMember }) {
   return (
     <div className="text-xs">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+        <button
+          type="button"
+          className="flex items-center gap-2 min-w-0 flex-1 hover:bg-muted/40 rounded px-1 -mx-1 text-left"
+          onClick={() => setHistoryOpen(true)}
+          title="點擊看玩家連線歷史"
+        >
           <StatusIcon className={`w-3 h-3 shrink-0 ${statusColor}`} />
           <span className="truncate">{member.name}</span>
           {member.role === "leader" && (
@@ -786,7 +792,8 @@ function PlayerRow({ member }: { member: SessionDetailMember }) {
               暫離
             </Badge>
           )}
-        </div>
+          <History className="w-2.5 h-2.5 text-muted-foreground shrink-0 opacity-0 group-hover:opacity-100" />
+        </button>
         <div className="flex items-center gap-3 text-muted-foreground shrink-0">
           <span title="當前頁">P{member.currentPageOrder}</span>
           <span title="進度">{member.progressPercent}%</span>
