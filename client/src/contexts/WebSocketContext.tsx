@@ -81,8 +81,22 @@ export interface ConnectionStats {
 interface WebSocketContextValue {
   isConnected: boolean;
   isReconnecting: boolean;
-  /** 確保 ws 已連到指定 user。回傳 release fn（unmount 時呼叫；目前是 no-op、ws 全期間保留）*/
+  /**
+   * 確保 ws 已連到指定 user（給 useTeamWebSocket 用）
+   * 回傳 release fn（unmount 時呼叫；目前是 no-op、ws 全期間保留）
+   */
   acquire: (config: AcquireConfig) => () => void;
+  /**
+   * 🆕 Phase 2：確保 ws 已連線（不附 user info，給 ChatPanel / HostScreen 等用）
+   * 回傳 release fn（ref counting 概念、未來可改成最後一個 release 才關 ws）
+   */
+  ensureConnected: () => () => void;
+  /**
+   * 🆕 Phase 2：註冊 on-connect handler（每次 ws 連到 OPEN 都會呼叫、reconnect 也會）
+   * key 用來 dedupe（同 hook 重複註冊只保留最新）
+   * 回傳 unregister fn
+   */
+  registerOnConnect: (key: string, handler: (ws: WebSocket) => void) => () => void;
   /** 訂閱所有 inbound 訊息。回傳 unsubscribe fn */
   subscribe: (handler: (msg: TeamMessage) => void) => () => void;
   /** 透過 current ws 發送訊息。回傳是否成功 */
