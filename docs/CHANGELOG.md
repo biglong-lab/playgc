@@ -5,6 +5,28 @@
 
 ---
 
+## 2026-05-09（晚上）
+
+### 🎯 5 項實機 UX 修復（text_card / FontScale / session 恢復 / ErrorBoundary）
+**主題**：業主第二輪實機回報的 5 項問題
+**狀態**：🟢 部署生產 / TS 通過 / 改動相關測試全綠
+**部署 commit**：`b5068633`
+
+**變更**：
+1. **text_card 上方超出畫面** — 4 layout `overflow-hidden → overflow-y-auto`、長內容可滾
+2. **a11y 字體切換器蓋登出** — `FloatingFontScale.shouldHide()` 加 `/me` 路徑
+3. **通關後仍顯示舊進度** — `getActiveSessionByUserAndGame` 改 **completed 優先**
+4. **time_bomb「同步失敗」** — 非 code bug、是 admin 填的劇情文字（標記不修）
+5. **React #310 部署後現** — `ErrorBoundary` 加 `isReactMinifiedError` 偵測 + 自動 reload + UX 改善為「🔄 版本更新中」
+
+**行為變更**：通關 = 結束。要重玩請手動點重新開始。
+
+**細節** → [changes/2026-05-09-ux-polish-5-items.md](changes/2026-05-09-ux-polish-5-items.md)
+
+⏭ 業主待手動：找有「同步失敗」標題的 time_bomb page、改 page title
+
+---
+
 ## 2026-05-09
 
 ### 🎯 4 項實機 UX 優化（PhotoTeam / Lock / BGM × 2）
