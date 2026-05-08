@@ -180,12 +180,10 @@ export function useTeamShootingSync({
     return () => clearInterval(id);
   }, [enabled, teamId, pageId, fetchHitsFromDb]);
 
-  // 🌐 Phase 2：Provider 版 — 透過全域 ws 訂閱 shooting_hit
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wsProvider = USE_GLOBAL_WS_PROVIDER ? useWebSocket() : null;
+  // 🌐 透過全域 ws Provider 訂閱 shooting_hit
+  const wsProvider = useWebSocket();
 
   useEffect(() => {
-    if (!USE_GLOBAL_WS_PROVIDER || !wsProvider) return;
     if (!enabled || !sessionId) return;
 
     const release = wsProvider.ensureConnected();
@@ -214,104 +212,18 @@ export function useTeamShootingSync({
         });
       }
     });
-    setIsConnected(wsProvider.isConnected);
 
     return () => {
       releaseJoin();
       unsubscribe();
       release();
-      setIsConnected(false);
     };
   }, [enabled, sessionId, myUserId, myDisplayName, wsProvider]);
 
-  // 同步 isConnected from provider（Provider 版本用）
+  // 同步 isConnected from provider
   useEffect(() => {
-    if (!USE_GLOBAL_WS_PROVIDER || !wsProvider) return;
     setIsConnected(wsProvider.isConnected);
-  }, [wsProvider?.isConnected, wsProvider]);
-
-  // ↓↓↓ Legacy 版（feature flag = false）：保留原有 WS 實作
-  useEffect(() => {
-    if (USE_GLOBAL_WS_PROVIDER) return;
-    if (!enabled || !sessionId) return;
-
-    const connect = () => {
-      try {
-        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${protocol}//${window.location.host}/ws`;
-        const ws = new WebSocket(wsUrl);
-        wsRef.current = ws;
-
-        ws.onopen = () => {
-          setIsConnected(true);
-          setError(null);
-          reconnectAttemptsRef.current = 0;
-          ws.send(
-            JSON.stringify({
-              type: "join",
-              sessionId,
-              userId: myUserId,
-              userName: myDisplayName,
-            }),
-          );
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const data = JSON.parse(event.data) as WsShootingMessage;
-            if (data.type === "shooting_hit" && data.record) {
-              const hit = parseHitRecord(data.record, myUserId, myDisplayName);
-              wsHitsRef.current = [...wsHitsRef.current, hit];
-              setTeamHits((prev) => {
-                // 以 timestamp 去重（DB polling 可能已加入）
-                const existingTs = new Set(prev.map((h) => h.timestamp));
-                if (existingTs.has(hit.timestamp)) return prev;
-                return [...prev, hit];
-              });
-            }
-          } catch {
-            // ignore parse errors
-          }
-        };
-
-        ws.onerror = () => {
-          setError("WebSocket 連線錯誤");
-        };
-
-        ws.onclose = () => {
-          setIsConnected(false);
-          wsRef.current = null;
-          if (reconnectAttemptsRef.current < MAX_RECONNECT_ATTEMPTS) {
-            const delay = Math.min(
-              1000 * 2 ** reconnectAttemptsRef.current,
-              30_000,
-            );
-            reconnectAttemptsRef.current += 1;
-            reconnectTimerRef.current = setTimeout(connect, delay);
-          } else {
-            setError("WebSocket 重連失敗，請重新整理頁面");
-          }
-        };
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "WebSocket 建立失敗";
-        setError(msg);
-      }
-    };
-
-    connect();
-
-    return () => {
-      if (reconnectTimerRef.current) {
-        clearTimeout(reconnectTimerRef.current);
-        reconnectTimerRef.current = null;
-      }
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-      setIsConnected(false);
-    };
-  }, [enabled, sessionId, myUserId, myDisplayName]);
+  }, [wsProvider.isConnected]);
 
   return { teamHits, isLoaded, isConnected, error, clearHits, injectHit };
 }
