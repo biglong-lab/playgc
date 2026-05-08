@@ -47,6 +47,13 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
   Activity,
   Users,
   Wifi,
@@ -68,6 +75,7 @@ import {
   Globe,
   Smartphone,
   Crown,
+  TrendingUp,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
