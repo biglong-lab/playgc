@@ -191,6 +191,16 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   wss.on("connection", async (ws: WebSocketClient, request: IncomingMessage) => {
     ws.isAlive = true;
 
+    // 🔭 Phase 0.2：取連線 metadata 給 log 用
+    const clientIp = (
+      (request.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
+      request.socket.remoteAddress ||
+      ""
+    ).slice(0, 50);
+    const userAgent = (request.headers["user-agent"] as string) || "";
+    (ws as WebSocketClient & { __clientIp?: string; __userAgent?: string }).__clientIp = clientIp;
+    (ws as WebSocketClient & { __clientIp?: string; __userAgent?: string }).__userAgent = userAgent;
+
     // 解析 URL 中的 token 參數進行認證
     const params = parseQueryParams(request.url);
     const token = params.token;
@@ -210,6 +220,15 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         // Token 驗證失敗，允許匿名連線（向後兼容）
       }
     }
+
+    // 🔭 Phase 0.2：log connect 事件
+    logWsEvent({
+      eventType: "connect",
+      direction: "system",
+      userId: authenticatedUserId,
+      clientIp,
+      userAgent,
+    });
 
     ws.on("pong", () => {
       ws.isAlive = true;
