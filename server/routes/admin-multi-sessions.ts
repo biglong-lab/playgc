@@ -18,12 +18,143 @@
 import type { Express } from "express";
 import { db } from "../db";
 import { games, gameSessions, teams, teamMembers, playerProgress, pages, users } from "@shared/schema";
-import { sql, eq, and, isNull, gte } from "drizzle-orm";
+import { sql, eq, and, isNull, gte, inArray } from "drizzle-orm";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
 
 export function registerAdminMultiSessionsRoutes(app: Express) {
+  // 🆕 Phase 0.1（2026-05-08）：列所有 active multi sessions（admin 場域內、不限 gameId）
+  // 用於 admin/multi-sessions 主頁、5 秒 refresh
+  app.get(
+    "/api/admin/multi-sessions",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+
+        const cutoff = new Date(Date.now() - ONLINE_THRESHOLD_MS);
+        const isSuperAdmin = req.admin.systemRole === "super_admin";
+
+        // 1. 取 active sessions（依場域權限過濾）
+        const sessionsRaw = await db
+          .select({
+            sessionId: gameSessions.id,
+            gameId: gameSessions.gameId,
+            startedAt: gameSessions.startedAt,
+            status: gameSessions.status,
+            hostMode: gameSessions.hostMode,
+            gameTitle: games.title,
+            fieldId: games.fieldId,
+          })
+          .from(gameSessions)
+          .leftJoin(games, eq(games.id, gameSessions.gameId))
+          .where(eq(gameSessions.status, "playing"));
+
+        const visibleSessions = isSuperAdmin
+          ? sessionsRaw
+          : sessionsRaw.filter((s) => s.fieldId === req.admin!.fieldId);
+
+        if (visibleSessions.length === 0) {
+          return res.json({
+            sessions: [],
+            totalActive: 0,
+            generatedAt: new Date().toISOString(),
+          });
+        }
+
+        // 2. batch 拉所有相關 game 的 teams（避免 N+1 query）
+        const gameIds = Array.from(new Set(visibleSessions.map((s) => s.gameId)));
+        const allTeams = await db
+          .select({ id: teams.id, gameId: teams.gameId })
+          .from(teams)
+          .where(inArray(teams.gameId, gameIds));
+
+        const teamsByGame = new Map<string, typeof allTeams>();
+        for (const t of allTeams) {
+          if (!teamsByGame.has(t.gameId)) teamsByGame.set(t.gameId, []);
+          teamsByGame.get(t.gameId)!.push(t);
+        }
+
+        // 3. batch 拉所有 active members
+        const allTeamIds = allTeams.map((t) => t.id);
+        const allMembers = allTeamIds.length > 0
+          ? await db
+              .select({ userId: teamMembers.userId, teamId: teamMembers.teamId })
+              .from(teamMembers)
+              .where(and(inArray(teamMembers.teamId, allTeamIds), isNull(teamMembers.leftAt)))
+          : [];
+
+        const membersByTeam = new Map<string, typeof allMembers>();
+        for (const m of allMembers) {
+          if (!membersByTeam.has(m.teamId)) membersByTeam.set(m.teamId, []);
+          membersByTeam.get(m.teamId)!.push(m);
+        }
+
+        // 4. batch 拉所有 player progress（看 online 狀態）
+        const sessionIds = visibleSessions.map((s) => s.sessionId);
+        const allProgress = sessionIds.length > 0
+          ? await db
+              .select({
+                userId: playerProgress.userId,
+                sessionId: playerProgress.sessionId,
+                updatedAt: playerProgress.updatedAt,
+              })
+              .from(playerProgress)
+              .where(
+                and(
+                  inArray(playerProgress.sessionId, sessionIds),
+                  gte(playerProgress.updatedAt, cutoff),
+                ),
+              )
+          : [];
+
+        const onlineSetBySession = new Map<string, Set<string>>();
+        for (const p of allProgress) {
+          if (!onlineSetBySession.has(p.sessionId)) onlineSetBySession.set(p.sessionId, new Set());
+          onlineSetBySession.get(p.sessionId)!.add(p.userId);
+        }
+
+        // 5. 組裝 lightweight session list
+        const result = visibleSessions.map((s) => {
+          const sessionTeams = teamsByGame.get(s.gameId) ?? [];
+          const totalMembers = sessionTeams.reduce(
+            (sum, t) => sum + (membersByTeam.get(t.id)?.length ?? 0),
+            0,
+          );
+          const onlineSet = onlineSetBySession.get(s.sessionId) ?? new Set();
+          const onlineMembers = sessionTeams.reduce((sum, t) => {
+            const teamMems = membersByTeam.get(t.id) ?? [];
+            return sum + teamMems.filter((m) => onlineSet.has(m.userId)).length;
+          }, 0);
+
+          return {
+            sessionId: s.sessionId,
+            gameId: s.gameId,
+            gameTitle: s.gameTitle ?? "(未命名)",
+            fieldId: s.fieldId,
+            startedAt: s.startedAt,
+            hostMode: s.hostMode,
+            teamCount: sessionTeams.length,
+            totalMembers,
+            onlineMembers,
+            offlineMembers: totalMembers - onlineMembers,
+          };
+        });
+
+        res.json({
+          sessions: result,
+          totalActive: result.length,
+          generatedAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        console.error("[admin-multi-sessions list] failed:", err);
+        res.status(500).json({ error: err instanceof Error ? err.message : "查詢失敗" });
+      }
+    },
+  );
+
   app.get(
     "/api/admin/multi-sessions/:gameId/state",
     requireAdminAuth,
