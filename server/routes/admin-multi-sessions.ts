@@ -17,11 +17,17 @@
 
 import type { Express } from "express";
 import { db } from "../db";
-import { games, gameSessions, teams, teamMembers, playerProgress, pages, users } from "@shared/schema";
+import { games, gameSessions, teams, teamMembers, playerProgress, pages, users, wsEventLog } from "@shared/schema";
 import { sql, eq, and, isNull, gte, inArray } from "drizzle-orm";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 
 const ONLINE_THRESHOLD_MS = 5 * 60 * 1000;
+// 🆕 P0-3 (2026-05-08)：真實 online 判斷依 ws_event_log
+//   - 過去 30 秒內有 message 事件 → online (綠)
+//   - 30 秒~5 分鐘有事件但近期無 → 暫離 (橘)
+//   - 5 分鐘以上無事件 / 最後事件是 close → 離線 (紅)
+const ONLINE_RECENT_MS = 30 * 1000;
+const HEALTH_WINDOW_MS = 5 * 60 * 1000; // 健康指標統計窗（過去 5 分鐘）
 
 export function registerAdminMultiSessionsRoutes(app: Express) {
   // 🆕 Phase 0.1（2026-05-08）：列所有 active multi sessions（admin 場域內、不限 gameId）
