@@ -119,13 +119,14 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
 
         const onlineSetBySession = new Map<string, Set<string>>();
         for (const p of allProgress) {
+          if (!p.sessionId) continue;
           if (!onlineSetBySession.has(p.sessionId)) onlineSetBySession.set(p.sessionId, new Set());
           onlineSetBySession.get(p.sessionId)!.add(p.userId);
         }
 
         // 5. 組裝 lightweight session list
         const result = visibleSessions.map((s) => {
-          const sessionTeams = teamsByGame.get(s.gameId) ?? [];
+          const sessionTeams = s.gameId ? (teamsByGame.get(s.gameId) ?? []) : [];
           const totalMembers = sessionTeams.reduce(
             (sum, t) => sum + (membersByTeam.get(t.id)?.length ?? 0),
             0,
