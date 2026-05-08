@@ -7,11 +7,8 @@ import { X, Send, Users } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { ChatMessage } from "@shared/schema";
-// 🌐 Phase 2 (2026-05-08)：改用全域 WS Provider（feature flag 控）
+// 🌐 全域 WS Provider（Phase 3 移除 feature flag、永遠走 Provider）
 import { useWebSocket } from "@/contexts/WebSocketContext";
-
-// Phase 2 feature flag — 與 useTeamWebSocket 同 flag
-const USE_GLOBAL_WS_PROVIDER = (import.meta.env.VITE_USE_GLOBAL_WS as string | undefined) === "true";
 
 interface ChatPanelProps {
   sessionId: string;
@@ -22,15 +19,9 @@ interface ChatPanelProps {
 
 export default function ChatPanel({ sessionId, userId, userName, onClose }: ChatPanelProps) {
   const [message, setMessage] = useState("");
-  const [isWsConnectedLegacy, setIsWsConnectedLegacy] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  // 🌐 Phase 2：Provider 版用 context state；Legacy 版用本地 state
-  // (條件 hook 但 USE_GLOBAL_WS_PROVIDER 為 module 常數、不會變動 → 安全)
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const wsProvider = USE_GLOBAL_WS_PROVIDER ? useWebSocket() : null;
-  const isWsConnected = USE_GLOBAL_WS_PROVIDER ? (wsProvider?.isConnected ?? false) : isWsConnectedLegacy;
+  const wsApi = useWebSocket();
+  const isWsConnected = wsApi.isConnected;
 
   const { data: messages = [], isLoading } = useQuery<ChatMessage[]>({
     queryKey: ["/api/chat", sessionId],
@@ -49,11 +40,10 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
     },
   });
 
-  // 🌐 Phase 2：Provider 版 — 用 ensureConnected + registerOnConnect + subscribe
+  // 🌐 全 app 共用 ws Provider — 確保連線 + 註冊 join + 訂閱 chat 廣播
   useEffect(() => {
-    if (!USE_GLOBAL_WS_PROVIDER || !wsProvider) return;
-    const release = wsProvider.ensureConnected();
-    const releaseJoin = wsProvider.registerOnConnect(`chat:${sessionId}:${userId}`, (ws) => {
+    const release = wsApi.ensureConnected();
+    const releaseJoin = wsApi.registerOnConnect(`chat:${sessionId}:${userId}`, (ws) => {
       ws.send(
         JSON.stringify({
           type: "join",
@@ -63,7 +53,7 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
         }),
       );
     });
-    const unsubscribe = wsProvider.subscribe((data) => {
+    const unsubscribe = wsApi.subscribe((data) => {
       const d = data as { type?: string; sessionId?: string };
       if (d.type === "chat" && d.sessionId === sessionId) {
         queryClient.invalidateQueries({ queryKey: ["/api/chat", sessionId] });
@@ -74,59 +64,7 @@ export default function ChatPanel({ sessionId, userId, userName, onClose }: Chat
       unsubscribe();
       release();
     };
-  }, [sessionId, userId, userName, wsProvider]);
-
-  // ↓↓↓ Legacy 版（feature flag = false）：原 new WebSocket 實作
-  useEffect(() => {
-    if (USE_GLOBAL_WS_PROVIDER) return;
-
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
-
-    try {
-      const ws = new WebSocket(wsUrl);
-
-      ws.onopen = () => {
-        setIsWsConnectedLegacy(true);
-        ws.send(JSON.stringify({
-          type: "join",
-          sessionId,
-          userId,
-          userName,
-        }));
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === "chat" && data.sessionId === sessionId) {
-            queryClient.invalidateQueries({ queryKey: ["/api/chat", sessionId] });
-          }
-        } catch {
-          // WebSocket 訊息解析失敗
-        }
-      };
-
-      ws.onerror = () => {
-        // WebSocket 錯誤已處理
-      };
-
-      ws.onclose = () => {
-        setIsWsConnectedLegacy(false);
-      };
-
-      wsRef.current = ws;
-
-      return () => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        }
-        setIsWsConnectedLegacy(false);
-      };
-    } catch {
-      // WebSocket 連線建立失敗
-    }
-  }, [sessionId, userId, userName]);
+  }, [sessionId, userId, userName, wsApi]);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
