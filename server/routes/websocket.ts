@@ -963,10 +963,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     const sessionClients = clients.get(sessionId);
     if (sessionClients) {
       const payload = JSON.stringify(message);
+      let sentCount = 0;
       sessionClients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(payload);
+          sentCount += 1;
         }
+      });
+      // 🔭 Phase 0.2：log broadcast 事件
+      logWsEvent({
+        eventType: "broadcast",
+        direction: "outbound",
+        messageType: (message as { type?: string }).type ?? null,
+        sessionId,
+        recipientCount: sentCount,
+        payload: message,
       });
     }
   }
@@ -975,10 +986,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     const teamClientSet = teamClients.get(teamId);
     if (teamClientSet) {
       const payload = JSON.stringify(message);
+      let sentCount = 0;
       teamClientSet.forEach((client) => {
         if (client.readyState === WebSocket.OPEN && client !== excludeClient) {
           client.send(payload);
+          sentCount += 1;
         }
+      });
+      // 🔭 Phase 0.2：log broadcast 事件
+      logWsEvent({
+        eventType: "broadcast",
+        direction: "outbound",
+        messageType: (message as { type?: string }).type ?? null,
+        teamId,
+        recipientCount: sentCount,
+        payload: message,
       });
     }
   }
