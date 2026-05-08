@@ -85,7 +85,20 @@ interface UseTeamWebSocketOptions {
   onSelfKicked?: (reason: string) => void;
 }
 
-export function useTeamWebSocket({
+export function useTeamWebSocket(opts: UseTeamWebSocketOptions) {
+  // 🌐 Phase 1：feature flag 分流
+  if (USE_GLOBAL_WS_PROVIDER) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useTeamWebSocketViaProvider(opts);
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  return useTeamWebSocketLegacy(opts);
+}
+
+// ====================================================================
+// Legacy 版（Phase 1 之前的原行為、feature flag = false 時使用）
+// ====================================================================
+function useTeamWebSocketLegacy({
   teamId,
   userId,
   userName,
