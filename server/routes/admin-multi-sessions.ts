@@ -119,7 +119,7 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
 
         const onlineSetBySession = new Map<string, Set<string>>();
         for (const p of allProgress) {
-          if (!p.sessionId) continue;
+          if (!p.sessionId || !p.userId) continue;
           if (!onlineSetBySession.has(p.sessionId)) onlineSetBySession.set(p.sessionId, new Set());
           onlineSetBySession.get(p.sessionId)!.add(p.userId);
         }
