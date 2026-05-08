@@ -1050,10 +1050,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     const matchClientSet = matchClients.get(matchId);
     if (matchClientSet) {
       const payload = JSON.stringify(message);
+      let sentCount = 0;
       matchClientSet.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(payload);
+          sentCount += 1;
         }
+      });
+      // 🔭 Phase 0.2：log broadcast 事件
+      logWsEvent({
+        eventType: "broadcast",
+        direction: "outbound",
+        messageType: (message as { type?: string }).type ?? null,
+        recipientCount: sentCount,
+        payload: message,
+        reason: `match=${matchId}`,
       });
     }
   }
@@ -1062,10 +1073,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     const slotClientSet = battleSlotClients.get(slotId);
     if (slotClientSet) {
       const payload = JSON.stringify(message);
+      let sentCount = 0;
       slotClientSet.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(payload);
+          sentCount += 1;
         }
+      });
+      // 🔭 Phase 0.2：log broadcast 事件
+      logWsEvent({
+        eventType: "broadcast",
+        direction: "outbound",
+        messageType: (message as { type?: string }).type ?? null,
+        recipientCount: sentCount,
+        payload: message,
+        reason: `battle_slot=${slotId}`,
       });
     }
   }
