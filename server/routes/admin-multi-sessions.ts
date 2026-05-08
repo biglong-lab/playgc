@@ -482,6 +482,42 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
             });
           }
 
+          // 🆕 P1-8 (2026-05-08)：本 session 的時間軸事件（過去 5 分鐘、給迷你 timeline 用）
+          const sessionTimelineEvents = detailWsEvents
+            .filter((e) => e.sessionId === s.id)
+            .map((e) => ({
+              userId: e.userId,
+              eventType: e.eventType,
+              timestamp: e.timestamp?.toISOString() ?? null,
+            }))
+            .sort((a, b) => (a.timestamp ?? "").localeCompare(b.timestamp ?? ""));
+
+          // 🆕 P0-4 health 聚合（per session、本 session）
+          const sessionHealth = {
+            graceCount: 0,
+            autoLeaveCount: 0,
+            kickCount: 0,
+            errorCount: 0,
+            messageCount: 0,
+            broadcastCount: 0,
+          };
+          for (const e of detailWsEvents) {
+            if (e.sessionId !== s.id) continue;
+            if (e.eventType === "grace_expired") sessionHealth.graceCount += 1;
+            else if (e.eventType === "auto_leave") sessionHealth.autoLeaveCount += 1;
+            else if (e.eventType === "kick") sessionHealth.kickCount += 1;
+            else if (e.eventType === "error") sessionHealth.errorCount += 1;
+            else if (e.eventType === "message") sessionHealth.messageCount += 1;
+            else if (e.eventType === "broadcast") sessionHealth.broadcastCount += 1;
+          }
+
+          // 🆕 P2-10 平均隊伍進度（已通過頁 / 總頁數）
+          const allMemberProgress = teamsData.flatMap((t) => t.members);
+          const avgPageOrder = allMemberProgress.length > 0
+            ? allMemberProgress.reduce((sum, m) => sum + m.currentPageOrder, 0) / allMemberProgress.length
+            : 0;
+          const avgProgressPercent = totalPages > 0 ? Math.round((avgPageOrder / totalPages) * 100) : 0;
+
           result.push({
             sessionId: s.id,
             startedAt: s.startedAt,
@@ -489,6 +525,14 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
             hostMode: s.hostMode,
             teamCount: teamsData.length,
             teams: teamsData,
+            // 🆕 P1-8 時間軸
+            timelineEvents: sessionTimelineEvents,
+            timelineWindowMinutes: Math.round(HEALTH_WINDOW_MS / 60_000),
+            // 🆕 P0-4 health
+            health: sessionHealth,
+            // 🆕 P2-10 game 進度
+            avgProgressPercent,
+            totalPages,
           });
         }
 
