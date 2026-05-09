@@ -5,6 +5,42 @@
 
 ---
 
+## 2026-05-10（晚上）
+
+### 📊 觀測完整化 — 自動報告 + Web Vitals + 第三方腳手架
+**主題**：業主要求「用數據佐證、自動回報、第三方專業工具？」
+**狀態**：🟢 本地 commit / tsc 0 / smoke 51/51 / ADR-0018 通過、待業主授權部署
+**部署 commit**：（待部署）
+
+**Phase 3 自動化活動結束報告**（最有商業價值）：
+- 新表 `session_reports`（11 個欄位、含 anomaly score + baseline snapshot）
+- `server/lib/generateSessionReport.ts` 撈 ws + 業務 + 跟前 5 場對比
+- `POST /api/cron/generate-session-reports` 每 15 分鐘 cron 觸發
+- 自動推 Telegram 摘要（健康 🟢 靜音 / 異常 🟠🔴 出聲）
+
+**Phase 4 Web Vitals**：
+- 收集 LCP/INP/CLS/FCP/TTFB、只上報 needs-improvement / poor
+- 透過既有 `reportClientEvent` → ws_event_log（dedup + keepalive）
+- main.tsx 啟動呼叫 `initWebVitals()`
+
+**Phase 5 admin/reports UI**：
+- 列表 + 異常分數醒目（🟢🟡🟠🔴）
+- 30 秒自動 refresh、手動觸發、跳 Replay
+- admin menu 加「📊 活動結束報告」
+
+**Phase 1+2 第三方腳手架**（待業主憑證）：
+- `.env.example` 預留 Sentry DSN / CF beacon token / CRON_SECRET
+- main.tsx CF beacon 條件動態載入
+- Sentry 整合 code 等業主給 DSN 後再裝
+
+**業主部署後操作**：
+- 設 `CRON_SECRET`（必要）+ 加 crontab `*/15 * * * *`
+- Sentry / CF beacon 申請後給我接（< 30 分）
+
+**細節** → [changes/2026-05-10-observability-suite.md](changes/2026-05-10-observability-suite.md)
+
+---
+
 ## 2026-05-10
 
 ### 🔥 多人斷線根因修 + 團體合照隊長鎖
