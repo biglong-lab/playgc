@@ -136,7 +136,7 @@ export function registerCronEndpoints(app: Express) {
             )
           )
         ORDER BY gs.started_at DESC
-        LIMIT 50
+        LIMIT 10
       `);
       const candidateRows = (candidates as unknown as { rows?: Array<{ id: string }> }).rows ?? [];
 
