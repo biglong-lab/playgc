@@ -104,18 +104,38 @@ export function registerCronEndpoints(app: Express) {
       }
 
       const lookbackHours = Math.min(
-        72,
+        168,
         Math.max(1, parseInt((req.query.lookbackHours as string) ?? "24", 10)),
       );
 
-      // 找已 completed 但無 report 的 session（過去 N 小時內）
+      // 找「實質已結束但無 report」的 session（三種情境）：
+      //   1. status='completed' / 'abandoned' 且過去 lookbackHours 內 started/completed
+      //   2. status='playing' 但 30 分鐘沒 ws 事件 = 玩家已散場（多人遊戲常見）
+      //      過濾 started_at 在 lookbackHours 內、避免歷史殭屍 session
+      //      要求至少有 1 筆 ws 事件（過濾未實際開玩的 session）
       const candidates = await db.execute<{ id: string }>(sql`
         SELECT gs.id
         FROM game_sessions gs
         LEFT JOIN session_reports sr ON sr.session_id = gs.id
-        WHERE gs.status = 'completed'
-          AND gs.completed_at >= NOW() - (${lookbackHours} || ' hours')::interval
-          AND sr.id IS NULL
+        WHERE sr.id IS NULL
+          AND gs.started_at >= NOW() - (${lookbackHours} || ' hours')::interval
+          AND (
+            gs.status IN ('completed', 'abandoned')
+            OR (
+              gs.status = 'playing'
+              AND NOT EXISTS (
+                SELECT 1 FROM ws_event_log
+                WHERE ws_event_log.session_id = gs.id
+                  AND ws_event_log.timestamp >= NOW() - INTERVAL '30 minutes'
+              )
+              AND EXISTS (
+                SELECT 1 FROM ws_event_log
+                WHERE ws_event_log.session_id = gs.id
+                LIMIT 1
+              )
+            )
+          )
+        ORDER BY gs.started_at DESC
         LIMIT 50
       `);
       const candidateRows = (candidates as unknown as { rows?: Array<{ id: string }> }).rows ?? [];
