@@ -5,6 +5,31 @@
 
 ---
 
+## 2026-05-10
+
+### 🔥 多人斷線根因修 + 團體合照隊長鎖
+**主題**：業主回報「組隊成功進遊戲就斷線、對講機離線」+ 「合照只有隊長能拍」
+**狀態**：🟢 本地 commit / tsc 0 / smoke 51/51 / ADR-0018 通過、待業主授權部署
+**部署 commit**：（待部署）
+
+**找到根因**（生產 ws_event_log 7 天統計）：
+- `close.reason='config_change'` 佔 **67%**（51/76）→ Provider 自己關 ws、不是真斷線
+- 78% 連線進 grace、73% expired、45% auto_leave
+- 玩家 lobby → game page 切換時 `alsoJoinSessionId` 變動 → ws 被關 → server 進 grace → 玩家被誤踢 team
+
+**修法**（4 個檔案）：
+1. **WebSocketContext.tsx** — `alsoJoinSessionId` 變動 → 保留 ws + send 新 join 訊息（不再 close）
+2. **WebSocketContext.tsx** — 首次 reconnect 從 800-1200ms 加速到 200ms
+3. **PhotoTeamGather.tsx** — 加 `isLeader` 隊長鎖、非隊長顯示「等待隊長拍照」+ 不開鏡頭
+4. **PhotoTeamFlow.tsx** — `captureMode='collage'` 強制改走 gather（含隊長鎖）
+5. **TriviaShowdownPage.tsx** — reconnect 後補拉 `/api/trivia/:id/state`（Phase 4 §6 已知限制）
+
+**預期改善**：close.reason='config_change' 67%→<5% / grace_start 78%→<30% / auto_leave 45%→<10%
+
+**細節** → [changes/2026-05-10-multi-leader-stability.md](changes/2026-05-10-multi-leader-stability.md)
+
+---
+
 ## 2026-05-09（晚上）
 
 ### 🎯 5 項實機 UX 修復（text_card / FontScale / session 恢復 / ErrorBoundary）
