@@ -17,6 +17,7 @@ import { registerAdminChangelogRoutes } from "./admin-changelog";
 import { registerAdminMultiSessionsRoutes } from "./admin-multi-sessions";
 import { registerAdminSessionReplayRoutes } from "./admin-session-replay";
 import { registerAdminTriviaRoutes } from "./admin-trivia";
+import { registerAdminReportsRoutes } from "./admin-reports";
 import { registerAdminGameRoutesRoutes } from "./admin-game-routes";
 import { registerPlayerFeedbackRoutes } from "./player-feedback";
 import { registerVariantPickerServerRoutes } from "./variant-picker-server";
