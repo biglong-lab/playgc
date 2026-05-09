@@ -79,11 +79,35 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
   const { state, sendPulse, broadcastState, hostMode } =
     useHostScreenSync<TriviaShowdownStateShape>();
 
+  // 🚀 2026-05-10: reconnect / 中途加入補拉 state（Phase 4 §6 已知限制修法）
+  //   ws 從 disconnect → connect 時 fetch /api/trivia/:sessionId/state
+  //   ws 廣播優先（state）、fallback 用 hydrated（hydratedState）
+  const wsApi = useWebSocket();
+  const [hydratedState, setHydratedState] = useState<TriviaShowdownStateShape | null>(null);
+  useEffect(() => {
+    if (!sessionId || !wsApi.isConnected) return;
+    let cancelled = false;
+    fetch(`/api/trivia/${sessionId}/state`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { state?: TriviaShowdownStateShape | null } | null) => {
+        if (cancelled || !data?.state) return;
+        setHydratedState(data.state);
+      })
+      .catch(() => {
+        /* 失敗不阻塞、等下次 ws broadcast */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId, wsApi.isConnected]);
+
+  const effectiveState = state ?? hydratedState;
+
   return (
     <TriviaShowdown
       config={config}
       hostMode={hostMode}
-      state={state}
+      state={effectiveState}
       myUserName={myUserName}
       sessionId={sessionId}
       myUserId={myUserId}
