@@ -412,6 +412,7 @@ function Router() {
         <Route path="/admin/host-sessions">{() => <ProtectedAdminRoute><AdminHostSessions /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/multi-sessions">{() => <ProtectedAdminRoute><AdminMultiSessions /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/sessions/:sessionId/replay">{() => <ProtectedAdminRoute><AdminSessionReplay /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/reports">{() => <ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>}</Route>
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>
