@@ -87,6 +87,21 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
       user.id.slice(0, 8)
     : "我";
 
+  // 🔒 2026-05-10: 隊長鎖 — 只有隊長能用鏡頭拍合照
+  //   非隊長：等待隊長拍 → ws 訂閱 photo_gather_updated 自動跳 done
+  //   隊長未設定（leaderId=null）→ 退回「任何人都能拍」舊行為（向後兼容）
+  const leaderId = myTeam?.leaderId ?? null;
+  const isLeader = !!user && !!leaderId && leaderId === user.id;
+  const hasLeader = !!leaderId;
+  const leaderMember = leaderId
+    ? myTeam?.members.find((m) => m.userId === leaderId)
+    : null;
+  const leaderDisplayName = leaderMember
+    ? [leaderMember.user?.firstName, leaderMember.user?.lastName].filter(Boolean).join(" ").trim() ||
+      leaderMember.user?.email?.split("@")[0] ||
+      leaderMember.userId.slice(0, 8)
+    : "隊長";
+
   // === Team-level 合照狀態（隊長拍完全隊看到）===
   const [teamGatherState, setTeamGatherState] = useState<TeamGatherState | null>(null);
   const [stateLoaded, setStateLoaded] = useState(false);
