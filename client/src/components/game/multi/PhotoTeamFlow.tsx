@@ -52,22 +52,24 @@ interface MemberShot {
 }
 
 export default function PhotoTeamFlow(props: PhotoTeamFlowProps) {
-  // 🆕 2026-05-05: captureMode 路由
-  //   'gather'（預設新建）→ PhotoTeamGather 簡化流程
-  //   'collage'（既有遊戲）→ 走下面舊邏輯
-  const captureMode = props.config.teamConfig?.captureMode ?? "gather";
-  if (captureMode === "gather") {
-    return (
-      <PhotoTeamGather
-        config={props.config}
-        onComplete={props.onComplete}
-        sessionId={props.sessionId}
-        gameId={props.gameId}
-        pageId={(props as { pageId?: string }).pageId}
-      />
+  // 🔒 2026-05-10: 全面強制走 gather（含隊長鎖）
+  //   原因：業主回報「合照只能隊長拍」、collage 模式逐位拍 N 張無法套用隊長鎖
+  //   既有 admin 設定 captureMode='collage' 也統一走 gather、行為一致整齊
+  //   PhotoTeamCollage 程式碼保留作向後兼容（未啟用、未來可評估刪除）
+  if (props.config.teamConfig?.captureMode === "collage") {
+    console.warn(
+      "[PhotoTeamFlow] captureMode='collage' 已 deprecated、自動走 gather 模式",
     );
   }
-  return <PhotoTeamCollage {...props} />;
+  return (
+    <PhotoTeamGather
+      config={props.config}
+      onComplete={props.onComplete}
+      sessionId={props.sessionId}
+      gameId={props.gameId}
+      pageId={(props as { pageId?: string }).pageId}
+    />
+  );
 }
 
 function PhotoTeamCollage({
