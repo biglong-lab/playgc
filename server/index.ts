@@ -378,6 +378,10 @@ app.use((req, res, next) => {
     console.error("[boot] startMultiSessionsAlertCron 失敗:", err);
   }
 
+  // 🐛 Sentry Express error handler — 必須在所有 route 之後、其他 error handler 之前
+  //   會自動 capture 所有 throw / next(err) 的錯誤、然後讓後續 handler 處理回應
+  setupSentryExpressErrorHandler(app);
+
   app.use((err: Error & { status?: number; statusCode?: number }, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
