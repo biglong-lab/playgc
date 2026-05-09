@@ -45,57 +45,15 @@ function redactObject(obj: unknown, depth = 0): unknown {
   return result;
 }
 
-let initialized = false;
-
-export function initSentryServer(): void {
-  if (initialized) return;
-  const dsn = process.env.SENTRY_DSN;
-  if (!dsn) return; // disabled
-  initialized = true;
-
-  Sentry.init({
-    dsn,
-    environment: process.env.NODE_ENV ?? "development",
-    release: process.env.APP_COMMIT,
-
-    tracesSampleRate: parseFloat(process.env.SENTRY_TRACES_SAMPLE_RATE ?? "0.1"),
-
-    // 隱私：不送 IP / cookie / 個資
-    sendDefaultPii: false,
-
-    beforeSend(event) {
-      // redact 敏感欄位
-      if (event.request) {
-        event.request = redactObject(event.request) as typeof event.request;
-      }
-      if (event.extra) {
-        event.extra = redactObject(event.extra) as typeof event.extra;
-      }
-      if (event.contexts) {
-        event.contexts = redactObject(event.contexts) as typeof event.contexts;
-      }
-      return event;
-    },
-
-    // 過濾已知無害錯誤
-    ignoreErrors: [
-      "client_disconnect",
-      "EPIPE", // ws / http abrupt close
-      "ECONNRESET",
-      /timeout of \d+ms exceeded/,
-    ],
-  });
-
-  console.log("[sentry] server enabled (env=" + (process.env.NODE_ENV ?? "dev") + ")");
-}
-
 /**
- * 啟用 Express error handler
- * 必須在所有 routes 之後、其他 app error handler 之前
+ * 啟用 Express error handler（Sentry init 由 server/instrument.ts 處理）
+ * 必須在所有 routes 之後、其他 app error handler 之前呼叫
+ *
+ * SENTRY_DSN 留空時、Sentry SDK 仍會初始化但不送資料（safe no-op）
  */
 export function setupSentryExpressErrorHandler(app: Express): void {
-  if (!initialized) return; // disabled
+  if (!process.env.SENTRY_DSN) return; // disabled
   Sentry.setupExpressErrorHandler(app);
 }
 
-export { Sentry };
+export { Sentry, redactObject };
