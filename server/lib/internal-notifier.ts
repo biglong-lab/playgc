@@ -248,6 +248,69 @@ export function notifyDailyReport(opts: {
 }
 
 // ============================================================================
+// 事件 8.5：活動結束報告（Phase 3 / 2026-05-10）
+// ============================================================================
+
+export function notifySessionReport(opts: {
+  sessionId: string;
+  gameId?: string | null;
+  totalPlayers: number;
+  completedPlayers: number;
+  completionRate: number | null;
+  graceStartCount: number;
+  autoLeaveCount: number;
+  wsConnects: number;
+  configChangeCloses: number;
+  anomalyScore: number;
+  anomaliesCount: number;
+  topAnomalyMessage?: string;
+  baselineCompletionRate?: number;
+  reportUrl?: string;
+}): void {
+  if (!isTelegramEnabled()) return;
+
+  const completionPct = opts.completionRate ?? 0;
+  const gracePct = opts.wsConnects > 0 ? Math.round((opts.graceStartCount / opts.wsConnects) * 100) : 0;
+  const autoLeavePct = opts.wsConnects > 0 ? Math.round((opts.autoLeaveCount / opts.wsConnects) * 100) : 0;
+  const configPct = opts.wsConnects > 0 ? Math.round((opts.configChangeCloses / opts.wsConnects) * 100) : 0;
+
+  const healthEmoji =
+    opts.anomalyScore === 0 ? "🟢" : opts.anomalyScore < 30 ? "🟡" : opts.anomalyScore < 60 ? "🟠" : "🔴";
+
+  const lines = [
+    `${healthEmoji} *活動結束報告* (anomaly=${opts.anomalyScore})`,
+    `\`session:${opts.sessionId.slice(0, 12)}\``,
+    ``,
+    `👥 完成 ${opts.completedPlayers}/${opts.totalPlayers} (${completionPct}%)`,
+    `📡 grace ${gracePct}% · auto_leave ${autoLeavePct}% · config_change ${configPct}%`,
+  ];
+
+  if (opts.anomaliesCount > 0 && opts.topAnomalyMessage) {
+    lines.push(``, `⚠️ ${opts.anomaliesCount} 項異常`);
+    lines.push(`首要：${opts.topAnomalyMessage.slice(0, 100)}`);
+  }
+
+  if (opts.baselineCompletionRate !== undefined && opts.completionRate !== null) {
+    const diff = opts.completionRate - opts.baselineCompletionRate;
+    if (Math.abs(diff) >= 5) {
+      lines.push(``, `📈 vs 基準（前 5 場平均 ${opts.baselineCompletionRate}%）：${diff > 0 ? "+" : ""}${diff}%`);
+    }
+  }
+
+  if (opts.reportUrl) {
+    lines.push(``, `詳情：${opts.reportUrl}`);
+  }
+
+  fireForget(
+    sendMessage({
+      text: lines.join("\n"),
+      parseMode: "Markdown",
+      silent: opts.anomalyScore < 30, // 健康無異常靜音、異常才響
+    }),
+  );
+}
+
+// ============================================================================
 // 事件 9：LINE / Cloudinary 額度告警
 // ============================================================================
 
