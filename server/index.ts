@@ -1,3 +1,8 @@
+// 🐛 Sentry 必須在最早初始化（在所有其他 import 之前）
+//   Phase 1 (2026-05-10)：SENTRY_DSN 留空就 disabled
+import { initSentryServer, setupSentryExpressErrorHandler } from "./lib/sentry";
+initSentryServer();
+
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
