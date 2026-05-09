@@ -443,7 +443,39 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
     );
   }
 
-  // intro（預設）
+  // 🔒 2026-05-10: 非隊長等待頁 — 不開鏡頭、訂 ws、等隊長拍完自動跳 done
+  if (hasLeader && !isLeader) {
+    return (
+      <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-gather-waiting-leader">
+        <div className="relative">
+          <Users className="w-12 h-12 text-primary" />
+          <Loader2 className="w-5 h-5 text-primary absolute -bottom-1 -right-1 animate-spin" />
+        </div>
+        <h2 className="text-xl font-bold">{config.title || "團體合照"}</h2>
+        <Card className="w-full max-w-md bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800/50">
+          <CardContent className="p-4 text-sm space-y-2 text-blue-900 dark:text-blue-100">
+            <p className="font-semibold">📸 等待隊長 {leaderDisplayName} 拍照</p>
+            <ul className="text-xs space-y-1 list-disc pl-4">
+              <li>請集合到隊長身邊、保持微笑</li>
+              <li>隊長拍完會自動同步給全隊</li>
+              <li>相機只開放給隊長使用</li>
+            </ul>
+          </CardContent>
+        </Card>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleContinue}
+          data-testid="btn-gather-skip"
+          className="text-muted-foreground"
+        >
+          先跳過此題、稍後再拍 →
+        </Button>
+      </div>
+    );
+  }
+
+  // intro（隊長 / 無 leaderId 向後兼容）
   return (
     <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-gather-intro">
       <Users className="w-12 h-12 text-primary" />
@@ -453,7 +485,9 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
       )}
       <Card className="w-full max-w-md bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800/50">
         <CardContent className="p-4 text-sm space-y-2 text-amber-900 dark:text-amber-100">
-          <p className="font-semibold">📸 怎麼拍（只需要一個人拍、整隊共享）</p>
+          <p className="font-semibold">
+            📸 {isLeader ? "隊長拍照（整隊共享）" : "怎麼拍（只需要一個人拍、整隊共享）"}
+          </p>
           <ol className="text-xs space-y-1 list-decimal pl-4">
             <li>對講機叫大家集合到隊長身邊</li>
             <li>按下「開始拍照」→ 5 秒倒數</li>
