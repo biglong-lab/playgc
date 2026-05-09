@@ -6,9 +6,10 @@
 //   - client 端 onPulse 不再算分（保留接收 server 廣播的 state）
 //   - ADR-0018 規則 4：計分 → server-side source-of-truth
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import TriviaShowdown, { type TriviaShowdownConfig } from "./TriviaShowdown";
 import { useHostScreenSync } from "../shared/hooks/useHostScreenSync";
+import { useWebSocket } from "@/contexts/WebSocketContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useMyUserName } from "@/hooks/useMyUserName";
 import type { Page } from "@shared/schema";
