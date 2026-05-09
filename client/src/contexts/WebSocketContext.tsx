@@ -148,10 +148,14 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
     reconnectFailCount: 0,
   });
 
-  // exp backoff（同原 use-team-websocket.ts）
+  // exp backoff（首次立即重連 + 後續 exp backoff）
+  // 🚀 2026-05-10: 首次 abnormal close 改 200ms（原 800-1200ms）→ 大幅降低 grace 觸發機率
+  //   因 server grace=30s、首次重連快回來就不會被誤判離線
+  //   後續嘗試仍 exp backoff 防 spam server（500ms / 1s / 2s / ... / 30s）
   const computeBackoff = useCallback((attempts: number): number => {
-    const base = 1000;
-    const ms = Math.min(base * Math.pow(2, attempts), 30_000);
+    if (attempts === 0) return 200; // 首次幾乎立即重連
+    const base = 500;
+    const ms = Math.min(base * Math.pow(2, attempts - 1), 30_000);
     const jitter = ms * 0.2 * (Math.random() * 2 - 1);
     return Math.max(500, Math.floor(ms + jitter));
   }, []);
