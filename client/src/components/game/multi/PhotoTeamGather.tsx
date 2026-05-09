@@ -54,6 +54,7 @@ interface TeamGatherState {
 
 interface MyTeamResponse {
   id: string;
+  leaderId?: string | null;
   members: Array<{ userId: string; user?: { firstName?: string | null; lastName?: string | null; email?: string } }>;
 }
 
