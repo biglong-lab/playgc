@@ -4,6 +4,11 @@ import App from "./App";
 import "./index.css";
 import { logAppLaunch } from "@/lib/pwa-analytics";
 import { initWebVitals } from "@/lib/web-vitals-report";
+import { initSentry } from "@/lib/sentry";
+
+// 🐛 Phase 1 (2026-05-10)：Sentry 錯誤監控（VITE_SENTRY_DSN 留空就 disabled）
+//   必須在 createRoot 之前 init、確保 React component error 被 capture
+initSentry();
 
 // 🆕 Phase D：App 啟動時 log（PWA / browser / TWA 區分），給後台統計用
 //   非阻塞，1 秒延遲讓 critical render 先完成
