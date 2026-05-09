@@ -194,3 +194,83 @@ export type ObservabilityEventType =
   | "kick";
 
 export type ObservabilityDirection = "inbound" | "outbound" | "system";
+
+// =============== Session Reports（活動結束自動報告 / Phase 3）===============
+//
+// 每場 multi session 結束時自動產生一份報告：
+//   - 撈 ws_event_log 統計（reconnect / grace / auto_leave / 平均延遲）
+//   - 撈業務數據（完成率、合照率、答對率）
+//   - 跟前 5 場對比、算 anomaly score
+//   - Telegram 推給業主、admin UI 看歷史
+//
+export const sessionReports = pgTable(
+  "session_reports",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    sessionId: varchar("session_id", { length: 100 }).notNull(),
+    gameId: varchar("game_id", { length: 100 }),
+    fieldId: varchar("field_id", { length: 100 }),
+
+    // 時段
+    startedAt: timestamp("started_at"),
+    endedAt: timestamp("ended_at"),
+    durationMs: integer("duration_ms"),
+
+    // 玩家統計
+    totalPlayers: integer("total_players").default(0),
+    completedPlayers: integer("completed_players").default(0),
+
+    // WS 健康度
+    wsConnects: integer("ws_connects").default(0),
+    wsCloses: integer("ws_closes").default(0),
+    wsConfigChangeCloses: integer("ws_config_change_closes").default(0),
+    wsAbnormalCloses: integer("ws_abnormal_closes").default(0),
+    graceStartCount: integer("grace_start_count").default(0),
+    graceExpiredCount: integer("grace_expired_count").default(0),
+    autoLeaveCount: integer("auto_leave_count").default(0),
+    avgWsLatencyMs: integer("avg_ws_latency_ms"),
+
+    // 業務指標
+    completionRate: integer("completion_rate"), // 0-100 整數百分比
+    triviaAnswerCount: integer("trivia_answer_count").default(0),
+    triviaCorrectRate: integer("trivia_correct_rate"), // 0-100
+    photoTeamCompletedCount: integer("photo_team_completed_count").default(0),
+
+    // 異常分析
+    anomalyScore: integer("anomaly_score").default(0), // 0-100、越高越異常
+    anomalies: jsonb("anomalies"), // 異常清單 [{type, severity, message}]
+
+    // 跟前 5 場對比基準
+    baselineSnapshot: jsonb("baseline_snapshot"), // 前 5 場平均值
+
+    // 通知狀態
+    telegramSent: boolean("telegram_sent").default(false),
+    telegramSentAt: timestamp("telegram_sent_at"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_session_reports_session").on(table.sessionId),
+    index("idx_session_reports_created").on(table.createdAt),
+    index("idx_session_reports_anomaly").on(table.anomalyScore, table.createdAt),
+  ],
+);
+
+export const insertSessionReportSchema = createInsertSchema(sessionReports).omit({
+  id: true,
+  createdAt: true,
+});
+export type SessionReport = typeof sessionReports.$inferSelect;
+export type InsertSessionReport = z.infer<typeof insertSessionReportSchema>;
+
+export interface SessionReportAnomaly {
+  type: "ws_grace_high" | "ws_auto_leave_high" | "ws_config_change_high" | "completion_low" | "latency_high" | "abnormal_close_high";
+  severity: "low" | "medium" | "high";
+  message: string;
+  /** 當前值 */
+  value: number;
+  /** 基準值（前 5 場平均）*/
+  baseline?: number;
+  /** 警戒閾值 */
+  threshold: number;
+}
