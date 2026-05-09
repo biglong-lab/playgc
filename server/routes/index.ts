@@ -129,6 +129,7 @@ export async function registerRoutes(
   registerAdminMultiSessionsRoutes(app);
   registerAdminSessionReplayRoutes(app);
   registerAdminTriviaRoutes(app, ctx);
+  registerAdminReportsRoutes(app);
   registerAdminGameRoutesRoutes(app);
   registerPlayerFeedbackRoutes(app);
   registerVariantPickerServerRoutes(app);
