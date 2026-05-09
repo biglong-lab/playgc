@@ -341,28 +341,57 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
         };
       }
 
-      // 不同 config → 切換 connection
+      // 🚀 2026-05-10 根因修復：只 alsoJoinSessionId 變動 → 保留 ws、send 新 join
+      //   原 bug：玩家從 lobby 進 game page、alsoJoinSessionId 變動 → close ws "config_change"
+      //   → server 5 秒 buffer + grace 30s + auto_leave 120s 流程 → 玩家被誤判離線
+      //   生產 7 天統計：close.reason='config_change' 佔 67%、grace_start 78%、grace_expired 73%
+      //   修法：teamId/userId/userName 不變、只 alsoJoinSessionId 變 → 保留 ws、補發 join
+      const onlySessionChanged =
+        current &&
+        current.teamId === config.teamId &&
+        current.userId === config.userId &&
+        current.userName === config.userName &&
+        current.alsoJoinSessionId !== config.alsoJoinSessionId;
+
+      if (onlySessionChanged) {
+        configRef.current = config;
+        const ws = wsRef.current;
+        if (ws && ws.readyState === WebSocket.OPEN && config.alsoJoinSessionId) {
+          try {
+            ws.send(
+              JSON.stringify({
+                type: "join",
+                sessionId: config.alsoJoinSessionId,
+                userId: config.userId,
+                userName: config.userName,
+              }),
+            );
+          } catch {
+            /* ignore */
+          }
+        }
+        return () => {
+          // no-op：保留 ws
+        };
+      }
+
+      // teamId/userId/userName 變動 → 真的要切 user/team、需重連
       configRef.current = config;
       const oldWs = wsRef.current;
       if (oldWs && oldWs.readyState === WebSocket.OPEN) {
-        // 標記非 intentional 是因為這是「config 變動」、不算 unmount
-        // 但我們確實要關掉舊 connection、用 close code 表示
         intentionalCloseRef.current = true;
         try {
-          oldWs.close(1000, "config_change");
+          oldWs.close(1000, "user_change");
         } catch {
           /* ignore */
         }
         wsRef.current = null;
-        // 重置 intentionalClose、讓 onclose 不排重連
-        // 然後立即重新 connect
         setTimeout(() => {
           intentionalCloseRef.current = false;
           reconnectAttemptsRef.current = 0;
           connect();
         }, 50);
       } else {
-        // 沒有 active ws → 直接 connect
         intentionalCloseRef.current = false;
         reconnectAttemptsRef.current = 0;
         connect();
