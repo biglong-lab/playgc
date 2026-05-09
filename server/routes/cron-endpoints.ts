@@ -151,8 +151,12 @@ export function registerCronEndpoints(app: Express) {
         try {
           const report = await generateSessionReport(row.id);
 
-          // 推 Telegram（僅未推過）
-          if (!report.telegramSent) {
+          // 推 Telegram（僅未推過 + session 在 30 分鐘內結束、避免歷史回填洗版）
+          const TELEGRAM_FRESHNESS_MS = 30 * 60 * 1000;
+          const isFresh =
+            report.endedAt &&
+            Date.now() - new Date(report.endedAt).getTime() < TELEGRAM_FRESHNESS_MS;
+          if (!report.telegramSent && isFresh) {
             const topAnomaly = Array.isArray(report.anomalies) && report.anomalies.length > 0
               ? (report.anomalies as Array<{ message: string; severity: string }>).sort((a, b) => {
                   const order = { high: 3, medium: 2, low: 1 };
