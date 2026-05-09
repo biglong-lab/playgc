@@ -14,6 +14,18 @@ setTimeout(() => logAppLaunch(), 1000);
 //   透過既有 reportClientEvent → /api/error-log（dedup + keepalive）
 initWebVitals();
 
+// 📊 Phase 2 (2026-05-10)：Cloudflare Web Analytics（選用）
+//   .env 設 VITE_CF_BEACON_TOKEN 才啟用
+//   完全免費、cookie-free、不影響隱私、不影響效能（defer + 5KB）
+const cfBeaconToken = import.meta.env.VITE_CF_BEACON_TOKEN;
+if (cfBeaconToken && typeof document !== "undefined") {
+  const cfScript = document.createElement("script");
+  cfScript.defer = true;
+  cfScript.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  cfScript.setAttribute("data-cf-beacon", JSON.stringify({ token: cfBeaconToken }));
+  document.head.appendChild(cfScript);
+}
+
 // Service Worker 更新時強制 reload，避免當前 tab 卡在舊 bundle
 // （已設 skipWaiting + clientsClaim，但舊 JS 已載入 memory，需要 reload 才會拿新版）
 if ("serviceWorker" in navigator) {
