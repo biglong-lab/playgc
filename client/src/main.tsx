@@ -3,10 +3,16 @@ import { AuthProvider } from "./contexts/AuthContext";
 import App from "./App";
 import "./index.css";
 import { logAppLaunch } from "@/lib/pwa-analytics";
+import { initWebVitals } from "@/lib/web-vitals-report";
 
 // 🆕 Phase D：App 啟動時 log（PWA / browser / TWA 區分），給後台統計用
 //   非阻塞，1 秒延遲讓 critical render 先完成
 setTimeout(() => logAppLaunch(), 1000);
+
+// 📐 Phase 4 (2026-05-10)：Web Vitals 收集（LCP / INP / CLS / FCP / TTFB）
+//   只上報 needs-improvement / poor、節省流量
+//   透過既有 reportClientEvent → /api/error-log（dedup + keepalive）
+initWebVitals();
 
 // Service Worker 更新時強制 reload，避免當前 tab 卡在舊 bundle
 // （已設 skipWaiting + clientsClaim，但舊 JS 已載入 memory，需要 reload 才會拿新版）
