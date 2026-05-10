@@ -80,7 +80,16 @@ export interface UseTeamGpsFusionResult {
 export function useTeamGpsFusion(
   options: UseTeamGpsFusionOptions,
 ): UseTeamGpsFusionResult {
-  const { teamId, userId, userName, enabled = true, sampleSize = 5, imuFallback = false } = options;
+  const {
+    teamId,
+    userId,
+    userName,
+    enabled = true,
+    sampleSize = 5,
+    imuFallback = false,
+    smoothingFactor = 0.3,
+    minSampleIntervalMs = 1000,
+  } = options;
 
   // 1. 個人 GPS（多採樣 + Kalman + 可選 IMU fallback）
   const {
@@ -95,7 +104,8 @@ export function useTeamGpsFusion(
     mode: "watch",
     enabled,
     sampleSize,
-    minSampleIntervalMs: 1000,
+    minSampleIntervalMs,
+    smoothingFactor,
     imuFallback,
   });
 
