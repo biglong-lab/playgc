@@ -229,8 +229,13 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
     userId: user?.id ?? null,
     userName: user?.firstName || "玩家",
     enabled: isWatching && hasValidTarget,
-    sampleSize: 5,
-    imuFallback: true, // 🧭 啟用 IMU fallback，GPS 失效時自動切換
+    // 🚀 2026-05-10: 導航即時模式 — 距離隨速度變化（修「1m, 1m 慢慢減」bug）
+    //   原預設 sampleSize=5 / smoothingFactor=0.3 / interval=1000 是給「站定打卡」設計
+    //   導航中需要立即反映位移、不能保留舊值權重
+    sampleSize: 3,             // 5 → 3（少 2 個樣本緩衝）
+    smoothingFactor: 0,        // 0.3 → 0（不保留舊值、新樣本即生效）
+    minSampleIntervalMs: 500,  // 1000 → 500（每秒 2 樣、距離更新更頻繁）
+    imuFallback: true,         // 🧭 啟用 IMU fallback，GPS 失效時自動切換
   });
 
   // 把 stable position 的更新推給 handleStableLocation
