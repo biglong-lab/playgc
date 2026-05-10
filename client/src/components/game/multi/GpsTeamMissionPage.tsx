@@ -131,9 +131,13 @@ export default function GpsTeamMissionPage({
     return user.id.slice(0, 8);
   }, [user]);
 
-  // 自己的位置（多採樣 + Kalman 穩定化）
+  // 自己的位置（即時模式、不重平滑、避免「1m, 1m 慢慢減」）
+  // 2026-05-10：multi 導航 / 動態追蹤同樣需要即時、非站定打卡
   const { position: myPosition } = useStableGeolocation({
     enabled: !!teamId && !!user,
+    sampleSize: 3,
+    smoothingFactor: 0,
+    minSampleIntervalMs: 500,
   });
 
   // 連 WebSocket 接隊友位置
