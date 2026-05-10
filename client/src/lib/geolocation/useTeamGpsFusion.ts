@@ -34,6 +34,18 @@ export interface UseTeamGpsFusionOptions {
   sampleSize?: number;
   /** 🧭 IMU PDR fallback（GPS 失效時用步數推算位置）*/
   imuFallback?: boolean;
+  /**
+   * 🆕 2026-05-10: 平滑強度（0-1、預設 0.3）
+   * 0 = 完全不平滑（移動 / 導航時即時反映）
+   * 0.3 = 預設（保留 30% 舊值權重、適合站定打卡）
+   * 0.7+ = 重平滑（GPS 抖動嚴重時）
+   */
+  smoothingFactor?: number;
+  /**
+   * 🆕 2026-05-10: 採樣間隔毫秒（預設 1000、即每秒 1 個樣本）
+   * 移動 / 導航場景建議 500（每秒 2 個樣本、距離更即時）
+   */
+  minSampleIntervalMs?: number;
 }
 
 export interface UseTeamGpsFusionResult {
