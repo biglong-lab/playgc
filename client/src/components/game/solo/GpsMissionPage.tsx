@@ -146,11 +146,12 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
     // pos.accuracy 已經是經 Kalman 濾波後的等效精度（比單次採樣更穩）
     const effectiveRadius = targetRadius + Math.min(pos.accuracy * 0.5, 50);
 
-    // 額外條件：採樣數 ≥ 3 才允許判定到達（避免暖機期誤判）
-    // 例外：locateOnce 模式（samplesUsed=1）允許直接到達
+    // 額外條件：採樣數 ≥ 2 才允許判定到達（避免暖機期誤判）
+    //   2026-05-10: 從 ≥ 3 放寬到 ≥ 2、配合即時模式 sampleSize=3 + 玩家移動可能還沒填滿緩衝就到達
+    //   locateOnce 模式（samplesUsed=1）仍允許直接到達
     const requireMultipleSamples = pos.samplesUsed > 1;
     if (
-      (!requireMultipleSamples || pos.samplesUsed >= 3) &&
+      (!requireMultipleSamples || pos.samplesUsed >= 2) &&
       dist <= effectiveRadius &&
       !hasArrivedRef.current
     ) {
