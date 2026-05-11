@@ -64,6 +64,16 @@ export default function VoteTeamPage({
   const teamId = myTeam?.id;
   const totalMembers = myTeam?.members?.length ?? 0;
 
+  // 📊 Phase 1 telemetry
+  const tele = useComponentTelemetry({
+    componentType: "vote_team",
+    sessionId, userId: user?.id, teamId, pageId,
+  });
+  const handleComplete = (...args: Parameters<typeof onComplete>) => {
+    tele.reportComplete("completed");
+    onComplete(...args);
+  };
+
   const { voteState, ensureVote, castVote, handleWsMessage } = useTeamVoteSync({
     teamId: teamId ?? "",
     pageId,
