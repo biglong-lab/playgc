@@ -66,7 +66,7 @@ export default function CameraToolbar({
   const playShutter = useShutterSound();
 
   const handleCapture = () => {
-    if (disabled) return;
+    if (disabled || captureDisabled) return;
     haptic.success();
     playShutter();
     onCapture();
