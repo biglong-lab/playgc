@@ -50,6 +50,12 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
   const myUserId = user?.id ?? "";
   const sessionId = useMemo(() => parseSessionIdFromUrl(), []);
 
+  // 📊 Phase 1 telemetry
+  const tele = useComponentTelemetry({
+    componentType: "trivia_showdown",
+    sessionId, userId: myUserId, pageId: page.id,
+  });
+
   // 用 useMemo 穩定 config 物件 identity（防 useCallback dep 每次 render 失效）
   const config = useMemo<TriviaShowdownConfig>(() => {
     const raw = (page.config as { config?: TriviaShowdownConfig } | TriviaShowdownConfig | null) ?? null;
