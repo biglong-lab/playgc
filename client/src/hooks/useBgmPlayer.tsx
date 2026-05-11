@@ -83,6 +83,8 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
   const [ducked, setDucked] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const wantPlayRef = useRef(false);
+  // 🆕 2026-05-12 #11: 動態音量（admin 在遊戲基本設定可調 0-100、預設 50）
+  const normalVolumeRef = useRef<number>(DEFAULT_NORMAL_VOLUME);
 
   // lazy 建 audio element（不要 SSR 跑）
   const ensureAudio = useCallback((): HTMLAudioElement | null => {
