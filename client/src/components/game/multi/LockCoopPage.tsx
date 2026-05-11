@@ -164,9 +164,9 @@ export default function LockCoopPage({
       attempts={lockState.attempts}
       isUnlocked={lockState.isUnlocked}
       isFailed={lockState.isFailed}
-      onCodeChange={lockState.onCodeChange}
+      onCodeChange={(...a) => { tele.reportInteraction(); return lockState.onCodeChange(...a); }}
       onAttempt={lockState.onAttempt}
-      onComplete={onComplete}
+      onComplete={handleComplete}
     />
   );
 }
