@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useComponentTelemetry } from "@/hooks/useComponentTelemetry";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { useWalkieSuggestion } from "@/hooks/useWalkieSuggestion";
 import { useTeamVoteSync } from "../shared/hooks/useTeamVoteSync";
