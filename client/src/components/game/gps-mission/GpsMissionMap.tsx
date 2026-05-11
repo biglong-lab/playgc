@@ -16,13 +16,26 @@ const targetIcon = L.divIcon({
   iconAnchor: [14, 14],
 });
 
-// 玩家位置圖示（藍，帶脈動）
-const userIcon = L.divIcon({
-  className: "gps-user-marker",
-  html: `<div style="background: hsl(var(--primary)); width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 4px rgba(var(--primary-rgb, 59 130 246), 0.3); animation: gps-pulse 2s infinite;"></div><style>@keyframes gps-pulse { 0%,100%{ box-shadow: 0 0 0 4px rgba(59,130,246,0.3);} 50%{ box-shadow: 0 0 0 10px rgba(59,130,246,0.15);}}</style>`,
-  iconSize: [20, 20],
-  iconAnchor: [10, 10],
-});
+// 🆕 2026-05-12 #10: 玩家位置 + 面向目標方向的箭頭 icon factory
+//   bearing 0 = 北、90 = 東、180 = 南、270 = 西
+//   箭頭從中心向上、用 CSS rotate(bearing) 指向目標
+function makeUserIcon(bearing: number | null) {
+  const arrowSvg = bearing !== null
+    ? `<svg width="32" height="32" viewBox="0 0 32 32" style="position:absolute; top:-6px; left:-6px; transform: rotate(${bearing}deg); transform-origin: center; pointer-events: none;">
+         <polygon points="16,2 22,12 16,9 10,12" fill="hsl(var(--primary))" stroke="white" stroke-width="1.5" />
+       </svg>`
+    : "";
+  return L.divIcon({
+    className: "gps-user-marker",
+    html: `<div style="position:relative; width:20px; height:20px;">
+             <div style="background: hsl(var(--primary)); width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 4px rgba(59,130,246,0.3); animation: gps-pulse 2s infinite;"></div>
+             ${arrowSvg}
+             <style>@keyframes gps-pulse { 0%,100%{ box-shadow: 0 0 0 4px rgba(59,130,246,0.3);} 50%{ box-shadow: 0 0 0 10px rgba(59,130,246,0.15);}}</style>
+           </div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
+}
 
 /** 依 user / target 自動調整視野 */
 function AutoFit({ userLat, userLng, targetLat, targetLng, radius }: {
