@@ -223,7 +223,10 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
       return;
     }
     if (typeof choice.jumpToMessageIndex === "number") {
-      const targetIndex = choice.jumpToMessageIndex;
+      // 🐛 2026-05-12 fix: admin 顯示 #1 #2 #3（1-based）、程式用 0-based
+      //   原 bug：admin 寫 2 跳到 index=2 (#3、錯) / 寫 3 跳出範圍 (無跳)
+      //   修：admin 寫 N 跳到 #N（index=N-1）
+      const targetIndex = choice.jumpToMessageIndex - 1;
       if (targetIndex >= 0 && targetIndex < messages.length) {
         setCurrentMessageIndex(targetIndex);
         return;
