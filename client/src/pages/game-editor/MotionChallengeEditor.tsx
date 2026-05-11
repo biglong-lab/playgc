@@ -105,7 +105,7 @@ export default function MotionChallengeEditor({ config, updateField }: EditorPro
         <label className="text-sm font-medium mb-2 block">獎勵分數</label>
         <Input
           type="number"
-          value={config.rewardPoints || 15}
+          value={config.rewardPoints ?? 15}
           onChange={(e) => {
             const n = parseInt(e.target.value, 10);
             updateField("rewardPoints", Number.isFinite(n) ? n : 15);
