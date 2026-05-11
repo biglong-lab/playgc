@@ -143,6 +143,12 @@ export default function ChoiceVerifyRacePage({
   const teamId = myTeam?.id;
   const effectivePageId = pageId ?? "default";
 
+  // 📊 Phase 1 telemetry
+  const tele = useComponentTelemetry({
+    componentType: "choice_verify_race",
+    sessionId, userId: user?.id, teamId, pageId: effectivePageId,
+  });
+
   // === Server-driven state ===
   const [serverState, setServerState] = useState<RaceStateFromServer | null>(null);
   const [serverAnswers, setServerAnswers] = useState<RaceAnswerFromServer[]>([]);
