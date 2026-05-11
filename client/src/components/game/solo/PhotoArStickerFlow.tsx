@@ -643,7 +643,9 @@ export default function PhotoArStickerFlow({
             facingMode={camera.facingMode}
             onCapture={handleCapture}
             onSwitchCamera={camera.switchCamera}
-            disabled={!preloadDone || (useFaceTracking && !faceAnchor)}
+            // 🆕 2026-05-12 #3 fix: 只鎖拍照、保留閃光燈 / 翻鏡頭可用
+            disabled={!preloadDone}
+            captureDisabled={useFaceTracking && !faceAnchor}
           />
           {useFaceTracking && !faceAnchor && (
             <span className="text-amber-400 text-xs bg-black/50 px-2 py-0.5 rounded animate-pulse">
