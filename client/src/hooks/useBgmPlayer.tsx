@@ -237,6 +237,7 @@ export function useBgmPlayer(): BgmPlayerAPI {
       duck: () => undefined,
       unduck: () => undefined,
       toggleMute: () => undefined,
+      setNormalVolume: () => undefined,
       currentUrl: null,
       muted: false,
       ducked: false,
