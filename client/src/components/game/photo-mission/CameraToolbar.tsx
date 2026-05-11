@@ -134,9 +134,9 @@ export default function CameraToolbar({
         variant="default"
         size="icon"
         className="rounded-full h-16 w-16 bg-white hover:bg-white/90 text-black border-4 border-primary/40 shadow-xl"
-        disabled={disabled}
+        disabled={disabled || captureDisabled}
         onClick={handleCapture}
-        title="拍照"
+        title={captureDisabled ? "等找到臉再拍" : "拍照"}
         data-testid="btn-camera-capture"
       >
         <Camera className="w-8 h-8" />
