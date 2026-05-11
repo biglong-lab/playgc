@@ -79,6 +79,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { title: "進行中場次", icon: Activity, path: "/admin/sessions", permission: "game:view" },
       { title: "📡 即時連線監控", icon: Activity, path: "/admin/multi-sessions", permission: "game:view" },
       { title: "📊 活動結束報告", icon: BarChart3, path: "/admin/reports", permission: "game:view" },
+      { title: "🧩 元件健康度", icon: BarChart3, path: "/admin/component-health", permission: "game:view" },
       { title: "📅 預約管理", icon: Activity, path: "/admin/bookings", permission: "game:edit" },
       // 🆕 設備管理僅 shooting 模組啟用才顯示（硬體靶機）
       { title: "設備管理", icon: Cpu, path: "/admin/devices", permission: "game:view", requiresModule: "shooting" },
