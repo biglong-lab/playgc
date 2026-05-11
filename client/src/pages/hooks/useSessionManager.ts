@@ -149,7 +149,10 @@ export function useSessionManager({
         completedPageIds: [],
       });
       setForceNewSession(false);
-      setHasRestoredProgress(true);
+      // 🐛 2026-05-12 fix: 新建 session 不設 hasRestoredProgress=true
+      //   原 bug：新建也標 true、ResumeDialog 在 currentPageIndex>0 時誤觸（如玩家玩 1 步離開又回來）
+      //   新建純粹是「沒有舊進度」、不該被視為「恢復進度」
+      setHasRestoredProgress(false);
       queryClient.invalidateQueries({ queryKey: ["/api/sessions/active", gameId] });
       toast({ title: "遊戲開始", description: "祝你好運!" });
     },
