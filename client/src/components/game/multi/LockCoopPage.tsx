@@ -69,6 +69,18 @@ export default function LockCoopPage({
   const teamId = myTeam?.id;
   const memberCount = myTeam?.members?.length ?? 0;
 
+  // 📊 Phase 1 telemetry — 紀錄元件健康度（fire-and-forget、不影響邏輯）
+  const tele = useComponentTelemetry({
+    componentType: "lock_coop",
+    sessionId, userId: user?.id, teamId, pageId,
+  });
+
+  // 攔截 onComplete → 標記 completed
+  const handleComplete = (...args: Parameters<typeof onComplete>) => {
+    tele.reportComplete("completed");
+    onComplete(...args);
+  };
+
   const myDisplayName = user
     ? [user.firstName, user.lastName].filter(Boolean).join(" ").trim()
       || user.email?.split("@")[0]
