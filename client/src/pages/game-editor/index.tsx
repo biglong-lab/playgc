@@ -614,6 +614,60 @@ export default function GameEditor() {
                       <Input type="number" value={maxPlayers} onChange={(e) => setMaxPlayers(parseInt(e.target.value) || 6)} min={1} max={20} data-testid="input-players" />
                     </div>
                   </div>
+
+                  {/* 🆕 2026-05-12 #11: 整場背景音樂 */}
+                  <div className="border-t pt-4 mt-2">
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      🎵 整場背景音樂（BGM）
+                    </h4>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">音檔 URL（mp3 / wav / cloudinary）</label>
+                        <div className="flex gap-2">
+                          <Input
+                            value={bgmUrl}
+                            onChange={(e) => setBgmUrl(e.target.value)}
+                            placeholder="https://res.cloudinary.com/.../audio.mp3 或留空 = 無 BGM"
+                            data-testid="input-game-bgm-url"
+                          />
+                          {gameId && (
+                            <MediaUploadButton
+                              gameId={gameId}
+                              accept="audio/*"
+                              label="上傳"
+                              onUploaded={(url) => setBgmUrl(url)}
+                            />
+                          )}
+                        </div>
+                        {bgmUrl && (
+                          <audio
+                            src={bgmUrl}
+                            controls
+                            className="mt-2 w-full h-8"
+                            data-testid="audio-game-bgm-preview"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">
+                          音量大小：<span className="font-medium tabular-nums">{bgmVolume}%</span>
+                        </label>
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          step={5}
+                          value={bgmVolume}
+                          onChange={(e) => setBgmVolume(parseInt(e.target.value, 10))}
+                          className="w-full"
+                          data-testid="slider-game-bgm-volume"
+                        />
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          0 = 靜音 / 50 = 中等（建議）/ 100 = 最大。頁面個別 BGM 會覆蓋此設定。
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 
