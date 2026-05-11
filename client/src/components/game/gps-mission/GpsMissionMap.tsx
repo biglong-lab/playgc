@@ -76,6 +76,13 @@ export default function GpsMissionMap({
     [targetLat, targetLng],
   );
 
+  // 🆕 2026-05-12 #10: 玩家箭頭面向目標方向
+  const userBearing = useMemo<number | null>(() => {
+    if (userLat === null || userLng === null) return null;
+    return bearingDegrees(userLat, userLng, targetLat, targetLng);
+  }, [userLat, userLng, targetLat, targetLng]);
+  const userIcon = useMemo(() => makeUserIcon(userBearing), [userBearing]);
+
   return (
     <div className="w-full rounded-lg overflow-hidden border border-border" style={{ height: 240 }}>
       <MapContainer
