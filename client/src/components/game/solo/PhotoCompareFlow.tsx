@@ -249,7 +249,7 @@ export default function PhotoCompareFlow({
     ];
     if (allItems.length > 0) reward.items = allItems;
 
-    onComplete(reward);
+    onComplete(reward, config.nextPageId);
   };
 
   // 🆕 一鍵保存到手機相簿
