@@ -8,6 +8,7 @@ import { PageTransition } from "@/components/feedback/PageTransition";
 import { PageLocationMiniMap, shouldShowMiniMap } from "@/components/game/PageLocationMiniMap";
 import FeedbackButtons from "@/components/game/FeedbackButtons";
 import { useLastShownVariant, clearShownVariant } from "@/lib/feedback-tracker";
+import ComponentErrorBoundary from "@/components/game/ComponentErrorBoundary";
 
 // 通用元件（shared/components/）— 個人/多人都可用
 const TextCardPage = lazy(() => import("@/components/game/shared/components/TextCardPage"));
