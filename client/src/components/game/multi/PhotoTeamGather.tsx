@@ -265,6 +265,8 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
   const handleContinue = () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
+    // 📊 telemetry：跳過 vs 完成
+    tele.reportComplete(stage === "done" ? "completed" : "skipped");
     const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
     const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
     const points = rewardPoints ?? config.onSuccess?.points ?? 40;
