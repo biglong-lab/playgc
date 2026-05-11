@@ -23,6 +23,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useComponentTelemetry } from "@/hooks/useComponentTelemetry";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
