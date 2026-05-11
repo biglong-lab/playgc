@@ -108,7 +108,7 @@ export default function PhotoMissionPage({
   const safeOnComplete = (reward: ReturnType<typeof buildReward>) => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    onComplete(reward);
+    onComplete(reward, config.nextPageId);
   };
 
   // AI 照片驗證
