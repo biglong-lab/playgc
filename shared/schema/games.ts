@@ -81,6 +81,8 @@ export const games = pgTable("games", {
   lastLiveTestedAt: timestamp("last_live_tested_at"),
   // 🆕 2026-05-07：整場 BGM URL（玩家進場時 BgmPlayer 自動播）
   bgmUrl: text("bgm_url"),
+  // 🆕 2026-05-12：整場 BGM 音量（0-100、預設 50）
+  bgmVolume: integer("bgm_volume").default(50),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
