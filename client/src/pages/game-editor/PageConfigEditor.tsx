@@ -21,6 +21,7 @@ import ConditionalVerifyEditor from "./ConditionalVerifyEditor";
 import TimeBombEditor from "./TimeBombEditor";
 import LockEditor from "./LockEditor";
 import MotionChallengeEditor from "./MotionChallengeEditor";
+import FlashlightEditor from "./FlashlightEditor";
 import VoteEditor from "./VoteEditor";
 import FlowRouterEditor from "./FlowRouterEditor";
 import OnCompleteActionsEditor from "./OnCompleteActionsEditor";
