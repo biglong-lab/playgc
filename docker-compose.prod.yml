@@ -57,6 +57,10 @@ services:
       NODE_ENV: production
       PORT: 3333
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/gameplatform
+      # 🔑 2026-05-12: runtime 注入 GIT_SHA 給 /api/version（PWA 版本比對機制）
+      # 部署：export GIT_SHA=$(git rev-parse HEAD) && docker compose up -d --build app
+      GIT_SHA: ${GIT_SHA:-unknown}
+      BUILD_TIME: ${BUILD_TIME:-unknown}
       # Node.js Cluster（多核心）
       #   0 = 單 process（預設，保持簡單穩定）
       #   4 = fork 4 worker（4 核心主機全榨，容量 3-4 倍）
