@@ -51,6 +51,9 @@ export default function GameEditor() {
   const [difficulty, setDifficulty] = useState("medium");
   const [estimatedTime, setEstimatedTime] = useState(30);
   const [maxPlayers, setMaxPlayers] = useState(6);
+  // 🆕 2026-05-12 #11: 整場 BGM + 音量
+  const [bgmUrl, setBgmUrl] = useState<string>("");
+  const [bgmVolume, setBgmVolume] = useState<number>(50);
   const [selectedPage, setSelectedPage] = useState<Page | null>(null);
   const [pages, setPages] = useState<Page[]>([]);
   const [isDraggingFromToolbox, setIsDraggingFromToolbox] = useState(false);
