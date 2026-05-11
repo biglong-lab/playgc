@@ -5,6 +5,27 @@
 
 ---
 
+## 2026-05-12
+
+### 🧩 元件健康度紀錄（Phase 1 of 5）
+**主題**：業主問「元件監測自我紀錄方便修復」、5 Phase 計畫第一階段
+**狀態**：🟢 本地 commit / tsc 0 / smoke 51/51 / ADR-0018 通過、待部署
+
+**完成**：
+- `component_runs` 表（每個元件 mount→完成全紀錄、含 retry/error 計數）
+- POST/PATCH `/api/component-runs` + GET `/api/admin/component-health` 聚合 endpoint
+- `useComponentTelemetry` hook（fire-and-forget、unmount 自動 abandoned）
+- 6 個關鍵元件接通：trivia / lock_coop / photo_team / vote_team / gps_mission / choice_verify_race
+- `/admin/component-health` UI：完成率 / 耗時 / 互動延遲 / vs 基準 / 健康度 🟢🟡🟠🔴
+
+**業主可立即量化**：「水彈這週表現？」「哪個元件最容易放棄？」「修 GPS 後完成率變化？」
+
+**Phase 2-5 規劃**：ErrorBoundary 自癒 / 體感升級 / Feature flags / 合成監測
+
+**細節** → [changes/2026-05-12-component-telemetry.md](changes/2026-05-12-component-telemetry.md)
+
+---
+
 ## 2026-05-10（晚上）
 
 ### 📊 觀測完整化 — 自動報告 + Web Vitals + 第三方腳手架
