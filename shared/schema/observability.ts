@@ -274,3 +274,65 @@ export interface SessionReportAnomaly {
   /** 警戒閾值 */
   threshold: number;
 }
+
+// =============== Component Runs（元件健康度紀錄 / Phase 1 / 2026-05-12）===============
+//
+// 每個元件 mount → 完成 / 失敗 全紀錄、用於：
+//   - 業主問「水彈元件 7 天表現？」→ 立即量化
+//   - 找出失敗率高的元件（建議重構優先級）
+//   - 平均互動延遲、Page-level loading perf
+//
+// finalState 列舉：
+//   - completed：玩家正常完成
+//   - abandoned：玩家離開頁面未完成（unmount without complete）
+//   - errored：元件 throw error（ErrorBoundary 收）
+//   - timeout：超過 X 分鐘未完成（cron 後處理）
+//   - skipped：玩家主動跳過
+//
+export const componentRuns = pgTable(
+  "component_runs",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    sessionId: varchar("session_id", { length: 100 }),
+    userId: varchar("user_id", { length: 100 }),
+    teamId: varchar("team_id", { length: 100 }),
+    pageId: varchar("page_id", { length: 100 }),
+    componentType: varchar("component_type", { length: 50 }).notNull(),
+
+    // 時間點
+    mountedAt: timestamp("mounted_at").defaultNow().notNull(),
+    firstInteractionAt: timestamp("first_interaction_at"),
+    completedAt: timestamp("completed_at"),
+
+    // 結算
+    finalState: varchar("final_state", { length: 20 }), // null = in_progress
+    durationMs: integer("duration_ms"),
+    interactionLatencyMs: integer("interaction_latency_ms"),
+
+    // 計數
+    retryCount: integer("retry_count").default(0),
+    errorCount: integer("error_count").default(0),
+    networkErrorCount: integer("network_error_count").default(0),
+
+    // 最後錯誤
+    lastError: text("last_error"),
+
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_component_runs_session").on(table.sessionId, table.mountedAt),
+    index("idx_component_runs_type_time").on(table.componentType, table.mountedAt),
+    index("idx_component_runs_user_time").on(table.userId, table.mountedAt),
+    index("idx_component_runs_state").on(table.finalState, table.mountedAt),
+    index("idx_component_runs_cleanup").on(table.mountedAt), // 90 天 retention
+  ],
+);
+
+export const insertComponentRunSchema = createInsertSchema(componentRuns).omit({
+  id: true,
+  createdAt: true,
+});
+export type ComponentRun = typeof componentRuns.$inferSelect;
+export type InsertComponentRun = z.infer<typeof insertComponentRunSchema>;
+
+export type ComponentFinalState = "completed" | "abandoned" | "errored" | "timeout" | "skipped";
