@@ -11,6 +11,7 @@ import TriviaShowdown, { type TriviaShowdownConfig } from "./TriviaShowdown";
 import { useHostScreenSync } from "../shared/hooks/useHostScreenSync";
 import { useWebSocket } from "@/contexts/WebSocketContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useComponentTelemetry } from "@/hooks/useComponentTelemetry";
 import { useMyUserName } from "@/hooks/useMyUserName";
 import type { Page } from "@shared/schema";
 
