@@ -17,6 +17,7 @@ import {
 import { GpsAccuracyIndicator } from "../GpsAccuracyIndicator";
 import { MotionPermissionRequest } from "../MotionPermissionRequest";
 import { useAuth } from "@/hooks/useAuth";
+import { useComponentTelemetry } from "@/hooks/useComponentTelemetry";
 
 interface GpsMissionPageProps {
   config: GpsMissionConfig;
