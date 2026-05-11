@@ -88,6 +88,12 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
       user.id.slice(0, 8)
     : "我";
 
+  // 📊 Phase 1 telemetry
+  const tele = useComponentTelemetry({
+    componentType: "photo_team_gather",
+    sessionId, userId: user?.id, teamId, pageId: effectivePageId,
+  });
+
   // 🔒 2026-05-10: 隊長鎖 — 只有隊長能用鏡頭拍合照
   //   非隊長：等待隊長拍 → ws 訂閱 photo_gather_updated 自動跳 done
   //   隊長未設定（leaderId=null）→ 退回「任何人都能拍」舊行為（向後兼容）
