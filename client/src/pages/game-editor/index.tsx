@@ -265,6 +265,7 @@ export default function GameEditor() {
     if (!runValidation(false)) return;
     const payload: Record<string, unknown> = {
       title, description, difficulty, estimatedTime, maxPlayers,
+      bgmUrl: bgmUrl || null, bgmVolume,
     };
     if (isNew) payload.status = "draft";
     saveGameMutation.mutate(payload);
@@ -274,7 +275,8 @@ export default function GameEditor() {
     // 發布時嚴格驗證，有任何 error 等級問題就擋下來
     if (!runValidation(true)) return;
     saveGameMutation.mutate({
-      title, description, difficulty, estimatedTime, maxPlayers, status: "published",
+      title, description, difficulty, estimatedTime, maxPlayers,
+      bgmUrl: bgmUrl || null, bgmVolume, status: "published",
     });
   };
 
