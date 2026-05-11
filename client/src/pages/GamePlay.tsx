@@ -175,6 +175,7 @@ export default function GamePlay() {
   //   兩者皆無 → 停 BGM
   const bgm = useBgmPlayer();
   const gameBgmUrl = (game as { bgmUrl?: string | null } | undefined)?.bgmUrl ?? null;
+  const gameBgmVolume = (game as { bgmVolume?: number | null } | undefined)?.bgmVolume ?? 50;
   const pageBgmUrl =
     (currentPage?.config as { bgmUrl?: string | null } | undefined)?.bgmUrl ?? null;
   useEffect(() => {
@@ -186,6 +187,12 @@ export default function GamePlay() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameBgmUrl, pageBgmUrl]);
+
+  // 🆕 2026-05-12 #11: 套用 game.bgmVolume 到 BGM player
+  useEffect(() => {
+    bgm.setNormalVolume(gameBgmVolume);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameBgmVolume]);
 
   // 🆕 Phase 3：首次掛載時 prime SpeechSynthesis voices（Chrome 需要）
   useEffect(() => {
