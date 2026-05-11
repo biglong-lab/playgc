@@ -1940,6 +1940,9 @@ export default function PageConfigEditor({
     case "motion_challenge":
       return <MotionChallengeEditor config={config} updateField={updateField} />;
 
+    case "flashlight":
+      return <FlashlightEditor config={config} updateField={updateField} />;
+
     case "vote":
     case "vote_team": // 多人版共用 config schema（VoteConfig）
       return <VoteEditor config={config} updateField={updateField} allPages={allPages} />;
