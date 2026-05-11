@@ -479,7 +479,7 @@ export default function PhotoBurstFlow({
       ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
     ];
     if (allItems.length > 0) reward.items = allItems;
-    onComplete(reward);
+    onComplete(reward, config.nextPageId);
   };
 
   // 🆕 一鍵保存「動態 GIF + 全部個別照片」到手機相簿
