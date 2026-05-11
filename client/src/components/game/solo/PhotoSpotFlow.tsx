@@ -274,7 +274,7 @@ export default function PhotoSpotFlow({
     ];
     if (allItems.length > 0) reward.items = allItems;
 
-    onComplete(reward);
+    onComplete(reward, config.nextPageId);
   };
 
   // 🆕 一鍵保存到手機相簿（手機優先 share sheet，桌機 fallback 下載）
