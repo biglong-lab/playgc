@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useComponentTelemetry } from "@/hooks/useComponentTelemetry";
 import { useWalkieSuggestion } from "@/hooks/useWalkieSuggestion";
 import { useTeamLockCoopSync } from "../shared/hooks/useTeamLockCoopSync";
 import LockCoop from "./LockCoop";
