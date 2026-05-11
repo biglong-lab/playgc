@@ -51,7 +51,7 @@ interface BgmPlayerAPI {
 const BgmPlayerContext = createContext<BgmPlayerAPI | null>(null);
 
 const FADE_DURATION_MS = 400;
-const DEFAULT_NORMAL_VOLUME = 0.5;
+const DEFAULT_normalVolumeRef.current = 0.5;
 const DUCKED_VOLUME = 0.1;
 const STORAGE_KEY = "chitoBgmMuted";
 
@@ -90,7 +90,7 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
     if (audioRef.current) return audioRef.current;
     const a = new Audio();
     a.loop = true;
-    a.volume = muted ? 0 : NORMAL_VOLUME;
+    a.volume = muted ? 0 : normalVolumeRef.current;
     a.preload = "auto";
     audioRef.current = a;
     return a;
@@ -139,7 +139,7 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
         a.load();
         a.play()
           .then(() => {
-            fadeVolume(a, muted ? 0 : (ducked ? DUCKED_VOLUME : NORMAL_VOLUME), FADE_DURATION_MS);
+            fadeVolume(a, muted ? 0 : (ducked ? DUCKED_VOLUME : normalVolumeRef.current), FADE_DURATION_MS);
           })
           .catch(() => {
             // 沒解鎖前會失敗、等下次 user gesture
@@ -181,7 +181,7 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current;
     if (!a) return;
     setDucked(false);
-    if (!muted) fadeVolume(a, NORMAL_VOLUME, 200);
+    if (!muted) fadeVolume(a, normalVolumeRef.current, 200);
   }, [muted]);
 
   const toggleMute = useCallback(() => {
@@ -193,7 +193,7 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
     if (next) {
       fadeVolume(a, 0, 200);
     } else {
-      fadeVolume(a, ducked ? DUCKED_VOLUME : NORMAL_VOLUME, 200);
+      fadeVolume(a, ducked ? DUCKED_VOLUME : normalVolumeRef.current, 200);
     }
   }, [muted, ducked]);
 
@@ -216,6 +216,7 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
     duck,
     unduck,
     toggleMute,
+    setNormalVolume,
     currentUrl,
     muted,
     ducked,
