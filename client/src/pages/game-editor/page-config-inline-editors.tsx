@@ -664,14 +664,16 @@ export function DialogueEditor({ config, updateField, MediaUploadButton }: BaseE
                         <span className="text-[10px] text-muted-foreground w-12 shrink-0">跳到訊息#</span>
                         <Input
                           type="number"
+                          min={1}
                           value={choice.jumpToMessageIndex ?? ""}
                           onChange={(e) => {
                             const v = parseInt(e.target.value, 10);
                             const next = [...choices];
-                            next[ci] = { ...next[ci], jumpToMessageIndex: Number.isFinite(v) ? v : undefined };
+                            // 限定 ≥ 1（對應 #1 #2 #3…）
+                            next[ci] = { ...next[ci], jumpToMessageIndex: Number.isFinite(v) && v >= 1 ? v : undefined };
                             updateMessage(i, { choices: next });
                           }}
-                          placeholder="留空 = 進下一則"
+                          placeholder="填 1 / 2 / 3...（對應 #1 #2 #3）"
                           className="h-7 text-xs flex-1"
                         />
                       </div>
