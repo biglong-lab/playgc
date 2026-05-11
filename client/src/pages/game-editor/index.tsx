@@ -153,6 +153,8 @@ export default function GameEditor() {
       setDifficulty(game.difficulty || "medium");
       setEstimatedTime(game.estimatedTime || 30);
       setMaxPlayers(game.maxPlayers || 6);
+      setBgmUrl((game as { bgmUrl?: string }).bgmUrl ?? "");
+      setBgmVolume((game as { bgmVolume?: number }).bgmVolume ?? 50);
       setPages(game.pages || []);
     }
   }, [game]);
