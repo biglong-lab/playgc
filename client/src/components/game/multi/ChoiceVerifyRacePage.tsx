@@ -470,10 +470,11 @@ export default function ChoiceVerifyRacePage({
         if (sortedQAnswers[0]?.userId === user.id) return sum + a.points;
         return sum;
       }, 0);
+    tele.reportComplete("completed");
     setTimeout(() => {
       onComplete({ points: myScore }, config.nextPageId);
     }, 1500);
-  }, [serverState?.status, serverAnswers, user, onComplete, config.nextPageId]);
+  }, [serverState?.status, serverAnswers, user, onComplete, config.nextPageId, tele]);
 
   // ============================================================================
   // Fallback UI
