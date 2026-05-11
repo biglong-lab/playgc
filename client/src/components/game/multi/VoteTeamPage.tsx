@@ -44,6 +44,7 @@ interface MyTeamResponse {
 export default function VoteTeamPage({
   config,
   onComplete,
+  sessionId,
   gameId,
   pageId,
 }: VoteTeamPageProps) {
