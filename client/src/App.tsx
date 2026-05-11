@@ -213,6 +213,9 @@ const AdminSessionReplay = lazy(() => import("@/pages/admin/AdminSessionReplay")
 // 📊 Admin Reports 活動結束報告（Phase 5 / 2026-05-10）
 const AdminReports = lazy(() => import("@/pages/admin/AdminReports"));
 
+// 📊 Admin Component Health 元件健康度（Phase 1 / 2026-05-12）
+const AdminComponentHealth = lazy(() => import("@/pages/admin/AdminComponentHealth"));
+
 // ⚙️ 場域行銷設定（Squad System Phase 12.6）
 const AdminEngagementSettings = lazy(() => import("@/pages/admin/AdminEngagementSettings"));
 
