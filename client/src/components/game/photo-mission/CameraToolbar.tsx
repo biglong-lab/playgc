@@ -42,6 +42,11 @@ export interface CameraToolbarProps {
   onPickFromGallery?: () => void;
   /** 是否 disable 所有互動（如 uploading 中）*/
   disabled?: boolean;
+  /**
+   * 🆕 2026-05-12 (#3 業主回報): 只 disable 拍照按鈕（保留閃光燈 / 翻鏡頭 / 相簿能用）
+   * 例：AR 元件「等找到臉才能拍」場景、玩家仍需切後鏡頭 / 開閃光燈
+   */
+  captureDisabled?: boolean;
   /** 自訂額外 class */
   className?: string;
 }
@@ -53,6 +58,7 @@ export default function CameraToolbar({
   onSwitchCamera,
   onPickFromGallery,
   disabled = false,
+  captureDisabled = false,
   className,
 }: CameraToolbarProps) {
   const torch = useTorch(stream);
