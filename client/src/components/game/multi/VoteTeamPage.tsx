@@ -166,8 +166,8 @@ export default function VoteTeamPage({
       teamId={teamId}
       voteState={voteState}
       onEnsureVote={ensureVote}
-      onCastVote={castVote}
-      onComplete={onComplete}
+      onCastVote={(...a) => { tele.reportInteraction(); return castVote(...a); }}
+      onComplete={handleComplete}
     />
   );
 }
