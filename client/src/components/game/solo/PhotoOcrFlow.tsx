@@ -195,7 +195,7 @@ export default function PhotoOcrFlow({
     ];
     if (allItems.length > 0) reward.items = allItems;
 
-    onComplete(reward);
+    onComplete(reward, config.nextPageId);
   };
 
   // ═══════════════════════════════════════════════════════════════
