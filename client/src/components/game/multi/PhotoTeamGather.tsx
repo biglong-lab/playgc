@@ -276,7 +276,7 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
       ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
     ];
     if (allItems.length > 0) reward.items = allItems;
-    onComplete(reward);
+    onComplete(reward, config.nextPageId);
   };
 
   // ===== Render =====
