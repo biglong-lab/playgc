@@ -38,6 +38,12 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // 📊 Phase 1 telemetry
+  const tele = useComponentTelemetry({
+    componentType: "gps_mission",
+    sessionId, userId: user?.id,
+  });
+
   // 🤝 取得當前 session 的 teamId（若有，啟用多人融合）
   const { data: sessionData } = useQuery<{ teamId: string | null; teamName: string | null }>({
     queryKey: ["/api/sessions", sessionId],
