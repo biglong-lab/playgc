@@ -631,12 +631,29 @@ export default function GameEditor() {
                             data-testid="input-game-bgm-url"
                           />
                           {gameId && (
-                            <MediaUploadButton
-                              gameId={gameId}
-                              accept="audio/*"
-                              label="上傳"
-                              onUploaded={(url) => setBgmUrl(url)}
-                            />
+                            <label className="shrink-0">
+                              <input
+                                type="file"
+                                accept="audio/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const f = e.target.files?.[0];
+                                  if (!f) return;
+                                  const url = await handleMediaUpload(f, "audio");
+                                  if (url) setBgmUrl(url);
+                                  e.target.value = "";
+                                }}
+                                data-testid="input-game-bgm-file"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                disabled={isUploading}
+                                asChild
+                              >
+                                <span>{isUploading ? "上傳中..." : "上傳"}</span>
+                              </Button>
+                            </label>
                           )}
                         </div>
                         {bgmUrl && (
