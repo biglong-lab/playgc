@@ -51,7 +51,7 @@ interface BgmPlayerAPI {
 const BgmPlayerContext = createContext<BgmPlayerAPI | null>(null);
 
 const FADE_DURATION_MS = 400;
-const NORMAL_VOLUME = 0.5;
+const DEFAULT_NORMAL_VOLUME = 0.5;
 const DUCKED_VOLUME = 0.1;
 const STORAGE_KEY = "chitoBgmMuted";
 
