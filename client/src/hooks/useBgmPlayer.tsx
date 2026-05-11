@@ -34,6 +34,10 @@ interface BgmPlayerAPI {
   unduck: () => void;
   /** 整體靜音切換（玩家手動）*/
   toggleMute: () => void;
+  /**
+   * 🆕 2026-05-12: 設定預設音量（0-100）— 對應 admin 在遊戲基本設定的 bgmVolume slider
+   */
+  setNormalVolume: (volumePercent: number) => void;
   /** 當前 url */
   currentUrl: string | null;
   /** 是否靜音（玩家設定）*/
