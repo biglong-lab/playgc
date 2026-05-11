@@ -110,6 +110,11 @@ export default function TriviaShowdownPage({ page }: TriviaShowdownPageProps) {
 
   const effectiveState = state ?? hydratedState;
 
+  // 偵測元件完成（status=ended）→ reportComplete
+  useEffect(() => {
+    if (effectiveState?.status === "ended") tele.reportComplete("completed");
+  }, [effectiveState?.status, tele]);
+
   return (
     <TriviaShowdown
       config={config}
