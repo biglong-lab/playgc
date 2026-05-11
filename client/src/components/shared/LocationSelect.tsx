@@ -76,22 +76,40 @@ export function LocationSelect({
               尚無地點，請先到「地點管理」新增
             </div>
           )}
-          {locations?.map((loc) => (
-            <SelectItem key={loc.id} value={String(loc.id)}>
-              <span className="flex items-center gap-2">
-                <MapPin className="w-3 h-3" />
-                {loc.name}
-                {loc.slug && (
-                  <code className="text-xs text-muted-foreground">({loc.slug})</code>
-                )}
-                {loc.locationType && loc.locationType !== "custom" && (
-                  <Badge variant="outline" className="text-xs">
-                    {loc.locationType}
-                  </Badge>
-                )}
-              </span>
-            </SelectItem>
-          ))}
+          {locations?.map((loc) => {
+            // 🆕 2026-05-12: 加座標 + description 顯示、讓 admin 分辨同名 GPS location
+            const lat = loc.latitude ? parseFloat(loc.latitude) : null;
+            const lng = loc.longitude ? parseFloat(loc.longitude) : null;
+            const coordStr = lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)
+              ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+              : null;
+            return (
+              <SelectItem key={loc.id} value={String(loc.id)}>
+                <span className="flex flex-col gap-0.5 py-0.5">
+                  <span className="flex items-center gap-2 flex-wrap">
+                    <MapPin className="w-3 h-3 shrink-0" />
+                    <span className="font-medium">{loc.name}</span>
+                    {loc.slug && (
+                      <code className="text-xs text-muted-foreground">({loc.slug})</code>
+                    )}
+                    {loc.locationType && loc.locationType !== "custom" && (
+                      <Badge variant="outline" className="text-xs">
+                        {loc.locationType}
+                      </Badge>
+                    )}
+                    <code className="text-[10px] text-muted-foreground">#{loc.id}</code>
+                  </span>
+                  {(coordStr || loc.description) && (
+                    <span className="text-[10px] text-muted-foreground pl-5 truncate max-w-md">
+                      {coordStr && <span className="font-mono">📍 {coordStr}</span>}
+                      {coordStr && loc.description && <span> · </span>}
+                      {loc.description}
+                    </span>
+                  )}
+                </span>
+              </SelectItem>
+            );
+          })}
           {hasValueButNotFound && (
             <SelectItem value={currentValue}>
               <span className="flex items-center gap-1 text-amber-600">
