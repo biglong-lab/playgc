@@ -520,7 +520,15 @@ export default function GamePageRenderer({
               <PageLocationMiniMap settings={config.locationSettings} />
             </div>
           )}
-          {renderPage()}
+          {/* 🛡️ 2026-05-12 Phase 2: 元件級 ErrorBoundary、單元件 throw 不影響其他 */}
+          <ComponentErrorBoundary
+            componentType={page.pageType}
+            sessionId={sessionId}
+            pageId={page.id}
+            onSkip={() => wrappedOnComplete({ points: 0 }, undefined)}
+          >
+            {renderPage()}
+          </ComponentErrorBoundary>
           {/* 📊 P11-8: 變體訊息反饋按鈕（玩家觸發 toast 後 60s 內可見） */}
           {lastShownVariant && lastShownVariant.pageId === page.id && (
             <div className="fixed bottom-4 right-4 bg-background/95 backdrop-blur border rounded-lg shadow-lg p-2 z-50">
