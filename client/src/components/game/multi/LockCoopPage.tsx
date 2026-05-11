@@ -20,6 +20,9 @@ import { useTeamLockCoopSync } from "../shared/hooks/useTeamLockCoopSync";
 import LockCoop from "./LockCoop";
 import type { LockCoopConfig } from "@shared/schema";
 
+// 📊 Phase 1 telemetry import
+// （hook 自動 fire-and-forget、失敗不影響元件）
+
 export interface LockCoopPageProps {
   config: LockCoopConfig;
   onComplete: (
