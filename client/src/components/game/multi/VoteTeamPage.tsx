@@ -50,8 +50,6 @@ export default function VoteTeamPage({
 
   // 取得當前玩家的隊伍
   const {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    // (telemetry 在下面用 myTeam.id)
     data: myTeam,
     isLoading: teamLoading,
     isError: teamError,
