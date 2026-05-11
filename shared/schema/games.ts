@@ -618,6 +618,12 @@ export interface PhotoMissionConfig {
   prompt?: string;
   imageUrl?: string;
   instruction?: string;
+  /** 🆕 2026-05-12: 完成後跳轉到指定頁面（覆蓋預設線性順序）*/
+  nextPageId?: string;
+  /** 🆕 2026-05-12: 完成獎勵分數（0 = 無獎勵、不 fallback default）*/
+  rewardPoints?: number;
+  /** 🆕 2026-05-12: 完成獎勵道具 */
+  rewardItems?: string[];
   aiVerify?: boolean;
   targetKeywords?: string[];         // free 模式使用
   aiConfidenceThreshold?: number;    // AI 信心度閾值（0-1，預設 0.6）
