@@ -44,8 +44,11 @@ export function RewardsSection({ config, updateField, gameId }: SharedSectionPro
           <label className="text-sm font-medium mb-2 block">獎勵分數</label>
           <Input
             type="number"
-            value={config.rewardPoints || 0}
-            onChange={(e) => updateField("rewardPoints", parseInt(e.target.value) || 0)}
+            value={config.rewardPoints ?? 0}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              updateField("rewardPoints", Number.isFinite(n) ? n : 0);
+            }}
             min={0}
             max={1000}
             data-testid="config-reward-points"
