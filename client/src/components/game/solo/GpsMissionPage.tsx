@@ -179,6 +179,7 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
           ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
         ];
         if (allItems.length > 0) reward.items = allItems;
+        tele.reportComplete("completed");
         onComplete(reward, config.nextPageId);
       }, 1500);
     }
@@ -536,7 +537,8 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
                         ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
                       ];
                       if (allItems.length > 0) reward.items = allItems;
-                      onComplete(reward, config.nextPageId);
+                      tele.reportComplete("completed");
+        onComplete(reward, config.nextPageId);
                     }, 800);
                   } else {
                     toast({
