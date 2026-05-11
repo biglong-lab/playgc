@@ -186,6 +186,20 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
     if (!muted) fadeVolume(a, normalVolumeRef.current, 200);
   }, [muted]);
 
+  // 🆕 2026-05-12 #11: 動態調整 BGM 預設音量（0-100）
+  const setNormalVolume = useCallback(
+    (volumePercent: number) => {
+      const clamped = Math.max(0, Math.min(100, volumePercent));
+      normalVolumeRef.current = clamped / 100;
+      const a = audioRef.current;
+      if (!a || muted) return;
+      if (!ducked) {
+        fadeVolume(a, normalVolumeRef.current, 200);
+      }
+    },
+    [muted, ducked],
+  );
+
   const toggleMute = useCallback(() => {
     const next = !muted;
     setMuted(next);
