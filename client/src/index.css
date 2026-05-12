@@ -669,3 +669,30 @@ html[data-app-mode="pwa"] .web-only {
 html[data-app-mode="web"] .pwa-only {
   display: none !important;
 }
+
+/* ─────────────────────────────────────────────
+ * 全域觸控優化（防雙擊放大、避免 300ms tap delay）
+ * 保留 viewport user-scalable=yes（無障礙）
+ * ───────────────────────────────────────────── */
+body {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 遊戲沉浸頁面 — 禁長按 context menu / 文字選取（避免遊戲互動被誤觸）*/
+.gameplay-immersive {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: contain;
+}
+
+/* 遊戲內可選文字（聊天訊息 / 任務說明等）— 開白名單 */
+.gameplay-immersive .selectable,
+.gameplay-immersive input,
+.gameplay-immersive textarea,
+.gameplay-immersive [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
