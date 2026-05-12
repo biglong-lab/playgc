@@ -7,6 +7,7 @@ import {
   Image as ImageIcon, Download, Loader2, X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useHaptic } from "@/hooks/useHaptic";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { apiRequest } from "@/lib/queryClient";
