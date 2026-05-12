@@ -438,6 +438,8 @@ export default function ConditionalVerifyEditor({
                   allowEmpty
                   placeholder="選擇地點..."
                   testId={`condition-location-${i}`}
+                  // 🆕 2026-05-12 #2: 傳 allPages、讓下拉顯示「#N · 對應 page 名稱」
+                  allPages={allPages}
                 />
               )}
 
