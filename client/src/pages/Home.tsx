@@ -20,6 +20,7 @@ import {
   X, ArrowRight,
 } from "lucide-react";
 import AnnouncementBanner from "@/components/shared/AnnouncementBanner";
+import LobbyDesktopHero from "@/components/shared/LobbyDesktopHero";
 import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
