@@ -59,6 +59,10 @@ export function useSessionManager({
 
   const [forceNewSession, setForceNewSession] = useState(isReplayMode);
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
+  // 🆕 2026-05-12 #5: existingSession 偵測到後、等玩家決定（繼續 / 重新開始）才動作
+  //   pendingDecision = true → 顯示 ResumeDialog 在遊戲頁前、不 restore 也不建新
+  const [pendingDecision, setPendingDecision] = useState(false);
+  const [userDecided, setUserDecided] = useState(false);
   const sessionCreationAttemptedRef = useRef(false);
 
   // Refs 避免 stale closure
