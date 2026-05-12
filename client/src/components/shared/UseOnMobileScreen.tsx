@@ -1,17 +1,16 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { Smartphone, ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useDeviceType } from "@/hooks/useDeviceType";
 
 const FORCE_KEY = "device-gate:force-enter";
+const URL_FORCE_PARAM = "force-device";
 
 interface Props {
   targetUrl?: string;
-  onForceEnter?: () => void;
 }
 
-export default function UseOnMobileScreen({ targetUrl, onForceEnter }: Props) {
+export default function UseOnMobileScreen({ targetUrl }: Props) {
   const device = useDeviceType();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [showWhy, setShowWhy] = useState(false);
@@ -32,16 +31,6 @@ export default function UseOnMobileScreen({ targetUrl, onForceEnter }: Props) {
       cancelled = true;
     };
   }, [url]);
-
-  const handleForce = () => {
-    try {
-      localStorage.setItem(FORCE_KEY, "1");
-    } catch {
-      // ignore
-    }
-    onForceEnter?.();
-    window.location.reload();
-  };
 
   const tip =
     device.type === "tablet"
@@ -79,14 +68,14 @@ export default function UseOnMobileScreen({ targetUrl, onForceEnter }: Props) {
         <button
           type="button"
           onClick={() => setShowWhy((v) => !v)}
-          className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 mb-3"
+          className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
         >
           為什麼限手機？
           {showWhy ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
 
         {showWhy && (
-          <div className="text-left text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 mb-4 space-y-2">
+          <div className="text-left text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 mt-3 space-y-2">
             <p>遊戲過程會用到：</p>
             <ul className="list-disc list-inside space-y-1 ml-1">
               <li>📷 相機（拍照任務）</li>
@@ -98,22 +87,29 @@ export default function UseOnMobileScreen({ targetUrl, onForceEnter }: Props) {
             <p className="mt-2">手機體驗最完整、操作最順暢。</p>
           </div>
         )}
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleForce}
-          className="text-xs text-slate-400 hover:text-slate-600"
-        >
-          我已了解、仍要在此繼續
-        </Button>
       </div>
     </div>
   );
 }
 
+/**
+ * 檢查是否有 force-enter 豁免（後門機制、不顯示在 UI）：
+ *
+ * 1. URL 參數 `?force-device=1`（demo / 業務 pitch 用、可分享網址）
+ *    第一次帶參數會自動寫入 localStorage、之後同瀏覽器免再帶
+ * 2. localStorage `device-gate:force-enter=1`（開發者 DevTools 手動設）
+ *
+ * 玩家看不到任何按鈕、無法自行觸發。
+ */
 export function hasForceEnterFlag(): boolean {
   try {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get(URL_FORCE_PARAM) === "1") {
+        localStorage.setItem(FORCE_KEY, "1");
+        return true;
+      }
+    }
     return localStorage.getItem(FORCE_KEY) === "1";
   } catch {
     return false;
