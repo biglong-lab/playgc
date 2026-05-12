@@ -1912,7 +1912,7 @@ export default function PageConfigEditor({
       );
 
     case "conditional_verify":
-      return <ConditionalVerifyEditor config={config} updateField={updateField} gameId={gameId} />;
+      return <ConditionalVerifyEditor config={config} updateField={updateField} gameId={gameId} allPages={allPages} />;
 
     case "button":
       return (
