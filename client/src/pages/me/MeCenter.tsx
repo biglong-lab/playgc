@@ -92,7 +92,17 @@ export default function MeCenter() {
     user.firstName || user.email?.split("@")[0] || "玩家";
   const initials = (user.firstName?.[0] || user.email?.[0] || "U").toUpperCase();
 
+  const queryClient = useQueryClient();
+  const handlePullRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }),
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] }),
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] }),
+    ]);
+  }, [queryClient]);
+
   return (
+    <PullToRefresh onRefresh={handlePullRefresh}>
     <div className="min-h-screen bg-muted/30 pb-bottom-nav md:pb-8">
       {/* Hero 區 — 綠色系品牌（safe-top 避開 iOS PWA 狀態列）*/}
       <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white pb-12 pt-6 px-4 safe-top">
