@@ -78,7 +78,7 @@ export default function PlayerBottomNav() {
           return (
             <Link key={item.path} href={item.path}>
               <a
-                onClick={() => haptics.light()}
+                onClick={() => haptic.tap()}
                 className={`flex flex-col items-center justify-center gap-1 h-full transition-all ${
                   active
                     ? "text-primary"
