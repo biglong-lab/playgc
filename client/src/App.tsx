@@ -347,9 +347,9 @@ function Router() {
         <Route path="/me/purchases">{() => <SmartRedirect to="/purchases" />}</Route>
 
         {/* 遊戲深連結 — 暫保留相容（Home/Team/Match 內部有 useCurrentField 兜底）*/}
-        <Route path="/game/:gameId/chapters/:chapterId" component={GamePlay} />
+        <Route path="/game/:gameId/chapters/:chapterId" component={GamePlayGated} />
         <Route path="/game/:gameId/chapters" component={ChapterSelect} />
-        <Route path="/game/:gameId" component={GamePlay} />
+        <Route path="/game/:gameId" component={GamePlayGated} />
         <Route path="/team/:gameId" component={TeamLobby} />
         <Route path="/match/:gameId" component={MatchLobby} />
         <Route path="/map/:gameId" component={MapView} />
