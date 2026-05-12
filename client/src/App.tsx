@@ -266,9 +266,9 @@ function Router() {
         <Route path="/f/:fieldCode" component={Landing} />
         <Route path="/f/:fieldCode/home" component={Home} />
         <Route path="/f/:fieldCode/leaderboard" component={Leaderboard} />
-        <Route path="/f/:fieldCode/game/:gameId/chapters/:chapterId" component={GamePlay} />
+        <Route path="/f/:fieldCode/game/:gameId/chapters/:chapterId" component={GamePlayGated} />
         <Route path="/f/:fieldCode/game/:gameId/chapters" component={ChapterSelect} />
-        <Route path="/f/:fieldCode/game/:gameId" component={GamePlay} />
+        <Route path="/f/:fieldCode/game/:gameId" component={GamePlayGated} />
         <Route path="/f/:fieldCode/team/:gameId" component={TeamLobby} />
         <Route path="/f/:fieldCode/match/:gameId" component={MatchLobby} />
         <Route path="/f/:fieldCode/map/:gameId" component={MapView} />
