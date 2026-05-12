@@ -282,8 +282,15 @@ export function useSessionManager({
 
   // 重新開始遊戲
   function resetAndCreateNew() {
-    // 🐛 2026-05-12 #1 fix: existingSession 仍是 completed → 沒 setForceNewSession=true
-    //   會被 useEffect 內 restoreSession 又當作 completed 處理、跳通關畫面
+    // 🐛 2026-05-12 深度修「再玩一次跳通關」根因：
+    //   server `getActiveSessionByUserAndGame` 邏輯先回 completed session（看 line 67）
+    //   新建 session 後 query refetch 仍會拿到舊 completed → 觸發 restore 跳通關
+    //
+    //   修法雙保險：
+    //   1. setForceNewSession(true) + sessionCreationAttemptedRef = false → 走建新分支
+    //   2. removeQueries 清掉 query cache + setQueryData(null) → 避免 refetch 又拿 completed
+    //   3. userDecided 不設 true（意義是「玩家選繼續舊」、reset 不算）
+    //   4. useEffect 內已加 state.sessionId 已存在 = 不再 restore 的保護
     setForceNewSession(true);
     sessionCreationAttemptedRef.current = false;
     setState({
@@ -297,9 +304,10 @@ export function useSessionManager({
     });
     setHasRestoredProgress(false);
     setPendingDecision(false);
-    setUserDecided(true);
-    // invalidate existingSession query 確保下次撈到新 session
-    queryClient.invalidateQueries({ queryKey: ["/api/sessions/active", gameId] });
+    setUserDecided(false);
+    // 清快取 + 移除 query、避免 refetch 後又拿到舊 completed session
+    queryClient.setQueryData(["/api/sessions/active", gameId], null);
+    queryClient.removeQueries({ queryKey: ["/api/sessions/active", gameId] });
     createSessionMutation.mutate();
   }
 
