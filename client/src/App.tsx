@@ -34,9 +34,15 @@ import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
 import FieldEntry from "@/pages/FieldEntry";
 import PlatformHome from "@/pages/PlatformHome";
+import DeviceGate from "@/components/shared/DeviceGate";
 
 // 玩家端 — lazy import
 const GamePlay = lazy(() => import("@/pages/GamePlay"));
+const GamePlayGated = () => (
+  <DeviceGate>
+    <GamePlay />
+  </DeviceGate>
+);
 const MapView = lazy(() => import("@/pages/MapView"));
 const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
 const TeamLobby = lazy(() => import("@/pages/TeamLobby"));
