@@ -7,22 +7,67 @@
 
 ## 2026-05-12
 
-### 🧩 元件健康度紀錄（Phase 1 of 5）
-**主題**：業主問「元件監測自我紀錄方便修復」、5 Phase 計畫第一階段
-**狀態**：🟢 本地 commit / tsc 0 / smoke 51/51 / ADR-0018 通過、待部署
+### 🐛 批 5 業主 5 項 bug 全修
+**狀態**：🟢 部署上線（commit `16e5ae89`、生產 HEAD `55558eac`、e2e 4/4 全 200）
 
-**完成**：
-- `component_runs` 表（每個元件 mount→完成全紀錄、含 retry/error 計數）
-- POST/PATCH `/api/component-runs` + GET `/api/admin/component-health` 聚合 endpoint
-- `useComponentTelemetry` hook（fire-and-forget、unmount 自動 abandoned）
-- 6 個關鍵元件接通：trivia / lock_coop / photo_team / vote_team / gps_mission / choice_verify_race
-- `/admin/component-health` UI：完成率 / 耗時 / 互動延遲 / vs 基準 / 健康度 🟢🟡🟠🔴
+| # | 問題 | 修法 |
+|---|------|------|
+| 1 | 再玩一次失效跳通關 | `useSessionManager.resetAndCreateNew` 加 forceNewSession + invalidate query |
+| 2 | GPS 下拉無法分辨點位 | LocationSelect 加 allPages prop、顯示「#N · pageName」+ pageType badge |
+| 3 | 獎勵設 0 仍給點 | 16 元件 `??` fallback 全改 `?? 0` |
+| 4 | GPS 箭頭固定不跟玩家轉 | 新 `useCompassHeading` hook（iOS webkit + Android alpha 翻正）+ 相對方位計算 |
+| 5 | ResumeDialog 渲染遊戲頁後才彈 | `pendingDecision` state、未決定前蓋遊戲頁顯示 dialog |
+
+**細節** → [changes/2026-05-12-bug-batch-5.md](changes/2026-05-12-bug-batch-5.md)
+
+### 🎯 5 Phase 觀測穩定性計畫全部完工
+**狀態**：🟢 部署上線、commit 序列 `d1ce1e67` → `48e845e4`
+
+| Phase | 主題 | commit |
+|-------|------|--------|
+| 1 | 元件健康度紀錄（`component_runs` 表 + 6 元件 + dashboard）| `d1ce1e67` |
+| 2 | 元件級 ErrorBoundary + 自癒 | `1ea3e61e` |
+| 3 | 體感升級 | `8a6d9c77` |
+| 4 | Feature flags + 自動降級 | `deeb26e9` |
+| 5 | 合成監測 | `48e845e4` |
 
 **業主可立即量化**：「水彈這週表現？」「哪個元件最容易放棄？」「修 GPS 後完成率變化？」
 
-**Phase 2-5 規劃**：ErrorBoundary 自癒 / 體感升級 / Feature flags / 合成監測
+**細節** → [changes/2026-05-12-component-telemetry.md](changes/2026-05-12-component-telemetry.md) / [component-self-healing.md](changes/2026-05-12-component-self-healing.md) / [ux-polish.md](changes/2026-05-12-ux-polish.md) / [feature-flags.md](changes/2026-05-12-feature-flags.md) / [synthetic-monitoring.md](changes/2026-05-12-synthetic-monitoring.md)
 
-**細節** → [changes/2026-05-12-component-telemetry.md](changes/2026-05-12-component-telemetry.md)
+### 🐛 批 1-4 業主 bug 修復
+**狀態**：🟢 部署上線
+
+- **批 1** `fac03b54`：reward + nextPage 鏈路（業主 12 項之 #4/#5/#6/#8/#13）
+- **批 2+3** `8f097de0`：業主 #1/#2/#7/#3 修復
+- **批 4** `80d8bdae`：GPS 方向箭頭 + 整場 BGM 音量（業主 #10 #11）
+
+**細節** → [changes/2026-05-12-bug-batch-1.md](changes/2026-05-12-bug-batch-1.md) / [bug-batch-4.md](changes/2026-05-12-bug-batch-4.md)
+
+### 📝 5/9~5/12 session handoff
+**commit `4d396bb4`** → [changes/2026-05-12-session-handoff.md](changes/2026-05-12-session-handoff.md)
+
+---
+
+## 2026-05-11
+
+休息日 — 觀察 5/10 觀測完整化部署後的 24h 數據、無實質 commit。
+
+---
+
+## 2026-05-09
+
+### 📱 PWA / RWD 體感優化（2 輪 9 項）
+**狀態**：🟢 部署上線
+
+**新增**：
+- `5ecabf2f` PullToRefresh hook + 元件（下拉重整核心）
+- `b409d5c1` 5 項 UX 修復收尾紀錄
+- `75cb8543` 兩輪 UX 修復共 9 項紀錄
+
+**主題**：safe-area / dvh / iOS Shortcuts 整合
+
+**細節** → 紀錄分散在 codex-claude/logs/2026-05-09.md
 
 ---
 
