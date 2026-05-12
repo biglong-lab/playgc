@@ -542,6 +542,11 @@ export default function Home() {
       )}
 
       <main className="container mx-auto px-4 py-8">
+        <LobbyDesktopHero
+          fieldName={fieldName}
+          tagline={currentField?.tagline}
+          welcomeMessage={welcomeMessage}
+        />
         <div className="mb-8">
           <h2 className="text-2xl md:text-3xl font-display font-bold mb-2">
             歡迎回來, <span className="text-primary" data-testid="home-display-name">{displayName}</span>
