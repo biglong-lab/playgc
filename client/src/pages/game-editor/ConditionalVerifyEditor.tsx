@@ -33,12 +33,21 @@ interface Condition {
 
 interface ConditionalVerifyEditorProps extends EditorProps {
   gameId: string;
+  // 🆕 2026-05-12 #2: 傳遊戲所有 pages、讓 LocationSelect 顯示對應 page #N
+  allPages?: Array<{
+    id: string;
+    pageOrder: number;
+    pageType: string;
+    customName?: string | null;
+    config?: unknown;
+  }>;
 }
 
 export default function ConditionalVerifyEditor({
   config,
   updateField,
   gameId,
+  allPages,
 }: ConditionalVerifyEditorProps) {
   const fragments = (config.fragments || []) as Fragment[];
   const conditions = (config.conditions || []) as Condition[];
