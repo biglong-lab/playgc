@@ -7,6 +7,7 @@ import { MapContainer, TileLayer, Marker, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { bearingDegrees } from "@/lib/geolocation";
+import { useCompassHeading } from "@/hooks/useCompassHeading";
 
 // 目標點圖示（大紅）
 const targetIcon = L.divIcon({
