@@ -264,7 +264,7 @@ export default function ConditionalVerifyPage({
       // 🔧 修 bug：RewardsSection 存 rewardItems[] 優先，舊 onSuccess.grantItem 向後相容
       const rsItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
       const reward: { points?: number; items?: string[] } = {
-        points: config.rewardPoints ?? config.onSuccess?.points ?? 10,
+        points: config.rewardPoints ?? config.onSuccess?.points ?? 0,
       };
       const allItems = [
         ...rsItems.filter((x) => !!x),
