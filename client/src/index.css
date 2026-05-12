@@ -635,3 +635,37 @@ body.font-display .font-bold {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/* ─────────────────────────────────────────────
+ * PWA vs Web 差異化（由 PwaChrome 元件設定屬性）
+ * data-app-mode: "pwa" | "web"
+ * data-device-type: "mobile" | "tablet" | "desktop"
+ * ───────────────────────────────────────────── */
+
+/* PWA 模式 — 自動套 top safe-area（避開 iOS notch / Android status bar） */
+html[data-app-mode="pwa"] body {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* PWA 模式 — 預設用 dvh（動態視窗高度，避開瀏覽器網址列伸縮抖動）*/
+html[data-app-mode="pwa"] .full-h {
+  height: 100dvh;
+  min-height: 100dvh;
+}
+
+/* mobile-only / desktop-only 工具 class */
+html[data-device-type="desktop"] .mobile-only,
+html[data-device-type="tablet"] .mobile-only {
+  display: none !important;
+}
+html[data-device-type="mobile"] .desktop-only {
+  display: none !important;
+}
+
+/* PWA-only / web-only 工具 class（手機已是必要前提）*/
+html[data-app-mode="pwa"] .web-only {
+  display: none !important;
+}
+html[data-app-mode="web"] .pwa-only {
+  display: none !important;
+}
