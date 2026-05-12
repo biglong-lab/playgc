@@ -600,10 +600,16 @@ export default function GamePlay() {
 
       {/* 🆕 WS 失連警示（Stage 2 #3）多人組隊才顯示、避免玩家以為「lag」 */}
       {myTeam?.id && !isTeamWsConnected && (
-        <div className="bg-destructive/10 border-b border-destructive/30 px-4 py-2 flex items-center justify-between gap-3 text-xs">
-          <WsConnectionBadge isConnected={false} />
-          <span className="text-destructive flex-1">
-            隊伍即時同步中斷、隊員操作可能不會更新到你這邊
+        <div className={`border-b px-4 py-2 flex items-center justify-between gap-3 text-xs ${
+          isTeamWsReconnecting
+            ? "bg-amber-500/10 border-amber-500/30"
+            : "bg-destructive/10 border-destructive/30"
+        }`}>
+          <WsConnectionBadge isConnected={false} isReconnecting={isTeamWsReconnecting} />
+          <span className={`flex-1 ${isTeamWsReconnecting ? "text-amber-600 dark:text-amber-300" : "text-destructive"}`}>
+            {isTeamWsReconnecting
+              ? "正在重新連線、稍候即可繼續…"
+              : "隊伍即時同步中斷、隊員操作可能不會更新到你這邊"}
           </span>
         </div>
       )}
