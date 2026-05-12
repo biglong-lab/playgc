@@ -216,6 +216,9 @@ const AdminReports = lazy(() => import("@/pages/admin/AdminReports"));
 // 📊 Admin Component Health 元件健康度（Phase 1 / 2026-05-12）
 const AdminComponentHealth = lazy(() => import("@/pages/admin/AdminComponentHealth"));
 
+// 🎚️ Admin Feature Flags 元件遠端開關（Phase 4 / 2026-05-12）
+const AdminFeatureFlags = lazy(() => import("@/pages/admin/AdminFeatureFlags"));
+
 // ⚙️ 場域行銷設定（Squad System Phase 12.6）
 const AdminEngagementSettings = lazy(() => import("@/pages/admin/AdminEngagementSettings"));
 
