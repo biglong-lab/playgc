@@ -583,7 +583,7 @@ export default function GamePlay() {
   }
 
   return (
-    <div className="min-h-screen-dynamic bg-background flex flex-col">
+    <div className="gameplay-immersive min-h-screen-dynamic bg-background flex flex-col">
       <GameHeader
         title={isChapterMode && chapterData?.title ? `${game.title} - ${chapterData.title}` : game.title}
         score={score}
