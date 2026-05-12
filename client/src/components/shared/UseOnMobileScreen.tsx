@@ -107,11 +107,13 @@ export function hasForceEnterFlag(): boolean {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get(URL_FORCE_PARAM) === "1") {
-        localStorage.setItem(FORCE_KEY, "1");
+        localStorage.setItem(FORCE_KEY, FORCE_VALUE);
         return true;
       }
     }
-    return localStorage.getItem(FORCE_KEY) === "1";
+    // 舊版（"1"）自動失效、只認新版本（FORCE_VALUE）。
+    // 業主想 demo → 用 `?force-device=1` 重新觸發、會寫入新值。
+    return localStorage.getItem(FORCE_KEY) === FORCE_VALUE;
   } catch {
     return false;
   }
