@@ -224,7 +224,7 @@ export default function MemoryMatchPage({ config, onComplete, sessionId }: Memor
                 再玩一次
               </Button>
               <Button
-                onClick={() => onComplete({ points: config.rewardPoints ?? 100 })}
+                onClick={() => onComplete({ points: config.rewardPoints ?? 0 })}
                 data-testid="btn-memory-next"
               >
                 繼續下一頁
