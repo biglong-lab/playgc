@@ -518,6 +518,7 @@ function App() {
                 <ThemePreviewBanner />
                 <OfflineBanner isOnline={isOnline} />
                 <Toaster />
+                <PwaChrome />
                 <Router />
                 <PlayerBottomNav />
                 <FloatingHomeButton />
