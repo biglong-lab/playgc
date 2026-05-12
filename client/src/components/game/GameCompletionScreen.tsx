@@ -105,6 +105,12 @@ export default function GameCompletionScreen({
   const currentField = useCurrentField();
   // 🔧 場域感知 link — 避免「後浦玩家按返回大廳跑到賈村」的隔離 bug
   const link = useFieldLink();
+  const haptic = useHaptic();
+
+  // 通關開場觸感（短-停-短-停-中 慶祝節奏）
+  useEffect(() => {
+    haptic.custom([60, 80, 60, 80, 120]);
+  }, [haptic]);
 
   // 🆕 v2: 查本次 session 有無照片 — 有才顯示「看本場相簿」按鈕
   const { data: albumData } = useQuery<{ photos?: unknown[] }>({
