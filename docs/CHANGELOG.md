@@ -55,19 +55,17 @@
 
 ---
 
-## 2026-05-09
+## 2026-05-09（額外補記）
 
-### 📱 PWA / RWD 體感優化（2 輪 9 項）
+### 📱 PWA 下拉重整 hook（與 4 項實機優化同日）
 **狀態**：🟢 部署上線
+**commits**：`5ecabf2f`（PTR hook + 元件）/ `b409d5c1` / `75cb8543` / `eb41a4a8`（docs）
 
-**新增**：
-- `5ecabf2f` PullToRefresh hook + 元件（下拉重整核心）
-- `b409d5c1` 5 項 UX 修復收尾紀錄
-- `75cb8543` 兩輪 UX 修復共 9 項紀錄
+**主題**：PullToRefresh / safe-area / dvh / iOS Shortcuts — 兩輪 UX 修復共 9 項
 
-**主題**：safe-area / dvh / iOS Shortcuts 整合
+> 同日 `32750517` 4 項實機 UX 優化見下方既有 entry。
 
-**細節** → 紀錄分散在 codex-claude/logs/2026-05-09.md
+**細節** → codex-claude/logs/2026-05-09.md
 
 ---
 
