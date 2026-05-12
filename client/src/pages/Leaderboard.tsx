@@ -102,7 +102,13 @@ export default function Leaderboard() {
     ? Math.round((anonymousCount / leaderboard.length) * 100)
     : 0;
 
+  const queryClient = useQueryClient();
+  const handlePullRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["/api/leaderboard"] });
+  }, [queryClient]);
+
   return (
+    <PullToRefresh onRefresh={handlePullRefresh}>
     <div className="min-h-screen bg-background pb-bottom-nav md:pb-0">
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border safe-top">
         <div className="container mx-auto px-4 py-4">
