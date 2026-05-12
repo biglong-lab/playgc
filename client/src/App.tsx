@@ -35,6 +35,7 @@ import NotFound from "@/pages/not-found";
 import FieldEntry from "@/pages/FieldEntry";
 import PlatformHome from "@/pages/PlatformHome";
 import DeviceGate from "@/components/shared/DeviceGate";
+import PwaChrome from "@/components/shared/PwaChrome";
 
 // 玩家端 — lazy import
 const GamePlay = lazy(() => import("@/pages/GamePlay"));
