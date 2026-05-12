@@ -4,6 +4,7 @@ import { Smartphone, ChevronDown, ChevronUp } from "lucide-react";
 import { useDeviceType } from "@/hooks/useDeviceType";
 
 const FORCE_KEY = "device-gate:force-enter";
+const FORCE_VALUE = "v2";
 const URL_FORCE_PARAM = "force-device";
 
 interface Props {
