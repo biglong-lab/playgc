@@ -378,3 +378,42 @@ export const insertFeatureFlagSchema = createInsertSchema(featureFlags).omit({
 });
 export type FeatureFlag = typeof featureFlags.$inferSelect;
 export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
+
+// =============== Synthetic Runs（合成監測 / Phase 5 / 2026-05-12）===============
+//
+// 24/7 自動巡檢、每小時 cron 跑：
+//   - 內部 fetch critical endpoints（health / version / cron health）
+//   - 各 endpoint 回應時間 + status code
+//   - 失敗推 Telegram + 寫紀錄
+//
+export const syntheticRuns = pgTable(
+  "synthetic_runs",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    runAt: timestamp("run_at").defaultNow().notNull(),
+    totalChecks: integer("total_checks").default(0),
+    passed: integer("passed").default(0),
+    failed: integer("failed").default(0),
+    avgResponseMs: integer("avg_response_ms"),
+    /** 各 check 詳情（{ name, ok, status, responseMs, error? }[]）*/
+    results: jsonb("results"),
+    /** 是否觸發告警 */
+    alertSent: boolean("alert_sent").default(false),
+  },
+  (table) => [
+    index("idx_synthetic_runs_time").on(table.runAt),
+    index("idx_synthetic_runs_failed").on(table.failed, table.runAt),
+  ],
+);
+
+export type SyntheticRun = typeof syntheticRuns.$inferSelect;
+
+export interface SyntheticCheckResult {
+  name: string;
+  url: string;
+  method: string;
+  ok: boolean;
+  status: number;
+  responseMs: number;
+  error?: string;
+}
