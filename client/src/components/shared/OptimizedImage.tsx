@@ -6,6 +6,7 @@ import {
   SIZES_PRESETS,
   type ImagePreset,
 } from "@/lib/image-utils";
+import { useNetworkQuality, withNetworkQuality } from "@/hooks/useNetworkQuality";
 
 interface OptimizedImageProps {
   /** 圖片 URL（支援 Cloudinary 自動優化） */
