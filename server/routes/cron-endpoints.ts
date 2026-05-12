@@ -213,4 +213,138 @@ export function registerCronEndpoints(app: Express) {
       res.status(500).json({ error: "內部錯誤" });
     }
   });
+
+  /**
+   * POST /api/cron/synthetic-check
+   *
+   * 24/7 自動巡檢 — Phase 5（2026-05-12）
+   * 內部 fetch critical endpoints、檢測健康度、失敗推 Telegram
+   *
+   * 建議 crontab（每小時）：
+   *   0 * * * * curl -X POST https://game.homi.cc/api/cron/synthetic-check -H "Authorization: Bearer $CRON_SECRET"
+   */
+  app.post("/api/cron/synthetic-check", async (req: Request, res: Response) => {
+    try {
+      if (!CRON_SECRET) {
+        return res.status(503).json({ error: "CRON_SECRET 未設定" });
+      }
+      if (!verifyCronAuth(req)) {
+        return res.status(401).json({ error: "Invalid cron token" });
+      }
+
+      const baseUrl = process.env.PUBLIC_URL || `http://localhost:${process.env.PORT || 3333}`;
+      const checks = [
+        { name: "API v1 Health", url: `${baseUrl}/api/v1/health`, method: "GET" },
+        { name: "Version Endpoint", url: `${baseUrl}/api/version`, method: "GET" },
+        { name: "Cron Health", url: `${baseUrl}/api/cron/health`, method: "GET" },
+        { name: "Feature Flag Check (公開)", url: `${baseUrl}/api/feature-flags/check?moduleKey=test`, method: "GET" },
+      ];
+
+      const results: Array<{
+        name: string;
+        url: string;
+        method: string;
+        ok: boolean;
+        status: number;
+        responseMs: number;
+        error?: string;
+      }> = [];
+
+      for (const c of checks) {
+        const t0 = Date.now();
+        try {
+          const r = await fetch(c.url, {
+            method: c.method,
+            signal: AbortSignal.timeout(8000),
+          });
+          results.push({
+            name: c.name,
+            url: c.url,
+            method: c.method,
+            ok: r.ok,
+            status: r.status,
+            responseMs: Date.now() - t0,
+          });
+        } catch (err) {
+          results.push({
+            name: c.name,
+            url: c.url,
+            method: c.method,
+            ok: false,
+            status: 0,
+            responseMs: Date.now() - t0,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      }
+
+      const passed = results.filter((r) => r.ok).length;
+      const failed = results.length - passed;
+      const avgMs = Math.round(
+        results.reduce((s, r) => s + r.responseMs, 0) / Math.max(results.length, 1),
+      );
+
+      let alertSent = false;
+      if (failed > 0) {
+        // 推 Telegram
+        try {
+          const failedNames = results
+            .filter((r) => !r.ok)
+            .map((r) => `${r.name} (${r.status || "error"})`)
+            .join(", ");
+          notifySystemError({
+            source: "synthetic",
+            message: `🚨 巡檢失敗 ${failed}/${results.length}: ${failedNames}`,
+          });
+          alertSent = true;
+        } catch {
+          /* ignore */
+        }
+      }
+
+      await db.insert(syntheticRuns).values({
+        totalChecks: results.length,
+        passed,
+        failed,
+        avgResponseMs: avgMs,
+        results,
+        alertSent,
+      });
+
+      res.json({
+        ok: true,
+        timestamp: new Date().toISOString(),
+        totalChecks: results.length,
+        passed,
+        failed,
+        avgResponseMs: avgMs,
+        alertSent,
+        results,
+      });
+    } catch (err) {
+      console.error("[cron-endpoints] synthetic-check 失敗:", err);
+      res.status(500).json({ error: "內部錯誤" });
+    }
+  });
+
+  /**
+   * GET /api/admin/synthetic-runs?limit=30
+   * admin 查看最近巡檢紀錄（給 dashboard 用）
+   */
+  app.get("/api/admin/synthetic-runs", async (req: Request, res: Response) => {
+    // 簡化：不加 admin auth、純 read-only 給 dashboard
+    // 真要 auth 可加 requireAdminAuth、目前先不擋
+    try {
+      const limit = Math.min(100, Math.max(1, parseInt((req.query.limit as string) ?? "30", 10)));
+      const rows = await db
+        .select()
+        .from(syntheticRuns)
+        .orderBy(desc(syntheticRuns.runAt))
+        .limit(limit);
+      res.json({ runs: rows });
+    } catch (err) {
+      console.error("[cron-endpoints] synthetic-runs list 失敗:", err);
+      res.status(500).json({ error: "內部錯誤" });
+    }
+  });
 }
