@@ -33,6 +33,17 @@ interface LocationSelectProps {
   placeholder?: string;
   className?: string;
   testId?: string;
+  /**
+   * 🆕 2026-05-12 #2: 傳入該 game 的所有 pages、用 lat/lng 近似匹配
+   * 顯示「#5 · GPS任務 1」這種「對應 page 編號」+ 名稱、admin 更易分辨
+   */
+  allPages?: Array<{
+    id: string;
+    pageOrder: number;
+    pageType: string;
+    customName?: string | null;
+    config?: unknown;
+  }>;
 }
 
 export function LocationSelect({
