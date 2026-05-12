@@ -147,7 +147,7 @@ export default function TextVerifyPage({ config, onComplete, gameId, variantPool
       const onSuccessPoints = (config.onSuccess as unknown as { points?: number })?.points;
       onComplete(
         {
-          points: config.rewardPoints ?? onSuccessPoints ?? 10,
+          points: config.rewardPoints ?? onSuccessPoints ?? 0,
           items: allItems.length > 0 ? allItems : undefined,
         },
         config.nextPageId,
