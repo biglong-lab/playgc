@@ -128,7 +128,7 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
         description: "密碼正確!",
       });
       setTimeout(() => {
-        onComplete({ points: config.rewardPoints ?? 20 }, config.nextPageId);
+        onComplete({ points: config.rewardPoints ?? 0 }, config.nextPageId);
       }, 2000);
     } else {
       // 用本地變數取代 attempts closure（原本 attempts+1 >= maxAttempts 靠 setState 巧合）
