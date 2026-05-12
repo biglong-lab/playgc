@@ -276,6 +276,10 @@ export function useSessionManager({
 
   // 重新開始遊戲
   function resetAndCreateNew() {
+    // 🐛 2026-05-12 #1 fix: existingSession 仍是 completed → 沒 setForceNewSession=true
+    //   會被 useEffect 內 restoreSession 又當作 completed 處理、跳通關畫面
+    setForceNewSession(true);
+    sessionCreationAttemptedRef.current = false;
     setState({
       sessionId: null,
       score: 0,
@@ -286,7 +290,17 @@ export function useSessionManager({
       completedPageIds: [],
     });
     setHasRestoredProgress(false);
+    setPendingDecision(false);
+    setUserDecided(true);
+    // invalidate existingSession query 確保下次撈到新 session
+    queryClient.invalidateQueries({ queryKey: ["/api/sessions/active", gameId] });
     createSessionMutation.mutate();
+  }
+
+  // 🆕 2026-05-12 #5: 玩家在 ResumeDialog 選「繼續」
+  function confirmContinue() {
+    setUserDecided(true);
+    setPendingDecision(false);
   }
 
   return {
@@ -298,5 +312,15 @@ export function useSessionManager({
     resetAndCreateNew,
     // 🆕 2026-05-07：暴露 hasRestoredProgress 給 GamePlay 顯示 ResumeDialog
     hasRestoredProgress,
+    // 🆕 2026-05-12 #5: 玩家未決定狀態（GamePlay 用來蓋遊戲頁面）
+    pendingDecision,
+    confirmContinue,
+    /** 給 dialog 顯示用：上次玩到第幾頁、目前分數 */
+    existingProgressInfo: existingSession?.session && existingSession.progress
+      ? {
+          currentPageId: existingSession.progress.currentPageId ?? null,
+          score: existingSession.progress.score ?? existingSession.session.score ?? 0,
+        }
+      : null,
   };
 }
