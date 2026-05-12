@@ -2,7 +2,7 @@
 // 🎨 設計原則：單一 icon（線稿）+ 文字，無重複符號，有質感
 import { Link, useLocation } from "wouter";
 import { Gamepad2, Swords, User, type LucideIcon } from "lucide-react";
-import { haptics } from "@/lib/haptics";
+import { useHaptic } from "@/hooks/useHaptic";
 
 interface NavItem {
   path: string;
