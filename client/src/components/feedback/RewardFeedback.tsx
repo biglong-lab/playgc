@@ -53,12 +53,14 @@ function subscribe(listener: Listener): () => void {
 export function RewardFeedbackOverlay() {
   const [current, setCurrent] = useState<RewardEvent | null>(null);
   const [queue, setQueue] = useState<RewardEvent[]>([]);
+  const haptic = useHaptic();
 
   useEffect(() => {
     return subscribe((event) => {
       setQueue((q) => [...q, event]);
+      haptic.success();
     });
-  }, []);
+  }, [haptic]);
 
   // 有等待中且目前沒顯示 → 推下一個
   useEffect(() => {
