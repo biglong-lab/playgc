@@ -192,8 +192,34 @@ export function useSessionManager({
 
     if (forceNewSession || createSessionMutation.isPending) return;
 
-    // 恢復現有 session
-    if (existingSession?.session && !hasRestoredProgress && activePages.length > 0) {
+    // 🆕 2026-05-12 #5: existingSession 有資料 + 玩家未決定 → 暫停、顯示 dialog
+    //   有「進行中」session 且非 completed → 才需要詢問（completed 視為新場直接重新開始流程更乾淨）
+    if (
+      existingSession?.session &&
+      !hasRestoredProgress &&
+      !userDecided &&
+      !pendingDecision &&
+      activePages.length > 0
+    ) {
+      const progressedPages = existingSession.progress?.currentPageId
+        ? activePages.findIndex((p) => p.id === existingSession.progress?.currentPageId)
+        : -1;
+      const sessionInProgress = existingSession.session.status !== "completed" && progressedPages > 0;
+      if (sessionInProgress) {
+        // 等玩家決定（繼續 / 重新開始）
+        setPendingDecision(true);
+        return;
+      }
+      // 沒實質進度 → 直接 restore（completed session 走 completed 路徑、無進度 session 視為新場）
+      restoreSession(existingSession);
+      return;
+    }
+
+    // 等玩家決定中 → 不動作
+    if (pendingDecision) return;
+
+    // 玩家已決定繼續 → restore
+    if (userDecided && existingSession?.session && !hasRestoredProgress && activePages.length > 0) {
       restoreSession(existingSession);
       return;
     }
@@ -203,7 +229,7 @@ export function useSessionManager({
       sessionCreationAttemptedRef.current = true;
       createSessionMutation.mutate();
     }
-  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending]);
+  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, pendingDecision, userDecided]);
 
   function restoreSession(data: ExistingSessionData) {
     const newScore = data.progress?.score || data.session.score || 0;
