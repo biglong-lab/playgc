@@ -180,6 +180,12 @@ export function useSessionManager({
   useEffect(() => {
     if (!userId || !gameId) return;
 
+    // 🐛 2026-05-12 深度修「再玩一次跳通關」：state.sessionId 已存在 = 不再 restore
+    //   server `getActiveSessionByUserAndGame` 先回 completed session（line 67）
+    //   新建 session 後 query refetch 拿到舊 completed → 又 restore → 跳通關
+    //   修法：state.sessionId 已存在（新建 / restore 成功）→ 一律不再覆蓋 state
+    if (state.sessionId) return;
+
     // replay 模式：強制建新 session
     if (forceNewSession && !state.sessionId && !createSessionMutation.isPending) {
       if (isReplayMode) {
