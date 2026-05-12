@@ -97,7 +97,7 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
         description: config.successMessage || "做得好!",
       });
       setTimeout(() => {
-        onComplete({ points: config.rewardPoints ?? 50 }, config.successNextPageId);
+        onComplete({ points: config.rewardPoints ?? 0 }, config.successNextPageId);
       }, 2000);
     } else {
       setCurrentTaskIndex((prev) => prev + 1);
