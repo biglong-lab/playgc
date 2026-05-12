@@ -142,14 +142,26 @@ const SKIP_MINI_MAP_TYPES = new Set([
 ]);
 
 function PageLoadingFallback() {
+  // 🆕 2026-05-12 Phase 3: Skeleton 取代 spinner、預先呈現遊戲頁面 layout（減少跳動感）
+  //   頂部 1 個進度條 + 中央內容區（圖 + 文字 + 按鈕）模擬
   return (
-    <div className="flex items-center justify-center h-full min-h-[200px]">
-      <div className="flex flex-col items-center gap-3 text-muted-foreground">
-        <div className="relative">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-        <p className="text-sm animate-pulse">載入頁面中...</p>
+    <div className="flex flex-col h-full w-full p-4 gap-4 animate-pulse" data-testid="page-skeleton">
+      {/* 模擬頂部標題 / 進度 */}
+      <div className="space-y-2">
+        <div className="h-6 bg-muted rounded-md w-2/3" />
+        <div className="h-3 bg-muted/60 rounded-md w-1/3" />
       </div>
+      {/* 模擬中央內容區（圖 / 主視覺）*/}
+      <div className="flex-1 min-h-[200px] bg-muted/40 rounded-lg flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground/50" />
+      </div>
+      {/* 模擬說明文字 */}
+      <div className="space-y-2">
+        <div className="h-3 bg-muted rounded-md w-full" />
+        <div className="h-3 bg-muted rounded-md w-5/6" />
+      </div>
+      {/* 模擬按鈕區 */}
+      <div className="h-11 bg-muted rounded-md w-full" />
     </div>
   );
 }
