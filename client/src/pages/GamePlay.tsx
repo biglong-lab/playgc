@@ -510,6 +510,23 @@ export default function GamePlay() {
     setLocation(`/map/${gameId}?session=${sessionId}`);
   }, [gameId, sessionId, setLocation]);
 
+  // 🆕 2026-05-12 #5: pendingDecision 時、整頁顯示 ResumeDialog（蓋遊戲頁面、玩家先選）
+  //   避免 dialog 在遊戲頁面渲染後才彈、玩家先看到第一個 page 才選
+  if (pendingDecision && !isReplayMode) {
+    return (
+      <div className="min-h-screen-dynamic bg-background flex items-center justify-center p-4">
+        <ResumeDialog
+          open={true}
+          onContinue={() => confirmContinue()}
+          onReset={() => resetAndCreateNew()}
+          currentPageIndex={pendingProgressIndex >= 0 ? pendingProgressIndex : 0}
+          totalPages={totalPages}
+          score={existingProgressInfo?.score ?? 0}
+        />
+      </div>
+    );
+  }
+
   // === 載入中/錯誤/完成 狀態 ===
   if (authLoading || gameLoading) {
     return (
