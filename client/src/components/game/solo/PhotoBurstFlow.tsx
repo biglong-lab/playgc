@@ -472,7 +472,7 @@ export default function PhotoBurstFlow({
     finishedRef.current = true;
     const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
     const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
-    const points = rewardPoints ?? config.onSuccess?.points ?? 25;
+    const points = rewardPoints ?? config.onSuccess?.points ?? 0;
     const reward: { points?: number; items?: string[] } = { points };
     const allItems = [
       ...rewardItems.filter((x) => !!x),
