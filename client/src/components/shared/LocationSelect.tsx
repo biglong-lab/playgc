@@ -54,7 +54,25 @@ export function LocationSelect({
   placeholder = "選擇地點...",
   className,
   testId,
+  allPages,
 }: LocationSelectProps) {
+  // 🆕 2026-05-12 #2: 用 lat/lng 找對應 page
+  const findMatchingPage = (loc: Location) => {
+    if (!allPages || !loc.latitude || !loc.longitude) return null;
+    const locLat = parseFloat(loc.latitude);
+    const locLng = parseFloat(loc.longitude);
+    if (isNaN(locLat) || isNaN(locLng)) return null;
+    // 容差 0.0001（約 11 公尺）
+    const EPSILON = 0.0001;
+    return allPages.find((p) => {
+      const cfg = p.config as { targetLocation?: { lat?: number; lng?: number }; targetLatitude?: number; targetLongitude?: number; locationSettings?: { latitude?: number; longitude?: number } } | null;
+      if (!cfg) return false;
+      const pLat = cfg.targetLocation?.lat ?? cfg.targetLatitude ?? cfg.locationSettings?.latitude;
+      const pLng = cfg.targetLocation?.lng ?? cfg.targetLongitude ?? cfg.locationSettings?.longitude;
+      if (typeof pLat !== "number" || typeof pLng !== "number") return false;
+      return Math.abs(pLat - locLat) < EPSILON && Math.abs(pLng - locLng) < EPSILON;
+    }) ?? null;
+  };
   const { data: locations, isLoading } = useQuery<Location[]>({
     queryKey: ["/api/games", gameId, "locations"],
     enabled: !!gameId,
