@@ -336,3 +336,45 @@ export type ComponentRun = typeof componentRuns.$inferSelect;
 export type InsertComponentRun = z.infer<typeof insertComponentRunSchema>;
 
 export type ComponentFinalState = "completed" | "abandoned" | "errored" | "timeout" | "skipped";
+
+// =============== Feature Flags（元件遠端開關 / Phase 4 / 2026-05-12）===============
+//
+// admin 可遠端關閉某元件（不用 deploy）
+// 自動降級：cron 偵測失敗率 > 50% → 自動標 disabled
+//
+// disabledReason 列舉：
+//   - "manual" — admin 手動關
+//   - "auto:high_failure" — 自動降級（失敗率高）
+//   - "auto:low_completion" — 自動降級（完成率低）
+//
+export const featureFlags = pgTable(
+  "feature_flags",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    /** scope = 'global' 或 'field' */
+    scope: varchar("scope", { length: 20 }).notNull().default("global"),
+    fieldId: varchar("field_id", { length: 100 }), // null = global
+    /** componentType（同 component_runs.componentType）或其他 module key */
+    moduleKey: varchar("module_key", { length: 100 }).notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    disabledReason: varchar("disabled_reason", { length: 50 }),
+    disabledAt: timestamp("disabled_at"),
+    disabledBy: varchar("disabled_by", { length: 100 }), // admin user id 或 'system'
+    /** 統計 snapshot（自動降級時記錄當時失敗率等）*/
+    metrics: jsonb("metrics"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("idx_feature_flags_lookup").on(table.scope, table.fieldId, table.moduleKey),
+    index("idx_feature_flags_module").on(table.moduleKey),
+  ],
+);
+
+export const insertFeatureFlagSchema = createInsertSchema(featureFlags).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type FeatureFlag = typeof featureFlags.$inferSelect;
+export type InsertFeatureFlag = z.infer<typeof insertFeatureFlagSchema>;
