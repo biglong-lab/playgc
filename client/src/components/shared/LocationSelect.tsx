@@ -106,7 +106,8 @@ export function LocationSelect({
             </div>
           )}
           {locations?.map((loc) => {
-            // 🆕 2026-05-12: 加座標 + description 顯示、讓 admin 分辨同名 GPS location
+            // 🆕 2026-05-12 #2: 用 lat/lng 找對應 page、優先顯示「#N · page name」
+            const matchingPage = findMatchingPage(loc);
             const lat = loc.latitude ? parseFloat(loc.latitude) : null;
             const lng = loc.longitude ? parseFloat(loc.longitude) : null;
             const coordStr = lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)
@@ -116,17 +117,35 @@ export function LocationSelect({
               <SelectItem key={loc.id} value={String(loc.id)}>
                 <span className="flex flex-col gap-0.5 py-0.5">
                   <span className="flex items-center gap-2 flex-wrap">
-                    <MapPin className="w-3 h-3 shrink-0" />
-                    <span className="font-medium">{loc.name}</span>
-                    {loc.slug && (
-                      <code className="text-xs text-muted-foreground">({loc.slug})</code>
+                    {matchingPage ? (
+                      // 顯示「#N · pageName」對應 page、admin 一眼分辨
+                      <>
+                        <Badge className="bg-primary text-primary-foreground text-xs font-bold shrink-0">
+                          #{matchingPage.pageOrder}
+                        </Badge>
+                        <MapPin className="w-3 h-3 shrink-0" />
+                        <span className="font-medium">
+                          {matchingPage.customName || loc.name}
+                        </span>
+                        <Badge variant="outline" className="text-[10px]">
+                          {matchingPage.pageType}
+                        </Badge>
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="w-3 h-3 shrink-0" />
+                        <span className="font-medium">{loc.name}</span>
+                        {loc.slug && (
+                          <code className="text-xs text-muted-foreground">({loc.slug})</code>
+                        )}
+                        {loc.locationType && loc.locationType !== "custom" && (
+                          <Badge variant="outline" className="text-xs">
+                            {loc.locationType}
+                          </Badge>
+                        )}
+                        <code className="text-[10px] text-muted-foreground">loc#{loc.id}</code>
+                      </>
                     )}
-                    {loc.locationType && loc.locationType !== "custom" && (
-                      <Badge variant="outline" className="text-xs">
-                        {loc.locationType}
-                      </Badge>
-                    )}
-                    <code className="text-[10px] text-muted-foreground">#{loc.id}</code>
                   </span>
                   {(coordStr || loc.description) && (
                     <span className="text-[10px] text-muted-foreground pl-5 truncate max-w-md">
