@@ -172,7 +172,7 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
         const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
         const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
         const reward: { points?: number; items?: string[] } = {
-          points: rewardPoints ?? config.onSuccess?.points ?? 15,
+          points: rewardPoints ?? config.onSuccess?.points ?? 0,
         };
         const allItems = [
           ...rewardItems.filter((x) => !!x),
@@ -530,7 +530,7 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
                       const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
                       const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
                       const reward: { points?: number; items?: string[] } = {
-                        points: rewardPoints ?? config.onSuccess?.points ?? 15,
+                        points: rewardPoints ?? config.onSuccess?.points ?? 0,
                       };
                       const allItems = [
                         ...rewardItems.filter((x) => !!x),
