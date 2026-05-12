@@ -269,7 +269,7 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
     tele.reportComplete(stage === "done" ? "completed" : "skipped");
     const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
     const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
-    const points = rewardPoints ?? config.onSuccess?.points ?? 40;
+    const points = rewardPoints ?? config.onSuccess?.points ?? 0;
     const reward: { points?: number; items?: string[] } = { points };
     const allItems = [
       ...rewardItems.filter((x) => !!x),
