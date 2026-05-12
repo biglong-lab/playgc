@@ -19,10 +19,10 @@ import {
 } from "../lib/expiring-session-checker";
 import { verifySharedSecret } from "../lib/webhook-signature";
 import { db } from "../db";
-import { gameSessions, sessionReports } from "@shared/schema";
-import { sql } from "drizzle-orm";
+import { gameSessions, sessionReports, syntheticRuns } from "@shared/schema";
+import { sql, desc } from "drizzle-orm";
 import { generateSessionReport } from "../lib/generateSessionReport";
-import { notifySessionReport } from "../lib/internal-notifier";
+import { notifySessionReport, notifySystemError } from "../lib/internal-notifier";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
