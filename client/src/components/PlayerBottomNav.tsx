@@ -39,6 +39,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export default function PlayerBottomNav() {
   const [location] = useLocation();
+  const haptic = useHaptic();
 
   // 以下路徑不顯示 bottom nav（避免干擾沉浸體驗 + 避免遮住遊戲按鈕）
   const shouldHide =
