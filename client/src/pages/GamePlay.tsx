@@ -694,14 +694,14 @@ export default function GamePlay() {
       {/* 🆕 2026-05-07：偵測既有進度時的選擇對話框 */}
       <ResumeDialog
         open={showResumeDialog}
-        onContinue={() => setShowResumeDialog(false)}
+        onContinue={() => confirmContinue()}
         onReset={() => {
-          setShowResumeDialog(false);
           resetAndCreateNew();
         }}
-        currentPageIndex={currentPageIndex}
+        // 🆕 2026-05-12 #5: pendingDecision 時 currentPageIndex 還沒 restore、用 existingProgressInfo 算
+        currentPageIndex={pendingProgressIndex >= 0 ? pendingProgressIndex : currentPageIndex}
         totalPages={totalPages}
-        score={score}
+        score={existingProgressInfo?.score ?? score}
       />
 
       {(() => {
