@@ -240,7 +240,7 @@ export default function PhotoCompareFlow({
     const legacyPoints = config.onSuccess?.points;
     const legacyItem = config.onSuccess?.grantItem;
 
-    const points = rewardPoints ?? legacyPoints ?? 30;
+    const points = rewardPoints ?? legacyPoints ?? 0;
     const reward: { points?: number; items?: string[] } = { points };
 
     const allItems = [
