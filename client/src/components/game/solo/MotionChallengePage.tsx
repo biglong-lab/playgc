@@ -75,7 +75,7 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
       description: "做得好!",
     });
     setTimeout(() => {
-      onComplete({ points: config.rewardPoints ?? 15 }, config.nextPageId);
+      onComplete({ points: config.rewardPoints ?? 0 }, config.nextPageId);
     }, 2000);
   }, [config, onComplete, toast]);
 
