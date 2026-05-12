@@ -195,7 +195,7 @@ export default function GamePlay() {
   // 🆕 Phase 2a：遊戲中也訂閱 team WS，顯示隊友離線/重連/離開 toast（存在感）
   //   solo mode → myTeam 為 null，hook 內部 effect 會跳過建立連線
   // 🆕 Phase 2.B：訂閱 team_progress_advance → 慢的玩家自動跟上最快進度
-  const { isConnected: isTeamWsConnected } = useTeamWebSocket({
+  const { isConnected: isTeamWsConnected, isReconnecting: isTeamWsReconnecting } = useTeamWebSocket({
     teamId: myTeam?.id,
     userId: user?.id,
     userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
