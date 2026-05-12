@@ -245,7 +245,7 @@ export function useQrScanner(
       setTimeout(() => {
         if (finishedRef.current) return;
         finishedRef.current = true;
-        onComplete({ points: config.rewardPoints ?? config.reward?.points ?? 10, items: grantItems }, config.nextPageId);
+        onComplete({ points: config.rewardPoints ?? config.reward?.points ?? 0, items: grantItems }, config.nextPageId);
       }, 1500);
     } else {
       setMode("error");
