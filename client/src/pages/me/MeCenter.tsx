@@ -385,6 +385,7 @@ export default function MeCenter() {
         </p>
       </div>
     </div>
+    </PullToRefresh>
   );
 }
 
