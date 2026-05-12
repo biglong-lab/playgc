@@ -77,12 +77,32 @@ export default function GpsMissionMap({
     [targetLat, targetLng],
   );
 
-  // 🆕 2026-05-12 #10: 玩家箭頭面向目標方向
+  // 🆕 2026-05-12 #4 fix: 箭頭根據「設備朝向」+ 目標相對位置
+  //   原邏輯（5/10 版本）：bearing 指目標絕對方位 — 玩家轉身、箭頭不變、會混淆
+  //   新邏輯：相對 = bearing_to_target - device_heading → 玩家轉身、箭頭跟著轉
+  //   不支援指南針的裝置 fallback 用絕對方位
+  const compass = useCompassHeading();
   const userBearing = useMemo<number | null>(() => {
     if (userLat === null || userLng === null) return null;
-    return bearingDegrees(userLat, userLng, targetLat, targetLng);
-  }, [userLat, userLng, targetLat, targetLng]);
+    const targetBearing = bearingDegrees(userLat, userLng, targetLat, targetLng);
+    if (compass.heading === null) return targetBearing;
+    return (targetBearing - compass.heading + 360) % 360;
+  }, [userLat, userLng, targetLat, targetLng, compass.heading]);
   const userIcon = useMemo(() => makeUserIcon(userBearing), [userBearing]);
+
+  // iOS 需 user gesture 觸發 compass.request()
+  useEffect(() => {
+    if (!compass.supported || compass.granted) return;
+    const tryRequest = () => {
+      void compass.request();
+    };
+    document.addEventListener("pointerdown", tryRequest, { once: true, passive: true });
+    document.addEventListener("touchstart", tryRequest, { once: true, passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", tryRequest);
+      document.removeEventListener("touchstart", tryRequest);
+    };
+  }, [compass.supported, compass.granted, compass]);
 
   return (
     <div className="w-full rounded-lg overflow-hidden border border-border" style={{ height: 240 }}>
