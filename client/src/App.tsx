@@ -420,6 +420,7 @@ function Router() {
         <Route path="/admin/sessions/:sessionId/replay">{() => <ProtectedAdminRoute><AdminSessionReplay /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/reports">{() => <ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/component-health">{() => <ProtectedAdminRoute><AdminComponentHealth /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/feature-flags">{() => <ProtectedAdminRoute><AdminFeatureFlags /></ProtectedAdminRoute>}</Route>
 
         {/* 🌐 SaaS 平台後台（限 super_admin / platform_admins）*/}
         <Route path="/platform">{() => <ProtectedAdminRoute><PlatformDashboard /></ProtectedAdminRoute>}</Route>
