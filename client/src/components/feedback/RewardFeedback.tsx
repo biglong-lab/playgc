@@ -12,6 +12,7 @@ import { useEffect, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Trophy, Package, Star, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
+import { useHaptic } from "@/hooks/useHaptic";
 
 // ============================================================================
 // Reward 事件 Store（簡易全域）
