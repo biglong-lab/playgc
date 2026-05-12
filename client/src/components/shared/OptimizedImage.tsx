@@ -101,12 +101,15 @@ export default function OptimizedImage({
     setIsLoaded(false);
   }, [src]);
 
+  const networkInfo = useNetworkQuality();
+
   // ⚡ useMemo：避免每次 render 都重算 URL（高頻 re-render 場景，如圖片列表）
   // ⚠️ 必須在 early return 之前（React hooks rules）
-  const optimizedSrc = useMemo(
-    () => (preset && src ? getOptimizedImageUrl(src, preset) : src ?? ""),
-    [src, preset],
-  );
+  // 🆕 弱網 / Data Saver 自動降低 Cloudinary 品質（q_auto:low / q_auto:eco）
+  const optimizedSrc = useMemo(() => {
+    const base = preset && src ? getOptimizedImageUrl(src, preset) : src ?? "";
+    return withNetworkQuality(base, networkInfo);
+  }, [src, preset, networkInfo]);
 
   // 🆕 多解析度 srcSet（給 retina / 高 DPR 螢幕用更大版本）
   // retry > 0 時不用 srcSet（避免 cache-bust 跟 srcSet 衝突）
