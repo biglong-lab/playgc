@@ -276,6 +276,7 @@ export default function Leaderboard() {
         getInitials={getInitials}
       />
     </div>
+    </PullToRefresh>
   );
 }
 
