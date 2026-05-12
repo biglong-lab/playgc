@@ -138,6 +138,9 @@ export default function GamePlay() {
     stateRef, activePagesRef,
     setState, resetAndCreateNew,
     hasRestoredProgress,
+    pendingDecision,
+    confirmContinue,
+    existingProgressInfo,
   } = useSessionManager({
     gameId,
     userId: user?.id,
@@ -146,24 +149,14 @@ export default function GamePlay() {
     userName: user?.firstName || "玩家",
   });
 
-  // 🆕 2026-05-07：偵測有進度時顯示 ResumeDialog
-  // - hasRestoredProgress = true 表示 useSessionManager 自動載入了 existingSession
-  // - currentPageIndex > 0 表示真有進度（不是剛開始）
-  // - !isCompleted 排除「已通關」（完成的 session 不需要選）
-  const [showResumeDialog, setShowResumeDialog] = useState(false);
-  const [resumeDialogShown, setResumeDialogShown] = useState(false);
-  useEffect(() => {
-    if (
-      !resumeDialogShown &&
-      hasRestoredProgress &&
-      currentPageIndex > 0 &&
-      !isCompleted &&
-      !isReplayMode
-    ) {
-      setShowResumeDialog(true);
-      setResumeDialogShown(true);
-    }
-  }, [hasRestoredProgress, currentPageIndex, isCompleted, isReplayMode, resumeDialogShown]);
+  // 🆕 2026-05-12 #5: pendingDecision = true → 顯示 ResumeDialog 在遊戲頁面之前
+  //   useSessionManager 偵測有實質進度的 existingSession 時 setPendingDecision(true)
+  //   玩家選「繼續」→ confirmContinue() / 選「重新開始」→ resetAndCreateNew()
+  //   兩種選擇後 dialog 自動關閉、進遊戲流程
+  const showResumeDialog = pendingDecision && !isReplayMode;
+  const pendingProgressIndex = existingProgressInfo?.currentPageId
+    ? activePages.findIndex((p) => p.id === existingProgressInfo.currentPageId)
+    : -1;
 
   const currentPage = activePages[currentPageIndex];
   const totalPages = activePages.length;
