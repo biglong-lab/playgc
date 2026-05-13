@@ -300,6 +300,13 @@ export default function PhotoBurstFlow({
   // 上傳階段：**並行**上傳（從 sequential → parallel，速度 5 倍）→ 合成 GIF
   useEffect(() => {
     if (stage !== "uploading") return;
+    // 🛠 2026-05-13：預覽模式跳過真上傳 + GIF / composite、直接顯示第一張
+    if (isPreview) {
+      const first = burstImagesRef.current[0];
+      if (first) setCompositeUrl(first);
+      setStage("done");
+      return;
+    }
     let cancelled = false;
     (async () => {
       try {
