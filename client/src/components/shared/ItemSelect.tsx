@@ -61,9 +61,12 @@ export function ItemSelect({
   const hasValueButNotFound = !!value && items && !existingItem;
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 min-w-0 flex-1">
       <Select value={value || "__empty__"} onValueChange={(v) => onChange(v === "__empty__" ? "" : v)}>
-        <SelectTrigger className={className} data-testid={testId}>
+        <SelectTrigger
+          className={`min-w-0 w-full max-w-full ${className ?? ""}`}
+          data-testid={testId}
+        >
           <SelectValue placeholder={isLoading ? "載入道具清單..." : placeholder} />
         </SelectTrigger>
         <SelectContent>
@@ -79,14 +82,15 @@ export function ItemSelect({
           )}
           {items?.map((item) => (
             <SelectItem key={item.id} value={item.id}>
-              <span className="flex items-center gap-2">
-                <Package className="w-3 h-3" />
-                {item.name}
+              {/* 🔧 2026-05-13：強制單行 + 截斷、防中文名長 trigger 內變直式 */}
+              <span className="flex items-center gap-2 whitespace-nowrap overflow-hidden">
+                <Package className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{item.name}</span>
                 {item.slug && (
-                  <code className="text-xs text-muted-foreground">({item.slug})</code>
+                  <code className="text-xs text-muted-foreground truncate hidden sm:inline">({item.slug})</code>
                 )}
                 {item.itemType && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs flex-shrink-0 hidden sm:inline-flex">
                     {item.itemType}
                   </Badge>
                 )}
@@ -96,9 +100,9 @@ export function ItemSelect({
           {/* 舊資料相容：原 itemId 不在清單（例如 integer "16"）→ 顯示為警告選項 */}
           {hasValueButNotFound && (
             <SelectItem value={value}>
-              <span className="flex items-center gap-1 text-amber-600">
-                <AlertTriangle className="w-3 h-3" />
-                舊資料：{value}（建議重選）
+              <span className="flex items-center gap-1 text-amber-600 whitespace-nowrap overflow-hidden">
+                <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">舊資料：{value}（建議重選）</span>
               </span>
             </SelectItem>
           )}
