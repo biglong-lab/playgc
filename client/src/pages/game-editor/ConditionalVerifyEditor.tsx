@@ -397,21 +397,24 @@ export default function ConditionalVerifyEditor({
                       <div className="flex-shrink-0 w-16 text-center">
                         <Badge variant="outline" className="text-xs">碎片 {i + 1}</Badge>
                       </div>
-                      <Input
-                        value={fragment.value || ""}
-                        onChange={(e) => {
-                          const next = [...fragments];
-                          next[i] = { ...next[i], value: e.target.value };
-                          updateFragments(next);
-                        }}
-                        placeholder={
-                          config.fragmentType === "numbers" ? "0-9"
-                            : config.fragmentType === "letters" ? "A-Z"
-                            : "內容"
-                        }
-                        className="w-24 text-center font-mono"
-                        data-testid={`config-fragment-value-${i}`}
-                      />
+                      {/* 🆕 2026-05-13 P2-5：圖片模式不顯示 value Input（沒用、value 無意義）*/}
+                      {config.fragmentSource !== "image" && (
+                        <Input
+                          value={fragment.value || ""}
+                          onChange={(e) => {
+                            const next = [...fragments];
+                            next[i] = { ...next[i], value: e.target.value };
+                            updateFragments(next);
+                          }}
+                          placeholder={
+                            config.fragmentType === "numbers" ? "0-9"
+                              : config.fragmentType === "letters" ? "A-Z"
+                              : "內容"
+                          }
+                          className="w-24 text-center font-mono"
+                          data-testid={`config-fragment-value-${i}`}
+                        />
+                      )}
                       <Input
                         value={fragment.label || ""}
                         onChange={(e) => {
@@ -419,7 +422,7 @@ export default function ConditionalVerifyEditor({
                           next[i] = { ...next[i], label: e.target.value };
                           updateField("fragments", next);
                         }}
-                        placeholder="碎片標籤"
+                        placeholder={config.fragmentSource === "image" ? "（選填）這塊的提示" : "碎片標籤"}
                         className="flex-1"
                         data-testid={`config-fragment-label-${i}`}
                       />
