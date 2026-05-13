@@ -126,7 +126,11 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="absolute top-4 right-4 z-50">
+      {/* 🔧 2026-05-13：往左偏移避開 FloatingFontScale（AAA）+ safe-area 對齊 */}
+      <div
+        className="fixed right-24 z-50"
+        style={{ top: "calc(0.5rem + env(safe-area-inset-top))" }}
+      >
         <LanguageSwitcher />
       </div>
 
