@@ -217,26 +217,62 @@ export default function ConditionalVerifyEditor({
           碎片收集設定
         </h4>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">碎片類型</label>
-            <Select
-              value={config.fragmentType || "numbers"}
-              onValueChange={(value) => {
-                updateField("fragmentType", value);
-                updateFragments(generateFragments(value, config.fragmentCount || 4));
-              }}
+        {/* 🆕 2026-05-13 P2-5：碎片來源（文字 / 圖片切割） */}
+        <div>
+          <label className="text-sm font-medium mb-2 block">碎片來源</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => updateField("fragmentSource", "text")}
+              className={`flex items-center gap-2 justify-center p-3 rounded-lg border transition-colors ${
+                (config.fragmentSource || "text") === "text"
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
+              }`}
+              data-testid="btn-fragment-source-text"
             >
-              <SelectTrigger data-testid="config-fragment-type">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="numbers">數字碎片 (0-9)</SelectItem>
-                <SelectItem value="letters">字母碎片 (A-Z)</SelectItem>
-                <SelectItem value="custom">自定義內容</SelectItem>
-              </SelectContent>
-            </Select>
+              <TypeIcon className="w-4 h-4" />
+              <span className="text-sm">文字碎片</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => updateField("fragmentSource", "image")}
+              className={`flex items-center gap-2 justify-center p-3 rounded-lg border transition-colors ${
+                config.fragmentSource === "image"
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-primary/50"
+              }`}
+              data-testid="btn-fragment-source-image"
+            >
+              <ImageIcon className="w-4 h-4" />
+              <span className="text-sm">圖片切割</span>
+            </button>
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          {/* 文字模式才顯示 fragmentType（圖片模式不需要）*/}
+          {(config.fragmentSource || "text") === "text" && (
+            <div>
+              <label className="text-sm font-medium mb-2 block">碎片類型</label>
+              <Select
+                value={config.fragmentType || "numbers"}
+                onValueChange={(value) => {
+                  updateField("fragmentType", value);
+                  updateFragments(generateFragments(value, config.fragmentCount || 4));
+                }}
+              >
+                <SelectTrigger data-testid="config-fragment-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="numbers">數字碎片 (0-9)</SelectItem>
+                  <SelectItem value="letters">字母碎片 (A-Z)</SelectItem>
+                  <SelectItem value="custom">自定義內容</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div>
             <label className="text-sm font-medium mb-2 block">碎片數量</label>
@@ -254,6 +290,74 @@ export default function ConditionalVerifyEditor({
             />
           </div>
         </div>
+
+        {/* 🆕 圖片切割模式：上傳 + 預覽 grid */}
+        {config.fragmentSource === "image" && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">碎片圖片</label>
+              {MediaUploadButton && (
+                <MediaUploadButton
+                  id="fragment-image-upload"
+                  accept="image/*"
+                  onUploaded={(url) => updateField("fragmentImageUrl", url)}
+                />
+              )}
+              {config.fragmentImageUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => updateField("fragmentImageUrl", "")}
+                  className="text-destructive"
+                >
+                  <XIcon className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+            {!config.fragmentImageUrl && (
+              <div className="text-xs text-muted-foreground p-3 border rounded bg-muted/40">
+                上傳一張完整圖、系統會依「碎片數量」自動切成等份。建議比例 1:1 或 16:9、圖檔 &lt; 1MB。
+              </div>
+            )}
+            {!!config.fragmentImageUrl && (() => {
+              const count = (config.fragmentCount as number) || 4;
+              const { cols, rows } = calcFragmentGrid(count);
+              return (
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-muted-foreground">切片預覽</span>
+                    <Badge variant="secondary" className="text-xs">{cols} × {rows}</Badge>
+                  </div>
+                  <div
+                    className="grid gap-1 rounded border p-1 bg-background"
+                    style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+                  >
+                    {Array.from({ length: count }).map((_, i) => {
+                      const col = i % cols;
+                      const row = Math.floor(i / cols);
+                      const bgX = cols > 1 ? (col / (cols - 1)) * 100 : 50;
+                      const bgY = rows > 1 ? (row / (rows - 1)) * 100 : 50;
+                      return (
+                        <div
+                          key={i}
+                          className="aspect-square rounded border bg-muted/30"
+                          style={{
+                            backgroundImage: `url(${config.fragmentImageUrl})`,
+                            backgroundSize: `${cols * 100}% ${rows * 100}%`,
+                            backgroundPosition: `${bgX}% ${bgY}%`,
+                            backgroundRepeat: "no-repeat",
+                          }}
+                          title={`碎片 ${i + 1}`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {fragments.length > 0 && (
           <>
