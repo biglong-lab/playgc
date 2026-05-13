@@ -222,23 +222,28 @@ export default function Home() {
     enabled: !!user,
   });
 
-  // 🔄 2026-05-02 修正：completed 優先於 playing
-  //   原本是 "playing 優先 completed"，導致使用者完成過一次（completed），
-  //   後來又開了一場（playing 但隊伍解散沒清乾淨）→ Home 顯示「返回隊伍」+
-  //   點進去顯示「創建或加入隊伍」。
-  //   後端 getSessionsByUser 已會把卡死的多人 playing 改為 completed，
-  //   前端再加一道保險：只要該遊戲有任何 completed 紀錄，就以 completed 為主，
-  //   並挑「最高分的那次 completed」顯示，更貼近使用者直覺。
+  // 🔄 2026-05-13 修正：playing 在 24h 內優先 / 否則 completed（取最高分）
+  //   背景：完成過遊戲後又開新一場玩到中途、Home 應該顯示「繼續任務」而非「再玩一次」
+  //   2026-05-02 改 completed 優先解決多人 playing 卡死的問題、但壞掉「進行中是新的」情境
+  //   新邏輯：startedAt 是「進行中」判定基準 — 24h 內的 playing 視為真進行中、過期視為卡死
+  //   仍保留 max-score completed 邏輯（玩家想看的是最佳成績）
+  const PLAYING_FRESH_MS = 24 * 60 * 60 * 1000;
+  const now = Date.now();
   const gameStatusMap = new Map<string, UserGameStatus>();
   if (userSessions) {
     userSessions.forEach((session) => {
       if (!session.gameId) return;
       if (session.status !== "playing" && session.status !== "completed") return;
 
+      const startedAtMs = session.startedAt ? new Date(session.startedAt).getTime() : 0;
+      const isFreshPlaying =
+        session.status === "playing" && startedAtMs > 0 && now - startedAtMs < PLAYING_FRESH_MS;
+
       const existing = gameStatusMap.get(session.gameId);
       const incoming: UserGameStatus = {
         gameId: session.gameId,
-        status: session.status as "playing" | "completed",
+        // 過期的 playing 視為 completed（卡死保護、與 backend getSessionsByUser 一致）
+        status: isFreshPlaying ? "playing" : (session.status === "playing" ? "completed" : "completed"),
         sessionId: session.id,
         score: session.score || 0,
       };
@@ -248,8 +253,10 @@ export default function Home() {
         return;
       }
 
-      // 規則：completed 永遠優先；都是 completed 取最高分；都是 playing 取最新（最先迭代到的）
-      if (incoming.status === "completed" && existing.status === "playing") {
+      // 新規則：
+      //   1. fresh playing 優先（玩家正在進行中、最當下狀態）
+      //   2. 都是 completed → 取最高分
+      if (incoming.status === "playing" && existing.status === "completed") {
         gameStatusMap.set(session.gameId, incoming);
       } else if (
         incoming.status === "completed" &&
@@ -258,7 +265,7 @@ export default function Home() {
       ) {
         gameStatusMap.set(session.gameId, incoming);
       }
-      // 其他情況維持 existing（playing 不能蓋 completed；同 status 沿用最新的迭代結果）
+      // 其他情況維持 existing
     });
   }
 
