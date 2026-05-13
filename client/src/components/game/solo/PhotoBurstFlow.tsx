@@ -235,6 +235,8 @@ export default function PhotoBurstFlow({
 
   // 🔄 背景上傳 + 合成（不 block UI，成功後靜默替換 URL）
   const backgroundUploadAndComposite = async () => {
+    // 🛠 2026-05-13：admin 預覽模式跳過真上傳 + 合成（不浪費 Cloudinary 額度、避免 400）
+    if (isPreview) return;
     try {
       const images = burstImagesRef.current;
       if (images.length === 0) return;
