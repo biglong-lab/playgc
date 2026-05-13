@@ -1,0 +1,67 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [main]
+  # 每週一 03:00 UTC 跑一次 main 基準
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lighthouse:
+    name: Lighthouse mobile audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+        env:
+          NODE_ENV: production
+          # 跳過 server bundle、只測 client
+          SKIP_SERVER_BUILD: "1"
+
+      - name: Lighthouse audit (production URL)
+        id: lighthouse
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            https://game.homi.cc/
+            https://game.homi.cc/f/JIACHUN/home
+            https://game.homi.cc/pitch
+            https://game.homi.cc/showcase
+          configPath: ./.github/lighthouse/lighthouserc.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Format scores for PR comment
+        id: format
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "## 🔆 Lighthouse 行動裝置分數" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "| URL | Performance | PWA | Accessibility | Best Practices | SEO |" >> $GITHUB_OUTPUT
+          echo "|-----|-------------|-----|---------------|----------------|-----|" >> $GITHUB_OUTPUT
+          echo "報告連結（artifacts）：${{ steps.lighthouse.outputs.links }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Comment PR with Lighthouse summary
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: lighthouse-ci
+          message: ${{ steps.format.outputs.summary }}
