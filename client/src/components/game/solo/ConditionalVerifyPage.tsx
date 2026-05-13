@@ -135,13 +135,18 @@ export default function ConditionalVerifyPage({
 
   const fragments = useMemo(() => normalizeFragments(config.fragments), [config.fragments]);
   const isFragmentMode = fragments.length > 0;
+  // 🆕 2026-05-13 P2-5：圖片切割模式
+  const isImageFragmentMode = config.fragmentSource === "image" && !!config.fragmentImageUrl;
   // 示範模式：由 admin 明確設定 config.demoMode，或向後相容
   // 「所有 fragment 都沒綁 sourceItemId」舊資料（模組範本字串陣列）
   const isDemoMode =
     isFragmentMode &&
     (config.demoMode === true || fragments.every((f) => !f.sourceItemId));
   const targetCode = config.targetCode || fragments.map(f => f.value).join('');
-  const verificationMode = config.verificationMode || 'order_matters';
+  // 🆕 image 模式強制 all_collected（玩家拼出整圖即通過、不需輸入密碼）
+  const verificationMode = isImageFragmentMode
+    ? 'all_collected'
+    : (config.verificationMode || 'order_matters');
 
   // inventory 可能混有 string / number（舊 seed 資料），統一轉字串集合做比對
   const inventorySet = useMemo(
