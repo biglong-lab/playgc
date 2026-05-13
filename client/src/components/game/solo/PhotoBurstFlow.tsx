@@ -81,10 +81,19 @@ export default function PhotoBurstFlow({
     return burstTagRef.current;
   };
 
+  const { isPreview } = usePreview();
+
   // 上傳單張照片（帶 burst tag + 10s timeout + Firebase Auth token）
   // 🐛 關鍵修：原本用裸 fetch 沒帶 token → HTTP 401
   //   改用 apiRequestWithTimeout（會自動加 Authorization: Bearer ${firebaseToken}）
+  // 🛠 2026-05-13：admin 預覽模式跳過真 Cloudinary 上傳、用 base64 inline 代替
   const uploadSingle = async (imageData: string): Promise<{ publicId: string; url: string }> => {
+    if (isPreview) {
+      return {
+        publicId: `preview-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        url: imageData,
+      };
+    }
     const res = await apiRequestWithTimeout(
       "POST",
       "/api/cloudinary/burst-frame",
