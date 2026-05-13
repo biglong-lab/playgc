@@ -97,6 +97,21 @@ function normalizeFragments(raw: unknown): FragmentConfig[] {
 // 穩定空陣列參考，避免預設值每次 render 產生新陣列觸發 useEffect 無窮迴圈
 const EMPTY_STRING_ARRAY: readonly string[] = Object.freeze([]);
 
+/**
+ * 依碎片數計算 grid (cols × rows)
+ * 2026-05-13 P2-5：與 ConditionalVerifyEditor.calcFragmentGrid 保持一致
+ */
+function calcFragmentGridClient(n: number): { cols: number; rows: number } {
+  if (n <= 1) return { cols: 1, rows: 1 };
+  if (n === 2) return { cols: 2, rows: 1 };
+  if (n === 3) return { cols: 3, rows: 1 };
+  if (n === 4) return { cols: 2, rows: 2 };
+  if (n <= 6) return { cols: 3, rows: 2 };
+  if (n <= 8) return { cols: 4, rows: 2 };
+  if (n === 9) return { cols: 3, rows: 3 };
+  return { cols: 5, rows: 2 };
+}
+
 export default function ConditionalVerifyPage({
   config,
   onComplete,
