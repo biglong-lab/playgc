@@ -182,10 +182,11 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
   const resetForm = () => {
     setFormData({
       name: "",
+      slug: "",
       description: "",
-      iconUrl: "",
+      iconUrl: "package",
       itemType: "consumable",
-      effect: {},
+      effect: { type: "none", value: 0 },
     });
     setEditingItem(null);
     setIsDialogOpen(false);
@@ -193,12 +194,17 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
 
   const handleEdit = (item: Item) => {
     setEditingItem(item);
+    const existingEffect = (item.effect as { type?: string; value?: number }) || {};
     setFormData({
       name: item.name,
+      slug: (item as Item & { slug?: string | null }).slug || "",
       description: item.description || "",
-      iconUrl: item.iconUrl || "",
+      iconUrl: item.iconUrl || "package",
       itemType: item.itemType || "consumable",
-      effect: item.effect || {},
+      effect: {
+        type: existingEffect.type || "none",
+        value: existingEffect.value || 0,
+      },
     });
     setIsDialogOpen(true);
   };
