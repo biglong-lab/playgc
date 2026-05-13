@@ -104,6 +104,21 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [gameId, setLocation, totalPages]);
 
+  // 🐛 修 React #310（2026-05-13）：以下 hooks 必須在 early return 之前
+  //   原本放在 isLoading/error/totalPages 條件 return 後面、違反 Rules of Hooks
+  //   render 在 loading→loaded 切換時 hook count 不同 → 觸發 #310（30 次/7 天 ErrorBoundary）
+
+  // 預覽用：onComplete 直接跳下一頁（不寫 chapter/score/inventory）
+  const handlePreviewComplete = useCallback(() => {
+    setCurrentIndex((prev) => Math.min(prev + 1, totalPages - 1));
+  }, [totalPages]);
+
+  // 預覽用：variable update 純 in-memory（不寫 DB）
+  const [variables, setVariables] = useState<Record<string, unknown>>({});
+  const handleVariableUpdate = useCallback((key: string, value: unknown) => {
+    setVariables((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -151,17 +166,6 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
   //   - 正式版 GameStateMachine 才會建立真實 session，preview 完全跳過
   //   後續 P3-2 ~ P3-4 會在 apiRequest 層或子元件層加 isPreview 提早 return（避免 console error）
   const handleExit = () => setLocation(`/admin/games/${gameId}`);
-
-  // 預覽用：onComplete 直接跳下一頁（不寫 chapter/score/inventory）
-  const handlePreviewComplete = useCallback(() => {
-    setCurrentIndex((prev) => Math.min(prev + 1, totalPages - 1));
-  }, [totalPages]);
-
-  // 預覽用：variable update 純 in-memory（不寫 DB）
-  const [variables, setVariables] = useState<Record<string, unknown>>({});
-  const handleVariableUpdate = useCallback((key: string, value: unknown) => {
-    setVariables((prev) => ({ ...prev, [key]: value }));
-  }, []);
 
   return (
     <PreviewProvider isPreview gameId={gameId}>
