@@ -57,6 +57,8 @@ interface ConditionalVerifyEditorProps extends EditorProps {
     customName?: string | null;
     config?: unknown;
   }>;
+  // 🆕 2026-05-13 P2-5：碎片圖切割上傳元件
+  MediaUploadButton?: React.FC<MediaUploadButtonProps>;
 }
 
 export default function ConditionalVerifyEditor({
@@ -64,6 +66,7 @@ export default function ConditionalVerifyEditor({
   updateField,
   gameId,
   allPages,
+  MediaUploadButton,
 }: ConditionalVerifyEditorProps) {
   const fragments = (config.fragments || []) as Fragment[];
   const conditions = (config.conditions || []) as Condition[];
