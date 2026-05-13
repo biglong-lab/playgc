@@ -8,10 +8,26 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Puzzle, Package, Plus, X as XIcon, ShieldCheck, AlertCircle } from "lucide-react";
+import { Puzzle, Package, Plus, X as XIcon, ShieldCheck, AlertCircle, Image as ImageIcon, Type as TypeIcon } from "lucide-react";
 import { LocationSettingsSection, type EditorProps } from "./page-config-shared";
 import type { Item } from "@shared/schema";
 import { LocationSelect } from "@/components/shared/LocationSelect";
+import type { MediaUploadButtonProps } from "./page-config-inline-editors";
+
+/**
+ * 依碎片數計算 grid (cols × rows)
+ * 2026-05-13 P2-5：碎片圖切割切割算法
+ */
+export function calcFragmentGrid(n: number): { cols: number; rows: number } {
+  if (n <= 1) return { cols: 1, rows: 1 };
+  if (n === 2) return { cols: 2, rows: 1 };
+  if (n === 3) return { cols: 3, rows: 1 };
+  if (n === 4) return { cols: 2, rows: 2 };
+  if (n <= 6) return { cols: 3, rows: 2 };
+  if (n <= 8) return { cols: 4, rows: 2 };
+  if (n === 9) return { cols: 3, rows: 3 };
+  return { cols: 5, rows: 2 };
+}
 
 interface Fragment {
   id: string;
