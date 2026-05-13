@@ -82,12 +82,17 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [deleteItem, setDeleteItem] = useState<Item | null>(null);
-  const [formData, setFormData] = useState<Partial<InsertItem>>({
+  // 🔄 2026-05-13 整合：補上完整版欄位（slug + effect.type + effect.value）
+  const [formData, setFormData] = useState<Partial<InsertItem> & {
+    slug?: string;
+    effect?: { type?: string; value?: number };
+  }>({
     name: "",
+    slug: "",
     description: "",
-    iconUrl: "",
+    iconUrl: "package",
     itemType: "consumable",
-    effect: {},
+    effect: { type: "none", value: 0 },
   });
 
   const apiBase = useAdminApi ? "/api/admin" : "/api";
