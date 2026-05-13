@@ -133,10 +133,27 @@ export default function ConditionalVerifyPage({
   const [inputCode, setInputCode] = useState("");
   const [codeError, setCodeError] = useState(false);
 
+  // 🆕 2026-05-13 P2-5：圖片載入失敗偵測（fallback 到文字模式）
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
+  useEffect(() => {
+    if (config.fragmentSource !== "image" || !config.fragmentImageUrl) {
+      setImageLoadFailed(false);
+      return;
+    }
+    setImageLoadFailed(false);
+    const img = new Image();
+    img.onload = () => setImageLoadFailed(false);
+    img.onerror = () => setImageLoadFailed(true);
+    img.src = config.fragmentImageUrl;
+  }, [config.fragmentSource, config.fragmentImageUrl]);
+
   const fragments = useMemo(() => normalizeFragments(config.fragments), [config.fragments]);
   const isFragmentMode = fragments.length > 0;
-  // 🆕 2026-05-13 P2-5：圖片切割模式
-  const isImageFragmentMode = config.fragmentSource === "image" && !!config.fragmentImageUrl;
+  // 🆕 2026-05-13 P2-5：圖片切割模式（圖片載入失敗 fallback 文字）
+  const isImageFragmentMode =
+    config.fragmentSource === "image" &&
+    !!config.fragmentImageUrl &&
+    !imageLoadFailed;
   // 示範模式：由 admin 明確設定 config.demoMode，或向後相容
   // 「所有 fragment 都沒綁 sourceItemId」舊資料（模組範本字串陣列）
   const isDemoMode =
