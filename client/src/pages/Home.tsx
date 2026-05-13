@@ -916,7 +916,8 @@ export default function Home() {
                   })()}
                 </CardFooter>
               </Card>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-20">
