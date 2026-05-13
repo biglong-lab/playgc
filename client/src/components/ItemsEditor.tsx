@@ -432,11 +432,14 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
               <div className="space-y-2">
                 <label className="text-sm font-medium">效果類型</label>
                 <Select
-                  value={formData.effect?.type || "none"}
-                  onValueChange={(value) => setFormData({
-                    ...formData,
-                    effect: { ...(formData.effect ?? {}), type: value },
-                  })}
+                  value={(formData.effect as { type?: string } | undefined)?.type || "none"}
+                  onValueChange={(value) => {
+                    const current = (formData.effect ?? {}) as { type?: string; value?: number };
+                    setFormData({
+                      ...formData,
+                      effect: { ...current, type: value },
+                    });
+                  }}
                 >
                   <SelectTrigger data-testid="select-effect-type">
                     <SelectValue />
@@ -452,24 +455,25 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
               </div>
 
               {/* 🔄 2026-05-13 整合：補效果數值（type !== none 才顯示）*/}
-              {formData.effect?.type && formData.effect.type !== "none" && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">效果數值</label>
-                  <Input
-                    type="number"
-                    value={formData.effect?.value ?? 0}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      effect: {
-                        ...(formData.effect ?? {}),
-                        value: parseInt(e.target.value) || 0,
-                      },
-                    })}
-                    placeholder="輸入效果數值"
-                    data-testid="input-effect-value"
-                  />
-                </div>
-              )}
+              {(() => {
+                const eff = (formData.effect ?? {}) as { type?: string; value?: number };
+                if (!eff.type || eff.type === "none") return null;
+                return (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">效果數值</label>
+                    <Input
+                      type="number"
+                      value={eff.value ?? 0}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        effect: { ...eff, value: parseInt(e.target.value) || 0 },
+                      })}
+                      placeholder="輸入效果數值"
+                      data-testid="input-effect-value"
+                    />
+                  </div>
+                );
+              })()}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm}>
