@@ -348,39 +348,86 @@ export default function ConditionalVerifyPage({
                 />
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
-                {fragments.map((fragment, index) => {
-                  // 示範模式全部已收集；正式模式需綁 sourceItemId 且 inventory 有此道具
-                  const isCollected = isDemoMode
-                    ? true
-                    : fragment.sourceItemId != null &&
-                      fragment.sourceItemId !== "" &&
-                      inventorySet.has(String(fragment.sourceItemId));
-                  return (
-                    <div
-                      key={fragment.id || index}
-                      className={`aspect-square rounded-lg flex flex-col items-center justify-center border-2 transition-all ${
-                        isCollected
-                          ? "bg-primary/20 border-primary text-primary scale-100 shadow-sm"
-                          : "bg-muted border-dashed border-muted-foreground/30 text-muted-foreground scale-95"
-                      }`}
-                      data-testid={`fragment-slot-${index}`}
-                    >
-                      {isCollected ? (
-                        <>
-                          <span className="text-xl font-mono font-bold">{fragment.value}</span>
-                          <span className="text-[10px] mt-1 opacity-70 tabular-nums">#{index + 1}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4" />
-                          <span className="text-[10px] mt-1">?</span>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              {(() => {
+                // 🆕 2026-05-13 P2-5：圖片切割模式 — CSS background-position 顯示切片
+                const isImageMode = config.fragmentSource === "image" && !!config.fragmentImageUrl;
+                const count = fragments.length;
+                const grid = isImageMode ? calcFragmentGridClient(count) : null;
+                const gridCols = grid ? grid.cols : Math.min(4, Math.max(2, count));
+                return (
+                  <div
+                    className="grid gap-2"
+                    style={{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }}
+                  >
+                    {fragments.map((fragment, index) => {
+                      const isCollected = isDemoMode
+                        ? true
+                        : fragment.sourceItemId != null &&
+                          fragment.sourceItemId !== "" &&
+                          inventorySet.has(String(fragment.sourceItemId));
+
+                      if (isImageMode && grid) {
+                        const col = index % grid.cols;
+                        const row = Math.floor(index / grid.cols);
+                        const bgX = grid.cols > 1 ? (col / (grid.cols - 1)) * 100 : 50;
+                        const bgY = grid.rows > 1 ? (row / (grid.rows - 1)) * 100 : 50;
+                        return (
+                          <div
+                            key={fragment.id || index}
+                            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all relative ${
+                              isCollected
+                                ? "border-primary shadow-sm"
+                                : "border-dashed border-muted-foreground/30"
+                            }`}
+                            style={{
+                              backgroundImage: `url(${config.fragmentImageUrl})`,
+                              backgroundSize: `${grid.cols * 100}% ${grid.rows * 100}%`,
+                              backgroundPosition: `${bgX}% ${bgY}%`,
+                              backgroundRepeat: "no-repeat",
+                              filter: isCollected ? "none" : "grayscale(100%) opacity(0.3)",
+                            }}
+                            data-testid={`fragment-slot-${index}`}
+                          >
+                            {!isCollected && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Lock className="w-5 h-5 text-muted-foreground" />
+                              </div>
+                            )}
+                            <span className="absolute bottom-1 right-1 text-[10px] bg-background/80 px-1 rounded">
+                              {index + 1}
+                            </span>
+                          </div>
+                        );
+                      }
+
+                      // 文字模式（既有）
+                      return (
+                        <div
+                          key={fragment.id || index}
+                          className={`aspect-square rounded-lg flex flex-col items-center justify-center border-2 transition-all ${
+                            isCollected
+                              ? "bg-primary/20 border-primary text-primary scale-100 shadow-sm"
+                              : "bg-muted border-dashed border-muted-foreground/30 text-muted-foreground scale-95"
+                          }`}
+                          data-testid={`fragment-slot-${index}`}
+                        >
+                          {isCollected ? (
+                            <>
+                              <span className="text-xl font-mono font-bold">{fragment.value}</span>
+                              <span className="text-[10px] mt-1 opacity-70 tabular-nums">#{index + 1}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Lock className="w-4 h-4" />
+                              <span className="text-[10px] mt-1">?</span>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
 
             {verificationMode !== 'all_collected' && !isDemoMode && (
