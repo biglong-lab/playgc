@@ -316,8 +316,10 @@ export default function ConditionalVerifyEditor({
               )}
             </div>
             {!config.fragmentImageUrl && (
-              <div className="text-xs text-muted-foreground p-3 border rounded bg-muted/40">
-                上傳一張完整圖、系統會依「碎片數量」自動切成等份。建議比例 1:1 或 16:9、圖檔 &lt; 1MB。
+              <div className="text-xs text-muted-foreground p-3 border rounded bg-muted/40 space-y-1">
+                <p>上傳一張完整圖、系統會依「碎片數量」自動切成等份。</p>
+                <p>建議：比例 1:1 或 16:9、圖檔 &lt; 1MB、碎片數 <b>4-9</b>（10 塊以上會切太細）。</p>
+                <p>玩家拼齊所有碎片 → 自動通過、不需輸入密碼。</p>
               </div>
             )}
             {!!config.fragmentImageUrl && (() => {
