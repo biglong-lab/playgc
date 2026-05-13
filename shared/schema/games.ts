@@ -468,6 +468,9 @@ export interface ConditionalVerifyConfig {
   fragments?: FragmentConfig[];
   targetCode?: string;
   verificationMode?: 'order_matters' | 'order_independent' | 'all_collected';
+  // 🆕 2026-05-13 P2-5：碎片圖切割
+  fragmentSource?: 'text' | 'image';
+  fragmentImageUrl?: string;
   onSuccess?: {
     message?: string;
     grantItem?: string;
