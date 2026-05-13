@@ -698,11 +698,18 @@ export default function Home() {
           </div>
         ) : filteredGames && filteredGames.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGames.map((game) => (
+            {filteredGames.map((game) => {
+              const cardStatus = gameStatusMap.get(game.id);
+              const isCompletedCard = cardStatus?.status === "completed";
+              return (
               <Card
                 key={game.id}
-                className="overflow-hidden group hover-elevate cursor-pointer"
-                onClick={() => {
+                className={
+                  isCompletedCard
+                    ? "overflow-hidden group"
+                    : "overflow-hidden group hover-elevate cursor-pointer"
+                }
+                onClick={isCompletedCard ? undefined : () => {
                   const navigate = () => {
                     if (game.gameStructure === "chapters") {
                       setLocation(link(`/game/${game.id}/chapters`));
