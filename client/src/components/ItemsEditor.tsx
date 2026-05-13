@@ -338,6 +338,7 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-4">
+              {/* 道具名稱 */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">道具名稱 *</label>
                 <Input
@@ -348,6 +349,36 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
                   data-testid="input-item-name"
                 />
               </div>
+
+              {/* 🔄 2026-05-13 整合：補 slug 欄位 */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-2">
+                  道具代碼 (slug)
+                  <span className="text-xs text-muted-foreground font-normal">
+                    選填、英數字建議（例：intel_fragment_1）、方便其他元件引用
+                  </span>
+                </label>
+                <Input
+                  value={formData.slug || ""}
+                  onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                  placeholder="留空將自動依名稱生成"
+                  data-testid="input-item-slug"
+                />
+              </div>
+
+              {/* 描述 */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">描述</label>
+                <Textarea
+                  value={formData.description || ""}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="輸入道具描述"
+                  rows={3}
+                  data-testid="input-item-description"
+                />
+              </div>
+
+              {/* 道具類型 */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">道具類型</label>
                 <Select
@@ -369,38 +400,76 @@ export default function ItemsEditor({ gameId, useAdminApi = false }: ItemsEditor
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* 🔄 2026-05-13 整合：圖示改成 icon picker grid（取代手填 URL）*/}
               <div className="space-y-2">
-                <label className="text-sm font-medium">描述</label>
-                <Textarea
-                  value={formData.description || ""}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="輸入道具描述"
-                  rows={3}
-                  data-testid="input-item-description"
-                />
+                <label className="text-sm font-medium">圖示</label>
+                <div className="grid grid-cols-6 gap-2">
+                  {ITEM_ICONS.map((icon) => {
+                    const Icon = icon.icon;
+                    const active = formData.iconUrl === icon.value;
+                    return (
+                      <button
+                        key={icon.value}
+                        type="button"
+                        className={`p-3 rounded-lg border transition-colors ${
+                          active
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        onClick={() => setFormData({ ...formData, iconUrl: icon.value })}
+                        title={icon.label}
+                        data-testid={`button-icon-${icon.value}`}
+                      >
+                        <Icon className="w-5 h-5 mx-auto" />
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
+
+              {/* 🔄 2026-05-13 整合：補效果類型 */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">圖示網址</label>
-                <Input
-                  value={formData.iconUrl || ""}
-                  onChange={(e) => setFormData({ ...formData, iconUrl: e.target.value })}
-                  placeholder="https://example.com/icon.png"
-                  data-testid="input-item-icon"
-                />
-                {formData.iconUrl && (
-                  <div className="flex items-center gap-2 mt-2">
-                    <img
-                      src={formData.iconUrl}
-                      alt="預覽"
-                      className="w-10 h-10 rounded object-cover border"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                    <span className="text-xs text-muted-foreground">圖示預覽</span>
-                  </div>
-                )}
+                <label className="text-sm font-medium">效果類型</label>
+                <Select
+                  value={formData.effect?.type || "none"}
+                  onValueChange={(value) => setFormData({
+                    ...formData,
+                    effect: { ...(formData.effect ?? {}), type: value },
+                  })}
+                >
+                  <SelectTrigger data-testid="select-effect-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EFFECT_TYPES.map((eff) => (
+                      <SelectItem key={eff.value} value={eff.value}>
+                        {eff.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+
+              {/* 🔄 2026-05-13 整合：補效果數值（type !== none 才顯示）*/}
+              {formData.effect?.type && formData.effect.type !== "none" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">效果數值</label>
+                  <Input
+                    type="number"
+                    value={formData.effect?.value ?? 0}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      effect: {
+                        ...(formData.effect ?? {}),
+                        value: parseInt(e.target.value) || 0,
+                      },
+                    })}
+                    placeholder="輸入效果數值"
+                    data-testid="input-effect-value"
+                  />
+                </div>
+              )}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm}>
