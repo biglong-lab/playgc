@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { usePreview } from "@/contexts/PreviewContext";
 import { apiRequest, apiRequestWithTimeout } from "@/lib/queryClient";
 import { createLocalCollage } from "@/lib/client-collage";
 import { createClientGif } from "@/lib/client-gif";
