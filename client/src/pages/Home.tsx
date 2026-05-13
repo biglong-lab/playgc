@@ -243,7 +243,7 @@ export default function Home() {
       const incoming: UserGameStatus = {
         gameId: session.gameId,
         // 過期的 playing 視為 completed（卡死保護、與 backend getSessionsByUser 一致）
-        status: isFreshPlaying ? "playing" : (session.status === "playing" ? "completed" : "completed"),
+        status: isFreshPlaying ? "playing" : "completed",
         sessionId: session.id,
         score: session.score || 0,
       };
