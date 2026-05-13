@@ -32,7 +32,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Package, Sparkles, Shield, Star, Zap } from "lucide-react";
+import {
+  Plus, Pencil, Trash2, Package, Sparkles, Shield, Star, Zap,
+  Sword, Scroll, Heart, Key, Gem, Coins, Gift,
+} from "lucide-react";
 import type { Item, InsertItem } from "@shared/schema";
 
 interface ItemsEditorProps {
@@ -45,6 +48,29 @@ const ITEM_TYPES = [
   { value: "equipment", label: "裝備", icon: Shield, color: "bg-blue-500/20 text-blue-400" },
   { value: "quest_item", label: "任務道具", icon: Star, color: "bg-yellow-500/20 text-yellow-400" },
   { value: "collectible", label: "收藏品", icon: Sparkles, color: "bg-purple-500/20 text-purple-400" },
+];
+
+// 🔄 2026-05-13 整合：跟 pages/ItemEditor.tsx 共用 11 種圖示
+const ITEM_ICONS = [
+  { value: "package", icon: Package, label: "包裹" },
+  { value: "sword", icon: Sword, label: "武器" },
+  { value: "scroll", icon: Scroll, label: "卷軸" },
+  { value: "star", icon: Star, label: "星星" },
+  { value: "zap", icon: Zap, label: "能量" },
+  { value: "shield", icon: Shield, label: "盾牌" },
+  { value: "heart", icon: Heart, label: "生命" },
+  { value: "key", icon: Key, label: "鑰匙" },
+  { value: "gem", icon: Gem, label: "寶石" },
+  { value: "coins", icon: Coins, label: "金幣" },
+  { value: "gift", icon: Gift, label: "禮物" },
+];
+
+const EFFECT_TYPES = [
+  { value: "none", label: "無效果" },
+  { value: "heal", label: "恢復生命" },
+  { value: "score", label: "增加分數" },
+  { value: "unlock", label: "解鎖內容" },
+  { value: "buff", label: "增益效果" },
 ];
 
 const getItemTypeInfo = (type: string | null) => {
