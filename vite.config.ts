@@ -59,6 +59,37 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          // 🆕 2026-05-13 C：Background Sync — session progress 寫入
+          //   玩家在訊號爛的地方（金門巷弄 / 山上 / 廟裡）寫進度時、
+          //   workbox 自動 queue 到 IndexedDB、回線後 SW 背景自動重發（即使分頁關了）
+          //   24 小時內未送出視為過期、避免無限累積
+          {
+            urlPattern: /^\/api\/sessions\/[^/]+\/progress/,
+            handler: "NetworkOnly",
+            method: "PATCH",
+            options: {
+              backgroundSync: {
+                name: "chito-session-progress",
+                options: {
+                  maxRetentionTime: 24 * 60, // 分鐘
+                },
+              },
+            },
+          },
+          // 🆕 拍照上傳也接 Background Sync（場域訊號問題救命）
+          {
+            urlPattern: /^\/api\/cloudinary\/(player-photo|burst-frame|composite-photo)/,
+            handler: "NetworkOnly",
+            method: "POST",
+            options: {
+              backgroundSync: {
+                name: "chito-photo-uploads",
+                options: {
+                  maxRetentionTime: 24 * 60,
+                },
+              },
+            },
+          },
           // 🚨 2026-04-24 v5 根治：圖片**完全不走 SW cache**
           // 歷史：CacheFirst 會 cache opaque response；NetworkFirst 雖自我修復，
           // 但 iOS Safari SW update 時序不穩，使用者 Cmd+R 容易看到舊版 SW + 舊 cache。
