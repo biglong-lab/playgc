@@ -290,16 +290,22 @@ export default function ConditionalVerifyEditor({
           )}
 
           <div>
-            <label className="text-sm font-medium mb-2 block">碎片數量</label>
+            <label className="text-sm font-medium mb-2 block">
+              碎片數量 <span className="text-xs text-muted-foreground">（2-10）</span>
+            </label>
             <Input
               type="number"
-              value={config.fragmentCount || 4}
+              value={(config.fragmentCount as number | undefined) ?? 4}
               onChange={(e) => {
-                const count = Math.max(0, Math.min(10, parseInt(e.target.value, 10) || 0));
+                const raw = e.target.value;
+                // 🐛 2026-05-14：空白不歸零、parseInt NaN fallback 4（不歸 0 = disable）
+                const parsed = raw === "" ? 4 : parseInt(raw, 10);
+                const safe = Number.isFinite(parsed) ? parsed : 4;
+                const count = Math.max(2, Math.min(10, safe));
                 updateField("fragmentCount", count);
                 updateFragments(generateFragments(config.fragmentType || "numbers", count));
               }}
-              min={0}
+              min={2}
               max={10}
               data-testid="config-fragment-count"
             />
