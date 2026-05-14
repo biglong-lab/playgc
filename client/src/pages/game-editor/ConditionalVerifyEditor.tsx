@@ -302,7 +302,7 @@ export default function ConditionalVerifyEditor({
         {/* 🆕 圖片切割模式：上傳 + 預覽 grid */}
         {config.fragmentSource === "image" && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <label className="text-sm font-medium">碎片圖片</label>
               {MediaUploadButton && (
                 <MediaUploadButton
@@ -312,17 +312,35 @@ export default function ConditionalVerifyEditor({
                 />
               )}
               {config.fragmentImageUrl && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => updateField("fragmentImageUrl", "")}
-                  className="text-destructive"
-                >
-                  <XIcon className="w-4 h-4" />
-                </Button>
+                <>
+                  <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    已上傳
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateField("fragmentImageUrl", "")}
+                    className="text-destructive ml-auto"
+                  >
+                    <XIcon className="w-4 h-4" />
+                    移除圖片
+                  </Button>
+                </>
               )}
             </div>
+            {/* 🔧 2026-05-14：上傳後顯示縮圖、admin 一眼確認檔對 */}
+            {config.fragmentImageUrl && (
+              <img
+                src={config.fragmentImageUrl}
+                alt="原圖縮圖"
+                className="rounded-md border max-w-[160px] max-h-[160px] object-contain bg-muted/30"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            )}
             {!config.fragmentImageUrl && (
               <div className="text-xs text-muted-foreground p-3 border rounded bg-muted/40 space-y-1">
                 <p>上傳一張完整圖、系統會依「碎片數量」自動切成等份。</p>
