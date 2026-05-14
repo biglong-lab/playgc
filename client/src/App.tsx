@@ -220,6 +220,9 @@ const AdminSessionReplay = lazy(() => import("@/pages/admin/AdminSessionReplay")
 // 📊 Admin Reports 活動結束報告（Phase 5 / 2026-05-10）
 const AdminReports = lazy(() => import("@/pages/admin/AdminReports"));
 
+// 📊 完成率歸因（W1 / 2026-05-14）
+const AdminCompletionAttribution = lazy(() => import("@/pages/admin/AdminCompletionAttribution"));
+
 // 📊 Admin Component Health 元件健康度（Phase 1 / 2026-05-12）
 const AdminComponentHealth = lazy(() => import("@/pages/admin/AdminComponentHealth"));
 
