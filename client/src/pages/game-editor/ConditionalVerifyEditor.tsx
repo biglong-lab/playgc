@@ -217,35 +217,43 @@ export default function ConditionalVerifyEditor({
           碎片收集設定
         </h4>
 
-        {/* 🆕 2026-05-13 P2-5：碎片來源（文字 / 圖片切割） */}
+        {/* 🆕 2026-05-13 P2-5（2026-05-14 強化）：碎片來源（文字 / 圖片切割） */}
         <div>
-          <label className="text-sm font-medium mb-2 block">碎片來源</label>
+          <label className="text-sm font-medium mb-2 block">
+            碎片來源 <span className="text-xs text-muted-foreground">（點擊切換、立即生效、記得最後按儲存）</span>
+          </label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => updateField("fragmentSource", "text")}
-              className={`flex items-center gap-2 justify-center p-3 rounded-lg border transition-colors ${
+              className={`flex flex-col items-center gap-1 justify-center p-4 rounded-lg border-2 transition-all ${
                 (config.fragmentSource || "text") === "text"
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-primary/50"
+                  ? "border-primary bg-primary/15 ring-2 ring-primary/40 shadow-sm"
+                  : "border-border hover:border-primary/50 opacity-60"
               }`}
               data-testid="btn-fragment-source-text"
             >
-              <TypeIcon className="w-4 h-4" />
-              <span className="text-sm">文字碎片</span>
+              <TypeIcon className="w-5 h-5" />
+              <span className="text-sm font-semibold">文字碎片</span>
+              {(config.fragmentSource || "text") === "text" && (
+                <span className="text-[10px] text-primary font-bold">✓ 已選</span>
+              )}
             </button>
             <button
               type="button"
               onClick={() => updateField("fragmentSource", "image")}
-              className={`flex items-center gap-2 justify-center p-3 rounded-lg border transition-colors ${
+              className={`flex flex-col items-center gap-1 justify-center p-4 rounded-lg border-2 transition-all ${
                 config.fragmentSource === "image"
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-primary/50"
+                  ? "border-primary bg-primary/15 ring-2 ring-primary/40 shadow-sm"
+                  : "border-border hover:border-primary/50 opacity-60"
               }`}
               data-testid="btn-fragment-source-image"
             >
-              <ImageIcon className="w-4 h-4" />
-              <span className="text-sm">圖片切割</span>
+              <ImageIcon className="w-5 h-5" />
+              <span className="text-sm font-semibold">圖片切割</span>
+              {config.fragmentSource === "image" && (
+                <span className="text-[10px] text-primary font-bold">✓ 已選</span>
+              )}
             </button>
           </div>
         </div>
