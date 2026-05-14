@@ -218,10 +218,100 @@ W9 結束後依實戰反饋微調：
 
 ---
 
+## 📊 漏斗各階段話術（2026-05-14 升版）
+
+> 對應 [business-metrics.md](../domains/business-metrics.md) 與 [W2 SLA dashboard](/admin/sla-dashboard)
+
+每個階段都要量化監測 + 對應話術。業務每週看 dashboard 找漏斗瓶頸。
+
+### 階段 1：接觸（Contact）
+
+**目標**：取得試用申請
+
+| 接觸來源 | 開場（30 秒內） | 關鍵句 |
+|----------|----------------|--------|
+| LINE outbound | 「看到您可能要辦 X、我們有現成 12 種情境、10 分鐘搞定」 | 「30 秒掃 QR 就能體驗、不用裝 app」 |
+| 推薦轉介 | 「[轉介人] 介紹的、他在 [場合] 用過、體驗很順」 | 「他幫您談到 [優惠] 價」 |
+| 主動詢問 | 「您好、想了解您的 [活動] 規模？」 | 「我們現場示範一個 [情境] 給您看」 |
+
+**監測指標**：接觸 → 試用申請 轉換率
+**話術重點**：先建立「我們是專業 + 別人也在用」的可信度，不急於報價。
+
+### 階段 2：試用（Trial / Pilot）
+
+**目標**：跑一場真實活動驗證
+
+| 客戶狀態 | 業務動作 | 關鍵句 |
+|----------|----------|--------|
+| 同意試用 | 走 [Step 2-4 完整流程](#-step-2訪談需求收集15-分鐘) | 「我陪您跑第一場、出問題我現場處理」 |
+| 試用中卡住 | 看 [admin SLA dashboard](/admin/sla-dashboard) p90 / topErrors | 「您卡 [步驟] 我幫您」 |
+| 試用結束 | 立刻填 [pilot-feedback-template](pilot-feedback-template.md) | 「請給我 5 分鐘填這份、下次更順」 |
+
+**監測指標**：
+- admin SLA：30 分鐘建場達成率（目標 ≥ 80%）
+- 完成率：[completion-attribution dashboard](/admin/completion-attribution)
+- AI 採用率：紫色按鈕被選比例（目標 ≥ 20%）
+
+**業務每週固定動作**：
+1. 看 dashboard 找 SLA 不達標的 funnel → 主動聯繫業主問原因
+2. 看 completion-attribution 找放棄最多的元件 → 提報工程修補
+3. 看 AI 採用率若 < 20% → 收集 admin 拒用原因（怕內容不好 / 不知道紫色按鈕？）
+
+### 階段 3：簽約付費（Conversion）
+
+**目標**：拿到付款
+
+| 客戶狀態 | 業務動作 | 關鍵句 |
+|----------|----------|--------|
+| 試用滿意 | 立刻丟方案三選（一次性 / 訂閱 / 委辦） | 「您下個月還辦嗎？訂閱省 [金額]」 |
+| 試用滿意但猶豫 | 列具體 ROI（省 [小時] / 多 [人數] / 額外 [收益]） | 「[轉介人] 訂閱半年後續了一年」 |
+| 試用不滿意 | 不急、補完缺口再回頭 | 「我們調 [問題] 再給您試用」 |
+
+**監測指標**：
+- 試用 → 簽約 轉換率
+- 客單價（依方案分布）
+- 簽約後 7 天內續第二場比例
+
+**禁忌**：
+- ❌ 客戶試用沒過就硬推訂閱
+- ❌ 報價直接報最高
+- ❌ 用 LINE 聊收費（要打電話 / Email 正式報價）
+
+### 階段 4：續約（Retention）
+
+**目標**：訂閱不流失、一次性轉訂閱
+
+| 客戶狀態 | 業務動作 | 關鍵句 |
+|----------|----------|--------|
+| 訂閱中 | 每月 1 號看 [business-metrics MRR](../domains/business-metrics.md) churn | 「上個月您辦 N 場、要不要試 [新情境]？」 |
+| 一次性已用 | 30 天後追蹤 | 「下次有活動嗎？我們有 [新元件]」 |
+| churned | 7 天內主動問原因 | 「您離開最大原因是什麼？我們能改嗎？」 |
+
+**監測指標**：MRR / churn / 一次性 → 訂閱 升級率
+
+---
+
+## 🔁 業務週循環（每週固定動作）
+
+| 週幾 | 動作 | 來源 |
+|------|------|------|
+| 週一 | 看 SLA dashboard / completion-attribution 找瓶頸 | /admin/sla-dashboard 與 /admin/completion-attribution |
+| 週三 | 接觸名單 → 試用申請 follow-up | CRM / LINE |
+| 週五 | 跑完一週的 pilot → 填 pilot-feedback-template | docs/runbooks/pilot-feedback-template.md |
+| 月底 | 更新 business-metrics 的 MRR / 月度趨勢 | docs/domains/business-metrics.md |
+
+---
+
 ## 🔗 相關文件
 
 - [客戶 FAQ](customer-faq.md) — 業務查答客戶問題
 - [情境啟動 SOP](scenario-launch.md) — admin 技術操作
+- [pilot-feedback-template](pilot-feedback-template.md) — 跑完一場填這份
+- [customer-pilot](customer-pilot.md) — pilot 執行 runbook
+- [business-model.md](../domains/business-model.md) — 商業模式統合
+- [business-metrics.md](../domains/business-metrics.md) — MRR / 付費客戶 SOT
+- [customer-feedback.md](../domains/customer-feedback.md) — 真實客戶反饋彙整
 - [W9 D1 AI MVP](../changes/2026-05-02-phase3-w9-d1-ai-content-mvp.md)
 - [W9 D2 AI 預覽 UI](../changes/2026-05-02-phase3-w9-d2-ai-preview-ui.md)
+- [W3 平台優化計劃](../changes/2026-05-14-platform-optimization-comprehensive.md)
 - [Phase 3 規劃](../changes/2026-05-02-phase3-plan.md)
