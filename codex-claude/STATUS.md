@@ -32,11 +32,18 @@ DB 撈生產 7 個既存 conditional_verify 元件、**全部** fragmentCount=0 
 
 | 指標 | 狀態 | 上次驗證 |
 |------|------|----------|
-| Smoke test | 51/51 ✅ | 2026-05-12 [Claude] |
-| TypeScript | 零錯誤 ✅ | 2026-05-12 [Claude] |
-| **🚀 生產端部署** | **commit `55558eac` 已上線**（容器 1 小時前重建、healthy）| 2026-05-12 [Claude] |
-| 生產 e2e 抽查 | / + /api/v1/health + /pitch + /showcase 全 200 ✅ | 2026-05-12 [Claude] |
-| 生產資源 | CPU 0.01% / Memory 452MiB (29.48%) ✅ | 2026-05-12 [Claude] |
+| Smoke test | 51/51 ✅ | 2026-05-14 [Claude] |
+| TypeScript | 零錯誤 ✅ | 2026-05-14 [Claude] |
+| **🚀 生產端部署** | **commit `78d384e2` 已上線**（容器 healthy）| 2026-05-14 [Claude] |
+| 生產 e2e 抽查 | / + /api/v1/health + /pitch + /showcase 全 200 ✅ | 2026-05-14 [Claude] |
+| 生產資源 | CPU 0% / Memory 455MiB (29.65%) ✅ | 2026-05-14 [Claude] |
+| **🆕 PWA Lighthouse CI** | workflow 設定完成、下次 PR 自動跑 | 2026-05-13 [Claude] |
+| **🆕 iOS PWA Splash × 12** | 12 種解析度自動匹配（iPhone 8 ~ 14 Pro Max + iPad）| 2026-05-13 [Claude] |
+| **🆕 Background Sync** | sessions/progress + cloudinary uploads queue 24h | 2026-05-13 [Claude] |
+| **🆕 碎片圖切割** | admin upload + 玩家 CSS bg-position 切片顯示 | 2026-05-13 [Claude] |
+| **🆕 stale closure 修補** | updateFields batch API、避免 multi-field 寫入失敗 | 2026-05-14 [Claude] |
+| **🆕 React #310 修補** | GamePreview hooks order（30 次 ErrorBoundary 根因）| 2026-05-13 [Claude] |
+| **🆕 DeviceGate** | 桌機/平板擋遊戲頁、引導 QR、escape via ?force-device=1 | 2026-05-12 [Claude] |
 | **Host 元件** | 17 個（含 W22 BingoBoard/BlessingWall/MicroQa）✅ | 2026-05-03 [Claude] |
 | **情境模板** | 17 個 ✅ | 2026-05-03 [Claude] |
 | **Race state（多人搶答）** | server 統一推進、預設 20s、admin 可設 5-120s ✅ | 2026-05-05 [Claude] |
