@@ -433,6 +433,7 @@ function Router() {
         <Route path="/admin/sessions/:sessionId/replay">{() => <ProtectedAdminRoute><AdminSessionReplay /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/reports">{() => <ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/completion-attribution">{() => <ProtectedAdminRoute><AdminCompletionAttribution /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/sla-dashboard">{() => <ProtectedAdminRoute><AdminSlaDashboard /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/component-health">{() => <ProtectedAdminRoute><AdminComponentHealth /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/feature-flags">{() => <ProtectedAdminRoute><AdminFeatureFlags /></ProtectedAdminRoute>}</Route>
 
