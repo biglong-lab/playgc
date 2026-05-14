@@ -128,7 +128,7 @@ export default function ConditionalVerifyEditor({
         updateFields(patch);
       } else {
         // fallback（理論上不會走到、updateFields 已從 PageConfigEditor 傳下來）
-        Object.entries(patch).forEach(([k, v]) => updateField(k, v));
+        Object.entries(patch).forEach(([k, v]) => updateField(k, v as never));
       }
     }
     // 🐛 2026-05-14：依賴 fragmentCount + fragmentSource 變化、補空 fragments
