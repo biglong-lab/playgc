@@ -7,11 +7,24 @@
 
 ## 📊 當前
 
-- **目前負責人**：（無、session 暫停、待業主實測）
+- **目前負責人**：（無、session 暫停、待業主實測碎片設定）
 - **開始時間**：—
-- **進行中任務**：—（批 5 業主 5 項 bug 修補後待回饋）
+- **進行中任務**：—（5/14 碎片 stale closure 修補後、待業主驗證 + DB 撈確認）
 - **阻塞項**：無
-- **上次更新**：2026-05-12 [Claude]（**🐛 批 5 業主 5 項 bug 全修 + 部署上線（commit `16e5ae89`、生產 HEAD `55558eac` 已同步、tsc 0 / smoke 51/51、生產 e2e 4/4 全 200、CPU 0.01% / MEM 29.48%）**）
+- **上次更新**：2026-05-14 [Claude]（**🐛 碎片 stale closure 真根因修補（commit `78d384e2`、生產 HEAD 同步、tsc 0 / smoke 51/51、CPU 0% / MEM 29.65%）**）
+
+---
+
+## 🔥 最緊急：5/14 待業主驗證
+
+業主回報「碎片預設數量變為 0、無法設定」、追到 3 輪後找到 stale closure 根因：
+
+1. **真根因**：PageConfigEditor.updateField 連續呼叫時、`{...config, [field]: value}` 的 `config` 是 stale closure
+2. **修法**：加 `updateFields(patch)` batch API、useEffect 一次寫入所有 fields（fragments + fragmentCount + fragmentType + targetCode）
+3. **commit**：`78d384e2` 已上線
+4. **業主需做**：硬重整 + 重開元件 + 按儲存 + 我撈 DB 驗證 fragmentCount=4
+
+DB 撈生產 7 個既存 conditional_verify 元件、**全部** fragmentCount=0 / fragments=[]。修補後業主開元件、useEffect 應自動補。
 
 ---
 
