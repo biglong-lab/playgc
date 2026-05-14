@@ -195,6 +195,7 @@ export async function registerRoutes(
   registerLineWebhookRoutes(app);
   registerCronEndpoints(app);
   registerAdminPilotHealthRoutes(app);
+  registerAdminMetricsCompletionRoutes(app);
   registerBattleSelfReportRoutes(app);
   registerSquadRecordsRoutes(app);
   registerSquadInvitesRoutes(app);
