@@ -81,13 +81,19 @@ export default function ConditionalVerifyEditor({
   // 但 fragments[] 是空陣列 → 玩家端 isFragmentMode=false → 看不到碎片 UI
   // 自動初始化：fragmentCount 未設或 > 0 且 fragments 為空 → 自動 generate
   //
-  // 重要：input 顯示 `value={config.fragmentCount || 4}`，但若 config.fragmentCount 是 undefined
-  // admin 看到 4 卻沒實際儲存，玩家端 fragments=[] → 任務直接「無碎片」可繼續
-  // 這個 useEffect 確保 admin 一進編輯器就把預設值落到 config 裡
+  // 🐛 2026-05-14：修「fragmentCount = 0 / NULL 導致玩家端看不到碎片」
+  // - 原 useEffect 只跑一次、且用 `|| 4` 把 0 視為 falsy → 0 被當沒設
+  // - 改成 useEffect 監聽 fragmentCount + fragmentSource 變化、自動補 fragments
+  // - hasCount 用 `?? null` + 強制最小值 2（不允許 0）
   useEffect(() => {
     const rawCount = config.fragmentCount as number | undefined;
-    // 預設 4 個碎片（與 input 預設值對齊）
-    const hasCount = rawCount === undefined || rawCount === null ? 4 : rawCount;
+    // 預設 4 個碎片、最少 2 個（圖片切割 1 塊無意義）
+    let hasCount: number;
+    if (rawCount === undefined || rawCount === null || rawCount < 2) {
+      hasCount = 4;
+    } else {
+      hasCount = Math.min(10, rawCount);
+    }
     const isFragmentCountDirty = rawCount !== hasCount;
 
     if (hasCount > 0 && fragments.length === 0) {
