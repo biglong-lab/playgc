@@ -60,6 +60,7 @@ export * from "./team-race";
 // 🔭 Observability — WS event log + DB write log（Phase 0.2 / 2026-05-08）
 export * from "./observability";
 export * from "./admin-session-timings";
+export * from "./line-bot-events";
 
 // 🏆 Trivia answers — TriviaShowdown server-side scoring（Phase 4 / 2026-05-08）
 export * from "./trivia-answers";
