@@ -394,10 +394,28 @@ export default function ConditionalVerifyEditor({
                 碎片配置
                 <Badge variant="secondary" className="text-xs">{fragments.length} 個碎片</Badge>
               </label>
+              {/* 🔧 2026-05-14：未建道具時、CTA 直接連到道具管理頁、解決「找不到綁定」 */}
               {!hasItemsList && config.demoMode !== true && (
-                <div className="flex items-start gap-2 p-2 mb-2 rounded bg-amber-500/10 text-amber-700 text-xs">
-                  <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-                  <span>尚未建立道具。玩家需透過本遊戲的道具系統取得碎片，請先到「道具管理」建立道具後回來綁定（或暫時開啟「示範模式」）。</span>
+                <div className="flex items-start justify-between gap-3 p-3 mb-3 rounded-lg border-2 border-amber-500/40 bg-amber-500/10">
+                  <div className="flex items-start gap-2 flex-1">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-amber-600" />
+                    <div className="text-xs text-amber-800 dark:text-amber-200 space-y-1">
+                      <p className="font-semibold">尚未建立任何道具、無法綁定碎片</p>
+                      <p>玩家需透過道具系統取得碎片。請先到「道具管理」建立道具、或開啟下方「示範模式」。</p>
+                    </div>
+                  </div>
+                  {gameId && gameId !== "new" && (
+                    <a
+                      href={`/admin/games/${gameId}/items`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-amber-600 text-white text-xs font-semibold hover:bg-amber-700 transition-colors"
+                      data-testid="link-go-to-items"
+                    >
+                      <Package className="w-3 h-3" />
+                      去道具管理
+                    </a>
+                  )}
                 </div>
               )}
               <div className="space-y-2">
