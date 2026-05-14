@@ -121,8 +121,9 @@ export default function ConditionalVerifyEditor({
         updateField("targetCode", generated.map((f) => f.value).join(""));
       }
     }
+    // 🐛 2026-05-14：依賴 fragmentCount + fragmentSource 變化、補空 fragments
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [config.fragmentCount, config.fragmentSource]);
 
   const updateFragments = (newFragments: Fragment[]) => {
     updateField("fragments", newFragments);
