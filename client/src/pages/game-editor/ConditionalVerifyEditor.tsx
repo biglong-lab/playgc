@@ -59,11 +59,14 @@ interface ConditionalVerifyEditorProps extends EditorProps {
   }>;
   // 🆕 2026-05-13 P2-5：碎片圖切割上傳元件
   MediaUploadButton?: React.FC<MediaUploadButtonProps>;
+  // 🆕 2026-05-14：batch update 多個 fields 一次寫入（避免 stale closure 覆蓋）
+  updateFields?: (patch: Record<string, unknown>) => void;
 }
 
 export default function ConditionalVerifyEditor({
   config,
   updateField,
+  updateFields,
   gameId,
   allPages,
   MediaUploadButton,
