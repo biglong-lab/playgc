@@ -113,15 +113,22 @@ export default function ConditionalVerifyEditor({
           order: i + 1,
         });
       }
-      updateField("fragments", generated);
-      if (isFragmentCountDirty) {
-        updateField("fragmentCount", hasCount);
-      }
-      if (!config.fragmentType) {
-        updateField("fragmentType", type);
-      }
+      // 🐛 2026-05-14 重要修補：原本連續 call updateField 多次有 stale closure bug
+      //   每次 updateField 都用 {...config, [field]: value}，config 是 stale closure，
+      //   後面的 call 覆蓋前面 → fragments/fragmentCount/fragmentType 只剩最後一個被寫入。
+      //   這就是業主回報「碎片數量永遠是 0」的根因。
+      // 修法：用 updateFields batch 一次寫所有 changes、共用同一個 spread。
+      const patch: Record<string, unknown> = { fragments: generated };
+      if (isFragmentCountDirty) patch.fragmentCount = hasCount;
+      if (!config.fragmentType) patch.fragmentType = type;
       if (type !== "custom") {
-        updateField("targetCode", generated.map((f) => f.value).join(""));
+        patch.targetCode = generated.map((f) => f.value).join("");
+      }
+      if (updateFields) {
+        updateFields(patch);
+      } else {
+        // fallback（理論上不會走到、updateFields 已從 PageConfigEditor 傳下來）
+        Object.entries(patch).forEach(([k, v]) => updateField(k, v));
       }
     }
     // 🐛 2026-05-14：依賴 fragmentCount + fragmentSource 變化、補空 fragments
@@ -129,6 +136,15 @@ export default function ConditionalVerifyEditor({
   }, [config.fragmentCount, config.fragmentSource]);
 
   const updateFragments = (newFragments: Fragment[]) => {
+    // 🐛 2026-05-14：同 batch 修補、避免 stale closure 覆蓋
+    if (updateFields) {
+      const patch: Record<string, unknown> = { fragments: newFragments };
+      if (config.fragmentType !== "custom") {
+        patch.targetCode = newFragments.map((f) => f.value).join("");
+      }
+      updateFields(patch);
+      return;
+    }
     updateField("fragments", newFragments);
     if (config.fragmentType !== "custom") {
       const targetCode = newFragments.map((f) => f.value).join("");
