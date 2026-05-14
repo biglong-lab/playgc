@@ -76,6 +76,13 @@ function getAdminGreeting(): string {
 export default function AdminDashboard() {
   const { admin, isAuthenticated, hasPermission } = useAdminAuth();
   const greeting = useMemo(() => getAdminGreeting(), []);
+  const { trackMilestone } = useAdminFunnelTracker();
+
+  // 📊 W2 admin funnel 埋點 — 進後台時推 entered_admin
+  useEffect(() => {
+    if (isAuthenticated) trackMilestone("entered_admin");
+  }, [isAuthenticated, trackMilestone]);
+
   const adminName = admin?.displayName || admin?.username || "管理員";
   // 🆕 只有 game:create 權限才顯示「新增遊戲」按鈕
   const canCreateGame = hasPermission("game:create");
