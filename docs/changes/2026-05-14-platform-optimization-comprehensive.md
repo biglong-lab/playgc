@@ -206,7 +206,51 @@ Week 3：
 
 ---
 
-## 草稿狀態 → 待決策
+## 交付清單（2026-05-14 loop 模式完成）
+
+### W1 — P0 商業閉環 ✅
+- `docs/domains/customer-feedback.md` — 真實 pilot 反饋彙整層
+- `docs/domains/business-metrics.md` — MRR / 付費客戶 SOT 模板
+- `docs/domains/business-model.md` — 商業模式統合
+- `server/routes/admin-metrics-completion.ts` — 完成率歸因 endpoint（5 個分群）
+- `client/src/pages/admin/AdminCompletionAttribution.tsx` — dashboard
+- 路由 `/admin/completion-attribution`
+
+### W2 — P1 KPI 校準 ✅
+- `shared/schema/admin-session-timings.ts` — 30 分鐘 SLA 埋點表
+- `server/routes/admin-timings.ts` — milestone upsert + SLA stats endpoint
+- `client/src/pages/admin/AdminSlaDashboard.tsx` — 3 KPI 卡 + duration percentile
+- `client/src/hooks/useAdminFunnelTracker.ts` — localStorage funnel 持久化
+- `client/src/pages/AdminDashboard.tsx` — `entered_admin` 埋點接入
+- `shared/schema/line-bot-events.ts` — LINE Bot 事件表
+- `server/routes/admin-line-bot-metrics.ts` — Bot 使用報表 endpoint
+- `server/lib/lineBotLogger.ts` — fire-and-forget helper
+- 路由 `/admin/sla-dashboard`
+
+### W3 — P2+P3 紅線自動化與文件層 ✅
+- `shared/component-scenarios.ts` — 元件 → 五大情境 mapping + validate helper
+- `scripts/check-component-scenarios.mjs` — CI 檢核（先警告模式）
+- `scripts/check-loop-grounding.mjs` — Loop 接地偵測（先警告模式）
+- MEMORY.md 拆分 — **433 行 → 31 行** + `project_digital_game_platform.md`
+- `docs/runbooks/customer-onboarding.md` 升版（+ 4 階段漏斗話術 + 業務週循環）
+
+### 接地驗證 6 次（紅線 #9 ✅）
+- 輪 6 / 13 / 16 / 20 / 22 / 26 / 28 共 7 次（超出原計畫 6 次）
+- 每次 smoke 51/51 + tsc 0 errors
+
+---
+
+## 待業主動作
+
+1. `npm run db:push` 套用 2 張新 schema（admin_session_timings + line_bot_events）
+2. 訪問 `/admin/completion-attribution` 與 `/admin/sla-dashboard` 看新 dashboard
+3. 補完 `shared/component-scenarios.ts` 中 43 個元件的真實 mapping（CI 揭示）
+4. 在 `business-metrics.md` 加入第一個真實付費客戶
+5. 在 `customer-feedback.md` 補 5/12 / 5/10 / 5/9 三批 entry
+
+---
+
+## 已完成、無待決策
 
 **等使用者確認以下後展開**：
 
