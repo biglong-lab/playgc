@@ -9,6 +9,7 @@
 // pageType: role_assign（multi 軸線）
 
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 export interface RoleDefinition {
   id: string;
