@@ -394,10 +394,13 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
             </div>
           </div>
         ) : (
-          /* npc / player 氣泡：左右對齊 */
-          <div
-            className={`flex gap-4 ${isPlayerMessage ? "flex-row-reverse" : ""} ${bubbleVisible ? "animate-slideIn" : "opacity-0"}`}
+          /* npc / player 氣泡：左右對齊 + framer-motion 切場淡入 */
+          <motion.div
             key={currentMessageIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: bubbleVisible ? 1 : 0, y: bubbleVisible ? 0 : 10 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className={`flex gap-4 ${isPlayerMessage ? "flex-row-reverse" : ""}`}
           >
             <div className="relative shrink-0">
               <Avatar className={`w-14 h-14 border-2 shadow-lg ring-2 transition-all duration-300 ${
