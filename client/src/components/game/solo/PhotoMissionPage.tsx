@@ -302,6 +302,6 @@ export default function PhotoMissionPage({
           onSkip={handleAiSkip}
         />
       )}
-    </div>
+    </motion.div>
   );
 }
