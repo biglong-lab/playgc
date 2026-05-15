@@ -176,6 +176,6 @@ export default function CollectiveScore({
             ))}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
