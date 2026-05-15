@@ -1,4 +1,5 @@
 import { useState, useRef, lazy, Suspense } from "react";
+import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
