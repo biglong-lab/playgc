@@ -155,7 +155,7 @@ export default function TreasureHunt({ config, state, onUnlockClue }: TreasureHu
             提交
           </button>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
