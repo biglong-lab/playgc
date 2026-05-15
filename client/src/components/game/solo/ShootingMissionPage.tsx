@@ -488,21 +488,36 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
               timeLeft <= 10 ? "text-destructive animate-pulse" :
               timeLeft <= 30 ? "text-amber-500" :
               "text-muted-foreground"
-            }`} />
+            }`} aria-hidden="true" />
             {/* 🆕 ≤10s 紅閃 + ≤30s 黃 + tabular-nums 防抖動 */}
-            <p className={`font-number text-2xl tabular-nums transition-colors ${
-              timeLeft <= 10 ? "text-destructive animate-pulse" :
-              timeLeft <= 30 ? "text-amber-500" :
-              "text-warning"
-            }`}>{formatTime(timeLeft)}</p>
+            <p
+              className={`font-number text-2xl tabular-nums transition-colors ${
+                timeLeft <= 10 ? "text-destructive animate-pulse" :
+                timeLeft <= 30 ? "text-amber-500" :
+                "text-warning"
+              }`}
+              role="timer"
+              aria-live={timeLeft <= 10 ? "assertive" : "off"}
+              aria-label={`剩餘時間：${formatTime(timeLeft)}`}
+            >
+              {formatTime(timeLeft)}
+            </p>
             <p className="text-xs text-muted-foreground">剩餘時間</p>
           </CardContent>
         </Card>
 
         <Card className="bg-card/80">
           <CardContent className="p-3 text-center">
-            <Target className="w-5 h-5 text-muted-foreground mx-auto mb-1" />
-            <p className="font-number text-2xl text-success tabular-nums">{hits.length}</p>
+            <Target className="w-5 h-5 text-muted-foreground mx-auto mb-1" aria-hidden="true" />
+            <p
+              className="font-number text-2xl text-success tabular-nums"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-label={`命中 ${hits.length} 次`}
+            >
+              {hits.length}
+            </p>
             <p className="text-xs text-muted-foreground">命中數</p>
           </CardContent>
         </Card>
