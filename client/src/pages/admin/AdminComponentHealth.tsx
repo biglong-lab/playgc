@@ -216,6 +216,6 @@ export default function AdminComponentHealth() {
       <p className="text-xs text-muted-foreground">
         ⓘ 樣本 &lt; 5 視為樣本不足、不評健康度。互動延遲 = mount 到首次玩家點擊的時間。
       </p>
-    </div>
+    </motion.div>
   );
 }
