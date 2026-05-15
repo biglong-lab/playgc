@@ -211,6 +211,7 @@ export function useGameSettings(): GameSettingsReturn {
       price: price ? parseInt(price) : null,
       currency: "TWD",
       recurProductId: recurProductId || null,
+      showProgress,
     });
   };
 
