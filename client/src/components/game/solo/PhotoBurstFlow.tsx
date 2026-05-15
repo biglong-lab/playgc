@@ -657,7 +657,12 @@ export default function PhotoBurstFlow({
         {/* ─── Stage: shooting ─── 顯示進度（🆕 加進度點視覺化「拍了幾張」） */}
         {stage === "shooting" && (
           <>
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-lg font-bold shadow-2xl tabular-nums">
+            <div
+              className="absolute top-20 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-6 py-3 rounded-full text-lg font-bold shadow-2xl tabular-nums"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               📸 第 {countdown} / {frameCount} 張
             </div>
             {/* 🆕 進度點 — 已拍 = 實心綠、目前 = 脈動白、待拍 = 空圈 */}
