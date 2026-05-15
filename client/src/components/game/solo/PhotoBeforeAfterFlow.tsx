@@ -520,6 +520,6 @@ export default function PhotoBeforeAfterFlow({
         onChange={camera.handleFileUpload}
         className="hidden"
       />
-    </div>
+    </motion.div>
   );
 }
