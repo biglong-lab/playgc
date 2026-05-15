@@ -663,17 +663,20 @@ export default function GamePlay() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <div className="px-4 py-2 bg-card/50 border-b border-border">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-muted-foreground">
-            進度: {currentPageIndex + 1} / {totalPages}
-          </span>
-          <span className="text-xs font-number text-primary">
-            {Math.round(progressPercent)}%
-          </span>
+      {/* 🆕 2026-05-16 #10：game.showProgress = false 時隱藏進度條 */}
+      {(game as { showProgress?: boolean })?.showProgress !== false && (
+        <div className="px-4 py-2 bg-card/50 border-b border-border">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-muted-foreground">
+              進度: {currentPageIndex + 1} / {totalPages}
+            </span>
+            <span className="text-xs font-number text-primary">
+              {Math.round(progressPercent)}%
+            </span>
+          </div>
+          <Progress value={progressPercent} className="h-1.5" />
         </div>
-        <Progress value={progressPercent} className="h-1.5" />
-      </div>
+      )}
 
       <main className="flex-1 relative overflow-hidden">
         {currentPage && (
