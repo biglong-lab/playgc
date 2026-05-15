@@ -80,6 +80,7 @@ import { registerAdminPilotHealthRoutes } from "./admin-pilot-health";
 import { registerAdminMetricsCompletionRoutes } from "./admin-metrics-completion";
 import { registerAdminTimingsRoutes } from "./admin-timings";
 import { registerAdminLineBotMetricsRoutes } from "./admin-line-bot-metrics";
+import { registerAdminReportsHealthRoutes } from "./admin-reports-health";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
