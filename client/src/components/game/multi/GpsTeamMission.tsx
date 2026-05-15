@@ -13,6 +13,7 @@
 // 不直接連 geolocation API（由父層 useTeamGpsFusion 注入位置）
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
