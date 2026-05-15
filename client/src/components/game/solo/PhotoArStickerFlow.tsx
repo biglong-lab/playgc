@@ -723,12 +723,18 @@ export default function PhotoArStickerFlow({
         }}
         disabled={!preloadDone}
         data-testid="btn-ar-start"
+        aria-label={!preloadDone ? "貼圖載入中、請稍候" : "開始 AR 拍照"}
+        aria-busy={!preloadDone}
       >
-        <Camera className="w-5 h-5" />
+        <Camera className="w-5 h-5" aria-hidden="true" />
         {!preloadDone ? "貼圖載入中..." : "開始拍照"}
       </Button>
       {preloadDone && failedCount > 0 && (
-        <p className="text-xs text-amber-500 text-center">
+        <p
+          className="text-xs text-amber-500 text-center"
+          role="status"
+          aria-live="polite"
+        >
           ⚠️ {failedCount} 張貼圖載入失敗，其他仍可使用
         </p>
       )}
