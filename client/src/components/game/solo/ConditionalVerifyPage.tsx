@@ -472,8 +472,11 @@ export default function ConditionalVerifyPage({
 
             {verificationMode !== 'all_collected' && !isDemoMode && (
               <div className="mb-6">
-                <label className="text-sm font-medium mb-2 block">輸入密碼組合</label>
+                <label htmlFor="fragment-code-input" className="text-sm font-medium mb-2 block">
+                  輸入密碼組合
+                </label>
                 <Input
+                  id="fragment-code-input"
                   value={inputCode}
                   onChange={(e) => {
                     setInputCode(e.target.value.toUpperCase());
@@ -483,9 +486,12 @@ export default function ConditionalVerifyPage({
                   className={`text-center font-mono text-xl tracking-widest ${codeError ? 'border-destructive' : ''}`}
                   maxLength={fragments.reduce((sum, f) => sum + (f.value?.length || 1), 0)}
                   data-testid="input-fragment-code"
+                  aria-label="輸入密碼組合"
+                  aria-invalid={codeError}
+                  aria-describedby={verificationMode === 'order_independent' ? "fragment-code-hint" : undefined}
                 />
                 {verificationMode === 'order_independent' && (
-                  <p className="text-xs text-muted-foreground mt-1 text-center">
+                  <p id="fragment-code-hint" className="text-xs text-muted-foreground mt-1 text-center">
                     提示：順序不重要，只需輸入所有碎片
                   </p>
                 )}
@@ -493,9 +499,13 @@ export default function ConditionalVerifyPage({
             )}
 
             {!allPassed && !allFragmentsCollected && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-6">
+              <div
+                className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-6"
+                role="status"
+                aria-live="polite"
+              >
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
                   <p className="text-sm text-amber-500">
                     你還沒有收集完所有碎片
                   </p>
