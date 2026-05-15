@@ -395,7 +395,13 @@ export default function PhotoSpotFlow({
 
   // 預設：instruction 畫面（GPS 指引）
   return (
-    <div className="h-full w-full flex flex-col items-center p-4 gap-4 overflow-y-auto" data-testid="photo-spot-instruction">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="h-full w-full flex flex-col items-center p-4 gap-4 overflow-y-auto"
+      data-testid="photo-spot-instruction"
+    >
       <div className="text-center space-y-2 pt-6">
         <MapPin className="w-10 h-10 mx-auto text-primary" />
         <h2 className="text-2xl font-bold" data-testid="photo-spot-title">
