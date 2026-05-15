@@ -153,6 +153,6 @@ export default function GpsCascade({ config, state, onReachPoint }: GpsCascadePr
       <p className="text-xs text-center text-muted-foreground">
         💡 P2 加強：實際 GPS 自動偵測（目前用「我到了」按鈕代替）
       </p>
-    </div>
+    </motion.div>
   );
 }
