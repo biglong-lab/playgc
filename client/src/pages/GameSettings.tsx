@@ -100,6 +100,12 @@ export default function GameSettings() {
           onScoreModeChange={settings.setTeamScoreMode}
         />
 
+        <PlayerDisplayCard
+          showProgress={settings.playerDisplay.showProgress}
+          canEdit={canEdit}
+          onShowProgressChange={settings.setShowProgress}
+        />
+
         <Card>
           <CardHeader>
             <CardTitle>其他設定</CardTitle>
