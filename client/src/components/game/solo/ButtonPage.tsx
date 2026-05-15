@@ -201,6 +201,6 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
           </p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
