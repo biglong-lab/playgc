@@ -524,9 +524,10 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
                 onClick={handleNext}
                 className={`gap-2 ${isLastMessage && !isTyping ? "animate-pulse" : ""}`}
                 data-testid="button-next-dialogue"
+                aria-label={isTyping ? "立刻顯示全部對話" : isLastMessage ? "結束對話" : "顯示下一句對話"}
               >
                 {isTyping ? "顯示全部" : isLastMessage ? "結束對話" : "下一句"}
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" aria-hidden="true" />
               </Button>
               {config?.autoAdvance && isLastMessage && !isTyping && (
                 <span className="text-[10px] text-muted-foreground">
