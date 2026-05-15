@@ -79,6 +79,7 @@ import {
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
+import { PlayerHistoryDialog } from "./AdminMultiSessionsPlayerHistory";
 
 // ============================================================================
 // Types（與 server endpoint 對應）
