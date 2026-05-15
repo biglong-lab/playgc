@@ -279,7 +279,6 @@ export default function PhotoBurstFlow({
           url?: string;
         };
         if (gifData.success && gifData.url) {
-          console.log("[Burst BG] ✅ GIF 合成成功，替換 URL");
           setCompositeUrl(gifData.url);
           return;
         }
