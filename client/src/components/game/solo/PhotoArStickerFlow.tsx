@@ -673,7 +673,13 @@ export default function PhotoArStickerFlow({
 
   // 介紹頁
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-ar-intro">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4"
+      data-testid="photo-ar-intro"
+    >
       <Sparkles className="w-12 h-12 text-primary" />
       <h2 className="text-2xl font-bold">
         {config.title || "AR 貼圖拍照"}
