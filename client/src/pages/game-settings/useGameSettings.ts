@@ -126,6 +126,9 @@ export function useGameSettings(): GameSettingsReturn {
   const [price, setPrice] = useState("");
   const [recurProductId, setRecurProductId] = useState("");
 
+  // 🆕 2026-05-16 #10：玩家畫面是否顯示進度
+  const [showProgress, setShowProgress] = useState(true);
+
   // 資料查詢
   const { data: user } = useQuery<User>({
     queryKey: ["/api/auth/user"],
