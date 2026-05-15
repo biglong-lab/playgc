@@ -7,6 +7,7 @@
 
 ## 2026-05
 
+- 🟢 [2026-05-16 — Admin 頁面優化 A+B+C+D + 碎片 bug 修補](2026-05-16-admin-pages-optimization-and-fragment-fix.md) — 4 admin 頁面 motion/a11y + AdminMultiSessions 拆檔 + reports-health endpoint + #11/#12 race condition 修
 - 🟢 [2026-05-15 — 元件優化 follow-up 立即/本週批次](2026-05-15-component-audit-followup.md) — console + 情境 + 4 元件 a11y 已交付 + 剩餘 pattern 給業主
 - 🟢 [2026-05-15 — 遊戲元件 Top 10 深度盤點分析](2026-05-15-component-audit-top10.md) — 5 維度 × 10 元件 / 80+ 具體建議 / 修補工時估
 - 🟢 [2026-05-14 — 平台全站優化計劃 P0-P3 全包](2026-05-14-platform-optimization-comprehensive.md) — 三週路徑 / 商業閉環 + KPI 校準 + 紅線自動化 + 文件層（**已交付 + 部署上線**）
