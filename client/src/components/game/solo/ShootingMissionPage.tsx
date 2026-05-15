@@ -517,7 +517,18 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
               aria-atomic="true"
               aria-label={`命中 ${hits.length} 次`}
             >
-              {hits.length}
+              <AnimatePresence mode="popLayout">
+                <motion.span
+                  key={hits.length}
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.2 }}
+                  className="inline-block"
+                >
+                  {hits.length}
+                </motion.span>
+              </AnimatePresence>
             </p>
             <p className="text-xs text-muted-foreground">命中數</p>
           </CardContent>
