@@ -180,7 +180,6 @@ export default function PhotoBurstFlow({
           // Step 2: Canvas 拼貼（1 秒）— 讓使用者看到 5 張都在
           createLocalCollage(images, { maxSize: 1600, quality: 0.88 })
             .then((collage) => {
-              console.log("[Burst] ✅ Step 2: 拼貼完成");
               setCompositeUrl(collage);
 
               // Step 3: 🎞️ Client GIF 編碼（2-5 秒）— 真正的動畫！
