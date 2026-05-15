@@ -234,7 +234,6 @@ export default function GameCompletionScreen({
       });
       const data = (await res.json()) as { success?: boolean; url?: string };
       if (data.success && data.url) {
-        console.log("[AchievementCard] ✨ Cloudinary 升級完成，替換");
         setCardUrl(data.url); // 靜默替換（使用者不會察覺卡頓）
       }
     } catch (err) {
