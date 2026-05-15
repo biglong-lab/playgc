@@ -11,6 +11,7 @@
 // 簡化版：用「我到了」按鈕代替 GPS 自動驗證（admin 配置真實 GPS 是 P2 加強）
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export interface GpsCascadePoint {
   id: string;
