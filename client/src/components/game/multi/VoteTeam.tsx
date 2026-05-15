@@ -19,6 +19,7 @@
 // 元件本身為「準 presentational」，便於單元測試。
 
 import { useState, useEffect, useRef, useMemo } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
