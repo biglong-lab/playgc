@@ -11,6 +11,7 @@
 //   - 跟前 5 場對比、看趨勢
 
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
