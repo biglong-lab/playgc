@@ -173,6 +173,75 @@ export default function AdminReports() {
         </Button>
       </div>
 
+      {/* 🆕 2026-05-16 B：最近報告 hint（actionable）*/}
+      {!isLoading && latestReportInfo.severity !== "ok" && (
+        <Card
+          role="status"
+          aria-live="polite"
+          className={
+            latestReportInfo.severity === "critical"
+              ? "border-red-300 bg-red-50/80 dark:bg-red-950/30"
+              : latestReportInfo.severity === "warning"
+              ? "border-amber-300 bg-amber-50/80 dark:bg-amber-950/30"
+              : "border-blue-300 bg-blue-50/80 dark:bg-blue-950/30"
+          }
+          data-testid="reports-stale-hint"
+        >
+          <CardContent className="p-4 flex items-start gap-3 text-sm">
+            <AlertTriangle
+              className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+                latestReportInfo.severity === "critical"
+                  ? "text-red-600"
+                  : latestReportInfo.severity === "warning"
+                  ? "text-amber-600"
+                  : "text-blue-600"
+              }`}
+              aria-hidden="true"
+            />
+            <div className="space-y-1">
+              {latestReportInfo.severity === "none" ? (
+                <>
+                  <p className="font-semibold">尚無任何活動結束報告</p>
+                  <p className="text-muted-foreground">
+                    需要至少一場 host_mode 多人活動完成後、cron 才會自動產生報告。
+                    或可手動使用下方「手動生成」工具觸發既有 session。
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold">
+                    最近一份報告：<span className="tabular-nums">{latestReportInfo.daysAgo}</span> 天前
+                    {latestReportInfo.severity === "critical" && "（已超過 7 天，請確認是否需要安排新活動）"}
+                    {latestReportInfo.severity === "warning" && "（已超過 3 天）"}
+                  </p>
+                  <p className="text-muted-foreground">
+                    報告寫入依賴「host_mode 多人活動完成」。若近期無新活動、屬正常。
+                    若有活動但仍無報告、檢查 cron 是否運作（CRON_SECRET 設定 + /api/cron/generate-reports）。
+                  </p>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {!isLoading && reports.length === 0 && (
+        <Card
+          role="status"
+          aria-live="polite"
+          className="border-blue-300 bg-blue-50/80 dark:bg-blue-950/30"
+        >
+          <CardContent className="p-4 flex items-start gap-3 text-sm">
+            <AlertTriangle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+            <div className="space-y-1">
+              <p className="font-semibold">尚無任何活動結束報告</p>
+              <p className="text-muted-foreground">
+                需要 host_mode 多人活動完成後、cron 才會自動產生報告。
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* 摘要卡 */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Card><CardContent className="p-3 text-center">
