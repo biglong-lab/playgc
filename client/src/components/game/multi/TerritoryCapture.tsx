@@ -15,6 +15,7 @@
 //   - 玩家進入點半徑內 + 不在 cooldown → 顯示「佔領」按鈕
 
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
