@@ -552,6 +552,6 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
           先跳過此題、稍後再拍 →
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
