@@ -637,10 +637,15 @@ export default function ConditionalVerifyEditor({
                   <SelectTrigger data-testid={`condition-item-${i}`}>
                     <SelectValue placeholder="選擇道具" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="min-w-[280px] max-w-[480px]">
                     <SelectItem value="_none"><span className="text-muted-foreground">（請選擇道具）</span></SelectItem>
                     {items.map((item) => (
-                      <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
+                      <SelectItem key={item.id} value={item.id}>
+                        <span className="flex items-baseline gap-2 whitespace-nowrap">
+                          <span className="font-medium">{item.name}</span>
+                          <span className="text-[11px] text-muted-foreground font-mono">id: {item.id}</span>
+                        </span>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
