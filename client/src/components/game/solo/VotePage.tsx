@@ -506,6 +506,6 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
           <span>您的投票將保持匿名</span>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
