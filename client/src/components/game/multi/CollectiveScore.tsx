@@ -10,6 +10,7 @@
 // 適用：學校班際積分、企業合作任務、義賣達標
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export interface CollectiveScoreConfig {
   title?: string;
