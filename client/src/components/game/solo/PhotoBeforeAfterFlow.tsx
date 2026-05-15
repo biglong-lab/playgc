@@ -195,7 +195,6 @@ export default function PhotoBeforeAfterFlow({
               );
               setCompositeUrl(collage);
               setStage("done");
-              console.log("[BeforeAfter] ✅ 本地拼貼完成");
             } catch (err) {
               console.warn("[BeforeAfter] 本地拼貼失敗:", err);
               // 備用 — 至少顯示 after 那張
