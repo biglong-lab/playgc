@@ -206,6 +206,6 @@ export default function TreasureHunt({ config, state, onUnlockClue }: TreasureHu
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }
