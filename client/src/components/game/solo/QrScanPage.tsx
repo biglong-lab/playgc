@@ -1,4 +1,5 @@
 import type { QrScanConfig } from "@shared/schema";
+import { motion } from "framer-motion";
 import { useQrScanner } from "../qr-scan/useQrScanner";
 import {
   InstructionView, CameraView,
