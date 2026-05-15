@@ -529,6 +529,19 @@ export default function GamePlay() {
     });
   }, [stateRef, activePagesRef, setState, handleCompletion, itemIdToInfo]);
 
+  // 🆕 2026-05-16 #7：預覽模式強制過關事件監聽
+  // PreviewNavBar 按「強制過關」→ dispatch CustomEvent → 此 useEffect 呼叫 handlePageComplete
+  useEffect(() => {
+    const handler = () => {
+      if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
+        console.log("[GamePlay] preview-force-complete 觸發");
+      }
+      handlePageComplete();
+    };
+    window.addEventListener("preview-force-complete", handler);
+    return () => window.removeEventListener("preview-force-complete", handler);
+  }, [handlePageComplete]);
+
   const handleVariableUpdate = useCallback((key: string, value: unknown) => {
     setState(prev => ({ ...prev, variables: { ...prev.variables, [key]: value } }));
   }, [setState]);
