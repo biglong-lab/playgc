@@ -2,6 +2,7 @@
 // 使用 JWT/RBAC 認證，根據角色權限動態顯示菜單
 import { Link, useLocation } from "wouter";
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { isMacOS } from "@/lib/platform";
