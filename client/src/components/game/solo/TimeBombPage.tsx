@@ -345,7 +345,14 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6 relative">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col items-center justify-center p-6 relative"
+      role="region"
+      aria-label="計時炸彈任務"
+    >
       {/* 🆕 ≤10s 紅色閃爍 + ≤30s 黃色微閃避（兩段警示提升緊張感）*/}
       <div
         className={`absolute inset-0 transition-colors ${
