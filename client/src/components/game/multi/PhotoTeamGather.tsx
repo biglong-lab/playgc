@@ -381,14 +381,27 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
   // 倒數
   if (stage === "countdown") {
     return (
-      <div className="h-full w-full flex flex-col items-center justify-center p-6 space-y-4" data-testid="photo-gather-countdown">
-        <Users className="w-12 h-12 text-primary animate-pulse" />
+      <div
+        className="h-full w-full flex flex-col items-center justify-center p-6 space-y-4"
+        data-testid="photo-gather-countdown"
+        role="status"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <Users className="w-12 h-12 text-primary animate-pulse" aria-hidden="true" />
         <h2 className="text-xl font-bold">請大家集合！</h2>
         <div className="my-4">
-          <span className="text-7xl font-bold font-number tabular-nums text-primary">{countdown}</span>
+          <span
+            className="text-7xl font-bold font-number tabular-nums text-primary"
+            aria-label={`倒數 ${countdown} 秒`}
+          >
+            {countdown}
+          </span>
         </div>
         <p className="text-sm text-muted-foreground">準備好笑容、我要拍囉～</p>
-        <Button variant="ghost" size="sm" onClick={() => setStage("intro")}>取消</Button>
+        <Button variant="ghost" size="sm" onClick={() => setStage("intro")} aria-label="取消倒數、返回介紹">
+          取消
+        </Button>
       </div>
     );
   }
