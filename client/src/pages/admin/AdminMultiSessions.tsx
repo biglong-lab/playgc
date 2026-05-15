@@ -155,12 +155,6 @@ interface SessionDetailTeam {
   lockStates: Array<{ shared_code?: string; attempts?: number; is_unlocked?: boolean; is_failed?: boolean }>;
 }
 
-interface TimelineEvent {
-  userId: string | null;
-  eventType: string;
-  timestamp: string | null;
-}
-
 interface SessionDetailResponse {
   gameId: string;
   gameTitle: string;
