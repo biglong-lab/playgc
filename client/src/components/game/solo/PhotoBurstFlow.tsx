@@ -631,7 +631,12 @@ export default function PhotoBurstFlow({
 
         {/* ─── Stage: countdown ─── 大字 3-2-1（🆕 色彩戲劇性：綠→黃→紅 GO!） */}
         {stage === "countdown" && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40">
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center bg-black/40"
+            role="status"
+            aria-live="assertive"
+            aria-atomic="true"
+          >
             <p className="text-white/80 text-xl mb-4">即將開始連拍...</p>
             <div
               key={countdownToStart}
@@ -642,6 +647,7 @@ export default function PhotoBurstFlow({
                 "text-emerald-300"
               }`}
               style={{ animation: "countdownPulse 1s ease-out" }}
+              aria-label={countdownToStart > 0 ? `倒數 ${countdownToStart}` : "開始拍照"}
             >
               {countdownToStart > 0 ? countdownToStart : "GO!"}
             </div>
