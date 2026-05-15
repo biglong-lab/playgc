@@ -10,6 +10,7 @@
 // 合規：僅傳 Cloudinary 公開 URL、不做人臉辨識、不存個資
 
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import {
   Camera,
