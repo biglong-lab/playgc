@@ -220,7 +220,6 @@ export default function PhotoSuccessView({
 
                 // 2. 再試 caller 提供的 fallback（如玩家原圖）
                 if (fallbackImageUrl && currentUrl !== fallbackImageUrl) {
-                  console.log("[PhotoSuccessView] 切換到 fallback 原圖");
                   setCurrentUrl(fallbackImageUrl);
                   setRetryKey((k) => k + 1);
                   return;
