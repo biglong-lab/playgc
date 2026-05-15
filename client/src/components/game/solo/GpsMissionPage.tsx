@@ -349,7 +349,12 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
   const isAtTarget = distance !== null && distance <= targetRadius;
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col items-center justify-center p-6"
+    >
       <Card className="w-full max-w-md">
         <CardContent className="p-6">
           <div className="text-center mb-6">
