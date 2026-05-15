@@ -287,6 +287,10 @@ export function useGameSettings(): GameSettingsReturn {
     setPricingType,
     setPrice,
     setRecurProductId,
+    playerDisplay: {
+      showProgress,
+    },
+    setShowProgress,
     handleSave,
     isSaving: updateMutation.isPending,
   };
