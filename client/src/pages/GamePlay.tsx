@@ -189,6 +189,20 @@ export default function GamePlay() {
     setState(prev => ({ ...prev, currentPageIndex: previousIndex }));
   };
 
+  // 🆕 2026-05-16 #7：預覽模式強制過關事件監聽
+  // PreviewNavBar 按「強制過關」→ dispatch CustomEvent → 此 useEffect 呼叫 handlePageComplete
+  // 避免「部分元件預覽無法 onComplete」造成測試卡住
+  useEffect(() => {
+    const handler = () => {
+      if ((import.meta as { env?: { DEV?: boolean } }).env?.DEV) {
+        console.log("[GamePlay] preview-force-complete 觸發");
+      }
+      handlePageComplete();
+    };
+    window.addEventListener("preview-force-complete", handler);
+    return () => window.removeEventListener("preview-force-complete", handler);
+  }, [handlePageComplete]);
+
   // 🆕 2026-05-07 K.2 + N.1：BGM 兩層覆蓋
   //   game.bgmUrl 整場 BGM（fallback）
   //   currentPage.config.bgmUrl 元件個別 BGM（覆蓋 game、優先）
