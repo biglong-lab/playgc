@@ -213,7 +213,6 @@ export default function PhotoSuccessView({
                 // 1. 先試 strip transformation（常見 case）
                 const stripped = stripTransformation(currentUrl);
                 if (stripped && stripped !== currentUrl) {
-                  console.log("[PhotoSuccessView] strip transformation 重試:", stripped.slice(0, 100));
                   setCurrentUrl(stripped);
                   setRetryKey((k) => k + 1);
                   return;
