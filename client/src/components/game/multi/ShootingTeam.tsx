@@ -16,6 +16,7 @@
 // 測試友善：純 presentational + props 注入 onSimulateHit / 接收 teamHits
 
 import { useMemo, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
