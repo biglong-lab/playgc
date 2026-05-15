@@ -224,7 +224,15 @@ export default function VoteTeam({
   }
 
   return (
-    <div className="space-y-4" data-testid="vote-team">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-4"
+      data-testid="vote-team"
+      role="region"
+      aria-label="多人投票"
+    >
       {/* 標題 */}
       <Card>
         <CardContent className="p-4">
