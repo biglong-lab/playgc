@@ -7,7 +7,8 @@
 
 ## 2026-05
 
-- 🟡 [2026-05-14 — 平台全站優化計劃 P0-P3 全包](2026-05-14-platform-optimization-comprehensive.md) — 三週路徑 / 商業閉環 + KPI 校準 + 紅線自動化 + 文件層（**規劃中**）
+- 🟢 [2026-05-15 — 遊戲元件 Top 10 深度盤點分析](2026-05-15-component-audit-top10.md) — 5 維度 × 10 元件 / 80+ 具體建議 / 修補工時估
+- 🟢 [2026-05-14 — 平台全站優化計劃 P0-P3 全包](2026-05-14-platform-optimization-comprehensive.md) — 三週路徑 / 商業閉環 + KPI 校準 + 紅線自動化 + 文件層（**已交付 + 部署上線**）
 - 🟡 [2026-05-02 — 多人遊戲元件平台 12 週路徑](2026-05-02-multiplayer-component-platform.md) — 38 新元件 + 4 大平台基建（**進行中**）
 - [2026-05-02 — Squad 系統一次到位](2026-05-02-squad-unification.md) — teams/battle_clans/squads 三套合一
 - [2026-05-01 — PWA 流程優化](2026-05-01-pwa-flow.md) — Phase A-D 完整推進
