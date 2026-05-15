@@ -449,7 +449,6 @@ export default function PhotoBurstFlow({
   useEffect(() => {
     if (stage !== "uploading" && stage !== "compositing") return;
     const startAt = Date.now();
-    console.log("[Burst] Super deadline armed at", startAt);
     const check = setInterval(() => {
       const elapsed = Date.now() - startAt;
       if (elapsed >= 25000) {
