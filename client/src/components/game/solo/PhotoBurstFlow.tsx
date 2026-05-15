@@ -656,7 +656,7 @@ export default function PhotoBurstFlow({
             >
               {countdownToStart > 0 ? countdownToStart : "GO!"}
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* ─── Stage: shooting ─── 顯示進度（🆕 加進度點視覺化「拍了幾張」） */}
