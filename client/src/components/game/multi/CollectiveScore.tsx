@@ -92,7 +92,14 @@ export default function CollectiveScore({
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 space-y-5">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="w-full max-w-md mx-auto p-4 space-y-5"
+      role="region"
+      aria-label="集體計分任務"
+    >
       {/* 標題 */}
       <div className="text-center space-y-2">
         <h2 className="text-xl font-display font-bold">{config.title ?? "🎯 合作達標"}</h2>
