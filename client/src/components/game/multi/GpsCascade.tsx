@@ -79,7 +79,14 @@ export default function GpsCascade({ config, state, onReachPoint }: GpsCascadePr
   }
 
   return (
-    <div className="w-full max-w-md mx-auto p-4 space-y-5">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="w-full max-w-md mx-auto p-4 space-y-5"
+      role="region"
+      aria-label="多人 GPS 級聯任務"
+    >
       <div className="text-center space-y-2">
         <h2 className="text-xl font-display font-bold">{config.title ?? "🗺 連鎖探索"}</h2>
         {config.subtitle && (
