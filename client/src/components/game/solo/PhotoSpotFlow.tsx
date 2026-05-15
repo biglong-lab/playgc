@@ -491,7 +491,11 @@ export default function PhotoSpotFlow({
         {spot.referenceImageUrl && (
           <div className="rounded-lg overflow-hidden border">
             <p className="text-xs text-muted-foreground px-3 py-2 bg-muted">📸 參考畫面</p>
-            <img src={spot.referenceImageUrl} alt="參考" className="w-full aspect-video object-cover" />
+            <img
+              src={spot.referenceImageUrl}
+              alt={(spot as { spotName?: string }).spotName ? `${(spot as { spotName?: string }).spotName} 定點參考照` : "定點任務參考照、請前往拍出類似畫面"}
+              className="w-full aspect-video object-cover"
+            />
           </div>
         )}
 
