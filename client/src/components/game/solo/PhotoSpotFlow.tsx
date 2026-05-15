@@ -9,6 +9,7 @@
 //   6. 顯示合成結果 + 下載/分享/繼續
 
 import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import { MapPin, Camera, CheckCircle2, AlertTriangle, Download, Share2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
