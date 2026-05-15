@@ -35,7 +35,50 @@
 
 ---
 
-## 三、待續（剩 6 元件 a11y + 全 10 元件動畫）
+## 2.5、本週批次後續推進（已交付 ✅ — 2026-05-15 loop 12 輪）
+
+### 剩 6 元件 a11y 補強（已完成 ✅）
+
+| 元件 | a11y 修補項 |
+|------|------------|
+| shooting_mission | timer role + assertive aria-live ≤10s + 命中數 status live + 2 icon aria-hidden |
+| choice_verify_race | WS 斷線 banner role=status / aria-live / aria-atomic |
+| gps_mission | hotZone status live + 距離卡 status live assertive-on-arrival + 距離 aria-label + Progress aria-label |
+| photo_team | countdown stage status assertive live + 倒數數字 aria-label + 取消 aria-label |
+| photo_compare | 2 處 alt 文字 + skip button aria-label |
+| photo_spot | alt 文字 |
+
+### 10 元件動畫（已完成 9/10、9/10 採 Pattern A）
+
+| 元件 | 動畫 |
+|------|------|
+| dialogue | motion.div 包氣泡切換、250ms 淡入 |
+| photo_burst | countdown stage 200ms 淡入/淡出 |
+| photo_ar | 介紹頁 250ms 滑入 |
+| shooting_mission | 命中數 Pattern B（AnimatePresence popLayout + key） |
+| conditional_verify | 外層 250ms 滑入 |
+| gps_mission | 外層 250ms 滑入 |
+| photo_team | intro stage 250ms 滑入 |
+| photo_spot | instruction 250ms 滑入 |
+| photo_compare | instruction 250ms 滑入 |
+| choice_verify_race | ⚠️ 主 UI 在子件 ChoiceVerifyRace（非 Top 10）、本批未做 |
+
+### Pattern B/C 應用
+
+- ✅ Pattern B 已用於 shooting_mission 命中數
+- ⚠️ Pattern C（list reorder）未做、適用 ChoiceVerifyRace 子件、業主可後續加
+
+### 累計變動統計
+
+- 修改檔案：13 個（10 元件 + 3 個之前的 console 清理）
+- a11y aria 屬性新增：~42 處
+- framer-motion 整合：9 元件
+- 接地驗證次數：3 次（Round 6 / Round 12 / Round 12 結束）
+- 接地結果：smoke 51/51 全綠 / tsc 0 errors 全程
+
+---
+
+## 三、（已交付、留作歷史參考）剩 6 元件 a11y + 全 10 元件動畫
 
 ### 還缺 a11y 的 6 個元件
 
