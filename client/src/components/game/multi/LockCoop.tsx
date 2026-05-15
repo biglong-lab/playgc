@@ -13,6 +13,7 @@
 //   容器層 LockCoopPage 用 useTeamLockCoopSync 提供 sharedCode / onCodeChange / onAttempt
 
 import { useMemo } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
