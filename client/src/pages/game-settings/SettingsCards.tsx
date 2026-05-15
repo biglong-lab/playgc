@@ -478,3 +478,46 @@ export function PricingCard({
     </Card>
   );
 }
+
+// ==================== 玩家畫面顯示卡片（2026-05-16 #10） ====================
+
+interface PlayerDisplayCardProps {
+  showProgress: boolean;
+  canEdit: boolean;
+  onShowProgressChange: (checked: boolean) => void;
+}
+
+export function PlayerDisplayCard({
+  showProgress,
+  canEdit,
+  onShowProgressChange,
+}: PlayerDisplayCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Settings className="w-5 h-5 text-primary" />
+          玩家畫面顯示
+        </CardTitle>
+        <CardDescription>控制玩家遊玩時看到的 UI 元素</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>顯示進度條</Label>
+            <p className="text-xs text-muted-foreground">
+              開啟時玩家會看到「第 N / 共 M 頁」的進度條。
+              關閉適合驚喜感重要的遊戲（玩家無法預判長度）。
+            </p>
+          </div>
+          <Switch
+            checked={showProgress}
+            onCheckedChange={onShowProgressChange}
+            disabled={!canEdit}
+            data-testid="switch-show-progress"
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
