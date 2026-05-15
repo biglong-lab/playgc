@@ -17,6 +17,7 @@
 //   photo_gather_updated
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { motion } from "framer-motion";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Camera, CheckCircle2, Users, ArrowRight, AlertTriangle, Image as ImageIcon, RotateCw, Plus, X, Loader2,
