@@ -309,6 +309,6 @@ export default function AdminReports() {
           );
         })}
       </div>
-    </div>
+    </motion.div>
   );
 }
