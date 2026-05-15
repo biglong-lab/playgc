@@ -493,7 +493,14 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-border">
-        <div className="flex gap-1">
+        <div
+          className="flex gap-1"
+          role="progressbar"
+          aria-valuenow={currentMessageIndex + 1}
+          aria-valuemin={1}
+          aria-valuemax={messages.length}
+          aria-label={`對話進度：第 ${currentMessageIndex + 1} 句、共 ${messages.length} 句`}
+        >
           {messages.map((_, index) => (
             <div
               key={index}
@@ -504,6 +511,7 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
                   ? "bg-primary/50"
                   : "bg-muted"
               }`}
+              aria-hidden="true"
             />
           ))}
         </div>
