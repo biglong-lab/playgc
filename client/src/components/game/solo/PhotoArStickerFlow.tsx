@@ -822,6 +822,6 @@ export default function PhotoArStickerFlow({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }
