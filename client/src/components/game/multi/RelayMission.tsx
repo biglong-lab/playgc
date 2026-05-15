@@ -255,7 +255,7 @@ export default function RelayMission({
           </CardContent>
         </Card>
       )}
-    </div>
+    </motion.div>
   );
 }
 
