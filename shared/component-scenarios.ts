@@ -66,6 +66,16 @@ export const COMPONENT_SCENARIOS: Record<string, ScenarioKey[]> = {
   // 表單 / 報名
   registration_form: ["gov", "private", "event", "space", "social"],
   feedback_form: ["gov", "private", "event", "space", "social"],
+
+  // 🆕 2026-05-15 Top 10 元件真實 componentType 對齊
+  photo_burst: ["private", "event", "social"],          // 連拍 → 婚禮 / 同學會 / 派對
+  photo_ar: ["private", "event", "social", "space"],    // AR 貼圖 → 廣泛應用
+  shooting_mission: ["event", "social", "private"],     // 單人射擊任務
+  choice_verify_race: ["private", "social", "event"],   // 多人答題對戰
+  photo_team: ["private", "event", "social"],           // 多人合照
+  dialogue: ["gov", "space", "event", "private"],       // 劇情對話、跨情境通用
+  photo_spot: ["gov", "space", "event"],                // 定點拍照
+  photo_compare: ["space", "gov", "private"],           // 前後對比（街區改造 / 場域）
 };
 
 /**
