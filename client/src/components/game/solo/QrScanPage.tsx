@@ -23,7 +23,14 @@ export default function QrScanPage({ config, onComplete, sessionId }: QrScanPage
   useCameraOverlayMode(mode === "initializing" || mode === "scanning");
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col items-center justify-center p-6"
+      role="region"
+      aria-label="QR 掃描任務"
+    >
       {mode === "instruction" && (
         <InstructionView config={config} state={state} actions={actions} />
       )}
