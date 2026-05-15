@@ -306,7 +306,14 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col items-center justify-center p-6"
+      role="region"
+      aria-label="動作挑戰任務"
+    >
       <Card className="w-full max-w-md">
         <CardContent className="p-6">
           <div className="text-center mb-6">
