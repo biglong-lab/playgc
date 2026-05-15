@@ -585,6 +585,6 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
           )}
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
