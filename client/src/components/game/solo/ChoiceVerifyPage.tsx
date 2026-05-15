@@ -436,6 +436,6 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
           )}
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
