@@ -306,6 +306,6 @@ export default function VoteTeam({
           ✓ 投票結束，前進中...
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
