@@ -237,7 +237,14 @@ export default function PhotoMissionPage({
   };
 
   return (
-    <div className="min-h-full flex flex-col p-4">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col p-4"
+      role="region"
+      aria-label="拍照任務"
+    >
       {camera.mode === "instruction" && (
         <InstructionView
           config={config}
