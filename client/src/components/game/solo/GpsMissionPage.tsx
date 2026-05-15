@@ -436,14 +436,24 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
                 : "bg-accent/50 border-border"
             }`}
             data-at-target={isAtTarget}
+            role="status"
+            aria-live={isAtTarget ? "assertive" : "off"}
+            aria-atomic="true"
           >
             <div className="flex items-center justify-between mb-3">
               <span className="text-sm text-muted-foreground">距離目標</span>
-              <span className={`font-number text-2xl tabular-nums transition-colors ${isAtTarget ? "text-success" : "text-primary"}`}>
+              <span
+                className={`font-number text-2xl tabular-nums transition-colors ${isAtTarget ? "text-success" : "text-primary"}`}
+                aria-label={`距離目標 ${getDistanceDisplay()}`}
+              >
                 {getDistanceDisplay()}
               </span>
             </div>
-            <Progress value={getProgressPercent()} className="h-2 transition-all" />
+            <Progress
+              value={getProgressPercent()}
+              className="h-2 transition-all"
+              aria-label={`抵達進度 ${Math.round(getProgressPercent())}%`}
+            />
             <p className="text-xs text-muted-foreground mt-2 text-center tabular-nums">
               {isAtTarget ? "✨ 已進入範圍！" : `需要在 ${targetRadius}m 範圍內`}
             </p>
