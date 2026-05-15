@@ -133,7 +133,14 @@ export default function AdminReports() {
   }, [reports]);
 
   return (
-    <div className="container mx-auto p-4 space-y-4 max-w-6xl">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="container mx-auto p-4 space-y-4 max-w-6xl"
+      role="region"
+      aria-label="活動結束報告 Dashboard"
+    >
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">📊 活動結束報告</h1>
         <Button
