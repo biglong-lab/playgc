@@ -421,6 +421,6 @@ export default function PhotoOcrFlow({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
