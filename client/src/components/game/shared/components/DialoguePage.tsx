@@ -304,8 +304,9 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
           onClick={handleSkip}
           className={`gap-1 ${isConfirmingSkip ? "" : "text-muted-foreground"}`}
           data-testid="button-skip-dialogue"
+          aria-label={isConfirmingSkip ? "再按一次確認跳過對話" : "跳過對話"}
         >
-          <SkipForward className="w-4 h-4" />
+          <SkipForward className="w-4 h-4" aria-hidden="true" />
           {isConfirmingSkip ? "再按一次確認跳過" : "跳過"}
         </Button>
       </div>
