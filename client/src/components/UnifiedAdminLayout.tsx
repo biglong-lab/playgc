@@ -138,7 +138,14 @@ export default function UnifiedAdminLayout({ children, title, actions }: Unified
           </header>
 
           <main className="flex-1 overflow-auto p-6 bg-muted/30">
-            {children}
+            <motion.div
+              key={title}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+            >
+              {children}
+            </motion.div>
           </main>
         </div>
       </div>
