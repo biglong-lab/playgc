@@ -321,8 +321,25 @@ export default function ConditionalVerifyEditor({
                 const parsed = raw === "" ? 4 : parseInt(raw, 10);
                 const safe = Number.isFinite(parsed) ? parsed : 4;
                 const count = Math.max(2, Math.min(10, safe));
-                updateField("fragmentCount", count);
-                updateFragments(generateFragments(config.fragmentType || "numbers", count));
+                // 🐛 2026-05-16：原連續 call updateField + updateFragments、第 2 個 call
+                //   用 stale config 把 fragmentCount 覆蓋回舊值（業主回報「數量表面不動但碎片欄增加」）。
+                //   修法：用 updateFields 一次 batch 寫 fragmentCount + fragments + targetCode。
+                const newFragments = generateFragments(config.fragmentType || "numbers", count);
+                if (updateFields) {
+                  const patch: Record<string, unknown> = {
+                    fragmentCount: count,
+                    fragments: newFragments,
+                  };
+                  if (config.fragmentType !== "custom") {
+                    patch.targetCode = newFragments.map((f) => f.value).join("");
+                  }
+                  updateFields(patch);
+                } else {
+                  // fallback：先寫 fragments（含 targetCode）再寫 fragmentCount
+                  // 順序顛倒以避免 updateFragments 內部 stale closure 覆蓋 fragmentCount
+                  updateFragments(newFragments);
+                  updateField("fragmentCount", count);
+                }
               }}
               min={2}
               max={10}
