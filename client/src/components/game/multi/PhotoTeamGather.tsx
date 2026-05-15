@@ -500,7 +500,13 @@ export default function PhotoTeamGather({ config, onComplete, sessionId, gameId,
 
   // intro（隊長 / 無 leaderId 向後兼容）
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-gather-intro">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4"
+      data-testid="photo-gather-intro"
+    >
       <Users className="w-12 h-12 text-primary" />
       <h2 className="text-2xl font-bold">{config.title || "團體合照"}</h2>
       {config.instruction && (
