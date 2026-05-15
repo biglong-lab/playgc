@@ -10,6 +10,7 @@
 // MVP：每段是文字問答；未來可擴充 segmentType 嵌套子玩法（photo/qr/gps）
 
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
