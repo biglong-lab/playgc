@@ -227,7 +227,15 @@ export default function TerritoryCapture({
   // ════════════════════════════════════════════════════════════════
 
   return (
-    <div className="min-h-screen p-4 space-y-4 max-w-md mx-auto" data-testid="territory-capture">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-screen p-4 space-y-4 max-w-md mx-auto"
+      data-testid="territory-capture"
+      role="region"
+      aria-label="多人領土爭奪"
+    >
       {/* 標題 + 倒數 */}
       <Card>
         <CardContent className="pt-6 space-y-2">
