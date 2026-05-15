@@ -395,6 +395,6 @@ export default function TimeBombPage({ config, onComplete }: TimeBombPageProps) 
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
