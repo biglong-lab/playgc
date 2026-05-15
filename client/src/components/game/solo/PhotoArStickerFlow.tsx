@@ -648,7 +648,11 @@ export default function PhotoArStickerFlow({
             captureDisabled={useFaceTracking && !faceAnchor}
           />
           {useFaceTracking && !faceAnchor && (
-            <span className="text-amber-400 text-xs bg-black/50 px-2 py-0.5 rounded animate-pulse">
+            <span
+              className="text-amber-400 text-xs bg-black/50 px-2 py-0.5 rounded animate-pulse"
+              role="status"
+              aria-live="polite"
+            >
               等找到臉才能拍
             </span>
           )}
@@ -657,6 +661,7 @@ export default function PhotoArStickerFlow({
             onClick={() => { camera.cancelCamera(); setStage("intro"); }}
             className="text-white/70 text-sm hover:text-white py-1 px-3"
             data-testid="btn-ar-cancel"
+            aria-label="取消 AR 拍照、返回介紹頁"
           >
             ✕ 返回
           </button>
