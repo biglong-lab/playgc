@@ -471,7 +471,7 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
                 </p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* 🆕 玩家選項按鈕（顯示後不能跳到下一句，等選擇）+ 動畫 + 鍵盤快速鍵 */}
