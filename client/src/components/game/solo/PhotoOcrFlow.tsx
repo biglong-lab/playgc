@@ -340,7 +340,12 @@ export default function PhotoOcrFlow({
   //   - 內容於可用空間垂直置中
   //   - 不使用 h-full w-full（會溢出 main 被 overflow-hidden 裁切）
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      role="region"
+      aria-label="OCR 招牌辨識任務"
       className="h-full w-full flex flex-col items-center justify-center p-4 gap-4 overflow-y-auto"
       data-testid="photo-ocr-intro"
     >
