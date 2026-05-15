@@ -451,10 +451,18 @@ export default function DialoguePage({ config, onComplete, onVariableUpdate }: D
                 ) : (
                   <div className="absolute -left-2 top-4 w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-card border-b-8 border-b-transparent" />
                 )}
-                <p className="font-chinese text-base leading-relaxed">
+                <p
+                  className="font-chinese text-base leading-relaxed"
+                  role="log"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
                   {displayedText}
                   {isTyping && (
-                    <span className="inline-block w-1 h-4 bg-primary ml-1 animate-pulse" />
+                    <span
+                      className="inline-block w-1 h-4 bg-primary ml-1 animate-pulse"
+                      aria-hidden="true"
+                    />
                   )}
                 </p>
               </div>
