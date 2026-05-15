@@ -63,6 +63,19 @@ function aiAdoptionColor(rate: number): string {
   return "text-red-700";
 }
 
+interface ReportsHealthResponse {
+  total: number;
+  last7d: number;
+  last30d: number;
+  latestCreatedAt: string | null;
+  daysAgo: number | null;
+  severity: "ok" | "warning" | "critical" | "none";
+  avgAnomaly: number | null;
+  telegramSent7d: number;
+  dailyTrend: Array<{ day: string; count: number }>;
+  timestamp: string;
+}
+
 export default function AdminSlaDashboard() {
   const [days, setDays] = useState<7 | 30>(30);
 
@@ -72,6 +85,16 @@ export default function AdminSlaDashboard() {
       const res = await apiRequest("GET", `/api/admin/timings/sla-stats?days=${days}`);
       return res.json();
     },
+  });
+
+  // 🆕 D 任務：session_reports 健康指標
+  const { data: reportsHealth } = useQuery<ReportsHealthResponse>({
+    queryKey: ["/api/admin/metrics/reports-health"],
+    queryFn: async () => {
+      const res = await apiRequest("GET", "/api/admin/metrics/reports-health");
+      return res.json();
+    },
+    refetchInterval: 60_000,
   });
 
   return (
