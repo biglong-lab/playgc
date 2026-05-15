@@ -793,12 +793,13 @@ export default function GamePlay() {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => setState(prev => ({ ...prev, currentPageIndex: Math.max(0, prev.currentPageIndex - 1) }))}
-          disabled={currentPageIndex === 0}
+          onClick={goBackByVisitStack}
+          disabled={visitStackRef.current.length < 2 && currentPageIndex === 0}
           className="gap-1"
           data-testid="button-prev-page"
+          aria-label="回到上一個訪問的頁面"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           上一頁
         </Button>
 
