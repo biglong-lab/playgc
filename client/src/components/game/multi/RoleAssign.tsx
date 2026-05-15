@@ -162,6 +162,6 @@ export default function RoleAssign({
           })}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
