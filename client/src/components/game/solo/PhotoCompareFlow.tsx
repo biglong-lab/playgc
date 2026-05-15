@@ -417,7 +417,13 @@ export default function PhotoCompareFlow({
 
   // 預設：參考照 + 開始拍照
   return (
-    <div className="h-full w-full flex flex-col items-center p-4 gap-4 overflow-y-auto" data-testid="photo-compare-instruction">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="h-full w-full flex flex-col items-center p-4 gap-4 overflow-y-auto"
+      data-testid="photo-compare-instruction"
+    >
       <div className="text-center space-y-2 pt-4">
         <h2 className="text-2xl font-bold" data-testid="photo-compare-title">
           {config.title || "拍照比對任務"}
