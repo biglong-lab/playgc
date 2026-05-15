@@ -235,7 +235,6 @@ export default function PhotoBeforeAfterFlow({
                       setTimeout(() => resolve(false), 5000);
                     });
                     if (ok) {
-                      console.log("[BeforeAfter] ✅ Cloudinary 合成驗證通過，替換");
                       setCompositeUrl(comp.compositeUrl);
                     } else {
                       console.warn(
