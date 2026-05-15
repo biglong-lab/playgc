@@ -118,7 +118,14 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col items-center justify-center p-6"
+      role="region"
+      aria-label="按鈕任務"
+    >
       {config.timeLimit && timeLeft !== null && (
         <div className="w-full max-w-md mb-6">
           <div className="flex items-center justify-between mb-2">
