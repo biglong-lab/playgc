@@ -305,6 +305,6 @@ export default function LockCoop({
           </CardContent>
         </Card>
       )}
-    </div>
+    </motion.div>
   );
 }
