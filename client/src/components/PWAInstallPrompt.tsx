@@ -91,6 +91,7 @@ function isIOSSafari(): boolean {
 export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const [iosVisible, setIosVisible] = useState(false);
 
   useEffect(() => {
     // 已是 standalone 模式 → 已安裝，無需提示
@@ -104,6 +105,11 @@ export default function PWAInstallPrompt() {
     const visitCount = bumpVisitCount();
     const visitsReached = visitCount >= MIN_VISITS_BEFORE_PROMPT;
 
+    // 🆕 2026-05-16 #2：iOS Safari 不觸發 beforeinstallprompt、改顯示手動指引
+    if (visitsReached && isIOSSafari()) {
+      setIosVisible(true);
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -113,6 +119,7 @@ export default function PWAInstallPrompt() {
 
     const handleAppInstalled = () => {
       setVisible(false);
+      setIosVisible(false);
       setDeferredPrompt(null);
     };
 
@@ -124,6 +131,72 @@ export default function PWAInstallPrompt() {
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
+
+  // 🆕 iOS Safari 專屬提示卡（手動加到主畫面）
+  if (iosVisible) {
+    return (
+      <div
+        className="fixed bottom-20 inset-x-3 z-50 md:bottom-4 md:left-auto md:right-4 md:max-w-sm safe-bottom"
+        role="dialog"
+        aria-labelledby="pwa-ios-install-title"
+        aria-live="polite"
+        data-testid="pwa-install-prompt-ios"
+      >
+        <div className="bg-card border shadow-lg rounded-xl p-4 flex items-start gap-3">
+          <div className="bg-primary/10 text-primary rounded-lg p-2 shrink-0">
+            <Download className="w-5 h-5" aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div id="pwa-ios-install-title" className="font-semibold text-sm">
+              加到主畫面（iOS）
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              點下方 <span aria-label="分享圖示" className="font-bold">⎙</span> 分享圖示 → 選「加到主畫面」、下次直接點 icon 開啟。
+            </p>
+            <div className="flex gap-2 mt-3 flex-wrap">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  markDismissed();
+                  setIosVisible(false);
+                }}
+                data-testid="button-pwa-ios-dismiss"
+                aria-label="稍後再說、30 天內不再提示"
+              >
+                稍後再說
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  markNeverShow();
+                  setIosVisible(false);
+                }}
+                className="text-muted-foreground/70 hover:text-muted-foreground text-xs"
+                data-testid="button-pwa-ios-never-show"
+                aria-label="不再顯示安裝提示"
+              >
+                不再提示
+              </Button>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              markDismissed();
+              setIosVisible(false);
+            }}
+            aria-label="關閉提示"
+            className="text-muted-foreground hover:text-foreground p-1 -mt-1 -mr-1"
+            data-testid="button-pwa-ios-close"
+          >
+            <X className="w-4 h-4" aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!visible || !deferredPrompt) return null;
 
