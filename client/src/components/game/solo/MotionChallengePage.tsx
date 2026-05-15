@@ -428,6 +428,6 @@ export default function MotionChallengePage({ config, onComplete }: MotionChalle
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
