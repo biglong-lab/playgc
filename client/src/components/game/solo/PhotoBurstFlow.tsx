@@ -8,6 +8,7 @@
 //   5. 顯示結果 + 下載 / 分享
 
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import {
   Camera, CheckCircle2, AlertTriangle, Download, Share2, Zap, RefreshCw,
