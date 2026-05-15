@@ -132,6 +132,25 @@ export default function AdminReports() {
     return { total, healthy, warning, critical, avgGraceRate };
   }, [reports]);
 
+  // 🆕 2026-05-16 B 任務：計算「最近一份報告距今天數」+ actionable hint
+  const latestReportInfo = useMemo(() => {
+    if (reports.length === 0) {
+      return { daysAgo: null, severity: "none" as const };
+    }
+    const latestCreatedAt = reports.reduce<string | null>((acc, r) => {
+      const created = r.createdAt ?? r.endedAt ?? r.startedAt;
+      if (!created) return acc;
+      if (!acc) return created;
+      return new Date(created).getTime() > new Date(acc).getTime() ? created : acc;
+    }, null);
+    if (!latestCreatedAt) return { daysAgo: null, severity: "none" as const };
+    const daysAgo = Math.floor(
+      (Date.now() - new Date(latestCreatedAt).getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const severity = daysAgo > 7 ? "critical" : daysAgo > 3 ? "warning" : "ok";
+    return { daysAgo, severity };
+  }, [reports]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
