@@ -544,9 +544,12 @@ export default function ChoiceVerifyRacePage({
         <Card
           className="border-amber-300 bg-amber-50/80 dark:bg-amber-950/30"
           data-testid="race-ws-disconnected-banner"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
         >
           <CardContent className="p-3 flex items-center gap-2 text-sm">
-            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" aria-hidden="true" />
             <span className="text-amber-900 dark:text-amber-100">
               {isReconnecting
                 ? "重新連線中…剛才的答題仍會自動同步"
