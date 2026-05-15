@@ -83,6 +83,9 @@ export const games = pgTable("games", {
   bgmUrl: text("bgm_url"),
   // 🆕 2026-05-12：整場 BGM 音量（0-100、預設 50）
   bgmVolume: integer("bgm_volume").default(50),
+  // 🆕 2026-05-16 #10：玩家畫面是否顯示進度（預設 true 顯示）
+  // 業主 5/15 回報：希望可選擇關閉、避免玩家透過進度條預判遊戲長度而失去驚喜感
+  showProgress: boolean("show_progress").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
