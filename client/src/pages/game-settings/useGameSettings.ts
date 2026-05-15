@@ -82,6 +82,9 @@ export interface GameSettingsReturn {
   setPricingType: (v: PricingType) => void;
   setPrice: (v: string) => void;
   setRecurProductId: (v: string) => void;
+  // 🆕 2026-05-16 #10：玩家畫面顯示
+  playerDisplay: { showProgress: boolean };
+  setShowProgress: (v: boolean) => void;
   // 操作
   handleSave: () => void;
   isSaving: boolean;
