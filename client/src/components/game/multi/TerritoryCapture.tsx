@@ -360,6 +360,6 @@ export default function TerritoryCapture({
           </CardContent>
         </Card>
       )}
-    </div>
+    </motion.div>
   );
 }
