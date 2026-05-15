@@ -102,7 +102,14 @@ export default function TreasureHunt({ config, state, onUnlockClue }: TreasureHu
   // 點線索進入答題模式
   if (activeClue) {
     return (
-      <div className="w-full max-w-md mx-auto p-4 space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="w-full max-w-md mx-auto p-4 space-y-4"
+        role="region"
+        aria-label="多人尋寶任務"
+      >
         <div className="text-center space-y-2">
           <h2 className="text-lg font-bold">📝 線索：{activeClue.prompt}</h2>
           {activeClue.hint && (
