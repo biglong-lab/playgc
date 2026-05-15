@@ -406,6 +406,7 @@ export default function PhotoCompareFlow({
           variant="outline"
           className="transition-transform active:scale-[0.97]"
           data-testid="btn-photo-compare-skip"
+          aria-label="跳過此拍照比對任務"
         >
           跳過此任務
         </Button>
