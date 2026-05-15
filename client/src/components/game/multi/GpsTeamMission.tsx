@@ -186,7 +186,15 @@ export default function GpsTeamMission({
       : (reachedCount / totalCount) * 100;
 
   return (
-    <div className="space-y-4" data-testid="gps-team-mission">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-4"
+      data-testid="gps-team-mission"
+      role="region"
+      aria-label="多人 GPS 任務"
+    >
       {/* 標題 + 目標 */}
       <Card>
         <CardContent className="p-4">
