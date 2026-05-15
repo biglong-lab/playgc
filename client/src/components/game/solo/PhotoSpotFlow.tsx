@@ -534,6 +534,6 @@ export default function PhotoSpotFlow({
           data-testid="input-photo-spot-upload"
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
