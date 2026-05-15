@@ -401,11 +401,16 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
           )}
 
           {hotZoneMessage && (
-            <div className={`text-center mb-4 p-3 rounded-lg animate-pulse ${
-              distance && distance <= targetRadius * 2
-                ? "bg-success/20 text-success border border-success/30"
-                : "bg-primary/20 text-primary border border-primary/30"
-            }`}>
+            <div
+              className={`text-center mb-4 p-3 rounded-lg animate-pulse ${
+                distance && distance <= targetRadius * 2
+                  ? "bg-success/20 text-success border border-success/30"
+                  : "bg-primary/20 text-primary border border-primary/30"
+              }`}
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <p className="font-bold text-lg">{hotZoneMessage}</p>
             </div>
           )}
