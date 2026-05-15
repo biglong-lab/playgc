@@ -198,7 +198,15 @@ export default function ShootingTeam({
   const overallProgress = Math.max(hitProgress, scoreProgress);
 
   return (
-    <div className="space-y-4" data-testid="shooting-team">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="space-y-4"
+      data-testid="shooting-team"
+      role="region"
+      aria-label="多人射擊任務"
+    >
       {/* 標題 + 規則 */}
       <Card>
         <CardContent className="p-4">
