@@ -328,7 +328,14 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col items-center justify-center p-6"
+      role="region"
+      aria-label="選擇題驗證任務"
+    >
       <Card className="w-full max-w-md">
         <CardContent className="p-6">
           <h2 className="text-xl font-display font-bold mb-2 text-center">
