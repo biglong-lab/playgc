@@ -395,7 +395,7 @@ export default function PhotoCompareFlow({
             </div>
             <img
               src={compare.referenceImageUrl}
-              alt="參考"
+              alt={compare.referenceDescription || "任務參考照片、請拍出類似畫面"}
               className="w-full aspect-square object-cover"
             />
           </div>
@@ -434,7 +434,7 @@ export default function PhotoCompareFlow({
             </div>
             <img
               src={compare.referenceImageUrl}
-              alt="參考"
+              alt={compare.referenceDescription || "任務參考照片、請拍出類似畫面"}
               className="w-full aspect-square object-cover"
             />
             <div className="px-3 py-2 text-xs text-muted-foreground bg-muted/50">
