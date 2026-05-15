@@ -79,6 +79,15 @@ function isStandaloneMode(): boolean {
   return nav.standalone === true;
 }
 
+// 🆕 2026-05-16 #2：iOS Safari 偵測（iOS 不觸發 beforeinstallprompt、需要手動指引）
+function isIOSSafari(): boolean {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) && !(window as unknown as { MSStream?: unknown }).MSStream;
+  const isSafari = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(ua);
+  return isIOS && isSafari;
+}
+
 export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
