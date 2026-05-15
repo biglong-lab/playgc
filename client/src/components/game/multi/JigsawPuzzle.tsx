@@ -11,6 +11,7 @@
 // 適用：親子家庭、企業破冰、團隊建立
 
 import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 interface JigsawSlot {
   id: string;       // "r{row}c{col}"
