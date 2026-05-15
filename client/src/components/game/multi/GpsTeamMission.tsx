@@ -287,6 +287,6 @@ export default function GpsTeamMission({
           🎉 任務完成！
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
