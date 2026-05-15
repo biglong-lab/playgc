@@ -527,8 +527,9 @@ export default function ConditionalVerifyPage({
                   !inputCode.trim()
                 }
                 data-testid="button-verify-code"
+                aria-label={verificationMode === 'all_collected' ? '確認碎片已收集完成' : '驗證輸入的密碼組合'}
               >
-                <Puzzle className="w-4 h-4" />
+                <Puzzle className="w-4 h-4" aria-hidden="true" />
                 {verificationMode === 'all_collected' ? '確認收集完成' : '驗證密碼'}
               </Button>
             ) : (
@@ -536,8 +537,9 @@ export default function ConditionalVerifyPage({
                 onClick={handleContinue}
                 className="w-full gap-2 transition-transform active:scale-[0.97]"
                 data-testid="button-continue-fragment"
+                aria-label="碎片驗證通過、繼續下一步"
               >
-                <CheckCircle2 className="w-4 h-4 animate-[pulse_2s_ease-in-out_infinite]" />
+                <CheckCircle2 className="w-4 h-4 animate-[pulse_2s_ease-in-out_infinite]" aria-hidden="true" />
                 繼續
               </Button>
             )}
