@@ -406,6 +406,6 @@ export default function LockPage({ config, onComplete }: LockPageProps) {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
