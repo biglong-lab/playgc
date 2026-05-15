@@ -47,6 +47,6 @@ export default function QrScanPage({ config, onComplete, sessionId }: QrScanPage
       )}
       {mode === "success" && <SuccessView config={config} />}
       {mode === "error" && <ErrorView />}
-    </div>
+    </motion.div>
   );
 }
