@@ -260,6 +260,6 @@ export default function JigsawPuzzle({
       <p className="text-xs text-center text-muted-foreground">
         💡 拍照升級版（上傳真實照片拼圖）將於 Phase 2 推出
       </p>
-    </div>
+    </motion.div>
   );
 }
