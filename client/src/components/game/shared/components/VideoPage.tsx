@@ -99,7 +99,6 @@ export default function VideoPage({ config, onComplete }: VideoPageProps) {
       // 🔁 自動重試一次（避免暫時網路 hiccup 直接顯示錯誤）
       if (retryCountRef.current < 1 && code !== 4) {
         retryCountRef.current += 1;
-        console.log("[VideoPage] auto retry", retryCountRef.current);
         setTimeout(() => {
           video.load(); // 重新載入
         }, 1000);
