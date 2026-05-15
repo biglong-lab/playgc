@@ -457,7 +457,15 @@ export default function PhotoBeforeAfterFlow({
 
   // 介紹 + 開始
   return (
-    <div className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4" data-testid="photo-before-after-intro">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="h-full w-full flex flex-col items-center justify-center p-4 space-y-4"
+      data-testid="photo-before-after-intro"
+      role="region"
+      aria-label="前後對比拍照任務"
+    >
       <Camera className="w-12 h-12 text-primary" />
       <h2 className="text-2xl font-bold">
         {config.title || "前後對比任務"}
