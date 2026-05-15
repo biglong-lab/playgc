@@ -516,6 +516,6 @@ export default function PhotoCompareFlow({
           data-testid="input-photo-compare-upload"
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
