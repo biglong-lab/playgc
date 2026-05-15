@@ -223,6 +223,69 @@ export default function AdminSlaDashboard() {
           </Card>
         </>
       )}
+
+      {/* 🆕 D：session_reports 健康指標卡 */}
+      {reportsHealth && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              session_reports 健康指標
+              {reportsHealth.severity === "ok" && (
+                <Badge className="bg-green-500/20 text-green-700">健康</Badge>
+              )}
+              {reportsHealth.severity === "warning" && (
+                <Badge className="bg-amber-500/20 text-amber-700">注意</Badge>
+              )}
+              {reportsHealth.severity === "critical" && (
+                <Badge className="bg-red-500/20 text-red-700">嚴重</Badge>
+              )}
+              {reportsHealth.severity === "none" && (
+                <Badge variant="secondary">無資料</Badge>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <div className="text-xs text-muted-foreground">過去 7 天</div>
+                <div className="text-2xl font-bold tabular-nums">{reportsHealth.last7d}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">過去 30 天</div>
+                <div className="text-2xl font-bold tabular-nums">{reportsHealth.last30d}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">累計總數</div>
+                <div className="text-2xl font-bold tabular-nums">{reportsHealth.total}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">最後一份距今</div>
+                <div className={`text-2xl font-bold tabular-nums ${
+                  reportsHealth.severity === "critical" ? "text-red-700" :
+                  reportsHealth.severity === "warning" ? "text-amber-700" :
+                  reportsHealth.severity === "ok" ? "text-green-700" : ""
+                }`}>
+                  {reportsHealth.daysAgo === null ? "—" : `${reportsHealth.daysAgo} 天`}
+                </div>
+              </div>
+            </div>
+            {reportsHealth.severity === "critical" && (
+              <div role="status" aria-live="polite" className="text-sm text-red-700">
+                ⚠️ 超過 7 天無新報告 — 檢查 cron（CRON_SECRET）或確認是否有 host_mode 多人活動完成
+              </div>
+            )}
+            {reportsHealth.severity === "warning" && (
+              <div role="status" aria-live="polite" className="text-sm text-amber-700">
+                ⚠️ 超過 3 天無新報告 — 屬正常範圍但需注意
+              </div>
+            )}
+            <div className="text-xs text-muted-foreground">
+              7 天 Telegram 推送：{reportsHealth.telegramSent7d} 次
+              {reportsHealth.avgAnomaly !== null && ` · 平均異常分數：${reportsHealth.avgAnomaly}`}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
