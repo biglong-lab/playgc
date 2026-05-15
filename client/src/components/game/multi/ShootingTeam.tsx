@@ -313,6 +313,6 @@ export default function ShootingTeam({
           🎯 隊伍達標！
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
