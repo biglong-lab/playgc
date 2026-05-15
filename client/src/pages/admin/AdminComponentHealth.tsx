@@ -5,6 +5,7 @@
 // UI：表格 — 元件名 / 跑了幾次 / 完成率 / 平均耗時 / 錯誤率 / vs 基準（前 7 天）
 
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
