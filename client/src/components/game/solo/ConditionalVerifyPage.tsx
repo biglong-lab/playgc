@@ -636,6 +636,6 @@ export default function ConditionalVerifyPage({
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
