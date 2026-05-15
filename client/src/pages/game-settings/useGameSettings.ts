@@ -164,6 +164,7 @@ export function useGameSettings(): GameSettingsReturn {
     setPricingType((game.pricingType as PricingType) || "free");
     setPrice(String(game.price ?? ""));
     setRecurProductId(game.recurProductId || "");
+    setShowProgress((game as { showProgress?: boolean }).showProgress !== false);
   }, [game]);
 
   // 儲存 mutation
