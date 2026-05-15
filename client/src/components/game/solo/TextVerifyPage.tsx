@@ -454,6 +454,6 @@ export default function TextVerifyPage({ config, onComplete, gameId, variantPool
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 }
