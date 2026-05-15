@@ -10,6 +10,7 @@
 // 適用：景點探秘、團隊解謎、企業內訓尋寶
 
 import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 
 export interface TreasureClue {
   id: string;
