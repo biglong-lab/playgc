@@ -192,7 +192,6 @@ export default function PhotoBurstFlow({
                 boomerang: true,
               })
                 .then((gifUrl) => {
-                  console.log("[Burst] ✅ Step 3: Client GIF 動畫完成！");
                   setCompositeUrl(gifUrl);
                 })
                 .catch((err) => {
