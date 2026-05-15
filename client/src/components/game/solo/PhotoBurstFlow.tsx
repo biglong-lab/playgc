@@ -776,7 +776,6 @@ export default function PhotoBurstFlow({
             <Button
               size="lg"
               onClick={() => {
-                console.log("[Burst] 使用者手動強制完成");
                 const first = burstImagesRef.current[0];
                 if (first) setCompositeUrl(first);
                 setStage("done");
