@@ -271,7 +271,14 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
   }
 
   return (
-    <div className="min-h-full flex flex-col items-center justify-center p-6">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="min-h-full flex flex-col items-center justify-center p-6"
+      role="region"
+      aria-label="投票任務"
+    >
       {votingTimeLimit > 0 && timeLeft !== null && !hasVoted && (
         <div className="w-full max-w-md mb-6">
           <div className="flex items-center justify-between mb-2">
