@@ -80,6 +80,7 @@ import {
 import { format, formatDistanceToNow } from "date-fns";
 import { zhTW } from "date-fns/locale";
 import { PlayerHistoryDialog } from "./AdminMultiSessionsPlayerHistory";
+import { MiniTimeline, type TimelineEvent } from "./AdminMultiSessionsTimeline";
 
 // ============================================================================
 // Types（與 server endpoint 對應）
