@@ -152,6 +152,7 @@ export function registerPosRoutes(app: Express) {
           paidBookings: paid,
           posTotalPaidCents: posStats?.totalPaidCents ?? 0,
           posTxCount: posStats?.txCount ?? 0,
+          pendingOnsiteCents,
         },
         upcoming: upcoming.map((b) => ({
           ...b,
