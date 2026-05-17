@@ -36,6 +36,7 @@ export function LoginDialog({
     setEmail,
     password,
     setPassword,
+    handleLineLogin,
     handleGoogleLogin,
     handleAppleLogin,
     handleGuestLogin,
@@ -43,6 +44,9 @@ export function LoginDialog({
     handleEmailSignup,
     handleForgotPassword,
   } = handlers;
+
+  // 環境偵測：LINE 內建瀏覽器 → 隱藏 Google（OAuth popup 會卡）
+  const visibility = getAuthProviderVisibility();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
