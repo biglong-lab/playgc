@@ -209,6 +209,7 @@ export async function registerRoutes(
   registerAdminLineConfigRoutes(app);
   registerAdminLineLoginConfigRoutes(app);
   registerLineLoginRoutes(app);
+  registerAdminActivitiesRoutes(app);
   registerBattleSelfReportRoutes(app);
   registerSquadRecordsRoutes(app);
   registerSquadInvitesRoutes(app);
