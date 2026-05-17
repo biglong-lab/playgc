@@ -23,6 +23,40 @@
 
 業主 5/18 確認：「全部推展、金流可以預留、其他功能都可以推進、並且持續打磨一段時間」
 
+### 🪄 Phase 8 持續打磨（Round 16-29、共 14 個小改進）
+
+**現場 UX 強化**：
+- POS Dashboard「下個 30 分鐘」加倒數時間（「5 分後」/「已過 3 分」）+ 10 分鐘內紅色 highlight、遲到琥珀色
+- PosScan / PosCheckout 加震動+音效反饋（成功上升音、錯誤低長嗶、桌機自動 fallback）
+- PosScan 確認頁顯示電話（tap-to-call）+ 備註（黃色 highlight）
+- PosBookingsToday 每筆顯示 `📞 電話` 可一鍵撥
+- PosSummary 加按收款員分組 + 交易明細顯示收款員姓名
+
+**業主端管理優化**：
+- AdminActivities 加「📋 複製活動」按鈕（一鍵複製設定建副本）
+- AdminActivities 卡片加 sortOrder 上下調整按鈕 + #N 顯示
+- AdminActivities 加「📅 時段」按鈕、可為每活動設專屬時段（重用 ScheduleEditor）
+- AdminBookings 列表加活動 filter + 活動名稱欄 + ✓到場/✓已收 badge + 電話 tap-to-call
+- Admin sidebar 加「💰 POS 工作站」入口
+
+**玩家體驗**：
+- BookActivitiesPage 卡片加「📱 現場付款」標籤
+- MyBookingsPage 預約卡片顯示活動名 + 金額 + 付款狀態
+- BookDonePage 顯示「✓ 已付款」狀態 + 收款時間
+- BookPage 應付金額提示改「現場出示 QR Code」
+
+**後端整合**：
+- activity_schedules 整合：getAvailability 接 activityId、優先用活動專屬時段、fallback booking_configs
+- /api/pos/dashboard 含 fieldName + phone + customerNote
+- /api/pos/summary 加 byStaff 分組 + 收款員姓名 join
+- /api/bookings/mine join activities 拿活動名
+- 線上付款暫時 fallback onsite（保持流程順暢、待商戶帳號開通）
+- 新 client lib：pos-feedback（震動/音效統一 API）
+
+**業主操作手冊**：`docs/runbooks/multi-activity-pos.md`（198 行、業主可直接照做）
+
+**接地驗證**：Round 22 + 29 各跑一次完整 e2e（建活動 → 預約 → POS 收款 → 紀錄全欄位）、生產 DB 實證可用、清乾淨
+
 ---
 
 ## 2026-05-12
