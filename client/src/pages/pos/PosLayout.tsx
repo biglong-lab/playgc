@@ -15,6 +15,18 @@ interface PosLayoutProps {
 
 export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
   const [location] = useLocation();
+  // 🆕 2026-05-18 離線指示器
+  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
+  useEffect(() => {
+    const onOnline = () => setIsOnline(true);
+    const onOffline = () => setIsOnline(false);
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
+    return () => {
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+    };
+  }, []);
 
   const tabs = [
     { path: "/pos", label: "首頁", icon: Home },
