@@ -88,7 +88,12 @@ export default function PosDashboard() {
           suffix=""
           color="text-amber-600"
         />
-        <StatCard label="收款筆數" value={`${s.posTxCount}`} suffix="筆" color="text-slate-600" />
+        <StatCard
+          label="待現場付款"
+          value={`NT$${((s.pendingOnsiteCents ?? 0) / 100).toLocaleString()}`}
+          suffix=""
+          color="text-red-600"
+        />
       </div>
 
       {/* 主要動作大按鈕 */}
