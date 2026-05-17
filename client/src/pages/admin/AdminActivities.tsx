@@ -217,6 +217,24 @@ export default function AdminActivities() {
     setCreating(true);
   };
 
+  // 🆕 2026-05-18：複製活動
+  const duplicateActivity = (a: Activity) => {
+    setForm({
+      slug: `${a.slug}-copy`,
+      name: `${a.name}（副本）`,
+      shortDesc: a.shortDesc ?? "",
+      description: a.description ?? "",
+      coverUrl: a.coverUrl ?? "",
+      locationNote: a.locationNote ?? "",
+      priceCents: a.priceCents,
+      durationMinutes: a.durationMinutes,
+      capacityPerSlot: a.capacityPerSlot,
+      paymentMode: a.paymentMode,
+      isActive: true,
+    });
+    setCreating(true);
+  };
+
   const closeDialog = () => {
     setEditing(null);
     setCreating(false);
