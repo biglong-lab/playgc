@@ -97,6 +97,17 @@ export function registerBookingRoutes(app: Express) {
   });
 
   // ──────────────────────────────────────────
+  // 🆕 2026-05-17 per-field LIFF：BookPage 動態取對應場域 LIFF ID（公開、不需 auth）
+  app.get("/api/bookings/liff/:fieldCode", async (req, res) => {
+    try {
+      const config = await resolveLineConfig(req.params.fieldCode);
+      res.json({ liffId: config.liffId, source: config.source });
+    } catch (err) {
+      console.error("[bookings/liff]", err);
+      res.status(500).json({ error: "查詢失敗" });
+    }
+  });
+
   // GET /api/bookings/config/:fieldId
   //   給預約頁顯示：是否需付費、取消政策、提醒分鐘等
   // ──────────────────────────────────────────
