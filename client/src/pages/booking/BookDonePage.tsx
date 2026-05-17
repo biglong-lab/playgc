@@ -5,12 +5,13 @@
 
 import { useParams, Link, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Calendar, Clock, Users, Hash, ArrowLeft, X } from "lucide-react";
+import { CheckCircle2, Calendar, Clock, Users, Hash, ArrowLeft, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import { initLiff } from "@/lib/liff";
 
 interface Booking {
   id: number;
