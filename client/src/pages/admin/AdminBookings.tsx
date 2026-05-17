@@ -384,8 +384,14 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                           "—"
                         )}
                       </td>
-                      <td className="py-2 px-2 text-xs truncate max-w-[200px]">
-                        {b.customerNote || ""}
+                      <td className="py-2 px-2 text-xs max-w-[200px]" title={b.customerNote || ""}>
+                        {b.customerNote ? (
+                          <span className="inline-block px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 truncate max-w-full">
+                            💬 {b.customerNote}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </td>
                       <td className="py-2 px-2">
                         {(b.status === "confirmed" || b.status === "pending") && (
