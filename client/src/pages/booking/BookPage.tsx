@@ -332,9 +332,21 @@ export default function BookPage() {
           <Calendar className="w-4 h-4" /> 選擇日期
         </Label>
         {availLoading ? (
-          <p className="text-muted-foreground text-sm">載入中...</p>
+          <div className="flex gap-2 overflow-hidden pb-2" aria-busy="true" aria-label="載入可預約日期">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="shrink-0 w-[72px] h-[68px] rounded-lg bg-muted animate-pulse"
+                aria-hidden="true"
+              />
+            ))}
+          </div>
         ) : availableDates.length === 0 ? (
-          <p className="text-destructive text-sm">未來 14 天無可預約場次</p>
+          <div className="text-center py-6 bg-muted/30 rounded-lg" role="status">
+            <Calendar className="w-8 h-8 mx-auto text-muted-foreground mb-2" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">未來 14 天無可預約場次</p>
+            <p className="text-xs text-muted-foreground mt-1">請稍後再試或聯絡業主</p>
+          </div>
         ) : (
           <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
             {availableDates.map((d) => {
