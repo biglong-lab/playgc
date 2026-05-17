@@ -85,6 +85,7 @@ import { registerAdminLineConfigRoutes } from "./admin-line-config";
 import { registerAdminLineLoginConfigRoutes } from "./admin-line-login-config";
 import { registerLineLoginRoutes } from "./auth-line-login";
 import { registerAdminActivitiesRoutes } from "./admin-activities";
+import { registerPublicActivitiesRoutes } from "./public-activities";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
