@@ -25,18 +25,23 @@ const LINE_PROFILE_URL = "https://api.line.me/v2/profile";
 const STATE_COOKIE = "line_login_state";
 const STATE_TTL_MS = 10 * 60 * 1000;
 
-function getEnv() {
+// 🆕 2026-05-18：改成 async getConfig（從 DB / env 動態取、業主後台可填）
+import { getLineLoginConfig } from "../lib/line-login-config";
+
+async function getConfig() {
+  const c = await getLineLoginConfig();
   return {
-    channelId: process.env.LINE_LOGIN_CHANNEL_ID,
-    channelSecret: process.env.LINE_LOGIN_CHANNEL_SECRET,
-    callbackUrl: process.env.LINE_LOGIN_CALLBACK_URL,
+    channelId: c.channelId,
+    channelSecret: c.channelSecret,
+    callbackUrl: c.callbackUrl,
     appBaseUrl: process.env.APP_BASE_URL || "https://game.homi.cc",
+    source: c.source,
   };
 }
 
-function isConfigured(): boolean {
-  const env = getEnv();
-  return !!(env.channelId && env.channelSecret && env.callbackUrl);
+async function isConfigured(): Promise<boolean> {
+  const c = await getConfig();
+  return !!(c.channelId && c.channelSecret && c.callbackUrl);
 }
 
 export function registerLineLoginRoutes(app: Express) {
