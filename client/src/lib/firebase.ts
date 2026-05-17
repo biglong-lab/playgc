@@ -186,6 +186,37 @@ export async function signInWithApple() {
   }
 }
 
+// 🆕 2026-05-17 LINE Login（透過後端 OAuth → Firebase custom token）
+// 步驟：
+//   1. 前端 redirect 到 /api/auth/line?returnTo=<current path>
+//   2. 後端跑 LINE OAuth flow（拿 LINE userId/displayName/pictureUrl）
+//   3. 後端 createCustomToken → redirect 回前端 #lineToken=xxx
+//   4. 前端讀 hash → signInWithCustomToken
+export function startLineLogin(returnTo?: string): void {
+  const path = returnTo ?? (window.location.pathname + window.location.search);
+  window.location.href = `/api/auth/line?returnTo=${encodeURIComponent(path)}`;
+}
+
+// 從 URL hash 撈 LINE custom token 並登入 Firebase
+// （在 App 啟動時呼叫、若有 hash 就走 LINE 登入流程）
+export async function consumeLineTokenFromHash(): Promise<boolean> {
+  try {
+    if (typeof window === "undefined") return false;
+    const hash = window.location.hash;
+    if (!hash || !hash.includes("lineToken=")) return false;
+    const params = new URLSearchParams(hash.slice(1));
+    const token = params.get("lineToken");
+    if (!token) return false;
+    // 清掉 hash（避免 token 留在 URL）
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+    await firebaseSignInWithCustomToken(auth, token);
+    return true;
+  } catch (err) {
+    console.error("[firebase] consumeLineTokenFromHash 失敗:", err);
+    return false;
+  }
+}
+
 // Anonymous Sign-In (Guest Mode)
 export async function signInAnonymously() {
   try {
