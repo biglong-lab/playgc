@@ -351,7 +351,7 @@ export default function PosCheckout() {
         {/* 確認按鈕（大、固定底）*/}
         <Button
           className="w-full h-16 text-lg"
-          onClick={() => checkoutMut.mutate()}
+          onClick={triggerCheckout}
           disabled={!validAmount || checkoutMut.isPending}
         >
           {checkoutMut.isPending ? (
@@ -361,6 +361,41 @@ export default function PosCheckout() {
           )}
           確認收款 NT${(amountCents / 100).toLocaleString()}
         </Button>
+
+        {/* 大金額確認對話框 */}
+        <Dialog open={showConfirm} onOpenChange={setShowConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-amber-600">
+                <AlertTriangle className="w-5 h-5" />
+                確認大金額收款
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <p className="text-sm">您將收取以下金額、請再次確認：</p>
+              <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-amber-700 dark:text-amber-200">
+                  NT${(amountCents / 100).toLocaleString()}
+                </p>
+                {customerName && <p className="text-sm mt-1">{customerName}</p>}
+                {booking && <p className="text-xs text-muted-foreground mt-1">預約碼 {booking.bookingCode}</p>}
+              </div>
+              {tenderedCents > 0 && (
+                <div className="text-sm text-center">
+                  客付 NT${(tenderedCents / 100).toLocaleString()}、{changeCents >= 0 ? `找零 NT$${(changeCents / 100).toLocaleString()}` : `不足 NT$${(Math.abs(changeCents) / 100).toLocaleString()}`}
+                </div>
+              )}
+            </div>
+            <DialogFooter className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => setShowConfirm(false)}>
+                取消
+              </Button>
+              <Button onClick={() => checkoutMut.mutate()} disabled={checkoutMut.isPending}>
+                確認收款
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </PosLayout>
   );
