@@ -177,7 +177,7 @@ function buildMessages(resolved: ResolvedTemplate): LineMessage[] {
 // 結構：封面圖 + 標題 + 4 欄資訊 + CTA 按鈕
 function buildBookingConfirmedFlex(
   booking: Booking,
-  ctx: { fieldName?: string },
+  ctx: { fieldName?: string; activityName?: string },
   coverUrl: string,
   detailUrl: string,
 ): Record<string, unknown> {
