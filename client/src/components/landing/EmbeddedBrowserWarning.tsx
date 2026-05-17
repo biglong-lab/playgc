@@ -29,12 +29,23 @@ export function isEmbeddedBrowser(): boolean {
   return false;
 }
 
-/** 嵌入式瀏覽器警告橫幅 + 「在瀏覽器中開啟」引導 */
+/** 是否在 LINE app 內建瀏覽器 */
+function isInLineApp(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /line\//i.test(navigator.userAgent || "");
+}
+
+/** 嵌入式瀏覽器警告橫幅 + 「在瀏覽器中開啟」引導
+ * 🐛 2026-05-18：LINE app 內已提供 LINE 登入按鈕、不該再阻擋使用者
+ * 只在 FB / IG / WeChat 等沒有原生登入方案的嵌入瀏覽器顯示
+ */
 export function EmbeddedBrowserWarning() {
   const { toast } = useToast();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    // LINE 環境有 LINE 登入按鈕、不需警告
+    if (isInLineApp()) return;
     setShow(isEmbeddedBrowser());
   }, []);
 
