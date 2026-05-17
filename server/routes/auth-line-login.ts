@@ -203,7 +203,7 @@ export function registerLineLoginRoutes(app: Express) {
    * GET /api/auth/line/status
    * 給前端確認 LINE Login 是否可用（決定是否顯示「用 LINE 登入」按鈕）
    */
-  app.get("/api/auth/line/status", (_req, res) => {
-    res.json({ configured: isConfigured() });
+  app.get("/api/auth/line/status", async (_req, res) => {
+    res.json({ configured: await isConfigured() });
   });
 }
