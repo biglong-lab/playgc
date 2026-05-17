@@ -168,6 +168,15 @@ function BookingRow({
               {b.partySize} 人 · {b.bookingCode}
               {b.amountCents > 0 && ` · NT$${(b.amountCents / 100).toFixed(0)}`}
             </p>
+            {b.phone && (
+              <a
+                href={`tel:${b.phone}`}
+                className="text-xs text-primary truncate hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                📞 {b.phone}
+              </a>
+            )}
           </div>
           <div className="flex flex-col gap-0.5 items-end">
             {cancelled && (
