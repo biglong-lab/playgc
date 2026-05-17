@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Camera, CheckCircle2, AlertCircle, Search, DollarSign, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { feedbackScanSuccess, feedbackError } from "@/lib/pos-feedback";
 
 interface CheckinResultBooking {
   type: "booking";
