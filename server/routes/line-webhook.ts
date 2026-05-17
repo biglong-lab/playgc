@@ -23,6 +23,7 @@ import {
   type LineMessage,
   type LineQuickReply,
 } from "../lib/line-bot";
+import { resolveLineConfig } from "../lib/line-config-resolver";
 import { parseAdminCommand, formatCommandReply } from "../lib/admin-nlu";
 import { isLineUserAdmin, getAdminFieldId, getLineAdminStatus } from "../lib/admin-line-auth";
 import {
