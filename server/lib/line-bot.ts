@@ -44,7 +44,7 @@ export interface LineQuickReply {
  * 文件：https://developers.line.biz/en/reference/messaging-api/#message-objects
  */
 export interface LineMessage {
-  type: "text" | "image" | "sticker";
+  type: "text" | "image" | "sticker" | "flex";
   text?: string;
   originalContentUrl?: string;
   previewImageUrl?: string;
@@ -52,6 +52,10 @@ export interface LineMessage {
   stickerId?: string;
   /** W16 D2: quick reply buttons（最多 13 個） */
   quickReply?: LineQuickReply;
+  /** Flex Message altText（type=flex 必填）*/
+  altText?: string;
+  /** Flex Message bubble / carousel contents（type=flex 必填）*/
+  contents?: Record<string, unknown>;
 }
 
 /**
