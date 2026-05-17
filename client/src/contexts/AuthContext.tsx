@@ -37,20 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { auth, onAuthStateChanged, handleRedirectResult, consumeLineTokenFromHash } = await import("@/lib/firebase");
 
         // 🆕 2026-05-17 LINE Login：先試 hash 裡的 custom token
-        // （後端 callback redirect 回來會帶 #lineToken=xxx）
+        // （後端 callback 會 redirect 到 returnTo + #lineToken=xxx）
         try {
-          const ok = await consumeLineTokenFromHash();
-          if (ok) {
-            // LINE 登入成功 → redirect 到 sessionStorage 記下的 returnTo
-            try {
-              const returnTo = sessionStorage.getItem("lineLoginReturnTo");
-              if (returnTo) {
-                sessionStorage.removeItem("lineLoginReturnTo");
-                window.location.replace(returnTo);
-                return;
-              }
-            } catch { /* sessionStorage 可能被擋（隱私模式）— ignore */ }
-          }
+          await consumeLineTokenFromHash();
         } catch (_lineErr) {
           // LINE 登入失敗 → 繼續走 Firebase 正常流程
         }
