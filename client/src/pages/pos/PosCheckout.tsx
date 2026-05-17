@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { CheckCircle2, DollarSign, Loader2, User, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { feedbackCheckoutSuccess, feedbackError } from "@/lib/pos-feedback";
 
 interface BookingForCheckout {
   id: number;
