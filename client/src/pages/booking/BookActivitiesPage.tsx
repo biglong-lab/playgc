@@ -129,9 +129,14 @@ export default function BookActivitiesPage() {
                 )}
               </div>
               <div className="flex items-center justify-between pt-2">
-                <span className="text-lg font-bold text-primary">
-                  NT${(a.priceCents / 100).toFixed(0)}
-                </span>
+                <div>
+                  <span className="text-lg font-bold text-primary">
+                    NT${(a.priceCents / 100).toFixed(0)}
+                  </span>
+                  {a.priceCents > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">📱 現場付款</p>
+                  )}
+                </div>
                 <Button size="sm">立即預約</Button>
               </div>
             </CardContent>
