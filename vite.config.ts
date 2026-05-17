@@ -156,6 +156,14 @@ export default defineConfig({
             url: "/find-scenario?launch=pwa-shortcut-find",
             icons: [{ src: "/icons/pwa-192.png", sizes: "192x192", type: "image/png" }],
           },
+          // 🆕 2026-05-18：POS 工作站快捷（業主長按 icon → 直達 POS）
+          {
+            name: "POS 工作站",
+            short_name: "POS",
+            description: "現場掃描 / 收款 / 核銷",
+            url: "/pos?launch=pwa-shortcut-pos",
+            icons: [{ src: "/icons/pwa-192.png", sizes: "192x192", type: "image/png" }],
+          },
         ],
       },
       devOptions: {
