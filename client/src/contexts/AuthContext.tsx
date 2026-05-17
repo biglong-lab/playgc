@@ -34,7 +34,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 動態載入以處理 Firebase 初始化錯誤
     const initFirebase = async () => {
       try {
-        const { auth, onAuthStateChanged, handleRedirectResult } = await import("@/lib/firebase");
+        const { auth, onAuthStateChanged, handleRedirectResult, consumeLineTokenFromHash } = await import("@/lib/firebase");
+
+        // 🆕 2026-05-17 LINE Login：先試 hash 裡的 custom token
+        // （後端 callback redirect 回來會帶 #lineToken=xxx）
+        try {
+          const ok = await consumeLineTokenFromHash();
+          if (ok) {
+            // LINE 登入成功 → redirect 到 sessionStorage 記下的 returnTo
+            try {
+              const returnTo = sessionStorage.getItem("lineLoginReturnTo");
+              if (returnTo) {
+                sessionStorage.removeItem("lineLoginReturnTo");
+                window.location.replace(returnTo);
+                return;
+              }
+            } catch { /* sessionStorage 可能被擋（隱私模式）— ignore */ }
+          }
+        } catch (_lineErr) {
+          // LINE 登入失敗 → 繼續走 Firebase 正常流程
+        }
 
         // 處理嵌入式瀏覽器的重導向登入流程
         try {
