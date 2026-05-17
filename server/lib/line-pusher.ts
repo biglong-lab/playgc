@@ -111,14 +111,17 @@ export interface ActivityEndedPushInput {
   recapUrl?: string;
   /** 自訂結尾話術（可選）*/
   closingMessage?: string;
+  /** 🆕 2026-05-17：場域 ID */
+  fieldId?: string | null;
 }
 
 /**
  * 活動結束推播（含回顧連結）
  */
 export async function pushActivityEnded(input: ActivityEndedPushInput): Promise<void> {
-  if (!ACCESS_TOKEN) {
-    console.warn("[line-pusher] ACCESS_TOKEN 未設、跳過推播");
+  const config = await resolveLineConfig(input.fieldId);
+  if (!config.accessToken) {
+    console.warn(`[line-pusher] ACCESS_TOKEN 未設（source=${config.source}）、跳過推播`);
     return;
   }
 
