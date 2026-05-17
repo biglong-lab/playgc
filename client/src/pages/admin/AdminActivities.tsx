@@ -345,6 +345,14 @@ export default function AdminActivities() {
                 <Button
                   size="sm"
                   variant="outline"
+                  onClick={() => copyPublicUrl(a)}
+                  title="複製公開預約連結"
+                >
+                  <Link2 className="w-3 h-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
                   onClick={() => {
                     if (confirm(`停用「${a.name}」？玩家將無法看到此活動。`)) deleteMutation.mutate(a.id);
                   }}
