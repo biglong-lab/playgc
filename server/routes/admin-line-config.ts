@@ -117,6 +117,8 @@ export function registerAdminLineConfigRoutes(app: Express) {
         }
 
         await db.update(fields).set(patch).where(eq(fields.id, req.admin.fieldId));
+        // 清快取讓新設定立即生效
+        invalidateLineConfigCache(req.admin.fieldId);
 
         res.json({ ok: true });
       } catch (err) {
