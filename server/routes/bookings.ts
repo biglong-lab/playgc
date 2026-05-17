@@ -24,6 +24,7 @@ import {
   getBookingByCode,
   BookingError,
 } from "../booking/booking-service";
+import { resolveLineConfig } from "../lib/line-config-resolver";
 
 const lineUserIdSchema = z.string().min(8).max(64);
 
