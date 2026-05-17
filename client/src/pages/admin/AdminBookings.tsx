@@ -102,9 +102,17 @@ const TEMPLATE_KEYS_LABEL: Record<string, string> = {
 
 export default function AdminBookings() {
   const [fieldId] = useState(DEFAULT_FIELD);
+  // 🆕 2026-05-17 #1：從 Provider 取 fieldCode、PublicBookingLinkCard 顯示對外連結用
+  const currentField = useCurrentField();
+  const fieldCode = currentField?.code ?? null;
 
   return (
     <UnifiedAdminLayout title={`預約管理 · ${fieldId}`}>
+      {/* 🆕 對外預約連結卡 */}
+      <div className="mb-4">
+        <PublicBookingLinkCard fieldCode={fieldCode} />
+      </div>
+
       <Tabs defaultValue="list" className="space-y-4">
         <TabsList>
           <TabsTrigger value="list" data-testid="tab-list">📋 預約列表</TabsTrigger>
