@@ -21,6 +21,7 @@ interface Activity {
   durationMinutes: number;
   capacityPerSlot: number;
   paymentMode: "online" | "onsite" | "both";
+  recentBookingCount?: number;
 }
 
 interface FieldInfo {
