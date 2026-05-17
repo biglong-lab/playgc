@@ -159,13 +159,15 @@ export async function getAvailability(
     for (const s of day.slots) {
       const key = s.startAt.toISOString();
       const booked = bookedMap.get(key) ?? 0;
-      const available = Math.max(0, s.capacity - booked);
+      // 🆕 activity 模式時、優先用 activity.capacityPerSlot（時段 template 也可覆寫）
+      const capacity = capacityOverride ?? s.capacity;
+      const available = Math.max(0, capacity - booked);
       const bookable = available > 0 && s.startAt > now;
       result.push({
         date: day.date,
         startAt: key,
         endAt: s.endAt.toISOString(),
-        capacity: s.capacity,
+        capacity,
         booked,
         available,
         bookable,
