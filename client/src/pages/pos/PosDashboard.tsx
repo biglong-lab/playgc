@@ -74,7 +74,7 @@ export default function PosDashboard() {
   });
 
   return (
-    <PosLayout title="POS 工作站">
+    <PosLayout title={data.fieldName ? `POS · ${data.fieldName}` : "POS 工作站"}>
       <p className="text-xs text-muted-foreground mb-3">{dateLabel}</p>
 
       {/* 大字統計 */}
