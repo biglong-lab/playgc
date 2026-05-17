@@ -94,6 +94,34 @@ export default function AdminActivities() {
     queryFn: async () => await fetchWithAdminAuth("/api/admin/activities"),
   });
 
+  // 拿場域 code 用來組公開 URL（fallback 第一個 activity 的 fieldId）
+  const { data: fieldsData } = useQuery<{ field?: { code?: string } }>({
+    queryKey: ["admin-field-info"],
+    queryFn: async () => {
+      const list = await fetchWithAdminAuth("/api/admin/field-info");
+      return list;
+    },
+    enabled: false, // 不主動 fetch、用 location 推斷
+  });
+
+  // 用 window.location.host 組 URL（最簡單）
+  const buildPublicUrl = (slug: string, fieldCode?: string) => {
+    const code = fieldCode || (typeof window !== "undefined"
+      ? localStorage.getItem("chito:lastVisitedField") || "JIACHUN"
+      : "JIACHUN");
+    return `${window.location.origin}/book/${code.toUpperCase()}/activity/${slug}`;
+  };
+
+  const copyPublicUrl = async (a: Activity) => {
+    const url = buildPublicUrl(a.slug, a.fieldCode);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({ title: "✓ 連結已複製", description: url });
+    } catch {
+      toast({ variant: "destructive", title: "複製失敗", description: url });
+    }
+  };
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const isEdit = !!editing;
