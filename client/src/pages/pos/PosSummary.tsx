@@ -36,6 +36,12 @@ interface Summary {
     count: number;
     totalCents: number;
   }>;
+  byStaff?: Array<{
+    staffId: string;
+    name: string;
+    count: number;
+    totalCents: number;
+  }>;
   transactions: PosTx[];
 }
 
