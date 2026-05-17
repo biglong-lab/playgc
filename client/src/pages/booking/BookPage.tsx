@@ -544,14 +544,14 @@ export default function BookPage() {
                 data-testid="input-note"
               />
             </div>
-            {config?.isPaid && (
+            {((config?.isPaid && effectivePriceCents > 0) || (activity && activity.priceCents > 0)) && (
               <div className="bg-amber-50 dark:bg-amber-950 px-3 py-2 rounded text-sm">
                 應付金額：
                 <span className="font-bold text-amber-600">
                   NT${((effectivePriceCents * partySize) / 100).toLocaleString()}
                 </span>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  確認後將轉至付款頁面
+                  📱 預約成功後請於現場出示 QR Code 給工作人員核銷收款
                 </p>
               </div>
             )}

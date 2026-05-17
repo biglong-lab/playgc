@@ -33,6 +33,8 @@ interface Booking {
   customerNote?: string | null;
   cancelledAt?: string | null;
   activityId?: string | null;
+  paidAt?: string | null;
+  paidByStaffId?: string | null;
 }
 
 export default function BookDonePage() {
