@@ -466,6 +466,7 @@ function Router() {
         <Route path="/platform/ip-whitelist">{() => <ProtectedAdminRoute><PlatformIpWhitelist /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/api-keys">{() => <ProtectedAdminRoute><PlatformApiKeys /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/login-config">{() => <ProtectedAdminRoute><PlatformLoginConfig /></ProtectedAdminRoute>}</Route>
+        <Route path="/platform/line-login">{() => <ProtectedAdminRoute><PlatformLineLogin /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/pwa">{() => <ProtectedAdminRoute><PlatformPwa /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/notifications">{() => <ProtectedAdminRoute><PlatformNotifications /></ProtectedAdminRoute>}</Route>
         <Route path="/platform/menu-management">{() => <ProtectedAdminRoute><PlatformMenu /></ProtectedAdminRoute>}</Route>
