@@ -64,6 +64,18 @@ interface BookingRow {
   amountCents: number;
   customerNote?: string | null;
   createdAt: string;
+  // 🆕 2026-05-18 多活動
+  activityId?: string | null;
+  paymentMode?: string | null;
+  checkedInAt?: string | null;
+  paidAt?: string | null;
+}
+
+interface AdminActivityOption {
+  id: string;
+  slug: string;
+  name: string;
+  isActive: boolean;
 }
 
 interface ConfigRow {
