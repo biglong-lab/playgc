@@ -290,6 +290,27 @@ export function registerPosRoutes(app: Express) {
         return res.status(400).json({ error: "validation", details: parsed.error.issues });
       }
 
+      // 🆕 2026-05-18 Phase 5：如有 voucherId、標券已用 + 校驗
+      if (parsed.data.voucherId) {
+        const [c] = await db
+          .select()
+          .from(platformCoupons)
+          .where(eq(platformCoupons.id, parsed.data.voucherId))
+          .limit(1);
+        if (!c) return res.status(404).json({ error: "voucher_not_found" });
+        if (c.status !== "unused") {
+          return res.status(400).json({ error: "voucher_already_used" });
+        }
+        await db
+          .update(platformCoupons)
+          .set({
+            status: "used",
+            usedAt: new Date(),
+            redeemedByStaffId: req.admin.id,
+          })
+          .where(eq(platformCoupons.id, c.id));
+      }
+
       const [tx] = await db
         .insert(posTransactions)
         .values({
