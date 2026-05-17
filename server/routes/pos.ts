@@ -88,6 +88,16 @@ export function registerPosRoutes(app: Express) {
       const paid = todayList.filter(
         (b) => !!b.paidAt || b.paymentStatus === "paid",
       ).length;
+      // 🆕 2026-05-18：待現場付款金額（沒取消 + 沒付）
+      const pendingOnsiteCents = todayList
+        .filter(
+          (b) =>
+            b.status !== "cancelled" &&
+            b.status !== "no_show" &&
+            !b.paidAt &&
+            b.paymentStatus !== "paid",
+        )
+        .reduce((s, b) => s + (b.amountCents ?? 0), 0);
 
       // 今日 POS 收款總額
       const [posStats] = await db
