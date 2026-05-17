@@ -412,9 +412,16 @@ export function registerPosRoutes(app: Express) {
       if (!fieldId) return res.status(400).json({ error: "no_field" });
       const { start, end } = getTodayRange();
 
-      const txs = await db
-        .select()
+      // 🆕 2026-05-18 join admin_accounts 拿收款員姓名
+      const { adminAccounts } = await import("@shared/schema");
+      const txRows = await db
+        .select({
+          tx: posTransactions,
+          staffName: adminAccounts.displayName,
+          staffUsername: adminAccounts.username,
+        })
         .from(posTransactions)
+        .leftJoin(adminAccounts, eq(posTransactions.staffId, adminAccounts.id))
         .where(
           and(
             eq(posTransactions.fieldId, fieldId),
@@ -424,8 +431,27 @@ export function registerPosRoutes(app: Express) {
         )
         .orderBy(posTransactions.createdAt);
 
+      const txs = txRows.map((r) => ({
+        ...r.tx,
+        staffName: r.staffName ?? r.staffUsername ?? null,
+      }));
+
       const totalPaid = txs.reduce((s, t) => s + (t.paidAmountCents ?? 0), 0);
       const totalDiscount = txs.reduce((s, t) => s + (t.voucherDiscountCents ?? 0), 0);
+
+      // 按收款員分組（給班次結算）
+      const byStaff = new Map<string, { count: number; totalCents: number; name: string }>();
+      for (const t of txs) {
+        const key = t.staffId;
+        const cur = byStaff.get(key) ?? { count: 0, totalCents: 0, name: t.staffName ?? "未知" };
+        cur.count += 1;
+        cur.totalCents += t.paidAmountCents ?? 0;
+        byStaff.set(key, cur);
+      }
+      const byStaffArr = Array.from(byStaff.entries()).map(([staffId, v]) => ({
+        staffId,
+        ...v,
+      }));
 
       // 按活動分組
       const byActivity = new Map<string, { count: number; totalCents: number }>();
