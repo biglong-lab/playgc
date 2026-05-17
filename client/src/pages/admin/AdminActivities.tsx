@@ -294,6 +294,9 @@ export default function AdminActivities() {
                 <Badge variant="outline">
                   {a.paymentMode === "online" ? "線上付款" : a.paymentMode === "onsite" ? "現場付款" : "兩種皆可"}
                 </Badge>
+                {(a.bookingCount ?? 0) > 0 && (
+                  <Badge className="bg-emerald-600">📅 {a.bookingCount} 筆預約</Badge>
+                )}
               </div>
               <div className="flex gap-1 pt-2 flex-wrap">
                 <Button size="sm" variant="outline" onClick={() => openEdit(a)} className="flex-1 min-w-[60px]">
