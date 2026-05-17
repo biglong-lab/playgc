@@ -291,6 +291,13 @@ export async function notifyBookingConfirmed(booking: Booking): Promise<{ sent: 
 
   try {
     const resolved = await resolveTemplate(booking.fieldId, "booking_confirmed", { booking });
+    // 🆕 2026-05-18：業主沒自訂 flex → 用預設預約成功卡片
+    if (!resolved.flex) {
+      const fieldName = await getFieldName(booking.fieldId);
+      const coverUrl = resolved.imageUrl || `${APP_BASE_URL}/booking-cover-default.jpg`;
+      const detailUrl = `${APP_BASE_URL}/book/${booking.fieldId}/done/${booking.bookingCode}`;
+      resolved.flex = buildBookingConfirmedFlex(booking, { fieldName }, coverUrl, detailUrl);
+    }
     await pushMessage({
       accessToken: lineConfig.accessToken,
       to: booking.lineUserId,
