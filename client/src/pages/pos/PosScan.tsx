@@ -323,8 +323,35 @@ export default function PosScan() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">輸入 6 字元預約碼或掃描 QR token</p>
+            <label className="flex items-center gap-2 pt-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={continuousMode}
+                onChange={(e) => setContinuousMode(e.target.checked)}
+                className="rounded"
+              />
+              <span>連續掃描模式（成功不關閉相機、自動繼續掃下一個）</span>
+            </label>
           </CardContent>
         </Card>
+
+        {/* 最近掃描歷史 */}
+        {recentScans.length > 0 && (
+          <Card>
+            <CardContent className="py-3 px-3">
+              <p className="text-xs font-bold mb-2">最近 3 筆</p>
+              <div className="space-y-1">
+                {recentScans.map((s, i) => (
+                  <div key={i} className="text-xs flex items-center gap-2">
+                    <span className="text-muted-foreground min-w-[3rem]">{s.time}</span>
+                    <span className="font-mono">{s.code}</span>
+                    <span className="truncate text-muted-foreground">{s.name}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </PosLayout>
   );
