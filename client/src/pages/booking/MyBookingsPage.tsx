@@ -10,6 +10,7 @@ import { Calendar, Clock, ArrowLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { initLiff } from "@/lib/liff";
 
 interface Booking {
   id: number;
