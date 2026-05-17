@@ -464,7 +464,7 @@ export async function cancelBooking(input: CancelBookingInput): Promise<Booking>
 export async function getMyBookings(
   lineUserId: string,
   options: { includeCompleted?: boolean } = {},
-): Promise<Booking[]> {
+): Promise<Array<Booking & { activityName?: string | null }>> {
   const statusFilter = options.includeCompleted
     ? undefined
     : ["confirmed", "pending"];
@@ -472,11 +472,16 @@ export async function getMyBookings(
   const conditions = [eq(bookings.lineUserId, lineUserId)];
   if (statusFilter) conditions.push(inArray(bookings.status, statusFilter));
 
-  return await db
-    .select()
+  // 🆕 2026-05-18：join activities 拿活動名（給玩家「我的預約」顯示）
+  const { activities } = await import("@shared/schema");
+  const rows = await db
+    .select({ booking: bookings, activityName: activities.name })
     .from(bookings)
+    .leftJoin(activities, eq(bookings.activityId, activities.id))
     .where(and(...conditions))
     .orderBy(bookings.slotStart);
+
+  return rows.map((r) => ({ ...r.booking, activityName: r.activityName }));
 }
 
 /** 用 booking_code 查單筆 */
