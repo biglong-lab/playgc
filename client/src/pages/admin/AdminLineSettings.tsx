@@ -74,8 +74,10 @@ export default function AdminLineSettings() {
         lineLiffId: liffId,
         lineEnabled: enabled,
       };
-      if (editingSecret && channelSecret) patch.lineChannelSecret = channelSecret;
-      if (editingToken && accessToken) patch.lineChannelAccessToken = accessToken;
+      // 🐛 2026-05-17 修補業主回報：首次填寫時 editingSecret/editingToken 是 false
+      // 改成「有值就送」（不需 editingFlag）— editing flag 只用於 UI 切換、不該影響儲存
+      if (channelSecret) patch.lineChannelSecret = channelSecret;
+      if (accessToken) patch.lineChannelAccessToken = accessToken;
       await fetchWithAdminAuth("/api/admin/line-config", {
         method: "PATCH",
         body: JSON.stringify(patch),
