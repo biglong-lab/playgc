@@ -156,16 +156,21 @@ export default function BookDonePage() {
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-lg max-w-md mx-auto my-4">
-      {/* 封面圖（場域 logo / fallback 灰色） */}
-      {fieldInfo?.logoUrl ? (
-        <img
-          src={fieldInfo.logoUrl}
-          alt={fieldInfo.name || fieldId}
-          className="w-full h-64 object-cover"
-        />
-      ) : (
-        <div className="w-full h-64 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-          <span className="text-slate-500 text-sm">{fieldInfo?.name || fieldId}</span>
+      {/* 封面圖（場域 logo / fallback 預設射擊圖）*/}
+      <img
+        src={fieldInfo?.logoUrl || "/booking-cover-default.jpg"}
+        alt={fieldInfo?.name || fieldId}
+        className="w-full h-64 object-cover"
+        onError={(e) => {
+          // 場域 logoUrl 載入失敗 → 退回預設射擊圖
+          if (!e.currentTarget.src.endsWith("/booking-cover-default.jpg")) {
+            e.currentTarget.src = "/booking-cover-default.jpg";
+          }
+        }}
+      />
+      {fieldInfo?.name && (
+        <div className="px-5 pt-3 -mb-1">
+          <span className="text-xs text-slate-500">{fieldInfo.name}</span>
         </div>
       )}
 
