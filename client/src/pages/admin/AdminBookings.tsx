@@ -375,7 +375,15 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                           )}
                         </div>
                       </td>
-                      <td className="py-2 px-2 text-xs">{b.phone || "—"}</td>
+                      <td className="py-2 px-2 text-xs">
+                        {b.phone ? (
+                          <a href={`tel:${b.phone}`} className="text-primary hover:underline" title="撥打電話">
+                            📞 {b.phone}
+                          </a>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                       <td className="py-2 px-2 text-xs truncate max-w-[200px]">
                         {b.customerNote || ""}
                       </td>
