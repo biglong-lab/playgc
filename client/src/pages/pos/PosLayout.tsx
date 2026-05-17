@@ -39,6 +39,12 @@ export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+      {!isOnline && (
+        <div className="bg-red-600 text-white text-center py-1 text-xs flex items-center justify-center gap-2 sticky top-0 z-20">
+          <WifiOff className="w-3 h-3" />
+          目前離線、操作將無法同步、請檢查網路
+        </div>
+      )}
       <header className="bg-white dark:bg-slate-900 border-b sticky top-0 z-10">
         <div className="flex items-center gap-3 px-4 py-3 max-w-md mx-auto">
           {backTo && (
