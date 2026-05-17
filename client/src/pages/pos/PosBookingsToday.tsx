@@ -19,6 +19,7 @@ interface TodayBooking {
   id: number;
   bookingCode: string;
   displayName: string | null;
+  phone?: string | null;
   slotStart: string;
   slotEnd: string;
   partySize: number;
