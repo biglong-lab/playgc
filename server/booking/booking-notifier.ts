@@ -152,6 +152,15 @@ async function resolveTemplate(
 
 function buildMessages(resolved: ResolvedTemplate): LineMessage[] {
   const messages: LineMessage[] = [];
+  // 業主自訂 flex → 直接用
+  if (resolved.flex) {
+    messages.push({
+      type: "flex",
+      altText: resolved.text.split("\n")[0]?.slice(0, 60) || "預約通知",
+      contents: resolved.flex,
+    } as LineMessage);
+    return messages;
+  }
   if (resolved.imageUrl) {
     messages.push({
       type: "image",
@@ -161,6 +170,114 @@ function buildMessages(resolved: ResolvedTemplate): LineMessage[] {
   }
   messages.push({ type: "text", text: resolved.text });
   return messages;
+}
+
+// 🆕 2026-05-18：預約成功卡片式 Flex Message（業主沒設 flex 時的預設）
+// 結構：封面圖 + 標題 + 4 欄資訊 + CTA 按鈕
+function buildBookingConfirmedFlex(
+  booking: Booking,
+  ctx: { fieldName?: string },
+  coverUrl: string,
+  detailUrl: string,
+): Record<string, unknown> {
+  const slotStartDate = new Date(booking.slotStart);
+  const dateStr = slotStartDate.toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    month: "numeric",
+    day: "numeric",
+    weekday: "short",
+  });
+  const timeStr = slotStartDate.toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  return {
+    type: "bubble",
+    hero: {
+      type: "image",
+      url: coverUrl,
+      size: "full",
+      aspectRatio: "20:13",
+      aspectMode: "cover",
+    },
+    body: {
+      type: "box",
+      layout: "vertical",
+      spacing: "md",
+      contents: [
+        {
+          type: "text",
+          text: `✅ ${booking.displayName || "您"} 預約成功！`,
+          weight: "bold",
+          size: "lg",
+          color: "#16A34A",
+          wrap: true,
+        },
+        ...(ctx.fieldName
+          ? [{ type: "text", text: ctx.fieldName, size: "sm", color: "#64748B" }]
+          : []),
+        { type: "separator", margin: "md" },
+        {
+          type: "box",
+          layout: "vertical",
+          spacing: "sm",
+          margin: "md",
+          contents: [
+            kv("📅 時間", `${dateStr} ${timeStr}`),
+            kv("👥 人數", `${booking.partySize} 人`),
+            kv("🎟️ 預約碼", booking.bookingCode, true),
+          ],
+        },
+        {
+          type: "text",
+          text: "活動開始前 30 分鐘將再次提醒您。",
+          size: "xs",
+          color: "#94A3B8",
+          margin: "md",
+          wrap: true,
+        },
+      ],
+    },
+    footer: {
+      type: "box",
+      layout: "vertical",
+      contents: [
+        {
+          type: "button",
+          style: "primary",
+          color: "#16A34A",
+          action: {
+            type: "uri",
+            label: "查看預約詳情",
+            uri: detailUrl,
+          },
+        },
+      ],
+    },
+  };
+}
+
+function kv(label: string, value: string, mono = false): Record<string, unknown> {
+  return {
+    type: "box",
+    layout: "baseline",
+    spacing: "sm",
+    contents: [
+      { type: "text", text: label, size: "sm", color: "#64748B", flex: 3 },
+      {
+        type: "text",
+        text: value,
+        size: "sm",
+        color: "#0F172A",
+        weight: mono ? "bold" : "regular",
+        flex: 5,
+        wrap: true,
+      },
+    ],
+  };
 }
 
 // ============================================================================
