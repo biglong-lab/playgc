@@ -227,6 +227,57 @@ export default function PosCheckout() {
           </CardContent>
         </Card>
 
+        {/* 找零計算（cash 模式才顯示）*/}
+        {paymentMethod === "cash" && validAmount && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200">
+            <CardContent className="py-3 px-3 space-y-2">
+              <Label htmlFor="tendered" className="text-xs">
+                客付現金（找零計算、選填）
+              </Label>
+              <Input
+                id="tendered"
+                type="number"
+                inputMode="decimal"
+                value={tenderedDollars}
+                onChange={(e) => setTenderedDollars(e.target.value)}
+                placeholder="例：客人給 2000"
+                className="text-lg h-11 font-semibold"
+              />
+              {/* 快速面額 */}
+              <div className="flex gap-1 flex-wrap">
+                {[500, 1000, 2000, 5000].map((v) => (
+                  <Button
+                    key={v}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setTenderedDollars(String(v))}
+                  >
+                    {v}
+                  </Button>
+                ))}
+                <Button size="sm" variant="outline" onClick={() => setTenderedDollars(String(amountCents / 100))}>
+                  剛好
+                </Button>
+              </div>
+              {tenderedCents > 0 && (
+                <div
+                  className={`rounded px-3 py-2 text-center font-bold ${
+                    changeCents < 0
+                      ? "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
+                      : "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300"
+                  }`}
+                >
+                  {changeCents < 0 ? (
+                    <>還差 NT$ {(Math.abs(changeCents) / 100).toLocaleString()}</>
+                  ) : (
+                    <>找零 NT$ {(changeCents / 100).toLocaleString()}</>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* 付款方式 */}
         <Card>
           <CardContent className="py-3 px-3">
