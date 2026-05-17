@@ -73,19 +73,33 @@ export default function BookPage() {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      if (!LIFF_ID) {
+      // 🆕 2026-05-17 per-field LIFF：先查場域對應 LIFF ID（公開 endpoint）
+      // fallback build-time env VITE_LIFF_ID_BOOK（向下相容）
+      let liffIdToUse: string | null = LIFF_ID ?? null;
+      if (fieldId) {
+        try {
+          const res = await fetch(`/api/bookings/liff/${encodeURIComponent(fieldId)}`);
+          if (res.ok) {
+            const j = (await res.json()) as { liffId?: string };
+            if (j.liffId) liffIdToUse = j.liffId;
+          }
+        } catch {
+          // 失敗就 fallback build-time env
+        }
+      }
+      if (!liffIdToUse) {
         // dev fallback：localStorage 給測試用
         const stored = localStorage.getItem("__bookpage_test_lineUserId");
         if (stored) {
           setLineUserId(stored);
           setDisplayName(localStorage.getItem("__bookpage_test_displayName") || "測試玩家");
         } else {
-          setLiffError("尚未設定 VITE_LIFF_ID_BOOK、目前使用測試模式");
+          setLiffError("此場域尚未設定 LINE LIFF、目前使用測試模式（請業主到 admin → LINE 設定填入 LIFF ID）");
         }
         return;
       }
       try {
-        const result = await initLiff(LIFF_ID);
+        const result = await initLiff(liffIdToUse);
         if (!mounted) return;
         if (result.profile) {
           setLineUserId(result.profile.userId);
@@ -103,7 +117,7 @@ export default function BookPage() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [fieldId]);
 
   // 查詢可預約時段（14 天）
   const { data: availability, isLoading: availLoading } = useQuery({
