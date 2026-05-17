@@ -201,6 +201,7 @@ const Pricing = lazy(() => import("@/pages/Pricing"));
 const ApiDocs = lazy(() => import("@/pages/ApiDocs"));
 // 📅 預約系統（Phase δ W1 — 2026-05-07）
 const BookPage = lazy(() => import("@/pages/booking/BookPage"));
+const BookEntryPage = lazy(() => import("@/pages/booking/BookEntryPage"));
 const BookDonePage = lazy(() => import("@/pages/booking/BookDonePage"));
 const MyBookingsPage = lazy(() => import("@/pages/booking/MyBookingsPage"));
 // 📱 PlayLiff LINE LIFF 玩家入口（W14 D1）
