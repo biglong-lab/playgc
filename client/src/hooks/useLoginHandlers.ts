@@ -246,6 +246,7 @@ export function useLoginHandlers(
     setEmail,
     password,
     setPassword,
+    handleLineLogin,
     handleGoogleLogin,
     handleAppleLogin,
     handleGuestLogin,
