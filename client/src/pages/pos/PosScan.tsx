@@ -339,7 +339,16 @@ export default function PosScan() {
         {recentScans.length > 0 && (
           <Card>
             <CardContent className="py-3 px-3">
-              <p className="text-xs font-bold mb-2">最近 3 筆</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold">最近 3 筆</p>
+                <button
+                  type="button"
+                  onClick={() => setRecentScans([])}
+                  className="text-[10px] text-muted-foreground hover:text-destructive"
+                >
+                  清除
+                </button>
+              </div>
               <div className="space-y-1">
                 {recentScans.map((s, i) => (
                   <div key={i} className="text-xs flex items-center gap-2">
