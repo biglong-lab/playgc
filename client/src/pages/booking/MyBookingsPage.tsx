@@ -145,6 +145,9 @@ export default function MyBookingsPage() {
                   <Card className="hover:bg-accent transition-colors">
                     <CardContent className="p-4 flex items-center gap-3">
                       <div className="flex-1 min-w-0">
+                        {b.activityName && (
+                          <div className="font-bold text-sm mb-1 truncate">{b.activityName}</div>
+                        )}
                         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                           <Calendar className="w-3 h-3" />
                           <span>{dateStr}</span>
@@ -154,7 +157,10 @@ export default function MyBookingsPage() {
                         <div className="font-mono font-bold text-sm">{b.bookingCode}</div>
                         <div className="text-xs text-muted-foreground">
                           {b.partySize} 人
-                          {b.paymentStatus === "paid" && " · 已付款"}
+                          {b.amountCents !== undefined && b.amountCents > 0 &&
+                            ` · NT$${(b.amountCents / 100).toFixed(0)}`}
+                          {b.paymentStatus === "paid" && " · ✓ 已付款"}
+                          {b.paymentStatus === "pending_onsite" && " · 現場付款"}
                           {b.paymentStatus === "pending" && " · 待付款"}
                         </div>
                       </div>
