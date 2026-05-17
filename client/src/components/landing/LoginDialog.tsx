@@ -133,13 +133,8 @@ export function LoginDialog({
             </div>
           )}
 
-          {isEmbeddedBrowser && !visibility.showGoogle && (
-            <p className="text-xs text-muted-foreground text-center">
-              偵測到 LINE 內建瀏覽器，建議使用上方 LINE 登入（最順暢）。
-            </p>
-          )}
-
-          {isEmbeddedBrowser && visibility.showGoogle && (
+          {/* 🐛 2026-05-18：LINE 環境已有 LINE 登入按鈕、Google 已藏、警告無意義 → 拿掉 */}
+          {isEmbeddedBrowser && !visibility.showLine && visibility.showGoogle && (
             <p className="text-xs text-destructive text-center">
               您正在使用 App 內建瀏覽器，社群登入可能無法使用。請使用訪客登入或電子郵件登入。
             </p>
