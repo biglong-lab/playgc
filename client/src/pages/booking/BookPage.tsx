@@ -137,21 +137,24 @@ export default function BookPage() {
 
   // 查詢可預約時段（14 天）
   const { data: availability, isLoading: availLoading } = useQuery({
-    queryKey: ["booking-availability", fieldId],
+    queryKey: ["booking-availability", fieldId, activitySlug],
     queryFn: async () => {
       const today = new Date();
       const fromStr = formatYMD(today);
       const toDate = new Date(today);
       toDate.setDate(toDate.getDate() + 29); // 14 → 30 天（2026-05-08 修）
       const toStr = formatYMD(toDate);
-      const res = await fetch(
-        `/api/bookings/availability/${fieldId}?from=${fromStr}&to=${toStr}`,
-      );
+      const url = new URL(`/api/bookings/availability/${fieldId}`, window.location.origin);
+      url.searchParams.set("from", fromStr);
+      url.searchParams.set("to", toStr);
+      // 🆕 2026-05-18：activity 模式時帶 activityId（後端優先用 activity_schedules）
+      if (activity?.id) url.searchParams.set("activityId", activity.id);
+      const res = await fetch(url.toString());
       if (!res.ok) throw new Error("查詢時段失敗");
       const data = await res.json();
       return data.slots as AvailableSlot[];
     },
-    enabled: !!fieldId,
+    enabled: !!fieldId && (!activitySlug || !!activity?.id),
   });
 
   const { data: config, isLoading: configLoading, error: configError } = useQuery({
