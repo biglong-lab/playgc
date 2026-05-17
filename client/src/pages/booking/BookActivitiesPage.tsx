@@ -51,10 +51,28 @@ export default function BookActivitiesPage() {
   });
 
   if (isLoading) {
+    // 🆕 Skeleton loading：3 張卡片骨架
     return (
-      <div className="container-player py-8 flex flex-col items-center gap-3" role="status">
-        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" aria-hidden="true" />
-        <p className="text-sm text-muted-foreground">載入活動中…</p>
+      <div className="container-player py-4 pb-24 space-y-4" role="status">
+        <div className="space-y-2">
+          <div className="h-7 w-40 bg-muted rounded animate-pulse" />
+          <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="overflow-hidden">
+              <div className="w-full h-40 bg-muted animate-pulse" />
+              <CardContent className="p-4 space-y-2">
+                <div className="h-5 w-3/4 bg-muted rounded animate-pulse" />
+                <div className="h-3 w-full bg-muted rounded animate-pulse" />
+                <div className="flex items-center justify-between pt-2">
+                  <div className="h-6 w-16 bg-muted rounded animate-pulse" />
+                  <div className="h-8 w-20 bg-muted rounded animate-pulse" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
