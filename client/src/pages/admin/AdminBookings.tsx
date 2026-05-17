@@ -334,6 +334,7 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                   <th className="text-left py-2 px-2">時間</th>
                   <th className="text-left py-2 px-2">代碼</th>
                   <th className="text-left py-2 px-2">玩家</th>
+                  <th className="text-left py-2 px-2">活動</th>
                   <th className="text-right py-2 px-2">人</th>
                   <th className="text-left py-2 px-2">狀態</th>
                   <th className="text-left py-2 px-2">電話</th>
