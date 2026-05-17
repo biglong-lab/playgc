@@ -308,7 +308,7 @@ function Router() {
         <Route path="/book/:fieldCode/done/:bookingCode" component={BookDonePage} />
         <Route path="/book/:fieldCode/mine" component={MyBookingsPage} />
         {/* 🆕 2026-05-18：activity slug 路由（場域多活動分流）*/}
-        <Route path="/book/:fieldCode/:activitySlug" component={BookPage} />
+        <Route path="/book/:fieldCode/activity/:activitySlug" component={BookPage} />
         {/* 入口：有活動→列表頁、沒有→既有單一預約頁 */}
         <Route path="/book/:fieldCode" component={BookEntryPage} />
 
