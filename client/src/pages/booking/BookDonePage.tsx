@@ -54,12 +54,15 @@ export default function BookDonePage() {
         if (!cancelled) setLineUserId(stored);
         return;
       }
-      // 查場域 LIFF ID
+      // 查場域 LIFF ID + 封面 logoUrl
       if (!fieldId) return;
       try {
         const res = await fetch(`/api/bookings/liff/${encodeURIComponent(fieldId)}`);
         if (!res.ok) return;
-        const j = (await res.json()) as { liffId?: string };
+        const j = (await res.json()) as { liffId?: string; fieldName?: string | null; logoUrl?: string | null };
+        if (!cancelled) {
+          setFieldInfo({ name: j.fieldName ?? null, logoUrl: j.logoUrl ?? null });
+        }
         if (!j.liffId) return;
         const result = await initLiff(j.liffId);
         if (cancelled) return;
