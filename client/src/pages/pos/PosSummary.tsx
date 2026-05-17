@@ -67,9 +67,44 @@ export default function PosSummary() {
     weekday: "long",
   });
 
+  // 🆕 2026-05-18 CSV 匯出
+  const handleDownloadCsv = () => {
+    const headers = ["時間", "客名", "預約碼", "活動", "金額", "折抵", "付款方式", "收款員", "備註"];
+    const rows = data.transactions.map((t) => {
+      const time = new Date(t.createdAt).toLocaleString("zh-TW");
+      return [
+        time,
+        t.customerName ?? "",
+        t.bookingId ? `BK_${t.bookingId}` : "",
+        t.activityId ?? "",
+        (t.paidAmountCents / 100).toFixed(0),
+        ((t.voucherDiscountCents ?? 0) / 100).toFixed(0),
+        t.paymentMethod,
+        t.staffName ?? "",
+        (t.note ?? "").replace(/"/g, '""'),
+      ].map((v) => `"${v}"`).join(",");
+    });
+    const csv = "﻿" + [headers.join(","), ...rows].join("\n"); // UTF-8 BOM + CRLF 兼容 Excel
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `pos-summary-${data.date}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <PosLayout title="今日小結" backTo="/pos">
-      <p className="text-xs text-muted-foreground mb-3">{dateLabel}</p>
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs text-muted-foreground">{dateLabel}</p>
+        {data.transactions.length > 0 && (
+          <Button size="sm" variant="outline" onClick={handleDownloadCsv}>
+            <Download className="w-3 h-3 mr-1" />
+            匯出 CSV
+          </Button>
+        )}
+      </div>
 
       {/* 大字總計 */}
       <Card className="mb-3 bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0">
