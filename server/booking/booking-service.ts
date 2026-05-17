@@ -159,6 +159,8 @@ export interface CreateBookingInput {
   slotStart: Date;
   partySize: number;
   customerNote?: string;
+  /** 🆕 2026-05-18：多活動分流時帶入；後端會用 activity.priceCents 算金額、寫 activityId */
+  activityId?: string;
 }
 
 export interface CreateBookingResult {
