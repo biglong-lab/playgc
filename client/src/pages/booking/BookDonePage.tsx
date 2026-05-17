@@ -113,14 +113,31 @@ export default function BookDonePage() {
     },
   });
 
-  if (isLoading) {
-    return <div className="p-6 text-center text-muted-foreground">載入中...</div>;
+  if (isLoading || !lineUserId) {
+    return (
+      <div className="container-player py-8 flex flex-col items-center gap-3" role="status" aria-live="polite">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+        <p className="text-sm text-muted-foreground">{!lineUserId ? "取得 LINE 身份…" : "載入預約資訊…"}</p>
+      </div>
+    );
   }
   if (!booking) {
     return (
-      <div className="p-6">
-        <p className="text-destructive mb-2">查不到此預約</p>
-        <Button onClick={() => navigate(`/book/${fieldId}`)}>回預約頁</Button>
+      <div className="container-player py-8 text-center space-y-4">
+        <AlertCircle className="w-12 h-12 mx-auto text-destructive" aria-hidden="true" />
+        <div>
+          <p className="font-semibold text-base mb-1">查不到此預約</p>
+          <p className="text-xs text-muted-foreground">
+            預約編號：<code>{bookingCode}</code>
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            可能原因：預約屬於其他 LINE 帳號、或預約編號錯誤
+          </p>
+        </div>
+        <Button onClick={() => navigate(`/book/${fieldId}`)} className="w-full sm:w-auto" aria-label="返回預約頁面">
+          <ArrowLeft className="w-4 h-4 mr-1" aria-hidden="true" />
+          回預約頁
+        </Button>
       </div>
     );
   }
