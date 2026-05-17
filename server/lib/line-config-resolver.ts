@@ -27,17 +27,19 @@ const CACHE_TTL_MS = 10_000;
 
 /**
  * 取場域 LINE 設定
- *   - fieldId 為 null/undefined → 直接走 env
- *   - 有 fieldId → 查 DB（lineEnabled='true'）→ 找到回 field 設定、否則 env
+ *   - fieldKey 為 null/undefined → 直接走 env
+ *   - 有 fieldKey → 查 DB（lineEnabled='true'）→ 找到回 field 設定、否則 env
+ *     fieldKey 可以是 fields.id (UUID) 或 fields.code（字串、case-insensitive）
  *   - 兩者都無 → source='none'（呼叫方應跳過 LINE 動作）
  */
-export async function resolveLineConfig(fieldId?: string | null): Promise<LineChannelConfig> {
+export async function resolveLineConfig(fieldKey?: string | null): Promise<LineChannelConfig> {
   // 場域查找（per-field）
-  if (fieldId) {
-    const cached = cache.get(fieldId);
+  if (fieldKey) {
+    const cached = cache.get(fieldKey);
     if (cached && cached.expires > Date.now()) return cached.config;
 
     try {
+      // 同時用 id 或 code（case-insensitive）查找
       const [row] = await db
         .select({
           lineChannelId: fields.lineChannelId,
@@ -47,7 +49,10 @@ export async function resolveLineConfig(fieldId?: string | null): Promise<LineCh
           lineEnabled: fields.lineEnabled,
         })
         .from(fields)
-        .where(eq(fields.id, fieldId))
+        .where(or(
+          eq(fields.id, fieldKey),
+          sql`lower(${fields.code}) = lower(${fieldKey})`,
+        ))
         .limit(1);
 
       if (row && row.lineEnabled === "true" && row.lineChannelAccessToken) {
