@@ -83,6 +83,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { title: "🧩 元件健康度", icon: BarChart3, path: "/admin/component-health", permission: "game:view" },
       { title: "🎚️ 元件開關", icon: Sliders, path: "/admin/feature-flags", permission: "game:edit" },
       { title: "📅 預約管理", icon: Activity, path: "/admin/bookings", permission: "game:edit" },
+      { title: "🎯 活動管理", icon: Activity, path: "/admin/activities", permission: "game:edit" },
       // 🆕 設備管理僅 shooting 模組啟用才顯示（硬體靶機）
       { title: "設備管理", icon: Cpu, path: "/admin/devices", permission: "game:view", requiresModule: "shooting" },
       { title: "QR Code 發布", icon: QrCode, path: "/admin/qrcodes", permission: "qr:generate" },
