@@ -233,14 +233,34 @@ export default function BookDonePage() {
                 <span className="text-slate-900 font-medium">
                   NT$ {(booking.amountCents / 100).toLocaleString()}
                   <span className="ml-2 text-xs text-slate-500">
-                    （{booking.paymentStatus === "paid" ? "已付款" :
-                      booking.paymentStatus === "pending" ? "待付款" : "—"}）
+                    （{booking.paymentStatus === "paid" ? "已付款"
+                      : booking.paymentStatus === "pending_onsite" ? "現場付款"
+                      : booking.paymentStatus === "pending" ? "待付款"
+                      : "—"}）
                   </span>
                 </span>
               </>
             )}
           </div>
         </div>
+
+        {/* 🆕 2026-05-18 QR Code（給現場 POS 掃描）*/}
+        {!isCancelled && qrDataUrl && (
+          <div className="border-t pt-4">
+            <div className="flex flex-col items-center gap-2">
+              <img
+                src={qrDataUrl}
+                alt={`預約 ${booking.bookingCode} QR Code`}
+                className="w-56 h-56 border-4 border-white rounded-lg shadow-md"
+              />
+              <p className="text-xs text-slate-500 text-center">
+                {booking.paymentStatus === "pending_onsite"
+                  ? "📱 出示此 QR 給現場工作人員核銷收款"
+                  : "📱 出示此 QR 給現場工作人員以快速報到"}
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* 備註（若有） */}
         {booking.customerNote && (
