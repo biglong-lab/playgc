@@ -394,6 +394,7 @@ function Router() {
         <Route path="/admin/games/:gameId">{() => <ProtectedAdminRoute><GameEditor /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/sessions">{() => <ProtectedAdminRoute><AdminSessions /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/bookings">{() => <ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/activities">{() => <ProtectedAdminRoute><AdminActivities /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/live">{() => <ProtectedAdminRoute><AdminLive /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/suspicious-log">{() => <ProtectedAdminRoute><AdminSuspiciousLog /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/devices">{() => <ProtectedAdminRoute><AdminDevices /></ProtectedAdminRoute>}</Route>
