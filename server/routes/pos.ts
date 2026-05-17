@@ -15,7 +15,7 @@
 
 import type { Express, Request, Response } from "express";
 import { db } from "../db";
-import { bookings, activities, posTransactions } from "@shared/schema";
+import { bookings, activities, posTransactions, platformCoupons, couponTemplates } from "@shared/schema";
 import { and, eq, gte, lte, sql, or } from "drizzle-orm";
 import { requireAdminAuth } from "../adminAuth";
 import { z } from "zod";
