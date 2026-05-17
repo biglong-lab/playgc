@@ -185,6 +185,9 @@ app.use(helmet({
             "https://storage.googleapis.com", // 🆕 MediaPipe face_landmarker.task model
             "https://cdn.jsdelivr.net", // 🆕 MediaPipe WASM fetch
             "https://api.recur.tw",
+            "https://api.line.me", // 🆕 2026-05-17 LIFF SDK call LINE API
+            "https://access.line.me", // 🆕 LIFF login flow
+            "https://liffsdk.line-scdn.net", // 🆕 LIFF SDK 後續 API
             "wss://game.homi.cc",
             "ws://localhost:*",
           ],
