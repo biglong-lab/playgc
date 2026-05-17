@@ -138,7 +138,9 @@ export default function PublicBookingLinkCard({ fieldCode, fieldId }: PublicBook
   }
 
   // 🆕 2026-05-17：場域尚未開通預約 → 隱藏連結、顯示開通提示
-  if (!isBookingEnabled) {
+  // 但只在 query 確認失敗（not_initialized）才隱藏；其他錯誤樂觀顯示連結（避免誤判）
+  const isUnknownError = !!configError && !(configError instanceof Error && configError.message.includes("not_initialized"));
+  if (!isBookingEnabled && !isUnknownError) {
     return (
       <Card className="border-amber-300 bg-amber-50/80 dark:bg-amber-950/30">
         <CardContent className="p-4 flex items-start gap-3" role="status" aria-live="polite">
