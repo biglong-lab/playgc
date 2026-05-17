@@ -36,6 +36,8 @@ const createBookingBodySchema = z.object({
   slotStart: z.string().datetime(),
   partySize: z.number().int().min(1).max(20),
   customerNote: z.string().max(500).optional(),
+  // 🆕 2026-05-18：多活動分流可選
+  activityId: z.string().uuid().optional(),
 });
 
 const cancelBodySchema = z.object({
