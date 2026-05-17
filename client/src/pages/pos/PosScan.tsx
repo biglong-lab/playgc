@@ -182,6 +182,20 @@ export default function PosScan() {
               <Kv label="人數" value={`${b.partySize} 人`} />
               <Kv label="金額" value={b.amountCents ? `NT$${(b.amountCents / 100).toFixed(0)}` : "—"} />
             </div>
+            {b.phone && (
+              <a
+                href={`tel:${b.phone}`}
+                className="text-sm text-primary hover:underline flex items-center gap-1"
+              >
+                📞 {b.phone}
+              </a>
+            )}
+            {b.customerNote && (
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 px-2 py-1.5 rounded text-xs">
+                <span className="font-semibold">備註：</span>
+                {b.customerNote}
+              </div>
+            )}
 
             {alreadyArrived && (
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 px-3 py-2 rounded text-xs text-green-700 dark:text-green-300">
