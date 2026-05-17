@@ -97,7 +97,11 @@ export default function AdminLineSettings() {
   });
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const webhookUrl = `${origin}/api/line/webhook`;
+  // 🐛 2026-05-17 修補：原顯示錯誤路徑 /api/line/webhook、實際後端是 /api/webhooks/line
+  // per-field 加 fieldCode 路由、業主貼到 LINE Console 即可
+  const webhookUrl = data?.fieldCode
+    ? `${origin}/api/webhooks/line/${data.fieldCode}`
+    : `${origin}/api/webhooks/line`;
 
   const copyWebhook = async () => {
     try {
