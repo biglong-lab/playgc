@@ -276,6 +276,13 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
   }
 
+  // 🆕 2026-05-18 業主決定：線上金流尚未開通、暫時強制 fallback 為 onsite
+  // 業主可在 admin/activities 切換、但 online/both 選項已 disabled
+  // 既有 activity 設了 online → 後端自動轉 onsite、避免玩家卡關
+  if (paymentMode === "online" || paymentMode === "both") {
+    paymentMode = "onsite";
+  }
+
   // 付費需求判定（activity 模式 paymentMode=online 才 pending、onsite 直接 confirmed）
   const paymentRequired = isPaid && priceCents > 0;
   const requiresOnlinePayment = paymentRequired && paymentMode === "online";
