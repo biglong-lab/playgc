@@ -242,6 +242,23 @@ export const bookings = pgTable(
     // ── 整合遊戲 ──────────────────────────────────
     /** 預約對應的實際遊戲 session（玩家現場進場後關聯） */
     gameSessionId: integer("game_session_id"),
+    // ── 🆕 2026-05-18 多活動 + POS 整合 ──────────────
+    /** 對應 activities.id（null = 舊版單一預約配置）*/
+    activityId: varchar("activity_id"),
+    /** 付款模式：online | onsite | both（同 activities.paymentMode）*/
+    paymentMode: varchar("payment_mode", { length: 20 }).default("onsite"),
+    /** 線下收款員 admin id */
+    paidByStaffId: varchar("paid_by_staff_id"),
+    /** 實際收款時間（onsite 收款後填）*/
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    /** 實收金額（用券折抵後的金額）*/
+    paidAmountCents: integer("paid_amount_cents"),
+    /** POS 掃描專用 token（不只是 bookingCode、加 random suffix 防猜）*/
+    qrToken: varchar("qr_token", { length: 64 }),
+    /** 玩家到場時間 */
+    checkedInAt: timestamp("checked_in_at", { withTimezone: true }),
+    /** 報到員 admin id */
+    checkedInByStaffId: varchar("checked_in_by_staff_id"),
     metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
