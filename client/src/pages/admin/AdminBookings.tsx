@@ -294,6 +294,27 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
               <option value="no_show">未到場</option>
             </select>
           </div>
+          {/* 🆕 2026-05-18：活動篩選 */}
+          {activities && activities.length > 0 && (
+            <div>
+              <Label className="text-xs">活動</Label>
+              <select
+                className="w-full h-10 px-3 rounded-md border bg-background"
+                value={activityFilter}
+                onChange={(e) => setActivityFilter(e.target.value)}
+                data-testid="select-activity"
+              >
+                <option value="">全部活動</option>
+                <option value="none">未綁活動（舊版）</option>
+                {activities.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name}
+                    {!a.isActive ? "（停用）" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex items-end">
             <Button onClick={() => refetch()} variant="outline" data-testid="button-refresh">
               <RefreshCw className="w-4 h-4 mr-1" /> 更新
