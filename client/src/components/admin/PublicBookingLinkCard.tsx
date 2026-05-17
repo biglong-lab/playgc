@@ -1,36 +1,59 @@
-// 🔗 PublicBookingLinkCard — admin/bookings 頁面對外預約連結卡（#1 / 2026-05-17）
+// 🔗 PublicBookingLinkCard — admin/bookings 對外預約連結卡（#1 / 2026-05-17）
 //
 // 用途：
 //   業主開 admin/bookings 後可直接複製公開預約連結給客戶
 //   加 QR Code 供印傳單 / 海報、列出「我的預約」連結供老客戶查詢
 //
-// 對應業主回報：「預約管理要用什麼連結對外使用？請將連結做在頁面上」
+// 對應業主回報：
+//   - 「預約管理要用什麼連結對外使用？請將連結做在頁面上」
+//   - 「顯示此場域尚未開通預約功能？」→ 加 config 檢查避免露出無效連結
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, ExternalLink, QrCode, Download, AlertTriangle } from "lucide-react";
+import { Copy, Check, ExternalLink, QrCode, Download, AlertTriangle, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 
 interface PublicBookingLinkCardProps {
+  /** 場域代碼（用於對外 URL 路徑、給玩家掃 QR 進入）*/
   fieldCode: string | null;
+  /** 場域 ID（用於 admin API 檢查 booking config）*/
+  fieldId: string | null;
 }
 
-export default function PublicBookingLinkCard({ fieldCode }: PublicBookingLinkCardProps) {
+export default function PublicBookingLinkCard({ fieldCode, fieldId }: PublicBookingLinkCardProps) {
   const { toast } = useToast();
   const [copiedBook, setCopiedBook] = useState(false);
   const [copiedMine, setCopiedMine] = useState(false);
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
 
+  // 🆕 2026-05-17：查場域是否已開通預約（避免露出無效連結）
+  const { data: bookingConfig, isLoading: configLoading } = useQuery({
+    queryKey: ["/api/admin/bookings", fieldId, "config"],
+    queryFn: async () => {
+      if (!fieldId) return null;
+      try {
+        return await fetchWithAdminAuth(`/api/admin/bookings/${fieldId}/config`);
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!fieldId,
+    retry: false,
+  });
+
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const bookUrl = fieldCode ? `${origin}/book/${fieldCode}` : null;
   const mineUrl = fieldCode ? `${origin}/book/${fieldCode}/mine` : null;
+  const isBookingEnabled = !!bookingConfig;
 
-  // 自動生成 QR Code
+  // 自動生成 QR Code（場域已開通才生）
   useEffect(() => {
-    if (!bookUrl) return;
+    if (!bookUrl || !isBookingEnabled) return;
     let cancelled = false;
     setQrLoading(true);
     (async () => {
@@ -52,7 +75,7 @@ export default function PublicBookingLinkCard({ fieldCode }: PublicBookingLinkCa
     return () => {
       cancelled = true;
     };
-  }, [bookUrl]);
+  }, [bookUrl, isBookingEnabled]);
 
   const copy = async (url: string, type: "book" | "mine") => {
     try {
@@ -92,6 +115,47 @@ export default function PublicBookingLinkCard({ fieldCode }: PublicBookingLinkCa
             <p className="text-sm text-muted-foreground">
               請在「場域設定」頁面設定 fieldCode、才能對外開放預約連結。
             </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 載入中 → skeleton
+  if (configLoading) {
+    return (
+      <Card>
+        <CardContent className="p-4 text-sm text-muted-foreground" role="status" aria-live="polite">
+          檢查預約功能狀態…
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // 🆕 2026-05-17：場域尚未開通預約 → 隱藏連結、顯示開通提示
+  if (!isBookingEnabled) {
+    return (
+      <Card className="border-amber-300 bg-amber-50/80 dark:bg-amber-950/30">
+        <CardContent className="p-4 flex items-start gap-3" role="status" aria-live="polite">
+          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+          <div className="flex-1">
+            <p className="font-semibold">此場域尚未開通預約功能</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              請先切到「⚙️ 場域設定」分頁、點「用賈村預設模板初始化」開通預約後、本卡片才會顯示對外連結與 QR Code。
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const tab = document.querySelector('[data-testid="tab-config"]') as HTMLElement | null;
+                tab?.click();
+              }}
+              data-testid="btn-goto-config-tab"
+              aria-label="切到場域設定分頁開通預約"
+            >
+              <Settings className="w-4 h-4 mr-1" aria-hidden="true" />
+              前往場域設定
+            </Button>
           </div>
         </CardContent>
       </Card>
