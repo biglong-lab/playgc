@@ -410,6 +410,8 @@ function Router() {
         <Route path="/pos/scan">{() => <ProtectedAdminRoute><PosScan /></ProtectedAdminRoute>}</Route>
         <Route path="/pos/bookings/today">{() => <ProtectedAdminRoute><PosBookingsToday /></ProtectedAdminRoute>}</Route>
         <Route path="/pos/checkout">{() => <ProtectedAdminRoute><PosCheckout /></ProtectedAdminRoute>}</Route>
+        <Route path="/pos/voucher">{() => <ProtectedAdminRoute><PosVoucher /></ProtectedAdminRoute>}</Route>
+        <Route path="/pos/summary">{() => <ProtectedAdminRoute><PosSummary /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/live">{() => <ProtectedAdminRoute><AdminLive /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/suspicious-log">{() => <ProtectedAdminRoute><AdminSuspiciousLog /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/devices">{() => <ProtectedAdminRoute><AdminDevices /></ProtectedAdminRoute>}</Route>
