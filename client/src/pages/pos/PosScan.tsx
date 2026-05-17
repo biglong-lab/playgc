@@ -53,6 +53,9 @@ export default function PosScan() {
   const [cameraStatus, setCameraStatus] = useState<"idle" | "starting" | "scanning" | "unsupported" | "error">("idle");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const scanLockRef = useRef(false);
+  // 🆕 2026-05-18 連續掃描：成功後不停 camera、3 秒後自動清結果繼續掃
+  const [continuousMode, setContinuousMode] = useState(false);
+  const [recentScans, setRecentScans] = useState<Array<{ code: string; time: string; name: string }>>([]);
 
   const submitToken = useMutation({
     mutationFn: async (token: string) => {
