@@ -21,6 +21,8 @@ interface PosTx {
   customerName: string | null;
   note: string | null;
   createdAt: string;
+  staffName?: string | null;
+  staffId?: string;
 }
 
 interface Summary {
