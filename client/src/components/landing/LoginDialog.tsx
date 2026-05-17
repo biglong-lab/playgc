@@ -9,9 +9,10 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Mail, User, Apple, Loader2 } from "lucide-react";
+import { Mail, User, Apple, Loader2, MessageCircle } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import type { LoginHandlers } from "@/hooks/useLoginHandlers";
+import { getAuthProviderVisibility } from "@/lib/auth-env";
 
 interface LoginDialogProps {
   open: boolean;
