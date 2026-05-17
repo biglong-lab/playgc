@@ -42,35 +42,37 @@ export default function BookDonePage() {
   // 🆕 2026-05-17 卡片式：場域資訊（封面 + 名稱）
   const [fieldInfo, setFieldInfo] = useState<{ name: string | null; logoUrl: string | null } | null>(null);
 
-  // 🐛 2026-05-17 修補：原本只看 localStorage、沒實作 LIFF init
-  // 業主回報：從 LINE LIFF 預約成功跳到 done 頁顯示「查不到此預約」
-  // 修法：先查場域 LIFF ID → 初始化 → 取 LINE userId（與 BookPage 同邏輯）
+  // 🐛 2026-05-18 修補：原本「localStorage 優先 → LIFF」的順序有汙染風險
+  // 業主回報：預約成功跳到 done 頁顯示「查不到」、原因是 localStorage 殘留舊測試 userId
+  // 正確順序：先試 LIFF（真實身份）→ 失敗才 fallback localStorage
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 先試 localStorage（測試模式）
-      const stored = localStorage.getItem("__bookpage_test_lineUserId");
-      if (stored) {
-        if (!cancelled) setLineUserId(stored);
-        return;
-      }
-      // 查場域 LIFF ID + 封面 logoUrl
       if (!fieldId) return;
+      // 查場域 LIFF ID + 封面 logoUrl
       try {
         const res = await fetch(`/api/bookings/liff/${encodeURIComponent(fieldId)}`);
-        if (!res.ok) return;
-        const j = (await res.json()) as { liffId?: string; fieldName?: string | null; logoUrl?: string | null };
-        if (!cancelled) {
-          setFieldInfo({ name: j.fieldName ?? null, logoUrl: j.logoUrl ?? null });
-        }
-        if (!j.liffId) return;
-        const result = await initLiff(j.liffId);
-        if (cancelled) return;
-        if (result.profile) {
-          setLineUserId(result.profile.userId);
+        if (res.ok) {
+          const j = (await res.json()) as { liffId?: string; fieldName?: string | null; logoUrl?: string | null };
+          if (!cancelled) {
+            setFieldInfo({ name: j.fieldName ?? null, logoUrl: j.logoUrl ?? null });
+          }
+          if (j.liffId) {
+            const result = await initLiff(j.liffId);
+            if (cancelled) return;
+            if (result.profile) {
+              setLineUserId(result.profile.userId);
+              return;
+            }
+          }
         }
       } catch (err) {
         console.warn("[BookDonePage] LIFF init 失敗:", err);
+      }
+      // Fallback：localStorage（測試模式）
+      if (!cancelled) {
+        const stored = localStorage.getItem("__bookpage_test_lineUserId");
+        if (stored) setLineUserId(stored);
       }
     })();
     return () => {
