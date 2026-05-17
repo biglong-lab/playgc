@@ -250,10 +250,19 @@ export default function AdminActivities() {
                   {a.paymentMode === "online" ? "線上付款" : a.paymentMode === "onsite" ? "現場付款" : "兩種皆可"}
                 </Badge>
               </div>
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-1 pt-2">
                 <Button size="sm" variant="outline" onClick={() => openEdit(a)} className="flex-1">
                   <Pencil className="w-3 h-3 mr-1" />
                   編輯
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openSchedule(a.id)}
+                  title="設定活動專屬時段"
+                >
+                  <Calendar className="w-3 h-3 mr-1" />
+                  時段
                 </Button>
                 <Button
                   size="sm"
