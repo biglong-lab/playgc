@@ -59,7 +59,29 @@ export function registerAdminActivitiesRoutes(app: Express) {
           .from(activities)
           .where(eq(activities.fieldId, req.admin.fieldId))
           .orderBy(asc(activities.sortOrder), asc(activities.createdAt));
-        res.json({ activities: list });
+
+        // 🆕 2026-05-18 加 booking count（給 admin 卡片顯示）
+        const { bookings } = await import("@shared/schema");
+        const { sql: drizzleSql, ne } = await import("drizzle-orm");
+        const counts = await db
+          .select({
+            activityId: bookings.activityId,
+            count: drizzleSql<number>`COUNT(*)::int`,
+          })
+          .from(bookings)
+          .where(
+            and(
+              eq(bookings.fieldId, req.admin.fieldId),
+              ne(bookings.status, "cancelled"),
+            ),
+          )
+          .groupBy(bookings.activityId);
+        const countMap = new Map<string, number>();
+        for (const c of counts) {
+          if (c.activityId) countMap.set(c.activityId, c.count);
+        }
+        const withCounts = list.map((a) => ({ ...a, bookingCount: countMap.get(a.id) ?? 0 }));
+        res.json({ activities: withCounts });
       } catch (err) {
         console.error("[admin-activities GET]", err);
         res.status(500).json({ error: "internal_error" });
