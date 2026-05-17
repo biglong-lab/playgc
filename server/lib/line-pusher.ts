@@ -26,14 +26,17 @@ export interface ActivityCreatedPushInput {
   playUrl: string;
   /** 活動開始時間（可選，含時間提示）*/
   startsAt?: Date;
+  /** 🆕 2026-05-17：場域 ID（per-field LINE channel）*/
+  fieldId?: string | null;
 }
 
 /**
  * 活動建立後通知玩家（push）
  */
 export async function pushActivityCreated(input: ActivityCreatedPushInput): Promise<void> {
-  if (!ACCESS_TOKEN) {
-    console.warn("[line-pusher] ACCESS_TOKEN 未設、跳過推播");
+  const config = await resolveLineConfig(input.fieldId);
+  if (!config.accessToken) {
+    console.warn(`[line-pusher] ACCESS_TOKEN 未設（source=${config.source}）、跳過推播`);
     return;
   }
 
