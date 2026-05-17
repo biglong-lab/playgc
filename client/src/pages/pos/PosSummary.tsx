@@ -7,7 +7,8 @@ import { useQuery } from "@tanstack/react-query";
 import PosLayout from "./PosLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, DollarSign, Receipt, User } from "lucide-react";
+import { TrendingUp, DollarSign, Receipt, User, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 
 interface PosTx {
