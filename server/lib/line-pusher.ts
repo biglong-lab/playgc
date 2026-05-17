@@ -70,14 +70,17 @@ export interface ActivityReminderPushInput {
   playUrl: string;
   /** 提醒類型 */
   remindType: "24h" | "1h";
+  /** 🆕 2026-05-17：場域 ID */
+  fieldId?: string | null;
 }
 
 /**
  * 活動前提醒（24h / 1h 前）
  */
 export async function pushActivityReminder(input: ActivityReminderPushInput): Promise<void> {
-  if (!ACCESS_TOKEN) {
-    console.warn("[line-pusher] ACCESS_TOKEN 未設、跳過推播");
+  const config = await resolveLineConfig(input.fieldId);
+  if (!config.accessToken) {
+    console.warn(`[line-pusher] ACCESS_TOKEN 未設（source=${config.source}）、跳過推播`);
     return;
   }
 
