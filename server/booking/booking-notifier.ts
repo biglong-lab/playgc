@@ -195,6 +195,13 @@ function buildBookingConfirmedFlex(
     hour12: false,
   });
 
+  // 🆕 顯示金額：onsite 標「現場付款」、online 標「已付款」/「待付款」
+  const isOnsite = booking.paymentMode === "onsite" || booking.paymentStatus === "pending_onsite";
+  const amountText =
+    booking.amountCents && booking.amountCents > 0
+      ? `NT$${(booking.amountCents / 100).toFixed(0)}${isOnsite ? "（現場付款）" : ""}`
+      : "免費";
+
   return {
     type: "bubble",
     hero: {
@@ -217,6 +224,10 @@ function buildBookingConfirmedFlex(
           color: "#16A34A",
           wrap: true,
         },
+        // 活動名 > 場域名（多活動分流時優先顯示活動）
+        ...(ctx.activityName
+          ? [{ type: "text", text: ctx.activityName, size: "sm", color: "#0F172A", weight: "bold" }]
+          : []),
         ...(ctx.fieldName
           ? [{ type: "text", text: ctx.fieldName, size: "sm", color: "#64748B" }]
           : []),
@@ -229,16 +240,20 @@ function buildBookingConfirmedFlex(
           contents: [
             kv("📅 時間", `${dateStr} ${timeStr}`),
             kv("👥 人數", `${booking.partySize} 人`),
+            kv("💰 金額", amountText),
             kv("🎟️ 預約碼", booking.bookingCode, true),
           ],
         },
         {
           type: "text",
-          text: "活動開始前 30 分鐘將再次提醒您。",
+          text: isOnsite
+            ? "📱 出示此預約碼給現場工作人員以核銷"
+            : "活動開始前 30 分鐘將再次提醒您。",
           size: "xs",
-          color: "#94A3B8",
+          color: isOnsite ? "#0F172A" : "#94A3B8",
           margin: "md",
           wrap: true,
+          weight: isOnsite ? "bold" : "regular",
         },
       ],
     },
