@@ -61,11 +61,13 @@ export default function PosScan() {
       return res as CheckinResultBooking;
     },
     onSuccess: (data) => {
+      feedbackScanSuccess();
       setResult(data);
       // 暫停掃描
       stopCamera();
     },
     onError: (err: unknown) => {
+      feedbackError();
       const msg = err instanceof Error ? err.message : "查無此預約";
       toast({ variant: "destructive", title: "找不到", description: msg });
       // 重置鎖，3 秒後恢復掃描
