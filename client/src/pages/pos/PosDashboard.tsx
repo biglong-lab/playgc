@@ -25,6 +25,7 @@ interface PosDashboard {
     paidBookings: number;
     posTotalPaidCents: number;
     posTxCount: number;
+    pendingOnsiteCents?: number;
   };
   upcoming: Array<{
     id: number;
