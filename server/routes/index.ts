@@ -82,6 +82,7 @@ import { registerAdminTimingsRoutes } from "./admin-timings";
 import { registerAdminLineBotMetricsRoutes } from "./admin-line-bot-metrics";
 import { registerAdminReportsHealthRoutes } from "./admin-reports-health";
 import { registerAdminLineConfigRoutes } from "./admin-line-config";
+import { registerLineLoginRoutes } from "./auth-line-login";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
 import { registerSquadInvitesRoutes } from "./squad-invites";
