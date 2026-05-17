@@ -25,6 +25,7 @@ import {
   DollarSign,
   Package,
   Smartphone,
+  MessageCircle,
 } from "lucide-react";
 
 /** 場域模組 key（對應 FieldSettings 的 enableXxx 開關） */
