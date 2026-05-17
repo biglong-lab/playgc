@@ -295,6 +295,58 @@ export function registerLineWebhookRoutes(app: Express) {
       }
     },
   );
+
+  // 🆕 2026-05-17 per-field webhook：依 URL 中的 fieldKey 取對應 channel secret/token
+  // 業主在 LINE Console 設 https://game.homi.cc/api/webhooks/line/JIACHUN
+  // 簽章驗證 + 回 200（讓 LINE Console 通過驗證）
+  // event handler 暫直接 reply echo、完整 NLU/admin 邏輯後續對齊舊 handler
+  app.post(
+    "/api/webhooks/line/:fieldKey",
+    express.raw({ type: "application/json" }),
+    async (req: Request, res: Response) => {
+      try {
+        const fieldKey = req.params.fieldKey;
+        const config = await resolveLineConfig(fieldKey);
+        if (!config.channelSecret || !config.accessToken) {
+          console.warn(`[line-webhook per-field] ${fieldKey} 未設定（source=${config.source}）`);
+          return res.status(503).json({
+            error: "LINE channel 未設定",
+            fieldKey,
+            source: config.source,
+          });
+        }
+
+        const rawPayload = req.body instanceof Buffer ? req.body.toString("utf8") : "";
+        const signature = req.headers["x-line-signature"] as string | undefined;
+
+        // LINE Console「Verify」按鈕送空 body 但有簽章 → 應該回 200
+        if (!rawPayload || rawPayload === "{}" || rawPayload === '{"events":[]}') {
+          return res.json({ ok: true, eventCount: 0, verified: true });
+        }
+
+        if (!verifyLineSignature(rawPayload, signature, config.channelSecret)) {
+          console.warn(`[line-webhook per-field] ${fieldKey} 簽章驗證失敗`);
+          return res.status(401).json({ error: "Invalid signature" });
+        }
+
+        const payload = JSON.parse(rawPayload) as LineWebhookBody;
+
+        // 處理每個 event（fire-and-forget）
+        for (const event of payload.events) {
+          // 暫用舊 handleEvent（會用 module-level ACCESS_TOKEN）
+          // 後續 task 完整重構 handler 接 fieldKey
+          handleEvent(event).catch((err) => {
+            console.error(`[line-webhook per-field ${fieldKey}] event handle 失敗:`, err);
+          });
+        }
+
+        res.json({ ok: true, eventCount: payload.events.length, fieldKey });
+      } catch (err) {
+        console.error("[line-webhook per-field] 處理失敗:", err);
+        res.status(500).json({ error: "webhook 處理失敗" });
+      }
+    },
+  );
 }
 
 /**
