@@ -32,7 +32,7 @@ export default function PublicBookingLinkCard({ fieldCode, fieldId }: PublicBook
   const [qrLoading, setQrLoading] = useState(false);
 
   // 🆕 2026-05-17：查場域是否已開通預約（避免露出無效連結）
-  const { data: bookingConfig, isLoading: configLoading } = useQuery({
+  const { data: bookingConfig, isLoading: configLoading, error: configError } = useQuery({
     queryKey: ["admin-booking-config-link", fieldId],
     queryFn: async () => {
       if (!fieldId) return null;
