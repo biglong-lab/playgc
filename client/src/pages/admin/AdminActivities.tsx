@@ -294,8 +294,8 @@ export default function AdminActivities() {
                   {a.paymentMode === "online" ? "線上付款" : a.paymentMode === "onsite" ? "現場付款" : "兩種皆可"}
                 </Badge>
               </div>
-              <div className="flex gap-1 pt-2">
-                <Button size="sm" variant="outline" onClick={() => openEdit(a)} className="flex-1">
+              <div className="flex gap-1 pt-2 flex-wrap">
+                <Button size="sm" variant="outline" onClick={() => openEdit(a)} className="flex-1 min-w-[60px]">
                   <Pencil className="w-3 h-3 mr-1" />
                   編輯
                 </Button>
@@ -307,6 +307,14 @@ export default function AdminActivities() {
                 >
                   <Calendar className="w-3 h-3 mr-1" />
                   時段
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => duplicateActivity(a)}
+                  title="複製此活動建立新活動"
+                >
+                  <Copy className="w-3 h-3" />
                 </Button>
                 <Button
                   size="sm"
