@@ -45,7 +45,9 @@ import {
 } from "lucide-react";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 
-const DEFAULT_FIELD = "jiacun";
+// 🆕 2026-05-17：fallback 改成 "JIACHUN"（與 fields.code + booking_configs.field_id 一致）
+// 真正生效的 fieldId 從 useCurrentField()?.code 拿、見 AdminBookings 主元件
+const DEFAULT_FIELD = "JIACHUN";
 
 interface BookingRow {
   id: number;
