@@ -135,26 +135,41 @@ export default function BookPage() {
     };
   }, [fieldId]);
 
+  // 🆕 2026-05-18：activity 模式（多活動分流）— 必須先查 activity 才能查 availability
+  const { data: activityData } = useQuery<{ activity: ActivityForBook }>({
+    queryKey: ["public-activity", fieldId, activitySlug],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/fields/${encodeURIComponent(fieldId)}/activities/${encodeURIComponent(activitySlug!)}`,
+      );
+      if (!res.ok) throw new Error("查詢活動失敗");
+      return await res.json();
+    },
+    enabled: !!fieldId && !!activitySlug,
+    retry: false,
+  });
+  const activityIdEarly = activityData?.activity?.id;
+
   // 查詢可預約時段（14 天）
   const { data: availability, isLoading: availLoading } = useQuery({
-    queryKey: ["booking-availability", fieldId, activitySlug],
+    queryKey: ["booking-availability", fieldId, activitySlug, activityIdEarly],
     queryFn: async () => {
       const today = new Date();
       const fromStr = formatYMD(today);
       const toDate = new Date(today);
-      toDate.setDate(toDate.getDate() + 29); // 14 → 30 天（2026-05-08 修）
+      toDate.setDate(toDate.getDate() + 29);
       const toStr = formatYMD(toDate);
       const url = new URL(`/api/bookings/availability/${fieldId}`, window.location.origin);
       url.searchParams.set("from", fromStr);
       url.searchParams.set("to", toStr);
-      // 🆕 2026-05-18：activity 模式時帶 activityId（後端優先用 activity_schedules）
-      if (activity?.id) url.searchParams.set("activityId", activity.id);
+      // 🆕 activity 模式時帶 activityId（後端優先用 activity_schedules）
+      if (activityIdEarly) url.searchParams.set("activityId", activityIdEarly);
       const res = await fetch(url.toString());
       if (!res.ok) throw new Error("查詢時段失敗");
       const data = await res.json();
       return data.slots as AvailableSlot[];
     },
-    enabled: !!fieldId && (!activitySlug || !!activity?.id),
+    enabled: !!fieldId && (!activitySlug || !!activityIdEarly),
   });
 
   const { data: config, isLoading: configLoading, error: configError } = useQuery({
@@ -168,20 +183,6 @@ export default function BookPage() {
       return (await res.json()) as BookingConfigPublic;
     },
     enabled: !!fieldId,
-    retry: false,
-  });
-
-  // 🆕 2026-05-18：activity 模式（多活動分流）
-  const { data: activityData } = useQuery<{ activity: ActivityForBook }>({
-    queryKey: ["public-activity", fieldId, activitySlug],
-    queryFn: async () => {
-      const res = await fetch(
-        `/api/fields/${encodeURIComponent(fieldId)}/activities/${encodeURIComponent(activitySlug!)}`,
-      );
-      if (!res.ok) throw new Error("查詢活動失敗");
-      return await res.json();
-    },
-    enabled: !!fieldId && !!activitySlug,
     retry: false,
   });
   const activity = activityData?.activity;
