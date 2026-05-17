@@ -42,6 +42,7 @@ export interface LoginHandlers {
   setEmail: (val: string) => void;
   password: string;
   setPassword: (val: string) => void;
+  handleLineLogin: () => void;
   handleGoogleLogin: () => Promise<void>;
   handleAppleLogin: () => Promise<void>;
   handleGuestLogin: () => Promise<void>;
