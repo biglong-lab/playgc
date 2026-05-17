@@ -33,13 +33,17 @@ export default function PublicBookingLinkCard({ fieldCode, fieldId }: PublicBook
 
   // 🆕 2026-05-17：查場域是否已開通預約（避免露出無效連結）
   const { data: bookingConfig, isLoading: configLoading } = useQuery({
-    queryKey: ["/api/admin/bookings", fieldId, "config"],
+    queryKey: ["admin-booking-config-link", fieldId],
     queryFn: async () => {
       if (!fieldId) return null;
       try {
         return await fetchWithAdminAuth(`/api/admin/bookings/${fieldId}/config`);
-      } catch {
-        return null;
+      } catch (e) {
+        // 與 ConfigPanel 同邏輯：只在 not_initialized 才視為未開通
+        // 其他錯誤（網路 / auth）throw 給 useQuery 處理、避免誤判
+        const msg = e instanceof Error ? e.message : "";
+        if (msg.includes("not_initialized")) return null;
+        throw e;
       }
     },
     enabled: !!fieldId,
@@ -49,6 +53,7 @@ export default function PublicBookingLinkCard({ fieldCode, fieldId }: PublicBook
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const bookUrl = fieldCode ? `${origin}/book/${fieldCode}` : null;
   const mineUrl = fieldCode ? `${origin}/book/${fieldCode}/mine` : null;
+  // 已開通 = data 不為 null（200 + body）OR query error 但非 not_initialized（網路問題、樂觀顯示）
   const isBookingEnabled = !!bookingConfig;
 
   // 自動生成 QR Code（場域已開通才生）
