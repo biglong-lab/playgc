@@ -257,8 +257,32 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     throw new BookingError("code_generation_failed", "預約碼產生失敗、請重試", 500);
   }
 
-  // 付費需求判定
-  const paymentRequired = config.isPaid && config.pricePerSlotCents > 0;
+  // 🆕 2026-05-18：activity 模式 — 用 activity 的價格 + paymentMode 覆寫 config
+  let priceCents = config.pricePerSlotCents;
+  let isPaid = config.isPaid;
+  let paymentMode: string = "onsite";
+  if (input.activityId) {
+    const { activities } = await import("@shared/schema");
+    const { eq } = await import("drizzle-orm");
+    const [activity] = await db
+      .select()
+      .from(activities)
+      .where(eq(activities.id, input.activityId))
+      .limit(1);
+    if (activity) {
+      priceCents = activity.priceCents;
+      isPaid = activity.priceCents > 0;
+      paymentMode = activity.paymentMode;
+    }
+  }
+
+  // 付費需求判定（activity 模式 paymentMode=online 才 pending、onsite 直接 confirmed）
+  const paymentRequired = isPaid && priceCents > 0;
+  const requiresOnlinePayment = paymentRequired && paymentMode === "online";
+
+  // 🆕 QR token（POS 掃描安全碼、64 字元）
+  const { randomBytes } = await import("crypto");
+  const qrToken = `BK_${randomBytes(28).toString("base64url")}`;
 
   const inserted = await db
     .insert(bookings)
@@ -271,11 +295,19 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       slotStart: input.slotStart,
       slotEnd: matchedSlot.endAt,
       partySize: input.partySize,
-      status: paymentRequired ? "pending" : "confirmed",
+      // online 模式：等付款 → pending；onsite 模式：直接 confirmed
+      status: requiresOnlinePayment ? "pending" : "confirmed",
       paymentRequired,
-      paymentStatus: paymentRequired ? "pending" : "none",
-      amountCents: paymentRequired ? config.pricePerSlotCents * input.partySize : 0,
+      paymentStatus: requiresOnlinePayment
+        ? "pending"
+        : paymentRequired
+          ? "pending_onsite"
+          : "none",
+      amountCents: paymentRequired ? priceCents * input.partySize : 0,
       customerNote: input.customerNote,
+      activityId: input.activityId ?? null,
+      paymentMode,
+      qrToken,
     })
     .returning();
 
