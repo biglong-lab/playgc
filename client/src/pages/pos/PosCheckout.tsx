@@ -64,6 +64,9 @@ export default function PosCheckout() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [note, setNote] = useState("");
   const [success, setSuccess] = useState<{ amountCents: number; method: string } | null>(null);
+  // 🆕 2026-05-18 找零計算 + 大金額確認
+  const [tenderedDollars, setTenderedDollars] = useState<string>("");
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     if (booking) {
