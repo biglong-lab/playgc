@@ -300,6 +300,30 @@ export default function AdminActivities() {
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
+              {/* 🆕 2026-05-18 sortOrder 上下調整 */}
+              <div className="flex gap-1 pt-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => moveActivity(a, "up")}
+                  className="flex-1 h-7"
+                  title="往上排"
+                  disabled={sortMutation.isPending}
+                >
+                  <ArrowUp className="w-3 h-3" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => moveActivity(a, "down")}
+                  className="flex-1 h-7"
+                  title="往下排"
+                  disabled={sortMutation.isPending}
+                >
+                  <ArrowDown className="w-3 h-3" />
+                </Button>
+                <span className="text-xs text-muted-foreground self-center px-2">#{a.sortOrder}</span>
+              </div>
             </CardContent>
           </Card>
         ))}
