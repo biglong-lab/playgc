@@ -134,6 +134,32 @@ export default function AdminActivities() {
     },
   });
 
+  const sortMutation = useMutation({
+    mutationFn: async ({ id, sortOrder }: { id: string; sortOrder: number }) => {
+      await fetchWithAdminAuth(`/api/admin/activities/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ sortOrder }),
+      });
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-activities"] }),
+  });
+
+  const moveActivity = (a: Activity, direction: "up" | "down") => {
+    const list = data?.activities ?? [];
+    const idx = list.findIndex((x) => x.id === a.id);
+    if (idx < 0) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= list.length) return;
+    const other = list[swapIdx];
+    // 兩者 sortOrder 交換、若同值則上加一下加
+    if (a.sortOrder === other.sortOrder) {
+      sortMutation.mutate({ id: a.id, sortOrder: direction === "up" ? a.sortOrder - 1 : a.sortOrder + 1 });
+    } else {
+      sortMutation.mutate({ id: a.id, sortOrder: other.sortOrder });
+      sortMutation.mutate({ id: other.id, sortOrder: a.sortOrder });
+    }
+  };
+
   const scheduleMutation = useMutation({
     mutationFn: async (template: ScheduleTemplate) => {
       if (!schedulingActivityId) throw new Error("無活動 id");
