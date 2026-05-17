@@ -21,6 +21,9 @@ interface Booking {
   partySize: number;
   status: string;
   paymentStatus: string;
+  amountCents?: number;
+  activityId?: string | null;
+  activityName?: string | null;
 }
 
 export default function MyBookingsPage() {
