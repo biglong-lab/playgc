@@ -79,40 +79,67 @@ export function LoginDialog({
 
           <Divider text="或使用帳號登入" />
 
-          {/* 社群登入 */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* LINE 登入（綠色主視覺、優先顯示） */}
+          {visibility.showLine && (
             <Button
-              variant="outline"
-              className="h-12 gap-2"
-              onClick={handleGoogleLogin}
-              disabled={isLoggingIn || isEmbeddedBrowser}
-              data-testid="button-google-login"
+              className="w-full h-12 gap-2 bg-[#06C755] hover:bg-[#05B04A] text-white border-0"
+              onClick={handleLineLogin}
+              disabled={isLoggingIn}
+              data-testid="button-line-login"
             >
-              {isLoggingIn && loginMethod === "google" ? (
+              {isLoggingIn && loginMethod === "line" ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <SiGoogle className="w-5 h-5" />
+                <MessageCircle className="w-5 h-5" />
               )}
-              Google
+              使用 LINE 登入
             </Button>
+          )}
 
-            <Button
-              variant="outline"
-              className="h-12 gap-2"
-              onClick={handleAppleLogin}
-              disabled={isLoggingIn || isEmbeddedBrowser}
-              data-testid="button-apple-login"
-            >
-              {isLoggingIn && loginMethod === "apple" ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Apple className="w-5 h-5" />
+          {/* 社群登入（Google / Apple）— LINE 內建瀏覽器藏 Google */}
+          {(visibility.showGoogle || true) && (
+            <div className={`grid gap-3 ${visibility.showGoogle ? "grid-cols-2" : "grid-cols-1"}`}>
+              {visibility.showGoogle && (
+                <Button
+                  variant="outline"
+                  className="h-12 gap-2"
+                  onClick={handleGoogleLogin}
+                  disabled={isLoggingIn || isEmbeddedBrowser}
+                  data-testid="button-google-login"
+                >
+                  {isLoggingIn && loginMethod === "google" ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <SiGoogle className="w-5 h-5" />
+                  )}
+                  Google
+                </Button>
               )}
-              Apple
-            </Button>
-          </div>
 
-          {isEmbeddedBrowser && (
+              <Button
+                variant="outline"
+                className="h-12 gap-2"
+                onClick={handleAppleLogin}
+                disabled={isLoggingIn || isEmbeddedBrowser}
+                data-testid="button-apple-login"
+              >
+                {isLoggingIn && loginMethod === "apple" ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Apple className="w-5 h-5" />
+                )}
+                Apple
+              </Button>
+            </div>
+          )}
+
+          {isEmbeddedBrowser && !visibility.showGoogle && (
+            <p className="text-xs text-muted-foreground text-center">
+              偵測到 LINE 內建瀏覽器，建議使用上方 LINE 登入（最順暢）。
+            </p>
+          )}
+
+          {isEmbeddedBrowser && visibility.showGoogle && (
             <p className="text-xs text-destructive text-center">
               您正在使用 App 內建瀏覽器，社群登入可能無法使用。請使用訪客登入或電子郵件登入。
             </p>
