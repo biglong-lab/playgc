@@ -25,6 +25,15 @@ export const fields = pgTable("fields", {
   settings: jsonb("settings").default({}), // Field-specific settings
   status: varchar("status", { length: 20 }).default("active"), // active, inactive, suspended
   codeLastChangedAt: timestamp("code_last_changed_at"), // Track when code was last changed for 6-month lock
+  // 🆕 2026-05-17：per-field LINE 設定（業主要求每館獨立 LINE channel）
+  // 不存 LIFF id（前端 build-time env、後續再支援動態載入）
+  // Secret 用 text 存（建議 admin 加密、目前 plain text、未來可加 KMS）
+  lineChannelId: varchar("line_channel_id", { length: 50 }),
+  lineChannelSecret: text("line_channel_secret"),
+  lineChannelAccessToken: text("line_channel_access_token"),
+  lineLiffId: varchar("line_liff_id", { length: 50 }),
+  // LINE 模組是否啟用（即使填了 channel 也可暫關）
+  lineEnabled: varchar("line_enabled", { length: 10 }).default("false"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
