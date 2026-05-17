@@ -261,6 +261,19 @@ function buildBookingConfirmedFlex(
   };
 }
 
+async function getFieldName(fieldId: string): Promise<string | undefined> {
+  try {
+    const [row] = await db
+      .select({ name: fields.name })
+      .from(fields)
+      .where(eq(fields.id, fieldId))
+      .limit(1);
+    return row?.name ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function kv(label: string, value: string, mono = false): Record<string, unknown> {
   return {
     type: "box",
