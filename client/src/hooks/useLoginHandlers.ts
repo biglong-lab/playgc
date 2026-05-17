@@ -9,6 +9,7 @@ import {
   signInWithEmail,
   signUpWithEmail,
   resetPassword,
+  startLineLogin,
 } from "@/lib/firebase";
 
 /**
