@@ -190,8 +190,9 @@ export function registerLineLoginRoutes(app: Express) {
       });
 
       // Redirect 回前端、帶 token 在 hash（hash 不會送到 server log）
-      const returnTo = parsed.returnTo || "/";
-      const safeReturnTo = returnTo.startsWith("/") ? returnTo : "/";
+      // 🐛 2026-05-18：returnTo="/" 會跳 Landing、業主登入後迷路。改 fallback 到 /f（選場域頁）
+      const rawReturnTo = parsed.returnTo || "/f";
+      const safeReturnTo = rawReturnTo.startsWith("/") && rawReturnTo !== "/" ? rawReturnTo : "/f";
       res.redirect(`${env.appBaseUrl}${safeReturnTo}#lineToken=${encodeURIComponent(customToken)}`);
     } catch (err) {
       console.error("[line-login callback]", err);
