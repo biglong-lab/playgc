@@ -4,8 +4,8 @@
 // 簡潔大字、底部固定導航
 
 import { Link, useLocation } from "wouter";
-import { ReactNode } from "react";
-import { Home, ScanLine, ListChecks, DollarSign, Ticket, TrendingUp, Settings } from "lucide-react";
+import { ReactNode, useEffect, useState } from "react";
+import { Home, ScanLine, ListChecks, DollarSign, Ticket, TrendingUp, Settings, WifiOff } from "lucide-react";
 
 interface PosLayoutProps {
   title: string;
