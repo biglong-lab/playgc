@@ -237,11 +237,21 @@ export default function BookPage() {
     );
   }
 
+  // 🆕 2026-05-17：整頁載入狀態（避免白屏）
+  if (configLoading) {
+    return (
+      <div className="container-player py-8 flex flex-col items-center gap-3" role="status" aria-live="polite">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+        <p className="text-sm text-muted-foreground">載入預約資訊…</p>
+      </div>
+    );
+  }
+
   // 場域 config 查不到 → 場域不存在 / 未開通預約
   if (!configLoading && config === null && !configError) {
     return (
       <div className="container-player py-8 text-center">
-        <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+        <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" aria-hidden="true" />
         <h2 className="text-lg font-semibold mb-2">此場域尚未開通預約功能</h2>
         <p className="text-sm text-muted-foreground mb-4">
           場域代碼：<code>{fieldId}</code>
