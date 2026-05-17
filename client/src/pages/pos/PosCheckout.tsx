@@ -155,6 +155,18 @@ export default function PosCheckout() {
 
   const amountCents = Math.round(Number(amountDollars) * 100) || 0;
   const validAmount = amountCents > 0;
+  const tenderedCents = Math.round(Number(tenderedDollars) * 100) || 0;
+  const changeCents = tenderedCents > 0 ? tenderedCents - amountCents : 0;
+  const isLargeAmount = amountCents >= 200000; // NT$2000 以上要確認
+
+  const triggerCheckout = () => {
+    if (isLargeAmount && !showConfirm) {
+      setShowConfirm(true);
+      return;
+    }
+    setShowConfirm(false);
+    checkoutMut.mutate();
+  };
 
   return (
     <PosLayout title="現金收款" backTo={bookingId ? "/pos/bookings/today" : "/pos"}>
