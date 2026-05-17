@@ -45,6 +45,8 @@ export default function BookDonePage() {
   const [lineUserId, setLineUserId] = useState<string | null>(null);
   // 🆕 2026-05-17 卡片式：場域資訊（封面 + 名稱）
   const [fieldInfo, setFieldInfo] = useState<{ name: string | null; logoUrl: string | null } | null>(null);
+  // 🆕 2026-05-18 POS：QR Code dataURL（玩家現場出示用）
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
   // 🐛 2026-05-18 修補：原本「localStorage 優先 → LIFF」的順序有汙染風險
   // 業主回報：預約成功跳到 done 頁顯示「查不到」、原因是 localStorage 殘留舊測試 userId
