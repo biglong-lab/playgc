@@ -98,11 +98,34 @@ export function registerBookingRoutes(app: Express) {
   });
 
   // ──────────────────────────────────────────
-  // 🆕 2026-05-17 per-field LIFF：BookPage 動態取對應場域 LIFF ID（公開、不需 auth）
+  // 🆕 2026-05-17 per-field LIFF + 場域資訊（公開、不需 auth、case-insensitive）
   app.get("/api/bookings/liff/:fieldCode", async (req, res) => {
     try {
-      const config = await resolveLineConfig(req.params.fieldCode);
-      res.json({ liffId: config.liffId, source: config.source });
+      const fieldCode = req.params.fieldCode;
+      const config = await resolveLineConfig(fieldCode);
+
+      // 同時回場域 logoUrl / name（給 BookDonePage 卡片式畫面用）
+      const { db } = await import("../db");
+      const { fields: fieldsTable } = await import("@shared/schema");
+      const { sql: rawSql } = await import("drizzle-orm");
+      const rows = await db
+        .select({
+          name: fieldsTable.name,
+          code: fieldsTable.code,
+          logoUrl: fieldsTable.logoUrl,
+        })
+        .from(fieldsTable)
+        .where(rawSql`lower(${fieldsTable.code}) = lower(${fieldCode})`)
+        .limit(1);
+      const field = rows[0] ?? null;
+
+      res.json({
+        liffId: config.liffId,
+        source: config.source,
+        fieldName: field?.name ?? null,
+        fieldCode: field?.code ?? fieldCode,
+        logoUrl: field?.logoUrl ?? null,
+      });
     } catch (err) {
       console.error("[bookings/liff]", err);
       res.status(500).json({ error: "查詢失敗" });
