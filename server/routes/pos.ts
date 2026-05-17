@@ -329,6 +329,52 @@ export function registerPosRoutes(app: Express) {
     }
   });
 
+  // 🆕 2026-05-18 Phase 5：POST /api/pos/voucher/redeem（純核銷、不收款）
+  const voucherRedeemSchema = z.object({
+    token: z.string().min(1).max(120),
+    bookingId: z.number().int().optional(),
+  });
+  app.post("/api/pos/voucher/redeem", requireAdminAuth, async (req, res) => {
+    try {
+      const fieldId = resolveFieldId(req);
+      if (!fieldId || !req.admin) return res.status(400).json({ error: "no_field" });
+      const parsed = voucherRedeemSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "validation" });
+      }
+      const token = parsed.data.token.trim();
+
+      const [c] = await db
+        .select({ coupon: platformCoupons, template: couponTemplates })
+        .from(platformCoupons)
+        .leftJoin(couponTemplates, eq(platformCoupons.templateId, couponTemplates.id))
+        .where(or(eq(platformCoupons.qrToken, token), eq(platformCoupons.code, token.toUpperCase())))
+        .limit(1);
+      if (!c) return res.status(404).json({ error: "voucher_not_found" });
+      if (c.coupon.status !== "unused") {
+        return res.status(400).json({ error: "voucher_already_used", coupon: c.coupon });
+      }
+      if (c.coupon.expiresAt < new Date()) {
+        return res.status(400).json({ error: "voucher_expired" });
+      }
+
+      const [updated] = await db
+        .update(platformCoupons)
+        .set({
+          status: "used",
+          usedAt: new Date(),
+          redeemedByStaffId: req.admin.id,
+        })
+        .where(eq(platformCoupons.id, c.coupon.id))
+        .returning();
+
+      res.json({ ok: true, coupon: updated, template: c.template });
+    } catch (err) {
+      console.error("[pos/voucher/redeem]", err);
+      res.status(500).json({ error: "internal_error" });
+    }
+  });
+
   // GET /api/pos/summary
   app.get("/api/pos/summary", requireAdminAuth, async (req, res) => {
     try {
