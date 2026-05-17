@@ -122,9 +122,18 @@ export function registerPosRoutes(app: Express) {
         for (const a of acts) activityMap.set(a.id, { name: a.name, coverUrl: a.coverUrl });
       }
 
+      // 場域名（給 dashboard 顯示）
+      const { fields } = await import("@shared/schema");
+      const [field] = await db
+        .select({ name: fields.name })
+        .from(fields)
+        .where(eq(fields.id, fieldId))
+        .limit(1);
+
       res.json({
         date: start.toISOString().slice(0, 10),
         fieldId,
+        fieldName: field?.name,
         stats: {
           totalBookings: total,
           arrivedBookings: arrived,
