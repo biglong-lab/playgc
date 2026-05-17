@@ -5,7 +5,7 @@
 
 import { Link, useLocation } from "wouter";
 import { ReactNode } from "react";
-import { Home, ScanLine, ListChecks, DollarSign, Ticket, TrendingUp } from "lucide-react";
+import { Home, ScanLine, ListChecks, DollarSign, Ticket, TrendingUp, Settings } from "lucide-react";
 
 interface PosLayoutProps {
   title: string;
