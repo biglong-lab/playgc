@@ -27,7 +27,9 @@ import {
 import { eq, and } from "drizzle-orm";
 import { pushMessage, type LineMessage } from "../lib/line-bot";
 
-const ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN || "";
+// 🆕 2026-05-17 per-field：用 resolveLineConfig 動態查 booking.fieldId 的 LINE channel
+// 全域 fallback 由 resolver 處理（env 仍可用作 fallback）
+import { resolveLineConfig } from "../lib/line-config-resolver";
 const APP_BASE_URL = process.env.APP_BASE_URL || "https://game.homi.cc";
 
 interface NotifyContext {
