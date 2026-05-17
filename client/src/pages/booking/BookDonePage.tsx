@@ -39,6 +39,8 @@ export default function BookDonePage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [lineUserId, setLineUserId] = useState<string | null>(null);
+  // 🆕 2026-05-17 卡片式：場域資訊（封面 + 名稱）
+  const [fieldInfo, setFieldInfo] = useState<{ name: string | null; logoUrl: string | null } | null>(null);
 
   // 🐛 2026-05-17 修補：原本只看 localStorage、沒實作 LIFF init
   // 業主回報：從 LINE LIFF 預約成功跳到 done 頁顯示「查不到此預約」
