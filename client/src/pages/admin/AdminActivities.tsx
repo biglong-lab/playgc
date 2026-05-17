@@ -22,7 +22,11 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 
-interface Activity {
+interface ActivityField {
+  fieldCode?: string;
+}
+
+interface Activity extends ActivityField {
   id: string;
   fieldId: string;
   slug: string;
