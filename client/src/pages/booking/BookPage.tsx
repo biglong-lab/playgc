@@ -301,6 +301,31 @@ export default function BookPage() {
 
   return (
     <div className="container-player py-4 pb-24">
+      {/* 🆕 2026-05-18：activity 模式 — 顯示封面 hero */}
+      {activity && (
+        <div className="mb-4 -mx-4">
+          {activity.coverUrl ? (
+            <img
+              src={activity.coverUrl}
+              alt={activity.name}
+              className="w-full h-44 object-cover sm:rounded-lg"
+            />
+          ) : null}
+          <div className="px-4 mt-3 space-y-1">
+            <h1 className="text-xl font-bold">{activity.name}</h1>
+            {activity.shortDesc && (
+              <p className="text-sm text-muted-foreground">{activity.shortDesc}</p>
+            )}
+            {activity.locationNote && (
+              <p className="text-xs text-muted-foreground">📍 {activity.locationNote}</p>
+            )}
+            {activity.description && (
+              <p className="text-sm whitespace-pre-line mt-2">{activity.description}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <button
