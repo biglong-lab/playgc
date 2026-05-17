@@ -68,12 +68,21 @@ const EMPTY_FORM: ActivityForm = {
   isActive: true,
 };
 
+const EMPTY_SCHEDULE: ScheduleTemplate = {
+  rules: [],
+  blackoutDates: [],
+  notes: "",
+  version: 1,
+};
+
 export default function AdminActivities() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [editing, setEditing] = useState<Activity | null>(null);
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState<ActivityForm>(EMPTY_FORM);
+  const [schedulingActivityId, setSchedulingActivityId] = useState<string | null>(null);
+  const [scheduleDraft, setScheduleDraft] = useState<ScheduleTemplate>(EMPTY_SCHEDULE);
 
   const { data, isLoading } = useQuery<{ activities: Activity[] }>({
     queryKey: ["admin-activities"],
