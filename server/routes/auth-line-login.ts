@@ -88,9 +88,9 @@ export function registerLineLoginRoutes(app: Express) {
    * 接 LINE code → 換 access_token → 拿 profile → Firebase custom token → redirect 前端
    */
   app.get("/api/auth/line/callback", async (req: Request, res: Response) => {
-    const env = getEnv();
-    if (!isConfigured()) {
-      return res.status(503).send("LINE Login 未設定");
+    const env = await getConfig();
+    if (!env.channelId || !env.channelSecret || !env.callbackUrl) {
+      return res.status(503).send("LINE Login 尚未設定");
     }
 
     try {
