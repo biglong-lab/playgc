@@ -63,6 +63,7 @@ export * from "./admin-session-timings";
 export * from "./line-bot-events";
 export * from "./line-login-config";
 export * from "./activities";
+export * from "./pos-transactions";
 
 // 🏆 Trivia answers — TriviaShowdown server-side scoring（Phase 4 / 2026-05-08）
 export * from "./trivia-answers";
