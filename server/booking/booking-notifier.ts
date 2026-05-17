@@ -308,9 +308,30 @@ export async function notifyBookingConfirmed(booking: Booking): Promise<{ sent: 
     // 🆕 2026-05-18：業主沒自訂 flex → 用預設預約成功卡片
     if (!resolved.flex) {
       const fieldName = await getFieldName(booking.fieldId);
-      const coverUrl = resolved.imageUrl || `${APP_BASE_URL}/booking-cover-default.jpg`;
+      // 🆕 多活動：activity 封面優先
+      let activityName: string | undefined;
+      let activityCover: string | undefined;
+      if (booking.activityId) {
+        const { activities } = await import("@shared/schema");
+        const [act] = await db
+          .select({ name: activities.name, coverUrl: activities.coverUrl })
+          .from(activities)
+          .where(eq(activities.id, booking.activityId))
+          .limit(1);
+        if (act) {
+          activityName = act.name;
+          activityCover = act.coverUrl ?? undefined;
+        }
+      }
+      const coverUrl =
+        activityCover || resolved.imageUrl || `${APP_BASE_URL}/booking-cover-default.jpg`;
       const detailUrl = `${APP_BASE_URL}/book/${booking.fieldId}/done/${booking.bookingCode}`;
-      resolved.flex = buildBookingConfirmedFlex(booking, { fieldName }, coverUrl, detailUrl);
+      resolved.flex = buildBookingConfirmedFlex(
+        booking,
+        { fieldName, activityName },
+        coverUrl,
+        detailUrl,
+      );
     }
     await pushMessage({
       accessToken: lineConfig.accessToken,
