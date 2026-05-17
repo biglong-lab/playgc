@@ -132,6 +132,11 @@ export const platformCoupons = pgTable("platform_coupons", {
   expiresAt: timestamp("expires_at").notNull(),
 
   redemptionContext: jsonb("redemption_context"),
+
+  // 🆕 2026-05-18 Phase 5：POS 掃描專用 token（CP_ prefix、防猜）
+  qrToken: varchar("qr_token", { length: 64 }),
+  /** POS 核銷員 admin id */
+  redeemedByStaffId: varchar("redeemed_by_staff_id"),
 }, (table) => [
   index("idx_coupons_user").on(table.issuedToUserId, table.status),
   index("idx_coupons_squad").on(table.issuedToSquadId, table.status),
