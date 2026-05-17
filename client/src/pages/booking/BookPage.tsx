@@ -323,7 +323,7 @@ export default function BookPage() {
           <CardTitle className="text-lg">場次預約</CardTitle>
           <CardDescription className="text-xs">
             {config?.isPaid
-              ? `每梯 NT$${(config.pricePerSlotCents / 100).toLocaleString()} × 人數`
+              ? `每梯 NT$${(effectivePriceCents / 100).toLocaleString()} × 人數`
               : "免費場次"}
             {config?.cancellable && config.cancelBeforeMinutes === 0 && " · 隨時可取消"}
             {config?.cancellable && config.cancelBeforeMinutes > 0 &&
@@ -523,7 +523,7 @@ export default function BookPage() {
               <div className="bg-amber-50 dark:bg-amber-950 px-3 py-2 rounded text-sm">
                 應付金額：
                 <span className="font-bold text-amber-600">
-                  NT${((config.pricePerSlotCents * partySize) / 100).toLocaleString()}
+                  NT${((effectivePriceCents * partySize) / 100).toLocaleString()}
                 </span>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   確認後將轉至付款頁面
