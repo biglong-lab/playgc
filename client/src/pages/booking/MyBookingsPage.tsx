@@ -78,16 +78,42 @@ export default function MyBookingsPage() {
     enabled: !!lineUserId,
   });
 
+  // 🆕 2026-05-18：LIFF closeWindow（玩家瀏覽完直接關閉 LIFF 視窗）
+  const handleClose = () => {
+    try {
+      const w = window as unknown as { liff?: { isInClient?: () => boolean; closeWindow?: () => void } };
+      if (w.liff?.isInClient?.()) {
+        w.liff.closeWindow?.();
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    // 非 LIFF 環境：回上一頁
+    if (window.history.length > 1) window.history.back();
+    else navigate(`/book/${fieldId}`);
+  };
+
   return (
     <div className="container-player py-4 pb-24">
-      <button
-        type="button"
-        onClick={() => navigate(`/book/${fieldId}`)}
-        className="flex items-center gap-1 text-sm text-muted-foreground mb-3"
-        data-testid="button-back"
-      >
-        <ArrowLeft className="w-4 h-4" /> 回預約頁
-      </button>
+      <div className="flex items-center justify-between mb-3">
+        <button
+          type="button"
+          onClick={() => navigate(`/book/${fieldId}`)}
+          className="flex items-center gap-1 text-sm text-muted-foreground"
+          data-testid="button-back"
+        >
+          <ArrowLeft className="w-4 h-4" /> 回預約頁
+        </button>
+        <button
+          type="button"
+          onClick={handleClose}
+          className="text-sm text-muted-foreground hover-elevate px-2 py-1 rounded"
+          data-testid="button-close"
+        >
+          ✕ 關閉
+        </button>
+      </div>
 
       <h1 className="text-xl font-bold mb-4">我的預約</h1>
 
