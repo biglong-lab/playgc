@@ -137,6 +137,7 @@ const PlatformHealth = lazy(() => import("@/pages/platform/PlatformHealth"));
 const PlatformIpWhitelist = lazy(() => import("@/pages/platform/PlatformIpWhitelist"));
 const PlatformApiKeys = lazy(() => import("@/pages/platform/PlatformApiKeys"));
 const PlatformLoginConfig = lazy(() => import("@/pages/platform/PlatformLoginConfig"));
+const PlatformLineLogin = lazy(() => import("@/pages/platform/PlatformLineLogin"));
 const PlatformPwa = lazy(() => import("@/pages/platform/PlatformPwa"));
 const PlatformNotifications = lazy(() => import("@/pages/platform/PlatformNotifications"));
 const PlatformMenu = lazy(() => import("@/pages/platform/PlatformMenu"));
