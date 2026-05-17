@@ -1,0 +1,297 @@
+// 💰 POS 現金收款頁（2026-05-18）
+//
+// 路徑：/pos/checkout?bookingId=xxx
+//   - 有 bookingId → 自動帶入金額 + 玩家姓名（綁定 booking 收款）
+//   - 沒有 → 散客手填模式
+// 流程：填金額 → 選付款方式 → 確認 → POST /api/pos/checkout → 成功頁
+
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import PosLayout from "./PosLayout";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle2, DollarSign, Loader2, User, Phone } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+
+interface BookingForCheckout {
+  id: number;
+  bookingCode: string;
+  displayName: string | null;
+  phone: string | null;
+  partySize: number;
+  amountCents: number;
+  paymentStatus: string;
+  paidAt: string | null;
+  activityId: string | null;
+}
+
+interface DashboardResp {
+  todayBookings: BookingForCheckout[];
+}
+
+type PaymentMethod = "cash" | "online_recur" | "online_stripe" | "linepay" | "voucher_full";
+
+export default function PosCheckout() {
+  const [location, navigate] = useLocation();
+  const { toast } = useToast();
+
+  // 從 URL ?bookingId= 解析
+  const bookingId = (() => {
+    const u = new URL(window.location.href);
+    const id = u.searchParams.get("bookingId");
+    return id ? Number(id) : null;
+  })();
+
+  const { data: dashboard } = useQuery<DashboardResp>({
+    queryKey: ["pos-dashboard"],
+    queryFn: async () => await fetchWithAdminAuth("/api/pos/dashboard"),
+    enabled: !!bookingId,
+  });
+  const booking = bookingId
+    ? dashboard?.todayBookings.find((b) => b.id === bookingId) ?? null
+    : null;
+
+  // 表單
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [amountDollars, setAmountDollars] = useState<string>("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
+  const [note, setNote] = useState("");
+  const [success, setSuccess] = useState<{ amountCents: number; method: string } | null>(null);
+
+  useEffect(() => {
+    if (booking) {
+      setCustomerName(booking.displayName ?? "");
+      setCustomerPhone(booking.phone ?? "");
+      setAmountDollars(booking.amountCents ? String(booking.amountCents / 100) : "");
+    }
+  }, [booking]);
+
+  const checkoutMut = useMutation({
+    mutationFn: async () => {
+      const amountCents = Math.round(Number(amountDollars) * 100);
+      if (!Number.isFinite(amountCents) || amountCents < 0) throw new Error("金額無效");
+      return await fetchWithAdminAuth("/api/pos/checkout", {
+        method: "POST",
+        body: JSON.stringify({
+          bookingId: bookingId ?? undefined,
+          activityId: booking?.activityId ?? undefined,
+          amountCents,
+          paidAmountCents: amountCents,
+          paymentMethod,
+          customerName: customerName.trim() || undefined,
+          customerPhone: customerPhone.trim() || undefined,
+          note: note.trim() || undefined,
+        }),
+      });
+    },
+    onSuccess: () => {
+      setSuccess({
+        amountCents: Math.round(Number(amountDollars) * 100),
+        method: paymentMethod,
+      });
+      toast({ title: "✅ 收款成功" });
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "請重試";
+      toast({ variant: "destructive", title: "收款失敗", description: msg });
+    },
+  });
+
+  if (success) {
+    return (
+      <PosLayout title="收款完成" backTo="/pos">
+        <Card className="mb-4 border-green-500 border-2">
+          <CardContent className="py-8 text-center space-y-3">
+            <CheckCircle2 className="w-16 h-16 mx-auto text-green-600" aria-hidden="true" />
+            <h2 className="text-3xl font-bold text-green-600">
+              NT${(success.amountCents / 100).toLocaleString()}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {success.method === "cash" ? "現金收款" : success.method} 已紀錄
+            </p>
+            {customerName && (
+              <p className="text-sm">
+                <User className="w-4 h-4 inline mr-1" />
+                {customerName}
+              </p>
+            )}
+            {booking && (
+              <p className="text-xs text-muted-foreground">預約碼：{booking.bookingCode}</p>
+            )}
+          </CardContent>
+        </Card>
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" onClick={() => navigate("/pos")}>
+            回首頁
+          </Button>
+          <Button
+            onClick={() => {
+              setSuccess(null);
+              setCustomerName("");
+              setCustomerPhone("");
+              setAmountDollars("");
+              setNote("");
+              navigate("/pos/checkout");
+            }}
+          >
+            繼續收款
+          </Button>
+        </div>
+      </PosLayout>
+    );
+  }
+
+  const amountCents = Math.round(Number(amountDollars) * 100) || 0;
+  const validAmount = amountCents > 0;
+
+  return (
+    <PosLayout title="現金收款" backTo={bookingId ? "/pos/bookings/today" : "/pos"}>
+      <div className="space-y-3">
+        {/* 綁定預約資訊 */}
+        {booking && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200">
+            <CardContent className="py-3 px-3">
+              <p className="text-xs text-muted-foreground">預約 {booking.bookingCode}</p>
+              <p className="font-semibold">{booking.displayName || "—"}</p>
+              <p className="text-xs">
+                {booking.partySize} 人 · 應收 NT${(booking.amountCents / 100).toFixed(0)}
+              </p>
+              {booking.paymentStatus === "paid" && (
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                  ⚠️ 此預約已收款、繼續會建立新交易
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 金額（大字輸入）*/}
+        <Card>
+          <CardContent className="py-4 px-3">
+            <Label htmlFor="amount" className="text-xs">
+              金額 *
+            </Label>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-2xl font-bold text-muted-foreground">NT$</span>
+              <Input
+                id="amount"
+                type="number"
+                inputMode="decimal"
+                value={amountDollars}
+                onChange={(e) => setAmountDollars(e.target.value)}
+                placeholder="0"
+                className="text-2xl h-14 font-bold"
+              />
+            </div>
+            {/* 快速金額按鈕 */}
+            <div className="flex gap-1 mt-2">
+              {[100, 500, 800, 1000].map((v) => (
+                <Button
+                  key={v}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setAmountDollars(String(v))}
+                >
+                  +{v}
+                </Button>
+              ))}
+              <Button size="sm" variant="ghost" onClick={() => setAmountDollars("")}>
+                清除
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 付款方式 */}
+        <Card>
+          <CardContent className="py-3 px-3">
+            <Label className="text-xs">付款方式</Label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <Button
+                variant={paymentMethod === "cash" ? "default" : "outline"}
+                onClick={() => setPaymentMethod("cash")}
+              >
+                💵 現金
+              </Button>
+              <Button variant="outline" disabled title="待金流上線後啟用">
+                💳 信用卡（待開通）
+              </Button>
+              <Button variant="outline" disabled title="待金流上線後啟用">
+                LINE Pay（待開通）
+              </Button>
+              <Button variant="outline" disabled title="券折抵走 /pos/voucher">
+                🎟️ 券折抵
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 散客資訊（無 booking 才顯示）*/}
+        {!booking && (
+          <Card>
+            <CardContent className="py-3 px-3 space-y-2">
+              <div>
+                <Label htmlFor="customer-name" className="text-xs">
+                  顧客姓名（選填）
+                </Label>
+                <Input
+                  id="customer-name"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="散客姓名"
+                />
+              </div>
+              <div>
+                <Label htmlFor="customer-phone" className="text-xs">
+                  電話（選填）
+                </Label>
+                <Input
+                  id="customer-phone"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="0912..."
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 備註 */}
+        <Card>
+          <CardContent className="py-3 px-3">
+            <Label htmlFor="note" className="text-xs">
+              備註（選填）
+            </Label>
+            <Textarea
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="例：加購水彈、現金找零等"
+              rows={2}
+            />
+          </CardContent>
+        </Card>
+
+        {/* 確認按鈕（大、固定底）*/}
+        <Button
+          className="w-full h-16 text-lg"
+          onClick={() => checkoutMut.mutate()}
+          disabled={!validAmount || checkoutMut.isPending}
+        >
+          {checkoutMut.isPending ? (
+            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+          ) : (
+            <DollarSign className="w-5 h-5 mr-1" />
+          )}
+          確認收款 NT${(amountCents / 100).toLocaleString()}
+        </Button>
+      </div>
+    </PosLayout>
+  );
+}
