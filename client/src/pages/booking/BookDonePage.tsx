@@ -40,12 +40,38 @@ export default function BookDonePage() {
   const queryClient = useQueryClient();
   const [lineUserId, setLineUserId] = useState<string | null>(null);
 
+  // 🐛 2026-05-17 修補：原本只看 localStorage、沒實作 LIFF init
+  // 業主回報：從 LINE LIFF 預約成功跳到 done 頁顯示「查不到此預約」
+  // 修法：先查場域 LIFF ID → 初始化 → 取 LINE userId（與 BookPage 同邏輯）
   useEffect(() => {
-    // 從 localStorage（dev）或 LIFF 拿
-    const stored = localStorage.getItem("__bookpage_test_lineUserId");
-    if (stored) setLineUserId(stored);
-    // production：從 LIFF 拿（這頁通常從預約頁跳來、應已登入）
-  }, []);
+    let cancelled = false;
+    (async () => {
+      // 先試 localStorage（測試模式）
+      const stored = localStorage.getItem("__bookpage_test_lineUserId");
+      if (stored) {
+        if (!cancelled) setLineUserId(stored);
+        return;
+      }
+      // 查場域 LIFF ID
+      if (!fieldId) return;
+      try {
+        const res = await fetch(`/api/bookings/liff/${encodeURIComponent(fieldId)}`);
+        if (!res.ok) return;
+        const j = (await res.json()) as { liffId?: string };
+        if (!j.liffId) return;
+        const result = await initLiff(j.liffId);
+        if (cancelled) return;
+        if (result.profile) {
+          setLineUserId(result.profile.userId);
+        }
+      } catch (err) {
+        console.warn("[BookDonePage] LIFF init 失敗:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fieldId]);
 
   const { data: booking, isLoading } = useQuery({
     queryKey: ["booking", bookingCode, lineUserId],
