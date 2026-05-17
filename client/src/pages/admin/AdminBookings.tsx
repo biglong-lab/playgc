@@ -42,6 +42,7 @@ import {
   RefreshCw,
   CheckCircle2,
   UserX,
+  Download,
 } from "lucide-react";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 
