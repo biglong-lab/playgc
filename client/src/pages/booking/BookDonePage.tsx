@@ -258,36 +258,41 @@ export default function BookDonePage() {
           </a>
         </Link>
 
-      {!isCancelled && booking.status !== "completed" && (
-        <Button
-          variant="outline"
-          className="w-full mb-3"
-          onClick={() => {
-            if (window.confirm("確定要取消此預約？")) {
-              cancelMutation.mutate();
-            }
-          }}
-          disabled={cancelMutation.isPending}
-          data-testid="button-cancel"
-        >
-          {cancelMutation.isPending ? "取消中..." : "取消預約"}
-        </Button>
-      )}
-
-      <Link href={`/book/${fieldId}/mine`}>
-        <a className="block">
-          <Button variant="ghost" className="w-full" data-testid="link-my-bookings">
-            查看我的所有預約
+        {/* 次要動作 */}
+        {!isCancelled && booking.status !== "completed" && (
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => {
+              if (window.confirm("確定要取消此預約？")) {
+                cancelMutation.mutate();
+              }
+            }}
+            disabled={cancelMutation.isPending}
+            data-testid="button-cancel"
+            aria-label="取消此預約"
+          >
+            {cancelMutation.isPending ? "取消中..." : "取消預約"}
           </Button>
-        </a>
-      </Link>
+        )}
 
-      {!isCancelled && (
-        <p className="text-xs text-muted-foreground text-center mt-4 leading-relaxed">
-          請保留此預約碼、現場報到使用<br />
-          活動開始前 30 分鐘將透過 LINE 提醒您
-        </p>
-      )}
+        <button
+          type="button"
+          onClick={() => navigate(`/book/${fieldId}`)}
+          className="w-full text-sm text-slate-500 hover:text-slate-700 py-2"
+          data-testid="link-back"
+          aria-label="返回預約頁面"
+        >
+          <ArrowLeft className="w-4 h-4 inline mr-1" aria-hidden="true" />
+          回預約首頁
+        </button>
+
+        {!isCancelled && (
+          <p className="text-[11px] text-slate-400 text-center leading-relaxed pt-2 border-t">
+            活動開始前 30 分鐘將透過 LINE 提醒您
+          </p>
+        )}
+      </div>
     </div>
   );
 }
