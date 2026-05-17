@@ -57,9 +57,25 @@ interface CreatedBooking {
 
 const LIFF_ID = (import.meta.env.VITE_LIFF_ID_BOOK as string | undefined) || "";
 
+interface ActivityForBook {
+  id: string;
+  slug: string;
+  name: string;
+  shortDesc?: string | null;
+  description?: string | null;
+  coverUrl?: string | null;
+  locationNote?: string | null;
+  priceCents: number;
+  durationMinutes: number;
+  capacityPerSlot: number;
+  paymentMode: "online" | "onsite" | "both";
+}
+
 export default function BookPage() {
-  const params = useParams<{ fieldCode: string }>();
+  // 🆕 2026-05-18：activitySlug 可選（多活動分流路由 /book/:fieldCode/activity/:slug）
+  const params = useParams<{ fieldCode: string; activitySlug?: string }>();
   const fieldId = params.fieldCode ?? "";
+  const activitySlug = params.activitySlug;
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
