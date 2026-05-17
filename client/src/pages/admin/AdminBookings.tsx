@@ -316,9 +316,44 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
               </select>
             </div>
           )}
-          <div className="flex items-end">
+          <div className="flex items-end gap-1">
             <Button onClick={() => refetch()} variant="outline" data-testid="button-refresh">
               <RefreshCw className="w-4 h-4 mr-1" /> 更新
+            </Button>
+            <Button
+              onClick={() => {
+                const list = data ?? [];
+                if (!list.length) return;
+                const headers = ["時間", "預約碼", "玩家", "電話", "活動", "人數", "狀態", "金額", "備註"];
+                const actMap = new Map((activities ?? []).map((a) => [a.id, a.name]));
+                const rows = list.map((b) => {
+                  const t = new Date(b.slotStart);
+                  return [
+                    t.toLocaleString("zh-TW"),
+                    b.bookingCode,
+                    b.displayName ?? "",
+                    b.phone ?? "",
+                    b.activityId ? actMap.get(b.activityId) ?? "" : "",
+                    String(b.partySize),
+                    b.status,
+                    String((b.amountCents ?? 0) / 100),
+                    (b.customerNote ?? "").replace(/"/g, '""'),
+                  ].map((v) => `"${v}"`).join(",");
+                });
+                const csv = "﻿" + [headers.join(","), ...rows].join("\n");
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `bookings-${from}-${to}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+              variant="outline"
+              title="匯出 CSV 給會計"
+              disabled={!data?.length}
+            >
+              <Download className="w-4 h-4 mr-1" /> CSV
             </Button>
           </div>
         </div>
