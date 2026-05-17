@@ -105,6 +105,7 @@ export const PLATFORM_MENU_GROUPS: PlatformMenuGroupDef[] = [
       { label: "系統健康", path: "/platform/health", icon: Heart },
       { label: "錯誤記錄", path: "/platform/errors", icon: Bug },
       { label: "登入管理", path: "/platform/login-config", icon: KeyRound },
+      { label: "LINE Login 設定", path: "/platform/line-login", icon: MessageCircle },
       { label: "PWA 管理", path: "/platform/pwa", icon: Smartphone },
     ],
   },
