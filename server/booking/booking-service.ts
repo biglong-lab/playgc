@@ -90,11 +90,39 @@ export async function getAvailability(
   fieldId: string,
   fromDate: Date,
   toDate: Date,
+  activityId?: string,
 ): Promise<AvailableSlot[]> {
-  const config = await getBookingConfig(fieldId);
-  if (!config || !config.isEnabled) return [];
+  // 🆕 2026-05-18：activity 模式 — 優先用 activity_schedules.scheduleTemplate
+  // 沒設活動時段 → fallback booking_configs（向下相容）
+  let template: BookingScheduleTemplate | null = null;
+  let capacityOverride: number | undefined;
 
-  const template = config.scheduleTemplate as BookingScheduleTemplate;
+  if (activityId) {
+    const { activities, activitySchedules } = await import("@shared/schema");
+    const [act] = await db
+      .select({ capacity: activities.capacityPerSlot })
+      .from(activities)
+      .where(eq(activities.id, activityId))
+      .limit(1);
+    if (act) capacityOverride = act.capacity;
+
+    const [sched] = await db
+      .select({ template: activitySchedules.scheduleTemplate })
+      .from(activitySchedules)
+      .where(eq(activitySchedules.activityId, activityId))
+      .limit(1);
+    if (sched?.template) {
+      template = sched.template as BookingScheduleTemplate;
+    }
+  }
+
+  // fallback booking_configs
+  if (!template) {
+    const config = await getBookingConfig(fieldId);
+    if (!config || !config.isEnabled) return [];
+    template = config.scheduleTemplate as BookingScheduleTemplate;
+  }
+
   const dailyResult = getSlotsInRange(template, fromDate, toDate);
 
   // 一次撈出區間內所有非取消的 booking、計算已用容量
