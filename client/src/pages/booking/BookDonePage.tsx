@@ -98,6 +98,17 @@ export default function BookDonePage() {
       return data.booking as Booking;
     },
     enabled: !!lineUserId && !!bookingCode,
+    onSuccess: undefined, // placeholder for type
+  });
+
+  // 🆕 2026-05-18 產 QR Code（POS 掃描用、優先 qr_token、fallback bookingCode）
+  useEffect(() => {
+    if (!booking) return;
+    const token = booking.qrToken || `BK_${booking.bookingCode}`;
+    QRCode.toDataURL(token, { width: 280, margin: 1, errorCorrectionLevel: "M" })
+      .then(setQrDataUrl)
+      .catch((err) => console.warn("[BookDonePage] QR 產生失敗:", err));
+  }, [booking]);
   });
 
   const cancelMutation = useMutation({
