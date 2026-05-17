@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Pencil, Trash2, Calendar, Image as ImageIcon, Activity as ActivityIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 
 interface Activity {
   id: string;
