@@ -95,6 +95,12 @@ export const couponTemplates = pgTable("coupon_templates", {
   validityDays: integer("validity_days").default(30),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+
+  // 🆕 2026-05-18 Phase 5：POS 現場折抵屬性
+  /** 券面額（分為單位）— POS 折抵公式：應收 − faceValueCents = 實付 */
+  faceValueCents: integer("face_value_cents").default(0),
+  /** 兌換特定品項（如「免費射擊一場」、null=可折抵任意活動）*/
+  deliverableSkuId: varchar("deliverable_sku_id"),
 });
 
 export const insertCouponTemplateSchema = createInsertSchema(couponTemplates).omit({
