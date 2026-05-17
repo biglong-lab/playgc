@@ -142,7 +142,7 @@ export async function pushActivityEnded(input: ActivityEndedPushInput): Promise<
   ];
 
   try {
-    await pushMessage({ accessToken: ACCESS_TOKEN, to: input.userId, messages });
+    await pushMessage({ accessToken: config.accessToken, to: input.userId, messages });
   } catch (err) {
     console.error("[line-pusher] activity-ended 推播失敗:", err);
   }
