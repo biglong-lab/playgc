@@ -233,12 +233,25 @@ export default function BookDonePage() {
                 <span className="text-slate-900 font-medium">
                   NT$ {(booking.amountCents / 100).toLocaleString()}
                   <span className="ml-2 text-xs text-slate-500">
-                    （{booking.paymentStatus === "paid" ? "已付款"
+                    （{booking.paymentStatus === "paid" ? "✓ 已付款"
                       : booking.paymentStatus === "pending_onsite" ? "現場付款"
                       : booking.paymentStatus === "pending" ? "待付款"
                       : "—"}）
                   </span>
                 </span>
+                {booking.paidAt && (
+                  <>
+                    <span className="text-slate-500">收款時間</span>
+                    <span className="text-slate-900 text-xs">
+                      {new Date(booking.paidAt).toLocaleString("zh-TW", {
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </>
+                )}
               </>
             )}
           </div>
