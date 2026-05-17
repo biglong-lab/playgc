@@ -29,10 +29,38 @@ export default function MyBookingsPage() {
   const [, navigate] = useLocation();
   const [lineUserId, setLineUserId] = useState<string | null>(null);
 
+  // 🐛 2026-05-18：原本只看 localStorage 殘留、會用到過時假 userId 查不到預約
+  // 正確順序：先試 LIFF（真實身份）→ 失敗才 fallback localStorage（測試模式）
   useEffect(() => {
-    const stored = localStorage.getItem("__bookpage_test_lineUserId");
-    if (stored) setLineUserId(stored);
-  }, []);
+    let cancelled = false;
+    (async () => {
+      if (!fieldId) return;
+      try {
+        const res = await fetch(`/api/bookings/liff/${encodeURIComponent(fieldId)}`);
+        if (res.ok) {
+          const j = (await res.json()) as { liffId?: string };
+          if (j.liffId) {
+            const result = await initLiff(j.liffId);
+            if (cancelled) return;
+            if (result.profile) {
+              setLineUserId(result.profile.userId);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[MyBookingsPage] LIFF init 失敗:", err);
+      }
+      // Fallback：localStorage（測試模式）
+      if (!cancelled) {
+        const stored = localStorage.getItem("__bookpage_test_lineUserId");
+        if (stored) setLineUserId(stored);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fieldId]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-bookings", lineUserId],
