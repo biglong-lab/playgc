@@ -92,6 +92,7 @@ export default function PosCheckout() {
       });
     },
     onSuccess: () => {
+      feedbackCheckoutSuccess();
       setSuccess({
         amountCents: Math.round(Number(amountDollars) * 100),
         method: paymentMethod,
@@ -99,6 +100,7 @@ export default function PosCheckout() {
       toast({ title: "✅ 收款成功" });
     },
     onError: (err: unknown) => {
+      feedbackError();
       const msg = err instanceof Error ? err.message : "請重試";
       toast({ variant: "destructive", title: "收款失敗", description: msg });
     },
