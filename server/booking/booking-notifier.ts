@@ -21,6 +21,7 @@ import {
   bookings,
   bookingNotificationTemplates,
   bookingConfigs,
+  fields,
   type Booking,
   type BookingNotificationTemplateKey,
 } from "@shared/schema";
