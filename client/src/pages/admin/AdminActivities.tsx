@@ -299,7 +299,7 @@ export default function AdminActivities() {
                 />
               </Field>
             </div>
-            <Field label="付款模式 *">
+            <Field label="付款模式 *" hint="目前僅支援『現場付款』；線上金流（Recur/Stripe/LinePay）待商戶帳號開通後啟用">
               <Select
                 value={form.paymentMode}
                 onValueChange={(v) => setForm({ ...form, paymentMode: v as ActivityForm["paymentMode"] })}
@@ -309,8 +309,12 @@ export default function AdminActivities() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="onsite">現場付款（出示 QR 給工作人員）</SelectItem>
-                  <SelectItem value="online">線上付款（預約即付）</SelectItem>
-                  <SelectItem value="both">兩種皆可（玩家自選）</SelectItem>
+                  <SelectItem value="online" disabled>
+                    線上付款（待金流開通）
+                  </SelectItem>
+                  <SelectItem value="both" disabled>
+                    兩種皆可（待金流開通）
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>
