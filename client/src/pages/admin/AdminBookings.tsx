@@ -358,9 +358,22 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                       </td>
                       <td className="py-2 px-2 font-mono text-xs">{b.bookingCode}</td>
                       <td className="py-2 px-2 truncate max-w-[120px]">{b.displayName || "—"}</td>
+                      <td className="py-2 px-2 text-xs">
+                        {b.activityId
+                          ? activities?.find((a) => a.id === b.activityId)?.name ?? "—"
+                          : <span className="text-muted-foreground italic">舊版</span>}
+                      </td>
                       <td className="py-2 px-2 text-right">{b.partySize}</td>
                       <td className="py-2 px-2">
-                        <StatusBadge status={b.status} />
+                        <div className="flex flex-col gap-0.5">
+                          <StatusBadge status={b.status} />
+                          {b.checkedInAt && (
+                            <span className="text-[10px] text-green-600">✓ 到場</span>
+                          )}
+                          {(b.paidAt || b.paymentStatus === "paid") && (
+                            <span className="text-[10px] text-blue-600">✓ 已收</span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-2 px-2 text-xs">{b.phone || "—"}</td>
                       <td className="py-2 px-2 text-xs truncate max-w-[200px]">
