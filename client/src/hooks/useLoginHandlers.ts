@@ -103,6 +103,21 @@ export function useLoginHandlers(
     });
   };
 
+  // 🆕 LINE Login（透過後端 OAuth → Firebase custom token）
+  // 走 redirect、不是 popup，沒辦法 await 結果（由 hash callback 處理）
+  const handleLineLogin = () => {
+    setIsLoggingIn(true);
+    setLoginMethod("line");
+    try {
+      // 記住目前場域，登入回來才能 redirect 到正確 /f/{code}/home
+      const code = readFieldCodeFromContext();
+      const returnTo = code ? `/f/${code}/home` : window.location.pathname;
+      startLineLogin(returnTo);
+    } catch (error) {
+      handleLoginError(error);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     setIsLoggingIn(true);
     setLoginMethod("google");
