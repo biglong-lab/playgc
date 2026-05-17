@@ -474,6 +474,7 @@ export function registerPosRoutes(app: Express) {
         totalPaidCents: totalPaid,
         totalDiscountCents: totalDiscount,
         byActivity: byActivityArr,
+        byStaff: byStaffArr,
         transactions: txs,
       });
     } catch (err) {
