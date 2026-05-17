@@ -218,6 +218,8 @@ export default function BookPage() {
           slotStart: selectedSlot.startAt,
           partySize,
           customerNote: customerNote || undefined,
+          // 🆕 2026-05-18：多活動分流時帶 activityId（後端覆寫價格/付款模式）
+          activityId: activity?.id ?? undefined,
         }),
       });
       const data = await res.json();
