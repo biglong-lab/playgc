@@ -189,7 +189,25 @@ export function registerPosRoutes(app: Express) {
         return res.json({ type: "booking", booking: b, activity });
       }
 
-      // TODO: CP_xxx 券 / RD_xxx 兌換碼（Phase 4-E）
+      // 🆕 2026-05-18 Phase 5：CP_xxx 平台券 / 純 code
+      if (token.startsWith("CP_") || /^[A-Z0-9]{6,32}$/i.test(token)) {
+        const [c] = await db
+          .select({
+            coupon: platformCoupons,
+            template: couponTemplates,
+          })
+          .from(platformCoupons)
+          .leftJoin(couponTemplates, eq(platformCoupons.templateId, couponTemplates.id))
+          .where(or(eq(platformCoupons.qrToken, token), eq(platformCoupons.code, token.toUpperCase())))
+          .limit(1);
+        if (c) {
+          return res.json({
+            type: "voucher",
+            coupon: c.coupon,
+            template: c.template,
+          });
+        }
+      }
       res.status(400).json({ error: "unknown_token_type" });
     } catch (err) {
       console.error("[pos/checkin]", err);
