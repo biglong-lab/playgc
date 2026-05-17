@@ -133,6 +133,8 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { title: "我的方案", icon: Package, path: "/admin/field/subscription", permission: "field:manage" },
       { title: "場域基本資料", icon: Building2, path: "/admin/fields", permission: "field:manage" },
       { title: "場域進階設定", icon: Sliders, path: "/admin/field-settings", permission: "field:manage" },
+      // 🆕 2026-05-17：per-field LINE 設定（業主每館獨立 LINE channel / LIFF）
+      { title: "LINE 設定", icon: MessageCircle, path: "/admin/line-settings", permission: "field:manage" },
       { title: "角色管理", icon: Key, path: "/admin/roles", permission: "user:manage_roles" },
       { title: "管理員帳號", icon: UserCog, path: "/admin/accounts", permission: "admin:manage_accounts" },
       { title: "玩家管理", icon: Users, path: "/admin/players", permission: "user:view" },
