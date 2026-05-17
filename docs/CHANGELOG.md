@@ -5,6 +5,26 @@
 
 ---
 
+## 2026-05-18
+
+### 🎯 多活動預約 + POS 工作站（一次大型整合）
+**狀態**：🟢 部署上線、生產 e2e 全綠
+**細節**：[changes/2026-05-18-multi-activity-pos.md](changes/2026-05-18-multi-activity-pos.md)
+
+| 範圍 | 內容 |
+|------|------|
+| Schema | 新 `activities` / `activity_schedules` / `pos_transactions` 表；`bookings` +7 欄位（activityId / paymentMode / paidByStaffId / paidAt / paidAmountCents / qrToken / checkedInAt / By）；`coupon_templates` 加面額；`platform_coupons` 加 qrToken |
+| Admin | `/admin/activities` 多活動管理（封面/定價/時長/容量/付款模式） |
+| 玩家端 | `/book/:fieldCode` 智能路由（有活動→卡片列表、沒有→fallback）；`/book/:fieldCode/activity/:slug` 獨立預約頁；BookDonePage 大 QR Code；LINE Flex 用活動封面 |
+| POS（mobile-first） | `/pos` Dashboard + `/pos/scan` 相機/手輸 + `/pos/bookings/today` 清單 + `/pos/checkout` 收款 + `/pos/voucher` 券核銷 + `/pos/summary` 小結 |
+| 後端 API | 13 新 endpoint：admin-activities(5)、public-activities(2)、pos(7)、revenue overview 加 POS 切片 |
+| 權限 | 新 6 permissions：pos:view/scan/checkout/voucher_redeem + booking:view_today/mark_attended |
+| 金流 | 預留欄位、實際 Recur/Stripe/LinePay 串接延後（業主等商戶帳號） |
+
+業主 5/18 確認：「全部推展、金流可以預留、其他功能都可以推進、並且持續打磨一段時間」
+
+---
+
 ## 2026-05-12
 
 ### 🐛 批 5 業主 5 項 bug 全修
