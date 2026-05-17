@@ -394,18 +394,47 @@ export default function AdminActivities() {
         </DialogContent>
       </Dialog>
 
-      <Card className="mt-6 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+      <Card className="mt-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <Calendar className="w-4 h-4" />
-            時段規則
+            活動時段
           </CardTitle>
         </CardHeader>
         <CardContent className="text-xs space-y-1">
-          <p>活動時段規則目前共用既有「預約管理 / 場域設定」頁的 booking_configs 設定。</p>
-          <p>後續版本會加入「每活動獨立時段」（activity_schedules 已建表、待 UI）。</p>
+          <p>點活動卡片的「時段」按鈕、為該活動設定獨立時段規則。</p>
+          <p>未設活動時段 → 共用既有「預約管理 / 場域設定」頁的設定（向下相容）。</p>
         </CardContent>
       </Card>
+
+      {/* 活動時段編輯 Dialog */}
+      <Dialog open={!!schedulingActivityId} onOpenChange={(o) => !o && setSchedulingActivityId(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              活動時段規則 — {data?.activities.find((a) => a.id === schedulingActivityId)?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {schedulingActivityId && (
+            <ScheduleEditor
+              template={scheduleDraft}
+              onChange={setScheduleDraft}
+              isSaving={scheduleMutation.isPending}
+            />
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSchedulingActivityId(null)}>
+              取消
+            </Button>
+            <Button
+              onClick={() => scheduleMutation.mutate(scheduleDraft)}
+              disabled={scheduleMutation.isPending}
+            >
+              {scheduleMutation.isPending ? "儲存中…" : "儲存時段"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </UnifiedAdminLayout>
   );
 }
