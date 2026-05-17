@@ -223,6 +223,9 @@ const AdminReports = lazy(() => import("@/pages/admin/AdminReports"));
 // 📊 完成率歸因（W1 / 2026-05-14）
 const AdminCompletionAttribution = lazy(() => import("@/pages/admin/AdminCompletionAttribution"));
 
+// 🔗 LINE per-field 設定（2026-05-17）
+const AdminLineSettings = lazy(() => import("@/pages/admin/AdminLineSettings"));
+
 // 📊 建場 SLA + AI 採用率（W2 / 2026-05-14）
 const AdminSlaDashboard = lazy(() => import("@/pages/admin/AdminSlaDashboard"));
 
