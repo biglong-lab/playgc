@@ -84,6 +84,8 @@ const PosDashboard = lazy(() => import("@/pages/pos/PosDashboard"));
 const PosScan = lazy(() => import("@/pages/pos/PosScan"));
 const PosBookingsToday = lazy(() => import("@/pages/pos/PosBookingsToday"));
 const PosCheckout = lazy(() => import("@/pages/pos/PosCheckout"));
+const PosVoucher = lazy(() => import("@/pages/pos/PosVoucher"));
+const PosSummary = lazy(() => import("@/pages/pos/PosSummary"));
 const AdminSuspiciousLog = lazy(() => import("@/pages/AdminSuspiciousLog"));
 const AdminLeaderboard = lazy(() => import("@/pages/AdminLeaderboard"));
 const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
