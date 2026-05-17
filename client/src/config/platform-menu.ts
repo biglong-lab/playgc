@@ -30,6 +30,7 @@ import {
   Smartphone,
   Mail,
   ListTree,
+  MessageCircle,
 } from "lucide-react";
 
 export interface PlatformMenuItemDef {
