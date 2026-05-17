@@ -63,7 +63,7 @@ export async function resolveLineConfig(fieldKey?: string | null): Promise<LineC
           accessToken: row.lineChannelAccessToken,
           liffId: row.lineLiffId ?? null,
         };
-        cache.set(fieldId, { config, expires: Date.now() + CACHE_TTL_MS });
+        cache.set(fieldKey, { config, expires: Date.now() + CACHE_TTL_MS });
         return config;
       }
     } catch (err) {
