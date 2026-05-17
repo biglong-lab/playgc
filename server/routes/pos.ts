@@ -60,6 +60,7 @@ export function registerPosRoutes(app: Express) {
           id: bookings.id,
           bookingCode: bookings.bookingCode,
           displayName: bookings.displayName,
+          phone: bookings.phone,
           slotStart: bookings.slotStart,
           slotEnd: bookings.slotEnd,
           partySize: bookings.partySize,
@@ -69,6 +70,7 @@ export function registerPosRoutes(app: Express) {
           checkedInAt: bookings.checkedInAt,
           paidAt: bookings.paidAt,
           activityId: bookings.activityId,
+          customerNote: bookings.customerNote,
         })
         .from(bookings)
         .where(
