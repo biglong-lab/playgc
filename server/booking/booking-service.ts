@@ -53,10 +53,14 @@ function generateBookingCode(): string {
 
 /** 取場域預約設定 */
 export async function getBookingConfig(fieldId: string): Promise<BookingConfig | null> {
+  // 🆕 2026-05-17：case-insensitive 查找（業主回報「/book/JIACHUN 顯示未開通」）
+  // 歷史資料 booking_configs.field_id 存小寫 "jiacun"、
+  // 但前端 BookPage 從 URL `/book/:fieldCode` 拿到 "JIACHUN" 大寫直接傳入 → 404
+  // 修法：DB query 用 lower() 雙邊 normalize、避免大小寫不符
   const rows = await db
     .select()
     .from(bookingConfigs)
-    .where(eq(bookingConfigs.fieldId, fieldId))
+    .where(sql`lower(${bookingConfigs.fieldId}) = lower(${fieldId})`)
     .limit(1);
   return rows[0] ?? null;
 }
