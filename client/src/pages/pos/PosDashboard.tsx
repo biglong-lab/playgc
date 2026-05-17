@@ -115,10 +115,34 @@ export default function PosDashboard() {
             {data.upcoming.map((b) => {
               const t = new Date(b.slotStart);
               const timeStr = `${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
+              const minutesUntil = Math.round((t.getTime() - Date.now()) / 60000);
+              const urgent = minutesUntil <= 10 && minutesUntil > 0;
+              const overdue = minutesUntil < 0;
+              const countdownText = overdue
+                ? `已過 ${Math.abs(minutesUntil)} 分`
+                : `${minutesUntil} 分後`;
               return (
-                <Card key={b.id}>
+                <Card
+                  key={b.id}
+                  className={
+                    urgent
+                      ? "border-red-500 border-2 bg-red-50 dark:bg-red-950/30"
+                      : overdue
+                      ? "border-amber-500 border-2 bg-amber-50 dark:bg-amber-950/30"
+                      : ""
+                  }
+                >
                   <CardContent className="py-3 flex items-center gap-3">
-                    <div className="text-lg font-bold text-primary">{timeStr}</div>
+                    <div className="flex flex-col items-center min-w-[4rem]">
+                      <div className="text-lg font-bold text-primary leading-tight">{timeStr}</div>
+                      <div
+                        className={`text-[10px] font-semibold leading-tight ${
+                          urgent ? "text-red-600" : overdue ? "text-amber-700" : "text-muted-foreground"
+                        }`}
+                      >
+                        {countdownText}
+                      </div>
+                    </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold truncate">{b.displayName || "—"}</p>
                       <p className="text-xs text-muted-foreground truncate">
@@ -126,7 +150,7 @@ export default function PosDashboard() {
                       </p>
                     </div>
                     <Link href="/pos/scan">
-                      <Button size="sm" variant="outline">
+                      <Button size="sm" variant={urgent ? "default" : "outline"}>
                         報到
                       </Button>
                     </Link>
