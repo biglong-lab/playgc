@@ -112,7 +112,7 @@ export default function AdminBookings() {
     <UnifiedAdminLayout title={`預約管理 · ${fieldId}`}>
       {/* 🆕 對外預約連結卡 */}
       <div className="mb-4">
-        <PublicBookingLinkCard fieldCode={fieldCode} />
+        <PublicBookingLinkCard fieldCode={fieldCode} fieldId={fieldId} />
       </div>
 
       <Tabs defaultValue="list" className="space-y-4">
