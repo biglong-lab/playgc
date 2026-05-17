@@ -38,6 +38,7 @@ interface Activity {
   paymentMode: "online" | "onsite" | "both";
   isActive: boolean;
   sortOrder: number;
+  bookingCount?: number;
 }
 
 interface ActivityForm {
