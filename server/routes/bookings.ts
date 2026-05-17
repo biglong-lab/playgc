@@ -92,8 +92,16 @@ export function registerBookingRoutes(app: Express) {
         });
       }
 
-      const slots = await getAvailability(fieldId, fromDate, toDate);
-      res.json({ fieldId, from: fromDate.toISOString(), to: toDate.toISOString(), slots });
+      // 🆕 2026-05-18：activityId 可選（多活動模式時用該活動時段）
+      const activityId = typeof req.query.activityId === "string" ? req.query.activityId : undefined;
+      const slots = await getAvailability(fieldId, fromDate, toDate, activityId);
+      res.json({
+        fieldId,
+        activityId: activityId ?? null,
+        from: fromDate.toISOString(),
+        to: toDate.toISOString(),
+        slots,
+      });
     } catch (err) {
       return handleBookingError(res, err);
     }
