@@ -134,6 +134,41 @@ export default function AdminActivities() {
     },
   });
 
+  const scheduleMutation = useMutation({
+    mutationFn: async (template: ScheduleTemplate) => {
+      if (!schedulingActivityId) throw new Error("無活動 id");
+      await fetchWithAdminAuth(`/api/admin/activities/${schedulingActivityId}/schedule`, {
+        method: "PATCH",
+        body: JSON.stringify({ scheduleTemplate: template }),
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "活動時段已儲存" });
+      setSchedulingActivityId(null);
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "請重試";
+      toast({ variant: "destructive", title: "儲存失敗", description: msg });
+    },
+  });
+
+  // 進入時段編輯：先 fetch 現有 schedule（如果有）
+  const openSchedule = async (activityId: string) => {
+    setSchedulingActivityId(activityId);
+    try {
+      const res = (await fetchWithAdminAuth(`/api/admin/activities/${activityId}`)) as {
+        schedule?: { scheduleTemplate: ScheduleTemplate } | null;
+      };
+      if (res.schedule?.scheduleTemplate) {
+        setScheduleDraft(res.schedule.scheduleTemplate);
+      } else {
+        setScheduleDraft(EMPTY_SCHEDULE);
+      }
+    } catch {
+      setScheduleDraft(EMPTY_SCHEDULE);
+    }
+  };
+
   const openEdit = (a: Activity) => {
     setEditing(a);
     setForm({
