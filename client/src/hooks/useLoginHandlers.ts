@@ -11,6 +11,7 @@ import {
   resetPassword,
   startLineLogin,
 } from "@/lib/firebase";
+import { getLastVisitedField } from "@/lib/last-visited-field";
 
 /**
  * 從當前 context（URL path 或 localStorage）推出 fieldCode
