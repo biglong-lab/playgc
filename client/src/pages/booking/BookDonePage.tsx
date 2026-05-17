@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { initLiff } from "@/lib/liff";
+import QRCode from "qrcode";
 
 interface Booking {
   id: number;
@@ -27,8 +28,11 @@ interface Booking {
   paymentRequired: boolean;
   paymentStatus: string;
   amountCents: number;
-  customerNote?: string;
+  paymentMode?: string | null;
+  qrToken?: string | null;
+  customerNote?: string | null;
   cancelledAt?: string | null;
+  activityId?: string | null;
 }
 
 export default function BookDonePage() {
