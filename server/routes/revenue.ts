@@ -65,11 +65,41 @@ export function registerRevenueRoutes(app: Express): void {
           .from(redeemCodes)
           .where(eq(redeemCodes.fieldId, fieldId));
 
+        // 🆕 2026-05-18 Phase 7：POS 收款 + 預約收入（含 activity 切片）
+        const { posTransactions, bookings, activities } = await import("@shared/schema");
+        const [posRevenue] = await db
+          .select({
+            totalRevenue: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}), 0)::int`,
+            monthlyRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${posTransactions.createdAt} >= ${monthStart} THEN ${posTransactions.paidAmountCents} ELSE 0 END), 0)::int`,
+            txCount: sql<number>`COUNT(*)::int`,
+          })
+          .from(posTransactions)
+          .where(eq(posTransactions.fieldId, fieldId));
+
+        // 按活動切片（本月）
+        const activityBreakdown = await db
+          .select({
+            activityId: posTransactions.activityId,
+            activityName: activities.name,
+            totalCents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}), 0)::int`,
+            txCount: sql<number>`COUNT(*)::int`,
+          })
+          .from(posTransactions)
+          .leftJoin(activities, eq(posTransactions.activityId, activities.id))
+          .where(
+            sql`${posTransactions.fieldId} = ${fieldId} AND ${posTransactions.createdAt} >= ${monthStart}`,
+          )
+          .groupBy(posTransactions.activityId, activities.name);
+
         res.json({
           totalRevenue:
-            (gameRevenue?.totalRevenue ?? 0) + (battleRevenue?.totalRevenue ?? 0),
+            (gameRevenue?.totalRevenue ?? 0) +
+            (battleRevenue?.totalRevenue ?? 0) +
+            (posRevenue?.totalRevenue ?? 0),
           monthlyRevenue:
-            (gameRevenue?.monthlyRevenue ?? 0) + (battleRevenue?.monthlyRevenue ?? 0),
+            (gameRevenue?.monthlyRevenue ?? 0) +
+            (battleRevenue?.monthlyRevenue ?? 0) +
+            (posRevenue?.monthlyRevenue ?? 0),
           breakdown: {
             games: {
               totalRevenue: gameRevenue?.totalRevenue ?? 0,
@@ -80,6 +110,13 @@ export function registerRevenueRoutes(app: Express): void {
               totalRevenue: battleRevenue?.totalRevenue ?? 0,
               monthlyRevenue: battleRevenue?.monthlyRevenue ?? 0,
               registrationCount: battleRevenue?.registrationCount ?? 0,
+            },
+            // 🆕 POS 收款（多活動 + 散客 + 現場加購）
+            pos: {
+              totalRevenue: posRevenue?.totalRevenue ?? 0,
+              monthlyRevenue: posRevenue?.monthlyRevenue ?? 0,
+              txCount: posRevenue?.txCount ?? 0,
+              byActivity: activityBreakdown,
             },
           },
           codes: codeStats,
