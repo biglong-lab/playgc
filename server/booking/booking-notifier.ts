@@ -175,7 +175,7 @@ export async function notifyBookingConfirmed(booking: Booking): Promise<{ sent: 
   try {
     const resolved = await resolveTemplate(booking.fieldId, "booking_confirmed", { booking });
     await pushMessage({
-      accessToken: ACCESS_TOKEN,
+      accessToken: lineConfig.accessToken,
       to: booking.lineUserId,
       messages: buildMessages(resolved),
     });
@@ -205,7 +205,7 @@ export async function notifyBookingReminder(booking: Booking): Promise<{ sent: b
   try {
     const resolved = await resolveTemplate(booking.fieldId, "reminder_30min", { booking });
     await pushMessage({
-      accessToken: ACCESS_TOKEN,
+      accessToken: lineConfig.accessToken,
       to: booking.lineUserId,
       messages: buildMessages(resolved),
     });
@@ -303,7 +303,7 @@ export async function notifyGameCompleted(
     }
 
     await pushMessage({
-      accessToken: ACCESS_TOKEN,
+      accessToken: lineConfig.accessToken,
       to: booking.lineUserId,
       messages: buildMessages(resolved),
     });
@@ -329,7 +329,7 @@ export async function notifyBookingCancelled(booking: Booking): Promise<{ sent: 
   try {
     const resolved = await resolveTemplate(booking.fieldId, "booking_cancelled", { booking });
     await pushMessage({
-      accessToken: ACCESS_TOKEN,
+      accessToken: lineConfig.accessToken,
       to: booking.lineUserId,
       messages: buildMessages(resolved),
     });
