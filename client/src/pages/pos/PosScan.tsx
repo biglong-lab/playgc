@@ -23,6 +23,7 @@ interface CheckinResultBooking {
     id: number;
     bookingCode: string;
     displayName: string | null;
+    phone?: string | null;
     slotStart: string;
     partySize: number;
     status: string;
@@ -31,6 +32,7 @@ interface CheckinResultBooking {
     checkedInAt: string | null;
     paidAt: string | null;
     activityId: string | null;
+    customerNote?: string | null;
   };
   activity: { name: string; coverUrl: string | null } | null;
 }
