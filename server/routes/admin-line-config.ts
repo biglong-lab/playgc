@@ -15,6 +15,7 @@ import { fields } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 import { z } from "zod";
+import { invalidateLineConfigCache } from "../lib/line-config-resolver";
 
 function maskSecret(value: string | null | undefined): string {
   if (!value) return "";
