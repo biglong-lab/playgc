@@ -18,6 +18,7 @@ import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 interface PosDashboard {
   date: string;
   fieldId: string;
+  fieldName?: string;
   stats: {
     totalBookings: number;
     arrivedBookings: number;
