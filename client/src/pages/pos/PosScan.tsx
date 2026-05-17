@@ -68,8 +68,27 @@ export default function PosScan() {
     onSuccess: (data) => {
       feedbackScanSuccess();
       setResult(data);
-      // 暫停掃描
-      stopCamera();
+      // 紀錄最近掃描（最多 3 筆）
+      const now = new Date();
+      setRecentScans((prev) =>
+        [
+          {
+            code: data.booking.bookingCode,
+            time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+            name: data.booking.displayName ?? "—",
+          },
+          ...prev,
+        ].slice(0, 3),
+      );
+      // 連續模式：不停 camera、3 秒後自動清結果
+      if (continuousMode) {
+        setTimeout(() => {
+          setResult(null);
+          scanLockRef.current = false;
+        }, 3000);
+      } else {
+        stopCamera();
+      }
     },
     onError: (err: unknown) => {
       feedbackError();
