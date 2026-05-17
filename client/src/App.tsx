@@ -307,7 +307,10 @@ function Router() {
         {/* 📅 預約系統 Phase δ W1 (2026-05-07) — 公開頁、LIFF 內運作 */}
         <Route path="/book/:fieldCode/done/:bookingCode" component={BookDonePage} />
         <Route path="/book/:fieldCode/mine" component={MyBookingsPage} />
-        <Route path="/book/:fieldCode" component={BookPage} />
+        {/* 🆕 2026-05-18：activity slug 路由（場域多活動分流）*/}
+        <Route path="/book/:fieldCode/:activitySlug" component={BookPage} />
+        {/* 入口：有活動→列表頁、沒有→既有單一預約頁 */}
+        <Route path="/book/:fieldCode" component={BookEntryPage} />
 
         {/* 🎬 元件展示館（公開頁，銷售工具）*/}
         <Route path="/showcase" component={ShowcaseHub} />
