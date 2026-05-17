@@ -168,6 +168,24 @@ export default function BookPage() {
     retry: false,
   });
 
+  // 🆕 2026-05-18：activity 模式（多活動分流）
+  const { data: activityData } = useQuery<{ activity: ActivityForBook }>({
+    queryKey: ["public-activity", fieldId, activitySlug],
+    queryFn: async () => {
+      const res = await fetch(
+        `/api/fields/${encodeURIComponent(fieldId)}/activities/${encodeURIComponent(activitySlug!)}`,
+      );
+      if (!res.ok) throw new Error("查詢活動失敗");
+      return await res.json();
+    },
+    enabled: !!fieldId && !!activitySlug,
+    retry: false,
+  });
+  const activity = activityData?.activity;
+
+  /** 活動模式時、覆寫 config 的價格（顯示用）*/
+  const effectivePriceCents = activity?.priceCents ?? config?.pricePerSlotCents ?? 0;
+
   // 整理日期 → slot list
   const slotsByDate = useMemo(() => {
     const m = new Map<string, AvailableSlot[]>();
