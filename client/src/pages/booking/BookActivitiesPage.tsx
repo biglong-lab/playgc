@@ -114,18 +114,27 @@ export default function BookActivitiesPage() {
             onClick={() => navigate(`/book/${fieldCode}/activity/${a.slug}`)}
             data-testid={`card-activity-${a.slug}`}
           >
-            {a.coverUrl ? (
-              <img
-                src={a.coverUrl}
-                alt={a.name}
-                className="w-full h-40 object-cover"
-                loading="lazy"
-              />
-            ) : (
-              <div className="w-full h-40 bg-gradient-to-br from-primary/10 to-primary/30 flex items-center justify-center">
-                <ActivityIcon className="w-12 h-12 text-primary/60" aria-hidden="true" />
-              </div>
-            )}
+            <div className="relative">
+              {a.coverUrl ? (
+                <img
+                  src={a.coverUrl}
+                  alt={a.name}
+                  className="w-full h-40 object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-40 bg-gradient-to-br from-primary/10 to-primary/30 flex items-center justify-center">
+                  <ActivityIcon className="w-12 h-12 text-primary/60" aria-hidden="true" />
+                </div>
+              )}
+              {/* 🆕 熱門標記：近 30 天 ≥10 筆預約 */}
+              {(a.recentBookingCount ?? 0) >= 10 && (
+                <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                  <Flame className="w-3 h-3" aria-hidden="true" />
+                  熱門
+                </div>
+              )}
+            </div>
             <CardContent className="p-4 space-y-2">
               <h3 className="font-bold text-base">{a.name}</h3>
               {a.shortDesc && (
