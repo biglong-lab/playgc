@@ -105,10 +105,11 @@ const TEMPLATE_KEYS_LABEL: Record<string, string> = {
 };
 
 export default function AdminBookings() {
-  const [fieldId] = useState(DEFAULT_FIELD);
-  // 🆕 2026-05-17 #1：從 Provider 取 fieldCode、PublicBookingLinkCard 顯示對外連結用
+  // 🆕 2026-05-17 #1：從 Provider 取 fieldCode、優先用真實場域代碼、fallback 才用 DEFAULT_FIELD
+  // 修補業主回報「未開通預約」根因：原寫死 "jiacun" 與 booking_configs 實際 "JIACHUN" 不符
   const currentField = useCurrentField();
   const fieldCode = currentField?.code ?? null;
+  const fieldId = fieldCode ?? DEFAULT_FIELD;
 
   return (
     <UnifiedAdminLayout title={`預約管理 · ${fieldId}`}>
