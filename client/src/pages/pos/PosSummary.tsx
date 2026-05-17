@@ -121,6 +121,34 @@ export default function PosSummary() {
         )}
       </section>
 
+      {/* 按收款員分組（班次結算用）*/}
+      {data.byStaff && data.byStaff.length > 0 && (
+        <section className="mb-4">
+          <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
+            <User className="w-4 h-4" aria-hidden="true" />
+            按收款員分組
+          </h3>
+          <div className="space-y-2">
+            {data.byStaff
+              .slice()
+              .sort((a, b) => b.totalCents - a.totalCents)
+              .map((g) => (
+                <Card key={g.staffId}>
+                  <CardContent className="py-3 px-3 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-sm">{g.name || "未知"}</p>
+                      <p className="text-xs text-muted-foreground">{g.count} 筆</p>
+                    </div>
+                    <p className="text-lg font-bold text-amber-600">
+                      NT${(g.totalCents / 100).toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </section>
+      )}
+
       {/* 交易明細 */}
       <section>
         <h3 className="text-sm font-bold mb-2 flex items-center gap-1">
