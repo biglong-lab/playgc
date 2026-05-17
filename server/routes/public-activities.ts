@@ -27,9 +27,28 @@ export function registerPublicActivitiesRoutes(app: Express) {
         .where(and(eq(activities.fieldId, field.id), eq(activities.isActive, true)))
         .orderBy(asc(activities.sortOrder), asc(activities.createdAt));
 
+      // 🆕 2026-05-18：加近 30 天 booking count 給「熱門」標記（社會證明）
+      const { bookings } = await import("@shared/schema");
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const counts = await db
+        .select({
+          activityId: bookings.activityId,
+          count: sql<number>`COUNT(*)::int`,
+        })
+        .from(bookings)
+        .where(
+          sql`${bookings.fieldId} = ${field.id} AND ${bookings.activityId} IS NOT NULL AND ${bookings.status} != 'cancelled' AND ${bookings.createdAt} >= ${thirtyDaysAgo}`,
+        )
+        .groupBy(bookings.activityId);
+      const countMap = new Map<string, number>();
+      for (const c of counts) {
+        if (c.activityId) countMap.set(c.activityId, c.count);
+      }
+      const withCounts = list.map((a) => ({ ...a, recentBookingCount: countMap.get(a.id) ?? 0 }));
+
       res.json({
         field: { id: field.id, code: field.code, name: field.name },
-        activities: list,
+        activities: withCounts,
       });
     } catch (err) {
       console.error("[public-activities GET list]", err);
