@@ -168,7 +168,8 @@ function buildMessages(resolved: ResolvedTemplate): LineMessage[] {
 // ============================================================================
 
 export async function notifyBookingConfirmed(booking: Booking): Promise<{ sent: boolean; reason?: string }> {
-  if (!ACCESS_TOKEN) return { sent: false, reason: "no_access_token" };
+  const lineConfig = await resolveLineConfig(booking.fieldId);
+  if (!lineConfig.accessToken) return { sent: false, reason: "no_access_token" };
   if (booking.confirmNotifiedAt) return { sent: false, reason: "already_notified" };
 
   try {
@@ -194,7 +195,8 @@ export async function notifyBookingConfirmed(booking: Booking): Promise<{ sent: 
 // ============================================================================
 
 export async function notifyBookingReminder(booking: Booking): Promise<{ sent: boolean; reason?: string }> {
-  if (!ACCESS_TOKEN) return { sent: false, reason: "no_access_token" };
+  const lineConfig = await resolveLineConfig(booking.fieldId);
+  if (!lineConfig.accessToken) return { sent: false, reason: "no_access_token" };
   if (booking.reminderSentAt) return { sent: false, reason: "already_notified" };
   if (booking.status !== "confirmed" && booking.status !== "pending") {
     return { sent: false, reason: "wrong_status" };
@@ -276,7 +278,8 @@ export async function notifyGameCompleted(
   bookingId: number,
   options: { actionUrl?: string; imageUrlOverride?: string } = {},
 ): Promise<{ sent: boolean; reason?: string }> {
-  if (!ACCESS_TOKEN) return { sent: false, reason: "no_access_token" };
+  const lineConfig = await resolveLineConfig(booking.fieldId);
+  if (!lineConfig.accessToken) return { sent: false, reason: "no_access_token" };
 
   const rows = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
   const booking = rows[0];
@@ -320,7 +323,8 @@ export async function notifyGameCompleted(
 // ============================================================================
 
 export async function notifyBookingCancelled(booking: Booking): Promise<{ sent: boolean; reason?: string }> {
-  if (!ACCESS_TOKEN) return { sent: false, reason: "no_access_token" };
+  const lineConfig = await resolveLineConfig(booking.fieldId);
+  if (!lineConfig.accessToken) return { sent: false, reason: "no_access_token" };
 
   try {
     const resolved = await resolveTemplate(booking.fieldId, "booking_cancelled", { booking });
