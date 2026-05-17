@@ -50,12 +50,12 @@ export function registerLineLoginRoutes(app: Express) {
    * Redirect 到 LINE Login authorize endpoint
    * Query：returnTo（可選、callback 後 redirect 的前端 URL）
    */
-  app.get("/api/auth/line", (req: Request, res: Response) => {
-    const env = getEnv();
-    if (!isConfigured()) {
+  app.get("/api/auth/line", async (req: Request, res: Response) => {
+    const env = await getConfig();
+    if (!env.channelId || !env.channelSecret || !env.callbackUrl) {
       return res.status(503).json({
         error: "line_login_not_configured",
-        message: "LINE Login 未設定（環境變數 LINE_LOGIN_CHANNEL_ID/SECRET/CALLBACK_URL 缺）",
+        message: "LINE Login 尚未設定（請至 後台 → 平台設定 → LINE Login 填寫 channel）",
       });
     }
 
