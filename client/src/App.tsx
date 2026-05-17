@@ -80,6 +80,7 @@ const AdminAnalytics = lazy(() => import("@/pages/AdminAnalytics"));
 const AdminSessions = lazy(() => import("@/pages/AdminSessions"));
 const AdminBookings = lazy(() => import("@/pages/admin/AdminBookings"));
 const AdminActivities = lazy(() => import("@/pages/admin/AdminActivities"));
+const PosDashboard = lazy(() => import("@/pages/pos/PosDashboard"));
 const AdminSuspiciousLog = lazy(() => import("@/pages/AdminSuspiciousLog"));
 const AdminLeaderboard = lazy(() => import("@/pages/AdminLeaderboard"));
 const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
