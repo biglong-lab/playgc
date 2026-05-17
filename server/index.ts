@@ -132,7 +132,7 @@ app.use(helmet({
         directives: {
           // 預設：僅同源
           defaultSrc: ["'self'"],
-          // Script：同源 + Firebase/Google OAuth + Recur + MediaPipe WASM
+          // Script：同源 + Firebase/Google OAuth + Recur + MediaPipe WASM + LINE LIFF
           scriptSrc: [
             "'self'",
             "'unsafe-inline'", // Vite 產生的 inline script（未來可移除）
@@ -142,6 +142,7 @@ app.use(helmet({
             "https://*.googleapis.com",
             "https://accounts.google.com",
             "https://cdn.jsdelivr.net", // 🆕 MediaPipe tasks-vision WASM from jsdelivr
+            "https://static.line-scdn.net", // 🆕 2026-05-17 LIFF SDK
           ],
           // Style：同源 + Google Fonts
           styleSrc: [
