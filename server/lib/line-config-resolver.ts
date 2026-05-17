@@ -9,7 +9,7 @@
 
 import { db } from "../db";
 import { fields } from "@shared/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, or } from "drizzle-orm";
 
 export interface LineChannelConfig {
   /** 從哪裡取的：field（per-field）或 env（全域 fallback）*/
