@@ -315,6 +315,39 @@ export default function BookDonePage() {
           </a>
         </Link>
 
+        {/* 🆕 2026-05-18 分享按鈕（Web Share API + 複製連結 fallback）*/}
+        {!isCancelled && (
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={async () => {
+              const shareUrl = `${window.location.origin}/book/${fieldId}`;
+              const fieldName = fieldInfo?.name ?? fieldId;
+              const shareData = {
+                title: `${fieldName} - 線上預約`,
+                text: `我剛預約了 ${fieldName}！你也來看看：`,
+                url: shareUrl,
+              };
+              try {
+                if (navigator.share) {
+                  await navigator.share(shareData);
+                } else {
+                  await navigator.clipboard.writeText(shareUrl);
+                  toast({ title: "✓ 連結已複製、可貼給朋友" });
+                }
+              } catch (err) {
+                // 用戶取消分享、不顯錯
+                if (err instanceof Error && err.name !== "AbortError") {
+                  toast({ variant: "destructive", title: "分享失敗", description: err.message });
+                }
+              }
+            }}
+            data-testid="button-share"
+          >
+            📤 分享給朋友
+          </Button>
+        )}
+
         {/* 次要動作 */}
         {!isCancelled && booking.status !== "completed" && (
           <Button
