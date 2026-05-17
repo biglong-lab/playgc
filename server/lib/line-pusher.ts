@@ -10,8 +10,10 @@
 //   - LINE 免費 1000 訊息/月限制（W15 D2 不做用量追蹤、信任 LINE 後台統計）
 
 import { pushMessage, type LineMessage } from "./line-bot";
+import { resolveLineConfig } from "./line-config-resolver";
 
-const ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+// 🆕 2026-05-17 per-field：所有 push 函式 input 加 optional fieldId
+// 走 resolveLineConfig 先查 field → fallback env、不再硬寫死 process.env
 
 export interface ActivityCreatedPushInput {
   /** 玩家 LINE userId（從 LIFF profile 取得後存）*/
