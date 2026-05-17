@@ -400,6 +400,8 @@ function Router() {
         <Route path="/admin/sessions">{() => <ProtectedAdminRoute><AdminSessions /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/bookings">{() => <ProtectedAdminRoute><AdminBookings /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/activities">{() => <ProtectedAdminRoute><AdminActivities /></ProtectedAdminRoute>}</Route>
+        {/* 🆕 2026-05-18 POS 工作站（給現場工作人員、mobile-first）*/}
+        <Route path="/pos">{() => <ProtectedAdminRoute><PosDashboard /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/live">{() => <ProtectedAdminRoute><AdminLive /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/suspicious-log">{() => <ProtectedAdminRoute><AdminSuspiciousLog /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/devices">{() => <ProtectedAdminRoute><AdminDevices /></ProtectedAdminRoute>}</Route>
