@@ -278,13 +278,13 @@ export async function notifyGameCompleted(
   bookingId: number,
   options: { actionUrl?: string; imageUrlOverride?: string } = {},
 ): Promise<{ sent: boolean; reason?: string }> {
-  const lineConfig = await resolveLineConfig(booking.fieldId);
-  if (!lineConfig.accessToken) return { sent: false, reason: "no_access_token" };
-
   const rows = await db.select().from(bookings).where(eq(bookings.id, bookingId)).limit(1);
   const booking = rows[0];
   if (!booking) return { sent: false, reason: "not_found" };
   if (booking.completedNotifiedAt) return { sent: false, reason: "already_notified" };
+
+  const lineConfig = await resolveLineConfig(booking.fieldId);
+  if (!lineConfig.accessToken) return { sent: false, reason: "no_access_token" };
 
   try {
     const resolved = await resolveTemplate(
