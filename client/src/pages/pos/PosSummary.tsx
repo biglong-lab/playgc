@@ -178,9 +178,10 @@ export default function PosSummary() {
                           <p className="text-sm font-medium truncate">
                             {t.customerName || (t.bookingId ? `預約 #${t.bookingId}` : "散客")}
                           </p>
-                          {t.note && (
-                            <p className="text-xs text-muted-foreground truncate">{t.note}</p>
-                          )}
+                          <p className="text-xs text-muted-foreground truncate">
+                            {t.staffName ? `👤 ${t.staffName}` : ""}
+                            {t.note ? ` · ${t.note}` : ""}
+                          </p>
                         </div>
                         <Badge variant="outline" className="text-xs">
                           {t.paymentMethod === "cash" ? "現金" : t.paymentMethod}
