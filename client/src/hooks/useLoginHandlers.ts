@@ -32,7 +32,7 @@ function readFieldCodeFromContext(): string | null {
 }
 
 /** 登入方法類型 */
-export type LoginMethod = "google" | "apple" | "guest" | "email" | null;
+export type LoginMethod = "google" | "apple" | "guest" | "email" | "line" | null;
 
 /** 登入處理 Hook 的回傳介面 */
 export interface LoginHandlers {
