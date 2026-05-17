@@ -153,61 +153,110 @@ export default function BookDonePage() {
   const timeStr = `${String(slotStartDate.getHours()).padStart(2,"0")}:${String(slotStartDate.getMinutes()).padStart(2,"0")}`;
 
   return (
-    <div className="container-player py-4 pb-24">
-      <button
-        type="button"
-        onClick={() => navigate(`/book/${fieldId}`)}
-        className="flex items-center gap-1 text-sm text-muted-foreground mb-3"
-        data-testid="button-back"
-      >
-        <ArrowLeft className="w-4 h-4" /> 回預約頁
-      </button>
+    <div className="bg-white rounded-2xl overflow-hidden shadow-lg max-w-md mx-auto my-4">
+      {/* 封面圖（場域 logo / fallback 灰色） */}
+      {fieldInfo?.logoUrl ? (
+        <img
+          src={fieldInfo.logoUrl}
+          alt={fieldInfo.name || fieldId}
+          className="w-full h-64 object-cover"
+        />
+      ) : (
+        <div className="w-full h-64 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+          <span className="text-slate-500 text-sm">{fieldInfo?.name || fieldId}</span>
+        </div>
+      )}
 
-      <Card className="mb-4 border-2 border-primary/30">
-        <CardHeader className="pb-3 text-center">
+      {/* 卡片內容 */}
+      <div className="p-5 space-y-4">
+        {/* 標題 */}
+        <div className="flex items-center gap-2">
           {isCancelled ? (
             <>
-              <X className="w-12 h-12 mx-auto text-destructive mb-2" />
-              <CardTitle className="text-xl">預約已取消</CardTitle>
+              <X className="w-6 h-6 text-red-500" aria-hidden="true" />
+              <h2 className="text-xl font-bold text-red-500">預約已取消</h2>
             </>
           ) : (
             <>
-              <CheckCircle2 className="w-12 h-12 mx-auto text-green-600 mb-2" />
-              <CardTitle className="text-xl">預約成功！</CardTitle>
+              <span className="text-2xl" role="img" aria-label="成功">✅</span>
+              <h2 className="text-xl font-bold text-green-600">預約成功！</h2>
             </>
           )}
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="bg-primary/5 rounded-lg p-3 text-center">
-            <div className="text-xs text-muted-foreground mb-1">預約碼</div>
-            <div className="font-bold text-2xl tracking-widest font-mono" data-testid="booking-code">
+        </div>
+
+        {/* 4 欄資訊（label 灰 / value 黑、時間綠強調） */}
+        <div className="space-y-2 text-sm">
+          <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-2">
+            <span className="text-slate-500">姓名</span>
+            <span className="text-slate-900 font-medium">{booking.displayName || "—"}</span>
+
+            <span className="text-slate-500">預約碼</span>
+            <span className="text-slate-900 font-mono font-bold" data-testid="booking-code">
               {booking.bookingCode}
+            </span>
+
+            <span className="text-slate-500">時間</span>
+            <span className="text-green-600 font-bold">
+              {dateStr} {timeStr}
+            </span>
+
+            <span className="text-slate-500">人數</span>
+            <span className="text-slate-900 font-medium">{booking.partySize} 人</span>
+
+            {booking.paymentRequired && (
+              <>
+                <span className="text-slate-500">金額</span>
+                <span className="text-slate-900 font-medium">
+                  NT$ {(booking.amountCents / 100).toLocaleString()}
+                  <span className="ml-2 text-xs text-slate-500">
+                    （{booking.paymentStatus === "paid" ? "已付款" :
+                      booking.paymentStatus === "pending" ? "待付款" : "—"}）
+                  </span>
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* 備註（若有） */}
+        {booking.customerNote && (
+          <div className="border-t pt-3">
+            <div className="text-xs text-slate-500 mb-1">您的備註</div>
+            <div className="bg-slate-50 px-3 py-2 rounded text-sm text-slate-700">
+              {booking.customerNote}
             </div>
           </div>
-          <BookingDetailRow icon={<Calendar className="w-4 h-4" />} label="日期" value={dateStr} />
-          <BookingDetailRow icon={<Clock className="w-4 h-4" />} label="時間" value={timeStr} />
-          <BookingDetailRow icon={<Users className="w-4 h-4" />} label="人數" value={`${booking.partySize} 人`} />
-          {booking.paymentRequired && (
-            <BookingDetailRow
-              icon={<Hash className="w-4 h-4" />}
-              label="金額"
-              value={`NT$${(booking.amountCents / 100).toLocaleString()}（${
-                booking.paymentStatus === "paid" ? "已付款" :
-                booking.paymentStatus === "pending" ? "待付款" : "—"
-              }）`}
-            />
-          )}
-          {booking.customerNote && (
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">您的備註</div>
-              <div className="bg-muted px-3 py-2 rounded text-sm">{booking.customerNote}</div>
-            </div>
-          )}
-          <Badge variant={isCancelled ? "destructive" : "default"} className="w-full justify-center">
-            {isCancelled ? "已取消" : booking.status === "pending" ? "待確認" : "已確認"}
-          </Badge>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* QR 提示 */}
+        {!isCancelled && (
+          <div className="border-t pt-3 flex items-start gap-2 text-xs text-slate-600">
+            <span className="text-base" role="img" aria-label="手機">📱</span>
+            <p>請於活動當天出示此預約碼或截圖</p>
+          </div>
+        )}
+
+        {/* 狀態 Badge */}
+        <Badge
+          variant={isCancelled ? "destructive" : "default"}
+          className={`w-full justify-center py-1.5 ${
+            isCancelled ? "" : "bg-green-500 hover:bg-green-600"
+          }`}
+        >
+          {isCancelled ? "已取消" : booking.status === "pending" ? "待確認" : "已確認"}
+        </Badge>
+
+        {/* 主 CTA */}
+        <Link href={`/book/${fieldId}/mine`}>
+          <a className="block">
+            <Button
+              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold text-base py-6"
+              data-testid="link-my-bookings"
+            >
+              查看預約詳情
+            </Button>
+          </a>
+        </Link>
 
       {!isCancelled && booking.status !== "completed" && (
         <Button
