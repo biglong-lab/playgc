@@ -165,8 +165,19 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
   const [from, setFrom] = useState(formatDateInput(new Date()));
   const [to, setTo] = useState(formatDateInput(addDays(new Date(), 14)));
   const [statusFilter, setStatusFilter] = useState<string>("");
+  // 🆕 2026-05-18：活動篩選（""=全部、"none"=未綁活動、其他=activityId）
+  const [activityFilter, setActivityFilter] = useState<string>("");
 
-  const queryKey = ["admin-bookings-list", fieldId, from, to, statusFilter];
+  // 拉場域的所有活動（給 filter 用）
+  const { data: activities } = useQuery({
+    queryKey: ["admin-activities-options"],
+    queryFn: async () => {
+      const res = await fetchWithAdminAuth("/api/admin/activities");
+      return (res.activities ?? []) as AdminActivityOption[];
+    },
+  });
+
+  const queryKey = ["admin-bookings-list", fieldId, from, to, statusFilter, activityFilter];
   const { data, isLoading, refetch } = useQuery({
     queryKey,
     queryFn: async () => {
@@ -175,7 +186,11 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
       if (to) url.searchParams.set("to", new Date(`${to}T23:59:59`).toISOString());
       if (statusFilter) url.searchParams.set("status", statusFilter);
       const res = await fetchWithAdminAuth(url.toString());
-      return (res.bookings || []) as BookingRow[];
+      const list = (res.bookings || []) as BookingRow[];
+      // 前端過濾 activity（後端等下個版本加 query param）
+      if (!activityFilter) return list;
+      if (activityFilter === "none") return list.filter((b) => !b.activityId);
+      return list.filter((b) => b.activityId === activityFilter);
     },
   });
 
