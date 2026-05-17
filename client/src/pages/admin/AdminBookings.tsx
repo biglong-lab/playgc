@@ -14,6 +14,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
+import PublicBookingLinkCard from "@/components/admin/PublicBookingLinkCard";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
