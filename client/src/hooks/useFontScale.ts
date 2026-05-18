@@ -33,7 +33,11 @@ function readStoredScale(): FontScale {
 
 function applyScale(scale: FontScale): void {
   if (typeof document === "undefined") return;
-  document.documentElement.style.setProperty("--font-scale", String(SCALE_VALUES[scale]));
+  const value = String(SCALE_VALUES[scale]);
+  // 🆕 2026-05-18：reader-scale 只給 .game-prose 用、不影響 nav/header/icon
+  document.documentElement.style.setProperty("--reader-scale", value);
+  // 舊 --font-scale 固定 1（不再放大 html font-size、避免影響全站）
+  document.documentElement.style.setProperty("--font-scale", "1");
   document.documentElement.dataset.fontScale = scale;
 }
 
