@@ -24,7 +24,7 @@ import {
   squadExternalRewards,
 } from "@shared/schema";
 import { eq, desc, and, sql, inArray } from "drizzle-orm";
-import { requireAdminAuth } from "../adminAuth";
+import { requireAdminAuth, logAuditAction } from "../adminAuth";
 import { z } from "zod";
 
 export function registerAdminRewardsRoutes(app: Express) {
