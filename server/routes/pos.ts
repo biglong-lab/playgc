@@ -196,7 +196,15 @@ export function registerPosRoutes(app: Express) {
             ),
           )
           .limit(1);
-        if (!b) return res.status(404).json({ error: "not_found", type: "booking" });
+        if (!b) {
+          // 🐛 2026-05-19 業主回報「找不到 Request failed」原因不清楚
+          // 改回友善 message、前端可顯示具體問題
+          return res.status(404).json({
+            error: "not_found",
+            type: "booking",
+            message: `找不到預約：${token}（可能不是本場域的預約、或編號錯誤）`,
+          });
+        }
 
         // 補活動資訊
         let activity = null;
