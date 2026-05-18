@@ -224,7 +224,10 @@ function AdminSidebar({
 
         {filteredMenuGroups.map((group) => (
           <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className="flex items-center gap-1.5 font-semibold">
+            <SidebarGroupLabel
+              className="flex items-center gap-1.5 font-semibold"
+              title={group.description}
+            >
               {group.emoji && <span className="text-sm">{group.emoji}</span>}
               <span>{group.label}</span>
             </SidebarGroupLabel>
@@ -241,7 +244,13 @@ function AdminSidebar({
                     >
                       <Link href={item.path}>
                         <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
+                        <span className="flex-1 truncate">{item.title}</span>
+                        {/* 🆕 2026-05-19 v3：未實作功能顯示「規劃中」徽章 */}
+                        {item.comingSoon && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 h-4 leading-none">
+                            規劃中
+                          </Badge>
+                        )}
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
