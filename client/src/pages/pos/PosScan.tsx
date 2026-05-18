@@ -265,89 +265,9 @@ export default function PosScan() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 確認頁
+  // 確認頁 — 抽到獨立 component
   if (result) {
-    const b = result.booking;
-    const t = new Date(b.slotStart);
-    const dateStr = `${t.getMonth() + 1}/${t.getDate()} ${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`;
-    const alreadyArrived = !!b.checkedInAt;
-    const alreadyPaid = b.paymentStatus === "paid" || !!b.paidAt;
-    const needsPayment = !alreadyPaid && b.amountCents > 0;
-    return (
-      <PosLayout title="掃描結果" backTo="/pos/scan">
-        <Card className="mb-4">
-          {result.activity?.coverUrl && (
-            <img src={result.activity.coverUrl} alt={result.activity.name} className="w-full h-32 object-cover rounded-t-lg" />
-          )}
-          <CardContent className="py-4 space-y-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-6 h-6 text-green-600" aria-hidden="true" />
-              <h2 className="text-lg font-bold">{b.displayName || "—"}</h2>
-            </div>
-            {result.activity && (
-              <p className="text-sm font-semibold">{result.activity.name}</p>
-            )}
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <Kv label="預約碼" value={b.bookingCode} />
-              <Kv label="時間" value={dateStr} />
-              <Kv label="人數" value={`${b.partySize} 人`} />
-              <Kv label="金額" value={b.amountCents ? `NT$${(b.amountCents / 100).toFixed(0)}` : "—"} />
-            </div>
-            {b.phone && (
-              <a
-                href={`tel:${b.phone}`}
-                className="text-sm text-primary hover:underline flex items-center gap-1"
-              >
-                📞 {b.phone}
-              </a>
-            )}
-            {b.customerNote && (
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 px-2 py-1.5 rounded text-xs">
-                <span className="font-semibold">備註：</span>
-                {b.customerNote}
-              </div>
-            )}
-
-            {alreadyArrived && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 px-3 py-2 rounded text-xs text-green-700 dark:text-green-300">
-                ✓ 已於 {new Date(b.checkedInAt!).toLocaleTimeString("zh-TW")} 報到
-              </div>
-            )}
-            {alreadyPaid && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 px-3 py-2 rounded text-xs text-blue-700 dark:text-blue-300">
-                ✓ 已收款
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-2 gap-2">
-          {!alreadyArrived && (
-            <Button
-              className="w-full h-14 text-base"
-              onClick={() => checkInMutation.mutate(b.id)}
-              disabled={checkInMutation.isPending}
-            >
-              {checkInMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-5 h-5 mr-1" />}
-              標記到場
-            </Button>
-          )}
-          {needsPayment && (
-            <Button
-              variant="default"
-              className="w-full h-14 text-base bg-amber-600 hover:bg-amber-700"
-              onClick={() => navigate(`/pos/checkout?bookingId=${b.id}`)}
-            >
-              <DollarSign className="w-5 h-5 mr-1" />
-              現場收款
-            </Button>
-          )}
-          <Button variant="outline" className="w-full h-14 text-base col-span-2" onClick={() => setResult(null)}>
-            繼續掃描
-          </Button>
-        </div>
-      </PosLayout>
-    );
+    return <PosScanResultCard result={result} onClose={() => setResult(null)} />;
   }
 
   // 掃描頁
