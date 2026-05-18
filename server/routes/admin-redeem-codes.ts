@@ -166,6 +166,20 @@ export function registerAdminRedeemCodeRoutes(app: Express) {
         }));
 
         const codes = await storage.createRedeemCodes(codesData);
+
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "redeem_code:batch_create",
+            targetType: "redeem_code",
+            targetId: gameId,
+            fieldId: game.fieldId,
+            metadata: { count: codes.length, scope: parsed.scope, label: parsed.label ?? null },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.status(201).json({ count: codes.length, codes });
       } catch (error) {
         if (error instanceof z.ZodError) {
