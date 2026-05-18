@@ -67,6 +67,17 @@ export function registerAdminSettingsRoutes(app: Express) {
         .set({ settings: updatedSettings, updatedAt: new Date() })
         .where(eq(fields.id, req.admin.fieldId));
 
+      logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "field_settings:update",
+        targetType: "field",
+        targetId: req.admin.fieldId,
+        fieldId: req.admin.fieldId,
+        metadata: { changedKeys: Object.keys(parsed) },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
       return res.json({
         defaultGameTime: updatedSettings.defaultGameTime ?? 30,
         defaultMaxPlayers: updatedSettings.defaultMaxPlayers ?? 6,
