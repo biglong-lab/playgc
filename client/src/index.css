@@ -213,6 +213,64 @@
     }
   }
 
+  /* 🆕 2026-05-18：reader-scale 用於正文（業主回報字級不該放大 nav/header/icon）
+     用法：在正文容器加 className="game-prose"、字會跟著 A 標準/大/特大 放大 */
+  .game-prose {
+    font-size: calc(1rem * var(--reader-scale, 1));
+    line-height: 1.7;
+  }
+  .game-prose p,
+  .game-prose li,
+  .game-prose span {
+    font-size: inherit;
+  }
+
+  /* 系統 UI 固定字級、不受 reader-scale 影響 */
+  .app-header,
+  .player-bottom-nav,
+  .icon-button,
+  .floating-tool {
+    font-size: 16px;
+  }
+  .icon-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* 🆕 2026-05-18 z-index token（業主回報按鈕被遮擋）
+     順序：modal > toast > floating-tool > bottom-nav > header > content */
+  :root {
+    --z-content: 1;
+    --z-header: 10;
+    --z-bottom-nav: 50;
+    --z-floating-tool: 60;
+    --z-toast: 90;
+    --z-modal: 100;
+  }
+
+  /* 玩家底部導覽 — 統一 viewport 定位 + safe-area */
+  .player-bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100dvw;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: var(--z-bottom-nav);
+  }
+
+  /* 玩家內容區 — 預留 bottom padding 避免被底部導覽遮 */
+  .game-content {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  /* 浮動工具（音量/QR/字級/BGM）用 viewport 定位 */
+  .floating-tool {
+    position: fixed;
+    right: max(12px, env(safe-area-inset-right));
+    z-index: var(--z-floating-tool);
+  }
+
   /* 防止超長詞撐爆容器 */
   .text-balance-safe {
     word-break: break-word;
