@@ -646,6 +646,21 @@ export function registerPosRoutes(app: Express) {
         .where(eq(platformCoupons.id, c.coupon.id))
         .returning();
 
+      logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "voucher:redeem",
+        targetType: "coupon",
+        targetId: c.coupon.id,
+        fieldId: scope.id,
+        metadata: {
+          code: c.coupon.code,
+          templateId: c.coupon.templateId,
+          bookingId: parsed.data.bookingId ?? null,
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
       res.json({ ok: true, coupon: updated, template: c.template });
     } catch (err) {
       console.error("[pos/voucher/redeem]", err);
