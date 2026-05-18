@@ -180,7 +180,8 @@ export function registerAdminActivitiesRoutes(app: Express) {
     },
   );
 
-  // DELETE 軟刪除
+  // DELETE — 業主回報想要真刪除（不只是停用）
+  // 2026-05-18：先檢查有沒有預約綁定、有 → 拒絕並建議用停用、沒 → 真刪
   app.delete(
     "/api/admin/activities/:id",
     requireAdminAuth,
@@ -188,18 +189,98 @@ export function registerAdminActivitiesRoutes(app: Express) {
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });
-        const [updated] = await db
-          .update(activities)
-          .set({ isActive: false, updatedAt: new Date() })
+
+        // 確認活動屬於此 admin 的場域
+        const [target] = await db
+          .select({ id: activities.id })
+          .from(activities)
           .where(
             and(eq(activities.id, req.params.id), eq(activities.fieldId, req.admin.fieldId)),
           )
-          .returning();
-        if (!updated) return res.status(404).json({ error: "not_found" });
-        res.json({ ok: true });
+          .limit(1);
+        if (!target) return res.status(404).json({ error: "not_found" });
+
+        // 檢查是否有 booking 綁定（保護 referential integrity）
+        const { bookings } = await import("@shared/schema");
+        const { count, sql: drizzleSql } = await import("drizzle-orm");
+        const [stats] = await db
+          .select({ total: drizzleSql<number>`COUNT(*)::int` })
+          .from(bookings)
+          .where(eq(bookings.activityId, req.params.id));
+
+        if ((stats?.total ?? 0) > 0) {
+          // 有預約綁定 → 不可真刪、改成停用（軟刪除）
+          await db
+            .update(activities)
+            .set({ isActive: false, updatedAt: new Date() })
+            .where(eq(activities.id, req.params.id));
+          return res.json({
+            ok: true,
+            mode: "deactivated",
+            message: `此活動有 ${stats?.total} 筆預約紀錄、已停用（保留歷史資料）`,
+          });
+        }
+
+        // 沒任何預約 → 真刪
+        // 連帶刪 activity_schedules（沒 FK cascade）
+        const { activitySchedules } = await import("@shared/schema");
+        await db.delete(activitySchedules).where(eq(activitySchedules.activityId, req.params.id));
+        await db.delete(activities).where(eq(activities.id, req.params.id));
+
+        res.json({ ok: true, mode: "deleted", message: "活動已永久刪除" });
       } catch (err) {
         console.error("[admin-activities DELETE]", err);
         res.status(500).json({ error: "internal_error" });
+      }
+    },
+  );
+
+  // 🆕 2026-05-18：封面上傳（業主可直接傳檔、不用自己拿 URL）
+  const coverSchema = z.object({
+    imageData: z.string()
+      .min(1, "缺少圖片資料")
+      .refine(
+        (d) => d.startsWith("data:image/"),
+        "無效的圖片格式",
+      )
+      .refine((d) => d.length < 10 * 1024 * 1024, "圖片大小不能超過 10MB"),
+  });
+  app.post(
+    "/api/admin/activities/:id/cover",
+    requireAdminAuth,
+    requirePermission("game:edit"),
+    async (req, res) => {
+      try {
+        if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });
+        const parsed = coverSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ error: "validation", message: parsed.error.issues[0]?.message });
+        }
+        // 確認活動屬此場域
+        const [target] = await db
+          .select({ id: activities.id })
+          .from(activities)
+          .where(
+            and(eq(activities.id, req.params.id), eq(activities.fieldId, req.admin.fieldId)),
+          )
+          .limit(1);
+        if (!target) return res.status(404).json({ error: "not_found" });
+
+        // 上傳 cloudinary
+        const { default: cloudinary } = await import("../cloudinary");
+        const result = await cloudinary.uploadActivityCover(parsed.data.imageData, req.params.id);
+
+        // 更新 activity.coverUrl
+        const [updated] = await db
+          .update(activities)
+          .set({ coverUrl: result.secure_url, updatedAt: new Date() })
+          .where(eq(activities.id, req.params.id))
+          .returning();
+
+        res.json({ coverUrl: result.secure_url, activity: updated });
+      } catch (err) {
+        console.error("[admin-activities cover]", err);
+        res.status(500).json({ error: "upload_failed", message: err instanceof Error ? err.message : "未知錯誤" });
       }
     },
   );
