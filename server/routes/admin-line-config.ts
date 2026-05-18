@@ -13,7 +13,7 @@ import type { Express } from "express";
 import { db } from "../db";
 import { fields } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { z } from "zod";
 import { invalidateLineConfigCache } from "../lib/line-config-resolver";
 
