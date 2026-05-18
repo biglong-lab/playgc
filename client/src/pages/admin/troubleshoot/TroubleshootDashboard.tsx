@@ -124,10 +124,9 @@ export default function TroubleshootDashboard() {
           <ActionCard
             icon={<Receipt className="w-6 h-6" />}
             title="退款處理"
-            desc="爭議 / 取消 / 沒到"
+            desc="爭議 / 取消 / 沒到（cash）"
             color="amber"
             onClick={() => navigate("/admin/troubleshoot/refund")}
-            comingSoon
           />
           <ActionCard
             icon={<Calendar className="w-6 h-6" />}
