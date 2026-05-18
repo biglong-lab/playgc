@@ -216,11 +216,12 @@ export default function PosScan() {
       try {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, imageData.width, imageData.height);
-        if (code && code.data) {
+        if (code && code.data && isValidToken(code.data.trim())) {
           scanLockRef.current = true;
-          submitToken.mutate(code.data);
+          submitToken.mutate(code.data.trim());
           return;
         }
+        // 掃到但格式不對（如鍵盤條碼、藥罐標籤）→ 繼續掃、不打擾
       } catch {
         // 偶發 frame 取樣失敗、繼續下幀
       }
