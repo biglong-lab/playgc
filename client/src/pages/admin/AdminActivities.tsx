@@ -359,8 +359,17 @@ export default function AdminActivities() {
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    if (confirm(`停用「${a.name}」？玩家將無法看到此活動。`)) deleteMutation.mutate(a.id);
+                    if (
+                      confirm(
+                        `刪除「${a.name}」？\n\n` +
+                        `• 若無預約綁定 → 永久刪除\n` +
+                        `• 若有預約紀錄 → 自動改為停用（保留歷史資料、玩家看不到）`,
+                      )
+                    ) {
+                      deleteMutation.mutate(a.id);
+                    }
                   }}
+                  title="刪除（無預約綁定）/ 停用（有預約綁定）"
                 >
                   <Trash2 className="w-3 h-3" />
                 </Button>
