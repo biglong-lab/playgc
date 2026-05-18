@@ -392,7 +392,7 @@ export function registerAdminSessionRoutes(app: Express) {
           action: "session:reset",
           targetType: "game_session",
           targetId: req.params.id,
-          fieldId: existing.game?.fieldId,
+          fieldId: existing.game?.fieldId ?? undefined,
           metadata: {
             gameName: existing.game?.name,
             reason: parsed.data.reason,
