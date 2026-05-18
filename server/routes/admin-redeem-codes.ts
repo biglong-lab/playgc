@@ -219,6 +219,19 @@ export function registerAdminRedeemCodeRoutes(app: Express) {
               : undefined,
         });
 
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "redeem_code:update",
+            targetType: "redeem_code",
+            targetId: id,
+            fieldId: existing.fieldId,
+            metadata: { keys: Object.keys(parsed) },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.json(updated);
       } catch (error) {
         if (error instanceof z.ZodError) {
