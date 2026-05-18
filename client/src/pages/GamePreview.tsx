@@ -14,6 +14,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Eye, AlertTriangle } from "lucide-react";
+import { resolveFlowRouter } from "@/lib/flow-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { PreviewProvider } from "@/contexts/PreviewContext";
 import { PreviewBanner } from "@/components/preview/PreviewBanner";
