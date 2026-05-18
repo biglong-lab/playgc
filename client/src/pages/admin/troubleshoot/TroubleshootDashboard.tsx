@@ -171,21 +171,13 @@ export default function TroubleshootDashboard() {
             {data?.abnormalBookings.map((b) => (
               <div
                 key={b.id}
-                className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer"
+                className="flex flex-wrap items-center gap-1.5 px-2 py-1.5 rounded hover:bg-muted/50 cursor-pointer"
                 onClick={() => navigate("/pos/scan")}
               >
                 <Badge variant="outline" className="font-mono text-xs">
                   {b.bookingCode}
                 </Badge>
-                <span className="text-sm font-medium flex-1 truncate">{b.displayName ?? "—"}</span>
-                <span className="text-xs text-muted-foreground hidden md:inline">
-                  {new Date(b.slotStart).toLocaleString("zh-TW", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
-                </span>
-                {b.paidAt && (
-                  <Badge variant="default" className="text-[10px]">
-                    已收 NT${(b.amountCents / 100).toFixed(0)}
-                  </Badge>
-                )}
+                <span className="text-sm font-medium truncate min-w-0 flex-1">{b.displayName ?? "—"}</span>
                 <Badge
                   variant={b.status === "cancelled" || b.status === "no_show" ? "destructive" : "secondary"}
                   className="text-[10px]"
@@ -193,6 +185,22 @@ export default function TroubleshootDashboard() {
                   {b.status}
                 </Badge>
                 <ExternalLink className="w-3 h-3 text-muted-foreground" />
+                {/* 第二行（換行）: 金額 + 時間 */}
+                <span className="basis-full flex items-center gap-2 text-xs text-muted-foreground pl-1">
+                  {b.paidAt && (
+                    <span className="font-semibold text-foreground">
+                      已收 NT${(b.amountCents / 100).toFixed(0)}
+                    </span>
+                  )}
+                  <span>
+                    {new Date(b.slotStart).toLocaleString("zh-TW", {
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </span>
               </div>
             ))}
           </CardContent>
