@@ -124,7 +124,7 @@ export function registerPosRoutes(app: Express) {
         )
         .reduce((s, b) => s + (b.amountCents ?? 0), 0);
 
-      // 今日 POS 收款總額
+      // 今日 POS 收款總額（pos_transactions 用 UUID 存）
       const [posStats] = await db
         .select({
           totalPaidCents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}), 0)::int`,
@@ -133,7 +133,7 @@ export function registerPosRoutes(app: Express) {
         .from(posTransactions)
         .where(
           and(
-            eq(posTransactions.fieldId, fieldId),
+            inArray(posTransactions.fieldId, scope.identifiers),
             gte(posTransactions.createdAt, start),
             lte(posTransactions.createdAt, end),
           ),
