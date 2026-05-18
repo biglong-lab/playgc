@@ -232,7 +232,14 @@ export default function BookPage() {
       if (!lineUserId) throw new Error("尚未取得 LINE 身份");
       if (!selectedSlot) throw new Error("請先選擇時段");
       if (partySize < 1 || partySize > selectedSlot.available) {
-        throw new Error(`人數須在 1-${selectedSlot.available} 之間`);
+        // 🐛 2026-05-18：錯誤訊息也不漏實際剩餘
+        if (selectedSlot.available === 0) {
+          throw new Error("此時段已額滿、請選其他時段");
+        }
+        if (selectedSlot.available <= 5) {
+          throw new Error(`此時段僅剩 ${selectedSlot.available} 位、請調整人數`);
+        }
+        throw new Error(`此時段容量不足、請減少人數或選其他時段`);
       }
       const res = await fetch("/api/bookings", {
         method: "POST",
