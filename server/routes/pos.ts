@@ -15,8 +15,8 @@
 
 import type { Express, Request, Response } from "express";
 import { db } from "../db";
-import { bookings, activities, posTransactions, platformCoupons, couponTemplates } from "@shared/schema";
-import { and, eq, gte, lte, sql, or } from "drizzle-orm";
+import { bookings, activities, posTransactions, platformCoupons, couponTemplates, fields } from "@shared/schema";
+import { and, eq, gte, lte, sql, or, inArray } from "drizzle-orm";
 import { requireAdminAuth } from "../adminAuth";
 import { z } from "zod";
 
@@ -28,6 +28,31 @@ function resolveFieldId(req: Request): string | null {
   // super admin 可指定任意場域；其他 admin 只能看自己場域
   if (queryFieldId && admin.systemRole === "super_admin") return queryFieldId;
   return admin.fieldId ?? null;
+}
+
+/**
+ * 🐛 2026-05-19 業主回報 POS 全部「找不到」根因：
+ *   - admin_accounts.field_id = UUID（如 72cc204d-...）
+ *   - bookings.field_id       = 場域代碼（如 JIACHUN）
+ *   - 直接 eq() 永遠不會 match
+ *
+ * 解法：取得 admin 場域的「所有可能識別碼」（UUID + code）、查詢時 OR 匹配。
+ * 同時提供場域 code 給 UI 顯示用。
+ */
+async function resolveFieldScope(
+  req: Request,
+): Promise<{ id: string; code: string; identifiers: string[] } | null> {
+  const raw = resolveFieldId(req);
+  if (!raw) return null;
+  const [row] = await db
+    .select({ id: fields.id, code: fields.code })
+    .from(fields)
+    .where(or(eq(fields.id, raw), eq(fields.code, raw)))
+    .limit(1);
+  if (!row) return null;
+  // 兩個值都納入比對、避免歷史資料混用
+  const identifiers = Array.from(new Set([row.id, row.code].filter(Boolean) as string[]));
+  return { id: row.id, code: row.code, identifiers };
 }
 
 /** 取得當日（Asia/Taipei）的起訖時間（UTC）*/
