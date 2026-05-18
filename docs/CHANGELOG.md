@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-05-19
+
+### 🐛 POS fieldId 根因修正 + 智慧排解流程
+**狀態**：🟢 部署上線（commit 63e94805 + 85034598）
+**細節**：[changes/2026-05-19-pos-rescue.md](changes/2026-05-19-pos-rescue.md)
+
+| 範圍 | 內容 |
+|------|------|
+| 根因 | `bookings.field_id` 存代碼 `JIACHUN`、`admin_accounts.field_id` 存 UUID `72cc204d-...`、eq() 永遠 0 match → 所有 POS 「找不到」|
+| 修正 | 新 `resolveFieldScope()` 同時拿 UUID + code、所有 POS query 用 `inArray(scope.identifiers)`、覆蓋 7 endpoint |
+| 智慧錯誤 | checkin 改為先全域找預約、再分流 5 種狀態：not_found / wrong_field / too_early / too_late / cancelled |
+| 強制核銷 | `POST /bookings/:id/check-in { force: true, note }` 忽略狀態與時段、自動 reactivate、寫 adminNote |
+| 改梯次 | 新 `POST /bookings/:id/reschedule { slotStart, durationMinutes, reason }`、業主可現場改 |
+| 前端 | 拆 `PosScanResultCard.tsx`（379 行）、5 種狀態各自 banner + 修正按鈕 + confirm 對話框 |
+
+業主同日提出「後台導航重構 + 排解中心」大計畫、Claude 已產出方案等業主確認。
+
+---
+
 ## 2026-05-18
 
 ### 🎯 多活動預約 + POS 工作站（一次大型整合）
