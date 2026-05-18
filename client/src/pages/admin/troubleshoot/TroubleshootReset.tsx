@@ -9,7 +9,7 @@
 // 3. 輸入重置原因（≥ 10 字）
 // 4. 二段確認 → 完成
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
