@@ -113,6 +113,13 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
   //   原本放在 isLoading/error/totalPages 條件 return 後面、違反 Rules of Hooks
   //   render 在 loading→loaded 切換時 hook count 不同 → 觸發 #310（30 次/7 天 ErrorBoundary）
 
+  // 預覽用：variable update 純 in-memory（不寫 DB）
+  // 🐛 2026-05-18 #8 移到 handlePreviewComplete 前面（要當依賴）
+  const [variables, setVariables] = useState<Record<string, unknown>>({});
+  const handleVariableUpdate = useCallback((key: string, value: unknown) => {
+    setVariables((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
   // 🐛 2026-05-18 #8：預覽用真實 FlowEngine（resolveFlowRouter）
   // 業主回報「預覽應按元件設定流程、不是按元件順序」
   // 接收元件 onComplete 的 nextPageId（jumpToPageId）+ 解析 flow_router 連續跳轉
