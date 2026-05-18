@@ -184,6 +184,25 @@ export function registerAdminPurchaseRoutes(app: Express) {
           completedAt: new Date(),
         });
 
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "purchase:grant_access",
+            targetType: "purchase",
+            targetId: purchase.id,
+            fieldId: game.fieldId,
+            metadata: {
+              userId: parsed.userId,
+              gameId,
+              chapterId: parsed.chapterId ?? null,
+              amount: parsed.amount,
+              note: parsed.note ?? null,
+            },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.status(201).json(purchase);
       } catch (error) {
         if (error instanceof z.ZodError) {
