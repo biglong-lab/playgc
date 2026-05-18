@@ -500,8 +500,18 @@ export default function BookPage() {
                   data-testid={`slot-${s.startAt}`}
                 >
                   <div>{formatTime(s.startAt)}</div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {s.bookable ? `剩 ${s.available}` : "已滿"}
+                  {/* 🐛 2026-05-18：隱藏實際容量、避免玩家算出營運狀況
+                      - 0 → 已額滿
+                      - 1-5 → 僅剩 N 位（稀缺感、促銷下單）
+                      - >5 → 可預約（不露具體數）*/}
+                  <div className={`text-[10px] ${
+                    !s.bookable ? "text-muted-foreground" :
+                    s.available <= 5 ? "text-amber-600 font-semibold" :
+                    "text-emerald-600"
+                  }`}>
+                    {!s.bookable ? "已額滿"
+                      : s.available <= 5 ? `僅剩 ${s.available} 位`
+                      : "可預約"}
                   </div>
                 </button>
               );
