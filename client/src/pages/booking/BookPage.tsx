@@ -474,8 +474,9 @@ export default function BookPage() {
                     {["日", "一", "二", "三", "四", "五", "六"][date.getDay()]}
                   </div>
                   <div className="font-bold">{date.getDate()}</div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {totalAvail > 0 ? `剩 ${totalAvail}` : "已滿"}
+                  {/* 🐛 2026-05-18：不顯示具體日總剩餘人數（推不出營運），只標「可預約/額滿」*/}
+                  <div className={`text-[10px] ${totalAvail === 0 ? "text-muted-foreground" : "text-emerald-600"}`}>
+                    {totalAvail > 0 ? "可預約" : "已滿"}
                   </div>
                 </button>
               );
