@@ -120,6 +120,22 @@ export function registerAdminLineConfigRoutes(app: Express) {
         // 清快取讓新設定立即生效
         invalidateLineConfigCache(req.admin.fieldId);
 
+        // 🆕 2026-05-19 Phase B：LINE 設定更新留紀錄（敏感資料、必補 audit）
+        // metadata 只記欄位名 + 是否清空、不洩漏實際 secret / token
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "line_config:update",
+          targetType: "field_line_config",
+          targetId: req.admin.fieldId,
+          fieldId: req.admin.fieldId,
+          metadata: {
+            changedFields: Object.keys(patch).filter((k) => k !== "updatedAt"),
+            enabled: parsed.data.lineEnabled,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
         res.json({ ok: true });
       } catch (err) {
         console.error("[admin-line-config PATCH]", err);
