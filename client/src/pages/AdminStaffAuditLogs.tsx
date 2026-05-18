@@ -54,6 +54,14 @@ const ACTION_LABELS: Record<string, string> = {
   "game:update": "更新遊戲",
   "game:delete": "刪除遊戲",
   "game:publish": "發布遊戲",
+  // 🆕 2026-05-19 Phase B：POS / 預約 / 券核銷 audit action
+  "pos:scan_lookup": "POS 掃描查詢",
+  "pos:checkin": "預約報到",
+  "pos:force_checkin": "🆘 強制核銷",
+  "pos:checkout": "POS 收款",
+  "booking:no_show": "標記未到",
+  "booking:reschedule": "🆘 改梯次",
+  "voucher:redeem": "券核銷",
 };
 
 const ACTION_COLORS: Record<string, string> = {
