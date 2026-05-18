@@ -273,6 +273,20 @@ export function registerPosRoutes(app: Express) {
         if (timing === "early") issues.push("too_early");
         if (timing === "late") issues.push("too_late");
 
+        // 🆕 2026-05-19 Phase B：掃描查詢留紀錄（不論結果）
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "pos:scan_lookup",
+            targetType: "booking",
+            targetId: String(b.id),
+            fieldId: scope.id,
+            metadata: { bookingCode: b.bookingCode, timing, issues },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         return res.json({
           type: "booking",
           booking: b,
