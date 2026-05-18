@@ -446,7 +446,7 @@ function Router() {
         <Route path="/admin/troubleshoot/reset">{() => <ProtectedAdminRoute><TroubleshootReset /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/refund">{() => <ProtectedAdminRoute><TroubleshootRefund /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/booking">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
-        <Route path="/admin/troubleshoot/compensation">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/compensation">{() => <ProtectedAdminRoute><TroubleshootCompensation /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/logs">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/players">{() => <ProtectedAdminRoute><AdminStaffPlayers /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/qrcodes">{() => <ProtectedAdminRoute><AdminStaffQRCodes /></ProtectedAdminRoute>}</Route>
