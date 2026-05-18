@@ -287,8 +287,9 @@ export default function BookPage() {
     );
   }
 
-  // 場域 config 查不到 → 場域不存在 / 未開通預約
-  if (!configLoading && config === null && !configError) {
+  // 🐛 2026-05-18 修：activity 模式時、不需要 booking_configs（用 activity 自己的設定）
+  // 只擋既有單一預約模式（沒 activitySlug 才檢查 config）
+  if (!activitySlug && !configLoading && config === null && !configError) {
     return (
       <div className="container-player py-8 text-center">
         <AlertCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" aria-hidden="true" />
@@ -299,6 +300,25 @@ export default function BookPage() {
         <p className="text-xs text-muted-foreground">
           若您是業主、請至 admin 後台「預約管理」初始化此場域。
         </p>
+      </div>
+    );
+  }
+
+  // 🐛 2026-05-18 修：activity 模式時、若 activity 還在 loading、顯示骨架（避免玩家以為頁面壞了按返回）
+  if (activitySlug && !activity) {
+    return (
+      <div className="container-player py-4 pb-24">
+        <div className="mb-4 -mx-4">
+          <div className="w-full h-44 bg-muted animate-pulse sm:rounded-lg" />
+          <div className="px-4 mt-3 space-y-2">
+            <div className="h-6 w-3/4 bg-muted rounded animate-pulse" />
+            <div className="h-3 w-1/2 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-3 mt-12" role="status">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+          <p className="text-sm text-muted-foreground">載入活動資料…</p>
+        </div>
       </div>
     );
   }
