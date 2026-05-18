@@ -99,6 +99,21 @@ export class CloudinaryService {
     });
   }
 
+  /** 🎯 活動封面圖（多活動分流時用、2026-05-18） */
+  async uploadActivityCover(
+    base64Data: string,
+    activityId: string
+  ): Promise<CloudinaryUploadResult> {
+    return this.uploadImage(base64Data, {
+      folder: `jiachun-game/activities/covers`,
+      publicId: `activity-${activityId}-cover`,
+      transformation: [
+        { width: 1600, height: 900, crop: "limit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    });
+  }
+
   /** 🎨 場域封面圖（hero / 玩家端遊戲列表頂部） */
   async uploadFieldCover(
     base64Data: string,
