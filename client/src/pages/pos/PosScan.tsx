@@ -176,6 +176,17 @@ export default function PosScan() {
     setCameraStatus("idle");
   }
 
+  // 🐛 2026-05-19：QR 掃到的字串先做格式檢查、避免亂送（如鍵盤上的條碼）
+  // 接受：BK_xxx / CP_xxx / RD_xxx / 6 字元預約碼
+  function isValidToken(token: string): boolean {
+    if (!token || token.length < 4 || token.length > 120) return false;
+    if (token.startsWith("BK_") && token.length >= 10) return true;
+    if (token.startsWith("CP_") && token.length >= 8) return true;
+    if (token.startsWith("RD_") && token.length >= 6) return true;
+    if (/^[A-Z0-9]{4,12}$/i.test(token)) return true;
+    return false;
+  }
+
   // 第二層 fallback：jsQR + canvas（業主 iOS Safari 用這條）
   function runJsQRDetection(jsQR: (data: Uint8ClampedArray, w: number, h: number) => { data: string } | null) {
     const canvas = document.createElement("canvas");
