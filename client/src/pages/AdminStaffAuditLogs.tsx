@@ -75,6 +75,25 @@ const ACTION_LABELS: Record<string, string> = {
   "activity:deactivate": "停用活動",
   "activity:upload_cover": "上傳活動封面",
   "activity_schedule:update": "更新活動時段",
+  // 🆕 2026-05-19 Phase B 第三批：redeem-codes / feature-flags / purchases / line-config / settings / sessions / rewards
+  "redeem_code:create": "建立兌換碼",
+  "redeem_code:batch_create": "批次建立兌換碼",
+  "redeem_code:update": "更新兌換碼",
+  "redeem_code:delete": "刪除兌換碼",
+  "feature_flag:upsert": "新增/更新元件開關",
+  "feature_flag:enable": "啟用元件",
+  "feature_flag:disable": "停用元件",
+  "purchase:grant_access": "現金授權存取",
+  "purchase:refund": "🆘 撤銷購買（退款）",
+  "line_config:update": "🔒 更新 LINE 設定",
+  "field_settings:update": "更新場域系統設定",
+  "session:bulk_abandon": "🆘 批次清理超時場次",
+  "reward_rule:create": "建立獎勵規則",
+  "reward_rule:update": "更新獎勵規則",
+  "reward_rule:soft_delete": "刪除獎勵規則",
+  "coupon_template:create": "建立券模板",
+  "coupon_template:update": "更新券模板",
+  "reward:manual_issue": "🆘 手動發券",
 };
 
 const ACTION_COLORS: Record<string, string> = {
