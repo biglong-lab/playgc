@@ -107,6 +107,20 @@ export function registerAdminRewardsRoutes(app: Express) {
           validUntil: data.validUntil ? new Date(data.validUntil) : undefined,
         })
         .returning();
+
+      if (req.admin) {
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "reward_rule:create",
+          targetType: "reward_rule",
+          targetId: created.id,
+          fieldId: fieldId ?? undefined,
+          metadata: { name: data.name, isActive: data.isActive, priority: data.priority },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+      }
+
       res.status(201).json(created);
     } catch (error) {
       console.error("[admin-rewards] POST rule 失敗:", error);
