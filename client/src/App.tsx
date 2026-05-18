@@ -449,7 +449,7 @@ function Router() {
         {/* 預約調整 → POS 已有完整功能、redirect 過去 */}
         <Route path="/admin/troubleshoot/booking">{() => <Redirect to="/pos/scan" />}</Route>
         <Route path="/admin/troubleshoot/compensation">{() => <ProtectedAdminRoute><TroubleshootCompensation /></ProtectedAdminRoute>}</Route>
-        <Route path="/admin/troubleshoot/logs">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/logs">{() => <ProtectedAdminRoute><TroubleshootLogs /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/players">{() => <ProtectedAdminRoute><AdminStaffPlayers /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/qrcodes">{() => <ProtectedAdminRoute><AdminStaffQRCodes /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/battle/dashboard">{() => <ProtectedAdminRoute><AdminBattleDashboard /></ProtectedAdminRoute>}</Route>
