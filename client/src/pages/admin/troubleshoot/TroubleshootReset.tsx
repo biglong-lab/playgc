@@ -81,18 +81,6 @@ export default function TroubleshootReset() {
   const [reason, setReason] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  // 🆕 2026-05-19：從 URL ?session=xxx 自動帶入（給排解中心點 stuck session 跳過來用）
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const sid = params.get("session");
-    if (sid && sid.length > 0) {
-      setSessionIdInput(sid);
-      // 自動查
-      searchMutation.mutate(sid);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const searchMutation = useMutation({
     mutationFn: async (id: string) => {
       return (await fetchWithAdminAuth(`/api/admin/sessions/${encodeURIComponent(id.trim())}/lookup`)) as SessionLookup;
