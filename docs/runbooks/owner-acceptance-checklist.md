@@ -220,12 +220,23 @@
 
 ## 七、未處理項目（業主可決定要不要做）
 
-### 已 task list 但暫停的
-- Phase 4-A 退款管理（task #34）— 等業主有 Recur/Stripe 商戶帳號
-- Phase 4-B 線上金流切換（task #35）— 同上
-- LINE Login 前端整合（task #40）— 業主 5/17 已部分做、剩按鈕條件式整合
+### 已 task list 但暫停的（**業主 blocker、非技術問題**）
+- **Phase 4-B 線上金流切換**（task #35）— 等業主拿到 Recur.tw / Stripe 商戶帳號才能串
+  - cash 退款已實作（/admin/troubleshoot/refund）、線上金流商戶帳號到位後再加 recur / stripe options
 
-### 業主之後可能需要的
+### 已完成（5/19 全日推進、共 14 commit）
+- ✅ POS fieldId 根因修正
+- ✅ Phase A 選單情境化 5 群重組
+- ✅ Phase B audit 覆蓋（40+ 寫入端點）
+- ✅ Phase C 遊戲重置（schema + endpoint + UI）
+- ✅ Phase D cash 退款（schema + endpoint + UI）
+- ✅ Phase E 排解中心首頁
+- ✅ 玩家補償頁
+- ✅ 排解紀錄頁
+- ✅ Dashboard 手機版 RWD polish
+
+### 業主之後可能需要的（規劃中、有空再做）
+- 補進度（修玩家的 currentChapterId / inventory）
 - 簡訊通知（玩家沒加 LINE 好友的 fallback）
 - 多場域數據比較（賈村 vs 海島 vs 烈嶼）
 - 玩家滿意度問卷（場後自動發）
