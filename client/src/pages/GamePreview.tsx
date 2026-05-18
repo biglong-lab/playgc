@@ -206,7 +206,7 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
             page={currentPage}
             onComplete={handlePreviewComplete}
             onVariableUpdate={handleVariableUpdate}
-            sessionId=""
+            sessionId={previewSessionId}
             gameId={gameId}
             variables={variables}
             inventory={[]}
