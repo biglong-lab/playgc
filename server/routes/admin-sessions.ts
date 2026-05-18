@@ -327,7 +327,7 @@ export function registerAdminSessionRoutes(app: Express) {
         const [existing] = await db
           .select({
             session: gameSessions,
-            game: { id: games.id, fieldId: games.fieldId, name: games.name },
+            game: { id: games.id, fieldId: games.fieldId, name: games.title },
           })
           .from(gameSessions)
           .leftJoin(games, eq(gameSessions.gameId, games.id))
