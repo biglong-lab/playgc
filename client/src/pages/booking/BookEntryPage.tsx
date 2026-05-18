@@ -8,9 +8,11 @@
 // 向下相容：沒設 activities 的場域維持原本流程、不會壞
 
 import { useParams } from "wouter";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import BookActivitiesPage from "./BookActivitiesPage";
 import BookPage from "./BookPage";
+import { initLiff } from "@/lib/liff";
 
 interface ActivitiesResponse {
   activities: Array<{ id: string }>;
