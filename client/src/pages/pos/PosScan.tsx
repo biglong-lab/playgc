@@ -155,9 +155,51 @@ export default function PosScan() {
     setCameraStatus("idle");
   }
 
-  function runDetection(detector: { detect: (s: ImageBitmapSource) => Promise<Array<{ rawValue: string }>> }) {
+  // 第二層 fallback：jsQR + canvas（業主 iOS Safari 用這條）
+  function runJsQRDetection(jsQR: (data: Uint8ClampedArray, w: number, h: number) => { data: string } | null) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) {
+      setCameraStatus("error");
+      setCameraError("無法初始化 canvas、請改用手動輸入");
+      return;
+    }
+    const tick = () => {
+      if (!videoRef.current || streamRef.current === null) return;
+      if (scanLockRef.current) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      const video = videoRef.current;
+      if (video.readyState < video.HAVE_ENOUGH_DATA) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      // 降採樣減 CPU（300px 寬足以辨識中等距離 QR）
+      const targetWidth = 400;
+      const ratio = targetWidth / video.videoWidth;
+      canvas.width = targetWidth;
+      canvas.height = Math.round(video.videoHeight * ratio);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code && code.data) {
+          scanLockRef.current = true;
+          submitToken.mutate(code.data);
+          return;
+        }
+      } catch {
+        // 偶發 frame 取樣失敗、繼續下幀
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+
+  function runNativeDetection(detector: { detect: (s: ImageBitmapSource) => Promise<Array<{ rawValue: string }>> }) {
     const tick = async () => {
-      if (!videoRef.current || cameraStatus === "idle") return;
+      if (!videoRef.current || streamRef.current === null) return;
       if (scanLockRef.current) {
         requestAnimationFrame(tick);
         return;
