@@ -500,6 +500,17 @@ export function registerAdminBookingRoutes(app: Express) {
               eq(bookingBlackouts.id, id),
             ),
           );
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "booking_blackout:delete",
+            targetType: "booking_blackout",
+            targetId: String(id),
+            fieldId: req.params.fieldId,
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
         res.status(204).end();
       } catch (err) {
         return handleErr(res, err);
