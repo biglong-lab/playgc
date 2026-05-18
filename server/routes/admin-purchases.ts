@@ -239,6 +239,24 @@ export function registerAdminPurchaseRoutes(app: Express) {
           status: "refunded",
         });
 
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "purchase:refund",
+            targetType: "purchase",
+            targetId: id,
+            fieldId: game?.fieldId ?? undefined,
+            metadata: {
+              userId: purchase.userId,
+              gameId: purchase.gameId,
+              chapterId: purchase.chapterId,
+              amount: purchase.amount,
+            },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.json(updated);
       } catch (error) {
         res.status(500).json({ message: "無法撤銷購買" });
