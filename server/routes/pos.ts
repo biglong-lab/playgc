@@ -481,6 +481,23 @@ export function registerPosRoutes(app: Express) {
           })
           .where(eq(bookings.id, bookingId))
           .returning();
+
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "booking:reschedule",
+          targetType: "booking",
+          targetId: String(bookingId),
+          fieldId: scope.id,
+          metadata: {
+            bookingCode: existing.bookingCode,
+            from: existing.slotStart,
+            to: slotStart,
+            reason: parsed.data.reason ?? null,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
         res.json({ booking: updated });
       } catch (err) {
         console.error("[pos/reschedule]", err);
