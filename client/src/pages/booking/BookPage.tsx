@@ -121,6 +121,11 @@ export default function BookPage() {
           setLineUserId(result.profile.userId);
           setDisplayName(result.profile.displayName);
           setPictureUrl(result.profile.pictureUrl ?? null);
+          // 🆕 2026-05-18：成功時把 userId 存 localStorage（給其他頁 fallback）
+          try {
+            localStorage.setItem("__bookpage_test_lineUserId", result.profile.userId);
+            localStorage.setItem("__bookpage_test_displayName", result.profile.displayName);
+          } catch { /* 隱私模式可能阻止 */ }
         } else if (!result.isLoggedIn && result.sdk) {
           // 觸發登入
           result.sdk.login({ redirectUri: window.location.href });
