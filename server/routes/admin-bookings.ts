@@ -464,6 +464,18 @@ export function registerAdminBookingRoutes(app: Express) {
             reason: parsed.data.reason,
           })
           .returning();
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "booking_blackout:create",
+            targetType: "booking_blackout",
+            targetId: String(inserted[0].id),
+            fieldId: req.params.fieldId,
+            metadata: { startAt: parsed.data.startAt, endAt: parsed.data.endAt, reason: parsed.data.reason },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
         res.status(201).json(inserted[0]);
       } catch (err) {
         return handleErr(res, err);
