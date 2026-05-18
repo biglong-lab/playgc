@@ -582,6 +582,24 @@ export function registerPosRoutes(app: Express) {
           .where(eq(bookings.id, parsed.data.bookingId));
       }
 
+      logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "pos:checkout",
+        targetType: "pos_transaction",
+        targetId: String(tx.id),
+        fieldId: scope.id,
+        metadata: {
+          bookingId: parsed.data.bookingId ?? null,
+          activityId: parsed.data.activityId ?? null,
+          amountCents: parsed.data.amountCents,
+          paidAmountCents: parsed.data.paidAmountCents,
+          paymentMethod: parsed.data.paymentMethod,
+          voucherDiscountCents: parsed.data.voucherDiscountCents,
+        },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
       res.status(201).json({ transaction: tx });
     } catch (err) {
       console.error("[pos/checkout]", err);
