@@ -7,6 +7,24 @@
 
 ## 2026-05-19
 
+### 🆘 後台導航重構 + 排解中心（5 Phase 一日完成）
+**狀態**：🟢 全部部署上線
+**細節**：[changes/2026-05-19-admin-nav-rescue.md](changes/2026-05-19-admin-nav-rescue.md)
+
+業主回報「整體選單超級複雜」、依使用情境重組 + 新增「排解中心」處理現場問題（重來 / 退款 / 改梯次 / 補償）。所有操作留時間 + 操作者紀錄。
+
+| Phase | 部署 commit | 內容 |
+|-------|------------|------|
+| **A** 選單情境化 | `556a6553` | 5 群（設計/現場/排解/紀錄/設定）取代 12 分組 40+ 項；對戰歸「設計」、財務歸「紀錄」；6 排解子路由佔位 |
+| **B** Audit 覆蓋（3 批） | `c72e13e7` / `a15edc0b` / `1fcbef23` | POS 7 endpoint + admin-bookings/activities/redeem-codes/feature-flags/purchases/line-config/settings/sessions/rewards 共 **40+ 寫入端點** 補 audit log；新增 32 個中文 action 標籤 |
+| **C** 遊戲重置 | `86974811` | `game_sessions` 加 `reset_count` + `reset_history`；POST `/admin/sessions/:id/reset` 必填 reason ≥ 10 字、清 playerProgress、寫入 audit；前端 /troubleshoot/reset 有完整 lookup + 二段確認 + 歷史 |
+| **D** Cash 退款 | `e76ee4cb` | 新 `refunds` 表（生產 DB 已建）；POST `/admin/refunds` cash 立即 completed、防呆退超原額、連動 booking；前端 /troubleshoot/refund 含查交易 + 全退快捷 + 最近退款列表 |
+| **E** 排解中心首頁 | `e9b534b8` | `/admin/troubleshoot` 取代佔位頁；4 大入口卡 + 4 統計 + 異常預約列表（cancelled/no_show 已付款）+ 卡住場次（playing > 24h）+ 最近 50 排解操作 audit；自動 refetch |
+
+**業主端閉環完整**：客人卡 bug → 重置 ✅、爭議 → cash 退款 ✅、提前/遲到 → 改梯次 / 強制核銷 ✅、額外補償 → 手動發券 ✅、追責任 → audit_logs ✅
+
+---
+
 ### 🐛 POS fieldId 根因修正 + 智慧排解流程
 **狀態**：🟢 部署上線（commit 63e94805 + 85034598）
 **細節**：[changes/2026-05-19-pos-rescue.md](changes/2026-05-19-pos-rescue.md)
