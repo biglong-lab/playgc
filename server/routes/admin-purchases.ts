@@ -190,7 +190,7 @@ export function registerAdminPurchaseRoutes(app: Express) {
             action: "purchase:grant_access",
             targetType: "purchase",
             targetId: purchase.id,
-            fieldId: game.fieldId,
+            fieldId: game.fieldId ?? undefined,
             metadata: {
               userId: parsed.userId,
               gameId,
