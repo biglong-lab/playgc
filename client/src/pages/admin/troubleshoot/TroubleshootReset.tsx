@@ -96,6 +96,17 @@ export default function TroubleshootReset() {
     },
   });
 
+  // 🆕 2026-05-19：從 URL ?session=xxx 自動帶入（給排解中心點 stuck session 跳過來用）
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sid = params.get("session");
+    if (sid && sid.length > 0) {
+      setSessionIdInput(sid);
+      searchMutation.mutate(sid);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const resetMutation = useMutation({
     mutationFn: async () => {
       if (!lookup) throw new Error("尚未查到場次");
