@@ -1,7 +1,7 @@
 // 管理端場次路由 — 批次清理卡住場次 + 全系統場次查詢 + 統計
 import type { Express } from "express";
 import { storage } from "../storage";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { z } from "zod";
 import { db } from "../db";
 import { gameSessions, games, users, playerProgress } from "@shared/schema";
