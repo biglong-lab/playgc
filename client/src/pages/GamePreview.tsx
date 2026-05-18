@@ -209,6 +209,17 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
             score={0}
             visitedLocations={[]}
           />
+
+          {/* 🆕 2026-05-18：預覽「模擬通過」按鈕 — 業主測 GPS/QR/拍照/AI 等元件卡關時、一鍵跳下一頁 */}
+          <button
+            type="button"
+            onClick={handlePreviewComplete}
+            className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-semibold active:scale-95 transition-transform"
+            title="預覽工具：跳過此元件、直接到下一頁（不寫資料、不計分）"
+            data-testid="preview-skip-button"
+          >
+            ⏭️ 模擬通過此元件 → 下一頁
+          </button>
         </main>
 
         <PreviewNavBar
