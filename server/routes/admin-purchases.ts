@@ -1,7 +1,7 @@
 // 管理端購買路由 - 購買記錄、現金收款授權、票券統計
 import type { Express } from "express";
 import { storage } from "../storage";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { db } from "../db";
 import { games, purchases, redeemCodes, redeemCodeUses } from "@shared/schema";
 import { eq, sql, and } from "drizzle-orm";
