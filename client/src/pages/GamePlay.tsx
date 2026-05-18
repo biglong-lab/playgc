@@ -164,29 +164,54 @@ export default function GamePlay() {
 
   // 🆕 2026-05-16 #9：玩家訪問歷史 stack（解決跳轉後上一頁回不到 jump source 的問題）
   // 業主回報：流程 #2 → #7（跳轉）時上一頁應回 #2、不是 page order #6
+  // 🐛 2026-05-18：改用 localStorage 持久化（業主回報重整後 stack 消失）
+  const stackKey = sessionId ? `chito:visitStack:${sessionId}` : null;
   const visitStackRef = useRef<number[]>([]);
+
+  // 初始化：從 localStorage 讀
+  useEffect(() => {
+    if (!stackKey) return;
+    try {
+      const stored = localStorage.getItem(stackKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          visitStackRef.current = parsed.filter((n) => typeof n === "number");
+        }
+      }
+    } catch { /* ignore */ }
+  }, [stackKey]);
+
+  // 紀錄訪問 + 持久化
   useEffect(() => {
     const stack = visitStackRef.current;
-    // 同頁不重複 push
     if (stack[stack.length - 1] !== currentPageIndex) {
       stack.push(currentPageIndex);
-      // 防止 stack 無限增長（保留最近 50 步）
       if (stack.length > 50) stack.shift();
+      // 🆕 寫入 localStorage（重整還在）
+      if (stackKey) {
+        try {
+          localStorage.setItem(stackKey, JSON.stringify(stack));
+        } catch { /* 隱私模式可能拒寫 */ }
+      }
     }
-  }, [currentPageIndex]);
+  }, [currentPageIndex, stackKey]);
 
   const goBackByVisitStack = () => {
     const stack = visitStackRef.current;
-    // 至少需要 2 項：當前 + 上一個
     if (stack.length < 2) {
-      // fallback：沒歷史就走 page order - 1
       setState(prev => ({ ...prev, currentPageIndex: Math.max(0, prev.currentPageIndex - 1) }));
       return;
     }
-    // pop 當前、目標是新 last
     stack.pop();
     const previousIndex = stack[stack.length - 1];
     setState(prev => ({ ...prev, currentPageIndex: previousIndex }));
+    // 🆕 同步寫回 localStorage
+    if (stackKey) {
+      try {
+        localStorage.setItem(stackKey, JSON.stringify(stack));
+      } catch { /* ignore */ }
+    }
   };
 
   // 🆕 2026-05-07 K.2 + N.1：BGM 兩層覆蓋
