@@ -113,8 +113,9 @@ export default function PosScan() {
     },
   });
 
-  // 🐛 2026-05-19 業主回報 iOS Safari 不支援 BarcodeDetector
-  // 改成兩層 fallback：BarcodeDetector（Chrome）→ jsQR（iOS Safari / Firefox / 所有瀏覽器）
+  // 🐛 2026-05-19 業主回報 iOS Safari 不支援 BarcodeDetector + video 黑屏
+  // 兩層 fallback：BarcodeDetector（Chrome）→ jsQR（iOS Safari / 全瀏覽器）
+  // 黑屏修法：先 setCameraStatus 讓 video render、再用 useEffect attach stream
   async function startCamera() {
     setCameraError(null);
     setCameraStatus("starting");
@@ -124,28 +125,48 @@ export default function PosScan() {
         audio: false,
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute("playsinline", "true"); // iOS Safari 不全螢幕播放
-        await videoRef.current.play();
-      }
+      // 先設 scanning 讓 video element mount → useEffect 會接手 attach
       setCameraStatus("scanning");
-
-      // 第一層：原生 BarcodeDetector（Chrome / Edge 88+）
-      const Detector = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
-      if (Detector) {
-        runNativeDetection(new Detector({ formats: ["qr_code"] }));
-        return;
-      }
-
-      // 第二層：jsQR（iOS Safari / Firefox / 所有瀏覽器、純 JS）
-      const jsQRModule = await import("jsqr");
-      runJsQRDetection(jsQRModule.default);
     } catch (err) {
       setCameraStatus("error");
       setCameraError(err instanceof Error ? err.message : "無法開啟相機");
     }
   }
+
+  // 🆕 cameraStatus = scanning 後、video mounted → attach stream + 啟動偵測
+  useEffect(() => {
+    if (cameraStatus !== "scanning") return;
+    if (!videoRef.current || !streamRef.current) return;
+    const video = videoRef.current;
+    video.srcObject = streamRef.current;
+    video.setAttribute("playsinline", "true");
+    video.setAttribute("autoplay", "true");
+    video.setAttribute("muted", "true");
+    video.muted = true;
+    video.play().catch((err) => {
+      console.warn("[PosScan] video.play() 失敗:", err);
+      setCameraStatus("error");
+      setCameraError("無法播放相機畫面、請重試");
+    });
+
+    // 啟動偵測
+    let cancelled = false;
+    (async () => {
+      const Detector = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
+      if (Detector) {
+        runNativeDetection(new Detector({ formats: ["qr_code"] }));
+        return;
+      }
+      const jsQRModule = await import("jsqr");
+      if (cancelled) return;
+      runJsQRDetection(jsQRModule.default);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraStatus]);
 
   function stopCamera() {
     if (streamRef.current) {
