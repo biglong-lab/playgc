@@ -1,6 +1,6 @@
 // 系統設定路由 — 讀寫管理員所屬場域的遊戲/場次預設設定
 import type { Express } from "express";
-import { requireAdminAuth } from "../adminAuth";
+import { requireAdminAuth, logAuditAction } from "../adminAuth";
 import { db } from "../db";
 import { fields, parseFieldSettings } from "@shared/schema";
 import type { FieldSettings } from "@shared/schema";
