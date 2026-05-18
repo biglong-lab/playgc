@@ -226,6 +226,20 @@ export function registerAdminRewardsRoutes(app: Express) {
         .returning();
 
       if (!updated) return res.status(404).json({ error: "規則不存在" });
+
+      if (req.admin) {
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "reward_rule:soft_delete",
+          targetType: "reward_rule",
+          targetId: id,
+          fieldId: existing.fieldId ?? undefined,
+          metadata: { name: existing.name },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+      }
+
       res.json({ success: true });
     } catch (error) {
       console.error("[admin-rewards] DELETE rule 失敗:", error);
