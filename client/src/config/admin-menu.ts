@@ -120,7 +120,7 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { title: "排解中心", icon: LifeBuoy, path: "/admin/troubleshoot", permission: "game:view" },
       { title: "遊戲重置", icon: RefreshCw, path: "/admin/troubleshoot/reset", permission: "game:edit" },
       { title: "退款處理", icon: Receipt, path: "/admin/troubleshoot/refund", permission: "field:manage" },
-      { title: "預約調整", icon: Calendar, path: "/admin/troubleshoot/booking", permission: "game:edit", comingSoon: true },
+      { title: "預約調整", icon: Calendar, path: "/admin/troubleshoot/booking", permission: "game:edit" },
       { title: "玩家補償", icon: Users, path: "/admin/troubleshoot/compensation", permission: "field:manage" },
       { title: "排解紀錄", icon: ScrollText, path: "/admin/troubleshoot/logs", permission: "admin:view_audit", comingSoon: true },
     ],
