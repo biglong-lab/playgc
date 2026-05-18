@@ -577,8 +577,9 @@ export function registerPosRoutes(app: Express) {
   // GET /api/pos/summary
   app.get("/api/pos/summary", requireAdminAuth, async (req, res) => {
     try {
-      const fieldId = resolveFieldId(req);
-      if (!fieldId) return res.status(400).json({ error: "no_field" });
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const fieldId = scope.id;
       const { start, end } = getTodayRange();
 
       // 🆕 2026-05-18 join admin_accounts 拿收款員姓名
