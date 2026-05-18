@@ -14,7 +14,7 @@ import { z } from "zod";
 import { db } from "../db";
 import { featureFlags } from "@shared/schema";
 import { eq, sql, and, desc } from "drizzle-orm";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 
 const upsertSchema = z.object({
   scope: z.enum(["global", "field"]).default("global"),
