@@ -336,6 +336,18 @@ export function registerAdminBookingRoutes(app: Express) {
           cancelBy: { type: "admin" },
           reason: req.body?.reason,
         });
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "booking:cancel_admin",
+            targetType: "booking",
+            targetId: req.params.bookingCode,
+            fieldId: result?.fieldId,
+            metadata: { reason: req.body?.reason ?? null },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
         res.json({ booking: result });
       } catch (err) {
         return handleErr(res, err);
@@ -355,6 +367,18 @@ export function registerAdminBookingRoutes(app: Express) {
           sendNotification: req.body?.sendNotification !== false,
           customActionUrl: req.body?.customActionUrl,
         });
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "booking:mark_completed",
+            targetType: "booking",
+            targetId: req.params.bookingCode,
+            fieldId: result?.fieldId,
+            metadata: { sentNotification: req.body?.sendNotification !== false },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
         res.json({ booking: result });
       } catch (err) {
         return handleErr(res, err);
@@ -370,6 +394,17 @@ export function registerAdminBookingRoutes(app: Express) {
     async (req, res) => {
       try {
         const result = await markBookingNoShow(req.params.bookingCode);
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "booking:mark_no_show_admin",
+            targetType: "booking",
+            targetId: req.params.bookingCode,
+            fieldId: result?.fieldId,
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
         res.json({ booking: result });
       } catch (err) {
         return handleErr(res, err);
