@@ -61,7 +61,7 @@ export default function PlayerBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/95 backdrop-blur-lg border-t border-border"
+      className="player-bottom-nav md:hidden bg-background/95 backdrop-blur-lg border-t border-border"
       data-testid="player-bottom-nav"
     >
       {/* 🔧 把 safe-area 算進 grid 高度，icon 在「總高度」中央
