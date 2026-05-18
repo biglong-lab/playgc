@@ -446,7 +446,8 @@ function Router() {
         <Route path="/admin/troubleshoot">{() => <ProtectedAdminRoute><TroubleshootDashboard /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/reset">{() => <ProtectedAdminRoute><TroubleshootReset /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/refund">{() => <ProtectedAdminRoute><TroubleshootRefund /></ProtectedAdminRoute>}</Route>
-        <Route path="/admin/troubleshoot/booking">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        {/* 預約調整 → POS 已有完整功能、redirect 過去 */}
+        <Route path="/admin/troubleshoot/booking">{() => <Redirect to="/pos/scan" />}</Route>
         <Route path="/admin/troubleshoot/compensation">{() => <ProtectedAdminRoute><TroubleshootCompensation /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/logs">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/players">{() => <ProtectedAdminRoute><AdminStaffPlayers /></ProtectedAdminRoute>}</Route>
