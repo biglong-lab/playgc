@@ -96,6 +96,8 @@ const ACTION_LABELS: Record<string, string> = {
   "reward:manual_issue": "🆘 手動發券",
   // 🆕 2026-05-19 Phase C：遊戲重置
   "session:reset": "🆘 重置遊戲場次",
+  // 🆕 2026-05-19 Phase D：退款
+  "refund:create": "🆘 建立退款",
 };
 
 const ACTION_COLORS: Record<string, string> = {
