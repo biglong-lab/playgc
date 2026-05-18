@@ -373,6 +373,24 @@ export function registerPosRoutes(app: Express) {
           })
           .where(eq(bookings.id, bookingId))
           .returning();
+
+        // 🆕 2026-05-19 Phase B：報到 / 強制核銷必留 audit
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: force ? "pos:force_checkin" : "pos:checkin",
+          targetType: "booking",
+          targetId: String(bookingId),
+          fieldId: scope.id,
+          metadata: {
+            bookingCode: existing.bookingCode,
+            previousStatus: existing.status,
+            note: note ?? null,
+            reactivated: force && (existing.status === "cancelled" || existing.status === "no_show"),
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
         res.json({ booking: updated, forced: force });
       } catch (err) {
         console.error("[pos/check-in]", err);
