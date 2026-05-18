@@ -267,8 +267,8 @@ export function registerAdminActivitiesRoutes(app: Express) {
         if (!target) return res.status(404).json({ error: "not_found" });
 
         // 上傳 cloudinary
-        const { default: cloudinary } = await import("../cloudinary");
-        const result = await cloudinary.uploadActivityCover(parsed.data.imageData, req.params.id);
+        const { cloudinaryService } = await import("../cloudinary");
+        const result = await cloudinaryService.uploadActivityCover(parsed.data.imageData, req.params.id);
 
         // 更新 activity.coverUrl
         const [updated] = await db
