@@ -159,17 +159,17 @@ export function registerPosRoutes(app: Express) {
         for (const a of acts) activityMap.set(a.id, { name: a.name, coverUrl: a.coverUrl });
       }
 
-      // 場域名（給 dashboard 顯示）
-      const { fields } = await import("@shared/schema");
+      // 場域名（給 dashboard 顯示、用 scope.id 直接查）
       const [field] = await db
         .select({ name: fields.name })
         .from(fields)
-        .where(eq(fields.id, fieldId))
+        .where(eq(fields.id, scope.id))
         .limit(1);
 
       res.json({
         date: start.toISOString().slice(0, 10),
-        fieldId,
+        fieldId: scope.id,
+        fieldCode: scope.code,
         fieldName: field?.name,
         stats: {
           totalBookings: total,
