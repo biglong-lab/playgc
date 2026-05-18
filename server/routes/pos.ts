@@ -75,11 +75,11 @@ export function registerPosRoutes(app: Express) {
   // GET /api/pos/dashboard
   app.get("/api/pos/dashboard", requireAdminAuth, async (req, res) => {
     try {
-      const fieldId = resolveFieldId(req);
-      if (!fieldId) return res.status(400).json({ error: "no_field" });
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
       const { start, end } = getTodayRange();
 
-      // 今日預約清單
+      // 今日預約清單（fieldId 同時支援 UUID + code）
       const todayList = await db
         .select({
           id: bookings.id,
@@ -100,7 +100,7 @@ export function registerPosRoutes(app: Express) {
         .from(bookings)
         .where(
           and(
-            eq(bookings.fieldId, fieldId),
+            inArray(bookings.fieldId, scope.identifiers),
             gte(bookings.slotStart, start),
             lte(bookings.slotStart, end),
           ),
