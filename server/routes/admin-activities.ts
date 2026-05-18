@@ -234,6 +234,16 @@ export function registerAdminActivitiesRoutes(app: Express) {
             .update(activities)
             .set({ isActive: false, updatedAt: new Date() })
             .where(eq(activities.id, req.params.id));
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "activity:deactivate",
+            targetType: "activity",
+            targetId: req.params.id,
+            fieldId: req.admin.fieldId,
+            metadata: { reason: "has_bookings", bookingCount: stats?.total },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
           return res.json({
             ok: true,
             mode: "deactivated",
@@ -246,6 +256,16 @@ export function registerAdminActivitiesRoutes(app: Express) {
         const { activitySchedules } = await import("@shared/schema");
         await db.delete(activitySchedules).where(eq(activitySchedules.activityId, req.params.id));
         await db.delete(activities).where(eq(activities.id, req.params.id));
+
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "activity:delete",
+          targetType: "activity",
+          targetId: req.params.id,
+          fieldId: req.admin.fieldId,
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
 
         res.json({ ok: true, mode: "deleted", message: "活動已永久刪除" });
       } catch (err) {
