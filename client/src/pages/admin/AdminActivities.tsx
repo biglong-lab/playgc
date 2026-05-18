@@ -149,11 +149,15 @@ export default function AdminActivities() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await fetchWithAdminAuth(`/api/admin/activities/${id}`, { method: "DELETE" });
+    mutationFn: async (id: string): Promise<{ mode?: string; message?: string }> => {
+      return await fetchWithAdminAuth(`/api/admin/activities/${id}`, { method: "DELETE" });
     },
-    onSuccess: () => {
-      toast({ title: "已停用" });
+    onSuccess: (data) => {
+      // 後端會視預約綁定情形回 mode: 'deleted' 或 'deactivated'
+      toast({
+        title: data.mode === "deleted" ? "✓ 已永久刪除" : "已停用",
+        description: data.message,
+      });
       qc.invalidateQueries({ queryKey: ["admin-activities"] });
     },
   });
