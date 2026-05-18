@@ -437,6 +437,13 @@ function Router() {
         <Route path="/admin/roles">{() => <ProtectedAdminRoute><AdminStaffRoles /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/accounts">{() => <ProtectedAdminRoute><AdminStaffAccounts /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/audit-logs">{() => <ProtectedAdminRoute><AdminStaffAuditLogs /></ProtectedAdminRoute>}</Route>
+        {/* 🆘 排解中心（2026-05-19）— Phase A：路由註冊、實作於 B-E */}
+        <Route path="/admin/troubleshoot">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/reset">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/refund">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/booking">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/compensation">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/logs">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/players">{() => <ProtectedAdminRoute><AdminStaffPlayers /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/qrcodes">{() => <ProtectedAdminRoute><AdminStaffQRCodes /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/battle/dashboard">{() => <ProtectedAdminRoute><AdminBattleDashboard /></ProtectedAdminRoute>}</Route>
