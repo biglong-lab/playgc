@@ -94,6 +94,8 @@ const ACTION_LABELS: Record<string, string> = {
   "coupon_template:create": "建立券模板",
   "coupon_template:update": "更新券模板",
   "reward:manual_issue": "🆘 手動發券",
+  // 🆕 2026-05-19 Phase C：遊戲重置
+  "session:reset": "🆘 重置遊戲場次",
 };
 
 const ACTION_COLORS: Record<string, string> = {
