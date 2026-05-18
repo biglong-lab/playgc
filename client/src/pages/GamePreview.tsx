@@ -156,12 +156,6 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
     [game?.pages, currentIndex, totalPages, variables],
   );
 
-  // 預覽用：variable update 純 in-memory（不寫 DB）
-  const [variables, setVariables] = useState<Record<string, unknown>>({});
-  const handleVariableUpdate = useCallback((key: string, value: unknown) => {
-    setVariables((prev) => ({ ...prev, [key]: value }));
-  }, []);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
