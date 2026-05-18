@@ -25,6 +25,7 @@ interface CheckinResultBooking {
     displayName: string | null;
     phone?: string | null;
     slotStart: string;
+    slotEnd?: string;
     partySize: number;
     status: string;
     paymentStatus: string;
@@ -33,8 +34,21 @@ interface CheckinResultBooking {
     paidAt: string | null;
     activityId: string | null;
     customerNote?: string | null;
+    adminNote?: string | null;
   };
   activity: { name: string; coverUrl: string | null } | null;
+  // 🆕 2026-05-19 後端回傳的時段 / 狀態評估
+  timing?: "on_time" | "early" | "late";
+  minutesBeforeStart?: number;
+  minutesAfterEnd?: number;
+  issues?: string[];
+}
+
+interface WrongFieldError {
+  error: "wrong_field";
+  booking?: CheckinResultBooking["booking"];
+  otherField?: { code: string; name: string } | null;
+  message?: string;
 }
 
 interface BarcodeDetectorCtor {
