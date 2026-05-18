@@ -113,17 +113,11 @@ export default function PosScan() {
     },
   });
 
-  // 啟動相機 + BarcodeDetector
+  // 🐛 2026-05-19 業主回報 iOS Safari 不支援 BarcodeDetector
+  // 改成兩層 fallback：BarcodeDetector（Chrome）→ jsQR（iOS Safari / Firefox / 所有瀏覽器）
   async function startCamera() {
     setCameraError(null);
     setCameraStatus("starting");
-    // 偵測 API
-    const Detector = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
-    if (!Detector) {
-      setCameraStatus("unsupported");
-      setCameraError("此瀏覽器不支援 QR 自動辨識、請使用手動輸入");
-      return;
-    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -132,10 +126,21 @@ export default function PosScan() {
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.setAttribute("playsinline", "true"); // iOS Safari 不全螢幕播放
         await videoRef.current.play();
       }
       setCameraStatus("scanning");
-      runDetection(new Detector({ formats: ["qr_code"] }));
+
+      // 第一層：原生 BarcodeDetector（Chrome / Edge 88+）
+      const Detector = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector;
+      if (Detector) {
+        runNativeDetection(new Detector({ formats: ["qr_code"] }));
+        return;
+      }
+
+      // 第二層：jsQR（iOS Safari / Firefox / 所有瀏覽器、純 JS）
+      const jsQRModule = await import("jsqr");
+      runJsQRDetection(jsQRModule.default);
     } catch (err) {
       setCameraStatus("error");
       setCameraError(err instanceof Error ? err.message : "無法開啟相機");
