@@ -112,6 +112,7 @@ const TroubleshootComingSoon = lazy(() => import("@/pages/admin/troubleshoot/Tro
 const TroubleshootReset = lazy(() => import("@/pages/admin/troubleshoot/TroubleshootReset"));
 const TroubleshootDashboard = lazy(() => import("@/pages/admin/troubleshoot/TroubleshootDashboard"));
 const TroubleshootRefund = lazy(() => import("@/pages/admin/troubleshoot/TroubleshootRefund"));
+const TroubleshootCompensation = lazy(() => import("@/pages/admin/troubleshoot/TroubleshootCompensation"));
 const AdminStaffPlayers = lazy(() => import("@/pages/AdminStaffPlayers"));
 const AdminStaffQRCodes = lazy(() => import("@/pages/AdminStaffQRCodes"));
 const AdminBattleVenues = lazy(() => import("@/pages/AdminBattleVenues"));
