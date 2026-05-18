@@ -535,8 +535,8 @@ export function registerPosRoutes(app: Express) {
   });
   app.post("/api/pos/voucher/redeem", requireAdminAuth, async (req, res) => {
     try {
-      const fieldId = resolveFieldId(req);
-      if (!fieldId || !req.admin) return res.status(400).json({ error: "no_field" });
+      const scope = await resolveFieldScope(req);
+      if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
       const parsed = voucherRedeemSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ error: "validation" });
