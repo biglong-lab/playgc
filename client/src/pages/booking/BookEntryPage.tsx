@@ -22,6 +22,33 @@ export default function BookEntryPage() {
   const params = useParams<{ fieldCode: string }>();
   const fieldCode = params.fieldCode ?? "";
 
+  // 🐛 2026-05-18：提前 LIFF init、把 userId 存 localStorage
+  // 業主回報：點活動進預約頁時、LIFF 第二次 init 卡關 → 玩家以為頁面壞了按返回
+  // 修法：在活動列表頁就先 LIFF init、把 profile 存 localStorage、BookPage 從 localStorage 讀
+  useEffect(() => {
+    if (!fieldCode) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/bookings/liff/${encodeURIComponent(fieldCode)}`);
+        if (!res.ok) return;
+        const j = (await res.json()) as { liffId?: string };
+        if (!j.liffId) return;
+        const result = await initLiff(j.liffId);
+        if (cancelled || !result.profile) return;
+        try {
+          localStorage.setItem("__bookpage_test_lineUserId", result.profile.userId);
+          localStorage.setItem("__bookpage_test_displayName", result.profile.displayName);
+        } catch { /* ignore */ }
+      } catch (err) {
+        console.warn("[BookEntryPage] 提前 LIFF init 失敗:", err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fieldCode]);
+
   const { data, isLoading } = useQuery<ActivitiesResponse>({
     queryKey: ["public-activities-count", fieldCode],
     queryFn: async () => {
