@@ -64,7 +64,9 @@ export async function fetchWithAdminAuth(url: string, options: RequestInit = {})
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "Request failed" }));
-    throw new Error(error.message || "Request failed");
+    // 🐛 2026-05-19：後端錯誤訊息可能在 message / error / details 任一個欄位、優先順序拿
+    const msg = error.message || error.error || error.details || `HTTP ${response.status}`;
+    throw new Error(msg);
   }
 
   return response.json();
