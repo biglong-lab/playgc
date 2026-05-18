@@ -80,6 +80,25 @@ export function registerAdminFeatureFlagsRoutes(app: Express) {
             },
           })
           .returning();
+
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "feature_flag:upsert",
+            targetType: "feature_flag",
+            targetId: row.id,
+            fieldId: parsed.data.fieldId ?? undefined,
+            metadata: {
+              moduleKey: parsed.data.moduleKey,
+              scope: parsed.data.scope,
+              enabled: parsed.data.enabled,
+              disabledReason: parsed.data.disabledReason ?? null,
+            },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.json({ flag: row });
       } catch (err) {
         console.error("[admin-feature-flags] upsert failed:", err);
