@@ -230,4 +230,237 @@ export function registerAdminTroubleshootRoutes(app: Express) {
       }
     },
   );
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🆕 2026-05-19 Phase D：退款管理（cash 部分實作、線上等金流帳號）
+  // ═══════════════════════════════════════════════════════════════
+
+  // GET /api/admin/refunds — 列出退款
+  app.get(
+    "/api/admin/refunds",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        const isSuper = req.admin.systemRole === "super_admin";
+        const scope = req.admin.fieldId ? await resolveFieldScope(req.admin.fieldId) : null;
+
+        const conditions = [];
+        if (!isSuper && scope) {
+          conditions.push(inArray(refunds.fieldId, scope.identifiers));
+        }
+        if (req.query.status) {
+          conditions.push(eq(refunds.status, String(req.query.status)));
+        }
+
+        const rows = await db
+          .select({
+            refund: refunds,
+            staffUsername: adminAccounts.username,
+            staffDisplayName: adminAccounts.displayName,
+          })
+          .from(refunds)
+          .leftJoin(adminAccounts, eq(refunds.processedByStaffId, adminAccounts.id))
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+          .orderBy(desc(refunds.createdAt))
+          .limit(200);
+
+        res.json({
+          refunds: rows.map((r) => ({
+            ...r.refund,
+            staffName: r.staffDisplayName ?? r.staffUsername ?? null,
+          })),
+        });
+      } catch (err) {
+        console.error("[admin-refunds] list failed:", err);
+        res.status(500).json({ error: "internal_error" });
+      }
+    },
+  );
+
+  // POST /api/admin/refunds — 建立退款
+  // cash 模式：立即 completed（業主自己手動退錢）
+  // 線上模式：先 pending、等 callback（本期不串接）
+  const createRefundSchema = z.object({
+    sourceType: z.enum(["pos_transaction", "booking"]),
+    sourceId: z.string().min(1).max(100),
+    bookingId: z.number().int().optional(),
+    amountCents: z.number().int().min(1),
+    reason: z.string().min(5, "原因至少 5 字").max(500),
+    refundMethod: z.enum(["cash", "recur", "stripe", "linepay", "manual_adjust"]),
+    customerName: z.string().max(100).optional(),
+    customerPhone: z.string().max(20).optional(),
+  });
+
+  app.post(
+    "/api/admin/refunds",
+    requireAdminAuth,
+    requirePermission("field:manage"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+        const parsed = createRefundSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            error: "validation",
+            message: parsed.error.errors[0]?.message ?? "請求格式錯誤",
+          });
+        }
+
+        const adminFieldId = req.admin.fieldId;
+        if (!adminFieldId && req.admin.systemRole !== "super_admin") {
+          return res.status(400).json({ error: "no_field" });
+        }
+
+        // 找出原交易確認可退（avoid 退超過原額）
+        let sourceFieldId: string | undefined = adminFieldId;
+        if (parsed.data.sourceType === "pos_transaction") {
+          const [tx] = await db
+            .select()
+            .from(posTransactions)
+            .where(eq(posTransactions.id, parsed.data.sourceId))
+            .limit(1);
+          if (!tx) return res.status(404).json({ error: "transaction_not_found" });
+          sourceFieldId = tx.fieldId;
+
+          // 已退過的累計
+          const previousRefunds = await db
+            .select({ total: sql<number>`COALESCE(SUM(${refunds.amountCents}), 0)::int` })
+            .from(refunds)
+            .where(
+              and(
+                eq(refunds.sourceType, "pos_transaction"),
+                eq(refunds.sourceId, parsed.data.sourceId),
+                inArray(refunds.status, ["pending", "completed"]),
+              ),
+            );
+          const refunded = previousRefunds[0]?.total ?? 0;
+          const remaining = (tx.paidAmountCents ?? 0) - refunded;
+          if (parsed.data.amountCents > remaining) {
+            return res.status(400).json({
+              error: "exceeds_refundable",
+              message: `可退金額：NT$${(remaining / 100).toFixed(0)}（原額 NT$${((tx.paidAmountCents ?? 0) / 100).toFixed(0)}、已退 NT$${(refunded / 100).toFixed(0)}）`,
+            });
+          }
+        }
+
+        // 場域權限檢查：非 super 不能退別場
+        const isSuper = req.admin.systemRole === "super_admin";
+        if (!isSuper && sourceFieldId !== adminFieldId) {
+          const scope = adminFieldId ? await resolveFieldScope(adminFieldId) : null;
+          if (!scope || !scope.identifiers.includes(sourceFieldId ?? "")) {
+            return res.status(403).json({ error: "wrong_field", message: "不能退別場域的款" });
+          }
+        }
+
+        // cash 立即 completed、其他先 pending
+        const now = new Date();
+        const status = parsed.data.refundMethod === "cash" || parsed.data.refundMethod === "manual_adjust"
+          ? "completed"
+          : "pending";
+
+        const [created] = await db
+          .insert(refunds)
+          .values({
+            fieldId: sourceFieldId ?? adminFieldId!,
+            sourceType: parsed.data.sourceType,
+            sourceId: parsed.data.sourceId,
+            bookingId: parsed.data.bookingId ?? null,
+            amountCents: parsed.data.amountCents,
+            reason: parsed.data.reason,
+            refundMethod: parsed.data.refundMethod,
+            status,
+            processedByStaffId: req.admin.id,
+            processedAt: status === "completed" ? now : null,
+            customerName: parsed.data.customerName ?? null,
+            customerPhone: parsed.data.customerPhone ?? null,
+          })
+          .returning();
+
+        // booking 連動：標 paymentStatus = refunded
+        if (parsed.data.bookingId && status === "completed") {
+          await db
+            .update(bookings)
+            .set({ paymentStatus: "refunded", updatedAt: now })
+            .where(eq(bookings.id, parsed.data.bookingId));
+        }
+
+        // audit
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "refund:create",
+          targetType: "refund",
+          targetId: String(created.id),
+          fieldId: sourceFieldId,
+          metadata: {
+            sourceType: parsed.data.sourceType,
+            sourceId: parsed.data.sourceId,
+            amountCents: parsed.data.amountCents,
+            refundMethod: parsed.data.refundMethod,
+            status,
+            reason: parsed.data.reason,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
+        res.status(201).json({ refund: created });
+      } catch (err) {
+        console.error("[admin-refunds] create failed:", err);
+        res.status(500).json({ error: "internal_error" });
+      }
+    },
+  );
+
+  // GET /api/admin/refunds/lookup-tx?id=xxx — 查 pos_transaction 給退款表單預填
+  app.get(
+    "/api/admin/refunds/lookup-tx",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+        const id = String(req.query.id ?? "");
+        if (!id) return res.status(400).json({ error: "missing_id" });
+
+        const [tx] = await db
+          .select()
+          .from(posTransactions)
+          .where(eq(posTransactions.id, id))
+          .limit(1);
+        if (!tx) return res.status(404).json({ error: "transaction_not_found" });
+
+        // 場域權限
+        const isSuper = req.admin.systemRole === "super_admin";
+        const scope = req.admin.fieldId ? await resolveFieldScope(req.admin.fieldId) : null;
+        if (!isSuper && (!scope || !scope.identifiers.includes(tx.fieldId))) {
+          return res.status(403).json({ error: "wrong_field" });
+        }
+
+        // 已退累計
+        const previousRefunds = await db
+          .select({ total: sql<number>`COALESCE(SUM(${refunds.amountCents}), 0)::int` })
+          .from(refunds)
+          .where(
+            and(
+              eq(refunds.sourceType, "pos_transaction"),
+              eq(refunds.sourceId, id),
+              inArray(refunds.status, ["pending", "completed"]),
+            ),
+          );
+        const refunded = previousRefunds[0]?.total ?? 0;
+
+        res.json({
+          transaction: tx,
+          refunded,
+          remaining: (tx.paidAmountCents ?? 0) - refunded,
+        });
+      } catch (err) {
+        console.error("[admin-refunds] lookup failed:", err);
+        res.status(500).json({ error: "internal_error" });
+      }
+    },
+  );
 }
