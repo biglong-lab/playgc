@@ -1,7 +1,7 @@
 // 管理端兌換碼路由 - 兌換碼 CRUD、批次建立、使用紀錄
 import type { Express } from "express";
 import { storage } from "../storage";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { z } from "zod";
 import {
   generateRedeemCode,
