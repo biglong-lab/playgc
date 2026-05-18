@@ -44,9 +44,32 @@ export const gameSessions = pgTable(
     hostMode: boolean("host_mode").default(false).notNull(),
     hostToken: varchar("host_token"),
     hostTokenExpiresAt: timestamp("host_token_expires_at"),
+    // 🆕 2026-05-19 Phase C：遊戲重置記錄
+    //   業主在 /admin/troubleshoot/reset 對出狀況的玩家重新開始一次
+    //   reset_history append-only、保留完整重置軌跡（含原因、操作者、from 章節/分數）
+    resetCount: integer("reset_count").default(0).notNull(),
+    resetHistory: jsonb("reset_history").default([]).notNull(),
   },
   (table) => [index("idx_sessions_status").on(table.status, table.startedAt)]
 );
+
+/** Reset history entry 結構 */
+export interface SessionResetEntry {
+  /** ISO timestamp */
+  at: string;
+  /** 操作 admin id */
+  byAdminId: string;
+  /** 操作 admin 顯示名 */
+  byAdminName?: string;
+  /** 重置原因（必填、≥ 10 字）*/
+  reason: string;
+  /** 重置前的章節 id */
+  fromChapterId?: string | null;
+  /** 重置前的分數 */
+  fromScore: number;
+  /** 重置前狀態 */
+  fromStatus: string;
+}
 
 // ============================================================================
 // Player Progress table - Individual player state in a session
