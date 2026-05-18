@@ -376,6 +376,15 @@ export function registerAdminActivitiesRoutes(app: Express) {
             ...parsed.data,
           });
         }
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "activity_schedule:update",
+          targetType: "activity_schedule",
+          targetId: req.params.id,
+          fieldId: req.admin.fieldId,
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
         res.json({ ok: true });
       } catch (err) {
         console.error("[admin-activities PATCH schedule]", err);
