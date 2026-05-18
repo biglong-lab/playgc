@@ -411,12 +411,29 @@ export default function AdminActivities() {
                 disabled={!!editing}
               />
             </Field>
-            <Field label="封面圖 URL（Cloudinary）" hint="LINE 通知卡片 + 預約頁 hero 都會用">
-              <Input
-                value={form.coverUrl}
-                onChange={(e) => setForm({ ...form, coverUrl: e.target.value })}
-                placeholder="https://res.cloudinary.com/..."
-              />
+            <Field label="封面圖" hint="LINE 通知卡片 + 預約頁 hero 都會用，建議 16:9（1600×900）">
+              {/* 🆕 2026-05-18：上傳檔案（編輯模式才能、新增完才能傳）*/}
+              {editing ? (
+                <UploadImageButton
+                  endpoint={`/api/admin/activities/${editing.id}/cover`}
+                  currentUrl={form.coverUrl || undefined}
+                  onUploaded={(url) => setForm({ ...form, coverUrl: url })}
+                  label="上傳封面圖"
+                  hint="建議 16:9 比例 / 最大 10MB"
+                  testId="upload-activity-cover"
+                />
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">
+                    新增完成後再回來編輯、即可上傳封面檔案
+                  </p>
+                  <Input
+                    value={form.coverUrl}
+                    onChange={(e) => setForm({ ...form, coverUrl: e.target.value })}
+                    placeholder="或直接貼 https://... URL"
+                  />
+                </div>
+              )}
             </Field>
             <Field label="卡片簡介">
               <Input
