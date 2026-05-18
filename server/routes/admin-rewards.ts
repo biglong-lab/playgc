@@ -178,6 +178,20 @@ export function registerAdminRewardsRoutes(app: Express) {
         .returning();
 
       if (!updated) return res.status(404).json({ error: "規則不存在" });
+
+      if (req.admin) {
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "reward_rule:update",
+          targetType: "reward_rule",
+          targetId: id,
+          fieldId: updated.fieldId ?? undefined,
+          metadata: { keys: Object.keys(updateValue) },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+      }
+
       res.json(updated);
     } catch (error) {
       console.error("[admin-rewards] PATCH rule 失敗:", error);
