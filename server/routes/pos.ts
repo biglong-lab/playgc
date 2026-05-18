@@ -200,8 +200,8 @@ export function registerPosRoutes(app: Express) {
   });
   app.post("/api/pos/checkin", requireAdminAuth, async (req, res) => {
     try {
-      const fieldId = resolveFieldId(req);
-      if (!fieldId) return res.status(400).json({ error: "no_field" });
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
       const parsed = checkinSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(400).json({ error: "validation" });
@@ -210,26 +210,49 @@ export function registerPosRoutes(app: Express) {
 
       // 自動判別 prefix
       if (token.startsWith("BK_") || /^[A-Z0-9]{4,12}$/i.test(token)) {
-        // 嘗試用 qr_token 或 bookingCode 找
+        // 🐛 2026-05-19 fix：先在「全域」找此預約、再判斷是否在本場域
+        // 給業主明確訊息：找不到 vs 不是本場域 vs 已取消 vs 未到時段 vs 已過時段
         const [b] = await db
           .select()
           .from(bookings)
-          .where(
-            and(
-              eq(bookings.fieldId, fieldId),
-              or(eq(bookings.qrToken, token), eq(bookings.bookingCode, token.toUpperCase())),
-            ),
-          )
+          .where(or(eq(bookings.qrToken, token), eq(bookings.bookingCode, token.toUpperCase())))
           .limit(1);
+
         if (!b) {
-          // 🐛 2026-05-19 業主回報「找不到 Request failed」原因不清楚
-          // 改回友善 message、前端可顯示具體問題
           return res.status(404).json({
             error: "not_found",
             type: "booking",
-            message: `找不到預約：${token}（可能不是本場域的預約、或編號錯誤）`,
+            message: `查無預約編號 ${token.toUpperCase()}。請確認 QR 來源或編號輸入正確`,
           });
         }
+
+        // 跨場域檢查：booking 屬於別場
+        if (!scope.identifiers.includes(b.fieldId)) {
+          // 拿目標場域 code 給訊息用
+          const [otherField] = await db
+            .select({ code: fields.code, name: fields.name })
+            .from(fields)
+            .where(or(eq(fields.id, b.fieldId), eq(fields.code, b.fieldId)))
+            .limit(1);
+          return res.status(403).json({
+            error: "wrong_field",
+            type: "booking",
+            booking: b,
+            otherField: otherField ?? null,
+            message: `此預約屬於「${otherField?.name ?? b.fieldId}」、不是本場域（${scope.code}）`,
+          });
+        }
+
+        // 時段資訊（讓前端決定顯示「早到 X 分鐘」「遲到 X 分鐘」）
+        const now = new Date();
+        const slotStart = b.slotStart instanceof Date ? b.slotStart : new Date(b.slotStart as unknown as string);
+        const slotEnd = b.slotEnd instanceof Date ? b.slotEnd : new Date(b.slotEnd as unknown as string);
+        const minutesBeforeStart = Math.round((slotStart.getTime() - now.getTime()) / 60000);
+        const minutesAfterEnd = Math.round((now.getTime() - slotEnd.getTime()) / 60000);
+
+        let timing: "on_time" | "early" | "late" = "on_time";
+        if (now < slotStart) timing = "early";
+        else if (now > slotEnd) timing = "late";
 
         // 補活動資訊
         let activity = null;
@@ -241,7 +264,24 @@ export function registerPosRoutes(app: Express) {
             .limit(1);
           activity = a ?? null;
         }
-        return res.json({ type: "booking", booking: b, activity });
+
+        // 已取消 / 已 no-show：仍回 200 但 status 標記、前端決定 UX
+        const issues: string[] = [];
+        if (b.status === "cancelled") issues.push("cancelled");
+        if (b.status === "no_show") issues.push("no_show");
+        if (b.checkedInAt) issues.push("already_checked_in");
+        if (timing === "early") issues.push("too_early");
+        if (timing === "late") issues.push("too_late");
+
+        return res.json({
+          type: "booking",
+          booking: b,
+          activity,
+          timing,
+          minutesBeforeStart,
+          minutesAfterEnd,
+          issues,
+        });
       }
 
       // 🆕 2026-05-18 Phase 5：CP_xxx 平台券 / 純 code
