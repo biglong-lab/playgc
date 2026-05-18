@@ -262,6 +262,20 @@ export function registerAdminRedeemCodeRoutes(app: Express) {
         if (!assertFieldOwnership(req.admin, existing.fieldId, res)) return;
 
         await storage.deleteRedeemCode(id);
+
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "redeem_code:delete",
+            targetType: "redeem_code",
+            targetId: id,
+            fieldId: existing.fieldId,
+            metadata: { code: existing.code },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.json({ message: "兌換碼已刪除" });
       } catch (error) {
         res.status(500).json({ message: "無法刪除兌換碼" });
