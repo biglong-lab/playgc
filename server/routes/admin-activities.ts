@@ -317,6 +317,17 @@ export function registerAdminActivitiesRoutes(app: Express) {
           .where(eq(activities.id, req.params.id))
           .returning();
 
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "activity:upload_cover",
+          targetType: "activity",
+          targetId: req.params.id,
+          fieldId: req.admin.fieldId,
+          metadata: { coverUrl: result.secure_url },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
         res.json({ coverUrl: result.secure_url, activity: updated });
       } catch (err) {
         console.error("[admin-activities cover]", err);
