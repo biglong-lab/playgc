@@ -206,6 +206,24 @@ export function registerAdminSessionRoutes(app: Express) {
 
         const abandoned = await storage.abandonStaleSessions(thresholdHours, fieldFilter);
 
+        if (req.admin && abandoned.length > 0) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "session:bulk_abandon",
+            targetType: "game_session",
+            targetId: String(abandoned.length),
+            fieldId: fieldFilter,
+            metadata: {
+              thresholdHours,
+              count: abandoned.length,
+              isPlatformAdmin,
+              sessionIds: abandoned.map((s) => s.id).slice(0, 50),
+            },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.json({
           message: `已清理 ${abandoned.length} 個卡住的場次` +
             (fieldFilter ? `（場域：${fieldFilter}）` : "（全平台）"),
