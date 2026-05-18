@@ -14,7 +14,7 @@ import type { Express } from "express";
 import { db } from "../db";
 import { activities, activitySchedules } from "@shared/schema";
 import { eq, and, asc } from "drizzle-orm";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { z } from "zod";
 
 const createSchema = z.object({
