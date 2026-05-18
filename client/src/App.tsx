@@ -440,7 +440,7 @@ function Router() {
         <Route path="/admin/accounts">{() => <ProtectedAdminRoute><AdminStaffAccounts /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/audit-logs">{() => <ProtectedAdminRoute><AdminStaffAuditLogs /></ProtectedAdminRoute>}</Route>
         {/* 🆘 排解中心（2026-05-19）— Phase A：路由註冊、實作於 B-E */}
-        <Route path="/admin/troubleshoot">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot">{() => <ProtectedAdminRoute><TroubleshootDashboard /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/reset">{() => <ProtectedAdminRoute><TroubleshootReset /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/refund">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/booking">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
