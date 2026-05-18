@@ -130,6 +130,24 @@ export function registerAdminFeatureFlagsRoutes(app: Express) {
           .where(eq(featureFlags.id, req.params.id))
           .returning();
         if (!row) return res.status(404).json({ error: "flag 不存在" });
+
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: enabled ? "feature_flag:enable" : "feature_flag:disable",
+            targetType: "feature_flag",
+            targetId: row.id,
+            fieldId: row.fieldId ?? undefined,
+            metadata: {
+              moduleKey: row.moduleKey,
+              scope: row.scope,
+              disabledReason: enabled ? null : (req.body.disabledReason ?? "manual"),
+            },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.json({ flag: row });
       } catch (err) {
         console.error("[admin-feature-flags] patch failed:", err);
