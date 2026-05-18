@@ -243,4 +243,178 @@ export function registerAdminSessionRoutes(app: Express) {
       }
     },
   );
+
+  // ═══════════════════════════════════════════════════════════════
+  // 🆕 2026-05-19 Phase C：遊戲重置（業主排解現場玩家狀況）
+  // ═══════════════════════════════════════════════════════════════
+
+  // GET /api/admin/sessions/:id/lookup — 查單一 session 含進度（給 reset UI 顯示）
+  app.get(
+    "/api/admin/sessions/:id/lookup",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+        const [session] = await db
+          .select({
+            session: gameSessions,
+            game: { id: games.id, name: games.name, fieldId: games.fieldId },
+          })
+          .from(gameSessions)
+          .leftJoin(games, eq(gameSessions.gameId, games.id))
+          .where(eq(gameSessions.id, req.params.id))
+          .limit(1);
+
+        if (!session) return res.status(404).json({ message: "場次不存在" });
+
+        // 場域隔離（super_admin 可看全部）
+        const isSuper = req.admin.systemRole === "super_admin";
+        if (!isSuper && session.game?.fieldId !== req.admin.fieldId) {
+          return res.status(403).json({ message: "無權檢視此場次" });
+        }
+
+        // 補玩家進度
+        const players = await db
+          .select({
+            id: playerProgress.id,
+            userId: playerProgress.userId,
+            currentPageId: playerProgress.currentPageId,
+            score: playerProgress.score,
+            inventory: playerProgress.inventory,
+            updatedAt: playerProgress.updatedAt,
+          })
+          .from(playerProgress)
+          .where(eq(playerProgress.sessionId, req.params.id));
+
+        res.json({
+          session: session.session,
+          game: session.game,
+          players,
+        });
+      } catch (error) {
+        console.error("[admin-sessions] lookup failed:", error);
+        res.status(500).json({ message: "查詢場次失敗" });
+      }
+    },
+  );
+
+  // POST /api/admin/sessions/:id/reset — 重置遊戲場次
+  // 必填 reason ≥ 10 字、所有玩家進度清空、回 status=playing、score=0
+  // 寫入 reset_history（append-only）+ audit log
+  const resetSchema = z.object({
+    reason: z.string().min(10, "原因至少 10 字").max(500),
+    notifyPlayers: z.boolean().default(false),
+  });
+
+  app.post(
+    "/api/admin/sessions/:id/reset",
+    requireAdminAuth,
+    requirePermission("game:edit"),
+    async (req, res) => {
+      try {
+        if (!req.admin) return res.status(401).json({ message: "未認證" });
+
+        const parsed = resetSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({
+            error: "validation",
+            message: parsed.error.errors[0]?.message ?? "請填寫重置原因（≥ 10 字）",
+          });
+        }
+
+        const [existing] = await db
+          .select({
+            session: gameSessions,
+            game: { id: games.id, fieldId: games.fieldId, name: games.name },
+          })
+          .from(gameSessions)
+          .leftJoin(games, eq(gameSessions.gameId, games.id))
+          .where(eq(gameSessions.id, req.params.id))
+          .limit(1);
+
+        if (!existing) return res.status(404).json({ message: "場次不存在" });
+
+        // 場域隔離
+        const isSuper = req.admin.systemRole === "super_admin";
+        if (!isSuper && existing.game?.fieldId !== req.admin.fieldId) {
+          return res.status(403).json({ message: "無權重置此場次（不在本場域）" });
+        }
+
+        // 防呆：完成 / 放棄超過 24 小時的場次拒絕重置（避免改歷史資料）
+        const completedAt = existing.session.completedAt;
+        if (completedAt) {
+          const hoursAgo = (Date.now() - new Date(completedAt).getTime()) / (1000 * 60 * 60);
+          if (hoursAgo > 24 && !isSuper) {
+            return res.status(403).json({
+              message: `此場次已結束超過 ${Math.floor(hoursAgo)} 小時、僅 super_admin 可重置`,
+            });
+          }
+        }
+
+        // 記錄重置前狀態
+        const resetEntry = {
+          at: new Date().toISOString(),
+          byAdminId: req.admin.id,
+          byAdminName: req.admin.displayName ?? req.admin.username ?? null,
+          reason: parsed.data.reason,
+          fromChapterId: existing.session.currentChapterId,
+          fromScore: existing.session.score ?? 0,
+          fromStatus: existing.session.status ?? "unknown",
+        };
+
+        // 取現有 history 並 append
+        const currentHistory = Array.isArray(existing.session.resetHistory)
+          ? (existing.session.resetHistory as unknown[])
+          : [];
+        const newHistory = [...currentHistory, resetEntry];
+
+        // 重置場次：狀態 → playing、分數 → 0、currentChapterId → null、completedAt → null
+        // 注意：teamName / gameId / hostMode / startedAt 保留
+        await db
+          .update(gameSessions)
+          .set({
+            status: "playing",
+            score: 0,
+            currentChapterId: null,
+            completedAt: null,
+            resetCount: (existing.session.resetCount ?? 0) + 1,
+            resetHistory: newHistory,
+          })
+          .where(eq(gameSessions.id, req.params.id));
+
+        // 清玩家進度（讓玩家從頭開始）
+        await db.delete(playerProgress).where(eq(playerProgress.sessionId, req.params.id));
+
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "session:reset",
+          targetType: "game_session",
+          targetId: req.params.id,
+          fieldId: existing.game?.fieldId,
+          metadata: {
+            gameName: existing.game?.name,
+            reason: parsed.data.reason,
+            fromChapterId: existing.session.currentChapterId,
+            fromScore: existing.session.score,
+            fromStatus: existing.session.status,
+            resetCount: (existing.session.resetCount ?? 0) + 1,
+            notifyPlayers: parsed.data.notifyPlayers,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
+        res.json({
+          ok: true,
+          message: "場次已重置、玩家可重新開始",
+          resetCount: (existing.session.resetCount ?? 0) + 1,
+        });
+      } catch (error) {
+        console.error("[admin-sessions] reset failed:", error);
+        res.status(500).json({ message: "重置場次失敗" });
+      }
+    },
+  );
 }
