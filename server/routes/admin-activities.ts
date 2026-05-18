@@ -182,6 +182,16 @@ export function registerAdminActivitiesRoutes(app: Express) {
           )
           .returning();
         if (!updated) return res.status(404).json({ error: "not_found" });
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "activity:update",
+          targetType: "activity",
+          targetId: updated.id,
+          fieldId: req.admin.fieldId,
+          metadata: { keys: Object.keys(parsed.data) },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
         res.json({ activity: updated });
       } catch (err) {
         console.error("[admin-activities PATCH]", err);
