@@ -27,7 +27,7 @@ import {
   type BookingScheduleTemplate,
 } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import {
   cancelBooking,
   listBookings,
