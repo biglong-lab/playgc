@@ -594,7 +594,7 @@ export function registerPosRoutes(app: Express) {
         .leftJoin(adminAccounts, eq(posTransactions.staffId, adminAccounts.id))
         .where(
           and(
-            eq(posTransactions.fieldId, fieldId),
+            inArray(posTransactions.fieldId, scope.identifiers),
             gte(posTransactions.createdAt, start),
             lte(posTransactions.createdAt, end),
           ),
