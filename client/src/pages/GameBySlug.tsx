@@ -72,6 +72,22 @@ export default function GameBySlug() {
     enabled: !!slug,
   });
 
+  // 🆕 2026-05-18 #6 業主回報「繼續遊戲」失效：查玩家在此遊戲的 active session
+  const { data: activeSession } = useQuery<{ session: { id: string }; progress: { currentPageId?: string } | null } | null>({
+    queryKey: ["/api/sessions/active", game?.id],
+    queryFn: async () => {
+      if (!game?.id) return null;
+      const res = await fetch(`/api/sessions/active?gameId=${game.id}`, { credentials: "include" });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data?.session ? data : null;
+    },
+    enabled: !!game?.id,
+    retry: false,
+    staleTime: 30_000,
+  });
+  const hasActiveProgress = !!(activeSession?.session?.id && activeSession?.progress?.currentPageId);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
