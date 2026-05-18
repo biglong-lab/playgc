@@ -530,7 +530,14 @@ export default function BookPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <Label className="text-xs">人數（剩餘 {selectedSlot.available}）</Label>
+              <Label className="text-xs">
+                人數
+                {selectedSlot.available <= 5 && (
+                  <span className="ml-2 text-amber-600 font-semibold">
+                    （僅剩 {selectedSlot.available} 位、請盡快）
+                  </span>
+                )}
+              </Label>
               <div className="flex items-center gap-2 mt-1">
                 <Button
                   type="button"
