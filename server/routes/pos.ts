@@ -313,28 +313,53 @@ export function registerPosRoutes(app: Express) {
     }
   });
 
-  // POST /api/pos/bookings/:id/check-in（手動報到）
+  // POST /api/pos/bookings/:id/check-in（手動報到 / 強制核銷）
+  // 🆕 2026-05-19：支援 force=true、忽略狀態與時段限制（業主可現場調整）
   app.post(
     "/api/pos/bookings/:id/check-in",
     requireAdminAuth,
     async (req: Request, res: Response) => {
       try {
-        const fieldId = resolveFieldId(req);
-        if (!fieldId || !req.admin) return res.status(400).json({ error: "no_field" });
+        const scope = await resolveFieldScope(req);
+        if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
         const bookingId = Number(req.params.id);
         if (!Number.isFinite(bookingId)) return res.status(400).json({ error: "invalid_id" });
+
+        const force = req.body?.force === true;
+        const note = typeof req.body?.note === "string" ? req.body.note.slice(0, 500) : undefined;
+
+        // 先 select 確認 booking 存在 + 同場域
+        const [existing] = await db
+          .select()
+          .from(bookings)
+          .where(and(eq(bookings.id, bookingId), inArray(bookings.fieldId, scope.identifiers)))
+          .limit(1);
+        if (!existing) return res.status(404).json({ error: "not_found" });
+
+        // 非 force 模式拒絕：已取消 / 已 no-show
+        if (!force && (existing.status === "cancelled" || existing.status === "no_show")) {
+          return res.status(400).json({
+            error: "status_blocked",
+            booking: existing,
+            message: `此預約狀態為「${existing.status}」、需勾選強制核銷才能報到`,
+          });
+        }
 
         const [updated] = await db
           .update(bookings)
           .set({
             checkedInAt: new Date(),
             checkedInByStaffId: req.admin.id,
+            // 強制核銷時若先前是 cancelled / no_show、自動 reactivate 回 confirmed
+            ...(force && (existing.status === "cancelled" || existing.status === "no_show")
+              ? { status: "confirmed" as const }
+              : {}),
+            ...(note ? { adminNote: [existing.adminNote, `[強制核銷] ${note}`].filter(Boolean).join("\n") } : {}),
             updatedAt: new Date(),
           })
-          .where(and(eq(bookings.id, bookingId), eq(bookings.fieldId, fieldId)))
+          .where(eq(bookings.id, bookingId))
           .returning();
-        if (!updated) return res.status(404).json({ error: "not_found" });
-        res.json({ booking: updated });
+        res.json({ booking: updated, forced: force });
       } catch (err) {
         console.error("[pos/check-in]", err);
         res.status(500).json({ error: "internal_error" });
@@ -348,19 +373,73 @@ export function registerPosRoutes(app: Express) {
     requireAdminAuth,
     async (req: Request, res: Response) => {
       try {
-        const fieldId = resolveFieldId(req);
-        if (!fieldId) return res.status(400).json({ error: "no_field" });
+        const scope = await resolveFieldScope(req);
+        if (!scope) return res.status(400).json({ error: "no_field" });
         const bookingId = Number(req.params.id);
         if (!Number.isFinite(bookingId)) return res.status(400).json({ error: "invalid_id" });
         const [updated] = await db
           .update(bookings)
           .set({ status: "no_show", updatedAt: new Date() })
-          .where(and(eq(bookings.id, bookingId), eq(bookings.fieldId, fieldId)))
+          .where(and(eq(bookings.id, bookingId), inArray(bookings.fieldId, scope.identifiers)))
           .returning();
         if (!updated) return res.status(404).json({ error: "not_found" });
         res.json({ booking: updated });
       } catch (err) {
         console.error("[pos/no-show]", err);
+        res.status(500).json({ error: "internal_error" });
+      }
+    },
+  );
+
+  // POST /api/pos/bookings/:id/reschedule（業主改梯次、客人提前 / 遲到時用）
+  // 🆕 2026-05-19：不檢查 capacity（業主已現場判斷有位置）、只改 slotStart / slotEnd
+  const rescheduleSchema = z.object({
+    slotStart: z.string().datetime(),
+    durationMinutes: z.number().int().min(15).max(240).default(30),
+    reason: z.string().max(500).optional(),
+  });
+  app.post(
+    "/api/pos/bookings/:id/reschedule",
+    requireAdminAuth,
+    async (req: Request, res: Response) => {
+      try {
+        const scope = await resolveFieldScope(req);
+        if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
+        const bookingId = Number(req.params.id);
+        if (!Number.isFinite(bookingId)) return res.status(400).json({ error: "invalid_id" });
+
+        const parsed = rescheduleSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ error: "validation", details: parsed.error.issues });
+        }
+
+        const slotStart = new Date(parsed.data.slotStart);
+        const slotEnd = new Date(slotStart.getTime() + parsed.data.durationMinutes * 60_000);
+
+        const [existing] = await db
+          .select()
+          .from(bookings)
+          .where(and(eq(bookings.id, bookingId), inArray(bookings.fieldId, scope.identifiers)))
+          .limit(1);
+        if (!existing) return res.status(404).json({ error: "not_found" });
+
+        const reasonNote = parsed.data.reason
+          ? `[改梯次 ${new Date().toISOString().slice(0, 16)}] 原 ${existing.slotStart.toISOString()} → ${slotStart.toISOString()}：${parsed.data.reason}`
+          : `[改梯次 ${new Date().toISOString().slice(0, 16)}] 原 ${existing.slotStart.toISOString()} → ${slotStart.toISOString()}`;
+
+        const [updated] = await db
+          .update(bookings)
+          .set({
+            slotStart,
+            slotEnd,
+            adminNote: [existing.adminNote, reasonNote].filter(Boolean).join("\n"),
+            updatedAt: new Date(),
+          })
+          .where(eq(bookings.id, bookingId))
+          .returning();
+        res.json({ booking: updated });
+      } catch (err) {
+        console.error("[pos/reschedule]", err);
         res.status(500).json({ error: "internal_error" });
       }
     },
