@@ -138,10 +138,9 @@ export default function TroubleshootDashboard() {
           <ActionCard
             icon={<Users className="w-6 h-6" />}
             title="玩家補償"
-            desc="補券 / 補進度"
+            desc="補券（補進度 規劃中）"
             color="violet"
             onClick={() => navigate("/admin/troubleshoot/compensation")}
-            comingSoon
           />
         </div>
 
