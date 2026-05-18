@@ -33,6 +33,7 @@ const TROUBLESHOOT_ACTIONS = [
   "session:reset",
   "session:bulk_abandon",
   "purchase:refund",
+  "refund:create",
   "reward:manual_issue",
   "activity:deactivate",
   "redeem_code:delete",
