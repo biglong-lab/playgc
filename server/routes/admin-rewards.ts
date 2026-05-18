@@ -659,6 +659,24 @@ export function registerAdminRewardsRoutes(app: Express) {
         })
         .returning();
 
+      if (req.admin) {
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "reward:manual_issue",
+          targetType: "platform_coupon",
+          targetId: created.id,
+          fieldId: adminFieldId ?? undefined,
+          metadata: {
+            userId: parsed.data.userId,
+            squadId: parsed.data.squadId ?? null,
+            templateId: parsed.data.templateId,
+            reason: parsed.data.reason ?? null,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+      }
+
       res.status(201).json({ success: true, coupon: created });
     } catch (error) {
       console.error("[admin-rewards] POST manual 失敗:", error);
