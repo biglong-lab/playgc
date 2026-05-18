@@ -21,6 +21,7 @@ import { Plus, Pencil, Trash2, Calendar, Image as ImageIcon, Activity as Activit
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
+import UploadImageButton from "@/components/shared/UploadImageButton";
 
 interface ActivityField {
   fieldCode?: string;
