@@ -430,7 +430,7 @@ export default function AdminActivities() {
                 <UploadImageButton
                   endpoint={`/api/admin/activities/${editing.id}/cover`}
                   currentUrl={form.coverUrl || undefined}
-                  onUploaded={(url) => setForm({ ...form, coverUrl: url })}
+                  onUploaded={(url: string) => setForm({ ...form, coverUrl: url })}
                   label="上傳封面圖"
                   hint="建議 16:9 比例 / 最大 10MB"
                   testId="upload-activity-cover"
