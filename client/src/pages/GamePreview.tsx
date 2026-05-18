@@ -112,10 +112,41 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
   //   原本放在 isLoading/error/totalPages 條件 return 後面、違反 Rules of Hooks
   //   render 在 loading→loaded 切換時 hook count 不同 → 觸發 #310（30 次/7 天 ErrorBoundary）
 
-  // 預覽用：onComplete 直接跳下一頁（不寫 chapter/score/inventory）
-  const handlePreviewComplete = useCallback(() => {
-    setCurrentIndex((prev) => Math.min(prev + 1, totalPages - 1));
-  }, [totalPages]);
+  // 🐛 2026-05-18 #8：預覽用真實 FlowEngine（resolveFlowRouter）
+  // 業主回報「預覽應按元件設定流程、不是按元件順序」
+  // 接收元件 onComplete 的 nextPageId（jumpToPageId）+ 解析 flow_router 連續跳轉
+  const handlePreviewComplete = useCallback(
+    (reward?: { points?: number; items?: string[] }, nextPageId?: string) => {
+      const pages = game?.pages ?? [];
+      if (pages.length === 0) return;
+
+      // 1. 若有 nextPageId（元件指定跳轉、如 conditional_verify、選擇分支）→ 跳到該頁
+      let nextIndex = currentIndex + 1;
+      if (nextPageId === "_end") {
+        setCurrentIndex(totalPages - 1);
+        return;
+      }
+      if (nextPageId) {
+        const foundIndex = pages.findIndex((p) => p.id === nextPageId);
+        if (foundIndex !== -1) nextIndex = foundIndex;
+      }
+
+      // 2. 解析連續的 flow_router 頁面（業主指出「#2 跳 #7 而非 #6」走真實邏輯）
+      const resolvedIndex = resolveFlowRouter(
+        pages.map((p) => ({ id: p.id, pageType: p.pageType, config: p.config })),
+        nextIndex,
+        variables,
+        [],
+        0,
+      );
+      if (resolvedIndex === -1) {
+        setCurrentIndex(totalPages - 1);
+        return;
+      }
+      setCurrentIndex(Math.min(resolvedIndex, totalPages - 1));
+    },
+    [game?.pages, currentIndex, totalPages, variables],
+  );
 
   // 預覽用：variable update 純 in-memory（不寫 DB）
   const [variables, setVariables] = useState<Record<string, unknown>>({});
