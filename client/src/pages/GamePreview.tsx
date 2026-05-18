@@ -47,6 +47,10 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
   // 🔒 in-memory state — 完全不寫 DB（守則 9 資料隔離）
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // 🆕 2026-05-18 #4：預覽 sessionId（業主回報「拍照失敗 400: 缺少 Session ID」）
+  // 用 `preview-` prefix 讓後端能判別、且滿足 zod min(1) 驗證
+  const previewSessionId = useState(() => `preview-${gameId}-${Date.now()}`)[0];
+
   // 🎬 標記 preview 模式：apiRequest 看到 sessionStorage.previewMode='1' + AI endpoint 會 mock pass
   useEffect(() => {
     try {
