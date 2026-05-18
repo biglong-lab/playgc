@@ -249,6 +249,18 @@ export function registerAdminBookingRoutes(app: Express) {
         if (updated.length === 0) {
           return res.status(404).json({ error: "not_initialized" });
         }
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "booking_config:update",
+            targetType: "booking_config",
+            targetId: req.params.fieldId,
+            fieldId: req.params.fieldId,
+            metadata: { keys: Object.keys(parsed.data) },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
         res.json(updated[0]);
       } catch (err) {
         return handleErr(res, err);
