@@ -98,6 +98,19 @@ export function registerAdminRedeemCodeRoutes(app: Express) {
           createdBy: req.admin?.accountId ?? null,
         });
 
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "redeem_code:create",
+            targetType: "redeem_code",
+            targetId: code.id,
+            fieldId: game.fieldId,
+            metadata: { gameId, scope: parsed.scope, maxUses: parsed.maxUses, label: parsed.label ?? null },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+
         res.status(201).json(code);
       } catch (error) {
         if (error instanceof z.ZodError) {
