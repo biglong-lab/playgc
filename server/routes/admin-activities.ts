@@ -144,6 +144,16 @@ export function registerAdminActivitiesRoutes(app: Express) {
             fieldId: req.admin.fieldId,
           })
           .returning();
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "activity:create",
+          targetType: "activity",
+          targetId: created.id,
+          fieldId: req.admin.fieldId,
+          metadata: { slug: parsed.data.slug, name: parsed.data.name, priceCents: parsed.data.priceCents },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
         res.status(201).json({ activity: created });
       } catch (err) {
         console.error("[admin-activities POST]", err);
