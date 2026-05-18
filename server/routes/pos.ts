@@ -238,7 +238,10 @@ export function registerPosRoutes(app: Express) {
           });
         }
       }
-      res.status(400).json({ error: "unknown_token_type" });
+      res.status(400).json({
+        error: "unknown_token_type",
+        message: `此 QR 不是預約碼或券（${token.slice(0, 20)}...）`,
+      });
     } catch (err) {
       console.error("[pos/checkin]", err);
       res.status(500).json({ error: "internal_error" });
