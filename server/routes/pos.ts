@@ -17,7 +17,7 @@ import type { Express, Request, Response } from "express";
 import { db } from "../db";
 import { bookings, activities, posTransactions, platformCoupons, couponTemplates, fields } from "@shared/schema";
 import { and, eq, gte, lte, sql, or, inArray } from "drizzle-orm";
-import { requireAdminAuth } from "../adminAuth";
+import { requireAdminAuth, logAuditAction } from "../adminAuth";
 import { z } from "zod";
 
 /** 取得 admin 所屬 fieldId（若 query 有指定 + 是 super 則用 query；否則用 admin.fieldId）*/
