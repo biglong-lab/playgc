@@ -17,9 +17,12 @@ import {
   auditLogs,
   fields,
   adminAccounts,
+  refunds,
+  posTransactions,
 } from "@shared/schema";
 import { and, eq, gte, lte, or, inArray, desc, sql, gt, isNotNull } from "drizzle-orm";
-import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
+import { z } from "zod";
 
 // 排解類 action key（要過濾顯示在「最近排解操作」）
 const TROUBLESHOOT_ACTIONS = [
