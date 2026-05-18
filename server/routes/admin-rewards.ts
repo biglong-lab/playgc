@@ -488,6 +488,24 @@ export function registerAdminRewardsRoutes(app: Express) {
           isActive: parsed.data.isActive,
         })
         .returning();
+
+      if (req.admin) {
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "coupon_template:create",
+          targetType: "coupon_template",
+          targetId: created.id,
+          fieldId: req.admin.fieldId,
+          metadata: {
+            name: parsed.data.name,
+            discountType: parsed.data.discountType,
+            discountValue: parsed.data.discountValue,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+      }
+
       res.status(201).json(created);
     } catch (error) {
       console.error("[admin-rewards] POST template 失敗:", error);
