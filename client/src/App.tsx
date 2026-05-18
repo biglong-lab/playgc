@@ -443,7 +443,7 @@ function Router() {
         {/* 🆘 排解中心（2026-05-19）— Phase A：路由註冊、實作於 B-E */}
         <Route path="/admin/troubleshoot">{() => <ProtectedAdminRoute><TroubleshootDashboard /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/reset">{() => <ProtectedAdminRoute><TroubleshootReset /></ProtectedAdminRoute>}</Route>
-        <Route path="/admin/troubleshoot/refund">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/troubleshoot/refund">{() => <ProtectedAdminRoute><TroubleshootRefund /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/booking">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/compensation">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/troubleshoot/logs">{() => <ProtectedAdminRoute><TroubleshootComingSoon /></ProtectedAdminRoute>}</Route>
