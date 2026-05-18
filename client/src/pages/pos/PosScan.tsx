@@ -12,10 +12,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Camera, CheckCircle2, AlertCircle, Search, DollarSign, Loader2 } from "lucide-react";
+import { Camera, AlertCircle, Search, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import { feedbackScanSuccess, feedbackError } from "@/lib/pos-feedback";
+import PosScanResultCard from "./PosScanResultCard";
 
 interface CheckinResultBooking {
   type: "booking";
