@@ -406,7 +406,7 @@ export function registerPosRoutes(app: Express) {
     async (req: Request, res: Response) => {
       try {
         const scope = await resolveFieldScope(req);
-        if (!scope) return res.status(400).json({ error: "no_field" });
+        if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
         const bookingId = Number(req.params.id);
         if (!Number.isFinite(bookingId)) return res.status(400).json({ error: "invalid_id" });
         const [updated] = await db
@@ -415,6 +415,18 @@ export function registerPosRoutes(app: Express) {
           .where(and(eq(bookings.id, bookingId), inArray(bookings.fieldId, scope.identifiers)))
           .returning();
         if (!updated) return res.status(404).json({ error: "not_found" });
+
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "booking:no_show",
+          targetType: "booking",
+          targetId: String(bookingId),
+          fieldId: scope.id,
+          metadata: { bookingCode: updated.bookingCode },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
         res.json({ booking: updated });
       } catch (err) {
         console.error("[pos/no-show]", err);
