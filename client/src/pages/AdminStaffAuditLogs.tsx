@@ -62,6 +62,19 @@ const ACTION_LABELS: Record<string, string> = {
   "booking:no_show": "標記未到",
   "booking:reschedule": "🆘 改梯次",
   "voucher:redeem": "券核銷",
+  // 🆕 2026-05-19 Phase B 第二批：admin-bookings + admin-activities
+  "booking:cancel_admin": "業主取消預約",
+  "booking:mark_completed": "標記預約完成",
+  "booking:mark_no_show_admin": "業主標記未到",
+  "booking_config:update": "更新預約設定",
+  "booking_blackout:create": "新增黑名單時段",
+  "booking_blackout:delete": "刪除黑名單時段",
+  "activity:create": "建立活動",
+  "activity:update": "更新活動",
+  "activity:delete": "刪除活動",
+  "activity:deactivate": "停用活動",
+  "activity:upload_cover": "上傳活動封面",
+  "activity_schedule:update": "更新活動時段",
 };
 
 const ACTION_COLORS: Record<string, string> = {
