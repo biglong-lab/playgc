@@ -108,23 +108,17 @@ export default function PosScan() {
     onError: (err: unknown) => {
       feedbackError();
       const msg = err instanceof Error ? err.message : "查無此預約";
-      toast({ variant: "destructive", title: "找不到", description: msg });
-      // 重置鎖，3 秒後恢復掃描
+      // 🐛 2026-05-19 區分「不在本場域」/「找不到」/「不是預約碼」
+      const isWrongField = msg.includes("不是本場域") || msg.includes("屬於");
+      toast({
+        variant: "destructive",
+        title: isWrongField ? "不在本場域" : "找不到",
+        description: msg,
+      });
+      // 重置鎖，3 秒後恢復掃描（避免亂掃連續觸發）
       setTimeout(() => {
         scanLockRef.current = false;
       }, 1500);
-    },
-  });
-
-  const checkInMutation = useMutation({
-    mutationFn: async (bookingId: number) => {
-      return await fetchWithAdminAuth(`/api/pos/bookings/${bookingId}/check-in`, {
-        method: "POST",
-      });
-    },
-    onSuccess: () => {
-      toast({ title: "✅ 已報到" });
-      setResult(null);
     },
   });
 
