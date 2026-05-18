@@ -66,10 +66,13 @@ export function ItemSelect({
         <SelectTrigger
           className={`min-w-0 w-full max-w-full ${className ?? ""}`}
           data-testid={testId}
+          title={existingItem ? `${existingItem.name}${existingItem.slug ? ` (${existingItem.slug})` : ""}` : undefined}
         >
           <SelectValue placeholder={isLoading ? "載入道具清單..." : placeholder} />
         </SelectTrigger>
-        <SelectContent>
+        {/* 🐛 2026-05-18 #5：業主回報名稱/ID 截斷看不到
+            選項改兩行顯示（名稱粗體 + slug/ID 灰色小字）+ 桌機 min-width 360px */}
+        <SelectContent className="min-w-[260px] sm:min-w-[360px] max-w-[480px]">
           {allowEmpty && (
             <SelectItem value="__empty__">
               <span className="text-muted-foreground">（無）</span>
@@ -81,23 +84,29 @@ export function ItemSelect({
             </div>
           )}
           {items?.map((item) => (
-            <SelectItem key={item.id} value={item.id}>
-              {/* 🔧 2026-05-13：強制單行 + 截斷、防中文名長 trigger 內變直式 */}
-              <span className="flex items-center gap-2 whitespace-nowrap overflow-hidden">
-                <Package className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{item.name}</span>
-                {item.slug && (
-                  <code className="text-xs text-muted-foreground truncate hidden sm:inline">({item.slug})</code>
-                )}
-                {item.itemType && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 hidden sm:inline-flex">
-                    {item.itemType}
-                  </Badge>
-                )}
+            <SelectItem
+              key={item.id}
+              value={item.id}
+              title={`${item.name}${item.slug ? ` (${item.slug})` : ""} · ${item.id}`}
+            >
+              <span className="flex items-start gap-2 py-0.5">
+                <Package className="w-3 h-3 flex-shrink-0 mt-1" />
+                <span className="flex flex-col min-w-0 flex-1">
+                  <span className="font-medium text-sm leading-tight break-all">{item.name}</span>
+                  {(item.slug || item.itemType) && (
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground leading-tight mt-0.5">
+                      {item.slug && <code className="font-mono">{item.slug}</code>}
+                      {item.itemType && (
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">
+                          {item.itemType}
+                        </Badge>
+                      )}
+                    </span>
+                  )}
+                </span>
               </span>
             </SelectItem>
           ))}
-          {/* 舊資料相容：原 itemId 不在清單（例如 integer "16"）→ 顯示為警告選項 */}
           {hasValueButNotFound && (
             <SelectItem value={value}>
               <span className="flex items-center gap-1 text-amber-600 whitespace-nowrap overflow-hidden">
