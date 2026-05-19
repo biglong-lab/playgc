@@ -11,6 +11,7 @@ import {
   RefreshCw,
   XCircle,
   SkipForward,
+  Image as ImageIcon,
 } from "lucide-react";
 import type { PhotoMissionConfig } from "@shared/schema";
 import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
