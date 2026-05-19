@@ -84,6 +84,7 @@ export function InstructionView({
                 onClearError();
                 onStartCamera();
               }}
+              onOpenGallery={onOpenGallery}
             />
           )}
 
@@ -98,17 +99,34 @@ export function InstructionView({
               開啟相機
             </Button>
 
-            {/* 隱藏 file input — 仍保留給程式碼相容性（admin 預覽 / 測試用）但 UI 不顯示 */}
+            {/* 🆕 2026-05-19：LINE 內建瀏覽器相機被拒時的 fallback、永遠顯示讓玩家有路 */}
+            <Button
+              onClick={onOpenGallery}
+              variant="outline"
+              className="w-full gap-2 h-11"
+              data-testid="button-open-gallery"
+            >
+              <ImageIcon className="w-4 h-4" />
+              從相簿選照片
+            </Button>
+
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              capture="environment"
               onChange={onFileUpload}
               className="hidden"
             />
           </div>
 
-          <p className="text-xs text-muted-foreground text-center mt-4">
+          {isLineInAppBrowser() && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 text-center mt-3">
+              💡 偵測到 LINE 瀏覽器：若相機無法開啟、請點「從相簿選照片」
+            </p>
+          )}
+
+          <p className="text-xs text-muted-foreground text-center mt-2">
             提示: 請確保允許瀏覽器使用相機權限，並在光線充足的環境拍攝
           </p>
         </CardContent>
