@@ -141,10 +141,14 @@ export function InstructionView({
 function CameraErrorBanner({
   error,
   onRetry,
+  onOpenGallery,
 }: {
   error: string;
   onRetry: () => void;
+  onOpenGallery?: () => void;
 }) {
+  const isPermissionError = error.includes("權限被拒");
+  const isLine = isLineInAppBrowser();
   return (
     <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-6">
       <div className="flex items-start gap-3">
@@ -152,19 +156,44 @@ function CameraErrorBanner({
         <div className="text-left">
           <p className="text-sm text-destructive font-medium mb-1">相機問題</p>
           <p className="text-sm text-destructive/80">{error}</p>
+          {/* 🆕 2026-05-19：LINE 環境 + 權限被拒 → 提示走相簿 */}
+          {isLine && isPermissionError && (
+            <p className="text-xs text-amber-700 dark:text-amber-300 mt-2">
+              💡 LINE 內建瀏覽器無法存取相機、請改用「從相簿選照片」
+            </p>
+          )}
         </div>
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onRetry}
-        className="mt-3 w-full gap-2 transition-transform active:scale-[0.97]"
-      >
-        <RefreshCw className="w-4 h-4" />
-        重試
-      </Button>
+      <div className="mt-3 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRetry}
+          className="flex-1 gap-2 transition-transform active:scale-[0.97]"
+        >
+          <RefreshCw className="w-4 h-4" />
+          重試
+        </Button>
+        {onOpenGallery && (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={onOpenGallery}
+            className="flex-1 gap-2"
+          >
+            <ImageIcon className="w-4 h-4" />
+            從相簿選
+          </Button>
+        )}
+      </div>
     </div>
   );
+}
+
+/** 偵測 LINE 內建瀏覽器（iOS / Android）*/
+function isLineInAppBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /Line\//i.test(navigator.userAgent);
 }
 
 // ===========================================
