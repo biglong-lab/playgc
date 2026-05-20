@@ -53,8 +53,14 @@ function classify(width: number, isTouch: boolean, ua: string): DeviceType {
   if (looksLikePhoneUa) return "mobile";
   if (looksLikeTabletUa) return "tablet";
 
+  // 🆕 2026-05-20：iPad iOS 13+ 偽裝成 Macintosh、寬度可達 1366 (iPad Pro 12.9)
+  // 之前會被誤判為 desktop、平板開放後必須補
+  if (isTouch && /Macintosh/i.test(ua)) return "tablet";
+
   if (width <= MOBILE_MAX) return isTouch ? "mobile" : "desktop";
   if (width <= TABLET_MAX) return isTouch ? "tablet" : "desktop";
+  // 寬度 > 1023 但仍有 touch（如 Surface / iPad Pro 13）→ 視為平板
+  if (isTouch) return "tablet";
   return "desktop";
 }
 
