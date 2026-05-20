@@ -44,7 +44,7 @@ export default function UseOnMobileScreen({ targetUrl }: Props) {
         </div>
 
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">
-          請用手機開始遊戲
+          請改用手機或平板
         </h1>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">{tip}</p>
 
@@ -52,7 +52,7 @@ export default function UseOnMobileScreen({ targetUrl }: Props) {
           <div className="flex justify-center mb-4">
             <img
               src={qrDataUrl}
-              alt="掃描以用手機開啟"
+              alt="掃描以用行動裝置開啟"
               className="w-56 h-56 rounded-lg border border-slate-200 dark:border-slate-700"
             />
           </div>
@@ -61,7 +61,7 @@ export default function UseOnMobileScreen({ targetUrl }: Props) {
         )}
 
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
-          用手機相機掃描 QR Code、即可繼續遊戲
+          用手機 / 平板的相機掃描 QR Code、即可繼續遊戲
         </p>
 
         <button
@@ -69,7 +69,7 @@ export default function UseOnMobileScreen({ targetUrl }: Props) {
           onClick={() => setShowWhy((v) => !v)}
           className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
         >
-          為什麼限手機？
+          為什麼限行動裝置？
           {showWhy ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
 
@@ -83,7 +83,7 @@ export default function UseOnMobileScreen({ targetUrl }: Props) {
               <li>📳 震動（即時回饋）</li>
               <li>🎤 麥克風（語音對講）</li>
             </ul>
-            <p className="mt-2">手機體驗最完整、操作最順暢。</p>
+            <p className="mt-2">手機 / 平板體驗最完整、操作最順暢。</p>
           </div>
         )}
       </div>
