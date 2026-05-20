@@ -33,10 +33,8 @@ export default function UseOnMobileScreen({ targetUrl }: Props) {
     };
   }, [url]);
 
-  const tip =
-    device.type === "tablet"
-      ? "您正在使用平板。為了給玩家最好的體驗，遊戲過程僅在手機開放使用。"
-      : "您正在使用電腦。為了給玩家最好的體驗，遊戲過程僅在手機開放使用。";
+  // 🆕 2026-05-20：平板已開放、僅擋桌機
+  const tip = "您正在使用電腦。遊戲過程僅在手機或平板開放、請改用行動裝置繼續。";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-950 flex items-center justify-center p-6">
