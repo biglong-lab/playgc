@@ -274,26 +274,49 @@ export default function GameBySlug() {
                         💡 {hint}
                       </p>
                     )}
-                    {/* 🆕 2026-05-18 #6：有進度顯示「繼續」+「重新」按鈕 */}
-                    {hasActiveProgress && (
+                    {/* 🆕 2026-05-22 業主 docx #11：三態按鈕（never / playing / completed） */}
+                    {hasResumablePlaying ? (
+                      <>
+                        {/* 進行中：返回遊戲 + 重新開始 */}
+                        <Button
+                          className="w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700 text-white"
+                          onClick={() => setLocation(link(target))}
+                          data-testid="button-resume-game"
+                        >
+                          <Play className="w-5 h-5 mr-2" />
+                          返回遊戲
+                        </Button>
+                        <Button
+                          className="w-full h-12 text-lg"
+                          variant="outline"
+                          onClick={() => setLocation(link(target) + "?restart=1")}
+                          data-testid="button-restart-game"
+                        >
+                          <Icon className="w-5 h-5 mr-2" />
+                          重新開始（清除進度）
+                        </Button>
+                      </>
+                    ) : hasCompleted ? (
+                      /* 已完成過：再玩一次 */
                       <Button
-                        className="w-full h-12 text-lg bg-emerald-600 hover:bg-emerald-700 text-white"
-                        onClick={() => setLocation(link(target))}
-                        data-testid="button-resume-game"
+                        className="w-full h-12 text-lg"
+                        onClick={() => setLocation(link(target) + "?restart=1")}
+                        data-testid="button-replay-game"
                       >
-                        <Play className="w-5 h-5 mr-2" />
-                        繼續上次進度
+                        <Icon className="w-5 h-5 mr-2" />
+                        🔁 再玩一次
+                      </Button>
+                    ) : (
+                      /* 從沒玩過：開始遊戲 */
+                      <Button
+                        className="w-full h-12 text-lg"
+                        onClick={() => setLocation(link(target))}
+                        data-testid="button-start-game"
+                      >
+                        <Icon className="w-5 h-5 mr-2" />
+                        {label}
                       </Button>
                     )}
-                    <Button
-                      className="w-full h-12 text-lg"
-                      variant={hasActiveProgress ? "outline" : "default"}
-                      onClick={() => setLocation(link(target))}
-                      data-testid="button-start-game"
-                    >
-                      <Icon className="w-5 h-5 mr-2" />
-                      {hasActiveProgress ? "重新開始（清除進度）" : label}
-                    </Button>
                   </>
                 );
               })()}
