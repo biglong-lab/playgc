@@ -238,6 +238,7 @@ export function useSessionManager({
       sessionCreationAttemptedRef.current = true;
       createSessionMutation.mutate();
     }
+    // state.sessionId 已在條件式內 reference、無需重複加 deps
   }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, pendingDecision, userDecided]);
 
   function restoreSession(data: ExistingSessionData) {
