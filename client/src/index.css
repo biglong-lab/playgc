@@ -240,7 +240,7 @@
     font-size: calc(1rem * var(--reader-scale, 1));
     line-height: 1.7;
   }
-  /* 🆕 2026-05-22 業主 docx #3：擴大繼承範圍、包含遊戲元件常用的 div/h*/button label 等
+  /* 🆕 2026-05-22 業主 docx #3：擴大繼承範圍、包含遊戲元件常用的 div / h1-h4 / button / label
      業主回報「字級切換無效」根因：很多元件用 div / h3 / Button、原本只 inherit p/li/span 沒覆蓋到 */
   .game-prose p,
   .game-prose li,
