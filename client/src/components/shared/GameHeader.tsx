@@ -118,6 +118,7 @@ export default function GameHeader({
               size="icon"
               onClick={onChat}
               data-testid="button-chat"
+              className="h-9 w-9 sm:h-10 sm:w-10"
             >
               <MessageCircle className="w-5 h-5" />
             </Button>
