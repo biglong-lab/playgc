@@ -154,6 +154,9 @@ export default function ChoiceVerifyRacePage({
   const [serverAnswers, setServerAnswers] = useState<RaceAnswerFromServer[]>([]);
   const [stateLoading, setStateLoading] = useState(true);
   const [stateError, setStateError] = useState<string | null>(null);
+  // 🆕 2026-05-22 業主 docx #1：同步隊伍進度卡住、加 timeout + retry trigger
+  const [loadingTooLong, setLoadingTooLong] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const advanceFiredRef = useRef<Set<number>>(new Set()); // 已送 advance 的題號（防重複送）
   const onCompleteFiredRef = useRef(false);
 
