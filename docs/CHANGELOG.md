@@ -5,6 +5,47 @@
 
 ---
 
+## 2026-05-22
+
+### 🐛 CHITO 5/20 docx 第一批 7 項修正
+**狀態**：🟢 部署上線（commit bbabbf1d + 2f7c9c3f + fb7a4791）
+**細節**：[changes/2026-05-22-chito-feedback-batch.md](changes/2026-05-22-chito-feedback-batch.md)
+
+業主第二輪驗收 docx 提出 10 個問題、第一批 7 項已修：
+
+| # | 問題 | 修法重點 |
+|---|------|---------|
+| 11 | **保留進度沒「繼續」、按返回跳完成** | GameBySlug 改三態按鈕（never/playing/completed）、`?restart=1` 帶入 GamePlay 強制 replay 路徑 |
+| 14 | runtime 中又彈「偵測到上次進度」 | 移除 GamePlay 冗餘 ResumeDialog 第二處、useSessionManager 加 `!state.sessionId` 防衛 |
+| 13 | 「遊戲開始祝你好運」黑色橫幅 | 直接移除 toast |
+| 3 | 字體切換無效 | 根因：`.game-prose` 0 元件用、main 加 class + 擴大繼承到 div/h1-h4/button/label |
+| 4 | <380px 按鈕被裁 | GameHeader RWD 強化（max-w-full + 縮 padding + icon h-9 sm:h-10）|
+| 9 | 按鈕長文字超出 | break-words whitespace-normal min-w-0 |
+| - | （未涉及 docx）| 平板放行（5/20 已部署） |
+
+**等業主回報 repro**：#1 多人卡同步 / #2 對講按鍵消失 / #12 藍色橫幅位置 / #15 頁 1 跳回
+
+---
+
+## 2026-05-20
+
+### 📱 平板開放、桌機仍封鎖
+**狀態**：🟢 部署上線（commit 2b8bd410）
+
+DeviceGate.tsx：放行條件從 `isMobile` 改成 `isMobile || isTablet`。
+useDeviceType.ts：補 iPad Pro 12.9 偵測（UA 偽裝 Macintosh、寬 1366）`isTouch + Macintosh → tablet`。
+UseOnMobileScreen.tsx 文案改成「請改用手機或平板」。
+
+### 📷 LINE 內建瀏覽器拍照 fallback
+**狀態**：🟢 部署上線（commit f5e88097）
+
+LINE WebView 沙箱不允許 getUserMedia。修法三層保護：
+- 永遠顯示「從相簿選照片」備用按鈕（原本故意隱藏）
+- 偵測 LINE 環境（UA 含 `Line/`）→ 顯示提示
+- 相機錯誤 banner 加「從相簿選」雙按鈕
+
+---
+
 ## 2026-05-19
 
 ### 🆘 後台導航重構 + 排解中心（5 Phase 一日完成）
