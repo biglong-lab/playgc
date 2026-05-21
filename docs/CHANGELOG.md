@@ -7,6 +7,18 @@
 
 ## 2026-05-22
 
+### 🐛 CHITO 5/20 docx 第二批 3 項修正（業主截圖 repro 後）
+**狀態**：🟢 部署上線（commit d81ea7c7）
+**細節**：[changes/2026-05-22-chito-feedback-batch.md](changes/2026-05-22-chito-feedback-batch.md) 第二批段落
+
+| # | 問題 | 修法 |
+|---|------|------|
+| 1 | 多人卡「同步隊伍進度中」 | ChoiceVerifyRacePage 加 8s timeout + 重試按鈕（loading / error 兩處都加）|
+| 2 | 對講按鍵窄裝置消失 | WalkiePill 預設 y=80 改 110（高過底部 nav 90px）+ loadPos 加 viewport clamp + resize/orientation listener |
+| 12 | 點數通知藍色橫幅遮擋 | RewardFeedback 只有點數的事件跳過橫幅、保留 haptic + GameHeader 既有 +N 動畫；道具/成就仍保留 |
+
+剩 **#15 通過頁 1 又跳回頁 1** 仍待業主提供 repro 步驟（哪個遊戲 / 頁 1 元件類型）。
+
 ### 🐛 CHITO 5/20 docx 第一批 7 項修正
 **狀態**：🟢 部署上線（commit bbabbf1d + 2f7c9c3f + fb7a4791）
 **細節**：[changes/2026-05-22-chito-feedback-batch.md](changes/2026-05-22-chito-feedback-batch.md)
