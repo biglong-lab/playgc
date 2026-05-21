@@ -785,18 +785,10 @@ export default function GamePlay() {
         />
       )}
 
-      {/* 🆕 2026-05-07：偵測既有進度時的選擇對話框 */}
-      <ResumeDialog
-        open={showResumeDialog}
-        onContinue={() => confirmContinue()}
-        onReset={() => {
-          resetAndCreateNew();
-        }}
-        // 🆕 2026-05-12 #5: pendingDecision 時 currentPageIndex 還沒 restore、用 existingProgressInfo 算
-        currentPageIndex={pendingProgressIndex >= 0 ? pendingProgressIndex : currentPageIndex}
-        totalPages={totalPages}
-        score={existingProgressInfo?.score ?? score}
-      />
+      {/* 🐛 2026-05-22 業主 docx #14：移除 runtime 層 ResumeDialog
+          原本 line 583 已 early return 整頁覆蓋、line 789 是冗餘渲染
+          業主回報「進入遊戲後又彈進度提示」就是這裡造成（玩家進遊戲後 query 重 fetch 又彈）
+          正確：只在進場前彈一次（line 583 early return）、玩家做決定後永不再彈 */}
 
       {(() => {
         // 🔒 導航規則：
