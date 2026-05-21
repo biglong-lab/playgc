@@ -220,28 +220,132 @@ if (
 
 ---
 
+## 第二批修正（業主截圖 repro 後）— 2026-05-22 下午
+
+業主 5/22 提供 4 張截圖、明確 repro #1 / #2 / #12。直接動工修：
+
+### 7. #1 多人卡「同步隊伍進度中」
+
+#### 問題
+業主截圖：「多人TEST」遊戲、進度 3/5 60%、畫面顯示 spinner「同步隊伍進度中...」永久卡住。
+
+#### 根因
+`client/src/components/game/multi/ChoiceVerifyRacePage.tsx`：
+- `stateLoading` 初始 = true
+- 觸發 POST `/api/team-race/state`、回 200 才 `setStateLoading(false)`
+- **沒 timeout**：API 無回應 / 慢回應就永遠 spinner
+- error path 只 show error、**沒重試按鈕**、業主只能重整整頁
+
+#### 修法
+```tsx
+// 8 秒 timeout 機制
+const [loadingTooLong, setLoadingTooLong] = useState(false);
+const [retryCount, setRetryCount] = useState(0);
+
+useEffect(() => {
+  // ...
+  const longLoadTimer = setTimeout(() => {
+    if (!cancelled) setLoadingTooLong(true);
+  }, 8000);
+  initStateMutation.mutateAsync({ teamId, sessionId, pageId: effectivePageId })
+    .then(/* 成功清 timer + setStateLoading(false) */)
+    .catch(/* 失敗清 timer + setStateError */)
+  // ...
+}, [..., retryCount]); // 加 retryCount 進 deps
+
+// loading UI
+{loadingTooLong && (
+  <button onClick={() => setRetryCount(n => n + 1)}>
+    🔄 重新嘗試同步
+  </button>
+)}
+
+// error UI 也加 retry 按鈕
+```
+
+### 8. #2 對講按鈕窄裝置消失
+
+#### 問題
+業主截圖兩個視窗對比：左圖（寬版）對講 Pill 正常顯示在底部 nav 上方；右圖（窄版）對講 Pill 完全消失（紅圈標位置）。
+
+#### 根因
+`client/src/components/walkie/WalkiePill.tsx`：
+- 預設位置 `y = 80`（距底部 80px）
+- 但底部 PlayerBottomNav 高度 = `3.5rem + env(safe-area-inset-bottom)` = **56 + 34 = 90px**（iPhone notch）
+- pill 完全在 nav 後面被蓋住
+
+也適用：在窄裝置時 PILL_W=148 可能 + right=16 已接近視口邊緣。
+
+#### 修法
+```tsx
+const MIN_Y_FROM_BOTTOM = 110; // 高過底部 nav
+
+function clampToViewport(p: Pos): Pos {
+  if (typeof window === "undefined") return p;
+  const maxX = Math.max(MARGIN, window.innerWidth - PILL_W - MARGIN);
+  const maxY = Math.max(MIN_Y_FROM_BOTTOM, window.innerHeight - PILL_H - MARGIN);
+  return {
+    x: Math.max(MARGIN, Math.min(maxX, p.x)),
+    y: Math.max(MIN_Y_FROM_BOTTOM, Math.min(maxY, p.y)),
+  };
+}
+
+function loadPos(): Pos {
+  // ... 讀 localStorage
+  if (validPos) return clampToViewport(validPos); // 防舊資料超界
+  return { x: MARGIN, y: MIN_Y_FROM_BOTTOM };
+}
+
+// 螢幕轉向 / resize 時也 re-clamp
+useEffect(() => {
+  const onResize = () => setPos((p) => clampToViewport(p));
+  window.addEventListener("resize", onResize);
+  window.addEventListener("orientationchange", onResize);
+  return () => {
+    window.removeEventListener("resize", onResize);
+    window.removeEventListener("orientationchange", onResize);
+  };
+}, []);
+```
+
+### 9. #12 獎勵點數藍色橫幅
+
+#### 問題
+業主截圖：藍色漸層卡片「✨ 獲得點數！ +10 點」遮蓋題目顯示。
+
+#### 根因
+`client/src/components/feedback/RewardFeedback.tsx`：
+- `RewardCard` 根據事件類型用 sky / emerald / amber 三主題
+- 「只有 points」事件 → sky 主題（sky-500 to indigo-500 漸層 = **藍色橫幅**）
+- 業主明確要：「不需要藍色橫幅遮擋通知、僅需要在上欄那邊顯示個加幾分的小動畫」
+
+GameHeader 已有 `scoreChange` 觸發 `animate-score-float` 動畫顯示 +N。
+
+#### 修法
+```tsx
+useEffect(() => {
+  return subscribe((event) => {
+    const hasPoints = !!(event.points && event.points > 0);
+    const hasItems = !!(event.items && event.items.length > 0);
+    const hasAchievements = !!(event.achievements && event.achievements.length > 0);
+    const isPointsOnly = hasPoints && !hasItems && !hasAchievements;
+    if (isPointsOnly) {
+      haptic.success(); // 保留觸覺反饋
+      return; // 不入 queue、不彈橫幅
+    }
+    setQueue((q) => [...q, event]);
+    haptic.success();
+  });
+}, [haptic]);
+```
+
+道具 / 成就事件仍保留橫幅（業主明確只抱怨「點數」橫幅、實質有東西要看的事件保留）。
+
+---
+
 ## 未處理項目（等業主提供 repro）
 
-### #1 多人協作模式卡「同步隊伍進度中」
-需業主回報：
-- 哪個遊戲（gameId / 名稱）？
-- 幾人組隊？哪個玩家觸發？
-- 卡多久？永久卡 還是 N 秒後恢復？
-- 畫面有顯示「WS 連線中斷」訊息嗎？
-- 重整瀏覽器後能恢復嗎？
-
-### #2 對講按鍵窄裝置消失
-需業主回報：
-- 哪個遊戲場域？多人 / 多人團隊 / 多人對戰？
-- 裝置型號 + 螢幕寬度（業主 docx 提到「應該與設備顯示大小有關係」、但沒指明寬度）
-- 是進入遊戲就沒看到、還是某操作後消失？
-
-### #12 點數通知藍色橫幅
-搜尋 codebase 沒找到「藍色橫幅」字串。需業主截圖告知：
-- 是什麼操作觸發（按鈕選對 / 通關 / 拿道具 / 累積到 milestone）
-- 截圖看實際 UI 元素
-
-### #15 通過頁 1 又跳回頁 1
+### #15 通過頁 1 又跳回頁 1（仍待業主回報）
 需業主回報：
 - 哪個遊戲？頁 1 是什麼類型元件（按鈕 / 拍照 / 文字 / 條件驗證）？
 - 跳回的時機（自動 / 點下一頁後 / 重整後）？
