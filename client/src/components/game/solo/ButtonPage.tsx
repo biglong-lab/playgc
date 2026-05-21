@@ -172,9 +172,13 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
               disabled={isSubmitting}
               data-testid={`button-choice-${index}`}
             >
-              <div className="flex items-center gap-3 flex-1">
-                {getIcon(button.icon)}
-                <span className="flex-1 text-left">{button.text}</span>
+              {/* 🆕 2026-05-22 業主 docx #9：長文字按鈕在窄裝置會超出
+                  - min-w-0 + flex-1 讓 span 可縮
+                  - break-words + whitespace-normal 允許多行換行
+                  - max-w-full 防超出父容器 */}
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <span className="flex-shrink-0">{getIcon(button.icon)}</span>
+                <span className="flex-1 text-left break-words whitespace-normal min-w-0">{button.text}</span>
               </div>
               <div className="flex items-center gap-2">
                 {button.rewardPoints != null && button.rewardPoints !== 0 && (
