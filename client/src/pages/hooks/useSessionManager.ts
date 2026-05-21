@@ -158,7 +158,8 @@ export function useSessionManager({
       //   新建純粹是「沒有舊進度」、不該被視為「恢復進度」
       setHasRestoredProgress(false);
       queryClient.invalidateQueries({ queryKey: ["/api/sessions/active", gameId] });
-      toast({ title: "遊戲開始", description: "祝你好運!" });
+      // 🐛 2026-05-22 業主 docx #13：移除「遊戲開始祝你好運」橫幅、太遮擋且顯示太久
+      //   玩家本來就知道自己按了開始遊戲、不需要通知
     },
     onError: (err: any) => {
       setForceNewSession(false);
