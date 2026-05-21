@@ -88,7 +88,7 @@ export default function GameHeader({
               variant="ghost" 
               size="icon"
               onClick={onInventory}
-              className="relative"
+              className="relative h-9 w-9 sm:h-10 sm:w-10"
               data-testid="button-inventory"
             >
               <Backpack className="w-5 h-5" />
