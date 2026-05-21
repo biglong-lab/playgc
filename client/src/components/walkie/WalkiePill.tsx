@@ -118,6 +118,19 @@ export function WalkiePill({
     return () => observer.disconnect();
   }, []);
 
+  // 🆕 2026-05-22 業主 docx #2：螢幕轉向 / resize 時重新 clamp 位置
+  //   避免從橫向轉直向後、pill 跑出視口外消失
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setPos((p) => clampToViewport(p));
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, []);
+
   // refs 用於區分 tap / longpress / drag
   const pressStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
