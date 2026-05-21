@@ -72,8 +72,14 @@ export default function GameBySlug() {
     enabled: !!slug,
   });
 
-  // 🆕 2026-05-18 #6 業主回報「繼續遊戲」失效：查玩家在此遊戲的 active session
-  const { data: activeSession } = useQuery<{ session: { id: string }; progress: { currentPageId?: string } | null } | null>({
+  // 🆕 2026-05-18 #6 / 2026-05-22 業主 docx #11：依 session.status 三態判斷
+  //   - 沒玩過 → 開始遊戲
+  //   - playing + 有 progress → 返回遊戲 + 重新開始
+  //   - completed → 再玩一次
+  const { data: activeSession } = useQuery<{
+    session: { id: string; status: string } | null;
+    progress: { currentPageId?: string } | null;
+  } | null>({
     queryKey: ["/api/sessions/active", game?.id],
     queryFn: async () => {
       if (!game?.id) return null;
@@ -86,7 +92,10 @@ export default function GameBySlug() {
     retry: false,
     staleTime: 30_000,
   });
-  const hasActiveProgress = !!(activeSession?.session?.id && activeSession?.progress?.currentPageId);
+
+  const sessionStatus = activeSession?.session?.status ?? null;
+  const hasResumablePlaying = sessionStatus === "playing" && !!activeSession?.progress?.currentPageId;
+  const hasCompleted = sessionStatus === "completed";
 
   if (isLoading) {
     return (
