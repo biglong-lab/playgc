@@ -58,6 +58,18 @@ export function RewardFeedbackOverlay() {
 
   useEffect(() => {
     return subscribe((event) => {
+      // 🆕 2026-05-22 業主 docx #12：只有點數的事件不再彈藍色橫幅
+      //   業主回報「重疊遮擋太大、僅需要上欄加幾分小動畫就好」
+      //   GameHeader 已有 scoreChange `animate-score-float` 動畫、保留即可
+      //   橫幅只在「拿道具 / 解鎖成就」等更重要事件保留
+      const hasPoints = !!(event.points && event.points > 0);
+      const hasItems = !!(event.items && event.items.length > 0);
+      const hasAchievements = !!(event.achievements && event.achievements.length > 0);
+      const isPointsOnly = hasPoints && !hasItems && !hasAchievements;
+      if (isPointsOnly) {
+        haptic.success(); // 仍保留觸覺反饋
+        return; // 不入 queue、不彈橫幅
+      }
       setQueue((q) => [...q, event]);
       haptic.success();
     });
