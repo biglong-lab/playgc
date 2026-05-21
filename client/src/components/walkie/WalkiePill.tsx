@@ -51,16 +51,33 @@ interface Pos {
   y: number; // 距底部 px（bottom-based）
 }
 
+// 🆕 2026-05-22 業主 docx #2：對講按鈕在窄/有 notch 裝置消失
+//   根因：預設 y=80、但底部 nav 高度 56 + iOS safe-area 34 = 90、pill 被 nav 蓋住
+//   修法：預設 y 提高到 110（高過 nav）+ load 時 clamp 進當前 viewport
+const MIN_Y_FROM_BOTTOM = 110;
+
+function clampToViewport(p: Pos): Pos {
+  if (typeof window === "undefined") return p;
+  const maxX = Math.max(MARGIN, window.innerWidth - PILL_W - MARGIN);
+  const maxY = Math.max(MIN_Y_FROM_BOTTOM, window.innerHeight - PILL_H - MARGIN);
+  return {
+    x: Math.max(MARGIN, Math.min(maxX, p.x)),
+    y: Math.max(MIN_Y_FROM_BOTTOM, Math.min(maxY, p.y)),
+  };
+}
+
 function loadPos(): Pos {
   try {
     const saved = localStorage.getItem(STORAGE_POS);
     if (saved) {
       const p = JSON.parse(saved) as Pos;
-      if (typeof p.x === "number" && typeof p.y === "number") return p;
+      if (typeof p.x === "number" && typeof p.y === "number") {
+        return clampToViewport(p);
+      }
     }
   } catch { /* ignore */ }
-  // 預設：右下角（與原本位置相容）
-  return { x: MARGIN, y: 80 };
+  // 預設：右下角（避開底部 nav）
+  return { x: MARGIN, y: MIN_Y_FROM_BOTTOM };
 }
 
 function savePos(pos: Pos) {
