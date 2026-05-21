@@ -209,6 +209,7 @@ if (
 
 ## 影響範圍
 
+### 第一批（commit bbabbf1d + 2f7c9c3f + fb7a4791）
 | 檔案 | 變動 |
 |------|------|
 | `client/src/pages/GameBySlug.tsx` | 三態按鈕（+68 / -25 行）|
@@ -217,6 +218,13 @@ if (
 | `client/src/components/shared/GameHeader.tsx` | RWD 強化（+21 / -7 行）|
 | `client/src/components/game/solo/ButtonPage.tsx` | 長文字 break-words（+10 / -3 行）|
 | `client/src/index.css` | `.game-prose` 擴大繼承（+18 / -1 行）|
+
+### 第二批（commit d81ea7c7）
+| 檔案 | 變動 |
+|------|------|
+| `client/src/components/game/multi/ChoiceVerifyRacePage.tsx` | 8s timeout + retry button（+30 行）|
+| `client/src/components/walkie/WalkiePill.tsx` | MIN_Y_FROM_BOTTOM=110 + clampToViewport + resize listener（+30 / -3 行）|
+| `client/src/components/feedback/RewardFeedback.tsx` | isPointsOnly 跳過 queue（+12 行）|
 
 ---
 
