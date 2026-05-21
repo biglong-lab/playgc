@@ -234,23 +234,33 @@ export default function ChoiceVerifyRacePage({
     let cancelled = false;
     setStateLoading(true);
     setStateError(null);
+    setLoadingTooLong(false);
+    // 🆕 2026-05-22 業主 docx #1：8 秒沒回應 → 顯示「載入較久」提示 + 重試
+    const longLoadTimer = setTimeout(() => {
+      if (!cancelled) setLoadingTooLong(true);
+    }, 8000);
     initStateMutation
       .mutateAsync({ teamId, sessionId, pageId: effectivePageId })
       .then((data) => {
         if (cancelled) return;
+        clearTimeout(longLoadTimer);
         applyServerStateIfNewer(data.state, data.answers);
         setStateLoading(false);
+        setLoadingTooLong(false);
       })
       .catch((err) => {
         if (cancelled) return;
+        clearTimeout(longLoadTimer);
         setStateError(err instanceof Error ? err.message : "載入狀態失敗");
         setStateLoading(false);
+        setLoadingTooLong(false);
       });
     return () => {
       cancelled = true;
+      clearTimeout(longLoadTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId, sessionId, effectivePageId, totalQuestions]);
+  }, [teamId, sessionId, effectivePageId, totalQuestions, retryCount]);
 
   // === WebSocket：race_state_updated 廣播 → 更新 state + answers ===
   const handleWsMessage = useCallback(
