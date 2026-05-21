@@ -54,9 +54,12 @@ export default function GamePlay() {
   const { toast } = useToast();
   const isChapterMode = !!chapterId;
 
+  // 🆕 2026-05-22 業主 docx #11/#14：
+  //   - replay=true 或 restart=1 → 強制重新開始、不顯示 ResumeDialog
+  //   - 由 GameBySlug 三態按鈕「重新開始 / 再玩一次」帶入
   const isReplayMode = useMemo(() => {
     const params = new URLSearchParams(searchString);
-    return params.get("replay") === "true";
+    return params.get("replay") === "true" || params.get("restart") === "1";
   }, [searchString]);
 
   const [showChat, setShowChat] = useState(false);
