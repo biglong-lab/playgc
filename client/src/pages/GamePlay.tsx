@@ -746,7 +746,9 @@ export default function GamePlay() {
         </div>
       )}
 
-      <main className="flex-1 relative overflow-hidden">
+      {/* 🆕 2026-05-22 業主 docx #3：字級切換無效根因 — game-prose class 零元件用
+          把 class 加到 main、後代繼承 → 字級切換有感 */}
+      <main className="flex-1 relative overflow-hidden game-prose">
         {currentPage && (
           // 🛡️ ErrorBoundary 防止單頁 crash 導致整個遊戲白屏
           //   page.id key 讓換頁時重新建立 ErrorBoundary（舊 error 清掉）
