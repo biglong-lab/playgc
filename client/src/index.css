@@ -240,10 +240,26 @@
     font-size: calc(1rem * var(--reader-scale, 1));
     line-height: 1.7;
   }
+  /* 🆕 2026-05-22 業主 docx #3：擴大繼承範圍、包含遊戲元件常用的 div/h*/button label 等
+     業主回報「字級切換無效」根因：很多元件用 div / h3 / Button、原本只 inherit p/li/span 沒覆蓋到 */
   .game-prose p,
   .game-prose li,
-  .game-prose span {
+  .game-prose span,
+  .game-prose div,
+  .game-prose h1,
+  .game-prose h2,
+  .game-prose h3,
+  .game-prose h4,
+  .game-prose label,
+  .game-prose button {
     font-size: inherit;
+  }
+  /* 系統 UI 即使在 .game-prose 內也不放大 */
+  .game-prose .app-header,
+  .game-prose .player-bottom-nav,
+  .game-prose .icon-button,
+  .game-prose .floating-tool {
+    font-size: 16px;
   }
 
   /* 系統 UI 固定字級、不受 reader-scale 影響 */
