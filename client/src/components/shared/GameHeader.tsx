@@ -106,6 +106,7 @@ export default function GameHeader({
               size="icon"
               onClick={onMap}
               data-testid="button-map"
+              className="h-9 w-9 sm:h-10 sm:w-10"
             >
               <Map className="w-5 h-5" />
             </Button>
