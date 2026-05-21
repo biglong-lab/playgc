@@ -132,6 +132,7 @@ export default function GameHeader({
                 size="icon"
                 data-testid="button-game-prefs"
                 aria-label="偏好設定"
+                className="h-9 w-9 sm:h-10 sm:w-10"
               >
                 <MoreVertical className="w-5 h-5" />
               </Button>
