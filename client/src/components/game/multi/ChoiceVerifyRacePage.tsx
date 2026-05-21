@@ -531,9 +531,25 @@ export default function ChoiceVerifyRacePage({
   if (stateLoading) {
     return (
       <Card data-testid="race-page-state-loading">
-        <CardContent className="p-6 text-center space-y-2">
+        <CardContent className="p-6 text-center space-y-3">
           <Loader2 className="w-6 h-6 mx-auto animate-spin text-muted-foreground" />
           <p className="text-sm text-muted-foreground">同步隊伍進度中...</p>
+          {/* 🆕 2026-05-22 業主 docx #1：8 秒沒回應顯示重試（之前永遠卡 spinner）*/}
+          {loadingTooLong && (
+            <div className="space-y-2 pt-2 border-t">
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                載入時間較長、可能網路較慢或伺服器忙線
+              </p>
+              <button
+                type="button"
+                onClick={() => setRetryCount((n) => n + 1)}
+                className="text-sm text-primary hover:underline"
+                data-testid="button-race-retry"
+              >
+                🔄 重新嘗試同步
+              </button>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -542,9 +558,18 @@ export default function ChoiceVerifyRacePage({
   if (stateError || !serverState) {
     return (
       <Card data-testid="race-page-state-error">
-        <CardContent className="p-6 text-center">
+        <CardContent className="p-6 text-center space-y-3">
           <AlertCircle className="w-8 h-8 mx-auto mb-2 text-destructive" />
           <p className="text-sm text-muted-foreground">{stateError ?? "狀態載入失敗"}</p>
+          {/* 🆕 2026-05-22 業主 docx #1：失敗也提供重試 */}
+          <button
+            type="button"
+            onClick={() => setRetryCount((n) => n + 1)}
+            className="text-sm text-primary hover:underline"
+            data-testid="button-race-retry"
+          >
+            🔄 重新嘗試
+          </button>
         </CardContent>
       </Card>
     );
