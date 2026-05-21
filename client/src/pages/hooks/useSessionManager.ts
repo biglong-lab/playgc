@@ -198,13 +198,16 @@ export function useSessionManager({
 
     if (forceNewSession || createSessionMutation.isPending) return;
 
-    // 🆕 2026-05-12 #5: existingSession 有資料 + 玩家未決定 → 暫停、顯示 dialog
-    //   有「進行中」session 且非 completed → 才需要詢問（completed 視為新場直接重新開始流程更乾淨）
+    // 🆕 2026-05-12 #5 / 2026-05-22 業主 docx #14: existingSession + 未決定 → 顯示 dialog
+    //   業主回報 runtime 中又彈進度提示：根因是 query refetch 又把 existingSession 帶回來
+    //   防護：只在還沒有 sessionId（= 真正第一次進場）才考慮 setPendingDecision
+    //   已 restore / 已建新 / 已決定 → 一律不再彈
     if (
       existingSession?.session &&
       !hasRestoredProgress &&
       !userDecided &&
       !pendingDecision &&
+      !state.sessionId &&
       activePages.length > 0
     ) {
       const progressedPages = existingSession.progress?.currentPageId
