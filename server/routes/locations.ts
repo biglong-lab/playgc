@@ -411,6 +411,73 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
+  // Admin 設定 AR 參考照片（接 Cloudinary URL，後端算 dHash）
+  app.post("/api/locations/:id/set-reference-image", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { imageUrl } = req.body || {};
+      if (isNaN(id) || !imageUrl) {
+        return res.status(400).json({ message: "Missing id or imageUrl" });
+      }
+      const existing = await storage.getLocation(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      const ownershipCheck = await checkGameOwnership(req, existing.gameId);
+      if (!ownershipCheck.authorized) {
+        return res.status(ownershipCheck.status || 403).json({ message: ownershipCheck.message });
+      }
+      const hash = await computeImageHash(imageUrl);
+      if (!hash) {
+        return res.status(400).json({ message: "無法處理圖片（請確認 URL 可下載）" });
+      }
+      const updated = await storage.updateLocation(id, {
+        referenceImageHash: hash,
+        referenceImageUrl: imageUrl,
+      });
+      res.json({ hash, location: updated });
+    } catch (error) {
+      console.error("[locations] set-reference-image failed:", error);
+      res.status(500).json({ message: "Failed to set reference image" });
+    }
+  });
+
+  // 玩家拍照驗證（前端傳已上傳的照片 URL → 後端算 hash 比對 → 回 matchScore）
+  app.post(
+    "/api/sessions/:sessionId/locations/:locationId/verify-photo",
+    isAuthenticated,
+    async (req, res) => {
+      try {
+        const locId = parseInt(req.params.locationId);
+        const { imageUrl } = req.body || {};
+        if (isNaN(locId) || !imageUrl) {
+          return res.status(400).json({ message: "Missing locationId or imageUrl" });
+        }
+        const location = await storage.getLocation(locId);
+        if (!location || !location.referenceImageHash) {
+          return res.status(400).json({ message: "此任務點未設定 AR 參考照片" });
+        }
+        const playerHash = await computeImageHash(imageUrl);
+        if (!playerHash) {
+          return res.status(400).json({ message: "無法處理玩家照片" });
+        }
+        const distance = hammingDistance(playerHash, location.referenceImageHash);
+        // 0-64 → 轉成 0-1 的 score（距離越小分數越高）
+        const matchScore = Math.max(0, 1 - distance / 32);
+        res.json({
+          matchScore: Number(matchScore.toFixed(3)),
+          hammingDistance: distance,
+          referenceImageId: String(locId),
+          // matchScore 提供給玩家端，可在 visit 時帶入做最終驗證
+          passed: matchScore >= 0.7,
+        });
+      } catch (error) {
+        console.error("[locations] verify-photo failed:", error);
+        res.status(500).json({ message: "Failed to verify photo" });
+      }
+    },
+  );
+
   // 掛載玩家位置追蹤、造訪、導航計算子路由
   registerLocationTrackingRoutes(app, ctx);
 }
