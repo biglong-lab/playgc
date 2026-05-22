@@ -41,7 +41,15 @@ export const locations = pgTable(
     points: integer("points").default(0), // Points earned when visiting
     unlockCondition: jsonb("unlock_condition"),
     reward: jsonb("reward"),
-    qrCodeData: varchar("qr_code_data", { length: 100 }), // QR code trigger data
+    qrCodeData: varchar("qr_code_data", { length: 100 }), // QR code trigger data（舊欄位，保留相容）
+    // 🆕 2026-05-22 多元定位驗證系統
+    verificationMode: varchar("verification_mode", { length: 20 }).default("gps"),
+    // 'gps' | 'qr' | 'code' | 'hybrid' | 'any'
+    // gps=只能 GPS / qr=只能掃 QR / code=只能輸入代碼
+    // hybrid=GPS + (QR 或代碼) 擇一 / any=三種都可
+    verificationCode: varchar("verification_code", { length: 10 }), // 4-6 位短碼（admin 設定）
+    qrToken: varchar("qr_token", { length: 64 }), // QR 內嵌 token（HMAC 簽章用）
+    allowAdminRescue: boolean("allow_admin_rescue").default(true), // 是否允許管理員手動標記到達
     isRequired: boolean("is_required").default(true), // Required for game completion
     status: varchar("status", { length: 20 }).default("active"), // active, inactive, completed
     orderIndex: integer("order_index"),
