@@ -7,6 +7,24 @@
 
 ## 2026-05-22
 
+### 🎯 多元定位驗證系統 — GPS 替代方案（feat）
+**狀態**：🟡 已實作、待部署
+**細節**：[changes/2026-05-22-multi-tier-location-verification.md](changes/2026-05-22-multi-tier-location-verification.md)
+**ADR**：[decisions/0021-multi-tier-location-verification.md](decisions/0021-multi-tier-location-verification.md)
+
+業主反映「學校場域 GPS 統一被關、遊戲卡關」、現場手機訊號薄弱但有 WiFi。完整重構定位驗證為五層備援架構：
+
+```
+GPS → QR Code → 數字代碼 → PDR 相對定位 → 管理員救援
+```
+
+主要變動：
+- Schema：`locations` 加 `verificationMode/Code/qrToken/allowAdminRescue/referenceImageHash`；`location_visits` 加 `verifyMethod/verifyMetadata`
+- 後端：`server/lib/location-verification.ts` 統一分流、`/api/sessions/.../visit` 接 `verifyMethod`、`admin-rescue.ts` 救援端點
+- 玩家端：`LocationVerifier` / `LocationQRScanner` / `ARVerifier` 元件、`usePDRNavigation` Hook
+- Admin：`LocationVerificationConfig` 設定區塊、`LocationPrintSheet` 列印頁、`StuckPlayersPanel` 救援面板
+- WiFi SSID / iBeacon / NFC 在 web 端**不可行**（瀏覽器限制），未來原生 APP 才能加
+
 ### 🐛 CHITO 5/20 docx 第二批 3 項修正（業主截圖 repro 後）
 **狀態**：🟢 部署上線（commit d81ea7c7）
 **細節**：[changes/2026-05-22-chito-feedback-batch.md](changes/2026-05-22-chito-feedback-batch.md) 第二批段落
