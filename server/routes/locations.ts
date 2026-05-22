@@ -11,6 +11,11 @@ import { checkGameOwnership } from "./utils";
 import { ensureUniqueSlug, normalizeSlugInput } from "../lib/slug";
 import type { RouteContext } from "./types";
 import { registerLocationTrackingRoutes } from "./location-tracking";
+import {
+  generateShortCode,
+  generateQrToken,
+} from "../lib/location-verification";
+import QRCode from "qrcode";
 
 export function registerLocationRoutes(app: Express, ctx: RouteContext) {
   // ===========================================
