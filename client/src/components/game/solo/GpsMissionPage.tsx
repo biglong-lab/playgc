@@ -525,57 +525,34 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
               單次定位
             </Button>
 
-            {(showQrFallback || config.qrFallback) && (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  // 真正的 QR fallback：要求玩家手動輸入 config.fallbackQrCode
-                  const expected = (config.fallbackQrCode || "").trim();
-                  if (!expected) {
-                    toast({
-                      title: "QR Fallback 未設定",
-                      description: "管理員尚未設定備用 QR 代碼，請稍後再試",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  const input = prompt("請輸入現場 QR Code 代碼：")?.trim();
-                  if (!input) return;
-                  if (input.toUpperCase() === expected.toUpperCase()) {
-                    toast({
-                      title: "QR 確認成功!",
-                      description: "已通過備用驗證",
-                    });
-                    stopWatching();
-                    setTimeout(() => {
-                      // 🔧 同上：RewardsSection 的 rewardPoints/rewardItems 優先
-                      const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
-                      const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
-                      const reward: { points?: number; items?: string[] } = {
-                        points: rewardPoints ?? config.onSuccess?.points ?? 0,
-                      };
-                      const allItems = [
-                        ...rewardItems.filter((x) => !!x),
-                        ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
-                      ];
-                      if (allItems.length > 0) reward.items = allItems;
-                      tele.reportComplete("completed");
-        onComplete(reward, config.nextPageId);
-                    }, 800);
-                  } else {
-                    toast({
-                      title: "QR 代碼錯誤",
-                      description: "請確認代碼是否正確",
-                      variant: "destructive",
-                    });
-                  }
+            {/* 🆕 2026-05-22 多元定位備援 — 取代舊 prompt UX */}
+            {(showQrFallback || config.qrFallback) && config.fallbackQrCode && (
+              <InlineCodeFallback
+                expectedCode={config.fallbackQrCode}
+                onPass={() => {
+                  stopWatching();
+                  setTimeout(() => {
+                    // 跟原流程一致：優先讀 RewardsSection 設定
+                    const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
+                    const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
+                    const reward: { points?: number; items?: string[] } = {
+                      points: rewardPoints ?? config.onSuccess?.points ?? 0,
+                    };
+                    const allItems = [
+                      ...rewardItems.filter((x) => !!x),
+                      ...(config.onSuccess?.grantItem ? [config.onSuccess.grantItem] : []),
+                    ];
+                    if (allItems.length > 0) reward.items = allItems;
+                    tele.reportComplete("completed");
+                    onComplete(reward, config.nextPageId);
+                  }, 800);
                 }}
-                className="w-full gap-2"
-                data-testid="button-qr-fallback"
-              >
-                <QrCode className="w-4 h-4" />
-                無法定位？輸入現場 QR 代碼
-              </Button>
+              />
+            )}
+            {(showQrFallback || config.qrFallback) && !config.fallbackQrCode && (
+              <p className="text-xs text-amber-600 text-center" data-testid="text-no-fallback-code">
+                ⚠ 管理員尚未設定備用代碼
+              </p>
             )}
           </div>
 
