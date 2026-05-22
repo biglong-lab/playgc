@@ -175,11 +175,30 @@ export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) 
         return res.status(400).json({ message: "Location already visited" });
       }
 
+      // 🆕 2026-05-22 多元定位驗證
+      // 接受 verifyMethod 與 verifyPayload，若未提供則 fallback 為 GPS（向後相容）
+      const verifyMethod = (req.body?.verifyMethod || "gps") as VerifyMethod;
+      const verifyPayload: VerifyPayload = req.body?.verifyPayload || {
+        lat: req.body?.lat,
+        lng: req.body?.lng,
+        accuracy: req.body?.accuracy,
+      };
+
+      const verifyResult = verifyVisit(verifyMethod, verifyPayload, location);
+      if (!verifyResult.ok) {
+        return res.status(400).json({
+          message: verifyResult.reason || "驗證失敗",
+          verifyMethod,
+        });
+      }
+
       const visitData = insertLocationVisitSchema.parse({
         locationId: locId,
         gameSessionId: sessionId,
         playerId: userId,
         completed: true,
+        verifyMethod,
+        verifyMetadata: verifyResult.metadata || null,
       });
 
       const visit = await storage.createLocationVisit(visitData);
