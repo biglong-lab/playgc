@@ -50,6 +50,8 @@ export const locations = pgTable(
     verificationCode: varchar("verification_code", { length: 10 }), // 4-6 位短碼（admin 設定）
     qrToken: varchar("qr_token", { length: 64 }), // QR 內嵌 token（HMAC 簽章用）
     allowAdminRescue: boolean("allow_admin_rescue").default(true), // 是否允許管理員手動標記到達
+    referenceImageHash: varchar("reference_image_hash", { length: 16 }), // AR 比對：參考照片的 dHash（Phase 3）
+    referenceImageUrl: text("reference_image_url"), // AR 比對：參考照片 URL（admin 預覽用）
     isRequired: boolean("is_required").default(true), // Required for game completion
     status: varchar("status", { length: 20 }).default("active"), // active, inactive, completed
     orderIndex: integer("order_index"),
