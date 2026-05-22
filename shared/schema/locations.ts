@@ -115,6 +115,10 @@ export const locationVisits = pgTable(
     distanceFromCenter: decimal("distance_from_center", { precision: 6, scale: 2 }), // in meters
     duration: integer("duration"), // in seconds
     completed: boolean("completed").default(false),
+    // 🆕 2026-05-22 多元定位驗證
+    verifyMethod: varchar("verify_method", { length: 20 }).default("gps"),
+    // 'gps' | 'qr' | 'code' | 'pdr' | 'ar' | 'admin'
+    verifyMetadata: jsonb("verify_metadata"), // 對應方式的詳細資料（QR token、代碼輸入時間、AR 比對分數等）
   },
   (table) => [
     index("idx_location_visits").on(table.locationId, table.gameSessionId),
