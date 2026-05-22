@@ -8,6 +8,7 @@ import {
   insertLocationVisitSchema,
 } from "@shared/schema";
 import { hotPathLimiter } from "../utils/rate-limiters";
+import { verifyVisit, type VerifyMethod, type VerifyPayload } from "../lib/location-verification";
 
 export function registerLocationTrackingRoutes(app: Express, ctx: RouteContext) {
   // ===========================================
