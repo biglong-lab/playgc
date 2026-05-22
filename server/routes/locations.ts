@@ -284,6 +284,132 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
     }
   });
 
+  // ===========================================
+  // 🆕 多元定位驗證 — Admin 輔助端點（2026-05-22）
+  // ===========================================
+
+  // 為單一 location 自動生成短碼
+  app.post("/api/locations/:id/generate-code", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid location ID" });
+      }
+      const existing = await storage.getLocation(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      const ownershipCheck = await checkGameOwnership(req, existing.gameId);
+      if (!ownershipCheck.authorized) {
+        return res.status(ownershipCheck.status || 403).json({ message: ownershipCheck.message });
+      }
+      const length = (req.body?.length === 5 || req.body?.length === 6) ? req.body.length : 4;
+      const code = generateShortCode(length);
+      const updated = await storage.updateLocation(id, { verificationCode: code });
+      res.json({ verificationCode: code, location: updated });
+    } catch (error) {
+      console.error("[locations] generate-code failed:", error);
+      res.status(500).json({ message: "Failed to generate code" });
+    }
+  });
+
+  // 為單一 location 自動生成 QR token
+  app.post("/api/locations/:id/generate-qr-token", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid location ID" });
+      }
+      const existing = await storage.getLocation(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      const ownershipCheck = await checkGameOwnership(req, existing.gameId);
+      if (!ownershipCheck.authorized) {
+        return res.status(ownershipCheck.status || 403).json({ message: ownershipCheck.message });
+      }
+      const token = generateQrToken(id);
+      const updated = await storage.updateLocation(id, { qrToken: token });
+      res.json({ qrToken: token, location: updated });
+    } catch (error) {
+      console.error("[locations] generate-qr-token failed:", error);
+      res.status(500).json({ message: "Failed to generate qr token" });
+    }
+  });
+
+  // 取得 location 的 QR Code DataURL（供 admin 預覽或玩家端使用）
+  app.get("/api/locations/:id/qr-image", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid location ID" });
+      }
+      const location = await storage.getLocation(id);
+      if (!location) {
+        return res.status(404).json({ message: "Location not found" });
+      }
+      if (!location.qrToken) {
+        return res.status(400).json({ message: "Location 尚未啟用 QR（請先 generate-qr-token）" });
+      }
+      // QR 內容：JSON 字串，含 type + locationId + token，玩家端掃出後 POST 給 server
+      const qrPayload = JSON.stringify({ t: "loc", id, tok: location.qrToken });
+      const dataUrl = await QRCode.toDataURL(qrPayload, {
+        type: "image/png",
+        width: 400,
+        margin: 2,
+        color: { dark: "#1f2937", light: "#ffffff" },
+        errorCorrectionLevel: "H",
+      });
+      res.json({ dataUrl, payload: qrPayload, locationName: location.name, code: location.verificationCode });
+    } catch (error) {
+      console.error("[locations] qr-image failed:", error);
+      res.status(500).json({ message: "Failed to generate qr image" });
+    }
+  });
+
+  // 一次取得整個遊戲所有 location 的 QR + 代碼（給列印 PDF 用）
+  app.get("/api/games/:gameId/locations/print-data", isAuthenticated, async (req, res) => {
+    try {
+      const { gameId } = req.params;
+      const ownershipCheck = await checkGameOwnership(req, gameId);
+      if (!ownershipCheck.authorized) {
+        return res.status(ownershipCheck.status || 403).json({ message: ownershipCheck.message });
+      }
+      const locationsList = await storage.getLocationsByGame(gameId, {});
+      const items = await Promise.all(
+        locationsList.map(async (loc) => {
+          let qrDataUrl: string | null = null;
+          if (loc.qrToken) {
+            const qrPayload = JSON.stringify({ t: "loc", id: loc.id, tok: loc.qrToken });
+            qrDataUrl = await QRCode.toDataURL(qrPayload, {
+              type: "image/png",
+              width: 400,
+              margin: 2,
+              color: { dark: "#1f2937", light: "#ffffff" },
+              errorCorrectionLevel: "H",
+            });
+          }
+          return {
+            id: loc.id,
+            name: loc.name,
+            description: loc.description,
+            verificationMode: loc.verificationMode || "gps",
+            verificationCode: loc.verificationCode,
+            qrToken: loc.qrToken,
+            qrDataUrl,
+            radius: loc.radius,
+            points: loc.points,
+            orderIndex: loc.orderIndex,
+          };
+        }),
+      );
+      res.json({ gameId, items });
+    } catch (error) {
+      console.error("[locations] print-data failed:", error);
+      res.status(500).json({ message: "Failed to fetch print data" });
+    }
+  });
+
   // 掛載玩家位置追蹤、造訪、導航計算子路由
   registerLocationTrackingRoutes(app, ctx);
 }
