@@ -427,6 +427,8 @@ function Router() {
         <Route path="/admin/settings">{() => <ProtectedAdminRoute><AdminSettings /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/templates">{() => <ProtectedAdminRoute><AdminTemplates /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId/locations">{() => <ProtectedAdminRoute><LocationEditor /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/games/:gameId/locations/print">{() => <ProtectedAdminRoute><LocationPrintSheet /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/sessions/:sessionId/stuck-players">{() => <ProtectedAdminRoute><StuckPlayersPanel /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId/items">{() => <ProtectedAdminRoute><ItemEditor /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId/achievements">{() => <ProtectedAdminRoute><AchievementEditor /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/games/:gameId/settings">{() => <ProtectedAdminRoute><GameSettings /></ProtectedAdminRoute>}</Route>
