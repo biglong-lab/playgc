@@ -187,6 +187,7 @@ export async function registerRoutes(
   registerPlayerPurchaseRoutes(app);
   registerAdminSessionRoutes(app);
   registerAdminSettingsRoutes(app);
+  registerAdminRescueRoutes(app, ctx);
   registerAiScoringRoutes(app);
 
   // 水彈對戰 PK 擂台
