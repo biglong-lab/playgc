@@ -92,6 +92,8 @@ const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
 const AdminTemplates = lazy(() => import("@/pages/AdminTemplates"));
 const GameEditor = lazy(() => import("@/pages/game-editor"));
 const LocationEditor = lazy(() => import("@/pages/LocationEditor"));
+const LocationPrintSheet = lazy(() => import("@/pages/admin/LocationPrintSheet"));
+const StuckPlayersPanel = lazy(() => import("@/pages/admin/StuckPlayersPanel"));
 const ItemEditor = lazy(() => import("@/pages/ItemEditor"));
 const AchievementEditor = lazy(() => import("@/pages/AchievementEditor"));
 const GameSettings = lazy(() => import("@/pages/GameSettings"));
