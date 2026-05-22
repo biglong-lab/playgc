@@ -383,9 +383,9 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
       if (!ownershipCheck.authorized) {
         return res.status(ownershipCheck.status || 403).json({ message: ownershipCheck.message });
       }
-      const locationsList = await storage.getLocationsByGame(gameId, {});
+      const locationsList = await storage.getLocations(gameId, {});
       const items = await Promise.all(
-        locationsList.map(async (loc) => {
+        locationsList.map(async (loc: typeof locations.$inferSelect) => {
           let qrDataUrl: string | null = null;
           if (loc.qrToken) {
             const qrPayload = JSON.stringify({ t: "loc", id: loc.id, tok: loc.qrToken });
