@@ -78,6 +78,13 @@ export function registerLocationRoutes(app: Express, ctx: RouteContext) {
                     reward: null,
                     isRequired: true,
                     unlockCondition: null,
+                    // 🆕 2026-05-22 多元定位驗證欄位（虛擬地點預設值）
+                    verificationMode: 'gps',
+                    verificationCode: null,
+                    qrToken: null,
+                    allowAdminRescue: true,
+                    referenceImageHash: null,
+                    referenceImageUrl: null,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                   });
