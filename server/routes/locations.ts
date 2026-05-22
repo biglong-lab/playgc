@@ -16,6 +16,7 @@ import {
   generateQrToken,
 } from "../lib/location-verification";
 import QRCode from "qrcode";
+import { computeImageHash, hammingDistance } from "../lib/image-hash";
 
 export function registerLocationRoutes(app: Express, ctx: RouteContext) {
   // ===========================================
