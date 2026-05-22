@@ -203,6 +203,12 @@ export default function LocationEditor() {
                 <p className="text-xs text-muted-foreground">{game?.title || "載入中..."}</p>
               </div>
             </div>
+            <Link href={`/admin/games/${gameId}/locations/print`}>
+              <Button variant="outline" size="sm" data-testid="button-print-qr">
+                <Printer className="w-4 h-4 mr-1" />
+                列印 QR / 代碼
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
