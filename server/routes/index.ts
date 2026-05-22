@@ -40,6 +40,7 @@ import { registerAdminPurchaseRoutes } from "./admin-purchases";
 import { registerPlayerPurchaseRoutes } from "./player-purchases";
 import { registerAdminSessionRoutes } from "./admin-sessions";
 import { registerAdminSettingsRoutes } from "./admin-settings";
+import { registerAdminRescueRoutes } from "./admin-rescue";
 import { registerRecurWebhookRoutes } from "./webhook-recur";
 import { registerAiScoringRoutes } from "./ai-scoring";
 import { registerBattleVenueRoutes } from "./battle-venues";
