@@ -392,6 +392,13 @@ export default function LocationEditor() {
                           </div>
                         </div>
                       )}
+
+                      {/* 🆕 2026-05-22 多元定位驗證設定 — 選中時展開 */}
+                      {isSelected && (
+                        <div className="mt-3 pt-3 border-t border-border">
+                          <LocationVerificationConfig location={location} />
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 );
