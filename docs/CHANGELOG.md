@@ -8,7 +8,7 @@
 ## 2026-05-22
 
 ### 🎯 多元定位驗證系統 — GPS 替代方案（feat）
-**狀態**：🟡 已實作、待部署
+**狀態**：🟢 部署上線（2026-05-22 22:38）
 **細節**：[changes/2026-05-22-multi-tier-location-verification.md](changes/2026-05-22-multi-tier-location-verification.md)
 **ADR**：[decisions/0021-multi-tier-location-verification.md](decisions/0021-multi-tier-location-verification.md)
 
