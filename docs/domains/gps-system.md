@@ -304,7 +304,60 @@ accuracy < 100m？ ─是→ ⚠️ 用 GPS + UI 提示「移到開闊處」
 
 ---
 
-## 七、技術參考
+## 七、🆕 多元定位驗證（2026-05-22）
+
+> **背景**：學校場域 GPS 統一被關、室內 GPS 飄移嚴重，純 GPS 無法滿足所有場域。
+> 完整設計：[ADR-0021](../decisions/0021-multi-tier-location-verification.md)
+> 變動紀錄：[changes/2026-05-22](../changes/2026-05-22-multi-tier-location-verification.md)
+
+### 五層備援架構
+
+```
+GPS → QR Code → 數字代碼 → PDR 相對定位 → 管理員救援
+```
+
+### Admin 設定流程
+
+1. 進入 LocationEditor → 任務點
+2. 展開「多元定位驗證設定」
+3. 選 `verificationMode`：
+   - `gps`（預設）／`qr`（純 QR）／`code`（純代碼）／`hybrid`（混合）／`any`（全可）
+4. 生成 QR token / 短碼 / AR 參考照片
+5. 列印 PDF → 張貼現場
+
+### 玩家簽到流程
+
+`LocationVerifier` 元件依 `verificationMode` 顯示可用按鈕：
+- **GPS**：直接帶座標 POST visit
+- **QR**：開啟掃描器、解析 `{ t: "loc", id, tok }` 格式
+- **代碼**：4-6 位代碼輸入
+- **AR**：拍照 → dHash 比對 → matchScore ≥ 0.7 通過
+- **PDR**：相對定位導引（不作簽到驗證）
+
+### API 端點
+
+| 端點 | 用途 |
+|------|------|
+| `POST /api/sessions/:sid/locations/:lid/visit` | 統一簽到（含 verifyMethod / verifyPayload）|
+| `POST /api/locations/:id/generate-code` | 自動生成代碼 |
+| `POST /api/locations/:id/generate-qr-token` | 生成 QR token |
+| `GET /api/locations/:id/qr-image` | 取 QR DataURL |
+| `GET /api/games/:gid/locations/print-data` | 列印用資料 |
+| `POST /api/locations/:id/set-reference-image` | 設 AR 參考照片 |
+| `POST /api/sessions/:sid/locations/:lid/verify-photo` | AR 比對 |
+| `GET /api/admin/sessions/:sid/stuck-players` | 卡關玩家清單 |
+| `POST /api/admin/sessions/:sid/rescue/:pid/visit/:lid` | Admin 救援 |
+
+### 安全機制
+
+- **QR Token**：HMAC-SHA256 簽章（`QR_TOKEN_SECRET` env），無法偽造
+- **代碼比對**：不分大小寫、排除易混字（0/O/1/I/L）
+- **Admin 救援**：必寫 audit log（admin id / reason / timestamp）
+- **AR 比對**：dHash + Hamming distance，預設門檻 0.7
+
+---
+
+## 八、技術參考
 
 - W3C Geolocation API: https://www.w3.org/TR/geolocation/
 - Haversine: https://en.wikipedia.org/wiki/Haversine_formula
