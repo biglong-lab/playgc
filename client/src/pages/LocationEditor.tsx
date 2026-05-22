@@ -9,11 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Location, Game } from "@shared/schema";
-import { 
-  MapPin, Navigation, Target, Save, RefreshCw, 
+import {
+  MapPin, Navigation, Target, Save, RefreshCw,
   ChevronLeft, CheckCircle, Crosshair, Loader2,
-  QrCode, ArrowLeft
+  QrCode, ArrowLeft, Printer
 } from "lucide-react";
+import { LocationVerificationConfig } from "@/components/admin/LocationVerificationConfig";
+import { Link } from "wouter";
 
 interface GeoPosition {
   latitude: number;
