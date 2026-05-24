@@ -134,16 +134,25 @@ export default function QRCodeDialog({
                 </div>
               </div>
             ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">尚未產生 QR Code</p>
-                <Button
-                  onClick={() => onGenerate(game.id)}
-                  disabled={isPending}
-                  data-testid="button-generate-qr-dialog"
-                >
-                  <QrCode className="h-4 w-4 mr-2" />
-                  產生 QR Code
-                </Button>
+              <div className="text-center py-8 flex flex-col items-center gap-3">
+                {isPending ? (
+                  <>
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">生成 QR Code 中…</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground">準備生成 QR Code</p>
+                    <Button
+                      onClick={() => onGenerate(game.id)}
+                      disabled={isPending}
+                      data-testid="button-generate-qr-dialog"
+                    >
+                      <QrCode className="h-4 w-4 mr-2" />
+                      產生 QR Code
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </div>
