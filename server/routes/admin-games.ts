@@ -68,7 +68,13 @@ export function registerAdminGameRoutes(app: Express) {
         orderBy: [desc(games.createdAt)],
       });
 
-      res.json(gamesList);
+      // 🔧 2026-05-25：列表回傳時剝離 qrCodeUrl 欄位
+      //   理由：DB 內歷史 cache 的 qrCodeUrl 是 PNG DataURL、QR 內含 URL 在
+      //         「產生當下」就被編進去（過去多為 localhost）。生產 BASE_URL 改了
+      //         也不會更新到 PNG。強制前端用 GET /api/admin/games/:id/qrcode 即時動態取，
+      //         保證 QR 永遠對應目前 PUBLIC_BASE_URL。
+      const stripped = gamesList.map((g) => ({ ...g, qrCodeUrl: null }));
+      res.json(stripped);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch games" });
     }
