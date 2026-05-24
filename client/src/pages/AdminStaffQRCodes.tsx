@@ -225,7 +225,8 @@ export default function AdminStaffQRCodes() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {game.qrCodeUrl ? (
+                          {/* 🔧 2026-05-25：改用 publicSlug 判定（qrCodeUrl 已不從列表取） */}
+                          {game.publicSlug ? (
                             <Badge variant="outline" className="text-green-500 border-green-500/30">
                               已生成
                             </Badge>
