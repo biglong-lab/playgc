@@ -311,6 +311,11 @@ export default function AdminStaffQRCodes() {
                       />
                     </div>
                   </div>
+                ) : generateQRMutation.isPending ? (
+                  <div className="flex flex-col items-center justify-center py-8 gap-3 text-muted-foreground">
+                    <div className="w-8 h-8 border-2 border-current border-r-transparent rounded-full animate-spin" />
+                    <p className="text-sm">即時生成 QR Code 中…</p>
+                  </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     尚未生成 QR Code
