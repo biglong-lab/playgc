@@ -34,6 +34,20 @@ export default function QRCodeDialog({
 }: QRCodeDialogProps) {
   const { toast } = useToast();
   const [copiedUrl, setCopiedUrl] = useState(false);
+  // 🔧 2026-05-25：對話框開啟時若沒有 cached QR Code 自動觸發即時生成
+  //   避免拿到 DB cached PNG（舊 BASE_URL 編碼進去的）
+  //   server 端列表已不回傳 qrCodeUrl，所以這裡幾乎一定會 null → 觸發
+  const autoTriggeredRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!open || !game) {
+      autoTriggeredRef.current = null;
+      return;
+    }
+    if (game.qrCodeUrl) return; // 已有就不重新生成
+    if (autoTriggeredRef.current === game.id) return; // 同一 game 已觸發過
+    autoTriggeredRef.current = game.id;
+    onGenerate(game.id);
+  }, [open, game, onGenerate]);
 
   function copyGameUrl(slug: string) {
     const baseUrl = window.location.origin;
