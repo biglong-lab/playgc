@@ -251,7 +251,14 @@ export default function AdminStaffQRCodes() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => setSelectedGame(game)}
+                                  onClick={() => {
+                                    // 🔧 2026-05-25：開啟對話框時自動觸發生成
+                                    // 避免拿到 DB cached（含舊 BASE_URL）的 PNG
+                                    setSelectedGame({ ...game, qrCodeUrl: null });
+                                    if (!generateQRMutation.isPending) {
+                                      generateQRMutation.mutate(game.id);
+                                    }
+                                  }}
                                   data-testid={`button-view-qr-${game.id}`}
                                 >
                                   <QrCode className="h-4 w-4 mr-1" />
