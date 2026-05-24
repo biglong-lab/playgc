@@ -247,33 +247,23 @@ export default function AdminStaffQRCodes() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            {game.qrCodeUrl ? (
-                              <>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    // 🔧 2026-05-25：開啟對話框時自動觸發生成
-                                    // 避免拿到 DB cached（含舊 BASE_URL）的 PNG
-                                    setSelectedGame({ ...game, qrCodeUrl: null });
-                                    if (!generateQRMutation.isPending) {
-                                      generateQRMutation.mutate(game.id);
-                                    }
-                                  }}
-                                  data-testid={`button-view-qr-${game.id}`}
-                                >
-                                  <QrCode className="h-4 w-4 mr-1" />
-                                  查看
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDownloadQR(game)}
-                                  data-testid={`button-download-qr-${game.id}`}
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                              </>
+                            {/* 🔧 2026-05-25：改用 publicSlug 判定（列表不再回傳 qrCodeUrl） */}
+                            {game.publicSlug ? (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  // 開對話框時自動即時生成（避免 DB 舊 cache）
+                                  setSelectedGame({ ...game, qrCodeUrl: null });
+                                  if (!generateQRMutation.isPending) {
+                                    generateQRMutation.mutate(game.id);
+                                  }
+                                }}
+                                data-testid={`button-view-qr-${game.id}`}
+                              >
+                                <QrCode className="h-4 w-4 mr-1" />
+                                查看
+                              </Button>
                             ) : (
                               <Button
                                 size="sm"
