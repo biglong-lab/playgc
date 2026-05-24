@@ -5,6 +5,28 @@
 
 ---
 
+## 2026-05-25
+
+### 🐛 遊戲 QR Code 編碼為 localhost URL（fix）
+**狀態**：🟢 部署上線
+
+**症狀**：使用者掃 QR Code 解碼出 `http://localhost:3333/g/xxx`、無法進入遊戲。
+
+**根因**：
+- DB `games.qr_code_url` 欄位儲存的是 **PNG DataURL**（不是純 URL）
+- 過去產生時 server `resolveBaseUrl()` fallback 到 `localhost:3333`（無 PUBLIC_BASE_URL）
+- 那個 localhost URL **被 QR Code 編碼進 PNG**、存進 DB
+- 之後即使生產 `.env` 設了 `PUBLIC_BASE_URL=https://game.homi.cc`、**PNG 內容也不會自動更新**
+- `GET /api/admin/games` 列表直接回傳 DB cached PNG → 玩家拿到舊版
+
+**修法**：
+1. 清空所有 `games.qr_code_url`（15 筆）— 強制每次都動態生成
+2. `GET /api/admin/games` 與 `GET /api/admin/games/:id` 回傳時剝離 `qrCodeUrl`（防未來再有 cache 風險）
+3. `QRCodeDialog` 與 `AdminStaffQRCodes` 對話框開啟時自動觸發 `POST /api/admin/games/:id/qrcode` 即時生成
+4. 表格 QR 狀態判定改用 `publicSlug`（而非 `qrCodeUrl`）
+
+---
+
 ## 2026-05-22
 
 ### 🎯 多元定位驗證系統 — GPS 替代方案（feat）
