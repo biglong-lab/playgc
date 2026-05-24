@@ -160,7 +160,8 @@ export function registerAdminGameRoutes(app: Express) {
         return res.status(403).json({ message: "無權限存取此遊戲" });
       }
 
-      res.json(game);
+      // 🔧 2026-05-25：同列表端點，剝離 cached qrCodeUrl 避免回傳過時 PNG
+      res.json({ ...game, qrCodeUrl: null });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch game" });
     }
