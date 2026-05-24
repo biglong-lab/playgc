@@ -1,5 +1,5 @@
 // QR Code 對話框元件
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { QrCode, Download, Copy, Check, RefreshCw, ExternalLink } from "lucide-react";
+import { QrCode, Download, Copy, Check, RefreshCw, ExternalLink, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface QRCodeDialogProps {
