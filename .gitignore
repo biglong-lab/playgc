@@ -31,6 +31,9 @@ google-credentials*.json
 
 # 🗄️ 資料庫備份（含生產資料，絕不提交）
 backups/
+db-backups/
+*.dump
+*.sql.gz
 
 # 📊 測試與覆蓋率產物（CI 產生，不進版控）
 coverage/
