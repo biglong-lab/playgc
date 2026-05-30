@@ -327,6 +327,22 @@ app.use((req, res, next) => {
   next();
 });
 
+// 🔒 敏感欄位遮罩：避免 token / 密碼 / 個資 / 付款資訊寫進 log
+const SENSITIVE_KEY_RE =
+  /(pass(word)?|token|secret|auth|cookie|session|otp|code|jwt|apikey|api[-_]?key|credit|card|cvv|phone|email|idnumber|id[-_]?card)/i;
+
+function redactForLog(value: unknown, depth = 0): unknown {
+  if (depth > 3 || value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) {
+    return value.slice(0, 20).map((v) => redactForLog(v, depth + 1));
+  }
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+    out[k] = SENSITIVE_KEY_RE.test(k) ? "[redacted]" : redactForLog(v, depth + 1);
+  }
+  return out;
+}
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -342,8 +358,10 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      // 只在非 production 附帶遮罩後的 response 摘要（截斷 200 字），production 不記 body
+      if (capturedJsonResponse && process.env.NODE_ENV !== "production") {
+        const redacted = JSON.stringify(redactForLog(capturedJsonResponse));
+        logLine += ` :: ${redacted.length > 200 ? redacted.slice(0, 200) + "…" : redacted}`;
       }
 
       log(logLine);
