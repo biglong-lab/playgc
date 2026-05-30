@@ -20,7 +20,8 @@ export default defineConfig({
     ],
     exclude: ["node_modules", "dist", ".git", "attached_assets", ".cache"],
     // Vitest threads pool 偶爾有跨檔案 mock 洩漏，retry 作為安全網
-    retry: 2,
+    // CI 設 0：不掩蓋真 flake，讓不穩定測試現形；本機留 1 減少誤判
+    retry: process.env.CI ? 0 : 1,
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
