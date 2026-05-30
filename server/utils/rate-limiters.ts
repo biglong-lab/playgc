@@ -1,16 +1,21 @@
 // 熱路徑 per-user rate limit
 // 目標：500 人同時玩時，防單一玩家寫腳本/誤觸爆打某 API
 // 原則：套用在 isAuthenticated 之後的 route，透過 req.user 取 userId
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import type { Request } from "express";
 
-/** 從 req 取得使用者識別碼（優先 userId，退回 IP）*/
+/** IPv6 安全的 IP key（避免使用者切換 IPv6 後綴繞過限速）*/
+function safeIp(req: Request): string {
+  return ipKeyGenerator(req.ip ?? "");
+}
+
+/** 從 req 取得使用者識別碼（優先 userId，退回正規化後的 IP）*/
 function getUserKey(req: Request): string {
   const r = req as Request & {
     user?: { claims?: { sub?: string }; id?: string };
   };
   const userId = r.user?.claims?.sub || r.user?.id;
-  return userId ? `u:${userId}` : `ip:${req.ip}`;
+  return userId ? `u:${userId}` : `ip:${safeIp(req)}`;
 }
 
 /**
