@@ -14,6 +14,14 @@ export default tseslint.config(
       "*.config.js",
       "*.config.ts",
       "script/**",
+      // 工具/快取/產物目錄 — 不該被 lint（否則掃到第三方檔案產生大量噪音）
+      ".cache/**",
+      ".config/**",
+      ".local/**",
+      "coverage/**",
+      "playwright-report/**",
+      "test-results/**",
+      "backups/**",
     ],
   },
 
