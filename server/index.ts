@@ -284,7 +284,18 @@ app.get("/api/version", (_req, res) => {
 });
 
 // 詳細健康檢查（DB pool 狀態，幫助壓測觀察瓶頸）
-app.get("/api/health/detail", async (_req, res) => {
+// 🔒 含 memory / DB pool 等內部狀態，不該對外公開：
+//    設定 HEALTH_SECRET 後，需帶 x-health-secret header 才放行（壓測/監控工具自行帶）
+//    生產環境務必設定 HEALTH_SECRET
+app.get("/api/health/detail", async (req, res) => {
+  const secret = process.env.HEALTH_SECRET;
+  if (secret && req.headers["x-health-secret"] !== secret) {
+    return res.status(404).json({ message: "Not found" });
+  }
+  if (!secret && process.env.NODE_ENV === "production") {
+    // 生產卻沒設 secret → 不洩漏內部狀態，只回基本 ok
+    return res.json({ status: "ok", timestamp: Date.now() });
+  }
   // 動態載入避免循環依賴
   const { pool } = await import("./db");
   res.json({
