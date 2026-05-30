@@ -26,6 +26,12 @@ jobs:
       - name: TypeScript 型別檢查
         run: npm run check
 
+      # ESLint：目前約 450 errors / 3278 warnings 待清，先「報告但不擋 merge」
+      # 待技術債清乾淨後移除 continue-on-error，轉為硬閘門
+      - name: ESLint 檢查（暫不擋 merge）
+        run: npm run lint
+        continue-on-error: true
+
   test:
     name: 單元測試 + 整合測試
     runs-on: ubuntu-latest
