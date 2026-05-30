@@ -135,13 +135,20 @@ DROP INDEX IF EXISTS idx_table_x_new_field;
 
 ## 備份策略
 
+> **⚠️ scp 使用界線（澄清全域「禁 scp」規則）**
+> 全域紅線禁止的是**用 scp 部署程式碼 / 變更**（必須走 git）。
+> 本節的 scp 是**資料庫備份維運**——備份 dump 本來就不能進 git（含生產資料，已從版控移除），
+> 走 scp 傳 dump 是正當例外。但仍須遵守：
+> - dump 落地本地後**不可** `git add`（`.gitignore` 已擋 `backups/`、`db-backups/` 請一併確認）
+> - 還原（上傳覆蓋）僅限緊急，且務必先確認目標環境
+
 ### 部署高風險變動前手動備份
 
 ```bash
 # 在生產跑 pg_dump 到時間戳檔名
 ssh root@172.233.89.147 "docker exec gamehomicc-db-1 pg_dump -U postgres gameplatform > /tmp/backup-$(date +%Y%m%d-%H%M%S).sql"
 
-# 下載到本地
+# 下載到本地（DB 備份維運，非程式碼部署）
 scp root@172.233.89.147:/tmp/backup-*.sql ./db-backups/
 ```
 
