@@ -5,6 +5,20 @@
 
 ---
 
+## 2026-05-31
+
+### 🛡️ Repo 衛生 + 安全護欄 + CI 可信度（chore / fix）
+**狀態**：🟢 部署上線（commit `20b1c8b6`）
+**細節** → [changes/2026-05-31-repo-hygiene-security-hardening.md](changes/2026-05-31-repo-hygiene-security-hardening.md)
+
+- **安全護欄**：API logger 遮罩敏感欄位（production 不記 response body）；`/api/health/detail` 加 `HEALTH_SECRET` 守門（已驗證生產不再洩漏 memory/pool）；rate-limiter IPv6 正規化防繞限速；seed 生產守門 + 密碼環境變數化
+- **部署安全**：`deploy.sh` 改「工作區不乾淨即中止」（不再自動收檔）；`deploy.yml` health 失敗即失敗
+- **CI 可信度**：ESLint ignores 修正（lint 噪音 16 萬→真實 345 errors）；CI 補 lint；移除掩蓋 schema 的 continue-on-error；vitest retry CI 設 0（測試 547s→30s）
+- **Repo 衛生**：DB dump / coverage / 測試產物移出版控 + gitignore
+- **驗證**：tsc 零錯誤；測試 53 既有失敗零 regression；部署後生產 health/version 全綠
+
+---
+
 ## 2026-05-25
 
 ### 🐛 遊戲 QR Code 編碼為 localhost URL（fix）
