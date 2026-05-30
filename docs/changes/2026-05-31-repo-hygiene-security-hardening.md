@@ -52,7 +52,20 @@
 
 ## 已知限制 / 後續優化
 
-- **Phase 3（body 上限）**：`express.json` 全域 `50mb` 是上傳所需（圖片/影片/音訊以 base64 走 JSON body），上傳端點散落多個路徑前綴，盲降會讓生產上傳噴 413。需可測試的審慎變更（路徑分層或遷移 multipart）。**待專門處理。**
+- **Phase 3（body 上限）**：`express.json` 全域 `50mb` 是上傳所需（圖片/影片/音訊以 base64 走 JSON body），上傳端點散落 5+ 路徑前綴、共約 15 個，盲降會讓生產上傳噴 413。需可測試的審慎變更（路徑分層或遷移 multipart），且須逐一驗證上傳流程。**待能測上傳的 session 專門處理。**
+  <details><summary>上傳端點清單（base64 / large body，2026-05-31 盤點）</summary>
+
+  - `POST /api/cloudinary/upload`、`/player-photo`、`/burst-frame`、`/burst-to-gif`、`/composite-photo`、`/composite-upload`
+  - `POST /api/admin/games/:id/cloudinary-cover`、`/cloudinary-media`
+  - `POST /api/admin/fields/:id/cloudinary-cover`、`/cloudinary-logo`
+  - `POST/PATCH /api/admin/activities`（建立/更新帶 imageData）、`POST /api/admin/activities/:id/cover`
+  - `POST /api/admin/photo-composite/preview`
+  - `POST /api/squads/:id/emblem`
+  - `POST /api/photos/upload`
+  - （`POST /api/photos` 收 photoURL 字串非 base64，不需大 limit）
+
+  建議做法：保留這些端點大 limit、全域降至 ~1mb；或遷移 multipart/multer。改後須實測每條上傳流程。
+  </details>
 - **Phase 4（Git 歷史清理 dump）**：repo 未公開，非緊急。轉公開前須先做 `git filter-repo` + force push（需明確授權）。
 - **Phase 5（大檔拆分）**：25 檔超 800 行（最大 `shared/scenario-templates.ts` 5106 行）。需在 Phase 1 可信測試基線上分小 PR 進行，獨立週期。
 - **Phase 6（文件/維運）**：PROGRESS/STATUS 落後、runbook scp 與全域禁 scp 矛盾、`docker-compose.prod.yml` LiveKit `:latest` 待鎖版本（需先確認生產實際版本）。
