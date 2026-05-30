@@ -43,6 +43,15 @@ const ALL_PERMISSIONS = [
 ];
 
 async function seed() {
+  // 🔒 安全守門：禁止在 production 誤跑 seed（會建立超級管理員，覆蓋風險）
+  if (process.env.NODE_ENV === "production" && process.env.SEED_FORCE !== "1") {
+    console.error(
+      "❌ 偵測到 NODE_ENV=production，拒絕執行 seed。\n" +
+        "   若確定要在生產初始化，請設定 SEED_FORCE=1 並務必提供 SEED_ADMIN_PASSWORD。",
+    );
+    process.exit(1);
+  }
+
   console.log("🌱 開始初始化種子資料...\n");
 
   // 1. 建立場域
