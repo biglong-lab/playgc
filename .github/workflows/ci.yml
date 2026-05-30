@@ -105,7 +105,6 @@ jobs:
 
       - name: 推送 DB schema
         run: npx drizzle-kit push --force
-        continue-on-error: true
 
       - name: 安裝 Playwright 瀏覽器
         run: npx playwright install chromium --with-deps
