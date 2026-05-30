@@ -180,8 +180,10 @@ async function seed() {
   console.log("  ✅ 場域執行者角色已建立（唯讀）");
 
   // 4. 建立管理員帳號（帳密登入）
+  //    密碼優先吃 SEED_ADMIN_PASSWORD；dev 未設定時退回 admin123 方便本地開發
   console.log("\n👤 建立管理員帳號...");
-  const passwordHash = await bcrypt.hash("admin123", 10);
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || "admin123";
+  const passwordHash = await bcrypt.hash(adminPassword, 10);
   await db.insert(adminAccounts).values({
     id: randomUUID(),
     fieldId,
@@ -192,7 +194,8 @@ async function seed() {
     roleId: superAdminRoleId,
     status: "active",
   });
-  console.log("  ✅ 帳號 admin / admin123 已建立（超級管理員）");
+  const pwHint = process.env.SEED_ADMIN_PASSWORD ? "（來自 SEED_ADMIN_PASSWORD）" : "admin123（dev 預設）";
+  console.log(`  ✅ 帳號 admin / ${pwHint} 已建立（超級管理員）`);
 
   // 5. 建立展示遊戲（從模組庫前 3 個模組建立，狀態為 published）
   console.log("\n🎮 建立展示遊戲...");
