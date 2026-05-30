@@ -79,6 +79,6 @@ export const publicWriteLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => `pubwrite:ip:${req.ip}`,
+  keyGenerator: (req) => `pubwrite:ip:${safeIp(req)}`,
   message: { message: "請求過於頻繁，請稍後再試" },
 });
