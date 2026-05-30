@@ -65,15 +65,21 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            cd ${{ secrets.DEPLOY_PATH || '/www/wwwroot/gameplatform' }}
+            cd ${{ secrets.DEPLOY_PATH || '/www/wwwroot/game.homi.cc' }}
             echo "📦 拉取最新程式碼..."
             git pull origin main
             echo "🐳 重新建置並啟動容器..."
-            docker compose -f docker-compose.prod.yml up -d --build
+            GIT_SHA=$(git rev-parse --short HEAD) docker compose -f docker-compose.prod.yml up -d --build
             echo "⏳ 等待健康檢查..."
             sleep 10
             echo "🔍 檢查服務狀態..."
-            curl -sf http://localhost:3333/health && echo "✅ 部署成功！" || echo "❌ 健康檢查失敗"
+            # 健康檢查失敗必須讓 step exit 非零（否則部署失敗會被誤判成功）
+            if curl -sf http://localhost:3333/health; then
+              echo "✅ 部署成功！"
+            else
+              echo "❌ 健康檢查失敗，部署視為失敗"
+              exit 1
+            fi
 
   deploy-coolify:
     name: 部署（Coolify Webhook）
