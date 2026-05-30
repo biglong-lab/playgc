@@ -39,37 +39,16 @@ log_fail()  { echo -e "${RED}❌${NC} $1"; }
 # ═══ 1/6 檢查本地狀態 ═══
 log_step "1/6 檢查本地狀態"
 
-# 🆕 主動 stage 所有變更（包含 untracked 新檔）— 防 auto-hook 延遲 commit 導致漏檔
-git add -A
-
-# 若有 staged 但沒 commit（通常是 auto-hook 還沒跑完），自己先 commit
-if ! git diff --cached --quiet; then
-  STAGED_FILES=$(git diff --cached --name-only)
-  log_warn "偵測到已 stage 但未 commit 的變更，為確保不漏檔部署，自動 commit："
-  echo "$STAGED_FILES"
-  if [[ ! -t 0 ]] || [[ -n "$NON_INTERACTIVE" ]] || [[ "$DEPLOY_FORCE" == "1" ]]; then
-    git commit -m "chore(deploy): 部署前自動 commit 未存檔變更" || {
-      log_fail "自動 commit 失敗（可能有 pre-commit hook 報錯）"
-      exit 1
-    }
-    log_ok "已自動 commit"
-  else
-    read -rp "要自動 commit 這些變更嗎？(y/N) " ans
-    if [[ "$ans" == "y" ]]; then
-      git commit -m "chore(deploy): 部署前自動 commit" || exit 1
-      log_ok "已自動 commit"
-    else
-      log_fail "取消部署"
-      exit 1
-    fi
-  fi
-fi
-
-# 最後一次驗證：工作區確實乾淨
+# 🔒 安全原則：部署前工作區必須乾淨。
+#    不再自動 git add -A / 自動 commit —— 那會把無關半成品、DB dump、報告一起送上線。
+#    請先自行 commit 想部署的變更，再執行部署。
 if [[ -n "$(git status -s)" ]]; then
-  log_fail "工作區仍有未處理變更（可能 .gitignore 排除或 submodule）"
+  log_fail "工作區有未提交的變更，為避免誤把無關檔案部署上線，已中止。"
+  log_fail "請先檢視並自行 commit 要部署的內容後再試："
   git status -s
+  # 急用時可用 DEPLOY_FORCE=1 略過（自負風險，不會自動 commit）
   [[ "$DEPLOY_FORCE" != "1" ]] && exit 1
+  log_warn "DEPLOY_FORCE=1：略過乾淨度檢查（未提交變更不會被部署）"
 fi
 
 LOCAL_SHA=$(git rev-parse HEAD)   # 🔧 改用完整 40 字元 SHA，避免 git 短 SHA 長度不一致的誤判
