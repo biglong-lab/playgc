@@ -239,7 +239,7 @@ async function seed() {
   console.log("\n📋 登入資訊：");
   console.log("  場域編號: JIACHUN");
   console.log("  帳號: admin");
-  console.log("  密碼: admin123");
+  console.log(`  密碼: ${process.env.SEED_ADMIN_PASSWORD ? "（你設定的 SEED_ADMIN_PASSWORD）" : "admin123"}`);
   console.log("\n🌐 訪問 http://localhost:3333/admin/login 開始使用");
   console.log("   或 http://localhost:3333/home 查看已發布的遊戲\n");
 
