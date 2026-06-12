@@ -107,6 +107,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "新人祝福牆",
         role: "賓客掃 QR 匿名送祝福、大螢幕即時長出祝福卡（免登入）",
         axis: "host",
+        config: {
+          theme: "wedding",
+          title: "💕 新人祝福牆",
+          subtitle: "寫下你對新人的祝福",
+          emojis: ["💕", "💍", "🥂", "🎉", "✨", "💐"],
+          maxLength: 40,
+        },
       },
       {
         pageType: "host_emoji_react",
