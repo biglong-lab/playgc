@@ -712,6 +712,14 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "親子一起找線索、解謎",
         axis: "multi",
         demoMode: "treasure",
+        config: {
+          title: "🧒 親子尋寶大冒險",
+          finalReward: "🏅 完成領「小勇者」徽章",
+          clues: [
+            { id: "c1", prompt: "找一個紅色的東西，數數看一共有幾個？", answer: "請主辦改成正確答案" },
+            { id: "c2", prompt: "找到最高的那棵樹，樹下藏著什麼顏色的記號？", answer: "請主辦改成正確答案" },
+          ],
+        },
       },
       {
         pageType: "jigsaw_puzzle",
@@ -719,6 +727,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "孩子貼拼圖、家長拍照",
         axis: "multi",
         demoMode: "jigsaw",
+        config: {
+          title: "🧩 親子拼圖",
+          rows: 2,
+          cols: 2,
+          prompts: ["可愛動物", "彩虹", "太陽", "小花"],
+        },
       },
       {
         pageType: "host_emoji_react",
