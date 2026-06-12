@@ -67,6 +67,18 @@ test.describe("template-market 12 情境 smoke", () => {
     expect(criticalOnly(errors)).toHaveLength(0);
   });
 
+  test("社交情境(wedding)詳情頁標示「全程免登入」", async ({ page }) => {
+    await page.goto("/template-market/wedding");
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("badge-login-mode")).toContainText("免登入");
+  });
+
+  test("GPS情境(street-walk)詳情頁標示「需登入組隊」", async ({ page }) => {
+    await page.goto("/template-market/street-walk");
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("badge-login-mode")).toContainText("組隊");
+  });
+
   test("玩家路由 /play 可達不崩潰", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (err) => errors.push(err.message));
