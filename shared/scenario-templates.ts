@@ -28,6 +28,13 @@ export interface ScenarioComponent {
   axis: PlayerMode | "shared";
   /** demo 連結（ShowcaseHub demoMode）*/
   demoMode?: string;
+  /**
+   * 主題化 default 呈現內容（2026-06-13）。
+   * instantiate 時優先序：aiConfig > component.config > getDefaultConfigForPageType。
+   * 形狀必須吻合該 pageType 的 renderer 期望（見 server getDefaultConfigForPageType）。
+   * 未填則 fallback 回 pageType 通用 default。
+   */
+  config?: Record<string, unknown>;
 }
 
 /** 情境分類 */
