@@ -594,6 +594,16 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "決策模擬、議題討論",
         axis: "host",
         demoMode: "poll-host",
+        config: {
+          title: "🏢 議題即時投票",
+          question: "面對這個情境，你會優先選擇？",
+          options: [
+            { id: "a", label: "立即行動" },
+            { id: "b", label: "先蒐集更多資訊" },
+            { id: "c", label: "尋求主管核可" },
+            { id: "d", label: "交給團隊討論" },
+          ],
+        },
       },
       {
         pageType: "role_assign",
