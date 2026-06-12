@@ -51,7 +51,8 @@ interface AiPreviewResponse {
 export default function TemplateMarketDetail() {
   const [, params] = useRoute("/template-market/:scenarioId");
   const [, navigate] = useLocation();
-  const { admin } = useAdminAuth();
+  // 公開銷售頁：未登入訪客也要能看詳情，不可被 useAdminAuth 預設導向 /admin/login
+  const { admin } = useAdminAuth({ redirectTo: "" });
   const [launching, setLaunching] = useState(false);
   const [launchResult, setLaunchResult] = useState<InstantiateResponse | null>(null);
   // 🆕 D2-c (2026-05-07)：dialog 關閉時 launchResult 不清掉、admin 可重開「再列印 / 看 URL」
