@@ -639,7 +639,19 @@ function ComponentRow({ component }: { component: ScenarioComponent }) {
         {axisStyle.label}
       </Badge>
       <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm">{component.label}</div>
+        <div className="font-medium text-sm flex items-center gap-1.5 flex-wrap">
+          {component.label}
+          {/* host 軸線可匿名（掃 QR 即玩）；其他軸線需登入組隊 */}
+          {component.axis === "host" ? (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
+              免登入
+            </span>
+          ) : (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400">
+              需登入組隊
+            </span>
+          )}
+        </div>
         <div className="text-xs text-muted-foreground mt-0.5">{component.role}</div>
       </div>
       {component.demoMode && (
