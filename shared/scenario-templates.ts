@@ -145,10 +145,10 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "host",
       },
       {
-        pageType: "wish_wall",
-        label: "壽星祝福卡牆",
-        role: "每位賓客送出一張祝福卡給壽星，附 emoji 與署名",
-        axis: "multi",
+        pageType: "host_blessing_wall",
+        label: "壽星祝福牆",
+        role: "賓客掃 QR 匿名送祝福給壽星、大螢幕即時呈現（免登入）",
+        axis: "host",
       },
       {
         pageType: "host_emoji_react",
