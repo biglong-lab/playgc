@@ -38,6 +38,31 @@
   詳情頁可見且列元件、玩家路由 /play /g 不崩、mobile RWD）
 - 不變式：12 情境 53 元件 0 個無 renderer
 
+## 第二輪：使用情境登入優化（2026-06-13）
+使用者指出「有些使用情境不需登入」。盤點玩家端登入需求：
+- `host_*` 元件 → `/play/:sessionId` → **匿名可玩**（掃 QR 即玩）
+- `multi` 元件 → `/g/:slug` → 「創建/加入隊伍」→ `/team/:id` → **強制登入+組隊**
+  （`getGameModeForComponent` 把 multi 一律設 team 模式；GameBySlug 導向 team lobby）
+
+**決策（使用者選定）**：6 個社交情境換成全匿名 host。
+| 情境 | 換掉的 multi → 匿名 host |
+|------|------------------------|
+| wedding | wish_wall→host_blessing_wall、mad_libs→host_word_cloud |
+| birthday | wish_wall→host_blessing_wall |
+| reunion | wish_wall→host_blessing_wall、never_have_i_ever→host_poll_live |
+| carnival-stage | multi_vote→host_poll_live |
+| icebreaker | jigsaw_puzzle→host_word_cloud |
+| awards-ceremony | word_cloud→host_word_cloud |
+
+結果：6 社交情境 **100% host = 全程免登入**。GPS/尋寶類（street-walk、district-checkin、
+kids-adventure、venue-storyline、corporate-training、company-trip）本質需組隊 → 維持 multi。
+
+**UX 打磨**：詳情頁新增登入需求標示
+- 情境層 badge：`🟢 全程免登入（掃 QR 即玩）` / `🔑 含需登入組隊元件`
+- 元件層 tag：每個元件標 `免登入` / `需登入組隊`
+
+補 `host_blessing_wall` default config。e2e 18/18 通過（含 badge 標示驗證）。
+
 ## 已知限制 / 後續
 - golden-path-a/b/c e2e 被「本地 dev DB schema drift」擋住（games 表缺 show_progress
   等欄位，seed-game 500）。此為既有環境問題、非本次改動造成；`db:push` 需 table-level
