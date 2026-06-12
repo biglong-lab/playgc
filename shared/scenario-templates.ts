@@ -169,6 +169,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "壽星祝福牆",
         role: "賓客掃 QR 匿名送祝福給壽星、大螢幕即時呈現（免登入）",
         axis: "host",
+        config: {
+          theme: "birthday",
+          title: "🎂 壽星祝福牆",
+          subtitle: "寫下你對壽星的生日祝福",
+          emojis: ["🎂", "🎉", "🎈", "🎁", "✨", "🥳"],
+          maxLength: 40,
+        },
       },
       {
         pageType: "host_emoji_react",
