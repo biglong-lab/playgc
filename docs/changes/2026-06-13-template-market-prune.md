@@ -63,6 +63,26 @@ kids-adventure、venue-storyline、corporate-training、company-trip）本質需
 
 補 `host_blessing_wall` default config。e2e 18/18 通過（含 badge 標示驗證）。
 
+## 第三輪：主題化呈現（2026-06-13）
+問題：`getDefaultConfigForPageType` 只用 pageType 當 key、不分情境 → 同學會/園遊會/頒獎的
+即時投票都顯示同一句「範例:你最想看哪個橋段?」+ 選項 A/B/C 佔位文字，admin 一鍵建場
+(default) 後畫面無法直接用。
+
+解法（最小架構）：
+- `ScenarioComponent` 加 `config?: Record<string, unknown>`
+- instantiate 優先序改：`aiConfig ?? component.config ?? getDefaultConfigForPageType(...)`
+- 為 **23 個會顯示佔位**的元件填主題化內容（title-only 的如拍立得/簽名簿/emoji 不動）
+
+主題化範圍：
+- 6 社交：祝福牆帶 theme(wedding/birthday/reunion)、詞雲帶主題 prompt、投票/搶答帶真實題目選項
+- 探索類：街區 gps_cascade 點位、商圈/親子/場域 treasure_hunt 線索、venue dialogue 對白、親子 jigsaw 主題
+- 企業/旅遊：role_assign 角色、trivia/poll/rank_choice 議題、would_you_rather 旅途題、gps_team_mission
+
+補 `host_blessing_wall` default config。向後相容：沒填 config 的元件 fallback 回原 default。
+
+驗證：tsc PASS；新增 `scenario-config.test.ts`（9 測試：形狀吻合 renderer + 無佔位字串洩漏）；
+shared 單元 85/85；e2e 18/18。
+
 ## 已知限制 / 後續
 - golden-path-a/b/c e2e 被「本地 dev DB schema drift」擋住（games 表缺 show_progress
   等欄位，seed-game 500）。此為既有環境問題、非本次改動造成；`db:push` 需 table-level
