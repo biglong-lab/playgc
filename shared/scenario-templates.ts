@@ -663,6 +663,16 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "議題優先排序",
         role: "每人依重要性排列今天培訓議題，公布 Borda 積分聚合結果，讓主管一眼看見團隊共識",
         axis: "multi",
+        config: {
+          title: "📊 培訓議題排序",
+          question: "請依重要性排列今天的培訓議題",
+          items: [
+            { itemId: "r1", label: "溝通技巧" },
+            { itemId: "r2", label: "時間管理" },
+            { itemId: "r3", label: "團隊協作" },
+            { itemId: "r4", label: "問題解決" },
+          ],
+        },
       },
     ],
     valueProposition: "顧問 / 講師端的 SaaS。月訂閱 NT$ 1,500-5,000 / 帳號。",
