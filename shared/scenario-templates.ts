@@ -525,6 +525,15 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "店家線索拼密碼",
         axis: "multi",
         demoMode: "treasure",
+        config: {
+          title: "🔍 商圈尋寶",
+          finalReward: "🏆 集滿線索兌換商圈小禮",
+          clues: [
+            { id: "c1", prompt: "找到招牌有紅色字的老店，門口的門牌號碼是？", answer: "請主辦改成正確答案" },
+            { id: "c2", prompt: "在轉角咖啡店問店員今日招牌飲品名稱是？", answer: "請主辦改成正確答案" },
+            { id: "c3", prompt: "走到商圈最老的那家店，創立於哪一年？", answer: "請主辦改成正確答案" },
+          ],
+        },
       },
       {
         pageType: "host_knowledge_map",
