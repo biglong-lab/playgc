@@ -55,6 +55,8 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
       return { title: `${scenarioName} 簽名簿`, subtitle: "歡迎留言" };
     case "host_emoji_react":
       return { title: `${scenarioName} 情緒池` };
+    case "host_blessing_wall":
+      return { title: `${scenarioName} 祝福牆`, subtitle: "掃 QR 匿名留下祝福", maxLength: 30 };
     case "host_trivia_showdown":
       return {
         title: `${scenarioName} 搶答`,
