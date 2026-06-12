@@ -763,6 +763,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "NPC 對話",
         role: "場域主人公開場介紹",
         axis: "shared",
+        config: {
+          character: { name: "場域主人" },
+          messages: [
+            { text: "歡迎光臨！我是這裡的主人，接下來帶你認識這個地方的故事…" },
+            { text: "準備好了嗎？完成沿途的任務，就能解鎖隱藏故事喔！" },
+          ],
+        },
       },
       {
         pageType: "treasure_hunt",
@@ -770,6 +777,14 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "解謎找密碼、解鎖故事",
         axis: "multi",
         demoMode: "treasure",
+        config: {
+          title: "🗝️ 故事任務鏈",
+          finalReward: "🎬 解鎖隱藏結局",
+          clues: [
+            { id: "c1", prompt: "找到牆上最舊的那張照片，照片裡是哪一年？", answer: "請主辦改成正確答案" },
+            { id: "c2", prompt: "問問場域主人最珍惜的物件，它的名字是？", answer: "請主辦改成正確答案" },
+          ],
+        },
       },
       {
         pageType: "host_polaroid_collage",
