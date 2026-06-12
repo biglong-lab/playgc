@@ -127,6 +127,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "祝福詞雲",
         role: "賓客一人一詞，大螢幕即時匯成祝福文字雲（免登入）",
         axis: "host",
+        config: {
+          title: "💕 祝福詞雲",
+          subtitle: "用一個詞形容你眼中的新人",
+          maxWordsPerUser: 3,
+          maxLength: 8,
+        },
       },
     ],
     valueProposition:
