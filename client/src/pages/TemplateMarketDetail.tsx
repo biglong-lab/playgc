@@ -203,6 +203,20 @@ export default function TemplateMarketDetail() {
                     ? "👀 預覽"
                     : "🚧 規劃中"}
               </Badge>
+              {/* 🔑 登入需求標示：全 host = 免登入掃碼即玩；含 multi = 部分需組隊登入 */}
+              <Badge
+                variant="secondary"
+                data-testid="badge-login-mode"
+                className={
+                  scenario.components.every((c) => c.axis === "host")
+                    ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
+                    : "bg-amber-500/20 text-amber-800 dark:text-amber-300"
+                }
+              >
+                {scenario.components.every((c) => c.axis === "host")
+                  ? "🟢 全程免登入（掃 QR 即玩）"
+                  : "🔑 含需登入組隊元件"}
+              </Badge>
             </div>
           </CardContent>
         </Card>
