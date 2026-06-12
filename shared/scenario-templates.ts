@@ -294,6 +294,25 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "在地知識題、品牌冷知識",
         axis: "host",
         demoMode: "trivia-host",
+        config: {
+          title: "🎪 園遊會搶答",
+          questions: [
+            {
+              id: "q1",
+              prompt: "今天園遊會總共有幾個攤位？（請主辦改成實際數字）",
+              options: ["10", "20", "30", "40"],
+              correctIdx: 2,
+              timeLimitSec: 15,
+            },
+            {
+              id: "q2",
+              prompt: "本次活動的主辦單位是？",
+              options: ["社區發展協會", "學校家長會", "在地商圈", "以上皆是"],
+              correctIdx: 3,
+              timeLimitSec: 15,
+            },
+          ],
+        },
       },
       {
         pageType: "host_live_leaderboard",
