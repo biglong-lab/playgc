@@ -163,9 +163,9 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   {
     id: "reunion",
     name: "同學會 / 聚會情境包",
-    tagline: "重逢搶答 + 故事接龍 + 數位簽名簿",
+    tagline: "重逢搶答 + 許願牆 + 數位簽名簿",
     description:
-      "重逢主題的破冰互動。透過搶答 ice-breaker、故事接龍、電子簽名簿，讓久未相見的朋友快速重新熟悉。",
+      "重逢主題的破冰互動。透過搶答 ice-breaker、許願牆、電子簽名簿，讓久未相見的朋友快速重新熟悉。",
     useCases: ["畢業 N 週年同學會", "工作老同事聚會", "社團校友會"],
     category: "social",
     icon: "Users",
