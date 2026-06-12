@@ -611,6 +611,16 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "情境模擬、劇本演練",
         axis: "multi",
         demoMode: "role-assign",
+        config: {
+          title: "🎭 情境角色分派",
+          subtitle: "你被分到哪個角色？",
+          roles: [
+            { id: "r1", name: "主管", emoji: "👔", description: "負責決策與協調", color: "#3b82f6" },
+            { id: "r2", name: "客戶", emoji: "🤝", description: "提出需求與疑慮", color: "#10b981" },
+            { id: "r3", name: "執行者", emoji: "🛠️", description: "落地執行方案", color: "#f59e0b" },
+            { id: "r4", name: "觀察員", emoji: "👁", description: "記錄並提出回饋", color: "#a855f7" },
+          ],
+        },
       },
       {
         pageType: "dot_vote",
