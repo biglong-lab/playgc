@@ -446,6 +446,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "活動文字雲",
         role: "典禮結束前每人匿名送 1-3 個詞描述感受、大螢幕匯成字雲，溫馨收場（免登入）",
         axis: "host",
+        config: {
+          title: "🏆 今日感受",
+          subtitle: "用一個詞形容今天的典禮",
+          maxWordsPerUser: 2,
+          maxLength: 8,
+        },
       },
     ],
     valueProposition: "頒獎場合的觀眾參與機制。NT$ 8,000-20,000。",
