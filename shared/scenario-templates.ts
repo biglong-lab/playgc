@@ -96,10 +96,10 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "guestbook-host",
       },
       {
-        pageType: "wish_wall",
-        label: "新人祝福卡牆",
-        role: "每位賓客送出一張專屬祝福卡，附 emoji 與署名",
-        axis: "multi",
+        pageType: "host_blessing_wall",
+        label: "新人祝福牆",
+        role: "賓客掃 QR 匿名送祝福、大螢幕即時長出祝福卡（免登入）",
+        axis: "host",
       },
       {
         pageType: "host_emoji_react",
@@ -109,10 +109,10 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "emoji-host",
       },
       {
-        pageType: "mad_libs",
-        label: "瘋狂祝福故事",
-        role: "賓客合力填入空格，完成一篇搞笑溫馨的婚禮故事，成為最特別的紀念品",
-        axis: "multi",
+        pageType: "host_word_cloud",
+        label: "祝福詞雲",
+        role: "賓客一人一詞，大螢幕即時匯成祝福文字雲（免登入）",
+        axis: "host",
       },
     ],
     valueProposition:
