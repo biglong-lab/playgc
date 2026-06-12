@@ -334,10 +334,10 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "emoji-host",
       },
       {
-        pageType: "word_cloud",
+        pageType: "host_word_cloud",
         label: "活動文字雲",
-        role: "典禮結束前每人送出 1-3 個詞描述今天的感受，揭曉共同心聲，溫馨收場",
-        axis: "multi",
+        role: "典禮結束前每人匿名送 1-3 個詞描述感受、大螢幕匯成字雲，溫馨收場（免登入）",
+        axis: "host",
       },
     ],
     valueProposition: "頒獎場合的觀眾參與機制。NT$ 8,000-20,000。",
