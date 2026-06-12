@@ -3292,8 +3292,12 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
   // host 軸 → 活動現場（不登入）/ 其他 → 遊戲（要登入）
   const editorMode = isHost ? "activity" : "game";
 
-  // W9 D2: AI 生成的 config 優先、fallback 到 default
-  const config = aiConfig ?? getDefaultConfigForPageType(component.pageType, scenarioDisplayName);
+  // config 優先序（2026-06-13）：
+  //   1. AI 生成（aiConfig）— admin 用 AI 客製
+  //   2. 情境主題化（component.config）— 每個情境元件的 default 呈現內容
+  //   3. pageType 通用 default — 最後 fallback
+  const config =
+    aiConfig ?? component.config ?? getDefaultConfigForPageType(component.pageType, scenarioDisplayName);
 
   const [game] = await db
     .insert(games)
