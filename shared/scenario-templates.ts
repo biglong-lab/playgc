@@ -720,6 +720,14 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "旅途選擇題",
         role: "輕鬆二選一：沙灘還是山林？一個人旅行還是揪團出發？邊搭車邊玩邊認識彼此",
         axis: "multi",
+        config: {
+          title: "🤔 旅途二選一",
+          optionA: "海邊放空",
+          emojiA: "🏖️",
+          optionB: "山林探險",
+          emojiB: "⛰️",
+          showVoterNames: true,
+        },
       },
       {
         pageType: "host_guestbook_digital",
