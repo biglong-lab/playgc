@@ -479,6 +479,15 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "強制走訪每一站",
         axis: "multi",
         demoMode: "gps-cascade",
+        config: {
+          title: "🚶 街區連鎖點",
+          points: [
+            { id: "p1", name: "起點廣場", hint: "在入口集合處掃碼開始" },
+            { id: "p2", name: "老街中段", hint: "找到掛紅燈籠的那家店" },
+            { id: "p3", name: "歷史地標", hint: "在廟口或老樹下打卡" },
+            { id: "p4", name: "終點", hint: "完成所有點即解鎖紀念" },
+          ],
+        },
       },
       {
         pageType: "host_knowledge_map",
