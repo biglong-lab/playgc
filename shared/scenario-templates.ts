@@ -256,6 +256,16 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "重逢即時投票",
         role: "「誰先當爸媽？」等趣味題、賓客手機匿名投票、大螢幕即時開票（免登入）",
         axis: "host",
+        config: {
+          title: "🎓 重逢投票",
+          question: "我們之中，誰最有當年的樣子？",
+          options: [
+            { id: "a", label: "班長" },
+            { id: "b", label: "風雲人物" },
+            { id: "c", label: "最低調的同學" },
+            { id: "d", label: "老師最疼的那個" },
+          ],
+        },
       },
     ],
     valueProposition: "輕量、不複雜，主辦方一人就能搞定。NT$ 2,000-5,000。",
