@@ -247,10 +247,10 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "wave-host",
       },
       {
-        pageType: "multi_vote",
+        pageType: "host_poll_live",
         label: "最佳攤位票選",
-        role: "現場掃 QR 投票、即時看結果",
-        axis: "multi",
+        role: "現場掃 QR 匿名投票、大螢幕即時開票（免登入）",
+        axis: "host",
       },
       {
         pageType: "host_scoreboard_announcement",
