@@ -416,6 +416,16 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "「人氣獎」由觀眾票選",
         axis: "host",
         demoMode: "poll-host",
+        config: {
+          title: "🏆 人氣獎票選",
+          question: "你心目中的最佳表現獎是？",
+          options: [
+            { id: "a", label: "1 號入圍者" },
+            { id: "b", label: "2 號入圍者" },
+            { id: "c", label: "3 號入圍者" },
+            { id: "d", label: "4 號入圍者" },
+          ],
+        },
       },
       {
         pageType: "host_scoreboard_announcement",
