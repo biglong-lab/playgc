@@ -333,6 +333,16 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "最佳攤位票選",
         role: "現場掃 QR 匿名投票、大螢幕即時開票（免登入）",
         axis: "host",
+        config: {
+          title: "🎪 最佳攤位票選",
+          question: "今天最讚的攤位是哪一個？",
+          options: [
+            { id: "a", label: "美食區" },
+            { id: "b", label: "遊戲區" },
+            { id: "c", label: "手作體驗區" },
+            { id: "d", label: "舞台表演" },
+          ],
+        },
       },
       {
         pageType: "host_scoreboard_announcement",
