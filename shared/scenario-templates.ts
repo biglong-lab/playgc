@@ -206,6 +206,25 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "「誰最快結婚？」、「誰是當年校隊隊長？」",
         axis: "host",
         demoMode: "trivia-host",
+        config: {
+          title: "🎓 重逢搶答",
+          questions: [
+            {
+              id: "q1",
+              prompt: "我們是哪一年畢業的？（請主辦改成你們的年份）",
+              options: ["2008", "2012", "2016", "2020"],
+              correctIdx: 1,
+              timeLimitSec: 15,
+            },
+            {
+              id: "q2",
+              prompt: "當年最常一起去的地方是？",
+              options: ["福利社", "操場", "圖書館", "校門口飲料店"],
+              correctIdx: 3,
+              timeLimitSec: 15,
+            },
+          ],
+        },
       },
       {
         pageType: "host_guestbook_digital",
