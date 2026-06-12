@@ -193,10 +193,10 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         axis: "host",
       },
       {
-        pageType: "wish_wall",
+        pageType: "host_blessing_wall",
         label: "許願牆",
-        role: "離別前每人留下一句話或祝福，作為聚會的溫暖結尾",
-        axis: "multi",
+        role: "離別前每人匿名留下一句話或祝福、大螢幕呈現，作為聚會的溫暖結尾（免登入）",
+        axis: "host",
       },
       {
         pageType: "never_have_i_ever",
