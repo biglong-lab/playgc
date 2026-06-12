@@ -708,6 +708,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "GPS 隊伍任務",
         role: "拓荒、找特定地標",
         axis: "multi",
+        config: {
+          title: "📍 隊伍 GPS 任務",
+          triggerMode: "any",
+          targetLocation: { lat: 24.4321, lng: 118.317 },
+          radius: 50,
+        },
       },
       {
         pageType: "would_you_rather",
