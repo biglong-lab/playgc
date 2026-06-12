@@ -243,6 +243,13 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "許願牆",
         role: "離別前每人匿名留下一句話或祝福、大螢幕呈現，作為聚會的溫暖結尾（免登入）",
         axis: "host",
+        config: {
+          theme: "reunion",
+          title: "🎓 同學會許願牆",
+          subtitle: "離別前，留下一句想對大家說的話",
+          emojis: ["🎓", "🤝", "✨", "💬", "🍻", "📸"],
+          maxLength: 50,
+        },
       },
       {
         pageType: "host_poll_live",
