@@ -575,6 +575,18 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         role: "搭配大螢幕的競賽搶答",
         axis: "host",
         demoMode: "trivia-host",
+        config: {
+          title: "🏢 內訓搶答",
+          questions: [
+            {
+              id: "q1",
+              prompt: "範例題：本次課程的核心目標是？（請講師替換成課程題目）",
+              options: ["提升效率", "強化溝通", "風險管理", "以上皆是"],
+              correctIdx: 3,
+              timeLimitSec: 20,
+            },
+          ],
+        },
       },
       {
         pageType: "host_poll_live",
