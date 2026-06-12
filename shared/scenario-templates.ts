@@ -380,6 +380,12 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         label: "破冰詞雲",
         role: "一人一詞「用三個字形容現在的心情」、大螢幕即時長出字雲（免登入）",
         axis: "host",
+        config: {
+          title: "🧊 破冰詞雲",
+          subtitle: "用三個字形容你現在的心情",
+          maxWordsPerUser: 3,
+          maxLength: 6,
+        },
       },
       {
         pageType: "host_emoji_react",
