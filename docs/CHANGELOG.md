@@ -5,6 +5,20 @@
 
 ---
 
+## 2026-06-13
+
+### 🎯 template-market 12 情境瘦身 + 登入優化（fix / refactor / feat）
+**狀態**：🟢 部署上線（commit `a0dfc74e`）
+**細節** → [changes/2026-06-13-template-market-prune.md](changes/2026-06-13-template-market-prune.md)
+
+- **瘦身**：上一輪 loop 灌成 112 情境 / 338 元件（含 70% 無 renderer 的幽靈元件，玩家看到「未知頁面類型」）→ 清除 99 個無實質意義樣板 + 121 個幽靈元件，回歸 12 個全部可運作的情境（檔案 5106→673 行）
+- **修 bug**：詳情頁 `useAdminAuth()` 預設把未登入訪客導向 `/admin/login` → 改 `redirectTo:""`，銷售頁恢復公開可瀏覽
+- **使用情境優化**：6 個社交情境（婚禮/生日/同學會/園遊會/頒獎/破冰）的 multi 元件換成匿名 host 等價版 → 全程免登入掃 QR 即玩；詳情頁新增登入需求標示
+- **防呆**：新增 `scenario-renderable.test.ts` 不變式鎖死「每元件都有 renderer」
+- **驗證**：tsc PASS；scenario 24/24；e2e 18/18；部署後生產 version=a0dfc74e、health=12 情境、首頁/template-market 200
+
+---
+
 ## 2026-05-31
 
 ### 🛡️ Repo 衛生 + 安全護欄 + CI 可信度（chore / fix）
