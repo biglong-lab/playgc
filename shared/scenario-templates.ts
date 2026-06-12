@@ -284,11 +284,10 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
         demoMode: "crowd-host",
       },
       {
-        pageType: "jigsaw_puzzle",
-        label: "拼圖協作",
-        role: "分組拼圖破冰",
-        axis: "multi",
-        demoMode: "jigsaw",
+        pageType: "host_word_cloud",
+        label: "破冰詞雲",
+        role: "一人一詞「用三個字形容現在的心情」、大螢幕即時長出字雲（免登入）",
+        axis: "host",
       },
       {
         pageType: "host_emoji_react",
