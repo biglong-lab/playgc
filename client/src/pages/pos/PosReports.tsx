@@ -103,6 +103,49 @@ export default function PosReports() {
           </CardContent>
         </Card>
 
+        {/* 🆕 週/月 區間 */}
+        <Card>
+          <CardHeader className="py-3"><CardTitle className="text-base">區間統計</CardTitle></CardHeader>
+          <CardContent className="py-2 px-3 space-y-2">
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => {
+                const now = new Date();
+                const day = (now.getDay() + 6) % 7; // 週一為起點
+                const mon = new Date(now); mon.setDate(now.getDate() - day);
+                const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+                setRange({ from: fmt(mon), to: taipeiToday(), label: "本週" });
+              }} data-testid="range-week">本週</Button>
+              <Button size="sm" variant="outline" onClick={() => {
+                const now = new Date();
+                const first = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-01`;
+                setRange({ from: first, to: taipeiToday(), label: "本月" });
+              }} data-testid="range-month">本月</Button>
+              {range && <Button size="sm" variant="ghost" onClick={() => setRange(null)}>清除</Button>}
+            </div>
+            {range && rangeRep && (
+              <div className="text-sm space-y-1">
+                <div className="font-medium">{range.label}（{rangeRep.fromDate} ~ {rangeRep.toDate}）</div>
+                <Row label="淨收款" value={money(rangeRep.netCents)} />
+                <Row label="總收 / 退款" value={`${money(rangeRep.totalCents)} / ${money(rangeRep.refundsCents)}`} />
+                <Row label="交易筆數" value={`${rangeRep.txnCount} 筆`} />
+                <div className="pt-1 text-xs text-muted-foreground">每日：{rangeRep.daily.map((d) => `${d.day.slice(5)} ${money(d.cents)}`).join("　")}</div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 時段分析 */}
+        {daily?.byHour && daily.byHour.length > 0 && (
+          <Card>
+            <CardHeader className="py-3"><CardTitle className="text-base">時段分析</CardTitle></CardHeader>
+            <CardContent className="py-2 px-3">
+              {daily.byHour.map((h) => (
+                <Row key={h.hour} label={`${String(h.hour).padStart(2, "0")}:00（${h.count} 筆）`} value={money(h.cents)} />
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
         {/* 分類 */}
         <Card>
           <CardHeader className="py-3"><CardTitle className="text-base">按分類</CardTitle></CardHeader>
