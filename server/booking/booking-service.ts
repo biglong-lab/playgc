@@ -528,7 +528,7 @@ export async function getBookingSummaryByCode(code: string): Promise<{
  */
 export async function bindBookingLine(code: string, lineUserId: string): Promise<boolean> {
   const [b] = await db
-    .select()
+    .select({ lineUserId: bookings.lineUserId })
     .from(bookings)
     .where(eq(bookings.bookingCode, code))
     .limit(1);
