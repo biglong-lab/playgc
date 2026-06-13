@@ -32,6 +32,10 @@ export const posTransactions = pgTable(
     note: text("note"),
     /** 班次結算 id（結帳後不可改）*/
     shiftCloseId: varchar("shift_close_id"),
+    // 🆕 軟刪除（2026-06-13）— 帳務刪除需原因、進垃圾桶可還原
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: varchar("deleted_by"),
+    deleteReason: text("delete_reason"),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (table) => [
