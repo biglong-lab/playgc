@@ -121,6 +121,10 @@ export async function registerRoutes(
 
   app.use(adminAuthMiddleware);
 
+  // 🔍 全域變更稽核（2026-06-13）— 所有 admin/POS mutating 請求自動寫 audit_log
+  // 必須在 adminAuthMiddleware 之後（req.admin 已就緒）
+  app.use(auditMutationMiddleware);
+
   // WebSocket 設定
   const ctx = setupWebSocket(httpServer);
 
