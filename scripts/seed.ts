@@ -178,7 +178,7 @@ async function seed() {
       allow: true,
     });
   }
-  console.log("  ✅ 場域執行者角色已建立（唯讀）");
+  console.log("  ✅ 場域執行者角色已建立（現場操作 + 排障）");
 
   // 4. 建立管理員帳號（帳密登入）
   //    密碼優先吃 SEED_ADMIN_PASSWORD；dev 未設定時退回 admin123 方便本地開發
