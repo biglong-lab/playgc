@@ -195,6 +195,18 @@ export function registerAdminPosReportRoutes(app: Express) {
     }
   });
 
+  // 區間報表（週/月）
+  app.get("/api/admin/pos/reports/range", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+    try {
+      const to = (req.query.to as string) || taipeiToday();
+      const from = (req.query.from as string) || to;
+      const report = await aggregateRange(req.admin!.fieldId, from, to);
+      res.json(report);
+    } catch (e) {
+      fail(res, e);
+    }
+  });
+
   // 狀態總覽（預約 + 退款）
   app.get("/api/admin/pos/reports/status", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
     try {
