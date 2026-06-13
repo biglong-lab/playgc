@@ -256,6 +256,7 @@ export default function PosCheckout() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {/* 找零計算（cash 模式才顯示）*/}
         {paymentMethod === "cash" && validAmount && (
