@@ -217,6 +217,7 @@ const BookPage = lazy(() => import("@/pages/booking/BookPage"));
 const BookEntryPage = lazy(() => import("@/pages/booking/BookEntryPage"));
 const BookDonePage = lazy(() => import("@/pages/booking/BookDonePage"));
 const MyBookingsPage = lazy(() => import("@/pages/booking/MyBookingsPage"));
+const BindBookingPage = lazy(() => import("@/pages/booking/BindBookingPage"));
 // 📱 PlayLiff LINE LIFF 玩家入口（W14 D1）
 const PlayLiff = lazy(() => import("@/pages/PlayLiff"));
 // ❓ Faq 公開常見問題頁（W17 D2）
