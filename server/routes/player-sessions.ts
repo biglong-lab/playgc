@@ -399,6 +399,8 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
             score: req.body.score || 0,
             currentPageId: req.body.pageId || null,
           });
+          // 🆕 2026-06-13 賈村遊戲開玩 → Telegram 群組（首次建立進度才觸發、fire-and-forget）
+          void notifyFieldGameStart(sessionId, userId);
           res.json(progress);
           return;
         }
