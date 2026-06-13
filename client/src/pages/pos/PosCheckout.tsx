@@ -72,6 +72,10 @@ export default function PosCheckout() {
   // 🆕 2026-06-13 收款模式：items=選品項 / free=自由金額。綁定預約預設自由金額
   const [mode, setMode] = useState<"items" | "free">("free");
   const [cartLines, setCartLines] = useState<CartLine[]>([]);
+  // 🆕 整單折扣
+  const [discountDollars, setDiscountDollars] = useState("");
+  const [discountReason, setDiscountReason] = useState("");
+  const discountCents = Math.max(0, Math.round(Number(discountDollars) * 100) || 0);
 
   useEffect(() => {
     if (booking) {
