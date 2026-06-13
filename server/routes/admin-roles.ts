@@ -16,7 +16,7 @@ import {
   auditLogs,
   users,
 } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gte, lte, like, or, sql } from "drizzle-orm";
 
 export function registerAdminRoleRoutes(app: Express) {
   // ============================================================================
