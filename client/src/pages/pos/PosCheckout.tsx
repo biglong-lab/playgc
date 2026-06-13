@@ -389,6 +389,34 @@ export default function PosCheckout() {
           </CardContent>
         </Card>
 
+        {/* 🆕 整單折扣 */}
+        <Card>
+          <CardContent className="py-3 px-3 space-y-2">
+            <Label className="text-xs">整單折扣（選填，元）</Label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={discountDollars}
+                onChange={(e) => setDiscountDollars(e.target.value)}
+                placeholder="折抵金額"
+                data-testid="discount-amount"
+              />
+              <Input
+                value={discountReason}
+                onChange={(e) => setDiscountReason(e.target.value)}
+                placeholder="折扣原因"
+                data-testid="discount-reason"
+              />
+            </div>
+            {discountCents > 0 && (
+              <div className="text-sm text-right">
+                折抵 NT${(discountCents / 100).toLocaleString()} → 應收 <span className="font-bold text-amber-600">NT${(Math.max(0, amountCents - discountCents) / 100).toLocaleString()}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* 確認按鈕（大、固定底）*/}
         <Button
           className="w-full h-16 text-lg"
