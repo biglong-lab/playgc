@@ -730,12 +730,29 @@ export function registerPosRoutes(app: Express) {
           });
         }
       }
-      // 有 items 時以重算金額為準（扣掉 voucher 折抵）
-      const finalAmountCents = computedLineItems.length > 0 ? itemsTotalCents : parsed.data.amountCents;
-      const finalPaidCents =
-        computedLineItems.length > 0
-          ? Math.max(0, itemsTotalCents - (parsed.data.voucherDiscountCents ?? 0))
-          : parsed.data.paidAmountCents;
+      // 🆕 臨時品項（非目錄）
+      if (parsed.data.customItems && parsed.data.customItems.length > 0) {
+        for (const ci of parsed.data.customItems) {
+          const lineTotal = ci.priceCents * ci.qty;
+          itemsTotalCents += lineTotal;
+          computedLineItems.push({
+            productId: null,
+            nameSnapshot: ci.name,
+            category: "custom",
+            qty: ci.qty,
+            unitPriceCents: ci.priceCents,
+            modifiers: [],
+            lineTotalCents: lineTotal,
+          });
+        }
+      }
+      const hasItems = computedLineItems.length > 0;
+      // 有 items 時以重算金額為準（扣掉 voucher + 整單折扣）
+      const discount = (parsed.data.voucherDiscountCents ?? 0) + (parsed.data.discountCents ?? 0);
+      const finalAmountCents = hasItems ? itemsTotalCents : parsed.data.amountCents;
+      const finalPaidCents = hasItems
+        ? Math.max(0, itemsTotalCents - discount)
+        : Math.max(0, parsed.data.paidAmountCents - (parsed.data.discountCents ?? 0));
 
       const [tx] = await db
         .insert(posTransactions)
