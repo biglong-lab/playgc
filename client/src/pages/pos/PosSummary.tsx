@@ -48,6 +48,18 @@ interface Summary {
 }
 
 export default function PosSummary() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const delTxn = useMutation({
+    mutationFn: (v: { id: string; reason: string }) =>
+      fetchWithAdminAuth(`/api/pos/transactions/${v.id}/delete`, { method: "POST", body: JSON.stringify({ reason: v.reason }) }),
+    onSuccess: () => {
+      toast({ title: "已移到垃圾桶", description: "可在 POS 垃圾桶還原" });
+      qc.invalidateQueries({ queryKey: ["pos-summary"] });
+      qc.invalidateQueries({ queryKey: ["pos-daily-report"] });
+    },
+    onError: (e) => toast({ title: "刪除失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
+  });
   const { data, isLoading } = useQuery<Summary>({
     queryKey: ["pos-summary"],
     queryFn: async () => await fetchWithAdminAuth("/api/pos/summary"),
