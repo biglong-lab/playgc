@@ -15,6 +15,7 @@ import { db } from "../db";
 import {
   bookings,
   bookingConfigs,
+  fields,
   type BookingConfig,
   type Booking,
   type BookingScheduleTemplate,
