@@ -99,8 +99,14 @@ export default function PosCheckout() {
           note: note.trim() || undefined,
           // 🆕 帶品項明細 → 後端重算金額 + 記 line items
           items: useItems
-            ? cartLines.map((l) => ({ productId: l.productId, qty: l.qty, modifierOptionIds: l.modifierOptionIds }))
+            ? cartLines.filter((l) => !l.isCustom).map((l) => ({ productId: l.productId, qty: l.qty, modifierOptionIds: l.modifierOptionIds }))
             : undefined,
+          customItems: useItems
+            ? cartLines.filter((l) => l.isCustom).map((l) => ({ name: l.name, priceCents: l.unitPriceCents, qty: l.qty }))
+            : undefined,
+          // 🆕 整單折扣
+          discountCents: discountCents > 0 ? discountCents : undefined,
+          discountReason: discountCents > 0 ? (discountReason.trim() || undefined) : undefined,
         }),
       });
     },
