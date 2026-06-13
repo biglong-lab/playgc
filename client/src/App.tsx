@@ -326,6 +326,9 @@ function Router() {
         {/* 入口：有活動→列表頁、沒有→既有單一預約頁 */}
         <Route path="/book/:fieldCode" component={BookEntryPage} />
 
+        {/* 🔗 人工建單短連結綁定 LINE（2026-06-13）— 公開頁 */}
+        <Route path="/b/:code" component={BindBookingPage} />
+
         {/* 🎬 元件展示館（公開頁，銷售工具）*/}
         <Route path="/showcase" component={ShowcaseHub} />
 
