@@ -420,6 +420,8 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                 {manualMutation.isPending ? "登記中…" : "確認登記"}
               </Button>
             </DialogFooter>
+            </>
+            )}
           </DialogContent>
         </Dialog>
 
