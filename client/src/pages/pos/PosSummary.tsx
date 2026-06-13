@@ -3,12 +3,13 @@
 // 路徑：/pos/summary
 // 顯示今日 POS 交易統計、按活動分組、含交易明細
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import PosLayout from "./PosLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, DollarSign, Receipt, User, Download } from "lucide-react";
+import { TrendingUp, DollarSign, Receipt, User, Download, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 
 interface PosTx {
