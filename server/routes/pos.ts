@@ -572,9 +572,9 @@ export function registerPosRoutes(app: Express) {
       }> = [];
       let itemsTotalCents = 0;
       if (parsed.data.items && parsed.data.items.length > 0) {
-        const productIds = [...new Set(parsed.data.items.map((i) => i.productId))];
+        const productIds = Array.from(new Set(parsed.data.items.map((i) => i.productId)));
         const prods = await db.select().from(posProducts).where(inArray(posProducts.id, productIds));
-        const allOptIds = [...new Set(parsed.data.items.flatMap((i) => i.modifierOptionIds))];
+        const allOptIds = Array.from(new Set(parsed.data.items.flatMap((i) => i.modifierOptionIds)));
         const opts = allOptIds.length
           ? await db.select().from(posModifierOptions).where(inArray(posModifierOptions.id, allOptIds))
           : [];
