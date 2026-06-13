@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-06-13 (e)
+
+### 🔎 操作記錄查詢頁加篩選（feat）
+**狀態**：🟢 部署上線（commit `ed553d91`）
+
+- `/admin/audit-logs`（後台「操作記錄」）原本只列最近 100 筆、無篩選 → 加：類型（全部/重點操作/完整變更）、日期區間、關鍵字搜尋（動作/對象/內容/操作員，含 metadata 內文）
+- `http:` 中介層紀錄中文化（新增/修改/調整/移除）+ 顯示完整 API 路徑
+- API `/api/admin/audit-logs` 加 category/from/to/q 篩選參數
+- 權限 `admin:view_audit`（管理者可看、現場執行者不可）
+- 驗證：tsc PASS、boot 無崩潰、生產 version=ed553d91
+
+---
+
 ## 2026-06-13 (d)
 
 ### 🔐 場域執行者現場帳號 + 全域變更稽核 + 退款開放（feat / security）
