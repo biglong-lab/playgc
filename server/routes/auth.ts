@@ -213,8 +213,13 @@ export function registerAuthRoutes(app: Express) {
         });
         if (emailMatch && emailMatch.status === "active") {
           // 即使已有 firebase_user_id 也允許更新（支援多裝置/多登入方式切換）
+          // 🆕 順便補 email 欄位（若先前為空）→ 之後就能用 email 比對
           await db.update(adminAccounts)
-            .set({ firebaseUserId, displayName: firebaseDisplayName || emailMatch.displayName })
+            .set({
+              firebaseUserId,
+              displayName: firebaseDisplayName || emailMatch.displayName,
+              email: emailMatch.email ?? firebaseEmail,
+            })
             .where(eq(adminAccounts.id, emailMatch.id));
           adminAccount = { ...emailMatch, firebaseUserId };
         }
