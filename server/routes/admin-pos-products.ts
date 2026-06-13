@@ -24,6 +24,7 @@ import {
   posModifierGroups,
   posModifierOptions,
   posProductModifiers,
+  posTransactions,
   POS_PRODUCT_CATEGORIES,
 } from "@shared/schema";
 import { eq, and, inArray, asc, isNull, desc } from "drizzle-orm";
