@@ -64,6 +64,8 @@ export * from "./line-bot-events";
 export * from "./line-login-config";
 export * from "./activities";
 export * from "./pos-transactions";
+// 🛒 POS 品項目錄 + 客製 + 明細 + 結帳（2026-06-13）
+export * from "./pos-products";
 // 🆘 退款記錄（Phase D — 2026-05-19）
 export * from "./refunds";
 
