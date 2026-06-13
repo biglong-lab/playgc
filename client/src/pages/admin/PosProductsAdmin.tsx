@@ -93,6 +93,12 @@ export default function PosProductsAdmin() {
     onError: (e) => toast({ title: "刪除失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
   });
 
+  const toggleSoldOut = useMutation({
+    mutationFn: (v: { id: string; soldOut: boolean }) =>
+      fetchWithAdminAuth(`/api/admin/pos/products/${v.id}`, { method: "PATCH", body: JSON.stringify({ soldOut: v.soldOut }) }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["pos-products"] }),
+  });
+
   const uploadPhoto = async (productId: string, file: File) => {
     const reader = new FileReader();
     reader.onload = async () => {
