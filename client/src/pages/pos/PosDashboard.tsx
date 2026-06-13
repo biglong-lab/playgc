@@ -102,6 +102,8 @@ export default function PosDashboard() {
         <BigActionButton href="/pos/checkout" icon={DollarSign} label="現金收款" color="bg-amber-600" />
         <BigActionButton href="/pos/bookings/today" icon={ListChecks} label="今日預約" color="bg-blue-600" />
         <BigActionButton href="/pos/voucher" icon={Ticket} label="券核銷" color="bg-purple-600" />
+        <BigActionButton href="/pos/summary" icon={TrendingUp} label="今日小結" color="bg-emerald-600" />
+        <BigActionButton href="/admin/troubleshoot" icon={LifeBuoy} label="排除障礙" color="bg-red-600" />
       </div>
 
       {/* 下個時段 */}
