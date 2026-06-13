@@ -87,6 +87,7 @@ const PosCheckout = lazy(() => import("@/pages/pos/PosCheckout"));
 const PosVoucher = lazy(() => import("@/pages/pos/PosVoucher"));
 const PosSummary = lazy(() => import("@/pages/pos/PosSummary"));
 const PosProductsAdmin = lazy(() => import("@/pages/admin/PosProductsAdmin"));
+const PosReports = lazy(() => import("@/pages/pos/PosReports"));
 const AdminSuspiciousLog = lazy(() => import("@/pages/AdminSuspiciousLog"));
 const AdminLeaderboard = lazy(() => import("@/pages/AdminLeaderboard"));
 const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
