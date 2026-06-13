@@ -12,7 +12,22 @@
 //   - fire-and-forget：不 block 主流程
 //   - rate limit：同一事件 30 秒內冷卻（防同類事件爆量）
 
-import { sendMessage, isTelegramEnabled } from "./telegram-bot";
+import { sendMessage, isTelegramEnabled, getFieldGroupChatIds } from "./telegram-bot";
+
+// ============================================================================
+// 顧客向「場域群組」通知（2026-06-13）
+// 與內部 ops chat 分流：群組(如賈村)只收顧客事件（預約 / 今日預約 / 賈村遊戲），
+// 不收部署/錯誤/付款等 ops 訊息（那些留 TELEGRAM_NOTIFY_CHAT_IDS 個人 chat）。
+// ============================================================================
+
+/** 發送到所有場域群組 chat_id（沒設則 no-op） */
+export function sendToFieldGroup(text: string, silent = false): void {
+  const groups = getFieldGroupChatIds();
+  if (groups.length === 0) return;
+  for (const chatId of groups) {
+    fireForget(sendMessage({ chatId, text, parseMode: "Markdown", silent }));
+  }
+}
 
 const recentEvents = new Map<string, number>();
 const COOLDOWN_MS = 30_000;
