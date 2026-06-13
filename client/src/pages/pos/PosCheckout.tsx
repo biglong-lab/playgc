@@ -117,8 +117,10 @@ export default function PosCheckout() {
     onSuccess: () => {
       feedbackCheckoutSuccess();
       setSuccess({
-        amountCents: Math.round(Number(amountDollars) * 100),
+        amountCents: Math.max(0, Math.round(Number(amountDollars) * 100) - discountCents),
         method: paymentMethod,
+        lines: mode === "items" ? cartLines : [],
+        discountCents,
       });
       toast({ title: "✅ 收款成功" });
     },
