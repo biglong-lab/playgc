@@ -172,6 +172,18 @@ export default function AdminDashboard() {
         <span className="font-medium text-foreground">{adminName}</span>
       </div>
 
+      {/* 🏪 現場模式入口（2026-06-13）— 現場人員一鍵進手機優先的 POS/掃描/收款/核銷/排解 */}
+      <Link href="/pos" className="block mb-4" data-testid="link-field-mode">
+        <div className="rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white p-4 flex items-center gap-3 hover-elevate active-elevate-2">
+          <div className="text-3xl">🏪</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-lg">進入現場模式</div>
+            <div className="text-xs text-white/90">POS 收款・掃描報到・券核銷・今日預約・排除障礙（手機優先）</div>
+          </div>
+          <div className="text-2xl">→</div>
+        </div>
+      </Link>
+
       {/* 🆕 當前公告（僅有生效公告時顯示） */}
       <AnnouncementStatusCard />
 
