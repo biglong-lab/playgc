@@ -131,6 +131,11 @@ export default function PosBookingsToday() {
 
   return (
     <PosLayout title="今日預約" backTo="/pos">
+      {/* 🆕 人工預約 */}
+      <Button className="w-full mb-3" onClick={() => { setBindLink(""); setManualOpen(true); }} data-testid="btn-pos-manual-booking">
+        <Plus className="w-4 h-4 mr-1" />人工預約（電話 / 現場）
+      </Button>
+
       <div className="mb-3 relative">
         <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" aria-hidden="true" />
         <Input
@@ -140,6 +145,59 @@ export default function PosBookingsToday() {
           className="pl-9"
         />
       </div>
+
+      {/* 人工預約 dialog */}
+      <Dialog open={manualOpen} onOpenChange={(o) => { setManualOpen(o); if (!o) setBindLink(""); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>➕ 人工預約</DialogTitle>
+          </DialogHeader>
+          {bindLink ? (
+            <div className="space-y-3">
+              <p className="text-sm">✅ 預約已建立。把連結傳給顧客（LINE / 簡訊），點了綁 LINE 即可自動提醒 + 查閱/取消：</p>
+              <div className="flex gap-2">
+                <Input readOnly value={bindLink} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} data-testid="pos-bind-link" />
+                <Button onClick={() => { navigator.clipboard?.writeText(bindLink); toast({ title: "已複製" }); }} data-testid="pos-copy-link">複製</Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">不綁也沒關係，預約一樣有效，只是不會自動提醒。</p>
+              <Button variant="outline" className="w-full" onClick={() => { setBindLink(""); setManualOpen(false); }}>完成</Button>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs">客戶名稱 *</Label>
+                  <Input value={mName} onChange={(e) => setMName(e.target.value)} placeholder="王小明" data-testid="pos-manual-name" />
+                </div>
+                <div>
+                  <Label className="text-xs">電話</Label>
+                  <Input value={mPhone} onChange={(e) => setMPhone(e.target.value)} placeholder="09xx-xxx-xxx" data-testid="pos-manual-phone" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">日期 *</Label>
+                    <Input type="date" value={mDate} onChange={(e) => setMDate(e.target.value)} data-testid="pos-manual-date" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">時間 *</Label>
+                    <Input type="time" value={mTime} onChange={(e) => setMTime(e.target.value)} data-testid="pos-manual-time" />
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs">人數 *</Label>
+                  <Input type="number" min={1} value={mParty} onChange={(e) => setMParty(Math.max(1, parseInt(e.target.value) || 1))} data-testid="pos-manual-party" />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setManualOpen(false)}>取消</Button>
+                <Button onClick={() => manualMut.mutate()} disabled={!mName.trim() || manualMut.isPending} data-testid="pos-manual-submit">
+                  {manualMut.isPending ? "建立中…" : "建立並產生連結"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {isLoading && <p className="text-sm text-muted-foreground text-center py-6">載入中…</p>}
 
