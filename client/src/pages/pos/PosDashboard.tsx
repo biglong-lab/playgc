@@ -106,6 +106,7 @@ export default function PosDashboard() {
         <BigActionButton href="/admin/troubleshoot" icon={LifeBuoy} label="排除障礙" color="bg-red-600" />
         <BigActionButton href="/admin/pos-products" icon={Package} label="品項設定" color="bg-slate-600" />
         <BigActionButton href="/admin/pos-reports" icon={BarChart3} label="銷售報表" color="bg-indigo-600" />
+        <BigActionButton href="/admin/pos-trash" icon={Trash2} label="垃圾桶" color="bg-zinc-600" />
       </div>
 
       {/* 下個時段 */}
