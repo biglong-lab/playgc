@@ -628,6 +628,64 @@ export function registerPosRoutes(app: Express) {
     }
   });
 
+  // 🆕 2026-06-13 POS 退款（現金、記 refunds、原交易保留）
+  app.post("/api/pos/transactions/:id/refund", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+      if (reason.length < 2) return res.status(400).json({ error: "reason_required", message: "請填退款原因" });
+      const [tx] = await db
+        .select()
+        .from(posTransactions)
+        .where(and(eq(posTransactions.id, req.params.id), inArray(posTransactions.fieldId, scope.identifiers)))
+        .limit(1);
+      if (!tx) return res.status(404).json({ error: "not_found" });
+      // 已退金額
+      const [agg] = await db
+        .select({ total: sql<number>`COALESCE(SUM(${refunds.amountCents}),0)::int` })
+        .from(refunds)
+        .where(and(eq(refunds.sourceType, "pos_transaction"), eq(refunds.sourceId, tx.id), eq(refunds.status, "completed")));
+      const alreadyRefunded = Number(agg?.total ?? 0);
+      const remaining = (tx.paidAmountCents ?? 0) - alreadyRefunded;
+      const amount = typeof req.body?.amountCents === "number" ? req.body.amountCents : remaining;
+      if (amount <= 0 || amount > remaining) {
+        return res.status(400).json({ error: "invalid_amount", message: `可退金額剩 NT$${(remaining / 100).toLocaleString()}` });
+      }
+      const [refund] = await db
+        .insert(refunds)
+        .values({
+          fieldId: scope.id,
+          sourceType: "pos_transaction",
+          sourceId: tx.id,
+          bookingId: tx.bookingId ?? null,
+          amountCents: amount,
+          reason,
+          refundMethod: "cash",
+          status: "completed",
+          processedByStaffId: req.admin.id,
+          processedAt: new Date(),
+          customerName: tx.customerName ?? null,
+          customerPhone: tx.customerPhone ?? null,
+        })
+        .returning();
+      logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "pos:refund",
+        targetType: "pos_transaction",
+        targetId: tx.id,
+        fieldId: scope.id,
+        metadata: { amountCents: amount, reason },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ refund });
+    } catch (e) {
+      console.error("[pos] refund 失敗:", e);
+      res.status(500).json({ error: "internal_error" });
+    }
+  });
+
   // POST /api/pos/checkout（現金收款）
   const checkoutSchema = z.object({
     bookingId: z.number().int().optional(),
