@@ -85,9 +85,13 @@ export default function PosReports() {
           <CardContent className="py-3 px-3 space-y-2">
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} data-testid="report-date" />
             <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg p-4 text-center">
-              <div className="text-xs">{date} 總收款</div>
-              <div className="text-3xl font-bold">{money(daily?.totalCents ?? 0)}</div>
-              <div className="text-xs">{daily?.txnCount ?? 0} 筆 · {daily?.itemCount ?? 0} 件品項</div>
+              <div className="text-xs">{date} 淨收款（已扣退款）</div>
+              <div className="text-3xl font-bold">{money(daily?.netCents ?? 0)}</div>
+              <div className="text-xs">
+                收 {money(daily?.totalCents ?? 0)}
+                {(daily?.refundsCents ?? 0) > 0 ? ` · 退 ${money(daily!.refundsCents)}（${daily!.refundCount} 筆）` : ""}
+                {" · "}{daily?.txnCount ?? 0} 筆 · {daily?.itemCount ?? 0} 件
+              </div>
             </div>
           </CardContent>
         </Card>
