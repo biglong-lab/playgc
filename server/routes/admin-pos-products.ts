@@ -323,4 +323,51 @@ export function registerAdminPosProductRoutes(app: Express) {
       err(res, e);
     }
   });
+
+  // ── 垃圾桶：列已軟刪除的 POS 資料 ──────────────
+  app.get("/api/admin/pos/trash", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+    try {
+      const fieldId = req.admin!.fieldId;
+      const delProducts = await db
+        .select()
+        .from(posProducts)
+        .where(and(eq(posProducts.fieldId, fieldId), sql`${posProducts.deletedAt} IS NOT NULL`))
+        .orderBy(desc(posProducts.deletedAt));
+      const delGroups = await db
+        .select()
+        .from(posModifierGroups)
+        .where(and(eq(posModifierGroups.fieldId, fieldId), sql`${posModifierGroups.deletedAt} IS NOT NULL`))
+        .orderBy(desc(posModifierGroups.deletedAt));
+      const delTxns = await db
+        .select()
+        .from(posTransactions)
+        .where(and(eq(posTransactions.fieldId, fieldId), sql`${posTransactions.deletedAt} IS NOT NULL`))
+        .orderBy(desc(posTransactions.deletedAt))
+        .limit(200);
+      res.json({ products: delProducts, modifierGroups: delGroups, transactions: delTxns });
+    } catch (e) {
+      err(res, e);
+    }
+  });
+
+  // ── 還原（從垃圾桶取回）──────────────────────
+  app.post("/api/admin/pos/restore", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+    try {
+      const { type, id } = req.body ?? {};
+      if (!type || !id) return res.status(400).json({ error: "validation" });
+      const clear = { deletedAt: null, deletedBy: null, deleteReason: null };
+      if (type === "product") {
+        await db.update(posProducts).set({ ...clear, updatedAt: new Date() }).where(and(eq(posProducts.id, id), eq(posProducts.fieldId, req.admin!.fieldId)));
+      } else if (type === "modifierGroup") {
+        await db.update(posModifierGroups).set(clear).where(and(eq(posModifierGroups.id, id), eq(posModifierGroups.fieldId, req.admin!.fieldId)));
+      } else if (type === "transaction") {
+        await db.update(posTransactions).set(clear).where(and(eq(posTransactions.id, id), eq(posTransactions.fieldId, req.admin!.fieldId)));
+      } else {
+        return res.status(400).json({ error: "unknown_type" });
+      }
+      res.json({ ok: true });
+    } catch (e) {
+      err(res, e);
+    }
+  });
 }
