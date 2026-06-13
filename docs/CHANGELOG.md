@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-06-13 (b)
+
+### 🎨 template-market 12 情境主題化呈現（feat）
+**狀態**：🟢 部署上線（commit `d0cb232e`）
+**細節** → [changes/2026-06-13-template-market-prune.md](changes/2026-06-13-template-market-prune.md)（第三輪）
+
+- **問題**：`getDefaultConfigForPageType` 只用 pageType 當 key、不分情境 → 同學會/園遊會/頒獎的投票全顯示「範例:你最想看哪個橋段?」佔位，一鍵建場後無法直接用
+- **解法**：`ScenarioComponent` 加 `config?` 欄位；instantiate 優先序 `aiConfig ?? component.config ?? default`；23 個元件填主題化內容（祝福牆 theme、投票/搶答真實題目、尋寶線索、NPC 對白、角色分派…）
+- **向後相容**：沒填 config 的元件 fallback 回原 default
+- **驗證**：tsc PASS；新增 `scenario-config.test.ts`（9 測試:形狀+無佔位）；shared 85/85；e2e 18/18；部署後生產 version=d0cb232e、health=12
+
+---
+
 ## 2026-06-13
 
 ### 🎯 template-market 12 情境瘦身 + 登入優化（fix / refactor / feat）
