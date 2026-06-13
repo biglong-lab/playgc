@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-06-13 (f)
+
+### 🔗 手動預約 → LINE 綁定閉環 + 來源追蹤（feat）
+**狀態**：🟢 部署上線（commit `a4d232af`）
+**細節** → [changes/2026-06-13-manual-booking-line-bind.md](changes/2026-06-13-manual-booking-line-bind.md)
+
+- 電話/信箱/現場手動建單 → 產短連結 `game.homi.cc/b/<預約碼>` → 顧客點了用 LINE 綁定（自動建遊戲帳號）→ 所有來源歸整到 LINE、自動提醒 + 可自助查詢
+- 綁定在 LINE OAuth callback 伺服器端完成（bookingCode 帶進 state），顧客零摩擦
+- bookings 加 `source`（line_direct/manual/manual_linked）；不綁也可（預約照存、有 admin_note）
+- 新增 `/b/:code` BindBookingPage、公開 `GET /api/bookings/by-code/:code`（名稱遮罩）；AdminBookings 人工登記後顯示+複製短連結
+- 生產 DB：`ALTER TABLE bookings ADD COLUMN source`
+- 驗證：tsc PASS、92 單元、by-code 端點 runtime OK、生產 version=a4d232af
+
+---
+
 ## 2026-06-13 (e)
 
 ### 🔎 操作記錄查詢頁加篩選（feat）
