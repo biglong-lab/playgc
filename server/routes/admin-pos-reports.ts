@@ -42,6 +42,8 @@ async function aggregateDaily(fieldId: string, date: string) {
       paidAmountCents: posTransactions.paidAmountCents,
       paymentMethod: posTransactions.paymentMethod,
       staffId: posTransactions.staffId,
+      // Taipei 小時（時段分析）
+      hour: sql<number>`EXTRACT(HOUR FROM (${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei'))::int`,
     })
     .from(posTransactions)
     .where(
