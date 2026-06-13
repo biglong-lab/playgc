@@ -239,6 +239,13 @@ export const bookings = pgTable(
     customerNote: text("customer_note"),
     /** 業主處理紀錄（私人） */
     adminNote: text("admin_note"),
+    /**
+     * 🆕 2026-06-13 預約來源：
+     *   line_direct   = 顧客自己在 LINE 直訂
+     *   manual        = 現場人工建單（電話/信箱/現場），未綁 LINE
+     *   manual_linked = 人工建單後，顧客已透過短連結綁定 LINE
+     */
+    source: varchar("source", { length: 20 }).default("line_direct"),
     // ── 整合遊戲 ──────────────────────────────────
     /** 預約對應的實際遊戲 session（玩家現場進場後關聯） */
     gameSessionId: integer("game_session_id"),
