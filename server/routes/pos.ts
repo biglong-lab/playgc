@@ -591,6 +591,42 @@ export function registerPosRoutes(app: Express) {
     }
   });
 
+  // 🆕 2026-06-13 帳務交易軟刪除（需原因、進垃圾桶可還原）
+  app.post("/api/pos/transactions/:id/delete", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+      if (reason.length < 2) return res.status(400).json({ error: "reason_required", message: "請填刪除原因" });
+      const [updated] = await db
+        .update(posTransactions)
+        .set({ deletedAt: new Date(), deletedBy: req.admin.id, deleteReason: reason })
+        .where(
+          and(
+            eq(posTransactions.id, req.params.id),
+            inArray(posTransactions.fieldId, scope.identifiers),
+            sql`${posTransactions.deletedAt} IS NULL`,
+          ),
+        )
+        .returning();
+      if (!updated) return res.status(404).json({ error: "not_found" });
+      logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "pos:transaction_delete",
+        targetType: "pos_transaction",
+        targetId: req.params.id,
+        fieldId: scope.id,
+        metadata: { reason, amountCents: updated.paidAmountCents },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ ok: true });
+    } catch (e) {
+      console.error("[pos] transaction delete 失敗:", e);
+      res.status(500).json({ error: "internal_error" });
+    }
+  });
+
   // POST /api/pos/checkout（現金收款）
   const checkoutSchema = z.object({
     bookingId: z.number().int().optional(),
