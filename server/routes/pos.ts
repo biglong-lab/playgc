@@ -506,6 +506,51 @@ export function registerPosRoutes(app: Express) {
     },
   );
 
+  // 🆕 2026-06-13 POS 人工預約（電話/現場）→ 產生綁定短連結
+  const posManualBookingSchema = z.object({
+    displayName: z.string().min(1).max(100),
+    phone: z.string().max(30).optional(),
+    slotStart: z.string().datetime(),
+    partySize: z.number().int().min(1).max(500),
+    activityId: z.string().optional(),
+    customerNote: z.string().max(500).optional(),
+  });
+  app.post("/api/pos/bookings/manual", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
+      const parsed = posManualBookingSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ error: "validation", message: parsed.error.issues[0]?.message });
+      }
+      const { createManualBooking } = await import("../booking/booking-service");
+      const result = await createManualBooking({
+        fieldId: scope.id,
+        displayName: parsed.data.displayName,
+        phone: parsed.data.phone,
+        slotStart: new Date(parsed.data.slotStart),
+        partySize: parsed.data.partySize,
+        activityId: parsed.data.activityId,
+        customerNote: parsed.data.customerNote,
+        staffId: req.admin.id,
+      });
+      logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "pos:manual_booking",
+        targetType: "booking",
+        targetId: result.booking.bookingCode,
+        fieldId: scope.id,
+        metadata: { displayName: parsed.data.displayName, partySize: parsed.data.partySize },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ booking: result.booking });
+    } catch (e) {
+      console.error("[pos] manual booking 失敗:", e);
+      res.status(500).json({ error: "internal_error", message: e instanceof Error ? e.message : "伺服器錯誤" });
+    }
+  });
+
   // POST /api/pos/checkout（現金收款）
   const checkoutSchema = z.object({
     bookingId: z.number().int().optional(),
