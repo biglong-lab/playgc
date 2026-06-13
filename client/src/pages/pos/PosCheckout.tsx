@@ -199,7 +199,28 @@ export default function PosCheckout() {
           </Card>
         )}
 
-        {/* 金額（大字輸入）*/}
+        {/* 🆕 收款模式切換 */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant={mode === "items" ? "default" : "outline"} onClick={() => setMode("items")} data-testid="mode-items">
+            🛒 選品項
+          </Button>
+          <Button variant={mode === "free" ? "default" : "outline"} onClick={() => { setMode("free"); setCartLines([]); }} data-testid="mode-free">
+            ✏️ 自由金額
+          </Button>
+        </div>
+
+        {/* 🆕 品項模式：選品項 → 自動帶金額 */}
+        {mode === "items" && (
+          <PosItemPicker
+            onChange={(lines, totalCents) => {
+              setCartLines(lines);
+              setAmountDollars(totalCents > 0 ? String(totalCents / 100) : "");
+            }}
+          />
+        )}
+
+        {/* 金額（大字輸入）— 自由金額模式 */}
+        {mode === "free" && (
         <Card>
           <CardContent className="py-4 px-3">
             <Label htmlFor="amount" className="text-xs">
