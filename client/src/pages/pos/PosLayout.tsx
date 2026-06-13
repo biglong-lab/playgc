@@ -61,16 +61,18 @@ export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
             </Link>
           )}
           <h1 className="font-bold text-lg flex-1">{title}</h1>
-          <Link href="/admin">
-            <button
-              className="text-xs text-muted-foreground hover-elevate p-1.5 rounded flex items-center gap-1"
-              aria-label="切換到後台"
-              title="切換到完整後台"
-            >
-              <Settings className="w-4 h-4" />
-              後台
-            </button>
-          </Link>
+          {!isFieldStaff && (
+            <Link href="/admin">
+              <button
+                className="text-xs text-muted-foreground hover-elevate p-1.5 rounded flex items-center gap-1"
+                aria-label="切換到後台"
+                title="切換到完整後台"
+              >
+                <Settings className="w-4 h-4" />
+                後台
+              </button>
+            </Link>
+          )}
         </div>
       </header>
 
