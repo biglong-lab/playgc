@@ -121,6 +121,22 @@ const getActionColor = (action: string): string => {
   return "bg-muted text-muted-foreground";
 };
 
+// http: 中介層自動紀錄 → 用 HTTP method 對應好懂的中文
+const HTTP_METHOD_LABELS: Record<string, string> = {
+  POST: "新增 / 送出",
+  PUT: "修改",
+  PATCH: "調整",
+  DELETE: "移除",
+};
+
+function actionLabel(action: string): string {
+  if (action.startsWith("http:")) {
+    const method = action.slice(5);
+    return HTTP_METHOD_LABELS[method] || `操作（${method}）`;
+  }
+  return ACTION_LABELS[action] || action;
+}
+
 export default function AdminStaffAuditLogs() {
   const { isAuthenticated } = useAdminAuth();
   const { data: logs, isLoading } = useQuery<AuditLog[]>({
