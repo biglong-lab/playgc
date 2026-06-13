@@ -26,7 +26,7 @@ import {
   posProductModifiers,
   POS_PRODUCT_CATEGORIES,
 } from "@shared/schema";
-import { eq, and, inArray, asc } from "drizzle-orm";
+import { eq, and, inArray, asc, isNull, desc } from "drizzle-orm";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
 
 function err(res: import("express").Response, e: unknown) {
