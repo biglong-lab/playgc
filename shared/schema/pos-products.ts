@@ -25,6 +25,10 @@ export const posProducts = pgTable(
     activityId: varchar("activity_id"),
     isActive: boolean("is_active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(0),
+    // 🆕 軟刪除（2026-06-13）
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: varchar("deleted_by"),
+    deleteReason: text("delete_reason"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
