@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import { feedbackCheckoutSuccess, feedbackError } from "@/lib/pos-feedback";
+import PosItemPicker, { type CartLine } from "./PosItemPicker";
 
 interface BookingForCheckout {
   id: number;
