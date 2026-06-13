@@ -104,6 +104,16 @@ const blackoutSchema = z.object({
   reason: z.string().max(500).optional(),
 });
 
+// 人工登記預約（電話預約）2026-06-13
+const manualBookingSchema = z.object({
+  displayName: z.string().min(1).max(100),
+  phone: z.string().max(30).optional(),
+  slotStart: z.string().datetime(),
+  partySize: z.number().int().min(1).max(500),
+  activityId: z.string().optional(),
+  customerNote: z.string().max(500).optional(),
+});
+
 const templateUpdateSchema = z.object({
   messageText: z.string().max(2000),
   flexMessageJson: z.record(z.unknown()).optional(),
