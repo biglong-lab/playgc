@@ -650,6 +650,13 @@ export function registerPosRoutes(app: Express) {
         }),
       )
       .optional(),
+    // 🆕 臨時品項（非目錄、自訂名稱+價）
+    customItems: z
+      .array(z.object({ name: z.string().min(1).max(120), priceCents: z.number().int().min(0), qty: z.number().int().min(1).max(99).default(1) }))
+      .optional(),
+    // 🆕 整單折扣（金額，分）+ 原因
+    discountCents: z.number().int().min(0).default(0),
+    discountReason: z.string().max(200).optional(),
   });
   app.post("/api/pos/checkout", requireAdminAuth, async (req, res) => {
     try {
