@@ -371,6 +371,107 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 }
 
 // ============================================================================
+// 人工登記預約（2026-06-13）— 電話預約由現場人員手動建立
+// 與 createBooking 不同：不受 schedule template 限制（可填任意時間）、直接 confirmed、
+// 標 admin_note。仍會產 bookingCode + qrToken（可在 POS 掃描報到）。
+// ============================================================================
+
+export interface ManualBookingInput {
+  fieldId: string;
+  displayName: string;
+  phone?: string;
+  slotStart: Date;
+  /** 不傳則預設 +60 分鐘 */
+  slotEnd?: Date;
+  partySize: number;
+  activityId?: string;
+  customerNote?: string;
+  adminNote?: string;
+  staffId?: string;
+}
+
+export async function createManualBooking(input: ManualBookingInput): Promise<CreateBookingResult> {
+  if (input.partySize < 1) {
+    throw new BookingError("invalid_party_size", "人數必須 ≥ 1", 400);
+  }
+  if (!input.displayName?.trim()) {
+    throw new BookingError("invalid_name", "請填客戶名稱", 400);
+  }
+
+  // 金額（若綁活動用活動價）
+  let priceCents = 0;
+  let activityId: string | null = input.activityId ?? null;
+  if (input.activityId) {
+    const { activities } = await import("@shared/schema");
+    const [activity] = await db
+      .select()
+      .from(activities)
+      .where(eq(activities.id, input.activityId))
+      .limit(1);
+    if (activity) priceCents = activity.priceCents;
+    else activityId = null;
+  }
+
+  // unique code
+  let code: string | null = null;
+  for (let i = 0; i < MAX_CODE_RETRIES; i++) {
+    const candidate = generateBookingCode();
+    const existing = await db
+      .select({ id: bookings.id })
+      .from(bookings)
+      .where(eq(bookings.bookingCode, candidate))
+      .limit(1);
+    if (existing.length === 0) {
+      code = candidate;
+      break;
+    }
+  }
+  if (!code) throw new BookingError("code_generation_failed", "預約碼產生失敗、請重試", 500);
+
+  const { randomBytes } = await import("crypto");
+  const qrToken = `BK_${randomBytes(28).toString("base64url")}`;
+  const slotEnd = input.slotEnd ?? new Date(input.slotStart.getTime() + 60 * 60_000);
+  const paymentRequired = priceCents > 0;
+
+  const inserted = await db
+    .insert(bookings)
+    .values({
+      bookingCode: code,
+      fieldId: input.fieldId,
+      lineUserId: `manual:${code}`,
+      displayName: input.displayName.trim(),
+      phone: input.phone,
+      slotStart: input.slotStart,
+      slotEnd,
+      partySize: input.partySize,
+      status: "confirmed",
+      paymentRequired,
+      paymentStatus: paymentRequired ? "pending_onsite" : "none",
+      amountCents: paymentRequired ? priceCents * input.partySize : 0,
+      customerNote: input.customerNote,
+      adminNote: input.adminNote ?? "人工登記（電話預約）",
+      activityId,
+      paymentMode: "onsite",
+      qrToken,
+    })
+    .returning();
+
+  // Telegram 群組通知（沿用 createBooking 的通報路徑 → 個人 + 場域群組）
+  if (inserted[0]) {
+    tgNotifyBookingCreated({
+      fieldId: inserted[0].fieldId,
+      bookingCode: inserted[0].bookingCode,
+      displayName: inserted[0].displayName ?? undefined,
+      slotStart: inserted[0].slotStart,
+      partySize: inserted[0].partySize,
+      amountCents: inserted[0].amountCents,
+    });
+  }
+
+  return { booking: inserted[0]! };
+}
+
+// ============================================================================
 // 取消預約
 // ============================================================================
 
