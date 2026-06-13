@@ -238,6 +238,20 @@ export default function PosSummary() {
                         <p className="font-bold text-amber-600 text-sm">
                           NT${(t.paidAmountCents / 100).toLocaleString()}
                         </p>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 shrink-0"
+                          aria-label="刪除交易"
+                          onClick={() => {
+                            const r = prompt("刪除這筆帳務的原因？（必填，會進垃圾桶可還原）");
+                            if (r && r.trim().length >= 2) delTxn.mutate({ id: t.id, reason: r.trim() });
+                            else if (r !== null) toast({ title: "請填至少 2 字原因", variant: "destructive" });
+                          }}
+                          data-testid={`del-txn-${t.id}`}
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
