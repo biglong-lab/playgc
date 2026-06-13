@@ -69,6 +69,9 @@ export default function PosCheckout() {
   // 🆕 2026-05-18 找零計算 + 大金額確認
   const [tenderedDollars, setTenderedDollars] = useState<string>("");
   const [showConfirm, setShowConfirm] = useState(false);
+  // 🆕 2026-06-13 收款模式：items=選品項 / free=自由金額。綁定預約預設自由金額
+  const [mode, setMode] = useState<"items" | "free">("free");
+  const [cartLines, setCartLines] = useState<CartLine[]>([]);
 
   useEffect(() => {
     if (booking) {
