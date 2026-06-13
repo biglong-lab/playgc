@@ -89,6 +89,7 @@ import { registerLineLoginRoutes } from "./auth-line-login";
 import { registerAdminActivitiesRoutes } from "./admin-activities";
 import { registerPublicActivitiesRoutes } from "./public-activities";
 import { registerPosRoutes } from "./pos";
+import { registerAdminPosProductRoutes } from "./admin-pos-products";
 import { registerAdminTroubleshootRoutes } from "./admin-troubleshoot";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
