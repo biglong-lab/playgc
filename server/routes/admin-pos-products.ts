@@ -172,11 +172,11 @@ export function registerAdminPosProductRoutes(app: Express) {
       const groups = await db
         .select()
         .from(posModifierGroups)
-        .where(eq(posModifierGroups.fieldId, fieldId))
+        .where(and(eq(posModifierGroups.fieldId, fieldId), isNull(posModifierGroups.deletedAt)))
         .orderBy(asc(posModifierGroups.sortOrder));
       const gids = groups.map((g) => g.id);
       const options = gids.length
-        ? await db.select().from(posModifierOptions).where(inArray(posModifierOptions.groupId, gids)).orderBy(asc(posModifierOptions.sortOrder))
+        ? await db.select().from(posModifierOptions).where(and(inArray(posModifierOptions.groupId, gids), isNull(posModifierOptions.deletedAt))).orderBy(asc(posModifierOptions.sortOrder))
         : [];
       res.json({
         groups: groups.map((g) => ({ ...g, options: options.filter((o) => o.groupId === g.id) })),
