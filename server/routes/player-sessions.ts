@@ -10,6 +10,29 @@ import { ObjectPermission } from "../objectAcl";
 import { insertGameSessionSchema } from "@shared/schema";
 import { z } from "zod";
 import { hotPathLimiter, chatLimiter } from "../utils/rate-limiters";
+import { notifyFieldGamePlay } from "../lib/internal-notifier";
+
+/**
+ * 🆕 2026-06-13 賈村遊戲開玩通報（Telegram 群組）
+ * 只針對 TELEGRAM_GAME_NOTIFY_FIELD_ID 指定的場域（賈村）；fire-and-forget、不阻塞回應。
+ */
+async function notifyFieldGameStart(sessionId: string, userId: string): Promise<void> {
+  try {
+    const fieldId = process.env.TELEGRAM_GAME_NOTIFY_FIELD_ID;
+    if (!fieldId) return;
+    const session = await storage.getSession(sessionId);
+    if (!session?.gameId) return;
+    const game = await storage.getGame(session.gameId);
+    if (!game || game.fieldId !== fieldId) return;
+    const user = await storage.getUser(userId);
+    const name = user
+      ? [user.firstName, user.lastName].filter(Boolean).join("") || undefined
+      : undefined;
+    notifyFieldGamePlay({ gameTitle: game.title, playerName: name });
+  } catch (err) {
+    console.error("[player-sessions] 賈村遊戲通報失敗:", err);
+  }
+}
 
 // ctx 為 optional：測試環境可不傳；正式環境由 player-games → setupWebSocket 注入
 export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
