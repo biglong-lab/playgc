@@ -28,13 +28,15 @@ export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
     };
   }, []);
 
+  // 現場模式固定底部選單（2026-06-13）：現場最常用 6 項
+  // 小結移到首頁大按鈕（每日結算、頻率較低）；排解＝排除遊戲障礙
   const tabs = [
     { path: "/pos", label: "首頁", icon: Home },
     { path: "/pos/scan", label: "掃描", icon: ScanLine },
-    { path: "/pos/bookings/today", label: "今日", icon: ListChecks },
+    { path: "/pos/bookings/today", label: "預約", icon: CalendarCheck },
     { path: "/pos/checkout", label: "收款", icon: DollarSign },
-    { path: "/pos/voucher", label: "券", icon: Ticket },
-    { path: "/pos/summary", label: "小結", icon: TrendingUp },
+    { path: "/pos/voucher", label: "核銷", icon: Ticket },
+    { path: "/admin/troubleshoot", label: "排解", icon: LifeBuoy },
   ];
 
   return (
