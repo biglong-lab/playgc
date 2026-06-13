@@ -15,7 +15,7 @@
 
 import type { Express, Request, Response } from "express";
 import { db } from "../db";
-import { bookings, activities, posTransactions, platformCoupons, couponTemplates, fields } from "@shared/schema";
+import { bookings, activities, posTransactions, platformCoupons, couponTemplates, fields, posProducts, posModifierOptions, posTransactionItems } from "@shared/schema";
 import { and, eq, gte, lte, sql, or, inArray } from "drizzle-orm";
 import { requireAdminAuth, logAuditAction } from "../adminAuth";
 import { z } from "zod";
