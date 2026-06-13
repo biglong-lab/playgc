@@ -294,14 +294,17 @@ export default function AdminStaffAuditLogs() {
                       </TableCell>
                       <TableCell>
                         <Badge className={getActionColor(log.action)} variant="secondary">
-                          {ACTION_LABELS[log.action] || log.action}
+                          {actionLabel(log.action)}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {log.targetType && log.targetId ? (
+                        {log.action.startsWith("http:") && log.targetId ? (
+                          // 中介層紀錄：targetId 是 API 路徑，直接顯示（看得出改了什麼）
+                          <span className="font-mono text-xs break-all">{log.targetId}</span>
+                        ) : log.targetType && log.targetId ? (
                           <div className="text-sm">
                             <span className="text-muted-foreground">{log.targetType}: </span>
-                            <span className="font-mono text-xs">{log.targetId.slice(0, 8)}...</span>
+                            <span className="font-mono text-xs">{log.targetId.slice(0, 12)}</span>
                           </div>
                         ) : (
                           <span className="text-muted-foreground">-</span>
