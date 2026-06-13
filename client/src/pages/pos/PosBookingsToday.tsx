@@ -73,6 +73,39 @@ export default function PosBookingsToday() {
     },
   });
 
+  // 🆕 2026-06-13 POS 人工預約
+  const [manualOpen, setManualOpen] = useState(false);
+  const [mName, setMName] = useState("");
+  const [mPhone, setMPhone] = useState("");
+  const [mDate, setMDate] = useState(todayStr());
+  const [mTime, setMTime] = useState("14:00");
+  const [mParty, setMParty] = useState(2);
+  const [bindLink, setBindLink] = useState("");
+  const manualMut = useMutation({
+    mutationFn: async () => {
+      const slotStart = new Date(`${mDate}T${mTime}:00`).toISOString();
+      return await fetchWithAdminAuth("/api/pos/bookings/manual", {
+        method: "POST",
+        body: JSON.stringify({
+          displayName: mName.trim(),
+          phone: mPhone.trim() || undefined,
+          slotStart,
+          partySize: mParty,
+        }),
+      });
+    },
+    onSuccess: (res: { booking?: { bookingCode?: string } }) => {
+      const code = res?.booking?.bookingCode;
+      setBindLink(code ? `${window.location.origin}/b/${code}` : "");
+      toast({ title: "✅ 已建立預約" });
+      setMName("");
+      setMPhone("");
+      setMParty(2);
+      qc.invalidateQueries({ queryKey: ["pos-dashboard"] });
+    },
+    onError: (e) => toast({ title: "建立失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
+  });
+
   const filtered = useMemo(() => {
     const list = data?.todayBookings ?? [];
     if (!search.trim()) return list;
