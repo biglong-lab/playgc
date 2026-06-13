@@ -90,6 +90,7 @@ import { registerAdminActivitiesRoutes } from "./admin-activities";
 import { registerPublicActivitiesRoutes } from "./public-activities";
 import { registerPosRoutes } from "./pos";
 import { registerAdminPosProductRoutes } from "./admin-pos-products";
+import { registerAdminPosReportRoutes } from "./admin-pos-reports";
 import { registerAdminTroubleshootRoutes } from "./admin-troubleshoot";
 import { registerBattleSelfReportRoutes } from "./battle-self-report";
 import { registerSquadRecordsRoutes } from "./squad-records";
