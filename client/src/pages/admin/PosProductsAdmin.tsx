@@ -29,6 +29,7 @@ interface Product {
   photoUrl: string | null;
   priceCents: number;
   isActive: boolean;
+  soldOut?: boolean;
   modifierGroupIds: string[];
 }
 interface ModOption { id: string; name: string; priceDeltaCents: number }
