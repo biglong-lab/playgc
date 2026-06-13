@@ -83,8 +83,9 @@ export default function PosCheckout() {
 
   const checkoutMut = useMutation({
     mutationFn: async () => {
+      const useItems = mode === "items" && cartLines.length > 0;
       const amountCents = Math.round(Number(amountDollars) * 100);
-      if (!Number.isFinite(amountCents) || amountCents < 0) throw new Error("金額無效");
+      if (!useItems && (!Number.isFinite(amountCents) || amountCents < 0)) throw new Error("金額無效");
       return await fetchWithAdminAuth("/api/pos/checkout", {
         method: "POST",
         body: JSON.stringify({
@@ -96,6 +97,10 @@ export default function PosCheckout() {
           customerName: customerName.trim() || undefined,
           customerPhone: customerPhone.trim() || undefined,
           note: note.trim() || undefined,
+          // 🆕 帶品項明細 → 後端重算金額 + 記 line items
+          items: useItems
+            ? cartLines.map((l) => ({ productId: l.productId, qty: l.qty, modifierOptionIds: l.modifierOptionIds }))
+            : undefined,
         }),
       });
     },
