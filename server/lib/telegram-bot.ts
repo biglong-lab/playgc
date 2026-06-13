@@ -35,6 +35,7 @@ interface TgEnvConfig {
   token: string;
   username: string;
   chatIds: string[];
+  fieldGroupChatIds: string[];
 }
 
 let cachedConfig: TgEnvConfig | null = null;
