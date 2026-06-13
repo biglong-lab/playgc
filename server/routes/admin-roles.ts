@@ -447,18 +447,40 @@ export function registerAdminRoleRoutes(app: Express) {
       }
 
       const { limit = 100, offset = 0 } = req.query;
+      // 🆕 2026-06-13 篩選：category(all/semantic/http)、actor、from、to、q(搜尋)
+      const category = (req.query.category as string | undefined) ?? "all";
+      const actorId = (req.query.actorId as string | undefined)?.trim();
+      const fromStr = (req.query.from as string | undefined)?.trim();
+      const toStr = (req.query.to as string | undefined)?.trim();
+      const q = (req.query.q as string | undefined)?.trim();
 
       // 🔒 場域隔離：統一只看自己場域的 audit log
-      const whereClause = eq(auditLogs.fieldId, req.admin.fieldId);
+      const conditions = [eq(auditLogs.fieldId, req.admin.fieldId)];
+      // category：http=中介層自動紀錄、semantic=語意化紀錄、all=全部
+      if (category === "http") conditions.push(like(auditLogs.action, "http:%"));
+      else if (category === "semantic") conditions.push(sql`${auditLogs.action} NOT LIKE 'http:%'`);
+      if (actorId) conditions.push(eq(auditLogs.actorAdminId, actorId));
+      if (fromStr) conditions.push(gte(auditLogs.createdAt, new Date(fromStr)));
+      if (toStr) conditions.push(lte(auditLogs.createdAt, new Date(`${toStr}T23:59:59`)));
+      if (q) {
+        const term = `%${q}%`;
+        const orClause = or(
+          like(auditLogs.action, term),
+          like(auditLogs.targetId, term),
+          like(auditLogs.targetType, term),
+          sql`${auditLogs.metadata}::text ILIKE ${term}`,
+        );
+        if (orClause) conditions.push(orClause);
+      }
 
       const logs = await db.query.auditLogs.findMany({
-        where: whereClause,
+        where: and(...conditions),
         with: {
           actorAdmin: true,
           field: true,
         },
         orderBy: [desc(auditLogs.createdAt)],
-        limit: Number(limit),
+        limit: Math.min(Number(limit), 500),
         offset: Number(offset),
       });
 
