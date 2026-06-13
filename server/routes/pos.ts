@@ -766,6 +766,8 @@ export function registerPosRoutes(app: Express) {
           paymentMethod: parsed.data.paymentMethod,
           voucherId: parsed.data.voucherId ?? null,
           voucherDiscountCents: parsed.data.voucherDiscountCents,
+          manualDiscountCents: parsed.data.discountCents ?? 0,
+          discountReason: parsed.data.discountReason ?? null,
           customerName: parsed.data.customerName ?? null,
           customerPhone: parsed.data.customerPhone ?? null,
           note: parsed.data.note ?? null,
