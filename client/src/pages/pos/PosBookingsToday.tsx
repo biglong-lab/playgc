@@ -48,11 +48,17 @@ export default function PosBookingsToday() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<"today" | "upcoming">("today");
 
   const { data, isLoading } = useQuery<DashboardResp>({
     queryKey: ["pos-dashboard"],
     queryFn: async () => await fetchWithAdminAuth("/api/pos/dashboard"),
     refetchInterval: 30_000,
+  });
+  const { data: upcomingData, isLoading: upcomingLoading } = useQuery<{ bookings: TodayBooking[] }>({
+    queryKey: ["pos-upcoming"],
+    queryFn: async () => await fetchWithAdminAuth("/api/pos/bookings/upcoming"),
+    enabled: view === "upcoming",
   });
 
   const checkInMut = useMutation({
