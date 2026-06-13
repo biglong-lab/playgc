@@ -16,6 +16,9 @@ interface PosLayoutProps {
 
 export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
   const [location] = useLocation();
+  // 場域執行者＝純現場人員、不顯示「切換到後台」（點了也會被導回現場）
+  const { admin } = useAdminAuth({ redirectTo: "" });
+  const isFieldStaff = admin?.systemRole === "field_executor";
   // 🆕 2026-05-18 離線指示器
   const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   useEffect(() => {
