@@ -136,6 +136,7 @@ export function registerPosRoutes(app: Express) {
             inArray(posTransactions.fieldId, scope.identifiers),
             gte(posTransactions.createdAt, start),
             lte(posTransactions.createdAt, end),
+            sql`${posTransactions.deletedAt} IS NULL`,
           ),
         );
 
