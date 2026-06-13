@@ -111,10 +111,15 @@ export function registerAdminPosProductRoutes(app: Express) {
 
   app.delete("/api/admin/pos/products/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
     try {
-      await db.delete(posProductModifiers).where(eq(posProductModifiers.productId, req.params.id));
-      await db
-        .delete(posProducts)
-        .where(and(eq(posProducts.id, req.params.id), eq(posProducts.fieldId, req.admin!.fieldId)));
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+      if (reason.length < 2) return res.status(400).json({ error: "reason_required", message: "請填刪除原因" });
+      // 軟刪除（進垃圾桶、可還原）
+      const [updated] = await db
+        .update(posProducts)
+        .set({ deletedAt: new Date(), deletedBy: req.admin!.id, deleteReason: reason, updatedAt: new Date() })
+        .where(and(eq(posProducts.id, req.params.id), eq(posProducts.fieldId, req.admin!.fieldId), isNull(posProducts.deletedAt)))
+        .returning();
+      if (!updated) return res.status(404).json({ error: "not_found" });
       res.json({ ok: true });
     } catch (e) {
       err(res, e);
