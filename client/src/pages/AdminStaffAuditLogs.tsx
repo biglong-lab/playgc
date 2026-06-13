@@ -188,10 +188,68 @@ export default function AdminStaffAuditLogs() {
           <p className="text-muted-foreground mt-1">查看系統操作的審計日誌</p>
         </div>
 
+        {/* 🆕 篩選列 */}
+        <Card>
+          <CardContent className="pt-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 items-end">
+              <div>
+                <Label className="text-xs">類型</Label>
+                <select
+                  className="w-full h-10 px-3 rounded-md border bg-background text-sm"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value as "all" | "semantic" | "http")}
+                  data-testid="filter-category"
+                >
+                  <option value="all">全部</option>
+                  <option value="semantic">重點操作</option>
+                  <option value="http">完整變更</option>
+                </select>
+              </div>
+              <div>
+                <Label className="text-xs">起始日期</Label>
+                <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} data-testid="filter-from" />
+              </div>
+              <div>
+                <Label className="text-xs">結束日期</Label>
+                <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} data-testid="filter-to" />
+              </div>
+              <div className="col-span-2 md:col-span-1">
+                <Label className="text-xs">搜尋（動作/對象/內容/操作員）</Label>
+                <Input
+                  value={qInput}
+                  onChange={(e) => setQInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && setQ(qInput.trim())}
+                  placeholder="輸入關鍵字後 Enter"
+                  data-testid="filter-q"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button size="sm" onClick={() => setQ(qInput.trim())} data-testid="filter-apply">搜尋</Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setCategory("all");
+                    setFrom("");
+                    setTo("");
+                    setQ("");
+                    setQInput("");
+                  }}
+                  data-testid="filter-reset"
+                >
+                  清除
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
-            <CardTitle>最近操作記錄</CardTitle>
-            <CardDescription>顯示最近 100 筆系統操作記錄</CardDescription>
+            <CardTitle>操作記錄</CardTitle>
+            <CardDescription>
+              {logs ? `${logs.length} 筆` : "查詢中"}　·　每筆都含「操作者 + 時間 + 動作 + 對象 + IP」
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
