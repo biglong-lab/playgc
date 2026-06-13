@@ -33,6 +33,7 @@ import {
   listBookings,
   markBookingCompleted,
   markBookingNoShow,
+  createManualBooking,
   BookingError,
 } from "../booking/booking-service";
 import {
