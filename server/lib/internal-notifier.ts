@@ -185,7 +185,61 @@ export function notifyBookingCreated(opts: {
   if (opts.amountCents > 0) {
     lines.push(`金額：NT$${(opts.amountCents / 100).toLocaleString()}`);
   }
-  fireForget(sendMessage({ text: lines.join("\n"), parseMode: "Markdown" }));
+  const text = lines.join("\n");
+  fireForget(sendMessage({ text, parseMode: "Markdown" }));
+  // 🆕 2026-06-13 也通報到場域群組（賈村群組等）
+  sendToFieldGroup(text);
+}
+
+// ============================================================================
+// 事件 6.5：賈村遊戲開玩（2026-06-13）— 只通報場域群組
+// 需求：時間 + 遊戲名稱 + 帳號；只針對指定場域（賈村）
+// ============================================================================
+
+export function notifyFieldGamePlay(opts: {
+  gameTitle: string;
+  playerName?: string;
+  startedAt?: Date;
+}): void {
+  const groups = getFieldGroupChatIds();
+  if (groups.length === 0) return;
+  const timeStr = (opts.startedAt ?? new Date()).toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const text =
+    `🎮 有人玩賈村遊戲\n` +
+    `時間：${timeStr}\n` +
+    `遊戲：${opts.gameTitle}\n` +
+    `帳號：${opts.playerName || "(匿名)"}`;
+  sendToFieldGroup(text, true);
+}
+
+// ============================================================================
+// 事件 6.6：今日預約晨報（2026-06-13）— 每天早上通報場域群組
+// ============================================================================
+
+export function notifyTodayBookings(opts: {
+  dateLabel: string;
+  bookings: Array<{ timeStr: string; displayName: string; partySize: number; activityName?: string }>;
+}): void {
+  const groups = getFieldGroupChatIds();
+  if (groups.length === 0) return;
+  if (opts.bookings.length === 0) {
+    sendToFieldGroup(`☀️ *今日預約 · ${opts.dateLabel}*\n\n今天目前沒有預約`, true);
+    return;
+  }
+  const lines = [`☀️ *今日預約 · ${opts.dateLabel}*`, `共 ${opts.bookings.length} 組`, ``];
+  for (const b of opts.bookings) {
+    lines.push(
+      `• ${b.timeStr} · ${b.displayName} · ${b.partySize} 人` +
+        (b.activityName ? ` · ${b.activityName}` : ""),
+    );
+  }
+  sendToFieldGroup(lines.join("\n"));
 }
 
 export function notifyBookingCancelled(opts: {
