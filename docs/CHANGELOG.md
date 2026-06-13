@@ -5,6 +5,21 @@
 
 ---
 
+## 2026-06-13 (g)
+
+### 🛒 POS 大升級：品項系統 + 客製 + 銷售報表（feat）
+**狀態**：🟢 部署上線（Phase1-3 `a499224e`、Phase4 `9ccbba3c`）
+**細節** → [changes/2026-06-13-pos-products-reports.md](changes/2026-06-13-pos-products-reports.md)
+
+- **6 新表**：pos_products / modifier_groups / modifier_options / product_modifiers / transaction_items / shift_closes（生產已建）
+- **品項設定** `/admin/pos-products`：餐飲/文創/課程三類別、照片+名稱+價、客製群組（一鍵建糖度/冰塊）+ 加購選項
+- **結帳改版**：選品項+客製→購物車→自動算總，金額伺服器端重算防竄改，記 line items（向後相容自由金額）
+- **銷售報表** `/admin/pos-reports`：分類/付款/品項/客製熱度 + 預約狀態（今日/本月/未來+來源）+ 退款
+- **每日結帳**：一鍵結算 → 寫 shift_closes + 標記交易 + 推賈村群組（總額/分類/付款/熱銷 TOP5）
+- 驗證：tsc PASS、各頁 boot smoke、金額重算；生產 version=9ccbba3c
+
+---
+
 ## 2026-06-13 (f)
 
 ### 🔗 手動預約 → LINE 綁定閉環 + 來源追蹤（feat）
