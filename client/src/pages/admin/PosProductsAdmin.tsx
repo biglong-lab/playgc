@@ -183,7 +183,16 @@ export default function PosProductsAdmin() {
                         )}
                         <div className="font-medium text-sm truncate">{p.name}</div>
                         <div className="text-primary font-bold">{money(p.priceCents)}</div>
-                        {!p.isActive && <Badge variant="outline">停用</Badge>}
+                        <div className="flex gap-1 flex-wrap">
+                          {!p.isActive && <Badge variant="outline">停用</Badge>}
+                          <button
+                            onClick={() => toggleSoldOut.mutate({ id: p.id, soldOut: !p.soldOut })}
+                            className={`text-[10px] px-1.5 py-0.5 rounded ${p.soldOut ? "bg-red-500/20 text-red-700 dark:text-red-400" : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"}`}
+                            data-testid={`toggle-soldout-${p.id}`}
+                          >
+                            {p.soldOut ? "售完(點擊恢復)" : "供應中"}
+                          </button>
+                        </div>
                         <div className="flex gap-1">
                           <Button size="sm" variant="outline" className="flex-1" onClick={() => setEditing({ ...p })}>
                             <Pencil className="w-3 h-3" />
