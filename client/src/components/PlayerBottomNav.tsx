@@ -51,6 +51,7 @@ export default function PlayerBottomNav() {
     location.startsWith("/checkout/") ||
     location.startsWith("/purchase/") ||
     location.startsWith("/admin") ||
+    location.startsWith("/pos") ||
     location.startsWith("/platform") ||
     location.startsWith("/g/") ||
     // 🎯 場域遊戲路徑（/f/{code}/game/...、/f/{code}/map/..., 等）也要隱藏
