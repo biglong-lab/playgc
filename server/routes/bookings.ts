@@ -206,6 +206,24 @@ export function registerBookingRoutes(app: Express) {
   // ──────────────────────────────────────────
   // GET /api/bookings/:bookingCode
   // ──────────────────────────────────────────
+  // ──────────────────────────────────────────
+  // GET /api/bookings/by-code/:code — 公開最小摘要（給綁定短連結頁、不需 lineUserId）
+  // 2026-06-13
+  // ──────────────────────────────────────────
+  app.get("/api/bookings/by-code/:code", async (req, res) => {
+    try {
+      const summary = await getBookingSummaryByCode(req.params.code);
+      if (!summary) return res.status(404).json({ error: "not_found" });
+      // 名稱遮罩（只露第一個字）避免短連結被猜到後看到全名
+      const masked = summary.displayName
+        ? summary.displayName.slice(0, 1) + "＊＊"
+        : null;
+      res.json({ booking: { ...summary, displayName: masked } });
+    } catch (err) {
+      return handleBookingError(res, err);
+    }
+  });
+
   app.get("/api/bookings/:bookingCode", async (req, res) => {
     try {
       const booking = await getBookingByCode(req.params.bookingCode);
