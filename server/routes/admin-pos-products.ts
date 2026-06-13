@@ -301,12 +301,12 @@ export function registerAdminPosProductRoutes(app: Express) {
       const products = await db
         .select()
         .from(posProducts)
-        .where(and(eq(posProducts.fieldId, fieldId), eq(posProducts.isActive, true)))
+        .where(and(eq(posProducts.fieldId, fieldId), eq(posProducts.isActive, true), isNull(posProducts.deletedAt)))
         .orderBy(asc(posProducts.category), asc(posProducts.sortOrder));
-      const groups = await db.select().from(posModifierGroups).where(eq(posModifierGroups.fieldId, fieldId));
+      const groups = await db.select().from(posModifierGroups).where(and(eq(posModifierGroups.fieldId, fieldId), isNull(posModifierGroups.deletedAt)));
       const gids = groups.map((g) => g.id);
       const options = gids.length
-        ? await db.select().from(posModifierOptions).where(inArray(posModifierOptions.groupId, gids)).orderBy(asc(posModifierOptions.sortOrder))
+        ? await db.select().from(posModifierOptions).where(and(inArray(posModifierOptions.groupId, gids), isNull(posModifierOptions.deletedAt))).orderBy(asc(posModifierOptions.sortOrder))
         : [];
       const links = await db.select().from(posProductModifiers);
       const groupWithOpts = groups.map((g) => ({ ...g, options: options.filter((o) => o.groupId === g.id) }));
