@@ -154,6 +154,38 @@ export default function PosCheckout() {
             )}
           </CardContent>
         </Card>
+
+        {/* 🆕 收據明細 */}
+        {success.lines.length > 0 && (
+          <Card className="mb-4">
+            <CardContent className="py-3 px-3">
+              <p className="text-xs text-muted-foreground mb-2">🧾 明細（可截圖給客人）</p>
+              <div className="space-y-1.5">
+                {success.lines.map((l, i) => (
+                  <div key={i} className="flex justify-between text-sm">
+                    <span className="flex-1 min-w-0">
+                      {l.name}
+                      {l.modifierLabel && l.modifierLabel !== "臨時" ? <span className="text-xs text-muted-foreground"> · {l.modifierLabel}</span> : null}
+                      <span className="text-xs text-muted-foreground"> ×{l.qty}</span>
+                    </span>
+                    <span>NT${((l.unitPriceCents * l.qty) / 100).toLocaleString()}</span>
+                  </div>
+                ))}
+                {success.discountCents > 0 && (
+                  <div className="flex justify-between text-sm text-red-600 border-t pt-1">
+                    <span>折扣</span>
+                    <span>-NT${(success.discountCents / 100).toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold border-t pt-1">
+                  <span>合計</span>
+                  <span className="text-green-600">NT${(success.amountCents / 100).toLocaleString()}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" onClick={() => navigate("/pos")}>
             回首頁
