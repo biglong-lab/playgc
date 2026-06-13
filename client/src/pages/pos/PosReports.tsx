@@ -51,6 +51,13 @@ export default function PosReports() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [date, setDate] = useState(taipeiToday());
+  const [range, setRange] = useState<{ from: string; to: string; label: string } | null>(null);
+
+  const { data: rangeRep } = useQuery<RangeRep>({
+    queryKey: ["pos-range-report", range?.from, range?.to],
+    queryFn: () => fetchWithAdminAuth(`/api/admin/pos/reports/range?from=${range!.from}&to=${range!.to}`),
+    enabled: !!range,
+  });
 
   const { data: daily } = useQuery<Daily>({
     queryKey: ["pos-daily-report", date],
