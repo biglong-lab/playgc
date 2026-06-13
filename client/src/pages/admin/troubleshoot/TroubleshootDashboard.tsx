@@ -98,6 +98,10 @@ export default function TroubleshootDashboard() {
   return (
     <UnifiedAdminLayout title="🆘 排解中心">
       <div className="max-w-6xl mx-auto space-y-4">
+        {/* 🏪 返回現場模式（2026-06-13）— 排解是現場底部選單的一頁 */}
+        <Link href="/pos" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover-elevate px-2 py-1 rounded" data-testid="link-back-field-mode">
+          ← 返回現場模式
+        </Link>
         {/* Header 卡 */}
         <Card className="border-red-200 dark:border-red-900/50">
           <CardContent className="py-4 flex items-start gap-3">
