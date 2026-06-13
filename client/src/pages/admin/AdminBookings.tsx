@@ -339,6 +339,42 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
             <DialogHeader>
               <DialogTitle>➕ 人工登記預約（電話預約）</DialogTitle>
             </DialogHeader>
+            {bindLink ? (
+              <div className="space-y-3">
+                <p className="text-sm">
+                  ✅ 預約已建立。把這個連結傳給顧客（LINE / 簡訊），點了用 LINE 綁定就會自動收到提醒：
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    readOnly
+                    value={bindLink}
+                    className="font-mono text-xs"
+                    data-testid="bind-link"
+                    onFocus={(e) => e.currentTarget.select()}
+                  />
+                  <Button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(bindLink);
+                      toast({ title: "已複製連結" });
+                    }}
+                    data-testid="copy-bind-link"
+                  >
+                    複製
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground">顧客不綁也沒關係，預約一樣有效，只是不會收到提醒。</p>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setBindLink("");
+                    setManualOpen(false);
+                  }}
+                >
+                  完成
+                </Button>
+              </div>
+            ) : (
             <div className="space-y-3">
               <div>
                 <Label className="text-xs">客戶名稱 *</Label>
