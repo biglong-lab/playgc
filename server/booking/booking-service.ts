@@ -473,6 +473,61 @@ export async function createManualBooking(input: ManualBookingInput): Promise<Cr
 }
 
 // ============================================================================
+// 短連結綁定 LINE（2026-06-13）— 人工建單 → 顧客點短連結 → LINE 綁定閉環
+// ============================================================================
+
+/** 公開：用預約碼查最小摘要（給綁定頁顯示，不含敏感資料） */
+export async function getBookingSummaryByCode(code: string): Promise<{
+  bookingCode: string;
+  displayName: string | null;
+  slotStart: Date;
+  partySize: number;
+  status: string;
+  fieldId: string;
+  alreadyBound: boolean;
+} | null> {
+  const [b] = await db
+    .select()
+    .from(bookings)
+    .where(eq(bookings.bookingCode, code))
+    .limit(1);
+  if (!b) return null;
+  return {
+    bookingCode: b.bookingCode,
+    displayName: b.displayName,
+    slotStart: b.slotStart,
+    partySize: b.partySize,
+    status: b.status,
+    fieldId: b.fieldId,
+    // 已綁＝line_user_id 不是 manual: 前綴
+    alreadyBound: !b.lineUserId.startsWith("manual:"),
+  };
+}
+
+/**
+ * 把預約綁到顧客的 LINE userId。
+ * 只允許「尚未綁定（manual:）」的預約被綁，避免覆蓋既有 LINE 直訂預約。
+ * 回傳是否成功綁定。
+ */
+export async function bindBookingLine(code: string, lineUserId: string): Promise<boolean> {
+  const [b] = await db
+    .select()
+    .from(bookings)
+    .where(eq(bookings.bookingCode, code))
+    .limit(1);
+  if (!b) return false;
+  if (!b.lineUserId.startsWith("manual:")) {
+    // 已綁定或本就是 LINE 直訂 → 視為已完成、不覆蓋
+    return b.lineUserId === lineUserId;
+  }
+  await db
+    .update(bookings)
+    .set({ lineUserId, source: "manual_linked", updatedAt: new Date() })
+    .where(eq(bookings.bookingCode, code));
+  return true;
+}
+
+// ============================================================================
 // 取消預約
 // ============================================================================
 
