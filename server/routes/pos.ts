@@ -691,7 +691,7 @@ export function registerPosRoutes(app: Express) {
 
       // 🆕 2026-06-13：有帶 items → 伺服器端用 DB 價格重算（防前端竄改金額）
       let computedLineItems: Array<{
-        productId: string;
+        productId: string | null;
         nameSnapshot: string;
         category: string | null;
         qty: number;
