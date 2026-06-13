@@ -42,6 +42,48 @@ if (cfBeaconToken && typeof document !== "undefined") {
   document.head.appendChild(cfScript);
 }
 
+// 🆕 2026-06-13：chunk 載入失敗自動救援
+//   部署後舊分頁去 lazy-import 已不存在的舊 chunk → "Importing a module script failed"。
+//   直接拋到 ErrorBoundary（顯示錯誤畫面）、版本檢查還沒跑到。這裡攔截 → 清快取 + 立即重載新版。
+function isChunkLoadError(msg?: string | null): boolean {
+  return /Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|module script failed|Load failed/i.test(
+    msg || "",
+  );
+}
+async function recoverFromChunkError(): Promise<void> {
+  const KEY = "chito_chunk_reload_at";
+  const last = Number(sessionStorage.getItem(KEY) || 0);
+  if (Date.now() - last < 15000) return; // 15 秒內不重複、避免無限重載
+  sessionStorage.setItem(KEY, String(Date.now()));
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((k) => caches.delete(k)));
+    }
+  } catch {
+    // ignore
+  }
+  window.location.reload();
+}
+if (typeof window !== "undefined") {
+  // Vite 官方：preload 的動態 chunk 失敗會 dispatch 此事件
+  window.addEventListener("vite:preloadError", (e) => {
+    e.preventDefault?.();
+    void recoverFromChunkError();
+  });
+  window.addEventListener("error", (e) => {
+    if (isChunkLoadError((e as ErrorEvent)?.message)) void recoverFromChunkError();
+  });
+  window.addEventListener("unhandledrejection", (e) => {
+    const reason = (e as PromiseRejectionEvent)?.reason;
+    if (isChunkLoadError(reason?.message || String(reason))) void recoverFromChunkError();
+  });
+}
+
 // Service Worker 更新時強制 reload，避免當前 tab 卡在舊 bundle
 // （已設 skipWaiting + clientsClaim，但舊 JS 已載入 memory，需要 reload 才會拿新版）
 if ("serviceWorker" in navigator) {
