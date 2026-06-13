@@ -5,6 +5,20 @@
 
 ---
 
+## 2026-06-13 (c)
+
+### 🏪 現場模式 + Telegram 賈村群組通知 + 體驗預約強化（feat）
+**狀態**：🟢 部署上線（commit `6ce3752f`）
+**細節** → [changes/2026-06-13-field-mode-telegram-bookings.md](changes/2026-06-13-field-mode-telegram-bookings.md)
+
+- **現場模式**：修 PlayerBottomNav 洩漏 /pos（玩家選單蓋掉 POS）；PosLayout 現場 6 選單（首頁/掃描/預約/收款/核銷/排解）；AdminDashboard 加「🏪 進入現場模式」入口
+- **Telegram 賈村群組**（`-5126162505`，與個人 ops chat 分流）：新預約（含人工登記）、賈村遊戲開玩（時間/遊戲/帳號）、今日預約晨報（每天 08:00 Taipei，新 today-bookings-cron）
+- **體驗預約**：人工登記（電話預約，createManualBooking + dialog）、今日/本月/未來快速檢視
+- **新 env**：`TELEGRAM_FIELD_GROUP_CHAT_IDS`、`TELEGRAM_GAME_NOTIFY_FIELD_ID`（已加生產）
+- **驗證**：tsc PASS；742 單元 passed；bot 端到端發群組成功；生產 version=6ce3752f、cron 啟動
+
+---
+
 ## 2026-06-13 (b)
 
 ### 🎨 template-market 12 情境主題化呈現（feat）
