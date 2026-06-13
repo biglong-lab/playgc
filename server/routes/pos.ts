@@ -560,6 +560,52 @@ export function registerPosRoutes(app: Express) {
           .where(eq(platformCoupons.id, c.id));
       }
 
+      // 🆕 2026-06-13：有帶 items → 伺服器端用 DB 價格重算（防前端竄改金額）
+      let computedLineItems: Array<{
+        productId: string;
+        nameSnapshot: string;
+        category: string | null;
+        qty: number;
+        unitPriceCents: number;
+        modifiers: Array<{ optionName: string; priceDeltaCents: number }>;
+        lineTotalCents: number;
+      }> = [];
+      let itemsTotalCents = 0;
+      if (parsed.data.items && parsed.data.items.length > 0) {
+        const productIds = [...new Set(parsed.data.items.map((i) => i.productId))];
+        const prods = await db.select().from(posProducts).where(inArray(posProducts.id, productIds));
+        const allOptIds = [...new Set(parsed.data.items.flatMap((i) => i.modifierOptionIds))];
+        const opts = allOptIds.length
+          ? await db.select().from(posModifierOptions).where(inArray(posModifierOptions.id, allOptIds))
+          : [];
+        for (const item of parsed.data.items) {
+          const prod = prods.find((p) => p.id === item.productId && p.fieldId === fieldId);
+          if (!prod) return res.status(400).json({ error: "invalid_product", message: `品項不存在: ${item.productId}` });
+          const chosen = item.modifierOptionIds
+            .map((oid) => opts.find((o) => o.id === oid))
+            .filter((o): o is NonNullable<typeof o> => Boolean(o));
+          const modTotal = chosen.reduce((s, o) => s + o.priceDeltaCents, 0);
+          const unit = prod.priceCents + modTotal;
+          const lineTotal = unit * item.qty;
+          itemsTotalCents += lineTotal;
+          computedLineItems.push({
+            productId: prod.id,
+            nameSnapshot: prod.name,
+            category: prod.category,
+            qty: item.qty,
+            unitPriceCents: unit,
+            modifiers: chosen.map((o) => ({ optionName: o.name, priceDeltaCents: o.priceDeltaCents })),
+            lineTotalCents: lineTotal,
+          });
+        }
+      }
+      // 有 items 時以重算金額為準（扣掉 voucher 折抵）
+      const finalAmountCents = computedLineItems.length > 0 ? itemsTotalCents : parsed.data.amountCents;
+      const finalPaidCents =
+        computedLineItems.length > 0
+          ? Math.max(0, itemsTotalCents - (parsed.data.voucherDiscountCents ?? 0))
+          : parsed.data.paidAmountCents;
+
       const [tx] = await db
         .insert(posTransactions)
         .values({
@@ -567,8 +613,8 @@ export function registerPosRoutes(app: Express) {
           staffId: req.admin.id,
           bookingId: parsed.data.bookingId ?? null,
           activityId: parsed.data.activityId ?? null,
-          amountCents: parsed.data.amountCents,
-          paidAmountCents: parsed.data.paidAmountCents,
+          amountCents: finalAmountCents,
+          paidAmountCents: finalPaidCents,
           paymentMethod: parsed.data.paymentMethod,
           voucherId: parsed.data.voucherId ?? null,
           voucherDiscountCents: parsed.data.voucherDiscountCents,
