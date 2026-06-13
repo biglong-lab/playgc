@@ -375,6 +375,7 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                 </Button>
               </div>
             ) : (
+            <>
             <div className="space-y-3">
               <div>
                 <Label className="text-xs">客戶名稱 *</Label>
