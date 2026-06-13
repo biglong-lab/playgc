@@ -20,6 +20,7 @@ interface MenuProduct {
   name: string;
   photoUrl: string | null;
   priceCents: number;
+  soldOut?: boolean;
   modifierGroups: ModGroup[];
 }
 export interface CartLine {
@@ -29,6 +30,7 @@ export interface CartLine {
   unitPriceCents: number;
   modifierOptionIds: string[];
   modifierLabel: string;
+  isCustom?: boolean; // 臨時品項（非目錄）
 }
 
 const CAT_LABELS: Record<string, string> = { food: "餐飲", goods: "文創", course: "課程" };
