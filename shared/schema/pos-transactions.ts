@@ -26,6 +26,9 @@ export const posTransactions = pgTable(
     /** 用了哪張券（折抵）*/
     voucherId: varchar("voucher_id"),
     voucherDiscountCents: integer("voucher_discount_cents").default(0),
+    /** 🆕 整單手動折扣（2026-06-13）*/
+    manualDiscountCents: integer("manual_discount_cents").notNull().default(0),
+    discountReason: text("discount_reason"),
     /** 散客可手填姓名 */
     customerName: varchar("customer_name", { length: 100 }),
     customerPhone: varchar("customer_phone", { length: 20 }),
