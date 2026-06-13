@@ -217,7 +217,7 @@ export default function PosProductsAdmin() {
               <div key={g.id} className="border rounded-lg p-3 space-y-2" data-testid={`group-${g.id}`}>
                 <div className="flex items-center justify-between">
                   <div className="font-medium">{g.name} <span className="text-xs text-muted-foreground">({g.selectType === "single" ? "單選" : "多選"})</span></div>
-                  <Button size="sm" variant="ghost" onClick={() => confirm(`刪除群組「${g.name}」?`) && delGroup.mutate(g.id)}>
+                  <Button size="sm" variant="ghost" onClick={() => { const r = prompt(`刪除群組「${g.name}」的原因？（必填）`); if (r && r.trim().length >= 2) delGroup.mutate({ id: g.id, reason: r.trim() }); else if (r !== null) toast({ title: "請填至少 2 字原因", variant: "destructive" }); }}>
                     <Trash2 className="w-3 h-3 text-destructive" />
                   </Button>
                 </div>
