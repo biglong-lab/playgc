@@ -254,6 +254,7 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
 
   // 🆕 2026-06-13 人工登記（電話預約）
   const [manualOpen, setManualOpen] = useState(false);
+  const [bindLink, setBindLink] = useState(""); // 建單後產生的 LINE 綁定短連結
   const [mName, setMName] = useState("");
   const [mPhone, setMPhone] = useState("");
   const [mDate, setMDate] = useState(formatDateInput(new Date()));
