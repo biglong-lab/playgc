@@ -249,6 +249,20 @@ export default function PosSummary() {
                           NT${(t.paidAmountCents / 100).toLocaleString()}
                         </p>
                         <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 px-2 shrink-0 text-xs text-amber-600"
+                          aria-label="退款"
+                          onClick={() => {
+                            const r = prompt("退款原因？（現金退款,記入退款報表）");
+                            if (r && r.trim().length >= 2) refundTxn.mutate({ id: t.id, reason: r.trim() });
+                            else if (r !== null) toast({ title: "請填至少 2 字原因", variant: "destructive" });
+                          }}
+                          data-testid={`refund-txn-${t.id}`}
+                        >
+                          退款
+                        </Button>
+                        <Button
                           size="icon"
                           variant="ghost"
                           className="h-7 w-7 shrink-0"
