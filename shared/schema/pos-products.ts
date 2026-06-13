@@ -24,6 +24,8 @@ export const posProducts = pgTable(
     /** 課程類可連結既有 activities.id（null = 純品項）*/
     activityId: varchar("activity_id"),
     isActive: boolean("is_active").notNull().default(true),
+    /** 售完（暫時不可點）2026-06-13 */
+    soldOut: boolean("sold_out").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
     // 🆕 軟刪除（2026-06-13）
     deletedAt: timestamp("deleted_at"),
