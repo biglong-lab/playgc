@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import type { Server } from "http";
 import { adminAuthMiddleware } from "../adminAuth";
+import { auditMutationMiddleware } from "../middleware/audit-mutations";
 import { setupWebSocket } from "./websocket";
 import { registerAuthRoutes } from "./auth";
 import { registerTestOnlyRoutes } from "./test-only";
