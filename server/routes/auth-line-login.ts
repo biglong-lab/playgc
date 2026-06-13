@@ -62,9 +62,11 @@ export function registerLineLoginRoutes(app: Express) {
     // 產 state + nonce（CSRF 防護）
     const state = crypto.randomBytes(16).toString("hex");
     const returnTo = typeof req.query.returnTo === "string" ? req.query.returnTo : "/";
+    // 🆕 2026-06-13：人工建單短連結綁定 — 帶預約碼進 state，callback 完成綁定
+    const bindBooking = typeof req.query.bindBooking === "string" ? req.query.bindBooking : "";
 
     // 存 state 進 cookie（10 分鐘、HttpOnly、SameSite=Lax 給 OAuth redirect 用）
-    res.cookie(STATE_COOKIE, JSON.stringify({ state, returnTo, exp: Date.now() + STATE_TTL_MS }), {
+    res.cookie(STATE_COOKIE, JSON.stringify({ state, returnTo, bindBooking, exp: Date.now() + STATE_TTL_MS }), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
