@@ -6,6 +6,7 @@
 import { Link, useLocation } from "wouter";
 import { ReactNode, useEffect, useState } from "react";
 import { Home, ScanLine, CalendarCheck, DollarSign, Ticket, LifeBuoy, Settings, WifiOff } from "lucide-react";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 interface PosLayoutProps {
   title: string;
