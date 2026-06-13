@@ -113,7 +113,7 @@ export default function PosBookingsToday() {
   });
 
   const filtered = useMemo(() => {
-    const list = data?.todayBookings ?? [];
+    const list = view === "today" ? data?.todayBookings ?? [] : upcomingData?.bookings ?? [];
     if (!search.trim()) return list;
     const q = search.trim().toLowerCase();
     return list.filter(
@@ -121,19 +121,24 @@ export default function PosBookingsToday() {
         b.bookingCode.toLowerCase().includes(q) ||
         (b.displayName ?? "").toLowerCase().includes(q),
     );
-  }, [data, search]);
+  }, [data, upcomingData, view, search]);
 
-  // 按 activity 分組
+  // 今日→按 activity 分組；未來→按日期分組
   const groups = useMemo(() => {
     const m = new Map<string, TodayBooking[]>();
     for (const b of filtered) {
-      const key = b.activity?.name || "（一般預約）";
+      const key =
+        view === "upcoming"
+          ? new Date(b.slotStart).toLocaleDateString("zh-TW", { month: "numeric", day: "numeric", weekday: "short" })
+          : b.activity?.name || "（一般預約）";
       const arr = m.get(key) ?? [];
       arr.push(b);
       m.set(key, arr);
     }
     return Array.from(m.entries());
-  }, [filtered]);
+  }, [filtered, view]);
+
+  const loading = view === "today" ? isLoading : upcomingLoading;
 
   return (
     <PosLayout title="今日預約" backTo="/pos">
