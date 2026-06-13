@@ -22,12 +22,25 @@ function taipeiToday() {
 interface Daily {
   date: string;
   totalCents: number;
+  refundsCents: number;
+  netCents: number;
+  refundCount: number;
   txnCount: number;
   itemCount: number;
   byMethod: Array<{ label: string; cents: number; count: number }>;
   byCategory: Array<{ label: string; cents: number; qty: number }>;
   byProduct: Array<{ name: string; qty: number; cents: number }>;
   byModifier: Array<{ name: string; qty: number }>;
+  byHour: Array<{ hour: number; cents: number; count: number }>;
+}
+interface RangeRep {
+  fromDate: string;
+  toDate: string;
+  totalCents: number;
+  refundsCents: number;
+  netCents: number;
+  txnCount: number;
+  daily: Array<{ day: string; cents: number }>;
 }
 interface Status {
   bookings: { today: number; month: number; future: number; srcLineDirect: number; srcManual: number; srcManualLinked: number };
