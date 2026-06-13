@@ -11,7 +11,7 @@ import {
 import { db } from "../db";
 import { fields, roles, rolePermissions, adminAccounts, adminSessions } from "@shared/schema";
 import jwt from "jsonwebtoken";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, or } from "drizzle-orm";
 import { timingSafeEqual } from "crypto";
 
 // 🔒 平台擁有者登入失敗計數（per-IP，記憶體）
