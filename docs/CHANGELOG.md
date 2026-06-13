@@ -5,6 +5,38 @@
 
 ---
 
+## 2026-06-13 (j)
+
+### 🛒 POS 優化批次：餐飲營運 + 交易完整 + 報表強化（feat）
+**狀態**：🟢 部署上線（commit `2b440093`）
+**細節** → [changes/2026-06-13-pos-optimize-batch.md](changes/2026-06-13-pos-optimize-batch.md)
+
+- **餐飲營運**：售完標示(一鍵切換+結帳擋售完)、整單折扣(金額+原因)、臨時品項(非目錄自訂名/價)
+- **交易完整**：收據明細(結帳完顯示品項/客製/折扣/合計可截圖)、退款整合進 POS(現金退款記 refunds、可部分退)
+- **報表強化**：淨收款(扣退款)、時段分析、本週/本月區間報表+每日明細
+- 新欄位：pos_products.sold_out、pos_transactions.manual_discount_cents/discount_reason
+
+## 2026-06-13 (i)
+
+### 🗑️ POS 全面軟刪除 + 垃圾桶（feat）
+**狀態**：🟢 部署上線（commit `d4a60278`）
+**細節** → [changes/2026-06-13-pos-soft-delete.md](changes/2026-06-13-pos-soft-delete.md)
+
+- 品項/客製/帳務交易刪除一律軟刪除(進垃圾桶可還原)、**強制填原因**
+- 所有列表/報表/結帳統計排除已刪；垃圾桶 `/admin/pos-trash` 還原；完整歷史靠全域稽核
+- 4 表加 deleted_at/deleted_by/delete_reason
+
+## 2026-06-13 (h)
+
+### 🔧 PWA chunk 自動救援 + POS 人工/未來預約（fix / feat）
+**狀態**：🟢 部署上線（commit `187bb751` / `b3d19b32` / `a510b797`）
+
+- **chunk 救援**：部署後舊分頁抓不到舊 chunk → 自動清快取重載(vite:preloadError + ErrorBoundary)，免手動清
+- **POS 人工預約**：今日預約頁加「人工預約」按鈕 → 產生 LINE 綁定短連結
+- **未來預約**：今日預約頁加「今日/未來」切換、未來按日期分組
+
+---
+
 ## 2026-06-13 (g)
 
 ### 🛒 POS 大升級：品項系統 + 客製 + 銷售報表（feat）
