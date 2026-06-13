@@ -163,12 +163,13 @@ async function seed() {
     fieldId,
     name: "場域執行者",
     systemRole: "field_executor",
-    description: "場域執行者，只能查看資料和執行遊戲",
+    description: "場域執行者，現場操作（POS/掃描/收款/核銷/預約/排障重置救援），看不到後台設定",
     isCustom: false,
     isDefault: false,
   });
 
-  const executorPerms = ["game:view", "page:view", "item:view", "qr:view", "user:view"];
+  // 2026-06-13：加 game:edit 讓現場可做排障動作（遊戲重置/卡關救援）；退款仍需 field:manage
+  const executorPerms = ["game:view", "game:edit", "page:view", "item:view", "qr:view", "user:view"];
   for (const permKey of executorPerms) {
     await db.insert(rolePermissions).values({
       id: randomUUID(),
