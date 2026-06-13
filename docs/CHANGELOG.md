@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-06-13 (d)
+
+### 🔐 場域執行者現場帳號 + 全域變更稽核 + 退款開放（feat / security）
+**狀態**：🟢 部署上線（commit `8859e19f`）
+**細節** → [changes/2026-06-13-field-mode-telegram-bookings.md](changes/2026-06-13-field-mode-telegram-bookings.md)（四、五節）
+
+- **場域執行者**：登入直接進 /pos 現場模式、看不到後台設定（ProtectedAdminRoute 導向 + PosLayout 隱藏後台鈕）；角色加 `game:edit` → 可排障（重置/卡關救援）
+- **退款開放現場**：`field:manage`→`game:edit`，沿用強制理由（≥5字）+ refunds 表 + audit log
+- **全域變更稽核**：新增 auditMutationMiddleware — 所有 /api/admin、/api/pos 的 POST/PUT/PATCH/DELETE 成功後自動寫 audit_log（操作者+時間+路徑+body摘要+IP），敏感欄位遮罩、未來端點自動涵蓋、長期保留
+- **驗證**：tsc PASS；audit 中介層 7 測試 + shared 共 92 passed；生產 version=8859e19f、3 個 field_executor 角色已授 game:edit、cron 啟動
+
+---
+
 ## 2026-06-13 (c)
 
 ### 🏪 現場模式 + Telegram 賈村群組通知 + 體驗預約強化（feat）
