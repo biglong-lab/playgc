@@ -444,25 +444,42 @@ export async function createAdminAccount(data: {
   email?: string;
   roleId?: string;
 }): Promise<{ success: boolean; accountId?: string; error?: string }> {
+  // 🆕 2026-06-13 防重複：email 可能被填進 username（UI）；也可能玩家已自助登入產生 pending 帳號。
+  // 用 username / email 多重比對找現有帳號，找到就「更新」而非建新（去重）。
+  const effEmail = (data.email || (data.username.includes("@") ? data.username : undefined))?.toLowerCase();
+  const matchConds = [eq(adminAccounts.username, data.username)];
+  if (effEmail) {
+    matchConds.push(eq(adminAccounts.email, effEmail));
+    matchConds.push(eq(adminAccounts.username, effEmail));
+  }
   const existing = await db.query.adminAccounts.findFirst({
-    where: and(
-      eq(adminAccounts.fieldId, data.fieldId),
-      eq(adminAccounts.username, data.username)
-    ),
+    where: and(eq(adminAccounts.fieldId, data.fieldId), or(...matchConds)),
   });
 
   if (existing) {
-    return { success: false, error: "此場域已存在相同帳號名稱" };
+    // 去重：把現有帳號補上角色/名稱/email 並啟用（涵蓋自助登入的 pending 帳號）
+    await db
+      .update(adminAccounts)
+      .set({
+        roleId: data.roleId ?? existing.roleId,
+        displayName: data.displayName ?? existing.displayName,
+        email: existing.email ?? effEmail ?? null,
+        status: "active",
+        updatedAt: new Date(),
+      })
+      .where(eq(adminAccounts.id, existing.id));
+    return { success: true, accountId: existing.id };
   }
 
   const passwordHash = await hashPassword(data.password);
-  
+
   const [account] = await db.insert(adminAccounts).values({
     fieldId: data.fieldId,
     username: data.username,
     passwordHash,
     displayName: data.displayName,
-    email: data.email,
+    // email 一律補上（即使 UI 把 email 填在 username）→ 確保登入 email 比對找得到
+    email: data.email ?? effEmail ?? null,
     roleId: data.roleId,
     status: "active",
   }).returning();
