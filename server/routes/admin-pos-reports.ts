@@ -89,15 +89,98 @@ async function aggregateDaily(fieldId: string, date: string) {
     }
   }
 
+  // 時段分析（按 Taipei 小時）
+  const byHourMap: Record<number, { cents: number; count: number }> = {};
+  for (const t of txns) {
+    const h = Number(t.hour ?? 0);
+    byHourMap[h] ??= { cents: 0, count: 0 };
+    byHourMap[h].cents += t.paidAmountCents ?? 0;
+    byHourMap[h].count++;
+  }
+  const byHour = Object.entries(byHourMap)
+    .map(([hour, v]) => ({ hour: Number(hour), ...v }))
+    .sort((a, b) => a.hour - b.hour);
+
+  // 當日退款（refunds completed）
+  const [refundAgg] = await db
+    .select({ cents: sql<number>`COALESCE(SUM(${refunds.amountCents}),0)::int`, count: sql<number>`COUNT(*)::int` })
+    .from(refunds)
+    .where(
+      and(
+        eq(refunds.fieldId, fieldId),
+        eq(refunds.status, "completed"),
+        sql`(${refunds.createdAt} AT TIME ZONE 'Asia/Taipei')::date = ${date}::date`,
+      ),
+    );
+  const refundsCents = Number(refundAgg?.cents ?? 0);
+
   return {
     date,
     totalCents,
+    refundsCents,
+    netCents: totalCents - refundsCents,
+    refundCount: Number(refundAgg?.count ?? 0),
     txnCount: txns.length,
     itemCount: items.reduce((s, i) => s + i.qty, 0),
     byMethod: Object.values(byMethod).sort((a, b) => b.cents - a.cents),
     byCategory: Object.values(byCategory).sort((a, b) => b.cents - a.cents),
     byProduct: Object.values(byProduct).sort((a, b) => b.cents - a.cents),
     byModifier: Object.entries(byModifier).map(([name, qty]) => ({ name, qty })).sort((a, b) => b.qty - a.qty),
+    byHour,
+  };
+}
+
+/** 區間聚合（週/月）— 每日淨額彙總 */
+async function aggregateRange(fieldId: string, fromDate: string, toDate: string) {
+  const [txAgg] = await db
+    .select({
+      totalCents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}),0)::int`,
+      txnCount: sql<number>`COUNT(*)::int`,
+    })
+    .from(posTransactions)
+    .where(
+      and(
+        eq(posTransactions.fieldId, fieldId),
+        sql`${posTransactions.deletedAt} IS NULL`,
+        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+      ),
+    );
+  const [refAgg] = await db
+    .select({ cents: sql<number>`COALESCE(SUM(${refunds.amountCents}),0)::int` })
+    .from(refunds)
+    .where(
+      and(
+        eq(refunds.fieldId, fieldId),
+        eq(refunds.status, "completed"),
+        sql`(${refunds.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+      ),
+    );
+  // 每日淨額
+  const daily = await db
+    .select({
+      day: sql<string>`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date::text`,
+      cents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}),0)::int`,
+    })
+    .from(posTransactions)
+    .where(
+      and(
+        eq(posTransactions.fieldId, fieldId),
+        sql`${posTransactions.deletedAt} IS NULL`,
+        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+      ),
+    )
+    .groupBy(sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date`)
+    .orderBy(sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date`);
+  const totalCents = Number(txAgg?.totalCents ?? 0);
+  const refundsCents = Number(refAgg?.cents ?? 0);
+  return {
+    fromDate,
+    toDate,
+    totalCents,
+    refundsCents,
+    netCents: totalCents - refundsCents,
+    txnCount: Number(txAgg?.txnCount ?? 0),
+    daily: daily.map((d) => ({ day: d.day, cents: Number(d.cents) })),
   };
 }
 
