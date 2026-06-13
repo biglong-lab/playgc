@@ -252,6 +252,67 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
       }),
   });
 
+  // 🆕 2026-06-13 人工登記（電話預約）
+  const [manualOpen, setManualOpen] = useState(false);
+  const [mName, setMName] = useState("");
+  const [mPhone, setMPhone] = useState("");
+  const [mDate, setMDate] = useState(formatDateInput(new Date()));
+  const [mTime, setMTime] = useState("14:00");
+  const [mParty, setMParty] = useState(2);
+  const [mActivity, setMActivity] = useState("");
+  const [mNote, setMNote] = useState("");
+
+  const manualMutation = useMutation({
+    mutationFn: async () => {
+      const slotStart = new Date(`${mDate}T${mTime}:00`).toISOString();
+      return await fetchWithAdminAuth(`/api/admin/bookings/${fieldId}/manual`, {
+        method: "POST",
+        body: JSON.stringify({
+          displayName: mName.trim(),
+          phone: mPhone.trim() || undefined,
+          slotStart,
+          partySize: mParty,
+          activityId: mActivity || undefined,
+          customerNote: mNote.trim() || undefined,
+        }),
+      });
+    },
+    onSuccess: () => {
+      toast({ title: "✅ 已人工登記預約", description: "已通報賈村群組" });
+      setManualOpen(false);
+      setMName("");
+      setMPhone("");
+      setMParty(2);
+      setMActivity("");
+      setMNote("");
+      queryClient.invalidateQueries({ queryKey });
+    },
+    onError: (err) =>
+      toast({
+        title: "登記失敗",
+        description: err instanceof Error ? err.message : "",
+        variant: "destructive",
+      }),
+  });
+
+  // 🆕 2026-06-13 快速檢視：今日 / 本月 / 未來 / 全部
+  function setRange(kind: "today" | "month" | "future" | "all") {
+    const now = new Date();
+    if (kind === "today") {
+      setFrom(formatDateInput(now));
+      setTo(formatDateInput(now));
+    } else if (kind === "month") {
+      setFrom(formatDateInput(new Date(now.getFullYear(), now.getMonth(), 1)));
+      setTo(formatDateInput(new Date(now.getFullYear(), now.getMonth() + 1, 0)));
+    } else if (kind === "future") {
+      setFrom(formatDateInput(now));
+      setTo(formatDateInput(addDays(now, 90)));
+    } else {
+      setFrom(formatDateInput(addDays(now, -365)));
+      setTo(formatDateInput(addDays(now, 365)));
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -260,6 +321,69 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
+        {/* 🆕 快速檢視 + 人工登記 */}
+        <div className="flex flex-wrap items-center gap-2 mb-3">
+          <Button size="sm" variant="outline" onClick={() => setRange("today")} data-testid="chip-today">今日</Button>
+          <Button size="sm" variant="outline" onClick={() => setRange("month")} data-testid="chip-month">本月</Button>
+          <Button size="sm" variant="outline" onClick={() => setRange("future")} data-testid="chip-future">未來</Button>
+          <Button size="sm" variant="outline" onClick={() => setRange("all")} data-testid="chip-all">全部</Button>
+          <Button size="sm" className="ml-auto" onClick={() => setManualOpen(true)} data-testid="btn-manual-booking">➕ 人工登記</Button>
+        </div>
+
+        {/* 🆕 人工登記 dialog */}
+        <Dialog open={manualOpen} onOpenChange={setManualOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>➕ 人工登記預約（電話預約）</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs">客戶名稱 *</Label>
+                <Input value={mName} onChange={(e) => setMName(e.target.value)} placeholder="王小明" data-testid="manual-name" />
+              </div>
+              <div>
+                <Label className="text-xs">電話</Label>
+                <Input value={mPhone} onChange={(e) => setMPhone(e.target.value)} placeholder="09xx-xxx-xxx" data-testid="manual-phone" />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">日期 *</Label>
+                  <Input type="date" value={mDate} onChange={(e) => setMDate(e.target.value)} data-testid="manual-date" />
+                </div>
+                <div>
+                  <Label className="text-xs">時間 *</Label>
+                  <Input type="time" value={mTime} onChange={(e) => setMTime(e.target.value)} data-testid="manual-time" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs">人數 *</Label>
+                  <Input type="number" min={1} value={mParty} onChange={(e) => setMParty(Math.max(1, parseInt(e.target.value) || 1))} data-testid="manual-party" />
+                </div>
+                <div>
+                  <Label className="text-xs">活動（選填）</Label>
+                  <select className="w-full h-10 px-3 rounded-md border bg-background" value={mActivity} onChange={(e) => setMActivity(e.target.value)} data-testid="manual-activity">
+                    <option value="">不綁活動</option>
+                    {(activities ?? []).map((a) => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">備註</Label>
+                <Textarea value={mNote} onChange={(e) => setMNote(e.target.value)} placeholder="電話預約、其他需求…" rows={2} data-testid="manual-note" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setManualOpen(false)}>取消</Button>
+              <Button onClick={() => manualMutation.mutate()} disabled={!mName.trim() || manualMutation.isPending} data-testid="manual-submit">
+                {manualMutation.isPending ? "登記中…" : "確認登記"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           <div>
             <Label className="text-xs">起始日期</Label>
