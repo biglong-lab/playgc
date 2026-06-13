@@ -453,6 +453,7 @@ export async function createManualBooking(input: ManualBookingInput): Promise<Cr
       activityId,
       paymentMode: "onsite",
       qrToken,
+      source: "manual",
     })
     .returning();
 
