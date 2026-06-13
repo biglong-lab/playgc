@@ -277,9 +277,11 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
         }),
       });
     },
-    onSuccess: () => {
+    onSuccess: (res: { booking?: { bookingCode?: string } }) => {
+      const code = res?.booking?.bookingCode;
+      // 產生短連結讓現場傳給顧客綁定 LINE
+      setBindLink(code ? `${window.location.origin}/b/${code}` : "");
       toast({ title: "✅ 已人工登記預約", description: "已通報賈村群組" });
-      setManualOpen(false);
       setMName("");
       setMPhone("");
       setMParty(2);
