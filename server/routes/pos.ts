@@ -518,6 +518,16 @@ export function registerPosRoutes(app: Express) {
     customerName: z.string().max(100).optional(),
     customerPhone: z.string().max(20).optional(),
     note: z.string().max(500).optional(),
+    // 🆕 2026-06-13：品項明細（選品項+客製）。有帶 items → 金額伺服器端重算（防竄改）
+    items: z
+      .array(
+        z.object({
+          productId: z.string(),
+          qty: z.number().int().min(1).max(99).default(1),
+          modifierOptionIds: z.array(z.string()).default([]),
+        }),
+      )
+      .optional(),
   });
   app.post("/api/pos/checkout", requireAdminAuth, async (req, res) => {
     try {
