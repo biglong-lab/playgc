@@ -139,9 +139,24 @@ function actionLabel(action: string): string {
 
 export default function AdminStaffAuditLogs() {
   const { isAuthenticated } = useAdminAuth();
+  // 🆕 2026-06-13 篩選
+  const [category, setCategory] = useState<"all" | "semantic" | "http">("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [q, setQ] = useState("");
+  const [qInput, setQInput] = useState("");
+
   const { data: logs, isLoading } = useQuery<AuditLog[]>({
-    queryKey: ["/api/admin/audit-logs"],
-    queryFn: () => fetchWithAdminAuth("/api/admin/audit-logs"),
+    queryKey: ["/api/admin/audit-logs", category, from, to, q],
+    queryFn: () => {
+      const url = new URL("/api/admin/audit-logs", window.location.origin);
+      url.searchParams.set("limit", "300");
+      if (category !== "all") url.searchParams.set("category", category);
+      if (from) url.searchParams.set("from", from);
+      if (to) url.searchParams.set("to", to);
+      if (q) url.searchParams.set("q", q);
+      return fetchWithAdminAuth(url.pathname + url.search);
+    },
     enabled: isAuthenticated,
   });
 
