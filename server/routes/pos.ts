@@ -506,6 +506,46 @@ export function registerPosRoutes(app: Express) {
     },
   );
 
+  // 🆕 2026-06-13 POS 未來預約（今日之後、confirmed/pending）
+  app.get("/api/pos/bookings/upcoming", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const { end } = getTodayRange();
+      const list = await db
+        .select({
+          id: bookings.id,
+          bookingCode: bookings.bookingCode,
+          displayName: bookings.displayName,
+          phone: bookings.phone,
+          slotStart: bookings.slotStart,
+          slotEnd: bookings.slotEnd,
+          partySize: bookings.partySize,
+          status: bookings.status,
+          paymentStatus: bookings.paymentStatus,
+          amountCents: bookings.amountCents,
+          checkedInAt: bookings.checkedInAt,
+          paidAt: bookings.paidAt,
+          activityId: bookings.activityId,
+          customerNote: bookings.customerNote,
+        })
+        .from(bookings)
+        .where(
+          and(
+            inArray(bookings.fieldId, scope.identifiers),
+            gt(bookings.slotStart, end),
+            sql`${bookings.status} IN ('confirmed', 'pending')`,
+          ),
+        )
+        .orderBy(bookings.slotStart)
+        .limit(200);
+      res.json({ bookings: list });
+    } catch (e) {
+      console.error("[pos] upcoming 失敗:", e);
+      res.status(500).json({ error: "internal_error" });
+    }
+  });
+
   // 🆕 2026-06-13 POS 人工預約（電話/現場）→ 產生綁定短連結
   const posManualBookingSchema = z.object({
     displayName: z.string().min(1).max(100),
