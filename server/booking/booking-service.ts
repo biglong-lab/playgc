@@ -489,25 +489,35 @@ export async function getBookingSummaryByCode(code: string): Promise<{
   fieldName: string | null;
   alreadyBound: boolean;
 } | null> {
+  // 只選需要的欄位（避免 select * 撞到 DB schema drift）
   const [row] = await db
-    .select({ b: bookings, fieldCode: fields.code, fieldName: fields.name })
+    .select({
+      bookingCode: bookings.bookingCode,
+      displayName: bookings.displayName,
+      slotStart: bookings.slotStart,
+      partySize: bookings.partySize,
+      status: bookings.status,
+      fieldId: bookings.fieldId,
+      lineUserId: bookings.lineUserId,
+      fieldCode: fields.code,
+      fieldName: fields.name,
+    })
     .from(bookings)
     .leftJoin(fields, eq(fields.id, bookings.fieldId))
     .where(eq(bookings.bookingCode, code))
     .limit(1);
   if (!row) return null;
-  const b = row.b;
   return {
-    bookingCode: b.bookingCode,
-    displayName: b.displayName,
-    slotStart: b.slotStart,
-    partySize: b.partySize,
-    status: b.status,
-    fieldId: b.fieldId,
+    bookingCode: row.bookingCode,
+    displayName: row.displayName,
+    slotStart: row.slotStart,
+    partySize: row.partySize,
+    status: row.status,
+    fieldId: row.fieldId,
     fieldCode: row.fieldCode,
     fieldName: row.fieldName,
     // 已綁＝line_user_id 不是 manual: 前綴
-    alreadyBound: !b.lineUserId.startsWith("manual:"),
+    alreadyBound: !row.lineUserId.startsWith("manual:"),
   };
 }
 
