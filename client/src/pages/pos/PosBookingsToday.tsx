@@ -216,12 +216,12 @@ export default function PosBookingsToday() {
         </DialogContent>
       </Dialog>
 
-      {isLoading && <p className="text-sm text-muted-foreground text-center py-6">載入中…</p>}
+      {loading && <p className="text-sm text-muted-foreground text-center py-6">載入中…</p>}
 
-      {!isLoading && filtered.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-sm text-muted-foreground">
-            {search ? "找不到符合的預約" : "今日尚無預約"}
+            {search ? "找不到符合的預約" : view === "upcoming" ? "目前沒有未來預約" : "今日尚無預約"}
           </CardContent>
         </Card>
       )}
