@@ -47,6 +47,9 @@ export const posModifierGroups = pgTable(
     /** 是否必選 */
     required: boolean("required").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: varchar("deleted_by"),
+    deleteReason: text("delete_reason"),
     createdAt: timestamp("created_at").defaultNow(),
   },
   (t) => [index("idx_pos_modgroup_field").on(t.fieldId)],
