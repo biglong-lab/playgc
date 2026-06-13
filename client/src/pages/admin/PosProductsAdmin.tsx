@@ -125,8 +125,10 @@ export default function PosProductsAdmin() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["pos-mod-groups"] }),
   });
   const delGroup = useMutation({
-    mutationFn: (id: string) => fetchWithAdminAuth(`/api/admin/pos/modifier-groups/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["pos-mod-groups"] }),
+    mutationFn: (v: { id: string; reason: string }) =>
+      fetchWithAdminAuth(`/api/admin/pos/modifier-groups/${v.id}`, { method: "DELETE", body: JSON.stringify({ reason: v.reason }) }),
+    onSuccess: () => { toast({ title: "已移到垃圾桶" }); qc.invalidateQueries({ queryKey: ["pos-mod-groups"] }); },
+    onError: (e) => toast({ title: "刪除失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
   });
   const addOption = useMutation({
     mutationFn: (v: { groupId: string; name: string; priceDeltaCents: number }) =>
