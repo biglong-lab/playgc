@@ -42,6 +42,7 @@ const productSchema = z.object({
   photoUrl: z.string().optional(),
   activityId: z.string().optional(),
   isActive: z.boolean().optional(),
+  soldOut: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
 });
 
