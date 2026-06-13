@@ -185,6 +185,17 @@ export function registerLineLoginRoutes(app: Express) {
         });
       }
 
+      // 🆕 2026-06-13：人工建單綁定 — 把該預約綁到此 LINE userId
+      if (parsed.bindBooking) {
+        try {
+          const { bindBookingLine } = await import("../booking/booking-service");
+          await bindBookingLine(parsed.bindBooking, profile.userId);
+        } catch (bindErr) {
+          console.error("[line-login] 綁定預約失敗:", bindErr);
+          // 綁定失敗不阻斷登入流程
+        }
+      }
+
       // 生 custom token
       const customToken = await adminAuth.createCustomToken(firebaseUid, {
         provider: "line",
