@@ -485,14 +485,18 @@ export async function getBookingSummaryByCode(code: string): Promise<{
   partySize: number;
   status: string;
   fieldId: string;
+  fieldCode: string | null;
+  fieldName: string | null;
   alreadyBound: boolean;
 } | null> {
-  const [b] = await db
-    .select()
+  const [row] = await db
+    .select({ b: bookings, fieldCode: fields.code, fieldName: fields.name })
     .from(bookings)
+    .leftJoin(fields, eq(fields.id, bookings.fieldId))
     .where(eq(bookings.bookingCode, code))
     .limit(1);
-  if (!b) return null;
+  if (!row) return null;
+  const b = row.b;
   return {
     bookingCode: b.bookingCode,
     displayName: b.displayName,
@@ -500,6 +504,8 @@ export async function getBookingSummaryByCode(code: string): Promise<{
     partySize: b.partySize,
     status: b.status,
     fieldId: b.fieldId,
+    fieldCode: row.fieldCode,
+    fieldName: row.fieldName,
     // 已綁＝line_user_id 不是 manual: 前綴
     alreadyBound: !b.lineUserId.startsWith("manual:"),
   };
