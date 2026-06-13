@@ -393,6 +393,14 @@ app.use((req, res, next) => {
     console.error("[boot] startBookingReminderCron 失敗:", err);
   }
 
+  // ☀️ 啟動今日預約晨報 cron（每天 08:00 Taipei → 推賈村群組）2026-06-13
+  try {
+    const { startTodayBookingsCron } = await import("./booking/today-bookings-cron");
+    startTodayBookingsCron();
+  } catch (err) {
+    console.error("[boot] startTodayBookingsCron 失敗:", err);
+  }
+
   // 🔭 啟動 observability 清理 cron（Phase 0.2 / 2026-05-08）
   // 每天 03:00 跑、刪 90 天前的 ws_event_log + db_write_log
   try {
