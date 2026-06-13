@@ -66,7 +66,7 @@ export function registerAdminPosProductRoutes(app: Express) {
       const products = await db
         .select()
         .from(posProducts)
-        .where(eq(posProducts.fieldId, fieldId))
+        .where(and(eq(posProducts.fieldId, fieldId), isNull(posProducts.deletedAt)))
         .orderBy(asc(posProducts.category), asc(posProducts.sortOrder));
       const links = await db.select().from(posProductModifiers);
       const withMods = products.map((p) => ({
