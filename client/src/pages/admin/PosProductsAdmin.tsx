@@ -63,6 +63,7 @@ export default function PosProductsAdmin() {
         name: p.name,
         priceCents: p.priceCents ?? 0,
         isActive: p.isActive ?? true,
+        soldOut: p.soldOut ?? false,
       });
       if (p.id) return fetchWithAdminAuth(`/api/admin/pos/products/${p.id}`, { method: "PATCH", body });
       return fetchWithAdminAuth("/api/admin/pos/products", { method: "POST", body });
