@@ -337,6 +337,48 @@ export function registerAdminBookingRoutes(app: Express) {
     },
   );
 
+  // POST manual — 人工登記預約（電話預約）2026-06-13
+  app.post(
+    "/api/admin/bookings/:fieldId/manual",
+    requireAdminAuth,
+    requirePermission("game:edit"),
+    async (req, res) => {
+      try {
+        const parsed = manualBookingSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res
+            .status(400)
+            .json({ error: "validation", message: parsed.error.errors[0]?.message });
+        }
+        const result = await createManualBooking({
+          fieldId: req.params.fieldId,
+          displayName: parsed.data.displayName,
+          phone: parsed.data.phone,
+          slotStart: new Date(parsed.data.slotStart),
+          partySize: parsed.data.partySize,
+          activityId: parsed.data.activityId,
+          customerNote: parsed.data.customerNote,
+          staffId: req.admin?.id,
+        });
+        if (req.admin) {
+          logAuditAction({
+            actorAdminId: req.admin.id,
+            action: "booking:manual_create",
+            targetType: "booking",
+            targetId: result.booking.bookingCode,
+            fieldId: req.params.fieldId,
+            metadata: { displayName: parsed.data.displayName, partySize: parsed.data.partySize },
+            ipAddress: req.ip,
+            userAgent: req.headers["user-agent"],
+          });
+        }
+        res.json({ booking: result.booking });
+      } catch (err) {
+        return handleErr(res, err);
+      }
+    },
+  );
+
   // POST cancel（admin 強制）
   app.post(
     "/api/admin/bookings/:bookingCode/cancel",
