@@ -710,6 +710,8 @@ export function registerPosRoutes(app: Express) {
         for (const item of parsed.data.items) {
           const prod = prods.find((p) => p.id === item.productId && p.fieldId === fieldId);
           if (!prod) return res.status(400).json({ error: "invalid_product", message: `品項不存在: ${item.productId}` });
+          if (prod.soldOut) return res.status(400).json({ error: "sold_out", message: `${prod.name} 已售完` });
+          if (prod.deletedAt) return res.status(400).json({ error: "deleted_product", message: `${prod.name} 已刪除` });
           const chosen = item.modifierOptionIds
             .map((oid) => opts.find((o) => o.id === oid))
             .filter((o): o is NonNullable<typeof o> => Boolean(o));
