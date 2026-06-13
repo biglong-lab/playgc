@@ -47,8 +47,18 @@ function readConfig(): TgEnvConfig {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
-  cachedConfig = { token, username, chatIds: ids };
+  // 🆕 2026-06-13 顧客向「場域群組」chat_id（與內部 ops chat 分流，群組只收顧客事件）
+  const fieldGroupIds = (process.env.TELEGRAM_FIELD_GROUP_CHAT_IDS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  cachedConfig = { token, username, chatIds: ids, fieldGroupChatIds: fieldGroupIds };
   return cachedConfig;
+}
+
+/** 顧客向場域群組 chat_id 清單（沒設則空、相關通知自動 stub） */
+export function getFieldGroupChatIds(): string[] {
+  return readConfig().fieldGroupChatIds;
 }
 
 /**
