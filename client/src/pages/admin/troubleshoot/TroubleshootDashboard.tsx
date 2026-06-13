@@ -7,7 +7,7 @@
 //   3. 最近排解操作（過濾 audit_logs）
 
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
