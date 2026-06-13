@@ -82,11 +82,13 @@ export default function PosProductsAdmin() {
     onError: (e) => toast({ title: "儲存失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
   });
   const delProduct = useMutation({
-    mutationFn: (id: string) => fetchWithAdminAuth(`/api/admin/pos/products/${id}`, { method: "DELETE" }),
+    mutationFn: (v: { id: string; reason: string }) =>
+      fetchWithAdminAuth(`/api/admin/pos/products/${v.id}`, { method: "DELETE", body: JSON.stringify({ reason: v.reason }) }),
     onSuccess: () => {
-      toast({ title: "已刪除" });
+      toast({ title: "已移到垃圾桶", description: "可在 POS 垃圾桶還原" });
       qc.invalidateQueries({ queryKey: ["pos-products"] });
     },
+    onError: (e) => toast({ title: "刪除失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
   });
 
   const uploadPhoto = async (productId: string, file: File) => {
