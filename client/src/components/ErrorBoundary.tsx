@@ -89,6 +89,31 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    // 🆕 2026-06-13：chunk 載入失敗（部署後舊分頁抓不到舊 chunk）→ 清快取自動重載新版，不顯示錯誤畫面
+    if (/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|module script failed|Load failed/i.test(error?.message || "")) {
+      const KEY = "chito_chunk_reload_at";
+      const last = Number(sessionStorage.getItem(KEY) || 0);
+      if (Date.now() - last >= 15000) {
+        sessionStorage.setItem(KEY, String(Date.now()));
+        (async () => {
+          try {
+            if ("serviceWorker" in navigator) {
+              const regs = await navigator.serviceWorker.getRegistrations();
+              await Promise.all(regs.map((r) => r.unregister()));
+            }
+            if ("caches" in window) {
+              const keys = await caches.keys();
+              await Promise.all(keys.map((k) => caches.delete(k)));
+            }
+          } catch {
+            // ignore
+          }
+          window.location.reload();
+        })();
+        return;
+      }
+    }
+
     this.setState({ errorInfo });
 
     // 🆕 上報錯誤給後端（若 useErrorReport hook 已註冊 __chitoReportError）
