@@ -66,6 +66,9 @@ export const posModifierOptions = pgTable(
     priceDeltaCents: integer("price_delta_cents").notNull().default(0),
     isDefault: boolean("is_default").notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: varchar("deleted_by"),
+    deleteReason: text("delete_reason"),
   },
   (t) => [index("idx_pos_modopt_group").on(t.groupId)],
 );
