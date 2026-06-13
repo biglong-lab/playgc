@@ -135,16 +135,37 @@ export default function PosItemPicker({
             {products.filter((p) => p.category === cat).map((p) => (
               <button
                 key={p.id}
-                onClick={() => addToCart(p)}
-                className="border rounded-lg p-2 text-left hover-elevate active-elevate-2"
+                onClick={() => !p.soldOut && addToCart(p)}
+                disabled={p.soldOut}
+                className={`border rounded-lg p-2 text-left ${p.soldOut ? "opacity-50 cursor-not-allowed" : "hover-elevate active-elevate-2"}`}
                 data-testid={`menu-product-${p.id}`}
               >
                 {p.photoUrl && <img src={p.photoUrl} alt={p.name} className="w-full h-14 object-cover rounded mb-1" />}
                 <div className="text-xs font-medium truncate">{p.name}</div>
-                <div className="text-xs text-primary font-bold">{money(p.priceCents)}</div>
+                <div className="text-xs text-primary font-bold">{p.soldOut ? "售完" : money(p.priceCents)}</div>
               </button>
             ))}
           </div>
+          {/* 臨時品項 */}
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full mt-2"
+            data-testid="btn-custom-item"
+            onClick={() => {
+              const name = prompt("臨時品項名稱");
+              if (!name?.trim()) return;
+              const price = prompt("金額（元）", "0");
+              const cents = Math.round(Number(price || 0) * 100);
+              if (!Number.isFinite(cents) || cents < 0) return;
+              setCart((prev) => [
+                ...prev,
+                { productId: "", name: name.trim(), qty: 1, unitPriceCents: cents, modifierOptionIds: [], modifierLabel: "臨時", isCustom: true },
+              ]);
+            }}
+          >
+            ➕ 臨時品項（非目錄）
+          </Button>
         </CardContent>
       </Card>
 
