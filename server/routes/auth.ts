@@ -202,11 +202,13 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // 若找不到帳號但有 email 匹配，自動綁定或重新綁定（Firebase 已驗證 email）
+      // 🆕 2026-06-13：也比對 username == email（涵蓋 UI 把 email 填進 username、email 欄位空的帳號）
+      //   防止「admin 已建帳號但 email 欄位空 → 登入找不到 → 又建一個 pending」的重複問題
       if (!adminAccount && firebaseEmail) {
         const emailMatch = await db.query.adminAccounts.findFirst({
           where: and(
-            eq(adminAccounts.email, firebaseEmail),
             eq(adminAccounts.fieldId, field.id),
+            or(eq(adminAccounts.email, firebaseEmail), eq(adminAccounts.username, firebaseEmail)),
           ),
         });
         if (emailMatch && emailMatch.status === "active") {
