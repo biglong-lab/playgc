@@ -624,6 +624,22 @@ export function registerPosRoutes(app: Express) {
         })
         .returning();
 
+      // 🆕 2026-06-13：寫入品項明細 line items
+      if (tx && computedLineItems.length > 0) {
+        await db.insert(posTransactionItems).values(
+          computedLineItems.map((li) => ({
+            transactionId: tx.id,
+            productId: li.productId,
+            nameSnapshot: li.nameSnapshot,
+            category: li.category,
+            qty: li.qty,
+            unitPriceCents: li.unitPriceCents,
+            modifiers: li.modifiers,
+            lineTotalCents: li.lineTotalCents,
+          })),
+        );
+      }
+
       // 若綁定 booking → 標記 paid_at / paymentStatus
       if (parsed.data.bookingId) {
         await db
