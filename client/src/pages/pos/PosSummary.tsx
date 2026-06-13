@@ -50,6 +50,16 @@ interface Summary {
 export default function PosSummary() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const refundTxn = useMutation({
+    mutationFn: (v: { id: string; reason: string }) =>
+      fetchWithAdminAuth(`/api/pos/transactions/${v.id}/refund`, { method: "POST", body: JSON.stringify({ reason: v.reason }) }),
+    onSuccess: () => {
+      toast({ title: "✅ 已記錄退款", description: "現金退款已記入退款報表" });
+      qc.invalidateQueries({ queryKey: ["pos-summary"] });
+      qc.invalidateQueries({ queryKey: ["pos-status-report"] });
+    },
+    onError: (e) => toast({ title: "退款失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
+  });
   const delTxn = useMutation({
     mutationFn: (v: { id: string; reason: string }) =>
       fetchWithAdminAuth(`/api/pos/transactions/${v.id}/delete`, { method: "POST", body: JSON.stringify({ reason: v.reason }) }),
