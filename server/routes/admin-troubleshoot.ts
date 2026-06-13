@@ -297,7 +297,8 @@ export function registerAdminTroubleshootRoutes(app: Express) {
   app.post(
     "/api/admin/refunds",
     requireAdminAuth,
-    requirePermission("field:manage"),
+    // 2026-06-13：現場執行者也可退款（已強制理由 min5 + 寫 refunds 表 + audit log）
+    requirePermission("game:edit"),
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
