@@ -48,6 +48,7 @@ async function aggregateDaily(fieldId: string, date: string) {
       and(
         eq(posTransactions.fieldId, fieldId),
         sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date = ${date}::date`,
+        sql`${posTransactions.deletedAt} IS NULL`,
       ),
     );
 
