@@ -12,7 +12,7 @@ import PosLayout from "./PosLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScanLine, DollarSign, Ticket, ListChecks, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { ScanLine, DollarSign, Ticket, ListChecks, Clock, CheckCircle2, AlertCircle, TrendingUp, LifeBuoy } from "lucide-react";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 
 interface PosDashboard {
