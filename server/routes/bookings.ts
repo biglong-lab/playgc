@@ -22,6 +22,7 @@ import {
   cancelBooking,
   getMyBookings,
   getBookingByCode,
+  getBookingSummaryByCode,
   BookingError,
 } from "../booking/booking-service";
 import { resolveLineConfig } from "../lib/line-config-resolver";
