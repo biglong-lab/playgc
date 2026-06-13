@@ -215,11 +215,14 @@ export function registerAdminPosProductRoutes(app: Express) {
 
   app.delete("/api/admin/pos/modifier-groups/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
     try {
-      await db.delete(posModifierOptions).where(eq(posModifierOptions.groupId, req.params.id));
-      await db.delete(posProductModifiers).where(eq(posProductModifiers.groupId, req.params.id));
-      await db
-        .delete(posModifierGroups)
-        .where(and(eq(posModifierGroups.id, req.params.id), eq(posModifierGroups.fieldId, req.admin!.fieldId)));
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+      if (reason.length < 2) return res.status(400).json({ error: "reason_required", message: "請填刪除原因" });
+      const [updated] = await db
+        .update(posModifierGroups)
+        .set({ deletedAt: new Date(), deletedBy: req.admin!.id, deleteReason: reason })
+        .where(and(eq(posModifierGroups.id, req.params.id), eq(posModifierGroups.fieldId, req.admin!.fieldId), isNull(posModifierGroups.deletedAt)))
+        .returning();
+      if (!updated) return res.status(404).json({ error: "not_found" });
       res.json({ ok: true });
     } catch (e) {
       err(res, e);
