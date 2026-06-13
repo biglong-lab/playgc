@@ -182,7 +182,7 @@ export default function PosProductsAdmin() {
                             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadPhoto(p.id, e.target.files[0])} />
                             <span className="inline-flex items-center justify-center w-full h-8 border rounded text-xs cursor-pointer hover-elevate">照片</span>
                           </label>
-                          <Button size="sm" variant="ghost" onClick={() => confirm(`刪除「${p.name}」?`) && delProduct.mutate(p.id)}>
+                          <Button size="sm" variant="ghost" onClick={() => { const r = prompt(`刪除「${p.name}」的原因？（必填）`); if (r && r.trim().length >= 2) delProduct.mutate({ id: p.id, reason: r.trim() }); else if (r !== null) toast({ title: "請填至少 2 字原因", variant: "destructive" }); }}>
                             <Trash2 className="w-3 h-3 text-destructive" />
                           </Button>
                         </div>
