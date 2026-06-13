@@ -147,6 +147,12 @@ export default function PosBookingsToday() {
         <Plus className="w-4 h-4 mr-1" />人工預約（電話 / 現場）
       </Button>
 
+      {/* 🆕 今日 / 未來 切換 */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <Button variant={view === "today" ? "default" : "outline"} onClick={() => setView("today")} data-testid="view-today">今日預約</Button>
+        <Button variant={view === "upcoming" ? "default" : "outline"} onClick={() => setView("upcoming")} data-testid="view-upcoming">未來預約</Button>
+      </div>
+
       <div className="mb-3 relative">
         <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" aria-hidden="true" />
         <Input
