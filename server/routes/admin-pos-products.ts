@@ -254,7 +254,12 @@ export function registerAdminPosProductRoutes(app: Express) {
 
   app.delete("/api/admin/pos/modifier-options/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
     try {
-      await db.delete(posModifierOptions).where(eq(posModifierOptions.id, req.params.id));
+      // 選項刪除為小操作、原因選填（群組/品項/帳務刪除才強制）
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+      await db
+        .update(posModifierOptions)
+        .set({ deletedAt: new Date(), deletedBy: req.admin!.id, deleteReason: reason || "（未填）" })
+        .where(eq(posModifierOptions.id, req.params.id));
       res.json({ ok: true });
     } catch (e) {
       err(res, e);
