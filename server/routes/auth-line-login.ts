@@ -111,7 +111,7 @@ export function registerLineLoginRoutes(app: Express) {
       if (!stateCookie) {
         return res.status(400).send("State cookie 缺、可能逾時或被攔截");
       }
-      let parsed: { state: string; returnTo: string; exp: number };
+      let parsed: { state: string; returnTo: string; bindBooking?: string; exp: number };
       try {
         parsed = JSON.parse(stateCookie);
       } catch {
