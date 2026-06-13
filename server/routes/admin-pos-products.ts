@@ -253,6 +253,34 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
+  // ── 一鍵建立預設客製（糖度 / 冰塊）──────────────
+  app.post("/api/admin/pos/seed-default-modifiers", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+    try {
+      const fieldId = req.admin!.fieldId;
+      const existing = await db.select().from(posModifierGroups).where(eq(posModifierGroups.fieldId, fieldId));
+      const have = new Set(existing.map((g) => g.name));
+      const presets: Array<{ name: string; options: string[] }> = [
+        { name: "糖度", options: ["全糖", "半糖", "五分糖", "三分糖", "無糖"] },
+        { name: "冰塊", options: ["正常冰", "少冰", "微冰", "去冰", "熱"] },
+      ];
+      const created: string[] = [];
+      for (const preset of presets) {
+        if (have.has(preset.name)) continue;
+        const [g] = await db
+          .insert(posModifierGroups)
+          .values({ fieldId, name: preset.name, selectType: "single", required: false })
+          .returning();
+        await db.insert(posModifierOptions).values(
+          preset.options.map((name, i) => ({ groupId: g.id, name, priceDeltaCents: 0, isDefault: i === 0, sortOrder: i })),
+        );
+        created.push(preset.name);
+      }
+      res.json({ created });
+    } catch (e) {
+      err(res, e);
+    }
+  });
+
   // ── POS 結帳用菜單（active 品項 + 客製）──────────
   app.get("/api/pos/menu", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
     try {
