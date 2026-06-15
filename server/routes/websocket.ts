@@ -220,6 +220,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             eventType: "auto_leave",
             direction: "system",
             teamId,
+            sessionId: teamSid(teamId),
             userId,
             userName,
             reason: "auto_leave_after_grace",
