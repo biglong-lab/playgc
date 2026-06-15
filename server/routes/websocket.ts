@@ -318,7 +318,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           direction: "inbound",
           messageType: message.type,
           payload: message,
-          sessionId: ws.sessionId ?? message.sessionId ?? null,
+          sessionId: ws.sessionId ?? message.sessionId ?? teamSid(ws.teamId ?? message.teamId ?? "") ?? null,
           teamId: ws.teamId ?? message.teamId ?? null,
           userId: ws.userId ?? message.userId ?? null,
           userName: ws.userName ?? message.userName ?? null,
