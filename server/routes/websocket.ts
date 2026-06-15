@@ -4,7 +4,7 @@ import { storage } from "../storage";
 import { mqttService } from "../mqttService";
 import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
-import { gameMatches, matchParticipants, teamMembers } from "@shared/schema";
+import { gameMatches, matchParticipants, teamMembers, teamSessions } from "@shared/schema";
 import { eq, and, isNull } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
 // 🔭 Phase 0.2 (2026-05-08)：完整事件 log（fire-and-forget、不阻塞 ws）
