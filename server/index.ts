@@ -401,6 +401,14 @@ app.use((req, res, next) => {
     console.error("[boot] startTodayBookingsCron 失敗:", err);
   }
 
+  // 📊 啟動 session 報表自動生成 cron（每 15 分鐘 → 多人遊戲可診斷）2026-06-15
+  try {
+    const { startSessionReportCron } = await import("./lib/session-report-cron");
+    startSessionReportCron();
+  } catch (err) {
+    console.error("[boot] startSessionReportCron 失敗:", err);
+  }
+
   // 🔭 啟動 observability 清理 cron（Phase 0.2 / 2026-05-08）
   // 每天 03:00 跑、刪 90 天前的 ws_event_log + db_write_log
   try {
