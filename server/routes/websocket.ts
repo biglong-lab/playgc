@@ -371,6 +371,8 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             const effectiveUserId = ws.authenticatedUserId || message.userId;
 
             ws.teamId = message.teamId;
+            // 🔭 2026-06-15：填 teamId→sessionId 快取（給 ws_event_log 對應場次）
+            void resolveTeamSessionId(message.teamId);
             ws.userId = effectiveUserId;
             ws.userName = message.userName;
 
