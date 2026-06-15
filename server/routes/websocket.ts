@@ -49,6 +49,28 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
   const clients: Map<string, Set<WebSocketClient>> = new Map();
   const teamClients: Map<string, Set<WebSocketClient>> = new Map();
+  // 🔭 2026-06-15：teamId → sessionId 快取，讓 ws_event_log 能對應到遊戲場次
+  //   （原本 team 事件只記 team_id、session_id 全 null → 報表抓不到 → 0 筆）
+  const teamSessionIdCache: Map<string, string> = new Map();
+  async function resolveTeamSessionId(teamId: string): Promise<string | null> {
+    const cached = teamSessionIdCache.get(teamId);
+    if (cached) return cached;
+    try {
+      const [row] = await db
+        .select({ sessionId: teamSessions.sessionId })
+        .from(teamSessions)
+        .where(eq(teamSessions.teamId, teamId))
+        .limit(1);
+      if (row?.sessionId) {
+        teamSessionIdCache.set(teamId, row.sessionId);
+        return row.sessionId;
+      }
+    } catch {
+      // 查詢失敗不影響 ws
+    }
+    return null;
+  }
+  const teamSid = (teamId: string): string | null => teamSessionIdCache.get(teamId) ?? null;
   const matchClients: Map<string, Set<WebSocketClient>> = new Map();
   const battleSlotClients: Map<string, Set<WebSocketClient>> = new Map();
 
