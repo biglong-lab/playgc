@@ -169,6 +169,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
       eventType: "grace_start",
       direction: "system",
       teamId,
+      sessionId: teamSid(teamId),
       userId,
       userName,
       reason: `grace=${GRACE_PERIOD_MS}ms`,
