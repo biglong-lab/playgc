@@ -844,7 +844,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
       logWsEvent({
         eventType: "close",
         direction: "system",
-        sessionId: ws.sessionId ?? null,
+        sessionId: ws.sessionId ?? teamSid(ws.teamId ?? "") ?? null,
         teamId: ws.teamId ?? null,
         userId: ws.userId ?? null,
         userName: ws.userName ?? null,
