@@ -185,6 +185,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         eventType: "grace_expired",
         direction: "system",
         teamId,
+        sessionId: teamSid(teamId),
         userId,
         userName,
         reason: `auto_leave_in=${AUTO_LEAVE_AFTER_GRACE_MS}ms`,
