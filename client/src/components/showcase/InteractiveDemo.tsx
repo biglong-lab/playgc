@@ -211,16 +211,20 @@ export default function InteractiveDemo({ demo }: { demo: string }) {
     [def],
   );
   if (!def) return null;
-  const { Host, Player, config } = def;
+  const { Host, Player, config, hostHint } = def;
   return (
-    <div className="flex flex-col md:flex-row gap-3 p-3 bg-zinc-950">
-      {/* 大螢幕 */}
-      <div className="flex-1 min-w-0">
-        <div className="text-xs text-white/60 mb-1 px-1">📺 大螢幕（即時反應）</div>
-        <div className="rounded-lg overflow-hidden border border-white/10 bg-black h-[300px] md:h-[420px] overflow-y-auto">
-          <Host config={config} state={state} />
+    <div className="flex flex-col gap-2 p-3 bg-zinc-950">
+      {hostHint && (
+        <div className="text-xs text-amber-300 bg-amber-500/10 rounded px-2 py-1.5">{hostHint}</div>
+      )}
+      <div className="flex flex-col md:flex-row gap-3">
+        {/* 大螢幕 */}
+        <div className="flex-1 min-w-0">
+          <div className="text-xs text-white/60 mb-1 px-1">📺 大螢幕（即時反應）</div>
+          <div className="rounded-lg overflow-hidden border border-white/10 bg-black h-[300px] md:h-[420px] overflow-y-auto">
+            <Host config={config} state={state} broadcast={setState} />
+          </div>
         </div>
-      </div>
       {/* 手機 */}
       <div className="w-full md:w-[280px] shrink-0">
         <div className="text-xs text-white/60 mb-1 px-1">📱 手機（點點看 →）</div>
