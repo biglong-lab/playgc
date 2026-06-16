@@ -9,10 +9,12 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import BingoBoard, { type BingoTask } from "@/components/game/host/BingoBoard";
 import BlessingWall from "@/components/game/host/BlessingWall";
+import InteractiveDemo from "@/components/showcase/InteractiveDemo";
 
 type W22Demo =
   | "bingo-host" | "bingo-player"
-  | "blessing-host" | "blessing-player";
+  | "blessing-host" | "blessing-player"
+  | `interactive:${string}`;
 
 const BINGO_DEMO_TASKS: BingoTask[] = [
   { id: "t1", label: "找穿紅衣賓客", emoji: "👗" },
