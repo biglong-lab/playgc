@@ -10,8 +10,15 @@ import { useState, useCallback } from "react";
 import EmojiReact from "@/components/game/host/EmojiReact";
 import WaveResponse from "@/components/game/host/WaveResponse";
 import PollLive from "@/components/game/host/PollLive";
+import CrowdGather from "@/components/game/host/CrowdGather";
+import WordCloud from "@/components/game/host/WordCloud";
+import PolaroidCollage from "@/components/game/host/PolaroidCollage";
+import GuestbookDigital from "@/components/game/host/GuestbookDigital";
 
 type Aggregate = (state: unknown, pulseType: string, payload: unknown) => unknown;
+
+const DEMO_AUTHOR = "現場觀眾";
+const rid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 const DEFAULT_EMOJIS = ["❤️", "👍", "🎉", "🔥", "😍", "👏", "😂", "🙌"];
 
