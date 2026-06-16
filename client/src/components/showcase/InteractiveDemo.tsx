@@ -32,8 +32,10 @@ const DEMOS: Record<
     config: Record<string, unknown>;
     initial: unknown;
     aggregate: Aggregate;
-    Host: (p: { config: unknown; state: unknown }) => JSX.Element;
+    Host: (p: { config: unknown; state: unknown; broadcast: (s: unknown) => void }) => JSX.Element;
     Player: (p: { config: unknown; state: unknown; onPulse: (t: string, pl: unknown) => void }) => JSX.Element;
+    // host 端有控制鈕時的提示文字（trivia/scoreboard）
+    hostHint?: string;
   }
 > = {
   emoji: {
