@@ -225,11 +225,12 @@ export default function InteractiveDemo({ demo }: { demo: string }) {
             <Host config={config} state={state} broadcast={setState} />
           </div>
         </div>
-      {/* 手機 */}
-      <div className="w-full md:w-[280px] shrink-0">
-        <div className="text-xs text-white/60 mb-1 px-1">📱 手機（點點看 →）</div>
-        <div className="rounded-lg overflow-hidden border border-emerald-500/30 bg-background h-[300px] md:h-[420px] overflow-y-auto">
-          <Player config={config} state={state} onPulse={onPulse} />
+        {/* 手機 */}
+        <div className="w-full md:w-[280px] shrink-0">
+          <div className="text-xs text-white/60 mb-1 px-1">📱 手機（點點看 →）</div>
+          <div className="rounded-lg overflow-hidden border border-emerald-500/30 bg-background h-[300px] md:h-[420px] overflow-y-auto">
+            <Player config={config} state={state} onPulse={onPulse} />
+          </div>
         </div>
       </div>
     </div>
