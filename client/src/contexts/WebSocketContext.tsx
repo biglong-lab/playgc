@@ -163,7 +163,10 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
   const connect = useCallback(() => {
     if (intentionalCloseRef.current) return;
     const config = configRef.current;
-    if (!config) return;
+    // 🐛 2026-06-16 修復:host-screen 模式(ensureConnected,無 config)永遠連不上 →
+    //   大螢幕↔手機互動全失效。改為:有 config(team) 或 有 ensureConnected 引用者(host-screen)就連。
+    //   原本 `if (!config) return` 讓 ensureConnected 呼叫的 connect() 立即 return、ws 從不建立。
+    if (!config && connectionRefCountRef.current === 0) return;
     // 已 OPEN 不重連
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) return;
 
