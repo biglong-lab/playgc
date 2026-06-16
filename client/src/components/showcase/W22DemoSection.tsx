@@ -147,6 +147,7 @@ export default function W22DemoSection() {
           icon="💝"
           hostDemo="blessing-host"
           playerDemo="blessing-player"
+          interactiveKey="blessing"
           onOpen={setDemoMode}
         />
       </div>
