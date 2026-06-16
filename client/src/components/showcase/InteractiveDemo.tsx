@@ -16,6 +16,8 @@ import GuestbookDigital from "@/components/game/host/GuestbookDigital";
 import KnowledgeMap from "@/components/game/host/KnowledgeMap";
 import ScoreboardAnnouncement from "@/components/game/host/ScoreboardAnnouncement";
 import TriviaShowdown from "@/components/game/host/TriviaShowdown";
+import BingoBoard, { computeLines } from "@/components/game/host/BingoBoard";
+import BlessingWall from "@/components/game/host/BlessingWall";
 
 type Aggregate = (state: unknown, pulseType: string, payload: unknown) => unknown;
 
