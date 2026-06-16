@@ -144,6 +144,56 @@ const DEMOS: Record<
     Host: ({ config, state }) => <GuestbookDigital config={config as never} hostMode state={state as never} myUserName={DEMO_AUTHOR} />,
     Player: ({ config, state, onPulse }) => <GuestbookDigital config={config as never} hostMode={false} state={state as never} myUserName={DEMO_AUTHOR} onPulse={onPulse} />,
   },
+  knowledgemap: {
+    title: "場域全景地圖",
+    config: { title: "街區打卡地圖", allowMessage: true },
+    initial: { visits: [] },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "visit") return null;
+      const p = payload as { pointId?: string; name?: string; message?: string };
+      if (!p?.pointId || !p?.name) return null;
+      const s = state as { visits: unknown[] };
+      return { visits: [...s.visits, { id: rid(), pointId: p.pointId, name: p.name, message: p.message, ts: Date.now() }].slice(-200) };
+    },
+    Host: ({ config, state }) => <KnowledgeMap config={config as never} hostMode state={state as never} myUserName={DEMO_AUTHOR} />,
+    Player: ({ config, state, onPulse }) => <KnowledgeMap config={config as never} hostMode={false} state={state as never} myUserName={DEMO_AUTHOR} onPulse={onPulse} />,
+  },
+  scoreboard: {
+    title: "跑馬燈宣告",
+    hostHint: "👈 大螢幕端輸入文字+類型→播報，手機端跑馬燈即時顯示",
+    config: { title: "賽事即時播報" },
+    initial: { announcements: [] },
+    aggregate: () => null, // 無 player pulse（host 端主控）
+    Host: ({ config, state, broadcast }) => (
+      <ScoreboardAnnouncement config={config as never} hostMode state={state as never} onBroadcastState={broadcast as never} />
+    ),
+    Player: ({ config, state }) => <ScoreboardAnnouncement config={config as never} hostMode={false} state={state as never} />,
+  },
+  trivia: {
+    title: "搶答秀",
+    hostHint: "👈 大螢幕端按「開始/揭曉/下一題」控場，手機端搶答",
+    config: {
+      title: "金門知識搶答",
+      questions: [
+        { id: "q1", prompt: "金門高粱酒主要原料是？", options: ["高粱", "小米", "稻米", "玉米"], correctIdx: 0, timeLimitSec: 15 },
+        { id: "q2", prompt: "金門舊稱為？", options: ["浯洲", "東寧", "瀛洲", "蓬萊"], correctIdx: 0, timeLimitSec: 15 },
+      ],
+    },
+    initial: { currentQuestionIdx: 0, status: "intro", answered: {}, scores: {} },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "answer") return null;
+      const choice = (payload as { choice?: number })?.choice;
+      if (choice === undefined) return null;
+      const s = state as { answered: Record<string, unknown>; [k: string]: unknown };
+      return { ...s, answered: { ...s.answered, [DEMO_AUTHOR]: { choice, ts: Date.now() } } };
+    },
+    Host: ({ config, state, broadcast }) => (
+      <TriviaShowdown config={config as never} hostMode state={state as never} onBroadcastState={broadcast as never} myUserName={DEMO_AUTHOR} />
+    ),
+    Player: ({ config, state, onPulse }) => (
+      <TriviaShowdown config={config as never} hostMode={false} state={state as never} onPulse={onPulse} myUserName={DEMO_AUTHOR} />
+    ),
+  },
 };
 
 export const INTERACTIVE_DEMOS = Object.keys(DEMOS);
