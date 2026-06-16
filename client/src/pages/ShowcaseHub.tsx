@@ -974,6 +974,18 @@ function DemoCard({
           </Button>
         )}
 
+        {/* 🤝 雙人協作試玩：並排兩玩家共享進度（multi 元件，2026-06-16）*/}
+        {COOP_DEMOS.includes(item.id) && (
+          <Button
+            onClick={() => onDemoOpen(`coop:${item.id}`)}
+            size="sm"
+            className="w-full bg-emerald-600 hover:bg-emerald-700"
+            data-testid={`btn-demo-${item.id}-coop`}
+          >
+            🤝 雙人協作試玩
+          </Button>
+        )}
+
         <div className="flex gap-2">
           {hasBoth ? (
             <>
