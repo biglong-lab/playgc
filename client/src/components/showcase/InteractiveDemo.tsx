@@ -95,6 +95,73 @@ const DEMOS: Record<
     Host: ({ config, state }) => <PollLive config={config as never} hostMode state={state as never} />,
     Player: ({ config, state, onPulse }) => <PollLive config={config as never} hostMode={false} state={state as never} onPulse={onPulse} />,
   },
+  crowd: {
+    title: "聚眾達標",
+    config: { title: "一起簽到打卡", targetCount: 8 },
+    initial: { registered: [], totalCount: 0, isReached: false },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "checkin") return null;
+      const name = ((payload as { name?: string })?.name ?? "匿名").slice(0, 20);
+      const s = state as { registered: { name: string; ts: number }[]; totalCount: number; isReached: boolean };
+      if (s.isReached) return s;
+      const total = s.totalCount + 1;
+      return { registered: [...s.registered, { name, ts: Date.now() }].slice(-100), totalCount: total, isReached: total >= 8 };
+    },
+    Host: ({ config, state }) => <CrowdGather config={config as never} hostMode state={state as never} />,
+    Player: ({ config, state, onPulse }) => <CrowdGather config={config as never} hostMode={false} state={state as never} onPulse={onPulse} />,
+  },
+  wordcloud: {
+    title: "許願字雲",
+    config: { title: "現場許願字雲", maxLength: 10, maxWordsPerUser: 20 },
+    initial: { wordCounts: {}, totalSubmissions: 0, recentWords: [], submitters: {} },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "submit") return null;
+      const word = (payload as { word?: string })?.word?.trim().slice(0, 10);
+      const userId = (payload as { userId?: string })?.userId?.trim();
+      if (!word || !userId) return null;
+      const s = state as { wordCounts: Record<string, number>; totalSubmissions: number; recentWords: unknown[]; submitters: Record<string, number> };
+      const used = s.submitters[userId] ?? 0;
+      if (used >= 20) return null;
+      return {
+        wordCounts: { ...s.wordCounts, [word]: (s.wordCounts[word] ?? 0) + 1 },
+        totalSubmissions: s.totalSubmissions + 1,
+        recentWords: [...s.recentWords, { word, ts: Date.now(), x: Math.floor(Math.random() * 80) + 5 }].slice(-30),
+        submitters: { ...s.submitters, [userId]: used + 1 },
+      };
+    },
+    Host: ({ config, state }) => <WordCloud config={config as never} hostMode state={state as never} />,
+    Player: ({ config, state, onPulse }) => <WordCloud config={config as never} hostMode={false} state={state as never} onPulse={onPulse} />,
+  },
+  polaroid: {
+    title: "祝福紀念牆",
+    config: { title: "📸 留下祝福" },
+    initial: { polaroids: [] },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "polaroid") return null;
+      const p = payload as { emoji?: string; message?: string; color?: string };
+      if (!p?.emoji || !p?.message) return null;
+      const s = state as { polaroids: unknown[] };
+      const np = { id: rid(), emoji: p.emoji, message: p.message.slice(0, 100), author: DEMO_AUTHOR, color: p.color ?? "#fef3c7", ts: Date.now() };
+      return { polaroids: [...s.polaroids, np].slice(-50) };
+    },
+    Host: ({ config, state }) => <PolaroidCollage config={config as never} hostMode state={state as never} myUserName={DEMO_AUTHOR} />,
+    Player: ({ config, state, onPulse }) => <PolaroidCollage config={config as never} hostMode={false} state={state as never} myUserName={DEMO_AUTHOR} onPulse={onPulse} />,
+  },
+  guestbook: {
+    title: "數位簽名簿",
+    config: { title: "📖 留言簿" },
+    initial: { entries: [] },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "sign") return null;
+      const p = payload as { name?: string; message?: string };
+      if (!p?.name || !p?.message) return null;
+      const s = state as { entries: unknown[] };
+      const ne = { id: rid(), name: p.name.slice(0, 30), message: p.message.slice(0, 200), ts: Date.now() };
+      return { entries: [...s.entries, ne].slice(-100) };
+    },
+    Host: ({ config, state }) => <GuestbookDigital config={config as never} hostMode state={state as never} myUserName={DEMO_AUTHOR} />,
+    Player: ({ config, state, onPulse }) => <GuestbookDigital config={config as never} hostMode={false} state={state as never} myUserName={DEMO_AUTHOR} onPulse={onPulse} />,
+  },
 };
 
 export const INTERACTIVE_DEMOS = Object.keys(DEMOS);
