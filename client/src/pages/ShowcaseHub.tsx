@@ -235,7 +235,8 @@ type HostDemo =
   | "trivia-host" | "trivia-player"
   | "scoreboard-host" | "scoreboard-player"
   | "knowledgemap-host" | "knowledgemap-player"
-  | "jigsaw" | "treasure" | "gps-cascade" | "collective" | "role-assign";
+  | "jigsaw" | "treasure" | "gps-cascade" | "collective" | "role-assign"
+  | `interactive:${string}`;
 
 export default function ShowcaseHub() {
   const liveCount = COMPONENTS.filter((c) => c.status === "live").length;
