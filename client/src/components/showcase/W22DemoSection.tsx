@@ -159,14 +159,25 @@ export default function W22DemoSection() {
 
       <Dialog open={demoMode !== null} onOpenChange={(open) => !open && setDemoMode(null)}>
         <DialogContent
-          className={isHost ? "max-w-5xl h-[80vh] p-0 overflow-hidden" : "max-w-md p-0 max-h-[80vh] overflow-y-auto"}
+          className={
+            isInteractive
+              ? "max-w-5xl h-[90vh] md:h-[85vh] p-0 bg-zinc-900 overflow-hidden"
+              : isHost
+              ? "max-w-5xl h-[80vh] p-0 overflow-hidden"
+              : "max-w-md p-0 max-h-[80vh] overflow-y-auto"
+          }
         >
-          <DialogHeader className={isHost ? "px-6 py-3 bg-zinc-900 text-white" : "p-4"}>
+          <DialogHeader className={isInteractive || isHost ? "px-6 py-3 bg-zinc-900 text-white" : "p-4"}>
             <DialogTitle>
-              {isHost ? "📺 大螢幕版型 (Demo)" : "📱 玩家手機版型 (Demo)"}
+              {isInteractive
+                ? "🎮 互動試玩 — 大螢幕 + 手機（點手機看大螢幕反應）"
+                : isHost
+                ? "📺 大螢幕版型 (Demo)"
+                : "📱 玩家手機版型 (Demo)"}
             </DialogTitle>
           </DialogHeader>
-          <div className={isHost ? "flex-1 overflow-y-auto" : "overflow-y-auto"}>
+          <div className={isInteractive || isHost ? "flex-1 overflow-y-auto" : "overflow-y-auto"}>
+            {isInteractive && <InteractiveDemo demo={demoMode!.slice("interactive:".length)} />}
             {demoMode === "bingo-host" && (
               <BingoBoard
                 config={{
