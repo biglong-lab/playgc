@@ -109,28 +109,6 @@ const DEMOS: Record<
     Host: ({ config, state }) => <CrowdGather config={config as never} hostMode state={state as never} />,
     Player: ({ config, state, onPulse }) => <CrowdGather config={config as never} hostMode={false} state={state as never} onPulse={onPulse} />,
   },
-  wordcloud: {
-    title: "許願字雲",
-    config: { title: "現場許願字雲", maxLength: 10, maxWordsPerUser: 20 },
-    initial: { wordCounts: {}, totalSubmissions: 0, recentWords: [], submitters: {} },
-    aggregate: (state, pulseType, payload) => {
-      if (pulseType !== "submit") return null;
-      const word = (payload as { word?: string })?.word?.trim().slice(0, 10);
-      const userId = (payload as { userId?: string })?.userId?.trim();
-      if (!word || !userId) return null;
-      const s = state as { wordCounts: Record<string, number>; totalSubmissions: number; recentWords: unknown[]; submitters: Record<string, number> };
-      const used = s.submitters[userId] ?? 0;
-      if (used >= 20) return null;
-      return {
-        wordCounts: { ...s.wordCounts, [word]: (s.wordCounts[word] ?? 0) + 1 },
-        totalSubmissions: s.totalSubmissions + 1,
-        recentWords: [...s.recentWords, { word, ts: Date.now(), x: Math.floor(Math.random() * 80) + 5 }].slice(-30),
-        submitters: { ...s.submitters, [userId]: used + 1 },
-      };
-    },
-    Host: ({ config, state }) => <WordCloud config={config as never} hostMode state={state as never} />,
-    Player: ({ config, state, onPulse }) => <WordCloud config={config as never} hostMode={false} state={state as never} onPulse={onPulse} />,
-  },
   polaroid: {
     title: "祝福紀念牆",
     config: { title: "📸 留下祝福" },
