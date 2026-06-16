@@ -13,6 +13,9 @@ import PollLive from "@/components/game/host/PollLive";
 import CrowdGather from "@/components/game/host/CrowdGather";
 import PolaroidCollage from "@/components/game/host/PolaroidCollage";
 import GuestbookDigital from "@/components/game/host/GuestbookDigital";
+import KnowledgeMap from "@/components/game/host/KnowledgeMap";
+import ScoreboardAnnouncement from "@/components/game/host/ScoreboardAnnouncement";
+import TriviaShowdown from "@/components/game/host/TriviaShowdown";
 
 type Aggregate = (state: unknown, pulseType: string, payload: unknown) => unknown;
 
