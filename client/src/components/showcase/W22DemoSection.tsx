@@ -116,6 +116,7 @@ function W22DemoCard({ title, desc, highlight, icon, hostDemo, playerDemo, inter
 
 export default function W22DemoSection() {
   const [demoMode, setDemoMode] = useState<W22Demo | null>(null);
+  const isInteractive = demoMode?.startsWith("interactive:");
   const isHost = demoMode?.endsWith("-host");
 
   return (
