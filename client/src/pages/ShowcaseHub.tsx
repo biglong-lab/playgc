@@ -377,7 +377,7 @@ export default function ShowcaseHub() {
         <Dialog open={demoMode !== null} onOpenChange={(open) => !open && setDemoMode(null)}>
           <DialogContent
             className={
-              demoMode?.startsWith("interactive:")
+              demoMode?.startsWith("interactive:") || demoMode?.startsWith("coop:")
                 ? "max-w-5xl h-[90vh] md:h-[85vh] p-0 bg-zinc-900 overflow-hidden"
                 : demoMode?.endsWith("-host")
                 ? "max-w-5xl h-[80vh] p-0 bg-black overflow-hidden"
@@ -386,7 +386,7 @@ export default function ShowcaseHub() {
           >
             <DialogHeader
               className={
-                demoMode?.startsWith("interactive:") || demoMode?.endsWith("-host")
+                demoMode?.startsWith("interactive:") || demoMode?.startsWith("coop:") || demoMode?.endsWith("-host")
                   ? "px-6 py-3 bg-zinc-900 text-white"
                   : "p-4"
               }
@@ -394,6 +394,8 @@ export default function ShowcaseHub() {
               <DialogTitle>
                 {demoMode?.startsWith("interactive:")
                   ? "🎮 互動試玩 — 大螢幕 + 手機（點手機看大螢幕反應）"
+                  : demoMode?.startsWith("coop:")
+                  ? "🤝 雙人協作試玩 — 兩位玩家共享進度"
                   : demoMode?.endsWith("-host")
                   ? "📺 大螢幕版型 (Demo)"
                   : "📱 玩家手機版型 (Demo)"}
@@ -401,7 +403,7 @@ export default function ShowcaseHub() {
             </DialogHeader>
             <div
               className={
-                demoMode?.startsWith("interactive:")
+                demoMode?.startsWith("interactive:") || demoMode?.startsWith("coop:")
                   ? "flex-1 overflow-y-auto"
                   : demoMode?.endsWith("-host")
                   ? "flex-1 overflow-y-auto"
@@ -410,6 +412,9 @@ export default function ShowcaseHub() {
             >
               {demoMode?.startsWith("interactive:") && (
                 <InteractiveDemo demo={demoMode.slice("interactive:".length)} />
+              )}
+              {demoMode?.startsWith("coop:") && (
+                <CoopDemo demo={demoMode.slice("coop:".length)} />
               )}
               {demoMode === "poll-host" && (
                 <PollLive config={POLLLIVE_DEMO_CONFIG} hostMode={true} state={POLLLIVE_DEMO_HOST_STATE} />
