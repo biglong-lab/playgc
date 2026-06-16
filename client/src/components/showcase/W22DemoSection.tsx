@@ -137,6 +137,7 @@ export default function W22DemoSection() {
           icon="🎯"
           hostDemo="bingo-host"
           playerDemo="bingo-player"
+          interactiveKey="bingo"
           onOpen={setDemoMode}
         />
         <W22DemoCard
