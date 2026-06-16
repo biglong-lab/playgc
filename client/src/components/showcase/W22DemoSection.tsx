@@ -87,7 +87,14 @@ function W22DemoCard({ title, desc, highlight, icon, hostDemo, playerDemo, inter
           <p className="text-xs text-amber-700 dark:text-amber-300 opacity-80">{highlight}</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 mt-3">
+      <button
+        onClick={() => onOpen(`interactive:${interactiveKey}`)}
+        data-testid={`btn-demo-${interactiveKey}-interactive`}
+        className="w-full mt-3 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium transition-colors"
+      >
+        🎮 互動試玩（雙邊同開）
+      </button>
+      <div className="grid grid-cols-2 gap-2 mt-2">
         <button
           onClick={() => onOpen(hostDemo)}
           data-testid={`w22-${hostDemo}-btn`}
