@@ -375,19 +375,40 @@ export default function ShowcaseHub() {
         <Dialog open={demoMode !== null} onOpenChange={(open) => !open && setDemoMode(null)}>
           <DialogContent
             className={
-              demoMode?.endsWith("-host")
+              demoMode?.startsWith("interactive:")
+                ? "max-w-5xl h-[90vh] md:h-[85vh] p-0 bg-zinc-900 overflow-hidden"
+                : demoMode?.endsWith("-host")
                 ? "max-w-5xl h-[80vh] p-0 bg-black overflow-hidden"
                 : "max-w-md p-0 max-h-[80vh] overflow-y-auto"
             }
           >
             <DialogHeader
-              className={demoMode?.endsWith("-host") ? "px-6 py-3 bg-zinc-900 text-white" : "p-4"}
+              className={
+                demoMode?.startsWith("interactive:") || demoMode?.endsWith("-host")
+                  ? "px-6 py-3 bg-zinc-900 text-white"
+                  : "p-4"
+              }
             >
               <DialogTitle>
-                {demoMode?.endsWith("-host") ? "📺 大螢幕版型 (Demo)" : "📱 玩家手機版型 (Demo)"}
+                {demoMode?.startsWith("interactive:")
+                  ? "🎮 互動試玩 — 大螢幕 + 手機（點手機看大螢幕反應）"
+                  : demoMode?.endsWith("-host")
+                  ? "📺 大螢幕版型 (Demo)"
+                  : "📱 玩家手機版型 (Demo)"}
               </DialogTitle>
             </DialogHeader>
-            <div className={demoMode?.endsWith("-host") ? "flex-1 overflow-y-auto" : "overflow-y-auto"}>
+            <div
+              className={
+                demoMode?.startsWith("interactive:")
+                  ? "flex-1 overflow-y-auto"
+                  : demoMode?.endsWith("-host")
+                  ? "flex-1 overflow-y-auto"
+                  : "overflow-y-auto"
+              }
+            >
+              {demoMode?.startsWith("interactive:") && (
+                <InteractiveDemo demo={demoMode.slice("interactive:".length)} />
+              )}
               {demoMode === "poll-host" && (
                 <PollLive config={POLLLIVE_DEMO_CONFIG} hostMode={true} state={POLLLIVE_DEMO_HOST_STATE} />
               )}
