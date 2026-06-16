@@ -196,6 +196,59 @@ const DEMOS: Record<
       <TriviaShowdown config={config as never} hostMode={false} state={state as never} onPulse={onPulse} myUserName={DEMO_AUTHOR} />
     ),
   },
+  bingo: {
+    title: "Bingo 集章板",
+    hostHint: "👉 手機端點任務格→完成，大螢幕對應格亮起、連線即時判定",
+    config: {
+      title: "🎯 集章 Bingo",
+      subtitle: "完成任務、連線換獎",
+      rows: 3,
+      cols: 3,
+      tasks: [
+        { id: "b1", label: "找穿紅衣的人", emoji: "👗" }, { id: "b2", label: "合照一張", emoji: "📸" }, { id: "b3", label: "舉杯敬酒", emoji: "🥂" },
+        { id: "b4", label: "找小朋友", emoji: "👶" }, { id: "b5", label: "拍蛋糕", emoji: "🎂" }, { id: "b6", label: "找司儀", emoji: "🎤" },
+        { id: "b7", label: "錄祝福", emoji: "🎥" }, { id: "b8", label: "找台北來的", emoji: "🚄" }, { id: "b9", label: "拍捧花", emoji: "💐" },
+      ],
+    },
+    initial: { completed: {}, claimedLines: [], totalParticipants: 0 },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "task_complete") return null;
+      const taskId = (payload as { taskId?: string })?.taskId;
+      if (!taskId) return null;
+      const s = state as { completed: Record<string, number>; claimedLines: string[]; totalParticipants: number };
+      const newCount = (s.completed[taskId] ?? 0) + 1;
+      const completed = { ...s.completed, [taskId]: newCount };
+      // 重算連線（對齊 BingoBoardPage）
+      const tasks = (DEMOS.bingo.config.tasks as { id: string; requiredCount?: number }[]);
+      const rows = 3, cols = 3;
+      const done = new Set<number>();
+      for (let i = 0; i < rows * cols; i++) {
+        const t = tasks[i];
+        if (t && (completed[t.id] ?? 0) >= (t.requiredCount ?? 1)) done.add(i);
+      }
+      const claimedLines = computeLines(rows, cols).filter((ln) => ln.cells.every((c) => done.has(c))).map((ln) => ln.id);
+      return { completed, claimedLines, totalParticipants: s.totalParticipants + (newCount === 1 ? 1 : 0) };
+    },
+    Host: ({ config, state }) => <BingoBoard config={config as never} hostMode state={state as never} />,
+    Player: ({ config, state, onPulse }) => <BingoBoard config={config as never} hostMode={false} state={state as never} onPulse={onPulse} />,
+  },
+  blessing: {
+    title: "祝福瀑布牆",
+    config: { title: "💝 給新人的祝福", subtitle: "留言飛上大螢幕", theme: "wedding" },
+    initial: { blessings: [], recentFlying: [] },
+    aggregate: (state, pulseType, payload) => {
+      if (pulseType !== "blessing") return null;
+      const p = payload as { name?: string; message?: string; emoji?: string };
+      if (!p?.name || !p?.message) return null;
+      const s = state as { blessings: unknown[]; recentFlying: unknown[] };
+      const id = rid();
+      const item = { id, name: p.name.slice(0, 20), message: p.message.slice(0, 100), emoji: p.emoji, addedAt: Date.now() };
+      const flying = { ...item, x: 10 + Math.floor(Math.random() * 80), startedAt: Date.now() };
+      return { blessings: [...s.blessings, item].slice(-100), recentFlying: [...s.recentFlying, flying].slice(-30) };
+    },
+    Host: ({ config, state }) => <BlessingWall config={config as never} hostMode state={state as never} />,
+    Player: ({ config, state, onPulse }) => <BlessingWall config={config as never} hostMode={false} state={state as never} onPulse={onPulse} />,
+  },
 };
 
 export const INTERACTIVE_DEMOS = Object.keys(DEMOS);
