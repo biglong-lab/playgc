@@ -960,6 +960,18 @@ function DemoCard({
           </div>
         )}
 
+        {/* 🎮 互動試玩：一次開大螢幕+手機，點手機看大螢幕即時反應（2026-06-16）*/}
+        {INTERACTIVE_DEMOS.includes(item.id) && (
+          <Button
+            onClick={() => onDemoOpen(`interactive:${item.id}`)}
+            size="sm"
+            className="w-full bg-emerald-600 hover:bg-emerald-700"
+            data-testid={`btn-demo-${item.id}-interactive`}
+          >
+            🎮 互動試玩（雙邊同開）
+          </Button>
+        )}
+
         <div className="flex gap-2">
           {hasBoth ? (
             <>
