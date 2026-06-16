@@ -69,10 +69,11 @@ interface CardProps {
   icon: string;
   hostDemo: W22Demo;
   playerDemo: W22Demo;
+  interactiveKey: string;
   onOpen: (demo: W22Demo) => void;
 }
 
-function W22DemoCard({ title, desc, highlight, icon, hostDemo, playerDemo, onOpen }: CardProps) {
+function W22DemoCard({ title, desc, highlight, icon, hostDemo, playerDemo, interactiveKey, onOpen }: CardProps) {
   return (
     <div className="rounded-xl border-2 border-amber-200 dark:border-amber-800/40 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 p-4 hover:shadow-lg transition-shadow">
       <div className="flex items-start gap-3">
