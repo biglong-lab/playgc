@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import W22DemoSection from "@/components/showcase/W22DemoSection";
 import InteractiveDemo, { INTERACTIVE_DEMOS } from "@/components/showcase/InteractiveDemo";
+import CoopDemo, { COOP_DEMOS } from "@/components/showcase/CoopDemo";
 import PollLive from "@/components/game/host/PollLive";
 import EmojiReact from "@/components/game/host/EmojiReact";
 import WaveResponse from "@/components/game/host/WaveResponse";
