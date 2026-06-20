@@ -5,6 +5,26 @@
 
 ---
 
+## 2026-06-19 (b)
+
+### 🔐 game.homi.cc SSL 憑證過期修復 + 自動續期（fix）
+**狀態**：🟢 已修復（server 端，無程式碼變更）
+**細節** → [runbooks/ssl-cert-renew-cf-proxy.md](runbooks/ssl-cert-renew-cf-proxy.md)
+
+- 症狀：登入「Unexpected token '<'」= CF 526（源站憑證過期）回 HTML→前端 JSON.parse 爆
+- certbot webroot 重簽（webroot=`/www/wwwroot/java_node_ssl`，CF proxy 站關鍵坑）
+- 設 deploy-hook 自動續期套用 → 不再過期（有效到 2026-09-17）
+
+## 2026-06-19 (a)
+
+### 🎮 Showcase 互動試玩全覆蓋（feat）
+**狀態**：🟢 部署上線（commit `0bb88bce`）
+**細節** → [changes/2026-06-19-showcase-interactive-demos.md](changes/2026-06-19-showcase-interactive-demos.md)
+
+- `/showcase` 16 個元件可實際玩：host 軸 11 個（大螢幕+手機雙邊同開）+ multi 軸 5 個（雙人協作共享進度）
+- 純前端本地模擬（零生產風險），聚合器對齊各 `*Page` handlePulse / updateState
+- 新增 `InteractiveDemo.tsx`、`CoopDemo.tsx`；全程 Playwright e2e 驗證
+
 ## 2026-06-13 (j)
 
 ### 🛒 POS 優化批次：餐飲營運 + 交易完整 + 報表強化（feat）
