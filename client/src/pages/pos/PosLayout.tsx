@@ -39,6 +39,7 @@ export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
     { path: "/pos/scan", label: "掃描", icon: ScanLine },
     { path: "/pos/bookings/today", label: "預約", icon: CalendarCheck },
     { path: "/pos/checkout", label: "收款", icon: DollarSign },
+    { path: "/pos/cash", label: "現金", icon: Wallet },
     { path: "/pos/voucher", label: "核銷", icon: Ticket },
     { path: "/admin/troubleshoot", label: "排解", icon: LifeBuoy },
   ];
