@@ -427,6 +427,7 @@ function Router() {
         <Route path="/pos/checkout">{() => <ProtectedAdminRoute><PosCheckout /></ProtectedAdminRoute>}</Route>
         <Route path="/pos/voucher">{() => <ProtectedAdminRoute><PosVoucher /></ProtectedAdminRoute>}</Route>
         <Route path="/pos/summary">{() => <ProtectedAdminRoute><PosSummary /></ProtectedAdminRoute>}</Route>
+        <Route path="/pos/cash">{() => <ProtectedAdminRoute><PosCash /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/pos-products">{() => <ProtectedAdminRoute><PosProductsAdmin /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/pos-reports">{() => <ProtectedAdminRoute><PosReports /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/pos-trash">{() => <ProtectedAdminRoute><PosTrash /></ProtectedAdminRoute>}</Route>
