@@ -63,8 +63,16 @@ interface Status {
 export default function PosReports() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { hasPermission } = useAdminAuth({ redirectTo: "" });
+  const canCashAdmin = hasPermission("pos_cash_admin");
   const [date, setDate] = useState(taipeiToday());
   const [range, setRange] = useState<{ from: string; to: string; label: string } | null>(null);
+
+  const { data: cash } = useQuery<CashSummary>({
+    queryKey: ["pos-cash-summary", date],
+    queryFn: () => fetchWithAdminAuth(`/api/pos/cash/summary?date=${date}`),
+    enabled: canCashAdmin,
+  });
 
   const { data: rangeRep } = useQuery<RangeRep>({
     queryKey: ["pos-range-report", range?.from, range?.to],
