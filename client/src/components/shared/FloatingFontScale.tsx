@@ -13,6 +13,8 @@ function shouldHide(pathname: string): boolean {
   return (
     pathname.startsWith("/admin") ||
     pathname.startsWith("/platform") ||
+    // 🆕 2026-06-22：POS 工作站有自己的 header（含「後台」鈕），浮動字級器會重疊遮蔽
+    pathname.startsWith("/pos") ||
     // 🆕 2026-05-09：會員中心 hero 區右上有登出按鈕、FloatingFontScale 會蓋住
     pathname.startsWith("/me") ||
     // 🆕 2026-05-07：遊戲頁 / 活動頁 / 公開分享有自己的 header
