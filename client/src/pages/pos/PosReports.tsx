@@ -42,6 +42,18 @@ interface RangeRep {
   netCents: number;
   txnCount: number;
   daily: Array<{ day: string; cents: number }>;
+  byMethod?: Array<{ label: string; cents: number; count: number }>;
+  byCategory?: Array<{ label: string; cents: number; qty: number }>;
+  byProduct?: Array<{ name: string; qty: number; cents: number }>;
+}
+interface CashSummary {
+  date: string;
+  openingCents: number | null;
+  closingCents: number | null;
+  cashSalesCents: number;
+  cashRefundsCents: number;
+  drawdownCents: number;
+  actualCashCents: number | null;
 }
 interface Status {
   bookings: { today: number; month: number; future: number; srcLineDirect: number; srcManual: number; srcManualLinked: number };
