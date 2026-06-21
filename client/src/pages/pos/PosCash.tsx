@@ -1,0 +1,316 @@
+// 💰 POS 櫃檯現金（2026-06-22）
+//
+// 上班清點 / 下班結算（面額張數統計）/ 隔日對帳差異 / 清帳 / 差異確認 / 歷史。
+// mobile-first；清帳 + 差異確認僅 pos_cash_admin 可見。
+
+import { useState, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import PosLayout from "./PosLayout";
+import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+
+const FACES = [1000, 500, 100, 50, 10, 1] as const;
+const NT = (cents: number) => `NT$${Math.round(cents / 100).toLocaleString()}`;
+
+interface CashCount {
+  id: string;
+  businessDate: string;
+  countType: "opening" | "closing";
+  countedCents: number;
+  expectedCents: number;
+  varianceCents: number;
+  varianceReason: string | null;
+  varianceStatus: "none" | "pending" | "confirmed";
+  adjustmentCents: number | null;
+  countedByName: string | null;
+  countedAt: string;
+  denominations: Record<string, number>;
+}
+interface Drawdown {
+  id: string;
+  businessDate: string;
+  amountCents: number;
+  reason: string | null;
+  drawdownByName: string | null;
+  drawdownAt: string;
+}
+interface Today {
+  date: string;
+  opening: CashCount | null;
+  closing: CashCount | null;
+  openingExpected: number;
+  closingExpected: number;
+  cashSalesCents: number;
+  cashRefundsCents: number;
+  todayDrawdownsCents: number;
+  canCashAdmin: boolean;
+}
+
+export default function PosCash() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const [denoms, setDenoms] = useState<Record<string, number>>({});
+  const [reason, setReason] = useState("");
+  const [mode, setMode] = useState<"opening" | "closing" | null>(null);
+  const [drawAmount, setDrawAmount] = useState("");
+  const [drawReason, setDrawReason] = useState("");
+
+  const { data: today } = useQuery<Today>({
+    queryKey: ["pos-cash-today"],
+    queryFn: () => fetchWithAdminAuth("/api/pos/cash/today"),
+    refetchInterval: 60_000,
+  });
+  const { data: history } = useQuery<{ counts: CashCount[]; drawdowns: Drawdown[] }>({
+    queryKey: ["pos-cash-history"],
+    queryFn: () => fetchWithAdminAuth("/api/pos/cash/history?limit=40"),
+  });
+
+  // 預設清點型別：未開班→開班；已開班未收班→收班
+  const effectiveMode: "opening" | "closing" =
+    mode ?? (today && !today.opening ? "opening" : today && !today.closing ? "closing" : "opening");
+
+  const countedCents = useMemo(
+    () => FACES.reduce((s, f) => s + f * 100 * Math.max(0, Math.floor(denoms[String(f)] || 0)), 0),
+    [denoms],
+  );
+  const expectedCents = effectiveMode === "opening" ? today?.openingExpected ?? 0 : today?.closingExpected ?? 0;
+  const varianceCents = countedCents - expectedCents;
+
+  const submitCount = useMutation({
+    mutationFn: () =>
+      fetchWithAdminAuth("/api/pos/cash/count", {
+        method: "POST",
+        body: JSON.stringify({ countType: effectiveMode, denominations: denoms, note: reason || undefined }),
+      }),
+    onSuccess: () => {
+      toast({ title: `${effectiveMode === "opening" ? "上班清點" : "下班結算"}已記錄` });
+      setDenoms({});
+      setReason("");
+      setMode(null);
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-history"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "記錄失敗", description: e.message }),
+  });
+
+  const submitDrawdown = useMutation({
+    mutationFn: () =>
+      fetchWithAdminAuth("/api/pos/cash/drawdown", {
+        method: "POST",
+        body: JSON.stringify({ amountCents: Math.round(Number(drawAmount) * 100), reason: drawReason || undefined }),
+      }),
+    onSuccess: () => {
+      toast({ title: "清帳已記錄" });
+      setDrawAmount("");
+      setDrawReason("");
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-history"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "清帳失敗", description: e.message }),
+  });
+
+  const confirmVariance = useMutation({
+    mutationFn: (v: { id: string; mode: "record" | "adjust"; adjustmentCents?: number }) =>
+      fetchWithAdminAuth(`/api/pos/cash/count/${v.id}/confirm`, {
+        method: "POST",
+        body: JSON.stringify({ mode: v.mode, adjustmentCents: v.adjustmentCents }),
+      }),
+    onSuccess: () => {
+      toast({ title: "差異已確認" });
+      qc.invalidateQueries({ queryKey: ["pos-cash-history"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "確認失敗", description: e.message }),
+  });
+
+  const pendingVariances = (history?.counts ?? []).filter((c) => c.varianceStatus === "pending");
+
+  return (
+    <PosLayout title="櫃檯現金" backTo="/pos">
+      {/* 今日概況 */}
+      {today && (
+        <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3 text-sm space-y-1">
+          <div className="font-semibold text-base mb-1">📅 {today.date}</div>
+          <Row label="開班清點" value={today.opening ? NT(today.opening.adjustmentCents ?? today.opening.countedCents) : "—"} />
+          <Row label="現金收款" value={NT(today.cashSalesCents)} />
+          <Row label="現金退款" value={`−${NT(today.cashRefundsCents)}`} />
+          <Row label="今日清帳" value={`−${NT(today.todayDrawdownsCents)}`} />
+          <Row label="下班結算" value={today.closing ? NT(today.closing.adjustmentCents ?? today.closing.countedCents) : "—"} bold />
+        </div>
+      )}
+
+      {/* 清點表單 */}
+      <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
+        <div className="flex gap-2 mb-3">
+          {(["opening", "closing"] as const).map((m) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              data-testid={`cash-mode-${m}`}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold ${
+                effectiveMode === m ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {m === "opening" ? "🌅 上班清點" : "🌆 下班結算"}
+            </button>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          {FACES.map((f) => {
+            const qty = Math.max(0, Math.floor(denoms[String(f)] || 0));
+            return (
+              <div key={f} className="flex items-center gap-2">
+                <span className="w-16 text-right font-medium tabular-nums">${f}</span>
+                <span className="text-muted-foreground">×</span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  value={denoms[String(f)] ?? ""}
+                  onChange={(e) => setDenoms((d) => ({ ...d, [String(f)]: Math.max(0, Math.floor(Number(e.target.value) || 0)) }))}
+                  placeholder="0"
+                  data-testid={`cash-denom-${f}`}
+                  className="flex-1 min-w-0 px-3 py-2 rounded-lg border bg-background text-base text-right tabular-nums"
+                />
+                <span className="w-24 text-right text-muted-foreground tabular-nums">{NT(f * 100 * qty)}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 pt-3 border-t space-y-1">
+          <Row label="點鈔總額" value={NT(countedCents)} bold />
+          <Row label="系統預期" value={NT(expectedCents)} />
+          <Row
+            label="差異"
+            value={`${varianceCents > 0 ? "溢 " : varianceCents < 0 ? "短 " : ""}${NT(Math.abs(varianceCents))}`}
+            highlight={varianceCents !== 0}
+          />
+        </div>
+
+        {varianceCents !== 0 && (
+          <textarea
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="差異原因（必填）"
+            data-testid="cash-variance-reason"
+            className="mt-2 w-full px-3 py-2 rounded-lg border bg-background text-sm"
+            rows={2}
+          />
+        )}
+
+        <Button
+          onClick={() => submitCount.mutate()}
+          disabled={submitCount.isPending || countedCents === 0 || (varianceCents !== 0 && !reason.trim())}
+          className="w-full mt-3"
+          data-testid="cash-submit-count"
+        >
+          {effectiveMode === "opening" ? "記錄上班清點" : "記錄下班結算"}
+        </Button>
+      </div>
+
+      {/* 清帳（僅 cash admin）*/}
+      {today?.canCashAdmin && (
+        <div className="rounded-xl border bg-amber-50 dark:bg-amber-950/20 p-3 mb-3">
+          <div className="font-semibold text-sm mb-2">💵 清帳（取走現金）</div>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              value={drawAmount}
+              onChange={(e) => setDrawAmount(e.target.value)}
+              placeholder="金額（元）"
+              data-testid="cash-drawdown-amount"
+              className="flex-1 min-w-0 px-3 py-2 rounded-lg border bg-background text-base"
+            />
+            <Button
+              onClick={() => submitDrawdown.mutate()}
+              disabled={submitDrawdown.isPending || !(Number(drawAmount) > 0)}
+              data-testid="cash-drawdown-submit"
+            >
+              清帳
+            </Button>
+          </div>
+          <input
+            value={drawReason}
+            onChange={(e) => setDrawReason(e.target.value)}
+            placeholder="事由（如：存銀行）"
+            className="mt-2 w-full px-3 py-2 rounded-lg border bg-background text-sm"
+          />
+        </div>
+      )}
+
+      {/* 待確認差異（僅 cash admin）*/}
+      {today?.canCashAdmin && pendingVariances.length > 0 && (
+        <div className="rounded-xl border border-red-300 bg-red-50 dark:bg-red-950/20 p-3 mb-3">
+          <div className="font-semibold text-sm mb-2 text-red-700 dark:text-red-300">⚠️ 待確認差異 ({pendingVariances.length})</div>
+          <div className="space-y-2">
+            {pendingVariances.map((c) => (
+              <div key={c.id} className="text-sm border-t pt-2 first:border-t-0 first:pt-0">
+                <div>{c.businessDate} {c.countType === "opening" ? "上班" : "下班"}：差異 {c.varianceCents > 0 ? "溢" : "短"}{NT(Math.abs(c.varianceCents))}</div>
+                {c.varianceReason && <div className="text-muted-foreground text-xs">原因：{c.varianceReason}</div>}
+                <div className="flex gap-2 mt-1">
+                  <Button size="sm" variant="outline" onClick={() => confirmVariance.mutate({ id: c.id, mode: "record" })} data-testid={`cash-confirm-record-${c.id}`}>
+                    依紀錄確認
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      const v = prompt("輸入調整後的實際金額（元）", String(Math.round(c.countedCents / 100)));
+                      if (v != null && Number(v) >= 0) confirmVariance.mutate({ id: c.id, mode: "adjust", adjustmentCents: Math.round(Number(v) * 100) });
+                    }}
+                    data-testid={`cash-confirm-adjust-${c.id}`}
+                  >
+                    輸入調整金額
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 歷史 */}
+      <div className="rounded-xl border bg-white dark:bg-slate-900 p-3">
+        <div className="font-semibold text-sm mb-2">📜 歷史紀錄</div>
+        <div className="space-y-1.5 text-sm">
+          {(history?.counts ?? []).slice(0, 20).map((c) => (
+            <div key={c.id} className="flex justify-between gap-2 border-b pb-1.5 last:border-b-0">
+              <span className="text-muted-foreground shrink-0">{c.businessDate} {c.countType === "opening" ? "上班" : "下班"}</span>
+              <span className="text-right">
+                {NT(c.adjustmentCents ?? c.countedCents)}
+                {c.varianceCents !== 0 && (
+                  <span className={c.varianceStatus === "confirmed" ? "text-muted-foreground" : "text-red-600"}>
+                    {" "}（{c.varianceCents > 0 ? "溢" : "短"}{NT(Math.abs(c.varianceCents))}{c.varianceStatus === "confirmed" ? "已確認" : "待確認"}）
+                  </span>
+                )}
+                <span className="text-muted-foreground text-xs block">{c.countedByName ?? "—"}</span>
+              </span>
+            </div>
+          ))}
+          {(history?.drawdowns ?? []).slice(0, 10).map((d) => (
+            <div key={d.id} className="flex justify-between gap-2 border-b pb-1.5 last:border-b-0">
+              <span className="text-amber-600 shrink-0">{d.businessDate} 清帳</span>
+              <span className="text-right">
+                −{NT(d.amountCents)}
+                <span className="text-muted-foreground text-xs block">{d.drawdownByName ?? "—"}{d.reason ? `・${d.reason}` : ""}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </PosLayout>
+  );
+}
+
+function Row({ label, value, bold, highlight }: { label: string; value: string; bold?: boolean; highlight?: boolean }) {
+  return (
+    <div className="flex justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`tabular-nums ${bold ? "font-bold" : ""} ${highlight ? "text-red-600 font-semibold" : ""}`}>{value}</span>
+    </div>
+  );
+}
