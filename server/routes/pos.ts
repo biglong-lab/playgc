@@ -39,7 +39,7 @@ function resolveFieldId(req: Request): string | null {
  * 解法：取得 admin 場域的「所有可能識別碼」（UUID + code）、查詢時 OR 匹配。
  * 同時提供場域 code 給 UI 顯示用。
  */
-async function resolveFieldScope(
+export async function resolveFieldScope(
   req: Request,
 ): Promise<{ id: string; code: string; identifiers: string[] } | null> {
   const raw = resolveFieldId(req);
@@ -56,7 +56,7 @@ async function resolveFieldScope(
 }
 
 /** 取得當日（Asia/Taipei）的起訖時間（UTC）*/
-function getTodayRange(): { start: Date; end: Date; date: string } {
+export function getTodayRange(): { start: Date; end: Date; date: string } {
   const now = new Date();
   // 用 Asia/Taipei 時區算今日 00:00 ~ 23:59:59
   const taipeiOffset = 8 * 60; // 分鐘
