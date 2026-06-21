@@ -105,6 +105,17 @@ export default function PosReports() {
     </div>
   );
 
+  if (!canCashAdmin) {
+    return (
+      <PosLayout title="銷售報表" backTo="/pos">
+        <div className="text-center py-16 text-muted-foreground">
+          <p className="text-base font-medium">🔒 權限不足</p>
+          <p className="text-sm mt-2">銷售報表僅限管理員（pos_cash_admin）查看，請聯絡平台管理員開通。</p>
+        </div>
+      </PosLayout>
+    );
+  }
+
   return (
     <PosLayout title="銷售報表" backTo="/pos">
       <div className="space-y-3">
