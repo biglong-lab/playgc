@@ -135,6 +135,20 @@ export default function PosReports() {
           </CardContent>
         </Card>
 
+        {/* 💰 櫃檯現金（當日）*/}
+        {cash && (cash.openingCents !== null || cash.closingCents !== null || cash.drawdownCents > 0) && (
+          <Card>
+            <CardHeader className="py-3"><CardTitle className="text-base">櫃檯現金</CardTitle></CardHeader>
+            <CardContent className="py-2 px-3">
+              <Row label="開班清點" value={cash.openingCents !== null ? money(cash.openingCents) : "—"} />
+              <Row label="現金收款 / 退款" value={`${money(cash.cashSalesCents)} / ${money(cash.cashRefundsCents)}`} />
+              <Row label="下班結算" value={cash.closingCents !== null ? money(cash.closingCents) : "—"} />
+              <Row label="清帳取走" value={cash.drawdownCents > 0 ? `−${money(cash.drawdownCents)}` : "—"} />
+              <Row label="櫃檯實際現金" value={cash.actualCashCents !== null ? money(cash.actualCashCents) : "—"} />
+            </CardContent>
+          </Card>
+        )}
+
         {/* 🆕 週/月 區間 */}
         <Card>
           <CardHeader className="py-3"><CardTitle className="text-base">區間統計</CardTitle></CardHeader>
