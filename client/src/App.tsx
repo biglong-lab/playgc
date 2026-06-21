@@ -86,6 +86,7 @@ const PosBookingsToday = lazy(() => import("@/pages/pos/PosBookingsToday"));
 const PosCheckout = lazy(() => import("@/pages/pos/PosCheckout"));
 const PosVoucher = lazy(() => import("@/pages/pos/PosVoucher"));
 const PosSummary = lazy(() => import("@/pages/pos/PosSummary"));
+const PosCash = lazy(() => import("@/pages/pos/PosCash"));
 const PosProductsAdmin = lazy(() => import("@/pages/admin/PosProductsAdmin"));
 const PosReports = lazy(() => import("@/pages/pos/PosReports"));
 const PosTrash = lazy(() => import("@/pages/pos/PosTrash"));
