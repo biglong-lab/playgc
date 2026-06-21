@@ -173,6 +173,53 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
     .orderBy(sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date`);
   const totalCents = Number(txAgg?.totalCents ?? 0);
   const refundsCents = Number(refAgg?.cents ?? 0);
+
+  // drill-down：區間付款方式
+  const methodRows = await db
+    .select({
+      method: posTransactions.paymentMethod,
+      cents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}),0)::int`,
+      count: sql<number>`COUNT(*)::int`,
+    })
+    .from(posTransactions)
+    .where(
+      and(
+        eq(posTransactions.fieldId, fieldId),
+        sql`${posTransactions.deletedAt} IS NULL`,
+        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+      ),
+    )
+    .groupBy(posTransactions.paymentMethod);
+
+  // drill-down：區間品項分類 + 品項（join items）
+  const itemRows = await db
+    .select({
+      category: posTransactionItems.category,
+      name: posTransactionItems.nameSnapshot,
+      qty: sql<number>`COALESCE(SUM(${posTransactionItems.qty}),0)::int`,
+      cents: sql<number>`COALESCE(SUM(${posTransactionItems.lineTotalCents}),0)::int`,
+    })
+    .from(posTransactionItems)
+    .innerJoin(posTransactions, eq(posTransactionItems.transactionId, posTransactions.id))
+    .where(
+      and(
+        eq(posTransactions.fieldId, fieldId),
+        sql`${posTransactions.deletedAt} IS NULL`,
+        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+      ),
+    )
+    .groupBy(posTransactionItems.category, posTransactionItems.nameSnapshot);
+
+  const byCategoryMap: Record<string, { label: string; cents: number; qty: number }> = {};
+  const byProduct: Array<{ name: string; qty: number; cents: number }> = [];
+  for (const r of itemRows) {
+    const cat = r.category ?? "other";
+    byCategoryMap[cat] ??= { label: CAT_LABEL[cat] ?? cat, cents: 0, qty: 0 };
+    byCategoryMap[cat].cents += Number(r.cents);
+    byCategoryMap[cat].qty += Number(r.qty);
+    byProduct.push({ name: r.name, qty: Number(r.qty), cents: Number(r.cents) });
+  }
+
   return {
     fromDate,
     toDate,
@@ -181,6 +228,11 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
     netCents: totalCents - refundsCents,
     txnCount: Number(txAgg?.txnCount ?? 0),
     daily: daily.map((d) => ({ day: d.day, cents: Number(d.cents) })),
+    byMethod: methodRows
+      .map((m) => ({ label: METHOD_LABEL[m.method] ?? m.method, cents: Number(m.cents), count: Number(m.count) }))
+      .sort((a, b) => b.cents - a.cents),
+    byCategory: Object.values(byCategoryMap).sort((a, b) => b.cents - a.cents),
+    byProduct: byProduct.sort((a, b) => b.cents - a.cents).slice(0, 50),
   };
 }
 
