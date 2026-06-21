@@ -5,6 +5,20 @@
 
 ---
 
+## 2026-06-22 (a)
+
+### 💰 POS 櫃檯現金管理 + 報表強化 + 權限矩陣 + RWD（feat/fix）
+**狀態**：🟢 部署上線（commit `9003dfa8`）
+**細節** → [changes/2026-06-22-pos-cash-management.md](changes/2026-06-22-pos-cash-management.md)
+
+- **現金**：上班清點/下班結算（面額張數）、隔日對帳、差異原因+通知+確認、清帳取現金、完整歷史
+- **報表**：管理員限定(`pos_cash_admin`)、區間 drill-down(分類/付款/熱銷)、櫃檯現金納入報表與結帳推播
+- **權限矩陣**：角色×權限一覽即時開關 + CommandPalette 入口
+- **時間 bug**：今日小結/dashboard 凌晨差一天 → 改 Asia/Taipei
+- **RWD**：修浮動字級器遮蔽 POS header「後台」鈕
+- 新表：pos_cash_counts / pos_cash_drawdowns；新權限：pos_cash_admin
+- ⚠️ 生產 SSH port = 52099
+
 ## 2026-06-19 (b)
 
 ### 🔐 game.homi.cc SSL 憑證過期修復 + 自動續期（fix）
