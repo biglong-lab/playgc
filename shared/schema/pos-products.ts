@@ -127,9 +127,70 @@ export const shiftCloses = pgTable(
   (t) => [index("idx_shift_close_field_date").on(t.fieldId, t.businessDate)],
 );
 
+// ── 櫃檯現金清點（開班/收班共用）────────────────
+// 上班清點(opening) / 下班結算(closing)，面額分張數統計。
+// 隔日對帳：今日 opening 預期 = 上次 closing 點鈔 − 之後所有清帳。
+export const POS_CASH_COUNT_TYPES = ["opening", "closing"] as const;
+export const POS_CASH_VARIANCE_STATUS = ["none", "pending", "confirmed"] as const;
+export const CASH_DENOMINATIONS = [1000, 500, 100, 50, 10, 1] as const;
+
+export const posCashCounts = pgTable(
+  "pos_cash_counts",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    fieldId: varchar("field_id").notNull(),
+    /** Asia/Taipei yyyy-mm-dd */
+    businessDate: varchar("business_date", { length: 10 }).notNull(),
+    /** opening | closing */
+    countType: varchar("count_type", { length: 12 }).notNull(),
+    /** 面額張數快照：{ "1000": n, "500": n, "100": n, "50": n, "10": n, "1": n } */
+    denominations: jsonb("denominations").default(sql`'{}'::jsonb`),
+    /** 點鈔總額（依面額×張數）*/
+    countedCents: integer("counted_cents").notNull().default(0),
+    /** 系統預期金額（opening=上次closing−清帳；closing=opening+現金收−現金退−當班清帳）*/
+    expectedCents: integer("expected_cents").notNull().default(0),
+    /** 差異 = counted − expected */
+    varianceCents: integer("variance_cents").notNull().default(0),
+    varianceReason: text("variance_reason"),
+    /** none | pending | confirmed */
+    varianceStatus: varchar("variance_status", { length: 12 }).notNull().default("none"),
+    /** 確認差異時若選「輸入調整金額」，記調整後金額 */
+    adjustmentCents: integer("adjustment_cents"),
+    countedBy: varchar("counted_by").notNull(),
+    countedByName: varchar("counted_by_name"),
+    countedAt: timestamp("counted_at").defaultNow(),
+    confirmedBy: varchar("confirmed_by"),
+    confirmedByName: varchar("confirmed_by_name"),
+    confirmedAt: timestamp("confirmed_at"),
+    note: text("note"),
+  },
+  (t) => [index("idx_pos_cash_count_field_date").on(t.fieldId, t.businessDate)],
+);
+
+// ── 清帳（取走現金，僅 pos_cash_admin）──────────
+export const posCashDrawdowns = pgTable(
+  "pos_cash_drawdowns",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    fieldId: varchar("field_id").notNull(),
+    businessDate: varchar("business_date", { length: 10 }).notNull(),
+    /** 取走金額（分）*/
+    amountCents: integer("amount_cents").notNull(),
+    reason: text("reason"),
+    drawdownBy: varchar("drawdown_by").notNull(),
+    drawdownByName: varchar("drawdown_by_name"),
+    drawdownAt: timestamp("drawdown_at").defaultNow(),
+  },
+  (t) => [index("idx_pos_cash_drawdown_field_date").on(t.fieldId, t.businessDate)],
+);
+
 export type PosProduct = typeof posProducts.$inferSelect;
 export type PosProductInsert = typeof posProducts.$inferInsert;
 export type PosModifierGroup = typeof posModifierGroups.$inferSelect;
 export type PosModifierOption = typeof posModifierOptions.$inferSelect;
 export type PosTransactionItem = typeof posTransactionItems.$inferSelect;
 export type ShiftClose = typeof shiftCloses.$inferSelect;
+export type PosCashCount = typeof posCashCounts.$inferSelect;
+export type PosCashCountInsert = typeof posCashCounts.$inferInsert;
+export type PosCashDrawdown = typeof posCashDrawdowns.$inferSelect;
+export type PosCashDrawdownInsert = typeof posCashDrawdowns.$inferInsert;
