@@ -385,6 +385,14 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
+  // 💰 補 POS 現金權限（idempotent、純新增）
+  try {
+    const { ensurePosPermissions } = await import("./lib/ensure-pos-permissions");
+    await ensurePosPermissions();
+  } catch (err) {
+    console.error("[boot] ensurePosPermissions 失敗:", err);
+  }
+
   // 📅 啟動預約提醒 cron（每分鐘掃即將開始的預約 → 推 LINE）
   try {
     const { startBookingReminderCron } = await import("./booking/booking-reminder-cron");
