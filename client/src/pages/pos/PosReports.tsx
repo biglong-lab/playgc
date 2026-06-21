@@ -161,6 +161,25 @@ export default function PosReports() {
                 <Row label="總收 / 退款" value={`${money(rangeRep.totalCents)} / ${money(rangeRep.refundsCents)}`} />
                 <Row label="交易筆數" value={`${rangeRep.txnCount} 筆`} />
                 <div className="pt-1 text-xs text-muted-foreground">每日：{rangeRep.daily.map((d) => `${d.day.slice(5)} ${money(d.cents)}`).join("　")}</div>
+                {/* drill-down：區間分類 / 付款 / 熱銷 */}
+                {rangeRep.byCategory && rangeRep.byCategory.length > 0 && (
+                  <div className="pt-2 mt-1 border-t">
+                    <div className="text-xs font-semibold text-muted-foreground mb-1">區間分類</div>
+                    {rangeRep.byCategory.map((c) => <Row key={c.label} label={`${c.label}（${c.qty} 件）`} value={money(c.cents)} />)}
+                  </div>
+                )}
+                {rangeRep.byMethod && rangeRep.byMethod.length > 0 && (
+                  <div className="pt-2 mt-1 border-t">
+                    <div className="text-xs font-semibold text-muted-foreground mb-1">區間付款方式</div>
+                    {rangeRep.byMethod.map((m) => <Row key={m.label} label={`${m.label}（${m.count} 筆）`} value={money(m.cents)} />)}
+                  </div>
+                )}
+                {rangeRep.byProduct && rangeRep.byProduct.length > 0 && (
+                  <div className="pt-2 mt-1 border-t">
+                    <div className="text-xs font-semibold text-muted-foreground mb-1">區間熱銷 TOP10</div>
+                    {rangeRep.byProduct.slice(0, 10).map((p) => <Row key={p.name} label={`${p.name} ×${p.qty}`} value={money(p.cents)} />)}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
