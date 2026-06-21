@@ -56,7 +56,7 @@ async function resolveFieldScope(
 }
 
 /** 取得當日（Asia/Taipei）的起訖時間（UTC）*/
-function getTodayRange(): { start: Date; end: Date } {
+function getTodayRange(): { start: Date; end: Date; date: string } {
   const now = new Date();
   // 用 Asia/Taipei 時區算今日 00:00 ~ 23:59:59
   const taipeiOffset = 8 * 60; // 分鐘
@@ -68,7 +68,11 @@ function getTodayRange(): { start: Date; end: Date } {
   );
   const start = new Date(dayStart.getTime() - taipeiOffset * 60 * 1000);
   const end = new Date(start.getTime() + 24 * 60 * 60 * 1000 - 1);
-  return { start, end };
+  // 🐛 2026-06-22 修復：date 須用 Taipei 日期（taipeiDate 的 UTC 部位即台北牆鐘日期），
+  // 不可用 start.toISOString()（會轉回 UTC 變前一天，凌晨時段顯示錯日期）
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const date = `${taipeiDate.getUTCFullYear()}-${pad(taipeiDate.getUTCMonth() + 1)}-${pad(taipeiDate.getUTCDate())}`;
+  return { start, end, date };
 }
 
 export function registerPosRoutes(app: Express) {
