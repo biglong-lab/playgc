@@ -12,7 +12,7 @@ import { Volume2, VolumeX } from "lucide-react";
 import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 
 function shouldHide(pathname: string): boolean {
-  return pathname.startsWith("/admin") || pathname.startsWith("/platform");
+  return pathname.startsWith("/admin") || pathname.startsWith("/platform") || pathname.startsWith("/pos");
 }
 
 export default function FloatingBgmMute() {
