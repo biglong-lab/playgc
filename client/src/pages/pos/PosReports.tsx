@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 const money = (c: number) => `NT$${(c / 100).toLocaleString()}`;
 function taipeiToday() {
