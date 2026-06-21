@@ -40,6 +40,8 @@ const ALL_PERMISSIONS = [
   // 管理員帳號
   { key: "admin:manage_accounts", name: "管理帳號", category: "admin" },
   { key: "admin:view_audit", name: "檢視審計日誌", category: "admin" },
+  // POS 現金/報表（清帳取現金、看銷售報表、確認差異）
+  { key: "pos_cash_admin", name: "POS 現金管理（清帳/報表/差異確認）", category: "pos" },
 ];
 
 async function seed() {
