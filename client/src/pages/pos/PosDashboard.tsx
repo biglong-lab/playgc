@@ -100,6 +100,7 @@ export default function PosDashboard() {
       <div className="grid grid-cols-2 gap-3 mb-4">
         <BigActionButton href="/pos/scan" icon={ScanLine} label="掃描 QR" color="bg-primary" />
         <BigActionButton href="/pos/checkout" icon={DollarSign} label="現金收款" color="bg-amber-600" />
+        <BigActionButton href="/pos/cash" icon={Wallet} label="櫃檯現金" color="bg-orange-600" />
         <BigActionButton href="/pos/bookings/today" icon={ListChecks} label="今日預約" color="bg-blue-600" />
         <BigActionButton href="/pos/voucher" icon={Ticket} label="券核銷" color="bg-purple-600" />
         <BigActionButton href="/pos/summary" icon={TrendingUp} label="今日小結" color="bg-emerald-600" />
