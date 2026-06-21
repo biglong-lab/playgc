@@ -89,6 +89,7 @@ import { registerLineLoginRoutes } from "./auth-line-login";
 import { registerAdminActivitiesRoutes } from "./admin-activities";
 import { registerPublicActivitiesRoutes } from "./public-activities";
 import { registerPosRoutes } from "./pos";
+import { registerPosCashRoutes } from "./pos-cash";
 import { registerAdminPosProductRoutes } from "./admin-pos-products";
 import { registerAdminPosReportRoutes } from "./admin-pos-reports";
 import { registerAdminTroubleshootRoutes } from "./admin-troubleshoot";
