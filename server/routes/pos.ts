@@ -81,7 +81,7 @@ export function registerPosRoutes(app: Express) {
     try {
       const scope = await resolveFieldScope(req);
       if (!scope) return res.status(400).json({ error: "no_field" });
-      const { start, end } = getTodayRange();
+      const { start, end, date } = getTodayRange();
 
       // 今日預約清單（fieldId 同時支援 UUID + code）
       const todayList = await db
@@ -172,7 +172,7 @@ export function registerPosRoutes(app: Express) {
         .limit(1);
 
       res.json({
-        date: start.toISOString().slice(0, 10),
+        date,
         fieldId: scope.id,
         fieldCode: scope.code,
         fieldName: field?.name,
@@ -958,7 +958,7 @@ export function registerPosRoutes(app: Express) {
       const scope = await resolveFieldScope(req);
       if (!scope) return res.status(400).json({ error: "no_field" });
       const fieldId = scope.id;
-      const { start, end } = getTodayRange();
+      const { start, end, date } = getTodayRange();
 
       // 🆕 2026-05-18 join admin_accounts 拿收款員姓名
       const { adminAccounts } = await import("@shared/schema");
@@ -1017,7 +1017,7 @@ export function registerPosRoutes(app: Express) {
       }));
 
       res.json({
-        date: start.toISOString().slice(0, 10),
+        date,
         fieldId,
         totalTransactions: txs.length,
         totalPaidCents: totalPaid,
