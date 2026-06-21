@@ -225,6 +225,7 @@ export async function registerRoutes(
   registerAdminActivitiesRoutes(app);
   registerPublicActivitiesRoutes(app);
   registerPosRoutes(app);
+  registerPosCashRoutes(app);
   registerAdminPosProductRoutes(app);
   registerAdminPosReportRoutes(app);
   registerAdminTroubleshootRoutes(app);
