@@ -112,6 +112,7 @@ const DevTools = lazy(() => import("@/pages/admin/DevTools"));
 const TestImpersonate = lazy(() => import("@/pages/TestImpersonate"));
 const AdminStaffFields = lazy(() => import("@/pages/AdminStaffFields"));
 const AdminStaffRoles = lazy(() => import("@/pages/AdminStaffRoles"));
+const PermissionMatrix = lazy(() => import("@/pages/PermissionMatrix"));
 const AdminStaffAccounts = lazy(() => import("@/pages/AdminStaffAccounts"));
 const AdminStaffAuditLogs = lazy(() => import("@/pages/AdminStaffAuditLogs"));
 const TroubleshootReset = lazy(() => import("@/pages/admin/troubleshoot/TroubleshootReset"));
