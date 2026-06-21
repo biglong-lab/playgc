@@ -84,6 +84,7 @@ const COMMANDS: CommandItem[] = [
   { label: "場域基本資料", path: "/admin/fields", icon: Building2, group: "🏢 場域總部", keywords: ["field", "venue"] },
   { label: "場域進階設定", path: "/admin/field-settings", icon: Sliders, group: "🏢 場域總部", keywords: ["settings", "ai"] },
   { label: "角色管理", path: "/admin/roles", icon: Key, group: "🏢 場域總部", keywords: ["role", "permission"] },
+  { label: "權限矩陣", path: "/admin/permission-matrix", icon: Key, group: "🏢 場域總部", keywords: ["permission", "matrix", "矩陣", "權限"] },
   { label: "管理員帳號", path: "/admin/accounts", icon: UserCog, group: "🏢 場域總部", keywords: ["admin", "account"] },
   { label: "玩家管理", path: "/admin/players", icon: Users, group: "🏢 場域總部", keywords: ["player", "user"] },
   { label: "操作記錄", path: "/admin/audit-logs", icon: FileText, group: "🏢 場域總部", keywords: ["audit", "log"] },
