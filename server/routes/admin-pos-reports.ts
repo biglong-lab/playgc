@@ -349,6 +349,31 @@ export function registerAdminPosReportRoutes(app: Express) {
         lines.push("", "*熱銷 TOP5*");
         report.byProduct.slice(0, 5).forEach((p, i) => lines.push(`${i + 1}. ${p.name} ×${p.qty}`));
       }
+
+      // 💰 櫃檯現金 / 清帳 納入結帳傳送
+      const cashCounts = await db
+        .select()
+        .from(posCashCounts)
+        .where(and(eq(posCashCounts.fieldId, fieldId), eq(posCashCounts.businessDate, date)));
+      const opening = cashCounts.find((c) => c.countType === "opening");
+      const closing = cashCounts.find((c) => c.countType === "closing");
+      const [ddAgg] = await db
+        .select({ cents: sql<number>`COALESCE(SUM(${posCashDrawdowns.amountCents}),0)::int` })
+        .from(posCashDrawdowns)
+        .where(and(eq(posCashDrawdowns.fieldId, fieldId), eq(posCashDrawdowns.businessDate, date)));
+      const drawdownCents = Number(ddAgg?.cents ?? 0);
+      if (opening || closing || drawdownCents > 0) {
+        const nt = (c: number) => `NT$${(c / 100).toLocaleString()}`;
+        lines.push("", "*櫃檯現金*");
+        if (opening) lines.push(`· 開班：${nt(opening.adjustmentCents ?? opening.countedCents)}`);
+        if (closing) {
+          const cc = closing.adjustmentCents ?? closing.countedCents;
+          lines.push(`· 收班：${nt(cc)}`);
+          if (closing.varianceCents !== 0) lines.push(`· 差異：${closing.varianceCents > 0 ? "溢" : "短"}${nt(Math.abs(closing.varianceCents))}`);
+          lines.push(`· 實際現金（收班−清帳）：${nt(Math.max(0, cc - drawdownCents))}`);
+        }
+        if (drawdownCents > 0) lines.push(`· 清帳取走：${nt(drawdownCents)}`);
+      }
       sendToFieldGroup(lines.join("\n"));
 
       res.json({ shiftClose: sc, report });
