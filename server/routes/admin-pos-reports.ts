@@ -8,7 +8,7 @@
 
 import type { Express } from "express";
 import { db } from "../db";
-import { posTransactions, posTransactionItems, shiftCloses, refunds, bookings } from "@shared/schema";
+import { posTransactions, posTransactionItems, shiftCloses, refunds, bookings, posCashCounts, posCashDrawdowns } from "@shared/schema";
 import { and, eq, sql, desc, inArray, gte } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { sendToFieldGroup } from "../lib/internal-notifier";
@@ -237,7 +237,7 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
 }
 
 export function registerAdminPosReportRoutes(app: Express) {
-  app.get("/api/admin/pos/reports/daily", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/admin/pos/reports/daily", requireAdminAuth, requirePermission("pos_cash_admin"), async (req, res) => {
     try {
       const date = (req.query.date as string) || taipeiToday();
       const report = await aggregateDaily(req.admin!.fieldId, date);
@@ -248,7 +248,7 @@ export function registerAdminPosReportRoutes(app: Express) {
   });
 
   // 區間報表（週/月）
-  app.get("/api/admin/pos/reports/range", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/admin/pos/reports/range", requireAdminAuth, requirePermission("pos_cash_admin"), async (req, res) => {
     try {
       const to = (req.query.to as string) || taipeiToday();
       const from = (req.query.from as string) || to;
@@ -260,7 +260,7 @@ export function registerAdminPosReportRoutes(app: Express) {
   });
 
   // 狀態總覽（預約 + 退款）
-  app.get("/api/admin/pos/reports/status", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/admin/pos/reports/status", requireAdminAuth, requirePermission("pos_cash_admin"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const [counts] = await db
@@ -357,7 +357,7 @@ export function registerAdminPosReportRoutes(app: Express) {
     }
   });
 
-  app.get("/api/admin/pos/shift/closes", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/admin/pos/shift/closes", requireAdminAuth, requirePermission("pos_cash_admin"), async (req, res) => {
     try {
       const rows = await db
         .select()
