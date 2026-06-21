@@ -456,6 +456,7 @@ function Router() {
         <Route path="/test-impersonate" component={TestImpersonate} />
         <Route path="/admin/fields">{() => <ProtectedAdminRoute><AdminStaffFields /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/roles">{() => <ProtectedAdminRoute><AdminStaffRoles /></ProtectedAdminRoute>}</Route>
+        <Route path="/admin/permission-matrix">{() => <ProtectedAdminRoute><PermissionMatrix /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/accounts">{() => <ProtectedAdminRoute><AdminStaffAccounts /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/audit-logs">{() => <ProtectedAdminRoute><AdminStaffAuditLogs /></ProtectedAdminRoute>}</Route>
         {/* 🆘 排解中心（2026-05-19）— Phase A：路由註冊、實作於 B-E */}
