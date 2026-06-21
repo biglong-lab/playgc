@@ -82,7 +82,7 @@ export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t">
-        <div className="max-w-md mx-auto grid grid-cols-6">
+        <div className="max-w-md mx-auto grid grid-cols-7">
           {tabs.map((t) => {
             const Icon = t.icon;
             const active = location === t.path || (t.path !== "/pos" && location.startsWith(t.path));
