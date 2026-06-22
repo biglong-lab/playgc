@@ -4,6 +4,7 @@
 // mobile-first；清帳 + 差異確認僅 pos_cash_admin 可見。
 
 import { useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import PosLayout from "./PosLayout";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
