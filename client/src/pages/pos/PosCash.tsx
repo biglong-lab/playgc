@@ -376,7 +376,7 @@ export default function PosCash() {
 
       {/* 結帳（收班完成、未結帳）— 閉環收尾 */}
       {!locked && today?.closing && (
-        <div className="rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 p-3 mb-3">
+        <div id="cash-settle-card" className="rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 p-3 mb-3">
           <div className="font-semibold text-sm mb-1">🧾 今日結帳</div>
           <p className="text-xs text-muted-foreground mb-2">
             確認後送出當日帳務並鎖定，數字成為隔日對帳基礎。鎖定後僅管理員可調整（保留軌跡）。
