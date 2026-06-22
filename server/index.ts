@@ -58,6 +58,10 @@ function resolveWorkerCount(): number {
 
 const CLUSTER_WORKERS = resolveWorkerCount();
 
+// 🔔 單一排程實例守衛：cron + 啟動通知只在「一個」實例跑，避免 cluster N workers 重複 N 次
+//   單 process（CLUSTER_WORKERS=0）→ 跑；cluster 模式 → 只在 worker id===1 跑
+const IS_SCHEDULER_INSTANCE = CLUSTER_WORKERS === 0 || cluster.worker?.id === 1;
+
 // Primary process：fork workers 後就結束（不跑 Express）
 // 注意：WebSocket 連線由 Node cluster 自動分配到不同 worker，
 // 同一條 WS connection 會固定在同一 worker（TCP 層 round-robin）
