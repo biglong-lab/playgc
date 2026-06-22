@@ -248,3 +248,7 @@ export type PosCashCount = typeof posCashCounts.$inferSelect;
 export type PosCashCountInsert = typeof posCashCounts.$inferInsert;
 export type PosCashDrawdown = typeof posCashDrawdowns.$inferSelect;
 export type PosCashDrawdownInsert = typeof posCashDrawdowns.$inferInsert;
+export type PosDailySettlement = typeof posDailySettlements.$inferSelect;
+export type PosDailySettlementInsert = typeof posDailySettlements.$inferInsert;
+export type PosCashAdjustment = typeof posCashAdjustments.$inferSelect;
+export type PosCashAdjustmentInsert = typeof posCashAdjustments.$inferInsert;
