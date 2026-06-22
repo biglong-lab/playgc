@@ -35,6 +35,34 @@ interface Drawdown {
   drawdownByName: string | null;
   drawdownAt: string;
 }
+interface Settlement {
+  id: string;
+  businessDate: string;
+  openingCents: number;
+  cashSalesCents: number;
+  cashRefundsCents: number;
+  drawdownCents: number;
+  expectedCashCents: number;
+  countedCashCents: number;
+  varianceCents: number;
+  varianceReason: string | null;
+  actualCashCents: number;
+  salesTotalCents: number;
+  txnCount: number;
+  settledByName: string | null;
+  settledAt: string;
+}
+interface Adjustment {
+  id: string;
+  businessDate: string;
+  targetType: string;
+  fieldChanged: string;
+  oldCents: number | null;
+  newCents: number | null;
+  reason: string;
+  adjustedByName: string | null;
+  adjustedAt: string;
+}
 interface Today {
   date: string;
   opening: CashCount | null;
@@ -44,6 +72,9 @@ interface Today {
   cashSalesCents: number;
   cashRefundsCents: number;
   todayDrawdownsCents: number;
+  settlement: Settlement | null;
+  locked: boolean;
+  stage: "not_started" | "open" | "closing_done" | "settled";
   canCashAdmin: boolean;
 }
 
