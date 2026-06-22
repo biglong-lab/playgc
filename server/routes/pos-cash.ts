@@ -218,6 +218,9 @@ export function registerPosCashRoutes(app: Express) {
       const denoms = (denominations ?? {}) as Record<string, number>;
       const countedCents = sumDenominations(denoms);
       const { date } = getTodayRange();
+      // 🔒 已結帳鎖定 → 不可再清點（管理員須走「調整」）
+      const settled = await getSettlement(scope.identifiers, date);
+      if (settled) return res.status(409).json({ error: "locked", message: "當日已結帳鎖定，如需更正請由管理員調整" });
       const expectedCents = await computeExpected(scope.identifiers, date, countType);
       const varianceCents = countedCents - expectedCents;
       const varianceStatus = varianceCents === 0 ? "none" : "pending";
