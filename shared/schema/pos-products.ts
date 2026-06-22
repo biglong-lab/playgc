@@ -132,7 +132,7 @@ export const shiftCloses = pgTable(
 // 隔日對帳：今日 opening 預期 = 上次 closing 點鈔 − 之後所有清帳。
 export const POS_CASH_COUNT_TYPES = ["opening", "closing"] as const;
 export const POS_CASH_VARIANCE_STATUS = ["none", "pending", "confirmed"] as const;
-export const CASH_DENOMINATIONS = [1000, 500, 100, 50, 10, 1] as const;
+export const CASH_DENOMINATIONS = [1000, 500, 100, 50, 10, 5, 1] as const;
 
 export const posCashCounts = pgTable(
   "pos_cash_counts",
