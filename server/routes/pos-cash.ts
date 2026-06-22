@@ -530,7 +530,7 @@ export function registerPosCashRoutes(app: Express) {
 
       sendToFieldGroup(
         [
-          `✅ *每日結帳 · ${date}*`,
+          `✅ *每日結帳 · ${date} ${nowHM()}*`,
           `銷售總額：${NT(row.salesTotalCents)}（${row.txnCount} 筆）`,
           ``,
           `*櫃檯現金*`,
