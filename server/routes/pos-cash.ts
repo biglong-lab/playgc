@@ -13,7 +13,7 @@
 
 import type { Express, Response } from "express";
 import { db } from "../db";
-import { posCashCounts, posCashDrawdowns, posTransactions, refunds, CASH_DENOMINATIONS } from "@shared/schema";
+import { posCashCounts, posCashDrawdowns, posDailySettlements, posCashAdjustments, posTransactions, refunds, CASH_DENOMINATIONS } from "@shared/schema";
 import { and, eq, sql, desc, inArray, gte, lte, lt } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { sendToFieldGroup } from "../lib/internal-notifier";
