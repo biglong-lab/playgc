@@ -49,6 +49,11 @@ export default function PosCheckout() {
     const id = u.searchParams.get("bookingId");
     return id ? Number(id) : null;
   })();
+  // 🆕 從現金閉環流程來時 ?return=/pos/cash → 收完返回櫃檯現金
+  const returnTo = (() => {
+    const r = new URL(window.location.href).searchParams.get("return");
+    return r === "/pos/cash" ? "/pos/cash" : null;
+  })();
 
   const { data: dashboard } = useQuery<DashboardResp>({
     queryKey: ["pos-dashboard"],
