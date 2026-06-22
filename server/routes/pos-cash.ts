@@ -341,6 +341,8 @@ export function registerPosCashRoutes(app: Express) {
           return res.status(400).json({ error: "bad_amount" });
         }
         const { date } = getTodayRange();
+        const settledDd = await getSettlement(scope.identifiers, date);
+        if (settledDd) return res.status(409).json({ error: "locked", message: "當日已結帳鎖定" });
         const [row] = await db
           .insert(posCashDrawdowns)
           .values({
