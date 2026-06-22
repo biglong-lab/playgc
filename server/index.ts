@@ -516,10 +516,12 @@ app.use((req, res, next) => {
         startMonthlyResetScheduler();
         startRewardRetryWorker();
       }
-      // 🔔 Telegram boot notification（fire-and-forget）
-      import("./lib/internal-notifier")
-        .then((m) => m.notifyServerBoot())
-        .catch(() => {/* ignore */});
+      // 🔔 Telegram boot notification（每次部署只推 1 則：只在單一排程實例）
+      if (IS_SCHEDULER_INSTANCE) {
+        import("./lib/internal-notifier")
+          .then((m) => m.notifyServerBoot())
+          .catch(() => {/* ignore */});
+      }
     },
   );
 })();
