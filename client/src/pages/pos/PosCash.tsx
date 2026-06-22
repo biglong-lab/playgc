@@ -303,7 +303,7 @@ export default function PosCash() {
 
       {/* 清點表單（未鎖定才顯示）*/}
       {!locked && (
-      <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
+      <div id="cash-count-form" className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
         <div className="flex gap-2 mb-3">
           {(["opening", "closing"] as const).map((m) => (
             <button
