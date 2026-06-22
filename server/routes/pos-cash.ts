@@ -26,6 +26,16 @@ function fail(res: Response, e: unknown) {
 
 const NT = (cents: number) => `NT$${Math.round(cents / 100).toLocaleString()}`;
 
+/** 現在台北時間 HH:MM */
+function nowHM(): string {
+  return new Intl.DateTimeFormat("zh-TW", {
+    timeZone: "Asia/Taipei",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+}
+
 /** Taipei 日期字串 yyyy-mm-dd → UTC [start,end] */
 function taipeiDateRange(dateStr: string): { start: Date; end: Date } {
   const [y, m, d] = dateStr.split("-").map(Number);
