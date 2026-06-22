@@ -192,8 +192,8 @@ export default function PosCheckout() {
         )}
 
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" onClick={() => navigate("/pos")}>
-            回首頁
+          <Button variant="outline" onClick={() => navigate(returnTo ?? "/pos")} data-testid="checkout-done-back">
+            {returnTo ? "返回櫃檯現金" : "回首頁"}
           </Button>
           <Button
             onClick={() => {
@@ -202,7 +202,7 @@ export default function PosCheckout() {
               setCustomerPhone("");
               setAmountDollars("");
               setNote("");
-              navigate("/pos/checkout");
+              navigate(returnTo ? "/pos/checkout?return=/pos/cash" : "/pos/checkout");
             }}
           >
             繼續收款
