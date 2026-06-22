@@ -5,6 +5,17 @@
 
 ---
 
+## 2026-06-22 (b)
+
+### 🔁 POS 現金記帳閉環（開帳→記帳→結帳）（feat）
+**狀態**：🟢 部署上線（commit `97739e45`）
+**細節** → [changes/2026-06-22-pos-cash-management.md](changes/2026-06-22-pos-cash-management.md)
+
+- 清點與記帳串接成每日閉環：階段引導(開帳/記帳/收班/結帳) + 一鍵結帳鎖定
+- 結帳「櫃檯實際現金」成隔日對帳基礎；結帳推 Telegram(銷售+現金+實際現金)
+- 稽核鐵則：時間鎖(結帳後鎖當日)、管理員調整需原因、**原紀錄不動+append-only 調整軌跡(不可刪)**、完整人/時間/前後值
+- 新表：pos_daily_settlements / pos_cash_adjustments；新 API：settle/settlement/adjust/adjustments
+
 ## 2026-06-22 (a)
 
 ### 💰 POS 櫃檯現金管理 + 報表強化 + 權限矩陣 + RWD（feat/fix）
