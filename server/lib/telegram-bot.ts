@@ -44,15 +44,14 @@ function readConfig(): TgEnvConfig {
   if (cachedConfig) return cachedConfig;
   const token = process.env.TELEGRAM_BOT_TOKEN || "";
   const username = process.env.TELEGRAM_BOT_USERNAME || "";
-  const ids = (process.env.TELEGRAM_NOTIFY_CHAT_IDS || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  // 🆕 2026-06-22 去重（避免 env 重複 id → 同一則推播雙推）
+  const ids = Array.from(new Set(
+    (process.env.TELEGRAM_NOTIFY_CHAT_IDS || "").split(",").map((s) => s.trim()).filter(Boolean),
+  ));
   // 🆕 2026-06-13 顧客向「場域群組」chat_id（與內部 ops chat 分流，群組只收顧客事件）
-  const fieldGroupIds = (process.env.TELEGRAM_FIELD_GROUP_CHAT_IDS || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const fieldGroupIds = Array.from(new Set(
+    (process.env.TELEGRAM_FIELD_GROUP_CHAT_IDS || "").split(",").map((s) => s.trim()).filter(Boolean),
+  ));
   cachedConfig = { token, username, chatIds: ids, fieldGroupChatIds: fieldGroupIds };
   return cachedConfig;
 }
