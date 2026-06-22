@@ -378,7 +378,7 @@ export function registerPosCashRoutes(app: Express) {
 
         sendToFieldGroup(
           [
-            `💵 *POS 清帳*（${date}）`,
+            `💵 *POS 清帳*（${date} ${nowHM()}）`,
             `取走現金：${NT(amount)}`,
             `操作人：${row.drawdownByName ?? "—"}`,
             reason ? `事由：${reason}` : "",
