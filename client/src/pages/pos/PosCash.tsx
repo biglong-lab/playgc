@@ -352,7 +352,7 @@ export default function PosCash() {
       )}
 
       {/* 清帳（僅 cash admin）*/}
-      {today?.canCashAdmin && (
+      {today?.canCashAdmin && !locked && (
         <div className="rounded-xl border bg-amber-50 dark:bg-amber-950/20 p-3 mb-3">
           <div className="font-semibold text-sm mb-2">💵 清帳（取走現金）</div>
           <div className="flex gap-2">
