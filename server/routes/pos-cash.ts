@@ -232,7 +232,14 @@ export function registerPosCashRoutes(app: Express) {
       const settled = await getSettlement(scope.identifiers, date);
       if (settled) return res.status(409).json({ error: "locked", message: "當日已結帳鎖定，如需更正請由管理員調整" });
       const expectedCents = await computeExpected(scope.identifiers, date, countType);
-      const varianceCents = countedCents - expectedCents;
+      // 🆕 2026-06-22 開帳首日無對帳基礎（無前日結帳/收班）→ 不算差異、不推
+      let hasBase = true;
+      if (countType === "opening") {
+        const ls = await lastSettlement(scope.identifiers, date);
+        const lc = await lastClosing(scope.identifiers, date);
+        hasBase = !!(ls || lc);
+      }
+      const varianceCents = countType === "opening" && !hasBase ? 0 : countedCents - expectedCents;
       const varianceStatus = varianceCents === 0 ? "none" : "pending";
 
       const [row] = await db
