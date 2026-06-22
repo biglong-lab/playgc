@@ -181,8 +181,11 @@ export function registerPosCashRoutes(app: Express) {
       const closingExpected = await computeExpected(scope.identifiers, date, "closing");
       const { cashSalesCents, cashRefundsCents } = await cashFlows(scope.identifiers, date);
       const todayDrawdowns = await drawdownsSince(scope.identifiers, taipeiDateRange(date).start);
+      const settlement = await getSettlement(scope.identifiers, date);
       const canCashAdmin =
         req.admin!.systemRole === "super_admin" || req.admin!.permissions.includes("pos_cash_admin");
+      // 結帳閉環階段：opening done? → 記帳中 → closing done? → settled?
+      const stage = settlement ? "settled" : closing ? "closing_done" : opening ? "open" : "not_started";
       res.json({
         date,
         opening,
@@ -192,6 +195,9 @@ export function registerPosCashRoutes(app: Express) {
         cashSalesCents,
         cashRefundsCents,
         todayDrawdownsCents: todayDrawdowns,
+        settlement,
+        locked: !!settlement?.locked,
+        stage,
         canCashAdmin,
         denominations: CASH_DENOMINATIONS,
       });
