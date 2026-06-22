@@ -397,46 +397,49 @@ app.use((req, res, next) => {
     console.error("[boot] ensurePosPermissions 失敗:", err);
   }
 
-  // 📅 啟動預約提醒 cron（每分鐘掃即將開始的預約 → 推 LINE）
-  try {
-    const { startBookingReminderCron } = await import("./booking/booking-reminder-cron");
-    startBookingReminderCron();
-  } catch (err) {
-    console.error("[boot] startBookingReminderCron 失敗:", err);
-  }
+  // 🔔 cron 只在單一排程實例跑（避免 cluster N workers 重複推播 N 次）
+  if (IS_SCHEDULER_INSTANCE) {
+    // 📅 啟動預約提醒 cron（每分鐘掃即將開始的預約 → 推 LINE）
+    try {
+      const { startBookingReminderCron } = await import("./booking/booking-reminder-cron");
+      startBookingReminderCron();
+    } catch (err) {
+      console.error("[boot] startBookingReminderCron 失敗:", err);
+    }
 
-  // ☀️ 啟動今日預約晨報 cron（每天 08:00 Taipei → 推賈村群組）2026-06-13
-  try {
-    const { startTodayBookingsCron } = await import("./booking/today-bookings-cron");
-    startTodayBookingsCron();
-  } catch (err) {
-    console.error("[boot] startTodayBookingsCron 失敗:", err);
-  }
+    // ☀️ 啟動今日預約晨報 cron（每天 08:00 Taipei → 推賈村群組）2026-06-13
+    try {
+      const { startTodayBookingsCron } = await import("./booking/today-bookings-cron");
+      startTodayBookingsCron();
+    } catch (err) {
+      console.error("[boot] startTodayBookingsCron 失敗:", err);
+    }
 
-  // 📊 啟動 session 報表自動生成 cron（每 15 分鐘 → 多人遊戲可診斷）2026-06-15
-  try {
-    const { startSessionReportCron } = await import("./lib/session-report-cron");
-    startSessionReportCron();
-  } catch (err) {
-    console.error("[boot] startSessionReportCron 失敗:", err);
-  }
+    // 📊 啟動 session 報表自動生成 cron（每 15 分鐘 → 多人遊戲可診斷）2026-06-15
+    try {
+      const { startSessionReportCron } = await import("./lib/session-report-cron");
+      startSessionReportCron();
+    } catch (err) {
+      console.error("[boot] startSessionReportCron 失敗:", err);
+    }
 
-  // 🔭 啟動 observability 清理 cron（Phase 0.2 / 2026-05-08）
-  // 每天 03:00 跑、刪 90 天前的 ws_event_log + db_write_log
-  try {
-    const { startObservabilityCleanupCron } = await import("./lib/observability-cleanup-cron");
-    startObservabilityCleanupCron();
-  } catch (err) {
-    console.error("[boot] startObservabilityCleanupCron 失敗:", err);
-  }
+    // 🔭 啟動 observability 清理 cron（Phase 0.2 / 2026-05-08）
+    // 每天 03:00 跑、刪 90 天前的 ws_event_log + db_write_log
+    try {
+      const { startObservabilityCleanupCron } = await import("./lib/observability-cleanup-cron");
+      startObservabilityCleanupCron();
+    } catch (err) {
+      console.error("[boot] startObservabilityCleanupCron 失敗:", err);
+    }
 
-  // 🚨 啟動 multi-sessions 異常告警 cron（P3-13 / 2026-05-08）
-  // 每 5 分鐘掃 active sessions、anomalyScore >= 20 → Telegram + Replay 連結
-  try {
-    const { startMultiSessionsAlertCron } = await import("./lib/multi-sessions-alert-cron");
-    startMultiSessionsAlertCron();
-  } catch (err) {
-    console.error("[boot] startMultiSessionsAlertCron 失敗:", err);
+    // 🚨 啟動 multi-sessions 異常告警 cron（P3-13 / 2026-05-08）
+    // 每 5 分鐘掃 active sessions、anomalyScore >= 20 → Telegram + Replay 連結
+    try {
+      const { startMultiSessionsAlertCron } = await import("./lib/multi-sessions-alert-cron");
+      startMultiSessionsAlertCron();
+    } catch (err) {
+      console.error("[boot] startMultiSessionsAlertCron 失敗:", err);
+    }
   }
 
   // 🐛 Sentry Express error handler — 必須在所有 route 之後、其他 error handler 之前
