@@ -82,6 +82,7 @@ interface Today {
 export default function PosCash() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const [, navigate] = useLocation();
   const [denoms, setDenoms] = useState<Record<string, number>>({});
   const [reason, setReason] = useState("");
   const [mode, setMode] = useState<"opening" | "closing" | null>(null);
