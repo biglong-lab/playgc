@@ -159,14 +159,61 @@ export default function PosCash() {
     onError: (e: Error) => toast({ variant: "destructive", title: "確認失敗", description: e.message }),
   });
 
+  const settleMut = useMutation({
+    mutationFn: (v: { varianceReason?: string }) =>
+      fetchWithAdminAuth("/api/pos/cash/settle", { method: "POST", body: JSON.stringify(v) }),
+    onSuccess: () => {
+      toast({ title: "✅ 今日已結帳並鎖定" });
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-history"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "結帳失敗", description: e.message }),
+  });
+
+  const adjustMut = useMutation({
+    mutationFn: (v: { targetType: string; targetId: string; newCents: number; reason: string }) =>
+      fetchWithAdminAuth("/api/pos/cash/adjust", { method: "POST", body: JSON.stringify(v) }),
+    onSuccess: () => {
+      toast({ title: "調整已記錄（軌跡保留）" });
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-adjustments"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "調整失敗", description: e.message }),
+  });
+
   const pendingVariances = (history?.counts ?? []).filter((c) => c.varianceStatus === "pending");
+  const locked = !!today?.locked;
+  const stage = today?.stage ?? "not_started";
+  const STEP = { not_started: 1, open: 2, closing_done: 3, settled: 4 }[stage] ?? 1;
 
   return (
     <PosLayout title="櫃檯現金" backTo="/pos">
+      {/* 閉環階段引導 */}
+      {today && (
+        <div className="flex items-center gap-1 mb-3 text-xs">
+          {[
+            { n: 1, label: "開帳" },
+            { n: 2, label: "記帳" },
+            { n: 3, label: "收班" },
+            { n: 4, label: "結帳" },
+          ].map((s, i) => (
+            <div key={s.n} className="flex items-center gap-1 flex-1">
+              <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${STEP >= s.n ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"}`}>
+                <span className="font-bold">{STEP > s.n ? "✓" : s.n}</span>{s.label}
+              </div>
+              {i < 3 && <div className={`h-0.5 flex-1 ${STEP > s.n ? "bg-emerald-500" : "bg-muted"}`} />}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* 今日概況 */}
       {today && (
         <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3 text-sm space-y-1">
-          <div className="font-semibold text-base mb-1">📅 {today.date}</div>
+          <div className="font-semibold text-base mb-1 flex items-center justify-between">
+            <span>📅 {today.date}</span>
+            {locked && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded-full">🔒 已結帳鎖定</span>}
+          </div>
           <Row label="開班清點" value={today.opening ? NT(today.opening.adjustmentCents ?? today.opening.countedCents) : "—"} />
           <Row label="現金收款" value={NT(today.cashSalesCents)} />
           <Row label="現金退款" value={`−${NT(today.cashRefundsCents)}`} />
@@ -175,7 +222,37 @@ export default function PosCash() {
         </div>
       )}
 
-      {/* 清點表單 */}
+      {/* 已結帳：摘要 + (管理員)調整 */}
+      {locked && today?.settlement && (
+        <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3 text-sm space-y-1">
+          <div className="font-semibold text-base mb-1">🧾 結帳摘要</div>
+          <Row label="銷售總額" value={`${NT(today.settlement.salesTotalCents)}（${today.settlement.txnCount} 筆）`} />
+          <Row label="現金預期 / 實點" value={`${NT(today.settlement.expectedCashCents)} / ${NT(today.settlement.countedCashCents)}`} />
+          {today.settlement.varianceCents !== 0 && (
+            <Row label="差異" value={`${today.settlement.varianceCents > 0 ? "溢" : "短"}${NT(Math.abs(today.settlement.varianceCents))}（${today.settlement.varianceReason ?? ""}）`} highlight />
+          )}
+          <Row label="櫃檯實際現金（隔日基礎）" value={NT(today.settlement.actualCashCents)} bold />
+          <div className="text-xs text-muted-foreground">結帳人：{today.settlement.settledByName ?? "—"}</div>
+          {today.canCashAdmin && (
+            <button
+              onClick={() => {
+                const v = prompt("調整「櫃檯實際現金」為（元）", String(Math.round(today.settlement!.actualCashCents / 100)));
+                if (v == null || !(Number(v) >= 0)) return;
+                const r = prompt("調整原因（必填）");
+                if (!r) return;
+                adjustMut.mutate({ targetType: "settlement", targetId: today.settlement!.id, newCents: Math.round(Number(v) * 100), reason: r });
+              }}
+              className="mt-2 w-full py-2 rounded-lg border-2 border-amber-400 text-amber-700 dark:text-amber-300 text-sm font-medium"
+              data-testid="cash-adjust-settlement"
+            >
+              🛠 管理員調整（保留軌跡）
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* 清點表單（未鎖定才顯示）*/}
+      {!locked && (
       <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
         <div className="flex gap-2 mb-3">
           {(["opening", "closing"] as const).map((m) => (
