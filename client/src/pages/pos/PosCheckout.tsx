@@ -228,7 +228,7 @@ export default function PosCheckout() {
   };
 
   return (
-    <PosLayout title="現金收款" backTo={bookingId ? "/pos/bookings/today" : "/pos"}>
+    <PosLayout title="現金收款" backTo={returnTo ?? (bookingId ? "/pos/bookings/today" : "/pos")}>
       <div className="space-y-3">
         {/* 綁定預約資訊 */}
         {booking && (
