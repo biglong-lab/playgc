@@ -184,6 +184,60 @@ export const posCashDrawdowns = pgTable(
   (t) => [index("idx_pos_cash_drawdown_field_date").on(t.fieldId, t.businessDate)],
 );
 
+// ── 每日結帳閉環（開帳→記帳→結帳）─────────────────
+// 結帳確認後即鎖當日（locked=true）；actualCashCents 成為隔日開帳對帳基礎。
+export const posDailySettlements = pgTable(
+  "pos_daily_settlements",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    fieldId: varchar("field_id").notNull(),
+    businessDate: varchar("business_date", { length: 10 }).notNull(),
+    /** 結帳當下快照（分）*/
+    openingCents: integer("opening_cents").notNull().default(0),
+    cashSalesCents: integer("cash_sales_cents").notNull().default(0),
+    cashRefundsCents: integer("cash_refunds_cents").notNull().default(0),
+    drawdownCents: integer("drawdown_cents").notNull().default(0),
+    expectedCashCents: integer("expected_cash_cents").notNull().default(0),
+    countedCashCents: integer("counted_cash_cents").notNull().default(0),
+    varianceCents: integer("variance_cents").notNull().default(0),
+    varianceReason: text("variance_reason"),
+    /** 櫃檯實際現金（收班點鈔−清帳）→ 隔日開帳基礎 */
+    actualCashCents: integer("actual_cash_cents").notNull().default(0),
+    /** 銷售總額（含所有付款方式，給結帳摘要）*/
+    salesTotalCents: integer("sales_total_cents").notNull().default(0),
+    txnCount: integer("txn_count").notNull().default(0),
+    locked: boolean("locked").notNull().default(true),
+    settledBy: varchar("settled_by").notNull(),
+    settledByName: varchar("settled_by_name"),
+    settledAt: timestamp("settled_at").defaultNow(),
+    note: text("note"),
+  },
+  (t) => [index("idx_pos_settlement_field_date").on(t.fieldId, t.businessDate)],
+);
+
+// ── 現金調整紀錄（append-only，永不修改/刪除）──────
+// 鎖定後管理員調整 → 原紀錄不動、此處追加一筆完整軌跡（人/時間/前後值/原因）。
+export const posCashAdjustments = pgTable(
+  "pos_cash_adjustments",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    fieldId: varchar("field_id").notNull(),
+    businessDate: varchar("business_date", { length: 10 }).notNull(),
+    /** count | settlement | drawdown */
+    targetType: varchar("target_type", { length: 16 }).notNull(),
+    targetId: varchar("target_id").notNull(),
+    /** 調整的欄位（如 countedCents / actualCashCents）*/
+    fieldChanged: varchar("field_changed", { length: 40 }).notNull(),
+    oldCents: integer("old_cents"),
+    newCents: integer("new_cents"),
+    reason: text("reason").notNull(),
+    adjustedBy: varchar("adjusted_by").notNull(),
+    adjustedByName: varchar("adjusted_by_name"),
+    adjustedAt: timestamp("adjusted_at").defaultNow(),
+  },
+  (t) => [index("idx_pos_cash_adj_field_date").on(t.fieldId, t.businessDate)],
+);
+
 export type PosProduct = typeof posProducts.$inferSelect;
 export type PosProductInsert = typeof posProducts.$inferInsert;
 export type PosModifierGroup = typeof posModifierGroups.$inferSelect;
