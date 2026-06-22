@@ -519,9 +519,15 @@ export function notifyBattleCompleted(opts: {
 
 export function notifyServerBoot(): void {
   if (!isTelegramEnabled()) return;
+  // 白話版：給業主看的「系統更新上線」確認，不放工程術語（commit）
+  const time = new Date().toLocaleString("zh-TW", {
+    timeZone: "Asia/Taipei",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hour12: false,
+  });
   const text =
-    `🟢 game.homi.cc 啟動\n` +
-    `commit \`${(process.env.GIT_SHA || "unknown").slice(0, 8)}\`\n` +
-    `${new Date().toLocaleString("zh-TW", { timeZone: "Asia/Taipei" })}`;
+    `🟢 系統已更新上線\n` +
+    `賈村遊戲平台服務正常運作中\n` +
+    `時間：${time}`;
   fireForget(sendMessage({ text, parseMode: "Markdown", silent: true }));
 }
