@@ -119,6 +119,28 @@ async function getCount(identifiers: string[], date: string, type: "opening" | "
   return row ?? null;
 }
 
+/** 取某日結帳紀錄 */
+async function getSettlement(identifiers: string[], date: string) {
+  const [row] = await db
+    .select()
+    .from(posDailySettlements)
+    .where(and(inArray(posDailySettlements.fieldId, identifiers), eq(posDailySettlements.businessDate, date)))
+    .orderBy(desc(posDailySettlements.settledAt))
+    .limit(1);
+  return row ?? null;
+}
+
+/** 取最近一次（早於 date）已結帳紀錄 */
+async function lastSettlement(identifiers: string[], beforeDate: string) {
+  const [row] = await db
+    .select()
+    .from(posDailySettlements)
+    .where(and(inArray(posDailySettlements.fieldId, identifiers), lt(posDailySettlements.businessDate, beforeDate)))
+    .orderBy(desc(posDailySettlements.businessDate), desc(posDailySettlements.settledAt))
+    .limit(1);
+  return row ?? null;
+}
+
 /** 計算某型別清點的「系統預期金額」(分) */
 async function computeExpected(
   identifiers: string[],
@@ -126,8 +148,14 @@ async function computeExpected(
   type: "opening" | "closing",
 ): Promise<number> {
   if (type === "opening") {
+    // 對帳基礎優先用「上次已結帳的實際現金」（確認數字成隔日基礎）；否則退回上次 closing 點鈔
+    const ls = await lastSettlement(identifiers, date);
+    if (ls) {
+      const drawn = await drawdownsSince(identifiers, ls.settledAt ?? undefined);
+      return Math.max(0, ls.actualCashCents - drawn);
+    }
     const lc = await lastClosing(identifiers, date);
-    if (!lc) return 0; // 無前一日 closing → 預期 0（首次開班）
+    if (!lc) return 0; // 無前一日基礎 → 預期 0（首次開班）
     const base = lc.adjustmentCents ?? lc.countedCents;
     const drawn = await drawdownsSince(identifiers, lc.countedAt ?? undefined);
     return Math.max(0, base - drawn);
