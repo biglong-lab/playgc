@@ -444,4 +444,210 @@ export function registerPosCashRoutes(app: Express) {
       fail(res, e);
     }
   });
+
+  // ── POST 每日結帳（閉環：開帳+記帳+收班 → 鎖定當日）─
+  // 現場可直接結帳完成（requireAdminAuth）。結帳後即鎖；數字成隔日對帳基礎。
+  app.post("/api/pos/cash/settle", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const { date } = getTodayRange();
+      const existed = await getSettlement(scope.identifiers, date);
+      if (existed) return res.status(409).json({ error: "already_settled", message: "當日已結帳" });
+
+      const opening = await getCount(scope.identifiers, date, "opening");
+      const closing = await getCount(scope.identifiers, date, "closing");
+      if (!closing) return res.status(400).json({ error: "no_closing", message: "請先完成下班結算清點再結帳" });
+
+      const openingCents = opening ? opening.adjustmentCents ?? opening.countedCents : 0;
+      const countedCashCents = closing.adjustmentCents ?? closing.countedCents;
+      const { cashSalesCents, cashRefundsCents } = await cashFlows(scope.identifiers, date);
+      const { start, end } = taipeiDateRange(date);
+      const [ddAgg] = await db
+        .select({ cents: sql<number>`COALESCE(SUM(${posCashDrawdowns.amountCents}),0)::int` })
+        .from(posCashDrawdowns)
+        .where(and(inArray(posCashDrawdowns.fieldId, scope.identifiers), gte(posCashDrawdowns.drawdownAt, start), lte(posCashDrawdowns.drawdownAt, end)));
+      const drawdownCents = ddAgg?.cents ?? 0;
+      const expectedCashCents = Math.max(0, openingCents + cashSalesCents - cashRefundsCents - drawdownCents);
+      const varianceCents = countedCashCents - expectedCashCents;
+      const actualCashCents = Math.max(0, countedCashCents - drawdownCents);
+      const reason = typeof req.body?.varianceReason === "string" ? req.body.varianceReason : null;
+      if (varianceCents !== 0 && !reason) {
+        return res.status(400).json({ error: "need_reason", message: "現金有差異，請填寫差異原因再結帳" });
+      }
+      // 銷售總額（所有付款方式）
+      const [salesAgg] = await db
+        .select({
+          cents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}),0)::int`,
+          count: sql<number>`COUNT(*)::int`,
+        })
+        .from(posTransactions)
+        .where(and(inArray(posTransactions.fieldId, scope.identifiers), gte(posTransactions.createdAt, start), lte(posTransactions.createdAt, end), sql`${posTransactions.deletedAt} IS NULL`));
+
+      const [row] = await db
+        .insert(posDailySettlements)
+        .values({
+          fieldId: scope.id,
+          businessDate: date,
+          openingCents,
+          cashSalesCents,
+          cashRefundsCents,
+          drawdownCents,
+          expectedCashCents,
+          countedCashCents,
+          varianceCents,
+          varianceReason: reason,
+          actualCashCents,
+          salesTotalCents: salesAgg?.cents ?? 0,
+          txnCount: salesAgg?.count ?? 0,
+          locked: true,
+          settledBy: req.admin!.id,
+          settledByName: req.admin!.displayName ?? req.admin!.username,
+          note: typeof req.body?.note === "string" ? req.body.note.slice(0, 500) : null,
+        })
+        .returning();
+
+      await logAuditAction({
+        actorAdminId: req.admin!.id,
+        action: "pos:daily_settle",
+        targetType: "pos_daily_settlement",
+        targetId: row.id,
+        fieldId: scope.id,
+        metadata: { date, expectedCashCents, countedCashCents, varianceCents, actualCashCents, salesTotalCents: row.salesTotalCents },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      sendToFieldGroup(
+        [
+          `✅ *每日結帳 · ${date}*`,
+          `銷售總額：${NT(row.salesTotalCents)}（${row.txnCount} 筆）`,
+          ``,
+          `*櫃檯現金*`,
+          `· 開帳：${NT(openingCents)}　現金收：${NT(cashSalesCents)}`,
+          `· 現金退：${NT(cashRefundsCents)}　清帳：${NT(drawdownCents)}`,
+          `· 預期：${NT(expectedCashCents)}　實點：${NT(countedCashCents)}`,
+          varianceCents !== 0 ? `· ⚠️ 差異：${varianceCents > 0 ? "溢" : "短"}${NT(Math.abs(varianceCents))}（${reason}）` : `· 差異：無`,
+          `· 櫃檯實際現金：${NT(actualCashCents)}（隔日開帳基礎）`,
+          `結帳人：${row.settledByName ?? "—"}`,
+        ].join("\n"),
+      );
+
+      res.json({ ok: true, settlement: row });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
+
+  // ── GET 某日結帳 ───────────────────────────────
+  app.get("/api/pos/cash/settlement", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const date = (req.query.date as string) || getTodayRange().date;
+      const settlement = await getSettlement(scope.identifiers, date);
+      res.json({ settlement });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
+
+  // ── POST 調整已鎖定紀錄（append-only，[cash]）────
+  // 原紀錄不動；追加完整軌跡（人/時間/前後值/原因）；同步更新有效值。
+  app.post("/api/pos/cash/adjust", requireAdminAuth, requirePermission("pos_cash_admin"), async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const { targetType, targetId, newCents, reason } = req.body ?? {};
+      if (!["count", "settlement"].includes(targetType) || !targetId) return res.status(400).json({ error: "bad_target" });
+      if (!reason || typeof reason !== "string") return res.status(400).json({ error: "need_reason", message: "調整必須填原因" });
+      const nv = Math.max(0, Math.round(Number(newCents)));
+      if (!Number.isFinite(nv)) return res.status(400).json({ error: "bad_value" });
+
+      let oldCents = 0;
+      let fieldChanged = "";
+      let businessDate = "";
+      if (targetType === "count") {
+        const [c] = await db.select().from(posCashCounts).where(eq(posCashCounts.id, targetId)).limit(1);
+        if (!c) return res.status(404).json({ error: "not_found" });
+        oldCents = c.adjustmentCents ?? c.countedCents;
+        fieldChanged = "countedCents";
+        businessDate = c.businessDate;
+        await db.update(posCashCounts).set({
+          adjustmentCents: nv,
+          varianceCents: nv - c.expectedCents,
+          varianceStatus: "confirmed",
+          confirmedBy: req.admin!.id,
+          confirmedByName: req.admin!.displayName ?? req.admin!.username,
+          confirmedAt: new Date(),
+        }).where(eq(posCashCounts.id, targetId));
+      } else {
+        const [s] = await db.select().from(posDailySettlements).where(eq(posDailySettlements.id, targetId)).limit(1);
+        if (!s) return res.status(404).json({ error: "not_found" });
+        oldCents = s.actualCashCents;
+        fieldChanged = "actualCashCents";
+        businessDate = s.businessDate;
+        await db.update(posDailySettlements).set({ actualCashCents: nv }).where(eq(posDailySettlements.id, targetId));
+      }
+
+      const [adj] = await db
+        .insert(posCashAdjustments)
+        .values({
+          fieldId: scope.id,
+          businessDate,
+          targetType,
+          targetId,
+          fieldChanged,
+          oldCents,
+          newCents: nv,
+          reason,
+          adjustedBy: req.admin!.id,
+          adjustedByName: req.admin!.displayName ?? req.admin!.username,
+        })
+        .returning();
+
+      await logAuditAction({
+        actorAdminId: req.admin!.id,
+        action: "pos:cash_adjust",
+        targetType: `pos_${targetType}`,
+        targetId,
+        fieldId: scope.id,
+        metadata: { businessDate, fieldChanged, oldCents, newCents: nv, reason },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+
+      sendToFieldGroup(
+        [
+          `🛠 *POS 現金調整*（${businessDate}）`,
+          `項目：${targetType === "count" ? "清點" : "結帳實際現金"}`,
+          `${NT(oldCents)} → ${NT(nv)}`,
+          `原因：${reason}`,
+          `調整人：${adj.adjustedByName ?? "—"}`,
+        ].join("\n"),
+      );
+
+      res.json({ ok: true, adjustment: adj });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
+
+  // ── GET 調整紀錄（append-only 軌跡）─────────────
+  app.get("/api/pos/cash/adjustments", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const limit = Math.min(200, Math.max(1, Number(req.query.limit) || 60));
+      const rows = await db
+        .select()
+        .from(posCashAdjustments)
+        .where(inArray(posCashAdjustments.fieldId, scope.identifiers))
+        .orderBy(desc(posCashAdjustments.adjustedAt))
+        .limit(limit);
+      res.json({ adjustments: rows });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
 }
