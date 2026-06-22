@@ -96,6 +96,10 @@ export default function PosCash() {
     queryKey: ["pos-cash-history"],
     queryFn: () => fetchWithAdminAuth("/api/pos/cash/history?limit=40"),
   });
+  const { data: adjData } = useQuery<{ adjustments: Adjustment[] }>({
+    queryKey: ["pos-cash-adjustments"],
+    queryFn: () => fetchWithAdminAuth("/api/pos/cash/adjustments?limit=40"),
+  });
 
   // 預設清點型別：未開班→開班；已開班未收班→收班
   const effectiveMode: "opening" | "closing" =
