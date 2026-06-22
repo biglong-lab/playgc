@@ -441,6 +441,23 @@ export default function PosCash() {
             </div>
           ))}
         </div>
+        {/* 調整軌跡（append-only，永不刪除）*/}
+        {(adjData?.adjustments ?? []).length > 0 && (
+          <div className="mt-3 pt-3 border-t">
+            <div className="font-semibold text-sm mb-2">🛠 調整軌跡</div>
+            <div className="space-y-1.5 text-sm">
+              {(adjData?.adjustments ?? []).slice(0, 20).map((a) => (
+                <div key={a.id} className="border-b pb-1.5 last:border-b-0">
+                  <div className="flex justify-between gap-2">
+                    <span className="text-muted-foreground shrink-0">{a.businessDate} {a.targetType === "count" ? "清點" : "結帳"}</span>
+                    <span className="text-right tabular-nums">{NT(a.oldCents ?? 0)} → <span className="font-semibold">{NT(a.newCents ?? 0)}</span></span>
+                  </div>
+                  <div className="text-muted-foreground text-xs">{a.adjustedByName ?? "—"}・{a.reason}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </PosLayout>
   );
