@@ -187,10 +187,17 @@ export default function PosCash() {
   const locked = !!today?.locked;
   const stage = today?.stage ?? "not_started";
   const STEP = { not_started: 1, open: 2, closing_done: 3, settled: 4 }[stage] ?? 1;
+  // 點階段 → 跳到對應動作
+  const goStep = (n: number) => {
+    if (n === 1) { setMode("opening"); document.getElementById("cash-count-form")?.scrollIntoView({ behavior: "smooth" }); }
+    else if (n === 2) { navigate("/pos/checkout?return=/pos/cash"); }
+    else if (n === 3) { setMode("closing"); document.getElementById("cash-count-form")?.scrollIntoView({ behavior: "smooth" }); }
+    else if (n === 4) { document.getElementById("cash-settle-card")?.scrollIntoView({ behavior: "smooth" }); }
+  };
 
   return (
     <PosLayout title="櫃檯現金" backTo="/pos">
-      {/* 閉環階段引導 */}
+      {/* 閉環階段引導（可點，導向對應動作）*/}
       {today && (
         <div className="flex items-center gap-1 mb-3 text-xs">
           {[
@@ -200,12 +207,53 @@ export default function PosCash() {
             { n: 4, label: "結帳" },
           ].map((s, i) => (
             <div key={s.n} className="flex items-center gap-1 flex-1">
-              <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${STEP >= s.n ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"}`}>
+              <button
+                onClick={() => !locked && goStep(s.n)}
+                disabled={locked}
+                data-testid={`cash-step-${s.n}`}
+                className={`flex items-center gap-1 px-2 py-1 rounded-full ${STEP >= s.n ? "bg-emerald-500 text-white" : "bg-muted text-muted-foreground"} ${STEP === s.n && !locked ? "ring-2 ring-emerald-300" : ""}`}
+              >
                 <span className="font-bold">{STEP > s.n ? "✓" : s.n}</span>{s.label}
-              </div>
+              </button>
               {i < 3 && <div className={`h-0.5 flex-1 ${STEP > s.n ? "bg-emerald-500" : "bg-muted"}`} />}
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 👉 下一步動作卡（閉環核心：把記帳/收款串進來）*/}
+      {today && !locked && (
+        <div className="rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 p-3 mb-3">
+          {stage === "not_started" && (
+            <>
+              <div className="font-semibold text-sm mb-1">👉 第一步：開帳清點</div>
+              <p className="text-xs text-muted-foreground mb-2">上班先清點抽屜現金（下方面額表），確立今日起始金額。</p>
+              <Button className="w-full" onClick={() => goStep(1)} data-testid="cash-action-open">開始開帳清點</Button>
+            </>
+          )}
+          {stage === "open" && (
+            <>
+              <div className="font-semibold text-sm mb-1">💰 營業中：記帳收款</div>
+              <p className="text-xs text-muted-foreground mb-2">
+                今日現金收 <b>{NT(today.cashSalesCents)}</b>　退 {NT(today.cashRefundsCents)}　清帳 {NT(today.todayDrawdownsCents)}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button className="bg-amber-600 hover:bg-amber-700" onClick={() => navigate("/pos/checkout?return=/pos/cash")} data-testid="cash-action-checkout">
+                  ➕ 現金收款
+                </Button>
+                <Button variant="outline" onClick={() => goStep(3)} data-testid="cash-action-toclose">
+                  打烊 → 收班清點
+                </Button>
+              </div>
+            </>
+          )}
+          {stage === "closing_done" && (
+            <>
+              <div className="font-semibold text-sm mb-1">🧾 最後一步：結帳鎖定</div>
+              <p className="text-xs text-muted-foreground mb-2">確認今日帳務無誤後結帳，數字成隔日對帳基礎。</p>
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={() => goStep(4)} data-testid="cash-action-tosettle">前往結帳</Button>
+            </>
+          )}
         </div>
       )}
 
