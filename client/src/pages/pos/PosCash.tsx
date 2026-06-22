@@ -11,7 +11,7 @@ import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
-const FACES = [1000, 500, 100, 50, 10, 1] as const;
+const FACES = [1000, 500, 100, 50, 10, 5, 1] as const;
 const NT = (cents: number) => `NT$${Math.round(cents / 100).toLocaleString()}`;
 
 interface CashCount {
