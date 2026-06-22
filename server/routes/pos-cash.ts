@@ -629,7 +629,7 @@ export function registerPosCashRoutes(app: Express) {
 
       sendToFieldGroup(
         [
-          `🛠 *POS 現金調整*（${businessDate}）`,
+          `🛠 *POS 現金調整*（${businessDate} ${nowHM()}）`,
           `項目：${targetType === "count" ? "清點" : "結帳實際現金"}`,
           `${NT(oldCents)} → ${NT(nv)}`,
           `原因：${reason}`,
