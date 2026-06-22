@@ -270,7 +270,7 @@ export function registerPosCashRoutes(app: Express) {
         const sign = varianceCents > 0 ? "溢" : "短";
         sendToFieldGroup(
           [
-            `⚠️ *POS 現金差異*（${date} ${label}）`,
+            `⚠️ *POS 現金差異*（${date} ${nowHM()} ${label}）`,
             `點鈔：${NT(countedCents)}　預期：${NT(expectedCents)}`,
             `差異：${sign}${NT(Math.abs(varianceCents))}`,
             `清點人：${row.countedByName ?? "—"}`,
