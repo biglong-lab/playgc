@@ -596,6 +596,43 @@ export function registerPosRoutes(app: Express) {
     }
   });
 
+  // 🆕 2026-06-23 編輯預約（改人數/姓名/電話）— 今日+未來皆可，含稽核前後差異
+  app.patch("/api/pos/bookings/:bookingCode", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
+      const { partySize, displayName, phone } = req.body ?? {};
+      const { updateBooking } = await import("../booking/booking-service");
+      const { before, after } = await updateBooking({
+        bookingCode: req.params.bookingCode,
+        fieldId: scope.id,
+        partySize: partySize !== undefined ? Math.floor(Number(partySize)) : undefined,
+        displayName,
+        phone,
+      });
+      const changes: Record<string, { from: unknown; to: unknown }> = {};
+      if (before.partySize !== after.partySize) changes.partySize = { from: before.partySize, to: after.partySize };
+      if (before.displayName !== after.displayName) changes.displayName = { from: before.displayName, to: after.displayName };
+      if (before.phone !== after.phone) changes.phone = { from: before.phone, to: after.phone };
+      logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "pos:booking_edit",
+        targetType: "booking",
+        targetId: after.bookingCode,
+        fieldId: scope.id,
+        metadata: { changes },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ booking: after });
+    } catch (e) {
+      const status = (e as { status?: number })?.status ?? 500;
+      const msg = e instanceof Error ? e.message : "伺服器錯誤";
+      if (status === 500) console.error("[pos] booking edit 失敗:", e);
+      res.status(status).json({ error: "edit_failed", message: msg });
+    }
+  });
+
   // 🆕 2026-06-13 帳務交易軟刪除（需原因、進垃圾桶可還原）
   app.post("/api/pos/transactions/:id/delete", requireAdminAuth, async (req, res) => {
     try {
