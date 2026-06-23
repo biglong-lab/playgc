@@ -786,6 +786,7 @@ export interface UpdateBookingInput {
   partySize?: number;
   displayName?: string;
   phone?: string;
+  slotStart?: Date; // 改時間
 }
 export async function updateBooking(input: UpdateBookingInput): Promise<{ before: Booking; after: Booking }> {
   const [booking] = await db
@@ -797,27 +798,39 @@ export async function updateBooking(input: UpdateBookingInput): Promise<{ before
   if (booking.status === "cancelled") throw new BookingError("cannot_edit", "已取消的預約無法編輯", 400);
 
   const patch: Partial<typeof bookings.$inferInsert> = { updatedAt: new Date() };
+  const newParty = input.partySize ?? booking.partySize;
+  if (input.partySize !== undefined && input.partySize < 1) {
+    throw new BookingError("invalid_party_size", "人數必須 ≥ 1", 400);
+  }
 
-  if (input.partySize !== undefined && input.partySize !== booking.partySize) {
-    if (input.partySize < 1) throw new BookingError("invalid_party_size", "人數必須 ≥ 1", 400);
-    // 加大人數 → 容量檢查（用 getAvailability 取該時段 capacity/booked）
-    if (input.partySize > booking.partySize) {
-      const day = new Date(booking.slotStart);
-      const slots = await getAvailability(input.fieldId, day, day);
-      const slot = slots.find((s) => s.startAt === booking.slotStart.toISOString());
-      if (slot) {
-        const others = slot.booked - booking.partySize; // 排除本筆
-        if (others + input.partySize > slot.capacity) {
-          throw new BookingError(
-            "slot_full",
-            `此時段剩餘 ${slot.capacity - others} 位、無法容納 ${input.partySize} 位`,
-            409,
-          );
-        }
+  // 改時間 → 新時段必須開放、未過期、容量足夠
+  const changingTime = input.slotStart && input.slotStart.getTime() !== booking.slotStart.getTime();
+  if (changingTime) {
+    const day = input.slotStart!;
+    const slots = await getAvailability(input.fieldId, day, day, booking.activityId ?? undefined);
+    const slot = slots.find((s) => s.startAt === input.slotStart!.toISOString());
+    if (!slot) throw new BookingError("slot_not_open", "新時段不在開放時段內", 400);
+    if (new Date(slot.startAt) <= new Date()) throw new BookingError("slot_passed", "新時段已過、無法改", 400);
+    // 新時段不含本筆 → booked + 新人數 須 ≤ capacity
+    if (slot.booked + newParty > slot.capacity) {
+      throw new BookingError("slot_full", `新時段剩餘 ${slot.capacity - slot.booked} 位、無法容納 ${newParty} 位`, 409);
+    }
+    patch.slotStart = input.slotStart!;
+    patch.slotEnd = new Date(slot.endAt);
+  } else if (input.partySize !== undefined && input.partySize > booking.partySize) {
+    // 只加大人數（同時段）→ 排除本筆後檢查容量
+    const day = new Date(booking.slotStart);
+    const slots = await getAvailability(input.fieldId, day, day, booking.activityId ?? undefined);
+    const slot = slots.find((s) => s.startAt === booking.slotStart.toISOString());
+    if (slot) {
+      const others = slot.booked - booking.partySize;
+      if (others + input.partySize > slot.capacity) {
+        throw new BookingError("slot_full", `此時段剩餘 ${slot.capacity - others} 位、無法容納 ${input.partySize} 位`, 409);
       }
     }
-    patch.partySize = input.partySize;
   }
+
+  if (input.partySize !== undefined) patch.partySize = input.partySize;
   if (input.displayName !== undefined) patch.displayName = input.displayName.trim().slice(0, 100) || null;
   if (input.phone !== undefined) patch.phone = input.phone.trim().slice(0, 20) || null;
 
