@@ -284,8 +284,10 @@ function EditBookingDialog({
   const [party, setParty] = useState(booking.partySize);
   const [name, setName] = useState(booking.displayName ?? "");
   const [phone, setPhone] = useState(booking.phone ?? "");
-  const [date, setDate] = useState(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
-  const [time, setTime] = useState(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+  const initDate = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const initTime = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const [date, setDate] = useState(initDate);
+  const [time, setTime] = useState(initTime);
   const [reasonTag, setReasonTag] = useState("");
   const [reasonText, setReasonText] = useState("");
 
