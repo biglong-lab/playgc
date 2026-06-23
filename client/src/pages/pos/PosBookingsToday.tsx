@@ -80,6 +80,7 @@ export default function PosBookingsToday() {
   });
 
   // 🆕 2026-06-13 POS 人工預約
+  const [editing, setEditing] = useState<TodayBooking | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [mName, setMName] = useState("");
   const [mPhone, setMPhone] = useState("");
