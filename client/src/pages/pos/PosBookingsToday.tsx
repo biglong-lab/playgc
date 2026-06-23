@@ -251,7 +251,127 @@ export default function PosBookingsToday() {
           </section>
         ))}
       </div>
+
+      {editing && (
+        <EditBookingDialog
+          booking={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            qc.invalidateQueries({ queryKey: ["pos-dashboard"] });
+            qc.invalidateQueries({ queryKey: ["pos-upcoming"] });
+          }}
+        />
+      )}
     </PosLayout>
+  );
+}
+
+const REASON_TAGS = ["人數修改", "時間修改", "姓名電話修正", "其他"];
+
+function EditBookingDialog({
+  booking,
+  onClose,
+  onSaved,
+}: {
+  booking: TodayBooking;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const { toast } = useToast();
+  const d = new Date(booking.slotStart);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const [party, setParty] = useState(booking.partySize);
+  const [name, setName] = useState(booking.displayName ?? "");
+  const [phone, setPhone] = useState(booking.phone ?? "");
+  const [date, setDate] = useState(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`);
+  const [time, setTime] = useState(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
+  const [reasonTag, setReasonTag] = useState("");
+  const [reasonText, setReasonText] = useState("");
+
+  const save = useMutation({
+    mutationFn: () => {
+      const reason = [reasonTag, reasonText].filter(Boolean).join("：") || reasonTag || reasonText;
+      const body: Record<string, unknown> = { partySize: party, displayName: name, phone, reason };
+      // 時間有改才送 slotStart（避免不必要的時段驗證）
+      const newSlot = new Date(`${date}T${time}:00`);
+      if (newSlot.getTime() !== new Date(booking.slotStart).getTime()) body.slotStart = newSlot.toISOString();
+      return fetchWithAdminAuth(`/api/pos/bookings/${booking.bookingCode}`, { method: "PATCH", body: JSON.stringify(body) });
+    },
+    onSuccess: () => {
+      toast({ title: "✅ 預約已更新" });
+      onSaved();
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "更新失敗", description: e.message }),
+  });
+
+  const reasonValid = !!(reasonTag || reasonText.trim());
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>✏️ 編輯預約 · {booking.bookingCode}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div>
+            <Label className="text-xs">人數 *</Label>
+            <Input type="number" inputMode="numeric" min={1} value={party} onChange={(e) => setParty(Math.max(1, Math.floor(Number(e.target.value) || 1)))} data-testid="edit-party" />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <Label className="text-xs">日期</Label>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} data-testid="edit-date" />
+            </div>
+            <div>
+              <Label className="text-xs">時間</Label>
+              <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} data-testid="edit-time" />
+            </div>
+          </div>
+          <div>
+            <Label className="text-xs">姓名</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} data-testid="edit-name" />
+          </div>
+          <div>
+            <Label className="text-xs">電話</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} data-testid="edit-phone" />
+          </div>
+          <div>
+            <Label className="text-xs">修改原因 *（必填）</Label>
+            <div className="flex flex-wrap gap-1 mt-1">
+              {REASON_TAGS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setReasonTag(t)}
+                  data-testid={`edit-reason-${t}`}
+                  className={`px-2 py-1 rounded-full text-xs ${reasonTag === t ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+            <Input
+              value={reasonText}
+              onChange={(e) => setReasonText(e.target.value)}
+              placeholder="補充說明（選填）"
+              className="mt-2"
+              data-testid="edit-reason-text"
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <Button variant="outline" className="flex-1" onClick={onClose}>取消</Button>
+            <Button
+              className="flex-1"
+              onClick={() => save.mutate()}
+              disabled={save.isPending || !reasonValid}
+              data-testid="edit-save"
+            >
+              {save.isPending ? "儲存中…" : "儲存修改"}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
