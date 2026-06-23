@@ -242,6 +242,7 @@ export default function PosBookingsToday() {
                     if (confirm(`標記 ${b.displayName} 為未到場？`)) noShowMut.mutate(b.id);
                   }}
                   onCheckout={() => navigate(`/pos/checkout?bookingId=${b.id}`)}
+                  onEdit={() => setEditing(b)}
                   busy={checkInMut.isPending || noShowMut.isPending}
                 />
               ))}
