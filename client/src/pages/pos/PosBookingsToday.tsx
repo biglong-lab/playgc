@@ -295,9 +295,10 @@ function EditBookingDialog({
     mutationFn: () => {
       const reason = [reasonTag, reasonText].filter(Boolean).join("：") || reasonTag || reasonText;
       const body: Record<string, unknown> = { partySize: party, displayName: name, phone, reason };
-      // 時間有改才送 slotStart（避免不必要的時段驗證）
-      const newSlot = new Date(`${date}T${time}:00`);
-      if (newSlot.getTime() !== new Date(booking.slotStart).getTime()) body.slotStart = newSlot.toISOString();
+      // 只有「日期或時間字串真的變動」才送 slotStart（避免秒數誤差觸發時段驗證）
+      if (date !== initDate || time !== initTime) {
+        body.slotStart = new Date(`${date}T${time}:00`).toISOString();
+      }
       return fetchWithAdminAuth(`/api/pos/bookings/${booking.bookingCode}`, { method: "PATCH", body: JSON.stringify(body) });
     },
     onSuccess: () => {
