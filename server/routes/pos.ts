@@ -601,7 +601,11 @@ export function registerPosRoutes(app: Express) {
     try {
       const scope = await resolveFieldScope(req);
       if (!scope || !req.admin) return res.status(400).json({ error: "no_field" });
-      const { partySize, displayName, phone } = req.body ?? {};
+      const { partySize, displayName, phone, slotStart, reason } = req.body ?? {};
+      // 修改必填原因（含標籤）
+      if (!reason || typeof reason !== "string" || reason.trim().length < 2) {
+        return res.status(400).json({ error: "reason_required", message: "請選擇或填寫修改原因" });
+      }
       const { updateBooking } = await import("../booking/booking-service");
       const { before, after } = await updateBooking({
         bookingCode: req.params.bookingCode,
@@ -609,18 +613,21 @@ export function registerPosRoutes(app: Express) {
         partySize: partySize !== undefined ? Math.floor(Number(partySize)) : undefined,
         displayName,
         phone,
+        slotStart: slotStart ? new Date(slotStart) : undefined,
       });
       const changes: Record<string, { from: unknown; to: unknown }> = {};
       if (before.partySize !== after.partySize) changes.partySize = { from: before.partySize, to: after.partySize };
       if (before.displayName !== after.displayName) changes.displayName = { from: before.displayName, to: after.displayName };
       if (before.phone !== after.phone) changes.phone = { from: before.phone, to: after.phone };
+      if (before.slotStart.getTime() !== after.slotStart.getTime())
+        changes.slotStart = { from: before.slotStart.toISOString(), to: after.slotStart.toISOString() };
       logAuditAction({
         actorAdminId: req.admin.id,
         action: "pos:booking_edit",
         targetType: "booking",
         targetId: after.bookingCode,
         fieldId: scope.id,
-        metadata: { changes },
+        metadata: { reason: reason.trim(), changes },
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"],
       });
