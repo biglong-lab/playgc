@@ -777,3 +777,50 @@ export async function markBookingNoShow(bookingCode: string): Promise<Booking> {
 
   return updated[0]!;
 }
+
+// ── 編輯預約（改人數/姓名/電話）2026-06-23 ─────────
+// 回傳 before/after 供呼叫端寫稽核（誰/何時/前後差異）。加大人數時檢查時段容量。
+export interface UpdateBookingInput {
+  bookingCode: string;
+  fieldId: string; // 場域隔離
+  partySize?: number;
+  displayName?: string;
+  phone?: string;
+}
+export async function updateBooking(input: UpdateBookingInput): Promise<{ before: Booking; after: Booking }> {
+  const [booking] = await db
+    .select()
+    .from(bookings)
+    .where(and(eq(bookings.bookingCode, input.bookingCode), eq(bookings.fieldId, input.fieldId)))
+    .limit(1);
+  if (!booking) throw new BookingError("not_found", "找不到此預約", 404);
+  if (booking.status === "cancelled") throw new BookingError("cannot_edit", "已取消的預約無法編輯", 400);
+
+  const patch: Partial<typeof bookings.$inferInsert> = { updatedAt: new Date() };
+
+  if (input.partySize !== undefined && input.partySize !== booking.partySize) {
+    if (input.partySize < 1) throw new BookingError("invalid_party_size", "人數必須 ≥ 1", 400);
+    // 加大人數 → 容量檢查（用 getAvailability 取該時段 capacity/booked）
+    if (input.partySize > booking.partySize) {
+      const day = new Date(booking.slotStart);
+      const slots = await getAvailability(input.fieldId, day, day);
+      const slot = slots.find((s) => s.startAt === booking.slotStart.toISOString());
+      if (slot) {
+        const others = slot.booked - booking.partySize; // 排除本筆
+        if (others + input.partySize > slot.capacity) {
+          throw new BookingError(
+            "slot_full",
+            `此時段剩餘 ${slot.capacity - others} 位、無法容納 ${input.partySize} 位`,
+            409,
+          );
+        }
+      }
+    }
+    patch.partySize = input.partySize;
+  }
+  if (input.displayName !== undefined) patch.displayName = input.displayName.trim().slice(0, 100) || null;
+  if (input.phone !== undefined) patch.phone = input.phone.trim().slice(0, 20) || null;
+
+  const [after] = await db.update(bookings).set(patch).where(eq(bookings.id, booking.id)).returning();
+  return { before: booking, after: after! };
+}
