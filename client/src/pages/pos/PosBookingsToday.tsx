@@ -337,6 +337,11 @@ function BookingRow({
             </Button>
           </div>
         )}
+        {!cancelled && (
+          <Button size="sm" variant="ghost" className="w-full text-xs" onClick={onEdit} data-testid={`booking-edit-${b.bookingCode}`}>
+            ✏️ 編輯（人數 / 時間 / 姓名）
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
