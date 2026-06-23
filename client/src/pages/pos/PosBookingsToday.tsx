@@ -258,12 +258,14 @@ function BookingRow({
   onCheckIn,
   onNoShow,
   onCheckout,
+  onEdit,
   busy,
 }: {
   b: TodayBooking;
   onCheckIn: () => void;
   onNoShow: () => void;
   onCheckout: () => void;
+  onEdit: () => void;
   busy: boolean;
 }) {
   const t = new Date(b.slotStart);
