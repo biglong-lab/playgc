@@ -82,6 +82,11 @@ export default function PosBookingsToday() {
   // 🆕 2026-06-13 POS 人工預約
   const [editing, setEditing] = useState<TodayBooking | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
+  const resendReport = useMutation({
+    mutationFn: () => fetchWithAdminAuth("/api/pos/bookings/resend-today-report", { method: "POST" }),
+    onSuccess: () => toast({ title: "✅ 已重發今日預約到群組" }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "重發失敗", description: e.message }),
+  });
   const [mName, setMName] = useState("");
   const [mPhone, setMPhone] = useState("");
   const [mDate, setMDate] = useState(todayStr());
