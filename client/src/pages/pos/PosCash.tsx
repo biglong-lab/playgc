@@ -112,10 +112,6 @@ export default function PosCash() {
     queryKey: ["pos-cash-adjustments"],
     queryFn: () => fetchWithAdminAuth("/api/pos/cash/adjustments?limit=40"),
   });
-  const { data: expData } = useQuery<{ expenses: Expense[]; totalCents: number }>({
-    queryKey: ["pos-expenses-today"],
-    queryFn: () => fetchWithAdminAuth("/api/pos/expenses"),
-  });
 
   // 預設清點型別：未開班→開班；已開班未收班→收班
   const effectiveMode: "opening" | "closing" =
