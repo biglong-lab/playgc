@@ -322,6 +322,7 @@ export default function PosCash() {
         <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3 text-sm space-y-1">
           <div className="font-semibold text-base mb-1">🧾 結帳摘要</div>
           <Row label="銷售總額" value={`${NT(today.settlement.salesTotalCents)}（${today.settlement.txnCount} 筆）`} />
+          {today.settlement.expensesCents > 0 && <Row label="現金支出" value={`−${NT(today.settlement.expensesCents)}`} />}
           <Row label="現金預期 / 實點" value={`${NT(today.settlement.expectedCashCents)} / ${NT(today.settlement.countedCashCents)}`} />
           {today.settlement.varianceCents !== 0 && (
             <Row label="差異" value={`${today.settlement.varianceCents > 0 ? "溢" : "短"}${NT(Math.abs(today.settlement.varianceCents))}（${today.settlement.varianceReason ?? ""}）`} highlight />
