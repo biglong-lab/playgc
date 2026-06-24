@@ -462,6 +462,7 @@ export function registerPosCashRoutes(app: Express) {
           ),
         );
       const drawdownCents = ddAgg?.cents ?? 0;
+      const expensesCents = await expensesForDate(scope.identifiers, date);
       const closingCounted = closing ? closing.adjustmentCents ?? closing.countedCents : null;
       res.json({
         date,
@@ -470,6 +471,7 @@ export function registerPosCashRoutes(app: Express) {
         cashSalesCents,
         cashRefundsCents,
         drawdownCents,
+        expensesCents,
         // 櫃檯實際現金 = 下班點鈔 − 清帳
         actualCashCents: closingCounted !== null ? Math.max(0, closingCounted - drawdownCents) : null,
         openingVarianceCents: opening?.varianceCents ?? 0,
