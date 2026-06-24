@@ -80,15 +80,6 @@ interface Today {
   stage: "not_started" | "open" | "closing_done" | "settled";
   canCashAdmin: boolean;
 }
-interface Expense {
-  id: string;
-  category: string;
-  amountCents: number;
-  note: string | null;
-  spentByName: string | null;
-  spentAt: string;
-}
-
 export default function PosCash() {
   const { toast } = useToast();
   const qc = useQueryClient();
