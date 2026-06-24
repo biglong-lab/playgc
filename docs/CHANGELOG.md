@@ -5,6 +5,18 @@
 
 ---
 
+## 2026-06-24
+
+### 🧾 POS 收支/支出 + 預約編輯 + 晨報修復 + 推播整治（feat/fix）
+**狀態**：🟢 部署上線（commit `beb5d8b9`）
+**細節** → [changes/2026-06-24-pos-expense-booking-edit-notify.md](changes/2026-06-24-pos-expense-booking-edit-notify.md)
+
+- **預約編輯**：今日+未來可改人數/時間/姓名/電話，原因必填+容量檢查+稽核(原→新不刪)
+- **收支/支出**：收款頁改「收支」(收款/支出切換)；現金支出扣櫃檯現金、納入對帳/結帳/報表；新表 pos_expenses
+- **晨報修復**：bookings.field_id 混存 UUID/code → 漏項；改雙比對 + 加項目統計 + 手動重發鈕
+- **推播整治**：cluster 4 workers 重複 ×4 → gate 單一 worker；chat id 去重；啟動通知白話化；通知加 HH:MM；面額補 NT$5
+- 新增 API：booking PATCH、expenses CRUD、resend-today-report
+
 ## 2026-06-22 (b)
 
 ### 🔁 POS 現金記帳閉環（開帳→記帳→結帳）（feat）
