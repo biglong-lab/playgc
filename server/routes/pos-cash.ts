@@ -529,6 +529,7 @@ export function registerPosCashRoutes(app: Express) {
           cashSalesCents,
           cashRefundsCents,
           drawdownCents,
+          expensesCents,
           expectedCashCents,
           countedCashCents,
           varianceCents,
