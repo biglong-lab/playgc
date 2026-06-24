@@ -222,6 +222,7 @@ export function registerPosCashRoutes(app: Express) {
         cashSalesCents,
         cashRefundsCents,
         todayDrawdownsCents: todayDrawdowns,
+        todayExpensesCents: todayExpenses,
         settlement,
         locked: !!settlement?.locked,
         stage,
