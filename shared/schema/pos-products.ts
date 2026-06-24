@@ -184,6 +184,29 @@ export const posCashDrawdowns = pgTable(
   (t) => [index("idx_pos_cash_drawdown_field_date").on(t.fieldId, t.businessDate)],
 );
 
+// ── 現金支出（現場用抽屜現金付的採購/雜支，扣櫃檯現金）2026-06-24 ──
+// 軟刪除（與其他 POS 帳務一致：刪除需原因、進垃圾桶）。
+export const posExpenses = pgTable(
+  "pos_expenses",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    fieldId: varchar("field_id").notNull(),
+    businessDate: varchar("business_date", { length: 10 }).notNull(),
+    /** 分類（預設標籤或自訂）*/
+    category: varchar("category", { length: 40 }).notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    note: text("note"),
+    spentBy: varchar("spent_by").notNull(),
+    spentByName: varchar("spent_by_name"),
+    spentAt: timestamp("spent_at").defaultNow(),
+    // 軟刪除
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: varchar("deleted_by"),
+    deleteReason: text("delete_reason"),
+  },
+  (t) => [index("idx_pos_expense_field_date").on(t.fieldId, t.businessDate)],
+);
+
 // ── 每日結帳閉環（開帳→記帳→結帳）─────────────────
 // 結帳確認後即鎖當日（locked=true）；actualCashCents 成為隔日開帳對帳基礎。
 export const posDailySettlements = pgTable(
