@@ -185,12 +185,13 @@ async function computeExpected(
     const drawn = await drawdownsSince(identifiers, lc.countedAt ?? undefined);
     return Math.max(0, base - drawn);
   }
-  // closing：今日 opening + 現金收 − 現金退 − 今日(開班後)清帳
+  // closing：今日 opening + 現金收 − 現金退 − 今日(開班後)清帳 − 今日現金支出
   const opening = await getCount(identifiers, date, "opening");
   const openingCents = opening ? opening.adjustmentCents ?? opening.countedCents : 0;
   const { cashSalesCents, cashRefundsCents } = await cashFlows(identifiers, date);
   const drawnAfterOpen = await drawdownsSince(identifiers, opening?.countedAt ?? taipeiDateRange(date).start);
-  return Math.max(0, openingCents + cashSalesCents - cashRefundsCents - drawnAfterOpen);
+  const expenses = await expensesForDate(identifiers, date);
+  return Math.max(0, openingCents + cashSalesCents - cashRefundsCents - drawnAfterOpen - expenses);
 }
 
 export function registerPosCashRoutes(app: Express) {
