@@ -596,6 +596,18 @@ export function registerPosRoutes(app: Express) {
     }
   });
 
+  // 🆕 2026-06-24 手動重發今日預約晨報（含所有項目 + 統計）
+  app.post("/api/pos/bookings/resend-today-report", requireAdminAuth, async (req, res) => {
+    try {
+      const { sendTodayBookingsReport } = await import("../booking/today-bookings-cron");
+      await sendTodayBookingsReport();
+      res.json({ ok: true });
+    } catch (e) {
+      console.error("[pos] resend today report 失敗:", e);
+      res.status(500).json({ error: "internal_error" });
+    }
+  });
+
   // 🆕 2026-06-23 編輯預約（改人數/姓名/電話）— 今日+未來皆可，含稽核前後差異
   app.patch("/api/pos/bookings/:bookingCode", requireAdminAuth, async (req, res) => {
     try {
