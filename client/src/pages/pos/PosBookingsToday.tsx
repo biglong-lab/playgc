@@ -144,8 +144,18 @@ export default function PosBookingsToday() {
   return (
     <PosLayout title="今日預約" backTo="/pos">
       {/* 🆕 人工預約 */}
-      <Button className="w-full mb-3" onClick={() => { setBindLink(""); setManualOpen(true); }} data-testid="btn-pos-manual-booking">
+      <Button className="w-full mb-2" onClick={() => { setBindLink(""); setManualOpen(true); }} data-testid="btn-pos-manual-booking">
         <Plus className="w-4 h-4 mr-1" />人工預約（電話 / 現場）
+      </Button>
+      {/* 🆕 2026-06-24 重發今日預約晨報（含所有項目+統計）*/}
+      <Button
+        variant="outline"
+        className="w-full mb-3 text-xs"
+        onClick={() => resendReport.mutate()}
+        disabled={resendReport.isPending}
+        data-testid="btn-resend-today-report"
+      >
+        {resendReport.isPending ? "推播中…" : "📣 重發今日預約到群組"}
       </Button>
 
       {/* 🆕 今日 / 未來 切換 */}
