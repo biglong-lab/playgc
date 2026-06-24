@@ -220,6 +220,7 @@ export const posDailySettlements = pgTable(
     cashSalesCents: integer("cash_sales_cents").notNull().default(0),
     cashRefundsCents: integer("cash_refunds_cents").notNull().default(0),
     drawdownCents: integer("drawdown_cents").notNull().default(0),
+    expensesCents: integer("expenses_cents").notNull().default(0),
     expectedCashCents: integer("expected_cash_cents").notNull().default(0),
     countedCashCents: integer("counted_cash_cents").notNull().default(0),
     varianceCents: integer("variance_cents").notNull().default(0),
