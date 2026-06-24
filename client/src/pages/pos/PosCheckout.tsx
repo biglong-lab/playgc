@@ -6,7 +6,7 @@
 // 流程：填金額 → 選付款方式 → 確認 → POST /api/pos/checkout → 成功頁
 
 import { useState, useEffect } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import PosLayout from "./PosLayout";
 import { Card, CardContent } from "@/components/ui/card";
