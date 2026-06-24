@@ -503,7 +503,8 @@ export function registerPosCashRoutes(app: Express) {
         .from(posCashDrawdowns)
         .where(and(inArray(posCashDrawdowns.fieldId, scope.identifiers), gte(posCashDrawdowns.drawdownAt, start), lte(posCashDrawdowns.drawdownAt, end)));
       const drawdownCents = ddAgg?.cents ?? 0;
-      const expectedCashCents = Math.max(0, openingCents + cashSalesCents - cashRefundsCents - drawdownCents);
+      const expensesCents = await expensesForDate(scope.identifiers, date);
+      const expectedCashCents = Math.max(0, openingCents + cashSalesCents - cashRefundsCents - drawdownCents - expensesCents);
       const varianceCents = countedCashCents - expectedCashCents;
       const actualCashCents = Math.max(0, countedCashCents - drawdownCents);
       const reason = typeof req.body?.varianceReason === "string" ? req.body.varianceReason : null;
