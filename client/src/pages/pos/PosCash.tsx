@@ -446,6 +446,80 @@ export default function PosCash() {
       )}
 
       {/* 清帳（僅 cash admin）*/}
+      {/* 💸 現金支出（現場可記，扣櫃檯現金）*/}
+      {!locked && (
+        <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
+          <div className="font-semibold text-sm mb-2">💸 現金支出（採購/雜支，扣抽屜現金）</div>
+          <div className="flex flex-wrap gap-1 mb-2">
+            {["補貨/材料", "維修/清潔", "雜支/其他"].map((c) => (
+              <button
+                key={c}
+                onClick={() => setExpCat(c)}
+                data-testid={`exp-cat-${c}`}
+                className={`px-2 py-1 rounded-full text-xs ${expCat === c ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <input
+            value={expCat}
+            onChange={(e) => setExpCat(e.target.value)}
+            placeholder="分類（可自訂，如：飲料、瓦斯）"
+            data-testid="exp-cat-text"
+            className="w-full px-3 py-2 rounded-lg border bg-background text-sm mb-2"
+          />
+          <div className="flex gap-2">
+            <input
+              type="number"
+              inputMode="numeric"
+              value={expAmount}
+              onChange={(e) => setExpAmount(e.target.value)}
+              placeholder="金額（元）"
+              data-testid="exp-amount"
+              className="flex-1 min-w-0 px-3 py-2 rounded-lg border bg-background text-base"
+            />
+            <Button
+              onClick={() => addExpense.mutate()}
+              disabled={addExpense.isPending || !(Number(expAmount) > 0) || !expCat.trim()}
+              data-testid="exp-submit"
+            >
+              記支出
+            </Button>
+          </div>
+          <input
+            value={expNote}
+            onChange={(e) => setExpNote(e.target.value)}
+            placeholder="說明（選填，如：買水 2 箱）"
+            className="mt-2 w-full px-3 py-2 rounded-lg border bg-background text-sm"
+          />
+          {/* 今日支出清單 */}
+          {(expData?.expenses ?? []).length > 0 && (
+            <div className="mt-3 pt-2 border-t space-y-1.5">
+              <div className="text-xs text-muted-foreground">今日支出合計 −{NT(expData?.totalCents ?? 0)}</div>
+              {(expData?.expenses ?? []).map((x) => (
+                <div key={x.id} className="flex justify-between items-center gap-2 text-sm">
+                  <span className="min-w-0">
+                    <span className="font-medium">{x.category}</span>
+                    <span className="text-muted-foreground text-xs"> · {x.spentByName ?? "—"}{x.note ? `・${x.note}` : ""}</span>
+                  </span>
+                  <span className="flex items-center gap-2 shrink-0">
+                    <span className="tabular-nums">−{NT(x.amountCents)}</span>
+                    <button
+                      onClick={() => { const r = prompt("刪除原因（必填）"); if (r && r.trim().length >= 2) delExpense.mutate({ id: x.id, reason: r.trim() }); }}
+                      className="text-xs text-red-500"
+                      data-testid={`exp-del-${x.id}`}
+                    >
+                      刪
+                    </button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {today?.canCashAdmin && !locked && (
         <div className="rounded-xl border bg-amber-50 dark:bg-amber-950/20 p-3 mb-3">
           <div className="font-semibold text-sm mb-2">💵 清帳（取走現金）</div>
