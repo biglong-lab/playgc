@@ -41,6 +41,11 @@ async function runOnce(dateStr: string): Promise<void> {
   const fieldId = process.env.TELEGRAM_GAME_NOTIFY_FIELD_ID;
   if (!fieldId) return;
 
+  // 🐛 2026-06-24 修復：bookings.field_id 歷史上混存 UUID 或 code → 須同時比對兩者
+  //   （與 resolveFieldScope 同慣例），否則只用 UUID 過濾會漏掉存 code 的預約。
+  const [field] = await db.select({ id: fields.id, code: fields.code }).from(fields).where(or(eq(fields.id, fieldId), eq(fields.code, fieldId))).limit(1);
+  const identifiers = Array.from(new Set([fieldId, field?.id, field?.code].filter(Boolean) as string[]));
+
   // 今日（Taipei）confirmed/pending 預約，依時間排序
   const rows = await db
     .select({
@@ -53,7 +58,7 @@ async function runOnce(dateStr: string): Promise<void> {
     .leftJoin(activities, eq(activities.id, bookings.activityId))
     .where(
       and(
-        eq(bookings.fieldId, fieldId),
+        inArray(bookings.fieldId, identifiers),
         sql`${bookings.status} IN ('confirmed', 'pending')`,
         sql`(${bookings.slotStart} AT TIME ZONE 'Asia/Taipei')::date = (NOW() AT TIME ZONE 'Asia/Taipei')::date`,
       ),
