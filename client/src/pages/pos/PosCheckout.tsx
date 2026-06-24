@@ -228,8 +228,22 @@ export default function PosCheckout() {
   };
 
   return (
-    <PosLayout title="現金收款" backTo={returnTo ?? (bookingId ? "/pos/bookings/today" : "/pos")}>
+    <PosLayout title="收支" backTo={returnTo ?? (bookingId ? "/pos/bookings/today" : "/pos")}>
       <div className="space-y-3">
+        {/* 🆕 2026-06-24 收款 / 支出 切換 */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant={flow === "income" ? "default" : "outline"} onClick={() => setFlow("income")} data-testid="flow-income">
+            💰 收款
+          </Button>
+          <Button variant={flow === "expense" ? "default" : "outline"} onClick={() => setFlow("expense")} data-testid="flow-expense">
+            💸 支出
+          </Button>
+        </div>
+
+        {flow === "expense" ? (
+          <ExpensePanel />
+        ) : (
+        <>
         {/* 綁定預約資訊 */}
         {booking && (
           <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200">
