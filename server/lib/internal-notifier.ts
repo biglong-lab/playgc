@@ -232,12 +232,29 @@ export function notifyTodayBookings(opts: {
     sendToFieldGroup(`☀️ *今日預約 · ${opts.dateLabel}*\n\n今天目前沒有預約`, true);
     return;
   }
-  const lines = [`☀️ *今日預約 · ${opts.dateLabel}*`, `共 ${opts.bookings.length} 組`, ``];
+  const totalGroups = opts.bookings.length;
+  const totalPeople = opts.bookings.reduce((s, b) => s + (b.partySize ?? 0), 0);
+  const lines = [`☀️ *今日預約 · ${opts.dateLabel}*`, `共 ${totalGroups} 組 / ${totalPeople} 人`, ``];
   for (const b of opts.bookings) {
     lines.push(
       `• ${b.timeStr} · ${b.displayName} · ${b.partySize} 人` +
         (b.activityName ? ` · ${b.activityName}` : ""),
     );
+  }
+  // 📊 各項目統計（依活動名分組，未掛活動歸「其他/定點」）
+  const byActivity = new Map<string, { groups: number; people: number }>();
+  for (const b of opts.bookings) {
+    const key = b.activityName || "其他/定點";
+    const cur = byActivity.get(key) ?? { groups: 0, people: 0 };
+    cur.groups += 1;
+    cur.people += b.partySize ?? 0;
+    byActivity.set(key, cur);
+  }
+  if (byActivity.size > 0) {
+    lines.push(``, `📊 *項目統計*`);
+    for (const [name, s] of byActivity) {
+      lines.push(`· ${name}：${s.groups} 組 / ${s.people} 人`);
+    }
   }
   sendToFieldGroup(lines.join("\n"));
 }
