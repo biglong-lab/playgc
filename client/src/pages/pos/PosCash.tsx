@@ -193,33 +193,6 @@ export default function PosCash() {
     onError: (e: Error) => toast({ variant: "destructive", title: "調整失敗", description: e.message }),
   });
 
-  const addExpense = useMutation({
-    mutationFn: () =>
-      fetchWithAdminAuth("/api/pos/expenses", {
-        method: "POST",
-        body: JSON.stringify({ category: expCat, amountCents: Math.round(Number(expAmount) * 100), note: expNote || undefined }),
-      }),
-    onSuccess: () => {
-      toast({ title: "✅ 已記支出" });
-      setExpAmount("");
-      setExpCat("");
-      setExpNote("");
-      qc.invalidateQueries({ queryKey: ["pos-expenses-today"] });
-      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
-    },
-    onError: (e: Error) => toast({ variant: "destructive", title: "記支出失敗", description: e.message }),
-  });
-  const delExpense = useMutation({
-    mutationFn: (v: { id: string; reason: string }) =>
-      fetchWithAdminAuth(`/api/pos/expenses/${v.id}/delete`, { method: "POST", body: JSON.stringify({ reason: v.reason }) }),
-    onSuccess: () => {
-      toast({ title: "已刪除支出" });
-      qc.invalidateQueries({ queryKey: ["pos-expenses-today"] });
-      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
-    },
-    onError: (e: Error) => toast({ variant: "destructive", title: "刪除失敗", description: e.message }),
-  });
-
   const pendingVariances = (history?.counts ?? []).filter((c) => c.varianceStatus === "pending");
   const locked = !!today?.locked;
   const stage = today?.stage ?? "not_started";
