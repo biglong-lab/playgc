@@ -518,6 +518,8 @@ export default function PosCheckout() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </>
+        )}
       </div>
     </PosLayout>
   );
