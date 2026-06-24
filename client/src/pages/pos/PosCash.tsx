@@ -97,6 +97,9 @@ export default function PosCash() {
   const [mode, setMode] = useState<"opening" | "closing" | null>(null);
   const [drawAmount, setDrawAmount] = useState("");
   const [drawReason, setDrawReason] = useState("");
+  const [expAmount, setExpAmount] = useState("");
+  const [expCat, setExpCat] = useState("");
+  const [expNote, setExpNote] = useState("");
 
   const { data: today } = useQuery<Today>({
     queryKey: ["pos-cash-today"],
