@@ -143,6 +143,7 @@ export default function PosReports() {
             <CardContent className="py-2 px-3">
               <Row label="開班清點" value={cash.openingCents !== null ? money(cash.openingCents) : "—"} />
               <Row label="現金收款 / 退款" value={`${money(cash.cashSalesCents)} / ${money(cash.cashRefundsCents)}`} />
+              <Row label="現金支出" value={cash.expensesCents > 0 ? `−${money(cash.expensesCents)}` : "—"} />
               <Row label="下班結算" value={cash.closingCents !== null ? money(cash.closingCents) : "—"} />
               <Row label="清帳取走" value={cash.drawdownCents > 0 ? `−${money(cash.drawdownCents)}` : "—"} />
               <Row label="櫃檯實際現金" value={cash.actualCashCents !== null ? money(cash.actualCashCents) : "—"} />
