@@ -37,6 +37,12 @@ function taipeiNow(): { hour: number; minute: number; dateStr: string } {
   };
 }
 
+/** 手動重發今日預約晨報（給 admin 端點呼叫）*/
+export async function sendTodayBookingsReport(): Promise<void> {
+  const { dateStr } = taipeiNow();
+  await runOnce(dateStr);
+}
+
 async function runOnce(dateStr: string): Promise<void> {
   const fieldId = process.env.TELEGRAM_GAME_NOTIFY_FIELD_ID;
   if (!fieldId) return;
