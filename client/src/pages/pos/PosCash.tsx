@@ -310,6 +310,7 @@ export default function PosCash() {
           <Row label="開班清點" value={today.opening ? NT(today.opening.adjustmentCents ?? today.opening.countedCents) : "—"} />
           <Row label="現金收款" value={NT(today.cashSalesCents)} />
           <Row label="現金退款" value={`−${NT(today.cashRefundsCents)}`} />
+          <Row label="今日支出" value={`−${NT(today.todayExpensesCents)}`} />
           <Row label="今日清帳" value={`−${NT(today.todayDrawdownsCents)}`} />
           <Row label="下班結算" value={today.closing ? NT(today.closing.adjustmentCents ?? today.closing.countedCents) : "—"} bold />
         </div>
