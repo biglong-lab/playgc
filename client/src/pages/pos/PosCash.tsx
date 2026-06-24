@@ -43,6 +43,7 @@ interface Settlement {
   cashSalesCents: number;
   cashRefundsCents: number;
   drawdownCents: number;
+  expensesCents: number;
   expectedCashCents: number;
   countedCashCents: number;
   varianceCents: number;
