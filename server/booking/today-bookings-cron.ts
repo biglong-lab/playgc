@@ -7,8 +7,8 @@
 // 啟動位置：server/index.ts startup
 
 import { db } from "../db";
-import { bookings, activities } from "@shared/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { bookings, activities, fields } from "@shared/schema";
+import { eq, and, sql, inArray, or } from "drizzle-orm";
 import { notifyTodayBookings } from "../lib/internal-notifier";
 
 const CHECK_INTERVAL_MS = 60_000; // 每分鐘檢查是否到點
