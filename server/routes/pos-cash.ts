@@ -207,6 +207,7 @@ export function registerPosCashRoutes(app: Express) {
       const closingExpected = await computeExpected(scope.identifiers, date, "closing");
       const { cashSalesCents, cashRefundsCents } = await cashFlows(scope.identifiers, date);
       const todayDrawdowns = await drawdownsSince(scope.identifiers, taipeiDateRange(date).start);
+      const todayExpenses = await expensesForDate(scope.identifiers, date);
       const settlement = await getSettlement(scope.identifiers, date);
       const canCashAdmin =
         req.admin!.systemRole === "super_admin" || req.admin!.permissions.includes("pos_cash_admin");
