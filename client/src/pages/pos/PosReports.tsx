@@ -53,6 +53,7 @@ interface CashSummary {
   cashSalesCents: number;
   cashRefundsCents: number;
   drawdownCents: number;
+  expensesCents: number;
   actualCashCents: number | null;
 }
 interface Status {
