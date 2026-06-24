@@ -95,6 +95,21 @@ async function drawdownsSince(identifiers: string[], after?: Date): Promise<numb
   return agg?.cents ?? 0;
 }
 
+/** 某日現金支出總額（分，排除已軟刪除）*/
+async function expensesForDate(identifiers: string[], dateStr: string): Promise<number> {
+  const [agg] = await db
+    .select({ cents: sql<number>`COALESCE(SUM(${posExpenses.amountCents}),0)::int` })
+    .from(posExpenses)
+    .where(
+      and(
+        inArray(posExpenses.fieldId, identifiers),
+        eq(posExpenses.businessDate, dateStr),
+        sql`${posExpenses.deletedAt} IS NULL`,
+      ),
+    );
+  return agg?.cents ?? 0;
+}
+
 /** 取某 fieldId 最近一次 closing 清點（用於 opening 對帳基準）*/
 async function lastClosing(identifiers: string[], beforeDate: string) {
   const [row] = await db
