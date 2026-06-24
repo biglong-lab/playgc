@@ -690,4 +690,106 @@ export function registerPosCashRoutes(app: Express) {
       fail(res, e);
     }
   });
+
+  // ── POST 記現金支出（現場執行者可記）──────────────
+  app.post("/api/pos/expenses", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const { category, amountCents, note } = req.body ?? {};
+      const cat = typeof category === "string" ? category.trim().slice(0, 40) : "";
+      const amount = Math.round(Number(amountCents));
+      if (!cat) return res.status(400).json({ error: "category_required", message: "請選擇或填寫支出分類" });
+      if (!Number.isFinite(amount) || amount <= 0) return res.status(400).json({ error: "bad_amount", message: "金額需大於 0" });
+      const { date } = getTodayRange();
+      // 已結帳鎖定 → 不可再記當日支出（避免影響已鎖帳）
+      const settled = await getSettlement(scope.identifiers, date);
+      if (settled) return res.status(409).json({ error: "locked", message: "當日已結帳鎖定，無法再記支出" });
+      const [row] = await db
+        .insert(posExpenses)
+        .values({
+          fieldId: scope.id,
+          businessDate: date,
+          category: cat,
+          amountCents: amount,
+          note: typeof note === "string" ? note.slice(0, 200) : null,
+          spentBy: req.admin!.id,
+          spentByName: req.admin!.displayName ?? req.admin!.username,
+        })
+        .returning();
+      await logAuditAction({
+        actorAdminId: req.admin!.id,
+        action: "pos:expense_add",
+        targetType: "pos_expense",
+        targetId: row.id,
+        fieldId: scope.id,
+        metadata: { date, category: cat, amountCents: amount, note },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ ok: true, expense: row });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
+
+  // ── GET 支出清單（某日，排除已刪除）────────────────
+  app.get("/api/pos/expenses", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const date = (req.query.date as string) || getTodayRange().date;
+      const rows = await db
+        .select()
+        .from(posExpenses)
+        .where(
+          and(
+            inArray(posExpenses.fieldId, scope.identifiers),
+            eq(posExpenses.businessDate, date),
+            sql`${posExpenses.deletedAt} IS NULL`,
+          ),
+        )
+        .orderBy(desc(posExpenses.spentAt));
+      const totalCents = rows.reduce((s, r) => s + r.amountCents, 0);
+      res.json({ expenses: rows, totalCents });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
+
+  // ── POST 支出軟刪除（需原因，進垃圾桶）─────────────
+  app.post("/api/pos/expenses/:id/delete", requireAdminAuth, async (req, res) => {
+    try {
+      const scope = await resolveFieldScope(req);
+      if (!scope) return res.status(400).json({ error: "no_field" });
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+      if (reason.length < 2) return res.status(400).json({ error: "reason_required", message: "請填刪除原因" });
+      // 已結帳鎖定 → 不可刪（避免影響已鎖帳）
+      const { date } = getTodayRange();
+      const settled = await getSettlement(scope.identifiers, date);
+      const [target] = await db.select().from(posExpenses).where(eq(posExpenses.id, req.params.id)).limit(1);
+      if (settled && target && target.businessDate === date) {
+        return res.status(409).json({ error: "locked", message: "當日已結帳鎖定，無法刪除支出" });
+      }
+      const [updated] = await db
+        .update(posExpenses)
+        .set({ deletedAt: new Date(), deletedBy: req.admin!.id, deleteReason: reason })
+        .where(and(eq(posExpenses.id, req.params.id), inArray(posExpenses.fieldId, scope.identifiers), sql`${posExpenses.deletedAt} IS NULL`))
+        .returning();
+      if (!updated) return res.status(404).json({ error: "not_found" });
+      await logAuditAction({
+        actorAdminId: req.admin!.id,
+        action: "pos:expense_delete",
+        targetType: "pos_expense",
+        targetId: updated.id,
+        fieldId: scope.id,
+        metadata: { reason, amountCents: updated.amountCents, category: updated.category },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ ok: true });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
 }
