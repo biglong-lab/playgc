@@ -73,10 +73,19 @@ interface Today {
   cashSalesCents: number;
   cashRefundsCents: number;
   todayDrawdownsCents: number;
+  todayExpensesCents: number;
   settlement: Settlement | null;
   locked: boolean;
   stage: "not_started" | "open" | "closing_done" | "settled";
   canCashAdmin: boolean;
+}
+interface Expense {
+  id: string;
+  category: string;
+  amountCents: number;
+  note: string | null;
+  spentByName: string | null;
+  spentAt: string;
 }
 
 export default function PosCash() {
