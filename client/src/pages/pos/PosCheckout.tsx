@@ -526,3 +526,111 @@ export default function PosCheckout() {
     </PosLayout>
   );
 }
+
+// 💸 支出面板（記現金支出，扣櫃檯現金；2026-06-24 從現金頁移到收支頁）
+const NTX = (c: number) => `NT$${Math.round(c / 100).toLocaleString()}`;
+const EXP_CATS = ["補貨/材料", "維修/清潔", "雜支/其他"];
+interface ExpenseItem {
+  id: string;
+  category: string;
+  amountCents: number;
+  note: string | null;
+  spentByName: string | null;
+}
+function ExpensePanel() {
+  const { toast } = useToast();
+  const qc = useQueryClient();
+  const [cat, setCat] = useState("");
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const { data } = useQuery<{ expenses: ExpenseItem[]; totalCents: number }>({
+    queryKey: ["pos-expenses-today"],
+    queryFn: () => fetchWithAdminAuth("/api/pos/expenses"),
+  });
+  const add = useMutation({
+    mutationFn: () =>
+      fetchWithAdminAuth("/api/pos/expenses", {
+        method: "POST",
+        body: JSON.stringify({ category: cat, amountCents: Math.round(Number(amount) * 100), note: note || undefined }),
+      }),
+    onSuccess: () => {
+      toast({ title: "✅ 已記支出" });
+      setCat(""); setAmount(""); setNote("");
+      qc.invalidateQueries({ queryKey: ["pos-expenses-today"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "記支出失敗", description: e.message }),
+  });
+  const del = useMutation({
+    mutationFn: (v: { id: string; reason: string }) =>
+      fetchWithAdminAuth(`/api/pos/expenses/${v.id}/delete`, { method: "POST", body: JSON.stringify({ reason: v.reason }) }),
+    onSuccess: () => {
+      toast({ title: "已刪除支出" });
+      qc.invalidateQueries({ queryKey: ["pos-expenses-today"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "刪除失敗", description: e.message }),
+  });
+  return (
+    <Card>
+      <CardContent className="py-3 px-3 space-y-3">
+        <p className="text-sm text-muted-foreground">現金支出（採購/雜支），扣抽屜現金、納入當日結帳對帳。</p>
+        <div>
+          <Label className="text-xs">分類 *</Label>
+          <div className="flex flex-wrap gap-1 mt-1">
+            {EXP_CATS.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCat(c)}
+                data-testid={`exp-cat-${c}`}
+                className={`px-2 py-1 rounded-full text-xs ${cat === c ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <Input value={cat} onChange={(e) => setCat(e.target.value)} placeholder="可自訂（如：飲料、瓦斯）" className="mt-2" data-testid="exp-cat-text" />
+        </div>
+        <div>
+          <Label className="text-xs">金額（元）*</Label>
+          <Input type="number" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" data-testid="exp-amount" />
+        </div>
+        <div>
+          <Label className="text-xs">說明（選填）</Label>
+          <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="如：買水彈 2 箱" data-testid="exp-note" />
+        </div>
+        <Button
+          className="w-full h-12"
+          onClick={() => add.mutate()}
+          disabled={add.isPending || !(Number(amount) > 0) || !cat.trim()}
+          data-testid="exp-submit"
+        >
+          💸 記錄支出 {Number(amount) > 0 ? NTX(Math.round(Number(amount) * 100)) : ""}
+        </Button>
+        {(data?.expenses ?? []).length > 0 && (
+          <div className="pt-2 border-t space-y-1.5">
+            <div className="text-xs text-muted-foreground">今日支出合計 −{NTX(data?.totalCents ?? 0)}</div>
+            {(data?.expenses ?? []).map((x) => (
+              <div key={x.id} className="flex justify-between items-center gap-2 text-sm">
+                <span className="min-w-0">
+                  <span className="font-medium">{x.category}</span>
+                  <span className="text-muted-foreground text-xs"> · {x.spentByName ?? "—"}{x.note ? `・${x.note}` : ""}</span>
+                </span>
+                <span className="flex items-center gap-2 shrink-0">
+                  <span className="tabular-nums">−{NTX(x.amountCents)}</span>
+                  <button
+                    onClick={() => { const r = prompt("刪除原因（必填）"); if (r && r.trim().length >= 2) del.mutate({ id: x.id, reason: r.trim() }); }}
+                    className="text-xs text-red-500"
+                    data-testid={`exp-del-${x.id}`}
+                  >
+                    刪
+                  </button>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
