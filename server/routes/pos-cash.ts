@@ -563,6 +563,7 @@ export function registerPosCashRoutes(app: Express) {
           `*櫃檯現金*`,
           `· 開帳：${NT(openingCents)}　現金收：${NT(cashSalesCents)}`,
           `· 現金退：${NT(cashRefundsCents)}　清帳：${NT(drawdownCents)}`,
+          `· 現金支出：${NT(expensesCents)}`,
           `· 預期：${NT(expectedCashCents)}　實點：${NT(countedCashCents)}`,
           varianceCents !== 0 ? `· ⚠️ 差異：${varianceCents > 0 ? "溢" : "短"}${NT(Math.abs(varianceCents))}（${reason}）` : `· 差異：無`,
           `· 櫃檯實際現金：${NT(actualCashCents)}（隔日開帳基礎）`,
