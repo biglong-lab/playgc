@@ -186,12 +186,14 @@ async function computeExpected(
     const drawn = await drawdownsSince(identifiers, lc.countedAt ?? undefined);
     return Math.max(0, base - drawn);
   }
-  // closing：今日 opening + 現金收 − 現金退 − 今日(開班後)清帳 − 今日現金支出
+  // closing：opening + (開帳後的現金收 − 退 − 清帳 − 支出)
+  // ⚠️ 全部以「開帳時間點之後」為窗，因 opening 點鈔已反映當下抽屜（含先前異動），避免重複計
   const opening = await getCount(identifiers, date, "opening");
   const openingCents = opening ? opening.adjustmentCents ?? opening.countedCents : 0;
-  const { cashSalesCents, cashRefundsCents } = await cashFlows(identifiers, date);
-  const drawnAfterOpen = await drawdownsSince(identifiers, opening?.countedAt ?? taipeiDateRange(date).start);
-  const expenses = await expensesForDate(identifiers, date);
+  const since = opening?.countedAt ?? taipeiDateRange(date).start;
+  const { cashSalesCents, cashRefundsCents } = await cashFlows(identifiers, date, since);
+  const drawnAfterOpen = await drawdownsSince(identifiers, since);
+  const expenses = await expensesForDate(identifiers, date, since);
   return Math.max(0, openingCents + cashSalesCents - cashRefundsCents - drawnAfterOpen - expenses);
 }
 
