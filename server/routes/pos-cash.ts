@@ -54,9 +54,10 @@ function sumDenominations(denoms: Record<string, number>): number {
   return cents;
 }
 
-/** 某日現金收款 / 現金退款（分）*/
-async function cashFlows(identifiers: string[], dateStr: string) {
+/** 某日現金收款 / 現金退款（分）；after 指定時間後（對齊開帳時間點，避免重複計）*/
+async function cashFlows(identifiers: string[], dateStr: string, after?: Date) {
   const { start, end } = taipeiDateRange(dateStr);
+  const from = after && after > start ? after : start;
   const [salesAgg] = await db
     .select({ cents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}),0)::int` })
     .from(posTransactions)
@@ -64,7 +65,7 @@ async function cashFlows(identifiers: string[], dateStr: string) {
       and(
         inArray(posTransactions.fieldId, identifiers),
         eq(posTransactions.paymentMethod, "cash"),
-        gte(posTransactions.createdAt, start),
+        gte(posTransactions.createdAt, from),
         lte(posTransactions.createdAt, end),
         sql`${posTransactions.deletedAt} IS NULL`,
       ),
@@ -77,7 +78,7 @@ async function cashFlows(identifiers: string[], dateStr: string) {
         inArray(refunds.fieldId, identifiers),
         eq(refunds.refundMethod, "cash"),
         eq(refunds.status, "completed"),
-        gte(refunds.createdAt, start),
+        gte(refunds.createdAt, from),
         lte(refunds.createdAt, end),
       ),
     );
