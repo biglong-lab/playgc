@@ -252,7 +252,7 @@ export function notifyTodayBookings(opts: {
   }
   if (byActivity.size > 0) {
     lines.push(``, `📊 *項目統計*`);
-    for (const [name, s] of byActivity) {
+    for (const [name, s] of Array.from(byActivity.entries())) {
       lines.push(`· ${name}：${s.groups} 組 / ${s.people} 人`);
     }
   }
