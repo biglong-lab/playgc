@@ -501,14 +501,16 @@ export function registerPosCashRoutes(app: Express) {
 
       const openingCents = opening ? opening.adjustmentCents ?? opening.countedCents : 0;
       const countedCashCents = closing.adjustmentCents ?? closing.countedCents;
-      const { cashSalesCents, cashRefundsCents } = await cashFlows(scope.identifiers, date);
       const { start, end } = taipeiDateRange(date);
+      // ⚠️ 與 computeExpected 一致：全部以「開帳時間點之後」為窗，避免與 today 顯示的預期不符
+      const since = opening?.countedAt ?? start;
+      const { cashSalesCents, cashRefundsCents } = await cashFlows(scope.identifiers, date, since);
       const [ddAgg] = await db
         .select({ cents: sql<number>`COALESCE(SUM(${posCashDrawdowns.amountCents}),0)::int` })
         .from(posCashDrawdowns)
-        .where(and(inArray(posCashDrawdowns.fieldId, scope.identifiers), gte(posCashDrawdowns.drawdownAt, start), lte(posCashDrawdowns.drawdownAt, end)));
+        .where(and(inArray(posCashDrawdowns.fieldId, scope.identifiers), gte(posCashDrawdowns.drawdownAt, since), lte(posCashDrawdowns.drawdownAt, end)));
       const drawdownCents = ddAgg?.cents ?? 0;
-      const expensesCents = await expensesForDate(scope.identifiers, date);
+      const expensesCents = await expensesForDate(scope.identifiers, date, since);
       const expectedCashCents = Math.max(0, openingCents + cashSalesCents - cashRefundsCents - drawdownCents - expensesCents);
       const varianceCents = countedCashCents - expectedCashCents;
       const actualCashCents = Math.max(0, countedCashCents - drawdownCents);
