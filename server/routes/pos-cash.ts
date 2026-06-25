@@ -96,18 +96,18 @@ async function drawdownsSince(identifiers: string[], after?: Date): Promise<numb
   return agg?.cents ?? 0;
 }
 
-/** 某日現金支出總額（分，排除已軟刪除）*/
-async function expensesForDate(identifiers: string[], dateStr: string): Promise<number> {
+/** 某日現金支出總額（分，排除已軟刪除）；after 指定時間後（對齊開帳時間點）*/
+async function expensesForDate(identifiers: string[], dateStr: string, after?: Date): Promise<number> {
+  const conds = [
+    inArray(posExpenses.fieldId, identifiers),
+    eq(posExpenses.businessDate, dateStr),
+    sql`${posExpenses.deletedAt} IS NULL`,
+  ];
+  if (after) conds.push(gte(posExpenses.spentAt, after));
   const [agg] = await db
     .select({ cents: sql<number>`COALESCE(SUM(${posExpenses.amountCents}),0)::int` })
     .from(posExpenses)
-    .where(
-      and(
-        inArray(posExpenses.fieldId, identifiers),
-        eq(posExpenses.businessDate, dateStr),
-        sql`${posExpenses.deletedAt} IS NULL`,
-      ),
-    );
+    .where(and(...conds));
   return agg?.cents ?? 0;
 }
 
