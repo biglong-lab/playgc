@@ -35,5 +35,18 @@
 - 全程 Playwright e2e + API e2e（避免測試推播污染群組，用直接 SQL 建測試資料）
 - 預約編輯、收支切換、支出扣現金對帳、晨報雙組+統計、推播去重 均通過
 
+## 5. 下班結帳卡關修復（2026-06-25）
+- **症狀**：清點紀錄都有保留，但下班結帳一直回 400「請填差異原因」，無法結帳
+- **根因**：結帳算式「時間窗」不一致
+  - `computeExpected("closing")`（前端顯示用）只扣「開帳時間點之後」的清帳 → 預期 550,400、差異 0
+  - `settle`（結帳）卻扣「整天」清帳 → 當日有 NT$15,000 清帳 + 使用者重新點過開帳（開帳在清帳之後）→ 預期被算成 0、差異 55 萬 → need_reason → 400
+  - 前端說沒差異不帶原因、後端說有差異要原因 → 互相矛盾結不了帳
+- **修**：`settle` 與 `computeExpected` 統一用「開帳時間點(opening.countedAt)之後」的現金收/退/清帳/支出窗
+  - `cashFlows` / `expensesForDate` 加 `after` 參數；settle 改用 `since = opening.countedAt`
+  - 概念：opening 點鈔已反映當下抽屜（含先前所有異動），只算開帳後的異動才不會重複計
+- 順手修 `internal-notifier` Map 迭代 `downlevelIteration` tsc 錯（改 Array.from）
+- 驗證：生產實測 開帳 550,400 → 下班 550,400 → 預期 550,400 差異 0 → 結帳 200 成功
+- commit `e8884ffb`
+
 ## 相關
 - [2026-06-22-pos-cash-management](2026-06-22-pos-cash-management.md)（現金管理閉環）
