@@ -5,6 +5,17 @@
 
 ---
 
+## 2026-06-25
+
+### 🐛 下班結帳 need_reason 卡關修復（fix）
+**狀態**：🟢 部署上線（commit `e8884ffb`）
+**細節** → [changes/2026-06-24-pos-expense-booking-edit-notify.md](changes/2026-06-24-pos-expense-booking-edit-notify.md#5-下班結帳卡關修復2026-06-25)
+
+- 症狀：清點都有保留，但下班結帳一直 400「請填差異原因」，結不了帳
+- 根因：結帳算式時間窗不一致 — 前端預期只算「開帳後」清帳，後端結帳卻扣「整天」清帳（當日有清帳 NT$15,000 + 重新點開帳 → 重複計）
+- 修：settle 與 computeExpected 統一用「開帳時間點之後」的現金收/退/清帳/支出，避免重複計
+- 順手修 internal-notifier Map 迭代 downlevelIteration tsc 錯
+
 ## 2026-06-24
 
 ### 🧾 POS 收支/支出 + 預約編輯 + 晨報修復 + 推播整治（feat/fix）
