@@ -236,6 +236,8 @@ export default function PosSummary() {
               .map((t) => {
                 const time = new Date(t.createdAt);
                 const timeStr = `${String(time.getHours()).padStart(2, "0")}:${String(time.getMinutes()).padStart(2, "0")}`;
+                const refunded = t.refundedCents ?? 0;
+                const fullyRefunded = refunded > 0 && refunded >= t.paidAmountCents;
                 return (
                   <Card key={t.id}>
                     <CardContent className="py-2 px-3">
