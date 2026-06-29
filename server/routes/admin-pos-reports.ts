@@ -122,6 +122,7 @@ async function aggregateDaily(fieldId: string, date: string) {
         eq(refunds.fieldId, fieldId),
         eq(refunds.status, "completed"),
         sql`(${refunds.createdAt} AT TIME ZONE 'Asia/Taipei')::date = ${date}::date`,
+        REFUND_SOURCE_NOT_DELETED,
       ),
     );
   const refundsCents = Number(refundAgg?.cents ?? 0);
