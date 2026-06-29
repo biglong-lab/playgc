@@ -60,6 +60,8 @@ export default function PosSummary() {
       toast({ title: "✅ 已記錄退款", description: "現金退款已記入退款報表" });
       qc.invalidateQueries({ queryKey: ["pos-summary"] });
       qc.invalidateQueries({ queryKey: ["pos-status-report"] });
+      qc.invalidateQueries({ queryKey: ["pos-daily-report"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-summary"] });
     },
     onError: (e) => toast({ title: "退款失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
   });
