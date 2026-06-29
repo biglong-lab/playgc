@@ -54,6 +54,17 @@ function sumDenominations(denoms: Record<string, number>): number {
   return cents;
 }
 
+/**
+ * 排除「幽靈退款」：退款後來源 POS 交易又被軟刪除（deleted_at 有值）。
+ * 交易刪了不算收入，對應退款也不該再從現金扣除，否則櫃台現金會被重複扣減。
+ */
+const REFUND_SOURCE_NOT_DELETED = sql`NOT (
+  ${refunds.sourceType} = 'pos_transaction' AND EXISTS (
+    SELECT 1 FROM ${posTransactions} pt
+    WHERE pt.id = ${refunds.sourceId} AND pt.deleted_at IS NOT NULL
+  )
+)`;
+
 /** 某日現金收款 / 現金退款（分）；after 指定時間後（對齊開帳時間點，避免重複計）*/
 async function cashFlows(identifiers: string[], dateStr: string, after?: Date) {
   const { start, end } = taipeiDateRange(dateStr);
