@@ -13,6 +13,18 @@ import { and, eq, sql, desc, inArray, gte } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { sendToFieldGroup } from "../lib/internal-notifier";
 
+/**
+ * 排除「幽靈退款」：退款後來源 POS 交易又被軟刪除（deleted_at 有值）。
+ * 交易刪了就不算收入，對應退款也不該再扣帳，否則帳會被重複扣減。
+ * 僅針對 source_type='pos_transaction'；booking 退款不受影響。
+ */
+const REFUND_SOURCE_NOT_DELETED = sql`NOT (
+  ${refunds.sourceType} = 'pos_transaction' AND EXISTS (
+    SELECT 1 FROM ${posTransactions} pt
+    WHERE pt.id = ${refunds.sourceId} AND pt.deleted_at IS NOT NULL
+  )
+)`;
+
 function fail(res: import("express").Response, e: unknown) {
   console.error("[admin-pos-reports]", e);
   res.status(500).json({ error: "internal_error", message: "伺服器錯誤" });
