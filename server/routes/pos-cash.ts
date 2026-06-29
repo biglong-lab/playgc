@@ -91,6 +91,7 @@ async function cashFlows(identifiers: string[], dateStr: string, after?: Date) {
         eq(refunds.status, "completed"),
         gte(refunds.createdAt, from),
         lte(refunds.createdAt, end),
+        REFUND_SOURCE_NOT_DELETED,
       ),
     );
   return { cashSalesCents: salesAgg?.cents ?? 0, cashRefundsCents: refundAgg?.cents ?? 0 };
