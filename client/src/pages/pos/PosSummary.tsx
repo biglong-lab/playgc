@@ -33,6 +33,8 @@ interface Summary {
   fieldId: string;
   totalTransactions: number;
   totalPaidCents: number;
+  totalRefundedCents: number;
+  netPaidCents: number;
   totalDiscountCents: number;
   byActivity: Array<{
     activityId: string | null;
