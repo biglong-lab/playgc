@@ -135,12 +135,17 @@ export default function PosSummary() {
       {/* 大字總計 */}
       <Card className="mb-3 bg-gradient-to-br from-amber-500 to-orange-500 text-white border-0">
         <CardContent className="py-5 text-center">
-          <p className="text-xs uppercase tracking-wide">今日總收款</p>
+          <p className="text-xs uppercase tracking-wide">
+            {(data.totalRefundedCents ?? 0) > 0 ? "今日淨收款（已扣退款）" : "今日總收款"}
+          </p>
           <p className="text-4xl font-bold my-1">
-            NT${(data.totalPaidCents / 100).toLocaleString()}
+            NT${((data.netPaidCents ?? data.totalPaidCents) / 100).toLocaleString()}
           </p>
           <p className="text-xs opacity-90">
             {data.totalTransactions} 筆交易
+            {(data.totalRefundedCents ?? 0) > 0 && (
+              <> · 收 NT${(data.totalPaidCents / 100).toLocaleString()} · 退 NT${(data.totalRefundedCents / 100).toLocaleString()}</>
+            )}
             {data.totalDiscountCents > 0 && (
               <> · 折抵 NT${(data.totalDiscountCents / 100).toLocaleString()}</>
             )}
