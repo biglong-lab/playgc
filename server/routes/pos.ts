@@ -1036,12 +1036,34 @@ export function registerPosRoutes(app: Express) {
         )
         .orderBy(posTransactions.createdAt);
 
-      const txs = txRows.map((r) => ({
+      const txBase = txRows.map((r) => ({
         ...r.tx,
         staffName: r.staffName ?? r.staffUsername ?? null,
       }));
 
+      // 🆕 每筆已退款金額（completed 退款；txBase 已是未刪除交易集合）
+      const txIds = txBase.map((t) => t.id);
+      const refundRows = txIds.length
+        ? await db
+            .select({
+              sourceId: refunds.sourceId,
+              cents: sql<number>`COALESCE(SUM(${refunds.amountCents}),0)::int`,
+            })
+            .from(refunds)
+            .where(
+              and(
+                eq(refunds.sourceType, "pos_transaction"),
+                inArray(refunds.sourceId, txIds),
+                eq(refunds.status, "completed"),
+              ),
+            )
+            .groupBy(refunds.sourceId)
+        : [];
+      const refundMap = new Map(refundRows.map((r) => [r.sourceId, Number(r.cents)]));
+      const txs = txBase.map((t) => ({ ...t, refundedCents: refundMap.get(t.id) ?? 0 }));
+
       const totalPaid = txs.reduce((s, t) => s + (t.paidAmountCents ?? 0), 0);
+      const totalRefunded = txs.reduce((s, t) => s + (t.refundedCents ?? 0), 0);
       const totalDiscount = txs.reduce((s, t) => s + (t.voucherDiscountCents ?? 0), 0);
 
       // 按收款員分組（給班次結算）
