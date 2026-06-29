@@ -255,23 +255,36 @@ export default function PosSummary() {
                         <Badge variant="outline" className="text-xs">
                           {t.paymentMethod === "cash" ? "現金" : t.paymentMethod}
                         </Badge>
-                        <p className="font-bold text-amber-600 text-sm">
-                          NT${(t.paidAmountCents / 100).toLocaleString()}
-                        </p>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 px-2 shrink-0 text-xs text-amber-600"
-                          aria-label="退款"
-                          onClick={() => {
-                            const r = prompt("退款原因？（現金退款,記入退款報表）");
-                            if (r && r.trim().length >= 2) refundTxn.mutate({ id: t.id, reason: r.trim() });
-                            else if (r !== null) toast({ title: "請填至少 2 字原因", variant: "destructive" });
-                          }}
-                          data-testid={`refund-txn-${t.id}`}
-                        >
-                          退款
-                        </Button>
+                        <div className="text-right shrink-0">
+                          <p className={`font-bold text-sm ${fullyRefunded ? "text-muted-foreground line-through" : "text-amber-600"}`}>
+                            NT${(t.paidAmountCents / 100).toLocaleString()}
+                          </p>
+                          {refunded > 0 && (
+                            <p className="text-[10px] text-destructive">退 NT${(refunded / 100).toLocaleString()}</p>
+                          )}
+                        </div>
+                        {fullyRefunded ? (
+                          <Badge variant="outline" className="text-[10px] shrink-0 text-destructive border-destructive">
+                            已退款
+                          </Badge>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 shrink-0 text-xs text-amber-600"
+                            aria-label="退款"
+                            onClick={() => {
+                              const remaining = t.paidAmountCents - refunded;
+                              if (!confirm(`確定退款這筆 NT$${(remaining / 100).toLocaleString()}？\n退款後此金額不計入今日收入。`)) return;
+                              const r = prompt("退款原因？（現金退款,記入退款報表）");
+                              if (r && r.trim().length >= 2) refundTxn.mutate({ id: t.id, reason: r.trim() });
+                              else if (r !== null) toast({ title: "請填至少 2 字原因", variant: "destructive" });
+                            }}
+                            data-testid={`refund-txn-${t.id}`}
+                          >
+                            退款
+                          </Button>
+                        )}
                         <Button
                           size="icon"
                           variant="ghost"
