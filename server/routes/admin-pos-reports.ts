@@ -295,7 +295,7 @@ export function registerAdminPosReportRoutes(app: Express) {
           cents: sql<number>`COALESCE(SUM(${refunds.amountCents}),0)::int`,
         })
         .from(refunds)
-        .where(and(eq(refunds.fieldId, fieldId), gte(refunds.createdAt, sql`date_trunc('month', NOW())`)));
+        .where(and(eq(refunds.fieldId, fieldId), gte(refunds.createdAt, sql`date_trunc('month', NOW())`), REFUND_SOURCE_NOT_DELETED));
 
       res.json({ bookings: counts, refundsThisMonth: refundAgg });
     } catch (e) {
