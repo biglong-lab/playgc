@@ -18,6 +18,7 @@ interface PosTx {
   activityId: string | null;
   amountCents: number;
   paidAmountCents: number;
+  refundedCents: number;
   paymentMethod: string;
   voucherDiscountCents: number;
   customerName: string | null;
