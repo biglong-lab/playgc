@@ -1099,6 +1099,8 @@ export function registerPosRoutes(app: Express) {
         fieldId,
         totalTransactions: txs.length,
         totalPaidCents: totalPaid,
+        totalRefundedCents: totalRefunded,
+        netPaidCents: totalPaid - totalRefunded,
         totalDiscountCents: totalDiscount,
         byActivity: byActivityArr,
         byStaff: byStaffArr,
