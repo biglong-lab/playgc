@@ -166,6 +166,7 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
         eq(refunds.fieldId, fieldId),
         eq(refunds.status, "completed"),
         sql`(${refunds.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+        REFUND_SOURCE_NOT_DELETED,
       ),
     );
   // 每日淨額
