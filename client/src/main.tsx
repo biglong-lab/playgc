@@ -46,8 +46,11 @@ if (cfBeaconToken && typeof document !== "undefined") {
 //   部署後舊分頁去 lazy-import 已不存在的舊 chunk → "Importing a module script failed"。
 //   直接拋到 ErrorBoundary（顯示錯誤畫面）、版本檢查還沒跑到。這裡攔截 → 清快取 + 立即重載新版。
 function isChunkLoadError(msg?: string | null): boolean {
-  return /Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|module script failed|Load failed/i.test(
-    msg || "",
+  const m = msg || "";
+  return (
+    /Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|module script failed|Load failed/i.test(m) ||
+    // 🆕 2026-06-30：Safari React.lazy chunk 失敗 → render 拋 "undefined is not an object (evaluating '…._result.default')"
+    (/_result/.test(m) && /is not an object|Cannot read|undefined is not|null is not/i.test(m))
   );
 }
 async function recoverFromChunkError(): Promise<void> {
