@@ -7,6 +7,15 @@
 
 ## 2026-06-30
 
+### 🐛 預約改時間「不在開放時段」修復（fix）
+**狀態**：🟢 部署上線（commit `a61ca718`）
+**細節** → [changes/2026-06-30-booking-edit-fieldid-fix.md](changes/2026-06-30-booking-edit-fieldid-fix.md)
+
+- 症狀：預約改時間（7/12→7/9）報「新時段不在開放時段內」，但單獨新增同時段卻成功
+- 根因：`field_id` 混用 — `booking_configs.field_id='JIACHUN'`（代碼），但 `updateBooking` 傳 UUID（scope.id）→ `getBookingConfig(UUID)` miss → `getAvailability` 回 `[]` → 誤判；新增走 `createManualBooking` 不查時段故不受影響
+- 修：`getBookingConfig` 先用 `fields` 表把 UUID/code 正規化成 id+code 再比對；不動資料/schema
+- 驗證：生產 DB 模擬新查詢 UUID→找到 JIACHUN config；tsc 0
+
 ### 🔄 PWA 自動恢復韌性強化 + 6/29 結帳補登（fix）
 **狀態**：🟢 部署上線（commit `f0caa72b`）
 **細節** → [changes/2026-06-30-pwa-recovery-resilience.md](changes/2026-06-30-pwa-recovery-resilience.md)
