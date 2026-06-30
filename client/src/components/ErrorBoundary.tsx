@@ -113,31 +113,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    // 🆕 2026-06-13：chunk 載入失敗（部署後舊分頁抓不到舊 chunk）→ 清快取自動重載新版，不顯示錯誤畫面
-    if (/Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|module script failed|Load failed/i.test(error?.message || "")) {
-      const KEY = "chito_chunk_reload_at";
-      const last = Number(sessionStorage.getItem(KEY) || 0);
-      if (Date.now() - last >= 15000) {
-        sessionStorage.setItem(KEY, String(Date.now()));
-        (async () => {
-          try {
-            if ("serviceWorker" in navigator) {
-              const regs = await navigator.serviceWorker.getRegistrations();
-              await Promise.all(regs.map((r) => r.unregister()));
-            }
-            if ("caches" in window) {
-              const keys = await caches.keys();
-              await Promise.all(keys.map((k) => caches.delete(k)));
-            }
-          } catch {
-            // ignore
-          }
-          window.location.reload();
-        })();
-        return;
-      }
-    }
-
     this.setState({ errorInfo });
 
     // 🆕 上報錯誤給後端（若 useErrorReport hook 已註冊 __chitoReportError）
@@ -156,20 +131,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       // 上報失敗不可 block render
     }
 
-    // 若是 chunk / MIME / React minified 錯誤且尚未嘗試過自動恢復 → 清 SW + cache + reload
-    // 用 sessionStorage 避免無限迴圈（若 reload 後還是錯就停止自動恢復，改顯示給使用者）
-    // 🆕 D2-c+ (2026-05-09)：擴展到 React minified error（#310 等、部署後常見）
-    if (shouldAutoRecover(error)) {
-      try {
-        const attempted = sessionStorage.getItem(AUTO_RECOVERY_FLAG);
-        if (!attempted) {
-          sessionStorage.setItem(AUTO_RECOVERY_FLAG, String(Date.now()));
-          void clearPwaCachesAndReload();
-        }
-      } catch {
-        // sessionStorage 不可用時直接嘗試恢復
-        void clearPwaCachesAndReload();
-      }
+    // chunk / MIME / React minified / Safari lazy `_result` 錯誤 → 清 SW + cache + reload。
+    // 🆕 2026-06-30：改用時間窗節流（canRecover）取代一次性 flag，允許多次嘗試直到清乾淨，
+    //   不會像舊版首次失敗就永久卡死。超過 3 次才停手、改顯示錯誤畫面讓使用者手動。
+    if (shouldAutoRecover(error) && canRecover("chito_eb_recover")) {
+      void clearPwaCachesAndReload();
     }
   }
 
