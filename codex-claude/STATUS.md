@@ -9,9 +9,9 @@
 
 - **目前負責人**：（無、本次工作完成）
 - **開始時間**：—
-- **進行中任務**：—（另有 5/14 碎片 stale closure 待業主驗證 + DB 撈確認，見下方）
+- **進行中任務**：—（待業主實測「7/12 改 7/9」；另有 5/14 碎片 stale closure 待驗證，見下方）
 - **阻塞項**：無
-- **上次更新**：2026-06-30 [Claude]（**POS 幽靈退款修復 + 6/29 結帳補登(13,880) + PWA 韌性 + deploy.sh port 52099、生產 `65ab65d2`、/api/version 復活(非 unknown)、health 200、tsc 0；紀錄 logs/2026-06-30.md**）
+- **上次更新**：2026-06-30 [Claude]（**預約改時間誤判修復（getBookingConfig 支援 UUID/code 雙查）、生產 `a61ca718`、/api/version=a61ca718、health 200、tsc 0；同日另完成 POS 幽靈退款+6/29結帳補登(13,880)+PWA韌性+deploy.sh port；紀錄 logs/2026-06-30.md**）
 
 ---
 
