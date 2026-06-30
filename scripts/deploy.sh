@@ -110,7 +110,7 @@ sleep 15
 
 # ═══ 5/6 驗證 git HEAD 一致 ═══
 log_step "5/6 驗證 git HEAD 一致"
-REMOTE_SHA=$(ssh "$SSH_HOST" "cd $PROD_PATH && git rev-parse HEAD")   # 🔧 同步用完整 SHA
+REMOTE_SHA=$(ssh -p "$SSH_PORT" "$SSH_HOST" "cd $PROD_PATH && git rev-parse HEAD")   # 🔧 同步用完整 SHA
 if [[ "$LOCAL_SHA" != "$REMOTE_SHA" ]]; then
   log_fail "git HEAD 不一致：本地 ${LOCAL_SHA:0:7} != 伺服器 ${REMOTE_SHA:0:7}"
   exit 1
@@ -119,7 +119,7 @@ log_ok "git HEAD 一致: $LOCAL_SHA"
 
 # ═══ 6/6 驗證 bundle hash 一致 ═══
 log_step "6/6 驗證 bundle hash 一致"
-CONTAINER_HASH=$(ssh "$SSH_HOST" \
+CONTAINER_HASH=$(ssh -p "$SSH_PORT" "$SSH_HOST" \
   "docker exec $APP_CONTAINER cat /app/dist/public/index.html 2>/dev/null | grep -oE 'index-[A-Za-z0-9_-]+\\.js' | head -1" || echo "")
 if [[ -z "$CONTAINER_HASH" ]]; then
   log_fail "container 內找不到 bundle（docker build 可能沒真的生成前端）"
@@ -142,7 +142,7 @@ fi
 # 額外：grep 指定 symbol（可選）
 if [[ -n "$VERIFY_SYMBOL" ]]; then
   log_step "進階驗證: grep '$VERIFY_SYMBOL'"
-  COUNT=$(ssh "$SSH_HOST" "docker exec $APP_CONTAINER grep -rc '$VERIFY_SYMBOL' /app/dist/public/assets/ 2>/dev/null | grep -v ':0' | head -3")
+  COUNT=$(ssh -p "$SSH_PORT" "$SSH_HOST" "docker exec $APP_CONTAINER grep -rc '$VERIFY_SYMBOL' /app/dist/public/assets/ 2>/dev/null | grep -v ':0' | head -3")
   if [[ -z "$COUNT" ]]; then
     log_warn "找不到 symbol '$VERIFY_SYMBOL'（可能被 minify，但 bundle 有更新就算 OK）"
   else
