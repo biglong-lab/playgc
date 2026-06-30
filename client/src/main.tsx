@@ -53,11 +53,28 @@ function isChunkLoadError(msg?: string | null): boolean {
     (/_result/.test(m) && /is not an object|Cannot read|undefined is not|null is not/i.test(m))
   );
 }
+/**
+ * 恢復節流：避免無限 reload，但「允許多次嘗試」。
+ * 🆕 2026-06-30：舊版用一次性 flag，首次 reload 沒成功（SW/HTTP 快取殘留）就永久卡死、
+ *   使用者重整半天也不恢復。改成「5 分鐘窗內最多 3 次、每次至少間隔 minIntervalMs」，
+ *   讓系統能反覆嘗試直到清乾淨，又不會無限刷。
+ */
+function canRecover(key: string, minIntervalMs = 15000): boolean {
+  try {
+    const now = Date.now();
+    const recent = (JSON.parse(sessionStorage.getItem(key) || "[]") as number[]).filter((t) => now - t < 300000);
+    if (recent.length >= 3) return false;
+    if (recent.length && now - recent[recent.length - 1] < minIntervalMs) return false;
+    recent.push(now);
+    sessionStorage.setItem(key, JSON.stringify(recent));
+    return true;
+  } catch {
+    return true;
+  }
+}
+
 async function recoverFromChunkError(): Promise<void> {
-  const KEY = "chito_chunk_reload_at";
-  const last = Number(sessionStorage.getItem(KEY) || 0);
-  if (Date.now() - last < 15000) return; // 15 秒內不重複、避免無限重載
-  sessionStorage.setItem(KEY, String(Date.now()));
+  if (!canRecover("chito_chunk_recover")) return;
   try {
     if ("serviceWorker" in navigator) {
       const regs = await navigator.serviceWorker.getRegistrations();
