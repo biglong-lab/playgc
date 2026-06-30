@@ -194,8 +194,7 @@ const checkVersion = async () => {
       await Promise.all(keys.map((k) => caches.delete(k)));
     }
     localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
-    if (!sessionStorage.getItem("chito_version_reloaded")) {
-      sessionStorage.setItem("chito_version_reloaded", "1");
+    if (canRecover("chito_version_recover")) {
       window.location.reload();
     }
   } catch {
