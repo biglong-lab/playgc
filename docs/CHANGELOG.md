@@ -7,6 +7,18 @@
 
 ## 2026-06-30
 
+### 🔄 PWA 自動恢復韌性強化 + 6/29 結帳補登（fix）
+**狀態**：🟢 部署上線（commit `f0caa72b`）
+**細節** → [changes/2026-06-30-pwa-recovery-resilience.md](changes/2026-06-30-pwa-recovery-resilience.md)
+
+- 症狀：PWA 很容易卡住、重新整理半天不恢復；iPhone Safari `/admin` 報 `_result.default` TypeError
+- 根因①：手動 `docker compose --build` 沒帶 GIT_SHA → `/api/version` 回 unknown → 版本比對機制全失效
+- 根因②：一次性恢復 flag、首次 reload 沒成功就永久卡死
+- 根因③：Safari React.lazy chunk 失敗訊息（`_result.default`）漏偵測
+- 修：恢復節流改時間窗（5 分窗最多 3 次）；偵測加 `_result` 樣態；改用 `npm run deploy` 帶 GIT_SHA
+- ⚠️ 部署教訓：一律 `npm run deploy`（含 GIT_SHA 注入），勿手動 `docker compose --build`；deploy.sh 內 SSH 用 port 22 需注意（生產為 52099）
+- 附：手動補登 6/29 結帳（實際現金 13,880、差異 0），6/30 開班基礎已接上
+
 ### 🐛 POS 幽靈退款修復 + 退款防呆（fix）
 **狀態**：🟢 部署上線（commit `817c0115`）
 **細節** → [changes/2026-06-30-pos-ghost-refund-fix.md](changes/2026-06-30-pos-ghost-refund-fix.md)
