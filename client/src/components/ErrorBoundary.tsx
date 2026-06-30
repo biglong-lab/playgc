@@ -17,7 +17,25 @@ interface ErrorBoundaryState {
   copied: boolean;
 }
 
-const AUTO_RECOVERY_FLAG = "pwa-auto-recovery-attempted";
+/**
+ * 恢復節流：5 分鐘窗內最多 3 次、每次至少間隔 15 秒。
+ * 🆕 2026-06-30：取代舊的一次性 flag（pwa-auto-recovery-attempted）——
+ *   首次 reload 沒成功（SW/HTTP 快取殘留）就永久卡死、使用者重整半天也不恢復。
+ *   時間窗讓系統能反覆嘗試直到清乾淨，又不會無限刷。
+ */
+function canRecover(key: string, minIntervalMs = 15000): boolean {
+  try {
+    const now = Date.now();
+    const recent = (JSON.parse(sessionStorage.getItem(key) || "[]") as number[]).filter((t) => now - t < 300000);
+    if (recent.length >= 3) return false;
+    if (recent.length && now - recent[recent.length - 1] < minIntervalMs) return false;
+    recent.push(now);
+    sessionStorage.setItem(key, JSON.stringify(recent));
+    return true;
+  } catch {
+    return true;
+  }
+}
 
 /** 偵測是否為「PWA 舊 bundle / SW 快取」造成的錯誤 */
 function isChunkLoadError(error: Error): boolean {
