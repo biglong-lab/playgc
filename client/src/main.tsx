@@ -179,7 +179,7 @@ const checkVersion = async () => {
     if (!serverCommit || serverCommit === "unknown") return; // server 也是 unknown → 沒法判斷
     if (serverCommit === CLIENT_COMMIT) {
       localStorage.setItem(LAST_COMMIT_KEY, serverCommit);
-      sessionStorage.removeItem("chito_version_reloaded");
+      sessionStorage.removeItem("chito_version_recover"); // 版本一致 → 重置恢復計數
       return;
     }
     console.warn(
