@@ -58,11 +58,20 @@ export async function getBookingConfig(fieldId: string): Promise<BookingConfig |
   // 歷史資料 booking_configs.field_id 存小寫 "jiacun"、
   // 但前端 BookPage 從 URL `/book/:fieldCode` 拿到 "JIACHUN" 大寫直接傳入 → 404
   // 修法：DB query 用 lower() 雙邊 normalize、避免大小寫不符
-  const rows = await db
-    .select()
-    .from(bookingConfigs)
-    .where(sql`lower(${bookingConfigs.fieldId}) = lower(${fieldId})`)
+  //
+  // 🆕 2026-06-30：field_id 混用 UUID/code 修正（業主回報「改預約時間報『不在開放時段內』」）。
+  // booking_configs.field_id 存場域代碼（如 "JIACHUN"），但呼叫端（updateBooking →
+  // getAvailability）傳的是 UUID（scope.id）→ 直接比對 miss → 回 [] → 改時間誤判不在開放時段。
+  // 先用 fields 表把傳入值（UUID 或 code）正規化成 id + code，兩者一起比對 booking_configs。
+  const [field] = await db
+    .select({ id: fields.id, code: fields.code })
+    .from(fields)
+    .where(sql`${fields.id} = ${fieldId} OR lower(${fields.code}) = lower(${fieldId})`)
     .limit(1);
+  const cond = field
+    ? sql`lower(${bookingConfigs.fieldId}) IN (lower(${field.id}), lower(${field.code}))`
+    : sql`lower(${bookingConfigs.fieldId}) = lower(${fieldId})`;
+  const rows = await db.select().from(bookingConfigs).where(cond).limit(1);
   return rows[0] ?? null;
 }
 
