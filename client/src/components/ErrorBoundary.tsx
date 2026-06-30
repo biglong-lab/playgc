@@ -27,7 +27,13 @@ function isChunkLoadError(error: Error): boolean {
     /Failed to fetch dynamically imported module/i.test(msg) ||
     /ChunkLoadError/i.test(msg) ||
     /Loading chunk .* failed/i.test(msg) ||
-    /error loading dynamically imported module/i.test(msg)
+    /error loading dynamically imported module/i.test(msg) ||
+    // 🆕 補齊 main.tsx 同款動態 import 失敗訊息（Safari/Vite）
+    /Importing a module script failed|module script failed|Load failed/i.test(msg) ||
+    // 🆕 2026-06-30：Safari 上 React.lazy chunk 載入失敗，render 時讀 lazy payload
+    //   `_result.default` 拋 TypeError（"undefined is not an object (evaluating '…._result.default')"）。
+    //   變數名被 minify（l/e…），但 React 內部屬性 `_result` 在 production build 穩定保留 → 用它辨識。
+    (/_result/.test(msg) && /is not an object|Cannot read|undefined is not|null is not/i.test(msg))
   );
 }
 
