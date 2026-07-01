@@ -60,6 +60,9 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
   const [error, setError] = useState<string | null>(null);
   const [isWatching, setIsWatching] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(config.proximitySound ?? false);
+  // 🧭 修 bug（ProPlan CHITO #7）：原本指向標只用 GPS 方位角、沒納入手機朝向、
+  // 玩家轉手機時箭頭相對真實世界反向偏移。改用羅盤 heading 做相對修正（同 GpsMissionMap）。
+  const compass = useCompassHeading();
   // 若無有效座標，預設進入 QR fallback UI（元件自適應，不需資料預先補 placeholder）
   const [showQrFallback, setShowQrFallback] = useState(false);
   const [hotZoneMessage, setHotZoneMessage] = useState<string | null>(null);
