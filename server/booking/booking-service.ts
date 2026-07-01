@@ -830,7 +830,7 @@ export async function updateBooking(input: UpdateBookingInput): Promise<{ before
   } else if (input.partySize !== undefined && input.partySize > booking.partySize) {
     // 只加大人數（同時段）→ 排除本筆後檢查容量
     const day = new Date(booking.slotStart);
-    const slots = await getAvailability(input.fieldId, day, day, booking.activityId ?? undefined);
+    const slots = await getAvailability(booking.fieldId, day, day, booking.activityId ?? undefined);
     const slot = slots.find((s) => s.startAt === booking.slotStart.toISOString());
     if (slot) {
       const others = slot.booked - booking.partySize;
