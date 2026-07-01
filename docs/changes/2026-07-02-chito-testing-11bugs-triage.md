@@ -78,6 +78,39 @@ rewardPoints（含 0） > onSuccess.points > rewardPerQuestion > 預設 10
 
 ---
 
+## ✅ 本次已修：#7 — GPS 指向標方向與手機轉向相反
+
+### 根因
+`client/src/components/game/solo/GpsMissionPage.tsx` 的 `getDirectionArrow()` 只用
+GPS 經緯度算地理方位角（`atan2(dLng, dLat)`），**完全沒納入手機朝向（device heading）**。
+箭頭固定在螢幕某角度、不隨手機轉動修正 → 玩家轉手機時箭頭相對真實世界反向偏移。
+
+### 修法
+沿用同專案已驗證的 `GpsMissionMap` 模式（同一 `useCompassHeading` hook + `bearingDegrees`）：
+- 螢幕角度 = `(地理方位角 − 羅盤朝向 + 360) % 360`，玩家轉手機時箭頭同步跟著轉、正確指向真實目標。
+- 地理方位角改用含緯度修正的 `bearingDegrees`（比原本粗略 `atan2` 準）。
+- 加 iOS user-gesture 觸發 `compass.request()`（權限）。
+- 無羅盤（桌機/未授權）→ fallback 絕對方位角，維持原可用性。
+
+### 影響檔案
+- `client/src/components/game/solo/GpsMissionPage.tsx`
+
+### 驗證
+- `npx tsc --noEmit` ✅
+- 邏輯與已上線的 `GpsMissionMap` 完全一致（相對 heading 修正）
+- ⚠️ 羅盤行為無法單元測試 → **最終需真機複測**（見時機表）
+
+---
+
+## 🔬 已排查、判定「不宜盲改、需真機 e2e」的 3 隻
+
+| # | 為何不在本輪修 |
+|---|----------------|
+| #5 + #10 | `useSessionManager` 是 restore/replay/completed 三態 + query refetch race 的狀態機，已被前後修過 5+ 次、滿是 race 防護補丁。盲改極可能修 A 壞 B。#10 原文亦要求真流程複測。→ 需真機跑 replay 流程重現後精準改。|
+| #3 | 訪客暱稱只存 localStorage → 帶到 `gameSessions.playerName`，**沒寫進 users 表**；隊伍成員列表讀 users 表故顯示 user-xxx。修法需跨層（暱稱寫進 teamMembers/users），且原文是 3 台手機情境 → 需真機 e2e。|
+
+---
+
 ## ⏳ 待處理清單與建議排序
 
 | 優先 | # | 建議 | 預估 |
