@@ -22,8 +22,9 @@
 //     onPickFromGallery={openGallery}
 //   />
 
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Zap, ZapOff, RefreshCcw, ImagePlus } from "lucide-react";
+import { Camera, Zap, ZapOff, RefreshCcw, ImagePlus, Square } from "lucide-react";
 import { useTorch } from "@/hooks/useTorch";
 import { useHaptic } from "@/hooks/useHaptic";
 import { useShutterSound } from "@/hooks/useShutterSound";
