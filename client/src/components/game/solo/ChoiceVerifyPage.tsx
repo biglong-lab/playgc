@@ -185,7 +185,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
         if (finishedRef.current) return;
         finishedRef.current = true;
         const selected = legacyOptions[selectedOption];
-        onComplete({ points: 10 }, selected?.nextPageId);
+        onComplete({ points: legacyRewardPoints }, selected?.nextPageId);
       }, 1500);
     } else {
       toast({
