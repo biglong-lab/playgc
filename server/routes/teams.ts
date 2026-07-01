@@ -134,6 +134,9 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
 
         const body = createTeamBodySchema.parse(req.body);
 
+        // 🆕 CHITO #7：訪客暱稱寫進 users.firstName（在 fullTeam 查詢前、成員列表才顯示得到）
+        await persistGuestDisplayName(userId, body.displayName);
+
         // 🆕 PR4：若帶 squadId，驗證該玩家是該 Squad active 成員，並把 team 名稱用 squad 名稱
         let squadId: string | null = null;
         let squadName: string | null = null;
