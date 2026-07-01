@@ -17,6 +17,7 @@ import {
 } from "@/lib/geolocation";
 import { GpsAccuracyIndicator } from "../GpsAccuracyIndicator";
 import { MotionPermissionRequest } from "../MotionPermissionRequest";
+import { useCompassHeading } from "@/hooks/useCompassHeading";
 import { useAuth } from "@/hooks/useAuth";
 import { useComponentTelemetry } from "@/hooks/useComponentTelemetry";
 import { InlineCodeFallback } from "@/components/location/InlineCodeFallback";
