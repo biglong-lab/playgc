@@ -791,7 +791,8 @@ export async function markBookingNoShow(bookingCode: string): Promise<Booking> {
 // 回傳 before/after 供呼叫端寫稽核（誰/何時/前後差異）。加大人數時檢查時段容量。
 export interface UpdateBookingInput {
   bookingCode: string;
-  fieldId: string; // 場域隔離
+  /** 場域隔離：同時支援 UUID + code（歷史資料混用）*/
+  fieldIds: string[];
   partySize?: number;
   displayName?: string;
   phone?: string;
@@ -801,7 +802,7 @@ export async function updateBooking(input: UpdateBookingInput): Promise<{ before
   const [booking] = await db
     .select()
     .from(bookings)
-    .where(and(eq(bookings.bookingCode, input.bookingCode), eq(bookings.fieldId, input.fieldId)))
+    .where(and(eq(bookings.bookingCode, input.bookingCode), inArray(bookings.fieldId, input.fieldIds)))
     .limit(1);
   if (!booking) throw new BookingError("not_found", "找不到此預約", 404);
   if (booking.status === "cancelled") throw new BookingError("cannot_edit", "已取消的預約無法編輯", 400);
