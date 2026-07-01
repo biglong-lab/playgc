@@ -465,6 +465,8 @@ export default function PhotoArStickerFlow({
         }
       }
 
+      if (applyGesture) ctx.restore();
+
       const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
 
       // 停相機 + 上傳
