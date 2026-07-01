@@ -262,6 +262,63 @@ export default function PhotoArStickerFlow({
     return () => ro.disconnect();
   }, [stage, gestureEnabled]);
 
+  // 🎬 AR #2（CHITO）：長按錄影 — 錄「已合成貼圖」的 canvas
+  const recorder = useArVideoRecorder();
+  const recordCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const recordRafRef = useRef<number | null>(null);
+  // 每次 render 更新合成參數 ref，錄製 loop 讀 ref 取最新（避免 stale closure）
+  const drawOptsRef = useRef({
+    stickers,
+    preloadedStickers,
+    useFaceTracking,
+    faceAnchor,
+    isMirror: camera.facingMode === "user",
+    pageOpacity: (config as any).stickerOpacity ?? 1,
+    gestureTransform: gesture.transform,
+    applyGesture: gesture.isDirty,
+  });
+  drawOptsRef.current = {
+    stickers,
+    preloadedStickers,
+    useFaceTracking,
+    faceAnchor,
+    isMirror: camera.facingMode === "user",
+    pageOpacity: (config as any).stickerOpacity ?? 1,
+    gestureTransform: gesture.transform,
+    applyGesture: gesture.isDirty,
+  };
+
+  const startRecording = () => {
+    const video = camera.videoRef.current;
+    const canvas = recordCanvasRef.current;
+    if (!video || !canvas || !recorder.isSupported) return;
+    if (useFaceTracking && !faceAnchor) return; // 臉部模式沒臉不錄
+    drawArFrame(canvas, video, drawOptsRef.current); // 先畫一幀（設定尺寸+內容）
+    const loop = () => {
+      const v = camera.videoRef.current;
+      const c = recordCanvasRef.current;
+      if (v && c) drawArFrame(c, v, drawOptsRef.current);
+      recordRafRef.current = requestAnimationFrame(loop);
+    };
+    recordRafRef.current = requestAnimationFrame(loop);
+    recorder.start(canvas);
+  };
+
+  const stopRecording = () => {
+    recorder.stop();
+    if (recordRafRef.current !== null) {
+      cancelAnimationFrame(recordRafRef.current);
+      recordRafRef.current = null;
+    }
+  };
+
+  // 卸載/離開相機時停錄製 loop
+  useEffect(() => {
+    return () => {
+      if (recordRafRef.current !== null) cancelAnimationFrame(recordRafRef.current);
+    };
+  }, []);
+
   // 預載貼圖（只做一次）— 單張失敗不影響其他、不卡關
   useEffect(() => {
     if (stickers.length === 0) return;
