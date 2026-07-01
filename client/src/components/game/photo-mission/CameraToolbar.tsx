@@ -187,19 +187,40 @@ export default function CameraToolbar({
         )}
       </Button>
 
-      {/* 📷 拍照（最大、置中、最常用）*/}
-      <Button
-        type="button"
-        variant="default"
-        size="icon"
-        className="rounded-full h-16 w-16 bg-white hover:bg-white/90 text-black border-4 border-primary/40 shadow-xl"
-        disabled={disabled || captureDisabled}
-        onClick={handleCapture}
-        title={captureDisabled ? "等找到臉再拍" : "拍照"}
-        data-testid="btn-camera-capture"
-      >
-        <Camera className="w-8 h-8" />
-      </Button>
+      {/* 📷 拍照（最大、置中、最常用）；🆕 videoEnabled 時：短按拍照、長按錄影 + 進度環 */}
+      <div className="relative h-16 w-16 shrink-0">
+        {videoEnabled && isRecording && (
+          <svg className="absolute inset-0 -rotate-90 pointer-events-none" viewBox="0 0 64 64" data-testid="ar-record-ring">
+            <circle cx="32" cy="32" r="30" fill="none" stroke="rgba(239,68,68,0.25)" strokeWidth="4" />
+            <circle
+              cx="32" cy="32" r="30" fill="none" stroke="rgb(239,68,68)" strokeWidth="4" strokeLinecap="round"
+              strokeDasharray={2 * Math.PI * 30}
+              strokeDashoffset={2 * Math.PI * 30 * (1 - Math.min(1, Math.max(0, recordProgress)))}
+            />
+          </svg>
+        )}
+        <Button
+          type="button"
+          variant="default"
+          size="icon"
+          className={cn(
+            "rounded-full h-16 w-16 shadow-xl border-4",
+            isRecording
+              ? "bg-red-500 hover:bg-red-500 text-white border-red-300"
+              : "bg-white hover:bg-white/90 text-black border-primary/40",
+          )}
+          disabled={disabled || captureDisabled}
+          onClick={videoEnabled ? undefined : handleCapture}
+          onPointerDown={videoEnabled ? handleShutterDown : undefined}
+          onPointerUp={videoEnabled ? handleShutterUp : undefined}
+          onPointerLeave={videoEnabled ? handleShutterLeave : undefined}
+          onPointerCancel={videoEnabled ? handleShutterLeave : undefined}
+          title={captureDisabled ? "等找到臉再拍" : videoEnabled ? "短按拍照、長按錄影" : "拍照"}
+          data-testid="btn-camera-capture"
+        >
+          {isRecording ? <Square className="w-7 h-7 fill-current" /> : <Camera className="w-8 h-8" />}
+        </Button>
+      </div>
 
       {/* 🔄 前後鏡頭切換 */}
       <Button
