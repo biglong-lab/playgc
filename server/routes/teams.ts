@@ -29,12 +29,32 @@ const createTeamBodySchema = z.object({
     .transform((v) => (v && v.trim().length > 0 ? v.trim() : undefined)),
   // 🆕 PR4：以「永久隊伍」身份開場
   squadId: z.string().uuid().optional(),
+  // 🆕 CHITO #7：訪客在大廳輸入的遊戲暱稱（帶進來寫入 users.firstName）
+  displayName: z.string().max(50).optional(),
 });
 
 /** 加入隊伍的請求驗證 */
 const joinTeamBodySchema = z.object({
   accessCode: z.string().min(1, "請輸入組隊碼"),
+  // 🆕 CHITO #7：訪客遊戲暱稱
+  displayName: z.string().max(50).optional(),
 });
+
+/**
+ * 🐛 修 bug（ProPlan CHITO #7）：訪客暱稱只存 localStorage / gameSessions.playerName，
+ *   沒進 users 表 → 多人隊伍成員列表（讀 users.firstName）顯示 user-xxx@firebase.local。
+ *   修法：訪客建立/加入隊伍時把暱稱寫進自己的 users.firstName。
+ *   僅限匿名訪客（email 為 *@firebase.local）才覆寫，避免蓋掉 Google 帳號真名。
+ */
+async function persistGuestDisplayName(userId: string, rawName?: string): Promise<void> {
+  const name = rawName?.trim();
+  if (!name) return;
+  const user = await storage.getUser(userId);
+  if (!user || !user.email?.endsWith("@firebase.local")) return;
+  const clean = name.slice(0, 50);
+  if (user.firstName === clean) return;
+  await db.update(users).set({ firstName: clean, updatedAt: new Date() }).where(eq(users.id, userId));
+}
 
 function generateAccessCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
