@@ -28,6 +28,16 @@ export function parseInviteCode(search: string): string {
   }
 }
 
+/** 讀取訪客在大廳輸入的遊戲暱稱（localStorage）；無則 undefined */
+function getGuestDisplayName(): string | undefined {
+  try {
+    const v = localStorage.getItem("anonymous_player_name")?.trim();
+    return v || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function readInviteCodeFromUrl(): string {
   if (typeof window === "undefined") return "";
   return parseInviteCode(window.location.search);
