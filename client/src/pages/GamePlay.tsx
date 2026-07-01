@@ -823,10 +823,10 @@ export default function GamePlay() {
           }));
         };
 
+        // 🐛 修 bug（ProPlan CHITO #4）：<380px 底部導覽右側「下一頁」被裁切。
+        //   窄螢幕縮小 padding/gap、按鈕與圖示群 shrink-0 不擠壓，
+        //   「上一頁/下一頁」文字在 <380px 隱藏（保留圖示 + aria-label）→ 永遠塞得下、不撐出橫向捲動。
         return (
-      {/* 🐛 修 bug（ProPlan CHITO #4）：<380px 底部導覽右側「下一頁」被裁切。
-          窄螢幕縮小 padding/gap、按鈕與圖示群 shrink-0 不擠壓，
-          「上一頁/下一頁」文字在 <380px 隱藏（保留圖示 + aria-label）→ 永遠塞得下、不撐出橫向捲動。 */}
       <nav className="sticky bottom-0 bg-card/95 backdrop-blur border-t border-border px-2 sm:px-4 py-3 flex items-center justify-between gap-1 sm:gap-4">
         <Button
           variant="ghost"
