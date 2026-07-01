@@ -424,6 +424,14 @@ export default function PhotoArStickerFlow({
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       if (isMirror) ctx.restore();
 
+      // 🖐️ AR #1：固定位置模式套用使用者拖曳/縮放（群組 transform，與預覽同一套幾何）
+      //   臉部模式貼圖跟臉走、不套用。用 save/restore 包住整組貼圖繪製。
+      const applyGesture = !useFaceTracking && gesture.isDirty;
+      if (applyGesture) {
+        ctx.save();
+        applyGroupTransformToCanvas(ctx, gesture.transform, canvas.width, canvas.height);
+      }
+
       // 疊上每個貼圖
       for (let i = 0; i < stickers.length; i++) {
         const s = stickers[i];
