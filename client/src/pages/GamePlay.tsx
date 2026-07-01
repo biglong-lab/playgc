@@ -430,35 +430,25 @@ export default function GamePlay() {
 
     const currentState = stateRef.current;
     const pages = activePagesRef.current;
-    let newScore = currentState.score;
-    let newInventory = [...currentState.inventory];
-    let newVariables = { ...currentState.variables };
 
-    // 🐛 修 bug（ProPlan CHITO #2「上一頁重複通關刷分」）：
-    //   同一 session 內、此頁已在 completedPageIds（= 之前已通過並給過分）→
-    //   玩家點「上一頁」回頭重做時，不再重複加分/發道具（仍允許正常導航）。
+    // 🐛 ProPlan CHITO #2「上一頁重複通關刷分」防護：分數/道具/變數計算抽到純函式
+    //   computeCompletionReward — 同 session 內此頁已給過分（completedPageIds 含此頁）
+    //   → 回頭重做不再重複給分/發道具（仍允許正常導航）。
     //   分數是 client 累計後的絕對值 PATCH 給 server，擋住 client 端即同時擋住持久化。
-    //   註：replay/再玩一次 是新 session（completedPageIds 為空），不受此影響。
     const completingPage = pages[currentState.currentPageIndex];
-    const alreadyScored = !!completingPage && currentState.completedPageIds.includes(completingPage.id);
-
-    if (!alreadyScored) {
-      // 1. 處理 reward（現有邏輯）
-      if (reward?.points) newScore += reward.points;
-      if (reward?.items) newInventory = [...newInventory, ...reward.items];
-
-      // 2. 處理 onCompleteActions（通用變數/道具/分數操作）
-      if (completingPage) {
-        const cfg = completingPage.config as Record<string, unknown>;
-        const actions = (cfg.onCompleteActions || []) as OnCompleteAction[];
-        if (actions.length > 0) {
-          const result = processOnCompleteActions(actions, newVariables, newInventory, newScore);
-          newVariables = result.variables;
-          newInventory = result.inventory;
-          newScore = result.score;
-        }
-      }
-    }
+    const rewarded = computeCompletionReward({
+      reward,
+      page: completingPage
+        ? { id: completingPage.id, config: completingPage.config as Record<string, unknown> }
+        : undefined,
+      completedPageIds: currentState.completedPageIds,
+      score: currentState.score,
+      inventory: currentState.inventory,
+      variables: currentState.variables,
+    });
+    const newScore = rewarded.score;
+    const newInventory = rewarded.inventory;
+    const newVariables = rewarded.variables;
 
     // 2.5 觸發獎勵反饋 — 讓玩家看到「剛剛發生了什麼」
     const pointsDelta = newScore - currentState.score;
