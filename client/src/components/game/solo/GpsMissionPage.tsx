@@ -350,11 +350,15 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
 
   const getDirectionArrow = () => {
     if (!userLocation) return null;
-    
-    const dLat = targetLat - userLocation.lat;
-    const dLng = targetLng - userLocation.lng;
-    const angle = Math.atan2(dLng, dLat) * (180 / Math.PI);
-    
+
+    // 🧭 修 bug（ProPlan CHITO #7）：地理方位角（0=北、順時針）用含緯度修正的 bearingDegrees、
+    // 再減去手機羅盤朝向 → 相對角度。玩家轉手機時箭頭同步跟著轉、正確指向真實目標。
+    // 無羅盤（桌機/未授權）時 fallback 用絕對方位角（維持原可用性）。
+    const targetBearing = bearingDegrees(userLocation.lat, userLocation.lng, targetLat, targetLng);
+    const angle = compass.heading === null
+      ? targetBearing
+      : (targetBearing - compass.heading + 360) % 360;
+
     return (
       <div 
         className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transition-transform duration-300"
