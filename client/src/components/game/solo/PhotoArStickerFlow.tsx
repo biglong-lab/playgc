@@ -582,6 +582,23 @@ export default function PhotoArStickerFlow({
           autoPlay playsInline muted
         />
 
+        {/* 🎬 AR #2：隱藏合成 canvas（錄影來源，captureStream）*/}
+        <canvas ref={recordCanvasRef} className="hidden" aria-hidden="true" />
+
+        {/* 🎬 錄影中：紅點 + 秒數（00:SS / 00:30）*/}
+        {recorder.isRecording && (
+          <div
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 bg-black/60 px-3 py-1 rounded-full pointer-events-none"
+            data-testid="ar-recording-indicator"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-white text-xs tabular-nums">
+              {String(Math.floor(recorder.elapsedSec / 60)).padStart(2, "0")}:
+              {String(recorder.elapsedSec % 60).padStart(2, "0")} / 00:30
+            </span>
+          </div>
+        )}
+
         {/* 🆕 B2: 臉部追蹤狀態（大型明顯卡片）— 邊框依狀態變色（綠/橘/紅）*/}
         {useFaceTracking && (
           <div className="absolute top-4 left-4 right-16 z-10 pointer-events-none">
