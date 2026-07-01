@@ -101,36 +101,7 @@ function positionToStyle(pos: StickerPosition, sizeRatio: number): React.CSSProp
   }
 }
 
-// Canvas 合成用 — 計算貼圖在 canvas 上的實際 x/y/w/h
-function computeStickerRect(
-  pos: StickerPosition,
-  sizeRatio: number,
-  canvasW: number,
-  canvasH: number,
-  stickerNaturalRatio: number,  // w/h
-): { x: number; y: number; w: number; h: number } {
-  // 🆕 2026-05-07：fixed position 模式下、sizeRatio cap 到 1.0（避免超出 canvas）
-  // face tracking 模式（用 anchorW）才允許 >1.0（相對臉部大小）
-  const ratio = Math.min(sizeRatio, 1.0);
-  // 用短邊計算寬度，保持比例
-  const shortSide = Math.min(canvasW, canvasH);
-  const w = shortSide * ratio;
-  const h = w / stickerNaturalRatio;
-  const margin = shortSide * 0.05;
-
-  let x = 0;
-  let y = 0;
-  switch (pos) {
-    case "top":       x = (canvasW - w) / 2; y = margin; break;
-    case "bottom":    x = (canvasW - w) / 2; y = canvasH - h - margin; break;
-    case "center":    x = (canvasW - w) / 2; y = (canvasH - h) / 2; break;
-    case "corner_tl": x = margin; y = margin; break;
-    case "corner_tr": x = canvasW - w - margin; y = margin; break;
-    case "corner_bl": x = margin; y = canvasH - h - margin; break;
-    case "corner_br": x = canvasW - w - margin; y = canvasH - h - margin; break;
-  }
-  return { x, y, w, h };
-}
+// （computeStickerRect 已移到 ar-sticker/drawArFrame.ts，拍照與錄影共用）
 
 // 🎨 預載貼圖（單張失敗不影響其他，回傳 array，失敗位置為 null）
 // 加 timeout 避免壞 URL 永遠卡住
