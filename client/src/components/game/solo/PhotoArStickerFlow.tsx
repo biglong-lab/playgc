@@ -579,7 +579,7 @@ export default function PhotoArStickerFlow({
     return (
       // 🎨 fixed inset-0 z-50 蓋過 GamePlay header + sticky footer，沉浸式相機
       // transform: user 鏡頭鏡像翻轉（使用者看到的和鏡子一樣）
-      <div className="fixed inset-0 z-50 bg-black" data-testid="photo-ar-camera">
+      <div ref={previewRef} className="fixed inset-0 z-50 bg-black" data-testid="photo-ar-camera">
         <video
           ref={camera.videoRef}
           className="w-full h-full object-cover"
