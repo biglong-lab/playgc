@@ -641,20 +641,52 @@ export default function PhotoArStickerFlow({
             pageOpacity={(config as any).stickerOpacity ?? 1}
           />
         ) : (
-          /* 非臉部追蹤 — 固定位置（不需 face tracking，無頻率問題）*/
-          stickers.map((s, idx) => {
-            const img = preloadedStickers[idx];
-            if (preloadDone && !img) return null;
-            return (
-              <img
-                key={idx}
-                src={s.imageUrl}
-                alt=""
-                style={positionToStyle(s.position, s.sizeRatio)}
-                data-testid={`ar-sticker-overlay-${idx}`}
-              />
-            );
-          })
+          /* 非臉部追蹤 — 固定位置 + 🖐️ AR #1 單指拖曳/雙指縮放（群組 transform）
+             wrapper 吃手勢；內層貼圖維持 positionToStyle，靠 wrapper 的 CSS transform 一起移動/縮放。*/
+          <div
+            className="absolute inset-0"
+            style={{
+              transform: cssGroupTransform(gesture.transform, previewShort),
+              transformOrigin: "center",
+              touchAction: "none",
+              cursor: gesture.isDirty ? "grabbing" : "grab",
+            }}
+            {...gesture.handlers}
+            data-testid="ar-sticker-gesture-layer"
+          >
+            {stickers.map((s, idx) => {
+              const img = preloadedStickers[idx];
+              if (preloadDone && !img) return null;
+              return (
+                <img
+                  key={idx}
+                  src={s.imageUrl}
+                  alt=""
+                  style={{ ...positionToStyle(s.position, s.sizeRatio), pointerEvents: "none" }}
+                  data-testid={`ar-sticker-overlay-${idx}`}
+                />
+              );
+            })}
+          </div>
+        )}
+
+        {/* 🖐️ AR #1：拖曳/縮放提示 + 重置（只在固定位置模式顯示）*/}
+        {gestureEnabled && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 pointer-events-none">
+            <span className="text-white/80 text-xs bg-black/50 px-2 py-0.5 rounded">
+              單指拖曳移動貼圖、雙指縮放大小
+            </span>
+            {gesture.isDirty && (
+              <button
+                type="button"
+                onClick={gesture.reset}
+                className="text-white text-xs bg-black/60 px-2 py-0.5 rounded pointer-events-auto hover:bg-black/80"
+                data-testid="btn-ar-reset-transform"
+              >
+                ↺ 重置位置
+              </button>
+            )}
+          </div>
         )}
 
         {/* 🎨 底部沉浸式按鈕列（CameraToolbar + safe-area） */}
