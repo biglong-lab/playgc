@@ -9,6 +9,7 @@ import {
   gameSessions,
   squads,
   squadMembers,
+  users,
 } from "@shared/schema";
 import { eq, and, isNull, desc, sql } from "drizzle-orm"; // desc 用於 activeSessionId 查詢
 import { z } from "zod";
