@@ -221,6 +221,9 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
           return res.status(401).json({ message: "請先登入" });
         }
 
+        // 🆕 CHITO #7：訪客暱稱寫進 users.firstName，加入後成員列表才顯示得到
+        await persistGuestDisplayName(userId, body.displayName);
+
         const team = await db.query.teams.findFirst({
           where: eq(teams.accessCode, body.accessCode.toUpperCase()),
           with: {
