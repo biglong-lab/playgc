@@ -55,6 +55,12 @@ import { cssGroupTransform } from "./ar-sticker/arStickerTransform";
 import { useArVideoRecorder } from "./ar-sticker/useArVideoRecorder";
 import { drawArFrame } from "./ar-sticker/drawArFrame";
 import ArVideoResultView from "./ar-sticker/ArVideoResultView";
+import {
+  type StickerConfigItem,
+  positionToStyle,
+  preloadStickers,
+  FaceStickersOverlay,
+} from "./ar-sticker/arStickerParts";
 
 // localStorage key — 使用者同意臉部追蹤後記住
 const FACE_CONSENT_KEY = "chito-ar-face-consent-v1";
