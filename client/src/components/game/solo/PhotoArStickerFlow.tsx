@@ -267,6 +267,28 @@ export default function PhotoArStickerFlow({
 
   const finishedRef = useRef(false);
 
+  // 🖐️ AR #1（CHITO）：固定位置模式下、單指拖曳 + 雙指縮放貼圖
+  //   臉部錨定模式貼圖跟著臉走、不套用此手勢。
+  const previewRef = useRef<HTMLDivElement>(null);
+  const gesture = useArStickerGesture(previewRef);
+  const [previewShort, setPreviewShort] = useState(0);
+  const gestureEnabled = !useFaceTracking;
+
+  // 量測預覽容器短邊（給 CSS transform 用）— 與 hook 內 getBoundingClientRect 同基準
+  useEffect(() => {
+    if (stage !== "camera" || !gestureEnabled) return;
+    const el = previewRef.current;
+    if (!el) return;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      setPreviewShort(Math.min(r.width, r.height));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [stage, gestureEnabled]);
+
   // 預載貼圖（只做一次）— 單張失敗不影響其他、不卡關
   useEffect(() => {
     if (stickers.length === 0) return;
