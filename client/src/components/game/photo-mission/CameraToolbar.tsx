@@ -87,6 +87,49 @@ export default function CameraToolbar({
     onCapture();
   };
 
+  // 🆕 CHITO AR #2：短按拍照 / 長按錄影
+  const LONG_PRESS_MS = 350;
+  const pressTimerRef = useRef<number | null>(null);
+  const recordingRef = useRef(false);
+
+  const clearPressTimer = () => {
+    if (pressTimerRef.current !== null) {
+      clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+  };
+
+  const handleShutterDown = () => {
+    if (disabled || captureDisabled) return;
+    recordingRef.current = false;
+    clearPressTimer();
+    pressTimerRef.current = window.setTimeout(() => {
+      recordingRef.current = true;
+      haptic.tap();
+      onRecordStart?.();
+    }, LONG_PRESS_MS);
+  };
+
+  const handleShutterUp = () => {
+    if (disabled || captureDisabled) return;
+    clearPressTimer();
+    if (recordingRef.current) {
+      recordingRef.current = false;
+      onRecordStop?.();
+    } else {
+      handleCapture(); // 短按 → 拍照
+    }
+  };
+
+  const handleShutterLeave = () => {
+    // 手指移出快門 → 若在錄影就停、否則取消長按判定
+    clearPressTimer();
+    if (recordingRef.current) {
+      recordingRef.current = false;
+      onRecordStop?.();
+    }
+  };
+
   const handleSwitchCamera = () => {
     if (disabled || !onSwitchCamera) return;
     haptic.tap();
