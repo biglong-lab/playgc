@@ -824,21 +824,24 @@ export default function GamePlay() {
         };
 
         return (
-      <nav className="sticky bottom-0 bg-card/95 backdrop-blur border-t border-border px-4 py-3 flex items-center justify-between gap-4">
+      {/* 🐛 修 bug（ProPlan CHITO #4）：<380px 底部導覽右側「下一頁」被裁切。
+          窄螢幕縮小 padding/gap、按鈕與圖示群 shrink-0 不擠壓，
+          「上一頁/下一頁」文字在 <380px 隱藏（保留圖示 + aria-label）→ 永遠塞得下、不撐出橫向捲動。 */}
+      <nav className="sticky bottom-0 bg-card/95 backdrop-blur border-t border-border px-2 sm:px-4 py-3 flex items-center justify-between gap-1 sm:gap-4">
         <Button
           variant="ghost"
           size="sm"
           onClick={goBackByVisitStack}
           disabled={visitStackRef.current.length < 2 && currentPageIndex === 0}
-          className="gap-1"
+          className="gap-1 shrink-0 px-2 sm:px-3"
           data-testid="button-prev-page"
           aria-label="回到上一個訪問的頁面"
         >
           <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-          上一頁
+          <span className="max-[379px]:hidden">上一頁</span>
         </Button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <Button variant="ghost" size="icon" onClick={() => setShowChat(true)} data-testid="button-open-chat">
             <MessageCircle className="w-5 h-5" />
           </Button>
@@ -867,10 +870,10 @@ export default function GamePlay() {
           onClick={goNext}
           disabled={currentPageIndex >= totalPages - 1 || !canAdvance}
           title={!canAdvance ? "請先完成當前任務" : undefined}
-          className="gap-1"
+          className="gap-1 shrink-0 px-2 sm:px-3"
           data-testid="button-next-page"
         >
-          下一頁
+          <span className="max-[379px]:hidden">下一頁</span>
           <ChevronRight className="w-4 h-4" />
         </Button>
       </nav>
