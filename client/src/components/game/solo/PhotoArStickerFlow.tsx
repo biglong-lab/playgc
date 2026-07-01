@@ -409,63 +409,18 @@ export default function PhotoArStickerFlow({
 
     try {
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("無法建立 canvas context");
-
-      // 底圖：video 畫面（user 鏡頭要水平翻轉讓拍出來的是鏡像，跟預覽一致）
-      const isMirror = camera.facingMode === "user";
-      if (isMirror) {
-        ctx.save();
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-      }
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      if (isMirror) ctx.restore();
-
-      // 🖐️ AR #1：固定位置模式套用使用者拖曳/縮放（群組 transform，與預覽同一套幾何）
-      //   臉部模式貼圖跟臉走、不套用。用 save/restore 包住整組貼圖繪製。
-      const applyGesture = !useFaceTracking && gesture.isDirty;
-      if (applyGesture) {
-        ctx.save();
-        applyGroupTransformToCanvas(ctx, gesture.transform, canvas.width, canvas.height);
-      }
-
-      // 疊上每個貼圖
-      for (let i = 0; i < stickers.length; i++) {
-        const s = stickers[i];
-        const img = preloadedStickers[i];
-        if (!img) continue;
-        const ratio = img.naturalWidth / img.naturalHeight;
-        // 🆕 透明度：sticker 級 > 頁面級 > 預設 1.0
-        const opacity = (s as any).opacity ?? (config as any).stickerOpacity ?? 1;
-
-        // 🆕 B2: 若有 face anchor，用臉部座標定位；否則 fallback 固定位置
-        if (useFaceTracking) {
-          if (!faceAnchor) continue; // 沒臉就不畫
-          // size 縮小（與 DOM overlay 一致）
-          const anchorW = faceAnchor.width * canvas.width * (s.sizeRatio || 0.6);
-          const anchorH = anchorW / ratio;
-          // 🎨 mirror 模式：MediaPipe 回傳的座標是未鏡像的，要反推到鏡像後座標
-          const cx = (isMirror ? 1 - faceAnchor.x : faceAnchor.x) * canvas.width;
-          const cy = faceAnchor.y * canvas.height;
-          ctx.save();
-          ctx.globalAlpha = opacity; // 🆕 套用透明度
-          ctx.translate(cx, cy);
-          if (faceAnchor.rotationY) ctx.rotate(faceAnchor.rotationY);
-          ctx.drawImage(img, -anchorW / 2, -anchorH / 2, anchorW, anchorH);
-          ctx.restore();
-        } else {
-          const rect = computeStickerRect(s.position, s.sizeRatio, canvas.width, canvas.height, ratio);
-          ctx.save();
-          ctx.globalAlpha = opacity; // 🆕 套用透明度
-          ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
-          ctx.restore();
-        }
-      }
-
-      if (applyGesture) ctx.restore();
+      // 🖼️ 合成 video + 貼圖（拍照與錄影共用 drawArFrame）
+      const ok = drawArFrame(canvas, video, {
+        stickers,
+        preloadedStickers,
+        useFaceTracking,
+        faceAnchor,
+        isMirror: camera.facingMode === "user",
+        pageOpacity: (config as any).stickerOpacity ?? 1,
+        gestureTransform: gesture.transform,
+        applyGesture: gesture.isDirty,
+      });
+      if (!ok) throw new Error("無法建立 canvas context");
 
       const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
 
