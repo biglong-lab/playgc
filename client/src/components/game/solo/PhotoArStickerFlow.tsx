@@ -553,6 +553,23 @@ export default function PhotoArStickerFlow({
     );
   }
 
+  // 🎬 AR #2：錄影結果本地預覽（優先於相機畫面）
+  if (recorder.result) {
+    return (
+      <ArVideoResultView
+        url={recorder.result.url}
+        blob={recorder.result.blob}
+        mimeType={recorder.result.mimeType}
+        onRetake={() => recorder.clearResult()}
+        onContinue={() => {
+          recorder.clearResult();
+          camera.stopCamera();
+          handleContinue();
+        }}
+      />
+    );
+  }
+
   if (stage === "done" && finalUrl) {
     return (
       <PhotoSuccessView
