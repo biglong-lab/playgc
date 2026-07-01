@@ -8,8 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { queueProgressUpdate } from "@/lib/offlineStorage";
-import { processOnCompleteActions, resolveFlowRouter } from "@/lib/flow-router";
-import type { GameWithPages, Page, GameChapterWithPages, OnCompleteAction } from "@shared/schema";
+import { resolveFlowRouter } from "@/lib/flow-router";
+import { computeCompletionReward } from "@/lib/completion-reward";
+import type { GameWithPages, Page, GameChapterWithPages } from "@shared/schema";
 
 import GameHeader from "@/components/shared/GameHeader";
 import ChatPanel from "@/components/shared/ChatPanel";
