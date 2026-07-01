@@ -66,6 +66,16 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
   }, [config?.options, shouldRandomize]);
   const isLastInOrder = orderCursor >= questionOrder.length - 1;
 
+  // 🐛 修 bug（ProPlan CHITO #1/#11）：legacy 單題路徑原本寫死 points:10、
+  // 完全忽略後台「完成獎勵分數」設定（管理員設 0 仍自動 +10）。
+  // 改為與多題路徑（handleSubmit）相同的取值優先序、顯式 0 也要尊重：
+  // rewardPoints（含 0） > onSuccess.points > rewardPerQuestion > 預設 10。
+  const legacyRewardPoints =
+    (config as unknown as { rewardPoints?: number }).rewardPoints ??
+    config.onSuccess?.points ??
+    config.rewardPerQuestion ??
+    10;
+
   const handleOptionClick = (index: number) => {
     if (isSubmitted || showResult) return;
     setSelectedOption(index);
