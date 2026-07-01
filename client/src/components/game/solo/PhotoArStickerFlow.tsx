@@ -15,7 +15,7 @@
 //   - 只做 landmark detection，不做 face recognition
 //   - 使用者需 opt-in（B4 加 Dialog）
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -72,129 +72,8 @@ interface PhotoArStickerFlowProps {
   onVariableUpdate?: (key: string, value: unknown) => void;
 }
 
-type StickerPosition =
-  | "top" | "bottom" | "center"
-  | "corner_tl" | "corner_tr" | "corner_bl" | "corner_br";
+// 型別 / positionToStyle / preloadStickers / FaceStickersOverlay 已移到 ar-sticker/arStickerParts.tsx
 
-interface StickerConfigItem {
-  imageUrl: string;
-  position: StickerPosition;
-  sizeRatio: number;   // 0-1，佔畫面短邊比例
-}
-
-// 位置 → CSS style 對照（配合 absolute overlay）
-function positionToStyle(pos: StickerPosition, sizeRatio: number): React.CSSProperties {
-  // 🆕 2026-05-07：fixed position 模式下 cap 到 100%（避免超出 preview 容器）
-  const sizePct = `${Math.min(sizeRatio, 1.0) * 100}%`;
-  const commonStyle: React.CSSProperties = {
-    position: "absolute",
-    width: sizePct,
-    pointerEvents: "none",
-  };
-  switch (pos) {
-    case "top":       return { ...commonStyle, top: "5%", left: "50%", transform: "translateX(-50%)" };
-    case "bottom":    return { ...commonStyle, bottom: "5%", left: "50%", transform: "translateX(-50%)" };
-    case "center":    return { ...commonStyle, top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-    case "corner_tl": return { ...commonStyle, top: "5%", left: "5%" };
-    case "corner_tr": return { ...commonStyle, top: "5%", right: "5%" };
-    case "corner_bl": return { ...commonStyle, bottom: "5%", left: "5%" };
-    case "corner_br": return { ...commonStyle, bottom: "5%", right: "5%" };
-  }
-}
-
-// （computeStickerRect 已移到 ar-sticker/drawArFrame.ts，拍照與錄影共用）
-
-// 🎨 預載貼圖（單張失敗不影響其他，回傳 array，失敗位置為 null）
-// 加 timeout 避免壞 URL 永遠卡住
-async function preloadStickers(
-  items: StickerConfigItem[],
-): Promise<(HTMLImageElement | null)[]> {
-  const results = await Promise.allSettled(
-    items.map(
-      (s) =>
-        new Promise<HTMLImageElement>((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          const timer = setTimeout(
-            () => reject(new Error("timeout")),
-            10000,
-          );
-          img.onload = () => {
-            clearTimeout(timer);
-            resolve(img);
-          };
-          img.onerror = () => {
-            clearTimeout(timer);
-            reject(new Error(`載入失敗: ${s.imageUrl}`));
-          };
-          img.src = s.imageUrl;
-        }),
-    ),
-  );
-  return results.map((r) => (r.status === "fulfilled" ? r.value : null));
-}
-
-// 🎯 FaceStickersOverlay — 抽出獨立子元件 + memo
-// 為什麼：face tracking loop setFaceAnchor 每秒可能 5-10 次
-// 若整個 PhotoArStickerFlow re-render 浪費（含 camera UI、按鈕、Dialog 等大量 JSX）
-// 拆出來後只有此 overlay 重 render（只是幾張 img）
-// 預期：mobile 低端裝置 face tracking 流暢度大幅提升
-interface FaceStickersOverlayProps {
-  stickers: StickerConfigItem[];
-  preloadedStickers: (HTMLImageElement | null)[];
-  preloadDone: boolean;
-  faceAnchor: AnchorCoordinate | null;
-  isMirror: boolean;
-  pageOpacity?: number;
-}
-
-const FaceStickersOverlay = memo(function FaceStickersOverlay({
-  stickers,
-  preloadedStickers,
-  preloadDone,
-  faceAnchor,
-  isMirror,
-  pageOpacity = 1,
-}: FaceStickersOverlayProps) {
-  if (!faceAnchor) return null;
-
-  return (
-    <>
-      {stickers.map((s, idx) => {
-        const img = preloadedStickers[idx];
-        if (preloadDone && !img) return null;
-        const imgRatio = img ? img.naturalWidth / img.naturalHeight : 1;
-        const widthPct = faceAnchor.width * 100 * (s.sizeRatio || 0.6);
-        const heightPct = widthPct / imgRatio;
-        const rotation = faceAnchor.rotationY
-          ? `rotate(${(faceAnchor.rotationY * 180) / Math.PI}deg)`
-          : "";
-        const visualX = isMirror ? 1 - faceAnchor.x : faceAnchor.x;
-        const mirror = isMirror ? " scaleX(-1)" : "";
-        const opacity = (s as any).opacity ?? pageOpacity;
-        return (
-          <img
-            key={idx}
-            src={s.imageUrl}
-            alt=""
-            style={{
-              position: "absolute",
-              left: `${visualX * 100}%`,
-              top: `${faceAnchor.y * 100}%`,
-              width: `${widthPct}%`,
-              height: `${heightPct}%`,
-              transform: `translate(-50%, -50%) ${rotation}${mirror}`,
-              opacity,
-              pointerEvents: "none",
-              transition: "top 0.08s, left 0.08s",
-            }}
-            data-testid={`ar-sticker-face-${idx}`}
-          />
-        );
-      })}
-    </>
-  );
-});
 
 export default function PhotoArStickerFlow({
   config,
