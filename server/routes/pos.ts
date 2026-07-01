@@ -621,7 +621,7 @@ export function registerPosRoutes(app: Express) {
       const { updateBooking } = await import("../booking/booking-service");
       const { before, after } = await updateBooking({
         bookingCode: req.params.bookingCode,
-        fieldId: scope.id,
+        fieldIds: scope.identifiers,
         partySize: partySize !== undefined ? Math.floor(Number(partySize)) : undefined,
         displayName,
         phone,
