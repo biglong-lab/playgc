@@ -49,6 +49,16 @@ export interface CameraToolbarProps {
   captureDisabled?: boolean;
   /** 自訂額外 class */
   className?: string;
+  /** 🆕 CHITO AR #2：長按錄影（opt-in；預設關、其他任務不受影響）*/
+  videoEnabled?: boolean;
+  /** 錄影中 */
+  isRecording?: boolean;
+  /** 錄影進度 0~1（快門外圈進度環）*/
+  recordProgress?: number;
+  /** 長按超過門檻 → 開始錄影 */
+  onRecordStart?: () => void;
+  /** 放開 → 停止錄影 */
+  onRecordStop?: () => void;
 }
 
 export default function CameraToolbar({
@@ -59,6 +69,11 @@ export default function CameraToolbar({
   onPickFromGallery,
   disabled = false,
   captureDisabled = false,
+  videoEnabled = false,
+  isRecording = false,
+  recordProgress = 0,
+  onRecordStart,
+  onRecordStop,
   className,
 }: CameraToolbarProps) {
   const torch = useTorch(stream);
