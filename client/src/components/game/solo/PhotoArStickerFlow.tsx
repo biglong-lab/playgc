@@ -50,6 +50,8 @@ import {
   type AnchorPoint,
   type AnchorCoordinate,
 } from "@/lib/face-landmarker";
+import { useArStickerGesture } from "./ar-sticker/useArStickerGesture";
+import { cssGroupTransform, applyGroupTransformToCanvas } from "./ar-sticker/arStickerTransform";
 
 // localStorage key — 使用者同意臉部追蹤後記住
 const FACE_CONSENT_KEY = "chito-ar-face-consent-v1";
