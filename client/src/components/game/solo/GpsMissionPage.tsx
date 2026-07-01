@@ -318,6 +318,20 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
     };
   }, []);
 
+  // 🧭 iOS 需 user gesture 觸發 compass.request()（同 GpsMissionMap）
+  useEffect(() => {
+    if (!compass.supported || compass.granted) return;
+    const tryRequest = () => {
+      void compass.request();
+    };
+    document.addEventListener("pointerdown", tryRequest, { once: true, passive: true });
+    document.addEventListener("touchstart", tryRequest, { once: true, passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", tryRequest);
+      document.removeEventListener("touchstart", tryRequest);
+    };
+  }, [compass.supported, compass.granted, compass]);
+
   const getProgressPercent = () => {
     if (!distance) return 0;
     const maxDisplayDistance = 1000;
