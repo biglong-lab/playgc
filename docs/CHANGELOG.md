@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-07-02
+
+### 🎮 CHITO 測試回報 11 隻：6 修復 + 2 AR 新功能上線（fix + feat）
+**狀態**：🟢 部署上線（commits `5f4ab843` `37a93fef` `0f90e0ff` `da2b4c23` `2b791e47` `36cabd4f`）
+**細節** → [changes/2026-07-02-chito-testing-11bugs-triage.md](changes/2026-07-02-chito-testing-11bugs-triage.md)
+**來源**：ProPlan Debug workspace `37c5c6e0`（plan.aihomi.cc）
+
+- **fix 選擇驗證/道具計分**：`ChoiceVerifyPage` legacy 單選路徑寫死 `points:10` → 改尊重後台完成獎勵分數（設 0 給 0）
+- **fix GPS 指向標方向相反**：`GpsMissionPage` 箭頭沒納入手機羅盤 → 改 `(方位角−heading)` 相對修正（同 GpsMissionMap）
+- **fix 上一頁重複刷分**：`GamePlay` 計分抽純函式 `computeCompletionReward`，同 session 已完成頁不再重複給分（+6 測試）
+- **fix <380px 按鈕裁切**：底部導覽響應式 padding/gap + `max-[379px]:hidden` 文字 + 根容器 `overflow-x-hidden`
+- **fix 訪客暱稱顯示 user-xxx**：建/加入隊伍時把暱稱寫進 `users.firstName`（只覆寫匿名帳號）
+- **feat AR 拖曳/縮放**：單指拖曳 + 雙指縮放貼圖，預覽與拍照同一套幾何（4 測試）；純加法
+- **feat AR 短按拍照/長按錄影**：`MediaRecorder` + 進度環 + 30 秒上限 + 本地存檔分享；不支援裝置降級只拍照
+- **抽新模組** `client/src/components/game/solo/ar-sticker/`（6 檔）；tsc + build + 測試全過
+- ⚠️ 全數已寫回 ProPlan（7 隻 `testing` 待複測；AR 兩項需 iOS/Android 真機測）
+- 🔬 未修 2 隻（多人同步 #6 / 進度狀態機 #5+#10）= live 狀態機 bug，不盲改，ProPlan 卡內附真機 e2e 重現腳本
+
 ## 2026-06-30
 
 ### 🐛 預約改時間「不在開放時段」修復（fix）
