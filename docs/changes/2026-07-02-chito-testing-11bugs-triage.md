@@ -175,16 +175,40 @@ email 為 `user-xxx@firebase.local`，而隊伍成員列表用 `deriveDisplayNam
 
 ---
 
-## 🔬 剩 4 項：不宜從程式碼盲改、已寫分析入 ProPlan
+## ✅ 已實作（程式完成、build 通過、待真機測）：AR #1 拖曳/縮放、AR #2 快門拍照/錄影
 
-> 全部影響 live 生產遊戲，盲改會傷到正在遊玩的真實玩家。已在 ProPlan 各卡寫入工程分析 + 明確下一步。
+### AR #1 — 單指拖曳 + 雙指縮放貼圖
+- 新 `ar-sticker/useArStickerGesture.ts`：pointer 手勢 → 群組 transform {dx, dy, scale}。
+- 新 `ar-sticker/arStickerTransform.ts`：預覽 CSS 與 canvas 合成用**同一套幾何**（拖/縮後拍出來一致）；4 單元測試。
+- 只作用於「固定位置模式」（臉部錨定貼圖跟臉走不套用）；不動不縮 → 維持 config 原位（純加法）。
+- 附「單指拖曳/雙指縮放」提示 + 「重置位置」。
+
+### AR #2 — 短按拍照 / 長按錄影（進度環 + 30 秒上限）
+- 新 `ar-sticker/useArVideoRecorder.ts`：canvas `captureStream` + `MediaRecorder`，30 秒自動停、elapsed/progress。
+- 新 `ar-sticker/drawArFrame.ts`：video+貼圖合成（拍照與錄影**共用**、結果一致）。
+- 新 `ar-sticker/ArVideoResultView.tsx`：影片本地預覽 + 存檔/分享（Web Share／下載）+ 重拍/繼續。**不上傳 server**。
+- `CameraToolbar` 加 opt-in 長按錄影 + 快門進度環（其他拍照任務不受影響）。
+- 不支援 MediaRecorder 的裝置 → 自動降級成只拍照（短按）。
+
+### 影響檔案
+- 新增 `client/src/components/game/solo/ar-sticker/`（6 檔）
+- 改 `PhotoArStickerFlow.tsx`（接線、抽零件回 804 行）、`photo-mission/CameraToolbar.tsx`（opt-in 錄影）
+
+### 驗證
+- `npx tsc --noEmit` ✅、`npm run build` ✅、AR 幾何測試 4/4 ✅
+- ⚠️ 相機/手勢/錄影 **必須真機測**：拖曳/縮放後拍照要對齊、長按錄影 + 進度環 + 30 秒、存檔/分享
+- 尚未部署 → 待部署到 game.homi.cc 後真機驗證
+
+---
+
+## 🔬 剩 2 項 bug：不宜盲改、已寫分析入 ProPlan
+
+> 影響 live 生產遊戲，盲改會傷到正在遊玩的真實玩家。已在 ProPlan 各卡寫入工程分析 + 明確下一步。
 
 | # | 分類 | 為何不盲改 | 下一步 |
 |---|------|-----------|--------|
 | #6 多人同步 | bug（狀態機 in-progress）| WebSocket 分散式狀態一致性，需多台裝置 + 弱網/切背景才浮現 | 3 台真機 e2e 錄時序 → 定位 |
 | #5+#10 進度狀態 | bug（狀態機 in-progress）| `useSessionManager` 三態 + refetch race，已修 5+ 次，盲改易修 A 壞 B | 真機照步驟重現 + 抓 Network → 精準修 |
-| #8 AR 拖曳/縮放 | 功能需求（open）| 非既有邏輯壞，是新功能；手勢+合成須真機相機測 | 功能 sprint、分支開發、真機驗證 |
-| #9 AR 快門拍照/錄影 | 功能需求（open）| 需 canvas captureStream + MediaRecorder + 進度環，工程量中大 | 功能 sprint、分支開發、真機驗證 |
 
 > 註：本文件 # 對應原賈村編號；ProPlan 匯出把 AR 兩項編為 #1/#2、多人為 #4、進度為 #5。
 
