@@ -344,7 +344,12 @@ export function useTeamLobby(): TeamLobbyReturn {
   // Mutations
   const createTeamMutation = useMutation({
     mutationFn: async (data: { name?: string; squadId?: string }) => {
-      const response = await apiRequest("POST", `/api/games/${gameId}/teams`, data);
+      // 🆕 CHITO #7：帶上訪客在大廳輸入的暱稱、後端寫進 users.firstName（成員列表才顯示得到）
+      const displayName = getGuestDisplayName();
+      const response = await apiRequest("POST", `/api/games/${gameId}/teams`, {
+        ...data,
+        ...(displayName ? { displayName } : {}),
+      });
       return response.json();
     },
     onSuccess: (_data, vars) => {
