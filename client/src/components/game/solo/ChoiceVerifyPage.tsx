@@ -210,7 +210,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
     if (selectedOption === null || finishedRef.current) return;
     finishedRef.current = true;
     const selected = legacyOptions[selectedOption];
-    onComplete({ points: 10 }, selected?.nextPageId);
+    onComplete({ points: legacyRewardPoints }, selected?.nextPageId);
   };
 
   // 🆕 答錯後點「再試一次」重置
