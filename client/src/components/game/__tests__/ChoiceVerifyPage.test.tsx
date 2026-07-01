@@ -182,4 +182,40 @@ describe("ChoiceVerifyPage — Legacy 單選模式", () => {
     renderWith({});
     expect(screen.getByText(/尚未設定選項/)).toBeTruthy();
   });
+
+  // 🐛 ProPlan CHITO #1/#11：後台「完成獎勵分數」設 0，legacy 單選路徑原本寫死 +10
+  it("rewardPoints 設 0 → 答對給 0 分（不再自動 +10）", async () => {
+    const { onComplete } = renderWith({
+      question: "選 A",
+      options: [{ text: "A", correct: true, nextPageId: "page-A" }],
+      rewardPoints: 0,
+    } as ChoiceVerifyConfig);
+
+    fireEvent.click(screen.getByText("A"));
+    fireEvent.click(screen.getByTestId("button-submit-choice"));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
+
+    expect(onComplete).toHaveBeenCalledWith({ points: 0 }, "page-A");
+  });
+
+  // 顯式設定分數 → 依設定值給分（不再固定 10）
+  it("rewardPoints 設 50 → 答對給 50 分", async () => {
+    const { onComplete } = renderWith({
+      question: "選 A",
+      options: [{ text: "A", correct: true, nextPageId: "page-A" }],
+      rewardPoints: 50,
+    } as ChoiceVerifyConfig);
+
+    fireEvent.click(screen.getByText("A"));
+    fireEvent.click(screen.getByTestId("button-submit-choice"));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
+
+    expect(onComplete).toHaveBeenCalledWith({ points: 50 }, "page-A");
+  });
 });
