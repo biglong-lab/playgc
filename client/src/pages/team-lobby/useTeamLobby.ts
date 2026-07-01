@@ -366,7 +366,12 @@ export function useTeamLobby(): TeamLobbyReturn {
 
   const joinTeamMutation = useMutation({
     mutationFn: async (data: { accessCode: string }) => {
-      const response = await apiRequest("POST", "/api/teams/join", data);
+      // 🆕 CHITO #7：帶上訪客暱稱、後端寫進 users.firstName
+      const displayName = getGuestDisplayName();
+      const response = await apiRequest("POST", "/api/teams/join", {
+        ...data,
+        ...(displayName ? { displayName } : {}),
+      });
       return response.json();
     },
     onSuccess: (data) => {
