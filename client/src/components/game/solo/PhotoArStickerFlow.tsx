@@ -698,6 +698,12 @@ export default function PhotoArStickerFlow({
             // 🆕 2026-05-12 #3 fix: 只鎖拍照、保留閃光燈 / 翻鏡頭可用
             disabled={!preloadDone}
             captureDisabled={useFaceTracking && !faceAnchor}
+            // 🎬 AR #2：短按拍照、長按錄影（裝置支援才啟用）
+            videoEnabled={recorder.isSupported}
+            isRecording={recorder.isRecording}
+            recordProgress={recorder.progress}
+            onRecordStart={startRecording}
+            onRecordStop={stopRecording}
           />
           {useFaceTracking && !faceAnchor && (
             <span
