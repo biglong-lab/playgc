@@ -817,7 +817,7 @@ export async function updateBooking(input: UpdateBookingInput): Promise<{ before
   const changingTime = input.slotStart && input.slotStart.getTime() !== booking.slotStart.getTime();
   if (changingTime) {
     const day = input.slotStart!;
-    const slots = await getAvailability(input.fieldId, day, day, booking.activityId ?? undefined);
+    const slots = await getAvailability(booking.fieldId, day, day, booking.activityId ?? undefined);
     const slot = slots.find((s) => s.startAt === input.slotStart!.toISOString());
     if (!slot) throw new BookingError("slot_not_open", "新時段不在開放時段內", 400);
     if (new Date(slot.startAt) <= new Date()) throw new BookingError("slot_passed", "新時段已過、無法改", 400);
