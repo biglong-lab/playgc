@@ -96,9 +96,13 @@ rewardPoints（含 0） > onSuccess.points > rewardPerQuestion > 預設 10
 
 | 事件 | 時間點 | 說明 |
 |------|--------|------|
-| #11/#1 計分修復 commit | 見本次 commit hash | 修復進版本控制 |
-| 部署生產 | **待使用者說「部署」後填入** | game.homi.cc rebuild 完成時間 |
-| 複測開放 | 部署驗證通過後 | 測試員可回頭重測 #11、並用正式流程複測 #1 道具耦合 |
+| #11/#1 計分修復 commit | `5f4ab843`（playgc/main）| 修復進版本控制 |
+| 部署生產 | 2026-07-02 00:12（台北）| game.homi.cc 已 rebuild、HTTP 200 healthy |
+| 寫回 ProPlan 系統 | 2026-07-02 00:12 | #11→`testing`（待複測）、#1→`in-progress`（部分處理），各附處理紀錄 attempt |
+| 複測開放 | 即刻起 | 測試員可回頭重測 #11、並用正式流程複測 #1 道具耦合 |
+
+> ProPlan 面板：<https://plan.aihomi.cc/daily-ops/debug/37c5c6e0-8a06-4bf3-a27b-5899c0ae7cb3>
+> #11 已在「處理中」分頁、含完整修復說明與複測步驟；#1 同分頁、含部分處理說明。
 
 **複測 #11 步驟**：
 1. admin 進 `游戲 555e252d.../items` 或選擇驗證元件設定，把「完成獎勵分數」設 0。
