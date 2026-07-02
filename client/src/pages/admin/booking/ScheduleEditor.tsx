@@ -171,9 +171,11 @@ export default function ScheduleEditor({ template, onChange, isSaving }: Props) 
         </TabsContent>
 
         <TabsContent value="blackouts">
-          <BlackoutDatesEditor
-            blackoutDates={template.blackoutDates ?? []}
-            onChange={(dates) => onChange({ ...template, blackoutDates: dates })}
+          <ClosuresEditor
+            closures={template.closures ?? []}
+            legacyBlackoutDates={template.blackoutDates ?? []}
+            onChangeClosures={(closures) => onChange({ ...template, closures })}
+            onChangeBlackoutDates={(dates) => onChange({ ...template, blackoutDates: dates })}
           />
         </TabsContent>
       </Tabs>
