@@ -60,6 +60,7 @@ export interface BookingRule {
 export interface ScheduleTemplate {
   rules: BookingRule[];
   blackoutDates?: string[];
+  closures?: BookingClosure[];
   notes?: string;
   version?: number;
 }
