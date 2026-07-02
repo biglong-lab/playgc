@@ -769,65 +769,6 @@ function DayPreviewDialog({
   );
 }
 
-// ─ BlackoutDatesEditor ─────────────────────────────────
-
-function BlackoutDatesEditor({
-  blackoutDates,
-  onChange,
-}: {
-  blackoutDates: string[];
-  onChange: (dates: string[]) => void;
-}) {
-  const [newDate, setNewDate] = useState("");
-  return (
-    <Card>
-      <CardContent className="p-4 space-y-3">
-        <p className="text-sm text-muted-foreground">
-          特定日期完全關閉（最高優先、覆蓋所有規則）
-        </p>
-        <div className="flex gap-2">
-          <Input
-            type="date"
-            value={newDate}
-            onChange={(e) => setNewDate(e.target.value)}
-            data-testid="input-blackout-date"
-          />
-          <Button
-            onClick={() => {
-              if (newDate && !blackoutDates.includes(newDate)) {
-                onChange([...blackoutDates, newDate].sort());
-                setNewDate("");
-              }
-            }}
-            disabled={!newDate}
-          >
-            <Plus className="w-3 h-3 mr-1" /> 加入
-          </Button>
-        </div>
-        {blackoutDates.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-3 text-center">尚無休假日</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {blackoutDates.map((d) => (
-              <Badge
-                key={d}
-                variant="outline"
-                className="cursor-pointer"
-                onClick={() => onChange(blackoutDates.filter((x) => x !== d))}
-              >
-                {d} ✕
-              </Badge>
-            ))}
-          </div>
-        )}
-        <p className="text-xs text-muted-foreground">
-          點 Badge 可移除。例：聖誕、店主婚禮、設備大保養
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
 // ─ Helper：本地端 rule resolver（同 server）──────────────
 
 function formatYMD(d: Date): string {
