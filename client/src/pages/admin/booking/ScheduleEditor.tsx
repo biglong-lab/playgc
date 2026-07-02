@@ -718,7 +718,10 @@ function DayPreviewDialog({
   const [y, m, d] = date.split("-").map((s) => parseInt(s, 10));
   const dt = new Date(y, m - 1, d);
   const rule = resolveRule(template, dt);
-  const slots = rule ? expandSlots(dt, rule) : [];
+  // 🆕 過濾與 time_range closure 重疊的梯次（同 server）
+  const slots = (rule ? expandSlots(dt, rule) : []).filter(
+    (s) => !slotClosedLocal(template, date, s.start, s.end),
+  );
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
