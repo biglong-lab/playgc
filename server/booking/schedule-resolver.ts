@@ -156,19 +156,65 @@ export function expandSlotWindow(
   return result;
 }
 
+// ── 時段關閉 / 包場（closures）解析（2026-07-02）──────────
+
+/** HH:mm 格式化 Date（local）*/
+function toHHMM(d: Date): string {
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
+/** 取某日所有 closures */
+export function getClosuresForDate(
+  template: BookingScheduleTemplate,
+  ymd: string,
+): BookingClosure[] {
+  return (template.closures ?? []).filter((c) => c.date === ymd);
+}
+
+/** 某日是否整日關閉（full_day closure 或舊 blackoutDate）*/
+export function hasFullDayClosure(
+  template: BookingScheduleTemplate,
+  ymd: string,
+): boolean {
+  if (template.blackoutDates?.includes(ymd)) return true;
+  return getClosuresForDate(template, ymd).some((c) => c.scope === "full_day");
+}
+
+/** slot 是否落在某日 time_range closure 內（時間有重疊即關閉）*/
+export function isSlotClosed(
+  template: BookingScheduleTemplate,
+  ymd: string,
+  slot: ExpandedSlot,
+): boolean {
+  const sStart = toHHMM(slot.startAt);
+  const sEnd = toHHMM(slot.endAt);
+  return getClosuresForDate(template, ymd).some((c) => {
+    if (c.scope !== "time_range" || !c.startTime || !c.endTime) return false;
+    // 區間重疊：slotStart < closureEnd && slotEnd > closureStart
+    return sStart < c.endTime && sEnd > c.startTime;
+  });
+}
+
 /**
  * 取得某日的所有 expanded slots（不含已預約人數）
+ * 🆕 2026-07-02：套用 closures — 整日關閉回 []，time_range 關閉過濾掉重疊梯次
  */
 export function getDailySlots(
   template: BookingScheduleTemplate,
   date: Date,
 ): ExpandedSlot[] {
+  const ymd = formatYMD(date);
   const rule = resolveRuleForDate(template, date);
   if (!rule || rule.slots.length === 0) return [];
 
-  return rule.slots.flatMap((window) =>
+  // 整日關閉（full_day closure；blackoutDates 已在 resolveRuleForDate 擋掉）
+  if (hasFullDayClosure(template, ymd)) return [];
+
+  const slots = rule.slots.flatMap((window) =>
     expandSlotWindow(date, window, rule.capacityOverride),
   );
+  // 過濾與 time_range closure 重疊的梯次
+  return slots.filter((s) => !isSlotClosed(template, ymd, s));
 }
 
 /**
