@@ -122,11 +122,47 @@ export interface BookingRule {
  *   4. 若無任何 rule match → 此天無時段（不開放）
  *   5. 若 match rule 的 slots 為空 → 此天關閉（rule 主動標記休假日）
  */
+/** 關閉/包場/活動事由分類 */
+export type BookingClosureType =
+  | "holiday" // 休假日
+  | "private_booking" // 包場
+  | "maintenance" // 設備保養
+  | "event" // 活動
+  | "other";
+
+/**
+ * 時段關閉 / 包場活動註記（2026-07-02 新增）
+ *
+ * - scope="full_day"：整日關閉（等同一筆 blackoutDate、但帶事由/原因/設定人）
+ * - scope="time_range"：只關單一時段（例：某日 14:00-17:00 包場，其他時段仍開放）
+ * - reason 必填；createdBy* 由 server 於儲存時蓋章（設定帳號稽核）
+ */
+export interface BookingClosure {
+  id: string;
+  /** YYYY-MM-DD */
+  date: string;
+  scope: "full_day" | "time_range";
+  /** time_range 才有：HH:mm */
+  startTime?: string;
+  endTime?: string;
+  type: BookingClosureType;
+  /** 原因備註（必填）*/
+  reason: string;
+  /** 設定帳號 id（server 蓋章）*/
+  createdByAdminId?: string;
+  /** 設定人顯示名快照（server 蓋章）*/
+  createdByName?: string;
+  /** ISO 時間（server 蓋章）*/
+  createdAt?: string;
+}
+
 export interface BookingScheduleTemplate {
   /** 規則陣列（業主在 admin 後台用日曆勾選 + 批次設定產生）*/
   rules: BookingRule[];
-  /** 完全關閉的特定日期（休假、突發狀況、優先度最高）*/
+  /** 完全關閉的特定日期（休假、突發狀況、優先度最高）— 舊資料相容保留 */
   blackoutDates?: string[];
+  /** 🆕 時段關閉 / 包場活動註記（整日或單一時段、含原因與設定人）*/
+  closures?: BookingClosure[];
   /** 全域備註（顯示於預約頁底部）*/
   notes?: string;
   /** schema 版本 — 未來擴充時 backward-compat 標記 */
