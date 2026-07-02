@@ -79,9 +79,24 @@ const ruleSchema = z.object({
   adminNotes: z.string().max(500).optional(),
 });
 
+// 🆕 2026-07-02：時段關閉 / 包場（reason 必填等細節由 validateAndStampClosures 再驗）
+const closureSchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  scope: z.enum(["full_day", "time_range"]),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
+  type: z.enum(["holiday", "private_booking", "maintenance", "event", "other"]),
+  reason: z.string().max(500),
+  createdByAdminId: z.string().optional(),
+  createdByName: z.string().optional(),
+  createdAt: z.string().optional(),
+});
+
 const scheduleTemplateSchema = z.object({
   rules: z.array(ruleSchema),
   blackoutDates: z.array(z.string()).optional(),
+  closures: z.array(closureSchema).optional(),
   notes: z.string().max(1000).optional(),
   version: z.number().int().optional(),
 });
