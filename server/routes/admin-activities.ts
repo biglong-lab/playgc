@@ -350,7 +350,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
           return res.status(400).json({ error: "validation", details: parsed.error.issues });
         }
         // 🆕 2026-07-02：closures 驗證（原因必填/時段合法）+ 蓋章設定帳號
-        const body = { ...parsed.data } as { scheduleTemplate?: unknown };
+        const body: Record<string, unknown> = { ...parsed.data };
         let newClosureCount = 0;
         if (body.scheduleTemplate) {
           try {
