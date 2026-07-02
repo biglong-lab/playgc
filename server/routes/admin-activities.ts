@@ -12,9 +12,10 @@
 
 import type { Express } from "express";
 import { db } from "../db";
-import { activities, activitySchedules } from "@shared/schema";
+import { activities, activitySchedules, type BookingScheduleTemplate } from "@shared/schema";
 import { eq, and, asc } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
+import { validateAndStampClosures, ClosureValidationError } from "../booking/closure-service";
 import { z } from "zod";
 
 const createSchema = z.object({
