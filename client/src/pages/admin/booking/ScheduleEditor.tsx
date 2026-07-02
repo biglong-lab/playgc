@@ -125,7 +125,7 @@ export default function ScheduleEditor({ template, onChange, isSaving }: Props) 
         <TabsList>
           <TabsTrigger value="rules" data-testid="tab-rules">📋 規則列表</TabsTrigger>
           <TabsTrigger value="calendar" data-testid="tab-calendar">📅 月曆預覽</TabsTrigger>
-          <TabsTrigger value="blackouts" data-testid="tab-blackout-dates">🚫 休假日</TabsTrigger>
+          <TabsTrigger value="blackouts" data-testid="tab-blackout-dates">🚫 休假/包場</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rules" className="space-y-3">
