@@ -350,15 +350,15 @@ export function registerAdminActivitiesRoutes(app: Express) {
           return res.status(400).json({ error: "validation", details: parsed.error.issues });
         }
         // 🆕 2026-07-02：closures 驗證（原因必填/時段合法）+ 蓋章設定帳號
-        const body: Record<string, unknown> = { ...parsed.data };
+        const body = { ...parsed.data };
         let newClosureCount = 0;
         if (body.scheduleTemplate) {
           try {
             const stamped = validateAndStampClosures(
-              body.scheduleTemplate as BookingScheduleTemplate,
+              body.scheduleTemplate as unknown as BookingScheduleTemplate,
               req.admin,
             );
-            body.scheduleTemplate = stamped.template;
+            body.scheduleTemplate = stamped.template as unknown as typeof body.scheduleTemplate;
             newClosureCount = stamped.newClosureCount;
           } catch (e) {
             if (e instanceof ClosureValidationError) {
