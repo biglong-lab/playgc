@@ -28,6 +28,7 @@ import {
 } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
+import { validateAndStampClosures, ClosureValidationError } from "../booking/closure-service";
 import {
   cancelBooking,
   listBookings,
