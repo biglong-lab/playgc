@@ -267,9 +267,27 @@ export function registerAdminBookingRoutes(app: Express) {
             .status(400)
             .json({ error: "validation", message: parsed.error.errors[0]?.message });
         }
+        // 🆕 2026-07-02：closures 驗證（原因必填/時段合法）+ 蓋章設定帳號
+        const data = { ...parsed.data };
+        let newClosureCount = 0;
+        if (data.scheduleTemplate) {
+          try {
+            const stamped = validateAndStampClosures(
+              data.scheduleTemplate as unknown as BookingScheduleTemplate,
+              req.admin,
+            );
+            data.scheduleTemplate = stamped.template as typeof data.scheduleTemplate;
+            newClosureCount = stamped.newClosureCount;
+          } catch (e) {
+            if (e instanceof ClosureValidationError) {
+              return res.status(400).json({ error: "closure_invalid", message: e.message });
+            }
+            throw e;
+          }
+        }
         const updated = await db
           .update(bookingConfigs)
-          .set({ ...parsed.data, updatedAt: new Date() })
+          .set({ ...data, updatedAt: new Date() })
           .where(eq(bookingConfigs.fieldId, req.params.fieldId))
           .returning();
         if (updated.length === 0) {
@@ -282,7 +300,11 @@ export function registerAdminBookingRoutes(app: Express) {
             targetType: "booking_config",
             targetId: req.params.fieldId,
             fieldId: req.params.fieldId,
-            metadata: { keys: Object.keys(parsed.data) },
+            metadata: {
+              keys: Object.keys(parsed.data),
+              newClosures: newClosureCount,
+              closureTotal: (data.scheduleTemplate as { closures?: unknown[] } | undefined)?.closures?.length ?? 0,
+            },
             ipAddress: req.ip,
             userAgent: req.headers["user-agent"],
           });
