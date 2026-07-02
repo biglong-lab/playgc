@@ -348,6 +348,24 @@ export function registerAdminActivitiesRoutes(app: Express) {
         if (!parsed.success) {
           return res.status(400).json({ error: "validation", details: parsed.error.issues });
         }
+        // 🆕 2026-07-02：closures 驗證（原因必填/時段合法）+ 蓋章設定帳號
+        const body = { ...parsed.data } as { scheduleTemplate?: unknown };
+        let newClosureCount = 0;
+        if (body.scheduleTemplate) {
+          try {
+            const stamped = validateAndStampClosures(
+              body.scheduleTemplate as BookingScheduleTemplate,
+              req.admin,
+            );
+            body.scheduleTemplate = stamped.template;
+            newClosureCount = stamped.newClosureCount;
+          } catch (e) {
+            if (e instanceof ClosureValidationError) {
+              return res.status(400).json({ error: "closure_invalid", message: e.message });
+            }
+            throw e;
+          }
+        }
         // 確認 activity 屬於此 field
         const [activity] = await db
           .select({ id: activities.id })
@@ -368,12 +386,12 @@ export function registerAdminActivitiesRoutes(app: Express) {
         if (existing) {
           await db
             .update(activitySchedules)
-            .set({ ...parsed.data, updatedAt: new Date() })
+            .set({ ...body, updatedAt: new Date() })
             .where(eq(activitySchedules.activityId, req.params.id));
         } else {
           await db.insert(activitySchedules).values({
             activityId: req.params.id,
-            ...parsed.data,
+            ...body,
           });
         }
         logAuditAction({
@@ -382,6 +400,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
           targetType: "activity_schedule",
           targetId: req.params.id,
           fieldId: req.admin.fieldId,
+          metadata: { newClosures: newClosureCount },
           ipAddress: req.ip,
           userAgent: req.headers["user-agent"],
         });
