@@ -794,12 +794,25 @@ function matchesApply(date: Date, applyTo: ApplyRange): boolean {
 
 function resolveRule(t: ScheduleTemplate, date: Date): BookingRule | null {
   const ymd = formatYMD(date);
-  if (t.blackoutDates?.includes(ymd)) {
+  const fullDayClosed =
+    t.blackoutDates?.includes(ymd) ||
+    (t.closures ?? []).some((c) => c.date === ymd && c.scope === "full_day");
+  if (fullDayClosed) {
     return { id: "blackout", name: "休館", priority: 999, enabled: true, applyTo: {}, slots: [] };
   }
   const matched = t.rules.filter((r) => r.enabled && matchesApply(date, r.applyTo));
   if (matched.length === 0) return null;
   return [...matched].sort((a, b) => b.priority - a.priority)[0]!;
+}
+
+/** 預覽用：slot 是否被某日 time_range closure 關閉（同 server isSlotClosed）*/
+function slotClosedLocal(t: ScheduleTemplate, ymd: string, start: Date, end: Date): boolean {
+  const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const s = hhmm(start);
+  const e = hhmm(end);
+  return (t.closures ?? []).some(
+    (c) => c.date === ymd && c.scope === "time_range" && !!c.startTime && !!c.endTime && s < c.endTime && e > c.startTime,
+  );
 }
 
 interface ExpandedSlot {
