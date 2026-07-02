@@ -13,6 +13,7 @@
 
 import type {
   BookingApplyRange,
+  BookingClosure,
   BookingRule,
   BookingScheduleTemplate,
   BookingSlotWindow,
