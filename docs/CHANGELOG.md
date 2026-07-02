@@ -7,6 +7,16 @@
 
 ## 2026-07-02
 
+### 📅 預約時段關閉 / 包場活動註記 + 稽核（feat）
+**狀態**：🟢 部署上線（commit `866259df`）
+**細節** → [changes/2026-07-02-booking-slot-closures.md](changes/2026-07-02-booking-slot-closures.md) ｜ [ADR-0022](decisions/0022-booking-slot-closures.md)
+
+- 需求：時段只能整天關，包場時段無法只設定時段；要時段層級調整 + 活動註記 + 記錄設定帳號 + 原因必填
+- 資料模型：`scheduleTemplate` 新增 `closures[]`（整日/單一時段、事由分類、原因、設定人），保留 `blackoutDates` 相容
+- resolver：`getDailySlots` 唯一過濾點同時擋顯示與下訂；full_day 關整天、time_range 過濾重疊梯次
+- server：`validateAndStampClosures` 原因必填強制 + 用 `req.admin` 蓋章設定帳號/時間；活動層+場域層兩端點皆套用 + audit
+- UI：新 ClosuresEditor（休假日 tab 升級）+ 月曆預覽同步；10 單元測試過、tsc+build 過
+
 ### 🎮 CHITO 測試回報 11 隻：6 修復 + 2 AR 新功能上線（fix + feat）
 **狀態**：🟢 部署上線（commits `5f4ab843` `37a93fef` `0f90e0ff` `da2b4c23` `2b791e47` `36cabd4f`）
 **細節** → [changes/2026-07-02-chito-testing-11bugs-triage.md](changes/2026-07-02-chito-testing-11bugs-triage.md)
