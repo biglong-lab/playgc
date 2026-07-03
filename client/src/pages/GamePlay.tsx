@@ -117,10 +117,13 @@ export default function GamePlay() {
 
   // 🆕 Phase 2.B：拿隊伍當前進度（給進入時自動跳到最快頁面）
   //   server schema 不一致時 retry: false 避免無謂重試（玩家仍能玩自己進度）
+  // 🛡️ 2026-07-04 多人穩定性 Phase A1：加 10s 輪詢兜底 —
+  //   team_progress_advance WS 廣播漏接（斷線/背景）時，慢玩家 10 秒內仍能跟上隊伍。
   const { data: activeSession } = useQuery<{ sessionId: string; maxPageIndex: number } | null>({
     queryKey: ["/api/teams", myTeam?.id, "active-session"],
     enabled: !!myTeam?.id,
     retry: false,
+    refetchInterval: 10_000,
     queryFn: async () => {
       const res = await fetch(`/api/teams/${myTeam!.id}/active-session`, {
         credentials: "include",
