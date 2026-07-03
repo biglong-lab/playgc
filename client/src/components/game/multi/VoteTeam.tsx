@@ -95,7 +95,9 @@ export function isVotingComplete(state: TeamVoteState | undefined): boolean {
     case "unanimous":
       return votedCount >= state.totalMembers;
     case "majority":
-      return votedCount > state.totalMembers / 2;
+      // 🛡️ 2026-07-04 多人穩定性 Phase A2：改與 server 一致（team-votes.ts 用 ceil(n/2)）
+      //   原本 `> n/2` 在偶數人數時比 server 多要 1 票 → 兩端完成判定不同步
+      return votedCount >= Math.ceil(state.totalMembers / 2);
     case "display":
       // display 模式：每位玩家投完自己票就可前進，不卡集體
       return votedCount > 0;
