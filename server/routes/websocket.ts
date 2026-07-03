@@ -472,7 +472,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           // team_location/vote/ready 都是「能影響其他隊員看到的訊息」、必須認證才能廣播
           // client 端 useTeamWebSocket 本來就要求 userId、強制這個對正常使用者透明
           case "team_location":
-            if (!ws.authenticatedUserId) break; // silent drop（client 反正都登入才送）
+            if (!ws.authenticatedUserId) { sendAuthRequiredError(ws, "team_location"); break; }
             if (ws.teamId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_location",
