@@ -198,6 +198,7 @@ export function useSessionManager({
       if (existingSession === undefined) return;
       // 玩家在此共用 session 已有進度（重整/斷線回來）→ 正常 restore 接續
       if (existingSession?.session?.id === sharedSessionId) {
+        if (activePages.length === 0) return; // 等頁面載入完才 restore
         restoreSession(existingSession);
         return;
       }
