@@ -487,7 +487,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
 
           case "team_vote":
-            if (!ws.authenticatedUserId) break;
+            if (!ws.authenticatedUserId) { sendAuthRequiredError(ws, "team_vote"); break; }
             if (ws.teamId && message.voteId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_vote_cast",
