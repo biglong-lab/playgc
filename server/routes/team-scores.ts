@@ -6,7 +6,7 @@ import {
   teamScoreHistory,
   teamMembers,
 } from "@shared/schema";
-import { eq, desc, and, isNull } from "drizzle-orm";
+import { eq, desc, and, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { hotPathLimiter } from "../utils/rate-limiters";
