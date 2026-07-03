@@ -63,6 +63,15 @@ export default function GamePlay() {
     return params.get("replay") === "true" || params.get("restart") === "1";
   }, [searchString]);
 
+  // 🐛 2026-07-03 修多人同步根因（ProPlan CHITO 多人卡）：
+  //   隊伍開賽後 lobby 導向 /game/:id?session=<共用id>，但 GamePlay 從未讀取此參數
+  //   → 每個隊員各自建「個人 session」→ 投票狀態(key 含 sessionId)/進度/在線名單全隊腦裂。
+  //   修：讀取 ?session= 傳給 useSessionManager 採用共用 session。
+  const sharedSessionId = useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    return params.get("session") || undefined;
+  }, [searchString]);
+
   const [showChat, setShowChat] = useState(false);
   // 🆕 F1: 離開遊戲確認 Dialog
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
