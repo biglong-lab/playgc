@@ -171,7 +171,9 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
-    touch-action: manipulation;
+    /* 🐛 2026-07-03 CHITO critical：pan-x pan-y = 允許單指捲動、擋雙指縮放
+       （iOS Safari 可能忽略 viewport user-scalable=no、CSS 是第二道防線）*/
+    touch-action: pan-x pan-y;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* 📱 避免 iOS Safari 橡皮筋拖動露出背景 */
