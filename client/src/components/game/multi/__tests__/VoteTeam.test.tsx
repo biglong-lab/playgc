@@ -67,14 +67,13 @@ describe("isVotingComplete", () => {
     expect(isVotingComplete(undefined)).toBe(false);
   });
 
-  it("majority：剛好過半才 true（3/4 過半，2/4 還沒）", () => {
+  // 🛡️ 2026-07-04 Phase A2：門檻改與 server 一致（ceil(n/2)）——
+  //   4 人 ceil(4/2)=2 票即完成（原 client `>n/2` 要 3 票、兩端判定不同步）
+  it("majority：達 ceil(n/2) 即 true（4 人 2 票過、1 票還沒）", () => {
     expect(
       isVotingComplete(
         makeState({
-          ballots: [
-            { userId: "u1", optionIndex: 0, votedAt: "" },
-            { userId: "u2", optionIndex: 1, votedAt: "" },
-          ],
+          ballots: [{ userId: "u1", optionIndex: 0, votedAt: "" }],
         }),
       ),
     ).toBe(false);
@@ -84,7 +83,6 @@ describe("isVotingComplete", () => {
           ballots: [
             { userId: "u1", optionIndex: 0, votedAt: "" },
             { userId: "u2", optionIndex: 1, votedAt: "" },
-            { userId: "u3", optionIndex: 0, votedAt: "" },
           ],
         }),
       ),
