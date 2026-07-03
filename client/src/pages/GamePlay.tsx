@@ -160,6 +160,7 @@ export default function GamePlay() {
     isReplayMode,
     activePages,
     userName: user?.firstName || "玩家",
+    sharedSessionId, // 🆕 隊伍共用 session（?session=）
   });
 
   // 🆕 2026-05-12 #5: pendingDecision = true → 顯示 ResumeDialog 在遊戲頁面之前
