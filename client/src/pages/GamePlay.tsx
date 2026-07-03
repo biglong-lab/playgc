@@ -748,7 +748,9 @@ export default function GamePlay() {
 
       {/* 🆕 2026-05-22 業主 docx #3：字級切換無效根因 — game-prose class 零元件用
           把 class 加到 main、後代繼承 → 字級切換有感 */}
-      <main className="flex-1 relative overflow-hidden game-prose">
+      {/* 🐛 2026-07-03 CHITO critical：原 overflow-hidden 把超高內容裁掉 → 頁面沒有可捲區、
+          單指滑不動（玩家只能雙指縮放後平移）。改 overflow-y-auto 讓長內容可單指捲動。 */}
+      <main className="flex-1 relative overflow-y-auto overflow-x-hidden game-prose">
         {currentPage && (
           // 🛡️ ErrorBoundary 防止單頁 crash 導致整個遊戲白屏
           //   page.id key 讓換頁時重新建立 ErrorBoundary（舊 error 清掉）
