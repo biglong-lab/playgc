@@ -5,6 +5,18 @@
 
 ---
 
+## 2026-07-04
+
+### 🎮 多人穩定性根治：拓撲止血 + 7 項韌性強化（fix）
+**狀態**：🟢 部署上線（commit `11bbdbb7`、單 worker 已驗證）
+**細節** → [changes/2026-07-04-multiplayer-stability-analysis.md](changes/2026-07-04-multiplayer-stability-analysis.md) ｜ [ADR-0023](decisions/0023-ws-single-worker-topology.md)
+
+- 🔴 **頭號根因**：生產 `CLUSTER_WORKERS=4` 違反 WS 單 worker 架構前提（房間/計時器 per-worker、無 Redis）→ 94% 隊伍必有人收不到廣播 → **改回 0**（已驗證單進程）
+- Phase A：隊伍進度 10s 輪詢兜底、投票分母 refetch + 門檻 `ceil(n/2)` 對齊 server、重連立即重拉（投票+52 元件）、iOS `pageshow`
+- Phase B：隊伍計分 DB 原子累加、匿名 socket 錯誤可觀測
+- ADR-0023 紅線：未做 Redis 前禁止再開多 worker
+- 91 測試過；ProPlan 多人卡已更新（3 台真機複測腳本）
+
 ## 2026-07-03
 
 ### 🎮 CHITO 多人同步根因修復（fix）
