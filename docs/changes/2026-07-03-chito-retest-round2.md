@@ -37,6 +37,27 @@
 - **根因（client 配套）**：useSessionManager replay 分支寫死跳 `/game/:id`，把場域路徑（`/f/HPSPACE/game/...`）玩家踢出 → 路由改變 → GamePlay 重掛 → 進度被 refetch 蓋掉。改保留當前 pathname 只去 query
 - 檔：`server/storage/session-storage.ts`、`client/src/pages/hooks/useSessionManager.ts`
 
+## 本輪追加（第 3 批）
+
+### 6. 🔴 多人隊伍同步異常（開始不同步/投票不同步/在線誤判/卡同步中）
+- **根因（code-level 確認）**：隊伍開賽後 lobby 導向 `/game/:id?session=<共用id>`，
+  **但 GamePlay 從未讀取 `?session=` 參數** → 每個隊員在 useSessionManager 各自建了
+  「個人 session」。而投票狀態 key 是 `(teamId, sessionId, pageId)`、WS 房間/進度也綁
+  sessionId → **全隊腦裂**：投票各記各的、進度各走各的、在線名單各看各的——
+  完全吻合回報的所有症狀（3 台開始不同步、投票人數不同步、卡「同步隊伍進度中」）。
+- 修：GamePlay 解析 `?session=` → useSessionManager 新增 `sharedSessionId` 採用分支——
+  首次進入直接採用共用 session（progress row 由首次 PATCH 自動 upsert）；
+  重整/斷線回來時若玩家在共用 session 已有進度 → 正常 restore 接續。
+- 檔：`client/src/pages/GamePlay.tsx`、`client/src/pages/hooks/useSessionManager.ts`
+- 驗證：session/teams 相關 58 測試全過
+- ⚠️ 需 3 台真機複測（建隊→開賽→同頁→投票→切背景 30 秒回來）
+
+### 7. 道具+10（查證完成）
+- 生產 DB 查證：發「草綠服」的是「阿榮好想退伍 1.0」第 6 頁 choice_verify、
+  `rewardPoints` **完全未設定**、道具走 `add_item` action → +10 來自元件「未設定時預設 10」。
+- 處置：**admin 在編輯器把該頁「完成獎勵分數」設 0 即可**（第 1 輪修復已讓顯式 0 生效）。
+  內容變更屬 admin 權限、不由工程直改生產 DB。
+
 ## 判定說明（寫回 ProPlan）
 - **錄影貼圖不動**：測試遊戲 AR 頁多為固定位置模式——固定貼圖在影片中不動**與預覽一致、屬設計行為**；臉部錨定模式的貼圖會隨臉移動（且經 #3 SVG 修復後才會正確錄進影片）。「貼圖錨定真實世界（world tracking）」是另一個功能需求、非本輪 bug。
 
