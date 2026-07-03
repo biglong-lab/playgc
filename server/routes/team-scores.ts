@@ -85,15 +85,17 @@ export function registerTeamScoreRoutes(app: Express, ctx: RouteContext) {
             .json({ message: "隊伍遊戲紀錄不存在" });
         }
 
-        const newScore = (teamSession.teamScore || 0) + body.delta;
-
-        await db
+        // 🛡️ 2026-07-04 多人穩定性 Phase B5：原子累加（DB 端 team_score + delta）
+        //   原本 read-modify-write（先讀再寫絕對值）→ 兩人同時加分會互相蓋掉（lost update）
+        const [updatedSession] = await db
           .update(teamSessions)
           .set({
-            teamScore: newScore,
+            teamScore: sql`COALESCE(${teamSessions.teamScore}, 0) + ${body.delta}`,
             updatedAt: new Date(),
           })
-          .where(eq(teamSessions.id, teamSession.id));
+          .where(eq(teamSessions.id, teamSession.id))
+          .returning({ teamScore: teamSessions.teamScore });
+        const newScore = updatedSession?.teamScore ?? (teamSession.teamScore || 0) + body.delta;
 
         await db.insert(teamScoreHistory).values({
           teamId,
