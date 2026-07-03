@@ -241,6 +241,17 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     disconnectTimers.set(key, timer);
   }
 
+  // 🛡️ 2026-07-04 Phase B6：匿名 socket 送需認證訊息時回 error（原本靜默丟棄、不可觀測）
+  //   client 收到可 refresh token 重連或改走 HTTP；不影響正常已認證使用者
+  function sendAuthRequiredError(ws: WebSocketClient, action: string): void {
+    if (ws.readyState !== WebSocket.OPEN) return;
+    try {
+      ws.send(JSON.stringify({ type: "error", code: "unauthenticated", action }));
+    } catch {
+      /* ignore */
+    }
+  }
+
   wss.on("connection", async (ws: WebSocketClient, request: IncomingMessage) => {
     ws.isAlive = true;
 
