@@ -64,8 +64,14 @@ export const sessionStorageMethods = {
     userId: string,
     gameId: string
   ): Promise<{ session: GameSession; progress: PlayerProgress } | null> {
-    // 🆕 先查最新已完成的 session（玩家曾通關過、語意 = 結束）
-    const completedResults = await db
+    // 🐛 2026-07-03 修「已通關遊戲返回/再玩一次/保留進度異常」（CHITO 複測兩輪 fail）：
+    //   D2-c+ 舊邏輯「completed 無條件優先」→ 玩家點「再玩一次」建了新 playing session 後，
+    //   任何 query refetch / 元件重掛都撈回舊 completed → 直接跳「任務完成」、
+    //   replay 進度像被吃掉、「離開(保留進度)」再進也跳完成。
+    //   新邏輯：取「最新的一筆」（completed / playing 一起比 startedAt）——
+    //   ・通關後未重玩 → 最新 = completed → 照舊顯示通關（保留 D2-c+ 意圖）
+    //   ・點過再玩一次 → 最新 = playing → 正確接續 replay 進度
+    const results = await db
       .select({
         session: gameSessions,
         progress: playerProgress,
@@ -76,39 +82,13 @@ export const sessionStorageMethods = {
         and(
           eq(playerProgress.userId, userId),
           eq(gameSessions.gameId, gameId),
-          eq(gameSessions.status, "completed")
+          inArray(gameSessions.status, ["completed", "playing"])
         )
       )
       .orderBy(desc(gameSessions.startedAt))
       .limit(1);
 
-    if (completedResults.length > 0) {
-      return completedResults[0];
-    }
-
-    // 沒通關過 → 查最近進行中的 session（接續未完成進度）
-    const playingResults = await db
-      .select({
-        session: gameSessions,
-        progress: playerProgress,
-      })
-      .from(playerProgress)
-      .innerJoin(gameSessions, eq(playerProgress.sessionId, gameSessions.id))
-      .where(
-        and(
-          eq(playerProgress.userId, userId),
-          eq(gameSessions.gameId, gameId),
-          eq(gameSessions.status, "playing")
-        )
-      )
-      .orderBy(desc(gameSessions.startedAt))
-      .limit(1);
-
-    if (playingResults.length > 0) {
-      return playingResults[0];
-    }
-
-    return null;
+    return results[0] ?? null;
   },
 
   /**
