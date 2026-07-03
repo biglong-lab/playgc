@@ -7,6 +7,7 @@
 //   const { state, updateState, handleWsMessage, isLoaded, teamId } =
 //     useTeamPagePersistence<MyState>({ gameId, sessionId, pageId, type, defaultState });
 
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
