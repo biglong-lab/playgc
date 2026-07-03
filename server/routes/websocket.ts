@@ -508,7 +508,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           //   單一資料流原則（同 chat case 移除模式）
 
           case "team_ready":
-            if (!ws.authenticatedUserId) break;
+            if (!ws.authenticatedUserId) { sendAuthRequiredError(ws, "team_ready"); break; }
             if (ws.teamId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_ready_update",
