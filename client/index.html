@@ -2,8 +2,10 @@
 <html lang="zh-TW" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <!-- 📱 viewport-fit=cover 支援 iPhone 瀏海；允許縮放（無障礙要求）；interactive-widget 避免鍵盤推擠 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <!-- 📱 viewport-fit=cover 支援 iPhone 瀏海；interactive-widget 避免鍵盤推擠 -->
+    <!-- 🐛 2026-07-03 CHITO critical：雙指縮放讓遊戲版面跑掉/按鈕偏移 → 禁用者縮放
+         （遊戲平台互動優先；放大需求可用系統字級 + 遊戲內字級鈕）-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/icons/pwa-192.png" />
 
