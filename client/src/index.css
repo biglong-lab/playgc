@@ -769,10 +769,10 @@ html[data-app-mode="web"] .pwa-only {
 
 /* ─────────────────────────────────────────────
  * 全域觸控優化（防雙擊放大、避免 300ms tap delay）
- * 保留 viewport user-scalable=yes（無障礙）
+ * 🐛 2026-07-03：改 pan-x pan-y 擋雙指縮放（CHITO critical、遊戲版面優先）
  * ───────────────────────────────────────────── */
 body {
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
   -webkit-tap-highlight-color: transparent;
 }
 
