@@ -45,6 +45,7 @@ export function useSessionManager({
   isReplayMode,
   activePages,
   userName,
+  sharedSessionId,
 }: UseSessionManagerParams) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
