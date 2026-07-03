@@ -272,7 +272,7 @@ export function useSessionManager({
       createSessionMutation.mutate();
     }
     // state.sessionId 已在條件式內 reference、無需重複加 deps
-  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, pendingDecision, userDecided]);
+  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, pendingDecision, userDecided, sharedSessionId]);
 
   function restoreSession(data: ExistingSessionData) {
     const newScore = data.progress?.score || data.session.score || 0;
