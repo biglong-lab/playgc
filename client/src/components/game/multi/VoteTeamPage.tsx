@@ -77,7 +77,7 @@ export default function VoteTeamPage({
     onComplete(...args);
   };
 
-  const { voteState, ensureVote, castVote, handleWsMessage } = useTeamVoteSync({
+  const { voteState, ensureVote, castVote, handleWsMessage, refetchNow } = useTeamVoteSync({
     teamId: teamId ?? "",
     pageId,
     config,
