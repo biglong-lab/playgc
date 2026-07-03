@@ -7,6 +7,15 @@
 
 ## 2026-07-03
 
+### 🎮 CHITO 多人同步根因修復（fix）
+**狀態**：🟢 部署上線（commit `ccfbf063`、npm run deploy 驗證 bundle 一致）
+**細節** → [changes/2026-07-03-chito-retest-round2.md](changes/2026-07-03-chito-retest-round2.md)
+
+- **根因**：GamePlay 從未讀 `?session=`（lobby 開賽帶的共用 session）→ 隊員各建個人 session → 投票/WS/進度全隊腦裂
+- 修：useSessionManager 加 `sharedSessionId` 採用分支（首次採用、重整回來接續進度）
+- 道具+10 查證：發草綠服頁 rewardPoints 未設定 → admin 編輯器設 0 即可（操作步驟已寫入 ProPlan 卡）
+- 58 測試過；ProPlan 8 testing / 4 resolved / 1 in-progress（錄影判定待確認）
+
 ### 🎮 CHITO 複測第 2 輪：critical 觸控 + AR/GPS/session 修復（fix）
 **狀態**：🟢 部署上線（commit `5bc72a7b`、npm run deploy 驗證 bundle 一致）
 **細節** → [changes/2026-07-03-chito-retest-round2.md](changes/2026-07-03-chito-retest-round2.md)
