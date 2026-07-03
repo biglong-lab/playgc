@@ -83,7 +83,11 @@ export const FaceStickersOverlay = memo(function FaceStickersOverlay({
       {stickers.map((s, idx) => {
         const img = preloadedStickers[idx];
         if (preloadDone && !img) return null;
-        const imgRatio = img ? img.naturalWidth / img.naturalHeight : 1;
+        // SVG 無 intrinsic size → naturalWidth=0 → NaN 防護（同 drawArFrame）
+        const imgRatio =
+          img && img.naturalWidth > 0 && img.naturalHeight > 0
+            ? img.naturalWidth / img.naturalHeight
+            : 1;
         const widthPct = faceAnchor.width * 100 * (s.sizeRatio || 0.6);
         const heightPct = widthPct / imgRatio;
         const rotation = faceAnchor.rotationY
