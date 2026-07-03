@@ -26,6 +26,30 @@
 - 生產 `.env`：`CLUSTER_WORKERS=4 → 0`
 - 觀測：部署後監測 CPU/回應時間；若單核逼近上限 → 啟動 Phase D 評估
 
+## 附錄：Redis Pub/Sub 白話說明（2026-07-04 業主問答補充）
+
+Redis 除了當快取，還有「廣播電台」功能：任何程式可對頻道**發佈**訊息、所有**訂閱**該頻道的程式立刻收到——發佈者不需知道聽眾在哪台機器。
+
+**沒有它、開多 worker 時的問題（= 本次事故）**：
+```
+玩家A ── Worker 1  ┐ 房間名單各存自己記憶體
+玩家B ── Worker 2  ┤ 互相看不見
+玩家C ── Worker 3  ┘
+隊長開賽 → REST 打到 Worker 4 → 對著自己（空的）房間廣播
+→ A、B、C 全都收不到 ❌
+```
+
+**有 Redis Pub/Sub 之後**：
+```
+Worker 1/2/3 都訂閱 Redis 頻道「team:1234」
+Worker 4 發佈到頻道 → Redis 轉發給所有 worker
+→ 各 worker 轉給自己身上的玩家 → 全部收到 ✅
+```
+
+**為何現在不做**：單 worker 天然無跨 worker 問題（一行設定）；Redis 方案要把房間、廣播、離線計時器、狀態快取全改集中式（大工程）+ 新增 Redis 故障點。目前瓶頸在 DB 不在 CPU、單核承載綽綽有餘。
+
+**何時做**：單 worker CPU 逼近上限（如多場域同時上百隊）→ 先做 Redis Pub/Sub（Phase D）→ 才能開多 worker → supersede 本 ADR。
+
 ## 相關文件
 - 完整分析 → [changes/2026-07-04-multiplayer-stability-analysis.md](../changes/2026-07-04-multiplayer-stability-analysis.md)
 - 即時層架構 → [0018-realtime-architecture.md](0018-realtime-architecture.md)、[0014-realtime-protocol-cleanup.md](0014-realtime-protocol-cleanup.md)
