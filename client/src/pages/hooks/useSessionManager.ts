@@ -190,7 +190,10 @@ export function useSessionManager({
     // replay 模式：強制建新 session
     if (forceNewSession && !state.sessionId && !createSessionMutation.isPending) {
       if (isReplayMode) {
-        setLocation(`/game/${gameId}`, { replace: true });
+        // 🐛 2026-07-03 修：原本寫死跳 `/game/:id`、把場域路徑（/f/:code/game/:id）玩家
+        //   踢出場域 context → 路由改變 → GamePlay 重掛 → replay 進度被 refetch 蓋掉。
+        //   改保留當前 pathname、只去掉 ?replay query。
+        setLocation(window.location.pathname, { replace: true });
       }
       sessionCreationAttemptedRef.current = true;
       createSessionMutation.mutate();
