@@ -453,7 +453,8 @@ export function setupWebSocket(httpServer: Server): RouteContext {
 
           case "team_chat":
             // 強制 authenticatedUserId 防偽造他人聊天訊息（純廣播、不寫 DB）
-            if (!ws.authenticatedUserId) break;
+            // 🛡️ 2026-07-04 Phase B6：原本靜默丟棄 → 回 error 讓 client 可觀測/重新驗證 token
+            if (!ws.authenticatedUserId) { sendAuthRequiredError(ws, "team_chat"); break; }
             if (ws.teamId) {
               broadcastToTeam(ws.teamId, {
                 type: "team_chat",
