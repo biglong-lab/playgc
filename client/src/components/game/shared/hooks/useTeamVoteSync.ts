@@ -81,6 +81,8 @@ export interface UseTeamVoteSyncResult {
   castVote: (optionIndex: number) => Promise<void>;
   /** 處理 WebSocket 訊息（父層收到 vote_cast/vote_created 時呼叫） */
   handleWsMessage: (msg: VoteWsMessage) => void;
+  /** 🛡️ 2026-07-04 Phase A3：重連時立即重拉票數（不等 10s poll） */
+  refetchNow: () => void;
   /** 是否載入中 */
   isLoading: boolean;
   /** 錯誤訊息 */
