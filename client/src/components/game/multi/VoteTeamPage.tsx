@@ -109,12 +109,22 @@ export default function VoteTeamPage({
   );
 
   // 連 WebSocket（接 vote_cast / vote_created 訊息）
-  useTeamWebSocket({
+  const { isConnected: wsConnected } = useTeamWebSocket({
     teamId,
     userId: user?.id,
     userName: myDisplayName,
     onMessage: handleVoteWsMessage,
   });
+
+  // 🛡️ 2026-07-04 多人穩定性 Phase A3：ws 重連 → 立即重拉票數（不等 10s poll）
+  //   斷線期間漏接的 vote_cast 廣播在重連瞬間補回（同 race 元件範本）
+  const wsHadConnectedRef = useRef(false);
+  useEffect(() => {
+    if (wsConnected) {
+      if (wsHadConnectedRef.current) refetchNow();
+      wsHadConnectedRef.current = true;
+    }
+  }, [wsConnected, refetchNow]);
 
   // 🆕 多人元件入場時提示玩家「建議開啟對講機」（同 session + 同 team 只一次）
   useWalkieSuggestion({ teamId });
