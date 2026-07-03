@@ -164,5 +164,5 @@ export function useTeamGameState<T extends Record<string, unknown>>({
     [type],
   );
 
-  return { state, version, isLoaded, updateState, handleWsMessage };
+  return { state, version, isLoaded, updateState, handleWsMessage, refetchNow: fetchState };
 }
