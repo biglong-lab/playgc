@@ -190,6 +190,32 @@ export function useSessionManager({
     //   修法：state.sessionId 已存在（新建 / restore 成功）→ 一律不再覆蓋 state
     if (state.sessionId) return;
 
+    // 🆕 2026-07-03 多人同步根因修復：隊伍開賽 lobby 帶 ?session=<共用id>
+    //   全隊必須用「同一個 session」（投票狀態/WS 房間/進度都以 sessionId 為 key）。
+    //   原本沒讀此參數 → 每個隊員各自建個人 session → 全隊腦裂。
+    if (sharedSessionId) {
+      // 等 existingSession query 完成再決定（undefined = 載入中）
+      if (existingSession === undefined) return;
+      // 玩家在此共用 session 已有進度（重整/斷線回來）→ 正常 restore 接續
+      if (existingSession?.session?.id === sharedSessionId) {
+        restoreSession(existingSession);
+        return;
+      }
+      // 首次進入 → 直接採用共用 session、從第 1 頁開始
+      //（progress row 由首次 PATCH /progress 自動建立、之後重整走上面 restore 分支）
+      setState({
+        sessionId: sharedSessionId,
+        score: 0,
+        inventory: [],
+        variables: {},
+        currentPageIndex: 0,
+        isCompleted: false,
+        completedPageIds: [],
+      });
+      setHasRestoredProgress(false);
+      return;
+    }
+
     // replay 模式：強制建新 session
     if (forceNewSession && !state.sessionId && !createSessionMutation.isPending) {
       if (isReplayMode) {
