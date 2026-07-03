@@ -212,6 +212,12 @@ export function useTeamVoteSync({
     return () => clearInterval(id);
   }, [enabled, voteId, fetchLatestBallots]);
 
+  // 🛡️ 2026-07-04 多人穩定性 Phase A3：重連立即重拉（不等 10s poll）
+  //   給 Page 在 ws isConnected 由 false→true 時呼叫
+  const refetchNow = useCallback(() => {
+    if (voteId) void fetchLatestBallots(voteId);
+  }, [voteId, fetchLatestBallots]);
+
   // 投票
   const castVote = useCallback(
     async (optionIndex: number) => {
