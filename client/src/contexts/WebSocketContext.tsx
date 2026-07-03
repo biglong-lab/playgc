@@ -313,6 +313,7 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
 
     return () => {
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pageshow", onVisibilityChange);
       clearInterval(keepaliveInterval);
     };
   }, [connect]);
