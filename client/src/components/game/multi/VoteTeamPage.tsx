@@ -10,7 +10,7 @@
 //
 // 設計依據：docs/GAME_COMPONENT_MULTIPLAYER_PLAN.md §6.2 + VOTE_SYNC_PLAN.md
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
