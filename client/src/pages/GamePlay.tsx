@@ -359,15 +359,14 @@ export default function GamePlay() {
     });
   }, [currentPageIndex, myTeam?.id]);
 
-  // 🆕 Phase 2.B：進入遊戲時，若隊伍 maxPageIndex > 自己 → 跳上去
-  //   只在 maxPageIndex 第一次有值 + currentPageIndex 還很前面時觸發（避免覆蓋使用者操作）
-  const hasJumpedToTeamMaxRef = useRef(false);
+  // 🆕 Phase 2.B：若隊伍 maxPageIndex > 自己 → 跳上去
+  // 🛡️ 2026-07-04 多人穩定性 Phase A1：原本用 ref 只跳一次（進場時），
+  //   WS 漏接後就永遠落後。改為持續兜底（配合上方 10s 輪詢）——
+  //   語意與 WS onProgressAdvance 一致：只前進不後退、追上後不再觸發。
   useEffect(() => {
-    if (hasJumpedToTeamMaxRef.current) return;
     if (!activeSession || !activePages.length) return;
     const teamMax = activeSession.maxPageIndex;
     if (teamMax > currentPageIndex) {
-      hasJumpedToTeamMaxRef.current = true;
       const skippedIds = activePages.slice(currentPageIndex, teamMax).map((p) => p.id);
       toast({
         title: "🏃 跟上隊伍進度",
