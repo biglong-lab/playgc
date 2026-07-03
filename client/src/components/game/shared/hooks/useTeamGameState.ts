@@ -29,6 +29,8 @@ export interface UseTeamGameStateResult<T> {
   isLoaded: boolean;
   updateState: (newState: T) => Promise<void>;
   handleWsMessage: (msg: { type: string; componentType?: string; state?: unknown; version?: number }) => void;
+  /** 🛡️ 2026-07-04 Phase A3：立即重拉 server 狀態（重連補漏用、version 守衛防倒退）*/
+  refetchNow: () => void;
 }
 
 export function useTeamGameState<T extends Record<string, unknown>>({
