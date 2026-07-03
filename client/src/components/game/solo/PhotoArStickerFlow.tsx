@@ -134,19 +134,28 @@ export default function PhotoArStickerFlow({
   const gestureEnabled = !useFaceTracking;
 
   // 量測預覽容器短邊（給 CSS transform 用）— 與 hook 內 getBoundingClientRect 同基準
+  // 🐛 2026-07-03 修「單指拖不動貼圖」：原本只依賴 stage、但 stage=camera 初期
+  //   相機還在 initializing、previewRef 尚未掛載 → 量測 early-return 後不再重跑
+  //   → previewShort 永遠 0 → 拖曳位移 ×0、視覺完全不動。
+  //   修：加 camera.cameraReady 依賴（相機就緒、previewRef 掛載後重量測）+ fallback 視窗尺寸。
   useEffect(() => {
     if (stage !== "camera" || !gestureEnabled) return;
     const el = previewRef.current;
-    if (!el) return;
+    if (!el) {
+      // previewRef 未掛載（相機 initializing）→ 先用視窗尺寸當 fallback
+      setPreviewShort(Math.min(window.innerWidth, window.innerHeight));
+      return;
+    }
     const measure = () => {
       const r = el.getBoundingClientRect();
-      setPreviewShort(Math.min(r.width, r.height));
+      const short = Math.min(r.width, r.height);
+      setPreviewShort(short > 0 ? short : Math.min(window.innerWidth, window.innerHeight));
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [stage, gestureEnabled]);
+  }, [stage, gestureEnabled, camera.cameraReady]);
 
   // 🎬 AR #2（CHITO）：長按錄影 — 錄「已合成貼圖」的 canvas
   const recorder = useArVideoRecorder();
