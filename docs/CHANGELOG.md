@@ -5,6 +5,20 @@
 
 ---
 
+## 2026-07-03
+
+### 🎮 CHITO 複測第 2 輪：critical 觸控 + AR/GPS/session 修復（fix）
+**狀態**：🟢 部署上線（commit `5bc72a7b`、npm run deploy 驗證 bundle 一致）
+**細節** → [changes/2026-07-03-chito-retest-round2.md](changes/2026-07-03-chito-retest-round2.md)
+
+- 🔴 **critical 單指無法滑動/雙指縮放**：main overflow-hidden 裁掉可捲區 + viewport 允許縮放 → main 改可縱向捲、viewport 禁縮放、body `pan-x pan-y`
+- **AR 拖曳不動**：previewShort 在相機 initializing 時量測失敗後永遠 0 → 加 cameraReady 依賴
+- **AR 成品沒貼圖**：SVG naturalWidth=0 → ratio NaN → drawImage 靜默不畫 → NaN 防護
+- **GPS**：Navigation 圖示本體偏 45° → 換 Navigation2；加 `?gpsdebug=1` 診斷面板
+- **session**：getActiveSessionByUserAndGame「completed 無條件優先」→ 改取最新一筆（修 replay 被舊 completed 蓋掉）；replay 保留場域路徑
+- 判定：錄影固定貼圖不動=設計行為；world tracking 轉功能需求
+- 上輪 4 隻複測通過結案（刷分/訪客暱稱/380px/選擇驗證+10）；全數寫回 ProPlan
+
 ## 2026-07-02
 
 ### 📅 預約時段關閉 / 包場活動註記 + 稽核（feat）
