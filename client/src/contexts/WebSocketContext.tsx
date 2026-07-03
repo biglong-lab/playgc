@@ -295,6 +295,9 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
       }
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
+    // 🛡️ 2026-07-04 多人穩定性 Phase A4：iOS Safari 從 bfcache/背景回前景
+    //   有時只發 pageshow 不發 visibilitychange → 補監聽（同一 handler、冪等）
+    window.addEventListener("pageshow", onVisibilityChange);
 
     // 25 秒 client keepalive（對抗 browser tab background throttle）
     const keepaliveInterval = setInterval(() => {
