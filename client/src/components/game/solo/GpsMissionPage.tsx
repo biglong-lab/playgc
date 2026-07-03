@@ -527,7 +527,7 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
                   {isLocating ? (
                     <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <Navigation className="w-4 h-4" />
+                    <Navigation2 className="w-4 h-4" />
                   )}
                   {isLocating ? "定位中..." : "開始導航"}
                 </Button>
