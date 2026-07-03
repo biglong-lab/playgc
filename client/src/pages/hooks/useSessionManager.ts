@@ -24,6 +24,8 @@ interface UseSessionManagerParams {
   isReplayMode: boolean;
   activePages: Page[];
   userName: string;
+  /** 🆕 2026-07-03 多人同步：隊伍開賽時 lobby 帶 ?session=<共用id>、全隊採用同一 session */
+  sharedSessionId?: string;
 }
 
 interface SessionState {
