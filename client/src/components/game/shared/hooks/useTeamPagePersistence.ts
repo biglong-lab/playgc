@@ -56,13 +56,23 @@ export function useTeamPagePersistence<T extends Record<string, unknown>>({
   });
 
   // WS 訂閱（接 team_state_updated）
-  const { handleWsMessage } = gameState;
-  useTeamWebSocket({
+  const { handleWsMessage, refetchNow } = gameState;
+  const { isConnected } = useTeamWebSocket({
     teamId,
     userId,
     userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
     onMessage: handleWsMessage as (msg: unknown) => void,
   });
+
+  // 🛡️ 2026-07-04 多人穩定性 Phase A3：ws 重連 → 立即重拉狀態（不等 10s poll）
+  //   覆蓋所有走 useTeamPagePersistence 的 52 個多人元件；version 守衛防倒退
+  const wsHadConnectedRef = useRef(false);
+  useEffect(() => {
+    if (isConnected) {
+      if (wsHadConnectedRef.current) refetchNow();
+      wsHadConnectedRef.current = true;
+    }
+  }, [isConnected, refetchNow]);
 
   return { ...gameState, teamId, userId };
 }
