@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Navigation, Locate, CheckCircle, AlertCircle, QrCode, Volume2, VolumeX } from "lucide-react";
+import { MapPin, Navigation2, Locate, CheckCircle, AlertCircle, QrCode, Volume2, VolumeX } from "lucide-react";
 import type { GpsMissionConfig } from "@shared/schema";
 import GpsMissionMap from "../gps-mission/GpsMissionMap";
 import {
