@@ -58,6 +58,9 @@ export default function VoteTeamPage({
   } = useQuery<MyTeamResponse | null>({
     queryKey: [`/api/games/${gameId}/my-team`],
     enabled: !!gameId && !!user,
+    // 🛡️ 2026-07-04 多人穩定性 Phase A2：投票分母（totalMembers）需跟上成員變動
+    //   （原本不 refetch → 投票中有人加入/離開時各裝置分母不同 → 完成判定不同步）
+    refetchInterval: 10_000,
   });
 
   // 整合 hook（teamId 還沒有時 enabled=false 不發 request）
