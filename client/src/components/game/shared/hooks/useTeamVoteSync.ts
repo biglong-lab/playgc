@@ -298,6 +298,7 @@ export function useTeamVoteSync({
     ensureVote,
     castVote,
     handleWsMessage,
+    refetchNow,
     isLoading,
     error,
   };
