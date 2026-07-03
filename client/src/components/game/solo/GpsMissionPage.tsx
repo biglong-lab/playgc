@@ -360,11 +360,22 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
       : (targetBearing - compass.heading + 360) % 360;
 
     return (
-      <div 
-        className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transition-transform duration-300"
-        style={{ transform: `rotate(${angle}deg)` }}
-      >
-        <Navigation className="w-8 h-8 text-primary" />
+      <div className="flex flex-col items-center gap-1">
+        <div
+          className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transition-transform duration-300"
+          style={{ transform: `rotate(${angle}deg)` }}
+        >
+          {/* 🐛 2026-07-03 複測回饋：lucide Navigation 圖形本體指向東北(45°偏移)、
+              玩家怎麼轉都對不準、體感「方向相反」。換 Navigation2（正上方）→ angle=0 = 正前方。 */}
+          <Navigation2 className="w-8 h-8 text-primary fill-primary/30" />
+        </div>
+        {/* 🔬 ?gpsdebug=1 診斷面板：顯示 朝向/方位角/箭頭角 原始數據（給測試員回報用）*/}
+        {gpsDebug && (
+          <div className="text-[10px] text-muted-foreground tabular-nums bg-muted/50 rounded px-1.5 py-0.5" data-testid="gps-debug-panel">
+            朝向 {compass.heading === null ? "無(未授權?)" : Math.round(compass.heading) + "°"} ·
+            目標 {Math.round(targetBearing)}° · 箭頭 {Math.round(angle)}°
+          </div>
+        )}
       </div>
     );
   };
