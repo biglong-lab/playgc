@@ -2900,11 +2900,13 @@ export function registerScenarioRoutes(app: Express) {
             description: games.description,
             fieldId: games.fieldId,
             createdAt: games.createdAt,
+            isDemo: games.isDemo,
           })
           .from(games);
 
-        // 過濾：場域隔離 + 含 [scenario:] 標記 + 最近 30 天
+        // 過濾：排除 demo + 場域隔離 + 含 [scenario:] 標記 + 最近 30 天
         const scenarioGames = allGames.filter((g) => {
+          if (g.isDemo) return false; // 🆕 2026-07-05：demo 不計入正式統計
           if (!g.description?.includes("[scenario:")) return false;
           if (!isSuperAdmin && g.fieldId !== fieldId) return false;
           if (g.createdAt && new Date(g.createdAt) < thirtyDaysAgo) return false;
