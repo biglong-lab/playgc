@@ -161,8 +161,10 @@ export default function HostScreen() {
       <main className="flex-1 flex flex-col">
         {hostPage ? (
           // 有 host_* pageType → 渲染對應元件（PollLive / EmojiReact ...）
+          // 🆕 2026-07-05 UX：角落常駐玩家加入 QR（掃大螢幕即可入場、免另印）
           <div className="flex-1 flex">
             <HostPageRenderer page={hostPage} />
+            <HostJoinQr playPath={`/play/${sessionId}`} />
           </div>
         ) : (
           // 沒有對應 pageType → 顯示等待畫面 + 玩家網址
