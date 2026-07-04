@@ -35,6 +35,8 @@ const CATEGORIES: ScenarioCategory[] = [
 
 export default function TemplateMarket() {
   const [, navigate] = useLocation();
+  // 公開頁：不導向登入（同詳情頁 6/13 修法）；有 admin 身分時才顯示後台捷徑
+  const { admin } = useAdminAuth({ redirectTo: "" });
 
   const liveCount = SCENARIO_TEMPLATES.filter((s) => s.status === "live").length;
   const previewCount = SCENARIO_TEMPLATES.filter((s) => s.status === "preview").length;
