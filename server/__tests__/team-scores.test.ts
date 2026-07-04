@@ -222,7 +222,8 @@ describe("Team Scores 路由", () => {
         teamId: "team-1",
         teamScore: null,
       });
-      mockDb._chain.where.mockResolvedValueOnce(undefined);
+      // COALESCE(null, 0) + 25 = 25 — null 起算行為由 DB 端 COALESCE 保證、mock 回傳值表達
+      mockDb._chain.returning.mockResolvedValueOnce([{ teamScore: 25 }]);
       mockDb._chain.values.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
