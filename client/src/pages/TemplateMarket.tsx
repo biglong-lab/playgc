@@ -192,20 +192,33 @@ function ScenarioCard({ scenario, onClick }: ScenarioCardProps) {
           <Badge className={`${statusColor} flex-shrink-0`}>{statusLabel}</Badge>
         </div>
 
+        {/* 🆕 2026-07-05 UX：把「免登入掃碼即玩」最大賣點提升到卡片層（原本只在詳情頁）*/}
+        <Badge
+          variant="secondary"
+          data-testid={`badge-login-mode-${scenario.id}`}
+          className={
+            isAllHost(scenario)
+              ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
+              : "bg-amber-500/20 text-amber-800 dark:text-amber-300"
+          }
+        >
+          {isAllHost(scenario) ? "🟢 免登入・掃 QR 即玩" : "🔑 需組隊登入"}
+        </Badge>
+
         <div className="text-xs text-muted-foreground space-y-0.5">
           <div>👥 {scenario.estimatedPlayers}</div>
           <div>⏱ {scenario.estimatedDuration}</div>
         </div>
 
         <div className="flex flex-wrap gap-1.5">
-          {scenario.components.slice(0, 4).map((c) => (
+          {scenario.components.slice(0, 6).map((c) => (
             <Badge key={c.pageType} variant="outline" className="text-xs">
               {c.label}
             </Badge>
           ))}
-          {scenario.components.length > 4 && (
+          {scenario.components.length > 6 && (
             <Badge variant="outline" className="text-xs">
-              +{scenario.components.length - 4}
+              +{scenario.components.length - 6}
             </Badge>
           )}
         </div>
