@@ -2,8 +2,33 @@
 //
 // 覆蓋：純函式 parseHitRecord + hook injectHit / clearHits 介面
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
+
+// 🌐 Phase 3 起 hook 永遠走全域 WebSocketProvider（useWebSocket）
+//   單元測試不架 Provider、mock 一個「未連線、全 no-op」的假 Provider
+//   （enabled=false 情境本來就不應觸發任何 WS 行為）
+vi.mock("@/contexts/WebSocketContext", () => ({
+  useWebSocket: () => ({
+    isConnected: false,
+    isReconnecting: false,
+    acquire: () => () => {},
+    ensureConnected: () => () => {},
+    registerOnConnect: () => () => {},
+    subscribe: () => () => {},
+    send: () => false,
+    getConnectionStats: () => ({
+      connectAt: 0,
+      disconnectCount: 0,
+      reconnectSuccessCount: 0,
+      reconnectFailCount: 0,
+      isConnected: false,
+      isReconnecting: false,
+      currentAttempts: 0,
+    }),
+  }),
+}));
+
 import {
   useTeamShootingSync,
   parseHitRecord,
