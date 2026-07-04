@@ -3,7 +3,7 @@
 // 路徑：/template-market/:scenarioId
 // 用途：完整介紹單一情境、列出元件、提供試玩入口、銷售 CTA
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useRoute, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
