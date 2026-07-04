@@ -157,15 +157,18 @@ describe("對戰報名 API", () => {
     const app = createApp();
     const fakeReg = { id: "reg-new", slotId: "slot-1", userId: "user-1", status: "registered" };
 
+    // 通知功能會用 slotDate + startTime 組時間（combineSlotDateTime），缺這兩欄會 throw → 500
     mockStorage.getSlot.mockResolvedValue({
       id: "slot-1", status: "open", venueId: "v-1",
+      slotDate: "2026-07-10", startTime: "10:00",
       minPlayersOverride: null, maxPlayersOverride: null,
     });
     mockStorage.getRegistration.mockResolvedValue(null);
-    mockStorage.getVenue.mockResolvedValue({ id: "v-1", maxPlayers: 20, minPlayers: 4 });
+    mockStorage.getVenue.mockResolvedValue({ id: "v-1", name: "場地A", maxPlayers: 20, minPlayers: 4 });
     mockStorage.getActiveRegistrationCount.mockResolvedValue(3);
     mockStorage.createRegistration.mockResolvedValue(fakeReg);
     mockStorage.updateSlotCount.mockResolvedValue(undefined);
+    mockStorage.updateSlot.mockResolvedValue(undefined);
 
     const res = await request(app)
       .post("/api/battle/slots/slot-1/register")
