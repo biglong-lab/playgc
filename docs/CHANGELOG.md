@@ -5,6 +5,18 @@
 
 ---
 
+## 2026-07-05
+
+### 🎯 Template-Market 12 情境體驗優化（feat）
+**狀態**：🟢 部署上線（commit `a37f6560`）
+**細節** → [changes/2026-07-05-template-market-ux.md](changes/2026-07-05-template-market-ux.md)
+
+- 四段漏斗分析（瀏覽/理解/體驗/轉化）找出斷點，W1+W2 修復
+- W1：卡片亮「免登入掃碼即玩」badge、修過時文案、詳情頁元件→流程時間軸、kids-adventure 分類修正
+- W2：multi 登入牆順滑化（GameBySlug 預告 + GamePlay 明確畫面 + Home 登入後回跳）、HostScreen 常駐加入 QR、建場佔位字防呆
+- 守紅線（不灌情境/不加無 renderer 元件/不動 server）；tsc+build+測試過
+- 待業主決策：訪客 demo 沙盒（最大轉化利器、需動 server）
+
 ## 2026-07-04
 
 ### 🎮 多人穩定性根治：拓撲止血 + 7 項韌性強化（fix）
