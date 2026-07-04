@@ -12,12 +12,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Sparkles, Tv, Users, Gift } from "lucide-react";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import {
   SCENARIO_TEMPLATES,
   SCENARIO_CATEGORY_LABELS,
   type ScenarioCategory,
   type ScenarioTemplate,
 } from "@shared/scenario-templates";
+
+/** 情境是否全程免登入（全部元件都是 host 軸線、掃 QR 即玩）— 與詳情頁判斷一致 */
+function isAllHost(scenario: ScenarioTemplate): boolean {
+  return scenario.components.every((c) => c.axis === "host");
+}
 
 const CATEGORIES: ScenarioCategory[] = [
   "social",
