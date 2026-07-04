@@ -126,8 +126,7 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
   }, [votingTimeLimit, hasVoted, selectedOption, hasValidOptions]);
 
   const getIcon = (iconName?: string) => {
-    if (!iconName) return null;
-    const Icon = (LucideIcons as any)[iconName];
+    const Icon = getIconByName(iconName);
     return Icon ? <Icon className="w-5 h-5" /> : null;
   };
 
