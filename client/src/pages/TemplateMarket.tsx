@@ -74,10 +74,11 @@ export default function TemplateMarket() {
           <h2 className="text-3xl md:text-5xl font-display font-bold">
             一個情境，<span className="text-primary">一鍵變活動</span>
           </h2>
+          {/* 🔧 2026-07-05 UX：文案對齊現況 — AI 客製 + 一鍵建場已上線、且社交情境全程免登入 */}
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             12 個預組好的情境模板 — 婚禮、園遊會、街區、企業、空間
             <br />
-            選一個適合你的場合，套用後即可上線
+            選好情境、AI 客製內容、一鍵建場 — <span className="text-foreground font-medium">2 分鐘開出一場活動</span>
           </p>
           <div className="flex justify-center gap-3 pt-2">
             <Badge variant="secondary" className="gap-1.5">
