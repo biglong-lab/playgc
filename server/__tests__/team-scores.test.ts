@@ -7,6 +7,8 @@ const { mockDb } = vi.hoisted(() => {
   const mockUpdate = vi.fn();
   const mockSet = vi.fn();
   const mockWhere = vi.fn();
+  // 2026-07-04 原子累加修復後：update chain 以 .returning() 結尾（回傳 DB 累加後的新值）
+  const mockReturning = vi.fn();
   const mockInsert = vi.fn();
   const mockValues = vi.fn();
   // 路由新增 §19 防作弊：db.select().from(teamMembers).where(...).limit(1)
@@ -18,6 +20,7 @@ const { mockDb } = vi.hoisted(() => {
   // 鏈式操作支援
   mockUpdate.mockReturnValue({ set: mockSet });
   mockSet.mockReturnValue({ where: mockWhere });
+  mockWhere.mockReturnValue({ returning: mockReturning });
   mockInsert.mockReturnValue({ values: mockValues });
   // select chain
   mockSelect.mockReturnValue({ from: mockFrom });
@@ -34,7 +37,13 @@ const { mockDb } = vi.hoisted(() => {
       update: mockUpdate,
       insert: mockInsert,
       select: mockSelect,
-      _chain: { set: mockSet, where: mockWhere, values: mockValues, limit: mockLimit },
+      _chain: {
+        set: mockSet,
+        where: mockWhere,
+        returning: mockReturning,
+        values: mockValues,
+        limit: mockLimit,
+      },
     },
   };
 });
