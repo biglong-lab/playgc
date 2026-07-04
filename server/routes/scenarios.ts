@@ -3316,6 +3316,8 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
       gameMode,
       editorMode,
       publicSlug: slug,
+      isDemo,
+      demoExpiresAt,
     })
     .returning();
 
