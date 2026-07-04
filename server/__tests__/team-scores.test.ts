@@ -243,7 +243,8 @@ describe("Team Scores 路由", () => {
         teamId: "team-1",
         teamScore: 100,
       });
-      mockDb._chain.where.mockResolvedValueOnce(undefined);
+      // 原子累加：100 + 5 = 105
+      mockDb._chain.returning.mockResolvedValueOnce([{ teamScore: 105 }]);
       mockDb._chain.values.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
