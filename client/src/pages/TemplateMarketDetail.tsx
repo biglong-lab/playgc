@@ -66,6 +66,20 @@ export default function TemplateMarketDetail() {
   const scenarioId = params?.scenarioId;
   const scenario = scenarioId ? getScenarioById(scenarioId) : undefined;
 
+  // 🆕 2026-07-05 UX：偵測含「待編輯佔位字」的元件（純前端掃 config），
+  //   建場後提醒 admin 用 AI 客製或後台編輯，避免佔位字帶到玩家眼前
+  const placeholderComponents = useMemo(() => {
+    if (!scenario) return [] as string[];
+    const RE = /請(主辦|講師|主持|admin|你|替換|改成|編輯)/;
+    const hit = (v: unknown): boolean => {
+      if (typeof v === "string") return RE.test(v);
+      if (Array.isArray(v)) return v.some(hit);
+      if (v && typeof v === "object") return Object.values(v).some(hit);
+      return false;
+    };
+    return scenario.components.filter((c) => hit(c.config)).map((c) => c.label);
+  }, [scenario]);
+
   const handleAiPreview = async () => {
     if (!scenarioId) return;
     const trimmed = aiContext.trim();
