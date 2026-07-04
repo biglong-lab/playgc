@@ -399,6 +399,14 @@ app.use((req, res, next) => {
 
   // 🔔 cron 只在單一排程實例跑（避免 cluster N workers 重複推播 N 次）
   if (IS_SCHEDULER_INSTANCE) {
+    // 🧹 啟動 demo 沙盒清理 cron（每 30 分清過期訪客體驗遊戲）2026-07-05
+    try {
+      const { startDemoCleanupCron } = await import("./lib/demo-cleanup-cron");
+      startDemoCleanupCron();
+    } catch (err) {
+      console.error("[boot] startDemoCleanupCron 失敗:", err);
+    }
+
     // 📅 啟動預約提醒 cron（每分鐘掃即將開始的預約 → 推 LINE）
     try {
       const { startBookingReminderCron } = await import("./booking/booking-reminder-cron");
