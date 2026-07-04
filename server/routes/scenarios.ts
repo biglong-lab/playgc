@@ -3280,10 +3280,16 @@ interface InstantiateComponentParams {
   collector: ScenarioInstance[];
   /** W9 D2: 若有 AI 生成的客製 config，優先使用 */
   aiConfig?: Record<string, unknown> | null;
+  /** 🆕 2026-07-05：訪客 demo 沙盒（免登入臨時遊戲、到期自動清理）*/
+  isDemo?: boolean;
+  /** demo 遊戲到期時間（isDemo=true 時設）*/
+  demoExpiresAt?: Date | null;
 }
 
 async function instantiateComponent(params: InstantiateComponentParams): Promise<void> {
   const { scenarioId, scenarioDisplayName, component, fieldId, expiresAt, collector, aiConfig } = params;
+  const isDemo = params.isDemo ?? false;
+  const demoExpiresAt = params.demoExpiresAt ?? null;
 
   const isHost = component.axis === "host";
   const gameMode = getGameModeForComponent(component);
