@@ -2,8 +2,10 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import * as LucideIcons from "lucide-react";
 import { Clock, AlertTriangle, ChevronRight } from "lucide-react";
+// 🔧 2026-07-05 bundle 優化：原本 `import * as LucideIcons`（整包 ~1500 圖示、760KB）
+//   改用精選 ICON_CATALOG 的 getIconByName（admin IconPicker 本就只從此 catalog 選）
+import { getIconByName } from "@/components/shared/IconPicker";
 import type { ButtonConfig } from "@shared/schema";
 
 interface ButtonPageProps {
