@@ -75,6 +75,12 @@ vi.mock("drizzle-orm", () => ({
   desc: vi.fn((col: string) => ({ op: "desc", col })),
   and: vi.fn((...conds: any[]) => ({ op: "and", conds })),
   isNull: vi.fn((col: string) => ({ op: "isNull", col })),
+  // 原子累加用的 sql 標籤模板（COALESCE(team_score,0)+delta）— 回傳可辨識的標記物件
+  sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
+    op: "sql",
+    strings,
+    values,
+  })),
 }));
 
 import { registerTeamScoreRoutes } from "../routes/team-scores";
