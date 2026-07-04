@@ -416,11 +416,18 @@ describe("地點路由 (locations)", () => {
 
     it("成功記錄訪問並廣播", async () => {
       const { app, ctx } = createApp();
-      mockStorage.getSession.mockResolvedValue({ id: "s1" });
+      // 2026-05-22 多元定位驗證上線後：空 body 會被 verifyGps 以「缺少 GPS 座標」擋（400）
+      // 所以 location 需帶座標 + verificationMode，request 需帶範圍內的 lat/lng
+      mockStorage.getSession.mockResolvedValue({ id: "s1", gameId: "game-1" });
       mockStorage.getLocation.mockResolvedValue({
         id: 1,
         name: "地點A",
         points: 15,
+        gameId: "game-1",
+        latitude: "25.033",
+        longitude: "121.565",
+        radius: 50,
+        verificationMode: "gps",
       });
       mockStorage.hasVisitedLocation.mockResolvedValue(false);
       mockStorage.createLocationVisit.mockResolvedValue({
@@ -436,7 +443,7 @@ describe("地點路由 (locations)", () => {
       const res = await request(app)
         .post("/api/sessions/s1/locations/1/visit")
         .set(AUTH)
-        .send({});
+        .send({ lat: 25.033, lng: 121.565 });
 
       expect(res.status).toBe(201);
       expect(ctx.broadcastToSession).toHaveBeenCalledWith(
