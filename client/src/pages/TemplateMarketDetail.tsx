@@ -491,6 +491,18 @@ export default function TemplateMarketDetail() {
                   hostToken {new Date(launchResult.expiresAt).toLocaleString("zh-TW")} 前有效
                 </div>
               </div>
+              {/* 🆕 2026-07-05 UX：佔位字提醒（用 component.config 直接建場、非 AI 客製時）*/}
+              {placeholderComponents.length > 0 && (
+                <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm space-y-1" data-testid="placeholder-warning">
+                  <div className="font-medium text-amber-800 dark:text-amber-300">
+                    ⚠️ {placeholderComponents.length} 個元件含待編輯的範例內容
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {placeholderComponents.join("、")}
+                    ——建議用上方「AI 客製內容」重建，或到管理後台編輯題目/答案後再開場，避免玩家看到範例文字。
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 {launchResult.instances.map((inst) => (
                   <InstanceRow key={inst.sessionId} instance={inst} />
