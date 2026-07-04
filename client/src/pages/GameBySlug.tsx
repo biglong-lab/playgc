@@ -223,6 +223,16 @@ export default function GameBySlug() {
               )}
             </div>
             
+            {/* 🔧 2026-07-05 UX：team 模式預告需登入組隊（原本進 GamePlay 才被踢、玩家措手不及）*/}
+            {game.gameMode === "team" && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-center">
+                <p className="text-sm text-amber-800 dark:text-amber-300 flex items-center justify-center gap-2">
+                  🔑 此為多人組隊遊戲，開始前需登入
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">登入後會自動回到這裡</p>
+              </div>
+            )}
+
             {game.locationLockEnabled && game.lockLocationName && (
               <div className="bg-muted/50 rounded-lg p-4 text-center">
                 <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
