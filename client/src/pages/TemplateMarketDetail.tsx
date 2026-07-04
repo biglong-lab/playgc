@@ -628,7 +628,15 @@ function UrlRow({
   );
 }
 
-function ComponentRow({ component }: { component: ScenarioComponent }) {
+function ComponentRow({
+  component,
+  stepNumber,
+  isLast,
+}: {
+  component: ScenarioComponent;
+  stepNumber: number;
+  isLast: boolean;
+}) {
   const axisStyle = {
     host: { bg: "bg-blue-500/10", text: "text-blue-700 dark:text-blue-400", label: "📺 大螢幕" },
     multi: { bg: "bg-purple-500/10", text: "text-purple-700 dark:text-purple-400", label: "👥 多人" },
@@ -637,10 +645,15 @@ function ComponentRow({ component }: { component: ScenarioComponent }) {
   }[component.axis];
 
   return (
-    <div
-      className="flex items-start gap-3 p-3 rounded-lg bg-card border"
-      data-testid={`component-${component.pageType}`}
-    >
+    <div className="flex gap-3" data-testid={`component-${component.pageType}`}>
+      {/* 流程時間軸：編號圓點 + 連接線 */}
+      <div className="flex flex-col items-center flex-shrink-0">
+        <div className="w-7 h-7 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center">
+          {stepNumber}
+        </div>
+        {!isLast && <div className="w-px flex-1 bg-border my-1" />}
+      </div>
+      <div className={`flex items-start gap-3 p-3 rounded-lg bg-card border flex-1 min-w-0 ${isLast ? "" : "mb-2"}`}>
       <Badge className={`${axisStyle.bg} ${axisStyle.text} flex-shrink-0`}>
         {axisStyle.label}
       </Badge>
