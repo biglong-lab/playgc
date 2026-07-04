@@ -103,10 +103,12 @@ describe("Team Scores 路由", () => {
     mockDb.query.teamSessions.findFirst.mockReset();
     mockDb.query.teamScoreHistory.findMany.mockReset();
     mockDb._chain.where.mockReset();
+    mockDb._chain.returning.mockReset();
     mockDb._chain.values.mockReset();
-    // 重設鏈式 mock
+    // 重設鏈式 mock（update 鏈以 .returning() 結尾，對齊原子累加後的路由）
     mockDb.update.mockReturnValue({ set: mockDb._chain.set });
     mockDb._chain.set.mockReturnValue({ where: mockDb._chain.where });
+    mockDb._chain.where.mockReturnValue({ returning: mockDb._chain.returning });
     mockDb.insert.mockReturnValue({ values: mockDb._chain.values });
   });
 
