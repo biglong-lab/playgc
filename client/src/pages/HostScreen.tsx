@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2, Tv, Home, ArrowLeft } from "lucide-react";
 import HostPageRenderer from "@/components/game/host/HostPageRenderer";
+import HostJoinQr from "@/components/game/host/HostJoinQr";
 import type { Page } from "@shared/schema";
 
 interface HostSessionInfo {
