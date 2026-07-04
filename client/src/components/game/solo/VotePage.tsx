@@ -468,17 +468,17 @@ export default function VotePage({ config, onComplete, sessionId, variables, onV
                   {timedOut && totalVotes === 0 ? (
                     <>
                       跳過此頁
-                      <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
+                      <ChevronRight className="w-4 h-4 ml-2" />
                     </>
                   ) : autoAdvanceIn !== null && autoAdvanceIn > 0 ? (
                     <>
                       <span className="tabular-nums">{autoAdvanceIn}</span> 秒後自動進入下一關（立即繼續）
-                      <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
+                      <ChevronRight className="w-4 h-4 ml-2" />
                     </>
                   ) : (
                     <>
                       繼續下一關
-                      <LucideIcons.ChevronRight className="w-4 h-4 ml-2" />
+                      <ChevronRight className="w-4 h-4 ml-2" />
                     </>
                   )}
                 </Button>
