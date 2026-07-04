@@ -7,6 +7,16 @@
 
 ## 2026-07-05
 
+### 🎮 訪客 Demo 沙盒 — template-market 免登入一鍵體驗（feat）
+**狀態**：🟢 部署上線（commit `12da7dd3`、含 schema 變更 db ADD COLUMN）
+**細節** → [changes/2026-07-05-visitor-demo-sandbox.md](changes/2026-07-05-visitor-demo-sandbox.md)
+
+- 訪客在情境詳情頁點「立即體驗」→ 免登入建臨時 demo 遊戲 → 進大螢幕玩（含常駐加入 QR）→ 2h 自動清
+- 只開放 6 個全 host 情境（multi 回 400）；公開端點 `POST /api/scenarios/:id/demo` + publicWriteLimiter（10/hr/IP）
+- games 加 `is_demo`/`demo_expires_at`（生產 ADD COLUMN）；stats/quota 排除 demo；demo-cleanup-cron 每 30 分清
+- 端到端實測：wedding 建場 201、corporate-training 400、DB is_demo=true、cron 啟動
+- 轉化漏斗最大斷點修復（潛在客戶先玩再決定）
+
 ### 🎯 Template-Market 12 情境體驗優化（feat）
 **狀態**：🟢 部署上線（commit `a37f6560`）
 **細節** → [changes/2026-07-05-template-market-ux.md](changes/2026-07-05-template-market-ux.md)
