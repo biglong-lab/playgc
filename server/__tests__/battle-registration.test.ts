@@ -62,6 +62,14 @@ vi.mock("@shared/schema", () => ({
   insertPremadeGroupSchema: { parse: vi.fn((d: any) => d) },
 }));
 
+// ── Mock: Telegram 內部通知（2026-06-13 加入）──
+// 路由在報名成功後會 fire-and-forget 發通知，測試不需要真的打 Telegram
+vi.mock("../lib/internal-notifier", () => ({
+  notifyBattleRegistered: vi.fn(),
+  notifyBattleSlotConfirmed: vi.fn(),
+  notifyBattleSlotFull: vi.fn(),
+}));
+
 import express from "express";
 import request from "supertest";
 import { registerBattleRegistrationRoutes } from "../routes/battle-registration";
