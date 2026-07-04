@@ -50,6 +50,32 @@ vi.mock("@/hooks/use-toast", () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
+// Mock 全域 WebSocketProvider（2026-05-08 重構後 useTeamWebSocket 透過 Provider 取連線）
+// GamePlay 不直接用 context，但 useTeamWebSocket 內部呼叫 useWebSocket()，
+// 測試環境沒包 <WebSocketProvider> 會直接 throw，故整個 context 模組 mock 掉。
+// 注意：useWebSocket 每次呼叫回傳新 stub，避免 vi.resetAllMocks 清掉實作。
+vi.mock("@/contexts/WebSocketContext", () => ({
+  useWebSocket: () => ({
+    isConnected: true,
+    isReconnecting: false,
+    acquire: vi.fn(() => () => undefined),
+    ensureConnected: vi.fn(() => () => undefined),
+    registerOnConnect: vi.fn(() => () => undefined),
+    subscribe: vi.fn(() => () => undefined),
+    send: vi.fn(() => true),
+    getConnectionStats: vi.fn(() => ({
+      connectAt: 0,
+      disconnectCount: 0,
+      reconnectSuccessCount: 0,
+      reconnectFailCount: 0,
+      isConnected: true,
+      isReconnecting: false,
+      currentAttempts: 0,
+    })),
+  }),
+  WebSocketProvider: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
+
 function createMockGameWithPages(overrides?: Record<string, unknown>) {
   return {
     id: "game-1",
