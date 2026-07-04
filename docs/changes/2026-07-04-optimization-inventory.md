@@ -18,8 +18,14 @@
 
 | # | 項目 | 證據 |
 |---|------|------|
-| B1 | `vendor-icons` bundle **760KB**（lucide 疑沒 tree-shake、可能有 dynamic icon map）| dist 盤點 |
-| B2 | 主 bundle 648KB（code splitting 機會；livekit 480KB、charts 384KB 已各自分包）| dist 盤點 |
+| B1 | ✅ **已修**：`vendor-icons` **760KB → 111KB**（省 ~650KB）| 見下 |
+| B2 | 主 bundle 648KB（code splitting 機會；livekit 480KB、charts 384KB 已各自分包）| 待評估 |
+
+### ✅ B1 執行成果（2026-07-05）
+- **根因**：`ButtonPage.tsx` / `VotePage.tsx` 用 `import * as LucideIcons from "lucide-react"`（萬用 import）→ 整包 ~1500 圖示打包、tree-shake 失效 = 760KB。用途是 admin 自選圖示動態渲染 `LucideIcons[iconName]`。
+- **修法**：改用既有 `IconPicker` 的 `getIconByName`（精選 `ICON_CATALOG` ~60 圖示、named import 可 tree-shake）——admin 本就只從此 catalog 選圖示，動態渲染只需查這 60 個。`ChevronRight` 改具名 import。
+- **成果**：vendor-icons **760KB → 111KB**（-85%、手機首載省 ~650KB）；tsc+build+ButtonPage/VotePage 13 測試過
+- 邊界：舊 config 引用 catalog 外的圖示會顯示無圖示（graceful、非 crash）
 
 ## 🟡 C 類：程式健康（「碰到才拆」、不集中重構）
 
