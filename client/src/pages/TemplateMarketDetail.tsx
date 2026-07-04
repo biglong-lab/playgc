@@ -673,13 +673,14 @@ function ComponentRow({
         </div>
         <div className="text-xs text-muted-foreground mt-0.5">{component.role}</div>
       </div>
-      {component.demoMode && (
-        <Link href={`/showcase?demo=${component.demoMode}`}>
-          <Button size="sm" variant="ghost" className="text-xs flex-shrink-0">
-            試玩
-          </Button>
-        </Link>
-      )}
+        {component.demoMode && (
+          <Link href={`/showcase?demo=${component.demoMode}`}>
+            <Button size="sm" variant="ghost" className="text-xs flex-shrink-0">
+              試玩
+            </Button>
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
