@@ -3,8 +3,10 @@ import { describe, it, expect } from "vitest";
 import { PAGE_TYPES, PAGE_TEMPLATES, EVENT_TYPES, REWARD_TYPES, getPageTypeInfo } from "./constants";
 
 describe("PAGE_TYPES", () => {
-  it("定義 81 種頁面類型（30 既有 + 21 階段A + 30 階段B 互動模組擴充 2026-05-06）", () => {
-    expect(PAGE_TYPES).toHaveLength(81);
+  it("至少涵蓋 81 種基準頁面類型（30 既有 + 21 階段A + 30 階段B）", () => {
+    // ⚠️ 不寫死總數：元件庫持續擴充（2026-07 已達 98），寫死精確數字每次新增元件就會壞。
+    // 只驗證「不低於歷史基準 81」防止元件被誤刪；唯一性由下方「value 不重複」測試把關。
+    expect(PAGE_TYPES.length).toBeGreaterThanOrEqual(81);
   });
 
   it("包含 8 個多人核心工具元件（Phase 2 + 3.1 + 3.2 + 3.3 + 4）", () => {
