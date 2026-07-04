@@ -620,12 +620,29 @@ export default function GamePlay() {
   }
 
   if (!user) {
-    setLocation("/");
+    // 🔧 2026-07-05 UX：原本 render 內無聲 setLocation("/") 硬踢回首頁、無回跳。
+    //   改為明確「需登入」畫面：存 returnTo（登入後回到此遊戲）+ 前往登入按鈕 + 返回。
+    const returnPath = window.location.pathname + window.location.search;
     return (
-      <div className="min-h-screen-dynamic bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">請先登入...</p>
+      <div className="min-h-screen-dynamic bg-background flex items-center justify-center p-6">
+        <div className="text-center max-w-sm space-y-4">
+          <div className="text-4xl">🔑</div>
+          <h2 className="text-xl font-bold">此遊戲需登入組隊</h2>
+          <p className="text-sm text-muted-foreground">
+            多人遊戲需要登入才能與隊友同步。登入後會自動回到這個遊戲。
+          </p>
+          <div className="flex flex-col gap-2">
+            <Button
+              onClick={() => {
+                try { sessionStorage.setItem("postLoginReturn", returnPath); } catch { /* ignore */ }
+                setLocation("/");
+              }}
+              data-testid="btn-goto-login"
+            >
+              前往登入
+            </Button>
+            <Button variant="ghost" onClick={() => setLocation("/")}>返回首頁</Button>
+          </div>
         </div>
       </div>
     );
