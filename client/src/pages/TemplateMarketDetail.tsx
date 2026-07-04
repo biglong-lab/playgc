@@ -238,14 +238,20 @@ export default function TemplateMarketDetail() {
           </div>
         </section>
 
-        {/* 元件組合 */}
+        {/* 元件組合 — 🔧 2026-07-05 UX：扁平清單升級為「活動流程」時間軸
+            （編號 + 連接線，一眼看懂一場活動先做什麼、再做什麼）*/}
         <section className="space-y-3">
           <h3 className="font-display font-bold text-lg">
-            🧩 含 {scenario.components.length} 個元件
+            🧩 活動流程（{scenario.components.length} 個環節）
           </h3>
-          <div className="space-y-2">
-            {scenario.components.map((component) => (
-              <ComponentRow key={component.pageType} component={component} />
+          <div className="relative">
+            {scenario.components.map((component, idx) => (
+              <ComponentRow
+                key={component.pageType}
+                component={component}
+                stepNumber={idx + 1}
+                isLast={idx === scenario.components.length - 1}
+              />
             ))}
           </div>
         </section>
