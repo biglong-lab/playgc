@@ -43,8 +43,20 @@
 - 道具+10 待 admin 設定該頁獎勵分數 0
 - 單 worker CPU 觀測（逼近上限 → Phase D Redis、ADR-0023 紅線）
 
+## ✅ 第 1 批執行成果（2026-07-04 完成）
+- **A1 依賴漏洞**：`npm audit fix`（非破壞性）→ 33 個（9 high）→ **9 個（0 high、8 moderate、1 low）**；剩餘 9 個需 breaking 升級（`--force`）、留待第 2 批評估
+- **A2 測試債**：**57 失敗 → 0 失敗**（3186 全過、218 檔全綠）。修復 10 檔：
+  - `useTeamWebSocket.test` 改寫為新 Provider 架構薄封裝測試（31 測試）
+  - `GamePlay.test` 補 WebSocketProvider mock（10 測試）
+  - `PhotoTeamFlow.test` 改測 gather 委派契約（production 5/10 起強制 gather、舊 collage 流程是 dead path）
+  - `team-scores.test` mock 跟上 7/4 原子累加（`.returning()` + sql 表達式斷言）
+  - `locations`/`battle-registration`：查明**非真 bug**——分別是 5/22 防作弊 GPS 驗證、6/13 Telegram 通知欄位讓過時測試資料失效
+  - `constants.test` 改「≥81 下限」穩健斷言；LockPage/PhotoTeamGather/ShootingSync 小修
+- **A3 併發測試**：新增 `server/__tests__/multiplayer-concurrency.test.ts` 6 測試（votes onConflict 重複投票 / race conditional UPDATE 併發 advance / team-state version 樂觀鎖 / scores 原子累加）
+- 全程未動 production 程式碼；tsc ✅、build ✅
+
 ## 執行順序
-1. **第 1 批（進行中）**：A1 high 漏洞 → A2 測試債清償 → A3 併發測試
+1. ~~第 1 批~~ ✅ 完成（上述）
 2. 第 2 批：B1 vendor-icons + B2 bundle
 3. 第 3 批：C1 高頻檔分拆
 4. 第 4 批：D 類擇向（建議 D2 或 D1）
