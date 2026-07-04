@@ -3249,6 +3249,71 @@ export function registerScenarioRoutes(app: Express) {
       }
     },
   );
+
+  /**
+   * 🆕 2026-07-05：訪客 demo 沙盒 — 免登入一鍵體驗
+   * POST /api/scenarios/:scenarioId/demo（公開、無 admin）
+   *
+   * 只開放「全 host 情境」（host 元件免登入即玩）；建臨時 demo 遊戲（isDemo + 2h TTL）、
+   * fieldId=null（不綁場域、不污染統計），導訪客到大螢幕端 hostUrl 體驗。
+   * 防濫用：publicWriteLimiter（每 IP 每小時 10 次）。過期由 demo-cleanup-cron 清理。
+   */
+  app.post(
+    "/api/scenarios/:scenarioId/demo",
+    publicWriteLimiter,
+    async (req, res) => {
+      try {
+        const scenario = getScenarioById(req.params.scenarioId);
+        if (!scenario) {
+          return res.status(404).json({ error: "情境不存在" });
+        }
+        // 只允許全 host 情境（免登入即玩）；含 multi/shared 需登入組隊
+        const allHost = scenario.components.every((c) => c.axis === "host");
+        if (!allHost) {
+          return res.status(400).json({
+            error: "not_demoable",
+            message: "此情境含需登入組隊的元件，不支援免登入體驗，請登入後於後台建場",
+          });
+        }
+
+        const displayName = `[體驗] ${scenario.name}`.slice(0, 100);
+        const now = Date.now();
+        const DEMO_TTL_MS = 2 * 60 * 60 * 1000; // 2 小時
+        const demoExpiresAt = new Date(now + DEMO_TTL_MS);
+        // host session 的 token 效期與 demo 一致（2h），確保體驗期間可用
+        const expiresAt = demoExpiresAt;
+
+        const instances: ScenarioInstance[] = [];
+        for (const component of scenario.components) {
+          await instantiateComponent({
+            scenarioId: scenario.id,
+            scenarioDisplayName: displayName,
+            component,
+            fieldId: null, // demo 不綁場域
+            expiresAt,
+            collector: instances,
+            isDemo: true,
+            demoExpiresAt,
+          });
+        }
+
+        const first = instances[0];
+        res.status(201).json({
+          scenario: { id: scenario.id, name: scenario.name, tagline: scenario.tagline },
+          displayName,
+          expiresAt: demoExpiresAt.toISOString(),
+          instances,
+          totalCreated: instances.length,
+          // 訪客導向：第一個 host 元件的大螢幕（含常駐加入 QR）
+          hostUrl: first?.hostUrl ?? null,
+          playUrl: first?.playUrl ?? null,
+        });
+      } catch (err) {
+        console.error("[scenarios] demo 建立失敗:", err);
+        res.status(500).json({ error: "建立體驗失敗" });
+      }
+    },
+  );
 }
 
 interface ScenarioInstance {
