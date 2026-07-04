@@ -3041,10 +3041,12 @@ export function registerScenarioRoutes(app: Express) {
             description: games.description,
             fieldId: games.fieldId,
             createdAt: games.createdAt,
+            isDemo: games.isDemo,
           })
           .from(games);
 
         const monthGames = allGames.filter((g) => {
+          if (g.isDemo) return false; // 🆕 2026-07-05：demo 不佔配額
           if (!g.description?.includes("[scenario:")) return false;
           if (!isSuperAdmin && g.fieldId !== fieldId) return false;
           if (g.createdAt && new Date(g.createdAt) < monthStart) return false;
