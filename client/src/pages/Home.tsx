@@ -116,6 +116,18 @@ export default function Home() {
     }
   }, [urlFieldCode]);
 
+  // 🔧 2026-07-05 UX：登入後回跳 — multi 遊戲未登入時 GamePlay 會把玩家導來首頁並存
+  //   sessionStorage.postLoginReturn；登入完成（user 出現）後自動回到原本的遊戲。
+  useEffect(() => {
+    if (!user) return;
+    let ret: string | null = null;
+    try { ret = sessionStorage.getItem("postLoginReturn"); } catch { /* ignore */ }
+    if (ret) {
+      try { sessionStorage.removeItem("postLoginReturn"); } catch { /* ignore */ }
+      setLocation(ret);
+    }
+  }, [user, setLocation]);
+
   // 🆕 admin 是否能編輯這個場域（super_admin 或當前場域 admin）
   // 🐛 修 (2026-04-30)：原本 admin.fieldCode === currentFieldCode 比對失敗
   //    因為大小寫不一致（admin.fieldCode 可能是 db 原貌、currentFieldCode 經過 toUpperCase）
