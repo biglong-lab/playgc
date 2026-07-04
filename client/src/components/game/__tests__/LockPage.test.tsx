@@ -113,9 +113,12 @@ describe("LockPage — 字母密碼", () => {
   });
 
   it("字母密碼大小寫不敏感（combination lowercase 仍可用大寫解鎖）", async () => {
+    // 註：LockPage 給分邏輯為 `config.rewardPoints ?? 0`（無預設獎勵）
+    //   原測試漏設 rewardPoints 卻期望 20 → 補上設定、保留「解鎖成功回傳設定分數」語意
     const { onComplete } = renderWith({
       combination: "abc",
       lockType: "letter",
+      rewardPoints: 20,
     });
 
     // 字母 pad：按 A/B/C
