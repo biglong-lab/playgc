@@ -162,7 +162,8 @@ describe("Team Scores 路由", () => {
         teamId: "team-1",
         teamScore: 50,
       });
-      mockDb._chain.where.mockResolvedValueOnce(undefined);
+      // DB 端原子累加：returning 回傳累加後的新分數（50 + 10 = 60）
+      mockDb._chain.returning.mockResolvedValueOnce([{ teamScore: 60 }]);
       mockDb._chain.values.mockResolvedValueOnce(undefined);
 
       const res = await request(app)
@@ -179,6 +180,11 @@ describe("Team Scores 路由", () => {
 
       // 應更新 teamSessions
       expect(mockDb.update).toHaveBeenCalled();
+      // 原子語意驗證：set 收到的 teamScore 必須是 SQL 表達式（COALESCE(...) + delta），
+      // 而不是應用層先讀後寫算出的絕對數字（那樣會有 lost-update）
+      const setArg = mockDb._chain.set.mock.calls[0]?.[0] as { teamScore: unknown };
+      expect(typeof setArg.teamScore).not.toBe("number");
+      expect(setArg.teamScore).toMatchObject({ op: "sql" });
       // 應插入 scoreHistory
       expect(mockDb.insert).toHaveBeenCalled();
       // 應廣播
