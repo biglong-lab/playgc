@@ -151,8 +151,8 @@ describe("PhotoTeamGather", () => {
     render(<PhotoTeamGather {...defaultProps} />);
     await vi.waitFor(() => screen.getByTestId("btn-gather-start"));
     fireEvent.click(screen.getByTestId("btn-gather-start"));
-    // 倒數 UI 有取消按鈕（ghost button with 取消）
-    const cancelBtn = screen.getByRole("button", { name: "取消" });
+    // 倒數 UI 有取消按鈕（production 已加 aria-label、accessible name 為完整敘述）
+    const cancelBtn = screen.getByRole("button", { name: "取消倒數、返回介紹" });
     fireEvent.click(cancelBtn);
     expect(screen.getByTestId("photo-gather-intro")).toBeTruthy();
   });
