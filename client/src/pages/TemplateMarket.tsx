@@ -128,26 +128,32 @@ export default function TemplateMarket() {
           );
         })}
 
-        {/* 收尾 */}
+        {/* 收尾 — 🔧 2026-07-05 UX：移除過時「正式上線後才可套用」文案（一鍵建場早已可用）、
+            訪客 CTA 不再指向 admin 後台（原本點了直接撞登入牆）、admin 登入時才顯示後台捷徑 */}
         <section className="text-center py-10 space-y-4 border-t mt-12">
           <h3 className="text-2xl font-display font-bold">看完情境，準備來建一個？</h3>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            目前情境模板提供「視覺與元件組合預覽」，正式上線後可直接套用建立 host session +
-            玩家入口 — Phase 2 W7 完成自動化建場功能。
+            每個情境都能直接「AI 客製內容 + 一鍵建場」— 進入情境詳情頁即可建立
+            大螢幕場次與玩家入口，社交情境全程免登入、掃 QR 即玩。
           </p>
           <div className="flex justify-center gap-3 flex-wrap">
-            <Link href="/showcase">
-              <Button variant="outline">
-                <Sparkles className="w-4 h-4 mr-1" />
-                先看單一元件試玩
-              </Button>
-            </Link>
-            <Link href="/admin/host-sessions">
+            <Link href="/find-scenario">
               <Button>
-                建立大螢幕場次
-                <ArrowRight className="w-4 h-4 ml-1" />
+                <Sparkles className="w-4 h-4 mr-1" />
+                3 問找到適合的情境
               </Button>
             </Link>
+            <Link href="/showcase">
+              <Button variant="outline">先看單一元件試玩</Button>
+            </Link>
+            {admin && (
+              <Link href="/admin/host-sessions">
+                <Button variant="outline">
+                  管理我的場次
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            )}
           </div>
         </section>
       </main>
