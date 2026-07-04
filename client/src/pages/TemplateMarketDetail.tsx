@@ -156,6 +156,32 @@ export default function TemplateMarketDetail() {
     }
   };
 
+  // 🆕 2026-07-05：訪客免登入體驗（demo 沙盒）— 僅全 host 情境
+  const allHost = !!scenario && scenario.components.every((c) => c.axis === "host");
+  const [demoLaunching, setDemoLaunching] = useState(false);
+  const handleDemo = async () => {
+    if (!scenarioId) return;
+    setDemoLaunching(true);
+    try {
+      const res = await apiRequest("POST", `/api/scenarios/${scenarioId}/demo`, {});
+      const data: { hostUrl?: string | null; playUrl?: string | null } = await res.json();
+      const target = data.hostUrl || data.playUrl;
+      if (target) {
+        toast({ title: "🎮 體驗已建立", description: "正在進入大螢幕，可用另一支手機掃畫面上的 QR 加入" });
+        window.location.href = target;
+      } else {
+        throw new Error("未取得體驗連結");
+      }
+    } catch (err) {
+      toast({
+        title: "❌ 體驗建立失敗",
+        description: err instanceof Error ? err.message : "請稍後再試",
+        variant: "destructive",
+      });
+      setDemoLaunching(false);
+    }
+  };
+
   if (!scenario) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
