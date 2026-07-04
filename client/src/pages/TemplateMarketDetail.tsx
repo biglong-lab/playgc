@@ -429,11 +429,44 @@ export default function TemplateMarketDetail() {
                   </>
                 )}
               </Button>
+            ) : allHost ? (
+              // 🆕 2026-07-05：全 host 情境 → 訪客免登入一鍵體驗（demo 沙盒）
+              <div className="space-y-2">
+                <Button
+                  size="lg"
+                  onClick={handleDemo}
+                  disabled={demoLaunching}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  data-testid="btn-demo-scenario"
+                >
+                  {demoLaunching ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      建立體驗中...
+                    </>
+                  ) : (
+                    <>
+                      🎮 立即體驗（免登入）
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  免登入直接玩 · 進大螢幕後可用另一支手機掃 QR 加入 · 體驗場 2 小時後自動清除
+                </p>
+                <div className="pt-1">
+                  <Link href="/admin/login">
+                    <Button variant="ghost" size="sm" className="text-xs" data-testid="btn-go-admin-login">
+                      我是管理員，前往登入建正式場
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             ) : (
+              // 含 multi/shared 元件 → 需登入組隊、不支援匿名體驗
               <div className="space-y-2">
                 <Button size="lg" disabled className="bg-amber-600">
                   <Zap className="w-4 h-4 mr-1" />
-                  立即建立 {scenario.components.length} 個元件實例（需先登入）
+                  此情境需登入組隊，請登入後建場
                 </Button>
                 <div>
                   <Link href="/admin/login">
