@@ -24,6 +24,7 @@ import type { Express } from "express";
 import { db } from "../db";
 import { games, pages, gameSessions, fields, parseFieldSettings } from "@shared/schema";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { publicWriteLimiter } from "../utils/rate-limiters";
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import {
