@@ -7,6 +7,20 @@
 
 ## 2026-07-05
 
+### ⚡ Bundle 優化：vendor-icons 760KB→111KB（perf）
+**狀態**：🟢 部署上線（commit `c671c3c4`）
+**細節** → [changes/2026-07-04-optimization-inventory.md](changes/2026-07-04-optimization-inventory.md)（B1）
+
+- 根因：ButtonPage/VotePage 用 `import * as LucideIcons`（整包 ~1500 圖示、tree-shake 失效）
+- 修：改用既有 IconPicker.getIconByName（精選 ICON_CATALOG ~60 圖示）；手機首載省 ~650KB
+- 生產實測 vendor-icons 傳輸 113KB；13 測試過
+
+### 🧪 系統優化第 1 批：測試債清零 + 依賴 high 漏洞清零（chore）
+**狀態**：🟢 已 push（commit `42fda187`，測試/lockfile 變更、隨後部署生效）
+
+- A1：npm audit 33 漏洞（9 high）→ 9（0 high）；A2：57 失敗測試 → 0（10 檔）；A3：多人併發測試 +6
+- 四路系統優化盤點 → `docs/changes/2026-07-04-optimization-inventory.md`
+
 ### 🎮 訪客 Demo 沙盒 — template-market 免登入一鍵體驗（feat）
 **狀態**：🟢 部署上線（commit `12da7dd3`、含 schema 變更 db ADD COLUMN）
 **細節** → [changes/2026-07-05-visitor-demo-sandbox.md](changes/2026-07-05-visitor-demo-sandbox.md)
