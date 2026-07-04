@@ -756,7 +756,9 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
       "暑期夏令營",
       "兒童節市集",
     ],
-    category: "social",
+    // 🔧 2026-07-05 UX：原標 social 但檔案分區歸「空間」——親子冒險綁定實體場域（商場/親子館/樂園），
+    // 改歸 venue（也讓 venue 分類不再只有 1 張卡）
+    category: "venue",
     icon: "Baby",
     gradient: "from-yellow-500/20 to-orange-500/20",
     estimatedPlayers: "5-50 組親子",
