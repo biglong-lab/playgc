@@ -5,8 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import * as LucideIcons from "lucide-react";
-import { Vote, Clock, Users, CheckCircle, Timer, Eye, EyeOff, AlertCircle, Trophy } from "lucide-react";
+// 🔧 2026-07-05 bundle 優化：移除 `import * as LucideIcons`（整包 760KB）；ChevronRight 改具名 import、
+//   動態圖示改用精選 ICON_CATALOG 的 getIconByName（admin 只從此 catalog 選）
+import { Vote, Clock, Users, CheckCircle, Timer, Eye, EyeOff, AlertCircle, Trophy, ChevronRight } from "lucide-react";
+import { getIconByName } from "@/components/shared/IconPicker";
 import type { VoteConfig } from "@shared/schema";
 
 interface VotePageProps {
