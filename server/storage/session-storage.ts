@@ -64,13 +64,12 @@ export const sessionStorageMethods = {
     userId: string,
     gameId: string
   ): Promise<{ session: GameSession; progress: PlayerProgress } | null> {
-    // 🐛 2026-07-03 修「已通關遊戲返回/再玩一次/保留進度異常」（CHITO 複測兩輪 fail）：
-    //   D2-c+ 舊邏輯「completed 無條件優先」→ 玩家點「再玩一次」建了新 playing session 後，
-    //   任何 query refetch / 元件重掛都撈回舊 completed → 直接跳「任務完成」、
-    //   replay 進度像被吃掉、「離開(保留進度)」再進也跳完成。
-    //   新邏輯：取「最新的一筆」（completed / playing 一起比 startedAt）——
-    //   ・通關後未重玩 → 最新 = completed → 照舊顯示通關（保留 D2-c+ 意圖）
-    //   ・點過再玩一次 → 最新 = playing → 正確接續 replay 進度
+    // 🐛 2026-07-06 修「保留進度離開後重進沒回中斷頁」（CHITO 複測 round 3 fail）：
+    //   前次（07-03）改「取最新一筆 startedAt DESC limit 1」修好了 replay，
+    //   但玩家會累積多個 session（POST /sessions 無去重、前端 queryFn 網路抖動又誤建空 session），
+    //   最新那筆可能是「空的 playing（currentPageId=null）」→ 蓋掉真正有進度的 session → restore 回第 0 頁。
+    //   新邏輯：改抓全部再於應用層決策——「有進度的 playing」優先於「空的最新 session」，
+    //   同時保留 D2-c+「通關後顯示通關」意圖。
     const results = await db
       .select({
         session: gameSessions,
@@ -85,10 +84,31 @@ export const sessionStorageMethods = {
           inArray(gameSessions.status, ["completed", "playing"])
         )
       )
-      .orderBy(desc(gameSessions.startedAt))
-      .limit(1);
+      .orderBy(desc(gameSessions.startedAt));
 
-    return results[0] ?? null;
+    if (results.length === 0) return null;
+
+    // 有進度 = currentPageId 有值（玩家已前進過至少一頁；換頁時才寫入）
+    const hasProgress = (r: (typeof results)[number]) =>
+      r.progress.currentPageId != null;
+
+    const latest = results[0];
+
+    // 1. 最新一筆是進行中且有進度 → 直接接續（重玩中 / 正常進行，優先於舊 completed）
+    if (latest.session.status === "playing" && hasProgress(latest)) return latest;
+
+    // 2. 否則優先找「有進度的最新 playing」——避免抖動誤建的空 playing 蓋掉真進度（本 bug 主因）
+    const playingWithProgress = results.find(
+      (r) => r.session.status === "playing" && hasProgress(r)
+    );
+    if (playingWithProgress) return playingWithProgress;
+
+    // 3. 沒有任何有進度的 playing → 有通關紀錄就顯示通關（保留 D2-c+ 意圖）
+    const completed = results.find((r) => r.session.status === "completed");
+    if (completed) return completed;
+
+    // 4. 全新遊戲（只有空 playing）→ 依最新一筆、restore 回第 0 頁正常開始
+    return latest;
   },
 
   /**
