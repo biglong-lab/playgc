@@ -167,6 +167,13 @@ export default function ChoiceVerifyRacePage({
   const applyServerStateIfNewer = useCallback(
     (incomingState: RaceStateFromServer | null, incomingAnswers: RaceAnswerFromServer[]) => {
       if (!incomingState) return;
+      // 🐛 2026-07-06 修「卡在同步隊伍進度中」（CHITO 複測 round 4 fail）：
+      //   前次 stateLoading 唯一出口只綁在 POST /state 的 then/catch，
+      //   WS 廣播與 10 秒 polling 拿到 state 卻不清 loading → 就算最新進度已推進來、畫面仍死轉。
+      //   改為：任一來源（POST/WS/polling）拿到有效 server state 就退出 spinner。
+      //   → 即使 POST hang（apiRequest 無 timeout），10 秒 polling 也能自動解除卡死。
+      setStateLoading(false);
+      setLoadingTooLong(false);
       setServerState((prev) => {
         if (!prev) return incomingState;
         const prevUpdated = new Date(prev.updatedAt).getTime();
