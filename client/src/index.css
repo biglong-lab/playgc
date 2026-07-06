@@ -781,7 +781,9 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
-  overscroll-behavior: contain;
+  /* 🐛 2026-07-06 CHITO critical 複測：移除 overscroll-behavior:contain。
+     方案 B 交給 document 捲動，contain 會切斷捲動鏈往 body/document 傳遞 → 觸控被困在不可捲的 main 裡、單指滑不動。
+     iOS 橡皮筋露背景由 body 的 overscroll-behavior-y:none 擋，不需在此再 contain。 */
 }
 
 /* 遊戲內可選文字（聊天訊息 / 任務說明等）— 開白名單 */
