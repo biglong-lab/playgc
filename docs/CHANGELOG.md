@@ -5,6 +5,16 @@
 
 ---
 
+## 2026-07-06
+
+### 🔔 multi-sessions 告警調校（fix）
+**狀態**：🟢 部署上線（commit `4f9c5509`）
+**細節** → [changes/2026-07-06-multi-sessions-alert-tuning.md](changes/2026-07-06-multi-sessions-alert-tuning.md)
+
+- 診斷業主收到的 3 則「系統錯誤 (multi-sessions-alert)」：非當機（error=0/kick=0）、是測試遊戲 test1 的斷線→auto_leave 正常生命週期；`score` 是異常分數非遊戲分數
+- 修：告警排除 demo/測試遊戲（標題含 test/測試/demo/範例 或 isDemo）+ 門檻 20→30（真實活動 2 人早退不誤告警）
+- 加 5 過濾/計分測試；部署驗證 threshold=30
+
 ## 2026-07-05
 
 ### ⚡ Bundle 優化：vendor-icons 760KB→111KB（perf）
