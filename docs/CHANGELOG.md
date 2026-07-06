@@ -5,6 +5,18 @@
 
 ---
 
+## 2026-07-07
+
+### 🐛 CHITO 複測 4 項修復（fix）
+**狀態**：🟢 部署上線（commit `0c9bef04`、bundle `index-DNZzx8BR`）
+
+- #1 道具無效果卻給分：ChoiceVerify 系優先序鏈末端 fallback `10→0`（全站含 Race/PhotoMission、顯式設 0/50 仍尊重）；tsc + 57 測試 pass
+- #2 手機單指滑不動（critical，前修惡化成雙指也不行）：前次 overflow-y-auto 是空包彈（祖先鏈全 min-height 無確定高度）→ 方案 B 交 document 捲動（main 移 overflow-y-auto、gameplay-immersive 移 overscroll:contain）
+- #3 保留進度沒回中斷頁：server `getActiveSessionByUserAndGame` 從「取最新一筆」改「有進度 playing 優先」（多 session 時空 session 蓋掉真進度）
+- #4 多人卡「同步隊伍進度中」：stateLoading 出口只綁 POST → 改任一來源（POST/WS/輪詢）拿到 state 就退出 spinner + GamePlay 補 `!sessionId` gate
+- #5 GPS 指向標相反：分析確認前次「對齊 Map」無效（Page/Map 公式逐字相同）、待真機 `?gpsdebug=1` 定位 heading、本輪未動碼維持 open
+- ⏳ #2/#4 待真機/多裝置複測；5 筆已寫回 plan.aihomi.cc（#1~#4 轉待測試、#5 open）
+
 ## 2026-07-06
 
 ### 🔔 multi-sessions 告警調校（fix）
