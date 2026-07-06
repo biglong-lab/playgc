@@ -169,7 +169,7 @@ describe("ChoiceVerifyPage — Legacy 單選模式", () => {
         { text: "A", correct: true, nextPageId: "page-A" },
         { text: "B", correct: false, nextPageId: "page-B" },
       ],
-    } as ChoiceVerifyConfig);
+    } as unknown as ChoiceVerifyConfig);
 
     fireEvent.click(screen.getByText("A"));
     fireEvent.click(screen.getByTestId("button-submit-choice"));
