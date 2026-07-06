@@ -777,9 +777,12 @@ export default function GamePlay() {
 
       {/* 🆕 2026-05-22 業主 docx #3：字級切換無效根因 — game-prose class 零元件用
           把 class 加到 main、後代繼承 → 字級切換有感 */}
-      {/* 🐛 2026-07-03 CHITO critical：原 overflow-hidden 把超高內容裁掉 → 頁面沒有可捲區、
-          單指滑不動（玩家只能雙指縮放後平移）。改 overflow-y-auto 讓長內容可單指捲動。 */}
-      <main className="flex-1 relative overflow-y-auto overflow-x-hidden game-prose">
+      {/* 🐛 2026-07-06 CHITO critical 複測：方案 B（document 整頁捲動）。
+          前次改 overflow-y-auto 是空包彈——祖先鏈全是 min-height 無確定高度，
+          flex-1 的 main 被撐成內容高、scrollHeight===clientHeight、overflow-y 變 no-op → 單指仍滑不動。
+          正解：main 不自成捲動容器（移除 overflow-y-auto），內容自然撐高整頁 → 交給 document 捲動；
+          header(sticky top) 與 nav(sticky bottom) 黏在 viewport、內容在中間單指捲。 */}
+      <main className="flex-1 relative overflow-x-hidden game-prose">
         {currentPage && (
           // 🛡️ ErrorBoundary 防止單頁 crash 導致整個遊戲白屏
           //   page.id key 讓換頁時重新建立 ErrorBoundary（舊 error 清掉）
