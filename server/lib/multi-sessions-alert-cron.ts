@@ -41,16 +41,22 @@ interface SessionAlertCandidate {
 async function scanAndAlert(): Promise<void> {
   try {
     // 1. 拉所有 active sessions（可能很少、不需 batch）
-    const sessions = await db
+    const rawSessions = await db
       .select({
         sessionId: gameSessions.id,
         gameId: gameSessions.gameId,
         gameTitle: games.title,
         fieldId: games.fieldId,
+        isDemo: games.isDemo,
       })
       .from(gameSessions)
       .leftJoin(games, eq(games.id, gameSessions.gameId))
       .where(eq(gameSessions.status, "playing"));
+
+    // 🔧 2026-07-06：排除訪客 demo 沙盒 + 測試遊戲（避免測試斷線的告警噪音）
+    const sessions = rawSessions.filter(
+      (s) => !s.isDemo && !(s.gameTitle && TEST_TITLE_RE.test(s.gameTitle)),
+    );
 
     if (sessions.length === 0) return;
 
