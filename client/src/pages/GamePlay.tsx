@@ -679,6 +679,21 @@ export default function GamePlay() {
     );
   }
 
+  // 🐛 2026-07-06 修多人「卡同步隊伍進度中」根因之一（CHITO 複測 round 4）：
+  //   session（多人 ?session= 共用 / 單人新建）尚未採用完成前，原本仍掛載 GamePageRenderer、
+  //   傳 sessionId="" 給多人 race 元件 → 元件 effect early-return、連 8 秒重試計時器都不啟動 → 永久死轉。
+  //   改為 session ready 前顯示「準備連線中」，ready 後才掛載遊戲內容（單人同理：沒 session 不該開始）。
+  if (!sessionId) {
+    return (
+      <div className="min-h-screen-dynamic bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">準備連線中...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="gameplay-immersive min-h-screen-dynamic bg-background flex flex-col overflow-x-hidden">
       <GameHeader
