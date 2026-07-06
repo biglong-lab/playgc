@@ -17,8 +17,12 @@ import { notifySystemError } from "./internal-notifier";
 
 const CRON_INTERVAL_MS = 5 * 60 * 1000;       // 每 5 分鐘掃一次
 const HEALTH_WINDOW_MS = 5 * 60 * 1000;        // 過去 5 分鐘事件
-const CRITICAL_SCORE_THRESHOLD = 20;
+// 🔧 2026-07-06：門檻 20 → 30（避免真實活動 2 名玩家早退就告警；auto_leave×10、需 3 次或 grace+leave 混合）
+const CRITICAL_SCORE_THRESHOLD = 30;
 const COOLDOWN_MS = 30 * 60 * 1000;            // 同 session 30 分鐘 cooldown
+
+// 🔧 2026-07-06：排除測試/demo 遊戲（title 含 test/測試/demo）— 避免測試斷線噪音
+const TEST_TITLE_RE = /test|測試|demo|範例/i;
 
 let timer: NodeJS.Timeout | null = null;
 const lastAlertedAt: Map<string, number> = new Map(); // sessionId → ms timestamp
