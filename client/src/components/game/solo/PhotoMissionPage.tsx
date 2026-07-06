@@ -88,7 +88,8 @@ export default function PhotoMissionPage({
     const legacyItem = config.onSuccess?.grantItem;
 
     const configuredPoints = rewardPoints ?? legacyPoints;
-    const basePoints = configuredPoints ?? (config.aiVerify ? 20 : 10);
+    // 🐛 修 bug（複測 全站一致）：未設定分數不自動給分，預設 0（原本 aiVerify?20:10）
+    const basePoints = configuredPoints ?? 0;
 
     const reward: { points?: number; items?: string[] } = {
       points: aiVerified ? basePoints : 0,
