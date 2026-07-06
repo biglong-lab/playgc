@@ -376,7 +376,7 @@ export default function ChoiceVerifyRacePage({
       const question = config.questions?.[questionIndex];
       if (!question) return;
       const isCorrect = question.correctAnswer === optionIndex;
-      const points = isCorrect ? (config.rewardPerQuestion ?? 10) : 0;
+      const points = isCorrect ? (config.rewardPerQuestion ?? 0) : 0;
       answerMutation.mutate({
         questionIndex,
         selectedOption: optionIndex,
