@@ -119,7 +119,7 @@ export default function ChoiceVerifyPage({ config, onComplete }: ChoiceVerifyPag
         // 🔧 修 bug：RewardsSection 存 rewardPoints/rewardItems 優先，舊 onSuccess.* 向後相容
         const rsPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
         const rsItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
-        const rewardPerQ = config.rewardPerQuestion ?? 10;
+        const rewardPerQ = config.rewardPerQuestion ?? 0;
         const totalPoints = rsPoints ?? config.onSuccess?.points ?? correctCount * rewardPerQ;
         const allItems = [
           ...rsItems.filter((x) => !!x),
