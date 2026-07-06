@@ -140,7 +140,8 @@ describe("ChoiceVerifyPage — Legacy 單選模式", () => {
     vi.restoreAllMocks();
   });
 
-  it("答對 → 走對應的 nextPageId", async () => {
+  it("答對(未設分數) → 預設 0 分、走對應的 nextPageId", async () => {
+    // 🐛 CHITO 複測：未設定完成獎勵分數 → 不自動給分（原本 fallback 10）
     const { onComplete } = renderWith({
       question: "選 A 還是 B？",
       options: [
@@ -156,7 +157,28 @@ describe("ChoiceVerifyPage — Legacy 單選模式", () => {
       await vi.advanceTimersByTimeAsync(1600);
     });
 
-    expect(onComplete).toHaveBeenCalledWith({ points: 10 }, "page-A");
+    expect(onComplete).toHaveBeenCalledWith({ points: 0 }, "page-A");
+  });
+
+  it("答對(有設 rewardPoints) → 尊重設定分數", async () => {
+    // 顯式設定分數時，優先序鏈仍正確帶出（fallback 改 0 不影響有設定的情況）
+    const { onComplete } = renderWith({
+      question: "選 A 還是 B？",
+      rewardPoints: 50,
+      options: [
+        { text: "A", correct: true, nextPageId: "page-A" },
+        { text: "B", correct: false, nextPageId: "page-B" },
+      ],
+    } as ChoiceVerifyConfig);
+
+    fireEvent.click(screen.getByText("A"));
+    fireEvent.click(screen.getByTestId("button-submit-choice"));
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1600);
+    });
+
+    expect(onComplete).toHaveBeenCalledWith({ points: 50 }, "page-A");
   });
 
   it("答錯 → 不 onComplete，允許重新選擇", async () => {
