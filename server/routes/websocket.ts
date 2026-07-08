@@ -152,9 +152,9 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     const now = Date.now();
     // --- team 系快取 ---
     const knownTeams = new Set<string>([
-      ...teamStateCache.keys(),
-      ...teamMemberHistory.keys(),
-      ...teamSessionIdCache.keys(),
+      ...Array.from(teamStateCache.keys()),
+      ...Array.from(teamMemberHistory.keys()),
+      ...Array.from(teamSessionIdCache.keys()),
     ]);
     knownTeams.forEach((teamId) => {
       if (teamClients.has(teamId)) {
