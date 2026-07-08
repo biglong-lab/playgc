@@ -21,6 +21,8 @@ const { mockStorage } = vi.hoisted(() => ({
     createChatMessage: vi.fn(),
     getGame: vi.fn(),    // POST /api/sessions location_lock 用
     getItems: vi.fn(),   // PATCH progress inventory validation 用
+    // 🆕 2026-07-08 CHITO #f095652b：建新 session 時放棄舊 solo playing
+    abandonOtherPlayingSessionsForUser: vi.fn().mockResolvedValue(0),
   },
 }));
 
