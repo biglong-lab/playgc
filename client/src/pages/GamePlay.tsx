@@ -208,125 +208,26 @@ export default function GamePlay() {
     primeVoices();
   }, []);
 
-  // 🆕 Phase 2a：遊戲中也訂閱 team WS，顯示隊友離線/重連/離開 toast（存在感）
-  //   solo mode → myTeam 為 null，hook 內部 effect 會跳過建立連線
-  // 🆕 Phase 2.B：訂閱 team_progress_advance → 慢的玩家自動跟上最快進度
-  const { isConnected: isTeamWsConnected, isReconnecting: isTeamWsReconnecting } = useTeamWebSocket({
-    teamId: myTeam?.id,
-    userId: user?.id,
-    userName: user?.firstName || user?.email?.split("@")[0] || "玩家",
-    onMemberDisconnected: (userId, userName) => {
-      toast({
-        title: `⚠️ ${userName} 暫時離線`,
-        description: "30 秒寬限期內回來不影響",
-        duration: 3000,
-      });
-      speakTeamEvent(userId, userName, "disconnected");
-    },
-    onMemberReconnected: (userId, userName) => {
-      toast({
-        title: `✅ ${userName} 回來了`,
-        duration: 2000,
-      });
-      speakTeamEvent(userId, userName, "reconnected");
-    },
-    onMemberLeft: (userId, userName) => {
-      toast({
-        title: `👋 ${userName} 已離開遊戲`,
-        duration: 3000,
-      });
-      speakTeamEvent(userId, userName, "left");
-    },
-    // 🆕 Phase 2c：寬限期過了 — 倒數 2 分鐘自動 leave
-    onGraceExpired: (userId, userName, autoLeaveInMs) => {
-      const seconds = Math.round(autoLeaveInMs / 1000);
-      toast({
-        title: `⏳ ${userName} 寬限期已過`,
-        description: `${seconds} 秒後將自動視為離開（隊長可介入決定）`,
-        duration: 5000,
-        variant: "destructive",
-      });
-      speakTeamEvent(userId, userName, "graceExpired");
-      // 🆕 leader-decide：若我是隊長 → 開 dialog 讓決定
-      if (myTeam?.leaderId === user?.id) {
-        setPendingDecisionTarget({ userId, userName });
-      }
-    },
-    // 🆕 Phase 2c+ leader-decide：隊長下決定後 ws 廣播
-    onLeaderDecide: (action) => {
-      if (action === "wait") {
-        toast({
-          title: "👑 隊長選擇等待",
-          description: "繼續等離線玩家回來",
-          duration: 4000,
-        });
-      } else {
-        toast({
-          title: "👑 隊長選擇先繼續",
-          description: "離線玩家已標為離開",
-          duration: 4000,
-        });
-      }
-      setPendingDecisionTarget(null);
-    },
-    onProgressAdvance: (newMax, advancedBy) => {
-      // 自己引發的 advance 不要再跳（已經在 newMax 頁面了）
-      if (advancedBy === user?.id) return;
-      setState((prev) => {
-        if (newMax <= prev.currentPageIndex) return prev;
-        // 跳到隊伍最快進度，跳過的頁面標 visited 不重複出現
-        const skippedIds = activePagesRef.current
-          .slice(prev.currentPageIndex, newMax)
-          .map((p) => p.id);
-        toast({
-          title: "🏃 跟上隊伍進度",
-          description: `跳過 ${skippedIds.length} 頁，跟上最快的隊友`,
-          duration: 2500,
-        });
-        return {
-          ...prev,
-          currentPageIndex: Math.min(newMax, activePagesRef.current.length - 1),
-          completedPageIds: Array.from(new Set([...prev.completedPageIds, ...skippedIds])),
-        };
-      });
-    },
+  // 👥 2026-07-09 C1（全站優化盤點）：隊伍同步邏輯抽到 useTeamPlaySync —
+  //   my-team 查詢 / 自動 rejoin / leader-decide / active-session 輪詢 /
+  //   team WS 訂閱 / advance-progress 上報 / 跟隊跳頁（行為不變、純搬移）
+  const {
+    myTeam,
+    isTeamWsConnected,
+    isTeamWsReconnecting,
+    pendingDecisionTarget,
+    setPendingDecisionTarget,
+    decidePending,
+    handleLeaderDecide,
+  } = useTeamPlaySync({
+    gameId,
+    sharedSessionId,
+    user,
+    currentPageIndex,
+    activePages,
+    activePagesRef,
+    setState,
   });
-
-  // 🆕 Phase 2.B：玩家自己往前 → 呼叫 advance API（server 用 Math.max 更新隊伍 max）
-  //   失敗不阻塞遊戲（離線可重連時補上）
-  const lastAdvancedIndexRef = useRef(-1);
-  useEffect(() => {
-    if (!myTeam?.id) return;
-    if (currentPageIndex <= lastAdvancedIndexRef.current) return;
-    lastAdvancedIndexRef.current = currentPageIndex;
-    apiRequest("POST", `/api/teams/${myTeam.id}/advance-progress`, {
-      pageIndex: currentPageIndex,
-    }).catch(() => {
-      /* advance 失敗不阻塞遊戲 */
-    });
-  }, [currentPageIndex, myTeam?.id]);
-
-  // 🆕 Phase 2.B：若隊伍 maxPageIndex > 自己 → 跳上去
-  // 🛡️ 2026-07-04 多人穩定性 Phase A1：原本用 ref 只跳一次（進場時），
-  //   WS 漏接後就永遠落後。改為持續兜底（配合上方 10s 輪詢）——
-  //   語意與 WS onProgressAdvance 一致：只前進不後退、追上後不再觸發。
-  useEffect(() => {
-    if (!activeSession || !activePages.length) return;
-    const teamMax = activeSession.maxPageIndex;
-    if (teamMax > currentPageIndex) {
-      const skippedIds = activePages.slice(currentPageIndex, teamMax).map((p) => p.id);
-      toast({
-        title: "🏃 跟上隊伍進度",
-        description: `從第 ${currentPageIndex + 1} 頁跳到第 ${teamMax + 1} 頁`,
-        duration: 3000,
-      });
-      setState((prev) => ({
-        ...prev,
-        currentPageIndex: Math.min(teamMax, activePages.length - 1),
-        completedPageIds: Array.from(new Set([...prev.completedPageIds, ...skippedIds])),
-      }));
-    }
-  }, [activeSession, activePages.length, currentPageIndex, setState, toast]);
 
   // 玩家已造訪的位置（供 ConditionalVerifyPage 的 visited_location 條件判定）
   const { data: visitsData } = useQuery<Array<{ locationId: string | number }>>({
