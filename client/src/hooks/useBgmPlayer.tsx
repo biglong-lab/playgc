@@ -55,11 +55,21 @@ const DEFAULT_NORMAL_VOLUME = 0.5;
 const DUCKED_VOLUME = 0.1;
 const STORAGE_KEY = "chitoBgmMuted";
 
+// 🎵 2026-07-08 CHITO #4e88bd7d：fade 世代控制 —
+//   原本多個 fadeVolume 可同時跑（換曲 fade-out 未完又 fade-in / 停止與播放互搶），
+//   兩個 rAF loop 輪流改 volume、後完成者蓋掉先完成者的結果 → 停止的 pause 被蓋
+//   → 返回大廳 BGM 仍在播。改為每個 audio 只允許最新一個 fade 存活。
+const fadeGeneration = new WeakMap<HTMLAudioElement, number>();
+
 function fadeVolume(audio: HTMLAudioElement, target: number, durationMs: number, onDone?: () => void) {
+  const gen = (fadeGeneration.get(audio) ?? 0) + 1;
+  fadeGeneration.set(audio, gen);
   const start = audio.volume;
   const delta = target - start;
   const startTime = Date.now();
   const step = () => {
+    // 有更新的 fade 啟動 → 本 loop 作廢（不呼叫 onDone）
+    if (fadeGeneration.get(audio) !== gen) return;
     const elapsed = Date.now() - startTime;
     const t = Math.min(1, elapsed / durationMs);
     audio.volume = Math.max(0, Math.min(1, start + delta * t));
