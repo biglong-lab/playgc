@@ -238,6 +238,26 @@ export default function PhotoArStickerFlow({
     });
   }, [stickers]);
 
+  // 🎞️ 2026-07-08 CHITO #1bc34792：背景解動態貼圖幀（失敗/靜態/不支援 → null）
+  //   不阻塞預載流程；解好前開始錄影則該貼圖先用靜態幀
+  useEffect(() => {
+    if (stickers.length === 0) return;
+    let cancelled = false;
+    Promise.all(stickers.map((s) => loadAnimatedSticker(s.imageUrl))).then((arr) => {
+      if (cancelled) {
+        arr.forEach((a) => a?.close());
+        return;
+      }
+      animatedStickersRef.current = arr;
+    });
+    return () => {
+      cancelled = true;
+      animatedStickersRef.current.forEach((a) => a?.close());
+      animatedStickersRef.current = [];
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stickers]);
+
   // 相機就緒後啟動（AR 預設前鏡頭；管理員可在編輯器覆寫）
   useEffect(() => {
     if (stage !== "camera") return;
