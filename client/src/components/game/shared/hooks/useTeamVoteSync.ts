@@ -255,11 +255,26 @@ export function useTeamVoteSync({
         throw new Error("投票尚未建立，無法投票");
       }
       try {
-        await apiRequest("POST", `/api/votes/${voteId}/cast`, {
+        const res = await apiRequest("POST", `/api/votes/${voteId}/cast`, {
           optionId: buildOptionId(optionIndex),
         });
         // 樂觀更新本地（WebSocket 廣播會覆蓋確認）
-        // 此處不更新 — 等 WebSocket vote_cast 事件再 setBallots
+        // 此處不更新 ballots — 等 WebSocket vote_cast 事件再 setBallots
+        // 🗳️ 但完成訊號直接採用 cast 回應（最後一票的投票者不必等 WS）
+        try {
+          const data = (await res.json()) as {
+            isComplete?: boolean;
+            winningOptionId?: string | null;
+          };
+          if (data.isComplete && data.winningOptionId) {
+            setServerOutcome({
+              isComplete: true,
+              winningOptionId: data.winningOptionId,
+            });
+          }
+        } catch {
+          /* 回應解析失敗 → 等 WS / polling 補 */
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : "投票失敗";
         setError(msg);
