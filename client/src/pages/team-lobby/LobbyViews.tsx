@@ -210,6 +210,10 @@ interface JoinOrCreateProps {
   /** 🆕 2026-05-04: 使用者已保留的 Squad 清單（決定顯示三狀態 UI） */
   mySquads: MySquadOption[];
   mySquadsLoading: boolean;
+  /** 🆕 2026-07-08 CHITO #ec3f612b：可重新加入的原隊伍（退出後回歸入口） */
+  rejoinableTeam?: { teamId: string; name: string; status: string; memberCount: number } | null;
+  onRejoinTeam?: (teamId: string) => void;
+  rejoinPending?: boolean;
 }
 
 export function JoinOrCreateView({
