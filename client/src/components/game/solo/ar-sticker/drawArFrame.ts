@@ -89,14 +89,16 @@ export function drawArFrame(
   for (let i = 0; i < stickers.length; i++) {
     const s = stickers[i];
     const img = preloadedStickers[i];
-    if (!img) continue;
+    // 🎞️ 動態貼圖：優先用當前動畫幀（ImageBitmap）；無則 fallback 靜態 img
+    const frame = opts.stickerFrames?.[i] ?? null;
+    const src: CanvasImageSource | null = frame ?? img;
+    if (!src) continue;
     // 🐛 2026-07-03 修「成品沒貼圖」：SVG 無 intrinsic size 時 Safari naturalWidth/Height=0
     //   → ratio=NaN → drawImage 尺寸 NaN 靜默不畫（預覽 <img> 用 CSS 定寬所以看得到）。
     //   防護：無效比例 fallback 1（正方形）。
-    const ratio =
-      img.naturalWidth > 0 && img.naturalHeight > 0
-        ? img.naturalWidth / img.naturalHeight
-        : 1;
+    const srcW = frame ? frame.width : (img?.naturalWidth ?? 0);
+    const srcH = frame ? frame.height : (img?.naturalHeight ?? 0);
+    const ratio = srcW > 0 && srcH > 0 ? srcW / srcH : 1;
     const opacity = s.opacity ?? pageOpacity;
 
     if (useFaceTracking) {
