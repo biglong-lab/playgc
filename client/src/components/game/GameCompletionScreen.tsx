@@ -400,7 +400,8 @@ export default function GameCompletionScreen({
           {subtitle}
         </motion.p>
 
-        {/* ⭐ 星評等 */}
+        {/* ⭐ 星評等（🆕 CHITO #93c7a2ca：可由遊戲設定關閉） */}
+        {showStars && (
         <motion.div
           className="flex items-center justify-center gap-2 mb-4"
           initial={{ opacity: 0 }}
