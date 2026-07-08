@@ -42,10 +42,15 @@ export interface TeamVoteState {
     optionIndex: number;
     votedAt: string;
   }>;
-  /** 隊伍總人數（計算過半 / 全員的分母） */
+  /** 隊伍總人數（僅供 UI 顯示「N/M」；完成判定改用 serverComplete） */
   totalMembers: number;
   /** 投票模式 */
   votingMode: VotingMode;
+  /** 🗳️ 2026-07-08 CHITO #8687281e：server 權威完成訊號 —
+   *  majority/unanimous 只信這個（client 本地分母各裝置不一致會提早前進） */
+  serverComplete?: boolean;
+  /** server 判定的贏家選項 index（優先於本地計票） */
+  serverWinnerIndex?: number;
 }
 
 export interface VoteTeamProps {
