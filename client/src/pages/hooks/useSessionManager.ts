@@ -342,7 +342,10 @@ export function useSessionManager({
     //   3. userDecided 不設 true（意義是「玩家選繼續舊」、reset 不算）
     //   4. useEffect 內已加 state.sessionId 已存在 = 不再 restore 的保護
     setForceNewSession(true);
-    sessionCreationAttemptedRef.current = false;
+    // 🐛 2026-07-08：ref 設 true（不是 false）— 此處已直接 mutate()，
+    //   若設 false 會讓 effect 的建新分支再 mutate 一次 → 雙 session →
+    //   第二個 onSuccess 把玩家拉回第 0 頁（CHITO #f095652b「跳回第1頁」根因）
+    sessionCreationAttemptedRef.current = true;
     setState({
       sessionId: null,
       score: 0,
