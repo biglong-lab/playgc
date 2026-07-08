@@ -8,7 +8,7 @@ import {
   gameSessions,
   users,
 } from "@shared/schema";
-import { eq, and, isNull, desc } from "drizzle-orm";
+import { eq, and, isNull, isNotNull, desc } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { isAuthenticated } from "../firebaseAuth";
