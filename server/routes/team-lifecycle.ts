@@ -540,4 +540,134 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
       }
     },
   );
+
+  // 🆕 2026-07-08 CHITO #ec3f612b：查可重新加入的隊伍
+  //   情境：玩家退出/被 auto-leave 後重進遊戲 → my-team 回 null →
+  //   元件顯示「此元件需要組隊使用」且無路可走。
+  //   此端點找出玩家「曾在、已離開、隊伍仍進行中」的隊伍，供 client 顯示
+  //   「重新連線原隊伍」入口。
+  app.get(
+    "/api/games/:gameId/rejoinable-team",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { gameId } = req.params;
+        const userId = req.user?.claims?.sub;
+        if (!userId) {
+          return res.status(401).json({ message: "請先登入" });
+        }
+
+        const leftMemberships = await db.query.teamMembers.findMany({
+          where: and(
+            eq(teamMembers.userId, userId),
+            isNotNull(teamMembers.leftAt),
+          ),
+          with: {
+            team: {
+              with: {
+                members: { where: isNull(teamMembers.leftAt) },
+              },
+            },
+          },
+          orderBy: [desc(teamMembers.leftAt)],
+        });
+
+        // 只找「此遊戲 + 隊伍仍可玩（forming/ready/playing）」的最近一筆
+        const rejoinable = leftMemberships.find(
+          (m) =>
+            m.team?.gameId === gameId &&
+            ["forming", "ready", "playing"].includes(m.team.status || ""),
+        );
+
+        if (!rejoinable?.team) {
+          return res.json(null);
+        }
+
+        res.json({
+          teamId: rejoinable.team.id,
+          name: rejoinable.team.name,
+          status: rejoinable.team.status,
+          memberCount: rejoinable.team.members.length,
+        });
+      } catch (error) {
+        res.status(500).json({ message: "查詢可重加入隊伍失敗" });
+      }
+    },
+  );
+
+  // 🆕 2026-07-08 CHITO #ec3f612b：重新加入原隊伍（清 leftAt）
+  //   給「被誤踢 / 退出後想回來」的玩家一條回歸路徑。
+  //   條件：曾是成員（有 leftAt 紀錄）+ 隊伍仍 forming/ready/playing。
+  app.post(
+    "/api/teams/:teamId/rejoin",
+    isAuthenticated,
+    async (req: AuthenticatedRequest, res) => {
+      try {
+        const { teamId } = req.params;
+        const userId = req.user?.claims?.sub;
+        if (!userId) {
+          return res.status(401).json({ message: "請先登入" });
+        }
+
+        const team = await db.query.teams.findFirst({
+          where: eq(teams.id, teamId),
+        });
+        if (!team) {
+          return res.status(404).json({ message: "隊伍不存在" });
+        }
+        if (!["forming", "ready", "playing"].includes(team.status || "")) {
+          return res.status(400).json({ message: "此隊伍已結束，無法重新加入" });
+        }
+
+        const membership = await db.query.teamMembers.findFirst({
+          where: and(
+            eq(teamMembers.teamId, teamId),
+            eq(teamMembers.userId, userId),
+          ),
+        });
+        if (!membership) {
+          return res
+            .status(403)
+            .json({ message: "您不曾是此隊伍的成員，請用組隊碼加入" });
+        }
+        if (!membership.leftAt) {
+          // 已是現任成員（冪等）— 直接回成功
+          return res.json({ message: "您已在隊伍中", teamId, rejoined: false });
+        }
+
+        await db
+          .update(teamMembers)
+          .set({
+            leftAt: null,
+            // 遊戲已開打 → 直接視為 ready（避免卡全員 ready 檢查）
+            ...(team.status === "playing" ? { isReady: true } : {}),
+          })
+          .where(eq(teamMembers.id, membership.id));
+
+        // 名字給 toast 用
+        let userName = userId;
+        try {
+          const u = await db.query.users.findFirst({
+            where: eq(users.id, userId),
+          });
+          if (u?.firstName) userName = u.firstName;
+          else if (u?.email) userName = u.email.split("@")[0];
+        } catch {
+          /* 拿不到名字不阻塞 */
+        }
+
+        ctx.broadcastToTeam(teamId, {
+          type: "team_member_reconnected",
+          userId,
+          userName,
+          reason: "rejoin",
+          timestamp: new Date().toISOString(),
+        });
+
+        res.json({ message: "已重新加入隊伍", teamId, rejoined: true });
+      } catch (error) {
+        res.status(500).json({ message: "重新加入隊伍失敗" });
+      }
+    },
+  );
 }
