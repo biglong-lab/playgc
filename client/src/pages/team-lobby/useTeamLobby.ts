@@ -145,6 +145,14 @@ export interface TeamLobbyReturn {
   /** 隊長對 pendingDecision 下決定（傳 wait / continue） */
   decideLeader: (action: "wait" | "continue") => Promise<void>;
   decidePending: boolean;
+  /** 🆕 2026-07-08 CHITO #e2f14e8b：歡迎回來畫面 — 立即繼續（不等倒數） */
+  continueReconnectNow: () => void;
+  /** 🆕 2026-07-08 CHITO #e2f14e8b：取消自動接回並離開隊伍 */
+  cancelReconnectAndLeave: () => void;
+  /** 🆕 2026-07-08 CHITO #ec3f612b：可重新加入的原隊伍（無則 null） */
+  rejoinableTeam: { teamId: string; name: string; status: string; memberCount: number } | null;
+  rejoinTeam: (teamId: string) => void;
+  rejoinPending: boolean;
 }
 
 export function useTeamLobby(): TeamLobbyReturn {
