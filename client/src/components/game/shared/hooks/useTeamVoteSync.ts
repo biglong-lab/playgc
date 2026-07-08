@@ -148,6 +148,13 @@ export function useTeamVoteSync({
 }: UseTeamVoteSyncOptions): UseTeamVoteSyncResult {
   const [voteId, setVoteId] = useState<string | undefined>();
   const [ballots, setBallots] = useState<ServerBallot[]>([]);
+  // 🗳️ 2026-07-08 CHITO #8687281e：完成判定改 server 權威 —
+  //   client 不再用本地 totalMembers 自算（各裝置分母不一致 → 有人提早前進
+  //   → advance-progress 拖走全隊）。此 state 只由 server 訊號寫入：
+  //   cast 回應 / WS vote_cast·vote_completed / polling 看到 status=completed
+  const [serverOutcome, setServerOutcome] = useState<
+    { isComplete: boolean; winningOptionId: string | null } | undefined
+  >();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const ensuredRef = useRef(false);
@@ -160,7 +167,16 @@ export function useTeamVoteSync({
       const listRes = await apiRequest("GET", `/api/teams/${teamId}/votes`);
       const list = (await listRes.json()) as Array<ServerVote & { ballots: ServerBallot[] }>;
       const found = list.find((v) => v.id === vid);
-      if (found) setBallots(found.ballots ?? []);
+      if (found) {
+        setBallots(found.ballots ?? []);
+        // polling 兜底：WS 漏接完成廣播時，由 status=completed 補上完成訊號
+        if (found.status === "completed" && found.winningOptionId) {
+          setServerOutcome({
+            isComplete: true,
+            winningOptionId: found.winningOptionId,
+          });
+        }
+      }
     } catch {}
   }, [teamId]);
 
