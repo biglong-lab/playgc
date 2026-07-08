@@ -164,6 +164,14 @@ ssh root@172.233.89.147 "docker exec -i gamehomicc-db-1 psql -U postgres gamepla
 
 ---
 
+## 遷移紀錄
+
+| 日期 | 變更 | 生產同步 SQL |
+|------|------|--------------|
+| 2026-07-08 | `games` 加通關畫面顯示控制（CHITO #93c7a2ca） | `ALTER TABLE games ADD COLUMN IF NOT EXISTS show_completion_stars boolean DEFAULT true; ALTER TABLE games ADD COLUMN IF NOT EXISTS show_completion_score boolean DEFAULT true;` |
+
+---
+
 ## 相關文件
 
 - [decisions/0002-neon-postgres.md](../decisions/0002-neon-postgres.md) — DB 選型決策
