@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { queueProgressUpdate } from "@/lib/offlineStorage";
 import { resolveFlowRouter } from "@/lib/flow-router";
 import { computeCompletionReward } from "@/lib/completion-reward";
@@ -21,9 +21,9 @@ import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import ResumeDialog from "@/components/game/ResumeDialog";
 import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 import { useSessionManager } from "./hooks/useSessionManager";
-import { useTeamWebSocket } from "@/hooks/use-team-websocket";
+import { useTeamPlaySync } from "./hooks/useTeamPlaySync";
 import { WsConnectionBadge } from "@/components/shared/WsConnectionBadge";
-import { speakTeamEvent, primeVoices } from "@/lib/voice-notification";
+import { primeVoices } from "@/lib/voice-notification";
 import LeaderDecideDialog from "@/components/team/LeaderDecideDialog";
 import {
   RewardFeedbackOverlay,
