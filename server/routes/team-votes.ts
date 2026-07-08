@@ -209,7 +209,7 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
           voteId,
           userId,
           optionId: body.optionId,
-          voteCounts: Object.fromEntries(voteCounts),
+          voteCounts,
           isComplete,
           winningOptionId,
         });
@@ -218,7 +218,7 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
           success: true,
           isComplete,
           winningOptionId,
-          voteCounts: Object.fromEntries(voteCounts),
+          voteCounts,
         });
       } catch (error) {
         if (error instanceof z.ZodError) {
