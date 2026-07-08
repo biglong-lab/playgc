@@ -138,6 +138,61 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     return Array.from(cache.entries()).map(([type, payload]) => ({ type, payload }));
   }
 
+  // 🧹 2026-07-09 M1（全站優化盤點）：閒置隊伍快取回收 —
+  //   teamStateCache / teamMemberHistory / teamSessionIdCache / hostSessionStateCache
+  //   原本只 set 不 delete → 每個玩過的 team/host 永久佔記憶體（單 worker 常駐、
+  //   重啟才釋放）。不能在 socket 全斷瞬間清（全隊換頁/短斷線會需要重連快照），
+  //   改為：無任何連線持續 30 分鐘 → 回收（遊戲場次不會中斷半小時還回得來）。
+  const CACHE_SWEEP_INTERVAL_MS = 10 * 60 * 1000;
+  const CACHE_EVICT_AFTER_MS = 30 * 60 * 1000;
+  const teamEmptySince: Map<string, number> = new Map();
+  const hostEmptySince: Map<string, number> = new Map();
+
+  function sweepIdleCaches(): void {
+    const now = Date.now();
+    // --- team 系快取 ---
+    const knownTeams = new Set<string>([
+      ...teamStateCache.keys(),
+      ...teamMemberHistory.keys(),
+      ...teamSessionIdCache.keys(),
+    ]);
+    knownTeams.forEach((teamId) => {
+      if (teamClients.has(teamId)) {
+        teamEmptySince.delete(teamId); // 還有人連著 → 重置
+        return;
+      }
+      const since = teamEmptySince.get(teamId);
+      if (since === undefined) {
+        teamEmptySince.set(teamId, now);
+        return;
+      }
+      if (now - since >= CACHE_EVICT_AFTER_MS) {
+        teamStateCache.delete(teamId);
+        teamMemberHistory.delete(teamId);
+        teamSessionIdCache.delete(teamId);
+        teamEmptySince.delete(teamId);
+      }
+    });
+    // --- host 大螢幕快取 ---
+    hostSessionStateCache.forEach((_v, sessionId) => {
+      if (hostScreenClients.has(sessionId) || hostPlayerClients.has(sessionId)) {
+        hostEmptySince.delete(sessionId);
+        return;
+      }
+      const since = hostEmptySince.get(sessionId);
+      if (since === undefined) {
+        hostEmptySince.set(sessionId, now);
+        return;
+      }
+      if (now - since >= CACHE_EVICT_AFTER_MS) {
+        hostSessionStateCache.delete(sessionId);
+        hostEmptySince.delete(sessionId);
+      }
+    });
+  }
+  const cacheSweepTimer = setInterval(sweepIdleCaches, CACHE_SWEEP_INTERVAL_MS);
+  cacheSweepTimer.unref?.(); // 不阻止 process 結束（測試環境友善）
+
   function timerKey(teamId: string, userId: string): string {
     return `${teamId}:${userId}`;
   }

@@ -17,6 +17,7 @@ import type { RouteContext, AuthenticatedRequest } from "./types";
 import { registerTeamVoteRoutes } from "./team-votes";
 import { registerTeamScoreRoutes } from "./team-scores";
 import { registerTeamLifecycleRoutes } from "./team-lifecycle";
+import { teamActionLimiter } from "../utils/rate-limiters";
 
 /** 建立隊伍的請求驗證
  * 🛡️ 2026-05-04: name 接受空字串（轉 undefined）— 用既有 Squad 出戰時不必輸入名字、由 server fallback 用 squad name
@@ -79,6 +80,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
   app.post(
     "/api/games/:gameId/teams",
     isAuthenticated,
+    teamActionLimiter, // 🔐 2026-07-09 S3：per-user 防刷
     async (req: AuthenticatedRequest, res) => {
       try {
         const { gameId } = req.params;
@@ -212,6 +214,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
   app.post(
     "/api/teams/join",
     isAuthenticated,
+    teamActionLimiter, // 🔐 2026-07-09 S3：per-user 防刷
     async (req: AuthenticatedRequest, res) => {
       try {
         const body = joinTeamBodySchema.parse(req.body);

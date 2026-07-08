@@ -71,6 +71,33 @@ export const aiLimiter = rateLimit({
 });
 
 /**
+ * 🔐 2026-07-09 S3：隊伍動作（建隊/加隊/rejoin）
+ * 每 5 分鐘 30 次 — 正常玩家一場活動不會超過個位數，防腳本灌隊伍
+ */
+export const teamActionLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `team:${getUserKey(req)}`,
+  message: { message: "隊伍操作過於頻繁，請稍後再試" },
+});
+
+/**
+ * 🔐 2026-07-09 S3：建立遊戲場次
+ * 每 10 分鐘 30 次 — 正常重玩/測試綽綽有餘，防誤觸/腳本灌 session
+ *（配合同日 CHITO #f095652b 的「建新自動放棄舊 playing」雙保險）
+ */
+export const sessionCreateLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `sess:${getUserKey(req)}`,
+  message: { message: "建立場次過於頻繁，請稍後再試" },
+});
+
+/**
  * 公開寫入端點（無 auth、寫 DB）
  * 每 IP 每小時 10 次 — 防 spam（如 /api/apply 場域申請、防 abuse 灌假申請）
  */

@@ -14,6 +14,8 @@ import { db } from "../db";
 import { games, fields, parseFieldSettings } from "@shared/schema";
 import type { AuthenticatedRequest } from "./types";
 import { apiError } from "./types";
+// 🔐 2026-07-09 S3：掛上共用 aiLimiter（原本定義了從未使用；自寫記憶體計數保留當第二層）
+import { aiLimiter } from "../utils/rate-limiters";
 
 // ============================================================================
 // Rate Limiter（記憶體計數器，每用戶每分鐘 10 次）
@@ -280,7 +282,7 @@ async function resolveAiContext(gameId?: string): Promise<AiContextResolved> {
 
 export function registerAiScoringRoutes(app: Express): void {
   // POST /api/ai/verify-photo — AI 照片驗證
-  app.post("/api/ai/verify-photo", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/ai/verify-photo", isAuthenticated, aiLimiter, async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
     const startedAt = Date.now();
     let resolvedFieldId: string | undefined;
@@ -484,7 +486,7 @@ export function registerAiScoringRoutes(app: Express): void {
   });
 
   // 🆕 v2: POST /api/ai/compare-photos — AI 雙圖相似度比對
-  app.post("/api/ai/compare-photos", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/ai/compare-photos", isAuthenticated, aiLimiter, async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
     const startedAt = Date.now();
     let resolvedFieldId: string | undefined;
@@ -729,7 +731,7 @@ export function registerAiScoringRoutes(app: Express): void {
   });
 
   // POST /api/ai/score-text — AI 文字語意評分
-  app.post("/api/ai/score-text", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/ai/score-text", isAuthenticated, aiLimiter, async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
     const startedAt = Date.now();
     let resolvedFieldId: string | undefined;
@@ -918,7 +920,7 @@ export function registerAiScoringRoutes(app: Express): void {
   //   - 做模糊比對目標文字
   //   - 記錄用量到 ai_usage_logs
   //   - 免費額度不足時自動 fallback
-  app.post("/api/ai/ocr-detect", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/ai/ocr-detect", isAuthenticated, aiLimiter, async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.dbUser?.id || req.user?.claims?.sub || "unknown";
 
     try {

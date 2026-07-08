@@ -14,6 +14,7 @@ import type { RouteContext, AuthenticatedRequest } from "./types";
 import { isAuthenticated } from "../firebaseAuth";
 // 🗳️ 2026-07-08 CHITO #8687281e：成員離開後重算投票完成（避免投票永久卡住）
 import { reevaluateTeamVotes } from "../lib/team-vote-eval";
+import { teamActionLimiter } from "../utils/rate-limiters";
 
 /** 更新準備狀態的請求驗證 */
 const readyBodySchema = z.object({
@@ -601,6 +602,7 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
   app.post(
     "/api/teams/:teamId/rejoin",
     isAuthenticated,
+    teamActionLimiter, // 🔐 2026-07-09 S3：per-user 防刷
     async (req: AuthenticatedRequest, res) => {
       try {
         const { teamId } = req.params;
