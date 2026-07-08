@@ -136,10 +136,23 @@ export function BgmPlayerProvider({ children }: { children: ReactNode }) {
       setCurrentUrl(url);
 
       if (!url) {
-        // fade out 後 pause
-        fadeVolume(a, 0, FADE_DURATION_MS, () => {
+        // 🎵 2026-07-08 CHITO #4e88bd7d：停止必須「斷根」——
+        //   1. wantPlayRef=false：否則之後任何解鎖手勢（unlock handler）
+        //      看到 src+wantPlay 會把音樂重新播起來（返回大廳仍播的路徑之一）
+        //   2. fade 後清 src：確保就算有殘留 play() 也無聲源
+        //   3. setTimeout 兜底：rAF 被節流（切背景/省電）時 fade 永不完成
+        //      → pause 永不執行；計時器保證最終一定停
+        wantPlayRef.current = false;
+        const hardStop = () => {
           a.pause();
-        });
+          a.removeAttribute("src");
+          a.load();
+        };
+        fadeVolume(a, 0, FADE_DURATION_MS, hardStop);
+        window.setTimeout(() => {
+          // fade 正常完成的話 src 已清；否則強制停
+          if (!wantPlayRef.current && a.src) hardStop();
+        }, FADE_DURATION_MS + 300);
         return;
       }
 
