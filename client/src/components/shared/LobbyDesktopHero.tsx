@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import QRCode from "qrcode";
 import { Smartphone, Gamepad2, Camera, MapPin, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
@@ -34,7 +33,12 @@ export default function LobbyDesktopHero({ fieldName, tagline, welcomeMessage }:
     if (typeof window === "undefined") return;
     const url = window.location.href;
     let cancelled = false;
-    QRCode.toDataURL(url, { width: 200, margin: 1, color: { dark: "#111827", light: "#ffffff" } })
+    // 📦 2026-07-09 B2（全站優化盤點）：qrcode 改動態載入 —
+    //   此元件在首屏引用鏈上，靜態 import 會把 qrcode 庫拉進主 bundle
+    import("qrcode")
+      .then((QRCode) =>
+        QRCode.toDataURL(url, { width: 200, margin: 1, color: { dark: "#111827", light: "#ffffff" } }),
+      )
       .then((dataUrl) => {
         if (!cancelled) setQrDataUrl(dataUrl);
       })
