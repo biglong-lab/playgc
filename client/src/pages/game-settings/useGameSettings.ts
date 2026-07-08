@@ -83,8 +83,15 @@ export interface GameSettingsReturn {
   setPrice: (v: string) => void;
   setRecurProductId: (v: string) => void;
   // 🆕 2026-05-16 #10：玩家畫面顯示
-  playerDisplay: { showProgress: boolean };
+  playerDisplay: {
+    showProgress: boolean;
+    /** 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面顯示控制 */
+    showCompletionStars: boolean;
+    showCompletionScore: boolean;
+  };
   setShowProgress: (v: boolean) => void;
+  setShowCompletionStars: (v: boolean) => void;
+  setShowCompletionScore: (v: boolean) => void;
   // 操作
   handleSave: () => void;
   isSaving: boolean;
@@ -131,6 +138,9 @@ export function useGameSettings(): GameSettingsReturn {
 
   // 🆕 2026-05-16 #10：玩家畫面是否顯示進度
   const [showProgress, setShowProgress] = useState(true);
+  // 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面星星/分數顯示（預設開）
+  const [showCompletionStars, setShowCompletionStars] = useState(true);
+  const [showCompletionScore, setShowCompletionScore] = useState(true);
 
   // 資料查詢
   const { data: user } = useQuery<User>({
@@ -168,6 +178,12 @@ export function useGameSettings(): GameSettingsReturn {
     setPrice(String(game.price ?? ""));
     setRecurProductId(game.recurProductId || "");
     setShowProgress((game as { showProgress?: boolean }).showProgress !== false);
+    setShowCompletionStars(
+      (game as { showCompletionStars?: boolean }).showCompletionStars !== false,
+    );
+    setShowCompletionScore(
+      (game as { showCompletionScore?: boolean }).showCompletionScore !== false,
+    );
   }, [game]);
 
   // 儲存 mutation
@@ -215,6 +231,8 @@ export function useGameSettings(): GameSettingsReturn {
       currency: "TWD",
       recurProductId: recurProductId || null,
       showProgress,
+      showCompletionStars,
+      showCompletionScore,
     });
   };
 
@@ -292,8 +310,12 @@ export function useGameSettings(): GameSettingsReturn {
     setRecurProductId,
     playerDisplay: {
       showProgress,
+      showCompletionStars,
+      showCompletionScore,
     },
     setShowProgress,
+    setShowCompletionStars,
+    setShowCompletionScore,
     handleSave,
     isSaving: updateMutation.isPending,
   };

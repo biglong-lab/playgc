@@ -104,6 +104,10 @@ export default function GameSettings() {
           showProgress={settings.playerDisplay.showProgress}
           canEdit={canEdit}
           onShowProgressChange={settings.setShowProgress}
+          showCompletionStars={settings.playerDisplay.showCompletionStars}
+          onShowCompletionStarsChange={settings.setShowCompletionStars}
+          showCompletionScore={settings.playerDisplay.showCompletionScore}
+          onShowCompletionScoreChange={settings.setShowCompletionScore}
         />
 
         <Card>

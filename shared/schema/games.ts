@@ -306,6 +306,9 @@ export interface ButtonConfig {
   defaultChoice?: number; // index of default button when time runs out
   randomizeOrder?: boolean;
   showStatistics?: boolean; // show "60% chose this"
+  /** 🆕 2026-07-08 CHITO #7b1a6e7d：是否在玩家端顯示各選項的得分/道具標籤
+   *（預設 true 維持既有行為；關閉避免玩家以分數高低選答案破壞沉浸感） */
+  showOptionRewards?: boolean;
   locationSettings?: LocationSettings;
 }
 
