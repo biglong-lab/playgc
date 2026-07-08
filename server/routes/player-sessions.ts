@@ -34,6 +34,19 @@ async function notifyFieldGameStart(sessionId: string, userId: string): Promise<
   }
 }
 
+// 🔐 2026-07-09 M3（全站優化盤點）：熱路徑輸入驗證 —
+//   PATCH /progress 原本 req.body 直取（score 可送負數/超大值/任意型別）
+const progressPatchSchema = z.object({
+  pageId: z.string().max(200).optional(),
+  score: z.number().int().min(0).max(1_000_000).optional(),
+  inventory: z.array(z.string().max(200)).max(500).optional(),
+  variables: z.record(z.unknown()).optional(),
+});
+
+const chatMessageSchema = z.object({
+  message: z.string().min(1).max(1000),
+});
+
 // ctx 為 optional：測試環境可不傳；正式環境由 player-games → setupWebSocket 注入
 export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
   // ==========================================================================
