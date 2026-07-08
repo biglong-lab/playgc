@@ -23,6 +23,16 @@ const { mockDb } = vi.hoisted(() => {
   mockUpdate.mockReturnValue({ set: mockSet });
   mockSet.mockReturnValue({ where: mockWhere });
 
+  // 🔐 2026-07-09 S1：requireTeamMember middleware 用 select().from().where().limit()
+  //   預設回「是成員」（[{id:'m-1'}]）；403 測試用 mockSelectLimit 覆寫成 []
+  const mockSelect = vi.fn();
+  const mockSelectFrom = vi.fn();
+  const mockSelectWhere = vi.fn();
+  const mockSelectLimit = vi.fn().mockResolvedValue([{ id: "m-1" }]);
+  mockSelect.mockReturnValue({ from: mockSelectFrom });
+  mockSelectFrom.mockReturnValue({ where: mockSelectWhere });
+  mockSelectWhere.mockReturnValue({ limit: mockSelectLimit });
+
   return {
     mockDb: {
       query: {
@@ -31,7 +41,8 @@ const { mockDb } = vi.hoisted(() => {
       },
       insert: mockInsert,
       update: mockUpdate,
-      _chain: { values: mockValues, returning: mockReturning, onConflictDoNothing: mockOnConflictDoNothing, set: mockSet, where: mockWhere },
+      select: mockSelect,
+      _chain: { values: mockValues, returning: mockReturning, onConflictDoNothing: mockOnConflictDoNothing, set: mockSet, where: mockWhere, selectLimit: mockSelectLimit },
     },
   };
 });

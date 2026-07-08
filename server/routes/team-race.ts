@@ -23,6 +23,8 @@ import { db } from "../db";
 import { teamRaceStates, teamRaceAnswers, teamMembers } from "@shared/schema";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { RouteContext, AuthenticatedRequest } from "./types";
+// 🔐 2026-07-09 S2：isTeamMember 統一到 lib/team-membership（原 5 檔各自複製、易漏）
+import { isTeamMember } from "../lib/team-membership";
 
 /**
  * 啟動時 ensure schema — raw SQL CREATE IF NOT EXISTS
@@ -76,21 +78,6 @@ export async function ensureTeamRaceSchema(): Promise<void> {
 }
 
 /** 驗 user 在該 team 是否為 active member（防偽造） */
-async function isTeamMember(teamId: string, userId: string): Promise<boolean> {
-  const m = await db
-    .select({ id: teamMembers.id })
-    .from(teamMembers)
-    .where(
-      and(
-        eq(teamMembers.teamId, teamId),
-        eq(teamMembers.userId, userId),
-        isNull(teamMembers.leftAt),
-      ),
-    )
-    .limit(1);
-  return m.length > 0;
-}
-
 const stateQuerySchema = z.object({
   teamId: z.string().min(1),
   sessionId: z.string().min(1),

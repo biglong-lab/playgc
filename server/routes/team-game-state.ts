@@ -20,6 +20,8 @@ import { db } from "../db";
 import { teamMembers } from "@shared/schema";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { RouteContext, AuthenticatedRequest } from "./types";
+// 🔐 2026-07-09 S2：isTeamMember 統一到 lib/team-membership（原 5 檔各自複製、易漏）
+import { isTeamMember } from "../lib/team-membership";
 
 export async function ensureTeamGameStateSchema(): Promise<void> {
   await db.execute(sql`
@@ -38,15 +40,6 @@ export async function ensureTeamGameStateSchema(): Promise<void> {
     CREATE UNIQUE INDEX IF NOT EXISTS uniq_team_game_states
     ON team_game_states (team_id, session_id, page_id, component_type)
   `);
-}
-
-async function isTeamMember(teamId: string, userId: string): Promise<boolean> {
-  const m = await db
-    .select({ id: teamMembers.id })
-    .from(teamMembers)
-    .where(and(eq(teamMembers.teamId, teamId), eq(teamMembers.userId, userId), isNull(teamMembers.leftAt)))
-    .limit(1);
-  return m.length > 0;
 }
 
 type StateRow = {
