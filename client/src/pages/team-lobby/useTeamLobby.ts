@@ -317,20 +317,39 @@ export function useTeamLobby(): TeamLobbyReturn {
     },
   });
 
-  // 🆕 重連場景：myTeam.status='playing' + activeSessionId → 1 秒「歡迎回來」flash
-  //   遊戲已開打了不該再 5、4、3 倒數讓玩家乾等，直接 1 秒 flash 顯示存在感後跳遊戲。
+  // 🆕 重連場景：myTeam.status='playing' + activeSessionId →「歡迎回來」畫面
   //   （自願退出的玩家 leftAt 已設值，my-team 回 null，不會走到這裡 → 不會被拉回）
+  // 🛡️ 2026-07-08 CHITO #e2f14e8b：原本 1 秒 flash 強制跳轉、玩家無法選擇 →
+  //   被鎖在舊隊伍離不開。改 3 秒倒數 + 顯示「立即繼續 / 離開隊伍」按鈕，
+  //   點離開 → declinedReconnectRef 擋住 effect 重入，不再被拉回。
+  const declinedReconnectRef = useRef(false);
   useEffect(() => {
     if (
       myTeam?.status === "playing" &&
       myTeam.activeSessionId &&
-      !startSessionIdRef.current
+      !startSessionIdRef.current &&
+      !declinedReconnectRef.current
     ) {
       startSessionIdRef.current = myTeam.activeSessionId;
       setStartingMode("reconnecting");
-      setStartingCountdown(1);
+      setStartingCountdown(3);
     }
   }, [myTeam?.status, myTeam?.activeSessionId]);
+
+  // 🆕 立即繼續（不等倒數）
+  const continueReconnectNow = useCallback(() => {
+    setStartingCountdown(0);
+  }, []);
+
+  // 🆕 取消自動接回並離開隊伍
+  const cancelReconnectAndLeave = useCallback(() => {
+    declinedReconnectRef.current = true;
+    startSessionIdRef.current = null;
+    setStartingCountdown(null);
+    setStartingMode(null);
+    leaveTeamMutation.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 倒數 effect：每秒減 1，到 0 → setLocation 跳遊戲
   useEffect(() => {
