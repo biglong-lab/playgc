@@ -178,48 +178,19 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
           return res.status(400).json({ message: "您已經投過票了" });
         }
 
+        // 🗳️ 2026-07-08 CHITO #8687281e：完成判定抽到 lib/team-vote-eval（server 權威）
+        //   分子只計「現任成員」的票 — 離開者的舊票不灌高票數
+        const memberIds = new Set(vote.team.members.map((m) => m.userId));
         const allBallots = [
-          ...vote.ballots,
+          ...vote.ballots.filter((b) => memberIds.has(b.userId)),
           { userId, optionId: body.optionId },
         ];
         const totalMembers = vote.team.members.length;
-        const voteCounts = new Map<string, number>();
-
-        for (const b of allBallots) {
-          voteCounts.set(b.optionId, (voteCounts.get(b.optionId) || 0) + 1);
-        }
-
-        let isComplete = false;
-        let winningOptionId: string | null = null;
-
-        if (vote.votingMode === "unanimous") {
-          if (allBallots.length === totalMembers) {
-            const counts = Array.from(voteCounts.values());
-            if (counts.length === 1 && counts[0] === totalMembers) {
-              isComplete = true;
-              winningOptionId = allBallots[0].optionId;
-            }
-          }
-        } else {
-          const majorityNeeded = Math.ceil(totalMembers / 2);
-          for (const [optId, count] of Array.from(voteCounts.entries())) {
-            if (count >= majorityNeeded) {
-              isComplete = true;
-              winningOptionId = optId;
-              break;
-            }
-          }
-          if (allBallots.length === totalMembers && !isComplete) {
-            isComplete = true;
-            let maxVotes = 0;
-            for (const [optId, count] of Array.from(voteCounts.entries())) {
-              if (count > maxVotes) {
-                maxVotes = count;
-                winningOptionId = optId;
-              }
-            }
-          }
-        }
+        const { isComplete, winningOptionId, voteCounts } = computeVoteCompletion(
+          vote.votingMode,
+          allBallots.map((b) => b.optionId),
+          totalMembers,
+        );
 
         if (isComplete && winningOptionId) {
           await db
