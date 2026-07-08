@@ -631,5 +631,12 @@ export function useTeamLobby(): TeamLobbyReturn {
     setPendingDecisionTarget,
     decideLeader,
     decidePending,
+    // 🆕 2026-07-08 CHITO #e2f14e8b：歡迎回來畫面的選擇權
+    continueReconnectNow,
+    cancelReconnectAndLeave,
+    // 🆕 2026-07-08 CHITO #ec3f612b：重新加入原隊伍
+    rejoinableTeam: rejoinableTeam ?? null,
+    rejoinTeam: (teamId: string) => rejoinMutation.mutate(teamId),
+    rejoinPending: rejoinMutation.isPending,
   };
 }
