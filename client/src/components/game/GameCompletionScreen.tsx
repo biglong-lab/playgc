@@ -102,6 +102,8 @@ export default function GameCompletionScreen({
   sessionId,
   onPlayAgain,
   onNavigate,
+  showStars = true,
+  showScore = true,
 }: GameCompletionScreenProps) {
   const animatedScore = useCountUp(score);
   const starCount = starsByScore(score);
