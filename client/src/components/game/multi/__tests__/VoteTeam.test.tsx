@@ -67,43 +67,52 @@ describe("isVotingComplete", () => {
     expect(isVotingComplete(undefined)).toBe(false);
   });
 
-  // 🛡️ 2026-07-04 Phase A2：門檻改與 server 一致（ceil(n/2)）——
-  //   4 人 ceil(4/2)=2 票即完成（原 client `>n/2` 要 3 票、兩端判定不同步）
-  it("majority：達 ceil(n/2) 即 true（4 人 2 票過、1 票還沒）", () => {
-    expect(
-      isVotingComplete(
-        makeState({
-          ballots: [{ userId: "u1", optionIndex: 0, votedAt: "" }],
-        }),
-      ),
-    ).toBe(false);
+  // 🗳️ 2026-07-08 CHITO #8687281e：majority/unanimous 改「只信 server 完成訊號」——
+  //   client 本地分母（my-team 快取）各裝置不一致，會提早判定完成 →
+  //   advance-progress 拖走全隊。本地票數再多、serverComplete=false 就不前進。
+  it("majority：本地票數過半但 serverComplete=false → 不完成", () => {
     expect(
       isVotingComplete(
         makeState({
           ballots: [
             { userId: "u1", optionIndex: 0, votedAt: "" },
-            { userId: "u2", optionIndex: 1, votedAt: "" },
+            { userId: "u2", optionIndex: 0, votedAt: "" },
+            { userId: "u3", optionIndex: 0, votedAt: "" },
           ],
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("majority：serverComplete=true → 完成（即使本地只看到 1 票）", () => {
+    expect(
+      isVotingComplete(
+        makeState({
+          ballots: [{ userId: "u1", optionIndex: 0, votedAt: "" }],
+          serverComplete: true,
         }),
       ),
     ).toBe(true);
   });
 
-  it("unanimous：必須全員投完", () => {
-    const ballots3 = [
+  it("unanimous：同樣只信 serverComplete", () => {
+    const ballots4 = [
       { userId: "u1", optionIndex: 0, votedAt: "" },
       { userId: "u2", optionIndex: 0, votedAt: "" },
       { userId: "u3", optionIndex: 0, votedAt: "" },
+      { userId: "u4", optionIndex: 0, votedAt: "" },
     ];
+    // 全員投完但 server 尚未確認 → false
     expect(
-      isVotingComplete(makeState({ votingMode: "unanimous", ballots: ballots3 })),
+      isVotingComplete(makeState({ votingMode: "unanimous", ballots: ballots4 })),
     ).toBe(false);
-
+    // server 確認 → true
     expect(
       isVotingComplete(
         makeState({
           votingMode: "unanimous",
-          ballots: [...ballots3, { userId: "u4", optionIndex: 0, votedAt: "" }],
+          ballots: ballots4,
+          serverComplete: true,
         }),
       ),
     ).toBe(true);
