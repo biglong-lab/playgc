@@ -27,7 +27,8 @@ export default function TeamLobby() {
     return <SoloModeView onStart={() => ctx.navigate(`/game/${ctx.game!.id}`)} />;
   }
 
-  // 🆕 開始遊戲緩衝中：starting=隊長按開始 5 秒倒數；reconnecting=掉線回來 1 秒 flash
+  // 🆕 開始遊戲緩衝中：starting=隊長按開始 5 秒倒數；
+  //   reconnecting=掉線回來 3 秒倒數（可選擇立即繼續 / 離開隊伍）
   if (ctx.startingCountdown !== null && ctx.startingMode && ctx.myTeam) {
     return (
       <StartingCountdownView
@@ -35,6 +36,9 @@ export default function TeamLobby() {
         team={ctx.myTeam}
         remainingSeconds={ctx.startingCountdown}
         mode={ctx.startingMode}
+        onContinueNow={ctx.continueReconnectNow}
+        onLeaveTeam={ctx.cancelReconnectAndLeave}
+        leavePending={ctx.leavePending}
       />
     );
   }
@@ -56,6 +60,9 @@ export default function TeamLobby() {
         joinPending={ctx.joinPending}
         mySquads={ctx.mySquads}
         mySquadsLoading={ctx.mySquadsLoading}
+        rejoinableTeam={ctx.rejoinableTeam}
+        onRejoinTeam={ctx.rejoinTeam}
+        rejoinPending={ctx.rejoinPending}
       />
     );
   }
