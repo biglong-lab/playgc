@@ -55,10 +55,12 @@ export function registerAdminRescueRoutes(app: Express, ctx: RouteContext) {
         const validProgress = progressList.filter((p): p is typeof p & { userId: string } =>
           typeof p.userId === "string" && p.userId.length > 0,
         );
-        const players = await Promise.all(
-          validProgress.map(async (p) => {
-            const userInfo = await db.query.users.findFirst({
-              where: eq(users.id, p.userId),
+        // 🚀 2026-07-09 M2（全站優化盤點）：批次查詢消 N+1 —
+        //   原本每玩家各查 user + visits（P×2 次）→ 2 次總查詢 + JS 分組
+        const userIds = validProgress.map((p) => p.userId);
+        const userRows = userIds.length > 0
+          ? await db.query.users.findMany({
+              where: inArray(users.id, userIds),
               columns: {
                 id: true,
                 firstName: true,
@@ -66,18 +68,28 @@ export function registerAdminRescueRoutes(app: Express, ctx: RouteContext) {
                 email: true,
                 profileImageUrl: true,
               },
-            });
+            })
+          : [];
+        const userById = new Map(userRows.map((u) => [u.id, u]));
 
-            const visited = await db
-              .select({ locationId: locationVisits.locationId })
-              .from(locationVisits)
-              .where(
-                and(
-                  eq(locationVisits.gameSessionId, sessionId),
-                  eq(locationVisits.playerId, p.userId),
-                ),
-              );
-            const visitedIds = new Set(visited.map((v) => v.locationId));
+        const allVisits = await db
+          .select({
+            locationId: locationVisits.locationId,
+            playerId: locationVisits.playerId,
+          })
+          .from(locationVisits)
+          .where(eq(locationVisits.gameSessionId, sessionId));
+        const visitsByPlayer = new Map<string, Set<number | string>>();
+        for (const v of allVisits) {
+          if (!v.playerId) continue;
+          const set = visitsByPlayer.get(v.playerId) ?? new Set();
+          set.add(v.locationId);
+          visitsByPlayer.set(v.playerId, set);
+        }
+
+        const players = validProgress.map((p) => {
+            const userInfo = userById.get(p.userId);
+            const visitedIds = visitsByPlayer.get(p.userId) ?? new Set();
 
             const pending = allLocations.filter((l) => !visitedIds.has(l.id));
 
