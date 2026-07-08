@@ -234,6 +234,8 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             reason: "auto_leave_after_grace",
             timestamp: new Date().toISOString(),
           });
+          // 🗳️ 分母變小 → 重算 active 投票（可能因此達標，否則投票永久卡住）
+          void reevaluateTeamVotes(teamId, broadcastToTeam);
         } catch {
           // DB 寫入失敗不阻塞，下次再試（玩家手動回來也能處理）
         }
