@@ -5,6 +5,17 @@
 
 ---
 
+## 2026-07-09
+
+### 🛡️ 全站優化第 1-4 批：安全/穩定/效能/健康（fix + refactor）
+**狀態**：🟡 已 commit 待部署（3234 測試全綠）
+**細節** → [changes/2026-07-09-sitewide-optimization.md](changes/2026-07-09-sitewide-optimization.md)
+
+- 安全：修 2 個 IDOR（他隊投票/分數可讀）＋ isTeamMember 統一 middleware＋aiLimiter 掛載＋team/session per-user limiter
+- 穩定：WS 4 個 Map 閒置回收（30min）＋PATCH /progress、chat 補 zod＋2 處 N+1 批次化（admin-multi-sessions S×T×4→4 次）
+- 效能：主 bundle 647→622KB（qrcode 出首屏鏈）；refetchInterval 58 處審查=合理不動
+- 健康：抽 useMyTeam（7 容器 -47 行）＋GamePlay 992→810（隊伍同步抽 useTeamPlaySync）；websocket/Home 拆分延後下批
+
 ## 2026-07-08
 
 ### 🐛 CHITO 11 項總掃：多人 4 bug 根因鏈一次修 + 7 項單機修復/開關（fix + feat）
