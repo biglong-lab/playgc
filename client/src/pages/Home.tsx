@@ -22,6 +22,7 @@ import {
 import AnnouncementBanner from "@/components/shared/AnnouncementBanner";
 import LobbyDesktopHero from "@/components/shared/LobbyDesktopHero";
 import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
+import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
