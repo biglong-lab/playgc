@@ -97,7 +97,12 @@ export function registerAuthRoutes(app: Express) {
       const firebaseEmail = decodedToken.email || null;
       const firebaseDisplayName = decodedToken.name || null;
 
-      const { fieldCode } = req.body;
+      // 🔐 2026-07-09 M3：型別/長度驗證（原本任意型別直用）
+      const rawFieldCode = (req.body as { fieldCode?: unknown })?.fieldCode;
+      const fieldCode =
+        typeof rawFieldCode === "string" && rawFieldCode.length <= 50
+          ? rawFieldCode
+          : undefined;
 
       // super_admin 可不填場域碼 → 依 firebaseUserId 全域搜尋
       let field: typeof fields.$inferSelect | undefined;
