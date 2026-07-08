@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { queueProgressUpdate } from "@/lib/offlineStorage";
 import { resolveFlowRouter } from "@/lib/flow-router";
 import { computeCompletionReward } from "@/lib/completion-reward";
