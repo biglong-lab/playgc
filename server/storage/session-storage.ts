@@ -173,6 +173,49 @@ export const sessionStorageMethods = {
     return newSession;
   },
 
+  /**
+   * 🆕 2026-07-08 CHITO #f095652b：放棄該玩家在此遊戲的其他 solo playing session
+   *
+   * 根因：玩家會累積多個 playing session（重玩/網路抖動誤建），
+   *   getActiveSessionByUserAndGame 的揀選規則可能撈回古早的幽靈進度
+   *   （複測 fail：「保留進度重進卻問『從更以前的紀錄進度43繼續?』」）。
+   * 修法：建新 session 時把舊的 solo playing 標 abandoned →
+   *   同一玩家同一遊戲同時只有一個 playing session、揀選永遠唯一。
+   *
+   * ⚠️ 只動 solo：有 team_sessions 對應的多人 session 不碰
+   *   （多人 session 全隊共用、生命週期由 team lifecycle 管理）。
+   */
+  async abandonOtherPlayingSessionsForUser(
+    userId: string,
+    gameId: string,
+    excludeSessionId: string,
+  ): Promise<number> {
+    // 找候選：此玩家有 progress 的此遊戲 playing session（排除新建的那筆）
+    const candidates = await db
+      .select({ id: gameSessions.id, teamSessionId: teamSessions.id })
+      .from(gameSessions)
+      .innerJoin(playerProgress, eq(playerProgress.sessionId, gameSessions.id))
+      .leftJoin(teamSessions, eq(teamSessions.sessionId, gameSessions.id))
+      .where(
+        and(
+          eq(playerProgress.userId, userId),
+          eq(gameSessions.gameId, gameId),
+          eq(gameSessions.status, "playing"),
+        ),
+      );
+
+    const targetIds = candidates
+      .filter((c) => c.id !== excludeSessionId && c.teamSessionId == null)
+      .map((c) => c.id);
+    if (targetIds.length === 0) return 0;
+
+    await db
+      .update(gameSessions)
+      .set({ status: "abandoned", completedAt: new Date() })
+      .where(inArray(gameSessions.id, targetIds));
+    return targetIds.length;
+  },
+
   /** 更新工作階段 */
   async updateSession(id: string, session: Partial<InsertGameSession>): Promise<GameSession | undefined> {
     const [updated] = await db.update(gameSessions).set(session).where(eq(gameSessions.id, id)).returning();
