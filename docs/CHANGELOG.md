@@ -8,7 +8,7 @@
 ## 2026-07-09
 
 ### 🛡️ 全站優化第 1-4 批：安全/穩定/效能/健康（fix + refactor）
-**狀態**：🟡 已 commit 待部署（3234 測試全綠）
+**狀態**：🟢 部署上線（commit `58889d1d`、bundle `index-Buebtw9F`；生產 DB 已加 show_completion_* 兩欄）
 **細節** → [changes/2026-07-09-sitewide-optimization.md](changes/2026-07-09-sitewide-optimization.md)
 
 - 安全：修 2 個 IDOR（他隊投票/分數可讀）＋ isTeamMember 統一 middleware＋aiLimiter 掛載＋team/session per-user limiter
@@ -19,7 +19,7 @@
 ## 2026-07-08
 
 ### 🐛 CHITO 11 項總掃：多人 4 bug 根因鏈一次修 + 7 項單機修復/開關（fix + feat）
-**狀態**：🟡 已 commit 待部署（本地測試 3233 全綠）
+**狀態**：🟢 部署上線（隨 07-09 批次、commit `58889d1d`）；11 筆已寫回 CHITO 待複測（多人 4 筆需 3 台真機）
 
 **多人根因鏈（投票/同步/重連 4 issue 同源）**：
 - #8687281e 投票 1/3 跳頁：完成判定改 server 權威（`lib/team-vote-eval`）、client 只信 serverComplete（cast 回應/WS/polling 三路）；GET /votes 補回 completed；成員離開自動重算投票
