@@ -195,6 +195,36 @@ export function useTeamLobby(): TeamLobbyReturn {
   });
   const mySquads = mySquadsData?.memberships ?? [];
 
+  // 🆕 2026-07-08 CHITO #ec3f612b：沒隊伍時查「可重新加入的原隊伍」
+  //   （退出 / 被 auto-leave 後重進 → 顯示「重新連線原隊伍」入口）
+  const { data: rejoinableTeam } = useQuery<{
+    teamId: string;
+    name: string;
+    status: string;
+    memberCount: number;
+  } | null>({
+    queryKey: ["/api/games", gameId, "rejoinable-team"],
+    enabled: !!gameId && !!currentUserId && !teamLoading && !myTeam,
+  });
+
+  const rejoinMutation = useMutation({
+    mutationFn: async (teamId: string) => {
+      const response = await apiRequest("POST", `/api/teams/${teamId}/rejoin`, {});
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "已重新加入隊伍" });
+      // 重新接回 → 清除「拒絕自動接回」旗標，讓歡迎回來流程能再次啟動
+      declinedReconnectRef.current = false;
+      queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "rejoinable-team"] });
+    },
+    onError: (error: unknown) => {
+      const msg = error instanceof Error ? error.message : "無法重新加入";
+      toast({ title: "重新加入失敗", description: msg, variant: "destructive" });
+    },
+  });
+
   // 🔗 偵測到 ?code= 邀請碼時提示使用者「您被邀請了」
   useEffect(() => {
     if (initialInviteCode && !myTeam && game) {
