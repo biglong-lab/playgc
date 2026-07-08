@@ -58,10 +58,11 @@ export default function FlashlightEditor({ config, updateField }: EditorProps) {
         <label className="text-sm font-medium mb-2 block">獎勵分數</label>
         <Input
           type="number"
-          value={config.rewardPoints ?? 5}
+          // 🎯 2026-07-08 CHITO #c1149bc8：預設 0（給分需明確設定）
+          value={config.rewardPoints ?? 0}
           onChange={(e) => {
             const n = parseInt(e.target.value, 10);
-            updateField("rewardPoints", Number.isFinite(n) ? n : 5);
+            updateField("rewardPoints", Number.isFinite(n) ? n : 0);
           }}
           min={0}
           max={1000}
