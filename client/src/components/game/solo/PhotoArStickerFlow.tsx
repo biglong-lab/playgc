@@ -54,6 +54,7 @@ import { useArStickerGesture } from "./ar-sticker/useArStickerGesture";
 import { cssGroupTransform } from "./ar-sticker/arStickerTransform";
 import { useArVideoRecorder } from "./ar-sticker/useArVideoRecorder";
 import { drawArFrame } from "./ar-sticker/drawArFrame";
+import { loadAnimatedSticker, type AnimatedSticker } from "./ar-sticker/animatedSticker";
 import ArVideoResultView from "./ar-sticker/ArVideoResultView";
 import {
   type StickerConfigItem,
