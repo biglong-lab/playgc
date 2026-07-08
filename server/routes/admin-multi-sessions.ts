@@ -516,28 +516,17 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
               };
             });
 
-            // 隊伍 game states（最近 5 條）
-            const teamStates = await db.execute(sql`
-              SELECT page_id, component_type, version, updated_at
-              FROM team_game_states
-              WHERE team_id=${t.id} AND session_id=${s.id}
-              ORDER BY updated_at DESC LIMIT 5
-            `);
-
-            // 隊伍 lock states（如有）
-            const lockStates = await db.execute(sql`
-              SELECT page_id, shared_code, attempts, is_unlocked, is_failed, version, updated_at
-              FROM team_lock_states
-              WHERE team_id=${t.id} AND session_id=${s.id}
-            `);
+            // 隊伍 game states（最近 5 條）/ lock states — 批次結果查表
+            const recentStates = (teamStatesByKey.get(`${t.id}|${s.id}`) ?? []).slice(0, 5);
+            const lockStates = lockStatesByKey.get(`${t.id}|${s.id}`) ?? [];
 
             teamsData.push({
               teamId: t.id,
               teamName: t.name,
               memberCount: members.length,
               members: memberStatus,
-              recentStates: (teamStates as unknown as { rows?: unknown[] }).rows ?? [],
-              lockStates: (lockStates as unknown as { rows?: unknown[] }).rows ?? [],
+              recentStates,
+              lockStates,
             });
           }
 
