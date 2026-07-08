@@ -374,7 +374,9 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
         {/* 🔬 ?gpsdebug=1 診斷面板：顯示 朝向/方位角/箭頭角 原始數據（給測試員回報用）*/}
         {gpsDebug && (
           <div className="text-[10px] text-muted-foreground tabular-nums bg-muted/50 rounded px-1.5 py-0.5" data-testid="gps-debug-panel">
-            朝向 {compass.heading === null ? "無(未授權?)" : Math.round(compass.heading) + "°"} ·
+            朝向 {compass.heading === null ? "無(未授權?)" : Math.round(compass.heading) + "°"}
+            {/* 🧭 2026-07-08：abs=絕對方位（正確）；rel=相對值 fallback（會漂移、回報時註明）*/}
+            {compass.heading !== null && (compass.isAbsolute ? "(abs)" : "(rel⚠️)")} ·
             目標 {Math.round(targetBearing)}° · 箭頭 {Math.round(angle)}°
           </div>
         )}
