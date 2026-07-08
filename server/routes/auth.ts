@@ -529,8 +529,9 @@ export function registerAuthRoutes(app: Express) {
   if (process.env.NODE_ENV !== "production") {
     app.post("/api/dev/custom-token", async (req, res) => {
       try {
-        const { email } = req.body;
-        if (!email) {
+        // 🔐 2026-07-09 M3：型別驗證（dev-only 端點、仍防意外輸入）
+        const email = (req.body as { email?: unknown })?.email;
+        if (typeof email !== "string" || !email || email.length > 200) {
           return res.status(400).json({ message: "需要 email" });
         }
         // 先觸發一次 verifyFirebaseToken 確保 Firebase Admin 已初始化
