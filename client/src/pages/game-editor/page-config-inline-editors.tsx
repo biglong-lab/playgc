@@ -1211,14 +1211,16 @@ export function ChoiceVerifyEditor({
             <label className="text-xs text-muted-foreground mb-1 block">每題答對獎勵</label>
             <Input
               type="number"
-              value={(config.rewardPerQuestion as number | undefined) ?? 10}
+              // 🎯 2026-07-08 CHITO #c1149bc8：顯示 fallback 對齊 runtime（?? 0）
+              //   原本顯示 ?? 10 但玩家端未設定時給 0 → 管理員看到 10 卻對不上實際
+              value={(config.rewardPerQuestion as number | undefined) ?? 0}
               onChange={(e) => {
                 const n = parseInt(e.target.value, 10);
-                updateField("rewardPerQuestion", Number.isFinite(n) && n >= 0 ? n : 10);
+                updateField("rewardPerQuestion", Number.isFinite(n) && n >= 0 ? n : 0);
               }}
               min={0}
               className="h-8"
-              placeholder="10"
+              placeholder="0"
             />
           </div>
         </div>

@@ -1,5 +1,10 @@
 // 各頁面類型的預設設定值
 // 對齊 shared/schema/games.ts 的最新 Config 型別，補齊本輪擴充的欄位
+//
+// 🎯 2026-07-08 CHITO #c1149bc8：所有 rewardPoints / rewardPerQuestion 預設一律 0
+//   原本各型別預設 5~50 分，建頁時悄悄寫入 DB → 管理員「沒設定分數」
+//   玩家完成卻自動加分（發道具頁 toast 同時跳「獲得道具 +10 點」的根因）。
+//   給分必須由編輯者明確設定，預設不給分。
 
 export function getDefaultConfig(pageType: string): Record<string, unknown> {
   switch (pageType) {
@@ -47,7 +52,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         inputType: "text",
         caseSensitive: false,
         maxAttempts: 5,
-        rewardPoints: 10,
+        rewardPoints: 0,
       };
     case "choice_verify":
       return {
@@ -59,7 +64,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         randomizeOptions: false,
         multiple: false,
         showExplanation: false,
-        rewardPerQuestion: 10,
+        rewardPerQuestion: 0,
       };
     case "choice_verify_race": // 多人搶答（用 questions[] 多題模式）
       return {
@@ -71,7 +76,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
             correctAnswer: 0,
           },
         ],
-        rewardPerQuestion: 10,
+        rewardPerQuestion: 0,
         timeLimit: 30,
       };
     case "conditional_verify":
@@ -87,7 +92,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         verificationMode: "order_matters",
         conditions: [],
         allRequired: true,
-        rewardPoints: 30,
+        rewardPoints: 0,
       };
     case "shooting_mission":
     case "shooting_team": // 多人版共用 config schema
@@ -112,7 +117,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
           allowRetryOnFail: true,
           maxRetries: 3,
         },
-        rewardPoints: 30,
+        rewardPoints: 0,
       };
     case "gps_mission":
     case "gps_team_mission": // 多人版共用 config schema
@@ -136,7 +141,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         title: "拆彈任務",
         timeLimit: 60,
         tasks: [{ type: "tap", question: "快速點擊按鈕!", targetCount: 10 }],
-        rewardPoints: 50,
+        rewardPoints: 0,
         penaltySeconds: 0,
       };
     case "lock":
@@ -146,7 +151,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         combination: "1234",
         digits: 4,
         maxAttempts: 5,
-        rewardPoints: 20,
+        rewardPoints: 0,
       };
     case "motion_challenge":
       return {
@@ -154,7 +159,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         challengeType: "shake",
         targetValue: 20,
         timeLimit: 30,
-        rewardPoints: 15,
+        rewardPoints: 0,
       };
     // 🆕 2026-05-07：手電筒元件
     case "flashlight":
@@ -162,7 +167,7 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
         title: "點亮手電筒",
         description: "請點亮手電筒、看清楚周圍環境",
         requiredOnSeconds: 0, // 0 = 點一下就完成
-        rewardPoints: 5,
+        rewardPoints: 0,
       };
     case "vote":
     case "vote_team": // 多人版共用 config schema
