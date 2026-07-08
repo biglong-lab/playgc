@@ -526,6 +526,8 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
             reason: "leader_continue_decision",
             timestamp: new Date().toISOString(),
           });
+          // 🗳️ 2026-07-08：分母變小 → 重算 active 投票（可能因此達標）
+          void reevaluateTeamVotes(teamId, ctx.broadcastToTeam);
           res.json({ message: "已將該玩家標為離開", action: "continue" });
         } catch {
           res.status(500).json({ message: "處理離開失敗" });
