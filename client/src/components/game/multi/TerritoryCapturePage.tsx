@@ -23,6 +23,7 @@ import { useTeamTerritorySync } from "../shared/hooks/useTeamTerritorySync";
 import TerritoryCapture from "./TerritoryCapture";
 import type { TerritoryCaptureConfig } from "@shared/schema";
 import TeamRequiredFallback from "../shared/ui/TeamRequiredFallback";
+import { useMyTeam } from "../shared/hooks/useMyTeam";
 
 export interface TerritoryCapturePageProps {
   config: TerritoryCaptureConfig;
@@ -39,7 +40,7 @@ interface MyTeamResponse {
   id: string;
   members: Array<{
     userId: string;
-    user?: { id: string; firstName?: string | null; lastName?: string | null; email?: string };
+    user?: { id: string; firstName?: string | null; lastName?: string | null; email?: string | null};
   }>;
 }
 
@@ -52,17 +53,9 @@ export default function TerritoryCapturePage({
 }: TerritoryCapturePageProps) {
   const { user } = useAuth();
 
-  const {
-    data: myTeam,
-    isLoading: teamLoading,
-    isError: teamError,
-  } = useQuery<MyTeamResponse | null>({
-    queryKey: [`/api/games/${gameId}/my-team`],
-    enabled: !!gameId && !!user,
-    // 🛡️ 2026-07-08 CHITO #0e0f5f17：10s refetch — 被移出隊伍後 my-team 變 null
-    //   → 切到 TeamRequiredFallback（含重新連線入口），不再卡舊快取死轉
-    refetchInterval: 10_000,
-  });
+  // 👥 2026-07-09 C2（全站優化盤點）：my-team 查詢統一到 useMyTeam hook
+  //   （原 7 個容器各自複製同段 useQuery，複製漂移曾造成同步 bug）
+  const { myTeam, teamLoading, teamError } = useMyTeam(gameId, !!user);
 
   const teamId = myTeam?.id;
   const myDisplayName = user

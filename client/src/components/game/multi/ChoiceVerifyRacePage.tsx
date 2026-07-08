@@ -33,6 +33,7 @@ import ChoiceVerifyRace, {
 } from "./ChoiceVerifyRace";
 import type { ChoiceVerifyConfig } from "@shared/schema";
 import TeamRequiredFallback from "../shared/ui/TeamRequiredFallback";
+import { useMyTeam } from "../shared/hooks/useMyTeam";
 
 interface RaceStateFromServer {
   id: string;
@@ -88,7 +89,7 @@ interface MyTeamResponse {
       id: string;
       firstName?: string | null;
       lastName?: string | null;
-      email?: string;
+      email?: string | null; // 👥 2026-07-09 C2：對齊 useMyTeam 的 MyTeamData
     };
   }>;
 }
@@ -135,15 +136,9 @@ export default function ChoiceVerifyRacePage({
   // 🛡️ 2026-07-08 CHITO #0e0f5f17：加 10s refetch — 玩家被移出隊伍後
   //   my-team 若停在舊快取，team-state API 已 403 → 永久卡「同步隊伍進度中」。
   //   定期刷新讓 myTeam 變 null → 切到 TeamRequiredFallback（含重新連線入口）。
-  const {
-    data: myTeam,
-    isLoading: teamLoading,
-    isError: teamError,
-  } = useQuery<MyTeamResponse | null>({
-    queryKey: [`/api/games/${gameId}/my-team`],
-    enabled: !!gameId && !!user,
-    refetchInterval: 10_000,
-  });
+  // 👥 2026-07-09 C2（全站優化盤點）：my-team 查詢統一到 useMyTeam hook
+  //   （原 7 個容器各自複製同段 useQuery，複製漂移曾造成同步 bug）
+  const { myTeam, teamLoading, teamError } = useMyTeam(gameId, !!user);
 
   const teamId = myTeam?.id;
   const effectivePageId = pageId ?? "default";

@@ -22,6 +22,7 @@ import { useTeamVoteSync } from "../shared/hooks/useTeamVoteSync";
 import VoteTeam from "./VoteTeam";
 import type { VoteConfig } from "@shared/schema";
 import TeamRequiredFallback from "../shared/ui/TeamRequiredFallback";
+import { useMyTeam } from "../shared/hooks/useMyTeam";
 
 /** 此元件需要的 props（GamePageRenderer 透過 commonProps + pageId 傳入） */
 export interface VoteTeamPageProps {
@@ -52,17 +53,9 @@ export default function VoteTeamPage({
   const { user } = useAuth();
 
   // 取得當前玩家的隊伍
-  const {
-    data: myTeam,
-    isLoading: teamLoading,
-    isError: teamError,
-  } = useQuery<MyTeamResponse | null>({
-    queryKey: [`/api/games/${gameId}/my-team`],
-    enabled: !!gameId && !!user,
-    // 🛡️ 2026-07-04 多人穩定性 Phase A2：投票分母（totalMembers）需跟上成員變動
-    //   （原本不 refetch → 投票中有人加入/離開時各裝置分母不同 → 完成判定不同步）
-    refetchInterval: 10_000,
-  });
+  // 👥 2026-07-09 C2（全站優化盤點）：my-team 查詢統一到 useMyTeam hook
+  //   （原 7 個容器各自複製同段 useQuery，複製漂移曾造成同步 bug）
+  const { myTeam, teamLoading, teamError } = useMyTeam(gameId, !!user);
 
   // 整合 hook（teamId 還沒有時 enabled=false 不發 request）
   const teamId = myTeam?.id;
