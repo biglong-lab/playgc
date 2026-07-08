@@ -239,10 +239,13 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
       try {
         const { teamId } = req.params;
 
+        // 🗳️ 2026-07-08 CHITO #8687281e：補回 completed —
+        //   原本只回 active，投票一完成就從列表消失 → 晚掛載/重連的玩家
+        //   找不到已完成投票 → 重複建新票、也永遠等不到完成訊號
         const votes = await db.query.teamVotes.findMany({
           where: and(
             eq(teamVotes.teamId, teamId),
-            eq(teamVotes.status, "active"),
+            inArray(teamVotes.status, ["active", "completed"]),
           ),
           with: {
             ballots: true,
