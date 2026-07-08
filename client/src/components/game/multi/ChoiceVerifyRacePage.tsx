@@ -132,6 +132,9 @@ export default function ChoiceVerifyRacePage({
   const advanceCooldownSeconds = config.advanceCooldownSeconds ?? 5;
 
   // 從 useQuery 取 myTeam
+  // 🛡️ 2026-07-08 CHITO #0e0f5f17：加 10s refetch — 玩家被移出隊伍後
+  //   my-team 若停在舊快取，team-state API 已 403 → 永久卡「同步隊伍進度中」。
+  //   定期刷新讓 myTeam 變 null → 切到 TeamRequiredFallback（含重新連線入口）。
   const {
     data: myTeam,
     isLoading: teamLoading,
@@ -139,6 +142,7 @@ export default function ChoiceVerifyRacePage({
   } = useQuery<MyTeamResponse | null>({
     queryKey: [`/api/games/${gameId}/my-team`],
     enabled: !!gameId && !!user,
+    refetchInterval: 10_000,
   });
 
   const teamId = myTeam?.id;
