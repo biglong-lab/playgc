@@ -233,9 +233,11 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
   );
 
   // 取得隊伍投票列表
+  // 🔐 2026-07-09 S1：補成員驗證 — 原本只驗登入，任何登入者可讀他隊投票（IDOR）
   app.get(
     "/api/teams/:teamId/votes",
     isAuthenticated,
+    requireTeamMember,
     async (req: AuthenticatedRequest, res) => {
       try {
         const { teamId } = req.params;
