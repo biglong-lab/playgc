@@ -201,6 +201,9 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
         // - 再 kick 該 user：他會收到 team_kicked + ws close
         ctx.kickUserFromTeam?.(teamId, userId, "left_team");
 
+        // 🗳️ 2026-07-08：分母變小 → 重算 active 投票（可能因此達標）
+        void reevaluateTeamVotes(teamId, ctx.broadcastToTeam);
+
         res.json({ message: "已離開隊伍" });
       } catch (error) {
         res.status(500).json({ message: "離開隊伍失敗" });
