@@ -457,6 +457,28 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
           return res.status(403).json({ message: "只有隊長可以決定" });
         }
 
+        // 🛡️ 2026-07-08 CHITO #0e0f5f17：「先繼續」防呆 —
+        //   玩家切背景 30 秒回來已重連，但隊長對話框還開著 → 點「先繼續」
+        //   原本不檢查直接設 leftAt → 在線玩家被踢出 → 所有 team API 403
+        //   → 永久卡「同步隊伍進度中」且無回歸機制。
+        //   修法：目標玩家已有 active ws 連線 → 不設 leftAt、回 already_back。
+        if (
+          body.action === "continue" &&
+          ctx.isUserStillConnected?.(teamId, body.targetUserId)
+        ) {
+          ctx.cancelDisconnectTimer?.(teamId, body.targetUserId);
+          ctx.broadcastToTeam(teamId, {
+            type: "team_member_reconnected",
+            userId: body.targetUserId,
+            userName: body.targetUserId,
+            timestamp: new Date().toISOString(),
+          });
+          return res.json({
+            message: "該玩家已重新連線，未移出隊伍",
+            action: "already_back",
+          });
+        }
+
         // 取消既有 timer（grace + autoLeave）
         ctx.cancelDisconnectTimer?.(teamId, body.targetUserId);
 
