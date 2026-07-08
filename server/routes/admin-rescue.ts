@@ -115,8 +115,7 @@ export function registerAdminRescueRoutes(app: Express, ctx: RouteContext) {
               totalCount: allLocations.length,
               pendingLocations: pending,
             };
-          }),
-        );
+          });
 
         res.json({
           sessionId,
