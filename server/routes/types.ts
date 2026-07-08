@@ -38,6 +38,9 @@ export interface RouteContext {
   broadcastToHostSession?: (sessionId: string, message: WsBroadcastMessage, hostOnly?: boolean) => void;
   /** 🆕 2026-05-07 A4：把指定 user 從 team ws connections 踢掉（玩家被移出隊伍時用）*/
   kickUserFromTeam?: (teamId: string, userId: string, reason?: string) => void;
+  /** 🆕 2026-07-08 CHITO #0e0f5f17：查該 user 在此 team 是否仍有 active ws 連線
+   *（leader-decide「先繼續」防呆 — 玩家已重連就不該被標離開）*/
+  isUserStillConnected?: (teamId: string, userId: string) => boolean;
 }
 
 // 經 Firebase 認證後的 Request 型別
