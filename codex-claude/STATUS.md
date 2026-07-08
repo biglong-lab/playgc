@@ -9,9 +9,9 @@
 
 - **目前負責人**：（無、本次工作完成）
 - **開始時間**：—
-- **進行中任務**：—（待業主實測「7/12 改 7/9」；另有 5/14 碎片 stale closure 待驗證，見下方）
+- **進行中任務**：—（待 CHITO 測試員複測 11 筆，多人 4 筆需 3 台真機；另 5/14 碎片 stale closure 待驗證，見下方）
 - **阻塞項**：無
-- **上次更新**：2026-06-30 [Claude]（**預約改時間誤判修復（getBookingConfig 支援 UUID/code 雙查）、生產 `a61ca718`、/api/version=a61ca718、health 200、tsc 0；同日另完成 POS 幽靈退款+6/29結帳補登(13,880)+PWA韌性+deploy.sh port；紀錄 logs/2026-06-30.md**）
+- **上次更新**：2026-07-09 [Claude]（**CHITO 11 項總掃（多人投票 server 權威/leader-decide 防呆/rejoin 回歸/GPS deviceorientationabsolute/session 唯一化等）＋全站優化 4 批（IDOR×2/limiter/WS 記憶體回收/N+1/bundle 647→622KB/useMyTeam/GamePlay 992→810）；生產 `58889d1d`、/api/version=58889d1d、bundle index-Buebtw9F、DB 加 show_completion_* 兩欄、3234 測試全綠；紀錄 logs/2026-07-09.md**）
 
 ---
 
