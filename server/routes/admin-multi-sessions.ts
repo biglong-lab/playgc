@@ -380,22 +380,24 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
         }
 
         // 3. 每 session 的 teams + members + progress + persistence
-        const result = [];
+        // 🚀 2026-07-09 M2（全站優化盤點）：批次查詢消 N+1 —
+        //   原本 for(sessions)×for(teams) 內各查 members/progress/states
+        //   = S×T×4 次 DB 往返（10 隊 5 場 = 200 次）→ 改 4 次總查詢 + JS 分組
         const cutoff = new Date(Date.now() - ONLINE_THRESHOLD_MS);
         const detailRecentCutoff = new Date(Date.now() - ONLINE_RECENT_MS);
 
-        for (const s of sessions) {
-          // teams 在這個 game（不是 session、teams 屬 game level）
-          const teamRows = await db
-            .select()
-            .from(teams)
-            .where(eq(teams.gameId, gameId));
+        // teams 屬 game level（原本竟在 sessions 迴圈內重查 S 次）
+        const teamRows = await db
+          .select()
+          .from(teams)
+          .where(eq(teams.gameId, gameId));
+        const teamIds = teamRows.map((t) => t.id);
 
-          const teamsData = [];
-          for (const t of teamRows) {
-            // members（active）
-            const members = await db
+        // 全部 active members 一次查、依 teamId 分組
+        const allMembers = teamIds.length > 0
+          ? await db
               .select({
+                teamId: teamMembers.teamId,
                 userId: teamMembers.userId,
                 role: teamMembers.role,
                 joinedAt: teamMembers.joinedAt,
@@ -403,13 +405,70 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
               })
               .from(teamMembers)
               .leftJoin(users, eq(users.id, teamMembers.userId))
-              .where(and(eq(teamMembers.teamId, t.id), isNull(teamMembers.leftAt)));
+              .where(and(inArray(teamMembers.teamId, teamIds), isNull(teamMembers.leftAt)))
+          : [];
+        const membersByTeam = new Map<string, typeof allMembers>();
+        for (const m of allMembers) {
+          const arr = membersByTeam.get(m.teamId) ?? [];
+          arr.push(m);
+          membersByTeam.set(m.teamId, arr);
+        }
 
-            // 各員 progress（用 sessionId）
-            const progressRows = await db
+        // 全部 sessions 的 progress 一次查、依 sessionId 分組
+        const allProgress = sessionIds.length > 0
+          ? await db
               .select()
               .from(playerProgress)
-              .where(eq(playerProgress.sessionId, s.id));
+              .where(inArray(playerProgress.sessionId, sessionIds))
+          : [];
+        const progressBySession = new Map<string, typeof allProgress>();
+        for (const p of allProgress) {
+          const arr = progressBySession.get(p.sessionId) ?? [];
+          arr.push(p);
+          progressBySession.set(p.sessionId, arr);
+        }
+
+        // team_game_states / team_lock_states 一次查、依 team|session 分組
+        type StateRowLoose = Record<string, unknown> & { team_id: string; session_id: string };
+        const groupByTeamSession = (rows: StateRowLoose[]) => {
+          const map = new Map<string, StateRowLoose[]>();
+          for (const r of rows) {
+            const key = `${r.team_id}|${r.session_id}`;
+            const arr = map.get(key) ?? [];
+            arr.push(r);
+            map.set(key, arr);
+          }
+          return map;
+        };
+        const teamStatesRes = sessionIds.length > 0
+          ? await db.execute(sql`
+              SELECT team_id, session_id, page_id, component_type, version, updated_at
+              FROM team_game_states
+              WHERE session_id = ANY(${sessionIds})
+              ORDER BY updated_at DESC
+            `)
+          : { rows: [] };
+        const teamStatesByKey = groupByTeamSession(
+          ((teamStatesRes as unknown as { rows?: StateRowLoose[] }).rows ?? []),
+        );
+        const lockStatesRes = sessionIds.length > 0
+          ? await db.execute(sql`
+              SELECT team_id, session_id, page_id, shared_code, attempts, is_unlocked, is_failed, version, updated_at
+              FROM team_lock_states
+              WHERE session_id = ANY(${sessionIds})
+            `)
+          : { rows: [] };
+        const lockStatesByKey = groupByTeamSession(
+          ((lockStatesRes as unknown as { rows?: StateRowLoose[] }).rows ?? []),
+        );
+
+        const result = [];
+
+        for (const s of sessions) {
+          const teamsData = [];
+          for (const t of teamRows) {
+            const members = membersByTeam.get(t.id) ?? [];
+            const progressRows = progressBySession.get(s.id) ?? [];
 
             const memberStatus = members.map((m) => {
               const prog = progressRows.find((p) => p.userId === m.userId);
