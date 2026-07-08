@@ -424,7 +424,12 @@ export function registerAuthRoutes(app: Express) {
       }
 
       // 驗證目標場域
-      const { fieldCode } = req.body as { fieldCode?: string };
+      // 🔐 2026-07-09 M3：型別/長度驗證
+      const rawSwitchCode = (req.body as { fieldCode?: unknown })?.fieldCode;
+      const fieldCode =
+        typeof rawSwitchCode === "string" && rawSwitchCode.length <= 50
+          ? rawSwitchCode
+          : undefined;
       if (!fieldCode) return res.status(400).json({ message: "需指定 fieldCode" });
       const targetField = await db.query.fields.findFirst({
         where: eq(fields.code, fieldCode.toUpperCase()),
