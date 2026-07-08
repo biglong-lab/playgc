@@ -59,6 +59,9 @@ export default function TerritoryCapturePage({
   } = useQuery<MyTeamResponse | null>({
     queryKey: [`/api/games/${gameId}/my-team`],
     enabled: !!gameId && !!user,
+    // 🛡️ 2026-07-08 CHITO #0e0f5f17：10s refetch — 被移出隊伍後 my-team 變 null
+    //   → 切到 TeamRequiredFallback（含重新連線入口），不再卡舊快取死轉
+    refetchInterval: 10_000,
   });
 
   const teamId = myTeam?.id;
