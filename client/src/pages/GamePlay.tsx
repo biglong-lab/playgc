@@ -705,6 +705,9 @@ export default function GamePlay() {
         sessionId={sessionId || undefined}   /* 🆕 傳入以便「看本場相簿」*/
         onPlayAgain={resetAndCreateNew}
         onNavigate={setLocation}
+        /* 🆕 2026-07-08 CHITO #93c7a2ca：依遊戲設定控制星星/分數顯示 */
+        showStars={(game as { showCompletionStars?: boolean | null }).showCompletionStars ?? true}
+        showScore={(game as { showCompletionScore?: boolean | null }).showCompletionScore ?? true}
       />
     );
   }
