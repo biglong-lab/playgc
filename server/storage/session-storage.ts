@@ -91,23 +91,36 @@ export const sessionStorageMethods = {
     // 有進度 = currentPageId 有值（玩家已前進過至少一頁；換頁時才寫入）
     const hasProgress = (r: (typeof results)[number]) =>
       r.progress.currentPageId != null;
+    // 🕐 2026-07-08 CHITO #f095652b round4：與 Home gameStatusMap 同步的新鮮度
+    //   Home 用「24h 內 playing → 顯示返回遊戲」；此揀選若在同情境回 completed
+    //   → 玩家點「返回遊戲」卻直跳「任務完成」畫面（兩端判定不一致的根因）
+    const PLAYING_FRESH_MS = 24 * 60 * 60 * 1000;
+    const isFresh = (r: (typeof results)[number]) => {
+      const t = r.session.startedAt ? new Date(r.session.startedAt).getTime() : 0;
+      return t > 0 && Date.now() - t < PLAYING_FRESH_MS;
+    };
 
     const latest = results[0];
 
     // 1. 最新一筆是進行中且有進度 → 直接接續（重玩中 / 正常進行，優先於舊 completed）
     if (latest.session.status === "playing" && hasProgress(latest)) return latest;
 
-    // 2. 否則優先找「有進度的最新 playing」——避免抖動誤建的空 playing 蓋掉真進度（本 bug 主因）
+    // 2. 否則優先找「有進度的最新 playing」——避免抖動誤建的空 playing 蓋掉真進度
     const playingWithProgress = results.find(
       (r) => r.session.status === "playing" && hasProgress(r)
     );
     if (playingWithProgress) return playingWithProgress;
 
-    // 3. 沒有任何有進度的 playing → 有通關紀錄就顯示通關（保留 D2-c+ 意圖）
+    // 3. 🆕 最新一筆是「24h 內的空 playing」= 玩家剛開了新的一場（含通關後
+    //    點「返回遊戲/再玩一次」）→ 回這筆從第 0 頁正常開始，與 Home 顯示一致。
+    //    （原本這裡先回 completed → 玩家點返回遊戲卻直跳任務完成）
+    if (latest.session.status === "playing" && isFresh(latest)) return latest;
+
+    // 4. 沒有可接續的新場 → 有通關紀錄就顯示通關（保留 D2-c+「通關=結束」意圖）
     const completed = results.find((r) => r.session.status === "completed");
     if (completed) return completed;
 
-    // 4. 全新遊戲（只有空 playing）→ 依最新一筆、restore 回第 0 頁正常開始
+    // 5. 只剩過期的空 playing → 依最新一筆、restore 回第 0 頁正常開始
     return latest;
   },
 
