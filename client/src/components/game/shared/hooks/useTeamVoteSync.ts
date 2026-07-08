@@ -200,6 +200,14 @@ export function useTeamVoteSync({
       if (found) {
         setVoteId(found.id);
         setBallots(found.ballots ?? []);
+        // 晚掛載/重連：投票已完成 → 直接採用完成訊號（原本 completed 被 GET 濾掉
+        // → 永遠等不到完成、還會重複建新票）
+        if (found.status === "completed" && found.winningOptionId) {
+          setServerOutcome({
+            isComplete: true,
+            winningOptionId: found.winningOptionId,
+          });
+        }
       } else {
         // 2. 沒有 → 建立
         const createRes = await apiRequest("POST", `/api/teams/${teamId}/votes`, {
