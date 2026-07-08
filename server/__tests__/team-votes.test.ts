@@ -70,6 +70,8 @@ vi.mock("drizzle-orm", () => ({
   and: vi.fn((...args: unknown[]) => ({ op: "and", args })),
   desc: vi.fn((col: string) => ({ op: "desc", col })),
   isNull: vi.fn((col: string) => ({ op: "isNull", col })),
+  // 🗳️ 2026-07-08：GET /votes 改查 active+completed 用到 inArray
+  inArray: vi.fn((col: string, vals: unknown[]) => ({ op: "inArray", col, vals })),
 }));
 
 import { registerTeamVoteRoutes } from "../routes/team-votes";
