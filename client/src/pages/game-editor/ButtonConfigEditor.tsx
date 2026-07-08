@@ -246,6 +246,20 @@ export default function ButtonConfigEditor({
               onCheckedChange={(v) => updateField("randomizeOrder", v)}
             />
           </div>
+          {/* 🆕 2026-07-08 CHITO #7b1a6e7d：顯示選項得分開關 */}
+          <div className="flex items-center justify-between border rounded p-2 col-span-2">
+            <div className="flex flex-col">
+              <span className="text-xs">顯示選項得分</span>
+              <span className="text-[10px] text-muted-foreground">
+                關閉後玩家端不顯示 +N分 / +N道具 標籤（避免以分數選答案）
+              </span>
+            </div>
+            <Switch
+              checked={config.showOptionRewards !== false}
+              onCheckedChange={(v) => updateField("showOptionRewards", v)}
+              data-testid="config-button-show-option-rewards"
+            />
+          </div>
         </div>
       </div>
     </div>
