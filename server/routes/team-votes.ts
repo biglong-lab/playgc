@@ -7,9 +7,10 @@ import {
   teamVotes,
   teamVoteBallots,
 } from "@shared/schema";
-import { eq, and, desc, isNull } from "drizzle-orm";
+import { eq, and, desc, isNull, inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
+import { computeVoteCompletion } from "../lib/team-vote-eval";
 
 /** 建立投票的請求驗證 */
 const createVoteBodySchema = z.object({
