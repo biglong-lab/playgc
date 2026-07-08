@@ -197,7 +197,9 @@ export default function VoteTeam({
   useEffect(() => {
     if (!isComplete || hasAdvanced || !voteState) return;
 
-    const winnerIndex = getWinnerIndex(voteState.ballots, options.length);
+    // 🗳️ server 判定的贏家優先（本地 ballots 可能還沒同步完整）
+    const winnerIndex =
+      voteState.serverWinnerIndex ?? getWinnerIndex(voteState.ballots, options.length);
     const strategy = config.nextPageStrategy ?? "winner";
     const myBallot = voteState.ballots.find((b) => b.userId === myUserId);
     const targetIndex =
