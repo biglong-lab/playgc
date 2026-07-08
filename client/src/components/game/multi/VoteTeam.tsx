@@ -92,20 +92,24 @@ export function computeVoteResults(
   }));
 }
 
-/** 判斷是否已達投票完成條件 */
+/** 判斷是否已達投票完成條件
+ *
+ * 🗳️ 2026-07-08 CHITO #8687281e：majority/unanimous 改「只信 server」—
+ *   原本 client 用本地 totalMembers 自算門檻，但各裝置的 my-team 快取
+ *   10 秒才刷新 → 成員異動瞬間分母不一致 → 有裝置提早判定完成前進
+ *   → advance-progress 把全隊拖到下一頁（1/3 票就跳頁）。
+ *   server 每次 cast 都會算 isComplete 並廣播（+ 成員離開時重算），
+ *   client 經 cast 回應 / WS / 10s polling 三路都拿得到，不會卡住。
+ */
 export function isVotingComplete(state: TeamVoteState | undefined): boolean {
   if (!state) return false;
-  const votedCount = state.ballots.length;
   switch (state.votingMode) {
     case "unanimous":
-      return votedCount >= state.totalMembers;
     case "majority":
-      // 🛡️ 2026-07-04 多人穩定性 Phase A2：改與 server 一致（team-votes.ts 用 ceil(n/2)）
-      //   原本 `> n/2` 在偶數人數時比 server 多要 1 票 → 兩端完成判定不同步
-      return votedCount >= Math.ceil(state.totalMembers / 2);
+      return state.serverComplete === true;
     case "display":
       // display 模式：每位玩家投完自己票就可前進，不卡集體
-      return votedCount > 0;
+      return state.ballots.length > 0;
   }
 }
 
