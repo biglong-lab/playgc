@@ -11,7 +11,7 @@ import { storage } from "../storage";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { db } from "../db";
 import { locations, locationVisits, users } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import type { RouteContext } from "./types";
 
 export function registerAdminRescueRoutes(app: Express, ctx: RouteContext) {
