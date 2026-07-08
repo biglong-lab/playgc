@@ -270,6 +270,7 @@ export class DatabaseStorage implements IStorage {
   createSession = sessionStorageMethods.createSession;
   updateSession = sessionStorageMethods.updateSession;
   abandonStaleSessions = sessionStorageMethods.abandonStaleSessions;
+  abandonOtherPlayingSessionsForUser = sessionStorageMethods.abandonOtherPlayingSessionsForUser;
 
   // ===== 玩家進度方法 =====
   getPlayerProgress = sessionStorageMethods.getPlayerProgress;
