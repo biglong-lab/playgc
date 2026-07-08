@@ -11,6 +11,7 @@ import { eq, and, desc, isNull, inArray } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { computeVoteCompletion } from "../lib/team-vote-eval";
+import { requireTeamMember } from "../lib/team-membership";
 
 /** 建立投票的請求驗證 */
 const createVoteBodySchema = z.object({
