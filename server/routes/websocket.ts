@@ -1176,5 +1176,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     broadcastToHostSession,
     cancelDisconnectTimer,
     kickUserFromTeam,
+    // 🆕 2026-07-08 CHITO #0e0f5f17：leader-decide「先繼續」前檢查目標玩家是否已重連
+    isUserStillConnected,
   };
 }
