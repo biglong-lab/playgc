@@ -183,16 +183,31 @@ export default function PhotoArStickerFlow({
     applyGesture: gesture.isDirty,
   };
 
+  // 🎞️ 2026-07-08 CHITO #1bc34792：動態 WebP/GIF 貼圖幀序列（錄影用）
+  //   drawImage(HTMLImageElement) 只畫動態圖第一幀 → 成品影片貼圖靜止。
+  //   用 ImageDecoder 解幀、錄影 loop 依經過時間取當前幀。
+  //   iOS Safari 不支援 ImageDecoder → animatedStickersRef 全 null、維持既有行為。
+  const animatedStickersRef = useRef<(AnimatedSticker | null)[]>([]);
+  const recordStartMsRef = useRef(0);
+
   const startRecording = () => {
     const video = camera.videoRef.current;
     const canvas = recordCanvasRef.current;
     if (!video || !canvas || !recorder.isSupported) return;
     if (useFaceTracking && !faceAnchor) return; // 臉部模式沒臉不錄
-    drawArFrame(canvas, video, drawOptsRef.current); // 先畫一幀（設定尺寸+內容）
+    recordStartMsRef.current = performance.now();
+    // 🎞️ 依經過時間解出各貼圖的當前動畫幀（靜態貼圖為 null → fallback img）
+    const withFrames = () => ({
+      ...drawOptsRef.current,
+      stickerFrames: animatedStickersRef.current.map((a) =>
+        a ? a.getFrameAt(performance.now() - recordStartMsRef.current) : null,
+      ),
+    });
+    drawArFrame(canvas, video, withFrames()); // 先畫一幀（設定尺寸+內容）
     const loop = () => {
       const v = camera.videoRef.current;
       const c = recordCanvasRef.current;
-      if (v && c) drawArFrame(c, v, drawOptsRef.current);
+      if (v && c) drawArFrame(c, v, withFrames());
       recordRafRef.current = requestAnimationFrame(loop);
     };
     recordRafRef.current = requestAnimationFrame(loop);

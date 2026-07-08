@@ -111,13 +111,13 @@ export function drawArFrame(
       ctx.globalAlpha = opacity;
       ctx.translate(cx, cy);
       if (faceAnchor.rotationY) ctx.rotate(faceAnchor.rotationY);
-      ctx.drawImage(img, -anchorW / 2, -anchorH / 2, anchorW, anchorH);
+      ctx.drawImage(src, -anchorW / 2, -anchorH / 2, anchorW, anchorH);
       ctx.restore();
     } else {
       const rect = computeStickerRect(s.position, s.sizeRatio, canvas.width, canvas.height, ratio);
       ctx.save();
       ctx.globalAlpha = opacity;
-      ctx.drawImage(img, rect.x, rect.y, rect.w, rect.h);
+      ctx.drawImage(src, rect.x, rect.y, rect.w, rect.h);
       ctx.restore();
     }
   }
