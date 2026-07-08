@@ -525,6 +525,19 @@ describe("Team Votes 路由", () => {
       expect(res.body).toEqual([]);
     });
 
+    // 🔐 2026-07-09 S1：IDOR 修補 — 非隊員不得讀他隊投票
+    it("非隊員應回 403（IDOR 防護）", async () => {
+      const { app } = createApp();
+      mockDb._chain.selectLimit.mockResolvedValueOnce([]); // 查無成員資格
+
+      const res = await request(app)
+        .get("/api/teams/other-team/votes")
+        .set("Authorization", "Bearer valid-token");
+
+      expect(res.status).toBe(403);
+      expect(mockDb.query.teamVotes.findMany).not.toHaveBeenCalled();
+    });
+
     it("DB 錯誤應回 500", async () => {
       const { app } = createApp();
       mockDb.query.teamVotes.findMany.mockRejectedValueOnce(new Error("DB error"));
