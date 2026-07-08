@@ -187,7 +187,7 @@ export function registerTeamVoteRoutes(app: Express, ctx: RouteContext) {
         ];
         const totalMembers = vote.team.members.length;
         const { isComplete, winningOptionId, voteCounts } = computeVoteCompletion(
-          vote.votingMode,
+          vote.votingMode ?? "majority",
           allBallots.map((b) => b.optionId),
           totalMembers,
         );
