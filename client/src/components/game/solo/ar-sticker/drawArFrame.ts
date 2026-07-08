@@ -51,6 +51,10 @@ export interface DrawArFrameOpts {
   pageOpacity: number;
   gestureTransform: ArStickerTransform;
   applyGesture: boolean;
+  /** 🎞️ 2026-07-08 CHITO #1bc34792：動態貼圖當前幀（per-index 覆蓋）—
+   *  drawImage(HTMLImageElement) 只畫動態圖第一幀，錄影 loop 由呼叫端
+   *  依經過時間解出當前 ImageBitmap 傳入，成品影片貼圖才會動 */
+  stickerFrames?: (ImageBitmap | null | undefined)[];
 }
 
 /** 將 video 當前畫面 + 貼圖合成到 canvas（會設定 canvas 尺寸為 video 原生尺寸）*/
