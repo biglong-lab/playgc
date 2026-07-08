@@ -5,6 +5,29 @@
 
 ---
 
+## 2026-07-08
+
+### 🐛 CHITO 11 項總掃：多人 4 bug 根因鏈一次修 + 7 項單機修復/開關（fix + feat）
+**狀態**：🟡 已 commit 待部署（本地測試 3233 全綠）
+
+**多人根因鏈（投票/同步/重連 4 issue 同源）**：
+- #8687281e 投票 1/3 跳頁：完成判定改 server 權威（`lib/team-vote-eval`）、client 只信 serverComplete（cast 回應/WS/polling 三路）；GET /votes 補回 completed；成員離開自動重算投票
+- #0e0f5f17 卡「同步隊伍進度中」：leader-decide「先繼續」加已重連防呆（在線玩家不再被誤踢成 403 死鎖）；7 個多人頁 my-team 加 10s refetch
+- #ec3f612b 退出重進無法連線：新增 rejoinable-team/rejoin 端點 + TeamRequiredFallback「重新連線原隊伍」+ GamePlay 自動 rejoin
+- #e2f14e8b 卡舊隊伍：大廳「歡迎回來」1 秒強制跳轉 → 3 秒倒數 + 立即繼續/離開隊伍
+- 新增測試：team-vote-eval 13、team-rejoin 11
+
+**單機修復**：
+- #f095652b 保留進度/再玩一次（第9修）：solo playing session 唯一化（建新自動放棄舊）+ 揀選規則對齊 Home 24h 判定 + resetAndCreateNew 雙重 mutate 修復
+- #c1149bc8 道具給分（第7修）：getDefaultConfig 預設分數 10~50 全改 0（建頁悄悄寫入 DB 是主因）+ 編輯器顯示 fallback 對齊
+- #c92e32dc GPS 反向（第9修）：改監聽 deviceorientationabsolute（原 alpha 非指北）+ 螢幕方向補償
+- #4e88bd7d BGM 不停：fade 世代控制 + 停止斷根（清 src/wantPlay）+ Home 掛載保險
+- #1bc34792 AR 錄影 WEBP 靜態：ImageDecoder 解幀逐幀合成（iOS 不支援自動 fallback）
+
+**新開關（feat）**：
+- #93c7a2ca 通關畫面星星/分數顯示開關（games 加 2 欄、ADD COLUMN only）
+- #7b1a6e7d 按鈕選項得分顯示開關（ButtonConfig.showOptionRewards）
+
 ## 2026-07-07
 
 ### 🐛 CHITO 複測 4 項修復（fix）
