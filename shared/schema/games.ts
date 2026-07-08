@@ -86,6 +86,10 @@ export const games = pgTable("games", {
   // 🆕 2026-05-16 #10：玩家畫面是否顯示進度（預設 true 顯示）
   // 業主 5/15 回報：希望可選擇關閉、避免玩家透過進度條預判遊戲長度而失去驚喜感
   showProgress: boolean("show_progress").default(true),
+  // 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面顯示控制（預設 true 維持既有行為）
+  //   劇情體驗/導覽/教育走讀型遊戲不以分數為核心 → 可關閉星星評等與總分區塊
+  showCompletionStars: boolean("show_completion_stars").default(true),
+  showCompletionScore: boolean("show_completion_score").default(true),
   // 🆕 2026-07-05：訪客 demo 沙盒 — 免登入體驗建立的臨時遊戲
   //   isDemo=true 者不計入正式統計/配額；demoExpiresAt 到期由 cron 自動清理
   isDemo: boolean("is_demo").notNull().default(false),
