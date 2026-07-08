@@ -370,7 +370,9 @@ export default function PhotoArStickerFlow({
     finishedRef.current = true;
     const rewardPoints = (config as unknown as { rewardPoints?: number }).rewardPoints;
     const rewardItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
-    const points = rewardPoints ?? config.onSuccess?.points ?? 20;
+    // 🎯 2026-07-08 CHITO #c1149bc8：末端 fallback 20 → 0（給分需明確設定；
+    //   全站同步：TextVerify/ConditionalVerify/ChoiceVerify 前輪已改 0）
+    const points = rewardPoints ?? config.onSuccess?.points ?? 0;
     const reward: { points?: number; items?: string[] } = { points };
     const allItems = [
       ...rewardItems.filter((x) => !!x),
