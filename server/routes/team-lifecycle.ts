@@ -12,6 +12,8 @@ import { eq, and, isNull, desc } from "drizzle-orm";
 import { z } from "zod";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { isAuthenticated } from "../firebaseAuth";
+// 🗳️ 2026-07-08 CHITO #8687281e：成員離開後重算投票完成（避免投票永久卡住）
+import { reevaluateTeamVotes } from "../lib/team-vote-eval";
 
 /** 更新準備狀態的請求驗證 */
 const readyBodySchema = z.object({
