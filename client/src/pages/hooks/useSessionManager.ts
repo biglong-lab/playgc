@@ -166,6 +166,8 @@ export function useSessionManager({
     },
     onError: (err: any) => {
       setForceNewSession(false);
+      // 🐛 2026-07-08：建立失敗 → 允許之後重試（ref 已被 resetAndCreateNew 設 true）
+      sessionCreationAttemptedRef.current = false;
       // 🌐 location_lock 錯誤訊息（後端回 400/403 + requireLocation: true）
       const errMsg = err?.message ?? err?.response?.data?.message ?? "";
       if (errMsg.includes("地點") || errMsg.includes("GPS")) {
