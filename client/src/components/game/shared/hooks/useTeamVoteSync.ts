@@ -294,7 +294,22 @@ export function useTeamVoteSync({
           setBallots([]);
           ensuredRef.current = true;
         }
+      } else if (msg.type === "vote_completed" && msg.voteId === voteIdRef.current) {
+        // 🗳️ 成員離開觸發 server 重算 → 完成廣播（沒有新 cast 事件也能推進）
+        if (msg.winningOptionId) {
+          setServerOutcome({
+            isComplete: true,
+            winningOptionId: msg.winningOptionId,
+          });
+        }
       } else if (msg.type === "vote_cast" && msg.voteId === voteIdRef.current) {
+        // 🗳️ server 權威完成訊號（每次 cast 廣播都帶 isComplete/winningOptionId）
+        if (msg.isComplete && msg.winningOptionId) {
+          setServerOutcome({
+            isComplete: true,
+            winningOptionId: msg.winningOptionId,
+          });
+        }
         // 隊員投票了 — 加進 ballots
         if (msg.userId && msg.optionId) {
           setBallots((prev) => {
