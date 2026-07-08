@@ -477,6 +477,11 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
 
         res.json({ ...updated, unlockedAchievements });
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res
+            .status(400)
+            .json({ message: "資料驗證失敗", errors: error.errors });
+        }
         res.status(500).json({ message: "Failed to update progress" });
       }
     },
