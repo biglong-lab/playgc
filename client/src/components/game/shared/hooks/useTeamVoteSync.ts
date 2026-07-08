@@ -54,6 +54,9 @@ interface VoteWsMessage {
   voteId?: string;
   userId?: string;
   optionId?: string;
+  /** 🗳️ 2026-07-08 server 權威完成訊號（vote_cast / vote_completed 帶） */
+  isComplete?: boolean;
+  winningOptionId?: string | null;
 }
 
 export interface UseTeamVoteSyncOptions {
