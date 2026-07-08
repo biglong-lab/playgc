@@ -340,6 +340,7 @@ export function useTeamVoteSync({
       ensuredRef.current = false;
       setVoteId(undefined);
       setBallots([]);
+      setServerOutcome(undefined);
     }
   }, [enabled]);
 
@@ -349,6 +350,10 @@ export function useTeamVoteSync({
         ballots: mapServerBallots(ballots),
         totalMembers,
         votingMode,
+        serverComplete: serverOutcome?.isComplete ?? false,
+        serverWinnerIndex: serverOutcome?.winningOptionId
+          ? parseOptionIndex(serverOutcome.winningOptionId)
+          : undefined,
       }
     : undefined;
 
