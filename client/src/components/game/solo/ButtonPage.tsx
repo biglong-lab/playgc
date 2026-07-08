@@ -181,6 +181,9 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
                 <span className="flex-shrink-0">{getIcon(button.icon)}</span>
                 <span className="flex-1 text-left break-words whitespace-normal min-w-0">{button.text}</span>
               </div>
+              {/* 🆕 2026-07-08 CHITO #7b1a6e7d：showOptionRewards=false 時隱藏得分/道具標籤
+                  （避免玩家以分數高低選答案、破壞劇情沉浸感）；預設 true 維持既有行為 */}
+              {config.showOptionRewards !== false && (
               <div className="flex items-center gap-2">
                 {button.rewardPoints != null && button.rewardPoints !== 0 && (
                   <span className={`text-sm opacity-70 px-2 py-0.5 rounded tabular-nums ${
@@ -195,6 +198,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
                   </span>
                 )}
               </div>
+              )}
             </Button>
             
           </div>
