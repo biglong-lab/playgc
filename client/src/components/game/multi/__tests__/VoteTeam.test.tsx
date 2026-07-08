@@ -249,7 +249,7 @@ describe("VoteTeam 元件", () => {
     expect(screen.getByTestId("vote-team-empty")).toBeInTheDocument();
   });
 
-  it("達 majority 條件 → 1 秒後 onComplete 帶 winner 的 nextPageId", async () => {
+  it("server 確認完成（serverComplete）→ 1 秒後 onComplete 帶 winner 的 nextPageId", async () => {
     vi.useFakeTimers();
     const onComplete = vi.fn();
     const voteState: TeamVoteState = {
@@ -260,10 +260,49 @@ describe("VoteTeam 元件", () => {
       ],
       totalMembers: 4,
       votingMode: "majority",
+      serverComplete: true,
+      serverWinnerIndex: 1,
     };
     render(<VoteTeam {...baseProps} voteState={voteState} onComplete={onComplete} />);
 
     // 1 秒延遲
+    await vi.advanceTimersByTimeAsync(1100);
+    expect(onComplete).toHaveBeenCalledWith(undefined, "page-pizza");
+    vi.useRealTimers();
+  });
+
+  it("本地票數過半但 server 未確認 → 不前進（防各裝置分母不一致提早跳頁）", async () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    const voteState: TeamVoteState = {
+      ballots: [
+        { userId: "u1", optionIndex: 1, votedAt: "" },
+        { userId: "u2", optionIndex: 1, votedAt: "" },
+        { userId: "u3", optionIndex: 1, votedAt: "" },
+      ],
+      totalMembers: 4,
+      votingMode: "majority",
+      // serverComplete 未設 → 不前進
+    };
+    render(<VoteTeam {...baseProps} voteState={voteState} onComplete={onComplete} />);
+
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(onComplete).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it("serverWinnerIndex 優先於本地計票（本地 ballots 未同步完整）", async () => {
+    vi.useFakeTimers();
+    const onComplete = vi.fn();
+    const voteState: TeamVoteState = {
+      ballots: [{ userId: "u1", optionIndex: 0, votedAt: "" }], // 本地只看到選項0
+      totalMembers: 3,
+      votingMode: "majority",
+      serverComplete: true,
+      serverWinnerIndex: 1, // server 說贏家是披薩
+    };
+    render(<VoteTeam {...baseProps} voteState={voteState} onComplete={onComplete} />);
+
     await vi.advanceTimersByTimeAsync(1100);
     expect(onComplete).toHaveBeenCalledWith(undefined, "page-pizza");
     vi.useRealTimers();
@@ -281,6 +320,8 @@ describe("VoteTeam 元件", () => {
       ],
       totalMembers: 4,
       votingMode: "majority",
+      serverComplete: true,
+      serverWinnerIndex: 0,
     };
     render(
       <VoteTeam {...baseProps} config={config} voteState={voteState} onComplete={onComplete} />,
