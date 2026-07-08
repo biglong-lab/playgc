@@ -485,12 +485,21 @@ interface PlayerDisplayCardProps {
   showProgress: boolean;
   canEdit: boolean;
   onShowProgressChange: (checked: boolean) => void;
+  /** 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面星星/分數顯示控制 */
+  showCompletionStars: boolean;
+  onShowCompletionStarsChange: (checked: boolean) => void;
+  showCompletionScore: boolean;
+  onShowCompletionScoreChange: (checked: boolean) => void;
 }
 
 export function PlayerDisplayCard({
   showProgress,
   canEdit,
   onShowProgressChange,
+  showCompletionStars,
+  onShowCompletionStarsChange,
+  showCompletionScore,
+  onShowCompletionScoreChange,
 }: PlayerDisplayCardProps) {
   return (
     <Card>
@@ -515,6 +524,35 @@ export function PlayerDisplayCard({
             onCheckedChange={onShowProgressChange}
             disabled={!canEdit}
             data-testid="switch-show-progress"
+          />
+        </div>
+        {/* 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面顯示控制 */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>通關畫面顯示星星評等</Label>
+            <p className="text-xs text-muted-foreground">
+              關閉適合劇情體驗、導覽、教育走讀等不以評分為核心的遊戲。
+            </p>
+          </div>
+          <Switch
+            checked={showCompletionStars}
+            onCheckedChange={onShowCompletionStarsChange}
+            disabled={!canEdit}
+            data-testid="switch-show-completion-stars"
+          />
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label>通關畫面顯示總分</Label>
+            <p className="text-xs text-muted-foreground">
+              關閉後玩家通關時不會看到分數區塊。
+            </p>
+          </div>
+          <Switch
+            checked={showCompletionScore}
+            onCheckedChange={onShowCompletionScoreChange}
+            disabled={!canEdit}
+            data-testid="switch-show-completion-score"
           />
         </div>
       </CardContent>
