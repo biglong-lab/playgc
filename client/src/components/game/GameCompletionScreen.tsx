@@ -433,8 +433,10 @@ export default function GameCompletionScreen({
             </motion.div>
           ))}
         </motion.div>
+        )}
 
-        {/* 💯 分數 — 遞增動畫 */}
+        {/* 💯 分數 — 遞增動畫（🆕 CHITO #93c7a2ca：可由遊戲設定關閉） */}
+        {showScore ? (
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -446,6 +448,9 @@ export default function GameCompletionScreen({
           </p>
           <p className="text-sm text-muted-foreground mt-1">分</p>
         </motion.div>
+        ) : (
+          <div className="mb-8" />
+        )}
 
         {/* 🆕 F3: 分享戰績（獨立列，主要 CTA，金色 gradient 很顯眼） */}
         <motion.div
