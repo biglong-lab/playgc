@@ -17,20 +17,28 @@ import { Shield, Plus } from "lucide-react";
 
 // 🆕 開始遊戲緩衝畫面（兩種模式）：
 //   - mode='starting' (5 秒倒數)：隊長按開始 → 全員看到，等大家對講機就緒
-//   - mode='reconnecting' (1 秒 flash)：掉線回來 → 顯示「歡迎回來」flash 後直接進遊戲
+//   - mode='reconnecting' (3 秒倒數)：掉線回來 → 顯示「歡迎回來」+ 可選擇繼續或離開
+// 🛡️ 2026-07-08 CHITO #e2f14e8b：reconnecting 原本 1 秒強制跳轉、玩家被鎖在
+//   舊隊伍離不開 → 改 3 秒倒數 + 「立即繼續 / 離開隊伍」按鈕
 export function StartingCountdownView({
   game,
   team,
   remainingSeconds,
   mode,
+  onContinueNow,
+  onLeaveTeam,
+  leavePending,
 }: {
   game: Game;
   team: TeamWithDetails;
   remainingSeconds: number;
   mode: "starting" | "reconnecting";
+  onContinueNow?: () => void;
+  onLeaveTeam?: () => void;
+  leavePending?: boolean;
 }) {
   if (mode === "reconnecting") {
-    // 重連 flash：簡潔卡片，1 秒後跳遊戲
+    // 重連畫面：倒數自動接回 + 玩家可選擇
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
@@ -44,8 +52,26 @@ export function StartingCountdownView({
             <div>
               <h2 className="text-xl font-bold">歡迎回來</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                {game.title} · 隊伍仍在進行中，正在接回遊戲...
+                {game.title} · 隊伍仍在進行中，
+                <span className="font-number tabular-nums">{remainingSeconds}</span>
+                秒後自動接回遊戲...
               </p>
+            </div>
+            <div className="flex flex-col gap-2 pt-2">
+              <Button
+                onClick={onContinueNow}
+                data-testid="reconnect-continue-now"
+              >
+                立即繼續遊戲
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onLeaveTeam}
+                disabled={leavePending}
+                data-testid="reconnect-leave-team"
+              >
+                {leavePending ? "離開中..." : "離開隊伍（不再自動接回）"}
+              </Button>
             </div>
           </CardContent>
         </Card>
