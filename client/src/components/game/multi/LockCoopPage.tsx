@@ -20,6 +20,7 @@ import { useWalkieSuggestion } from "@/hooks/useWalkieSuggestion";
 import { useTeamLockCoopSync } from "../shared/hooks/useTeamLockCoopSync";
 import LockCoop from "./LockCoop";
 import type { LockCoopConfig } from "@shared/schema";
+import TeamRequiredFallback from "../shared/ui/TeamRequiredFallback";
 
 // 📊 Phase 1 telemetry import
 // （hook 自動 fire-and-forget、失敗不影響元件）
@@ -131,17 +132,8 @@ export default function LockCoopPage({
   }
 
   if (teamError || !myTeam || !teamId) {
-    return (
-      <Card data-testid="lock-coop-page-no-team">
-        <CardContent className="p-6 text-center">
-          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm font-medium mb-1">此元件需要組隊使用</p>
-          <p className="text-xs text-muted-foreground">
-            請回到場域首頁建立或加入隊伍
-          </p>
-        </CardContent>
-      </Card>
-    );
+    // 🛟 2026-07-08 CHITO #ec3f612b：共用 fallback（含「重新連線原隊伍」回歸入口）
+    return <TeamRequiredFallback gameId={gameId} testIdPrefix="lock-coop-page" />;
   }
 
   if (!lockState.isLoaded) {

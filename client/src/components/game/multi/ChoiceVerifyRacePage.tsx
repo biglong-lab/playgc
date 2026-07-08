@@ -32,6 +32,7 @@ import ChoiceVerifyRace, {
   type RaceMemberInfo,
 } from "./ChoiceVerifyRace";
 import type { ChoiceVerifyConfig } from "@shared/schema";
+import TeamRequiredFallback from "../shared/ui/TeamRequiredFallback";
 
 interface RaceStateFromServer {
   id: string;
@@ -522,17 +523,8 @@ export default function ChoiceVerifyRacePage({
   }
 
   if (teamError || !myTeam) {
-    return (
-      <Card data-testid="race-page-no-team">
-        <CardContent className="p-6 text-center">
-          <Users className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm font-medium mb-1">此元件需要組隊使用</p>
-          <p className="text-xs text-muted-foreground">
-            請回到場域首頁建立或加入隊伍
-          </p>
-        </CardContent>
-      </Card>
-    );
+    // 🛟 2026-07-08 CHITO #ec3f612b：共用 fallback（含「重新連線原隊伍」回歸入口）
+    return <TeamRequiredFallback gameId={gameId} testIdPrefix="race-page" />;
   }
 
   if (stateLoading) {

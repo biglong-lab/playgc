@@ -84,10 +84,40 @@ export default function GamePlay() {
   // 🆕 多人遊戲時拿 my-team 用來「自願離開」呼叫 /leave 設 leftAt
   //   solo mode → my-team 為 null，跳過 leave API（直接 setLocation 即可）
   //   leaderId 給 leader-decide dialog 判斷我是不是隊長用
-  const { data: myTeam } = useQuery<{ id: string; leaderId: string | null } | null>({
+  const { data: myTeam, isFetched: myTeamFetched } = useQuery<{ id: string; leaderId: string | null } | null>({
     queryKey: ["/api/games", gameId, "my-team"],
     enabled: !!gameId,
   });
+
+  // 🛟 2026-07-08 CHITO #ec3f612b：帶 ?session=（多人流程）重進但 my-team 回 null
+  //   → 玩家曾是隊員但被 auto-leave / leader-continue 設了 leftAt
+  //   → 自動嘗試 rejoin 一次（成功則 my-team 恢復、多人元件自動接回）
+  const autoRejoinTriedRef = useRef(false);
+  useEffect(() => {
+    if (!sharedSessionId || !gameId) return;       // 只處理多人共用 session 流程
+    if (!myTeamFetched || myTeam) return;          // 還沒查完 / 已有隊伍 → 不用
+    if (autoRejoinTriedRef.current) return;        // 只試一次，避免無限迴圈
+    autoRejoinTriedRef.current = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/games/${gameId}/rejoinable-team`, {
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const rejoinable = (await res.json()) as { teamId: string } | null;
+        if (!rejoinable?.teamId) return;
+        await apiRequest("POST", `/api/teams/${rejoinable.teamId}/rejoin`, {});
+        queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
+        toast({
+          title: "✅ 已自動重新連線原隊伍",
+          description: "隊伍狀態恢復中...",
+          duration: 3000,
+        });
+      } catch {
+        /* rejoin 失敗 → 元件層 TeamRequiredFallback 仍提供手動入口 */
+      }
+    })();
+  }, [sharedSessionId, gameId, myTeamFetched, myTeam, toast]);
 
   // 🆕 leader-decide：寬限期過的玩家（隊長收到時設值，顯示 dialog）
   const [pendingDecisionTarget, setPendingDecisionTarget] = useState<
