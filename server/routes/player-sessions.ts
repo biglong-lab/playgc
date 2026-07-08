@@ -511,21 +511,28 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
     async (req: AuthenticatedRequest, res) => {
       try {
         const userId = req.user?.claims?.sub;
+        // 🔐 2026-07-09 M3：長度/型別驗證（原本任意型別直寫 DB + 廣播）
+        const { message: text } = chatMessageSchema.parse(req.body ?? {});
         const message = await storage.createChatMessage({
           sessionId: req.params.sessionId,
           userId: userId,
-          message: req.body.message,
+          message: text,
         });
         // 寫 DB 後廣播給 session 內 WS clients、消除 client 雙路徑送訊（之前同時走 WS + REST 會雙寫 DB）
         ctx?.broadcastToSession?.(req.params.sessionId, {
           type: "chat",
           sessionId: req.params.sessionId,
           userId,
-          message: req.body.message,
+          message: text,
           timestamp: new Date().toISOString(),
         });
         res.status(201).json(message);
       } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res
+            .status(400)
+            .json({ message: "資料驗證失敗", errors: error.errors });
+        }
         res.status(500).json({ message: "Failed to create chat message" });
       }
     },
