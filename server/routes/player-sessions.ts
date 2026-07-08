@@ -179,6 +179,17 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
             variables: {},
           });
 
+          // 🆕 2026-07-08 CHITO #f095652b：放棄此玩家在此遊戲的其他 solo playing session
+          //   保證同玩家同遊戲只有一個 playing → 揀選/恢復不再撈到幽靈舊進度
+          //   （多人 session 不受影響 — 只清無 team_sessions 對應的 solo 場次）
+          if (data.gameId) {
+            await storage
+              .abandonOtherPlayingSessionsForUser(userId, data.gameId, session.id)
+              .catch((err) =>
+                console.error("[player-sessions] 放棄舊 playing session 失敗:", err),
+              );
+          }
+
           // 🎫 自動加入場域會員（首次遊玩此場域）
           if (data.gameId) {
             const game = await storage.getGame(data.gameId);
