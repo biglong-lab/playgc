@@ -107,6 +107,8 @@ export interface IStorage {
   createSession(session: InsertGameSession): Promise<GameSession>;
   updateSession(id: string, session: Partial<InsertGameSession>): Promise<GameSession | undefined>;
   abandonStaleSessions(thresholdHours: number, fieldId?: string): Promise<GameSession[]>;
+  /** 🆕 2026-07-08 CHITO #f095652b：建新 session 時放棄同玩家同遊戲的其他 solo playing */
+  abandonOtherPlayingSessionsForUser(userId: string, gameId: string, excludeSessionId: string): Promise<number>;
 
   getPlayerProgress(sessionId: string): Promise<PlayerProgress[]>;
   getPlayerProgressByUser(sessionId: string, userId: string): Promise<PlayerProgress | undefined>;
