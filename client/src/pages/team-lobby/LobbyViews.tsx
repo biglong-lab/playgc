@@ -221,6 +221,7 @@ export function JoinOrCreateView({
   showJoinForm, setShowJoinForm, onCreateTeam, onJoinTeam,
   onBack, createPending, joinPending,
   mySquads, mySquadsLoading,
+  rejoinableTeam, onRejoinTeam, rejoinPending,
 }: JoinOrCreateProps) {
   // 🆕 2026-05-04: 三狀態判斷
   //   - mySquadsLoading：先 spin，避免閃爍
@@ -236,6 +237,31 @@ export function JoinOrCreateView({
         onBack={onBack}
       />
       <main className="container mx-auto max-w-md py-8 space-y-6">
+        {/* 🆕 2026-07-08 CHITO #ec3f612b：退出後可重新加入原隊伍 */}
+        {rejoinableTeam && (
+          <Card className="border-primary/50" data-testid="rejoinable-team-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Radio className="w-4 h-4 text-primary" />
+                你之前的隊伍還在進行中
+              </CardTitle>
+              <CardDescription>
+                「{rejoinableTeam.name}」目前 {rejoinableTeam.memberCount} 人
+                {rejoinableTeam.status === "playing" ? "，遊戲進行中" : ""}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                className="w-full"
+                onClick={() => onRejoinTeam?.(rejoinableTeam.teamId)}
+                disabled={rejoinPending}
+                data-testid="button-rejoin-team"
+              >
+                {rejoinPending ? "重新加入中..." : "重新連線原隊伍"}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
