@@ -182,6 +182,10 @@ describe("Player Sessions 路由", () => {
       expect(mockStorage.createPlayerProgress).toHaveBeenCalledWith(
         expect.objectContaining({ sessionId: "s-new", userId: "user-1" })
       );
+      // 🆕 2026-07-08 CHITO #f095652b：建新場次必須放棄同玩家同遊戲的舊 solo playing
+      expect(mockStorage.abandonOtherPlayingSessionsForUser).toHaveBeenCalledWith(
+        "user-1", "g-1", "s-new",
+      );
     });
 
     it("新使用者應自動建立 user 記錄", async () => {
