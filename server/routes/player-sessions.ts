@@ -381,6 +381,10 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
           return res.status(401).json({ message: "Unauthorized" });
         }
 
+        // 🔐 2026-07-09 M3：zod 清洗後寫回 req.body（最小侵入 — 後續邏輯照舊取用）
+        //   擋掉：負分/超大分數、非字串 inventory、超長 pageId、非物件 variables
+        req.body = progressPatchSchema.parse(req.body ?? {});
+
         // 多人併發優化：
         // 原本：getSession + getPlayerProgress(整個 session 全部玩家) + update/create = 3 次 DB query
         // 優化：getPlayerProgressByUser（用 session_id+user_id 複合 index）+ update/create = 2 次
