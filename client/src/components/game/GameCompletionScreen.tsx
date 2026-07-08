@@ -26,6 +26,9 @@ interface GameCompletionScreenProps {
   readonly sessionId?: string;   // 🆕 v2: 傳入以便顯示「看本場相簿」連結
   readonly onPlayAgain: () => void;
   readonly onNavigate: (path: string) => void;
+  /** 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面顯示控制（undefined = 預設顯示） */
+  readonly showStars?: boolean;
+  readonly showScore?: boolean;
 }
 
 // 依分數決定星數（1-3 顆）— 提供視覺化的「表現評等」
