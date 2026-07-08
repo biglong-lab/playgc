@@ -33,6 +33,7 @@ interface ServerVote {
   options: Array<{ id: string; label: string; targetPageId?: string; points?: number }>;
   votingMode: string;
   status: string;
+  winningOptionId?: string | null;
   expiresAt: string | null;
   createdAt: string;
 }
