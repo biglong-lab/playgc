@@ -220,7 +220,17 @@ export function useSessionManager({
     }
 
     // replay 模式：強制建新 session
-    if (forceNewSession && !state.sessionId && !createSessionMutation.isPending) {
+    // 🐛 2026-07-08 CHITO #f095652b「再玩一次進第2頁跳回第1頁」根因：
+    //   resetAndCreateNew 已直接 mutate()，但原本把 ref 重設 false →
+    //   此 effect 在 isPending 尚未反映前再 mutate 一次 → 兩個 session 先後
+    //   onSuccess → 第二個把 state 重設回第 0 頁（玩家已走到第 2 頁被拉回）。
+    //   修法：branch 加 ref 檢查；resetAndCreateNew 設 ref=true（失敗才放行重試）。
+    if (
+      forceNewSession &&
+      !state.sessionId &&
+      !createSessionMutation.isPending &&
+      !sessionCreationAttemptedRef.current
+    ) {
       if (isReplayMode) {
         // 🐛 2026-07-03 修：原本寫死跳 `/game/:id`、把場域路徑（/f/:code/game/:id）玩家
         //   踢出場域 context → 路由改變 → GamePlay 重掛 → replay 進度被 refetch 蓋掉。
