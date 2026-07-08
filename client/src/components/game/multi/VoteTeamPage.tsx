@@ -99,7 +99,8 @@ export default function VoteTeamPage({
   // 注意：TeamMessage 型別未列 `vote` 欄位（vote_created 有），用 unknown cast 廣義處理
   const handleVoteWsMessage = useCallback(
     (msg: { type: string; voteId?: string; userId?: string; choice?: string }) => {
-      if (msg.type === "vote_cast" || msg.type === "vote_created") {
+      // 🗳️ 2026-07-08：vote_completed = 成員離開觸發 server 重算的完成廣播
+      if (msg.type === "vote_cast" || msg.type === "vote_created" || msg.type === "vote_completed") {
         handleWsMessage(
           msg as unknown as Parameters<typeof handleWsMessage>[0],
         );
