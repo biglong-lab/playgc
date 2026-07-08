@@ -64,6 +64,15 @@ export default function Home() {
   const { user, firebaseUser, isLoading: authLoading, isSignedIn } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+
+  // 🎵 2026-07-08 CHITO #4e88bd7d：進大廳強制停 BGM —
+  //   GamePlay unmount cleanup 為主要停止路徑，此處是最後一道保險
+  //   （fade race / rAF 節流等任何漏網情況，回到大廳一律靜音）
+  const bgm = useBgmPlayer();
+  useEffect(() => {
+    bgm.setBgmUrl(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   // 🆕 搜尋條件和 filter 存 localStorage，重整或切回頁保持使用者操作
   const [searchQuery, setSearchQuery] = useLocalStorageState("home_search_query", "");
   const [difficultyFilter, setDifficultyFilter] = useLocalStorageState<string | null>(
