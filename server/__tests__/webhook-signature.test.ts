@@ -3,7 +3,11 @@
 
 import { describe, it, expect } from "vitest";
 import crypto from "crypto";
-import { verifyHmacSignature, verifySharedSecret } from "../lib/webhook-signature";
+import {
+  verifyHmacSignature,
+  verifySharedSecret,
+  verifyStripeWebhookSignature,
+} from "../lib/webhook-signature";
 
 const SECRET = "test-secret-12345";
 
