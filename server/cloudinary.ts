@@ -486,6 +486,7 @@ export class CloudinaryService {
     if (!this.isConfigured()) {
       throw new Error("Cloudinary 尚未設定");
     }
+    assertDataUrlCategory(base64Data, "image");
     // 🐛 修：加 random suffix 避免同一秒多張連拍 public_id 碰撞（原本 Date.now() 會 500）
     const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const result = await cloudinary.uploader.upload(base64Data, {
