@@ -67,13 +67,20 @@ export function registerAdminSettingsRoutes(app: Express) {
         .set({ settings: updatedSettings, updatedAt: new Date() })
         .where(eq(fields.id, req.admin.fieldId));
 
+      // 記改前/改後值（一般設定值非敏感、可還原追溯）
+      const changedKeys = Object.keys(parsed) as Array<keyof typeof parsed>;
+      const before = Object.fromEntries(
+        changedKeys.map((k) => [k, currentSettings[k] ?? null]),
+      );
+      const after = Object.fromEntries(changedKeys.map((k) => [k, parsed[k]]));
+
       logAuditAction({
         actorAdminId: req.admin.id,
         action: "field_settings:update",
         targetType: "field",
         targetId: req.admin.fieldId,
         fieldId: req.admin.fieldId,
-        metadata: { changedKeys: Object.keys(parsed) },
+        metadata: { changedKeys, before, after },
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"],
       });
