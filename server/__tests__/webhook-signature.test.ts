@@ -102,3 +102,45 @@ describe("verifySharedSecret", () => {
     expect(verifySharedSecret("abc123", "xyz789")).toBe(false);
   });
 });
+
+describe("verifyStripeWebhookSignature", () => {
+  const PAYLOAD = '{"type":"checkout.session.completed"}';
+
+  function stripeHeader(payload: string, secret: string, ts?: number): string {
+    const t = ts ?? Math.floor(Date.now() / 1000);
+    const sig = crypto.createHmac("sha256", secret).update(`${t}.${payload}`).digest("hex");
+    return `t=${t},v1=${sig}`;
+  }
+
+  it("正確簽章 → true", () => {
+    expect(verifyStripeWebhookSignature(PAYLOAD, stripeHeader(PAYLOAD, SECRET), SECRET)).toBe(true);
+  });
+
+  it("錯誤 secret 簽的 → false", () => {
+    expect(verifyStripeWebhookSignature(PAYLOAD, stripeHeader(PAYLOAD, "wrong-secret"), SECRET)).toBe(false);
+  });
+
+  it("payload 被竄改 → false", () => {
+    const header = stripeHeader(PAYLOAD, SECRET);
+    expect(verifyStripeWebhookSignature('{"type":"charge.refunded"}', header, SECRET)).toBe(false);
+  });
+
+  it("時間戳過期（超過容忍）→ false（防重放）", () => {
+    const oldTs = Math.floor(Date.now() / 1000) - 3600;
+    expect(verifyStripeWebhookSignature(PAYLOAD, stripeHeader(PAYLOAD, SECRET, oldTs), SECRET)).toBe(false);
+  });
+
+  it("多個 v1 簽章、其中一個正確 → true（Stripe 金鑰輪替期行為）", () => {
+    const t = Math.floor(Date.now() / 1000);
+    const good = crypto.createHmac("sha256", SECRET).update(`${t}.${PAYLOAD}`).digest("hex");
+    const header = `t=${t},v1=${"0".repeat(64)},v1=${good}`;
+    expect(verifyStripeWebhookSignature(PAYLOAD, header, SECRET)).toBe(true);
+  });
+
+  it("header 缺失 / 格式錯誤 → false 不 throw", () => {
+    expect(verifyStripeWebhookSignature(PAYLOAD, undefined, SECRET)).toBe(false);
+    expect(verifyStripeWebhookSignature(PAYLOAD, "garbage", SECRET)).toBe(false);
+    expect(verifyStripeWebhookSignature(PAYLOAD, "t=abc,v1=zzz", SECRET)).toBe(false);
+    expect(verifyStripeWebhookSignature("", stripeHeader(PAYLOAD, SECRET), SECRET)).toBe(false);
+  });
+});
