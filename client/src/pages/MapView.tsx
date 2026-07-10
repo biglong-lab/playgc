@@ -198,10 +198,12 @@ export default function MapView() {
     tileLayer.on("tileload", () => {
       tileLoadCount++;
       setTilesLoaded((n) => n + 1);
-      if (tileLoadCount === 1) console.log("[map] ✅ 第一個 tile 載入成功");
+      if (import.meta.env.DEV && tileLoadCount === 1) console.log("[map] ✅ 第一個 tile 載入成功");
     });
-    tileLayer.on("loading", () => console.log("[map] tile 開始載入..."));
-    tileLayer.on("load", () => console.log(`[map] tile batch 全部載入完成（累計 ${tileLoadCount} 個）`));
+    if (import.meta.env.DEV) {
+      tileLayer.on("loading", () => console.log("[map] tile 開始載入..."));
+      tileLayer.on("load", () => console.log(`[map] tile batch 全部載入完成（累計 ${tileLoadCount} 個）`));
+    }
     setTimeout(() => {
       if (tileLoadCount === 0) {
         console.warn("[map] ⏰ 5 秒內沒任何 tile 載入成功，顯示診斷彈窗");
@@ -216,7 +218,7 @@ export default function MapView() {
       setTimeout(() => {
         if (mapInstanceRef.current && mapRef.current) {
           const rect = mapRef.current.getBoundingClientRect();
-          console.log(`[map] @${delay}ms 容器尺寸: ${Math.round(rect.width)}×${Math.round(rect.height)}`);
+          if (import.meta.env.DEV) console.log(`[map] @${delay}ms 容器尺寸: ${Math.round(rect.width)}×${Math.round(rect.height)}`);
           mapInstanceRef.current.invalidateSize();
         }
       }, delay),

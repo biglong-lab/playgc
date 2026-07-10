@@ -422,7 +422,7 @@ export function usePhotoCamera(): PhotoCameraState {
   //     - 但首次呼叫 enumerateDevices 需要先取得 camera permission 才有 label
   const switchCamera = async () => {
     const next: CameraFacing = facingMode === "user" ? "environment" : "user";
-    console.log(`[camera] 切換鏡頭 ${facingMode} → ${next}`);
+    if (import.meta.env.DEV) console.log(`[camera] 切換鏡頭 ${facingMode} → ${next}`);
 
     try {
       // 1. 先停止舊 stream（iOS 不允許同時兩個 video track）
@@ -443,7 +443,7 @@ export function usePhotoCamera(): PhotoCameraState {
           },
           audio: false,
         });
-        console.log("[camera] 用 facingMode:exact 切換成功");
+        if (import.meta.env.DEV) console.log("[camera] 用 facingMode:exact 切換成功");
       } catch (exactErr) {
         console.warn("[camera] facingMode:exact 失敗，改試 ideal:", exactErr);
         // 3. Fallback: 用 ideal
@@ -456,7 +456,7 @@ export function usePhotoCamera(): PhotoCameraState {
             },
             audio: false,
           });
-          console.log("[camera] 用 facingMode:ideal 切換成功");
+          if (import.meta.env.DEV) console.log("[camera] 用 facingMode:ideal 切換成功");
         } catch (idealErr) {
           console.warn(
             "[camera] facingMode:ideal 也失敗，嘗試 enumerateDevices:",
@@ -465,7 +465,7 @@ export function usePhotoCamera(): PhotoCameraState {
           // 4. 最後 fallback: enumerateDevices 找 deviceId
           const devices = await navigator.mediaDevices.enumerateDevices();
           const videoInputs = devices.filter((d) => d.kind === "videoinput");
-          console.log("[camera] 裝置清單:", videoInputs.map((d) => d.label));
+          if (import.meta.env.DEV) console.log("[camera] 裝置清單:", videoInputs.map((d) => d.label));
           if (videoInputs.length < 2) {
             throw new Error("此裝置只有一個鏡頭，無法切換");
           }
@@ -484,7 +484,7 @@ export function usePhotoCamera(): PhotoCameraState {
             video: { deviceId: { exact: target.deviceId } },
             audio: false,
           });
-          console.log("[camera] 用 deviceId 切換成功:", target.label);
+          if (import.meta.env.DEV) console.log("[camera] 用 deviceId 切換成功:", target.label);
         }
       }
 

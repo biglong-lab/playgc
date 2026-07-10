@@ -344,6 +344,16 @@ export function setupWebSocket(httpServer: Server): RouteContext {
       }
     }
 
+    // 🔭 2026-07-10 觀察階段：統計匿名連線占比、供決策是否切強制 token
+    // （host 大螢幕 role=player 是刻意匿名、切強制前必須先看這裡的數據）
+    wsConnStats[authenticatedUserId ? "authed" : "anonymous"]++;
+    const totalConns = wsConnStats.authed + wsConnStats.anonymous;
+    if (totalConns % 100 === 0) {
+      console.info(
+        `[ws-auth-stats] 累計連線 ${totalConns}：已認證 ${wsConnStats.authed}、匿名 ${wsConnStats.anonymous}（匿名占比 ${Math.round((wsConnStats.anonymous / totalConns) * 100)}%）`,
+      );
+    }
+
     // 🔭 Phase 0.2：log connect 事件
     logWsEvent({
       eventType: "connect",

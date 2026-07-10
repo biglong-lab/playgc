@@ -83,7 +83,7 @@ export function createReliableAudio(
     // 還沒試過 fallback 就嘗試原始 URL
     if (!triedFallback && optimizedUrl !== url) {
       triedFallback = true;
-      console.log("[audio] fallback to original url:", url);
+      if (import.meta.env.DEV) console.log("[audio] fallback to original url:", url);
       audio.src = url;
     } else {
       options?.onError?.(audio.error?.message ?? "load error");

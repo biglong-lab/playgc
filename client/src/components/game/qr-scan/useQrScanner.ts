@@ -198,7 +198,7 @@ export function useQrScanner(
   // 🆕 切換前後鏡頭
   const switchCamera = async () => {
     const next = facingMode === "environment" ? "user" : "environment";
-    console.log(`[QR] 切換鏡頭 ${facingMode} → ${next}`);
+    if (import.meta.env.DEV) console.log(`[QR] 切換鏡頭 ${facingMode} → ${next}`);
     setFacingMode(next);
     await stopScanning();
     // 給 iOS 一點時間釋放硬體

@@ -197,7 +197,7 @@ export function registerBookingRoutes(app: Express) {
   // ──────────────────────────────────────────
   // GET /api/bookings/mine?lineUserId=xxx&includeCompleted=true
   // ──────────────────────────────────────────
-  app.get("/api/bookings/mine", async (req, res) => {
+  app.get("/api/bookings/mine", hotPathLimiter, async (req, res) => {
     try {
       const lineUserId = getLineUserIdFromQuery(req);
       if (!lineUserId) {
@@ -218,7 +218,7 @@ export function registerBookingRoutes(app: Express) {
   // GET /api/bookings/by-code/:code — 公開最小摘要（給綁定短連結頁、不需 lineUserId）
   // 2026-06-13
   // ──────────────────────────────────────────
-  app.get("/api/bookings/by-code/:code", async (req, res) => {
+  app.get("/api/bookings/by-code/:code", hotPathLimiter, async (req, res) => {
     try {
       const summary = await getBookingSummaryByCode(req.params.code);
       if (!summary) return res.status(404).json({ error: "not_found" });
@@ -232,7 +232,7 @@ export function registerBookingRoutes(app: Express) {
     }
   });
 
-  app.get("/api/bookings/:bookingCode", async (req, res) => {
+  app.get("/api/bookings/:bookingCode", hotPathLimiter, async (req, res) => {
     try {
       const booking = await getBookingByCode(req.params.bookingCode);
       if (!booking) return res.status(404).json({ error: "not_found" });
@@ -250,7 +250,7 @@ export function registerBookingRoutes(app: Express) {
   // ──────────────────────────────────────────
   // POST /api/bookings/:bookingCode/cancel
   // ──────────────────────────────────────────
-  app.post("/api/bookings/:bookingCode/cancel", async (req, res) => {
+  app.post("/api/bookings/:bookingCode/cancel", hotPathLimiter, async (req, res) => {
     try {
       const parsed = cancelBodySchema.safeParse(req.body);
       if (!parsed.success) {

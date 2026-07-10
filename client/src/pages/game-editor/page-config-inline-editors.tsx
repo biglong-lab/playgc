@@ -33,10 +33,12 @@ function AudioPreviewWithStatus({ url }: { url: string }) {
         onLoadedMetadata={(e) => {
           setStatus("ready");
           setErrorDetail("");
-          console.log("[audio-preview] ✅ metadata loaded", {
-            duration: e.currentTarget.duration,
-            src: e.currentTarget.currentSrc,
-          });
+          if (import.meta.env.DEV) {
+            console.log("[audio-preview] ✅ metadata loaded", {
+              duration: e.currentTarget.duration,
+              src: e.currentTarget.currentSrc,
+            });
+          }
         }}
         onError={(e) => {
           const audio = e.currentTarget;
@@ -59,7 +61,7 @@ function AudioPreviewWithStatus({ url }: { url: string }) {
         }}
         onCanPlay={() => {
           setStatus("ready");
-          console.log("[audio-preview] ▶️ can play");
+          if (import.meta.env.DEV) console.log("[audio-preview] ▶️ can play");
         }}
       />
 
