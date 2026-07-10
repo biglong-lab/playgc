@@ -19,6 +19,7 @@
 //   - Platinum: 200+ 場 + 跨 3 場域
 //   - Super: 平台 top 10 + 招募 30+
 //
+import { withSchedulerRun } from "../lib/scheduler-run-recorder";
 import { db } from "../db";
 import { squadStats, fieldEngagementSettings } from "@shared/schema";
 import { eq, and, sql, desc, gte } from "drizzle-orm";
@@ -48,7 +49,7 @@ export interface LifecycleResult {
   errors: string[];
 }
 
-export async function runLifecycleCycle(): Promise<LifecycleResult> {
+async function runLifecycleCycleInner(): Promise<LifecycleResult> {
   const result: LifecycleResult = {
     squadsProcessed: 0,
     tierUpgrades: [],
@@ -159,6 +160,15 @@ let initialDelay: NodeJS.Timeout | null = null;
 
 const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
 const INITIAL_DELAY_MS = 10 * 60 * 1000; // 啟動 10 分鐘後跑首輪
+
+export async function runLifecycleCycle(): Promise<LifecycleResult> {
+  return withSchedulerRun(
+    "lifecycle-scheduler",
+    runLifecycleCycleInner,
+    (r) => r.squadsProcessed,
+    (r) => ({ tierUpgrades: r.tierUpgrades.length, errorCount: r.errors.length }),
+  );
+}
 
 export function startLifecycleScheduler(): void {
   if (schedulerInterval) {

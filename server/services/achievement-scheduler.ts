@@ -10,6 +10,7 @@
 // 排程：每 6 小時跑一次（UTC 00:00, 06:00, 12:00, 18:00）
 // 執行：批次掃描 squad_stats，逐隊判斷各成就，未達成就插入 squad_achievements
 //
+import { withSchedulerRun } from "../lib/scheduler-run-recorder";
 import { db } from "../db";
 import { squadStats, squadAchievements, squadMatchRecords } from "@shared/schema";
 import { eq, and, sql, gte } from "drizzle-orm";
@@ -37,7 +38,7 @@ export interface AchievementRunResult {
  * 2. 對每隊：算各場域場次 + 跑所有 ACHIEVEMENTS.check
  * 3. 未達成的插入 squad_achievements（onConflictDoNothing）
  */
-export async function runAchievementsCycle(): Promise<AchievementRunResult> {
+async function runAchievementsCycleInner(): Promise<AchievementRunResult> {
   const result: AchievementRunResult = {
     squadsProcessed: 0,
     achievementsAwarded: 0,
@@ -173,6 +174,15 @@ let initialDelay: NodeJS.Timeout | null = null;
 
 const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
 const INITIAL_DELAY_MS = 5 * 60 * 1000; // 啟動 5 分鐘後跑第一次
+
+export async function runAchievementsCycle(): Promise<AchievementRunResult> {
+  return withSchedulerRun(
+    "achievement-scheduler",
+    runAchievementsCycleInner,
+    (r) => r.squadsProcessed,
+    (r) => ({ achievementsAwarded: r.achievementsAwarded, errorCount: r.errors.length }),
+  );
+}
 
 export function startAchievementScheduler(): void {
   if (schedulerInterval) {

@@ -10,6 +10,7 @@
 //   - 跨日後若日期是 1 號 → 執行重置
 //   - 用 dedupe 機制（記錄最後重置月份）避免一日跑多次
 //
+import { withSchedulerRun } from "../lib/scheduler-run-recorder";
 import { db } from "../db";
 import { squadStats } from "@shared/schema";
 import { sql } from "drizzle-orm";
@@ -28,7 +29,7 @@ function currentMonthKey(date: Date = new Date()): string {
  * 重置 monthlyGames + monthlyRecruits 到 0
  * 不影響 totalGames / totalGamesRaw / totalExpPoints / recruitsCount
  */
-export async function resetMonthlyStats(): Promise<{ rowsAffected: number }> {
+async function resetMonthlyStatsInner(): Promise<{ rowsAffected: number }> {
   const result = await db
     .update(squadStats)
     .set({
@@ -63,6 +64,10 @@ async function checkAndReset(): Promise<void> {
   } catch (err) {
     console.error("[monthly-reset] 重置失敗:", err);
   }
+}
+
+export async function resetMonthlyStats(): Promise<{ rowsAffected: number }> {
+  return withSchedulerRun("monthly-reset-scheduler", resetMonthlyStatsInner, (r) => r.rowsAffected);
 }
 
 export function startMonthlyResetScheduler(): void {

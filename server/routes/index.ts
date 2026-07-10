@@ -179,6 +179,9 @@ export async function registerRoutes(
   // 🆕 2026-05-05: 通用多人遊戲狀態（RelayMission/TerritoryCapture/CollectiveScore/RoleAssign/QuestChain 等）
   await ensureTeamGameStateSchema();
   registerTeamGameStateRoutes(app, ctx);
+  // 🆕 2026-07-10: scheduler 執行歷史表
+  const { ensureSchedulerRunsSchema } = await import("../lib/scheduler-run-recorder");
+  await ensureSchedulerRunsSchema();
   registerPlayerChapterRoutes(app);
   registerAdminChapterRoutes(app);
   registerAdminChapterTemplateRoutes(app);

@@ -12,6 +12,7 @@
 //   - 用 dedupeKey 避免重複發送（每隊每天最多 1 封）
 //   - 走通知 dispatcher（admin 可關閉/調整管道）
 //
+import { withSchedulerRun } from "../lib/scheduler-run-recorder";
 import { db } from "../db";
 import {
   squadStats,
@@ -97,7 +98,7 @@ export function stopDormancyScheduler(): void {
  *   3. 用 determineActivityStatus 算狀態
  *   4. 視狀態觸發通知或標記休眠
  */
-export async function runDormancyCycle(): Promise<{
+async function runDormancyCycleInner(): Promise<{
   processed: number;
   warned: number;
   dormant: number;
@@ -215,4 +216,18 @@ async function sendDormancyWarning(
     // dedupeKey 防同一天重複發
     dedupeKey: `dormancy_${squadId}_${daysSince}_${new Date().toISOString().slice(0, 10)}`,
   });
+}
+
+export async function runDormancyCycle(): Promise<{
+  processed: number;
+  warned: number;
+  dormant: number;
+  errors: number;
+}> {
+  return withSchedulerRun(
+    "dormancy-scheduler",
+    runDormancyCycleInner,
+    (r) => r.processed,
+    (r) => ({ warned: r.warned, dormant: r.dormant, errorCount: r.errors }),
+  );
 }

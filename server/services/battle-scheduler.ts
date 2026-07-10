@@ -1,6 +1,7 @@
 // 水彈對戰 PK 擂台 — 通知排程器
 // 定期檢查即將開始的時段，自動建立提醒通知
 
+import { withSchedulerRun } from "../lib/scheduler-run-recorder";
 import { battleStorageMethods } from "../storage/battle-storage";
 import {
   sendNotification,
@@ -138,7 +139,7 @@ async function hasNotificationBeenSent(
 /**
  * 單次排程週期
  */
-async function runSchedulerCycle(): Promise<void> {
+async function runSchedulerCycleInner(): Promise<{ processed: number }> {
   const now = new Date();
 
   // 1) 處理已到時間的排程通知
@@ -150,6 +151,11 @@ async function runSchedulerCycle(): Promise<void> {
   // 2) 掃描未來 25 小時內的 confirmed/full 時段
   //    為各時段建立 24h/2h/確認出席/報到開放通知
   await scanUpcomingSlots(now);
+  return { processed };
+}
+
+async function runSchedulerCycle(): Promise<void> {
+  await withSchedulerRun("battle-scheduler", runSchedulerCycleInner, (r) => r.processed);
 }
 
 /**
