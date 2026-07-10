@@ -2,18 +2,22 @@
 //
 // 每天 03:00 跑 cleanup_observability_logs(90) 函式
 // 刪 90 天前的 ws_event_log + db_write_log 紀錄
+// 2026-07-10 擴充：audit_logs 保留 180 天、error_logs 保留 90 天（原本永久累積）
 //
 // 啟動位置：server/index.ts startup
 //
 // 監控：若刪除 > 100 萬筆 → Telegram 警示（資料量爆表、考慮升 partitioning）
 
 import { db } from "../db";
-import { sql } from "drizzle-orm";
+import { sql, lt, and, isNotNull } from "drizzle-orm";
+import { auditLogs, errorLogs } from "@shared/schema";
 
 const CHECK_INTERVAL_MS = 60_000; // 每分鐘檢查一次「現在是否該跑」
 const TARGET_HOUR = 3;             // 03:00 跑
 const TARGET_MINUTE = 0;
 const RETENTION_DAYS = 90;
+const AUDIT_RETENTION_DAYS = 180;  // 稽核紀錄保守留半年
+const ERROR_RETENTION_DAYS = 90;   // error_logs 依 lastSeenAt（仍在聚合的指紋不刪）
 
 let timer: NodeJS.Timeout | null = null;
 let lastRunDate: string | null = null; // YYYY-MM-DD、避免同日重跑
