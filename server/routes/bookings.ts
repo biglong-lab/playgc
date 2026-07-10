@@ -71,6 +71,7 @@ function parseDateParam(raw: unknown, fallback: Date): Date {
 function getLineUserIdFromQuery(req: Request): string | null {
   const v = req.query.lineUserId;
   if (typeof v !== "string" || v.length === 0) return null;
+  if (v.includes(":")) return null; // 內部偽 ID（manual: 等）不接受玩家端查詢
   return v;
 }
 
