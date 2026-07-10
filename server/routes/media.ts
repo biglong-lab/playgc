@@ -99,7 +99,7 @@ export function registerMediaRoutes(app: Express) {
       });
     } catch (error) {
       console.error("[media] cloudinary/upload 失敗:", error);
-      res.status(500).json({
+      res.status(error instanceof MediaTypeMismatchError ? 400 : 500).json({
         error: error instanceof Error ? error.message : "上傳失敗",
       });
     }
