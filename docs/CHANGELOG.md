@@ -5,6 +5,18 @@
 
 ---
 
+## 2026-07-10
+
+### 🔒 安全補強 × 圖片本地壓縮 × 系統紀錄 × 設定管理 4 批（feat）
+**狀態**：🟡 已 commit 待 push（`a12d1842` / `de4f15ce` / `5a65107f` / `440fd9dd`）
+**細節** → [changes/2026-07-10-security-image-audit-settings.md](changes/2026-07-10-security-image-audit-settings.md)
+
+- 安全 7 項：synthetic-runs 補 auth、Stripe webhook 驗簽、上傳 magic-byte 驗證（cloudinary 四關卡）、Firebase Admin 生產禁降級、預約封 manual: 偽 ID 列舉＋限流、client console.log DEV-gate、WS 匿名占比觀察
+- 圖片：browser-image-compression 接 6 個零壓縮上傳點（三級 preset、GIF/SVG 不壓、PNG 保透明）＋PhotoBurstFlow 補縮邊
+- 紀錄：audit/error/scheduler retention（180/90/90 天）、設定稽核記 before/after、line-login-config 補 audit、新表 scheduler_runs（5 個 scheduler 執行歷史＋查詢端點）、audit 失敗 Sentry 告警
+- 設定：AdminSettings 加「變更歷史」Tab＋一鍵還原改前值＋「更多設定」統一入口
+- 測試：新增 media-mime 12＋Stripe 簽章 6；全套 3252 綠、tsc/build 過
+
 ## 2026-07-09
 
 ### 🛡️ 全站優化第 1-4 批：安全/穩定/效能/健康（fix + refactor）
