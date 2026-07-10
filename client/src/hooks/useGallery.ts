@@ -16,6 +16,7 @@
 //   - max size 8MB（避免 base64 後過大）
 
 import { useCallback, useRef } from "react";
+import { compressImageToDataUrl } from "@/lib/image-compress";
 
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 
@@ -57,15 +58,13 @@ export function useGallery({ onImage, onError }: UseGalleryOptions = {}): UseGal
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
-        if (dataUrl) onImage?.(dataUrl, file);
-      };
-      reader.onerror = () => {
-        onError?.("讀取檔案失敗");
-      };
-      reader.readAsDataURL(file);
+      compressImageToDataUrl(file, "photo")
+        .then((dataUrl) => {
+          if (dataUrl) onImage?.(dataUrl, file);
+        })
+        .catch(() => {
+          onError?.("讀取檔案失敗");
+        });
     },
     [onImage, onError],
   );

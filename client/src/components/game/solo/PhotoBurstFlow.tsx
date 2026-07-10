@@ -214,12 +214,15 @@ export default function PhotoBurstFlow({
       // 直接抓當前 video frame
       const video = camera.videoRef.current;
       if (!video) return;
+      // 縮到最大邊 1080（連拍要合成 GIF、原尺寸會讓上傳與 GIF 體積爆掉）
+      const MAX_EDGE = 1080;
+      const scale = Math.min(1, MAX_EDGE / Math.max(video.videoWidth, video.videoHeight));
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = Math.round(video.videoWidth * scale);
+      canvas.height = Math.round(video.videoHeight * scale);
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.drawImage(video, 0, 0);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
       burstImagesRef.current = [...burstImagesRef.current, dataUrl];
       setBurstImages(burstImagesRef.current);

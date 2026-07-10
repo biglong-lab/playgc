@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { compressImageToDataUrl } from "@/lib/image-compress";
 import { Plus, Trash2, Pencil, Coffee, Package, GraduationCap } from "lucide-react";
 
 const CATEGORIES = [
@@ -100,20 +101,18 @@ export default function PosProductsAdmin() {
   });
 
   const uploadPhoto = async (productId: string, file: File) => {
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        await fetchWithAdminAuth(`/api/admin/pos/products/${productId}/photo`, {
-          method: "POST",
-          body: JSON.stringify({ imageData: reader.result }),
-        });
-        toast({ title: "✅ 照片已更新" });
-        qc.invalidateQueries({ queryKey: ["pos-products"] });
-      } catch (e) {
-        toast({ title: "上傳失敗", description: e instanceof Error ? e.message : "", variant: "destructive" });
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      // 上傳前本地壓縮（品項小圖用 logo 等級）
+      const imageData = await compressImageToDataUrl(file, "logo");
+      await fetchWithAdminAuth(`/api/admin/pos/products/${productId}/photo`, {
+        method: "POST",
+        body: JSON.stringify({ imageData }),
+      });
+      toast({ title: "✅ 照片已更新" });
+      qc.invalidateQueries({ queryKey: ["pos-products"] });
+    } catch (e) {
+      toast({ title: "上傳失敗", description: e instanceof Error ? e.message : "", variant: "destructive" });
+    }
   };
 
   // ── 客製群組 ──

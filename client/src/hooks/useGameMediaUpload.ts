@@ -20,6 +20,7 @@
 import { useState, useCallback } from "react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { compressImageToDataUrl } from "@/lib/image-compress";
 
 export type MediaType = "video" | "audio" | "image";
 
@@ -71,12 +72,16 @@ export function useGameMediaUpload(gameId: string | undefined | null) {
 
       setIsUploading(true);
       try {
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+        // 只有 image 分支做本地壓縮（影音不可壓）
+        const base64 =
+          type === "image"
+            ? await compressImageToDataUrl(file, "cover")
+            : await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+              });
 
         const response = await apiRequest(
           "POST",

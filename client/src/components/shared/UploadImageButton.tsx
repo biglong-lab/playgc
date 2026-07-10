@@ -8,6 +8,7 @@ import { Upload, Loader2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import OptimizedImage from "@/components/shared/OptimizedImage";
+import { compressImageToDataUrl, type CompressPreset } from "@/lib/image-compress";
 
 interface UploadImageButtonProps {
   /** POST 目標，body 會是 `{ imageData: "data:image/..." }` */
@@ -22,18 +23,10 @@ interface UploadImageButtonProps {
   hint?: string;
   /** 最大檔案大小（bytes），預設 5MB */
   maxBytes?: number;
+  /** 本地壓縮等級，預設 cover；logo 給小圖用 */
+  compressPreset?: CompressPreset;
   /** testId 前綴 */
   testId?: string;
-}
-
-/** 把 File 轉 base64 data URL */
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 }
 
 /**
@@ -84,6 +77,7 @@ export function UploadImageButton({
   label = "上傳圖片",
   hint,
   maxBytes = 5 * 1024 * 1024,
+  compressPreset = "cover",
   testId,
 }: UploadImageButtonProps) {
   const { toast } = useToast();
@@ -111,7 +105,8 @@ export function UploadImageButton({
 
     setUploading(true);
     try {
-      const base64 = await fileToBase64(file);
+      // 上傳前本地壓縮（省流量、加速上傳；GIF/SVG 不壓）
+      const base64 = await compressImageToDataUrl(file, compressPreset);
       const res = await fetchWithAdminAuth(endpoint, {
         method: "POST",
         body: JSON.stringify({ imageData: base64 }),

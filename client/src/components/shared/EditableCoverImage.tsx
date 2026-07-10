@@ -21,6 +21,7 @@ import { Move, Check, X, Camera, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { compressImageToDataUrl } from "@/lib/image-compress";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import {
   DEFAULT_POSITION,
@@ -135,13 +136,8 @@ export default function EditableCoverImage({
 
     setUploading(true);
     try {
-      // base64 轉換
-      const imageData = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // 上傳前本地壓縮 + base64 轉換（GIF/SVG 不壓）
+      const imageData = await compressImageToDataUrl(file, "cover");
 
       // 🐛 fetchWithAdminAuth 已自動 parse JSON 並 throw on !ok
       // 不要再呼叫 .json() 或檢查 .ok，否則會炸 "res.json is not a function"

@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { compressImageToDataUrl } from "@/lib/image-compress";
 import {
   Image as ImageIcon,
   Upload,
@@ -142,13 +143,8 @@ export default function SquadSettings() {
 
   const uploadMut = useMutation({
     mutationFn: async (file: File) => {
-      // 轉 base64
-      const reader = new FileReader();
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      // 上傳前本地壓縮 + 轉 base64（隊徽用 logo 等級、PNG 透明保留）
+      const dataUrl = await compressImageToDataUrl(file, "logo");
 
       const res = await apiRequest("POST", `/api/squads/${squadId}/emblem`, {
         imageData: dataUrl,
