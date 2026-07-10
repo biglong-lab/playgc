@@ -15,8 +15,11 @@ import type { ArduinoDevice, Game, GameSession } from "@shared/schema";
 import {
   Settings, Wifi, Radio, Gamepad2, Users, Clock,
   Save, RefreshCw, CheckCircle, AlertTriangle, Database,
+  History, MessageSquare, Flag, ScrollText, ChevronRight,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { Link } from "wouter";
+import SettingsChangeHistory from "@/pages/admin/SettingsChangeHistory";
 
 interface MqttStatus {
   connected: boolean;
@@ -135,6 +138,10 @@ export default function AdminSettings() {
             <Database className="w-4 h-4" />
             系統資訊
           </TabsTrigger>
+          <TabsTrigger value="history" className="gap-1" data-testid="tab-history">
+            <History className="w-4 h-4" />
+            變更歷史
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="space-y-6">
@@ -243,6 +250,39 @@ export default function AdminSettings() {
                   {saveMutation.isPending ? "儲存中..." : "儲存設定"}
                 </Button>
               </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    更多設定
+                  </CardTitle>
+                  <CardDescription>其他設定頁面的統一入口</CardDescription>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[
+                    { href: "/admin/line-settings", icon: MessageSquare, title: "LINE 設定", desc: "Bot / LIFF / 通知" },
+                    { href: "/admin/feature-flags", icon: Flag, title: "功能開關", desc: "模組啟用 / 降級" },
+                    { href: "/admin/audit-logs", icon: ScrollText, title: "操作記錄", desc: "完整稽核紀錄" },
+                  ].map((item) => (
+                    <Link key={item.href} href={item.href}>
+                      <div
+                        className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 cursor-pointer transition-colors"
+                        data-testid={`link-settings-${item.href.split("/").pop()}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <item.icon className="w-5 h-5 text-primary" />
+                          <div>
+                            <p className="font-medium">{item.title}</p>
+                            <p className="text-xs text-muted-foreground">{item.desc}</p>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                    </Link>
+                  ))}
+                </CardContent>
+              </Card>
             </>
           )}
         </TabsContent>
@@ -389,6 +429,10 @@ export default function AdminSettings() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-6">
+          <SettingsChangeHistory />
         </TabsContent>
       </Tabs>
     </UnifiedAdminLayout>
