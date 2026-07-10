@@ -10,7 +10,7 @@
 
 import { db } from "../db";
 import { sql, lt, and, isNotNull } from "drizzle-orm";
-import { auditLogs, errorLogs } from "@shared/schema";
+import { auditLogs, errorLogs, schedulerRuns } from "@shared/schema";
 
 const CHECK_INTERVAL_MS = 60_000; // 每分鐘檢查一次「現在是否該跑」
 const TARGET_HOUR = 3;             // 03:00 跑
