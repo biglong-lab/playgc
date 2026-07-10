@@ -10,8 +10,8 @@
 import type { Express, Response } from "express";
 import { requireAdminAuth } from "../adminAuth";
 import { db } from "../db";
-import { errorLogs } from "@shared/schema";
-import { sql, and, gte } from "drizzle-orm";
+import { errorLogs, schedulerRuns } from "@shared/schema";
+import { sql, and, gte, desc, eq } from "drizzle-orm";
 
 interface HealthStats {
   windowHours: number;
@@ -110,6 +110,34 @@ export function registerAdminSystemHealthRoutes(app: Express): void {
         res.json(stats);
       } catch (err) {
         console.error("[system-health] 失敗:", err);
+        res.status(500).json({ message: "查詢失敗" });
+      }
+    },
+  );
+
+  /**
+   * GET /api/admin/scheduler-runs?name=battle-scheduler&limit=50
+   * scheduler 執行歷史（2026-07-10）— 回答「上次跑何時、成功嗎、處理幾筆」
+   */
+  app.get(
+    "/api/admin/scheduler-runs",
+    requireAdminAuth,
+    async (req, res: Response) => {
+      try {
+        const limitRaw = parseInt(String(req.query.limit ?? "50"), 10);
+        const limit = Math.max(1, Math.min(Number.isFinite(limitRaw) ? limitRaw : 50, 200));
+        const name = typeof req.query.name === "string" ? req.query.name : undefined;
+
+        const rows = await db
+          .select()
+          .from(schedulerRuns)
+          .where(name ? eq(schedulerRuns.schedulerName, name) : undefined)
+          .orderBy(desc(schedulerRuns.finishedAt))
+          .limit(limit);
+
+        res.json({ runs: rows });
+      } catch (err) {
+        console.error("[scheduler-runs] 查詢失敗:", err);
         res.status(500).json({ message: "查詢失敗" });
       }
     },
