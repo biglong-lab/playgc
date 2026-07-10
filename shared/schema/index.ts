@@ -59,6 +59,7 @@ export * from "./team-race";
 
 // 🔭 Observability — WS event log + DB write log（Phase 0.2 / 2026-05-08）
 export * from "./observability";
+export * from "./scheduler-runs";
 export * from "./admin-session-timings";
 export * from "./line-bot-events";
 export * from "./line-login-config";
