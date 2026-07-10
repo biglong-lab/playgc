@@ -205,6 +205,8 @@ export class CloudinaryService {
       throw new Error("Cloudinary 尚未設定");
     }
 
+    assertDataUrlCategory(base64Data, "audio");
+
     const uploadOptions: Record<string, any> = {
       resource_type: "video",
       folder: options?.folder || "jiachun-game/audio",
