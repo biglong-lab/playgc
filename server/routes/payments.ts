@@ -105,13 +105,23 @@ export function registerPaymentsRoutes(app: Express) {
    * POST /api/payments/webhook
    * Stripe webhook 接收事件
    *
-   * 注意：W10 D1 暫不驗章（後續 D2 補上 stripe-signature 驗證）
-   * 目前只記 log 確認 endpoint 可達
+   * 簽章驗證：STRIPE_WEBHOOK_SECRET 已設定時強制驗 stripe-signature
+   * （驗簽對象是 rawBody、不能用 JSON.parse 後的 body 重組）
    */
   app.post("/api/payments/webhook", async (req, res) => {
     try {
       if (!STRIPE_KEY) {
         return res.status(503).json({ error: "付費系統未啟用" });
+      }
+
+      if (STRIPE_WEBHOOK_SECRET) {
+        const rawPayload =
+          req.rawBody instanceof Buffer ? req.rawBody.toString("utf8") : "";
+        const sig = req.headers["stripe-signature"] as string | undefined;
+        if (!verifyStripeWebhookSignature(rawPayload, sig, STRIPE_WEBHOOK_SECRET)) {
+          console.warn("[payments] stripe webhook 簽章未通過、拒絕請求");
+          return res.status(401).json({ error: "Invalid signature" });
+        }
       }
 
       const event = req.body;
