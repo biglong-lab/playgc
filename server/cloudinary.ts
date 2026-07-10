@@ -43,6 +43,8 @@ export class CloudinaryService {
       throw new Error("Cloudinary 尚未設定，請設定 CLOUDINARY_CLOUD_NAME、CLOUDINARY_API_KEY 和 CLOUDINARY_API_SECRET 環境變數");
     }
 
+    assertDataUrlCategory(base64Data, "image");
+
     const uploadOptions: Record<string, any> = {
       resource_type: "image",
       folder: options?.folder || "jiachun-game",
