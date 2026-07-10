@@ -332,9 +332,7 @@ export function registerCronEndpoints(app: Express) {
    * GET /api/admin/synthetic-runs?limit=30
    * admin 查看最近巡檢紀錄（給 dashboard 用）
    */
-  app.get("/api/admin/synthetic-runs", async (req: Request, res: Response) => {
-    // 簡化：不加 admin auth、純 read-only 給 dashboard
-    // 真要 auth 可加 requireAdminAuth、目前先不擋
+  app.get("/api/admin/synthetic-runs", requireAdminAuth, async (req: Request, res: Response) => {
     try {
       const limit = Math.min(100, Math.max(1, parseInt((req.query.limit as string) ?? "30", 10)));
       const rows = await db
