@@ -40,12 +40,23 @@ function getFirebaseAdmin(): App {
           privateKey: formattedPrivateKey,
         }),
       });
-    } catch {
-      // 服務帳號初始化失敗，fallback 至僅 projectId 模式（token 驗證可能失敗）
+    } catch (err) {
+      // 生產環境憑證設錯必須明確失敗、不可靜默降級（降級後 token 驗證行為不可預期）
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(
+          `Firebase Admin 服務帳號初始化失敗（請檢查 FIREBASE_ADMIN_CLIENT_EMAIL / FIREBASE_ADMIN_PRIVATE_KEY）：${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+      console.warn("[firebaseAuth] 服務帳號初始化失敗，fallback 至僅 projectId 模式（僅限開發環境）");
       firebaseAdmin = initializeApp({ projectId });
     }
   } else {
-    // 缺少服務帳號憑證，fallback 至僅 projectId 模式
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "Firebase Admin 憑證未設定（FIREBASE_ADMIN_CLIENT_EMAIL / FIREBASE_ADMIN_PRIVATE_KEY），生產環境禁止降級啟動",
+      );
+    }
+    console.warn("[firebaseAuth] 缺少服務帳號憑證，fallback 至僅 projectId 模式（僅限開發環境）");
     firebaseAdmin = initializeApp({ projectId });
   }
   
