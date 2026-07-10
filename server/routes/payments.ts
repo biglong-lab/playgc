@@ -20,6 +20,7 @@ import { sendEmailAsync, buildPaymentSuccessEmail } from "../lib/resend-mailer";
 import { getScenarioById } from "@shared/scenario-templates";
 
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 const RECUR_KEY = process.env.RECUR_TW_API_KEY;
 const RECUR_WEBHOOK_SECRET = process.env.RECUR_TW_WEBHOOK_SECRET;
 const RESEND_KEY = process.env.RESEND_API_KEY;
