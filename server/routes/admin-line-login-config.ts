@@ -13,6 +13,7 @@ import { db } from "../db";
 import { lineLoginConfig } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import { requirePlatformAdmin } from "../platformAuth";
+import { logAuditAction } from "../adminAuth";
 import { z } from "zod";
 import { invalidateLineLoginConfigCache, LINE_LOGIN_SINGLETON_ID } from "../lib/line-login-config";
 
@@ -124,6 +125,25 @@ export function registerAdminLineLoginConfigRoutes(app: Express) {
         }
 
         invalidateLineLoginConfigCache();
+
+        // 2026-07-10 補 audit：平台級設定變更留紀錄
+        // platformAdmin.id 來自 platform_admins 表（非 adminAccounts、不能塞 actorAdminId FK）→ 放 metadata
+        // secret 只記「欄位有變」不記值
+        logAuditAction({
+          action: "line_login_config:update",
+          targetType: "line_login_config",
+          targetId: LINE_LOGIN_SINGLETON_ID,
+          metadata: {
+            platformAdminId: adminId,
+            changedFields: Object.keys(patch).filter(
+              (k) => k !== "updatedAt" && k !== "updatedByAdminId",
+            ),
+            enabled: parsed.data.enabled,
+          },
+          ipAddress: req.ip,
+          userAgent: req.headers["user-agent"],
+        });
+
         res.json({ ok: true });
       } catch (err) {
         console.error("[admin-line-login-config PATCH]", err);

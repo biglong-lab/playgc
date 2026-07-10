@@ -425,8 +425,18 @@ export async function logAuditAction(data: {
       ipAddress: data.ipAddress,
       userAgent: data.userAgent,
     });
-  } catch {
-    // 審計日誌寫入失敗不影響主流程
+  } catch (err) {
+    // 審計日誌寫入失敗不影響主流程、但不可再靜默（稽核失效要能被發現）
+    console.error("[audit] 稽核寫入失敗:", data.action, err);
+    try {
+      const { Sentry } = await import("./lib/sentry");
+      Sentry.captureException(err, {
+        tags: { source: "audit-log-write" },
+        extra: { action: data.action, targetType: data.targetType },
+      });
+    } catch {
+      // Sentry 本身失敗就只剩 console
+    }
   }
 }
 
