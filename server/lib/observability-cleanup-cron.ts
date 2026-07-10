@@ -53,6 +53,14 @@ async function runCleanup(): Promise<void> {
     totalDeleted += errorDeleted.length;
     console.log(`[observability-cleanup] error_logs: deleted ${errorDeleted.length} rows（lastSeenAt >${ERROR_RETENTION_DAYS} 天）`);
 
+    const schedulerCutoff = new Date(Date.now() - RETENTION_DAYS * 86400_000);
+    const schedulerDeleted = await db
+      .delete(schedulerRuns)
+      .where(lt(schedulerRuns.finishedAt, schedulerCutoff))
+      .returning({ id: schedulerRuns.id });
+    totalDeleted += schedulerDeleted.length;
+    console.log(`[observability-cleanup] scheduler_runs: deleted ${schedulerDeleted.length} rows（>${RETENTION_DAYS} 天）`);
+
     // 大量刪除告警（> 100 萬筆 = 異常成長、應升 partitioning）
     if (totalDeleted > 1_000_000) {
       console.warn(
