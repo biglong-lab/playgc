@@ -31,6 +31,9 @@ const AUTO_LEAVE_AFTER_GRACE_MS = parseEnvMs(
   120_000,
 );
 
+// 🔭 匿名/已認證連線計數（觀察階段、in-memory、重啟歸零）
+const wsConnStats = { authed: 0, anonymous: 0 };
+
 // 從 URL 解析 query 參數
 function parseQueryParams(url: string | undefined): Record<string, string> {
   if (!url) return {};
