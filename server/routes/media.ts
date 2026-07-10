@@ -7,6 +7,7 @@ import {
   requirePermission,
 } from "../adminAuth";
 import { cloudinaryService } from "../cloudinary";
+import { MediaTypeMismatchError } from "../lib/media-mime";
 import { db } from "../db";
 import { games, fields, parseFieldSettings } from "@shared/schema";
 import type { FieldSettings } from "@shared/schema";
