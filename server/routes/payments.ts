@@ -15,6 +15,7 @@
 import type { Express } from "express";
 import { createCheckoutSession } from "../lib/stripe-checkout";
 import { createRecurCheckoutSession, verifyRecurWebhookSignature } from "../lib/recur-tw";
+import { verifyStripeWebhookSignature } from "../lib/webhook-signature";
 import { sendEmailAsync, buildPaymentSuccessEmail } from "../lib/resend-mailer";
 import { getScenarioById } from "@shared/scenario-templates";
 
