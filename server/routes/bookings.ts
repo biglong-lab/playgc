@@ -26,8 +26,15 @@ import {
   BookingError,
 } from "../booking/booking-service";
 import { resolveLineConfig } from "../lib/line-config-resolver";
+import { hotPathLimiter } from "../utils/rate-limiters";
 
-const lineUserIdSchema = z.string().min(8).max(64);
+// 玩家端 lineUserId：拒絕含 ":" 的內部偽 ID（manual:<code> 是人工建單佔位，
+// 若放行等於可拿印在單據上的 booking code 列舉他人預約（含電話）
+const lineUserIdSchema = z
+  .string()
+  .min(8)
+  .max(64)
+  .refine((v) => !v.includes(":"), "無效的 lineUserId");
 
 const createBookingBodySchema = z.object({
   fieldId: z.string().min(1).max(50),
