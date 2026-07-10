@@ -36,6 +36,23 @@ async function runCleanup(): Promise<void> {
       console.log(`[observability-cleanup] ${row.table_name}: deleted ${count} rows`);
     }
 
+    // 2026-07-10：audit_logs / error_logs retention（原本永久累積）
+    const auditCutoff = new Date(Date.now() - AUDIT_RETENTION_DAYS * 86400_000);
+    const auditDeleted = await db
+      .delete(auditLogs)
+      .where(lt(auditLogs.createdAt, auditCutoff))
+      .returning({ id: auditLogs.id });
+    totalDeleted += auditDeleted.length;
+    console.log(`[observability-cleanup] audit_logs: deleted ${auditDeleted.length} rows（>${AUDIT_RETENTION_DAYS} 天）`);
+
+    const errorCutoff = new Date(Date.now() - ERROR_RETENTION_DAYS * 86400_000);
+    const errorDeleted = await db
+      .delete(errorLogs)
+      .where(and(isNotNull(errorLogs.lastSeenAt), lt(errorLogs.lastSeenAt, errorCutoff)))
+      .returning({ id: errorLogs.id });
+    totalDeleted += errorDeleted.length;
+    console.log(`[observability-cleanup] error_logs: deleted ${errorDeleted.length} rows（lastSeenAt >${ERROR_RETENTION_DAYS} 天）`);
+
     // 大量刪除告警（> 100 萬筆 = 異常成長、應升 partitioning）
     if (totalDeleted > 1_000_000) {
       console.warn(
