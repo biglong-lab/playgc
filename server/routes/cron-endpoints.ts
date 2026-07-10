@@ -18,6 +18,7 @@ import {
   pruneRemindedCache,
 } from "../lib/expiring-session-checker";
 import { verifySharedSecret } from "../lib/webhook-signature";
+import { requireAdminAuth } from "../adminAuth";
 import { db } from "../db";
 import { gameSessions, sessionReports, syntheticRuns } from "@shared/schema";
 import { sql, desc } from "drizzle-orm";
