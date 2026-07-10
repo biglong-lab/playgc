@@ -52,6 +52,44 @@ export function verifyHmacSignature(
 }
 
 /**
+ * 驗證 Stripe webhook 簽章
+ *
+ * Stripe 格式：header `stripe-signature: t=<timestamp>,v1=<sig>[,v1=<sig>...]`
+ * 簽章對象：`${timestamp}.${rawBody}` 的 HMAC-SHA256（hex）
+ * 含時間戳容忍檢查（預設 5 分鐘）防重放攻擊
+ *
+ * @param rawPayload 原始 request body string（未經 JSON.parse）
+ * @param sigHeader  stripe-signature header 原始值
+ * @param secret     webhook signing secret（whsec_*）
+ * @param toleranceSec 時間戳容忍秒數（預設 300）
+ */
+export function verifyStripeWebhookSignature(
+  rawPayload: string,
+  sigHeader: string | undefined,
+  secret: string,
+  toleranceSec = 300,
+): boolean {
+  if (!sigHeader || !secret || !rawPayload) return false;
+  try {
+    const parts = sigHeader.split(",").map((p) => p.trim());
+    const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
+    const signatures = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
+    if (!timestamp || signatures.length === 0) return false;
+
+    const ts = parseInt(timestamp, 10);
+    if (!Number.isFinite(ts)) return false;
+    if (Math.abs(Date.now() / 1000 - ts) > toleranceSec) return false;
+
+    const signedPayload = `${timestamp}.${rawPayload}`;
+    return signatures.some((sig) =>
+      verifyHmacSignature(signedPayload, sig, secret, "hex"),
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
  * 驗證 shared secret（直接比對、不經雜湊）
  *
  * 用於：簡單的 header X-API-Secret = <stored_secret> 場景
