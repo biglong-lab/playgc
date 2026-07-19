@@ -3,7 +3,7 @@
 // 統一紀錄所有 POS 收款：預約付款 / 散客現場 / 商品銷售 / 體驗加購
 // 折抵紀錄：voucher_id + voucher_discount_cents
 
-import { pgTable, varchar, text, integer, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, varchar, text, integer, boolean, timestamp, index } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
 export const posTransactions = pgTable(
