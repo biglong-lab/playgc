@@ -189,9 +189,9 @@ export default function PosCash() {
   const STEP = { not_started: 1, open: 2, closing_done: 3, settled: 4 }[stage] ?? 1;
   // 點階段 → 跳到對應動作
   const goStep = (n: number) => {
-    if (n === 1) { setMode("opening"); document.getElementById("cash-count-form")?.scrollIntoView({ behavior: "smooth" }); }
+    if (n === 1) { document.getElementById("cash-count-form")?.scrollIntoView({ behavior: "smooth" }); }
     else if (n === 2) { navigate("/pos/checkout?return=/pos/cash"); }
-    else if (n === 3) { setMode("closing"); document.getElementById("cash-count-form")?.scrollIntoView({ behavior: "smooth" }); }
+    else if (n === 3) { document.getElementById("cash-count-form")?.scrollIntoView({ behavior: "smooth" }); }
     else if (n === 4) { document.getElementById("cash-settle-card")?.scrollIntoView({ behavior: "smooth" }); }
   };
 
