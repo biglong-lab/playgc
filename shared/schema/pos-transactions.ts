@@ -35,6 +35,8 @@ export const posTransactions = pgTable(
     note: text("note"),
     /** 班次結算 id（結帳後不可改）*/
     shiftCloseId: varchar("shift_close_id"),
+    // 🆕 2026-07-19 結帳後補記標記：當日已結帳後才收的款，計入實際現金並獨立標註（補記閉環）
+    postSettlement: boolean("post_settlement").notNull().default(false),
     // 🆕 軟刪除（2026-06-13）— 帳務刪除需原因、進垃圾桶可還原
     deletedAt: timestamp("deleted_at"),
     deletedBy: varchar("deleted_by"),
