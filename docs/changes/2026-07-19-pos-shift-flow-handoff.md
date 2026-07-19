@@ -87,3 +87,15 @@
 2. 部署前 migration（加 2 欄位）
 3. 部署（使用者說了才做；用 `npm run deploy`，非手動 docker compose --build）
 4. push 前留意本地領先 origin 32 commit + `pos-cash.ts` 831 行超標
+
+### e2e 接地驗證（2026-07-19 第二對話收尾）
+- ✅ 本地 server 真實啟動（port 3333）
+- ✅ migration 已套用**本地 dev DB**（pos_transactions / pos_expenses 加 post_settlement）
+- ✅ 三端點真實驗證：`POST post-settlement` / `POST adjust` / `GET adjustments` 全 **404→401**（修復生效、auth 正常擋）
+- ⚠️ 完整 UI 流程（上班→收班→結帳→補記）**未跑**：admin 登入統一 Firebase Google、AI 不能代做登入（安全紅線）→ **留部署後使用者本人實測**
+- 附記：本地 dev DB 的 games 表缺 is_demo 欄位（demo-cleanup cron 報錯），與 POS 無關、既有 schema 漂移
+
+### ⚠️ 部署前務必（生產尚未有欄位）
+1. 生產 DB 尚未有 post_settlement → **先跑 migration 加欄位、再部署 code**（否則 code 讀欄位報錯）
+2. 部署用 `npm run deploy`（注入 GIT_SHA），**非**手動 docker compose --build
+3. push 前：`git diff --stat origin/main HEAD` 確認只有預期檔 + tsc 綠 + line-webhook 零損壞
