@@ -206,6 +206,8 @@ export const posExpenses = pgTable(
     spentBy: varchar("spent_by").notNull(),
     spentByName: varchar("spent_by_name"),
     spentAt: timestamp("spent_at").defaultNow(),
+    // 🆕 2026-07-19 結帳後補記標記：當日已結帳後才記的支出，計入實際現金並獨立標註（補記閉環）
+    postSettlement: boolean("post_settlement").notNull().default(false),
     // 軟刪除
     deletedAt: timestamp("deleted_at"),
     deletedBy: varchar("deleted_by"),
