@@ -163,7 +163,14 @@ export const posCashCounts = pgTable(
     confirmedByName: varchar("confirmed_by_name"),
     confirmedAt: timestamp("confirmed_at"),
     note: text("note"),
+    // 🆕 2026-07-19 軟刪除（防誤按重複開帳/收班）— 刪除需原因、保留軌跡
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: varchar("deleted_by"),
+    deleteReason: text("delete_reason"),
   },
+  // ⚠️ 每營業日每型別唯一（防重複開帳/收班）：唯一約束由 migration 手動建
+  //    CREATE UNIQUE INDEX uq_pos_cash_count_field_date_type
+  //      ON pos_cash_counts (field_id, business_date, count_type) WHERE deleted_at IS NULL;
   (t) => [index("idx_pos_cash_count_field_date").on(t.fieldId, t.businessDate)],
 );
 
