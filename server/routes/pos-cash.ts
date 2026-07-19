@@ -24,10 +24,10 @@ function fail(res: Response, e: unknown) {
   res.status(500).json({ error: "internal_error", message: "伺服器錯誤" });
 }
 
-const NT = (cents: number) => `NT$${Math.round(cents / 100).toLocaleString()}`;
+export const NT = (cents: number) => `NT$${Math.round(cents / 100).toLocaleString()}`;
 
 /** 現在台北時間 HH:MM */
-function nowHM(): string {
+export function nowHM(): string {
   return new Intl.DateTimeFormat("zh-TW", {
     timeZone: "Asia/Taipei",
     hour: "2-digit",
