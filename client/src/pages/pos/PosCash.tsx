@@ -183,6 +183,18 @@ export default function PosCash() {
     onError: (e: Error) => toast({ variant: "destructive", title: "調整失敗", description: e.message }),
   });
 
+  // 🕐 2026-07-19 結帳後補記：已結帳後仍發生的現金收支 → 計入真實現金 + 推播 + 留痕（可多次）
+  const postSettleMut = useMutation({
+    mutationFn: (v: { direction: "income" | "expense"; amountCents: number; note?: string }) =>
+      fetchWithAdminAuth("/api/pos/cash/post-settlement", { method: "POST", body: JSON.stringify(v) }),
+    onSuccess: () => {
+      toast({ title: "✅ 補記已存檔並推播（已計入實際現金）" });
+      qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
+      qc.invalidateQueries({ queryKey: ["pos-cash-adjustments"] });
+    },
+    onError: (e: Error) => toast({ variant: "destructive", title: "補記失敗", description: e.message }),
+  });
+
   const pendingVariances = (history?.counts ?? []).filter((c) => c.varianceStatus === "pending");
   const locked = !!today?.locked;
   const stage = today?.stage ?? "not_started";
