@@ -462,7 +462,7 @@ export function registerPosCashRoutes(app: Express) {
       const counts = await db
         .select()
         .from(posCashCounts)
-        .where(inArray(posCashCounts.fieldId, scope.identifiers))
+        .where(and(inArray(posCashCounts.fieldId, scope.identifiers), sql`${posCashCounts.deletedAt} IS NULL`))
         .orderBy(desc(posCashCounts.countedAt))
         .limit(limit);
       const drawdowns = await db
