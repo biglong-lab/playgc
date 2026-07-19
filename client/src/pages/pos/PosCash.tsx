@@ -103,9 +103,10 @@ export default function PosCash() {
     queryFn: () => fetchWithAdminAuth("/api/pos/cash/adjustments?limit=40"),
   });
 
-  // 預設清點型別：未開班→開班；已開班未收班→收班
-  const effectiveMode: "opening" | "closing" =
-    mode ?? (today && !today.opening ? "opening" : today && !today.closing ? "closing" : "opening");
+  // 🔒 2026-07-19 防呆：清點型別純由階段決定（未開帳→上班清點；已開帳→下班結算）。
+  //    不再於「開帳+收班都完成」時 fallback 回上班清點——那正是收班後誤按重複開帳的根因。
+  //    清點表單也只在開帳/收班階段顯示（closing_done 起收合，見下方）。
+  const effectiveMode: "opening" | "closing" = today && !today.opening ? "opening" : "closing";
 
   const countedCents = useMemo(
     () => FACES.reduce((s, f) => s + f * 100 * Math.max(0, Math.floor(denoms[String(f)] || 0)), 0),
