@@ -263,9 +263,28 @@ export function registerPosCashRoutes(app: Express) {
       const denoms = (denominations ?? {}) as Record<string, number>;
       const countedCents = sumDenominations(denoms);
       const { date } = getTodayRange();
-      // 🔒 已結帳鎖定 → 不可再清點（管理員須走「調整」）
+      // 🔒 已結帳 → opening 一律擋（需隔日上班打卡再開帳）；closing 亦擋（當日已鎖帳）
       const settled = await getSettlement(scope.identifiers, date);
-      if (settled) return res.status(409).json({ error: "locked", message: "當日已結帳鎖定，如需更正請由管理員調整" });
+      if (settled) {
+        return res.status(409).json({
+          error: "already_settled",
+          message:
+            countType === "opening"
+              ? "本日已結帳，請明日上班打卡再開帳"
+              : "本日已結帳鎖定，如需更正請由管理員調整",
+        });
+      }
+      // 🔒 今日同型別已有紀錄（未軟刪）→ 擋，防「收班後又誤按上班」等重複清點
+      const existingSame = await getCount(scope.identifiers, date, countType);
+      if (existingSame) {
+        return res.status(409).json({
+          error: "duplicate_count",
+          message:
+            countType === "opening"
+              ? "今日已開帳（上班打卡），如需更正請由管理員調整"
+              : "今日已完成收班結算，如需更正請由管理員調整",
+        });
+      }
       const expectedCents = await computeExpected(scope.identifiers, date, countType);
       // 🆕 2026-06-22 開帳首日無對帳基礎（無前日結帳/收班）→ 不算差異、不推
       let hasBase = true;
