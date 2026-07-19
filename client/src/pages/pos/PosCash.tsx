@@ -125,6 +125,7 @@ export default function PosCash() {
       toast({ title: `${effectiveMode === "opening" ? "上班清點" : "下班結算"}已記錄` });
       setDenoms({});
       setReason("");
+      setMode(null);
       qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
       qc.invalidateQueries({ queryKey: ["pos-cash-history"] });
     },
