@@ -123,7 +123,7 @@ async function expensesForDate(identifiers: string[], dateStr: string, after?: D
   return agg?.cents ?? 0;
 }
 
-/** 取某 fieldId 最近一次 closing 清點（用於 opening 對帳基準）；排除軟刪除 */
+/** 取某 fieldId 最近一次 closing 清點（用於 opening 對帳基準）*/
 async function lastClosing(identifiers: string[], beforeDate: string) {
   const [row] = await db
     .select()
@@ -133,7 +133,6 @@ async function lastClosing(identifiers: string[], beforeDate: string) {
         inArray(posCashCounts.fieldId, identifiers),
         eq(posCashCounts.countType, "closing"),
         lt(posCashCounts.businessDate, beforeDate),
-        sql`${posCashCounts.deletedAt} IS NULL`,
       ),
     )
     .orderBy(desc(posCashCounts.businessDate), desc(posCashCounts.countedAt))
@@ -141,7 +140,7 @@ async function lastClosing(identifiers: string[], beforeDate: string) {
   return row ?? null;
 }
 
-/** 取某日某型別的清點；排除軟刪除（誤按被刪的不算）*/
+/** 取某日某型別的清點 */
 async function getCount(identifiers: string[], date: string, type: "opening" | "closing") {
   const [row] = await db
     .select()
@@ -151,7 +150,6 @@ async function getCount(identifiers: string[], date: string, type: "opening" | "
         inArray(posCashCounts.fieldId, identifiers),
         eq(posCashCounts.businessDate, date),
         eq(posCashCounts.countType, type),
-        sql`${posCashCounts.deletedAt} IS NULL`,
       ),
     )
     .orderBy(desc(posCashCounts.countedAt))
