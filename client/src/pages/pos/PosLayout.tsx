@@ -45,14 +45,14 @@ export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950">
       {!isOnline && (
-        <div className="bg-red-600 text-white text-center py-1 text-xs flex items-center justify-center gap-2 sticky top-0 z-20">
+        <div className="bg-red-600 text-white text-center py-1 text-xs flex items-center justify-center gap-2 shrink-0">
           <WifiOff className="w-3 h-3" />
           目前離線、操作將無法同步、請檢查網路
         </div>
       )}
-      <header className="bg-white dark:bg-slate-900 border-b sticky top-0 z-10">
+      <header className="bg-white dark:bg-slate-900 border-b shrink-0">
         <div className="flex items-center gap-3 px-4 py-3 max-w-md mx-auto">
           {backTo && (
             <Link href={backTo}>
@@ -77,11 +77,11 @@ export default function PosLayout({ title, children, backTo }: PosLayoutProps) {
         </div>
       </header>
 
-      <main className="flex-1 max-w-md mx-auto w-full px-4 py-4 pb-24">
+      <main className="flex-1 overflow-y-auto max-w-md mx-auto w-full px-4 py-4">
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t">
+      <nav className="shrink-0 bg-white dark:bg-slate-900 border-t pb-[env(safe-area-inset-bottom)]">
         <div className="max-w-md mx-auto grid grid-cols-7">
           {tabs.map((t) => {
             const Icon = t.icon;
