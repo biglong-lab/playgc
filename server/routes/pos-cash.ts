@@ -160,7 +160,7 @@ async function getCount(identifiers: string[], date: string, type: "opening" | "
 }
 
 /** 取某日結帳紀錄 */
-async function getSettlement(identifiers: string[], date: string) {
+export async function getSettlement(identifiers: string[], date: string) {
   const [row] = await db
     .select()
     .from(posDailySettlements)
