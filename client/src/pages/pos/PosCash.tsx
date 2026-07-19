@@ -198,6 +198,10 @@ export default function PosCash() {
   const pendingVariances = (history?.counts ?? []).filter((c) => c.varianceStatus === "pending");
   const locked = !!today?.locked;
   const stage = today?.stage ?? "not_started";
+  // 補記軌跡與一般調整軌跡分開呈現（補記另有專區）
+  const allAdjustments = adjData?.adjustments ?? [];
+  const postSettleEntries = allAdjustments.filter((a) => a.reason?.startsWith("結帳後補記"));
+  const otherAdjustments = allAdjustments.filter((a) => !a.reason?.startsWith("結帳後補記"));
   const STEP = { not_started: 1, open: 2, closing_done: 3, settled: 4 }[stage] ?? 1;
   // 點階段 → 跳到對應動作
   const goStep = (n: number) => {
