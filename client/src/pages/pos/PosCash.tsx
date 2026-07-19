@@ -277,6 +277,9 @@ export default function PosCash() {
       {locked && today?.settlement && (
         <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3 text-sm space-y-1">
           <div className="font-semibold text-base mb-1">🧾 結帳摘要</div>
+          <div className="text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-lg px-2 py-1.5 mb-1">
+            ✅ 本日已結帳鎖定。<b>明日上班打卡（開帳）</b>才開始新一天的帳，今天不會再重複開帳。
+          </div>
           <Row label="銷售總額" value={`${NT(today.settlement.salesTotalCents)}（${today.settlement.txnCount} 筆）`} />
           {today.settlement.expensesCents > 0 && <Row label="現金支出" value={`−${NT(today.settlement.expensesCents)}`} />}
           <Row label="現金預期 / 實點" value={`${NT(today.settlement.expectedCashCents)} / ${NT(today.settlement.countedCashCents)}`} />
