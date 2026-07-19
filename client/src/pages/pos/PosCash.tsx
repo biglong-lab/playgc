@@ -303,22 +303,15 @@ export default function PosCash() {
         </div>
       )}
 
-      {/* 清點表單（未鎖定才顯示）*/}
-      {!locked && (
+      {/* 清點表單：只在「開帳/收班」階段顯示；開帳+收班都完成(closing_done)起收合，改走結帳 */}
+      {!locked && stage !== "closing_done" && (
       <div id="cash-count-form" className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
-        <div className="flex gap-2 mb-3">
-          {(["opening", "closing"] as const).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              data-testid={`cash-mode-${m}`}
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold ${
-                effectiveMode === m ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {m === "opening" ? "🌅 上班清點" : "🌆 下班結算"}
-            </button>
-          ))}
+        {/* 🔒 型別由階段決定、不提供切換（防「收班後誤按開帳」的根因）*/}
+        <div
+          className="mb-3 py-2 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-semibold text-center"
+          data-testid={`cash-mode-${effectiveMode}`}
+        >
+          {effectiveMode === "opening" ? "🌅 上班打卡・開帳清點" : "🌆 下班結算・收班清點"}
         </div>
 
         <div className="space-y-2">
