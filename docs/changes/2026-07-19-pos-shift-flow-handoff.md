@@ -62,3 +62,28 @@
 - shared/schema/pos-products.ts、pos-transactions.ts（+post_settlement）
 - client/src/pages/pos/PosCash.tsx（原操作 + 補記卡）
 - server/routes/index.ts（註冊）
+
+
+---
+
+## 🔄 接手更新（2026-07-19 第二對話）
+
+### 已完成
+1. **修好 index.ts 漏註冊**（commit 51f18fef）：`registerPosCashAdjustmentRoutes` 原本沒掛進 index.ts → 補記/調整/軌跡三端點是死的（會 404）。自動存檔把註冊行還原所致。已原子補回，tsc 綠。
+2. **line-webhook.ts 全面查證 → 安全、不需滾回**：
+   - 本地 HEAD vs 生產 origin/main 逐字元 diff = 完全一致（750 行好版）
+   - line-webhook 在本地 31 commit（含 27 auto）中被動過 **0 次**
+   - 本地相對生產只有 7 個 POS 差異檔，零損壞
+   - 使用者看到的損壞是 **working tree 暫態（未 commit）**，git 從沒記錄過壞版本 → 滾回是空操作，不做
+3. **自動 commit hook 已移除**：從 `~/.claude/settings.json` 移除 PostToolUse + Stop（都呼叫 auto-checkpoint.sh），已 commit 進 `~/.claude` git。⚠️ **需重開對話才生效**。
+
+### 根因定位（澄清交接文件原誤判）
+- 「自動 commit（chore(auto)）」= PostToolUse hook → auto-checkpoint.sh（**是設定檔 hook**，原說「非設定檔」錯）。**只 commit、不改內容**。已移除。
+- 「還原編輯 / 損壞檔案」= **Claude 桌面 app 內建**（已排除 launchd/watcher/還原 hook；唯一相關 process 是 Claude.app）。shell 關不掉，需 app 端處理。
+- auto-checkpoint 的 **push 已於 07-18 停用**，不會自動推遠端；origin/main 仍停 ff599c74。
+
+### 剩餘待辦
+1. POS 本地 e2e 驗證（上班→收班→結帳→補記）
+2. 部署前 migration（加 2 欄位）
+3. 部署（使用者說了才做；用 `npm run deploy`，非手動 docker compose --build）
+4. push 前留意本地領先 origin 32 commit + `pos-cash.ts` 831 行超標
