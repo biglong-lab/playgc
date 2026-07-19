@@ -272,16 +272,16 @@ export function registerPosCashRoutes(app: Express) {
               : "本日已結帳鎖定，如需更正請由管理員調整",
         });
       }
-      // 🔒 今日同型別已有紀錄（未軟刪）→ 擋，防「收班後又誤按上班」等重複清點
-      const existingSame = await getCount(scope.identifiers, date, countType);
-      if (existingSame) {
-        return res.status(409).json({
-          error: "duplicate_count",
-          message:
-            countType === "opening"
-              ? "今日已開帳（上班打卡），如需更正請由管理員調整"
-              : "今日已完成收班結算，如需更正請由管理員調整",
-        });
+      // 🔒 收班後不可再開帳（精準擋「收班/結帳後誤按又變開帳」＝18 日情況；符合「隔天上班才能再開帳」）。
+      //    僅擋此一情境；開帳階段重新清點、換人重新收班等原本合理操作照常，畫面與行為不變。
+      if (countType === "opening") {
+        const closingDone = await getCount(scope.identifiers, date, "closing");
+        if (closingDone) {
+          return res.status(409).json({
+            error: "opening_after_closing",
+            message: "今日已收班，若要再開帳請明日上班打卡（避免收班後誤按重複開帳）",
+          });
+        }
       }
       const expectedCents = await computeExpected(scope.identifiers, date, countType);
       // 🆕 2026-06-22 開帳首日無對帳基礎（無前日結帳/收班）→ 不算差異、不推
@@ -460,7 +460,7 @@ export function registerPosCashRoutes(app: Express) {
       const counts = await db
         .select()
         .from(posCashCounts)
-        .where(and(inArray(posCashCounts.fieldId, scope.identifiers), sql`${posCashCounts.deletedAt} IS NULL`))
+        .where(inArray(posCashCounts.fieldId, scope.identifiers))
         .orderBy(desc(posCashCounts.countedAt))
         .limit(limit);
       const drawdowns = await db
