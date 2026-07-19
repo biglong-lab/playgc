@@ -86,6 +86,7 @@ export default function PosCash() {
   const [, navigate] = useLocation();
   const [denoms, setDenoms] = useState<Record<string, number>>({});
   const [reason, setReason] = useState("");
+  const [mode, setMode] = useState<"opening" | "closing" | null>(null);
   const [drawAmount, setDrawAmount] = useState("");
   const [drawReason, setDrawReason] = useState("");
 
