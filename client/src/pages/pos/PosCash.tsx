@@ -322,6 +322,60 @@ export default function PosCash() {
         </div>
       )}
 
+      {/* 🕐 結帳後補記：已結帳後仍發生的現金收支 → 計入真實現金、更新隔日基礎、推播＋留痕（可多次）*/}
+      {locked && today?.settlement && (
+        <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
+          <div className="font-semibold text-sm mb-1">🕐 結帳後補記</div>
+          <p className="text-xs text-muted-foreground mb-2">
+            本日已結帳。若之後仍有現金收支，補記會<b>計入實際現金</b>、更新隔日開帳基礎，並自動推播＋留痕。
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="outline"
+              className="border-emerald-400 text-emerald-700 dark:text-emerald-300"
+              disabled={postSettleMut.isPending}
+              onClick={() => {
+                const v = prompt("補記『收入』金額（元）");
+                if (v == null || !(Number(v) > 0)) return;
+                const n = prompt("說明（選填，如：補收現金）") ?? "";
+                postSettleMut.mutate({ direction: "income", amountCents: Math.round(Number(v) * 100), note: n || undefined });
+              }}
+              data-testid="post-settle-income"
+            >
+              ➕ 補記收入
+            </Button>
+            <Button
+              variant="outline"
+              className="border-amber-400 text-amber-700 dark:text-amber-300"
+              disabled={postSettleMut.isPending}
+              onClick={() => {
+                const v = prompt("補記『支出』金額（元）");
+                if (v == null || !(Number(v) > 0)) return;
+                const n = prompt("說明（選填，如：臨時採購）") ?? "";
+                postSettleMut.mutate({ direction: "expense", amountCents: Math.round(Number(v) * 100), note: n || undefined });
+              }}
+              data-testid="post-settle-expense"
+            >
+              ➖ 補記支出
+            </Button>
+          </div>
+          {postSettleEntries.length > 0 && (
+            <div className="mt-3 pt-3 border-t space-y-1.5 text-sm">
+              <div className="text-xs text-muted-foreground mb-1">本日補記紀錄（{postSettleEntries.length}）</div>
+              {postSettleEntries.map((a) => (
+                <div key={a.id} className="flex justify-between gap-2 border-b pb-1.5 last:border-b-0">
+                  <span className="text-muted-foreground shrink-0">{a.businessDate}</span>
+                  <span className="text-right">
+                    {NT(a.oldCents ?? 0)} → <span className="font-semibold">{NT(a.newCents ?? 0)}</span>
+                    <span className="text-muted-foreground text-xs block">{a.adjustedByName ?? "—"}・{a.reason}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 清點表單：只在「開帳/收班」階段顯示；開帳+收班都完成(closing_done)起收合，改走結帳 */}
       {!locked && stage !== "closing_done" && (
       <div id="cash-count-form" className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
