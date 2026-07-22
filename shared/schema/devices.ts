@@ -9,6 +9,7 @@ import {
   jsonb,
   decimal,
   index,
+  uniqueIndex,
   serial,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -33,6 +34,11 @@ export const arduinoDevices = pgTable("arduino_devices", {
   batteryLevel: integer("battery_level"), // Percentage 0-100
   firmwareVersion: varchar("firmware_version", { length: 20 }),
   ipAddress: varchar("ip_address", { length: 45 }), // IPv4 or IPv6 address
+  // 🔌 MQTT v1（ADR-0024）：場域隔離、裝置憑證、佈署狀態
+  fieldId: varchar("field_id"), // 所屬場域；先 nullable、backfill 後由應用層強制
+  apiKey: varchar("api_key", { length: 255 }), // 憑證 hash，絕不存明文
+  provisionStatus: varchar("provision_status", { length: 20 }).default("unprovisioned"),
+  revokedAt: timestamp("revoked_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -70,6 +76,8 @@ export const shootingRecords = pgTable(
     hitScore: integer("hit_score"),
     hitPosition: varchar("hit_position", { length: 50 }), // bullseye, inner, outer
     score: integer("score"), // Alternative score field for compatibility
+    // MQTT QoS 1 必定重送，以設備的 messageId 去重（ADR-0024）
+    eventId: varchar("event_id", { length: 64 }),
     hitTimestamp: timestamp("hit_timestamp").defaultNow(),
     timestamp: timestamp("timestamp").defaultNow(),
   },
@@ -105,3 +113,41 @@ export const insertShootingRecordSchema = createInsertSchema(shootingRecords).om
 export type InsertShootingRecord = z.infer<typeof insertShootingRecordSchema>;
 export type ShootingRecord = typeof shootingRecords.$inferSelect;
 
+
+// ============================================================================
+// Device Session Bindings - 裝置↔場次租約（ADR-0024）
+//
+// 「這一擊算誰的」唯一真實來源：設備只回報 zone/peak，不自報 sessionId。
+// 同一台設備同時只允許一筆 active 租約（DB partial unique index 保證互斥）。
+// ============================================================================
+export const deviceSessionBindings = pgTable(
+  "device_session_bindings",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    deviceId: varchar("device_id", { length: 50 }).notNull(), // 硬體 ID
+    fieldId: varchar("field_id").notNull(),
+    sessionId: varchar("session_id"),
+    pageId: varchar("page_id"), // 綁定的關卡
+    userId: varchar("user_id"),
+    teamId: varchar("team_id"),
+    status: varchar("status", { length: 20 }).notNull().default("active"), // active / released / expired
+    leasedAt: timestamp("leased_at").defaultNow(),
+    expiresAt: timestamp("expires_at").notNull(), // 逾時自動失效，避免玩家離場後靶被鎖死
+    releasedAt: timestamp("released_at"),
+  },
+  (table) => [
+    uniqueIndex("idx_device_binding_active")
+      .on(table.deviceId)
+      .where(sql`status = 'active'`),
+    index("idx_device_binding_session").on(table.sessionId),
+    index("idx_device_binding_field").on(table.fieldId),
+  ]
+);
+
+export const insertDeviceSessionBindingSchema = createInsertSchema(
+  deviceSessionBindings
+).omit({ id: true, leasedAt: true, releasedAt: true });
+export type InsertDeviceSessionBinding = z.infer<
+  typeof insertDeviceSessionBindingSchema
+>;
+export type DeviceSessionBinding = typeof deviceSessionBindings.$inferSelect;
