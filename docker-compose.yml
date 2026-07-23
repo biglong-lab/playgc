@@ -20,7 +20,25 @@ services:
       timeout: 5s
       retries: 5
 
+  # MQTT broker（⚠️ 僅開發用；生產使用託管 broker，見 ADR-0024）
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: gameplatform-mosquitto
+    restart: unless-stopped
+    ports:
+      - '1883:1883'
+    volumes:
+      - ./config/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto_data:/mosquitto/data
+    healthcheck:
+      test: ['CMD-SHELL', 'mosquitto_sub -h localhost -t healthcheck -C 1 -W 2 || exit 0']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
 volumes:
   postgres_data:
     name: gameplatform-postgres-data
     external: true
+  mosquitto_data:
+    name: gameplatform-mosquitto-data
