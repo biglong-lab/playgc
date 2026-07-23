@@ -389,6 +389,16 @@ app.use((req, res, next) => {
 (async () => {
   await registerRoutes(httpServer, app);
 
+  // 🔌 MQTT v1 裝置 gateway（ADR-0024）；MQTT_ENABLED != true 時不啟動
+  try {
+    const { initializeMqttV1 } = await import("./mqtt");
+    if (initializeMqttV1()) {
+      log("MQTT v1 gateway 已啟動", "mqtt");
+    }
+  } catch (e) {
+    console.error("[mqtt] gateway 啟動失敗（不影響 HTTP 服務）", e);
+  }
+
   // 💰 補 POS 現金權限（idempotent、純新增）
   try {
     const { ensurePosPermissions } = await import("./lib/ensure-pos-permissions");

@@ -2,6 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import type { Server, IncomingMessage } from "http";
 import { storage } from "../storage";
 import { mqttService } from "../mqttService";
+import { setHitBroadcaster as setMqttV1HitBroadcaster } from "../mqtt";
 import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
 import { gameMatches, matchParticipants, teamMembers, teamSessions } from "@shared/schema";
@@ -1064,6 +1065,14 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   });
 
   mqttService.setHitBroadcastHandler((sessionId: string, record: unknown) => {
+    broadcastToSession(sessionId, {
+      type: "shooting_hit",
+      record,
+    });
+  });
+
+  // 🔌 MQTT v1 gateway（ADR-0024）：與舊 mqttService 共用同一條廣播通道
+  setMqttV1HitBroadcaster((sessionId: string, record: unknown) => {
     broadcastToSession(sessionId, {
       type: "shooting_hit",
       record,
