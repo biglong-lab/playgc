@@ -8,12 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { Target, Timer, Crosshair, Award, Zap, Radio, AlertTriangle } from "lucide-react";
 import type { ShootingMissionConfig } from "@shared/schema";
-import {
-  validateHit,
-  validateFinalScore,
-  isSimulationAllowed,
-} from "@/lib/shootingValidation";
+import { validateHit, validateFinalScore, isSimulationAllowed } from "@/lib/shootingValidation";
 import { logWarning } from "@/lib/clientLogger";
+import { apiRequest } from "@/lib/queryClient";
 
 interface ShootingMissionPageProps {
   config: ShootingMissionConfig;
@@ -31,7 +28,11 @@ interface HitRecord {
   timestamp?: string;
 }
 
-export default function ShootingMissionPage({ config, onComplete, sessionId }: ShootingMissionPageProps) {
+export default function ShootingMissionPage({
+  config,
+  onComplete,
+  sessionId,
+}: ShootingMissionPageProps) {
   const { toast } = useToast();
   const { t } = useI18n();
   const [isStarted, setIsStarted] = useState(false);
@@ -40,7 +41,9 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
   const [totalScore, setTotalScore] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<"connecting" | "connected" | "disconnected">("disconnected");
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connecting" | "connected" | "disconnected"
+  >("disconnected");
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
   const MAX_AUTO_RECONNECT = 5;
   const wsRef = useRef<WebSocket | null>(null);
@@ -48,22 +51,41 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
   // stale-closure 防護：ws.onclose 透過 ref 讀取最新 isStarted/isCompleted
   const isStartedRef = useRef(isStarted);
   const isCompletedRef = useRef(isCompleted);
-  useEffect(() => { isStartedRef.current = isStarted; }, [isStarted]);
-  useEffect(() => { isCompletedRef.current = isCompleted; }, [isCompleted]);
+  useEffect(() => {
+    isStartedRef.current = isStarted;
+  }, [isStarted]);
+  useEffect(() => {
+    isCompletedRef.current = isCompleted;
+  }, [isCompleted]);
 
   // 🛡️ 作弊防護：最後一次 hit 時間（用於節流檢查）
   const lastHitTimeRef = useRef<number | null>(null);
 
+  // 🔌 釋放實體靶機租約（ADR-0024）；失敗不影響玩家，租約會逾時自動回收
+  const releaseDevice = useCallback(() => {
+    if (!config.deviceId) return;
+    void apiRequest("POST", "/api/device-lease/release", {
+      deviceId: config.deviceId,
+    }).catch(() => undefined);
+  }, [config.deviceId]);
+
+  // 玩家中途離開頁面也要放開靶機，否則下一位會被 409 擋住
+  useEffect(() => releaseDevice, [releaseDevice]);
+
   const requiredHits = config.requiredHits || 5;
   const targetScore = config.targetScore || config.minScore || 60;
   const hitProgress = (hits.length / requiredHits) * 100;
-  
+
   const getZoneMessage = (zone: string) => {
     switch (zone) {
-      case "bullseye": return t("shooting.bullseye");
-      case "inner": return t("shooting.inner");
-      case "outer": return t("shooting.outer");
-      default: return t("shooting.outer");
+      case "bullseye":
+        return t("shooting.bullseye");
+      case "inner":
+        return t("shooting.inner");
+      case "outer":
+        return t("shooting.outer");
+      default:
+        return t("shooting.outer");
     }
   };
 
@@ -71,10 +93,10 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     setConnectionStatus("connecting");
-    
+
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
-    
+
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
@@ -83,12 +105,14 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       setIsConnected(true);
       setReconnectAttempts(0);
 
-      ws.send(JSON.stringify({
-        type: "join",
-        sessionId: sessionId,
-        userId: "shooting-player",
-        userName: "玩家",
-      }));
+      ws.send(
+        JSON.stringify({
+          type: "join",
+          sessionId: sessionId,
+          userId: "shooting-player",
+          userName: "玩家",
+        }),
+      );
 
       toast({
         title: t("shooting.connected"),
@@ -99,9 +123,13 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        
+
         if (data.type === "shooting_hit" && isStartedRef.current && !isCompletedRef.current) {
           const record = data.record ?? {};
+          // 🎯 只接受本關卡綁定靶機的命中；未綁定裝置時不限制（ADR-0024）
+          if (config.deviceId && record.deviceId !== config.deviceId) {
+            return;
+          }
           // 相容前後端欄位名稱（DB schema: targetZone / hitPosition 字串 / hitScore/score）
           // 前端原期望: hitZone / hitPosition.x/y / points
           const zone: string =
@@ -109,11 +137,7 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
             record.targetZone ||
             (typeof record.hitPosition === "string" ? record.hitPosition : "outer");
           const zoneScore = calculateZoneScore(zone);
-          const points: number =
-            record.points ??
-            record.hitScore ??
-            record.score ??
-            zoneScore;
+          const points: number = record.points ?? record.hitScore ?? record.score ?? zoneScore;
 
           // 🛡️ 作弊防護：每筆 hit 都經過驗證
           setHits((prev) => {
@@ -126,18 +150,13 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
 
             if (!validation.valid) {
               // 作弊/bot 嘗試 → 丟棄這筆 hit 並記錄到伺服器
-              logWarning(
-                "shooting",
-                "hit_rejected",
-                validation.message || "hit 驗證失敗",
-                {
-                  reason: validation.reason,
-                  score: points,
-                  zone,
-                  sessionId,
-                  deviceId: record.deviceId,
-                },
-              );
+              logWarning("shooting", "hit_rejected", validation.message || "hit 驗證失敗", {
+                reason: validation.reason,
+                score: points,
+                zone,
+                sessionId,
+                deviceId: record.deviceId,
+              });
               // 若是連續太快，靜默忽略（不彈 toast 避免被知道）
               // 若是分數異常，顯示紅色警告
               if (validation.reason === "score_too_high" || validation.reason === "invalid_score") {
@@ -154,11 +173,15 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
             lastHitTimeRef.current = Date.now();
 
             const posX =
-              record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.x === "number"
+              record.hitPosition &&
+              typeof record.hitPosition === "object" &&
+              typeof record.hitPosition.x === "number"
                 ? record.hitPosition.x
                 : Math.random() * 100;
             const posY =
-              record.hitPosition && typeof record.hitPosition === "object" && typeof record.hitPosition.y === "number"
+              record.hitPosition &&
+              typeof record.hitPosition === "object" &&
+              typeof record.hitPosition.y === "number"
                 ? record.hitPosition.y
                 : Math.random() * 100;
 
@@ -329,7 +352,34 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     }
   }, [hits.length, isStarted, isCompleted, requiredHits]);
 
-  const handleStart = () => {
+  const handleStart = async () => {
+    // 🔌 綁定實體靶機：命中歸屬由 server 依此租約判定（ADR-0024）
+    if (config.deviceId) {
+      try {
+        const res = await apiRequest("POST", "/api/device-lease/acquire", {
+          deviceId: config.deviceId,
+          sessionId,
+          ttlMinutes: Math.ceil((config.timeLimit || 300) / 60) + 5,
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          toast({
+            title: res.status === 409 ? "靶機使用中" : "靶機綁定失敗",
+            description: body.message || "請稍後再試或聯絡現場人員",
+            variant: "destructive",
+          });
+          return;
+        }
+      } catch {
+        toast({
+          title: "靶機綁定失敗",
+          description: "網路異常，請稍後再試",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setIsStarted(true);
     connectWebSocket();
     toast({
@@ -340,6 +390,7 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
 
   const handleMissionEnd = () => {
     setIsCompleted(true);
+    releaseDevice();
 
     if (wsRef.current) {
       wsRef.current.close();
@@ -349,24 +400,18 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     const finalCheck = validateFinalScore({ hits, totalScore });
     let safeTotalScore = totalScore;
     if (!finalCheck.valid) {
-      logWarning(
-        "shooting",
-        "final_score_mismatch",
-        finalCheck.message || "總分異常",
-        {
-          sessionId,
-          totalScore,
-          expectedScore: finalCheck.expectedScore,
-          hitsCount: hits.length,
-        },
-      );
+      logWarning("shooting", "final_score_mismatch", finalCheck.message || "總分異常", {
+        sessionId,
+        totalScore,
+        expectedScore: finalCheck.expectedScore,
+        hitsCount: hits.length,
+      });
       // 使用 hits 實際總和，不信任 state
       safeTotalScore = finalCheck.expectedScore;
     }
 
     const scoreTarget = config.targetScore || config.minScore;
-    const success = hits.length >= requiredHits &&
-      (!scoreTarget || safeTotalScore >= scoreTarget);
+    const success = hits.length >= requiredHits && (!scoreTarget || safeTotalScore >= scoreTarget);
 
     if (success) {
       toast({
@@ -380,10 +425,7 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
         const rsItems = (config as unknown as { rewardItems?: string[] }).rewardItems ?? [];
 
         const rewardPoints =
-          rsPoints ??
-          config.onSuccess?.points ??
-          config.successReward?.points ??
-          safeTotalScore;
+          rsPoints ?? config.onSuccess?.points ?? config.successReward?.points ?? safeTotalScore;
 
         const allItems = [
           ...rsItems.filter((x) => !!x),
@@ -399,9 +441,8 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
     } else {
       toast({
         title: "任務失敗",
-        description: hits.length < requiredHits
-          ? `需要 ${requiredHits} 次命中`
-          : `需要 ${scoreTarget} 分以上`,
+        description:
+          hits.length < requiredHits ? `需要 ${requiredHits} 次命中` : `需要 ${scoreTarget} 分以上`,
         variant: "destructive",
       });
       setTimeout(() => {
@@ -418,17 +459,23 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
 
   const getConnectionIcon = () => {
     switch (connectionStatus) {
-      case "connected": return <Zap className="w-3 h-3" />;
-      case "connecting": return <Radio className="w-3 h-3 animate-pulse" />;
-      default: return <AlertTriangle className="w-3 h-3" />;
+      case "connected":
+        return <Zap className="w-3 h-3" />;
+      case "connecting":
+        return <Radio className="w-3 h-3 animate-pulse" />;
+      default:
+        return <AlertTriangle className="w-3 h-3" />;
     }
   };
 
   const getConnectionLabel = () => {
     switch (connectionStatus) {
-      case "connected": return "靶機已連接";
-      case "connecting": return "連接中...";
-      default: return "未連接";
+      case "connected":
+        return "靶機已連接";
+      case "connecting":
+        return "連接中...";
+      default:
+        return "未連接";
     }
   };
 
@@ -440,11 +487,9 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
             <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-6 animate-glow">
               <Target className="w-10 h-10 text-primary" />
             </div>
-            
+
             <h2 className="text-2xl font-display font-bold mb-2">射擊任務</h2>
-            <p className="text-muted-foreground mb-6">
-              在時限內完成指定次數的命中
-            </p>
+            <p className="text-muted-foreground mb-6">在時限內完成指定次數的命中</p>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="bg-card border border-border rounded-lg p-3">
@@ -459,15 +504,13 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
 
             {config.minScore && (
               <div className="bg-warning/10 border border-warning/20 rounded-lg p-3 mb-6">
-                <p className="text-sm text-warning">
-                  需要達到 {config.minScore} 分以上才能過關
-                </p>
+                <p className="text-sm text-warning">需要達到 {config.minScore} 分以上才能過關</p>
               </div>
             )}
 
-            <Button 
-              onClick={handleStart} 
-              size="lg" 
+            <Button
+              onClick={handleStart}
+              size="lg"
               className="w-full gap-2"
               data-testid="button-start-mission"
             >
@@ -485,17 +528,24 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       <div className="grid grid-cols-3 gap-3 mb-6">
         <Card className="bg-card/80">
           <CardContent className="p-3 text-center">
-            <Timer className={`w-5 h-5 mx-auto mb-1 transition-colors ${
-              timeLeft <= 10 ? "text-destructive animate-pulse" :
-              timeLeft <= 30 ? "text-amber-500" :
-              "text-muted-foreground"
-            }`} aria-hidden="true" />
+            <Timer
+              className={`w-5 h-5 mx-auto mb-1 transition-colors ${
+                timeLeft <= 10
+                  ? "text-destructive animate-pulse"
+                  : timeLeft <= 30
+                    ? "text-amber-500"
+                    : "text-muted-foreground"
+              }`}
+              aria-hidden="true"
+            />
             {/* 🆕 ≤10s 紅閃 + ≤30s 黃 + tabular-nums 防抖動 */}
             <p
               className={`font-number text-2xl tabular-nums transition-colors ${
-                timeLeft <= 10 ? "text-destructive animate-pulse" :
-                timeLeft <= 30 ? "text-amber-500" :
-                "text-warning"
+                timeLeft <= 10
+                  ? "text-destructive animate-pulse"
+                  : timeLeft <= 30
+                    ? "text-amber-500"
+                    : "text-warning"
               }`}
               role="timer"
               aria-live={timeLeft <= 10 ? "assertive" : "off"}
@@ -546,7 +596,9 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-muted-foreground">任務進度</span>
-          <span className="text-sm font-number text-primary tabular-nums">{hits.length}/{requiredHits}</span>
+          <span className="text-sm font-number text-primary tabular-nums">
+            {hits.length}/{requiredHits}
+          </span>
         </div>
         <Progress value={Math.min(hitProgress, 100)} className="h-2 transition-all" />
       </div>
@@ -554,11 +606,11 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       <div className="flex-1 flex items-center justify-center">
         <div className="relative w-64 h-64">
           <div className="absolute inset-0 rounded-full bg-gradient-radial from-success via-warning to-destructive opacity-80 animate-targetPulse border-4 border-primary" />
-          
+
           <div className="absolute inset-8 rounded-full bg-gradient-radial from-success via-warning to-destructive opacity-90 border-2 border-white/30" />
-          
+
           <div className="absolute inset-16 rounded-full bg-gradient-radial from-success to-success-foreground opacity-95 border-2 border-white/30" />
-          
+
           <div className="absolute inset-[45%] rounded-full bg-destructive border-2 border-white shadow-lg" />
 
           {hits.map((hit, index) => {
@@ -603,7 +655,13 @@ export default function ShootingMissionPage({ config, onComplete, sessionId }: S
       <div className="mt-6 flex flex-col items-center justify-center gap-2">
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <Badge
-            variant={connectionStatus === "connected" ? "default" : connectionStatus === "connecting" ? "secondary" : "destructive"}
+            variant={
+              connectionStatus === "connected"
+                ? "default"
+                : connectionStatus === "connecting"
+                  ? "secondary"
+                  : "destructive"
+            }
             className="gap-1"
           >
             {getConnectionIcon()}
