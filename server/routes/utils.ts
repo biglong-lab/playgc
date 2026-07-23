@@ -100,9 +100,19 @@ export async function requireAdminRole(req: AuthenticatedRequest): Promise<{ aut
   }
 
   const user = await storage.getUser(userId);
-  if (!user || user.role !== "admin") {
-    return { authorized: false, message: "Unauthorized: Admin role required" };
+
+  // 舊邏輯：users.role === "admin"（legacy 全域管理員）
+  if (user?.role === "admin") {
+    return { authorized: true, user };
   }
 
-  return { authorized: true, user };
+  // 新邏輯：SaaS 多租戶 — 查 admin_accounts（與 checkGameOwnership 同一套判定）
+  // 🐛 2026-07-23：原本只認 users.role，導致以後台帳號登入的場域管理員
+  //    （users.role 仍是 player）在 /admin/devices 全頁 403、無法新增設備。
+  const adminRows = await getAdminAccountsByFirebaseUid(userId);
+  if (adminRows.length > 0) {
+    return { authorized: true, user: user ?? undefined };
+  }
+
+  return { authorized: false, message: "Unauthorized: Admin role required" };
 }
