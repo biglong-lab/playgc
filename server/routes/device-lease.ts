@@ -5,6 +5,7 @@
 // 避免玩家把命中分數灌到別人帳上。
 
 import type { Express, Response } from "express";
+import type { AuthenticatedRequest } from "./types";
 import { z } from "zod";
 import { isAuthenticated } from "../firebaseAuth";
 import { acquireLease, releaseLease } from "../mqtt/lease-service";
@@ -35,7 +36,7 @@ function fail(res: Response, e: unknown) {
 
 export function registerDeviceLeaseRoutes(app: Express): void {
   // 租用靶機（進入關卡時呼叫）
-  app.post("/api/device-lease/acquire", isAuthenticated, async (req, res) => {
+  app.post("/api/device-lease/acquire", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) return res.status(401).json({ error: "unauthenticated" });
@@ -65,7 +66,7 @@ export function registerDeviceLeaseRoutes(app: Express): void {
   });
 
   // 釋放靶機（離開關卡時呼叫；逾時也會由系統自動回收）
-  app.post("/api/device-lease/release", isAuthenticated, async (req, res) => {
+  app.post("/api/device-lease/release", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = req.user?.claims?.sub;
       if (!userId) return res.status(401).json({ error: "unauthenticated" });
