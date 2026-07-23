@@ -73,6 +73,8 @@ vi.mock("../routes/utils", async (importOriginal) => {
       return { authorized: false, message: "Forbidden" };
     }),
     checkGameOwnership: vi.fn(),
+    // 場域權限判定不在本檔測範圍；預設放行，另有專門的失敗案例覆蓋
+    getManageableFields: vi.fn(async () => ({ all: true, fieldIds: [] })),
   };
 });
 
@@ -144,7 +146,12 @@ describe("Devices 路由", () => {
 
   describe("POST /api/devices", () => {
     it("應建立新裝置", async () => {
-      const deviceData = { deviceId: "arduino-002", deviceName: "Target B", deviceType: "shooting_target" };
+      const deviceData = {
+        deviceId: "arduino-002",
+        deviceName: "Target B",
+        deviceType: "shooting_target",
+        fieldId: "field-1",
+      };
       mockStorage.createArduinoDevice.mockResolvedValue({ id: "d-2", ...deviceData });
 
       const res = await request(app)
@@ -154,6 +161,36 @@ describe("Devices 路由", () => {
 
       expect(res.status).toBe(201);
       expect(res.body.deviceId).toBe("arduino-002");
+    });
+
+    it("缺硬體 ID 應回 400（沒有它 MQTT 心跳與命中都配不上）", async () => {
+      const res = await request(app)
+        .post("/api/devices")
+        .set(AUTH_HEADER)
+        .send({ deviceName: "Target C", fieldId: "field-1" });
+
+      expect(res.status).toBe(400);
+      expect(mockStorage.createArduinoDevice).not.toHaveBeenCalled();
+    });
+
+    it("硬體 ID 含非法字元應回 400（避免 MQTT topic wildcard 注入）", async () => {
+      const res = await request(app)
+        .post("/api/devices")
+        .set(AUTH_HEADER)
+        .send({ deviceId: "bad/id#1", deviceName: "Target D", fieldId: "field-1" });
+
+      expect(res.status).toBe(400);
+      expect(mockStorage.createArduinoDevice).not.toHaveBeenCalled();
+    });
+
+    it("缺場域應回 400（未綁場域的設備收不到命中）", async () => {
+      const res = await request(app)
+        .post("/api/devices")
+        .set(AUTH_HEADER)
+        .send({ deviceId: "arduino-003", deviceName: "Target E" });
+
+      expect(res.status).toBe(400);
+      expect(mockStorage.createArduinoDevice).not.toHaveBeenCalled();
     });
   });
 
