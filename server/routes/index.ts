@@ -91,6 +91,7 @@ import { registerPublicActivitiesRoutes } from "./public-activities";
 import { registerPosRoutes } from "./pos";
 import { registerPosCashRoutes } from "./pos-cash";
 import { registerPosCashAdjustmentRoutes } from "./pos-cash-adjustments";
+import { registerDeviceLeaseRoutes } from "./device-lease";
 import { registerAdminPosProductRoutes } from "./admin-pos-products";
 import { registerAdminPosReportRoutes } from "./admin-pos-reports";
 import { registerAdminTroubleshootRoutes } from "./admin-troubleshoot";
@@ -231,6 +232,7 @@ export async function registerRoutes(
   registerPosRoutes(app);
   registerPosCashRoutes(app);
   registerPosCashAdjustmentRoutes(app);
+  registerDeviceLeaseRoutes(app);
   registerAdminPosProductRoutes(app);
   registerAdminPosReportRoutes(app);
   registerAdminTroubleshootRoutes(app);
