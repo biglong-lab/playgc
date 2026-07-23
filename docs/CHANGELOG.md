@@ -7,6 +7,17 @@
 
 ## 2026-07-23
 
+### 🔧 裝置管理修復：場域管理員 403 × 新增表單補齊（fix + feat）
+**狀態**：🟢 部署上線（commit `efd45856`、bundle `index-Kml8v_Eu`；本批無 schema 變更）
+
+- **修 `/admin/devices` 全頁 403**：`requireAdminRole` 只認 `users.role === "admin"`，但後台管理員的 `users.role` 實際是 `player`（身份在 `admin_accounts`）→ 場域管理員完全無法新增／管理設備。補上 `admin_accounts` 判定，與**同檔 `checkGameOwnership` 早就做過的 SaaS 多租戶邏輯對齊**（該函式當初沒跟上這次遷移）
+- **新增設備表單補齊**（原本建出來的設備無法運作）：
+  - 加「**硬體 ID**」必填 ＋ 格式驗證（僅 `[A-Za-z0-9_-]`，避免 MQTT topic wildcard 注入）—— 缺它則心跳與命中永遠配不上
+  - **場域自動綁定**當前登入場域，後端以 `getManageableFields()` 驗證該管理員確實有此場域權限 —— 未綁場域的設備會被 MQTT 收訊直接丟棄
+  - **MQTT Topic 改唯讀**、依 v1 契約自動產生（原本可手填舊格式如 `jiachun/shoot/sc`，新契約必定解析失敗）
+  - **錯誤訊息顯示後端實際原因**（原本只顯示「新增失敗」，完全無從除錯）
+- **測試**：同步建立契約 ＋ 補 3 個驗證案例（缺硬體 ID／非法字元／缺場域）；全套 224 檔 3255 測試綠
+
 ### 🎯 POS 補記 × 底部導航 × MQTT v1 裝置整合地基 × 第13情境模板（feat + fix）
 **狀態**：🟢 部署上線（commit `ad9e34cf`、bundle `index-hUsTW2kV`；生產 DB 已跑兩批 additive migration）
 **細節** → [changes/2026-07-19-pos-shift-flow-handoff.md](changes/2026-07-19-pos-shift-flow-handoff.md) ／ [changes/2026-07-22-mqtt-device-integration-plan.md](changes/2026-07-22-mqtt-device-integration-plan.md) ／ [ADR-0024](decisions/0024-mqtt-v1-device-contract.md)
