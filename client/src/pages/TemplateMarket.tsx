@@ -1,4 +1,4 @@
-// 🎯 TemplateMarket — 12 情境模板市集（W6 D1）
+// 🎯 TemplateMarket — 13 情境模板市集（W6 D1）
 //
 // 路徑：/template-market（公開頁）
 // 用途：客戶銷售工具、業務簡報、讓使用者一眼看到「這個場景要怎麼組合」
@@ -53,7 +53,7 @@ export default function TemplateMarket() {
               </button>
             </Link>
             <div>
-              <h1 className="font-display font-bold text-lg">🎯 12 情境模板市集</h1>
+              <h1 className="font-display font-bold text-lg">🎯 13 情境模板市集</h1>
               <p className="text-xs text-muted-foreground">
                 {liveCount} 個可用 · {previewCount} 預覽 · {plannedCount} 規劃中
               </p>
@@ -76,7 +76,7 @@ export default function TemplateMarket() {
           </h2>
           {/* 🔧 2026-07-05 UX：文案對齊現況 — AI 客製 + 一鍵建場已上線、且社交情境全程免登入 */}
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            12 個預組好的情境模板 — 婚禮、園遊會、街區、企業、空間
+            13 個預組好的情境模板 — 婚禮、園遊會、街區、企業、空間、實體互動
             <br />
             選好情境、AI 客製內容、一鍵建場 — <span className="text-foreground font-medium">2 分鐘開出一場活動</span>
           </p>

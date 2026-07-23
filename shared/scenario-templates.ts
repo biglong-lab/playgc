@@ -859,6 +859,58 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   // ════════════════════════════════════════════
   // W22 新增 — 用 BingoBoard + BlessingWall
   // ════════════════════════════════════════════
+  {
+    id: "shooting-arena",
+    name: "實體打擊競技場",
+    tagline: "實體靶機 + 即時計分 + 現場應援",
+    description:
+      "把場域的實體打擊靶接進遊戲：玩家擊中靶面，成績即時進系統、隊伍分數同步累計，現場觀眾用 emoji 應援。\n需搭配 ESP32 打擊靶（見 docs/hardware-integration-spec.md），適合市集攤位、園區體驗區、運動主題空間。",
+    useCases: [
+      "市集趣味打擊攤位",
+      "園區實體體驗關卡",
+      "運動主題空間常駐體驗",
+      "企業家庭日闖關",
+      "校園園遊會競賽",
+    ],
+    category: "venue",
+    icon: "Target",
+    gradient: "from-red-500/20 to-orange-500/20",
+    estimatedPlayers: "2-40 人",
+    estimatedDuration: "20-60 分鐘",
+    components: [
+      {
+        pageType: "shooting_mission",
+        label: "個人打擊挑戰",
+        role: "單人上場擊靶，累積命中數與分數",
+        axis: "solo",
+        config: {
+          title: "🎯 個人打擊挑戰",
+          requiredHits: 10,
+          timeLimit: 120,
+          targetScore: 500,
+        },
+      },
+      {
+        pageType: "shooting_team",
+        label: "隊伍打擊賽",
+        role: "隊員輪流上場，分數即時累計比拚",
+        axis: "multi",
+        config: {
+          title: "🏆 隊伍打擊賽",
+        },
+      },
+      {
+        pageType: "host_emoji_react",
+        label: "現場應援池",
+        role: "觀眾用 emoji 為上場選手加油",
+        axis: "host",
+        demoMode: "emoji-host",
+      },
+    ],
+    valueProposition:
+      "實體硬體帶來的體感差異化是純手機遊戲做不到的。可作市集攤位收費體驗（NT$ 50-150 / 人次），或園區常駐設施搭配月租維運。",
+    status: "preview",
+  },
 ];
 
 // ════════════════════════════════════════════

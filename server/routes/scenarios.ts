@@ -201,6 +201,13 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         ],
         mode: "majority",
       };
+    case "shooting_mission":
+      return {
+        title: `${scenarioName} 打擊挑戰`,
+        requiredHits: 10,
+        timeLimit: 120,
+        targetScore: 500,
+      };
     case "shooting_team":
       return { title: `${scenarioName} 隊伍射擊累計` };
     case "gps_team_mission":

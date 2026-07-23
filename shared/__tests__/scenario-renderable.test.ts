@@ -41,7 +41,7 @@ describe("情境元件可渲染性（防幽靈元件）", () => {
   });
 
   it("恰好 12 個情境（清除無實質意義的樣板後）", () => {
-    expect(SCENARIO_TEMPLATES.length).toBe(12);
+    expect(SCENARIO_TEMPLATES.length).toBe(13);
   });
 
   it("每個情境至少有 3 個可運作元件", () => {

@@ -6,10 +6,10 @@
 //   BASE_URL=http://localhost:3333 node scripts/smoke-test-scenarios.mjs
 //
 // 驗證項目：
-//   1. 公開頁全部 200（主頁 / pitch / find-scenario / template-market / 12 情境 / showcase / scenario-qr-print）
-//   2. /api/scenarios/health 回應 OK + 含 12 情境
+//   1. 公開頁全部 200（主頁 / pitch / find-scenario / template-market / 13 情境 / showcase / scenario-qr-print）
+//   2. /api/scenarios/health 回應 OK + 含 13 情境
 //   3. POST /api/admin/scenarios/:id/instantiate 回應 401（認證守衛正確）
-//   4. 12 情境健康狀態（live / preview / planned）
+//   4. 13 情境健康狀態（live / preview / planned）
 
 const BASE_URL = process.env.BASE_URL || "https://game.homi.cc";
 const COLOR = {
@@ -100,8 +100,8 @@ async function runSmokeTest() {
     await check(`GET ${path}`, 200, () => checkStatus(`${BASE_URL}${path}`, 200));
   }
 
-  // 2. 12 情境詳情頁
-  console.log(`${COLOR.bold}── Section 2: 12 情境詳情頁 ──${COLOR.reset}`);
+  // 2. 13 情境詳情頁
+  console.log(`${COLOR.bold}── Section 2: 13 情境詳情頁 ──${COLOR.reset}`);
   for (const id of SCENARIO_IDS) {
     await check(`GET /template-market/${id}`, 200, () =>
       checkStatus(`${BASE_URL}/template-market/${id}`, 200),
