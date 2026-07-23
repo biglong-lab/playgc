@@ -1,7 +1,7 @@
 # MQTT 設備管理完整化計畫
 
 > 日期：2026-07-22
-> 狀態：規劃完成，尚未實作、尚未 push、尚未部署
+> 狀態：**Phase 0-2 + 租約 + 前端綁定已實作並部署（2026-07-23, commit ad9e34cf）**；韌體與實機驗收待硬體端
 > 範圍：`/admin/devices`、設備 API、MQTT gateway、ESP32 韌體、遊戲場次綁定、測試與維運
 
 ## 1. 結論
@@ -353,3 +353,23 @@ Tabs：
 ## 15. 下一個可執行動作
 
 從 Phase 0 開始，先建立 ADR、`shared/mqtt/` contract、`server/mqtt/topic.ts`、硬體 simulator 與 local Mosquitto 測試。這一階段不碰生產資料、不需要實機，也能先把目前最大的協定歧義消除。
+
+---
+
+## 16. 實作回顧（2026-07-23 部署）
+
+以 MVP 路徑推進（非完整 11-14 天版本），已完成並上線：
+
+| 對應 Phase | 實作 | 驗證 |
+|---|---|---|
+| 0 協定凍結 | `shared/mqtt/contracts.ts`（zod）、`server/mqtt/topic.ts`（拒非 v1）、[ADR-0024](../decisions/0024-mqtt-v1-device-contract.md)、[硬體對接規格](../hardware-integration-spec.md) | tsc 綠 |
+| 1 安全地基 | `arduino_devices` +`field_id`/`api_key`/`provision_status`/`revoked_at`；`shooting_records` +`event_id`；新表 `device_session_bindings` | 生產 migration 成功、資料零損失 |
+| 2 Gateway | `server/mqtt/` 連線層／ingest／presence sweeper／啟動掛載 | 端到端 5 送 1 存 |
+| 5 遊戲綁定 | 租約服務＋API（409 衝突）、`ShootingMissionPage` 綁定靶機與自動釋放 | 端點 401 已掛上；互斥索引實證 |
+
+**與原計畫的調整**：
+1. topic 用 `{fieldCode}`（如 `JIACHUN`）而非 `{fieldId}`(UUID) —— 短、可讀、韌體好燒，與 LINE webhook 對接慣例一致；隔離仍由 broker ACL 保證（見 ADR-0024）
+2. 開發用 local Mosquitto（`docker-compose.yml` dev），生產維持託管 broker 決策
+3. Phase 3（admin 完整精靈）、command ledger/ACK、韌體 OTA 未納入 MVP，留待後續
+
+**尚未完成**：Phase 4 韌體（硬體端依規格改造中）、Phase 6 實機驗收；生產 `MQTT_ENABLED` 仍為 `false`。

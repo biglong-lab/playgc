@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-07-23
+
+### 🎯 POS 補記 × 底部導航 × MQTT v1 裝置整合地基 × 第13情境模板（feat + fix）
+**狀態**：🟢 部署上線（commit `ad9e34cf`、bundle `index-hUsTW2kV`；生產 DB 已跑兩批 additive migration）
+**細節** → [changes/2026-07-19-pos-shift-flow-handoff.md](changes/2026-07-19-pos-shift-flow-handoff.md) ／ [changes/2026-07-22-mqtt-device-integration-plan.md](changes/2026-07-22-mqtt-device-integration-plan.md) ／ [ADR-0024](decisions/0024-mqtt-v1-device-contract.md)
+
+**POS**：
+- 結帳後補記閉環（補收入/支出 → 計入實際現金 → 更新隔日基礎 → 推播 → 留痕，可多次）；新增 `pos-cash-adjustments.ts`
+- 修 `registerPosCashAdjustmentRoutes` **漏註冊**（補記/調整/軌跡三端點原本是 404 死的）
+- 收班後誤按開帳防呆（僅擋此情境；重新清點／換人重收班不受影響）
+- 底部導航改 flex 佈局（`h-dvh` + `overflow-y-auto` + `shrink-0` + safe-area），根治 fixed 浮中間亂跑
+
+**MQTT v1 裝置整合地基**（⚠️ `MQTT_ENABLED=false`，本次上線不啟動、對現有功能零影響）：
+- 凍結 v1 契約：topic `chito/v1/{fieldCode}/{deviceId}/{channel}`、zod payload、6 channel（state/telemetry/event/ack/command/config）
+- 新增 `server/mqtt/`：連線層（指數退避／持久 session）、收訊（契約驗證＋跨場域防偽＋`event_id` 冪等去重＋租約歸屬＋**server 端算分**）、離線 sweeper（90s）
+- 租約機制：`device_session_bindings` + partial unique index，同一靶同時只允許一場（衝突 409）
+- 射擊關卡綁定靶機：只收綁定靶命中、進場自動租用、結束／離頁自動釋放
+- DB：`arduino_devices` +4 欄、`shooting_records` +`event_id`、新表 `device_session_bindings`（**全 ADD COLUMN，無 DROP**）
+- 文件：ADR-0024 ＋ [給硬體廠商的對接規格](hardware-integration-spec.md)（含新舊 topic 對照表）
+- 端到端實測：正常命中寫入／QoS1 重送去重／壞契約丟棄／跨場域偽造擋下／舊 topic 拒收 —— **5 送 1 存**
+
+**模板**：template-market 第 13 個「實體打擊競技場」（個人挑戰／隊伍賽／現場應援；`status: preview`，需搭配實體靶機）
+
+**測試**：224 檔 / 3252 測試全綠；tsc 零錯誤；部署後生產 `pos_transactions` 114 筆零損失
+
+---
+
 ## 2026-07-10
 
 ### 🔒 安全補強 × 圖片本地壓縮 × 系統紀錄 × 設定管理 4 批（feat）
