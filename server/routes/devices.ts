@@ -4,7 +4,7 @@ import { isAuthenticated } from "../firebaseAuth";
 import { mqttService } from "../mqttService";
 import { insertArduinoDeviceSchema, insertShootingRecordSchema } from "@shared/schema";
 import { z } from "zod";
-import { requireAdminRole } from "./utils";
+import { requireAdminRole, getManageableFields } from "./utils";
 import { hotPathLimiter } from "../utils/rate-limiters";
 import { enrichShootingRecordForBroadcast } from "../lib/shooting-broadcast";
 import type { RouteContext, AuthenticatedRequest } from "./types";
@@ -87,6 +87,29 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       }
 
       const data = insertArduinoDeviceSchema.parse(req.body);
+
+      // 🔑 硬體 ID 必填：MQTT 心跳與命中都靠它比對，缺了設備等於廢的
+      if (!data.deviceId?.trim()) {
+        return res
+          .status(400)
+          .json({ message: "請填寫硬體 ID（例如 TARGET_001）" });
+      }
+      // 硬體 ID 會進 MQTT topic，限制字元避免 wildcard 注入
+      if (!/^[A-Za-z0-9_-]{1,50}$/.test(data.deviceId)) {
+        return res
+          .status(400)
+          .json({ message: "硬體 ID 只能使用英數字、底線與連字號" });
+      }
+
+      // 🔑 場域歸屬：MQTT 收訊會比對「裝置↔場域」，未綁場域的設備收不到命中
+      const scope = await getManageableFields(req);
+      if (!data.fieldId) {
+        return res.status(400).json({ message: "請選擇設備所屬場域" });
+      }
+      if (!scope.all && !scope.fieldIds.includes(data.fieldId)) {
+        return res.status(403).json({ message: "無權在此場域建立設備" });
+      }
+
       const device = await storage.createArduinoDevice(data);
       res.status(201).json(device);
     } catch (error) {

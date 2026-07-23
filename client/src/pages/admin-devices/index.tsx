@@ -11,9 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import MetricCard from "@/components/shared/MetricCard";
 import type { ArduinoDevice, InsertArduinoDevice, DeviceLog } from "@shared/schema";
-import {
-  Plus, Cpu, Radio, Wifi, WifiOff, Lightbulb, Power, RefreshCw,
-} from "lucide-react";
+import { Plus, Cpu, Radio, Wifi, WifiOff, Lightbulb, Power, RefreshCw } from "lucide-react";
 import { LED_COLORS } from "./constants";
 import type { MqttStatus, DeviceStatistics } from "./types";
 import DeviceDialog from "./DeviceDialog";
@@ -22,7 +20,7 @@ import LEDControl from "./LEDControl";
 import DeviceStats from "./DeviceStats";
 
 export default function AdminDevices() {
-  const { isAuthenticated } = useAdminAuth();
+  const { isAuthenticated, admin } = useAdminAuth();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingDevice, setEditingDevice] = useState<ArduinoDevice | null>(null);
@@ -32,6 +30,7 @@ export default function AdminDevices() {
   const [ledBrightness, setLedBrightness] = useState(100);
   const [ledSpeed, setLedSpeed] = useState(500);
   const [formData, setFormData] = useState<Partial<InsertArduinoDevice>>({
+    deviceId: "",
     deviceName: "",
     deviceType: "shooting_target",
     mqttTopic: "",
@@ -61,16 +60,19 @@ export default function AdminDevices() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: InsertArduinoDevice) =>
-      apiRequest("POST", "/api/devices", data),
+    mutationFn: (data: InsertArduinoDevice) => apiRequest("POST", "/api/devices", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/devices"] });
       setIsAddDialogOpen(false);
       resetForm();
       toast({ title: "設備新增成功" });
     },
-    onError: () => {
-      toast({ title: "新增失敗", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({
+        title: "新增失敗",
+        description: error?.message || "請稍後再試",
+        variant: "destructive",
+      });
     },
   });
 
@@ -83,14 +85,17 @@ export default function AdminDevices() {
       resetForm();
       toast({ title: "設備更新成功" });
     },
-    onError: () => {
-      toast({ title: "更新失敗", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({
+        title: "更新失敗",
+        description: error?.message || "請稍後再試",
+        variant: "destructive",
+      });
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiRequest("DELETE", `/api/devices/${id}`),
+    mutationFn: (id: string) => apiRequest("DELETE", `/api/devices/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/devices"] });
       toast({ title: "設備已刪除" });
@@ -101,8 +106,7 @@ export default function AdminDevices() {
   });
 
   const activateMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiRequest("POST", `/api/devices/${id}/activate`, {}),
+    mutationFn: (id: string) => apiRequest("POST", `/api/devices/${id}/activate`, {}),
     onSuccess: () => {
       toast({ title: "啟動命令已發送" });
     },
@@ -112,8 +116,7 @@ export default function AdminDevices() {
   });
 
   const deactivateMutation = useMutation({
-    mutationFn: (id: string) =>
-      apiRequest("POST", `/api/devices/${id}/deactivate`, {}),
+    mutationFn: (id: string) => apiRequest("POST", `/api/devices/${id}/deactivate`, {}),
     onSuccess: () => {
       toast({ title: "停用命令已發送" });
     },
@@ -134,8 +137,15 @@ export default function AdminDevices() {
   });
 
   const commandMutation = useMutation({
-    mutationFn: ({ id, command, data }: { id: string; command: string; data?: Record<string, unknown> }) =>
-      apiRequest("POST", `/api/devices/${id}/command`, { command, data }),
+    mutationFn: ({
+      id,
+      command,
+      data,
+    }: {
+      id: string;
+      command: string;
+      data?: Record<string, unknown>;
+    }) => apiRequest("POST", `/api/devices/${id}/command`, { command, data }),
     onSuccess: (_, variables) => {
       toast({ title: `${variables.command} 命令已發送` });
     },
@@ -156,8 +166,7 @@ export default function AdminDevices() {
   });
 
   const pingAllMutation = useMutation({
-    mutationFn: () =>
-      apiRequest("POST", "/api/devices/broadcast/ping", {}),
+    mutationFn: () => apiRequest("POST", "/api/devices/broadcast/ping", {}),
     onSuccess: () => {
       toast({ title: "已向所有設備發送 Ping" });
     },
@@ -168,6 +177,7 @@ export default function AdminDevices() {
 
   const resetForm = () => {
     setFormData({
+      deviceId: "",
       deviceName: "",
       deviceType: "shooting_target",
       mqttTopic: "",
@@ -181,16 +191,34 @@ export default function AdminDevices() {
       toast({ title: "請輸入設備名稱", variant: "destructive" });
       return;
     }
+    if (!formData.deviceId?.trim()) {
+      toast({
+        title: "請輸入硬體 ID",
+        description: "例如 TARGET_001，需與韌體一致",
+        variant: "destructive",
+      });
+      return;
+    }
     if (editingDevice) {
       updateMutation.mutate({ id: editingDevice.id, data: formData });
-    } else {
-      createMutation.mutate(formData as InsertArduinoDevice);
+      return;
     }
+    if (!admin?.fieldId) {
+      toast({ title: "無法判定所屬場域", description: "請重新登入後台", variant: "destructive" });
+      return;
+    }
+    // 場域取自目前登入身分；topic 依 v1 契約自動產生
+    createMutation.mutate({
+      ...formData,
+      fieldId: admin.fieldId,
+      mqttTopic: `chito/v1/${admin.fieldCode}/${formData.deviceId}`,
+    } as InsertArduinoDevice);
   };
 
   const handleEdit = (device: ArduinoDevice) => {
     setEditingDevice(device);
     setFormData({
+      deviceId: device.deviceId || "",
       deviceName: device.deviceName,
       deviceType: device.deviceType || "shooting_target",
       mqttTopic: device.mqttTopic || "",
@@ -201,7 +229,7 @@ export default function AdminDevices() {
 
   const handleLedControl = () => {
     if (!selectedDevice) return;
-    const colorData = LED_COLORS.find(c => c.value === ledColor)?.color || { r: 0, g: 255, b: 0 };
+    const colorData = LED_COLORS.find((c) => c.value === ledColor)?.color || { r: 0, g: 255, b: 0 };
     ledMutation.mutate({
       id: selectedDevice.id,
       data: { mode: ledMode, color: colorData, brightness: ledBrightness, speed: ledSpeed },
@@ -213,8 +241,8 @@ export default function AdminDevices() {
     commandMutation.mutate({ id: selectedDevice.id, command });
   };
 
-  const onlineCount = devices?.filter(d => d.status === "online").length || 0;
-  const offlineCount = devices?.filter(d => d.status !== "online").length || 0;
+  const onlineCount = devices?.filter((d) => d.status === "online").length || 0;
+  const offlineCount = devices?.filter((d) => d.status !== "online").length || 0;
   const totalCount = devices?.length || 0;
 
   const headerActions = (
@@ -257,6 +285,7 @@ export default function AdminDevices() {
           setFormData={setFormData}
           onSubmit={handleSubmit}
           isPending={createMutation.isPending}
+          fieldCode={admin?.fieldCode}
         />
       </Dialog>
     </div>
@@ -270,13 +299,7 @@ export default function AdminDevices() {
           label="在線設備"
           value={onlineCount}
           icon={Wifi}
-          accent={
-            totalCount === 0
-              ? "muted"
-              : offlineCount > 0
-                ? "warning"
-                : "success"
-          }
+          accent={totalCount === 0 ? "muted" : offlineCount > 0 ? "warning" : "success"}
           testid="stat-online-count"
         />
         <MetricCard
@@ -305,13 +328,14 @@ export default function AdminDevices() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => broadcastLedMutation.mutate({ mode: "on", color: { r: 0, g: 255, b: 0 } })}
+                    onClick={() =>
+                      broadcastLedMutation.mutate({ mode: "on", color: { r: 0, g: 255, b: 0 } })
+                    }
                     disabled={broadcastLedMutation.isPending || totalCount === 0}
                     title={totalCount === 0 ? "尚未新增任何設備" : undefined}
                     data-testid="button-all-led-on"
                   >
-                    <Lightbulb className="w-3 h-3 mr-1" />
-                    開
+                    <Lightbulb className="w-3 h-3 mr-1" />開
                   </Button>
                   <Button
                     size="sm"
@@ -321,8 +345,7 @@ export default function AdminDevices() {
                     title={totalCount === 0 ? "尚未新增任何設備" : undefined}
                     data-testid="button-all-led-off"
                   >
-                    <Power className="w-3 h-3 mr-1" />
-                    關
+                    <Power className="w-3 h-3 mr-1" />關
                   </Button>
                 </div>
               </div>
@@ -404,9 +427,7 @@ export default function AdminDevices() {
             <Card>
               <CardContent className="py-12 text-center">
                 <Cpu className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
-                <p className="text-sm text-muted-foreground">
-                  點擊左側設備卡片查看詳情
-                </p>
+                <p className="text-sm text-muted-foreground">點擊左側設備卡片查看詳情</p>
               </CardContent>
             </Card>
           )}

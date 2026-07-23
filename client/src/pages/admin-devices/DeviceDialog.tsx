@@ -2,8 +2,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import type { InsertArduinoDevice } from "@shared/schema";
 import { DEVICE_TYPES } from "./constants";
 
@@ -15,6 +28,8 @@ interface DeviceDialogProps {
   setFormData: React.Dispatch<React.SetStateAction<Partial<InsertArduinoDevice>>>;
   onSubmit: () => void;
   isPending: boolean;
+  /** 目前登入場域代號，用於預覽自動產生的 MQTT topic */
+  fieldCode?: string;
 }
 
 export default function DeviceDialog({
@@ -25,7 +40,12 @@ export default function DeviceDialog({
   setFormData,
   onSubmit,
   isPending,
+  fieldCode,
 }: DeviceDialogProps) {
+  const topicPreview =
+    formData.deviceId && fieldCode
+      ? `chito/v1/${fieldCode}/${formData.deviceId}/…`
+      : "填寫硬體 ID 後自動產生";
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent onClick={(e) => e.stopPropagation()}>
@@ -33,6 +53,21 @@ export default function DeviceDialog({
           <DialogTitle>{isEditing ? "編輯設備" : "新增設備"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>
+              硬體 ID <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              value={formData.deviceId || ""}
+              onChange={(e) => setFormData({ ...formData, deviceId: e.target.value })}
+              placeholder="例如: TARGET_001"
+              disabled={isEditing}
+              data-testid={isEditing ? "input-edit-device-id" : "input-device-id"}
+            />
+            <p className="text-xs text-muted-foreground">
+              需與韌體燒錄的 ID 完全一致；心跳與命中都靠它比對。建立後不可修改。
+            </p>
+          </div>
           <div className="space-y-2">
             <Label>設備名稱</Label>
             <Input
@@ -48,7 +83,9 @@ export default function DeviceDialog({
               value={formData.deviceType || "shooting_target"}
               onValueChange={(v) => setFormData({ ...formData, deviceType: v })}
             >
-              <SelectTrigger data-testid={isEditing ? "select-edit-device-type" : "select-device-type"}>
+              <SelectTrigger
+                data-testid={isEditing ? "select-edit-device-type" : "select-device-type"}
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -61,13 +98,17 @@ export default function DeviceDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>MQTT Topic</Label>
+            <Label>MQTT Topic（系統自動產生）</Label>
             <Input
-              value={formData.mqttTopic || ""}
-              onChange={(e) => setFormData({ ...formData, mqttTopic: e.target.value })}
-              placeholder="例如: jiachun/targets/device-001"
+              value={topicPreview}
+              readOnly
+              disabled
+              className="text-muted-foreground"
               data-testid={isEditing ? "input-edit-mqtt-topic" : "input-mqtt-topic"}
             />
+            <p className="text-xs text-muted-foreground">
+              依 MQTT v1 契約由系統產生，不需手填（結尾 channel 為 event / state / command 等）。
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -99,7 +140,7 @@ export default function DeviceDialog({
             disabled={isPending}
             data-testid={isEditing ? "button-update-device" : "button-submit-device"}
           >
-            {isPending ? (isEditing ? "更新中..." : "新增中...") : (isEditing ? "更新" : "新增")}
+            {isPending ? (isEditing ? "更新中..." : "新增中...") : isEditing ? "更新" : "新增"}
           </Button>
         </DialogFooter>
       </DialogContent>

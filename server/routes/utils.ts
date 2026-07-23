@@ -37,6 +37,29 @@ async function getAdminAccountsByFirebaseUid(
   }
 }
 
+/**
+ * 取得該使用者可管理的場域。
+ * legacy 全域 admin 與 super_admin 回 all=true（不限場域）。
+ */
+export async function getManageableFields(
+  req: AuthenticatedRequest,
+): Promise<{ all: boolean; fieldIds: string[] }> {
+  const userId = req.user?.claims?.sub;
+  if (!userId) return { all: false, fieldIds: [] };
+
+  const user = await storage.getUser(userId);
+  if (user?.role === "admin") return { all: true, fieldIds: [] };
+
+  const rows = await getAdminAccountsByFirebaseUid(userId);
+  if (rows.some((r) => r.systemRole === "super_admin")) {
+    return { all: true, fieldIds: [] };
+  }
+  return {
+    all: false,
+    fieldIds: rows.map((r) => r.fieldId).filter((id): id is string => !!id),
+  };
+}
+
 // UUID v4 格式驗證
 const uuidSchema = z.string().uuid("無效的 ID 格式");
 
