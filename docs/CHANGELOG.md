@@ -7,6 +7,18 @@
 
 ## 2026-07-23
 
+### 🔌 MQTT Broker 後台可設定 UI（feat）
+**狀態**：🟢 部署上線（commit `2bf61940`、bundle `index-DYsBAT_B`；生產已建 mqtt_broker_config 表）
+**對應回報** → CHITO issue「MQTT設備」5a0080aa
+
+- **需求**：後台可自訂 broker（代理商/位址，如 mqttgo.io），不必改 env 重新部署
+- 新增 `mqtt_broker_config` singleton 表（位址/帳號/密碼/CA/啟用開關；仿 line_login_config）
+- **連線層改造**：設定優先從 DB 讀（env 作 fallback）+ `reconnectMqttV1` 重連入口 → 儲存即套用、不必重啟
+- **API**（requireAdminAuth）：GET(密碼遮罩) / PATCH(存+重連) / POST test(先試連再存)
+- **前端** `/admin/settings` → MQTT 設備 → 「Broker 設定」卡：啟用開關、位址、帳密、測試連線、儲存並套用；連線狀態顯示真實來源（database/env/未設定）
+- UI 內建安全提醒：公用 broker 可被偽造，正式營運用具 per-device 帳密＋Topic ACL 的託管 broker
+- **驗證**：本地端到端（source=database 生效）+ Playwright 前端實測（連線測試成功）；migration additive、MQTT 預設仍 false（零風險）
+
 ### 🔧 裝置管理修復：場域管理員 403 × 新增表單補齊（fix + feat）
 **狀態**：🟢 部署上線（commit `efd45856`、bundle `index-Kml8v_Eu`；本批無 schema 變更）
 
