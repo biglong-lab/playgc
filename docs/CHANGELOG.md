@@ -7,6 +7,16 @@
 
 ## 2026-07-23
 
+### 🐛 Broker 測試連線逾時修復：URL 自動補 scheme + 密碼可清除（fix）
+**狀態**：🟢 部署上線（commit `180ca551`；本批純 code、無 schema 變更；另即時修正生產 DB 設定）
+
+- **根因**：後台 broker 位址填 `host:port`（如 `mqttgo.io:1883`）**少了 `mqtt://` scheme** → mqtt.js 連錯 → connack 逾時（8 秒）。另有殘留密碼連匿名 broker 也會失敗
+- **修復**：
+  - `normalizeBrokerUrl()`：無 scheme 自動補（8883/8884→`mqtts://`、其餘→`mqtt://`），套用於 PATCH 存檔／測試連線／`resolveMqttConfig` 連線
+  - 密碼可清除（`clearPassword`）：換匿名 broker 時不再被舊密碼卡住（原本「留空＝保留」無法清空）
+  - 即時修正生產 DB：`broker_url` 補 scheme、清殘留密碼 → 現場立即可用
+- **排查記**：一度誤判「容器 outbound 網路問題」——實為 alpine 容器 busybox sh **不支援 `/dev/tcp`** 的假失敗；改用容器內 `node` 正確測（TCP✅、MQTT握手✅）後才定位到 scheme 問題。教訓：診斷工具要先確認在目標環境可用
+
 ### 🔧 設備控制端點遷移到 v1 gateway + 錯誤訊息語意化（feat + fix）
 **狀態**：🟢 部署上線（commit `842a7d85`、bundle `index-Cn9kkPmF`；本批純 code、無 schema 變更）
 
