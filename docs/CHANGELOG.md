@@ -7,6 +7,19 @@
 
 ## 2026-07-23
 
+### 🔧 設備控制端點遷移到 v1 gateway + 錯誤訊息語意化（feat + fix）
+**狀態**：🟢 部署上線（commit `842a7d85`、bundle `index-Cn9kkPmF`；本批純 code、無 schema 變更）
+
+- **根因**：`/admin/devices` 的「啟動/停用/LED/指令」按鈕連的是舊 `mqttService`（從未啟動的死碼）→ 一律回 503「MQTT not connected」，且前端只顯示籠統「啟動失敗」，無從除錯
+- **遷移**：activate/deactivate/led/command 改用新 v1 gateway（`server/mqtt/command-service.ts`）發送 `chito/v1/{fieldCode}/{deviceId}/command`：
+  - 指令走 v1 payload（含 messageId/expiresAt）、經 `commandDataSchema` allowlist 驗證（非法指令擋在 400）
+  - 發送前檢查：設備離線→409、缺硬體 ID/場域→400、MQTT 未連線→503（各有明確中文訊息）
+  - 補上 activate/deactivate 原本缺的 `requireAdminRole` 驗權
+  - `/api/mqtt/status` 改讀新 gateway 狀態（原本讀舊死碼永遠 disconnected）
+- **前端**：控制按鈕失敗改顯示後端實際原因（`extractErrMsg` 解析 `"503: {json}"`），不再只是「啟動失敗」
+- **驗證**：端到端實測（sendDeviceCommand 發正確 v1 topic + 完整信封 + allowlist 擋非法指令）；devices 控制端點測試同步重寫；全套 224 檔 3257 測試綠
+- 註：session/config/broadcast 端點暫留舊 service（TODO 後續遷移）；生產 MQTT 仍 false，設備顯示離線屬正常（待 broker + 韌體）
+
 ### 🔌 MQTT Broker 後台可設定 UI（feat）
 **狀態**：🟢 部署上線（commit `2bf61940`、bundle `index-DYsBAT_B`；生產已建 mqtt_broker_config 表）
 **對應回報** → CHITO issue「MQTT設備」5a0080aa
