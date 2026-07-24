@@ -5,6 +5,8 @@ import { mqttService } from "../mqttService";
 import { insertArduinoDeviceSchema, insertShootingRecordSchema } from "@shared/schema";
 import { z } from "zod";
 import { requireAdminRole, getManageableFields } from "./utils";
+import { sendDeviceCommand } from "../mqtt/command-service";
+import { getMqttStatus as getV1MqttStatus } from "../mqtt";
 import { hotPathLimiter } from "../utils/rate-limiters";
 import { enrichShootingRecordForBroadcast } from "../lib/shooting-broadcast";
 import type { RouteContext, AuthenticatedRequest } from "./types";
@@ -162,46 +164,60 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
         return res.status(403).json({ message: auth.message });
       }
 
-      const status = mqttService.getConnectionStatus();
+      const status = getV1MqttStatus();
       res.json(status);
     } catch (error) {
       res.status(500).json({ message: "Failed to get MQTT status" });
     }
   });
 
-  app.post("/api/devices/:id/activate", isAuthenticated, async (req, res) => {
+  app.post("/api/devices/:id/activate", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
+      const auth = await requireAdminRole(req);
+      if (!auth.authorized) return res.status(403).json({ message: auth.message });
+
       const device = await storage.getArduinoDevice(req.params.id);
-      if (!device) {
-        return res.status(404).json({ message: "Device not found" });
+      if (!device) return res.status(404).json({ message: "找不到設備" });
+      if (!device.deviceId || !device.fieldId) {
+        return res.status(400).json({ message: "設備缺少硬體 ID 或場域綁定" });
+      }
+      if (device.status !== "online") {
+        return res.status(409).json({
+          message: "設備目前離線，無法發送指令（請先確認韌體已連上 broker）",
+        });
       }
 
-      const success = mqttService.activateTarget(req.params.id, req.body);
-      if (success) {
-        res.json({ message: "Activation command sent", deviceId: req.params.id });
-      } else {
-        res.status(503).json({ message: "MQTT not connected" });
-      }
+      const result = await sendDeviceCommand(device.fieldId, device.deviceId, {
+        command: "start_session",
+      });
+      if (!result.ok) return res.status(result.status).json({ message: result.message });
+      res.json({ message: "啟動指令已發送", deviceId: device.deviceId });
     } catch (error) {
-      res.status(500).json({ message: "Failed to activate device" });
+      res.status(500).json({ message: "啟動失敗" });
     }
   });
 
-  app.post("/api/devices/:id/deactivate", isAuthenticated, async (req, res) => {
+  app.post("/api/devices/:id/deactivate", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
+      const auth = await requireAdminRole(req);
+      if (!auth.authorized) return res.status(403).json({ message: auth.message });
+
       const device = await storage.getArduinoDevice(req.params.id);
-      if (!device) {
-        return res.status(404).json({ message: "Device not found" });
+      if (!device) return res.status(404).json({ message: "找不到設備" });
+      if (!device.deviceId || !device.fieldId) {
+        return res.status(400).json({ message: "設備缺少硬體 ID 或場域綁定" });
+      }
+      if (device.status !== "online") {
+        return res.status(409).json({ message: "設備目前離線，無法發送指令" });
       }
 
-      const success = mqttService.deactivateTarget(req.params.id);
-      if (success) {
-        res.json({ message: "Deactivation command sent", deviceId: req.params.id });
-      } else {
-        res.status(503).json({ message: "MQTT not connected" });
-      }
+      const result = await sendDeviceCommand(device.fieldId, device.deviceId, {
+        command: "end_session",
+      });
+      if (!result.ok) return res.status(result.status).json({ message: result.message });
+      res.json({ message: "停用指令已發送", deviceId: device.deviceId });
     } catch (error) {
-      res.status(500).json({ message: "Failed to deactivate device" });
+      res.status(500).json({ message: "停用失敗" });
     }
   });
 
@@ -384,47 +400,30 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
   app.post("/api/devices/:id/led", isAuthenticated, async (req: AuthenticatedRequest, res) => {
     try {
       const auth = await requireAdminRole(req);
-      if (!auth.authorized) {
-        return res.status(403).json({ message: auth.message });
-      }
+      if (!auth.authorized) return res.status(403).json({ message: auth.message });
 
       const device = await storage.getArduinoDevice(req.params.id);
-      if (!device) {
-        return res.status(404).json({ message: "Device not found" });
+      if (!device) return res.status(404).json({ message: "找不到設備" });
+      if (!device.deviceId || !device.fieldId) {
+        return res.status(400).json({ message: "設備缺少硬體 ID 或場域綁定" });
+      }
+      if (device.status !== "online") {
+        return res.status(409).json({ message: "設備目前離線，無法發送指令" });
       }
 
-      const { mode, color, brightness, speed, duration } = req.body;
-      const deviceId = device.deviceId || req.params.id;
+      const { mode, color, brightness, speed, speedMs } = req.body;
+      const ledMode = mode === "on" ? "solid" : mode;
+      const data: Record<string, unknown> = { command: "led", mode: ledMode };
+      if (color) data.color = color;
+      if (typeof brightness === "number") data.brightness = brightness;
+      const sp = typeof speedMs === "number" ? speedMs : speed;
+      if (typeof sp === "number") data.speedMs = sp;
 
-      let success = false;
-      switch (mode) {
-        case "solid":
-        case "on":
-          success = mqttService.turnOnLED(deviceId, color, brightness);
-          break;
-        case "off":
-          success = mqttService.turnOffLED(deviceId);
-          break;
-        case "blink":
-          success = mqttService.blinkLED(deviceId, color, speed, duration);
-          break;
-        case "pulse":
-          success = mqttService.pulseLED(deviceId, color, speed);
-          break;
-        case "rainbow":
-          success = mqttService.rainbowLED(deviceId, speed, duration);
-          break;
-        default:
-          return res.status(400).json({ message: "Invalid LED mode. Use: solid, off, blink, pulse, rainbow" });
-      }
-
-      if (success) {
-        res.json({ message: "LED command sent", deviceId, mode });
-      } else {
-        res.status(503).json({ message: "MQTT not connected" });
-      }
+      const result = await sendDeviceCommand(device.fieldId, device.deviceId, data);
+      if (!result.ok) return res.status(result.status).json({ message: result.message });
+      res.json({ message: "LED 指令已發送", deviceId: device.deviceId, mode: ledMode });
     } catch (error) {
-      res.status(500).json({ message: "Failed to control LED" });
+      res.status(500).json({ message: "LED 控制失敗" });
     }
   });
 
@@ -466,38 +465,33 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
         return res.status(404).json({ message: "Device not found" });
       }
 
-      const { command, data } = req.body;
-      if (!command) {
-        return res.status(400).json({ message: "Command is required" });
+      if (!device.deviceId || !device.fieldId) {
+        return res.status(400).json({ message: "設備缺少硬體 ID 或場域綁定" });
+      }
+      if (device.status !== "online") {
+        return res.status(409).json({ message: "設備目前離線，無法發送指令" });
       }
 
-      const deviceId = device.deviceId || req.params.id;
-      let success = false;
+      const { command } = req.body;
+      // 舊指令名 → v1 command allowlist 映射
+      const map: Record<string, string> = {
+        reboot: "reboot",
+        calibrate: "calibrate",
+        self_test: "self_test",
+        reset_counter: "reset_counter",
+        ping: "self_test",
+        status: "self_test",
+      };
+      const v1Command = map[command];
+      if (!v1Command) return res.status(400).json({ message: "不支援的指令" });
 
-      switch (command) {
-        case "reboot":
-          success = mqttService.rebootDevice(deviceId);
-          break;
-        case "calibrate":
-          success = mqttService.calibrateDevice(deviceId);
-          break;
-        case "ping":
-          success = mqttService.pingDevice(deviceId);
-          break;
-        case "status":
-          success = mqttService.requestStatus(deviceId);
-          break;
-        default:
-          success = mqttService.sendCommand(deviceId, command, data || {});
-      }
-
-      if (success) {
-        res.json({ message: "Command sent", deviceId, command });
-      } else {
-        res.status(503).json({ message: "MQTT not connected" });
-      }
+      const result = await sendDeviceCommand(device.fieldId, device.deviceId, {
+        command: v1Command,
+      });
+      if (!result.ok) return res.status(result.status).json({ message: result.message });
+      res.json({ message: "指令已發送", deviceId: device.deviceId, command: v1Command });
     } catch (error) {
-      res.status(500).json({ message: "Failed to send command" });
+      res.status(500).json({ message: "指令發送失敗" });
     }
   });
 
