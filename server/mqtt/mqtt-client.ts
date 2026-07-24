@@ -7,8 +7,8 @@
 //    多 worker 各自訂閱會讓同一則命中被重複寫入。
 
 import mqtt, { type IClientOptions, type MqttClient } from "mqtt";
-import { readFileSync } from "node:fs";
 import { uplinkSubscriptions } from "./topic";
+import type { ResolvedMqttConfig } from "./config";
 
 export type MqttMessageHandler = (
   topic: string,
@@ -27,25 +27,24 @@ let reconnectAttempts = 0;
 let lastConnectedAt: string | null = null;
 let lastError: string | null = null;
 let shuttingDown = false;
+let currentConfig: ResolvedMqttConfig | null = null;
 
 export interface MqttStatus {
   enabled: boolean;
   connected: boolean;
   brokerUrl: string | null;
+  source: "database" | "env" | null;
   lastConnectedAt: string | null;
   lastError: string | null;
   reconnectAttempts: number;
 }
 
-export function isMqttEnabled(): boolean {
-  return process.env.MQTT_ENABLED === "true";
-}
-
 export function getMqttStatus(): MqttStatus {
   return {
-    enabled: isMqttEnabled(),
+    enabled: currentConfig !== null,
     connected: client?.connected ?? false,
-    brokerUrl: process.env.MQTT_BROKER_URL ?? null,
+    brokerUrl: currentConfig?.brokerUrl ?? null,
+    source: currentConfig?.source ?? null,
     lastConnectedAt,
     lastError,
     reconnectAttempts,
@@ -60,10 +59,9 @@ function buildOptions(): IClientOptions {
     connectTimeout: 30_000,
     keepalive: 60,
   };
-  const { MQTT_USERNAME, MQTT_PASSWORD, MQTT_CA_PATH } = process.env;
-  if (MQTT_USERNAME) options.username = MQTT_USERNAME;
-  if (MQTT_PASSWORD) options.password = MQTT_PASSWORD;
-  if (MQTT_CA_PATH) options.ca = [readFileSync(MQTT_CA_PATH)];
+  if (currentConfig?.username) options.username = currentConfig.username;
+  if (currentConfig?.password) options.password = currentConfig.password;
+  if (currentConfig?.caCert) options.ca = [Buffer.from(currentConfig.caCert)];
   return options;
 }
 
@@ -118,9 +116,9 @@ function attachHandlers(active: MqttClient): void {
 }
 
 function openConnection(): void {
-  const url = process.env.MQTT_BROKER_URL;
+  const url = currentConfig?.brokerUrl;
   if (!url) {
-    lastError = "缺少 MQTT_BROKER_URL";
+    lastError = "缺少 broker 設定";
     return;
   }
   try {
@@ -135,8 +133,11 @@ function openConnection(): void {
 }
 
 /** 啟動 gateway；回傳是否已啟用（連線本身是非同步、失敗會自動重試） */
-export function connectMqtt(messageHandler: MqttMessageHandler): boolean {
-  if (!isMqttEnabled()) return false;
+export function connectMqtt(
+  config: ResolvedMqttConfig,
+  messageHandler: MqttMessageHandler,
+): boolean {
+  currentConfig = config;
   handler = messageHandler;
   shuttingDown = false;
   openConnection();
@@ -175,6 +176,7 @@ export async function disconnectMqtt(): Promise<void> {
   const active = client;
   client = null;
   handler = null;
+  currentConfig = null;
   if (!active) return;
   await new Promise<void>((resolve) => active.end(false, {}, () => resolve()));
 }

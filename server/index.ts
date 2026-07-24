@@ -392,7 +392,7 @@ app.use((req, res, next) => {
   // 🔌 MQTT v1 裝置 gateway（ADR-0024）；MQTT_ENABLED != true 時不啟動
   try {
     const { initializeMqttV1 } = await import("./mqtt");
-    if (initializeMqttV1()) {
+    if (await initializeMqttV1()) {
       log("MQTT v1 gateway 已啟動", "mqtt");
     }
   } catch (e) {
