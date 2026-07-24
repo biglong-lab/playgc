@@ -75,17 +75,14 @@ function testConnection(
       resolve({ ok: false, error: e instanceof Error ? e.message : String(e) });
       return;
     }
-    const timer = setTimeout(
-      () => finish({ ok: false, error: "連線逾時（8 秒）" }),
-      8_500,
-    );
+    const timer = setTimeout(() => finish({ ok: false, error: "連線逾時（8 秒）" }), 8_500);
     c.on("connect", () => {
       clearTimeout(timer);
       finish({ ok: true });
     });
     c.on("error", (e) => {
       clearTimeout(timer);
-      finish({ ok: false, error: e.message });
+      finish({ ok: false, error: e.message || "無法連線（請檢查位址、埠與網路）" });
     });
   });
 }
@@ -110,86 +107,73 @@ export function registerMqttBrokerConfigRoutes(app: Express): void {
   });
 
   // 更新設定 → 立即套用重連
-  app.patch(
-    "/api/admin/mqtt/broker-config",
-    requireAdminAuth,
-    async (req, res) => {
-      try {
-        if (!req.admin) return res.status(401).json({ message: "未認證" });
-        const parsed = updateSchema.safeParse(req.body);
-        if (!parsed.success) {
-          return res.status(400).json({ message: "參數格式錯誤" });
-        }
-        const d = parsed.data;
-
-        const set: Partial<typeof mqttBrokerConfig.$inferInsert> = {
-          updatedAt: new Date(),
-          updatedByAdminId: req.admin.id,
-        };
-        if (d.brokerUrl !== undefined) set.brokerUrl = d.brokerUrl.trim() || null;
-        if (d.username !== undefined) set.username = d.username.trim() || null;
-        // 密碼：僅在提供非空值時更新（前端留空 = 保留原密碼）
-        if (d.password) set.password = d.password;
-        if (d.caCert !== undefined) set.caCert = d.caCert.trim() || null;
-        if (d.enabled !== undefined) set.enabled = d.enabled;
-
-        await db
-          .update(mqttBrokerConfig)
-          .set(set)
-          .where(eq(mqttBrokerConfig.id, SINGLETON));
-
-        // 套用新設定重連（enabled=false 則會斷線停用）
-        const active = await reconnectMqttV1();
-
-        await logAuditAction({
-          actorAdminId: req.admin.id,
-          action: "mqtt_broker_config_update",
-          targetType: "mqtt_broker_config",
-          fieldId: req.admin.fieldId,
-          metadata: { enabled: set.enabled ?? null, active },
-        });
-
-        res.json({ ok: true, active, status: getMqttStatus() });
-      } catch (e) {
-        fail(res, e);
+  app.patch("/api/admin/mqtt/broker-config", requireAdminAuth, async (req, res) => {
+    try {
+      if (!req.admin) return res.status(401).json({ message: "未認證" });
+      const parsed = updateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "參數格式錯誤" });
       }
-    },
-  );
+      const d = parsed.data;
+
+      const set: Partial<typeof mqttBrokerConfig.$inferInsert> = {
+        updatedAt: new Date(),
+        updatedByAdminId: req.admin.id,
+      };
+      if (d.brokerUrl !== undefined) set.brokerUrl = d.brokerUrl.trim() || null;
+      if (d.username !== undefined) set.username = d.username.trim() || null;
+      // 密碼：僅在提供非空值時更新（前端留空 = 保留原密碼）
+      if (d.password) set.password = d.password;
+      if (d.caCert !== undefined) set.caCert = d.caCert.trim() || null;
+      if (d.enabled !== undefined) set.enabled = d.enabled;
+
+      await db.update(mqttBrokerConfig).set(set).where(eq(mqttBrokerConfig.id, SINGLETON));
+
+      // 套用新設定重連（enabled=false 則會斷線停用）
+      const active = await reconnectMqttV1();
+
+      await logAuditAction({
+        actorAdminId: req.admin.id,
+        action: "mqtt_broker_config_update",
+        targetType: "mqtt_broker_config",
+        fieldId: req.admin.fieldId,
+        metadata: { enabled: set.enabled ?? null, active },
+      });
+
+      res.json({ ok: true, active, status: getMqttStatus() });
+    } catch (e) {
+      fail(res, e);
+    }
+  });
 
   // 測試連線（用表單值；密碼未提供時沿用 DB 已存的）
-  app.post(
-    "/api/admin/mqtt/broker-config/test",
-    requireAdminAuth,
-    async (req, res) => {
-      try {
-        const body = (req.body ?? {}) as {
-          brokerUrl?: string;
-          username?: string;
-          password?: string;
-          caCert?: string;
-        };
-        if (!body.brokerUrl?.trim()) {
-          return res
-            .status(400)
-            .json({ ok: false, error: "請先填寫 broker 位址" });
-        }
-        let password = body.password;
-        let caCert = body.caCert;
-        if (!password || !caCert) {
-          const cfg = await getConfigRow();
-          if (!password) password = cfg?.password ?? undefined;
-          if (!caCert) caCert = cfg?.caCert ?? undefined;
-        }
-        const result = await testConnection(
-          body.brokerUrl.trim(),
-          body.username?.trim() || undefined,
-          password,
-          caCert,
-        );
-        res.json(result);
-      } catch (e) {
-        fail(res, e);
+  app.post("/api/admin/mqtt/broker-config/test", requireAdminAuth, async (req, res) => {
+    try {
+      const body = (req.body ?? {}) as {
+        brokerUrl?: string;
+        username?: string;
+        password?: string;
+        caCert?: string;
+      };
+      if (!body.brokerUrl?.trim()) {
+        return res.status(400).json({ ok: false, error: "請先填寫 broker 位址" });
       }
-    },
-  );
+      let password = body.password;
+      let caCert = body.caCert;
+      if (!password || !caCert) {
+        const cfg = await getConfigRow();
+        if (!password) password = cfg?.password ?? undefined;
+        if (!caCert) caCert = cfg?.caCert ?? undefined;
+      }
+      const result = await testConnection(
+        body.brokerUrl.trim(),
+        body.username?.trim() || undefined,
+        password,
+        caCert,
+      );
+      res.json(result);
+    } catch (e) {
+      fail(res, e);
+    }
+  });
 }

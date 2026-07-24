@@ -13,9 +13,22 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { ArduinoDevice, Game, GameSession } from "@shared/schema";
 import {
-  Settings, Wifi, Radio, Gamepad2, Users, Clock,
-  Save, RefreshCw, CheckCircle, AlertTriangle, Database,
-  History, MessageSquare, Flag, ScrollText, ChevronRight,
+  Settings,
+  Wifi,
+  Radio,
+  Gamepad2,
+  Users,
+  Clock,
+  Save,
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
+  Database,
+  History,
+  MessageSquare,
+  Flag,
+  ScrollText,
+  ChevronRight,
 } from "lucide-react";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { Link } from "wouter";
@@ -24,6 +37,18 @@ import SettingsChangeHistory from "@/pages/admin/SettingsChangeHistory";
 interface MqttStatus {
   connected: boolean;
   reconnectAttempts?: number;
+  source?: "database" | "env" | null;
+  brokerUrl?: string | null;
+}
+
+interface BrokerConfig {
+  brokerUrl: string;
+  username: string;
+  hasPassword: boolean;
+  hasCaCert: boolean;
+  enabled: boolean;
+  updatedAt: string | null;
+  status: MqttStatus;
 }
 
 interface SystemSettings {
@@ -120,6 +145,79 @@ export default function AdminSettings() {
     saveMutation.mutate(formValues);
   };
 
+  // 🔌 Broker 設定（ADR-0024）
+  const { data: brokerConfig } = useQuery<BrokerConfig>({
+    queryKey: ["/api/admin/mqtt/broker-config"],
+    refetchInterval: 10000,
+    enabled: isAuthenticated,
+  });
+
+  const [brokerForm, setBrokerForm] = useState({
+    brokerUrl: "",
+    username: "",
+    password: "",
+    enabled: false,
+  });
+  useEffect(() => {
+    if (brokerConfig) {
+      setBrokerForm({
+        brokerUrl: brokerConfig.brokerUrl || "",
+        username: brokerConfig.username || "",
+        password: "", // 不回填密碼，留空=不變更
+        enabled: brokerConfig.enabled,
+      });
+    }
+  }, [brokerConfig]);
+
+  const saveBrokerMutation = useMutation({
+    mutationFn: async () => {
+      const body: Record<string, unknown> = {
+        brokerUrl: brokerForm.brokerUrl,
+        username: brokerForm.username,
+        enabled: brokerForm.enabled,
+      };
+      if (brokerForm.password) body.password = brokerForm.password;
+      return apiRequest("PATCH", "/api/admin/mqtt/broker-config", body);
+    },
+    onSuccess: async (res: Response) => {
+      const data = await res.json().catch(() => ({}));
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/mqtt/broker-config"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/mqtt/status"] });
+      toast({
+        title: "Broker 設定已儲存",
+        description: data?.status?.connected
+          ? "已成功連線"
+          : brokerForm.enabled
+            ? "已套用，連線中…"
+            : "已停用",
+      });
+    },
+    onError: (e: Error) => {
+      toast({ title: "儲存失敗", description: e?.message || "請稍後再試", variant: "destructive" });
+    },
+  });
+
+  const testBrokerMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/admin/mqtt/broker-config/test", {
+        brokerUrl: brokerForm.brokerUrl,
+        username: brokerForm.username,
+        password: brokerForm.password || undefined,
+      });
+      return res.json() as Promise<{ ok: boolean; error?: string }>;
+    },
+    onSuccess: (result: { ok: boolean; error?: string }) => {
+      toast({
+        title: result.ok ? "連線測試成功" : "連線測試失敗",
+        description: result.ok ? "broker 可正常連線" : result.error || "無法連線",
+        variant: result.ok ? undefined : "destructive",
+      });
+    },
+    onError: (e: Error) => {
+      toast({ title: "測試失敗", description: e?.message, variant: "destructive" });
+    },
+  });
+
   const isMqttConnected = mqttStatus?.connected === true;
 
   return (
@@ -172,9 +270,7 @@ export default function AdminSettings() {
                         min={1}
                         max={999}
                         value={formValues.defaultGameTime}
-                        onChange={(e) =>
-                          setField("defaultGameTime", Number(e.target.value) || 1)
-                        }
+                        onChange={(e) => setField("defaultGameTime", Number(e.target.value) || 1)}
                         data-testid="input-default-time"
                       />
                     </div>
@@ -186,9 +282,7 @@ export default function AdminSettings() {
                         min={1}
                         max={999}
                         value={formValues.defaultMaxPlayers}
-                        onChange={(e) =>
-                          setField("defaultMaxPlayers", Number(e.target.value) || 1)
-                        }
+                        onChange={(e) => setField("defaultMaxPlayers", Number(e.target.value) || 1)}
                         data-testid="input-max-players"
                       />
                     </div>
@@ -261,9 +355,24 @@ export default function AdminSettings() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
-                    { href: "/admin/line-settings", icon: MessageSquare, title: "LINE 設定", desc: "Bot / LIFF / 通知" },
-                    { href: "/admin/feature-flags", icon: Flag, title: "功能開關", desc: "模組啟用 / 降級" },
-                    { href: "/admin/audit-logs", icon: ScrollText, title: "操作記錄", desc: "完整稽核紀錄" },
+                    {
+                      href: "/admin/line-settings",
+                      icon: MessageSquare,
+                      title: "LINE 設定",
+                      desc: "Bot / LIFF / 通知",
+                    },
+                    {
+                      href: "/admin/feature-flags",
+                      icon: Flag,
+                      title: "功能開關",
+                      desc: "模組啟用 / 降級",
+                    },
+                    {
+                      href: "/admin/audit-logs",
+                      icon: ScrollText,
+                      title: "操作記錄",
+                      desc: "完整稽核紀錄",
+                    },
                   ].map((item) => (
                     <Link key={item.href} href={item.href}>
                       <div
@@ -309,7 +418,13 @@ export default function AdminSettings() {
                     <p className="font-medium">
                       {mqttLoading ? "檢查中..." : isMqttConnected ? "已連線" : "未連線"}
                     </p>
-                    <p className="text-sm text-muted-foreground">HiveMQ 公共代理</p>
+                    <p className="text-sm text-muted-foreground">
+                      {brokerConfig?.status?.source === "database"
+                        ? "自訂 broker（後台設定）"
+                        : brokerConfig?.status?.source === "env"
+                          ? "環境變數設定"
+                          : "尚未設定"}
+                    </p>
                   </div>
                 </div>
                 <Badge variant={isMqttConnected ? "default" : "destructive"}>
@@ -320,7 +435,7 @@ export default function AdminSettings() {
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div className="p-3 rounded-lg bg-muted/30">
                   <p className="text-sm text-muted-foreground">代理位址</p>
-                  <p className="font-mono text-sm">broker.hivemq.com</p>
+                  <p className="font-mono text-sm break-all">{brokerConfig?.brokerUrl || "—"}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/30">
                   <p className="text-sm text-muted-foreground">重連次數</p>
@@ -342,6 +457,101 @@ export default function AdminSettings() {
                   測試連線
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* 🔌 Broker 設定（ADR-0024）*/}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Radio className="w-5 h-5" />
+                Broker 設定
+              </CardTitle>
+              <CardDescription>
+                自訂 MQTT 代理位址與帳密，儲存後立即套用。此為平台級設定，影響全平台裝置連線。
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between rounded-lg border p-3">
+                <div>
+                  <p className="font-medium">啟用 MQTT</p>
+                  <p className="text-sm text-muted-foreground">關閉時平台不連線任何 broker</p>
+                </div>
+                <Switch
+                  checked={brokerForm.enabled}
+                  onCheckedChange={(v) => setBrokerForm((prev) => ({ ...prev, enabled: v }))}
+                  data-testid="switch-mqtt-enabled"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Broker 位址</Label>
+                <Input
+                  value={brokerForm.brokerUrl}
+                  onChange={(e) =>
+                    setBrokerForm((prev) => ({ ...prev, brokerUrl: e.target.value }))
+                  }
+                  placeholder="例如 mqtts://xxx.hivemq.cloud:8883 或 mqtt://mqttgo.io:1883"
+                  data-testid="input-broker-url"
+                />
+                <p className="text-xs text-muted-foreground">
+                  正式營運請用 mqtts://（TLS 加密）；mqtt://（明文）僅建議測試。
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>帳號（選填）</Label>
+                  <Input
+                    value={brokerForm.username}
+                    onChange={(e) =>
+                      setBrokerForm((prev) => ({ ...prev, username: e.target.value }))
+                    }
+                    placeholder="broker 使用者名稱"
+                    data-testid="input-broker-username"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>密碼（選填）</Label>
+                  <Input
+                    type="password"
+                    value={brokerForm.password}
+                    onChange={(e) =>
+                      setBrokerForm((prev) => ({ ...prev, password: e.target.value }))
+                    }
+                    placeholder={brokerConfig?.hasPassword ? "已設定，留空不變更" : "broker 密碼"}
+                    data-testid="input-broker-password"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => saveBrokerMutation.mutate()}
+                  disabled={saveBrokerMutation.isPending || !brokerForm.brokerUrl.trim()}
+                  className="gap-2"
+                  data-testid="button-save-broker"
+                >
+                  <Save
+                    className={`w-4 h-4 ${saveBrokerMutation.isPending ? "animate-spin" : ""}`}
+                  />
+                  儲存並套用
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => testBrokerMutation.mutate()}
+                  disabled={testBrokerMutation.isPending || !brokerForm.brokerUrl.trim()}
+                  className="gap-2"
+                  data-testid="button-test-broker"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 ${testBrokerMutation.isPending ? "animate-spin" : ""}`}
+                  />
+                  測試連線
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                ⚠️ 公用測試 broker（如 mqttgo.io
+                免費版）任何人都能訂閱與偽造訊息，請勿用於正式營運；正式請用具 per-device 帳密與
+                Topic ACL 的託管 broker。
+              </p>
             </CardContent>
           </Card>
 
