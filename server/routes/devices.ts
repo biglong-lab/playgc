@@ -413,6 +413,12 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
 
       const { mode, color, brightness, speed, speedMs } = req.body;
       const ledMode = mode === "on" ? "solid" : mode;
+      const validModes = ["solid", "blink", "pulse", "rainbow", "off"];
+      if (!validModes.includes(ledMode)) {
+        return res
+          .status(400)
+          .json({ message: "無效的 LED 模式（solid/blink/pulse/rainbow/off）" });
+      }
       const data: Record<string, unknown> = { command: "led", mode: ledMode };
       if (color) data.color = color;
       if (typeof brightness === "number") data.brightness = brightness;

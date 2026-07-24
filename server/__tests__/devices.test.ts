@@ -3,7 +3,7 @@ import express from "express";
 import request from "supertest";
 
 // Mock storage + MQTT（vi.hoisted 確保 hoisted vi.mock 可存取）
-const { mockStorage, mockMqttService } = vi.hoisted(() => ({
+const { mockStorage, mockMqttService, mockSendDeviceCommand } = vi.hoisted(() => ({
   mockStorage: {
     getArduinoDevices: vi.fn(),
     getArduinoDevice: vi.fn(),
@@ -38,6 +38,7 @@ const { mockStorage, mockMqttService } = vi.hoisted(() => ({
     turnOffAllLEDs: vi.fn(),
     pingAllDevices: vi.fn(),
   },
+  mockSendDeviceCommand: vi.fn(),
 }));
 
 vi.mock("../storage", () => ({
@@ -78,6 +79,14 @@ vi.mock("../routes/utils", async (importOriginal) => {
   };
 });
 
+vi.mock("../mqtt/command-service", () => ({
+  sendDeviceCommand: mockSendDeviceCommand,
+}));
+
+vi.mock("../mqtt", () => ({
+  getMqttStatus: vi.fn(() => ({ connected: true, enabled: true })),
+}));
+
 import { registerDeviceRoutes } from "../routes/devices";
 import type { RouteContext } from "../routes/types";
 
@@ -100,6 +109,7 @@ describe("Devices 路由", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSendDeviceCommand.mockResolvedValue({ ok: true });
     app = createApp();
   });
 
@@ -246,27 +256,32 @@ describe("Devices 路由", () => {
   });
 
   describe("POST /api/devices/:id/activate", () => {
-    it("啟用成功應回傳成功訊息", async () => {
-      mockStorage.getArduinoDevice.mockResolvedValue({ id: "d-1" });
-      mockMqttService.activateTarget.mockReturnValue(true);
+    const onlineDevice = { id: "d-1", deviceId: "TARGET_001", fieldId: "f-1", status: "online" };
 
-      const res = await request(app)
-        .post("/api/devices/d-1/activate")
-        .set(AUTH_HEADER)
-        .send({});
+    it("設備在線時應發送 v1 啟動指令", async () => {
+      mockStorage.getArduinoDevice.mockResolvedValue(onlineDevice);
+      mockSendDeviceCommand.mockResolvedValue({ ok: true });
+
+      const res = await request(app).post("/api/devices/d-1/activate").set(AUTH_HEADER).send({});
 
       expect(res.status).toBe(200);
-      expect(res.body.message).toContain("Activation");
+      expect(mockSendDeviceCommand).toHaveBeenCalledWith("f-1", "TARGET_001", { command: "start_session" });
+    });
+
+    it("設備離線應回傳 409 且不發指令", async () => {
+      mockStorage.getArduinoDevice.mockResolvedValue({ ...onlineDevice, status: "offline" });
+
+      const res = await request(app).post("/api/devices/d-1/activate").set(AUTH_HEADER).send({});
+
+      expect(res.status).toBe(409);
+      expect(mockSendDeviceCommand).not.toHaveBeenCalled();
     });
 
     it("MQTT 未連線應回傳 503", async () => {
-      mockStorage.getArduinoDevice.mockResolvedValue({ id: "d-1" });
-      mockMqttService.activateTarget.mockReturnValue(false);
+      mockStorage.getArduinoDevice.mockResolvedValue(onlineDevice);
+      mockSendDeviceCommand.mockResolvedValue({ ok: false, status: 503, message: "MQTT 未連線" });
 
-      const res = await request(app)
-        .post("/api/devices/d-1/activate")
-        .set(AUTH_HEADER)
-        .send({});
+      const res = await request(app).post("/api/devices/d-1/activate").set(AUTH_HEADER).send({});
 
       expect(res.status).toBe(503);
     });
@@ -274,10 +289,7 @@ describe("Devices 路由", () => {
     it("裝置不存在應回傳 404", async () => {
       mockStorage.getArduinoDevice.mockResolvedValue(null);
 
-      const res = await request(app)
-        .post("/api/devices/d-1/activate")
-        .set(AUTH_HEADER)
-        .send({});
+      const res = await request(app).post("/api/devices/d-1/activate").set(AUTH_HEADER).send({});
 
       expect(res.status).toBe(404);
     });
@@ -382,40 +394,41 @@ describe("Devices 路由", () => {
   // LED 控制
   // =====================================================
   describe("POST /api/devices/:id/led", () => {
-    it("solid 模式應開啟 LED", async () => {
-      mockStorage.getArduinoDevice.mockResolvedValue({ id: "d-1", deviceId: "arduino-001" });
-      mockMqttService.turnOnLED.mockReturnValue(true);
+    const onlineDevice = { id: "d-1", deviceId: "TARGET_001", fieldId: "f-1", status: "online" };
 
-      const res = await request(app)
-        .post("/api/devices/d-1/led")
-        .set(AUTH_HEADER)
-        .send({ mode: "solid", color: "#FF0000" });
+    it("solid 模式應發送 LED 指令", async () => {
+      mockStorage.getArduinoDevice.mockResolvedValue(onlineDevice);
+      mockSendDeviceCommand.mockResolvedValue({ ok: true });
+
+      const res = await request(app).post("/api/devices/d-1/led").set(AUTH_HEADER).send({ mode: "solid", color: "red" });
 
       expect(res.status).toBe(200);
-      expect(mockMqttService.turnOnLED).toHaveBeenCalled();
+      expect(mockSendDeviceCommand).toHaveBeenCalled();
     });
 
-    it("off 模式應關閉 LED", async () => {
-      mockStorage.getArduinoDevice.mockResolvedValue({ id: "d-1", deviceId: "arduino-001" });
-      mockMqttService.turnOffLED.mockReturnValue(true);
+    it("off 模式應發送 LED 指令", async () => {
+      mockStorage.getArduinoDevice.mockResolvedValue(onlineDevice);
+      mockSendDeviceCommand.mockResolvedValue({ ok: true });
 
-      const res = await request(app)
-        .post("/api/devices/d-1/led")
-        .set(AUTH_HEADER)
-        .send({ mode: "off" });
+      const res = await request(app).post("/api/devices/d-1/led").set(AUTH_HEADER).send({ mode: "off" });
 
       expect(res.status).toBe(200);
     });
 
     it("無效模式應回傳 400", async () => {
-      mockStorage.getArduinoDevice.mockResolvedValue({ id: "d-1", deviceId: "arduino-001" });
+      mockStorage.getArduinoDevice.mockResolvedValue(onlineDevice);
 
-      const res = await request(app)
-        .post("/api/devices/d-1/led")
-        .set(AUTH_HEADER)
-        .send({ mode: "invalid" });
+      const res = await request(app).post("/api/devices/d-1/led").set(AUTH_HEADER).send({ mode: "invalid" });
 
       expect(res.status).toBe(400);
+    });
+
+    it("設備離線應回傳 409", async () => {
+      mockStorage.getArduinoDevice.mockResolvedValue({ ...onlineDevice, status: "offline" });
+
+      const res = await request(app).post("/api/devices/d-1/led").set(AUTH_HEADER).send({ mode: "solid" });
+
+      expect(res.status).toBe(409);
     });
   });
 
@@ -423,26 +436,22 @@ describe("Devices 路由", () => {
   // 裝置指令
   // =====================================================
   describe("POST /api/devices/:id/command", () => {
-    it("reboot 指令應成功發送", async () => {
-      mockStorage.getArduinoDevice.mockResolvedValue({ id: "d-1", deviceId: "arduino-001" });
-      mockMqttService.rebootDevice.mockReturnValue(true);
+    const onlineDevice = { id: "d-1", deviceId: "TARGET_001", fieldId: "f-1", status: "online" };
 
-      const res = await request(app)
-        .post("/api/devices/d-1/command")
-        .set(AUTH_HEADER)
-        .send({ command: "reboot" });
+    it("reboot 指令應成功發送 v1 command", async () => {
+      mockStorage.getArduinoDevice.mockResolvedValue(onlineDevice);
+      mockSendDeviceCommand.mockResolvedValue({ ok: true });
+
+      const res = await request(app).post("/api/devices/d-1/command").set(AUTH_HEADER).send({ command: "reboot" });
 
       expect(res.status).toBe(200);
-      expect(mockMqttService.rebootDevice).toHaveBeenCalledWith("arduino-001");
+      expect(mockSendDeviceCommand).toHaveBeenCalledWith("f-1", "TARGET_001", { command: "reboot" });
     });
 
-    it("缺少 command 應回傳 400", async () => {
-      mockStorage.getArduinoDevice.mockResolvedValue({ id: "d-1", deviceId: "arduino-001" });
+    it("不支援的指令應回傳 400", async () => {
+      mockStorage.getArduinoDevice.mockResolvedValue(onlineDevice);
 
-      const res = await request(app)
-        .post("/api/devices/d-1/command")
-        .set(AUTH_HEADER)
-        .send({});
+      const res = await request(app).post("/api/devices/d-1/command").set(AUTH_HEADER).send({ command: "rm -rf" });
 
       expect(res.status).toBe(400);
     });
