@@ -16,6 +16,21 @@ export interface ResolvedMqttConfig {
   source: "database" | "env";
 }
 
+/**
+ * 補上 broker URL 的 scheme。使用者常只填 host:port（如 mqttgo.io:1883），
+ * mqtt.js 沒有 scheme 會連錯 → connack timeout。依 port 自動補：
+ * 8883/8884 → mqtts（TLS）；其餘 → mqtt。
+ */
+export function normalizeBrokerUrl(url: string): string {
+  const u = url.trim();
+  if (!u) return u;
+  if (/^(mqtts?|wss?|tcp):\/\//i.test(u)) return u;
+  const m = u.match(/:(\d+)\s*$/);
+  const port = m ? parseInt(m[1], 10) : 1883;
+  const scheme = port === 8883 || port === 8884 ? "mqtts" : "mqtt";
+  return `${scheme}://${u}`;
+}
+
 /** 解析目前生效的 MQTT 連線設定；未啟用時回 null（gateway 不啟動） */
 export async function resolveMqttConfig(): Promise<ResolvedMqttConfig | null> {
   // 1) DB singleton 優先
@@ -28,7 +43,7 @@ export async function resolveMqttConfig(): Promise<ResolvedMqttConfig | null> {
     const cfg = rows[0];
     if (cfg?.enabled && cfg.brokerUrl) {
       return {
-        brokerUrl: cfg.brokerUrl,
+        brokerUrl: normalizeBrokerUrl(cfg.brokerUrl),
         username: cfg.username ?? undefined,
         password: cfg.password ?? undefined,
         caCert: cfg.caCert ?? undefined,
@@ -50,7 +65,7 @@ export async function resolveMqttConfig(): Promise<ResolvedMqttConfig | null> {
       }
     }
     return {
-      brokerUrl: process.env.MQTT_BROKER_URL,
+      brokerUrl: normalizeBrokerUrl(process.env.MQTT_BROKER_URL),
       username: process.env.MQTT_USERNAME || undefined,
       password: process.env.MQTT_PASSWORD || undefined,
       caCert,

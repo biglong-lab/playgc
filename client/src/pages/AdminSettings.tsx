@@ -157,6 +157,7 @@ export default function AdminSettings() {
     username: "",
     password: "",
     enabled: false,
+    clearPassword: false,
   });
   useEffect(() => {
     if (brokerConfig) {
@@ -165,6 +166,7 @@ export default function AdminSettings() {
         username: brokerConfig.username || "",
         password: "", // 不回填密碼，留空=不變更
         enabled: brokerConfig.enabled,
+        clearPassword: false,
       });
     }
   }, [brokerConfig]);
@@ -177,6 +179,7 @@ export default function AdminSettings() {
         enabled: brokerForm.enabled,
       };
       if (brokerForm.password) body.password = brokerForm.password;
+      if (brokerForm.clearPassword) body.clearPassword = true;
       return apiRequest("PATCH", "/api/admin/mqtt/broker-config", body);
     },
     onSuccess: async (res: Response) => {
@@ -515,11 +518,33 @@ export default function AdminSettings() {
                     type="password"
                     value={brokerForm.password}
                     onChange={(e) =>
-                      setBrokerForm((prev) => ({ ...prev, password: e.target.value }))
+                      setBrokerForm((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                        clearPassword: false,
+                      }))
                     }
+                    disabled={brokerForm.clearPassword}
                     placeholder={brokerConfig?.hasPassword ? "已設定，留空不變更" : "broker 密碼"}
                     data-testid="input-broker-password"
                   />
+                  {brokerConfig?.hasPassword && (
+                    <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <input
+                        type="checkbox"
+                        checked={brokerForm.clearPassword}
+                        onChange={(e) =>
+                          setBrokerForm((prev) => ({
+                            ...prev,
+                            clearPassword: e.target.checked,
+                            password: "",
+                          }))
+                        }
+                        data-testid="checkbox-clear-password"
+                      />
+                      清除已儲存的密碼（改用匿名 broker 時勾選）
+                    </label>
+                  )}
                 </div>
               </div>
               <div className="flex gap-3">

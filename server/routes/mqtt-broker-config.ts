@@ -14,6 +14,7 @@ import { requireAdminAuth, logAuditAction } from "../adminAuth";
 import { db } from "../db";
 import { mqttBrokerConfig } from "@shared/schema";
 import { reconnectMqttV1, getMqttStatus } from "../mqtt";
+import { normalizeBrokerUrl } from "../mqtt/config";
 
 const SINGLETON = "singleton";
 
@@ -23,6 +24,7 @@ const updateSchema = z.object({
   password: z.string().max(500).optional(),
   caCert: z.string().max(10000).optional(),
   enabled: z.boolean().optional(),
+  clearPassword: z.boolean().optional(),
 });
 
 function fail(res: Response, e: unknown) {
