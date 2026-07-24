@@ -10,6 +10,7 @@ export * from "./teams";
 export * from "./walkie-groups";
 export * from "./client-events";
 export * from "./devices";
+export * from "./mqtt-broker-config";
 export * from "./locations";
 export * from "./leaderboard";
 export * from "./chapters";
