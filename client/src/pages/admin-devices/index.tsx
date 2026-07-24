@@ -19,6 +19,19 @@ import DeviceCard from "./DeviceCard";
 import LEDControl from "./LEDControl";
 import DeviceStats from "./DeviceStats";
 
+// 從 apiRequest 的錯誤（格式可能是 "503: {json}"）抽出後端的中文訊息
+function extractErrMsg(error: unknown, fallback: string): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  const m = raw.match(/^\d{3}:\s*([\s\S]*)$/);
+  const body = m ? m[1] : raw;
+  try {
+    const parsed = JSON.parse(body);
+    return parsed?.message || fallback;
+  } catch {
+    return body || fallback;
+  }
+}
+
 export default function AdminDevices() {
   const { isAuthenticated, admin } = useAdminAuth();
   const { toast } = useToast();
@@ -110,8 +123,12 @@ export default function AdminDevices() {
     onSuccess: () => {
       toast({ title: "啟動命令已發送" });
     },
-    onError: () => {
-      toast({ title: "啟動失敗", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({
+        title: "啟動失敗",
+        description: extractErrMsg(error, "請稍後再試"),
+        variant: "destructive",
+      });
     },
   });
 
@@ -120,8 +137,12 @@ export default function AdminDevices() {
     onSuccess: () => {
       toast({ title: "停用命令已發送" });
     },
-    onError: () => {
-      toast({ title: "停用失敗", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({
+        title: "停用失敗",
+        description: extractErrMsg(error, "請稍後再試"),
+        variant: "destructive",
+      });
     },
   });
 
@@ -131,8 +152,12 @@ export default function AdminDevices() {
     onSuccess: () => {
       toast({ title: "LED 命令已發送" });
     },
-    onError: () => {
-      toast({ title: "LED 控制失敗", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({
+        title: "LED 控制失敗",
+        description: extractErrMsg(error, "請稍後再試"),
+        variant: "destructive",
+      });
     },
   });
 
@@ -149,8 +174,12 @@ export default function AdminDevices() {
     onSuccess: (_, variables) => {
       toast({ title: `${variables.command} 命令已發送` });
     },
-    onError: () => {
-      toast({ title: "命令發送失敗", variant: "destructive" });
+    onError: (error: Error) => {
+      toast({
+        title: "命令發送失敗",
+        description: extractErrMsg(error, "請稍後再試"),
+        variant: "destructive",
+      });
     },
   });
 
