@@ -16,7 +16,23 @@ async function throwIfResNotOk(res: Response) {
     if (res.status === 401) {
       throw new Error("登入已失效，請重新登入");
     }
-    throw new Error(`${res.status}: ${text}`);
+    // 一般錯誤：解析後端 JSON，優先顯示可讀 message / 展開 zod validation 欄位，
+    // 取代原本的「500: {json}」（使用者看不懂）
+    let msg = `發生錯誤（${res.status}）`;
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed.error === "validation" && Array.isArray(parsed.details)) {
+        const detail = parsed.details
+          .map((d: { path?: unknown[]; message?: string }) => `${d.path?.join?.(".") || "?"}：${d.message}`)
+          .join("；");
+        msg = detail ? `欄位驗證失敗 — ${detail}` : parsed.message || msg;
+      } else {
+        msg = parsed.message || parsed.error || msg;
+      }
+    } catch {
+      msg = text || msg;
+    }
+    throw new Error(msg);
   }
 }
 
