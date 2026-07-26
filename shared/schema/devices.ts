@@ -37,6 +37,7 @@ export const arduinoDevices = pgTable("arduino_devices", {
   // 🔌 MQTT v1（ADR-0024）：場域隔離、裝置憑證、佈署狀態
   fieldId: varchar("field_id"), // 所屬場域；先 nullable、backfill 後由應用層強制
   apiKey: varchar("api_key", { length: 255 }), // 憑證 hash，絕不存明文
+  deviceSecret: varchar("device_secret", { length: 128 }), // HMAC 簽章密鑰（明文；命中防偽造，即使公用 broker 也擋灌分）
   provisionStatus: varchar("provision_status", { length: 20 }).default("unprovisioned"),
   revokedAt: timestamp("revoked_at"),
   createdAt: timestamp("created_at").defaultNow(),
