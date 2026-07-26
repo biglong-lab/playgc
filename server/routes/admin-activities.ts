@@ -18,8 +18,38 @@ import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAut
 import { validateAndStampClosures, ClosureValidationError } from "../booking/closure-service";
 import { z } from "zod";
 
+function slugify(input: string): string {
+  return (input || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+}
+
+/** 產生同場域唯一 slug；優先用填的、其次 name、純中文則 activity + 隨機後綴 */
+async function makeUniqueSlug(
+  fieldId: string,
+  rawSlug: string | undefined,
+  name: string,
+  excludeId?: string,
+): Promise<string> {
+  const base = slugify(rawSlug ?? "") || slugify(name) || "activity";
+  let candidate = base;
+  for (let i = 0; i < 50; i++) {
+    const [hit] = await db
+      .select({ id: activities.id })
+      .from(activities)
+      .where(and(eq(activities.fieldId, fieldId), eq(activities.slug, candidate)))
+      .limit(1);
+    if (!hit || hit.id === excludeId) return candidate;
+    candidate = `${base}-${Math.random().toString(36).slice(2, 6)}`;
+  }
+  return `${base}-${Date.now().toString(36)}`;
+}
+
 const createSchema = z.object({
-  slug: z.string().min(2).max(50).regex(/^[a-z0-9-]+$/i, "slug 只能含英數和 -"),
+  slug: z.string().max(50).optional(), // 選填：留空/純中文由後端自動產生
   name: z.string().min(1).max(100),
   shortDesc: z.string().max(200).optional().nullable(),
   description: z.string().optional().nullable(),
@@ -129,19 +159,17 @@ export function registerAdminActivitiesRoutes(app: Express) {
         if (!parsed.success) {
           return res.status(400).json({ error: "validation", details: parsed.error.issues });
         }
-        // slug 唯一性 check（per field）
-        const [existing] = await db
-          .select({ id: activities.id })
-          .from(activities)
-          .where(and(eq(activities.fieldId, req.admin.fieldId), eq(activities.slug, parsed.data.slug)))
-          .limit(1);
-        if (existing) {
-          return res.status(409).json({ error: "slug_taken", message: "此 slug 已被使用" });
-        }
+        // slug 選填：填的正規化後用；留空/純中文 → 自動產生唯一 slug
+        const slug = await makeUniqueSlug(
+          req.admin.fieldId,
+          parsed.data.slug,
+          parsed.data.name,
+        );
         const [created] = await db
           .insert(activities)
           .values({
             ...parsed.data,
+            slug,
             fieldId: req.admin.fieldId,
           })
           .returning();
@@ -151,7 +179,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
           targetType: "activity",
           targetId: created.id,
           fieldId: req.admin.fieldId,
-          metadata: { slug: parsed.data.slug, name: parsed.data.name, priceCents: parsed.data.priceCents },
+          metadata: { slug, name: parsed.data.name, priceCents: parsed.data.priceCents },
           ipAddress: req.ip,
           userAgent: req.headers["user-agent"],
         });
@@ -175,9 +203,18 @@ export function registerAdminActivitiesRoutes(app: Express) {
         if (!parsed.success) {
           return res.status(400).json({ error: "validation", details: parsed.error.issues });
         }
+        const patchData: Record<string, unknown> = { ...parsed.data, updatedAt: new Date() };
+        if (typeof parsed.data.slug === "string") {
+          patchData.slug = await makeUniqueSlug(
+            req.admin.fieldId,
+            parsed.data.slug,
+            parsed.data.name ?? "",
+            req.params.id,
+          );
+        }
         const [updated] = await db
           .update(activities)
-          .set({ ...parsed.data, updatedAt: new Date() })
+          .set(patchData)
           .where(
             and(eq(activities.id, req.params.id), eq(activities.fieldId, req.admin.fieldId)),
           )

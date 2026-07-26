@@ -15,9 +15,32 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Calendar, Image as ImageIcon, Activity as ActivityIcon, ArrowUp, ArrowDown, Copy, Link2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Calendar,
+  Image as ImageIcon,
+  Activity as ActivityIcon,
+  ArrowUp,
+  ArrowDown,
+  Copy,
+  Link2,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
@@ -97,9 +120,11 @@ export default function AdminActivities() {
 
   // 用 window.location.host + lastVisitedField 組 URL
   const buildPublicUrl = (slug: string, fieldCode?: string) => {
-    const code = fieldCode || (typeof window !== "undefined"
-      ? localStorage.getItem("chito:lastVisitedField") || "JIACHUN"
-      : "JIACHUN");
+    const code =
+      fieldCode ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem("chito:lastVisitedField") || "JIACHUN"
+        : "JIACHUN");
     return `${window.location.origin}/book/${code.toUpperCase()}/activity/${slug}`;
   };
 
@@ -181,7 +206,10 @@ export default function AdminActivities() {
     const other = list[swapIdx];
     // 兩者 sortOrder 交換、若同值則上加一下加
     if (a.sortOrder === other.sortOrder) {
-      sortMutation.mutate({ id: a.id, sortOrder: direction === "up" ? a.sortOrder - 1 : a.sortOrder + 1 });
+      sortMutation.mutate({
+        id: a.id,
+        sortOrder: direction === "up" ? a.sortOrder - 1 : a.sortOrder + 1,
+      });
     } else {
       sortMutation.mutate({ id: a.id, sortOrder: other.sortOrder });
       sortMutation.mutate({ id: other.id, sortOrder: a.sortOrder });
@@ -299,7 +327,11 @@ export default function AdminActivities() {
         {data?.activities?.map((a) => (
           <Card key={a.id} className={!a.isActive ? "opacity-50" : ""}>
             {a.coverUrl ? (
-              <img src={a.coverUrl} alt={a.name} className="w-full h-32 object-cover rounded-t-lg" />
+              <img
+                src={a.coverUrl}
+                alt={a.name}
+                className="w-full h-32 object-cover rounded-t-lg"
+              />
             ) : (
               <div className="w-full h-32 bg-muted flex items-center justify-center rounded-t-lg">
                 <ImageIcon className="w-8 h-8 text-muted-foreground" />
@@ -313,20 +345,31 @@ export default function AdminActivities() {
               <CardDescription className="text-xs">/{a.slug}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 pt-0">
-              {a.shortDesc && <p className="text-xs text-muted-foreground line-clamp-2">{a.shortDesc}</p>}
+              {a.shortDesc && (
+                <p className="text-xs text-muted-foreground line-clamp-2">{a.shortDesc}</p>
+              )}
               <div className="flex flex-wrap gap-2 text-xs">
                 <Badge variant="secondary">NT${(a.priceCents / 100).toFixed(0)}</Badge>
                 <Badge variant="secondary">{a.durationMinutes} 分</Badge>
                 <Badge variant="secondary">{a.capacityPerSlot} 人/梯</Badge>
                 <Badge variant="outline">
-                  {a.paymentMode === "online" ? "線上付款" : a.paymentMode === "onsite" ? "現場付款" : "兩種皆可"}
+                  {a.paymentMode === "online"
+                    ? "線上付款"
+                    : a.paymentMode === "onsite"
+                      ? "現場付款"
+                      : "兩種皆可"}
                 </Badge>
                 {(a.bookingCount ?? 0) > 0 && (
                   <Badge className="bg-emerald-600">📅 {a.bookingCount} 筆預約</Badge>
                 )}
               </div>
               <div className="flex gap-1 pt-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={() => openEdit(a)} className="flex-1 min-w-[60px]">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => openEdit(a)}
+                  className="flex-1 min-w-[60px]"
+                >
                   <Pencil className="w-3 h-3 mr-1" />
                   編輯
                 </Button>
@@ -362,8 +405,8 @@ export default function AdminActivities() {
                     if (
                       confirm(
                         `刪除「${a.name}」？\n\n` +
-                        `• 若無預約綁定 → 永久刪除\n` +
-                        `• 若有預約紀錄 → 自動改為停用（保留歷史資料、玩家看不到）`,
+                          `• 若無預約綁定 → 永久刪除\n` +
+                          `• 若有預約紀錄 → 自動改為停用（保留歷史資料、玩家看不到）`,
                       )
                     ) {
                       deleteMutation.mutate(a.id);
@@ -396,7 +439,9 @@ export default function AdminActivities() {
                 >
                   <ArrowDown className="w-3 h-3" />
                 </Button>
-                <span className="text-xs text-muted-foreground self-center px-2">#{a.sortOrder}</span>
+                <span className="text-xs text-muted-foreground self-center px-2">
+                  #{a.sortOrder}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -416,11 +461,19 @@ export default function AdminActivities() {
                 placeholder="例：賈村射擊體驗"
               />
             </Field>
-            <Field label="Slug（URL 用、英數和 -）*" hint={`/book/<場域>/${form.slug || "shooting"}`}>
+            <Field
+              label="Slug（選填，留空自動產生）"
+              hint={`預約網址：/book/<場域>/${form.slug || "自動產生"}`}
+            >
               <Input
                 value={form.slug}
-                onChange={(e) => setForm({ ...form, slug: e.target.value.toLowerCase() })}
-                placeholder="shooting"
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+                  })
+                }
+                placeholder="留空自動產生（僅英數和 -）"
                 disabled={!!editing}
               />
             </Field>
@@ -476,7 +529,9 @@ export default function AdminActivities() {
                 <Input
                   type="number"
                   value={form.priceCents / 100}
-                  onChange={(e) => setForm({ ...form, priceCents: Math.round(Number(e.target.value) * 100) })}
+                  onChange={(e) =>
+                    setForm({ ...form, priceCents: Math.round(Number(e.target.value) * 100) })
+                  }
                 />
               </Field>
               <Field label="時長（分鐘）*">
@@ -494,10 +549,15 @@ export default function AdminActivities() {
                 />
               </Field>
             </div>
-            <Field label="付款模式 *" hint="目前僅支援『現場付款』；線上金流（Recur/Stripe/LinePay）待商戶帳號開通後啟用">
+            <Field
+              label="付款模式 *"
+              hint="目前僅支援『現場付款』；線上金流（Recur/Stripe/LinePay）待商戶帳號開通後啟用"
+            >
               <Select
                 value={form.paymentMode}
-                onValueChange={(v) => setForm({ ...form, paymentMode: v as ActivityForm["paymentMode"] })}
+                onValueChange={(v) =>
+                  setForm({ ...form, paymentMode: v as ActivityForm["paymentMode"] })
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -528,7 +588,10 @@ export default function AdminActivities() {
             <Button variant="outline" onClick={closeDialog}>
               取消
             </Button>
-            <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending || !form.name || !form.slug}>
+            <Button
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || !form.name}
+            >
               {saveMutation.isPending ? "儲存中…" : "儲存"}
             </Button>
           </DialogFooter>
@@ -549,7 +612,10 @@ export default function AdminActivities() {
       </Card>
 
       {/* 活動時段編輯 Dialog */}
-      <Dialog open={!!schedulingActivityId} onOpenChange={(o) => !o && setSchedulingActivityId(null)}>
+      <Dialog
+        open={!!schedulingActivityId}
+        onOpenChange={(o) => !o && setSchedulingActivityId(null)}
+      >
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>

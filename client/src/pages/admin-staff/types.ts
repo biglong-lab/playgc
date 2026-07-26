@@ -46,12 +46,13 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 /** 帳號狀態 Badge 樣式對照 */
-export const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  active: "default",
-  inactive: "secondary",
-  locked: "destructive",
-  pending: "outline",
-};
+export const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> =
+  {
+    active: "default",
+    inactive: "secondary",
+    locked: "destructive",
+    pending: "outline",
+  };
 
 /** 帶管理員認證的 fetch */
 export async function fetchWithAdminAuth(url: string, options: RequestInit = {}) {
@@ -65,7 +66,17 @@ export async function fetchWithAdminAuth(url: string, options: RequestInit = {})
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "Request failed" }));
     // 🐛 2026-05-19：後端錯誤訊息可能在 message / error / details 任一個欄位、優先順序拿
-    const msg = error.message || error.error || error.details || `HTTP ${response.status}`;
+    let msg = error.message || error.error || `HTTP ${response.status}`;
+    // 🆕 validation 錯誤：把 zod details 展開成「欄位：原因」（原本只顯示 "validation"，看不出哪錯）
+    if (error.error === "validation" && Array.isArray(error.details)) {
+      const detail = error.details
+        .map(
+          (d: { path?: unknown[]; message?: string }) =>
+            `${d.path?.join(".") || "?"}：${d.message}`,
+        )
+        .join("；");
+      if (detail) msg = `欄位驗證失敗 — ${detail}`;
+    }
     throw new Error(msg);
   }
 
