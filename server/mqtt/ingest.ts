@@ -14,7 +14,8 @@ import {
   fields,
   shootingRecords,
 } from "@shared/schema";
-import { inboundMessageSchema, type HitZone } from "@shared/mqtt/contracts";
+import { inboundMessageSchema, buildHitSignatureBase, type HitZone } from "@shared/mqtt/contracts";
+import { verifyHmacSignature } from "../lib/webhook-signature";
 import { parseTopic } from "./topic";
 
 /** 命中區域對應分數（server 權威；未來可由關卡 config 覆寫） */
@@ -162,6 +163,29 @@ export async function handleInboundMessage(
   }
 
   if (message.type === "event" && message.data.event === "hit") {
+    // 🔐 HMAC 命中簽章驗證（ADR-0024 安全強化）：
+    //   有 device_secret → 強制驗簽（沒帶 sig 或 sig 錯一律拒收）→ 即使公用明文 broker 也無法偽造命中
+    //   無 device_secret → 放行（過渡期相容；provisioning 發 secret 後該設備自動進入強制驗簽）
+    if (device.deviceSecret) {
+      const base = buildHitSignatureBase({
+        deviceId: parsed.deviceId,
+        messageId: message.messageId,
+        sentAt: message.sentAt,
+        zone: message.data.zone,
+        peak: message.data.peak,
+      });
+      const ok = message.sig
+        ? verifyHmacSignature(base, message.sig, device.deviceSecret, "hex")
+        : false;
+      if (!ok) {
+        console.error(
+          "[mqtt-ingest] 命中簽章驗證失敗，拒收",
+          parsed.deviceId,
+          message.messageId,
+        );
+        return;
+      }
+    }
     await handleHitEvent(parsed.deviceId, message.messageId, message.data.zone);
   }
   // telemetry / ack：MVP 階段暫不處理，契約已預留
