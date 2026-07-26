@@ -7,7 +7,18 @@
 
 ## 2026-07-23
 
-### 🐛 Broker 測試連線逾時修復：URL 自動補 scheme + 密碼可清除（fix）
+### 🐛 新增預約方案 validation 失敗修復：slug 改選填自動產生（fix）
+**狀態**：🟢 部署上線（commit `6bc2db7a`；純 code、無 schema 變更）
+
+- **回報**：新增活動/預約方案按儲存 → 紅色「儲存失敗 validation」
+- **根因**：`slug` 欄位必填且只能英數-（2026-05-18 起的規則，非近期改動），使用者填中文「夜光彈對戰」或留空 → regex 擋下。前端錯誤只顯示 "validation"、看不出是哪欄
+- **修復**：
+  - slug 改**選填**：留空或純中文時後端自動產生唯一 slug（`slugify(name)` → 純中文則 `activity` + 隨機後綴，同場域唯一）
+  - 填合法英文 slug 仍直接採用；PATCH 同步處理
+  - 前端 slug 欄位改「選填、留空自動產生」+ onChange 即時過濾非法字元 + 儲存按鈕不再要求 slug
+  - `fetchWithAdminAuth` 展開 zod details → 錯誤訊息顯示「欄位：原因」（不再只有 "validation"）
+- **驗證**：本地端到端（slug 省略+中文 name→201 自動產生／同名再建→唯一後綴／填英文→直接用）
+- **非本次改動所致**：git 查證我近日部署未碰 activities 相關檔：URL 自動補 scheme + 密碼可清除（fix）
 **狀態**：🟢 部署上線（commit `180ca551`；本批純 code、無 schema 變更；另即時修正生產 DB 設定）
 
 - **根因**：後台 broker 位址填 `host:port`（如 `mqttgo.io:1883`）**少了 `mqtt://` scheme** → mqtt.js 連錯 → connack 逾時（8 秒）。另有殘留密碼連匿名 broker 也會失敗
