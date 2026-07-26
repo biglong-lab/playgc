@@ -22,6 +22,8 @@ const envelopeBase = z.object({
   sentAt: z.string().datetime(),
   bootId: z.string().min(1).max(64),
   sequence: z.number().int().nonnegative(),
+  // HMAC-SHA256 hex 簽章（選填；命中防偽造，基底見 buildHitSignatureBase）
+  sig: z.string().max(128).optional(),
 });
 
 // ── 上行：state（設備狀態；LWT 遺囑也發到此 channel）──
@@ -39,6 +41,21 @@ export const deviceStateSchema = envelopeBase.extend({
 
 /** 命中區域；分數對應由 server 端遊戲設定決定，不寫死在韌體 */
 export const hitZoneSchema = z.enum(["center", "inner", "outer"]);
+
+/**
+ * 命中訊息的 HMAC 簽章基底字串。
+ * 設備端與 server 端必須用「完全相同」的串法算 HMAC-SHA256(secret, base) → hex。
+ * 攻擊者沒有 device_secret 就簽不出有效 sig，即使公用明文 broker 也無法偽造命中。
+ */
+export function buildHitSignatureBase(input: {
+  deviceId: string;
+  messageId: string;
+  sentAt: string;
+  zone: string;
+  peak: number;
+}): string {
+  return `${input.deviceId}|${input.messageId}|${input.sentAt}|${input.zone}|${input.peak}`;
+}
 
 // ── 上行：event（不可遺失的業務事件）──
 export const deviceEventSchema = envelopeBase.extend({
