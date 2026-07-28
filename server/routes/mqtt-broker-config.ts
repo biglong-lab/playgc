@@ -15,6 +15,7 @@ import { db } from "../db";
 import { mqttBrokerConfig } from "@shared/schema";
 import { reconnectMqttV1, getMqttStatus } from "../mqtt";
 import { normalizeBrokerUrl } from "../mqtt/config";
+import { getRecentRejects } from "../mqtt/reject-log";
 
 const SINGLETON = "singleton";
 
@@ -174,6 +175,15 @@ export function registerMqttBrokerConfigRoutes(app: Express): void {
         caCert,
       );
       res.json(result);
+    } catch (e) {
+      fail(res, e);
+    }
+  });
+
+  // 最近拒收診斷：讓管理員看到「命中為何被擋」（記憶體最近 50 筆，重啟即清）
+  app.get("/api/admin/mqtt/rejects", requireAdminAuth, async (_req, res) => {
+    try {
+      res.json({ rejects: getRecentRejects() });
     } catch (e) {
       fail(res, e);
     }
