@@ -41,6 +41,7 @@ import { eq, desc, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { syncGamesMeter } from "../services/billing";
 import { storage } from "../storage";
+import { sanitizeDevice } from "./utils";
 
 export function registerAdminGameRoutes(app: Express) {
   // ============================================================================
@@ -91,7 +92,7 @@ export function registerAdminGameRoutes(app: Express) {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
         const devices = await storage.getArduinoDevices();
-        res.json(devices);
+        res.json(devices.map(sanitizeDevice));
       } catch (error) {
         console.error("[admin-games] list devices failed:", error);
         res.status(500).json({ message: "無法取得裝置清單" });

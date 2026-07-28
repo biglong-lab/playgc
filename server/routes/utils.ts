@@ -139,3 +139,17 @@ export async function requireAdminRole(req: AuthenticatedRequest): Promise<{ aut
 
   return { authorized: false, message: "Unauthorized: Admin role required" };
 }
+
+/**
+ * 剝除裝置敏感欄位後才可回前端（防洩漏）。
+ * - deviceSecret：HMAC 命中簽章明文密鑰，外洩等於可偽造命中灌分
+ * - apiKey：射擊記錄端點憑證
+ * 回傳 hasSecret 讓 UI 知道「是否已配發密鑰」，但絕不吐值本身。
+ */
+export function sanitizeDevice<
+  T extends { deviceSecret?: string | null; apiKey?: string | null },
+>(d: T): Omit<T, "deviceSecret" | "apiKey"> & { hasSecret: boolean } {
+  const { deviceSecret, apiKey, ...safe } = d;
+  void apiKey; // 有意丟棄、不回前端
+  return { ...safe, hasSecret: !!deviceSecret };
+}

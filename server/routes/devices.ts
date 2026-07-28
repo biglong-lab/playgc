@@ -4,7 +4,8 @@ import { isAuthenticated } from "../firebaseAuth";
 import { mqttService } from "../mqttService";
 import { insertArduinoDeviceSchema, insertShootingRecordSchema } from "@shared/schema";
 import { z } from "zod";
-import { requireAdminRole, getManageableFields } from "./utils";
+import { randomBytes } from "node:crypto";
+import { requireAdminRole, getManageableFields, sanitizeDevice } from "./utils";
 import { sendDeviceCommand } from "../mqtt/command-service";
 import { getMqttStatus as getV1MqttStatus } from "../mqtt";
 import { hotPathLimiter } from "../utils/rate-limiters";
@@ -20,7 +21,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       }
 
       const devices = await storage.getArduinoDevices();
-      res.json(devices);
+      res.json(devices.map(sanitizeDevice));
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch devices" });
     }
@@ -75,7 +76,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       if (!device) {
         return res.status(404).json({ message: "Device not found" });
       }
-      res.json(device);
+      res.json(sanitizeDevice(device));
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch device" });
     }
@@ -113,7 +114,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       }
 
       const device = await storage.createArduinoDevice(data);
-      res.status(201).json(device);
+      res.status(201).json(sanitizeDevice(device));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
@@ -134,7 +135,7 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       if (!device) {
         return res.status(404).json({ message: "Device not found" });
       }
-      res.json(device);
+      res.json(sanitizeDevice(device));
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
@@ -154,6 +155,46 @@ export function registerDeviceRoutes(app: Express, ctx: RouteContext) {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete device" });
+    }
+  });
+
+  // 🔐 產生／輪替裝置 HMAC 命中簽章密鑰（provisioning）
+  // 密鑰只在本次回應明文顯示一次，之後 sanitizeDevice 會擋掉任何讀取端點，
+  // 想要就得重新輪替。外洩即等於可偽造命中灌分，故顯示一次後由管理員自行保管燒入韌體。
+  app.post("/api/devices/:id/rotate-secret", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      const auth = await requireAdminRole(req);
+      if (!auth.authorized) {
+        return res.status(403).json({ message: auth.message });
+      }
+
+      const device = await storage.getArduinoDevice(req.params.id);
+      if (!device) {
+        return res.status(404).json({ message: "找不到設備" });
+      }
+
+      // 場域授權：非全域管理員只能為自己場域的設備產生密鑰
+      const scope = await getManageableFields(req);
+      if (!scope.all && (!device.fieldId || !scope.fieldIds.includes(device.fieldId))) {
+        return res.status(403).json({ message: "無權為此場域的設備產生密鑰" });
+      }
+
+      const secret = randomBytes(32).toString("hex");
+      const updated = await storage.updateArduinoDevice(req.params.id, {
+        deviceSecret: secret,
+        provisionStatus: "ready",
+      });
+      if (!updated) {
+        return res.status(404).json({ message: "找不到設備" });
+      }
+
+      res.json({
+        deviceId: device.deviceId,
+        deviceSecret: secret,
+        message: "密鑰只顯示這一次，請立即複製並燒入韌體",
+      });
+    } catch (error) {
+      res.status(500).json({ message: "產生密鑰失敗" });
     }
   });
 
