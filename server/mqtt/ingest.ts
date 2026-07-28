@@ -17,6 +17,7 @@ import {
 import { inboundMessageSchema, buildHitSignatureBase, type HitZone } from "@shared/mqtt/contracts";
 import { verifyHmacSignature } from "../lib/webhook-signature";
 import { parseTopic } from "./topic";
+import { recordReject } from "./reject-log";
 
 /** 命中區域對應分數（server 權威；未來可由關卡 config 覆寫） */
 const ZONE_SCORES: Record<HitZone, number> = {
@@ -139,23 +140,36 @@ export async function handleInboundMessage(
   payload: Buffer,
 ): Promise<void> {
   const parsed = parseTopic(topic);
-  if (!parsed) return;
+  if (!parsed) {
+    recordReject(topic, "bad_topic");
+    return;
+  }
 
   const json = safeJsonParse(payload);
-  if (!json) return;
+  if (!json) {
+    recordReject(topic, "bad_json", parsed.deviceId);
+    return;
+  }
 
   const result = inboundMessageSchema.safeParse(json);
   if (!result.success) {
     console.error("[mqtt-ingest] payload 不符契約", topic);
+    recordReject(topic, "schema_mismatch", parsed.deviceId);
     return;
   }
 
   const message = result.data;
   // topic 與 payload 的 deviceId 必須一致，否則視為偽造
-  if (message.deviceId !== parsed.deviceId) return;
+  if (message.deviceId !== parsed.deviceId) {
+    recordReject(topic, "device_id_mismatch", parsed.deviceId);
+    return;
+  }
 
   const device = await findDevice(parsed.fieldCode, parsed.deviceId);
-  if (!device) return;
+  if (!device) {
+    recordReject(topic, "unknown_device", parsed.deviceId);
+    return;
+  }
 
   if (message.type === "state") {
     await handleStateMessage(parsed.deviceId, message.data);
@@ -183,6 +197,7 @@ export async function handleInboundMessage(
           parsed.deviceId,
           message.messageId,
         );
+        recordReject(topic, "hmac_failed", parsed.deviceId);
         return;
       }
     }
