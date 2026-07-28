@@ -118,6 +118,34 @@ export default function AdminDevices() {
     },
   });
 
+  // 🔐 產生／輪替 HMAC 命中簽章密鑰：後端只回一次明文，成功即複製到剪貼簿
+  const rotateSecretMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("POST", `/api/devices/${id}/rotate-secret`, {});
+      return (await res.json()) as { deviceSecret: string; deviceId: string | null; message: string };
+    },
+    onSuccess: async (data) => {
+      const secret = data?.deviceSecret ?? "";
+      try {
+        await navigator.clipboard.writeText(secret);
+      } catch {
+        // 剪貼簿不可用（http 或權限）時，仍以 toast 顯示開頭讓管理員手動抄
+      }
+      queryClient.invalidateQueries({ queryKey: ["/api/devices"] });
+      toast({
+        title: "密鑰已產生並複製到剪貼簿",
+        description: `開頭 ${secret.slice(0, 8)}…　只顯示這一次，請貼進韌體設定`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "產生密鑰失敗",
+        description: extractErrMsg(error, "請稍後再試"),
+        variant: "destructive",
+      });
+    },
+  });
+
   const activateMutation = useMutation({
     mutationFn: (id: string) => apiRequest("POST", `/api/devices/${id}/activate`, {}),
     onSuccess: () => {
@@ -404,6 +432,7 @@ export default function AdminDevices() {
                   onDeactivate={() => deactivateMutation.mutate(device.id)}
                   onEdit={() => handleEdit(device)}
                   onDelete={() => deleteMutation.mutate(device.id)}
+                  onRotateSecret={() => rotateSecretMutation.mutate(device.id)}
                   onCloseEdit={() => setEditingDevice(null)}
                   formData={formData}
                   setFormData={setFormData}
@@ -412,6 +441,7 @@ export default function AdminDevices() {
                   deactivatePending={deactivateMutation.isPending}
                   updatePending={updateMutation.isPending}
                   deletePending={deleteMutation.isPending}
+                  rotateSecretPending={rotateSecretMutation.isPending}
                 />
               ))}
             </div>

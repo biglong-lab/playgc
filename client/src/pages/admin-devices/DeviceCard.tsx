@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
-  Play, Square, Edit, Trash2, Info, Radio, Battery, FileText, Globe
+  Play, Square, Edit, Trash2, Info, Radio, Battery, FileText, Globe, Key
 } from "lucide-react";
 import type { ArduinoDevice, InsertArduinoDevice } from "@shared/schema";
 import { DEVICE_TYPES, getDeviceIcon } from "./constants";
@@ -19,6 +19,7 @@ interface DeviceCardProps {
   onDeactivate: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onRotateSecret: () => void;
   onCloseEdit: () => void;
   formData: Partial<InsertArduinoDevice>;
   setFormData: React.Dispatch<React.SetStateAction<Partial<InsertArduinoDevice>>>;
@@ -27,6 +28,7 @@ interface DeviceCardProps {
   deactivatePending: boolean;
   updatePending: boolean;
   deletePending: boolean;
+  rotateSecretPending: boolean;
 }
 
 export default function DeviceCard({
@@ -38,6 +40,7 @@ export default function DeviceCard({
   onDeactivate,
   onEdit,
   onDelete,
+  onRotateSecret,
   onCloseEdit,
   formData,
   setFormData,
@@ -46,6 +49,7 @@ export default function DeviceCard({
   deactivatePending,
   updatePending,
   deletePending,
+  rotateSecretPending,
 }: DeviceCardProps) {
   // 🆕 依裝置類型切換 icon（與 Dashboard 共用）
   const DeviceIcon = getDeviceIcon(device.deviceType);
@@ -176,6 +180,19 @@ export default function DeviceCard({
               isPending={updatePending}
             />
           </Dialog>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRotateSecret();
+            }}
+            disabled={rotateSecretPending}
+            title="產生／輪替命中簽章密鑰（只顯示一次）"
+            data-testid={`button-rotate-secret-${device.id}`}
+          >
+            <Key className="w-4 h-4" />
+          </Button>
           <Button
             variant="ghost"
             size="icon"
