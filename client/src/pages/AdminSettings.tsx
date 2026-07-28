@@ -51,6 +51,23 @@ interface BrokerConfig {
   status: MqttStatus;
 }
 
+interface RejectEntry {
+  at: string;
+  topic: string;
+  reason: string;
+  deviceId?: string;
+}
+
+/** 拒收原因 → 管理員看得懂的中文（對應 server/mqtt/reject-log.ts） */
+const REJECT_REASON_LABEL: Record<string, string> = {
+  bad_topic: "Topic 格式不符（非 v1 或含 wildcard）",
+  bad_json: "Payload 不是合法 JSON",
+  schema_mismatch: "Payload 不符契約（欄位/範圍錯誤）",
+  device_id_mismatch: "Topic 與 Payload 的裝置 ID 不一致",
+  unknown_device: "查無此裝置或不屬於該場域",
+  hmac_failed: "命中簽章驗證失敗（密鑰不符或未帶簽章）",
+};
+
 interface SystemSettings {
   defaultGameTime: number;
   defaultMaxPlayers: number;
@@ -152,6 +169,13 @@ export default function AdminSettings() {
     enabled: isAuthenticated,
   });
 
+  // 🔍 最近拒收訊息（診斷「命中沒進來」用）
+  const { data: rejectData } = useQuery<{ rejects: RejectEntry[] }>({
+    queryKey: ["/api/admin/mqtt/rejects"],
+    refetchInterval: 15000,
+    enabled: isAuthenticated,
+  });
+
   const [brokerForm, setBrokerForm] = useState({
     brokerUrl: "",
     username: "",
@@ -222,6 +246,15 @@ export default function AdminSettings() {
   });
 
   const isMqttConnected = mqttStatus?.connected === true;
+
+  // 明文 broker（mqtt:// / ws:// / tcp://）：傳輸可被監聽竄改；命中另有 HMAC 簽章保護
+  const brokerUrlLower = brokerForm.brokerUrl.trim().toLowerCase();
+  const isPlaintextBroker =
+    brokerUrlLower.startsWith("mqtt://") ||
+    brokerUrlLower.startsWith("ws://") ||
+    brokerUrlLower.startsWith("tcp://");
+
+  const rejects = rejectData?.rejects ?? [];
 
   return (
     <UnifiedAdminLayout title="系統設定">
@@ -500,6 +533,22 @@ export default function AdminSettings() {
                   正式營運請用 mqtts://（TLS 加密）；mqtt://（明文）僅建議測試。
                 </p>
               </div>
+              {isPlaintextBroker && (
+                <div
+                  className="flex items-start gap-3 p-3 rounded-lg border border-destructive/40 bg-destructive/5"
+                  data-testid="warning-plaintext-broker"
+                >
+                  <AlertTriangle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-medium text-destructive">明文 Broker 連線風險</p>
+                    <p className="text-muted-foreground">
+                      目前位址使用未加密協定。傳輸內容可被監聽或竄改，建議改用{" "}
+                      <span className="font-mono">mqtts://</span>（TLS）。命中已受 HMAC
+                      簽章保護（已配密鑰的設備無法被偽造灌分），但帳密與遙測仍會明文外流。
+                    </p>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>帳號（選填）</Label>
@@ -577,6 +626,48 @@ export default function AdminSettings() {
                 免費版）任何人都能訂閱與偽造訊息，請勿用於正式營運；正式請用具 per-device 帳密與
                 Topic ACL 的託管 broker。
               </p>
+            </CardContent>
+          </Card>
+
+          <Card data-testid="card-mqtt-rejects">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5" />
+                最近拒收訊息
+              </CardTitle>
+              <CardDescription>
+                收訊防線擋下的訊息（記憶體最近 50 筆，服務重啟即清）。命中沒進來時先查這裡。
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {rejects.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  目前沒有被拒收的訊息
+                </p>
+              ) : (
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {rejects.map((r, i) => (
+                    <div
+                      key={`${r.at}-${i}`}
+                      className="flex items-start justify-between gap-3 p-2 rounded border text-sm"
+                      data-testid={`reject-row-${i}`}
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-destructive">
+                          {REJECT_REASON_LABEL[r.reason] ?? r.reason}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-mono truncate">
+                          {r.topic}
+                          {r.deviceId ? ` · ${r.deviceId}` : ""}
+                        </p>
+                      </div>
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {new Date(r.at).toLocaleTimeString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
