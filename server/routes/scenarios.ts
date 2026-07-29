@@ -1653,16 +1653,6 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         maxLength: 150,
       };
 
-    case "idea_market":
-      return {
-        title: "💡 創意市場",
-        prompt: `為「${scenarioName}」提交你的點子，並為最喜歡的點子投票`,
-        voteLabel: "投票",
-        votesPerPlayer: 3,
-        maxLength: 80,
-        submissionLabel: "提交你的點子",
-      };
-
     case "consensus_map":
       return {
         title: "🗺️ 共識地圖",
@@ -1900,14 +1890,6 @@ export function getDefaultConfigForPageType(pageType: string, scenarioName: stri
         title: "📜 團隊工作約定",
         prompt: `針對「${scenarioName}」，提出一條你希望團隊遵守的工作約定`,
         maxLength: 80,
-      };
-
-    case "hope_fear":
-      return {
-        title: "🌟 希望與恐懼",
-        hopePrompt: `🌟 希望：關於「${scenarioName}」，我期待...`,
-        fearPrompt: `😨 恐懼：關於「${scenarioName}」，我擔心...`,
-        maxLength: 100,
       };
 
     case "story_wall":
