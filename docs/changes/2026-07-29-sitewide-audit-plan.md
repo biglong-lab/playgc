@@ -89,18 +89,33 @@
 - 連帶風險：換 chunk hash 後舊 bundle 使用者 lazy-load 失敗 → Safari `_result.default` 錯誤
 - 現況加劇：本地已 push 11 個 commit（含 MQTT HMAC 全套），生產完全沒有
 
-### 🔴 P0-2：`scenarios.ts` 重複 case → 預設設定值錯誤（真 bug）
+### 🟡 P0-2【已修正 + 判斷更正】：`scenarios.ts` 重複 case
 
-`server/routes/scenarios.ts` 的 `getDefaultConfigForPageType()`：
+**原判斷（2026-07-29 初稿）**：「重複 case 導致 `hope_fear`/`idea_market` 預設值錯誤」→ **不成立，已更正**。
 
-| 元件 | 生效版本 | 死碼版本（永不執行） |
-|------|----------|---------------------|
-| `hope_fear` | L1053「🌟⚡ 期待與擔憂」 | L1905「🌟 希望與恐懼」（**帶 scenarioName 動態插值**） |
-| `idea_market` | L1411 | L1656 |
+**查證後的事實**：
+- 這兩個 pageType **不在** `SCENARIO_TEMPLATES`（模板實用 30 種）、**不在** `PAGE_TYPES`（前端註冊 107 種）、
+  **不在** `GamePageRenderer`（渲染器支援 100 種）→ 它們本來就不會被呼叫
+- 因此重複 case 的實際功能影響 = **零**，屬死碼內部的重複
+- 但 esbuild 每次 build 都報 `duplicate-case` 警告，屬程式碼衛生問題
 
-- esbuild 已在每次 build 報 `duplicate-case` 警告，但沒人處理
-- 影響：這兩個元件建立時拿到的預設 config 不是後來作者寫的版本（少了情境名稱插值）
-- **根因**：該函式單一 **2,823 行、221 個 case**（紅線是 50 行）→ 體積掩蓋了重複
+**處置**：已刪除後出現的重複 case（保留原生效版本，行為完全不變），
+build 警告歸零，並在 CI 加防護（commit `311cbb74`、`cebadaa5`）。
+
+### 🟠 P0-3【新發現】：`getDefaultConfigForPageType` 大量死碼
+
+| 指標 | 數值 | 可信度 |
+|------|------|--------|
+| 函式長度 | 2,823 行（紅線 50 行） | ✅ |
+| case 總數 | 347 個 | ✅ |
+| 前端渲染器支援 | 100 種（`GamePageRenderer`） | ✅ |
+| 模板實際使用 | 30 種 | ✅ |
+| 推估死碼 case | ≥ 289 個（約 83%） | ⚠️ 方向可靠，精確數字需人工核對 |
+
+**為何數字需保守**：自動比對會把其他 switch 的 case（如 `gps`/`photo`/`message`）誤計為 pageType，
+故「渲染器支援數」偏大、死碼數反而被低估。清理前必須人工逐項確認。
+
+**影響**：死碼本身不影響執行，但它是 bug 溫床（重複 case 正是被 2,823 行的體積掩蓋）。
 
 ### 🟠 P1-1：金流與預約端點缺 rate limit
 
@@ -141,6 +156,11 @@
 - 紅線明訂「禁止 console.log 留正式版」
 - 註：部分 server 端可能是有意的結構化 log，需逐一判斷後改用 logger
 
+### 🟡 P2-3【新發現】：ESLint 約 450 errors / 3,278 warnings
+
+CI 的 ESLint 步驟目前掛 `continue-on-error: true`（報告但不擋 merge），
+註解寫明「待技術債清乾淨後轉為硬閘門」。這是本次盤點初稿漏記的項目。
+
 ### 🟢 P3：`as any` 184 處
 
 紅線禁用 `any`。184 處需分批收斂，但多數應屬第三方型別缺失的邊界處理，優先度最低。
@@ -151,11 +171,11 @@
 
 ### 第 1 批：P0 修復（建議立即，約 1–2 小時）
 
-| # | 項目 | 動作 |
+| # | 項目 | 狀態 |
 |---|------|------|
-| 1 | 部署恢復 | 解除 SSH 封鎖 → 跑 migration → `npm run deploy`（帶 GIT_SHA）→ 驗 `/api/version` 非 unknown |
-| 2 | 重複 case bug | 決定 `hope_fear`/`idea_market` 保留哪個版本、刪另一個；build 警告歸零 |
-| 3 | 迴歸防護 | CI 加「esbuild 警告視為失敗」或 lint 規則 `no-duplicate-case`，防再犯 |
+| 1 | 部署恢復 | 🔴 **阻塞中** — 源站 SSH 不可達，需先解除封鎖 |
+| 2 | 重複 case | ✅ **已完成** `311cbb74` — 刪 2 個死碼 case，build 警告歸零、行為不變 |
+| 3 | 迴歸防護 | ✅ **已完成** `cebadaa5` — CI 攔截 duplicate-case，YAML 已驗證 |
 
 ### 第 2 批：P1 安全與結構（約 3–5 小時）
 
