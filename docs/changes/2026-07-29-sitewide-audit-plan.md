@@ -176,6 +176,18 @@ CI 的 ESLint 步驟目前掛 `continue-on-error: true`（報告但不擋 merge�
 | 1 | 部署恢復 | 🔴 **阻塞中** — 源站 SSH 不可達，需先解除封鎖 |
 | 2 | 重複 case | ✅ **已完成** `311cbb74` — 刪 2 個死碼 case，build 警告歸零、行為不變 |
 | 3 | 迴歸防護 | ✅ **已完成** `cebadaa5` — CI 攔截 duplicate-case，YAML 已驗證 |
+| 4 | CI 綠燈修復（執行中發現）| ✅ **已完成** `2b0058f5`+`c814008c` — 見下 |
+
+#### 第 1 批執行中的額外發現（皆為部署必要前置）
+
+跑完整測試時發現 **CI 本來就是紅的**，這會直接擋掉 `deploy.yml` 的 validate job：
+
+| 問題 | 根因 | 處置 |
+|------|------|------|
+| 2 個測試失敗 | `throwIfResNotOk` 對**非 JSON 錯誤**（nginx 502／純文字）把 body 當訊息並**丟掉狀態碼**，除錯時看不出是幾號錯誤 | 非 JSON 分支保留狀態碼；JSON `{message}` 行為完全不變（`2b0058f5`） |
+| 測試全過但 `exit=1` | `websocket.test.ts` 的 db mock 缺 `insert`，`ws-event-logger.flushBuffers` 噴 unhandled rejection | 補 mock（`c814008c`）。屬測試環境問題，非生產 bug |
+
+**修正後**：226 測試檔全過、3,286 測試通過、0 unhandled error、`exit=0`、build 0 警告、tsc 0 錯誤。
 
 ### 第 2 批：P1 安全與結構（約 3–5 小時）
 
