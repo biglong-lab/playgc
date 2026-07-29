@@ -3,10 +3,17 @@ name: Lighthouse CI
 on:
   pull_request:
     branches: [main]
-  # 每週一 03:00 UTC 跑一次 main 基準
-  schedule:
-    - cron: "0 3 * * 1"
+  # 每週一 03:00 UTC 的 main 基準排程暫停（2026-07-29）：
+  # 此 workflow 長期 100% 失敗，每週固定燒 Actions 分鐘數卻從未產出可用基準。
+  # 修好後把下面兩行取消註解即可恢復。
+  # schedule:
+  #   - cron: "0 3 * * 1"
   workflow_dispatch:
+
+# 同一 PR 連續 push 只保留最新一次審計（不含部署，取消安全）
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
