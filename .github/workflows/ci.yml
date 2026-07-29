@@ -63,9 +63,21 @@ jobs:
       - run: npm ci
 
       - name: 建置專案
-        run: npm run build
+        run: npm run build 2>&1 | tee /tmp/build.log
         env:
           NODE_ENV: production
+
+      # 🛡️ esbuild 的 duplicate-case 代表 switch 內有永不執行的重複分支
+      #    （2026-07-29 曾因此在 scenarios.ts 累積 2 個死碼 case 沒人發現）
+      #    這類警告不會讓 build 失敗，必須主動攔截。
+      - name: 阻擋 duplicate-case 警告
+        run: |
+          if grep -q 'duplicate-case' /tmp/build.log; then
+            echo "::error::偵測到 duplicate-case（switch 內重複分支，後者永不執行）"
+            grep -B2 -A8 'duplicate-case' /tmp/build.log
+            exit 1
+          fi
+          echo "✅ 無 duplicate-case 警告"
 
   e2e:
     name: E2E 測試（黃金路徑）
