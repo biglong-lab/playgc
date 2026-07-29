@@ -6,7 +6,7 @@
 //   npx tsx scripts/gen-jiachun-seed-sql.ts > /tmp/jiachun-seed.sql
 //
 // 套用到 production：
-//   cat /tmp/jiachun-seed.sql | ssh root@172.233.89.147 "docker exec -i gamehomicc-db-1 psql -U \$POSTGRES_USER -d \$POSTGRES_DB"
+//   cat /tmp/jiachun-seed.sql | ssh root@172.233.67.87 "docker exec -i gamehomicc-db-1 psql -U \$POSTGRES_USER -d \$POSTGRES_DB"
 
 import { JIACHUN_MODULES } from "../shared/schema/modules/jiachun";
 

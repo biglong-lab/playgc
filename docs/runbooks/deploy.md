@@ -1,5 +1,9 @@
 # Runbook: 標準部署流程
 
+> ⚠️ 2026-07-30：主機已遷至 prod-osa `172.233.67.87`（舊機 172.233.89.147 已停機）。
+> 本檔指令中的 IP 已更新；**專案路徑 `/www/wwwroot/game.homi.cc` 為舊機（寶塔）慣例，
+> 請確認新機實際路徑後更新**。
+
 > 觸發：使用者明確說「部署」才執行
 > 估時：3-5 分鐘
 > 風險：低（容器健康檢查、可立即回滾）
@@ -23,7 +27,7 @@ git push origin claude/<branch>:main 2>&1
 
 ```bash
 # 1. SSH 到生產
-ssh root@172.233.89.147
+ssh root@172.233.67.87
 
 # 2. 進入專案目錄
 cd /www/wwwroot/game.homi.cc
@@ -49,7 +53,7 @@ docker compose -f docker-compose.prod.yml up -d --build app
 ### 標準單行版本（從本地直接執行）— **推薦**
 
 ```bash
-ssh root@172.233.89.147 "cd /www/wwwroot/game.homi.cc \
+ssh root@172.233.67.87 "cd /www/wwwroot/game.homi.cc \
   && git pull origin main \
   && export GIT_SHA=\$(git rev-parse HEAD) \
   && docker compose -f docker-compose.prod.yml up -d --build app"
@@ -75,7 +79,7 @@ curl -s https://game.homi.cc/api/version
 
 ```bash
 # 1. 容器狀態（必須是 healthy）
-ssh root@172.233.89.147 "docker ps --format 'table {{.Names}}\t{{.Status}}' | grep gamehomicc"
+ssh root@172.233.67.87 "docker ps --format 'table {{.Names}}\t{{.Status}}' | grep gamehomicc"
 
 # 預期：
 # gamehomicc-app-1      Up XX seconds (healthy)
@@ -99,7 +103,7 @@ curl -s https://game.homi.cc/api/version
 ### 情境 1：build 失敗（容器沒起來）
 
 ```bash
-ssh root@172.233.89.147 "cd /www/wwwroot/game.homi.cc && docker compose -f docker-compose.prod.yml logs --tail 100 app"
+ssh root@172.233.67.87 "cd /www/wwwroot/game.homi.cc && docker compose -f docker-compose.prod.yml logs --tail 100 app"
 ```
 
 修 → push → 重新部署。**不要強制 down 現有 container**（舊版仍在跑）。
@@ -112,7 +116,7 @@ git revert HEAD
 git push origin main
 
 # 2. 重新部署上一版
-ssh root@172.233.89.147 "cd /www/wwwroot/game.homi.cc && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build"
+ssh root@172.233.67.87 "cd /www/wwwroot/game.homi.cc && git pull origin main && docker compose -f docker-compose.prod.yml up -d --build"
 ```
 
 ### 情境 3：DB schema 不相容（最嚴重）
@@ -128,7 +132,7 @@ ssh root@172.233.89.147 "cd /www/wwwroot/game.homi.cc && git pull origin main &&
 如果改了 `.env`（例：加新 `PUBLIC_BASE_URL`）：
 
 ```bash
-ssh root@172.233.89.147
+ssh root@172.233.67.87
 cd /www/wwwroot/game.homi.cc
 nano .env  # 編輯
 docker compose -f docker-compose.prod.yml up -d --build  # 必須加 --build

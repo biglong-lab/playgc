@@ -10,9 +10,19 @@
 import pg from "pg";
 
 const PROD = process.argv.includes("--prod");
-const CONN = PROD
-  ? "postgresql://postgres:rh750920@172.233.89.147:54321/gameplatform" // 需 SSH tunnel 或 port expose
-  : "postgresql://postgres:postgres@localhost:5437/gameplatform";
+
+// --prod 連線字串一律由環境變數提供，不給預設值。
+// 2026-07-30：原本這裡寫死生產密碼與舊機位址（172.233.89.147，已停機）。
+// 密碼進過版控 → 應視為已外洩，請輪換。
+// 用法：PROD_DATABASE_URL="postgresql://..." node scripts/migrate-page-schemas.mjs --prod
+//      （需先開 SSH tunnel 或 port expose）
+const CONN = PROD ? process.env.PROD_DATABASE_URL : "postgresql://postgres:postgres@localhost:5437/gameplatform";
+
+if (PROD && !CONN) {
+  console.error("❌ 未設定 PROD_DATABASE_URL —— 拒絕以寫死的連線資訊連生產資料庫。");
+  console.error('   用法：PROD_DATABASE_URL="postgresql://..." node scripts/migrate-page-schemas.mjs --prod');
+  process.exit(1);
+}
 
 const client = new pg.Client(CONN);
 await client.connect();

@@ -48,14 +48,17 @@ SELECT COUNT(*) as total FROM pages;
 `;
 
 import { writeFileSync } from "fs";
+
+// 生產主機（2026-07-30：舊機 172.233.89.147 已停機，改 prod-osa）
+const PROD_SSH = process.env.PROD_SSH || "root@172.233.67.87";
 writeFileSync("/tmp/push-pages.sql", fullSQL);
 console.log(`\n📝 SQL 已寫入 /tmp/push-pages.sql（${fullSQL.length} bytes）`);
 
 // 3. SCP + 執行
 console.log("\n🚀 上傳到生產並執行...");
-execSync("scp -q /tmp/push-pages.sql root@172.233.89.147:/tmp/push-pages.sql", { stdio: "inherit" });
+execSync(`scp -q /tmp/push-pages.sql ${PROD_SSH}:/tmp/push-pages.sql`, { stdio: "inherit" });
 const result = execSync(
-  `ssh root@172.233.89.147 "docker exec -i gamehomicc-db-1 psql -U postgres -d gameplatform < /tmp/push-pages.sql && rm /tmp/push-pages.sql"`,
+  `ssh ${PROD_SSH} "docker exec -i gamehomicc-db-1 psql -U postgres -d gameplatform < /tmp/push-pages.sql && rm /tmp/push-pages.sql"`,
   { encoding: "utf8" },
 );
 console.log(result);

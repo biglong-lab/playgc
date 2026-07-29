@@ -1,8 +1,15 @@
 # Runbook：nginx vhost（prod-osa 172.233.67.87）
 
-> **狀態**：⚠️ **草稿 —— 本專案尚未遷移**。目前生產在 **172.233.89.147（寶塔 nginx）**。
-> 遷移後請把本註記改掉並同步實際設定。
-> 目標主機：172.233.67.87（純系統 nginx，無面板，SSH port 22）
+> **狀態**：⚠️ **本檔為建議設定，尚未與伺服器實際 vhost 核對。**
+> 系統**已在** prod-osa（2026-07-30 實測 `curl --resolve game.homi.cc:443:172.233.67.87`
+> 回 HTTP 200，舊機 172.233.89.147 無回應）。實際跑的 nginx 設定是遷移時建立的，
+> 內容可能與本檔不同 —— 請以伺服器上的 `/etc/nginx/conf.d/game.homi.cc.conf` 為準，
+> 核對後再把本檔更新成實際內容。
+>
+> 本檔仍有價值的部分：下方三個 WebSocket / LiveKit 的必要條件，
+> 以及 Cloudflare 真實來源 IP 設定 —— 那些是不論設定怎麼寫都必須成立的。
+>
+> 主機：172.233.67.87（純系統 nginx，無面板，SSH port 22）
 > 設定位置：`/etc/nginx/conf.d/game.homi.cc.conf`
 > ⚠️ 修改流程：改檔 → `nginx -t`（**通過才**）→ `systemctl reload nginx` → 同步更新本檔
 

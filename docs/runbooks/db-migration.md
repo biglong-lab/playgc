@@ -1,5 +1,8 @@
 # Runbook: DB Schema 變動
 
+> ⚠️ 2026-07-30：主機已遷至 prod-osa `172.233.67.87`（舊機 172.233.89.147 已停機）。
+> 本檔指令中的 IP 已更新；**專案路徑請以伺服器實際為準**（尚未逐一核對）。
+
 > 觸發：需要新增 / 修改 schema
 > 估時：5-10 分鐘
 > 風險：中（資料完整性影響）
@@ -58,13 +61,13 @@ docker exec gameplatform-postgres psql -U postgres -d gameplatform -c "\d table_
 **解法**：直接走 SQL：
 
 ```bash
-ssh root@172.233.89.147 "docker exec gamehomicc-db-1 psql -U postgres -d gameplatform -c \"ALTER TABLE table_x ADD COLUMN IF NOT EXISTS new_field varchar; CREATE INDEX IF NOT EXISTS idx_table_x_new_field ON table_x(new_field);\""
+ssh root@172.233.67.87 "docker exec gamehomicc-db-1 psql -U postgres -d gameplatform -c \"ALTER TABLE table_x ADD COLUMN IF NOT EXISTS new_field varchar; CREATE INDEX IF NOT EXISTS idx_table_x_new_field ON table_x(new_field);\""
 ```
 
 ### Step 6：驗證
 
 ```bash
-ssh root@172.233.89.147 "docker exec gamehomicc-db-1 psql -U postgres -d gameplatform -c \"\\d table_x\" | grep new_field"
+ssh root@172.233.67.87 "docker exec gamehomicc-db-1 psql -U postgres -d gameplatform -c \"\\d table_x\" | grep new_field"
 ```
 
 ---
@@ -77,7 +80,7 @@ ssh root@172.233.89.147 "docker exec gamehomicc-db-1 psql -U postgres -d gamepla
 # 3. 本地測試 SQL
 # 4. commit + push + 部署
 # 5. 生產執行 SQL：
-ssh root@172.233.89.147 "docker exec gamehomicc-db-1 psql -U postgres -d gameplatform <<'EOF'
+ssh root@172.233.67.87 "docker exec gamehomicc-db-1 psql -U postgres -d gameplatform <<'EOF'
 CREATE TABLE IF NOT EXISTS new_table (
   id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
   ...
@@ -146,20 +149,20 @@ DROP INDEX IF EXISTS idx_table_x_new_field;
 
 ```bash
 # 在生產跑 pg_dump 到時間戳檔名
-ssh root@172.233.89.147 "docker exec gamehomicc-db-1 pg_dump -U postgres gameplatform > /tmp/backup-$(date +%Y%m%d-%H%M%S).sql"
+ssh root@172.233.67.87 "docker exec gamehomicc-db-1 pg_dump -U postgres gameplatform > /tmp/backup-$(date +%Y%m%d-%H%M%S).sql"
 
 # 下載到本地（DB 備份維運，非程式碼部署）
-scp root@172.233.89.147:/tmp/backup-*.sql ./db-backups/
+scp root@172.233.67.87:/tmp/backup-*.sql ./db-backups/
 ```
 
 ### 還原備份
 
 ```bash
 # 上傳備份檔
-scp ./db-backups/backup-XXX.sql root@172.233.89.147:/tmp/
+scp ./db-backups/backup-XXX.sql root@172.233.67.87:/tmp/
 
 # 還原（會覆蓋現有資料！）
-ssh root@172.233.89.147 "docker exec -i gamehomicc-db-1 psql -U postgres gameplatform < /tmp/backup-XXX.sql"
+ssh root@172.233.67.87 "docker exec -i gamehomicc-db-1 psql -U postgres gameplatform < /tmp/backup-XXX.sql"
 ```
 
 ---

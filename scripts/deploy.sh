@@ -19,8 +19,8 @@ set -eo pipefail
 #   npm run deploy             # 正常部署
 #   VERIFY_SYMBOL=xxx npm run deploy  # 額外 grep container 確認新 symbol
 
-SSH_HOST="${SSH_HOST:-root@172.233.89.147}"
-SSH_PORT="${SSH_PORT:-52099}"   # ⚠️ 生產 SSH 在 52099（非 22），漏帶會 connection refused
+SSH_HOST="${SSH_HOST:-root@172.233.67.87}"
+SSH_PORT="${SSH_PORT:-22}"   # prod-osa 用標準 22（舊機 172.233.89.147 是 52099，已停機）
 PROD_PATH="${PROD_PATH:-/www/wwwroot/game.homi.cc}"
 APP_CONTAINER="${APP_CONTAINER:-gamehomicc-app-1}"
 PROD_URL="${PROD_URL:-https://game.homi.cc}"

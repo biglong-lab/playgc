@@ -6,7 +6,7 @@ set -e
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BACKUPS="$PROJECT_ROOT/backups"
-SSH_HOST="root@172.233.89.147"
+SSH_HOST="${SSH_HOST:-root@172.233.67.87}"   # 2026-07-30：舊機 172.233.89.147 已停機
 PROD_CONTAINER="gamehomicc-db-1"
 LOCAL_CONTAINER="gameplatform-postgres"
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
