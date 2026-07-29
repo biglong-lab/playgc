@@ -50,7 +50,10 @@ services:
           cpus: '0.5'
           memory: 512M
     ports:
-      - "3333:3333"
+      # 只綁 loopback，不對公網暴露；對外一律經由主機 nginx 反向代理
+      # （game.homi.cc → 127.0.0.1:3333）。健康檢查用的
+      # curl http://localhost:3333/health 在主機上執行，不受影響。
+      - "127.0.0.1:3333:3333"
     env_file:
       - .env
     environment:
@@ -97,10 +100,18 @@ services:
       - ./livekit.yaml:/etc/livekit.yaml:ro
     ports:
       # API + WebSocket signaling（由 Nginx 反代到 wss://game.homi.cc/livekit）
+      # ⚠️ 這條「理論上」可以改綁 127.0.0.1（前端走 nginx，不直連本 port）。
+      #    但改之前必須先確認伺服器 .env 沒有把 LIVEKIT_PUBLIC_URL 覆寫成
+      #    直連形式（例如 wss://game.homi.cc:7880）——若有，改了對講機會直接斷。
+      #    驗證方式見 docs/runbooks/migrate-to-prod-osa.md。
       - "7880:7880"
       # TCP fallback 給 NAT 穿透失敗時
+      # 🔴 必須對外：客戶端直連本 port，不經 nginx（livekit.yaml rtc.tcp_port）
       - "7881:7881"
       # UDP RTP（實際音訊流）
+      # 🔴 必須對外：WebRTC 媒體流無法經 nginx 反代
+      #    對應 livekit.yaml 的 rtc.port_range_start/end（50000-50100）
+      #    遷移時新機防火牆要放行這 101 個 UDP port，否則對講機只會「連上但沒聲音」
       - "50000-50100:50000-50100/udp"
     deploy:
       resources:
