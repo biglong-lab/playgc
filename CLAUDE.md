@@ -10,7 +10,7 @@
 ### 系統定位
 - **產品**：金門場域型互動遊戲 SaaS 平台（賈村競技場、後浦小鎮等多場域）
 - **使用者**：玩家端 + 場域管理員（admin）+ 平台管理員（super_admin）
-- **生產**：[https://game.homi.cc](https://game.homi.cc) — Linode 172.233.89.147
+- **生產**：[https://game.homi.cc](https://game.homi.cc) — Linode `172.233.67.87`（prod-osa，2026-07-29 遷移；舊 172.233.89.147 已停用）
 
 ### 技術棧
 - **前端**：React 18 + Vite + TypeScript + wouter + TanStack Query + Tailwind + Radix
@@ -21,7 +21,7 @@
 - **部署**：Docker Compose + Nginx + Coolify（自動 webhook）
 
 ### 生產資訊
-- **SSH**：`ssh root@172.233.89.147`（已設 key）
+- **SSH**：`ssh root@172.233.67.87`（port 22、已設 key；⚠️ 舊主機的 52099 不再適用）
 - **部署目錄**：`/www/wwwroot/game.homi.cc`
 - **更新流程**：`git pull origin main && docker compose -f docker-compose.prod.yml up -d --build`
 - **Nginx 設定**：`/www/server/panel/vhost/nginx/game.homi.cc.conf`
