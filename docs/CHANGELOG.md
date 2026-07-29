@@ -5,6 +5,25 @@
 
 ---
 
+## 2026-07-29
+
+### 🔌 MQTT HMAC 命中防偽造全套上線 + 主機遷移修正（feat + fix）
+
+**部署**：`6bc2db7a` → `1488179d`（生產 commit 已驗證一致）
+
+- **MQTT HMAC 簽章**：`arduino_devices.device_secret` migration 上生產（additive，資料 1 筆不變）；
+  有密鑰的設備強制驗簽，即使公用明文 broker 也擋得住偽造命中灌分；無密鑰放行（漸進不中斷）
+- **裝置密鑰 provisioning**：`POST /api/devices/:id/rotate-secret`（場域授權、密鑰只顯示一次）
+  + 後台 Key 鈕自動複製剪貼簿；`sanitizeDevice` 剝除 deviceSecret/apiKey 四個回傳點
+- **拒收診斷**：ring buffer 記 6 個拒收點原因 + `GET /api/admin/mqtt/rejects` + 後台面板（中文對照）
+  + 明文 broker 風險警告
+- **測試**：MQTT 契約與核心 29 例
+- **修復 CI 紅燈**（原本會擋部署）：非 JSON 錯誤保留狀態碼、補 websocket db.insert mock
+- **修復死碼**：刪 2 個 esbuild `duplicate-case`，CI 加防護攔截
+- **🔧 主機遷移修正**：生產已遷至 `172.233.67.87`（prod-osa、SSH port 22），
+  舊 `172.233.89.147:52099` 已停用；`deploy.sh` 與 CLAUDE.md 同步更正
+- **PWA 恢復**：`/api/version` 從 `unknown` 修正為真實 commit，版本比對與自動更新重新生效
+
 ## 2026-07-23
 
 ### 🐛 新增預約方案 validation 失敗修復：slug 改選填自動產生（fix）
