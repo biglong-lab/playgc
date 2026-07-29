@@ -30,7 +30,8 @@ async function throwIfResNotOk(res: Response) {
         msg = parsed.message || parsed.error || msg;
       }
     } catch {
-      msg = text || msg;
+      // 非 JSON（nginx 502 HTML、純文字…）：保留狀態碼，否則除錯時看不出是幾號錯誤
+      msg = text ? `發生錯誤（${res.status}）：${text.slice(0, 200)}` : msg;
     }
     throw new Error(msg);
   }
