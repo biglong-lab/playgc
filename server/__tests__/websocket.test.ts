@@ -46,6 +46,11 @@ vi.mock("../db", () => ({
         where: vi.fn(() => Promise.resolve()),
       })),
     })),
+    // ws-event-logger 的 flushBuffers 會 db.insert(...).values(...).catch(...)
+    // 缺這段會噴 unhandled rejection、讓 vitest exit 非零（CI 紅燈）
+    insert: vi.fn(() => ({
+      values: vi.fn(() => Promise.resolve()),
+    })),
   },
 }));
 
