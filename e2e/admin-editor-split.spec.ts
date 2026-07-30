@@ -13,6 +13,7 @@
  * 啟用條件：server 必須有 ENABLE_E2E_HELPERS=true 或 NODE_ENV=test
  */
 import { test, expect } from "@playwright/test";
+import { SCENARIO_TEMPLATES } from "../shared/scenario-templates";
 
 async function isTestEndpointEnabled(request: import("@playwright/test").APIRequestContext): Promise<boolean> {
   try {
@@ -78,16 +79,29 @@ test.describe("🎯 軟分流階段 1 — editor mode 分流", () => {
   });
 
   test.describe("SCENARIO instantiate（API-level）", () => {
-    test("/api/scenarios/health 仍能回傳 112 個情境（向後相容）", async ({ request }) => {
+    // 原本寫死 total=112 與五個分類的固定數字。那是 2026-05-07 當下的情境數，
+    // 6/13 兩次重構（b6e67a63 刪 99 個無實質意義的樣板、6d9cbfca 刪 121 個無 renderer
+    // 的幽靈元件）之後只剩 12 個，7/23 加第 13 個模板 → 現在是 13。
+    // CI 從 6/13 起就一直紅，但沒人動它，因為「紅的原因」和「該修的東西」對不上。
+    //
+    // 寫死數字的測試每加一個模板就破一次，久了只會被無視。改成驗真正的不變式：
+    // 端點回傳的統計必須與 SCENARIO_TEMPLATES 定義一致。
+    // 加模板不會破測試，端點壞掉／情境被誤刪則會立刻抓到。
+    test("/api/scenarios/health 的統計與 SCENARIO_TEMPLATES 定義一致", async ({ request }) => {
       const res = await request.get("/api/scenarios/health");
       expect(res.ok()).toBeTruthy();
       const data = await res.json();
-      expect(data.total).toBe(112);
-      expect(data.byCategory.social).toBe(17);
-      expect(data.byCategory.event).toBe(19);
-      expect(data.byCategory.public).toBe(3);
-      expect(data.byCategory.corporate).toBe(68);
-      expect(data.byCategory.venue).toBe(5);
+
+      expect(data.total).toBe(SCENARIO_TEMPLATES.length);
+
+      const expectedByCategory: Record<string, number> = {};
+      for (const s of SCENARIO_TEMPLATES) {
+        expectedByCategory[s.category] = (expectedByCategory[s.category] ?? 0) + 1;
+      }
+      expect(data.byCategory).toEqual(expectedByCategory);
+
+      // 情境全數消失時 total 會是 0 而定義也是 0，兩邊一致反而測不出來——補一道下限
+      expect(SCENARIO_TEMPLATES.length).toBeGreaterThan(0);
     });
   });
 
