@@ -60,6 +60,7 @@ import { registerPlatformRoutes } from "./platform";
 import { registerPlatformAiCenterRoutes } from "./platform-ai-center";
 import { registerPlatformTicketRoutes } from "./platform-tickets";
 import { registerRevenueRoutes } from "./revenue";
+import { registerRevenueAnalyticsRoutes } from "./revenue-analytics";
 import { registerFieldRoutes } from "./field";
 import { registerApplicationRoutes } from "./applications";
 import { registerFieldMembershipRoutes } from "./field-memberships";
@@ -263,6 +264,7 @@ export async function registerRoutes(
 
   // 💰 財務中心 Facade（Phase 3）
   registerRevenueRoutes(app);
+  registerRevenueAnalyticsRoutes(app);
 
   // 🏢 場域訂閱 / 用量 / 平台費用（Phase 6）
   registerFieldRoutes(app);
