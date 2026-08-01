@@ -21,7 +21,7 @@ let sessionTag = "";
 // ⚠️ 每個 worker 必須有自己的 session：Playwright 平行跑時，
 //    共用同一筆 admin_sessions 會被先結束的 worker 在 afterAll 刪掉，
 //    其餘 worker 隨即全部 401（單獨跑會過、一起跑就掛的典型症狀）。
-test.beforeAll(async ({}, testInfo) => {
+test.beforeAll(async (_fixtures, testInfo) => {
   if (!hasEnv) return;
   sessionTag = `e2e-revenue-w${testInfo.workerIndex}`;
   adminToken = jwt.sign(
