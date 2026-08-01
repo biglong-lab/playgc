@@ -361,7 +361,7 @@ npx vitest run client/src/lib/__tests__/ \
 git push origin main
 
 # 伺服器（SSH）
-ssh root@172.233.89.147
+ssh root@172.233.67.87
 cd /www/wwwroot/game.homi.cc
 git pull origin main
 GIT_SHA=$(git rev-parse --short HEAD) docker compose -f docker-compose.prod.yml up -d --build app

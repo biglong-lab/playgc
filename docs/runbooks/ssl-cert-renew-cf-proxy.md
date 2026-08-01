@@ -12,10 +12,10 @@
 curl -s -o /dev/null -w "%{http_code}\n" https://game.homi.cc/health
 
 # 源站直連（繞 CF）：若 200 JSON = app 正常，問題純在憑證
-curl -s -o /dev/null -w "%{http_code} %{content_type}\n" --resolve game.homi.cc:443:172.233.89.147 https://game.homi.cc/health -k
+curl -s -o /dev/null -w "%{http_code} %{content_type}\n" --resolve game.homi.cc:443:172.233.67.87 https://game.homi.cc/health -k
 
 # 源站憑證到期日
-echo | openssl s_client -servername game.homi.cc -connect 172.233.89.147:443 2>/dev/null | openssl x509 -noout -dates
+echo | openssl s_client -servername game.homi.cc -connect 172.233.67.87:443 2>/dev/null | openssl x509 -noout -dates
 ```
 
 526 + 源站直連正常 + 憑證過期 → 就是憑證問題。
@@ -33,7 +33,7 @@ game.homi.cc 原本由**寶塔自簽**的 LE 憑證，自動續期早就壞了 �
 ## 修復步驟（已自動化，僅供再發時參考）
 
 ```bash
-ssh root@172.233.89.147
+ssh root@172.233.67.87
 
 # 1.（可選）先測 webroot 能否經 CF 取到
 mkdir -p /www/wwwroot/java_node_ssl/.well-known/acme-challenge
@@ -62,7 +62,7 @@ deploy-hook：`/etc/letsencrypt/renewal-hooks/deploy/game-homi-cc.sh`
 ```bash
 curl -s -o /dev/null -w "%{http_code}\n" https://game.homi.cc/health   # 200
 curl -s https://game.homi.cc/api/health                                 # JSON 非 HTML
-echo | openssl s_client -servername game.homi.cc -connect 172.233.89.147:443 2>/dev/null | openssl x509 -noout -enddate
+echo | openssl s_client -servername game.homi.cc -connect 172.233.67.87:443 2>/dev/null | openssl x509 -noout -enddate
 ```
 
 ## 相關

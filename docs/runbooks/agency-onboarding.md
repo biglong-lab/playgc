@@ -86,7 +86,7 @@ API_KEY_DEFAULT_FIELD=field_jc_jiacun
 ### 重啟 docker
 
 ```bash
-ssh root@172.233.89.147
+ssh root@172.233.67.87
 cd /www/wwwroot/game.homi.cc
 docker compose -f docker-compose.prod.yml up -d
 ```

@@ -129,7 +129,7 @@ Field-scoped Operations:
         │ HTTPS (Let's Encrypt)
         ▼
 ┌─────────────────────────────────┐
-│ Linode Server (172.233.89.147)  │
+│ Linode Server (172.233.67.87)  │
 │                                  │
 │ ┌─────────────────────────────┐ │
 │ │ Nginx (aaPanel)              │ │
