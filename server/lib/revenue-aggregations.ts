@@ -22,6 +22,7 @@ import {
   REFUND_NOT_GHOST,
   BATTLE_PRICE_TWD,
   businessDateOf,
+  taipeiLocalTime,
   withinBusinessRange,
   type RevenueRange,
   type RevenueSource,
@@ -576,11 +577,6 @@ export interface HeatCell {
   count: number;
 }
 
-/** naive timestamp → Taipei 當地時間（給 EXTRACT 用，不取 date）*/
-function taipeiLocal(col: SQL | unknown): SQL {
-  return sql`((${col} AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Taipei')`;
-}
-
 /**
  * 星期 × 時段 熱力圖 — 三源合併，永遠回滿 7×24=168 格（含零），
  * 讓前端不必處理稀疏格子。
@@ -590,8 +586,8 @@ export async function getRevenueHeatmap(
   range: RevenueRange,
 ): Promise<HeatCell[]> {
   const cellOf = (col: SQL | unknown) => ({
-    dow: sql<number>`EXTRACT(DOW FROM ${taipeiLocal(col)})::int`,
-    hour: sql<number>`EXTRACT(HOUR FROM ${taipeiLocal(col)})::int`,
+    dow: sql<number>`EXTRACT(DOW FROM ${taipeiLocalTime(col)})::int`,
+    hour: sql<number>`EXTRACT(HOUR FROM ${taipeiLocalTime(col)})::int`,
   });
 
   const posCell = cellOf(posTransactions.createdAt);

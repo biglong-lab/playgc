@@ -11,6 +11,7 @@ import { db } from "../db";
 import { posTransactions, posTransactionItems, shiftCloses, refunds, bookings, posCashCounts, posCashDrawdowns } from "@shared/schema";
 import { and, eq, sql, desc, inArray, gte } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
+import { taipeiBusinessDate, taipeiLocalTime } from "../lib/revenue-facts";
 import { sendToFieldGroup } from "../lib/internal-notifier";
 
 /**
@@ -55,13 +56,13 @@ async function aggregateDaily(fieldId: string, date: string) {
       paymentMethod: posTransactions.paymentMethod,
       staffId: posTransactions.staffId,
       // Taipei 小時（時段分析）
-      hour: sql<number>`EXTRACT(HOUR FROM (${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei'))::int`,
+      hour: sql<number>`EXTRACT(HOUR FROM ${taipeiLocalTime(posTransactions.createdAt)})::int`,
     })
     .from(posTransactions)
     .where(
       and(
         eq(posTransactions.fieldId, fieldId),
-        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date = ${date}::date`,
+        sql`${taipeiBusinessDate(posTransactions.createdAt)} = ${date}::date`,
         sql`${posTransactions.deletedAt} IS NULL`,
       ),
     );
@@ -155,7 +156,7 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
       and(
         eq(posTransactions.fieldId, fieldId),
         sql`${posTransactions.deletedAt} IS NULL`,
-        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+        sql`${taipeiBusinessDate(posTransactions.createdAt)} BETWEEN ${fromDate}::date AND ${toDate}::date`,
       ),
     );
   const [refAgg] = await db
@@ -172,7 +173,7 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
   // 每日淨額
   const daily = await db
     .select({
-      day: sql<string>`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date::text`,
+      day: sql<string>`${taipeiBusinessDate(posTransactions.createdAt)}::text`,
       cents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}),0)::int`,
     })
     .from(posTransactions)
@@ -180,11 +181,11 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
       and(
         eq(posTransactions.fieldId, fieldId),
         sql`${posTransactions.deletedAt} IS NULL`,
-        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+        sql`${taipeiBusinessDate(posTransactions.createdAt)} BETWEEN ${fromDate}::date AND ${toDate}::date`,
       ),
     )
-    .groupBy(sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date`)
-    .orderBy(sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date`);
+    .groupBy(sql`${taipeiBusinessDate(posTransactions.createdAt)}`)
+    .orderBy(sql`${taipeiBusinessDate(posTransactions.createdAt)}`);
   const totalCents = Number(txAgg?.totalCents ?? 0);
   const refundsCents = Number(refAgg?.cents ?? 0);
 
@@ -200,7 +201,7 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
       and(
         eq(posTransactions.fieldId, fieldId),
         sql`${posTransactions.deletedAt} IS NULL`,
-        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+        sql`${taipeiBusinessDate(posTransactions.createdAt)} BETWEEN ${fromDate}::date AND ${toDate}::date`,
       ),
     )
     .groupBy(posTransactions.paymentMethod);
@@ -219,7 +220,7 @@ async function aggregateRange(fieldId: string, fromDate: string, toDate: string)
       and(
         eq(posTransactions.fieldId, fieldId),
         sql`${posTransactions.deletedAt} IS NULL`,
-        sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date BETWEEN ${fromDate}::date AND ${toDate}::date`,
+        sql`${taipeiBusinessDate(posTransactions.createdAt)} BETWEEN ${fromDate}::date AND ${toDate}::date`,
       ),
     )
     .groupBy(posTransactionItems.category, posTransactionItems.nameSnapshot);
@@ -331,7 +332,7 @@ export function registerAdminPosReportRoutes(app: Express) {
           and(
             eq(posTransactions.fieldId, fieldId),
             sql`${posTransactions.shiftCloseId} IS NULL`,
-            sql`(${posTransactions.createdAt} AT TIME ZONE 'Asia/Taipei')::date = ${date}::date`,
+            sql`${taipeiBusinessDate(posTransactions.createdAt)} = ${date}::date`,
           ),
         );
 

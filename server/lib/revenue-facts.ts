@@ -87,6 +87,14 @@ export function taipeiBusinessDate(col: SQL | unknown): SQL {
   return sql`((${col} AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Taipei')::date`;
 }
 
+/**
+ * naive timestamp（DB 存 UTC）→ Asia/Taipei 當地時間（不取 date）。
+ * 給 EXTRACT(HOUR/DOW ...) 這類需要當地時鐘的場合用。
+ */
+export function taipeiLocalTime(col: SQL | unknown): SQL {
+  return sql`((${col} AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Taipei')`;
+}
+
 /** timestamptz → Asia/Taipei 營業日（已帶時區，單層轉換即可）*/
 export function taipeiBusinessDateTz(col: SQL | unknown): SQL {
   return sql`(${col} AT TIME ZONE 'Asia/Taipei')::date`;
