@@ -1,243 +1,177 @@
-// 💰 財務中心 — 營收總覽（升級版 TicketsOverview）
-// 整合遊戲 + 對戰收入、兌換碼統計、本月數據
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+// 💰 財務中心 — 營收總覽 / 分析
+//
+// 統合 3 個金流源（現場收款 POS / 遊戲購買 / 對戰報名）的營收分析。
+// 金額全程以「分」在前後端傳遞，只有 useRevenueAnalytics 的 money() 會換算成元。
+//
+// ⚠️ 預約（bookings）不是獨立收入源：POS 收預約款時會雙寫 bookings，
+//    列入會重複計算。預約以 POS 交易的 bookingId 當維度切分。
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import UnifiedAdminLayout from "@/components/UnifiedAdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Package, Ticket, Receipt, DollarSign } from "lucide-react";
+import RevenueFilterBar from "./analytics/RevenueFilterBar";
+import RevenueKpiCards from "./analytics/RevenueKpiCards";
+import RevenueTrendChart from "./analytics/RevenueTrendChart";
 import {
-  DollarSign,
-  TrendingUp,
-  Gamepad2,
-  Swords,
-  Ticket,
-  Package,
-  Receipt,
-  Loader2,
-} from "lucide-react";
+  RANGE_PRESETS,
+  suggestGranularity,
+  useRevenueSummary,
+  useRevenueTimeseries,
+  type DateRange,
+  type Granularity,
+} from "./analytics/useRevenueAnalytics";
 
-interface RevenueOverview {
-  totalRevenue: number;
-  monthlyRevenue: number;
-  breakdown: {
-    games: { totalRevenue: number; monthlyRevenue: number; purchaseCount: number };
-    battles: { totalRevenue: number; monthlyRevenue: number; registrationCount: number };
+const DEFAULT_PRESET = "30d";
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+interface FilterState {
+  range: DateRange;
+  granularity: Granularity;
+  preset: string | null;
+}
+
+/** 從 URL 還原篩選條件，讓分析結果可以直接複製連結分享 */
+function readInitialState(): FilterState {
+  const fallback = RANGE_PRESETS.find((p) => p.key === DEFAULT_PRESET)!;
+  if (typeof window === "undefined") {
+    const range = fallback.build();
+    return { range, granularity: suggestGranularity(range), preset: DEFAULT_PRESET };
+  }
+
+  const q = new URLSearchParams(window.location.search);
+  const from = q.get("from");
+  const to = q.get("to");
+  const g = q.get("g");
+  const validGranularity = g === "day" || g === "week" || g === "month" ? g : null;
+
+  if (from && to && DATE_PATTERN.test(from) && DATE_PATTERN.test(to) && from <= to) {
+    const range = { from, to };
+    const preset = RANGE_PRESETS.find((p) => {
+      const built = p.build();
+      return built.from === from && built.to === to;
+    });
+    return {
+      range,
+      granularity: validGranularity ?? suggestGranularity(range),
+      preset: preset?.key ?? null,
+    };
+  }
+
+  const range = fallback.build();
+  return {
+    range,
+    granularity: validGranularity ?? suggestGranularity(range),
+    preset: DEFAULT_PRESET,
   };
-  codes: { total: number; active: number; used: number };
 }
 
 export default function RevenueOverview() {
   const { isAuthenticated } = useAdminAuth();
+  const [state, setState] = useState<FilterState>(readInitialState);
 
-  const { data, isLoading } = useQuery<RevenueOverview>({
-    queryKey: ["/api/revenue/overview"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/revenue/overview");
-      return res.json();
-    },
-    enabled: isAuthenticated,
-  });
+  // 篩選條件同步進網址（replaceState：不污染上一頁/下一頁）
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    q.set("from", state.range.from);
+    q.set("to", state.range.to);
+    q.set("g", state.granularity);
+    window.history.replaceState(null, "", `${window.location.pathname}?${q.toString()}`);
+  }, [state.range.from, state.range.to, state.granularity]);
+
+  const handlePreset = useCallback((key: string) => {
+    const preset = RANGE_PRESETS.find((p) => p.key === key);
+    if (!preset) return;
+    const range = preset.build();
+    setState({ range, granularity: suggestGranularity(range), preset: key });
+  }, []);
+
+  const handleRangeChange = useCallback((range: DateRange) => {
+    // 手動改日期時保持前後順序合法，避免送出 from > to 被後端擋下
+    const safe: DateRange =
+      range.from > range.to ? { from: range.to, to: range.from } : range;
+    setState({ range: safe, granularity: suggestGranularity(safe), preset: null });
+  }, []);
+
+  const handleGranularity = useCallback((granularity: Granularity) => {
+    setState((prev) => ({ ...prev, granularity }));
+  }, []);
+
+  const summary = useRevenueSummary(state.range, isAuthenticated);
+  const timeseries = useRevenueTimeseries(state.range, state.granularity, isAuthenticated);
 
   return (
     <UnifiedAdminLayout title="💰 財務中心 / 營收總覽">
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {/* 頂部歡迎區 */}
-          <div className="rounded-lg bg-gradient-to-br from-emerald-600 to-teal-700 p-6 text-white">
-            <h2 className="text-xl font-bold mb-1">💰 財務中心</h2>
-            <p className="text-emerald-50 text-sm">
-              統一管理遊戲與對戰收入、兌換碼、交易與退款
-            </p>
-          </div>
-
-          {/* 頂部統計 */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <SummaryCard
-              title="總收入"
-              value={formatCurrency(data?.totalRevenue ?? 0)}
-              icon={<DollarSign className="w-5 h-5" />}
-              accent="emerald"
-            />
-            <SummaryCard
-              title="本月收入"
-              value={formatCurrency(data?.monthlyRevenue ?? 0)}
-              icon={<TrendingUp className="w-5 h-5" />}
-              accent="blue"
-            />
-            <SummaryCard
-              title="兌換碼"
-              value={`${data?.codes?.active ?? 0} / ${data?.codes?.total ?? 0}`}
-              subtitle={`已使用 ${data?.codes?.used ?? 0}`}
-              icon={<Ticket className="w-5 h-5" />}
-              accent="violet"
-            />
-          </div>
-
-          {/* 分類收入明細 */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <BreakdownCard
-              title="🎮 遊戲收入"
-              totalRevenue={data?.breakdown?.games?.totalRevenue ?? 0}
-              monthlyRevenue={data?.breakdown?.games?.monthlyRevenue ?? 0}
-              count={data?.breakdown?.games?.purchaseCount ?? 0}
-              countLabel="筆購買"
-              icon={<Gamepad2 className="w-5 h-5" />}
-              accent="violet"
-            />
-            <BreakdownCard
-              title="⚔️ 對戰收入"
-              totalRevenue={data?.breakdown?.battles?.totalRevenue ?? 0}
-              monthlyRevenue={data?.breakdown?.battles?.monthlyRevenue ?? 0}
-              count={data?.breakdown?.battles?.registrationCount ?? 0}
-              countLabel="筆報名"
-              icon={<Swords className="w-5 h-5" />}
-              accent="rose"
-            />
-          </div>
-
-          {/* 快速導覽 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">快速操作</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <QuickLink
-                  href="/admin/revenue/products"
-                  icon={<Package className="w-5 h-5" />}
-                  label="商品管理"
-                  description="遊戲與對戰場地定價"
-                />
-                <QuickLink
-                  href="/admin/revenue/codes"
-                  icon={<Ticket className="w-5 h-5" />}
-                  label="兌換碼中心"
-                  description="跨遊戲兌換碼"
-                />
-                <QuickLink
-                  href="/admin/revenue/transactions"
-                  icon={<Receipt className="w-5 h-5" />}
-                  label="交易記錄"
-                  description="所有購買與報名"
-                />
-                <QuickLink
-                  href="/admin/tickets"
-                  icon={<DollarSign className="w-5 h-5" />}
-                  label="舊版票券總覽"
-                  description="原本的票券/收款頁"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Phase 3 提示 */}
-          <Card className="border-emerald-200 bg-emerald-50/30 dark:bg-emerald-950/20">
-            <CardContent className="pt-4 text-sm text-muted-foreground">
-              <p>
-                💡 <strong>Phase 3 建置中：</strong>
-                財務中心正在擴建。目前可看到統合的營收統計、商品列表、兌換碼中心與交易記錄。
-                Phase 4 會加入退款管理、金流設定、以及統一的商品資料模型。
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </UnifiedAdminLayout>
-  );
-}
-
-// ============================================================================
-// 子元件
-// ============================================================================
-
-function SummaryCard({
-  title,
-  value,
-  subtitle,
-  icon,
-  accent,
-}: {
-  title: string;
-  value: string;
-  subtitle?: string;
-  icon: React.ReactNode;
-  accent: "emerald" | "blue" | "violet" | "rose";
-}) {
-  const accentClasses = {
-    emerald: "text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30",
-    blue: "text-blue-600 bg-blue-100 dark:bg-blue-900/30",
-    violet: "text-violet-600 bg-violet-100 dark:bg-violet-900/30",
-    rose: "text-rose-600 bg-rose-100 dark:bg-rose-900/30",
-  };
-  return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold font-number mt-1">{value}</p>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>
-            )}
-          </div>
-          <div className={`p-3 rounded-full ${accentClasses[accent]}`}>
-            {icon}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function BreakdownCard({
-  title,
-  totalRevenue,
-  monthlyRevenue,
-  count,
-  countLabel,
-  icon,
-  accent,
-}: {
-  title: string;
-  totalRevenue: number;
-  monthlyRevenue: number;
-  count: number;
-  countLabel: string;
-  icon: React.ReactNode;
-  accent: "violet" | "rose";
-}) {
-  const borderColor = accent === "violet" ? "border-violet-200" : "border-rose-200";
-  return (
-    <Card className={borderColor}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          {icon}
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div>
-          <p className="text-xs text-muted-foreground">累計</p>
-          <p className="text-xl font-bold font-number">{formatCurrency(totalRevenue)}</p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">本月</p>
-          <p className="text-lg font-semibold font-number">
-            {formatCurrency(monthlyRevenue)}
+      <div className="space-y-5">
+        <div className="rounded-lg bg-gradient-to-br from-emerald-600 to-teal-700 p-6 text-white">
+          <h2 className="text-xl font-bold mb-1">💰 財務中心</h2>
+          <p className="text-emerald-50 text-sm">
+            現場收款、遊戲購買、對戰報名的統合營收分析（金額已扣除退款）
           </p>
         </div>
-        <Badge variant="secondary">
-          {count} {countLabel}
-        </Badge>
-      </CardContent>
-    </Card>
+
+        <RevenueFilterBar
+          range={state.range}
+          granularity={state.granularity}
+          activePreset={state.preset}
+          onPreset={handlePreset}
+          onRangeChange={handleRangeChange}
+          onGranularityChange={handleGranularity}
+        />
+
+        {summary.isError && (
+          <Card className="border-destructive/50">
+            <CardContent className="p-4 text-sm text-destructive">
+              營收資料載入失敗，請重新整理或縮小查詢區間後再試。
+            </CardContent>
+          </Card>
+        )}
+
+        <RevenueKpiCards data={summary.data} isLoading={summary.isLoading} />
+
+        <RevenueTrendChart
+          series={timeseries.data?.series}
+          granularity={state.granularity}
+          isLoading={timeseries.isLoading}
+        />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">快速操作</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+              <QuickLink
+                href="/admin/revenue/products"
+                icon={<Package className="w-5 h-5" />}
+                label="商品管理"
+                description="遊戲與對戰場地定價"
+              />
+              <QuickLink
+                href="/admin/revenue/codes"
+                icon={<Ticket className="w-5 h-5" />}
+                label="兌換碼中心"
+                description="跨遊戲兌換碼"
+              />
+              <QuickLink
+                href="/admin/revenue/transactions"
+                icon={<Receipt className="w-5 h-5" />}
+                label="交易記錄"
+                description="所有購買與報名"
+              />
+              <QuickLink
+                href="/admin/pos-reports"
+                icon={<DollarSign className="w-5 h-5" />}
+                label="POS 每日報表"
+                description="現場銷售與結帳"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </UnifiedAdminLayout>
   );
 }
 
@@ -266,8 +200,4 @@ function QuickLink({
       </Button>
     </Link>
   );
-}
-
-function formatCurrency(amount: number): string {
-  return `NT$ ${amount.toLocaleString("zh-TW")}`;
 }
