@@ -18,6 +18,7 @@ import RevenueTrendChart from "./analytics/RevenueTrendChart";
 import RevenueSourceChart from "./analytics/RevenueSourceChart";
 import RevenueBreakdownPanel from "./analytics/RevenueBreakdownPanel";
 import RevenueHeatmap from "./analytics/RevenueHeatmap";
+import RevenueTransactionsPanel from "./analytics/RevenueTransactionsPanel";
 import {
   RANGE_PRESETS,
   suggestGranularity,
@@ -150,6 +151,8 @@ export default function RevenueOverview() {
         </div>
 
         <RevenueBreakdownPanel range={state.range} enabled={isAuthenticated} />
+
+        <RevenueTransactionsPanel range={state.range} enabled={isAuthenticated} />
 
         <Card>
           <CardHeader>

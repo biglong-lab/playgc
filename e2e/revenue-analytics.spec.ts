@@ -135,4 +135,58 @@ test.describe("營收分析儀表板", () => {
       json.txCount.toLocaleString("en-US"),
     );
   });
+
+  test("交易明細可篩選來源並提供 CSV 匯出", async ({ page }) => {
+    await openDashboard(page);
+    await page.getByTestId("tx-table").scrollIntoViewIfNeeded();
+    await expect(page.getByTestId("tx-table")).toBeVisible();
+    await expect(page.getByTestId("btn-export-revenue-csv")).toBeEnabled();
+
+    // 切到「遊戲」→ 本地展示資料只有 POS，應顯示空狀態而非壞掉
+    await page.getByTestId("tx-game").click();
+    await expect(page.getByTestId("btn-export-revenue-csv")).toBeDisabled();
+
+    await page.getByTestId("tx-pos").click();
+    await expect(page.getByTestId("tx-table")).toBeVisible();
+  });
+
+  test("CSV 匯出實際觸發下載，內容含當前區間資料", async ({ page }) => {
+    await openDashboard(page);
+    await page.getByTestId("btn-export-revenue-csv").scrollIntoViewIfNeeded();
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByTestId("btn-export-revenue-csv").click();
+    const download = await downloadPromise;
+    // exportToCsv 會自己再附加一次今天日期，所以只驗前綴含完整區間
+    expect(download.suggestedFilename()).toMatch(/^revenue-\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}.*\.csv$/);
+
+    const body = await download.createReadStream().then(
+      (stream) =>
+        new Promise<string>((resolve, reject) => {
+          let out = "";
+          stream.on("data", (c: Buffer) => (out += c.toString("utf8")));
+          stream.on("end", () => resolve(out));
+          stream.on("error", reject);
+        }),
+    );
+    expect(body).toContain("營業日");
+    expect(body).toContain("金額 (NT$)");
+    // 確認真的有資料列，不是只有表頭
+    expect(body.trim().split("\n").length).toBeGreaterThan(1);
+  });
+
+  test("視覺化色板在亮色 class 下確實換成亮色值", async ({ page }) => {
+    await openDashboard(page);
+    const darkValue = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--viz-1").trim(),
+    );
+    const lightValue = await page.evaluate(() => {
+      document.documentElement.classList.add("light");
+      const v = getComputedStyle(document.documentElement).getPropertyValue("--viz-1").trim();
+      document.documentElement.classList.remove("light");
+      return v;
+    });
+    // 兩個模式各自 selected（不是自動翻轉），值必須不同且都是驗證過的 hex
+    expect(darkValue).toBe("#3987e5");
+    expect(lightValue).toBe("#2a78d6");
+  });
 });
