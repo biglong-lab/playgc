@@ -68,14 +68,33 @@ export interface RevenueRange {
 // ============================================================================
 
 /**
+ * 時間欄位的兩種型別，時區轉換法「不同」，混用會差一天：
+ *   naive  = timestamp without time zone（DB 存 UTC 當地值）→ 需雙層轉換
+ *   tz     = timestamp with time zone（已帶時區資訊）→ 只需單層轉換
+ * 實測（UTC 2026-03-10 02:00 = Taipei 10:00，正解 03-10）：
+ *   naive 雙層 → 03-10 ✅ ｜ tz 雙層 → 03-09 ❌ ｜ tz 單層 → 03-10 ✅
+ */
+export type TimeColumnKind = "naive" | "tz";
+
+/**
  * naive timestamp（DB 存 UTC）→ Asia/Taipei 營業日。
  *
- * ⚠️ 必須雙重轉換。只寫 `col AT TIME ZONE 'Asia/Taipei'` 是錯的：
- * 那是「把 UTC 數值當成台北當地時間解讀」，結果會把台北 00:00–16:00
+ * ⚠️ 必須雙層轉換。只寫 `col AT TIME ZONE 'Asia/Taipei'` 是錯的：
+ * 那是「把 UTC 數值當成台北當地時間解讀」，會把台北 00:00–16:00
  * 的交易錯歸到前一天（實測：台北 09:00 → 被算成前一日）。
  */
 export function taipeiBusinessDate(col: SQL | unknown): SQL {
   return sql`((${col} AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Taipei')::date`;
+}
+
+/** timestamptz → Asia/Taipei 營業日（已帶時區，單層轉換即可）*/
+export function taipeiBusinessDateTz(col: SQL | unknown): SQL {
+  return sql`(${col} AT TIME ZONE 'Asia/Taipei')::date`;
+}
+
+/** 依欄位型別取對應的營業日運算式 */
+export function businessDateOf(col: SQL | unknown, kind: TimeColumnKind = "naive"): SQL {
+  return kind === "tz" ? taipeiBusinessDateTz(col) : taipeiBusinessDate(col);
 }
 
 /** Asia/Taipei 今天 YYYY-MM-DD */
@@ -94,8 +113,12 @@ export function taipeiToday(): string {
 }
 
 /** 依營業日區間過濾（from/to 皆可選，含頭含尾）*/
-export function withinBusinessRange(col: SQL | unknown, range: RevenueRange): SQL | undefined {
-  const day = taipeiBusinessDate(col);
+export function withinBusinessRange(
+  col: SQL | unknown,
+  range: RevenueRange,
+  kind: TimeColumnKind = "naive",
+): SQL | undefined {
+  const day = businessDateOf(col, kind);
   if (range.from && range.to) return sql`${day} BETWEEN ${range.from}::date AND ${range.to}::date`;
   if (range.from) return sql`${day} >= ${range.from}::date`;
   if (range.to) return sql`${day} <= ${range.to}::date`;
@@ -156,7 +179,7 @@ async function refundTotal(fieldId: string, range: RevenueRange): Promise<number
         eq(refunds.fieldId, fieldId),
         eq(refunds.status, "completed"),
         REFUND_NOT_GHOST,
-        withinBusinessRange(refunds.createdAt, range),
+        withinBusinessRange(refunds.createdAt, range, "tz"),
       ),
     );
   return Number(row?.cents ?? 0);
