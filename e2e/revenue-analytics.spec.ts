@@ -9,9 +9,12 @@ import { test, expect, type Page } from "@playwright/test";
 import jwt from "jsonwebtoken";
 import pg from "pg";
 
-const FIELD_ID = "72cc204d-8481-4276-b913-0033d69bf654"; // JIACHUN
-const ACCOUNT_ID = "8c551bbe-3d6f-42ea-9592-22a2ef515ffe";
-const ROLE_ID = "6df784c6-1bfe-4f66-9972-3659498564e6";
+// ⚠️ 不要寫死帳號/場域 ID：本地 DB 會定期用 npm run sync:db 從生產覆蓋，
+// 寫死的 UUID 同步後可能就不存在，測試會莫名其妙全紅。改為動態查詢。
+const FIELD_CODE = "JIACHUN";
+let FIELD_ID = "";
+let ACCOUNT_ID = "";
+let ROLE_ID = "";
 
 const hasEnv = Boolean(process.env.DATABASE_URL && process.env.SESSION_SECRET);
 
@@ -27,6 +30,23 @@ test.beforeAll(async () => {
   if (!hasEnv) return;
   const workerIndex = test.info().workerIndex;
   sessionTag = `e2e-revenue-w${workerIndex}`;
+
+  const lookupPool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  const { rows } = await lookupPool.query(
+    `SELECT a.id AS account_id, a.role_id, a.field_id
+       FROM admin_accounts a
+       JOIN roles r  ON a.role_id  = r.id
+       JOIN fields f ON a.field_id = f.id
+      WHERE a.status = 'active' AND f.code = $1 AND r.system_role = 'super_admin'
+      LIMIT 1`,
+    [FIELD_CODE],
+  );
+  await lookupPool.end();
+  if (!rows.length) throw new Error(`找不到 ${FIELD_CODE} 的 super_admin 帳號，請先跑 npm run sync:db`);
+  ACCOUNT_ID = rows[0].account_id;
+  ROLE_ID = rows[0].role_id;
+  FIELD_ID = rows[0].field_id;
+
   adminToken = jwt.sign(
     {
       sub: ACCOUNT_ID,
@@ -191,5 +211,20 @@ test.describe("營收分析儀表板", () => {
     // 兩個模式各自 selected（不是自動翻轉），值必須不同且都是驗證過的 hex
     expect(darkValue).toBe("#3987e5");
     expect(lightValue).toBe("#2a78d6");
+  });
+
+  test("財務中心選單出現在側邊欄（依 fields.settings.enablePayment）", async ({ page }) => {
+    await openDashboard(page);
+    // 選單由 filterMenuByModules 依場域的 enablePayment 決定；
+    // 本地 DB 若是舊快照（payment=false），這裡就會抓到，不必等人工發現。
+    // 用 data-sidebar 容器限定範圍：getByRole("navigation") 會先抓到頂部麵包屑，
+    // 而麵包屑同樣有「營收總覽」，測不到選單真正的狀態。
+    const sidebar = page.locator('[data-sidebar="sidebar"]').first();
+    await expect(sidebar.locator('a[href="/admin/revenue"]')).toHaveCount(1, { timeout: 10_000 });
+    // 商品管理只存在於選單、麵包屑不會有，可確認整組財務選單都在
+    await expect(sidebar.locator('a[href="/admin/revenue/products"]')).toHaveCount(1);
+
+    await sidebar.locator('a[href="/admin/revenue"]').scrollIntoViewIfNeeded();
+    await sidebar.screenshot({ path: "test-results/revenue-05-sidebar.png" });
   });
 });
