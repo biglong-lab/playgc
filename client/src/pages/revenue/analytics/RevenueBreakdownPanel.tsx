@@ -116,9 +116,12 @@ export default function RevenueBreakdownPanel({ range, enabled }: Props) {
                   barSize={18}
                   isAnimationActive={false}
                 >
+                  {/* width 必填：不給的話 recharts 會拿「長條本身的長度」當
+                      換行寬度，最短的那條會把「NT$ 4,410」折成兩行 */}
                   <LabelList
                     dataKey="cents"
                     position="right"
+                    width={96}
                     formatter={(v: number) => money(v)}
                     className="fill-muted-foreground"
                     fontSize={11}

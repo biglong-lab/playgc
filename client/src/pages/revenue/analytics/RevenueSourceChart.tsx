@@ -55,8 +55,10 @@ export default function RevenueSourceChart({
             此區間沒有收入紀錄
           </div>
         ) : (
-          <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="h-48 w-48 shrink-0 relative" data-testid="source-donut">
+          // 這張卡在桌機只佔 1/3 欄寬（約 300px），若橫排會把圖例壓成
+          // 直排單字（「現/場/收/款」）。一律縱向：甜甜圈在上、標籤在下。
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-44 w-44 shrink-0 relative" data-testid="source-donut">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -84,7 +86,7 @@ export default function RevenueSourceChart({
             </div>
 
             {/* 圖例即直接標籤：名稱 + 金額 + 佔比，不靠顏色單獨表意 */}
-            <ul className="flex-1 w-full space-y-2">
+            <ul className="w-full space-y-2">
               {slices.map((s) => (
                 <li key={s.key} className="flex items-center gap-2 text-sm">
                   <span

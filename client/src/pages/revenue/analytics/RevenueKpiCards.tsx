@@ -80,12 +80,14 @@ function KpiCard({
   testId: string;
 }) {
   return (
-    <Card data-testid={testId}>
+    // 四欄佈局下每張卡只有約 240px，text-3xl 會讓「NT$ 91,950」折成兩行，
+    // 因此字級統一，主指標改用左側色條強調（不靠字級大小）。
+    <Card data-testid={testId} className={emphasis ? "border-l-4" : undefined}
+      style={emphasis ? { borderLeftColor: "var(--viz-1)" } : undefined}
+    >
       <CardContent className="p-5">
         <p className="text-sm text-muted-foreground">{label}</p>
-        <p
-          className={`font-number font-bold mt-1 ${emphasis ? "text-3xl" : "text-2xl"}`}
-        >
+        <p className="font-number font-bold mt-1 text-2xl whitespace-nowrap">
           {value}
         </p>
         <div className="flex items-center gap-2 mt-2 flex-wrap">
