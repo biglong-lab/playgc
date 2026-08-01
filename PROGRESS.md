@@ -2715,7 +2715,7 @@ content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'
 
 #### 3.2 GitHub Actions CI/CD Secrets
 **已設定（6 個）**：
-- `DEPLOY_HOST` = 172.233.89.147
+- `DEPLOY_HOST` = 172.233.67.87
 - `DEPLOY_USER` = root
 - `DEPLOY_PATH` = /www/wwwroot/game.homi.cc
 - `VITE_FIREBASE_API_KEY` / `APP_ID` / `PROJECT_ID`
@@ -3123,7 +3123,7 @@ PLATFORM_OWNER_SECRET=3f435b3364acc20d049a00fc682fc526a1b418b92686c57c3f6b8935f5
 
 #### ✅ 正式部署完成（2026-03-23）
 - [x] **正式環境部署**：`https://game.homi.cc` — Linode VPS + Docker + Nginx + SSL
-- [x] 伺服器：`172.233.89.147`，部署目錄 `/www/wwwroot/game.homi.cc`
+- [x] 伺服器：`172.233.67.87`，部署目錄 `/www/wwwroot/game.homi.cc`
 - [x] Docker 容器：`gamehomicc-app` (healthy) + `gamehomicc-db` (PostgreSQL 16)
 - [x] 232 個 commits 更新成功，所有頁面和 API 正常回應
 

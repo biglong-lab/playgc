@@ -184,7 +184,7 @@ push 到 main：`git push origin HEAD:main`
 | 專案根 | `/Users/hung-macmini/projects/數位遊戲平台/.claude/worktrees/priceless-mestorf-2e034e` |
 | 主分支 | `main` |
 | 生產 | [https://game.homi.cc](https://game.homi.cc) |
-| 生產 SSH | `root@172.233.89.147` |
+| 生產 SSH | `root@172.233.67.87` |
 | 部署目錄 | `/www/wwwroot/game.homi.cc` |
 | 本地 dev port | 3333 |
 | 本地 DB | Docker `gameplatform-postgres` (port 5437) |
