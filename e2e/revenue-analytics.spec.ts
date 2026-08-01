@@ -21,16 +21,19 @@ let sessionTag = "";
 // ⚠️ 每個 worker 必須有自己的 session：Playwright 平行跑時，
 //    共用同一筆 admin_sessions 會被先結束的 worker 在 afterAll 刪掉，
 //    其餘 worker 隨即全部 401（單獨跑會過、一起跑就掛的典型症狀）。
-test.beforeAll(async (_fixtures, testInfo) => {
+// 用 test.info() 而非 hook 的第二參數取 workerIndex：Playwright 要求第一個
+// 參數必須是物件解構，而空解構 {} 會被 eslint 的 no-empty-pattern 擋下。
+test.beforeAll(async () => {
   if (!hasEnv) return;
-  sessionTag = `e2e-revenue-w${testInfo.workerIndex}`;
+  const workerIndex = test.info().workerIndex;
+  sessionTag = `e2e-revenue-w${workerIndex}`;
   adminToken = jwt.sign(
     {
       sub: ACCOUNT_ID,
       fieldId: FIELD_ID,
       roleId: ROLE_ID,
       type: "admin",
-      wi: testInfo.workerIndex, // 讓各 worker 的 token 不同，避免 unique 衝突
+      wi: workerIndex, // 讓各 worker 的 token 不同，避免 unique 衝突
     },
     process.env.SESSION_SECRET as string,
     { expiresIn: "2h" },
