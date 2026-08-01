@@ -217,9 +217,16 @@ test.describe("營收分析儀表板", () => {
     await openDashboard(page);
     // 選單由 filterMenuByModules 依場域的 enablePayment 決定；
     // 本地 DB 若是舊快照（payment=false），這裡就會抓到，不必等人工發現。
+    // 手機版側邊欄預設收合成 drawer、DOM 裡不渲染，要先按 trigger 展開，
+    // 否則這個測試在 Mobile project 會假性失敗。
+    let sidebar = page.locator('[data-sidebar="sidebar"]').first();
+    if (!(await sidebar.isVisible().catch(() => false))) {
+      await page.locator('[data-sidebar="trigger"]').first().click();
+      sidebar = page.locator('[data-sidebar="sidebar"]').first();
+      await expect(sidebar).toBeVisible({ timeout: 10_000 });
+    }
     // 用 data-sidebar 容器限定範圍：getByRole("navigation") 會先抓到頂部麵包屑，
     // 而麵包屑同樣有「營收總覽」，測不到選單真正的狀態。
-    const sidebar = page.locator('[data-sidebar="sidebar"]').first();
     await expect(sidebar.locator('a[href="/admin/revenue"]')).toHaveCount(1, { timeout: 10_000 });
     // 商品管理只存在於選單、麵包屑不會有，可確認整組財務選單都在
     await expect(sidebar.locator('a[href="/admin/revenue/products"]')).toHaveCount(1);
