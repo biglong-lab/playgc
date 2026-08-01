@@ -243,3 +243,28 @@ export function useRevenueTransactions(
     enabled,
   });
 }
+
+export interface HeatCell {
+  dow: number;
+  hour: number;
+  cents: number;
+  count: number;
+}
+
+export interface HeatmapResponse {
+  range: DateRange;
+  cells: HeatCell[];
+  maxCents: number;
+  peak: { dow: number; hour: number } | null;
+}
+
+export function useRevenueHeatmap(
+  range: DateRange,
+  enabled: boolean,
+): UseQueryResult<HeatmapResponse> {
+  return useQuery<HeatmapResponse>({
+    queryKey: [`${BASE}/heatmap`, range.from, range.to],
+    queryFn: () => fetchJson(`${BASE}/heatmap?from=${range.from}&to=${range.to}`),
+    enabled,
+  });
+}

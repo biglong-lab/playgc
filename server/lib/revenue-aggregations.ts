@@ -562,3 +562,105 @@ export async function getRevenueTransactions(
   out.sort((a, b) => (b.occurredAt?.getTime() ?? 0) - (a.occurredAt?.getTime() ?? 0));
   return out.slice(0, limit);
 }
+
+// ============================================================================
+// 時段熱力圖
+// ============================================================================
+
+export interface HeatCell {
+  /** 0=週日 … 6=週六（Asia/Taipei）*/
+  dow: number;
+  /** 0–23（Asia/Taipei）*/
+  hour: number;
+  cents: number;
+  count: number;
+}
+
+/** naive timestamp → Taipei 當地時間（給 EXTRACT 用，不取 date）*/
+function taipeiLocal(col: SQL | unknown): SQL {
+  return sql`((${col} AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Taipei')`;
+}
+
+/**
+ * 星期 × 時段 熱力圖 — 三源合併，永遠回滿 7×24=168 格（含零），
+ * 讓前端不必處理稀疏格子。
+ */
+export async function getRevenueHeatmap(
+  fieldId: string,
+  range: RevenueRange,
+): Promise<HeatCell[]> {
+  const cellOf = (col: SQL | unknown) => ({
+    dow: sql<number>`EXTRACT(DOW FROM ${taipeiLocal(col)})::int`,
+    hour: sql<number>`EXTRACT(HOUR FROM ${taipeiLocal(col)})::int`,
+  });
+
+  const posCell = cellOf(posTransactions.createdAt);
+  const gameCell = cellOf(purchases.createdAt);
+  const battleCell = cellOf(battleRegistrations.registeredAt);
+
+  const [posRows, gameRows, battleRows] = await Promise.all([
+    db
+      .select({
+        dow: posCell.dow,
+        hour: posCell.hour,
+        cents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}),0)::int`,
+        count: sql<number>`COUNT(*)::int`,
+      })
+      .from(posTransactions)
+      .where(and(
+        eq(posTransactions.fieldId, fieldId),
+        POS_NOT_DELETED,
+        withinBusinessRange(posTransactions.createdAt, range),
+      ))
+      .groupBy(posCell.dow, posCell.hour),
+
+    db
+      .select({
+        dow: gameCell.dow,
+        hour: gameCell.hour,
+        cents: sql<number>`COALESCE(SUM(${purchases.amount}),0)::int * ${TWD_TO_CENTS}`,
+        count: sql<number>`COUNT(*)::int`,
+      })
+      .from(purchases)
+      .innerJoin(games, eq(purchases.gameId, games.id))
+      .where(and(
+        eq(games.fieldId, fieldId),
+        eq(purchases.status, "completed"),
+        withinBusinessRange(purchases.createdAt, range),
+      ))
+      .groupBy(gameCell.dow, gameCell.hour),
+
+    db
+      .select({
+        dow: battleCell.dow,
+        hour: battleCell.hour,
+        cents: sql<number>`COALESCE(SUM(${BATTLE_PRICE_TWD}),0)::int * ${TWD_TO_CENTS}`,
+        count: sql<number>`COUNT(*)::int`,
+      })
+      .from(battleRegistrations)
+      .innerJoin(battleSlots, eq(battleRegistrations.slotId, battleSlots.id))
+      .innerJoin(battleVenues, eq(battleSlots.venueId, battleVenues.id))
+      .where(and(
+        eq(battleVenues.fieldId, fieldId),
+        eq(battleRegistrations.depositPaid, true),
+        withinBusinessRange(battleRegistrations.registeredAt, range),
+      ))
+      .groupBy(battleCell.dow, battleCell.hour),
+  ]);
+
+  const grid = new Map<string, HeatCell>();
+  for (let dow = 0; dow < 7; dow++) {
+    for (let hour = 0; hour < 24; hour++) {
+      grid.set(`${dow}-${hour}`, { dow, hour, cents: 0, count: 0 });
+    }
+  }
+  for (const rows of [posRows, gameRows, battleRows]) {
+    for (const r of rows) {
+      const cell = grid.get(`${Number(r.dow)}-${Number(r.hour)}`);
+      if (!cell) continue;
+      cell.cents += Number(r.cents);
+      cell.count += Number(r.count);
+    }
+  }
+  return Array.from(grid.values());
+}

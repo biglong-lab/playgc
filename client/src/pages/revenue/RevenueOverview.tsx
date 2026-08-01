@@ -15,6 +15,9 @@ import { Package, Ticket, Receipt, DollarSign } from "lucide-react";
 import RevenueFilterBar from "./analytics/RevenueFilterBar";
 import RevenueKpiCards from "./analytics/RevenueKpiCards";
 import RevenueTrendChart from "./analytics/RevenueTrendChart";
+import RevenueSourceChart from "./analytics/RevenueSourceChart";
+import RevenueBreakdownPanel from "./analytics/RevenueBreakdownPanel";
+import RevenueHeatmap from "./analytics/RevenueHeatmap";
 import {
   RANGE_PRESETS,
   suggestGranularity,
@@ -136,6 +139,17 @@ export default function RevenueOverview() {
           granularity={state.granularity}
           isLoading={timeseries.isLoading}
         />
+
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="lg:col-span-1">
+            <RevenueSourceChart data={summary.data} isLoading={summary.isLoading} />
+          </div>
+          <div className="lg:col-span-2">
+            <RevenueHeatmap range={state.range} enabled={isAuthenticated} />
+          </div>
+        </div>
+
+        <RevenueBreakdownPanel range={state.range} enabled={isAuthenticated} />
 
         <Card>
           <CardHeader>

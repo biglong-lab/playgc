@@ -16,6 +16,7 @@ import {
   getRevenueTimeseries,
   getRevenueBreakdown,
   getRevenueTransactions,
+  getRevenueHeatmap,
   type Granularity,
   type BreakdownDimension,
 } from "../lib/revenue-aggregations";
@@ -225,6 +226,34 @@ export function registerRevenueAnalyticsRoutes(app: Express): void {
         res.json({ range: { from: ctx.range.from, to: ctx.range.to }, ...result });
       } catch (err) {
         fail(res, err, "breakdown");
+      }
+    },
+  );
+
+  // ──────────────────────────────────────────────────────────
+  // 時段熱力圖
+  // ──────────────────────────────────────────────────────────
+  app.get(
+    "/api/revenue/analytics/heatmap",
+    requireAdminAuth,
+    requirePermission("game:view"),
+    async (req, res) => {
+      try {
+        const ctx = prepare(req, res);
+        if (!ctx) return;
+        const cells = await getRevenueHeatmap(ctx.fieldId, {
+          from: ctx.range.from,
+          to: ctx.range.to,
+        });
+        const peak = cells.reduce((best, c) => (c.cents > best.cents ? c : best), cells[0]);
+        res.json({
+          range: { from: ctx.range.from, to: ctx.range.to },
+          cells,
+          maxCents: peak?.cents ?? 0,
+          peak: peak && peak.cents > 0 ? { dow: peak.dow, hour: peak.hour } : null,
+        });
+      } catch (err) {
+        fail(res, err, "heatmap");
       }
     },
   );
