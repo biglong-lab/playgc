@@ -10,8 +10,17 @@ import {
   battleVenues,
   battleSlots,
   battleRegistrations,
+  posTransactions,
+  activities,
 } from "@shared/schema";
 import { eq, sql, and, desc } from "drizzle-orm";
+import {
+  getRevenueSummary,
+  taipeiToday,
+  withinBusinessRange,
+  POS_NOT_DELETED,
+  TWD_TO_CENTS,
+} from "../lib/revenue-facts";
 
 export function registerRevenueRoutes(app: Express): void {
   // ============================================================================
@@ -28,95 +37,81 @@ export function registerRevenueRoutes(app: Express): void {
         // 🔒 場域隔離：統一用 admin.fieldId
         const fieldId = req.admin.fieldId;
 
-        // 本月起始
-        const now = new Date();
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        // 本月起始（Asia/Taipei 營業日，不是伺服器 UTC 月初）
+        const monthStart = `${taipeiToday().slice(0, 7)}-01`;
 
-        // 🎮 遊戲收入
-        const [gameRevenue] = await db
-          .select({
-            totalRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${purchases.status} = 'completed' THEN ${purchases.amount} ELSE 0 END), 0)::int`,
-            monthlyRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${purchases.status} = 'completed' AND ${purchases.createdAt} >= ${monthStart} THEN ${purchases.amount} ELSE 0 END), 0)::int`,
-            purchaseCount: sql<number>`COUNT(CASE WHEN ${purchases.status} = 'completed' THEN 1 END)::int`,
-          })
-          .from(purchases)
-          .innerJoin(games, eq(purchases.gameId, games.id))
-          .where(eq(games.fieldId, fieldId));
+        const [allTime, monthly, codeRows, activityRows] = await Promise.all([
+          getRevenueSummary(fieldId),
+          getRevenueSummary(fieldId, { from: monthStart }),
+          db
+            .select({
+              total: sql<number>`COUNT(*)::int`,
+              active: sql<number>`COUNT(CASE WHEN ${redeemCodes.status} = 'active' THEN 1 END)::int`,
+              used: sql<number>`COUNT(CASE WHEN ${redeemCodes.status} = 'used' THEN 1 END)::int`,
+            })
+            .from(redeemCodes)
+            .where(eq(redeemCodes.fieldId, fieldId)),
+          // 本月 POS 依活動切片（排除軟刪除交易）
+          db
+            .select({
+              activityId: posTransactions.activityId,
+              activityName: activities.name,
+              totalCents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}), 0)::int`,
+              txCount: sql<number>`COUNT(*)::int`,
+            })
+            .from(posTransactions)
+            .leftJoin(activities, eq(posTransactions.activityId, activities.id))
+            .where(
+              and(
+                eq(posTransactions.fieldId, fieldId),
+                POS_NOT_DELETED,
+                withinBusinessRange(posTransactions.createdAt, { from: monthStart }),
+              ),
+            )
+            .groupBy(posTransactions.activityId, activities.name),
+        ]);
 
-        // ⚔️ 對戰收入（paid = depositPaid，金額 = slot.pricePerPerson 或 venue.settings.pricePerPerson）
-        const [battleRevenue] = await db
-          .select({
-            totalRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${battleRegistrations.depositPaid} THEN COALESCE(${battleSlots.pricePerPerson}, CAST(${battleVenues.settings}->>'pricePerPerson' AS INTEGER), 0) ELSE 0 END), 0)::int`,
-            monthlyRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${battleRegistrations.depositPaid} AND ${battleRegistrations.registeredAt} >= ${monthStart} THEN COALESCE(${battleSlots.pricePerPerson}, CAST(${battleVenues.settings}->>'pricePerPerson' AS INTEGER), 0) ELSE 0 END), 0)::int`,
-            registrationCount: sql<number>`COUNT(CASE WHEN ${battleRegistrations.depositPaid} THEN 1 END)::int`,
-          })
-          .from(battleRegistrations)
-          .innerJoin(battleSlots, eq(battleRegistrations.slotId, battleSlots.id))
-          .innerJoin(battleVenues, eq(battleSlots.venueId, battleVenues.id))
-          .where(eq(battleVenues.fieldId, fieldId));
-
-        // 兌換碼統計
-        const [codeStats] = await db
-          .select({
-            total: sql<number>`COUNT(*)::int`,
-            active: sql<number>`COUNT(CASE WHEN ${redeemCodes.status} = 'active' THEN 1 END)::int`,
-            used: sql<number>`COUNT(CASE WHEN ${redeemCodes.status} = 'used' THEN 1 END)::int`,
-          })
-          .from(redeemCodes)
-          .where(eq(redeemCodes.fieldId, fieldId));
-
-        // 🆕 2026-05-18 Phase 7：POS 收款 + 預約收入（含 activity 切片）
-        const { posTransactions, bookings, activities } = await import("@shared/schema");
-        const [posRevenue] = await db
-          .select({
-            totalRevenue: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}), 0)::int`,
-            monthlyRevenue: sql<number>`COALESCE(SUM(CASE WHEN ${posTransactions.createdAt} >= ${monthStart} THEN ${posTransactions.paidAmountCents} ELSE 0 END), 0)::int`,
-            txCount: sql<number>`COUNT(*)::int`,
-          })
-          .from(posTransactions)
-          .where(eq(posTransactions.fieldId, fieldId));
-
-        // 按活動切片（本月）
-        const activityBreakdown = await db
-          .select({
-            activityId: posTransactions.activityId,
-            activityName: activities.name,
-            totalCents: sql<number>`COALESCE(SUM(${posTransactions.paidAmountCents}), 0)::int`,
-            txCount: sql<number>`COUNT(*)::int`,
-          })
-          .from(posTransactions)
-          .leftJoin(activities, eq(posTransactions.activityId, activities.id))
-          .where(
-            sql`${posTransactions.fieldId} = ${fieldId} AND ${posTransactions.createdAt} >= ${monthStart}`,
-          )
-          .groupBy(posTransactions.activityId, activities.name);
+        const codeStats = codeRows[0] ?? { total: 0, active: 0, used: 0 };
+        /** 分 → 元（顯示用舊欄位相容值）*/
+        const twd = (cents: number) => Math.round(cents / TWD_TO_CENTS);
 
         res.json({
-          totalRevenue:
-            (gameRevenue?.totalRevenue ?? 0) +
-            (battleRevenue?.totalRevenue ?? 0) +
-            (posRevenue?.totalRevenue ?? 0),
-          monthlyRevenue:
-            (gameRevenue?.monthlyRevenue ?? 0) +
-            (battleRevenue?.monthlyRevenue ?? 0) +
-            (posRevenue?.monthlyRevenue ?? 0),
+          // ── 舊欄位（單位「元」）— 前端相容，Phase 2 後改用 *Cents ──
+          totalRevenue: twd(allTime.netCents),
+          monthlyRevenue: twd(monthly.netCents),
+          // ── 新欄位（單位「分」）— 精確值，勿與上面混用 ──
+          totalCents: allTime.netCents,
+          monthlyCents: monthly.netCents,
+          grossCents: allTime.grossCents,
+          refundCents: allTime.refundCents,
+          monthlyGrossCents: monthly.grossCents,
+          monthlyRefundCents: monthly.refundCents,
+          txCount: allTime.txCount,
           breakdown: {
             games: {
-              totalRevenue: gameRevenue?.totalRevenue ?? 0,
-              monthlyRevenue: gameRevenue?.monthlyRevenue ?? 0,
-              purchaseCount: gameRevenue?.purchaseCount ?? 0,
+              totalRevenue: twd(allTime.bySource.game.netCents),
+              monthlyRevenue: twd(monthly.bySource.game.netCents),
+              totalCents: allTime.bySource.game.netCents,
+              monthlyCents: monthly.bySource.game.netCents,
+              purchaseCount: allTime.bySource.game.txCount,
             },
             battles: {
-              totalRevenue: battleRevenue?.totalRevenue ?? 0,
-              monthlyRevenue: battleRevenue?.monthlyRevenue ?? 0,
-              registrationCount: battleRevenue?.registrationCount ?? 0,
+              totalRevenue: twd(allTime.bySource.battle.netCents),
+              monthlyRevenue: twd(monthly.bySource.battle.netCents),
+              totalCents: allTime.bySource.battle.netCents,
+              monthlyCents: monthly.bySource.battle.netCents,
+              registrationCount: allTime.bySource.battle.txCount,
             },
-            // 🆕 POS 收款（多活動 + 散客 + 現場加購）
+            // POS 收款（多活動 + 散客 + 現場加購）— 已扣退款、已排除軟刪除
             pos: {
-              totalRevenue: posRevenue?.totalRevenue ?? 0,
-              monthlyRevenue: posRevenue?.monthlyRevenue ?? 0,
-              txCount: posRevenue?.txCount ?? 0,
-              byActivity: activityBreakdown,
+              totalRevenue: twd(allTime.bySource.pos.netCents),
+              monthlyRevenue: twd(monthly.bySource.pos.netCents),
+              totalCents: allTime.bySource.pos.netCents,
+              monthlyCents: monthly.bySource.pos.netCents,
+              grossCents: allTime.bySource.pos.grossCents,
+              refundCents: allTime.bySource.pos.refundCents,
+              txCount: allTime.bySource.pos.txCount,
+              byActivity: activityRows,
             },
           },
           codes: codeStats,
