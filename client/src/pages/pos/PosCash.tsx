@@ -214,9 +214,14 @@ export default function PosCash() {
 
   return (
     <PosLayout title="櫃檯現金" backTo="/pos">
-      {/* 閉環階段引導（可點，導向對應動作）*/}
-      {today && (
-        <div className="flex items-center gap-1 mb-3 text-xs">
+      {/* 閉環階段引導（可點，導向對應動作）
+          ⚠️ 容器故意放在 today 判斷「外面」並保留最小高度：
+          這一列在頁面最頂端，若等資料到才整塊插入，會把下方所有內容
+          往下推 → CLS（生產實測 /pos/cash 77 次「差」評級）。
+          收銀台畫面跳動會造成誤點，不只是不好看。*/}
+      <div className="flex items-center gap-1 mb-3 text-xs min-h-[1.75rem]">
+        {today && (
+          <>
           {[
             { n: 1, label: "開帳" },
             { n: 2, label: "記帳" },
@@ -235,8 +240,9 @@ export default function PosCash() {
               {i < 3 && <div className={`h-0.5 flex-1 ${STEP > s.n ? "bg-emerald-500" : "bg-muted"}`} />}
             </div>
           ))}
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       {/* 👉 下一步動作卡（閉環核心：把記帳/收款串進來）*/}
       {today && !locked && (
