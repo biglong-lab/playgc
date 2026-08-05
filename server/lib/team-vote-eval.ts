@@ -81,17 +81,35 @@ export function computeVoteCompletion(
   return { isComplete, winningOptionId, voteCounts };
 }
 
+/** 分母下限 —— 全隊同時斷線時不讓分母歸零 */
+const MIN_VOTE_DENOMINATOR = 1;
+
 /**
- * 成員離開後重算該隊所有 active 投票
+ * 成員離開 / 斷線後重算該隊所有 active 投票
  *
  * 情境：3 人隊 2 人已投（需 2 票、未達）→ 第 3 人離開 → 分母變 2、
  *       門檻變 1 → 其實已達標，但沒有新的 cast 事件觸發重算 → 永久卡住。
  * 呼叫點：leave 路由、leader-decide continue、ws auto-leave。
  * 失敗不 throw（fire-and-forget，不阻塞離開流程）。
+ *
+ * 🆕 2026-08-05 根治（ADR-0024）：分母改用「在隊 ∩ 在線」。
+ *
+ * 為什麼：原本分母只看 isNull(leftAt)，斷線的人一直算在分母裡 →
+ * 投票永遠達不到門檻 → 遊戲卡死。系統為了解這個卡，用 auto_leave 把
+ * 斷線者的「成員身分」改掉（寫 leftAt）——結果玩家切背景回來就發現
+ * 自己不在隊上（生產實測 279 次 auto_leave 中 25% 人還在玩）。
+ *
+ * 根因是「用成員身分表達在線狀態」：在隊是持久身分、在線是瞬時狀態，
+ * 兩者不該混用。改成分母只計在線成員後，斷線者自然不卡投票，
+ * 就不需要動他的成員身分了。
+ *
+ * @param isUserOnline 判斷該成員此刻是否有 active 連線；
+ *        不傳 = 沿用舊行為（只看在隊），供尚未接上 WS 的呼叫端漸進遷移
  */
 export async function reevaluateTeamVotes(
   teamId: string,
   broadcastToTeam: (teamId: string, message: WsBroadcastMessage) => void,
+  isUserOnline?: (teamId: string, userId: string) => boolean,
 ): Promise<void> {
   try {
     const activeVotes = await db.query.teamVotes.findMany({
@@ -105,13 +123,22 @@ export async function reevaluateTeamVotes(
     });
     const memberIds = new Set(members.map((m) => m.userId));
 
+    // 分子仍看「在隊」（人在隊上、票就算數，即使此刻斷線）；
+    // 分母看「在隊且在線」，斷線者不該讓全隊卡住。
+    const onlineMemberIds = isUserOnline
+      ? new Set(members.filter((m) => isUserOnline(teamId, m.userId)).map((m) => m.userId))
+      : memberIds;
+    // 全隊同時斷線（例如場地網路中斷）時分母不歸零，
+    // 否則 0/0 會被算成達標、把遊戲自動推進下一關。
+    const denominator = Math.max(onlineMemberIds.size, MIN_VOTE_DENOMINATOR);
+
     for (const vote of activeVotes) {
       // 只計現任成員的票（離開者的票不算進分子，避免幽靈票灌高）
       const validBallots = vote.ballots.filter((b) => memberIds.has(b.userId));
       const result = computeVoteCompletion(
         vote.votingMode ?? "majority",
         validBallots.map((b) => b.optionId),
-        memberIds.size,
+        denominator,
       );
       if (!result.isComplete || !result.winningOptionId) continue;
 

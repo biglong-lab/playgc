@@ -203,7 +203,7 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
         ctx.kickUserFromTeam?.(teamId, userId, "left_team");
 
         // 🗳️ 2026-07-08：分母變小 → 重算 active 投票（可能因此達標）
-        void reevaluateTeamVotes(teamId, ctx.broadcastToTeam);
+        void reevaluateTeamVotes(teamId, ctx.broadcastToTeam, ctx.isUserStillConnected);
 
         res.json({ message: "已離開隊伍" });
       } catch (error) {
@@ -528,7 +528,7 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
             timestamp: new Date().toISOString(),
           });
           // 🗳️ 2026-07-08：分母變小 → 重算 active 投票（可能因此達標）
-          void reevaluateTeamVotes(teamId, ctx.broadcastToTeam);
+          void reevaluateTeamVotes(teamId, ctx.broadcastToTeam, ctx.isUserStillConnected);
           res.json({ message: "已將該玩家標為離開", action: "continue" });
         } catch {
           res.status(500).json({ message: "處理離開失敗" });
