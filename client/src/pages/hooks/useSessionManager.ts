@@ -39,6 +39,38 @@ interface SessionState {
   completedPageIds: string[];
 }
 
+// ─────────────────────────────────────────────────────────
+// 🛡️ 本地頁索引護欄（CHITO f095652b，第 11 修 — 這次修「類」不修「例」）
+//
+// 症狀「走到第 2 頁又被拉回第 1 頁」修了 10 次都是在堵單一觸發點
+// （query refetch / 雙 mutate / replay 重導…），但根因是一整類 race：
+// 「進度 PATCH 尚未落地」時任何 remount/refetch 都會拿到舊頁碼並覆蓋。
+// 觸發點堵不完（ErrorBoundary 自動 reload、PWA 更新重載、iOS 背景回收
+// 都會 remount），所以改成讓 race 本身無害：
+//   每次前進把頁索引同步寫 sessionStorage；restore 時取 max(server, 本地)。
+// 只前進不後退 → 舊資料再也蓋不掉新進度。replay/新場會清掉。
+// ─────────────────────────────────────────────────────────
+function pageGuardKey(sessionId: string): string {
+  return `chito_page_guard_${sessionId}`;
+}
+export function rememberPageIndex(sessionId: string | null, index: number): void {
+  if (!sessionId) return;
+  try {
+    const key = pageGuardKey(sessionId);
+    const prev = Number(sessionStorage.getItem(key) ?? -1);
+    if (index > prev) sessionStorage.setItem(key, String(index));
+  } catch { /* storage 不可用就退回原行為 */ }
+}
+function recallPageIndex(sessionId: string): number {
+  try {
+    return Number(sessionStorage.getItem(pageGuardKey(sessionId)) ?? -1);
+  } catch { return -1; }
+}
+function forgetPageIndex(sessionId: string | null): void {
+  if (!sessionId) return;
+  try { sessionStorage.removeItem(pageGuardKey(sessionId)); } catch { /* ignore */ }
+}
+
 export function useSessionManager({
   gameId,
   userId,
@@ -71,6 +103,14 @@ export function useSessionManager({
   // Refs 避免 stale closure
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
+
+  // 🛡️ 護欄同步：任何路徑改變頁索引（完成前進 / flow-router 跳頁 / 純導航）
+  //   都在這裡記錄，單點涵蓋、不用逐個呼叫端插。只進不退（見 rememberPageIndex）。
+  useEffect(() => {
+    if (state.sessionId && !state.isCompleted) {
+      rememberPageIndex(state.sessionId, state.currentPageIndex);
+    }
+  }, [state.sessionId, state.currentPageIndex, state.isCompleted]);
 
   const activePagesRef = useRef(activePages);
   useEffect(() => { activePagesRef.current = activePages; }, [activePages]);
@@ -313,6 +353,10 @@ export function useSessionManager({
       const foundIndex = activePages.findIndex(p => p.id === data.progress?.currentPageId);
       if (foundIndex !== -1) pageIndex = foundIndex;
     }
+    // 🛡️ 本地護欄：server 進度可能還沒落地（PATCH in-flight 時 remount）
+    //   取本地與 server 較大者 — 只前進不後退
+    const guarded = recallPageIndex(data.session.id);
+    if (guarded > pageIndex && guarded < activePages.length) pageIndex = guarded;
 
     // 恢復 session 時，currentPageIndex 之前的頁面視為已完成（允許回顧）
     const completedIds = activePages.slice(0, pageIndex).map((p) => p.id);
@@ -341,6 +385,8 @@ export function useSessionManager({
     //   2. removeQueries 清掉 query cache + setQueryData(null) → 避免 refetch 又拿 completed
     //   3. userDecided 不設 true（意義是「玩家選繼續舊」、reset 不算）
     //   4. useEffect 內已加 state.sessionId 已存在 = 不再 restore 的保護
+    // 🛡️ 再玩一次 = 放棄舊進度 → 清本地護欄（否則新場會被舊索引拉走）
+    forgetPageIndex(stateRef.current.sessionId);
     setForceNewSession(true);
     // 🐛 2026-07-08：ref 設 true（不是 false）— 此處已直接 mutate()，
     //   若設 false 會讓 effect 的建新分支再 mutate 一次 → 雙 session →
