@@ -26,7 +26,11 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "log": "bash scripts/git-clean.sh log",
+    "log:stat": "bash scripts/git-clean.sh stat",
+    "log:who": "bash scripts/git-clean.sh who",
+    "log:count": "bash scripts/git-clean.sh count"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.3",
