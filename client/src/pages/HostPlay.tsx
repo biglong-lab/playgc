@@ -24,7 +24,7 @@ import type { Page } from "@shared/schema";
  *   ?line_user_id=...&line_display_name=...
  * 既有 Page 元件可從 localStorage `chitoUserName` 讀取
  */
-function useLineProfileFromQuery(): string {
+function useLineProfileFromQuery(): [string, (name: string) => void] {
   const [name, setName] = useState<string>(() => {
     return localStorage.getItem("chitoUserName") || "";
   });
@@ -39,7 +39,53 @@ function useLineProfileFromQuery(): string {
     }
   }, []);
 
-  return name;
+  // 🆕 2026-08-06（CHITO 790b1c33）：直接掃 QR 進來的玩家沒有 LIFF query，
+  //   chitoUserName 永遠是空 → 詞雲/抽獎/任務全部卡「請先設定玩家名稱」
+  //   且原本沒有任何 UI 可以設定。提供手動設定路徑（LIFF 名字仍優先）。
+  const setManually = (raw: string) => {
+    const cleaned = raw.trim().slice(0, 30);
+    if (!cleaned) return;
+    localStorage.setItem("chitoUserName", cleaned);
+    setName(cleaned);
+  };
+
+  return [name, setManually];
+}
+
+/** 免登入玩家的名稱閘門 — 預填隨機暱稱，現場一鍵進入 */
+function NameGate({ onSubmit }: { onSubmit: (name: string) => void }) {
+  const [value, setValue] = useState(
+    () => `訪客${String(Math.floor(1000 + Math.random() * 9000))}`,
+  );
+  return (
+    <Card>
+      <CardContent className="p-6 text-center space-y-4">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+          <Smartphone className="w-8 h-8 text-primary" />
+        </div>
+        <h2 className="text-lg font-bold">先取個名字吧</h2>
+        <p className="text-sm text-muted-foreground">
+          大螢幕與互動結果會顯示這個名字（可直接用預設的）
+        </p>
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          maxLength={30}
+          className="w-full text-center text-lg rounded-lg border-2 border-border bg-background px-3 py-2 focus:border-primary focus:outline-none"
+          data-testid="input-guest-name"
+          aria-label="玩家名稱"
+        />
+        <Button
+          className="w-full"
+          disabled={!value.trim()}
+          onClick={() => onSubmit(value)}
+          data-testid="button-guest-name-submit"
+        >
+          開始互動
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
 
 interface HostSessionInfo {
@@ -50,7 +96,7 @@ interface HostSessionInfo {
 
 export default function HostPlay() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const myUserName = useLineProfileFromQuery();
+  const [myUserName, setUserName] = useLineProfileFromQuery();
   // 頁面層不再自開 WS（之前重複建立、跟元件層 useHostScreenSync 同畫面雙連線）
   // 連線狀態 + error 改由 HostPageRenderer 內部 hook 管理；indicator 改用 info query 載入狀態
 
@@ -154,7 +200,10 @@ export default function HostPlay() {
       </header>
 
       <main className="container mx-auto px-4 py-6 max-w-md">
-        {hostPage ? (
+        {hostPage && !myUserName ? (
+          // 🆕 CHITO 790b1c33：免登入玩家先設名字，否則元件互動會被擋
+          <NameGate onSubmit={setUserName} />
+        ) : hostPage ? (
           // 有 host_* pageType → 渲染對應元件玩家版（W14 D2 帶 LINE 名字）
           <HostPageRenderer page={hostPage} myUserName={myUserName || undefined} />
         ) : (
