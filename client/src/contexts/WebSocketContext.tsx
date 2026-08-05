@@ -221,6 +221,21 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
       ws.onmessage = (event) => {
         try {
           const data: TeamMessage = JSON.parse(event.data);
+
+          // 🛡️ 2026-08-05：被移出隊伍後，清掉自動 rejoin 的設定。
+          //   不清的話：server 踢人 → close ws → 前端 exp backoff 重連 →
+          //   onopen 又自動送 team_join → 人就自己回到房間了（等於踢不掉）。
+          //   玩家之後若循正常 UI 重新加入，會重新 acquire config，不受影響。
+          if (
+            (data as { type?: string }).type === "team_kicked" &&
+            configRef.current !== null
+          ) {
+            const kickedTeamId = (data as { teamId?: string }).teamId;
+            if (!kickedTeamId || kickedTeamId === configRef.current.teamId) {
+              configRef.current = null;
+            }
+          }
+
           // 廣播給所有 subscriber
           handlersRef.current.forEach((handler) => {
             try {

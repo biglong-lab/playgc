@@ -174,7 +174,7 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
 
         await db
           .update(teamMembers)
-          .set({ leftAt: new Date() })
+          .set({ leftAt: new Date(), leftReason: "manual" })
           .where(eq(teamMembers.id, membership.id));
 
         // 🆕 Phase 2a：明確「離開隊伍」廣播 team_member_left（≠ socket 斷線）
@@ -499,7 +499,7 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
         try {
           await db
             .update(teamMembers)
-            .set({ leftAt: new Date() })
+            .set({ leftAt: new Date(), leftReason: "kicked" })
             .where(
               and(
                 eq(teamMembers.teamId, teamId),

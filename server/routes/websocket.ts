@@ -5,8 +5,9 @@ import { mqttService } from "../mqttService";
 import { setHitBroadcaster as setMqttV1HitBroadcaster } from "../mqtt";
 import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
-import { gameMatches, matchParticipants, teamMembers, teamSessions } from "@shared/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { revokeAutoLeave } from "../lib/team-membership";
+import { gameMatches, matchParticipants, teamMembers, teamSessions, teams } from "@shared/schema";
+import { eq, and, isNull, sql } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
 // 🔭 Phase 0.2 (2026-05-08)：完整事件 log（fire-and-forget、不阻塞 ws）
 import { logWsEvent } from "../lib/ws-event-logger";
@@ -268,7 +269,8 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         try {
           await db
             .update(teamMembers)
-            .set({ leftAt: new Date() })
+            // leftReason 讓玩家重連時能撤銷這次自動離隊（見 schema 註解）
+            .set({ leftAt: new Date(), leftReason: "auto_leave" })
             .where(
               and(
                 eq(teamMembers.teamId, teamId),
@@ -476,6 +478,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             //   - 已有 active socket → 同 user 多 socket，不廣播
             //   - 沒 active socket 但 history 有他 → 重連，廣播 reconnected
             //   - 沒 active socket 且 history 沒他 → 初次，廣播 joined
+            // 🆕 2026-08-05：先撤銷可能存在的「自動離隊」標記，讓 DB 與記憶體一致。
+            //   放在廣播分支之前，確保隊友收到通知時 DB 已是正確狀態。
+            const revoked = await revokeAutoLeave(message.teamId, effectiveUserId);
+            if (revoked) {
+              logWsEvent({
+                eventType: "auto_leave_revoked",
+                direction: "system",
+                teamId: message.teamId,
+                sessionId: teamSid(message.teamId),
+                userId: effectiveUserId,
+                userName: message.userName,
+                reason: "rejoined_after_auto_leave",
+              });
+            }
+
             const teamSetForJoin = teamClients.get(message.teamId)!;
             const memberHistory = teamMemberHistory.get(message.teamId)!;
             const userAlreadyConnected = Array.from(teamSetForJoin).some(
@@ -495,6 +512,16 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             } else if (hasReconnected) {
               // 🆕 Phase 2c：重連回來 → 取消寬限期計時器（grace + auto-leave）
               cancelDisconnectTimer(message.teamId, effectiveUserId);
+              // 🔭 2026-08-05：補記 reconnect —— 型別早就定義了卻從沒被寫入，
+              //   導致無法回答「玩家切背景回來後有沒有成功歸隊」，只能靠猜。
+              logWsEvent({
+                eventType: "reconnect",
+                direction: "system",
+                teamId: message.teamId,
+                sessionId: teamSid(message.teamId),
+                userId: effectiveUserId,
+                userName: message.userName,
+              });
               // 🛡️ 2026-05-05: 取消 pending disconnected 廣播
               //   若 < 5s 內重連 → disconnected 從未廣播 → 對應 reconnected 也不該廣播（無感重連）
               //   若 ≥ 5s → disconnected 已廣播 + grace timer 走 → 此處仍廣播 reconnected 通知大家

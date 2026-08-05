@@ -57,6 +57,13 @@ export const teams = pgTable(
 // ============================================================================
 // Team Members table - Players in a team
 // ============================================================================
+/**
+ * 離隊原因。只有 auto_leave 可以在玩家重連時被撤銷 —— 這是刻意的：
+ * manual / kicked 若也能撤銷，被踢的人一重連就自己回來了。
+ */
+export const TEAM_LEFT_REASONS = ["auto_leave", "manual", "kicked"] as const;
+export type TeamLeftReason = (typeof TEAM_LEFT_REASONS)[number];
+
 export const teamMembers = pgTable(
   "team_members",
   {
@@ -71,6 +78,20 @@ export const teamMembers = pgTable(
     isReady: boolean("is_ready").default(false),
     joinedAt: timestamp("joined_at").defaultNow(),
     leftAt: timestamp("left_at"),
+    /**
+     * 🆕 2026-08-05 離隊原因 — 用來區分「系統自動踢」與「本人/管理員操作」。
+     *
+     * 為什麼需要：斷線寬限過期會寫 leftAt，但玩家切回來重連時只把自己加回
+     * 記憶體房間、沒清 DB，造成「WS 說在、DB 說不在」→ 重整就被踢出隊伍、
+     * 隊友畫面不同步。修法是重連時清掉 leftAt，但**只能清系統自動那種**，
+     * 否則被踢的人一重連就自己回來了（踢不掉人）。
+     *
+     * auto_leave = 斷線寬限過期（可於重連時撤銷）
+     * manual     = 玩家自己按離開
+     * kicked     = 隊長 / 管理員移除
+     * null       = 仍在隊上，或 2026-08-05 之前的歷史資料
+     */
+    leftReason: varchar("left_reason", { length: 20 }),
   },
   (table) => [
     index("idx_team_members_team").on(table.teamId),

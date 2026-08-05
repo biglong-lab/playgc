@@ -9,8 +9,8 @@
 
 import type { Response, NextFunction } from "express";
 import { db } from "../db";
-import { teamMembers } from "@shared/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { teamMembers, teams } from "@shared/schema";
+import { eq, and, isNull, sql } from "drizzle-orm";
 import type { AuthenticatedRequest } from "../routes/types";
 
 /** 是否為該隊現任成員（leftAt 為 null） */
@@ -59,3 +59,45 @@ export async function requireTeamMember(
     res.status(500).json({ message: "成員驗證失敗" });
   }
 }
+
+/** 可以重新歸隊的隊伍狀態 —— 已結束/解散的隊伍不讓人被自動加回 */
+const REJOINABLE_TEAM_STATUSES = ["forming", "ready", "playing"] as const;
+
+/**
+ * 撤銷「系統自動離隊」——玩家切背景太久被寬限期踢掉後又回來時呼叫。
+ *
+ * 為什麼需要：auto_leave 會寫 DB 的 leftAt，但重連只把人加回記憶體房間、
+ * 沒清 DB。結果 WS 說「他在」、DB 說「他離隊了」——玩家一重整就發現自己不在
+ * 隊上，隊友從 DB 讀成員也看不到他（畫面不同步）。2026-08-05 實測生產資料：
+ * 279 次 auto_leave 中有 71 次（25%）該玩家事後仍有 WS 活動，人其實還在玩。
+ *
+ * 兩個限制條件是刻意的、不可放寬：
+ *   1. 只清 left_reason='auto_leave' —— manual/kicked 若也清，被踢的人
+ *      一重連就自己回來了，等於踢不掉人
+ *   2. 隊伍必須還在進行中 —— 不把玩家加回已結束/解散的隊伍
+ *
+ * @returns 是否真的撤銷了（false = 沒有可撤銷的紀錄，屬正常情況）
+ */
+export async function revokeAutoLeave(teamId: string, userId: string): Promise<boolean> {
+  try {
+    const result = await db
+      .update(teamMembers)
+      .set({ leftAt: null, leftReason: null })
+      .where(
+        and(
+          eq(teamMembers.teamId, teamId),
+          eq(teamMembers.userId, userId),
+          eq(teamMembers.leftReason, "auto_leave"),
+          sql`EXISTS (SELECT 1 FROM ${teams} t WHERE t.id = ${teamMembers.teamId}
+                      AND t.status IN ('forming','ready','playing'))`,
+        ),
+      )
+      .returning({ id: teamMembers.id });
+    return result.length > 0;
+  } catch {
+    // DB 失敗不阻斷重連；玩家仍在記憶體房間，下次 join 會再試
+    return false;
+  }
+}
+
+export { REJOINABLE_TEAM_STATUSES };

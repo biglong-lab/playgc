@@ -191,6 +191,8 @@ export type ObservabilityEventType =
   | "grace_expired"
   | "auto_leave"
   | "reconnect"
+  /** 玩家重連後撤銷了先前的自動離隊（DB 與記憶體重新一致）*/
+  | "auto_leave_revoked"
   | "kick";
 
 export type ObservabilityDirection = "inbound" | "outbound" | "system";
