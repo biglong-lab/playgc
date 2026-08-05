@@ -641,6 +641,10 @@ export function registerTeamLifecycleRoutes(app: Express, ctx: RouteContext) {
           .update(teamMembers)
           .set({
             leftAt: null,
+            // 🆕 2026-08-05：leftReason 必須跟 leftAt 一起清。
+            //   只清 leftAt 會留下「人在隊上、卻標著 kicked」的髒資料，
+            //   未來任何依賴 leftReason 的邏輯都會判斷錯誤。
+            leftReason: null,
             // 遊戲已開打 → 直接視為 ready（避免卡全員 ready 檢查）
             ...(team.status === "playing" ? { isReady: true } : {}),
           })

@@ -239,7 +239,8 @@ describe("POST /api/teams/:teamId/rejoin", () => {
     expect(res.status).toBe(200);
     expect(res.body.rejoined).toBe(true);
     expect(mockDb.update).toHaveBeenCalled();
-    expect(mockDb._chain.set).toHaveBeenCalledWith({ leftAt: null, isReady: true });
+    // leftReason 必須跟 leftAt 一起清，否則會留下「人在隊上卻標著離隊原因」的髒資料
+    expect(mockDb._chain.set).toHaveBeenCalledWith({ leftAt: null, leftReason: null, isReady: true });
     expect(broadcastToTeam).toHaveBeenCalledWith(
       "team-1",
       expect.objectContaining({ type: "team_member_reconnected", userId: "user-1" }),
