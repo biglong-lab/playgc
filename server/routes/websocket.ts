@@ -6,6 +6,7 @@ import { setHitBroadcaster as setMqttV1HitBroadcaster } from "../mqtt";
 import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
 import { revokeAutoLeave } from "../lib/team-membership";
+import { computeWsLiveStats } from "../lib/ws-live-stats";
 import { gameMatches, matchParticipants, teamMembers, teamSessions, teams } from "@shared/schema";
 import { eq, and, isNull, sql } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
@@ -1282,5 +1283,12 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     kickUserFromTeam,
     // 🆕 2026-07-08 CHITO #0e0f5f17：leader-decide「先繼續」前檢查目標玩家是否已重連
     isUserStillConnected,
+    // 計算邏輯放在 lib（純函式、可測），這裡只提供房間 Map
+    getLiveStats: () =>
+      computeWsLiveStats({
+        totalConnections: wss.clients.size,
+        teamClients,
+        sessionClients: clients,
+      }),
   };
 }

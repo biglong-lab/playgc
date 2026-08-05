@@ -41,6 +41,8 @@ export interface RouteContext {
   /** 🆕 2026-07-08 CHITO #0e0f5f17：查該 user 在此 team 是否仍有 active ws 連線
    *（leader-decide「先繼續」防呆 — 玩家已重連就不該被標離開）*/
   isUserStillConnected?: (teamId: string, userId: string) => boolean;
+  /** 🆕 2026-08-05：WS 即時狀態（活動當天監控用，關鍵是最大單隊人數 = 扇出風險）*/
+  getLiveStats?: () => import("../lib/ws-live-stats").WsLiveStats;
 }
 
 // 經 Firebase 認證後的 Request 型別

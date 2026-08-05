@@ -61,6 +61,7 @@ import { registerPlatformAiCenterRoutes } from "./platform-ai-center";
 import { registerPlatformTicketRoutes } from "./platform-tickets";
 import { registerRevenueRoutes } from "./revenue";
 import { registerRevenueAnalyticsRoutes } from "./revenue-analytics";
+import { registerAdminWsHealthRoutes } from "./admin-ws-health";
 import { registerFieldRoutes } from "./field";
 import { registerApplicationRoutes } from "./applications";
 import { registerFieldMembershipRoutes } from "./field-memberships";
@@ -155,6 +156,7 @@ export async function registerRoutes(
   registerAdminMultiSessionsRoutes(app);
   registerAdminSessionReplayRoutes(app);
   registerAdminTriviaRoutes(app, ctx);
+  registerAdminWsHealthRoutes(app, ctx);
   registerAdminReportsRoutes(app);
   registerComponentTelemetryRoutes(app);
   registerAdminFeatureFlagsRoutes(app);
