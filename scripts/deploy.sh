@@ -71,6 +71,27 @@ else
   log_warn "SKIP_TYPECHECK=1 跳過型別檢查"
 fi
 
+# ═══ 1.6/6 React Hooks 規則檢查 ═══
+# 背景（2026-08-05）：MeCenter.tsx 把 useQueryClient/useCallback 寫在 early return
+#      之後，isLoading 從 true 變 false 時 hooks 數量改變 → React error #310 →
+#      整頁 crash 白畫面。生產實測 93 次，全在玩家最常開的「我的」頁面。
+#      CI 有跑 lint，但 deploy 走 SSH 不經過 CI，所以照樣上得去。
+# 為何只擋這條規則：全站還有 369 個其他 lint error（多是 no-console），
+#      要求全綠會永遠擋住 deploy；而 rules-of-hooks 是唯一會讓整頁 crash 的。
+# 跳過：SKIP_HOOKSCHECK=1 npm run deploy
+if [[ "$SKIP_HOOKSCHECK" != "1" ]]; then
+  log_step "1.6/6 React Hooks 規則檢查"
+  HOOKS_VIOLATIONS=$(npx eslint "client/src/**/*.tsx" 2>&1 | grep -c "rules-of-hooks" || true)
+  if [[ "$HOOKS_VIOLATIONS" -gt 0 ]]; then
+    npx eslint "client/src/**/*.tsx" 2>&1 | grep -B2 "rules-of-hooks" | head -30
+    log_fail "有 $HOOKS_VIOLATIONS 處 hooks 規則違規會導致整頁 crash，deploy 中止（或 SKIP_HOOKSCHECK=1 強制）"
+    exit 1
+  fi
+  log_ok "React Hooks 規則零違規"
+else
+  log_warn "SKIP_HOOKSCHECK=1 跳過 hooks 檢查"
+fi
+
 # ═══ 2/6 push 到 GitHub ═══
 log_step "2/6 push 到 GitHub"
 git push origin main

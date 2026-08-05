@@ -65,6 +65,20 @@ export default function MeCenter() {
     return memberships.filter((m) => m.fieldCode !== currentCode);
   }, [memberships, currentField?.code]);
 
+  // ⚠️ 所有 hooks 必須在 early return 之前呼叫。
+  //   原本 useQueryClient / useCallback 寫在下面兩個 early return 之後：
+  //   isLoading=true 時只跑 7 個 hooks、載入完成後跑 9 個 → React error #310
+  //   （Rendered more hooks than during the previous render）→ 整頁 crash 白畫面。
+  //   生產實測 93 次，全發生在玩家最常開的「我的」頁面。
+  const queryClient = useQueryClient();
+  const handlePullRefresh = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }),
+      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] }),
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] }),
+    ]);
+  }, [queryClient]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -91,15 +105,6 @@ export default function MeCenter() {
   const displayName =
     user.firstName || user.email?.split("@")[0] || "玩家";
   const initials = (user.firstName?.[0] || user.email?.[0] || "U").toUpperCase();
-
-  const queryClient = useQueryClient();
-  const handlePullRefresh = useCallback(async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] }),
-      queryClient.invalidateQueries({ queryKey: ["/api/sessions"] }),
-      queryClient.invalidateQueries({ queryKey: ["/api/me"] }),
-    ]);
-  }, [queryClient]);
 
   return (
     <PullToRefresh onRefresh={handlePullRefresh}>

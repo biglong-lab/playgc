@@ -69,7 +69,34 @@ export default function PhotoMissionPage({
     );
   }
   // mode === 'team' / 'burst' 等後續輪次加入
+  return (
+    <PhotoFreeMission
+      config={config}
+      onComplete={onComplete}
+      sessionId={sessionId}
+      gameId={gameId}
+    />
+  );
+}
 
+/**
+ * free mode 本體。
+ *
+ * ⚠️ 為什麼要獨立成一個元件：原本這些 hooks 直接寫在 PhotoMissionPage 裡、
+ * 位置在 mode 分派的 early return「之後」，違反 React hooks 規則
+ * （eslint react-hooks/rules-of-hooks 抓到 8 個）。目前因為 config.mode
+ * 在元件生命週期內不變、僥倖沒觸發，但只要哪天 mode 變成動態就會
+ * 整頁 crash —— MeCenter 就是這樣炸的（生產實測 93 次 React error #310）。
+ *
+ * 拆開後：dispatcher 沒有任何 hook，可以自由 early return；
+ * 本體的 hooks 永遠從第一行開始執行，順序必定一致。
+ */
+function PhotoFreeMission({
+  config,
+  onComplete,
+  sessionId,
+  gameId,
+}: Omit<PhotoMissionPageProps, "variables" | "onVariableUpdate">) {
   const { toast } = useToast();
   const camera = usePhotoCamera();
   const [aiRetryCount, setAiRetryCount] = useState(0);
