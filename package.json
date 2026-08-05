@@ -30,7 +30,8 @@
     "log": "bash scripts/git-clean.sh log",
     "log:stat": "bash scripts/git-clean.sh stat",
     "log:who": "bash scripts/git-clean.sh who",
-    "log:count": "bash scripts/git-clean.sh count"
+    "log:count": "bash scripts/git-clean.sh count",
+    "health:data": "docker exec -i gameplatform-postgres psql -U postgres -d gameplatform -q < scripts/data-health-check.sql"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.3",
