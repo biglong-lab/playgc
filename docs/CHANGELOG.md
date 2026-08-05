@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-08-05
+
+### 🔁 修復切背景回來被踢出隊伍 + 踢人踢不掉（fix）
+
+**狀態**：🟡 本機端到端驗證完成，**尚未部署**
+**需要 schema 變更**：`team_members` ADD COLUMN `left_reason`（不可用 db:push，見下）
+詳見 [changes/2026-08-05-team-rejoin-fix.md](changes/2026-08-05-team-rejoin-fix.md)
+
+- **根因**：`auto_leave` 會寫 DB `leftAt`，但重連只把人加回記憶體房間、沒清 DB
+  → WS 說「他在」、DB 說「他離隊了」。一次解釋三個症狀：重整後被踢出隊伍、
+  隊友畫面不同步、一直要重新整理
+- **生產實測**：279 次 auto_leave 中 71 次（25%）該玩家事後仍有 WS 活動；
+  `team_members` 有 98.7% 被標記離隊；斷線最大宗是 `1001`（手機鎖屏/切 app）186 次，
+  屬行動裝置正常行為而非故障
+- **連帶修復「踢不掉人」**：`onSelfKicked` 前端沒有任何使用端，被踢者
+  exp backoff 重連會自動重送 team_join 回到房間
+- **修法**：加 `left_reason` 區分 auto_leave / manual / kicked，重連只撤銷
+  auto_leave 且隊伍須仍在進行中；前端被踢後清除 rejoin config
+- **補觀測**：`reconnect` 事件型別早就定義卻從沒被寫入，導致無法回答
+  「玩家切背景回來有沒有成功歸隊」
+- **測試**：8 項迴歸測試（重點在證明不誤傷其他隊伍與帳號）+ 真實 WebSocket
+  端到端驗證；全套 3334 passed
+- **⚠️ 不可用 `npm run db:push`**：實測它會問是否 truncate 無關的
+  `booking_configs` 表，改用 `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`
+
+---
+
 ## 2026-08-01
 
 ### 💰 營收報表分析中心 + 4 個計帳 bug 修正（feat + fix）
