@@ -361,16 +361,53 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
       ? targetBearing
       : (targetBearing - compass.heading + 360) % 360;
 
+    // 🧭 2026-08-06（CHITO c92e32dc 第 12 修 — 停止翻正負號）：
+    //   歷經 11 輪查證，來源換算（iOS webkitCompassHeading 直用 / Android
+    //   360−alpha+螢幕補償）與公式（目標方位角−朝向）皆已正確。
+    //   「往右轉、箭頭在螢幕上往左」本來就是世界錨定的正確行為（同所有
+    //   指南針 App：北針固定指世界的北）。地圖版被覺得正常是因為有環境
+    //   參照；純箭頭沒有參照 → 正確行為反而被感知成「相反」。
+    //   修法不是再翻號，而是給參照系：
+    //   1. 羅盤刻度環（N/E/S/W 隨朝向反向轉）— 現場抬頭就能對照真實方位驗證
+    //   2. 明確文字指令（「向右轉約 X°」）— 不依賴任何方向感知
+    const relDeg = Math.round(angle);
+    const turnText =
+      compass.heading === null
+        ? null
+        : relDeg <= 10 || relDeg >= 350
+          ? "就在正前方，直走"
+          : relDeg <= 180
+            ? `向右轉約 ${relDeg}°`
+            : `向左轉約 ${360 - relDeg}°`;
+
     return (
       <div className="flex flex-col items-center gap-1">
-        <div
-          className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transition-transform duration-300"
-          style={{ transform: `rotate(${angle}deg)` }}
-        >
-          {/* 🐛 2026-07-03 複測回饋：lucide Navigation 圖形本體指向東北(45°偏移)、
-              玩家怎麼轉都對不準、體感「方向相反」。換 Navigation2（正上方）→ angle=0 = 正前方。 */}
-          <Navigation2 className="w-8 h-8 text-primary fill-primary/30" />
+        <div className="relative w-24 h-24">
+          {/* 羅盤刻度環：rotate(-heading) — 手機右轉時 N 往左移 = 真實世界的北不動 */}
+          <div
+            className="absolute inset-0 rounded-full border-2 border-border/60 transition-transform duration-300"
+            style={{ transform: `rotate(${compass.heading === null ? 0 : -compass.heading}deg)` }}
+            data-testid="compass-rose"
+          >
+            <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[10px] font-bold text-red-500">N</span>
+            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 text-[10px] text-muted-foreground">S</span>
+            <span className="absolute left-0.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">W</span>
+            <span className="absolute right-0.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">E</span>
+          </div>
+          <div
+            className="absolute inset-2 rounded-full bg-primary/20 flex items-center justify-center transition-transform duration-300"
+            style={{ transform: `rotate(${angle}deg)` }}
+          >
+            {/* 🐛 2026-07-03 複測回饋：lucide Navigation 圖形本體指向東北(45°偏移)、
+                玩家怎麼轉都對不準、體感「方向相反」。換 Navigation2（正上方）→ angle=0 = 正前方。 */}
+            <Navigation2 className="w-8 h-8 text-primary fill-primary/30" />
+          </div>
         </div>
+        {turnText && (
+          <p className="text-xs font-medium text-primary" data-testid="gps-turn-hint">
+            {turnText}
+          </p>
+        )}
         {/* 🔬 ?gpsdebug=1 診斷面板：顯示 朝向/方位角/箭頭角 原始數據（給測試員回報用）*/}
         {gpsDebug && (
           <div className="text-[10px] text-muted-foreground tabular-nums bg-muted/50 rounded px-1.5 py-0.5" data-testid="gps-debug-panel">
