@@ -23,7 +23,7 @@ export interface AnimatedSticker {
   width: number;
   height: number;
   /** 依錄影經過時間取當前幀（自動 loop） */
-  getFrameAt: (elapsedMs: number) => ImageBitmap;
+  getFrameAt: (elapsedMs: number) => CanvasImageSource;
   /** 釋放所有 ImageBitmap */
   close: () => void;
 }
@@ -64,7 +64,11 @@ function looksAnimatedType(mime: string): boolean {
  */
 export async function loadAnimatedSticker(url: string): Promise<AnimatedSticker | null> {
   const ImageDecoderClass = (globalThis as { ImageDecoder?: ImageDecoderCtor }).ImageDecoder;
-  if (!ImageDecoderClass) return null;
+  // 🍎 2026-08-06（CHITO 1bc34792 第 4 修）：iOS Safari 沒有 ImageDecoder，
+  //   前版直接回 null → 錄影永遠靜態第一幀 → 測試員（全用 iPhone/iPad）
+  //   三輪複測全部 fail。通解：貼圖若在 Cloudinary，用 f_mp4 轉成影片、
+  //   以隱藏 <video> 播放，drawImage(video) 每幀都會更新 — 全平台支援。
+  if (!ImageDecoderClass) return loadAnimatedStickerViaVideo(url);
 
   let decoder: ImageDecoderLike | null = null;
   try {
@@ -130,4 +134,49 @@ export async function loadAnimatedSticker(url: string): Promise<AnimatedSticker 
     try { decoder?.close(); } catch { /* ignore */ }
     return null;
   }
+}
+
+/**
+ * 🍎 iOS fallback：Cloudinary 動態圖 → f_mp4 影片 → 隱藏 <video> 當幀源。
+ * 只處理 res.cloudinary.com 的 /image/upload/ URL；其他來源回 null
+ * （維持舊行為：靜態第一幀，拍照不受影響）。
+ */
+async function loadAnimatedStickerViaVideo(url: string): Promise<AnimatedSticker | null> {
+  const m = url.match(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/);
+  if (!m) return null;
+  // 只有動態格式才需要（副檔名 .webp/.gif；查不出就仍嘗試 — f_mp4 對靜態圖也只是多一次載入）
+  if (!/\.(webp|gif)(\?|$)/i.test(url)) return null;
+
+  const videoUrl = `${m[1]}f_mp4/${m[2].replace(/\.(webp|gif)(\?|$)/i, ".mp4$2")}`;
+  const video = document.createElement("video");
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true; // iOS：不進全螢幕
+  video.crossOrigin = "anonymous"; // canvas 匯出需要，Cloudinary 允許 CORS
+  video.src = videoUrl;
+
+  const ok = await new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => resolve(false), 8000);
+    video.addEventListener("canplay", () => { clearTimeout(timer); resolve(true); }, { once: true });
+    video.addEventListener("error", () => { clearTimeout(timer); resolve(false); }, { once: true });
+  });
+  if (!ok) return null;
+
+  try { await video.play(); } catch { return null; } // muted+playsinline 應可自動播
+
+  const width = video.videoWidth || 1;
+  const height = video.videoHeight || 1;
+  return {
+    frames: [],
+    totalMs: (video.duration || 1) * 1000,
+    width,
+    height,
+    // video 自己會前進，直接回傳元素給 drawImage
+    getFrameAt: () => video,
+    close: () => {
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    },
+  };
 }

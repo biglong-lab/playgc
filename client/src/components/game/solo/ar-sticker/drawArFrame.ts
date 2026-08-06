@@ -54,7 +54,7 @@ export interface DrawArFrameOpts {
   /** 🎞️ 2026-07-08 CHITO #1bc34792：動態貼圖當前幀（per-index 覆蓋）—
    *  drawImage(HTMLImageElement) 只畫動態圖第一幀，錄影 loop 由呼叫端
    *  依經過時間解出當前 ImageBitmap 傳入，成品影片貼圖才會動 */
-  stickerFrames?: (ImageBitmap | null | undefined)[];
+  stickerFrames?: (CanvasImageSource | null | undefined)[];
 }
 
 /** 將 video 當前畫面 + 貼圖合成到 canvas（會設定 canvas 尺寸為 video 原生尺寸）*/
@@ -96,8 +96,13 @@ export function drawArFrame(
     // 🐛 2026-07-03 修「成品沒貼圖」：SVG 無 intrinsic size 時 Safari naturalWidth/Height=0
     //   → ratio=NaN → drawImage 尺寸 NaN 靜默不畫（預覽 <img> 用 CSS 定寬所以看得到）。
     //   防護：無效比例 fallback 1（正方形）。
-    const srcW = frame ? frame.width : (img?.naturalWidth ?? 0);
-    const srcH = frame ? frame.height : (img?.naturalHeight ?? 0);
+    // frame 可能是 ImageBitmap 或 <video>（iOS f_mp4 fallback）— 尺寸取法不同
+    const srcW = frame
+      ? (frame instanceof HTMLVideoElement ? frame.videoWidth : (frame as ImageBitmap).width)
+      : (img?.naturalWidth ?? 0);
+    const srcH = frame
+      ? (frame instanceof HTMLVideoElement ? frame.videoHeight : (frame as ImageBitmap).height)
+      : (img?.naturalHeight ?? 0);
     const ratio = srcW > 0 && srcH > 0 ? srcW / srcH : 1;
     const opacity = s.opacity ?? pageOpacity;
 
