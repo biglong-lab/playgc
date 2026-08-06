@@ -221,3 +221,74 @@ describe("ConditionalVerifyPage — 防連點（/loop 優化驗證）", () => {
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 });
+
+// ══════════════════════════════════════════════════════════════
+// 🛡️ CHITO f825215e 迴歸：被自動生成劫持的舊條件頁必須回歸條件模式
+// ══════════════════════════════════════════════════════════════
+import { render as renderHijack, screen as screenHijack } from "@testing-library/react";
+import ConditionalVerifyPageHijack from "../solo/ConditionalVerifyPage";
+
+describe("碎片劫持防禦（CHITO f825215e）", () => {
+  const baseProps = {
+    onComplete: () => {},
+    sessionId: "s1",
+    variables: {},
+    inventory: [] as string[],
+    visitedLocations: [] as string[],
+  };
+
+  it("有 conditions + 全未綁定的 fragments（自動注入殘留）→ 走條件模式、不顯示碎片 UI", () => {
+    renderHijack(
+      <ConditionalVerifyPageHijack
+        {...baseProps}
+        config={{
+          title: "道具蒐集",
+          demoMode: true, // 連 demoMode 一起被注入也不能劫持
+          conditions: [
+            { type: "has_item", itemId: "item-1", description: "關卡一道具" },
+          ],
+          fragments: [
+            { id: "f1", label: "碎片 1/2", value: "9", order: 1 },
+            { id: "f2", label: "碎片 2/2", value: "3", order: 2 },
+          ],
+          targetCode: "93",
+        }}
+      />,
+    );
+    // 條件模式的檢查按鈕在、碎片收集 UI 不在
+    expect(screenHijack.queryByText(/碎片/)).toBeNull();
+  });
+
+  it("有 conditions 但碎片有真實綁定 → 管理員刻意啟用碎片模式、尊重之", () => {
+    renderHijack(
+      <ConditionalVerifyPageHijack
+        {...baseProps}
+        config={{
+          title: "混合頁",
+          conditions: [{ type: "has_item", itemId: "item-1", description: "x" }],
+          fragments: [
+            { id: "f1", label: "碎片 1/2", value: "A", order: 1, sourceItemId: "item-1" },
+            { id: "f2", label: "碎片 2/2", value: "B", order: 2 },
+          ],
+        }}
+      />,
+    );
+    expect(screenHijack.queryAllByText(/碎片/).length).toBeGreaterThan(0);
+  });
+
+  it("純碎片示範頁（無 conditions、全未綁定）→ 維持示範碎片模式不受影響", () => {
+    renderHijack(
+      <ConditionalVerifyPageHijack
+        {...baseProps}
+        config={{
+          title: "示範",
+          fragments: [
+            { id: "f1", label: "碎片 1/2", value: "1", order: 1 },
+            { id: "f2", label: "碎片 2/2", value: "2", order: 2 },
+          ],
+        }}
+      />,
+    );
+    expect(screenHijack.queryAllByText(/碎片/).length).toBeGreaterThan(0);
+  });
+});

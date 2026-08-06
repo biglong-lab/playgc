@@ -149,7 +149,16 @@ export default function ConditionalVerifyPage({
   }, [config.fragmentSource, config.fragmentImageUrl]);
 
   const fragments = useMemo(() => normalizeFragments(config.fragments), [config.fragments]);
-  const isFragmentMode = fragments.length > 0;
+  // 🛡️ 2026-08-06（CHITO f825215e）：碎片模式的啟用條件收緊。
+  //   舊編輯器有「開頁即自動生成 fragments」的副作用，會把 conditions 為主的
+  //   舊條件驗證頁劫持成碎片模式（原玩法整頁失效）。防禦規則：
+  //   頁面有 conditions 時，碎片必須「至少綁定一個來源道具」才算真的要用
+  //   碎片模式；全未綁定 = 自動注入的殘留 → 回歸條件模式（原始玩法）。
+  //   純碎片頁（無 conditions）不受影響，含示範模式模組範本。
+  const legacyConditions = Array.isArray(config.conditions) ? config.conditions : [];
+  const isFragmentMode =
+    fragments.length > 0 &&
+    (legacyConditions.length === 0 || fragments.some((f) => f.sourceItemId != null && f.sourceItemId !== ""));
   // 🆕 2026-05-13 P2-5：圖片切割模式（圖片載入失敗 fallback 文字）
   const isImageFragmentMode =
     config.fragmentSource === "image" &&

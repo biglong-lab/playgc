@@ -90,6 +90,13 @@ export default function ConditionalVerifyEditor({
   // - hasCount 用 `?? null` + 強制最小值 2（不允許 0）
   useEffect(() => {
     const rawCount = config.fragmentCount as number | undefined;
+    // 🛡️ 2026-08-06（CHITO f825215e）：舊「條件驗證」頁（conditions 為主、
+    //   從未設定過碎片）不得因為「被打開看一眼」就被自動寫入 fragments —
+    //   fragments 一旦非空、玩家端就切換成碎片模式，原本逐關集道具的玩法
+    //   整頁被劫持（阿榮好想退伍 1.0 實際案例：10 個 has_item 條件全死、
+    //   玩家直接輸入自動生成的密碼就過）。
+    //   管理員仍可「明確設定碎片數量」來替此頁啟用碎片模式。
+    if (conditions.length > 0 && (rawCount === undefined || rawCount === null)) return;
     // 預設 4 個碎片、最少 2 個（圖片切割 1 塊無意義）
     let hasCount: number;
     if (rawCount === undefined || rawCount === null || rawCount < 2) {
