@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-08-06
+
+### 🎪 活動工具全面優化 + CHITO 批次 8 張 + MQTT 收整（feat + fix）
+
+**部署**：`5704dbbc`（bundle `index-C9RViYT8`）；六張 CHITO 轉待測試
+詳見 [changes/2026-08-06-event-tools-mqtt-legal-batch.md](changes/2026-08-06-event-tools-mqtt-legal-batch.md)
+
+- **活動元件編輯器**：17 個 host 元件從唯讀 JSON → schema 驅動完整表單
+  （新元件只要加一段 HOST_FIELD_SCHEMAS 定義）
+- **CHITO 高修次三題根治**：道具+10（第10修=修資料非程式碼）、
+  進度回退（第13修=頁索引護欄只進不退）、GPS 反向（第13修=公式本來就對、
+  給羅盤參照系而非翻號）
+- **碎片收集**：編輯器「開頁即自動生成」劫持舊條件頁 → 三層修（編輯器/
+  runtime 防禦/資料剝除，生產只有阿榮 1.0 一頁中招）
+- **詞雲名稱閘門**：掃 QR 動線原本無任何名稱設定 UI → HostPlay 頁面閘門
+  + 真互動 e2e（玩家送詞 → 大螢幕 WS 實收）
+- **AR 動態貼圖 iOS 通解**：ImageDecoder iOS 不支援（前 3 修盲點）→
+  Cloudinary f_mp4 + video 幀源
+- **MQTT**：散落 6 處資料彙整為 domains/mqtt-devices.md 單一總表；
+  模擬設備全鏈測試 10 例（免 broker 免硬體）；接線卡補 HMAC 順序；
+  ADR 撞號 0024→0025
+- **五宣告頁** /legal（條款/隱私/免責/風險/版權）+ LegalFooter
+- **⚠️ 部署後發現**：MQTT gateway 重啟 30 分鐘無連線也無錯誤 log —
+  存在 close-without-error 靜默重連迴圈，下一輪首要處理
+
+---
+
 ## 2026-08-05
 
 ### 🔁 修復切背景回來被踢出隊伍 + 踢人踢不掉（fix）
