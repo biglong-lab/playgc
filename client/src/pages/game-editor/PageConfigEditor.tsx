@@ -24,6 +24,7 @@ import MotionChallengeEditor from "./MotionChallengeEditor";
 import FlashlightEditor from "./FlashlightEditor";
 import VoteEditor from "./VoteEditor";
 import FlowRouterEditor from "./FlowRouterEditor";
+import HostComponentEditor, { HOST_FIELD_SCHEMAS } from "./HostComponentEditor";
 import OnCompleteActionsEditor from "./OnCompleteActionsEditor";
 import CommonNavigationEditor from "./CommonNavigationEditor";
 import { RewardsSection, LocationSettingsSection } from "./page-config-shared";
@@ -1958,6 +1959,18 @@ export default function PageConfigEditor({
       );
 
     default:
+      // 🎪 2026-08-06（CHITO c609d0c3）：17 個活動元件原本全部掉到這裡
+      //   變成唯讀 JSON — 管理員無法設定任何題目/選項/獎項。
+      //   改由 schema 驅動編輯器接手；未涵蓋的型別才顯示 JSON。
+      if (HOST_FIELD_SCHEMAS[page.pageType]) {
+        return (
+          <HostComponentEditor
+            pageType={page.pageType}
+            config={config}
+            updateField={updateField}
+          />
+        );
+      }
       return (
         <div className="bg-accent/30 rounded-lg p-4">
           <pre className="text-xs overflow-auto">
