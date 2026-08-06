@@ -207,6 +207,8 @@ const ShowcaseHub = lazy(() => import("@/pages/ShowcaseHub"));
 // 🎯 TemplateMarket 12 情境模板市集（W6 D1）
 const TemplateMarket = lazy(() => import("@/pages/TemplateMarket"));
 const TemplateMarketDetail = lazy(() => import("@/pages/TemplateMarketDetail"));
+// 📜 五宣告頁（CHITO c45e8915）
+const LegalPage = lazy(() => import("@/pages/LegalPage"));
 // 📄 ScenarioQrPrint QR 列印頁（W6 D4）
 const ScenarioQrPrint = lazy(() => import("@/pages/ScenarioQrPrint"));
 // 🧭 FindScenarioWizard 3 問找情境（W7 D3）
@@ -340,6 +342,8 @@ function Router() {
         {/* 🎯 12 情境模板市集（公開頁，銷售工具）*/}
         <Route path="/template-market/:scenarioId" component={TemplateMarketDetail} />
         <Route path="/template-market" component={TemplateMarket} />
+        <Route path="/legal/:section" component={LegalPage} />
+        <Route path="/legal" component={LegalPage} />
 
         {/* 📄 情境實例 QR 列印頁（W6 D4，admin 用）*/}
         <Route path="/admin/scenario-qr-print" component={ScenarioQrPrint} />

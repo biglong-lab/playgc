@@ -8,6 +8,7 @@
 //   - /template-market：完整情境組合（多元件）+ 商業價值描述
 
 import { Link, useLocation } from "wouter";
+import LegalFooter from "@/components/LegalFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -157,6 +158,7 @@ export default function TemplateMarket() {
           </div>
         </section>
       </main>
+      <LegalFooter />
     </div>
   );
 }
