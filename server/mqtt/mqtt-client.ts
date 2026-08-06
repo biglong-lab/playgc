@@ -96,6 +96,9 @@ function attachHandlers(active: MqttClient): void {
     reconnectAttempts = 0;
     lastError = null;
     lastConnectedAt = new Date().toISOString();
+    // 🔭 2026-08-06：連線成功必須留 log — 之前只 log 錯誤，
+    //   生產「連上了沒」從日誌完全看不出來（觀測缺口）
+    console.info("[mqtt] 已連線 broker");
     subscribeUplinks(active);
   });
 
