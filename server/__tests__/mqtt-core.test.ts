@@ -15,6 +15,7 @@ import {
 } from "../mqtt/topic";
 import { buildHitSignatureBase } from "@shared/mqtt/contracts";
 import { verifyHmacSignature } from "../lib/webhook-signature";
+import { normalizeBrokerUrl } from "../mqtt/broker-url";
 
 describe("MQTT topic — 建構與解析", () => {
   it("buildTopic 產生 v1 格式且 fieldCode 大寫", () => {
@@ -103,5 +104,65 @@ describe("HMAC 命中簽章 — 端到端", () => {
     const base = buildHitSignatureBase(hitInput);
     expect(verifyHmacSignature(base, "", secret, "hex")).toBe(false);
     expect(verifyHmacSignature(base, undefined, secret, "hex")).toBe(false);
+  });
+});
+
+// 🐛 2026-08-09 守門：broker URL scheme 推斷
+//
+// 生產靜默重連迴圈的真根因 —— 後台填 HiveMQ Cloud 的 `host:8884/mqtt`，
+// 舊版 ① port 比對要求結尾（有 /mqtt 就比不到 → 退回 1883）
+//      ② 8884 補成 mqtts（實際是 WebSocket/TLS）
+// 結果補出明文 mqtt:// 打 wss 埠 → 永遠沒有 CONNACK → close 無 error → 靜默。
+// 實測佐證：mqtt://…:8884/mqtt 靜默失敗；wss://…:8884/mqtt 與
+// mqtts://…:8883 皆連線成功。
+describe("broker URL 正規化 — scheme 推斷", () => {
+  const PROD = "71171d324b14453d86b6672af796c974.s1.eu.hivemq.cloud:8884/mqtt";
+
+  it("🐛 生產實例：HiveMQ 8884 + /mqtt 路徑 → wss（絕不可是明文 mqtt://）", () => {
+    const got = normalizeBrokerUrl(PROD);
+    expect(got).toBe(`wss://${PROD}`);
+    expect(got.startsWith("mqtt://")).toBe(false); // 迴歸點：明文打 TLS 埠
+  });
+
+  it("8884 不帶路徑 → wss", () => {
+    expect(normalizeBrokerUrl("foo.hivemq.cloud:8884")).toBe(
+      "wss://foo.hivemq.cloud:8884",
+    );
+  });
+
+  it("8883 → mqtts（原生 MQTT over TLS）", () => {
+    expect(normalizeBrokerUrl("foo.hivemq.cloud:8883")).toBe(
+      "mqtts://foo.hivemq.cloud:8883",
+    );
+  });
+
+  it("8883 帶路徑仍是 mqtts（路徑不該把原生 TLS 誤判成 ws）", () => {
+    expect(normalizeBrokerUrl("foo.hivemq.cloud:8883/x")).toBe(
+      "mqtts://foo.hivemq.cloud:8883/x",
+    );
+  });
+
+  it("1883 → mqtt（明文）", () => {
+    expect(normalizeBrokerUrl("mqttgo.io:1883")).toBe("mqtt://mqttgo.io:1883");
+  });
+
+  it("8000 / 8080 → ws", () => {
+    expect(normalizeBrokerUrl("h:8000/mqtt")).toBe("ws://h:8000/mqtt");
+    expect(normalizeBrokerUrl("h:8080")).toBe("ws://h:8080");
+  });
+
+  it("已帶 scheme 者原樣不動（含 wss / mqtts / tcp）", () => {
+    for (const u of [
+      "wss://h:8884/mqtt",
+      "mqtts://h:8883",
+      "mqtt://h:1883",
+      "tcp://h:1883",
+    ]) {
+      expect(normalizeBrokerUrl(u)).toBe(u);
+    }
+  });
+
+  it("無 port → 預設明文 1883 行為", () => {
+    expect(normalizeBrokerUrl("broker.local")).toBe("mqtt://broker.local");
   });
 });

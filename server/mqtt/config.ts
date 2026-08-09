@@ -16,20 +16,8 @@ export interface ResolvedMqttConfig {
   source: "database" | "env";
 }
 
-/**
- * 補上 broker URL 的 scheme。使用者常只填 host:port（如 mqttgo.io:1883），
- * mqtt.js 沒有 scheme 會連錯 → connack timeout。依 port 自動補：
- * 8883/8884 → mqtts（TLS）；其餘 → mqtt。
- */
-export function normalizeBrokerUrl(url: string): string {
-  const u = url.trim();
-  if (!u) return u;
-  if (/^(mqtts?|wss?|tcp):\/\//i.test(u)) return u;
-  const m = u.match(/:(\d+)\s*$/);
-  const port = m ? parseInt(m[1], 10) : 1883;
-  const scheme = port === 8883 || port === 8884 ? "mqtts" : "mqtt";
-  return `${scheme}://${u}`;
-}
+export { normalizeBrokerUrl } from "./broker-url";
+import { normalizeBrokerUrl } from "./broker-url";
 
 /** 解析目前生效的 MQTT 連線設定；未啟用時回 null（gateway 不啟動） */
 export async function resolveMqttConfig(): Promise<ResolvedMqttConfig | null> {

@@ -19,6 +19,8 @@ export type MqttMessageHandler = (
 const SERVER_CLIENT_ID = "chito-server-v1";
 const RECONNECT_MIN_MS = 1_000;
 const RECONNECT_MAX_MS = 60_000;
+/** 每 N 次重連把 log 升級成 warn（讓持續失敗在日誌裡凸顯出來） */
+const RECONNECT_WARN_EVERY = 5;
 
 let client: MqttClient | null = null;
 let handler: MqttMessageHandler | null = null;
@@ -73,6 +75,15 @@ function scheduleReconnect(): void {
     RECONNECT_MAX_MS,
   );
   const delay = backoff + Math.floor(Math.random() * 1_000);
+  // 🔭 每 N 次重試升級成 warn：靜默迴圈至少會在日誌留下週期性痕跡，
+  //    不會像 2026-08-06 那樣「30 分鐘完全查不到任何線索」
+  const attempt = reconnectAttempts + 1;
+  const line = `[mqtt] 第 ${attempt} 次重連將在 ${Math.round(delay / 1000)}s 後（broker=${currentConfig?.brokerUrl ?? "?"}）`;
+  if (attempt % RECONNECT_WARN_EVERY === 0) {
+    console.warn(`${line}｜持續失敗中，最後錯誤：${lastError ?? "無"}`);
+  } else {
+    console.info(line);
+  }
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null;
     reconnectAttempts += 1;
@@ -113,8 +124,27 @@ function attachHandlers(active: MqttClient): void {
     console.error("[mqtt] 連線錯誤", err.message);
   });
 
+  // 🔭 2026-08-09：close 原本「只重連、不留任何 log」——
+  //    無 error 的失敗（如 connack timeout、打錯埠）就成了完全無聲的迴圈，
+  //    連 getMqttStatus().lastError 都是 null，管理介面同樣看不出問題。
   active.on("close", () => {
-    if (!shuttingDown) scheduleReconnect();
+    if (shuttingDown) return;
+    const everConnected = lastConnectedAt !== null;
+    if (!lastError) {
+      lastError = everConnected
+        ? "連線中斷（broker 關閉連線，無錯誤事件）"
+        : "連線失敗（未收到 CONNACK，多為 broker URL 的 scheme／port 不符，如用 mqtt:// 連 WebSocket 埠）";
+    }
+    console.warn(`[mqtt] 連線關閉：${lastError}`);
+    scheduleReconnect();
+  });
+
+  active.on("offline", () => {
+    if (!shuttingDown) console.warn("[mqtt] 連線離線（offline）");
+  });
+
+  active.on("end", () => {
+    if (!shuttingDown) console.warn("[mqtt] 連線已結束（end）");
   });
 }
 
@@ -125,7 +155,14 @@ function openConnection(): void {
     return;
   }
   try {
-    client?.removeAllListeners();
+    // 舊 client 要真的收掉：只 removeAllListeners 會留下 socket 與計時器，
+    // 每次重連累積一個（60s 退避下一天約 1400 個）
+    const previous = client;
+    if (previous) {
+      previous.removeAllListeners();
+      previous.end(true, {}, () => {});
+    }
+    console.info(`[mqtt] 連線中… ${url}`);
     client = mqtt.connect(url, buildOptions());
     attachHandlers(client);
   } catch (e) {
