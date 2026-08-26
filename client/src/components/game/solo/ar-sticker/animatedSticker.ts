@@ -53,9 +53,46 @@ interface ImageDecoderCtor {
 const DEFAULT_FRAME_MS = 100; // 無 duration 資訊時的每幀時長
 const MAX_FRAMES = 300;       // 防超長動畫吃爆記憶體（300 幀 ≈ 30s@10fps）
 
+// 🚀 2026-08-27（CHITO 26ecaf3a）：解碼來源先過 Cloudinary 縮圖。
+//   實測原始貼圖 6.4MB／100 幀，冷啟在行動網路要數秒才解得完 —— 玩家一進畫面
+//   就按錄影，那幾秒內 animatedStickers 還是空的 → 整段成品用靜態第一幀，
+//   正是「動態貼圖錄影後變靜態」的成因之一。轉成動畫 WebP 540px 後同樣 100 幀、
+//   透明保留，檔案降到 1.0MB（-84%），連帶壓低 ImageBitmap 記憶體。
+//   ⚠️ w_720 在本帳號會被 Cloudinary 擋（400）→ 540 是實測可用值；
+//      轉檔失敗一律 fallback 原始 URL，不會比修改前差。
+const ANIM_MAX_WIDTH = 540;
+
 /** 是否可能是動態格式（先以副檔名/URL 粗篩、再以 content-type 確認） */
 function looksAnimatedType(mime: string): boolean {
   return mime === "image/webp" || mime === "image/gif" || mime === "image/apng" || mime === "image/png";
+}
+
+/** Cloudinary 動態圖 → 動畫 WebP 縮圖 URL；非 Cloudinary／已帶轉換參數 → null */
+export function cloudinaryAnimatedVariant(url: string, maxWidth = ANIM_MAX_WIDTH): string | null {
+  const m = url.match(/^(https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/)(.+)$/);
+  if (!m) return null;
+  if (/^[a-z]{1,3}_[^/]*\//.test(m[2])) return null; // 已有轉換參數 → 不重複疊加
+  if (!/\.(webp|gif)(\?|$)/i.test(url)) return null;
+  return `${m[1]}f_webp,fl_awebp,w_${maxWidth}/${m[2]}`;
+}
+
+/** 取動態圖位元組：先試縮圖版、失敗回原始 URL；都拿不到動態格式 → null */
+async function fetchAnimatedBytes(
+  url: string,
+): Promise<{ data: ArrayBuffer; mime: string } | null> {
+  const candidates = [cloudinaryAnimatedVariant(url), url].filter(Boolean) as string[];
+  for (const candidate of candidates) {
+    try {
+      const res = await fetch(candidate, { mode: "cors" });
+      if (!res.ok) continue;
+      const mime = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+      if (!looksAnimatedType(mime)) continue;
+      return { data: await res.arrayBuffer(), mime };
+    } catch {
+      /* 換下一個候選 */
+    }
+  }
+  return null;
 }
 
 /**
@@ -72,14 +109,12 @@ export async function loadAnimatedSticker(url: string): Promise<AnimatedSticker 
 
   let decoder: ImageDecoderLike | null = null;
   try {
-    const res = await fetch(url, { mode: "cors" });
-    if (!res.ok) return null;
-    const mime = (res.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
-    if (!looksAnimatedType(mime)) return null;
+    const fetched = await fetchAnimatedBytes(url);
+    if (!fetched) return null;
+    const { data, mime } = fetched;
     if (ImageDecoderClass.isTypeSupported && !(await ImageDecoderClass.isTypeSupported(mime))) {
       return null;
     }
-    const data = await res.arrayBuffer();
 
     decoder = new ImageDecoderClass({ data, type: mime });
     await decoder.tracks.ready;
@@ -147,7 +182,8 @@ async function loadAnimatedStickerViaVideo(url: string): Promise<AnimatedSticker
   // 只有動態格式才需要（副檔名 .webp/.gif；查不出就仍嘗試 — f_mp4 對靜態圖也只是多一次載入）
   if (!/\.(webp|gif)(\?|$)/i.test(url)) return null;
 
-  const videoUrl = `${m[1]}f_mp4/${m[2].replace(/\.(webp|gif)(\?|$)/i, ".mp4$2")}`;
+  // 一併縮到 ANIM_MAX_WIDTH：行動網路下載更快、記憶體更省（CHITO 26ecaf3a）
+  const videoUrl = `${m[1]}f_mp4,w_${ANIM_MAX_WIDTH}/${m[2].replace(/\.(webp|gif)(\?|$)/i, ".mp4$2")}`;
   const video = document.createElement("video");
   video.muted = true;
   video.loop = true;

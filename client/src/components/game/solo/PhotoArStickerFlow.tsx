@@ -15,11 +15,11 @@
 //   - 只做 landmark detection，不做 face recognition
 //   - 使用者需 opt-in（B4 加 Dialog）
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";
 import {
-  Camera, CheckCircle2, AlertTriangle, Download, Share2, Sparkles, RefreshCw,
+  Camera, AlertTriangle, Sparkles,
   Shield, Lock, Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { usePhotoCamera } from "../photo-mission/usePhotoCamera";
 import CameraToolbar from "../photo-mission/CameraToolbar";
-import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useCameraOverlayMode } from "@/hooks/useCameraOverlayMode";
 import {
   CameraInitializingView, UploadingView,
@@ -54,7 +53,7 @@ import { useArStickerGesture } from "./ar-sticker/useArStickerGesture";
 import { cssGroupTransform } from "./ar-sticker/arStickerTransform";
 import { useArVideoRecorder } from "./ar-sticker/useArVideoRecorder";
 import { drawArFrame } from "./ar-sticker/drawArFrame";
-import { loadAnimatedSticker, type AnimatedSticker } from "./ar-sticker/animatedSticker";
+import { useAnimatedStickers } from "./ar-sticker/useAnimatedStickers";
 import ArVideoResultView from "./ar-sticker/ArVideoResultView";
 import {
   type StickerConfigItem,
@@ -91,7 +90,9 @@ export default function PhotoArStickerFlow({
   const { toast } = useToast();
   const camera = usePhotoCamera();
   const ar = config.arStickerConfig;
-  const stickers = (ar?.stickers ?? []) as StickerConfigItem[];
+  // useMemo：ar.stickers 缺席時 `?? []` 每次 render 都是新陣列 →
+  // 會讓動態貼圖解碼 effect 反覆重跑（解到一半被 cleanup 掉）。
+  const stickers = useMemo(() => (ar?.stickers ?? []) as StickerConfigItem[], [ar]);
   const anchorPoint: AnchorPoint = (ar?.anchorPoint ?? "none") as AnchorPoint;
   const useFaceTracking = anchorPoint !== "none" && anchorPoint !== "hand";
 
@@ -163,46 +164,41 @@ export default function PhotoArStickerFlow({
   const recordCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const recordRafRef = useRef<number | null>(null);
   // 每次 render 更新合成參數 ref，錄製 loop 讀 ref 取最新（避免 stale closure）
-  const drawOptsRef = useRef({
+  const drawOpts = {
     stickers,
     preloadedStickers,
     useFaceTracking,
     faceAnchor,
     isMirror: camera.facingMode === "user",
-    pageOpacity: (config as any).stickerOpacity ?? 1,
-    gestureTransform: gesture.transform,
-    applyGesture: gesture.isDirty,
-  });
-  drawOptsRef.current = {
-    stickers,
-    preloadedStickers,
-    useFaceTracking,
-    faceAnchor,
-    isMirror: camera.facingMode === "user",
-    pageOpacity: (config as any).stickerOpacity ?? 1,
+    pageOpacity: (config as { stickerOpacity?: number }).stickerOpacity ?? 1,
     gestureTransform: gesture.transform,
     applyGesture: gesture.isDirty,
   };
+  const drawOptsRef = useRef(drawOpts);
+  drawOptsRef.current = drawOpts;
 
-  // 🎞️ 2026-07-08 CHITO #1bc34792：動態 WebP/GIF 貼圖幀序列（錄影用）
-  //   drawImage(HTMLImageElement) 只畫動態圖第一幀 → 成品影片貼圖靜止。
-  //   用 ImageDecoder 解幀、錄影 loop 依經過時間取當前幀。
-  //   iOS Safari 不支援 ImageDecoder → animatedStickersRef 全 null、維持既有行為。
-  const animatedStickersRef = useRef<(AnimatedSticker | null)[]>([]);
+  // 🎞️ 動態貼圖幀源（解幀 / iOS 影片幀源 / 就緒狀態全在 hook 內）— CHITO 26ecaf3a
+  const animated = useAnimatedStickers(stickers);
   const recordStartMsRef = useRef(0);
+  const recordBlocked = !animated.ready;
 
   const startRecording = () => {
     const video = camera.videoRef.current;
     const canvas = recordCanvasRef.current;
     if (!video || !canvas || !recorder.isSupported) return;
     if (useFaceTracking && !faceAnchor) return; // 臉部模式沒臉不錄
+    if (recordBlocked) {
+      toast({
+        title: "動態貼圖載入中",
+        description: "再等一下下，載好才錄得到動畫效果",
+      });
+      return;
+    }
     recordStartMsRef.current = performance.now();
     // 🎞️ 依經過時間解出各貼圖的當前動畫幀（靜態貼圖為 null → fallback img）
     const withFrames = () => ({
       ...drawOptsRef.current,
-      stickerFrames: animatedStickersRef.current.map((a) =>
-        a ? a.getFrameAt(performance.now() - recordStartMsRef.current) : null,
-      ),
+      stickerFrames: animated.framesAt(performance.now() - recordStartMsRef.current),
     });
     drawArFrame(canvas, video, withFrames()); // 先畫一幀（設定尺寸+內容）
     const loop = () => {
@@ -237,26 +233,6 @@ export default function PhotoArStickerFlow({
       setPreloadedStickers(arr);
       setPreloadDone(true);
     });
-  }, [stickers]);
-
-  // 🎞️ 2026-07-08 CHITO #1bc34792：背景解動態貼圖幀（失敗/靜態/不支援 → null）
-  //   不阻塞預載流程；解好前開始錄影則該貼圖先用靜態幀
-  useEffect(() => {
-    if (stickers.length === 0) return;
-    let cancelled = false;
-    Promise.all(stickers.map((s) => loadAnimatedSticker(s.imageUrl))).then((arr) => {
-      if (cancelled) {
-        arr.forEach((a) => a?.close());
-        return;
-      }
-      animatedStickersRef.current = arr;
-    });
-    return () => {
-      cancelled = true;
-      animatedStickersRef.current.forEach((a) => a?.close());
-      animatedStickersRef.current = [];
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stickers]);
 
   // 相機就緒後啟動（AR 預設前鏡頭；管理員可在編輯器覆寫）
@@ -416,43 +392,6 @@ export default function PhotoArStickerFlow({
     ];
     if (allItems.length > 0) reward.items = allItems;
     onComplete(reward, config.nextPageId);
-  };
-
-  // 🆕 一鍵保存到手機相簿
-  const handleSaveToAlbum = async () => {
-    if (!finalUrl) return;
-    const result = await savePhotoToAlbum({
-      url: finalUrl,
-      filename: "chito-ar",
-      title: "CHITO AR 拍照",
-      text: "看看我的 AR 造型！",
-    });
-    const msg = getSaveToastMessage(result);
-    if (msg.title) toast(msg);
-  };
-
-  const handleDownload = async () => {
-    if (!finalUrl) return;
-    const result = await savePhotoToAlbum({
-      url: finalUrl,
-      filename: "chito-ar",
-      forceMethod: "download",
-    });
-    const msg = getSaveToastMessage(result);
-    if (msg.title) toast(msg);
-  };
-
-  const handleShare = async () => {
-    if (!finalUrl) return;
-    const result = await savePhotoToAlbum({
-      url: finalUrl,
-      filename: "chito-ar",
-      title: "CHITO AR 拍照",
-      text: "看看我的 AR 造型！",
-      forceMethod: "share",
-    });
-    const msg = getSaveToastMessage(result);
-    if (msg.title) toast(msg);
   };
 
   // ═══════════════════════════════════════════════════════════════
@@ -679,6 +618,16 @@ export default function PhotoArStickerFlow({
               aria-live="polite"
             >
               等找到臉才能拍
+            </span>
+          )}
+          {recordBlocked && (
+            <span
+              className="text-amber-400 text-xs bg-black/50 px-2 py-0.5 rounded animate-pulse"
+              role="status"
+              aria-live="polite"
+              data-testid="ar-animated-loading"
+            >
+              動態貼圖載入中…載好才錄得到動畫
             </span>
           )}
           <button
