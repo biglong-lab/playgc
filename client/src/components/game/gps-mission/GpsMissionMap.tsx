@@ -6,7 +6,7 @@ import { useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { bearingDegrees } from "@/lib/geolocation";
+import { worldAbsoluteAngle } from "@/lib/compass-rotation";
 import { useCompassHeading } from "@/hooks/useCompassHeading";
 
 // 目標點圖示（大紅）
@@ -17,12 +17,16 @@ const targetIcon = L.divIcon({
   iconAnchor: [14, 14],
 });
 
-// 🆕 2026-05-12 #10: 玩家位置 + 面向目標方向的箭頭 icon factory
-//   bearing 0 = 北、90 = 東、180 = 南、270 = 西
-//   箭頭從中心向上、用 CSS rotate(bearing) 指向目標
-function makeUserIcon(bearing: number | null) {
-  const arrowSvg = bearing !== null
-    ? `<svg width="32" height="32" viewBox="0 0 32 32" style="position:absolute; top:-6px; left:-6px; transform: rotate(${bearing}deg); transform-origin: center; pointer-events: none;">
+// 🧭 玩家位置 icon factory
+//   2026-08-27（CHITO 2a1bb97a）：地圖是「北朝上、不隨手機旋轉」的世界座標系，
+//   箭頭必須用絕對角度。舊版套了羅盤用的相對角（目標方位 − 裝置朝向），
+//   箭頭因此與地圖上的目標位置差一個 heading → 回報「地圖方向與實際相反」。
+//   現在箭頭代表「手機目前朝向」（rotate(heading)，同 Google Maps 的視野指標），
+//   與上方羅盤刻度環（rotate(-heading)）指的是同一個真實方位。
+//   heading 0 = 北、90 = 東、180 = 南、270 = 西；無羅盤時不畫箭頭。
+function makeUserIcon(headingDeg: number | null) {
+  const arrowSvg = headingDeg !== null
+    ? `<svg width="32" height="32" viewBox="0 0 32 32" style="position:absolute; top:-6px; left:-6px; transform: rotate(${headingDeg}deg); transform-origin: center; pointer-events: none;">
          <polygon points="16,2 22,12 16,9 10,12" fill="hsl(var(--primary))" stroke="white" stroke-width="1.5" />
        </svg>`
     : "";
@@ -77,18 +81,14 @@ export default function GpsMissionMap({
     [targetLat, targetLng],
   );
 
-  // 🆕 2026-05-12 #4 fix: 箭頭根據「設備朝向」+ 目標相對位置
-  //   原邏輯（5/10 版本）：bearing 指目標絕對方位 — 玩家轉身、箭頭不變、會混淆
-  //   新邏輯：相對 = bearing_to_target - device_heading → 玩家轉身、箭頭跟著轉
-  //   不支援指南針的裝置 fallback 用絕對方位
+  // 🧭 地圖箭頭 = 手機朝向的「絕對」方位（世界座標系，見 lib/compass-rotation.ts）
+  //   ⚠️ 不可再減 compass.heading — 那是羅盤（裝置座標系）才要做的事。
   const compass = useCompassHeading();
-  const userBearing = useMemo<number | null>(() => {
-    if (userLat === null || userLng === null) return null;
-    const targetBearing = bearingDegrees(userLat, userLng, targetLat, targetLng);
-    if (compass.heading === null) return targetBearing;
-    return (targetBearing - compass.heading + 360) % 360;
-  }, [userLat, userLng, targetLat, targetLng, compass.heading]);
-  const userIcon = useMemo(() => makeUserIcon(userBearing), [userBearing]);
+  const userHeading = useMemo<number | null>(
+    () => worldAbsoluteAngle(compass.heading),
+    [compass.heading],
+  );
+  const userIcon = useMemo(() => makeUserIcon(userHeading), [userHeading]);
 
   // iOS 需 user gesture 觸發 compass.request()
   useEffect(() => {

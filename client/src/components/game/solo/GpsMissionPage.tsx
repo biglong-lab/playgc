@@ -18,6 +18,7 @@ import {
 import { GpsAccuracyIndicator } from "../GpsAccuracyIndicator";
 import { MotionPermissionRequest } from "../MotionPermissionRequest";
 import { useCompassHeading } from "@/hooks/useCompassHeading";
+import { deviceRelativeAngle } from "@/lib/compass-rotation";
 import { useAuth } from "@/hooks/useAuth";
 import { useComponentTelemetry } from "@/hooks/useComponentTelemetry";
 import { InlineCodeFallback } from "@/components/location/InlineCodeFallback";
@@ -357,9 +358,9 @@ export default function GpsMissionPage({ config, onComplete, sessionId }: GpsMis
     // 再減去手機羅盤朝向 → 相對角度。玩家轉手機時箭頭同步跟著轉、正確指向真實目標。
     // 無羅盤（桌機/未授權）時 fallback 用絕對方位角（維持原可用性）。
     const targetBearing = bearingDegrees(userLocation.lat, userLocation.lng, targetLat, targetLng);
-    const angle = compass.heading === null
-      ? targetBearing
-      : (targetBearing - compass.heading + 360) % 360;
+    // 羅盤 = 裝置座標系（螢幕上方 = 手機前方）→ 相對角；地圖用的是絕對角，
+    // 兩者定義集中在 lib/compass-rotation.ts，避免再度混用（CHITO 2a1bb97a）
+    const angle = deviceRelativeAngle(targetBearing, compass.heading);
 
     // 🧭 2026-08-06（CHITO c92e32dc 第 12 修 — 停止翻正負號）：
     //   歷經 11 輪查證，來源換算（iOS webkitCompassHeading 直用 / Android
