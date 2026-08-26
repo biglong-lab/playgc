@@ -16,6 +16,7 @@ import OfflineBanner from "@/components/shared/OfflineBanner";
 import SmartRedirect from "@/components/shared/SmartRedirect";
 import { ThemePreviewBanner } from "@/components/shared/ThemePreviewBanner";
 import PlayerBottomNav from "@/components/PlayerBottomNav";
+import GlobalLegalFooter from "@/components/shared/GlobalLegalFooter";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import FloatingHomeButton from "@/components/shared/FloatingHomeButton";
 import FloatingFontScale from "@/components/shared/FloatingFontScale";
@@ -588,6 +589,8 @@ function App() {
                 <Toaster />
                 <PwaChrome />
                 <Router />
+                {/* 全站宣告 footer — 每頁底部（沉浸式頁面除外，見元件內排除清單）*/}
+                <GlobalLegalFooter />
                 <PlayerBottomNav />
                 <FloatingHomeButton />
                 <FloatingFontScale />
