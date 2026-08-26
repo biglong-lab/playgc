@@ -193,14 +193,25 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
       return { title: "團隊願景", prompt: "寫下你心中的團隊未來藍圖" };
     case "group_nickname":
       return { title: "隊伍命名", prompt: "為你們的隊伍取一個有故事的名字" };
+    // ⚠️ 這幾個元件不讀 prompt，key 必須對上實作（CHITO 0541db39：
+    //    原本統一寫 prompt → 管理員設了完全沒效果）
     case "activity_memo":
-      return { title: "活動筆記", prompt: "今天最有印象的事是什麼？" };
+      return {
+        title: "活動筆記",
+        keywordPrompt: "今天最有印象的事是什麼？（一個關鍵詞）",
+        actionPrompt: "回去之後，你打算採取什麼行動？",
+      };
     case "peer_praise":
       return { title: "同伴讚美", prompt: "把讚美送給今天打動你的夥伴" };
     case "scale_check":
-      return { title: "心情尺度", prompt: "現在的你，狀態是幾分？" };
+      return {
+        title: "心情尺度",
+        question: "現在的你，狀態是幾分？",
+        minLabel: "很低落",
+        maxLabel: "超有精神",
+      };
     case "venue_rating":
-      return { title: "場地評分", prompt: "今天的場地給你什麼感受？" };
+      return { title: "場地評分", venueName: "" };
     case "micro_commit":
       return { title: "微承諾", prompt: "今天回家後，你願意做的一件小事是？" };
     case "closing_thought":
@@ -220,7 +231,11 @@ export function getDefaultConfig(pageType: string): Record<string, unknown> {
     case "dinner_table":
       return { title: "餐桌話題", prompt: "選一個今晚想聊的話題" };
     case "high_low_card":
-      return { title: "高低時刻", prompt: "今天的高峰與低谷分別是？" };
+      return {
+        title: "高低時刻",
+        highPrompt: "今天的高峰是什麼？",
+        lowPrompt: "今天的低谷是什麼？",
+      };
     case "role_board":
       return { title: "角色板", prompt: "你在隊伍中扮演什麼角色？" };
     case "discovery_card":

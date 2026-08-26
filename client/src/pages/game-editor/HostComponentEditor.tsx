@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { EVENT_MODULE_SCHEMAS } from "./eventModuleSchemas";
 
 // ── 欄位定義型別 ─────────────────────────────────
 interface ColumnDef {
@@ -26,7 +27,7 @@ interface ColumnDef {
   placeholder?: string;
 }
 
-type FieldDef =
+export type FieldDef =
   | { kind: "text"; key: string; label: string; placeholder?: string }
   | { kind: "textarea"; key: string; label: string; placeholder?: string }
   | { kind: "number"; key: string; label: string; min?: number; max?: number; hint?: string }
@@ -193,6 +194,8 @@ export const HOST_FIELD_SCHEMAS: Record<string, FieldDef[]> = {
     { kind: "number", key: "maxLength", label: "提問字數上限", min: 20, max: 500 },
     { kind: "boolean", key: "allowAnonymous", label: "允許匿名提問" },
   ],
+  // 🎉 互動模組庫 21 個活動互動元件（CHITO 0541db39）— 定義另放一檔
+  ...EVENT_MODULE_SCHEMAS,
 };
 
 // ── 通用渲染 ─────────────────────────────────────
@@ -205,12 +208,15 @@ interface Props {
 
 export default function HostComponentEditor({ pageType, config, updateField }: Props) {
   const schema = HOST_FIELD_SCHEMAS[pageType];
+  const isEventModule = pageType in EVENT_MODULE_SCHEMAS;
   if (!schema) return null;
 
   return (
     <div className="space-y-4" data-testid={`host-editor-${pageType}`}>
       <p className="text-xs text-muted-foreground">
-        📺 活動元件設定 — 存檔後大螢幕與玩家端即用新設定開場
+        {isEventModule
+          ? "👥 互動元件設定 — 存檔後玩家端即用新設定；欄位留空會顯示內建預設文字"
+          : "📺 活動元件設定 — 存檔後大螢幕與玩家端即用新設定開場"}
       </p>
       {schema.map((field) => (
         <FieldRenderer key={field.key} field={field} config={config} updateField={updateField} />
