@@ -2,8 +2,25 @@
 
 > 每個大型 feature / refactor 一份檔案，含背景、實作、驗證、回顧。
 > 命名：`{YYYY-MM-DD}-{topic}.md`，**寫完不改**（修錯字除外）。
+>
+> ⚠️ 下面只列**里程碑級**變動；本目錄還有 150+ 份逐日紀錄（多為 2026-05 的
+> phase/week 拆解），檔名即日期，直接 `ls docs/changes/` 依日期找即可。
 
 ---
+
+## 2026-08
+
+- 🟢 [2026-08-27 — CHITO 批次：宣告 footer / 地圖方向 / AR 動態貼圖 / 互動模組設定](2026-08-27-chito-footer-gps-map-ar-event-modules.md) — 部署 `73bfb33b`，四張轉待測試；剩 MQTT 硬體阻塞
+- 📋 [2026-08-09 — TapPay 金流閘道規劃](2026-08-09-tappay-payment-gateway-plan.md) — 規劃完成、未動工
+- 🟢 [2026-08-06 — 活動工具全面優化 + CHITO 批次 8 張 + MQTT 收整](2026-08-06-event-tools-mqtt-legal-batch.md) — 部署 `5704dbbc`
+- 🟢 [2026-08-05 — 團隊重連修復](2026-08-05-team-rejoin-fix.md) — 切背景被踢出隊伍 / 踢人踢不掉
+- 🟢 [2026-08-01 — 營收分析](2026-08-01-revenue-analytics.md)
+
+## 2026-07
+
+- 📋 [2026-07-29 — 全站稽核計畫](2026-07-29-sitewide-audit-plan.md)
+- 📋 [2026-07-22 — MQTT 設備整合計畫](2026-07-22-mqtt-device-integration-plan.md)
+- 📋 [2026-07-19 — POS 結帳流程盤點](2026-07-19-pos-shift-flow-handoff.md)
 
 ## 2026-05
 

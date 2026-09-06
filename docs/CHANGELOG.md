@@ -5,6 +5,28 @@
 
 ---
 
+## 2026-08-27
+
+### 📜 全站宣告 footer + 地圖方向 + AR 動態貼圖 + 互動模組設定（fix + feat）
+
+**部署**：`73bfb33b`（bundle `index-Cq0OKC-E.js`）；CHITO 四張轉待測試
+詳見 [changes/2026-08-27-chito-footer-gps-map-ar-event-modules.md](changes/2026-08-27-chito-footer-gps-map-ar-event-modules.md)
+
+- **五宣告 footer 全站掛載**（第 1 修只掛模板市集被判 fail）→ App 根層 +
+  沉浸式頁面排除清單；生產實測 7 個一般頁都有、遊玩頁正確排除
+- **OSM 地圖方向相反**：北朝上的地圖套了羅盤的裝置相對角（與羅盤 13 修
+  是不同的病）→ 改絕對角，兩種座標系定義集中到 `lib/compass-rotation.ts`
+- **AR 動態貼圖錄影變靜態**：先證明合成鏈是好的，破口是解幀來不及
+  （6.4MB／100 格）→ Cloudinary 縮圖 1.0MB（934ms 備妥）+ 未就緒擋錄影；
+  ⚠️ 舊 iOS（無 ImageDecoder）走影片幀源仍會失去透明背景
+- **互動模組 21 元件**從唯讀 JSON → 正式設定表單；順帶修 4 個預設值
+  key 對不上實作的「設了不生效」（activity_memo / scale_check /
+  venue_rating / high_low_card）
+- **新驗證手法**：Playwright 用 `import('/src/…')` 直接跑專案模組 +
+  錄影成品抽格比對像素；掃元件原始碼比對 config key 的守護測試
+
+---
+
 ## 2026-08-06
 
 ### 🎪 活動工具全面優化 + CHITO 批次 8 張 + MQTT 收整（feat + fix）

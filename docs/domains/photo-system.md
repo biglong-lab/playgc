@@ -124,6 +124,27 @@
 
 **注意**：固定位置版（不做臉部追蹤，避免合規風險）。
 
+#### 🎞️ 動態貼圖（GIF / 動畫 WebP）的錄影限制（2026-08-27）
+
+`ctx.drawImage(HTMLImageElement)` 依規範**只畫動態圖的第一幀**
+（掛不掛進 DOM 都一樣，已實測）→ 預覽 `<img>` 會動、錄影成品卻靜止。
+所以錄影必須另備幀源，優先序在 `ar-sticker/animatedSticker.ts`：
+
+| 環境 | 幀源 | 動畫 | 透明背景 |
+|---|---|---|---|
+| 有 `ImageDecoder`（Chrome / Android / iOS Safari 17.4+）| 解成 ImageBitmap 序列 | ✅ | ✅ |
+| 無 `ImageDecoder`（iOS Safari ≤ 17.3）| Cloudinary `f_mp4` 影片 | ✅ | ❌ 變黑框 |
+
+- 解碼來源一律先過 `f_webp,fl_awebp,w_540`（實測 6.4MB → 1.0MB、格數與透明皆保留；
+  `w_720` 會被 Cloudinary 擋 400）。轉檔失敗自動回原始 URL。
+- 幀源備妥前**不讓開始錄影**（`useAnimatedStickers` 的 `ready`）——
+  否則整段成品都是靜態第一幀，這正是 CHITO `1bc34792` / `26ecaf3a` 的成因。
+- 🔴 影片幀源無解的部分：**Cloudinary 任何影片格式都不保 alpha**
+  （`f_mp4` / `f_webm` / `vc_h265` 實測皆 `yuv420p`）。舊 iOS 要保留透明
+  得改逐格 PNG（`pg_N`，RGBA 可取但查不到總格數、每格約 155KB），尚未實作。
+- 成品是否真的在動 → `e2e/ar-animated-recording.spec.ts`（抽格比對像素指紋，
+  不靠肉眼）。
+
 ### 7. 👥 `photo_team` — 團體合影
 
 隊長主控，逐一為每位隊員拍照，最後合成團體照。

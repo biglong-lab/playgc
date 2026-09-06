@@ -357,6 +357,41 @@ GPS → QR Code → 數字代碼 → PDR 相對定位 → 管理員救援
 
 ---
 
+## 🧭 九、方位指示的兩種座標系（2026-08-27）
+
+> 🔴 **動任何「箭頭指向」的程式碼前先讀這節。**
+> GPS 指向標修過 13 次（CHITO `c92e32dc`）、地圖方向 1 次（`2a1bb97a`），
+> 兩題的病完全不同，混在一起看就會又去翻正負號。
+
+定義集中在 `client/src/lib/compass-rotation.ts`，兩個函式各自對應一種座標系：
+
+| UI | 座標系 | 旋轉角 | 函式 |
+|---|---|---|---|
+| 羅盤（`GpsMissionPage`）| 裝置：螢幕上方＝手機前方 | 刻度環 `-heading`；指標 `bearing − heading` | `deviceRelativeAngle()` |
+| Leaflet 地圖（`GpsMissionMap`）| 世界：永遠北朝上、不隨手機轉 | 指目標＝`bearing`；表朝向＝`heading` | `worldAbsoluteAngle()` |
+
+- `heading` 一律是「真北順時針」：0＝北、90＝東、180＝南、270＝西
+  （iOS 用 `webkitCompassHeading`；Android 用 `deviceorientationabsolute` 的
+  `360 − alpha + 螢幕旋轉角`，見 `useCompassHeading.ts`）
+
+### 兩個歷史故障（別再重蹈）
+
+1. **羅盤「方向相反」（13 修）**：換算與公式**本來就對**。
+   「右轉、箭頭往左移」是世界錨定的正確行為（同所有指南針 App）。
+   純箭頭沒有參照物才會被感知成相反 → 正解是給參照系
+   （刻度環 N/E/S/W ＋「向右轉約 X°」文字），**不是翻正負號**。
+2. **地圖「方向相反」（1 修）**：對的公式用在錯的座標系 ——
+   北朝上的地圖套了羅盤的相對角，箭頭與地圖上的目標位置永遠差一個 heading。
+   驗算：朝向 270°、目標方位 21° → 紅靶在正上方，箭頭卻指 111°（右下）。
+
+### 自我檢查
+
+改完問自己：**這個 UI 會不會跟著手機轉？**
+會 → 裝置座標系（減 heading）；不會（地圖）→ 世界座標系（不減）。
+守護測試：`client/src/lib/__tests__/compass-rotation.test.ts`
+
+---
+
 ## 八、技術參考
 
 - W3C Geolocation API: https://www.w3.org/TR/geolocation/
