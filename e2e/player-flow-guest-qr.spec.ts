@@ -3,8 +3,8 @@
  *
  *   1. 未登入掃 QR（/g/:slug）→ 直接進第一關（無登入牆、無繼續框、背景自動訪客身分）
  *   2. 走完全部關卡 → 結算畫面出現「保存這次紀錄」
- *   3. 按「登入保存紀錄」→ 以正式帳號登入（模擬 LINE 跳頁回來 #lineToken）
- *      → 自動認領 → 以正式帳號查詢，這場紀錄已在他名下
+ *   3. 按「登入保存紀錄」→ 以正式帳號登入（模擬 LINE 跳頁回到原本的結算頁 #lineToken）
+ *      → 先保存再進頁面 → 顯示原本的結算畫面（不多開新局）→ 以正式帳號查詢，這場紀錄在他名下
  *
  * 前置：
  *   - server 啟用 ENABLE_E2E_HELPERS=true（_test API）
@@ -96,9 +96,15 @@ test.describe.serial("玩家動線：免登入 QR 直達 → 通關 → 登入�
     expect(tokenRes.ok(), "取得開發用 custom token 失敗").toBeTruthy();
     const { customToken } = await tokenRes.json();
 
-    await test.step("正式帳號登入回來（模擬 LINE #lineToken）→ 自動保存紀錄", async () => {
-      await page.goto(`/f/JIACHUN/home#lineToken=${encodeURIComponent(customToken)}`);
+    await test.step("LINE 登入回到原頁（#lineToken）→ 自動保存 → 顯示原本的結算畫面", async () => {
+      const gamePath = new URL(page.url()).pathname;
+      // 真實 LINE 登入是從 LINE 網域整頁跳回；同網址只改 hash 不會重新載入 → 先離開再回來
+      await page.goto("about:blank");
+      await page.goto(`${gamePath}#lineToken=${encodeURIComponent(customToken)}`);
       await expect(page.getByText("紀錄已保存到你的帳號", { exact: true })).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByText("任務完成")).toBeVisible({ timeout: 15_000 });
+      // 已是正式帳號 → 不再顯示保存卡
+      await expect(page.getByTestId("save-record-card")).toHaveCount(0);
     });
 
     await test.step("以正式帳號查詢：這場通關紀錄已在他名下", async () => {
@@ -113,7 +119,9 @@ test.describe.serial("玩家動線：免登入 QR 直達 → 通關 → 登入�
       expect(idToken, "以 custom token 換 idToken 失敗").toBeTruthy();
       const sessions = await request.get("/api/sessions", { headers: { Authorization: `Bearer ${idToken}` } });
       const list = (await sessions.json()) as Array<{ gameId: string; status: string }>;
-      expect(list.some((s) => s.gameId === gameId && s.status === "completed")).toBe(true);
+      const mine = list.filter((s) => s.gameId === gameId);
+      expect(mine.some((s) => s.status === "completed")).toBe(true);
+      expect(mine, "登入回來不該多開一場新局").toHaveLength(1);
     });
   });
 });

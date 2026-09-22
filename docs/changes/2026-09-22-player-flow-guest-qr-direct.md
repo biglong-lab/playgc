@@ -1,7 +1,8 @@
 # 玩家動線通盤優化：免登入 + QR 直達 + 開局減法 + 結束引導保存 — 2026-09-22
 
 > 範圍：Phase 1–4 + 附帶 3 bug + 計分開關（業主 2026-09-22 確認）
-> 狀態：🟡 實作中（本地 commit，不 push、不部署）
+> 狀態：🟢 完成、已 push（未部署，等業主口令）
+> 範圍 commit：`61030538`..`HEAD`（main）
 
 ---
 
@@ -61,11 +62,75 @@ QR 介紹卡 → 登入牆（文案「需登入組隊」但單人也擋）→ �
 - 已通關再掃 QR：直接開新局
 - 認領憑證用 HMAC 簽章、不建表（零 schema 變動）
 
+## 改後動線
+
+| 情境 | 改前 | 改後 |
+|---|---|---|
+| 掃 QR・單人（未登入） | 最壞 12 步 | **掃完直接第一關**（背景自動訪客身分，0 次點擊） |
+| 有進行中進度 | 整頁繼續框 → 選 → 二次確認 | 直接接續 + toast「已從第 N 關繼續〔重新開始〕」 |
+| 已通關再掃 QR | 停在結算畫面 | 直接開新局 |
+| 章節 / 組隊 / 競賽 | 介紹卡 → 登入繞路 → 大廳 | 直達章節列表 / 組隊大廳 / 賽事大廳 |
+| 開局定位權限 | 每局都要（最多卡 8 秒） | 只有地點鎖遊戲才要 |
+| 結束 | 無引導 | 結算頁「保存這次紀錄」→ 登入後自動認領 |
+
 ## 實作步驟
-（進行中補 commit）
+
+| commit | 內容 |
+|---|---|
+| `ab96d29d` | GuestGate / guest-identity：遊玩路由自動訪客身分；GamePlay 移除登入牆 |
+| `578e237c` | 大廳免登入、訪客不被暱稱框攔截；Home.tsx 1123→709 行（拆 LobbyGameCard / BattleQuickEntry / game-entry） |
+| `5a656564` | `/g/:slug` 過場頁直達（套遊戲所屬場域、保留邀請碼、單人 entry=qr）；過場頁先擋桌機 |
+| `043f8232` | 開局減法：直接接續 + 可反悔 toast、QR 已通關開新局、GPS 只給地點鎖；修建立失敗無限重試 |
+| `074eb174` | lib/play-routes：遊玩流程中暫停推薦隊伍 / PWA 卡（改在通關出現）/ 版本更新自動重整 |
+| `e7f97a10` | 組隊大廳：開始鈕只給隊長、倒數 5→3 秒、去重複 toast、補 /f 前綴 |
+| `90e8d826` | Landing 直接進大廳、Google 警告改開登入框才顯示；組隊可改暱稱；建場次 per-IP 限流 |
+| `e4dbed60` | 認領 API（HMAC 憑證、16 表搬移、冪等、不刪資料）；isAuthenticated 帶 signInProvider |
+| `774717b8` | 結算頁 SaveRecordCard；GuestGate 登入後自動認領；AuthContext 換帳號重抓使用者 |
+| `bf8d8f23` `cd7d7c80` `51805936` | 附帶 bug：競賽/接力開賽導向、隊伍獎勵帶 userId、QR 管理頁重產短連結 |
+| `8fa4fa0d` | 計分開關 scoring_enabled（啟動冪等補欄位）、session-completion 服務、全玩家端分數顯示點 |
+| `63519560` `68cfead0` `50cdb0ec` | e2e：單人 QR→通關→保存紀錄、組隊雙手機 |
+
+## 程式碼審查與修正（code-reviewer）
+
+初審判定 **Block**（1 CRITICAL），全數修正後才 push：
+
+| 級別 | 問題 | 修正 commit |
+|---|---|---|
+| CRITICAL | QR 進場＋已通關＋地點鎖失敗 → 自動開新局與清快取互相觸發，1.5 秒 1202 次 POST | `cd9db95f`（自動開新局只一次、失敗後停手；地點錯誤改看 requireLocation 旗標；API 錯誤帶 status） |
+| HIGH | 認領一時失敗就刪憑證 → 紀錄變孤兒；並行 ensureMembership 撞唯一鍵整筆回滾 | `0ae7cb46`（只有 400 才清、可重試；每表 SAVEPOINT＋23505 重試；根層也觸發認領） |
+| MEDIUM | LINE 帳號（DB 也是假信箱）真名被訪客暱稱覆蓋 | `5cf67401`（後端看 signInProvider；前端只有訪客才送暱稱） |
+| MEDIUM | 大型活動共用網路撞 Firebase 匿名配額 / IP 上限 → 卡死 | `51b365b9`（配額錯誤訊息、「改用帳號登入」出路、SESSION_CREATE_IP_MAX） |
+| LOW | LINE 回跳無視 redirectTo、取消登入沒解除保存、補欄位每次拿鎖、地點 403 誤加「聯絡管理員」、函式過長 | `a64dd731` `0ae7cb46` `cd9db95f` |
+
+**未修（需業主決定 / 另案）**：
+- 獎勵可被刷：訪客可無限自動產生、每次通關都觸發獎勵引擎（計分遊戲 >0 分亦同）→ 是否限正式帳號才發券？
+- 競賽 / 接力計分未接上（見已知限制）
+- 認領憑證未綁定目標帳號、30 分鐘內可重送（憑證只存在訪客自己的 sessionStorage，風險低）
+- `shared/schema/games.ts` 1044 行（本批前即超過 1000 行，本批 +4）
 
 ## 驗證
-（完成時補）
+
+- `npx tsc --noEmit`：0 錯誤
+- vitest 全套：3439 passed / 0 failed（DB 整合測試另以 `node --env-file=.env` 跑過）
+- e2e 新增（Mobile Pixel 5、真瀏覽器）：
+  - `e2e/player-flow-guest-qr.spec.ts`：未登入掃 QR 直達第一關 → 走完 5 關 → 保存卡 → 模擬 LINE 回到原頁（#lineToken）→ 先保存 → 顯示原本結算畫面 → 以正式帳號 idToken 查 `/api/sessions`：紀錄在他名下且沒有多開新局 ✅
+  - `e2e/player-flow-team-guest.spec.ts`：兩位訪客掃碼建隊 / 邀請加入 → 只有隊長可開始 → 3 秒倒數 → 同一 `?session=` ✅
+- 不計分遊戲實測：每關設 20 分獎勵 → header 無分數、結算無星星/分數/排行榜、DB 完成分數 0、排行榜 0 筆 ✅
+- 回歸 e2e（footer / 黃金路徑 A、B / landing / auth / 組隊 / 瀏覽 / 場域隔離）：123 passed；
+  `golden-path-b` 的 `/play/:sessionId` `networkidle` 等待不穩（重跑失敗點會換一條、`/play` 相關檔案本批未改）→ 判定既有 flaky
+
+## 部署注意
+
+- `games.scoring_enabled`：server 啟動時自動 `ADD COLUMN IF NOT EXISTS`，不需手動遷移（已記 runbooks/db-migration.md）
+- 認領憑證金鑰由既有 `SESSION_SECRET` 衍生，不需新增環境變數
+- 選填 `SESSION_CREATE_IP_MAX`（建立場次 per-IP 上限，預設 200 / 10 分鐘）；大型活動前也請到 Firebase Console 確認匿名註冊配額
+- 生產 Firebase 需維持「匿名登入」啟用（目前已啟用：本地 DB 286 位玩家中 266 位訪客）
 
 ## 已知限制 / 後續
-（完成時補）
+
+- 認領刻意不搬：聊天、答題 / 投票 / 射擊等遊戲中暫存紀錄、水彈對戰（獨立系統）；排行榜舊列仍顯示訪客暱稱
+- 唯一鍵衝突（例如同一章節兩邊都有進度）保留正式帳號那筆，訪客那筆原地不動（不合併進度）
+- 競賽 / 接力模式本身仍不完整（前端沒呼叫回報分數、交棒、結束賽事 API；房主不在參賽者內）— 另案
+- 計分關閉時，射擊 / 搶答等「以得分為過關條件」的元件內部計分照常（屬玩法機制，不是積分）
+- 流程分支 `score_above / score_below`、條件驗證 `has_points` 在不計分遊戲恆以 0 分判斷，編輯器尚未警示
+

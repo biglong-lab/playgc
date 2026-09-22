@@ -112,7 +112,7 @@ battle_clans = 寫入凍結（POST 410 Gone），舊資料只讀保留
 | 版本紀錄 | [docs/CHANGELOG.md](docs/CHANGELOG.md) |
 | 過時 / 完成的舊計畫 | [docs/archive/](docs/archive/) |
 | 文件機制與規則 | [docs/README.md](docs/README.md) |
-| **🎯 最新批次狀態**（必讀）| [docs/changes/2026-08-27-chito-footer-gps-map-ar-event-modules.md](docs/changes/2026-08-27-chito-footer-gps-map-ar-event-modules.md) |
+| **🎯 最新批次狀態**（必讀）| [docs/changes/2026-09-22-player-flow-guest-qr-direct.md](docs/changes/2026-09-22-player-flow-guest-qr-direct.md)（免登入 / QR 直達 / 結束保存紀錄 / 計分開關） |
 
 ---
 
