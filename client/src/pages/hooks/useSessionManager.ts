@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, ApiError } from "@/lib/queryClient";
 import type { GameSession, Page } from "@shared/schema";
 
 interface SessionProgress {
@@ -32,6 +32,13 @@ interface UseSessionManagerParams {
   requireLocation?: boolean;
   /** 🆕 2026-09-22：掃 QR 進場（entry=qr）→ 上一場已通關就直接開新局，不停在結算畫面 */
   autoRestartCompleted?: boolean;
+}
+
+/** 建立場次失敗（GamePlay 顯示原因 + 重試） */
+export interface SessionError {
+  message: string;
+  /** 地點鎖：不在指定範圍 / 沒有定位 */
+  isLocation: boolean;
 }
 
 /** 接續進度提示（GamePlay 顯示「已從第 N 關繼續〔重新開始〕」） */
@@ -114,8 +121,11 @@ export function useSessionManager({
   const clearResumeNotice = useCallback(() => setResumeNotice(null), []);
   // 🐛 2026-09-22：建立失敗（多為不在指定地點）→ 停下來顯示錯誤、由玩家按重試
   //   原本 onError 把 ref 設回 false → effect 立刻再建 → 無限重試、每 8 秒重抓 GPS + 紅色 toast
-  const [sessionError, setSessionError] = useState<string | null>(null);
+  const [sessionError, setSessionError] = useState<SessionError | null>(null);
   const sessionCreationAttemptedRef = useRef(false);
+  // 🐛 2026-09-22 審查 CRITICAL：QR 自動開新局只觸發一次
+  //   原本：建立失敗 → resetAndCreateNew 清快取 → 重抓又拿到已通關場次 → 又自動開新局 → 無限狂打 API
+  const autoRestartTriedRef = useRef(false);
   const requireLocationRef = useRef(requireLocation);
   useEffect(() => { requireLocationRef.current = requireLocation; }, [requireLocation]);
 
@@ -226,10 +236,10 @@ export function useSessionManager({
     onError: (err: unknown) => {
       setForceNewSession(false);
       // ref 維持 true（不自動重試）— 由 GamePlay 顯示錯誤 + 重試按鈕（retryCreateSession）
-      // 🌐 location_lock 錯誤訊息（後端回 400/403 + requireLocation: true）
-      const errMsg = err instanceof Error ? err.message : "";
-      const isLocationError = errMsg.includes("地點") || errMsg.includes("GPS");
-      setSessionError(isLocationError ? errMsg : "無法開始遊戲，請檢查網路後重試");
+      // 🌐 location_lock：後端回 400/403 + requireLocation: true（訊息本身是可讀中文，直接顯示）
+      const isLocation = err instanceof ApiError && err.body?.requireLocation === true;
+      const message = err instanceof Error && err.message ? err.message : "無法開始遊戲，請檢查網路後重試";
+      setSessionError({ message, isLocation });
     },
   });
 
@@ -242,6 +252,9 @@ export function useSessionManager({
     //   新建 session 後 query refetch 拿到舊 completed → 又 restore → 跳通關
     //   修法：state.sessionId 已存在（新建 / restore 成功）→ 一律不再覆蓋 state
     if (state.sessionId) return;
+
+    // 🐛 2026-09-22：建立失敗後停在錯誤畫面，等玩家按重試（任何路徑都不自動再建）
+    if (sessionError) return;
 
     // 🆕 2026-07-03 多人同步根因修復：隊伍開賽 lobby 帶 ?session=<共用id>
     //   全隊必須用「同一個 session」（投票狀態/WS 房間/進度都以 sessionId 為 key）。
@@ -299,7 +312,12 @@ export function useSessionManager({
     //   QR 進場且上一場已通關 → 直接開新局（掃碼就是想玩，不停在結算畫面）
     if (existingSession?.session && !hasRestoredProgress) {
       if (activePages.length === 0) return; // 等頁面載入完才能換算頁碼
-      if (autoRestartCompleted && existingSession.session.status === "completed") {
+      if (
+        autoRestartCompleted &&
+        !autoRestartTriedRef.current &&
+        existingSession.session.status === "completed"
+      ) {
+        autoRestartTriedRef.current = true;
         resetAndCreateNew();
         return;
       }
@@ -314,7 +332,7 @@ export function useSessionManager({
     }
     // state.sessionId 已在條件式內 reference、無需重複加 deps
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, sharedSessionId, requireLocation, autoRestartCompleted]);
+  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, sharedSessionId, requireLocation, autoRestartCompleted, sessionError]);
 
   function restoreSession(data: ExistingSessionData) {
     const newScore = data.progress?.score || data.session.score || 0;

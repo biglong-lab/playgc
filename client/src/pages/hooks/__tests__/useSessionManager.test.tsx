@@ -19,9 +19,15 @@ vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mockToast }) }))
 vi.mock("@/lib/firebase", () => ({ getIdToken: vi.fn().mockResolvedValue("token") }));
 vi.mock("@/lib/queryClient", async () => {
   const { QueryClient } = await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
+  class ApiError extends Error {
+    constructor(message: string, readonly status: number, readonly body: Record<string, unknown> | null) {
+      super(message);
+    }
+  }
   return {
     apiRequest: (...args: unknown[]) => mockApiRequest(...args),
     queryClient: new QueryClient({ defaultOptions: { queries: { retry: false } } }),
+    ApiError,
   };
 });
 
@@ -147,7 +153,7 @@ describe("useSessionManager 開局行為", () => {
     mockActiveSession(null);
     mockApiRequest.mockRejectedValueOnce(new Error("400: 此遊戲需在指定地點才能開始，請允許 GPS 定位後重試"));
     const { result } = setup();
-    await waitFor(() => expect(result.current.sessionError).toContain("指定地點"));
+    await waitFor(() => expect(result.current.sessionError?.message).toContain("指定地點"));
     await new Promise((r) => setTimeout(r, 50));
     expect(mockApiRequest).toHaveBeenCalledTimes(1);
 
@@ -155,5 +161,33 @@ describe("useSessionManager 開局行為", () => {
     await waitFor(() => expect(result.current.sessionId).toBe("s-new"));
     expect(mockApiRequest).toHaveBeenCalledTimes(2);
     expect(result.current.sessionError).toBeNull();
+  });
+
+  it("🐛 審查 CRITICAL：QR 進場 + 已通關 + 建立失敗 → 只送一次、停在錯誤（不無限重試）", async () => {
+    mockActiveSession({
+      session: { id: "s-done", status: "completed", score: 80 },
+      progress: { currentPageId: "p3", score: 80 },
+    });
+    mockApiRequest.mockRejectedValue(new Error("403: 必須在「廟口」附近 50m 內才能開始遊戲"));
+    const { result } = setup({ autoRestartCompleted: true, requireLocation: true });
+    await waitFor(() => expect(result.current.sessionError?.message).toContain("廟口"));
+    await new Promise((r) => setTimeout(r, 300));
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
+    expect(result.current.sessionId).toBeNull();
+  });
+
+  it("「再玩一次」建立失敗 → 顯示錯誤，不默默退回結算畫面", async () => {
+    mockActiveSession({
+      session: { id: "s-done", status: "completed", score: 80 },
+      progress: { currentPageId: "p3", score: 80 },
+    });
+    const { result } = setup();
+    await waitFor(() => expect(result.current.isCompleted).toBe(true));
+    mockApiRequest.mockRejectedValueOnce(new Error("網路錯誤"));
+    act(() => result.current.resetAndCreateNew());
+    await waitFor(() => expect(result.current.sessionError).toBeTruthy());
+    await new Promise((r) => setTimeout(r, 200));
+    expect(result.current.isCompleted).toBe(false);
+    expect(mockApiRequest).toHaveBeenCalledTimes(1);
   });
 });

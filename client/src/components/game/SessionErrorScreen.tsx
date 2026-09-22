@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 
 interface SessionErrorScreenProps {
   message: string;
+  /** 地點鎖錯誤（不在範圍 / 沒有定位） */
+  isLocation: boolean;
   /** 地點鎖遊戲的指定地點名稱（有值時顯示地點提示） */
   lockLocationName?: string | null;
   onRetry: () => void;
   onBack: () => void;
 }
 
-export default function SessionErrorScreen({ message, lockLocationName, onRetry, onBack }: SessionErrorScreenProps) {
-  const isLocation = message.includes("地點") || message.includes("GPS");
+export default function SessionErrorScreen({ message, isLocation, lockLocationName, onRetry, onBack }: SessionErrorScreenProps) {
   const Icon = isLocation ? MapPin : AlertTriangle;
   return (
     <div className="min-h-screen-dynamic bg-background flex items-center justify-center p-6">

@@ -1,20 +1,41 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { getIdToken } from "./firebase";
 
+/**
+ * 🆕 2026-09-22：API 錯誤帶狀態碼與回應內容（呼叫端可分辨「憑證失效」vs「暫時失敗」）
+ * message 維持原本的友善文案，既有只讀 message 的呼叫端不受影響
+ */
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number, readonly body: Record<string, unknown> | null) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+function parseJsonBody(text: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
+    const body = parseJsonBody(text);
     // 🟠 403 友善訊息：告訴使用者需要什麼權限（從 response 取或預設）
     if (res.status === 403) {
       let friendly = "此操作需要更高權限，請聯絡場域管理員升級您的角色";
-      try {
-        const parsed = JSON.parse(text);
-        if (parsed.message) friendly = parsed.message + "（如需更多權限，請聯絡場域管理員）";
-      } catch { /* 非 JSON 用預設 */ }
-      throw new Error(friendly);
+      if (typeof body?.message === "string") {
+        // 🐛 2026-09-22：地點鎖（不在指定範圍）不是權限問題 → 不加「聯絡管理員」
+        friendly = body.requireLocation ? body.message : body.message + "（如需更多權限，請聯絡場域管理員）";
+      }
+      throw new ApiError(friendly, res.status, body);
     }
     if (res.status === 401) {
-      throw new Error("登入已失效，請重新登入");
+      throw new ApiError("登入已失效，請重新登入", res.status, body);
     }
     // 一般錯誤：解析後端 JSON，優先顯示可讀 message / 展開 zod validation 欄位，
     // 取代原本的「500: {json}」（使用者看不懂）
@@ -33,7 +54,7 @@ async function throwIfResNotOk(res: Response) {
       // 非 JSON（nginx 502 HTML、純文字…）：保留狀態碼，否則除錯時看不出是幾號錯誤
       msg = text ? `發生錯誤（${res.status}）：${text.slice(0, 200)}` : msg;
     }
-    throw new Error(msg);
+    throw new ApiError(msg, res.status, body);
   }
 }
 

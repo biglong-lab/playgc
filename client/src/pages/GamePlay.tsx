@@ -497,7 +497,8 @@ export default function GamePlay() {
     if (sessionError) {
       return (
         <SessionErrorScreen
-          message={sessionError}
+          message={sessionError.message}
+          isLocation={sessionError.isLocation}
           lockLocationName={game.lockLocationName}
           onRetry={retryCreateSession}
           onBack={() => setLocation(link("/home"))}
