@@ -38,9 +38,11 @@ type FlagRow = typeof featureFlags.$inferSelect;
 
 const GLOBAL_FORBIDDEN = "全域開關會影響所有場域，只有平台管理員可以設定";
 const OTHER_FIELD_FORBIDDEN = "只能設定自己場域的元件開關";
+const NO_FIELD_FORBIDDEN = "這個帳號沒有綁定場域，請先指定場域再設定元件開關";
 
+/** 平台級管理員（可設全域開關）：super_admin 與 platform_admin（後者見 server/lib/field-ownership.ts） */
 function isSuperAdmin(admin: AdminPrincipal): boolean {
-  return admin.systemRole === "super_admin";
+  return admin.systemRole === "super_admin" || admin.systemRole === "platform_admin";
 }
 
 /** 決定寫入範圍；非 super_admin 碰全域 / 別場域回傳 forbidden 訊息 */
@@ -54,7 +56,11 @@ function resolveTarget(
     return superAdmin ? { scope, fieldId: null } : { forbidden: GLOBAL_FORBIDDEN };
   }
   const fieldId = body.fieldId ?? admin.fieldId;
+  // 🔒 2026-09-23 安全審查 L4：沒綁場域的管理員會寫出 scope=field + fieldId=null 的死資料
+  //   （查詢條件是 eq(fieldId, x)，永遠對不上 → 設了卻沒作用）
+  if (!superAdmin && !admin.fieldId) return { forbidden: NO_FIELD_FORBIDDEN };
   if (!superAdmin && fieldId !== admin.fieldId) return { forbidden: OTHER_FIELD_FORBIDDEN };
+  if (!fieldId) return { forbidden: NO_FIELD_FORBIDDEN };
   return { scope, fieldId };
 }
 

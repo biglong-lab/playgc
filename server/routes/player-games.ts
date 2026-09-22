@@ -264,7 +264,11 @@ export function registerPlayerGameRoutes(app: Express, ctx?: RouteContext) {
             .json({ message: auth.message });
         }
 
+        // 🔒 2026-09-23 安全審查 M8：這條是遊戲擁有者可打的端點 →
+        //   禁止改「歸屬」類欄位（fieldId 可把遊戲丟到別的場域、creatorId 可換擁有者、
+        //   publicSlug 會搶別人的 QR 短網址、isDemo/demoExpiresAt 影響示範清理）
         const data = insertGameSchema
+          .omit({ fieldId: true, creatorId: true, publicSlug: true, isDemo: true, demoExpiresAt: true })
           .extend({ lastLiveTestedAt: z.coerce.date().nullable().optional() })
           .partial()
           .parse(req.body);

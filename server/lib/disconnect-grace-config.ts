@@ -72,6 +72,11 @@ export function createGraceConfigCache(load: (teamId: string) => Promise<unknown
     cache.forEach((entry, key) => {
       if (entry.expiresAt <= at) cache.delete(key);
     });
+    // 🔒 2026-09-23 安全審查 L5：全都還沒過期時上面一筆都刪不掉 →
+    //   仍超過上限就丟掉最舊的一半（TTL 只有 30 秒，重讀成本極低）
+    if (cache.size < MAX_CACHE_ENTRIES) return;
+    const oldestFirst = Array.from(cache.entries()).sort((a, b) => a[1].expiresAt - b[1].expiresAt);
+    oldestFirst.slice(0, Math.ceil(oldestFirst.length / 2)).forEach(([key]) => cache.delete(key));
   }
 
   return async function getGraceConfig(teamId: string): Promise<GraceConfig> {
