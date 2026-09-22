@@ -80,7 +80,11 @@ test.describe.serial("玩家動線：免登入 QR 直達 → 通關 → 登入�
       await expect(page.getByTestId("save-record-card")).toBeVisible();
     });
 
-    test.skip(!CLAIM_EMAIL, "未設定 E2E_CLAIM_EMAIL，略過登入認領步驟");
+    if (!CLAIM_EMAIL) {
+      // 前半段（QR 直達 → 通關 → 保存卡）已驗證；沒有可用的正式帳號就到此為止
+      test.info().annotations.push({ type: "note", description: "未設定 E2E_CLAIM_EMAIL，略過登入認領步驟" });
+      return;
+    }
 
     await test.step("按「登入保存紀錄」→ 登入框（不含訪客選項）", async () => {
       await page.getByTestId("button-save-record").click();
