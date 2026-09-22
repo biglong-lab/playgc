@@ -7,6 +7,7 @@
 //   POST /api/_test/seed-game                  建立測試 game + 5 pages + session（回傳 IDs）
 //   POST /api/_test/seed-multi-game            建立多人模式 game + vote_team 頁
 //   POST /api/_test/seed-multi-game-with-page  建立多人 game 含指定 pageType（A2 L3 驗證用）
+//   POST /api/_test/seed-match-game            建立競賽 / 接力 game（N 頁文字卡）
 //   POST /api/_test/cleanup/:gameId            清理測試 game（連同 sessions / pages）
 //   GET  /api/_test/games/:gameId              查詢測試 game 狀態
 //
@@ -19,7 +20,7 @@
 
 import type { Express } from "express";
 import { db } from "../db";
-import { games, pages, gameSessions, teams, teamMembers, users } from "@shared/schema";
+import { games, pages, gameSessions, teams, teamMembers, users, type GameMatchConfig } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { storage } from "../storage";
 
@@ -219,6 +220,48 @@ export function registerTestOnlyRoutes(app: Express) {
       });
     } catch (err) {
       console.error("[test-only seed-multi-game-with-page] 失敗:", err);
+      res.status(500).json({ error: String(err) });
+    }
+  });
+
+  // 🏁 2026-09-23 POST /api/_test/seed-match-game — 競賽 / 接力遊戲（N 頁文字卡，每頁 +10 分）
+  // body: { mode?: "competitive" | "relay", pageCount?: number, matchConfig?: GameMatchConfig }
+  app.post("/api/_test/seed-match-game", async (req, res) => {
+    try {
+      const body = (req.body ?? {}) as { mode?: string; pageCount?: number; matchConfig?: GameMatchConfig };
+      const mode = body.mode === "relay" ? "relay" : "competitive";
+      const pageCount = Math.min(Math.max(Number(body.pageCount) || 4, 1), 20);
+      const [game] = await db.insert(games).values({
+        title: `E2E ${mode === "relay" ? "接力" : "競賽"}測試`,
+        description: "Playwright e2e — 競賽 / 接力",
+        difficulty: "easy",
+        estimatedTime: 5,
+        maxPlayers: 10,
+        status: "published",
+        gameMode: mode,
+        matchConfig: body.matchConfig ?? {},
+        publicSlug: `e2e-${mode}-${Date.now()}`,
+      }).returning();
+      const inserted = await db.insert(pages).values(
+        Array.from({ length: pageCount }, (_, i) => ({
+          gameId: game.id,
+          pageOrder: i + 1,
+          pageType: "text_card",
+          config: {
+            title: `第 ${i + 1} 關`,
+            content: `E2E 關卡 ${i + 1}`,
+            layout: "center",
+            onCompleteActions: [{ type: "add_score", points: 10 }],
+          },
+        })),
+      ).returning();
+      res.json({
+        gameId: game.id,
+        publicSlug: game.publicSlug,
+        pages: inserted.map((p) => ({ id: p.id, order: p.pageOrder })),
+      });
+    } catch (err) {
+      console.error("[test-only seed-match-game] 失敗:", err);
       res.status(500).json({ error: String(err) });
     }
   });
