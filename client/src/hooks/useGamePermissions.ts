@@ -26,7 +26,7 @@ interface GameLike {
 export interface GamePermissions {
   /** 是否已載入使用者資訊（判斷用） */
   isLoaded: boolean;
-  /** 系統角色（super_admin / field_manager / field_executor / game_editor / null） */
+  /** 系統角色（super_admin / field_manager / field_director / field_executor / custom / null） */
   systemRole: string | null;
   /** 檢視遊戲 — 基本權限，登入後 + 同場域都有 */
   canView: boolean;
@@ -45,10 +45,13 @@ export interface GamePermissions {
 /**
  * 依當前登入者 + 遊戲資訊，回傳所有相關權限
  *
- * 角色矩陣：
+ * 角色矩陣（systemRole 列舉見 shared/schema/roles.ts systemRoleEnum）：
  * - super_admin：全平台全部 ✅
- * - field_manager：同場域，可 CRUD 遊戲 / 發布 / 刪除
- * - game_editor：同場域，可 CRUD + 發布，不可刪除
+ * - field_manager / field_director：同場域，可 CRUD 遊戲 / 發布
+ *     field_director = 新場域自動建立的「場域管理員」預設角色（server/routes/admin-fields.ts）
+ *     🐛 2026-09-23 前漏認 field_director → 新場域管理員被判不能編輯
+ * - game_editor：⚠️ 不在 systemRoleEnum；DB 有一筆手動建立的「遊戲編輯」自訂角色（2026-04-20）
+ *     用了這個 system_role 字串，為相容保留判斷（同場域可 CRUD + 發布）
  * - field_executor：同場域，可 view + 執行 session
  * - 建立者 (legacy)：視為 editor
  */
@@ -70,7 +73,8 @@ export function useGamePermissions(game?: GameLike | null): GamePermissions {
   // 是否同場域
   const sameField = !!(admin?.fieldId && game?.fieldId && admin.fieldId === game.fieldId);
   const isSuperAdmin = systemRole === "super_admin";
-  const isManager = systemRole === "field_manager" && sameField;
+  const isManager = (systemRole === "field_manager" || systemRole === "field_director") && sameField;
+  // game_editor 不在 systemRoleEnum，僅為相容 DB 既有自訂角色保留（見上方角色矩陣說明）
   const isEditor = systemRole === "game_editor" && sameField;
   const isExecutor = systemRole === "field_executor" && sameField;
 
