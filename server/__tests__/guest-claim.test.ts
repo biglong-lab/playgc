@@ -2,9 +2,14 @@
 //
 // 本機執行（DB 部分需 DATABASE_URL，沒有會自動跳過）：
 //   node --env-file=.env node_modules/.bin/vitest run server/__tests__/guest-claim.test.ts
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from "vitest";
 
 const HAS_DB = Boolean(process.env.DATABASE_URL);
+
+// 沒有 DB（CI 單元測試）→ 以空殼替代 db 模組，讓憑證純函式測試照跑；DB 整合段落自動 skip
+vi.mock("../db", async (importOriginal) =>
+  process.env.DATABASE_URL ? importOriginal() : { db: {}, pool: {}, closePool: async () => undefined },
+);
 
 describe("認領憑證（createClaimTicket / verifyClaimTicket）", () => {
   let svc: typeof import("../services/guest-claim");
