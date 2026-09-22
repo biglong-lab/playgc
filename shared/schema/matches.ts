@@ -36,6 +36,10 @@ export interface MatchSettings {
   readonly showRealTimeRanking: boolean;
   readonly maxParticipants?: number;
   readonly countdownSeconds?: number;
+  /** 🆕 2026-09-23：建賽時從遊戲設定（games.match_config）拍快照，開賽後改遊戲設定不影響進行中賽事 */
+  readonly minParticipants?: number;
+  /** 🆕 2026-09-23：接力分段快照（每一棒負責的頁碼區間，1-based 含頭尾） */
+  readonly relaySegments?: ReadonlyArray<{ readonly fromPage: number; readonly toPage: number }>;
 }
 
 // 接力設定介面

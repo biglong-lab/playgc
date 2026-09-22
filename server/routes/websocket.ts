@@ -7,7 +7,7 @@ import { verifyFirebaseToken } from "../firebaseAuth";
 import { db } from "../db";
 import { revokeAutoLeave } from "../lib/team-membership";
 import { computeWsLiveStats } from "../lib/ws-live-stats";
-import { gameMatches, matchParticipants, teamMembers, teamSessions, teams } from "@shared/schema";
+import { teamMembers, teamSessions, teams } from "@shared/schema";
 import { eq, and, isNull, sql } from "drizzle-orm";
 import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types";
 // 🔭 Phase 0.2 (2026-05-08)：完整事件 log（fire-and-forget、不阻塞 ws）
@@ -813,48 +813,21 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           // ════════════════════════════════════════════════════════════
 
           // 對戰系統事件
+          // 🔒 2026-09-23：只有已登入的參賽者能進賽事房間（原本任何連線都能進、還能冒名廣播「某人加入」）
+          //   加入 / 分數 / 交棒 / 開賽 / 結算的廣播一律由伺服器（REST + match-lifecycle）發出
           case "match_join": {
-            const matchId = message.matchId;
-            if (matchId) {
-              ws.matchId = matchId;
-              if (!matchClients.has(matchId)) {
-                matchClients.set(matchId, new Set());
-              }
-              matchClients.get(matchId)?.add(ws);
-              broadcastToMatch(matchId, {
-                type: "match_participant_joined",
-                userId: message.userId,
-                userName: message.userName,
-                timestamp: new Date().toISOString(),
-              });
+            const matchId = typeof message.matchId === "string" ? message.matchId : null;
+            if (!matchId || !ws.authenticatedUserId) break;
+            const { isMatchParticipant } = await import("../services/match-lobby");
+            if (!(await isMatchParticipant(matchId, ws.authenticatedUserId))) {
+              ws.send(JSON.stringify({ type: "error", message: "非比賽參與者" }));
+              break;
             }
-            break;
-          }
-
-          case "match_score_update": {
-            const mId = ws.matchId;
-            if (mId) {
-              broadcastToMatch(mId, {
-                type: "match_ranking",
-                userId: message.userId,
-                score: message.score,
-                timestamp: new Date().toISOString(),
-              });
+            ws.matchId = matchId;
+            if (!matchClients.has(matchId)) {
+              matchClients.set(matchId, new Set());
             }
-            break;
-          }
-
-          case "relay_handoff": {
-            const relayMatchId = ws.matchId;
-            if (relayMatchId) {
-              broadcastToMatch(relayMatchId, {
-                type: "relay_handoff",
-                fromUserId: message.fromUserId,
-                toUserId: message.toUserId,
-                segment: message.segment,
-                timestamp: new Date().toISOString(),
-              });
-            }
+            matchClients.get(matchId)?.add(ws);
             break;
           }
 
@@ -876,59 +849,10 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             break;
           }
 
-          // 前端倒數完成 → 切換對戰為 playing
-          // 🔒 安全（2026-05-03 修）：違反 ADR-0015「禁 WS 路徑做 DB write」紅線
-          //   之前任何匿名 ws 連線送 match_join + match_countdown_complete 即可
-          //   觸發 update(gameMatches).set({ status: "playing" }) → 任意提早比賽
-          //   修法：強制 ws.authenticatedUserId + 驗 match 參與者
-          case "match_countdown_complete": {
-            const countdownMatchId = ws.matchId;
-            if (!countdownMatchId) break;
-
-            // 必須認證
-            if (!ws.authenticatedUserId) {
-              ws.send(JSON.stringify({
-                type: "error",
-                message: "倒數完成需要登入身份",
-              }));
-              break;
-            }
-
-            // 驗證是 match 參與者（防非參與者觸發倒數）
-            const [participant] = await db
-              .select({ id: matchParticipants.id })
-              .from(matchParticipants)
-              .where(and(
-                eq(matchParticipants.matchId, countdownMatchId),
-                eq(matchParticipants.userId, ws.authenticatedUserId),
-              ))
-              .limit(1);
-
-            if (!participant) {
-              ws.send(JSON.stringify({
-                type: "error",
-                message: "非比賽參與者",
-              }));
-              break;
-            }
-
-            const [match] = await db.select()
-              .from(gameMatches)
-              .where(eq(gameMatches.id, countdownMatchId));
-
-            // 僅在 countdown 狀態才執行（防重複）
-            if (match && match.status === "countdown") {
-              await db.update(gameMatches)
-                .set({ status: "playing", startedAt: new Date(), updatedAt: new Date() })
-                .where(eq(gameMatches.id, countdownMatchId));
-
-              broadcastToMatch(countdownMatchId, {
-                type: "match_started",
-                timestamp: new Date().toISOString(),
-              });
-            }
+          // 🗑️ 2026-09-23：倒數到期由伺服器計時器 + 巡檢開賽（match-lifecycle），
+          //   不再接受前端回報（ADR-0015：WS 路徑不做 DB 寫入）；舊前端送來直接忽略
+          case "match_countdown_complete":
             break;
-          }
         }
       } catch {
         // 發送錯誤回應給客戶端
@@ -1038,10 +962,10 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           matchClients.delete(matchId);
         }
 
+        // 斷線 ≠ 退出賽事（退出走 POST /api/matches/:id/leave）→ 只通知連線狀態
         broadcastToMatch(matchId, {
-          type: "match_participant_left",
-          userId: ws.userId,
-          userName: ws.userName,
+          type: "match_connection_left",
+          userId: ws.authenticatedUserId ?? null,
           timestamp: new Date().toISOString(),
         });
       }

@@ -205,6 +205,9 @@ export async function registerRoutes(
   registerClientLogsRoutes(app);
   startClientLogsCleanup();
   registerMatchRoutes(app, ctx);
+  // 🏁 2026-09-23：賽事巡檢（倒數到期開賽、時間到結算；重啟後補做）— 單 worker 架構，只會有一個巡檢
+  const { startMatchSweeper } = await import("../services/match-lifecycle");
+  startMatchSweeper(ctx.broadcastToMatch);
   registerAdminRedeemCodeRoutes(app);
   registerAdminPurchaseRoutes(app);
   registerPlayerPurchaseRoutes(app);

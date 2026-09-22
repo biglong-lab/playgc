@@ -11,6 +11,7 @@ import { and, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "../db";
 import { gameMatches, gameSessions, matchParticipants, users, type GameMatch, type MatchSettings } from "@shared/schema";
 import { getPlayerDisplayName } from "@shared/lib/playerDisplay";
+import { MAX_SESSION_SCORE } from "../lib/scoreValidation";
 
 export type MatchBroadcast = (matchId: string, message: { type: string; [key: string]: unknown }) => void;
 
@@ -41,8 +42,13 @@ export function rankParticipants<T extends RankableParticipant>(list: T[]): Arra
     .map((p, i) => ({ ...p, rank: i + 1 }));
 }
 
+/** 內部用：多帶綁定的場次 ID（不對外廣播，避免別人拿到你的場次 ID） */
+export interface MatchRankingRow extends MatchRankingEntry {
+  sessionId: string | null;
+}
+
 /** 目前排名（含顯示名：真名 > 信箱前綴 > 場次暱稱 > 玩家） */
-export async function loadMatchRanking(matchId: string): Promise<MatchRankingEntry[]> {
+export async function loadMatchRankingRows(matchId: string): Promise<MatchRankingRow[]> {
   const rows = await db
     .select({
       p: matchParticipants,
@@ -60,6 +66,7 @@ export async function loadMatchRanking(matchId: string): Promise<MatchRankingEnt
   return ranked.map((p) => ({
     participantId: p.id,
     userId: p.userId,
+    sessionId: p.sessionId,
     displayName: getPlayerDisplayName({
       firstName: p.source.firstName,
       lastName: p.source.lastName,
@@ -72,6 +79,12 @@ export async function loadMatchRanking(matchId: string): Promise<MatchRankingEnt
     relaySegment: p.relaySegment,
     relayStatus: p.relayStatus,
   }));
+}
+
+/** 對外排名（大廳 / 廣播） */
+export async function loadMatchRanking(matchId: string): Promise<MatchRankingEntry[]> {
+  const rows = await loadMatchRankingRows(matchId);
+  return rows.map(({ sessionId: _sessionId, ...entry }) => entry);
 }
 
 async function broadcastRanking(matchId: string, broadcast: MatchBroadcast): Promise<void> {
@@ -186,6 +199,12 @@ async function findPlayingParticipant(sessionId: string, userId: string) {
   return row && row.status === "playing" ? row : null;
 }
 
+/** 這個場次是不是進行中接力賽的一棒（只玩部分頁面 → 不寫個人排行榜 / 成就） */
+export async function isRelayLegSession(sessionId: string, userId: string): Promise<boolean> {
+  const row = await findPlayingParticipant(sessionId, userId);
+  return row?.matchMode === "relay";
+}
+
 /** 玩家遊戲場次開局時綁定到賽事（只綁一次；賽事需進行中、本人需為參賽者） */
 export async function linkMatchSession(matchId: string, userId: string, sessionId: string): Promise<boolean> {
   const [match] = await db.select({ status: gameMatches.status }).from(gameMatches).where(eq(gameMatches.id, matchId));
@@ -198,17 +217,21 @@ export async function linkMatchSession(matchId: string, userId: string, sessionI
   return linked.length > 0;
 }
 
-/** 遊戲進度更新 → 同步賽事分數（只增不減）並廣播排名 */
+/** 遊戲進度更新 → 同步賽事分數（只增不減、不超過單場硬上限）並廣播排名 */
 export async function syncMatchScoreFromSession(
   sessionId: string, userId: string, score: number, broadcast: MatchBroadcast,
 ): Promise<void> {
   const row = await findPlayingParticipant(sessionId, userId);
-  if (!row || score <= row.p.currentScore) return;
-  await db.update(matchParticipants).set({ currentScore: score }).where(eq(matchParticipants.id, row.p.id));
+  const capped = Math.min(score, MAX_SESSION_SCORE);
+  if (!row || capped <= row.p.currentScore) return;
+  await db.update(matchParticipants).set({ currentScore: capped }).where(eq(matchParticipants.id, row.p.id));
   await broadcastRanking(row.p.matchId, broadcast);
 }
 
-/** 遊戲場次完成 → 標記參賽者完成；全員完成就結算 */
+/**
+ * 遊戲場次完成 → 標記參賽者完成；全員完成就結算
+ * finalScore 是場次完成時經 validateSessionScore 修正過的分數 → 以它為準（蓋掉進度途中的暫存分數）
+ */
 export async function completeMatchParticipant(
   sessionId: string, userId: string, finalScore: number, broadcast: MatchBroadcast,
 ): Promise<void> {
@@ -216,7 +239,7 @@ export async function completeMatchParticipant(
   if (!row || row.p.completedAt) return;
   await db
     .update(matchParticipants)
-    .set({ currentScore: Math.max(row.p.currentScore, finalScore), completedAt: new Date() })
+    .set({ currentScore: Math.max(0, Math.min(finalScore, MAX_SESSION_SCORE)), completedAt: new Date() })
     .where(eq(matchParticipants.id, row.p.id));
 
   if (row.matchMode === "relay") {

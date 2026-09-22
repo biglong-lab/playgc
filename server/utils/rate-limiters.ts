@@ -84,6 +84,18 @@ export const teamActionLimiter = rateLimit({
 });
 
 /**
+ * 🏁 2026-09-23：賽事動作（建賽 / 加入 / 離開 / 開賽 / 結束），同隊伍動作上限
+ */
+export const matchActionLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `match:${getUserKey(req)}`,
+  message: { message: "賽事操作過於頻繁，請稍後再試" },
+});
+
+/**
  * 🔐 2026-07-09 S3：建立遊戲場次
  * 每 10 分鐘 30 次 — 正常重玩/測試綽綽有餘，防誤觸/腳本灌 session
  *（配合同日 CHITO #f095652b 的「建新自動放棄舊 playing」雙保險）

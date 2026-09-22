@@ -2,13 +2,14 @@
 //
 // 規則：
 //   - 遊戲設定 games.match_config.relaySegments = 每一棒負責的頁碼區間（1-based、含頭尾）
+//     建賽時拍快照到 game_matches.settings.relaySegments（開賽後改遊戲設定不影響進行中賽事）
 //   - 一場接力賽事＝一隊；一人一棒，參賽人數 = 分段數（開賽前檢查）
 //   - 開賽 → 依加入順序分配棒次，第 1 棒 active、其餘 pending
 //   - 當棒玩家完成自己那段（遊戲場次完成）→ 自動交棒給下一棒；最後一棒完成 → 結算
 //   - 取代舊的 /relay/assign（房主手動分段）與 /relay/handoff（前端指定下一棒、未驗證）
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "../db";
-import { gameMatches, games, matchParticipants, resolveMatchConfig, type GameMatchConfig } from "@shared/schema";
+import { matchParticipants, type GameMatch, type MatchSettings } from "@shared/schema";
 import type { MatchBroadcast } from "./match-lifecycle";
 
 export interface RelayLeg {
@@ -17,11 +18,10 @@ export interface RelayLeg {
   toPage: number;
 }
 
-/** 遊戲的接力分段（沒設定 = 空陣列，不能開接力賽） */
-export async function loadRelayLegs(gameId: string): Promise<RelayLeg[]> {
-  const [game] = await db.select({ matchConfig: games.matchConfig }).from(games).where(eq(games.id, gameId));
-  const { relaySegments } = resolveMatchConfig(game?.matchConfig as GameMatchConfig | null);
-  return relaySegments.map((s, i) => ({ segment: i + 1, fromPage: s.fromPage, toPage: s.toPage }));
+/** 賽事的接力分段（建賽快照；沒設定 = 空陣列） */
+export function relayLegsOf(match: Pick<GameMatch, "settings">): RelayLeg[] {
+  const segments = (match.settings as MatchSettings | null)?.relaySegments ?? [];
+  return segments.map((s, i) => ({ segment: i + 1, fromPage: s.fromPage, toPage: s.toPage }));
 }
 
 /** 開賽：依加入順序分配棒次 */
@@ -82,11 +82,13 @@ export interface MyRelayLeg {
 }
 
 /** 我在這場接力的棒次與頁碼（遊戲頁據此只給玩自己那段 / 顯示等待畫面） */
-export async function getMyRelayLeg(matchId: string, userId: string): Promise<MyRelayLeg | null> {
-  const [match] = await db.select().from(gameMatches).where(eq(gameMatches.id, matchId));
-  if (!match || match.matchMode !== "relay") return null;
-  const legs = await loadRelayLegs(match.gameId);
-  const participants = await db.select().from(matchParticipants).where(eq(matchParticipants.matchId, matchId));
+export async function getMyRelayLeg(match: GameMatch, userId: string): Promise<MyRelayLeg | null> {
+  if (match.matchMode !== "relay") return null;
+  const legs = relayLegsOf(match);
+  const participants = await db
+    .select({ userId: matchParticipants.userId, relaySegment: matchParticipants.relaySegment, relayStatus: matchParticipants.relayStatus })
+    .from(matchParticipants)
+    .where(eq(matchParticipants.matchId, match.id));
   const mine = participants.find((p) => p.userId === userId);
   const active = participants.find((p) => p.relayStatus === "active");
   const leg = mine?.relaySegment ? legs[mine.relaySegment - 1] : undefined;

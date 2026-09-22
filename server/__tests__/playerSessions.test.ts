@@ -85,6 +85,17 @@ vi.mock("../services/achievement-unlock", () => ({
   checkAndUnlockAchievements: vi.fn().mockResolvedValue([]),
 }));
 
+// 🏁 2026-09-23 競賽 / 接力掛勾（預設不是賽事場次；個別測試調整）
+const { mockMatchHooks } = vi.hoisted(() => ({
+  mockMatchHooks: {
+    linkSessionToMatch: vi.fn(),
+    syncMatchScore: vi.fn(),
+    isRelayLeg: vi.fn(),
+    completeMatchForSession: vi.fn(),
+  },
+}));
+vi.mock("../services/match-session-hooks", () => mockMatchHooks);
+
 import { registerPlayerSessionRoutes } from "../routes/player-sessions";
 
 function createApp() {
@@ -102,6 +113,9 @@ describe("Player Sessions 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsParticipant.mockResolvedValue(true);
+    mockMatchHooks.linkSessionToMatch.mockResolvedValue(false);
+    mockMatchHooks.isRelayLeg.mockResolvedValue(false);
+    mockMatchHooks.completeMatchForSession.mockResolvedValue(undefined);
     app = createApp();
   });
 
@@ -397,6 +411,49 @@ describe("Player Sessions 路由", () => {
 
       expect(res.status).toBe(201);
       expect(res.body.message).toBe("Hi team!");
+    });
+  });
+
+  // =====================================================
+  // 🏁 2026-09-23 競賽 / 接力掛勾
+  // =====================================================
+  describe("賽事掛勾", () => {
+    const MATCH_ID = "11111111-1111-4111-8111-111111111111";
+
+    it("開局帶 matchId → 綁定到賽事，回應 matchLinked", async () => {
+      mockStorage.createSession.mockResolvedValue({ id: "s-m", gameId: "g-1" });
+      mockStorage.getUser.mockResolvedValue({ id: "user-1" });
+      mockStorage.createPlayerProgress.mockResolvedValue({ id: 1 });
+      mockMatchHooks.linkSessionToMatch.mockResolvedValue(true);
+      const res = await request(app).post("/api/sessions").set(AUTH_HEADER).send({ gameId: "g-1", matchId: MATCH_ID });
+      expect(res.status).toBe(201);
+      expect(res.body.matchLinked).toBe(true);
+      expect(mockMatchHooks.linkSessionToMatch).toHaveBeenCalledWith(MATCH_ID, "user-1", "s-m");
+    });
+
+    it("沒帶 matchId → 不查賽事", async () => {
+      mockStorage.createSession.mockResolvedValue({ id: "s-n", gameId: "g-1" });
+      mockStorage.getUser.mockResolvedValue({ id: "user-1" });
+      mockStorage.createPlayerProgress.mockResolvedValue({ id: 1 });
+      const res = await request(app).post("/api/sessions").set(AUTH_HEADER).send({ gameId: "g-1" });
+      expect(res.body.matchLinked).toBe(false);
+      expect(mockMatchHooks.linkSessionToMatch).not.toHaveBeenCalled();
+    });
+
+    it("進度帶分數 → 同步賽事分數", async () => {
+      mockStorage.getPlayerProgressByUser.mockResolvedValue({ id: 1, sessionId: "s-1", userId: "user-1" });
+      mockStorage.updatePlayerProgress.mockResolvedValue({ id: 1, score: 120 });
+      await request(app).patch("/api/sessions/s-1/progress").set(AUTH_HEADER).send({ pageId: "p-2", score: 120 });
+      expect(mockMatchHooks.syncMatchScore).toHaveBeenCalledWith("s-1", "user-1", 120, undefined);
+    });
+
+    it("接力的一棒完成 → 不寫個人排行榜，但交給賽事處理交棒", async () => {
+      mockMatchHooks.isRelayLeg.mockResolvedValue(true);
+      mockStorage.updateSession.mockResolvedValue({ id: "s-1", gameId: "g-1", status: "completed", score: 30 });
+      const res = await request(app).patch("/api/sessions/s-1").set(AUTH_HEADER).send({ status: "completed" });
+      expect(res.status).toBe(200);
+      expect(mockStorage.createLeaderboardEntry).not.toHaveBeenCalled();
+      expect(mockMatchHooks.completeMatchForSession).toHaveBeenCalledWith("s-1", "user-1", 30, undefined);
     });
   });
 });

@@ -11,6 +11,12 @@ import { insertGameSessionSchema } from "@shared/schema";
 import { z } from "zod";
 import { hotPathLimiter, chatLimiter, sessionCreateLimiter, sessionCreateIpLimiter } from "../utils/rate-limiters";
 import { notifyFieldGamePlay } from "../lib/internal-notifier";
+import {
+  completeMatchForSession,
+  isRelayLeg,
+  linkSessionToMatch,
+  syncMatchScore,
+} from "../services/match-session-hooks";
 
 /**
  * 🆕 2026-06-13 賈村遊戲開玩通報（Telegram 群組）
@@ -217,7 +223,12 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
           }
         }
 
-        res.status(201).json(session);
+        // 🏁 2026-09-23：競賽 / 接力開局 → 綁定到賽事（分數、完成、交棒都靠這個關聯）
+        const matchLinked = userId && req.body?.matchId
+          ? await linkSessionToMatch(req.body.matchId, userId, session.id)
+          : false;
+
+        res.status(201).json({ ...session, matchLinked });
       } catch (error) {
         if (error instanceof z.ZodError) {
           return res
@@ -291,12 +302,16 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
         }
 
         // 🏁 完成後寫排行榜 / 成就 / 隊伍戰績（2026-09-22 抽出＋依計分開關）
+        //   接力的一棒只玩部分頁面 → 不寫個人紀錄；賽事完成 / 交棒 / 結算另外處理（2026-09-23）
         if (data.status === "completed") {
-          const { recordSessionCompletion } = await import("../services/session-completion");
           const claims = (req as AuthenticatedRequest).user?.claims;
-          await recordSessionCompletion(session, claims?.sub, {
-            isGuest: claims?.signInProvider === "anonymous",
-          });
+          if (!callerId || !(await isRelayLeg(session.id, callerId))) {
+            const { recordSessionCompletion } = await import("../services/session-completion");
+            await recordSessionCompletion(session, claims?.sub, {
+              isGuest: claims?.signInProvider === "anonymous",
+            });
+          }
+          await completeMatchForSession(session.id, callerId, session.score ?? 0, ctx?.broadcastToMatch);
         }
 
         // 🆕 若分數被伺服器修正，告知 client
@@ -391,6 +406,8 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
           progress.id,
           updateData,
         );
+        // 🏁 2026-09-23：競賽 / 接力 → 同步賽事分數、廣播即時排名（非賽事場次查無關聯即略過）
+        syncMatchScore(sessionId, userId, req.body.score, ctx?.broadcastToMatch);
 
         // 🏆 即時成就檢查 — 當 inventory 或 score 更新時檢查是否有新成就解鎖
         // 避免 breaking client：只在 body 實際變更這些欄位時跑（跟章節完成的 end-of-game 檢查互不衝突，靠 unique constraint 去重）

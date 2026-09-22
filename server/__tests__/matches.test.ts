@@ -1,528 +1,232 @@
 /**
- * 對戰路由 API 整合測試 — matches.ts
- *
- * Mock 策略：Drizzle 鏈式呼叫 select().from().where().orderBy()
- * 每次 select() 呼叫按順序回傳 mockSelectResults 陣列中的下一個值。
- * 呼叫鏈會在最終方法（where / orderBy）解析為 Promise。
+ * 對戰路由 API — matches.ts（2026-09-23 P1 改寫：路由只做驗證 / 轉呼叫，資料操作在 services）
+ * Mock 策略：mock services（match-lobby / match-view / match-lifecycle）與 storage，驗證路由規則
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import express from "express";
 import request from "supertest";
 
-// ── 可控的回傳佇列 ─────────────────────────────────
-let selectResults: unknown[][] = [];
-let selectIndex = 0;
-
-const mockInsertReturning = vi.fn();
-const mockUpdateReturning = vi.fn();
-
-/** 取得下一筆 select 回傳值（按呼叫順序消費） */
-function nextSelectResult() {
-  const result = selectResults[selectIndex] ?? [];
-  selectIndex++;
-  return result;
-}
-
-/** 建立一個 thenable chain 物件，末端 resolve nextSelectResult */
-function createSelectChain() {
-  const chain: Record<string, unknown> = {};
-
-  // where() 可接 orderBy()，也可直接 await
-  const makeThenable = () => {
-    const thenable = {
-      orderBy: vi.fn(() => Promise.resolve(nextSelectResult())),
-      then: (resolve: (v: unknown) => void, reject?: (e: unknown) => void) =>
-        Promise.resolve(nextSelectResult()).then(resolve, reject),
-    };
-    return thenable;
-  };
-
-  chain.from = vi.fn(() => ({
-    where: vi.fn(() => makeThenable()),
-    orderBy: vi.fn(() => Promise.resolve(nextSelectResult())),
-  }));
-
-  return chain;
-}
-
-vi.mock("../db", () => ({
-  db: {
-    select: vi.fn(() => createSelectChain()),
-    insert: vi.fn(() => ({
-      values: vi.fn(() => ({
-        returning: mockInsertReturning,
-      })),
-    })),
-    update: vi.fn(() => ({
-      set: vi.fn(() => ({
-        where: vi.fn(() => {
-          // where() 回傳同時可 await（thenable）也可呼叫 .returning()
-          const whereResult = {
-            returning: mockUpdateReturning,
-            then: (resolve: (v: unknown) => void, reject?: (e: unknown) => void) =>
-              Promise.resolve().then(resolve, reject),
-          };
-          return whereResult;
-        }),
-      })),
-    })),
+const { lobby, view, life, mockStorage, mockGuestName } = vi.hoisted(() => ({
+  lobby: {
+    checkCanStart: vi.fn(),
+    countParticipants: vi.fn(),
+    createMatch: vi.fn(),
+    findMyActiveMatch: vi.fn(),
+    findWaitingMatchByCode: vi.fn(),
+    getMatch: vi.fn(),
+    isMatchParticipant: vi.fn(),
+    joinMatch: vi.fn(),
+    leaveMatch: vi.fn(),
+    listWaitingMatches: vi.fn(),
+    matchModeOf: vi.fn(),
   },
+  view: { getMatchDetail: vi.fn(), getMyMatchState: vi.fn() },
+  life: { beginCountdown: vi.fn(), finishMatch: vi.fn(), loadMatchRanking: vi.fn(), promoteToPlaying: vi.fn() },
+  mockStorage: { getGame: vi.fn() },
+  mockGuestName: vi.fn(),
 }));
 
+vi.mock("../services/match-lobby", () => lobby);
+vi.mock("../services/match-view", () => view);
+vi.mock("../services/match-lifecycle", () => life);
+vi.mock("../storage", () => ({ storage: mockStorage }));
+vi.mock("../services/guest-display-name", () => ({ persistGuestDisplayName: mockGuestName }));
+vi.mock("../routes/relay", () => ({ registerRelayRoutes: vi.fn() }));
 vi.mock("../firebaseAuth", () => ({
   isAuthenticated: vi.fn((req: any, res: any, next: any) => {
     if (req.headers.authorization === "Bearer valid-token") {
-      req.user = {
-        claims: { sub: "user-1" },
-        dbUser: { id: "user-1" },
-      };
+      req.user = { claims: { sub: "user-1", signInProvider: "anonymous" } };
       return next();
     }
     return res.status(401).json({ message: "Unauthorized" });
   }),
 }));
 
-// Mock relay 子路由（避免 relay 也試圖註冊路由）
-vi.mock("../routes/relay", () => ({
-  registerRelayRoutes: vi.fn(),
-}));
-
 import { registerMatchRoutes } from "../routes/matches";
+
+const MATCH_ID = "11111111-1111-4111-8111-111111111111";
+const GAME_ID = "22222222-2222-4222-8222-222222222222";
+const AUTH = { Authorization: "Bearer valid-token" };
 
 function createApp() {
   const app = express();
   app.use(express.json());
-  const ctx = {
-    broadcastToSession: vi.fn(),
-    broadcastToTeam: vi.fn(),
-    broadcastToMatch: vi.fn(),
-  };
-  registerMatchRoutes(app, ctx);
+  const ctx = { broadcastToSession: vi.fn(), broadcastToTeam: vi.fn(), broadcastToMatch: vi.fn() };
+  registerMatchRoutes(app, ctx as never);
   return { app, ctx };
 }
 
-describe("對戰路由 API", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    selectResults = [];
-    selectIndex = 0;
-    // 清除 mockResolvedValueOnce 佇列，防止跨測試洩漏
-    mockInsertReturning.mockReset();
-    mockUpdateReturning.mockReset();
+function match(overrides: Record<string, unknown> = {}) {
+  return { id: MATCH_ID, gameId: GAME_ID, creatorId: "user-1", status: "waiting", matchMode: "competitive", settings: {}, ...overrides };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  life.loadMatchRanking.mockResolvedValue([]);
+});
+
+describe("建立賽事 POST /api/games/:gameId/matches", () => {
+  it("未登入 → 401", async () => {
+    const res = await request(createApp().app).post(`/api/games/${GAME_ID}/matches`);
+    expect(res.status).toBe(401);
   });
 
-  // ────────────────────────────────────────────────────
-  // POST /api/games/:gameId/matches — 建立對戰
-  // ────────────────────────────────────────────────────
-  describe("POST /api/games/:gameId/matches — 建立對戰", () => {
-    it("成功建立對戰", async () => {
-      const { app } = createApp();
-      // select #0: 遊戲存在
-      selectResults = [[{ id: "a0000000-0000-4000-8000-000000000001", title: "測試" }]];
-      mockInsertReturning.mockResolvedValueOnce([{
-        id: "b0000000-0000-4000-8000-000000000001",
-        gameId: "a0000000-0000-4000-8000-000000000001",
-        status: "waiting",
-        accessCode: "ABC123",
-      }]);
-
-      const res = await request(app)
-        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
-        .set("Authorization", "Bearer valid-token")
-        .send({ matchMode: "competitive" });
-
-      expect(res.status).toBe(201);
-      expect(res.body.id).toBe("b0000000-0000-4000-8000-000000000001");
-    });
-
-    it("未認證時回傳 401", async () => {
-      const { app } = createApp();
-      const res = await request(app)
-        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
-        .send({});
-
-      expect(res.status).toBe(401);
-    });
-
-    it("遊戲不存在時回傳 404", async () => {
-      const { app } = createApp();
-      // select #0: 遊戲不存在
-      selectResults = [[]];
-
-      const res = await request(app)
-        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
-        .set("Authorization", "Bearer valid-token")
-        .send({ matchMode: "competitive" });
-
-      expect(res.status).toBe(404);
-    });
-
-    it("無效 matchMode 回傳 400", async () => {
-      const { app } = createApp();
-
-      const res = await request(app)
-        .post("/api/games/a0000000-0000-4000-8000-000000000001/matches")
-        .set("Authorization", "Bearer valid-token")
-        .send({ matchMode: "invalid" });
-
-      expect(res.status).toBe(400);
-    });
+  it("遊戲不存在 → 404；不是競賽 / 接力遊戲 → 400", async () => {
+    const { app } = createApp();
+    mockStorage.getGame.mockResolvedValueOnce(undefined);
+    expect((await request(app).post(`/api/games/${GAME_ID}/matches`).set(AUTH)).status).toBe(404);
+    mockStorage.getGame.mockResolvedValueOnce({ id: GAME_ID, gameMode: "individual" });
+    lobby.matchModeOf.mockReturnValueOnce(null);
+    expect((await request(app).post(`/api/games/${GAME_ID}/matches`).set(AUTH)).status).toBe(400);
   });
 
-  // ────────────────────────────────────────────────────
-  // GET /api/games/:gameId/matches — 對戰列表
-  // ────────────────────────────────────────────────────
-  describe("GET /api/games/:gameId/matches — 對戰列表", () => {
-    it("回傳對戰列表", async () => {
-      const { app } = createApp();
-      const matches = [
-        { id: "m1", status: "waiting" },
-        { id: "m2", status: "playing" },
-      ];
-      // 此端點使用 .where().orderBy() — select #0
-      selectResults = [matches];
+  it("成功 → 以遊戲模式建賽、房主自動參賽、訪客暱稱寫入", async () => {
+    const game = { id: GAME_ID, gameMode: "competitive" };
+    mockStorage.getGame.mockResolvedValue(game);
+    lobby.matchModeOf.mockReturnValue("competitive");
+    lobby.createMatch.mockResolvedValue(match());
+    const res = await request(createApp().app).post(`/api/games/${GAME_ID}/matches`).set(AUTH).send({ playerName: "探險家1234" });
+    expect(res.status).toBe(201);
+    expect(lobby.createMatch).toHaveBeenCalledWith(game, "competitive", "user-1");
+    expect(mockGuestName).toHaveBeenCalledWith("user-1", "探險家1234", "anonymous");
+  });
+});
 
-      const res = await request(app)
-        .get("/api/games/a0000000-0000-4000-8000-000000000001/matches");
-
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(2);
-    });
+describe("大廳讀取", () => {
+  it("列表：無效 ID → 400；有效 → 等待中賽事", async () => {
+    const { app } = createApp();
+    expect((await request(app).get("/api/games/not-a-uuid/matches")).status).toBe(400);
+    lobby.listWaitingMatches.mockResolvedValue([{ id: MATCH_ID, participantCount: 2 }]);
+    const res = await request(app).get(`/api/games/${GAME_ID}/matches`);
+    expect(res.body).toEqual([{ id: MATCH_ID, participantCount: 2 }]);
   });
 
-  // ────────────────────────────────────────────────────
-  // GET /api/matches/:matchId — 對戰詳情
-  // ────────────────────────────────────────────────────
-  describe("GET /api/matches/:matchId — 對戰詳情", () => {
-    it("對戰存在時回傳詳情", async () => {
-      const { app } = createApp();
-      // select #0: match 存在（where 呼叫）
-      // select #1: participants（where().orderBy()）
-      selectResults = [
-        [{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting" }],
-        [{ userId: "u1", currentScore: 100 }],
-      ];
-
-      const res = await request(app)
-        .get("/api/matches/b0000000-0000-4000-8000-000000000001");
-
-      expect(res.status).toBe(200);
-      expect(res.body.id).toBe("b0000000-0000-4000-8000-000000000001");
-    });
-
-    it("對戰不存在時回傳 404", async () => {
-      const { app } = createApp();
-      selectResults = [[]];
-      // 使用合法 UUID 格式但 DB 查無資料
-      const res = await request(app)
-        .get("/api/matches/c0000000-0000-4000-8000-000000000099");
-
-      expect(res.status).toBe(404);
-    });
-
-    it("無效 ID 格式回傳 400", async () => {
-      const { app } = createApp();
-      const res = await request(app)
-        .get("/api/matches/nonexistent");
-
-      expect(res.status).toBe(400);
-    });
+  it("我的賽事：回傳進行中賽事或 null", async () => {
+    lobby.findMyActiveMatch.mockResolvedValue(null);
+    const res = await request(createApp().app).get(`/api/games/${GAME_ID}/matches/mine`).set(AUTH);
+    expect(res.status).toBe(200);
+    expect(res.body).toBeNull();
+    expect(lobby.findMyActiveMatch).toHaveBeenCalledWith(GAME_ID, "user-1");
   });
 
-  // ────────────────────────────────────────────────────
-  // POST /api/matches/:matchId/join — 加入對戰
-  // ────────────────────────────────────────────────────
-  describe("POST /api/matches/:matchId/join — 加入對戰", () => {
-    it("成功加入對戰", async () => {
-      const { app, ctx } = createApp();
-      // select #0: match
-      // select #1: existing check (empty)
-      // select #2: all participants (count check)
-      selectResults = [
-        [{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting", maxTeams: 10 }],
-        [],
-        [],
-      ];
-
-      mockInsertReturning.mockResolvedValueOnce([{
-        id: "participant-1",
-        matchId: "b0000000-0000-4000-8000-000000000001",
-        userId: "user-1",
-      }]);
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/join")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(201);
-      expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "b0000000-0000-4000-8000-000000000001",
-        expect.objectContaining({ type: "match_participant_joined" }),
-      );
-    });
-
-    it("對戰已開始時回傳 400", async () => {
-      const { app } = createApp();
-      selectResults = [[{ id: "b0000000-0000-4000-8000-000000000001", status: "playing" }]];
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/join")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(400);
-    });
-
-    it("已加入時回傳 400", async () => {
-      const { app } = createApp();
-      selectResults = [
-        [{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting", maxTeams: 10 }],
-        [{ userId: "user-1" }], // 已加入
-      ];
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/join")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(400);
-    });
+  it("詳情：不存在 → 404；存在 → 檢視資料", async () => {
+    const { app } = createApp();
+    lobby.getMatch.mockResolvedValueOnce(undefined);
+    expect((await request(app).get(`/api/matches/${MATCH_ID}`)).status).toBe(404);
+    lobby.getMatch.mockResolvedValueOnce(match());
+    view.getMatchDetail.mockResolvedValue({ id: MATCH_ID, ranking: [] });
+    expect((await request(app).get(`/api/matches/${MATCH_ID}`)).body).toEqual({ id: MATCH_ID, ranking: [] });
   });
 
-  // ────────────────────────────────────────────────────
-  // POST /api/matches/:matchId/start — 開始對戰
-  // ────────────────────────────────────────────────────
-  describe("POST /api/matches/:matchId/start — 開始對戰", () => {
-    it("建立者可以開始對戰", async () => {
-      const { app, ctx } = createApp();
-      selectResults = [[{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "waiting",
-        creatorId: "user-1",
-        settings: { countdownSeconds: 3 },
-      }]];
+  it("我的狀態：要登入；回傳 getMyMatchState 結果", async () => {
+    const { app } = createApp();
+    expect((await request(app).get(`/api/matches/${MATCH_ID}/me`)).status).toBe(401);
+    lobby.getMatch.mockResolvedValue(match({ status: "playing" }));
+    view.getMyMatchState.mockResolvedValue({ matchId: MATCH_ID, isParticipant: true });
+    const res = await request(app).get(`/api/matches/${MATCH_ID}/me`).set(AUTH);
+    expect(res.body).toEqual({ matchId: MATCH_ID, isParticipant: true });
+  });
+});
 
-      mockUpdateReturning.mockResolvedValueOnce([{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "countdown",
-      }]);
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/start")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(200);
-      expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "b0000000-0000-4000-8000-000000000001",
-        expect.objectContaining({ type: "match_countdown" }),
-      );
-    });
-
-    it("非建立者不能開始", async () => {
-      const { app } = createApp();
-      selectResults = [[{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "waiting",
-        creatorId: "other-user",
-      }]];
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/start")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(403);
-    });
+describe("加入 / 邀請碼 / 退出", () => {
+  it("加入失敗 → 用服務回的狀態碼與訊息", async () => {
+    lobby.joinMatch.mockResolvedValue({ ok: false, status: 409, message: "這場賽事人數已滿" });
+    const res = await request(createApp().app).post(`/api/matches/${MATCH_ID}/join`).set(AUTH);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe("這場賽事人數已滿");
   });
 
-  // ────────────────────────────────────────────────────
-  // POST /api/matches/:matchId/finish — 結束對戰
-  // ────────────────────────────────────────────────────
-  describe("POST /api/matches/:matchId/finish — 結束對戰", () => {
-    it("正在進行的對戰可以結束", async () => {
-      const { app, ctx } = createApp();
-      // select #0: match
-      // select #1: participants (where().orderBy())
-      selectResults = [
-        [{ id: "b0000000-0000-4000-8000-000000000001", status: "playing" }],
-        [
-          { id: "p1", userId: "u1", currentScore: 100 },
-          { id: "p2", userId: "u2", currentScore: 50 },
-        ],
-      ];
-
-      // Promise.all 的 participant updates 不呼叫 .returning()（thenable resolve undefined）
-      // 只有最後的 match update 呼叫 .returning()
-      mockUpdateReturning.mockResolvedValueOnce([{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "finished",
-      }]);
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/finish")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(200);
-      expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "b0000000-0000-4000-8000-000000000001",
-        expect.objectContaining({ type: "match_finished" }),
-      );
-    });
-
-    it("非 playing 狀態不能結束", async () => {
-      const { app } = createApp();
-      selectResults = [[{ id: "b0000000-0000-4000-8000-000000000001", status: "waiting" }]];
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/finish")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(400);
-    });
+  it("新加入 → 201 + 廣播；已加入 → 200 不重複廣播", async () => {
+    const { app, ctx } = createApp();
+    lobby.joinMatch.mockResolvedValueOnce({ ok: true, participant: { id: "p1" }, alreadyJoined: false, participantCount: 2 });
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/join`).set(AUTH)).status).toBe(201);
+    expect(ctx.broadcastToMatch).toHaveBeenCalledWith(MATCH_ID, expect.objectContaining({ type: "match_participant_joined" }));
+    ctx.broadcastToMatch.mockClear();
+    lobby.joinMatch.mockResolvedValueOnce({ ok: true, participant: { id: "p1" }, alreadyJoined: true, participantCount: 2 });
+    const again = await request(app).post(`/api/matches/${MATCH_ID}/join`).set(AUTH);
+    expect(again.status).toBe(200);
+    expect(again.body.matchId).toBe(MATCH_ID);
+    expect(ctx.broadcastToMatch).not.toHaveBeenCalled();
   });
 
-  // ────────────────────────────────────────────────────
-  // PATCH /api/matches/:matchId/score — 更新分數
-  // ────────────────────────────────────────────────────
-  describe("PATCH /api/matches/:matchId/score — 更新分數", () => {
-    it("成功更新分數並廣播排名", async () => {
-      const { app, ctx } = createApp();
-      // select #0: participant 查詢 (where with and)
-      // select #1: 排名查詢 (where().orderBy())
-      selectResults = [
-        [{ id: "p1", matchId: "b0000000-0000-4000-8000-000000000001", userId: "user-1" }],
-        [{ userId: "user-1", currentScore: 100 }],
-      ];
-
-      mockUpdateReturning.mockResolvedValueOnce([{
-        id: "p1",
-        currentScore: 100,
-      }]);
-
-      const res = await request(app)
-        .patch("/api/matches/b0000000-0000-4000-8000-000000000001/score")
-        .set("Authorization", "Bearer valid-token")
-        .send({ score: 100 });
-
-      expect(res.status).toBe(200);
-      expect(ctx.broadcastToMatch).toHaveBeenCalled();
-    });
-
-    it("未加入對戰回傳 404", async () => {
-      const { app } = createApp();
-      selectResults = [[]];
-
-      const res = await request(app)
-        .patch("/api/matches/b0000000-0000-4000-8000-000000000001/score")
-        .set("Authorization", "Bearer valid-token")
-        .send({ score: 100 });
-
-      expect(res.status).toBe(404);
-    });
-
-    it("缺少 score 回傳 400", async () => {
-      const { app } = createApp();
-      const res = await request(app)
-        .patch("/api/matches/b0000000-0000-4000-8000-000000000001/score")
-        .set("Authorization", "Bearer valid-token")
-        .send({});
-
-      expect(res.status).toBe(400);
-    });
+  it("邀請碼：沒填 → 400；找不到 → 404；找到 → 加入那場", async () => {
+    const { app } = createApp();
+    expect((await request(app).post(`/api/games/${GAME_ID}/matches/join-by-code`).set(AUTH).send({})).status).toBe(400);
+    lobby.findWaitingMatchByCode.mockResolvedValueOnce(undefined);
+    expect((await request(app).post(`/api/games/${GAME_ID}/matches/join-by-code`).set(AUTH).send({ code: "ABCD23" })).status).toBe(404);
+    lobby.findWaitingMatchByCode.mockResolvedValueOnce(match());
+    lobby.joinMatch.mockResolvedValue({ ok: true, participant: { id: "p2" }, alreadyJoined: false, participantCount: 2 });
+    const res = await request(app).post(`/api/games/${GAME_ID}/matches/join-by-code`).set(AUTH).send({ code: "abcd23" });
+    expect(res.status).toBe(201);
+    expect(lobby.joinMatch).toHaveBeenCalledWith(MATCH_ID, "user-1");
   });
 
-  // ────────────────────────────────────────────────────
-  // GET /api/matches/:matchId/ranking — 即時排名
-  // ────────────────────────────────────────────────────
-  describe("GET /api/matches/:matchId/ranking — 即時排名", () => {
-    it("回傳排名列表", async () => {
-      const { app } = createApp();
-      // 此端點使用 where().orderBy() — select #0
-      selectResults = [[
-        { userId: "u1", currentScore: 100, teamId: null, relaySegment: null, relayStatus: null },
-        { userId: "u2", currentScore: 50, teamId: null, relaySegment: null, relayStatus: null },
-      ]];
+  it("退出：已開賽 → 409；房主退出 = 取消並廣播", async () => {
+    const { app, ctx } = createApp();
+    lobby.getMatch.mockResolvedValue(match());
+    lobby.leaveMatch.mockResolvedValueOnce("not_waiting");
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/leave`).set(AUTH)).status).toBe(409);
+    lobby.leaveMatch.mockResolvedValueOnce("cancelled");
+    const res = await request(app).post(`/api/matches/${MATCH_ID}/leave`).set(AUTH);
+    expect(res.body).toEqual({ success: true, result: "cancelled" });
+    expect(ctx.broadcastToMatch).toHaveBeenCalledWith(MATCH_ID, expect.objectContaining({ type: "match_cancelled" }));
+  });
+});
 
-      const res = await request(app)
-        .get("/api/matches/b0000000-0000-4000-8000-000000000001/ranking");
-
-      expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(2);
-      expect(res.body[0].rank).toBe(1);
-    });
+describe("房主：開賽 / 結束", () => {
+  it("不是房主 → 403 且附可讀 message", async () => {
+    lobby.getMatch.mockResolvedValue(match({ creatorId: "someone-else" }));
+    const res = await request(createApp().app).post(`/api/matches/${MATCH_ID}/start`).set(AUTH);
+    expect(res.status).toBe(403);
+    expect(res.body.message).toBe("只有房主可以開始對戰");
   });
 
-  // ────────────────────────────────────────────────────
-  // POST /api/matches/:matchId/recover — 恢復卡住的倒數
-  // ────────────────────────────────────────────────────
-  describe("POST /api/matches/:matchId/recover — 恢復倒數", () => {
-    it("超過倒數時間的 countdown 狀態可恢復為 playing", async () => {
-      const { app, ctx } = createApp();
-      // 6 秒前的時間（超過 3+2=5 秒容錯）
-      const sixSecondsAgo = new Date(Date.now() - 6000);
-      selectResults = [[{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "countdown",
-        settings: { countdownSeconds: 3 },
-        updatedAt: sixSecondsAgo.toISOString(),
-      }]];
+  it("開賽條件不足 → 400 顯示原因、不進倒數", async () => {
+    lobby.getMatch.mockResolvedValue(match());
+    lobby.countParticipants.mockResolvedValue(1);
+    lobby.checkCanStart.mockReturnValue("至少需要 2 人才能開始（還差 1 人）");
+    const res = await request(createApp().app).post(`/api/matches/${MATCH_ID}/start`).set(AUTH);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("還差 1 人");
+    expect(life.beginCountdown).not.toHaveBeenCalled();
+  });
 
-      mockUpdateReturning.mockResolvedValueOnce([{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "playing",
-      }]);
+  it("條件符合 → 交給伺服器倒數（beginCountdown）", async () => {
+    const m = match();
+    lobby.getMatch.mockResolvedValue(m);
+    lobby.countParticipants.mockResolvedValue(2);
+    lobby.checkCanStart.mockReturnValue(null);
+    life.beginCountdown.mockResolvedValue({ ...m, status: "countdown" });
+    const { app, ctx } = createApp();
+    const res = await request(app).post(`/api/matches/${MATCH_ID}/start`).set(AUTH);
+    expect(res.status).toBe(200);
+    expect(life.beginCountdown).toHaveBeenCalledWith(m, ctx.broadcastToMatch);
+  });
 
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
-        .set("Authorization", "Bearer valid-token");
+  it("結束：非房主 403；不在進行中 409；成功以 host_ended 結算", async () => {
+    const { app, ctx } = createApp();
+    lobby.getMatch.mockResolvedValueOnce(match({ creatorId: "x" }));
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/finish`).set(AUTH)).status).toBe(403);
+    lobby.getMatch.mockResolvedValue(match({ status: "playing" }));
+    life.finishMatch.mockResolvedValueOnce(false);
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/finish`).set(AUTH)).status).toBe(409);
+    life.finishMatch.mockResolvedValueOnce(true);
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/finish`).set(AUTH)).status).toBe(200);
+    expect(life.finishMatch).toHaveBeenLastCalledWith(MATCH_ID, ctx.broadcastToMatch, "host_ended");
+  });
 
-      expect(res.status).toBe(200);
-      expect(res.body.status).toBe("playing");
-      expect(ctx.broadcastToMatch).toHaveBeenCalledWith(
-        "b0000000-0000-4000-8000-000000000001",
-        expect.objectContaining({ type: "match_started", recovered: true }),
-      );
-    });
+  it("倒數補救：非參賽者 403；參賽者且逾時 → 開賽", async () => {
+    const { app } = createApp();
+    lobby.getMatch.mockResolvedValue(match({ status: "countdown", updatedAt: new Date(Date.now() - 60_000).toISOString() }));
+    lobby.isMatchParticipant.mockResolvedValueOnce(false);
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/recover`).set(AUTH)).status).toBe(403);
+    lobby.isMatchParticipant.mockResolvedValueOnce(true);
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/recover`).set(AUTH)).status).toBe(200);
+    expect(life.promoteToPlaying).toHaveBeenCalled();
+  });
 
-    it("倒數尚未超時時回傳 400", async () => {
-      const { app } = createApp();
-      // 剛剛才進入 countdown
-      selectResults = [[{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "countdown",
-        settings: { countdownSeconds: 3 },
-        updatedAt: new Date().toISOString(),
-      }]];
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(400);
-      expect(res.body.error).toBe("倒數尚未超時");
-    });
-
-    it("非 countdown 狀態回傳 400", async () => {
-      const { app } = createApp();
-      selectResults = [[{
-        id: "b0000000-0000-4000-8000-000000000001",
-        status: "playing",
-      }]];
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(400);
-      expect(res.body.error).toBe("對戰不在倒數狀態");
-    });
-
-    it("對戰不存在時回傳 404", async () => {
-      const { app } = createApp();
-      selectResults = [[]];
-
-      const res = await request(app)
-        .post("/api/matches/b0000000-0000-4000-8000-000000000001/recover")
-        .set("Authorization", "Bearer valid-token");
-
-      expect(res.status).toBe(404);
-    });
+  it("前端送分入口停用 → 410", async () => {
+    const res = await request(createApp().app).patch(`/api/matches/${MATCH_ID}/score`).set(AUTH).send({ score: 100 });
+    expect(res.status).toBe(410);
   });
 });
