@@ -1,31 +1,21 @@
-// 🧑‍🎮 匿名玩家自訂暱稱 Dialog
+// 🧑‍🎮 訪客改暱稱 Dialog
 //
-// 觸發時機：
-//   - 進入遊戲前，偵測使用者是匿名登入（無 firstName/lastName，email 是 @firebase.local）
-//   - 該 session 尚未設定 playerName
-//
-// UI 要素：
-//   - 友善的引導文案
-//   - 暱稱輸入框（2-20 字）
-//   - ⚠️ 警示：匿名遊玩不累積積分到個人帳號
-//   - [登入 Google] 按鈕（切到正式帳號）
-//   - [直接開始] 按鈕（保持匿名）
+// 2026-09-22 玩家動線優化：訪客進場時已自動取名（例如「探險家4271」），
+// 不再於進遊戲前攔截；此 Dialog 只在玩家主動點大廳的名字時開啟。
+// 正式帳號登入改到遊戲結束時引導（結算頁「保存這次紀錄」，紀錄可認領）。
 
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { User, AlertTriangle, LogIn, Play } from "lucide-react";
+import { User, Check } from "lucide-react";
 import { validatePlayerName } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
 
 interface AnonymousNameDialogProps {
   open: boolean;
-  /** 使用者按「直接開始」時呼叫，帶入暱稱 */
+  /** 使用者按「儲存」時呼叫，帶入暱稱 */
   onConfirm: (name: string) => void;
-  /** 使用者按「登入 Google」時呼叫 */
-  onGoogleLogin?: () => void;
   /** 使用者關閉 Dialog（用 X 或 Esc） */
   onClose?: () => void;
   /** 預設暱稱（若先前有設過） */
@@ -37,7 +27,6 @@ interface AnonymousNameDialogProps {
 export function AnonymousNameDialog({
   open,
   onConfirm,
-  onGoogleLogin,
   onClose,
   initialName = "",
   forceInput = false,
@@ -85,12 +74,10 @@ export function AnonymousNameDialog({
             <User className="w-7 h-7 text-primary" />
           </div>
           <DialogTitle className="text-center text-xl">
-            給自己取個暱稱吧！
+            修改暱稱
           </DialogTitle>
           <DialogDescription className="text-center">
-            你目前用匿名模式進入遊戲，幫自己取個名字，
-            <br />
-            排行榜和場次紀錄才不會都顯示「玩家」
+            排行榜和隊友會看到這個名字
           </DialogDescription>
         </DialogHeader>
 
@@ -112,42 +99,17 @@ export function AnonymousNameDialog({
               2-20 個字，可使用中英文、數字
             </p>
           </div>
-
-          {/* ⚠️ 匿名積分警告 */}
-          <Alert className="border-amber-500/50 bg-amber-500/10">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-sm">
-              <span className="font-semibold text-amber-700 dark:text-amber-400">
-                匿名遊玩不累積積分
-              </span>
-              <br />
-              <span className="text-muted-foreground">
-                想把分數記到個人帳號、跨場次累計成就？請改用 Google 登入。
-              </span>
-            </AlertDescription>
-          </Alert>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 mt-2">
-          {onGoogleLogin && (
-            <Button
-              variant="outline"
-              onClick={onGoogleLogin}
-              className="flex-1 gap-2"
-              data-testid="button-google-login"
-            >
-              <LogIn className="w-4 h-4" />
-              改用 Google 登入
-            </Button>
-          )}
           <Button
             onClick={handleSubmit}
             disabled={submitting || !name.trim()}
             className="flex-1 gap-2"
             data-testid="button-confirm-name"
           >
-            <Play className="w-4 h-4" />
-            {submitting ? "設定中..." : "直接開始"}
+            <Check className="w-4 h-4" />
+            {submitting ? "儲存中..." : "儲存"}
           </Button>
         </div>
       </DialogContent>

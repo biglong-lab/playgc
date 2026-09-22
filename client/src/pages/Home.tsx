@@ -4,26 +4,25 @@ import SearchKbdHint from "@/components/shared/SearchKbdHint";
 import { Link, useLocation, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
-import { signOut, signInWithGoogle } from "@/lib/firebase";
-import { apiRequest } from "@/lib/queryClient";
-import type { Game, GameSession, BattleSlot } from "@shared/schema";
+import { signOut } from "@/lib/firebase";
+import type { Game, GameSession } from "@shared/schema";
 import {
-  Gamepad2, Clock, Users, Zap, Search, Filter,
-  Star, MapPin, Trophy, Play, LogOut, RotateCcw, CheckCircle2, Swords, TrendingUp, UserCircle,
-  X, ArrowRight,
+  Gamepad2, Search, Filter, Star, Trophy, LogOut, X, ArrowRight,
 } from "lucide-react";
 import AnnouncementBanner from "@/components/shared/AnnouncementBanner";
 import LobbyDesktopHero from "@/components/shared/LobbyDesktopHero";
 import { AnonymousNameDialog } from "@/components/shared/AnonymousNameDialog";
+import LobbyGameCard, { type UserGameStatus, type GameStats } from "@/components/home/LobbyGameCard";
+import BattleQuickEntry from "@/components/home/BattleQuickEntry";
+import { getGameEntryPath } from "@/lib/game-entry";
 import { useBgmPlayer } from "@/hooks/useBgmPlayer";
-import { isAnonymousPlayer, getPlayerDisplayName } from "@shared/lib/playerDisplay";
+import { isAnonymousPlayer } from "@shared/lib/playerDisplay";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { setLastVisitedField } from "@/lib/last-visited-field";
@@ -31,19 +30,11 @@ import InAppQrScanFAB from "@/components/shared/InAppQrScanFAB";
 import PullToRefresh from "@/components/shared/PullToRefresh";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
-import OptimizedImage from "@/components/shared/OptimizedImage";
-import GenericCoverFallback from "@/components/shared/GenericCoverFallback";
 import EditableCoverImage from "@/components/shared/EditableCoverImage";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 
-interface UserGameStatus {
-  gameId: string;
-  status: "playing" | "completed";
-  sessionId: string;
-  score: number;
-}
 
 /** 🆕 依當前時段產生問候（早安 / 午安 / 晚安）— 呼應 CHITO 首頁 Hero 時段氛圍 */
 function getTimeGreeting(): string {
@@ -56,10 +47,7 @@ function getTimeGreeting(): string {
 }
 
 /** 批次遊戲統計 map: { [gameId]: { totalPlays, uniquePlayers, completedPlays } } */
-type GameStatsMap = Record<
-  string,
-  { totalPlays: number; uniquePlayers: number; completedPlays: number }
->;
+type GameStatsMap = Record<string, GameStats>;
 
 export default function Home() {
   const { user, firebaseUser, isLoading: authLoading, isSignedIn } = useAuth();
@@ -81,9 +69,11 @@ export default function Home() {
     null,
   );
 
-  // 🆕 匿名命名 Dialog 狀態
+  // 🆕 匿名命名 Dialog 狀態（2026-09-22：改為玩家主動點名字才開、不擋進遊戲）
   const [anonymousNameOpen, setAnonymousNameOpen] = useState(false);
-  const [pendingGameNavigation, setPendingGameNavigation] = useState<(() => void) | null>(null);
+  const [guestName, setGuestName] = useState(() => {
+    try { return localStorage.getItem("anonymous_player_name") || ""; } catch { return ""; }
+  });
 
   // 使用者是否為匿名（Firebase 匿名登入 / 無名字）
   const isAnonymous = user
@@ -125,18 +115,6 @@ export default function Home() {
       setLastVisitedField(urlFieldCode);
     }
   }, [urlFieldCode]);
-
-  // 🔧 2026-07-05 UX：登入後回跳 — multi 遊戲未登入時 GamePlay 會把玩家導來首頁並存
-  //   sessionStorage.postLoginReturn；登入完成（user 出現）後自動回到原本的遊戲。
-  useEffect(() => {
-    if (!user) return;
-    let ret: string | null = null;
-    try { ret = sessionStorage.getItem("postLoginReturn"); } catch { /* ignore */ }
-    if (ret) {
-      try { sessionStorage.removeItem("postLoginReturn"); } catch { /* ignore */ }
-      setLocation(ret);
-    }
-  }, [user, setLocation]);
 
   // 🆕 admin 是否能編輯這個場域（super_admin 或當前場域 admin）
   // 🐛 修 (2026-04-30)：原本 admin.fieldCode === currentFieldCode 比對失敗
@@ -299,23 +277,7 @@ export default function Home() {
   };
 
   // 🆕 顯示名稱（優先序：firstName > localStorage anon 名 > 預設）— memoize，避免每次 render 都讀 localStorage
-  const displayName = useMemo(() => {
-    if (user?.firstName) return user.firstName;
-    try {
-      return localStorage.getItem("anonymous_player_name") || "玩家";
-    } catch {
-      return "玩家";
-    }
-  }, [user?.firstName]);
-
-  // 🆕 匿名 dialog 的初始值（讀 localStorage 一次即可）
-  const savedAnonName = useMemo(() => {
-    try {
-      return localStorage.getItem("anonymous_player_name") || "";
-    } catch {
-      return "";
-    }
-  }, []);
+  const displayName = user?.firstName || guestName || "玩家";
 
   // 🆕 玩家戰績摘要（已完成場次 + 累計分數 + 不重複遊戲數）
   const playerStats = useMemo(() => {
@@ -353,19 +315,6 @@ export default function Home() {
     return counts;
   }, [games]);
 
-  // 🔥 改用 useEffect 確保跳轉在 render 之後執行
-  // 避免「Login Dialog 剛關閉 → Firebase onAuthStateChanged 還沒跑 → isSignedIn=false → 立刻跳回首頁」
-  // 的時序 bug。給 Firebase 一個 buffer 時間讓 auth state 同步。
-  useEffect(() => {
-    if (!authLoading && !isSignedIn) {
-      // 延遲 200ms 再決定，確保 Firebase auth state 完全同步
-      const timer = setTimeout(() => {
-        if (!isSignedIn) setLocation("/");
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [authLoading, isSignedIn, setLocation]);
-
   // 📲 下拉重整：重抽玩家主頁的 4 個 queries（遊戲、統計、session、對戰時段）
   // ⚠️ 必須在 early return 之前宣告（React Hooks 規則 — 否則 #310 hooks 數量不一致）
   const handlePullRefresh = useCallback(async () => {
@@ -387,7 +336,7 @@ export default function Home() {
     }
   }, [queryClient, gamesQueryKey, statsQueryKey, toast]);
 
-  // Loading 狀態：Firebase 還在 init、或剛登入等 auth state 同步
+  // Loading 狀態：路由層 GuestGate 已確保有身分（未登入自動建立訪客），這裡只剩同步空窗
   if (authLoading || !isSignedIn) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -419,45 +368,12 @@ export default function Home() {
 
   // difficultyCount 已在 early return 前宣告（React hook 規則）
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy": return "bg-success/20 text-success border-success/30";
-      case "medium": return "bg-warning/20 text-warning border-warning/30";
-      case "hard": return "bg-destructive/20 text-destructive border-destructive/30";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
-
-  const getDifficultyLabel = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy": return "簡單";
-      case "medium": return "中等";
-      case "hard": return "困難";
-      default: return difficulty;
-    }
-  };
-
-  // 🆕 CTA 文案依 gameStructure / gameMode 動態化
-  const getStartLabel = (game: Game): string => {
-    if (game.gameStructure === "chapters") return "選擇章節";
-    if (game.gameMode === "team") return "創建或加入隊伍";
-    if (game.gameMode === "relay") return "開始接力賽";
-    if (game.gameMode === "competitive") return "開始競賽";
-    return "開始遊戲";
-  };
-
-  // 🔄 2026-05-02 統一語意：所有「已完成過、再來一場」的 CTA 都用「再玩一次」
-  //   理由：使用者反映「重新組隊」辨識度低，看到「再玩一次」直覺知道「以前玩過」。
-  //   點進去後 team mode 會自動進 TeamLobby 重新組隊，所以文案不影響流程。
-  const getReplayLabel = (game: Game): string => {
-    if (game.gameStructure === "chapters") return "再玩一次（重選章節）";
-    return "再玩一次";
-  };
-
-  const getContinueLabel = (game: Game): string => {
-    if (game.gameStructure === "chapters") return "繼續章節";
-    if (game.gameMode === "team") return "返回隊伍";
-    return "返回遊戲";
+  // 🧭 依遊戲模式進入（2026-09-22：訪客不再先跳暱稱框 — 自動暱稱，header 點名字可改）
+  const openGame = (game: Game) => setLocation(link(getGameEntryPath(game)));
+  const replayGame = (game: Game) => {
+    // 章節 → 重選章節、組隊 → 重新組隊；其他直接開新局
+    const needsLobby = game.gameStructure === "chapters" || game.gameMode === "team";
+    setLocation(link(needsLobby ? getGameEntryPath(game) : `/game/${game.id}?replay=true`));
   };
 
   return (
@@ -498,9 +414,20 @@ export default function Home() {
               </Link>
               
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium hidden sm:inline">
-                  {user.firstName || user.email?.split("@")[0] || displayName}
-                </span>
+                {isAnonymous ? (
+                  <button
+                    type="button"
+                    onClick={() => setAnonymousNameOpen(true)}
+                    className="text-sm font-medium underline decoration-dotted underline-offset-4"
+                    data-testid="button-edit-guest-name"
+                  >
+                    {displayName}
+                  </button>
+                ) : (
+                  <span className="text-sm font-medium hidden sm:inline">
+                    {user.firstName || user.email?.split("@")[0] || displayName}
+                  </span>
+                )}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="rounded-full">
@@ -720,226 +647,18 @@ export default function Home() {
           </div>
         ) : filteredGames && filteredGames.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGames.map((game) => {
-              const cardStatus = gameStatusMap.get(game.id);
-              const isCompletedCard = cardStatus?.status === "completed";
-              return (
-              <Card
+            {filteredGames.map((game) => (
+              <LobbyGameCard
                 key={game.id}
-                className={
-                  isCompletedCard
-                    ? "overflow-hidden group"
-                    : "overflow-hidden group hover-elevate cursor-pointer"
-                }
-                onClick={isCompletedCard ? undefined : () => {
-                  const navigate = () => {
-                    if (game.gameStructure === "chapters") {
-                      setLocation(link(`/game/${game.id}/chapters`));
-                    } else if (game.gameMode === "competitive" || game.gameMode === "relay") {
-                      setLocation(link(`/match/${game.id}`));
-                    } else if (game.gameMode === "team") {
-                      setLocation(link(`/team/${game.id}`));
-                    } else {
-                      setLocation(link(`/game/${game.id}`));
-                    }
-                  };
-                  // 🆕 匿名玩家進入遊戲前，先跳暱稱 Dialog
-                  if (isAnonymous) {
-                    setPendingGameNavigation(() => navigate);
-                    setAnonymousNameOpen(true);
-                    return;
-                  }
-                  navigate();
-                }}
-                data-testid={`card-game-${game.id}`}
-              >
-                <div
-                  className="relative h-48 bg-card overflow-hidden"
-                  onClick={(e) => {
-                    // 🆕 admin 點到「編輯封面」相關按鈕時不該觸發進入遊戲
-                    const target = e.target as HTMLElement;
-                    if (target.closest('[data-testid^="game-cover-"]')) {
-                      const isEditTrigger = !!target.closest('[data-edit-mode="true"]');
-                      const isControlBtn = !!target.closest('button');
-                      if (isEditTrigger || isControlBtn) e.stopPropagation();
-                    }
-                  }}
-                >
-                  {/* 🆕 admin 可拖拉調焦點 + 快速換封面（v2 2026-04-30） */}
-                  {(game.coverImageUrl || canEditField) ? (
-                    <EditableCoverImage
-                      src={game.coverImageUrl}
-                      alt={game.title}
-                      position={
-                        (game as { coverImagePosition?: string }).coverImagePosition || "50% 50%"
-                      }
-                      isAdmin={canEditField}
-                      uploadEndpoint={`/api/admin/games/${game.id}/cloudinary-cover`}
-                      onSave={(data) => handleSaveGameCover(game.id, data)}
-                      preset="card"
-                      testId={`game-cover-${game.id}`}
-                      fallback={
-                        <GenericCoverFallback
-                          name={game.title}
-                          badge={
-                            game.gameMode === "team"
-                              ? { icon: <Users className="w-3 h-3" />, label: "團隊" }
-                              : game.gameMode === "competitive"
-                              ? { icon: <Trophy className="w-3 h-3" />, label: "競賽" }
-                              : undefined
-                          }
-                        />
-                      }
-                    />
-                  ) : (
-                    <GenericCoverFallback
-                      name={game.title}
-                      badge={
-                        game.gameMode === "team"
-                          ? { icon: <Users className="w-3 h-3" />, label: "團隊" }
-                          : game.gameMode === "competitive"
-                          ? { icon: <Trophy className="w-3 h-3" />, label: "競賽" }
-                          : undefined
-                      }
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
-                  <Badge
-                    className={`absolute top-3 right-3 ${getDifficultyColor(game.difficulty || "medium")}`}
-                  >
-                    {getDifficultyLabel(game.difficulty || "medium")}
-                  </Badge>
-                  {/* 🆕 狀態徽章（進行中=脈動警示、已完成=綠勾） */}
-                  {(() => {
-                    const gs = gameStatusMap.get(game.id);
-                    if (gs?.status === "playing") {
-                      return (
-                        <Badge
-                          className="absolute top-3 left-3 gap-1 bg-warning text-warning-foreground border-warning shadow-md"
-                          data-testid={`badge-status-playing-${game.id}`}
-                        >
-                          <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-warning-foreground/70 opacity-75" />
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-warning-foreground" />
-                          </span>
-                          進行中
-                        </Badge>
-                      );
-                    }
-                    if (gs?.status === "completed") {
-                      return (
-                        <Badge
-                          className="absolute top-3 left-3 gap-1 bg-success text-white border-success shadow-md"
-                          data-testid={`badge-status-completed-${game.id}`}
-                        >
-                          <CheckCircle2 className="w-3 h-3" />
-                          已完成
-                        </Badge>
-                      );
-                    }
-                    return null;
-                  })()}
-                </div>
-                
-                <CardContent className="p-4">
-                  <h3 className="font-display font-bold text-lg mb-2 group-hover:text-primary transition-colors">
-                    {game.title}
-                  </h3>
-                  <p
-                    className="text-sm text-muted-foreground line-clamp-2 mb-4"
-                    title={game.description || ""}
-                  >
-                    {game.description || "無描述"}
-                  </p>
-                  
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
-                    {/* 🆕 沒設時長就不顯示，而不是預設 30 分鐘誤導玩家 */}
-                    {game.estimatedTime ? (
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>約 {game.estimatedTime} 分鐘</span>
-                      </div>
-                    ) : null}
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {game.gameMode === "team" ? (
-                        <span>{game.minTeamPlayers || 2}-{game.maxTeamPlayers || 6} 人組隊</span>
-                      ) : (
-                        <span>最多 {game.maxPlayers || 6} 人</span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* 🆕 累計遊玩次數 / 玩過人數（非即時） */}
-                  {(() => {
-                    const s = statsMap?.[game.id];
-                    if (!s || (s.totalPlays === 0 && s.uniquePlayers === 0)) return null;
-                    return (
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-3 pt-3 border-t">
-                        <div className="flex items-center gap-1" data-testid={`stats-plays-${game.id}`}>
-                          <TrendingUp className="w-3.5 h-3.5 text-primary/70" />
-                          <span>累計 <span className="font-number font-semibold text-foreground">{s.totalPlays}</span> 場</span>
-                        </div>
-                        <div className="flex items-center gap-1" data-testid={`stats-players-${game.id}`}>
-                          <Star className="w-3.5 h-3.5 text-warning/80" />
-                          <span><span className="font-number font-semibold text-foreground">{s.uniquePlayers}</span> 人玩過</span>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </CardContent>
-                
-                <CardFooter className="p-4 pt-0">
-                  {(() => {
-                    const gameStatus = gameStatusMap.get(game.id);
-                    if (gameStatus?.status === "completed") {
-                      return (
-                        <div className="w-full space-y-2">
-                          <div className="flex items-center justify-center gap-2 text-success py-2">
-                            <CheckCircle2 className="w-4 h-4" />
-                            <span className="text-sm font-medium">遊戲已完成 - {gameStatus.score} 分</span>
-                          </div>
-                          <Button
-                            variant="outline"
-                            className="w-full gap-2"
-                            data-testid={`button-replay-game-${game.id}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // 🆕 章節遊戲再玩改回章節選擇，其他依原邏輯
-                              if (game.gameStructure === "chapters") {
-                                setLocation(link(`/game/${game.id}/chapters`));
-                              } else if (game.gameMode === "team") {
-                                setLocation(link(`/team/${game.id}`));
-                              } else {
-                                setLocation(link(`/game/${game.id}?replay=true`));
-                              }
-                            }}
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                            {getReplayLabel(game)}
-                          </Button>
-                        </div>
-                      );
-                    } else if (gameStatus?.status === "playing") {
-                      return (
-                        <Button className="w-full gap-2 bg-warning text-warning-foreground hover:bg-warning/90" data-testid={`button-continue-game-${game.id}`}>
-                          <Play className="w-4 h-4" />
-                          {getContinueLabel(game)}
-                        </Button>
-                      );
-                    } else {
-                      return (
-                        <Button className="w-full gap-2" data-testid={`button-start-game-${game.id}`}>
-                          {game.gameMode === "team" ? <Users className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                          {getStartLabel(game)}
-                        </Button>
-                      );
-                    }
-                  })()}
-                </CardFooter>
-              </Card>
-              );
-            })}
+                game={game}
+                status={gameStatusMap.get(game.id)}
+                stats={statsMap?.[game.id]}
+                canEditField={canEditField}
+                onSaveCover={handleSaveGameCover}
+                onOpen={openGame}
+                onReplay={replayGame}
+              />
+            ))}
           </div>
         ) : (
           <div className="text-center py-20">
@@ -972,152 +691,19 @@ export default function Home() {
         )}
       </main>
 
-      {/* 🆕 匿名玩家暱稱 Dialog */}
+      {/* 🆕 訪客改暱稱 Dialog（點 header 名字開啟） */}
       <AnonymousNameDialog
         open={anonymousNameOpen}
         onConfirm={(name) => {
-          // 把暱稱存在 localStorage，session 建立時會帶過去
-          try {
-            localStorage.setItem("anonymous_player_name", name);
-          } catch { /* ignore */ }
+          // 暱稱存 localStorage，建立場次 / 組隊時會帶過去
+          try { localStorage.setItem("anonymous_player_name", name); } catch { /* ignore */ }
+          setGuestName(name);
           setAnonymousNameOpen(false);
-          // 執行 pending 的導航
-          const nav = pendingGameNavigation;
-          setPendingGameNavigation(null);
-          nav?.();
         }}
-        onGoogleLogin={async () => {
-          try {
-            await signInWithGoogle();
-            setAnonymousNameOpen(false);
-            toast({ title: "切換到 Google 帳號後請重新點擊遊戲" });
-          } catch (err) {
-            toast({
-              title: "Google 登入失敗",
-              description: err instanceof Error ? err.message : "請稍後再試",
-              variant: "destructive",
-            });
-          }
-        }}
-        onClose={() => {
-          setAnonymousNameOpen(false);
-          setPendingGameNavigation(null);
-        }}
-        initialName={savedAnonName}
+        onClose={() => setAnonymousNameOpen(false)}
+        initialName={guestName}
       />
     </div>
     </PullToRefresh>
   );
-}
-
-/** 對戰快速入口卡片 — 顯示即將開打的 3 場 */
-function BattleQuickEntry() {
-  const { data: slots = [] } = useQuery<BattleSlot[]>({
-    queryKey: ["/api/battle/slots/open"],
-    queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
-      try {
-        const res = await apiRequest("GET", `/api/battle/slots?fromDate=${today}`);
-        const all: BattleSlot[] = await res.json();
-        return all.filter((s) => s.status === "open" || s.status === "confirmed");
-      } catch {
-        return [];
-      }
-    },
-  });
-
-  // 🆕 排序後取前 3 場
-  const upcoming = [...slots]
-    .sort((a, b) => {
-      const aKey = `${a.slotDate}T${a.startTime}`;
-      const bKey = `${b.slotDate}T${b.startTime}`;
-      return aKey.localeCompare(bKey);
-    })
-    .slice(0, 3);
-
-  return (
-    <Card className="mb-8 bg-card border-tactical-orange/30 hover-elevate group overflow-hidden">
-      <Link href="/battle" className="block">
-        <CardContent className="p-4 sm:p-6 cursor-pointer">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-tactical-orange/20 flex items-center justify-center shrink-0">
-                <Swords className="w-5 h-5 text-tactical-orange" />
-              </div>
-              <div>
-                <h3 className="font-display font-bold text-lg group-hover:text-tactical-orange transition-colors">
-                  水彈對戰 PK 擂台
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {slots.length > 0 ? `目前開放 ${slots.length} 場對戰` : "查看對戰時段與排行榜"}
-                </p>
-              </div>
-            </div>
-            <Button variant="outline" className="border-tactical-orange/30 text-tactical-orange hover:bg-tactical-orange/10 shrink-0">
-              前往對戰 →
-            </Button>
-          </div>
-        </CardContent>
-      </Link>
-
-      {/* 🆕 近期場次預覽（最多 3 場）*/}
-      {upcoming.length > 0 && (
-        <div className="border-t border-border/50 bg-muted/20 px-4 sm:px-6 py-3">
-          <p className="text-[11px] font-display uppercase tracking-wider text-muted-foreground mb-2">
-            近期場次
-          </p>
-          <div className="space-y-1.5">
-            {upcoming.map((slot) => {
-              const max = slot.maxPlayersOverride ?? 8;
-              const curr = slot.currentCount ?? 0;
-              const isFull = curr >= max;
-              return (
-                <Link
-                  key={slot.id}
-                  href={`/battle/slot/${slot.id}`}
-                  className="flex items-center justify-between gap-3 py-1.5 px-2 rounded-md hover:bg-muted/40 transition-colors"
-                  data-testid={`battle-quick-slot-${slot.id}`}
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-xs font-mono text-muted-foreground shrink-0">
-                      {formatSlotDate(slot.slotDate)}
-                    </span>
-                    <span className="text-xs text-foreground shrink-0">
-                      {(slot.startTime || "").slice(0, 5)}–{(slot.endTime || "").slice(0, 5)}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className={`text-[10px] font-mono ${isFull ? "text-muted-foreground" : "text-tactical-orange"}`}>
-                      {curr}/{max}
-                    </span>
-                    {isFull ? (
-                      <Badge variant="secondary" className="h-5 text-[10px] px-1.5">
-                        滿員
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="h-5 text-[10px] px-1.5 border-tactical-orange/40 text-tactical-orange">
-                        開放
-                      </Badge>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </Card>
-  );
-}
-
-/** 🆕 把 YYYY-MM-DD 格式化為「4/25 週五」 */
-function formatSlotDate(isoDate: string | null | undefined): string {
-  if (!isoDate) return "—";
-  try {
-    const d = new Date(isoDate);
-    const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
-    return `${d.getMonth() + 1}/${d.getDate()} 週${weekdays[d.getDay()]}`;
-  } catch {
-    return isoDate;
-  }
 }
