@@ -39,6 +39,7 @@ import {
   EMPTY_EDITOR_DRAFT, buildSavePayload, draftFromGame, serializeEditorDraft,
   type EditorDraft,
 } from "./lib/editor-draft";
+import { usePublishFromEditor } from "./lib/usePublishFromEditor";
 
 export default function GameEditor() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -287,15 +288,15 @@ export default function GameEditor() {
     return true;
   };
 
-  /** 送出儲存；成功回傳 true（失敗時 onError 已顯示錯誤 toast） */
-  const saveDraft = async (extra: Record<string, unknown> = {}): Promise<boolean> => {
+  /** 送出儲存；成功回傳遊戲 ID（新遊戲 = 剛建立的 ID），失敗回 null（onError 已顯示錯誤 toast） */
+  const saveDraft = async (): Promise<string | null> => {
     savingDraftRef.current = currentDraft;
     try {
       // 儲存不強制改 status（保留當前狀態，避免已發布遊戲意外降級為 draft）；新建遊戲才預設 draft
-      await saveGameMutation.mutateAsync({ ...buildSavePayload(currentDraft, isNew), ...extra });
-      return true;
+      const result = await saveGameMutation.mutateAsync(buildSavePayload(currentDraft, isNew));
+      return result?.game?.id ?? gameId ?? null;
     } catch {
-      return false;
+      return null;
     }
   };
 
@@ -304,10 +305,13 @@ export default function GameEditor() {
     void saveDraft();
   };
 
-  const handlePublish = () => {
+  // 🚦 2026-09-23：先存內容再改狀態 → 伺服器用最新頁面跑發佈檢查（見 usePublishFromEditor）
+  const publishMutation = usePublishFromEditor(apiGamesPath);
+  const handlePublish = async () => {
     // 發布時嚴格驗證，有任何 error 等級問題就擋下來
     if (!runValidation(true)) return;
-    void saveDraft({ status: "published" });
+    const savedId = await saveDraft();
+    if (savedId) publishMutation.mutate(savedId);
   };
 
   // 🎬 預覽讀的是伺服器資料 → 有未存變更就先自動儲存，存好才開（存失敗留在編輯器、錯誤 toast 已顯示）
@@ -323,7 +327,7 @@ export default function GameEditor() {
   // 🛡️ 未存離開攔截：返回 / AI 產生器 / 資源連結 → 先問「儲存後離開 / 不存離開 / 取消」
   const leaveGuard = useUnsavedChangesGuard({
     isDirty,
-    onSave: async () => runValidation(false) && saveDraft(),
+    onSave: async () => runValidation(false) && !!(await saveDraft()),
   });
 
   // 🤖 P6-4: 標記「已完成 AI 實測」(發布前提醒用)
@@ -519,7 +523,7 @@ export default function GameEditor() {
               />
               {game?.lastLiveTestedAt ? "已實測" : "標記已實測"}
             </Button>
-            <Button onClick={handlePublish} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-publish">
+            <Button onClick={() => void handlePublish()} disabled={saveGameMutation.isPending || publishMutation.isPending} className="gap-2" data-testid="button-publish">
               <Upload className="w-4 h-4" /> 發布
             </Button>
           </div>

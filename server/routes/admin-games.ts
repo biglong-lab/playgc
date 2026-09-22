@@ -41,6 +41,7 @@ import { eq, desc, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { syncGamesMeter } from "../services/billing";
 import { checkGamePublishable, isGameStatus, GAME_STATUSES } from "@shared/lib/game-publishable";
+import { rejectIfNotPublishable } from "../services/game-publish-guard";
 import { storage } from "../storage";
 import { sanitizeDevice } from "./utils";
 
@@ -346,6 +347,9 @@ export function registerAdminGameRoutes(app: Express) {
       if (req.admin.systemRole !== "super_admin" && existingGame.fieldId !== req.admin.fieldId) {
         return res.status(403).json({ message: "無權限編輯此遊戲" });
       }
+
+      // 🚦 2026-09-23：改成 published 前跑共用發佈檢查（與 /publish 同一套）
+      if (await rejectIfNotPublishable(req.params.id, updateData.status, res)) return;
 
       const [updatedGame] = await db.update(games)
         .set({ ...updateData, updatedAt: new Date() })

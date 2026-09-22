@@ -22,6 +22,7 @@ import { registerPlayerSessionRoutes } from "./player-sessions";
 import { registerPlayerItemRoutes } from "./player-items";
 import { registerPlayerAchievementRoutes } from "./player-achievements";
 import type { RouteContext } from "./types";
+import { rejectIfNotPublishable } from "../services/game-publish-guard";
 
 export function registerPlayerGameRoutes(app: Express, ctx?: RouteContext) {
   // 註冊子模組路由
@@ -229,6 +230,14 @@ export function registerPlayerGameRoutes(app: Express, ctx?: RouteContext) {
     async (req: AuthenticatedRequest, res) => {
       try {
         const data = insertGameSchema.parse(req.body);
+        // 🚦 2026-09-23：新遊戲還沒有頁面 → 不能直接建成已發佈（先存草稿、加頁面後再發佈）
+        if (data.status === "published") {
+          return res.status(400).json({
+            error: "not_publishable",
+            message: "新遊戲請先存成草稿、加好頁面後再發佈",
+            errors: [{ message: "遊戲至少需要 1 個頁面才能發佈" }],
+          });
+        }
         const userId = req.user?.claims?.sub;
         const game = await storage.createGame({ ...data, creatorId: userId });
         res.status(201).json(game);
@@ -259,6 +268,8 @@ export function registerPlayerGameRoutes(app: Express, ctx?: RouteContext) {
           .extend({ lastLiveTestedAt: z.coerce.date().nullable().optional() })
           .partial()
           .parse(req.body);
+        // 🚦 2026-09-23：改成 published 前跑共用發佈檢查（編輯器 / 設定頁走這條，原本 0 頁也能發佈）
+        if (await rejectIfNotPublishable(req.params.id, data.status, res)) return;
         const game = await storage.updateGame(req.params.id, data);
         if (!game) {
           return res.status(404).json({ message: "Game not found" });

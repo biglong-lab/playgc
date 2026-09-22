@@ -342,4 +342,25 @@ describe("GameEditor 未存變更攔截", () => {
     expect(mockSetLocation).toHaveBeenCalledWith("/admin/games");
     expect(screen.queryByText("有未儲存的變更")).toBeNull();
   });
+
+  // 🚦 2026-09-23：先存內容（頁面同步完）再改狀態 → 伺服器用最新頁面跑發佈檢查
+  it("按「發布」→ 先存內容（不帶 status）→ 再單獨把狀態改成 published", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("button-publish"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("PATCH", "/api/games/game-123", { status: "published" }),
+    );
+    const patches = mockApiRequest.mock.calls.filter(([m, u]) => m === "PATCH" && u === "/api/games/game-123");
+    expect(patches[0][2]).not.toHaveProperty("status");
+    expect(patches[0][2]).toMatchObject({ title: "原標題改" });
+    expect(patches[patches.length - 1][2]).toEqual({ status: "published" });
+  });
+
+  it("發布前儲存失敗 → 不送 published", async () => {
+    await renderWithUnsavedTitle();
+    mockApiRequest.mockRejectedValue(new Error("網路中斷"));
+    await userEvent.click(screen.getByTestId("button-publish"));
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
+    expect(mockApiRequest).not.toHaveBeenCalledWith("PATCH", "/api/games/game-123", { status: "published" });
+  });
 });
