@@ -2,12 +2,8 @@
 // 含指數退避重連 + 前端倒數計時
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getIdToken } from "@/lib/firebase";
-
-interface MatchRankingEntry {
-  readonly userId: string;
-  readonly score: number;
-  readonly rank: number;
-}
+// 🏁 2026-09-23：伺服器廣播的排名含顯示名 / 完成 / 接力棒次（同 GET /api/matches/:id 的 ranking）
+import type { MatchRankingEntry } from "@/lib/match-types";
 
 interface MatchWebSocketState {
   readonly isConnected: boolean;
@@ -61,14 +57,8 @@ export function useMatchWebSocket(matchId: string | null) {
 
       if (remaining <= 0) {
         clearCountdownTimer();
+        // 🏁 2026-09-23：開賽由伺服器計時（match-lifecycle），這裡只是畫面倒數、不再回報後端
         setState((prev) => ({ ...prev, countdown: 0 }));
-
-        // 倒數完成 → 通知後端
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(JSON.stringify({
-            type: "match_countdown_complete",
-          }));
-        }
       } else {
         setState((prev) => ({ ...prev, countdown: remaining }));
       }
@@ -148,10 +138,18 @@ export function useMatchWebSocket(matchId: string | null) {
                 break;
 
               case "relay_handoff":
+              case "match_participant_joined":
+              case "match_participant_left":
                 setState((prev) => ({
                   ...prev,
+                  ranking: data.ranking ?? prev.ranking,
                   lastEvent: data,
                 }));
+                break;
+
+              case "match_cancelled":
+                clearCountdownTimer();
+                setState((prev) => ({ ...prev, matchStatus: "cancelled", lastEvent: data }));
                 break;
 
               default:

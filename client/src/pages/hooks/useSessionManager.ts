@@ -32,6 +32,10 @@ interface UseSessionManagerParams {
   requireLocation?: boolean;
   /** 🆕 2026-09-22：掃 QR 進場（entry=qr）→ 上一場已通關就直接開新局，不停在結算畫面 */
   autoRestartCompleted?: boolean;
+  /** 🏁 2026-09-23：競賽 / 接力 — 建立場次時帶上賽事 ID（伺服器綁定分數 / 完成 / 交棒） */
+  matchId?: string;
+  /** 🏁 2026-09-23：一定開新局（賽事還沒綁定場次），不接續這款遊戲以前的進度 */
+  startFresh?: boolean;
 }
 
 /** 建立場次失敗（GamePlay 顯示原因 + 重試） */
@@ -100,6 +104,8 @@ export function useSessionManager({
   sharedSessionId,
   requireLocation,
   autoRestartCompleted = false,
+  matchId,
+  startFresh = false,
 }: UseSessionManagerParams) {
   const [, setLocation] = useLocation();
 
@@ -113,7 +119,7 @@ export function useSessionManager({
     completedPageIds: [],
   });
 
-  const [forceNewSession, setForceNewSession] = useState(isReplayMode);
+  const [forceNewSession, setForceNewSession] = useState(isReplayMode || startFresh);
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
   // 🆕 2026-09-22 開局減法：原本有進度時整頁蓋「繼續 / 重新開始」框等玩家選 →
   //   改為直接接續 + 可反悔提示（resumeNotice），重新開始才需要確認
@@ -213,6 +219,7 @@ export function useSessionManager({
         playerCount: 1,
         // 帶上 GPS（給後端 location_lock 驗證）
         ...(coords ? { playerLat: coords.lat, playerLng: coords.lng } : {}),
+        ...(matchId ? { matchId } : {}),
       });
       return response.json();
     },

@@ -1,283 +1,164 @@
+// 🏁 賽事大廳視圖（2026-09-23 P1 改寫）
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import {
-  LoadingView,
   BrowseMatchesView,
   WaitingView,
-  CountdownView,
   PlayingView,
   FinishedView,
+  CancelledView,
 } from "../match-lobby/MatchViews";
+import type { MatchDetail } from "@/lib/match-types";
+import type { Game } from "@shared/schema";
 
-// Mock framer-motion
-vi.mock("framer-motion", () => ({
-  motion: {
-    div: ({ children, ...props }: Record<string, unknown>) => {
-      const { variants: _v, initial: _i, animate: _a, exit: _e, ...rest } = props;
-      return <div {...rest}>{children as React.ReactNode}</div>;
-    },
-    p: ({ children, ...props }: Record<string, unknown>) => {
-      const { variants: _v, initial: _i, animate: _a, exit: _e, ...rest } = props;
-      return <p {...rest}>{children as React.ReactNode}</p>;
-    },
-    h1: ({ children, ...props }: Record<string, unknown>) => {
-      const { variants: _v, initial: _i, animate: _a, transition: _t, ...rest } = props;
-      return <h1 {...rest}>{children as React.ReactNode}</h1>;
-    },
-  },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}));
-
-// Mock 子元件
+vi.mock("framer-motion", () => {
+  const strip = (tag: string) => ({ children, ...props }: Record<string, unknown>) => {
+    const { variants: _v, initial: _i, animate: _a, exit: _e, transition: _t, ...rest } = props;
+    const Tag = tag as "div";
+    return <Tag {...rest}>{children as React.ReactNode}</Tag>;
+  };
+  return {
+    motion: { div: strip("div"), p: strip("p"), h1: strip("h1") },
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  };
+});
 vi.mock("@/components/match/LiveRanking", () => ({
-  default: ({ ranking, currentUserId }: { ranking: readonly unknown[]; currentUserId?: string }) => (
-    <div data-testid="live-ranking">
-      排名人數: {ranking.length}, uid: {currentUserId ?? "none"}
-    </div>
+  default: ({ ranking, showScore }: { ranking: readonly unknown[]; showScore?: boolean }) => (
+    <div data-testid="live-ranking">人數 {ranking.length} 分數{showScore === false ? "隱藏" : "顯示"}</div>
   ),
 }));
-
 vi.mock("@/components/match/MatchTimer", () => ({
-  default: ({ mode, seconds }: { mode: string; seconds: number }) => (
-    <div data-testid="match-timer">
-      {mode}: {seconds}
-    </div>
-  ),
+  default: ({ mode, seconds }: { mode: string; seconds: number }) => <div data-testid="match-timer">{mode}:{seconds}</div>,
 }));
+vi.mock("@/components/game/SaveRecordCard", () => ({ default: () => null }));
 
-// ============================================================================
-// LoadingView
-// ============================================================================
-describe("LoadingView", () => {
-  it("渲染 spinner svg", () => {
-    const { container } = render(<LoadingView />);
-    const svg = container.querySelector("svg");
-    expect(svg).toBeInTheDocument();
-  });
-});
+function game(overrides: Partial<Game> = {}): Game {
+  return { id: "g1", title: "金門大賽", gameMode: "competitive", matchConfig: null, ...overrides } as Game;
+}
 
-// ============================================================================
-// BrowseMatchesView
-// ============================================================================
+function match(overrides: Partial<MatchDetail> = {}): MatchDetail {
+  return {
+    id: "m1", gameId: "g1", matchMode: "competitive", status: "waiting", accessCode: "ABCD23", creatorId: "u1",
+    startedAt: null, finishedAt: null, minParticipants: 2, maxParticipants: 10, countdownSeconds: 3,
+    timeLimitSeconds: null, relayLegs: [], teamTotal: null,
+    ranking: [{ participantId: "p1", userId: "u1", displayName: "小明", score: 0, rank: 1, completed: false, relaySegment: null, relayStatus: null }],
+    ...overrides,
+  };
+}
+
+const noop = () => undefined;
+
 describe("BrowseMatchesView", () => {
-  const defaultProps = {
-    game: { id: 1, title: "測試遊戲", gameMode: "competitive" } as Record<string, unknown>,
-    matches: [] as Record<string, unknown>[],
-    onCreateMatch: vi.fn(),
-    onJoinMatch: vi.fn(),
-    onGoBack: vi.fn(),
-    isCreating: false,
-    isJoining: false,
-  };
+  const base = { matches: [], onCreateMatch: noop, onJoinMatch: noop, onJoinByCode: noop, onGoBack: noop, isCreating: false, isJoining: false };
 
-  it("顯示遊戲標題", () => {
-    render(<BrowseMatchesView {...defaultProps} />);
-    expect(screen.getByText("測試遊戲")).toBeInTheDocument();
-  });
-
-  it("顯示建立新對戰按鈕", () => {
-    render(<BrowseMatchesView {...defaultProps} />);
-    expect(screen.getByText("建立新對戰")).toBeInTheDocument();
-  });
-
-  it("點擊建立按鈕觸發 onCreateMatch", () => {
+  it("建立賽事 / 邀請碼加入（自動轉大寫）", () => {
     const onCreate = vi.fn();
-    render(<BrowseMatchesView {...defaultProps} onCreateMatch={onCreate} />);
-    fireEvent.click(screen.getByText("建立新對戰"));
-    expect(onCreate).toHaveBeenCalledTimes(1);
+    const onCode = vi.fn();
+    render(<BrowseMatchesView {...base} game={game()} onCreateMatch={onCreate} onJoinByCode={onCode} />);
+    fireEvent.click(screen.getByTestId("button-create-match"));
+    expect(onCreate).toHaveBeenCalled();
+    fireEvent.change(screen.getByTestId("input-match-code"), { target: { value: "abcd23" } });
+    fireEvent.click(screen.getByTestId("button-join-by-code"));
+    expect(onCode).toHaveBeenCalledWith("ABCD23");
   });
 
-  it("空列表顯示提示訊息", () => {
-    render(<BrowseMatchesView {...defaultProps} />);
-    expect(screen.getByText("目前沒有等待中的對戰，建立一個吧！")).toBeInTheDocument();
-  });
-
-  it("有等待中的對戰顯示列表", () => {
-    const matches = [
-      { id: "m1", accessCode: "ABC123", status: "waiting", participants: ["u1"], maxTeams: 4 },
-    ];
-    render(<BrowseMatchesView {...defaultProps} matches={matches} />);
-    expect(screen.getByText("ABC123")).toBeInTheDocument();
-    expect(screen.getByText("加入")).toBeInTheDocument();
-  });
-
-  it("點擊加入按鈕觸發 onJoinMatch", () => {
+  it("列出等待中的賽事與人數，點加入帶賽事 ID", () => {
     const onJoin = vi.fn();
-    const matches = [
-      { id: "m1", accessCode: "XYZ", status: "waiting", participants: [], maxTeams: 4 },
-    ];
-    render(<BrowseMatchesView {...defaultProps} matches={matches} onJoinMatch={onJoin} />);
-    fireEvent.click(screen.getByText("加入"));
-    expect(onJoin).toHaveBeenCalledWith("m1");
+    render(
+      <BrowseMatchesView {...base} game={game()} onJoinMatch={onJoin}
+        matches={[{ id: "m9", accessCode: "XYZ789", maxTeams: 8, participantCount: 3, createdAt: "" }]} />,
+    );
+    expect(screen.getByText("3/8 人")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("button-join-match-m9"));
+    expect(onJoin).toHaveBeenCalledWith("m9");
   });
 
-  it("點擊返回按鈕觸發 onGoBack", () => {
-    const onGoBack = vi.fn();
-    render(<BrowseMatchesView {...defaultProps} onGoBack={onGoBack} />);
-    // 返回按鈕是第一個 button (ghost icon)
-    const buttons = screen.getAllByRole("button");
-    fireEvent.click(buttons[0]);
-    expect(onGoBack).toHaveBeenCalledTimes(1);
-  });
-
-  it("relay 模式顯示接力模式文字", () => {
-    const game = { id: 1, title: "接力遊戲", gameMode: "relay" } as Record<string, unknown>;
-    render(<BrowseMatchesView {...defaultProps} game={game} />);
-    expect(screen.getByText("接力模式")).toBeInTheDocument();
+  it("接力遊戲沒設分段 → 提示且不能建立", () => {
+    render(<BrowseMatchesView {...base} game={game({ gameMode: "relay" })} />);
+    expect(screen.getByText(/還沒設定每一棒的頁數/)).toBeInTheDocument();
+    expect(screen.getByTestId("button-create-match")).toBeDisabled();
   });
 });
 
-// ============================================================================
-// WaitingView
-// ============================================================================
 describe("WaitingView", () => {
-  const defaultProps = {
-    match: { accessCode: "WAIT99", participants: ["u1", "u2"] } as Record<string, unknown>,
-    isCreator: true,
-    onStart: vi.fn(),
-    isStarting: false,
-    ranking: [],
-    userId: "u1",
-  };
+  const base = { userId: "u1", inviteUrl: "https://x/match/g1?code=ABCD23", onStart: noop, isStarting: false, onLeave: noop, isLeaving: false };
 
-  it("顯示存取碼", () => {
-    render(<WaitingView {...defaultProps} />);
-    expect(screen.getByText("WAIT99")).toBeInTheDocument();
+  it("房主人數不足 → 開始鈕停用並說明還差幾人", () => {
+    render(<WaitingView {...base} match={match()} isCreator />);
+    expect(screen.getByTestId("text-match-code")).toHaveTextContent("ABCD23");
+    expect(screen.getByTestId("button-start-match")).toBeDisabled();
+    expect(screen.getByText("至少需要 2 人才能開始（還差 1 人）")).toBeInTheDocument();
   });
 
-  it("顯示參與人數", () => {
-    render(<WaitingView {...defaultProps} />);
-    // 新 UX：用 Badge 顯示 "2 人"，而非「2 人已加入」純文字
-    expect(screen.getByText("2 人")).toBeInTheDocument();
+  it("接力人數不等於棒數 → 顯示需要剛好幾人", () => {
+    const legs = [{ segment: 1, fromPage: 1, toPage: 2 }, { segment: 2, fromPage: 3, toPage: 4 }];
+    render(<WaitingView {...base} match={match({ matchMode: "relay", relayLegs: legs })} isCreator />);
+    expect(screen.getByText("接力需要剛好 2 人（每人一棒），目前 1 人")).toBeInTheDocument();
   });
 
-  it("創建者可見開始按鈕", () => {
-    render(<WaitingView {...defaultProps} />);
-    // 用 role=button 精確查詢，避免抓到 fallback 文字
-    expect(screen.getByRole("button", { name: /開始對戰/ })).toBeInTheDocument();
-  });
-
-  it("非創建者不顯示開始按鈕", () => {
-    render(<WaitingView {...defaultProps} isCreator={false} />);
-    // 用 role=button 精確查詢
-    expect(screen.queryByRole("button", { name: /開始對戰/ })).not.toBeInTheDocument();
-  });
-
-  it("只有 1 人時開始按鈕 disabled", () => {
-    const match = { accessCode: "X", participants: ["u1"] } as Record<string, unknown>;
-    render(<WaitingView {...defaultProps} match={match} />);
-    const btn = screen.getByRole("button", { name: /開始對戰/ });
-    expect(btn).toBeDisabled();
-  });
-
-  // 新 UX：複製/分享 + 參賽者列表 + 房主標記
-  it("顯示複製按鈕與分享按鈕", () => {
-    render(<WaitingView {...defaultProps} />);
-    expect(screen.getByTestId("button-copy-match-code")).toBeInTheDocument();
-    expect(screen.getByTestId("button-share-match-code")).toBeInTheDocument();
-  });
-
-  it("非房主顯示等待提示", () => {
-    render(<WaitingView {...defaultProps} isCreator={false} />);
-    expect(screen.getByText(/等待房主開始對戰/)).toBeInTheDocument();
-  });
-
-  it("人數不足時顯示「還需 N 人」說明", () => {
-    const match = { accessCode: "X", participants: ["u1"] } as Record<string, unknown>;
-    render(<WaitingView {...defaultProps} match={match} />);
-    expect(screen.getByText(/還需 1 人/)).toBeInTheDocument();
-  });
-
-  it("顯示參賽者列表（含 displayName）", () => {
-    const match = {
-      accessCode: "X",
-      participants: [
-        { userId: "u1", displayName: "小明" },
-        { userId: "u2", displayName: "小華" },
+  it("人數夠 → 可以開始；非房主只看到等待提示", () => {
+    const two = match({
+      ranking: [
+        ...match().ranking,
+        { participantId: "p2", userId: "u2", displayName: "小華", score: 0, rank: 2, completed: false, relaySegment: null, relayStatus: null },
       ],
-    } as Record<string, unknown>;
-    render(<WaitingView {...defaultProps} match={match} />);
-    expect(screen.getByText("小明")).toBeInTheDocument();
-    expect(screen.getByText("小華")).toBeInTheDocument();
+    });
+    const onStart = vi.fn();
+    const { unmount } = render(<WaitingView {...base} match={two} isCreator onStart={onStart} />);
+    fireEvent.click(screen.getByTestId("button-start-match"));
+    expect(onStart).toHaveBeenCalled();
+    unmount();
+    render(<WaitingView {...base} match={two} isCreator={false} userId="u2" />);
+    expect(screen.queryByTestId("button-start-match")).toBeNull();
+    expect(screen.getByText("等待房主開始賽事…")).toBeInTheDocument();
   });
 
-  it("自己的列在會標 「我」 Badge", () => {
-    const match = {
-      accessCode: "X",
-      participants: [{ userId: "u1", displayName: "小明" }],
-    } as Record<string, unknown>;
-    render(<WaitingView {...defaultProps} match={match} userId="u1" />);
-    expect(screen.getByText("我")).toBeInTheDocument();
-  });
-});
-
-// ============================================================================
-// CountdownView
-// ============================================================================
-describe("CountdownView", () => {
-  it("顯示倒數秒數", () => {
-    render(<CountdownView seconds={3} />);
-    expect(screen.getByText("3")).toBeInTheDocument();
-  });
-
-  it("顯示準備開始文字", () => {
-    render(<CountdownView seconds={5} />);
-    expect(screen.getByText("準備開始...")).toBeInTheDocument();
+  it("房主取消賽事要先確認；一般參賽者直接退出", () => {
+    const onLeave = vi.fn();
+    const { unmount } = render(<WaitingView {...base} match={match()} isCreator onLeave={onLeave} />);
+    fireEvent.click(screen.getByTestId("button-leave-match"));
+    expect(onLeave).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTestId("button-confirm-cancel-match"));
+    expect(onLeave).toHaveBeenCalledTimes(1);
+    unmount();
+    render(<WaitingView {...base} match={match()} isCreator={false} onLeave={onLeave} />);
+    fireEvent.click(screen.getByTestId("button-leave-match"));
+    expect(onLeave).toHaveBeenCalledTimes(2);
   });
 });
 
-// ============================================================================
-// PlayingView
-// ============================================================================
-describe("PlayingView", () => {
-  it("顯示對戰進行中標題", () => {
-    render(<PlayingView match={{}} ranking={[]} userId="u1" />);
-    expect(screen.getByText("對戰進行中")).toBeInTheDocument();
+describe("PlayingView / FinishedView / CancelledView", () => {
+  it("進行中：有時限 → 倒數計時；房主可提前結束（先確認）", () => {
+    const onFinish = vi.fn();
+    const startedAt = new Date(Date.now() - 60_000).toISOString();
+    render(<PlayingView match={match({ status: "playing", startedAt, timeLimitSeconds: 300 })} userId="u1" isCreator showScore onFinish={onFinish} />);
+    expect(screen.getByTestId("match-timer").textContent).toMatch(/^countdown:2(39|40)$/);
+    fireEvent.click(screen.getByTestId("button-finish-match"));
+    fireEvent.click(screen.getByTestId("button-confirm-finish-match"));
+    expect(onFinish).toHaveBeenCalled();
   });
 
-  it("渲染 LiveRanking mock", () => {
-    const ranking = [{ userId: "u1", score: 10, rank: 1 }];
-    render(<PlayingView match={{}} ranking={ranking} userId="u1" />);
-    expect(screen.getByTestId("live-ranking")).toBeInTheDocument();
-    expect(screen.getByText(/排名人數: 1/)).toBeInTheDocument();
+  it("結算：競賽顯示我的名次；不計分遊戲隱藏分數", () => {
+    render(<FinishedView match={match({ status: "finished" })} userId="u1" showScore={false} onPlayAnother={noop} onGoBack={noop} />);
+    expect(screen.getByTestId("text-my-rank")).toHaveTextContent("你是第 1 名");
+    expect(screen.getByTestId("live-ranking")).toHaveTextContent("分數隱藏");
   });
 
-  it("有 timeLimit 時渲染 countdown 計時器", () => {
-    const match = { settings: { timeLimit: 120 } } as Record<string, unknown>;
-    render(<PlayingView match={match} ranking={[]} userId="u1" />);
-    expect(screen.getByTestId("match-timer")).toHaveTextContent("countdown: 120");
+  it("結算：接力顯示全隊總分；再來一場", () => {
+    const onAnother = vi.fn();
+    render(
+      <FinishedView match={match({ status: "finished", matchMode: "relay", teamTotal: 90 })} userId="u1" showScore
+        onPlayAnother={onAnother} onGoBack={noop} />,
+    );
+    expect(screen.getByTestId("text-relay-total")).toHaveTextContent("全隊總分 90");
+    fireEvent.click(screen.getByTestId("button-play-another-match"));
+    expect(onAnother).toHaveBeenCalled();
   });
 
-  it("無 timeLimit 時渲染 elapsed 計時器", () => {
-    render(<PlayingView match={{}} ranking={[]} userId="u1" />);
-    expect(screen.getByTestId("match-timer")).toHaveTextContent("elapsed: 0");
-  });
-});
-
-// ============================================================================
-// FinishedView
-// ============================================================================
-describe("FinishedView", () => {
-  const defaultProps = {
-    ranking: [{ userId: "u1", score: 100, rank: 1 }],
-    userId: "u1",
-    onGoBack: vi.fn(),
-  };
-
-  it("顯示對戰結束標題", () => {
-    render(<FinishedView {...defaultProps} />);
-    expect(screen.getByText("對戰結束！")).toBeInTheDocument();
-  });
-
-  it("渲染 LiveRanking", () => {
-    render(<FinishedView {...defaultProps} />);
-    expect(screen.getByTestId("live-ranking")).toBeInTheDocument();
-  });
-
-  it("點擊返回按鈕觸發 onGoBack", () => {
-    const onGoBack = vi.fn();
-    render(<FinishedView {...defaultProps} onGoBack={onGoBack} />);
-    fireEvent.click(screen.getByText("返回遊戲大廳"));
-    expect(onGoBack).toHaveBeenCalledTimes(1);
+  it("取消：說明房主取消、可回列表", () => {
+    const onBack = vi.fn();
+    render(<CancelledView onBack={onBack} />);
+    fireEvent.click(screen.getByText("回到賽事列表"));
+    expect(onBack).toHaveBeenCalled();
   });
 });

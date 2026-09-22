@@ -32,6 +32,19 @@ export function ensureGuestName(): string {
   }
 }
 
+/**
+ * 送給伺服器的訪客暱稱（組隊 / 賽事顯示用）：只有訪客才送，正式帳號用自己的名字
+ * 🐛 2026-09-22：正式帳號不被舊的訪客暱稱蓋掉（自 useTeamLobby 抽出共用，2026-09-23）
+ */
+export function guestNameForServer(isGuest: boolean): string | undefined {
+  if (!isGuest) return undefined;
+  try {
+    return localStorage.getItem(GUEST_NAME_KEY)?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 let inflight: Promise<void> | null = null;
 
 /**

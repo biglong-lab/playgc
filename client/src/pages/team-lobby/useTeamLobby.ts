@@ -8,39 +8,12 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useTeamWebSocket } from "@/hooks/use-team-websocket";
 import { speakTeamEvent, primeVoices } from "@/lib/voice-notification";
+import { guestNameForServer } from "@/lib/guest-identity";
+import { parseInviteCode } from "@/lib/invite-code";
 import type { Game, Team, TeamMember, User } from "@shared/schema";
 
-/**
- * 從 URL search string 解出 ?code= 邀請碼
- * 例如 ?code=ABC123 → "ABC123"
- *      不存在或為空 → ""
- *
- * 匯出供單元測試用（純函式）
- */
-export function parseInviteCode(search: string): string {
-  try {
-    const params = new URLSearchParams(search);
-    const code = params.get("code") ?? "";
-    // 限定 4-8 位英數（防注入用，Server 端再次驗證）
-    return /^[A-Z0-9]{4,8}$/i.test(code) ? code.toUpperCase() : "";
-  } catch {
-    return "";
-  }
-}
-
-/**
- * 讀取訪客的遊戲暱稱（localStorage）；無則 undefined
- * 🐛 2026-09-22：只有訪客身分才送（正式帳號用自己的名字，不被舊的訪客暱稱蓋掉）
- */
-function getGuestDisplayName(isGuest: boolean): string | undefined {
-  if (!isGuest) return undefined;
-  try {
-    const v = localStorage.getItem("anonymous_player_name")?.trim();
-    return v || undefined;
-  } catch {
-    return undefined;
-  }
-}
+// 🔗 邀請碼解析搬到 lib 共用（賽事大廳也用，2026-09-23）；保留再匯出供既有測試
+export { parseInviteCode };
 
 function readInviteCodeFromUrl(): string {
   if (typeof window === "undefined") return "";
@@ -420,7 +393,7 @@ export function useTeamLobby(): TeamLobbyReturn {
   const createTeamMutation = useMutation({
     mutationFn: async (data: { name?: string; squadId?: string }) => {
       // 🆕 CHITO #7：帶上訪客在大廳輸入的暱稱、後端寫進 users.firstName（成員列表才顯示得到）
-      const displayName = getGuestDisplayName(!!firebaseUser?.isAnonymous);
+      const displayName = guestNameForServer(!!firebaseUser?.isAnonymous);
       const response = await apiRequest("POST", `/api/games/${gameId}/teams`, {
         ...data,
         ...(displayName ? { displayName } : {}),
@@ -442,7 +415,7 @@ export function useTeamLobby(): TeamLobbyReturn {
   const joinTeamMutation = useMutation({
     mutationFn: async (data: { accessCode: string }) => {
       // 🆕 CHITO #7：帶上訪客暱稱、後端寫進 users.firstName
-      const displayName = getGuestDisplayName(!!firebaseUser?.isAnonymous);
+      const displayName = guestNameForServer(!!firebaseUser?.isAnonymous);
       const response = await apiRequest("POST", "/api/teams/join", {
         ...data,
         ...(displayName ? { displayName } : {}),

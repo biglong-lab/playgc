@@ -8,8 +8,8 @@ interface MatchTimerProps {
   readonly onCountdownEnd?: () => void;
 }
 
-// 模組級純函式（不需要每次渲染重建）
-function formatTime(totalSeconds: number): string {
+// 模組級純函式（不需要每次渲染重建；遊戲中賽事看板也用，2026-09-23）
+export function formatTime(totalSeconds: number): string {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
   return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;

@@ -7,8 +7,12 @@ import { Trophy, Medal, Award, User } from "lucide-react";
 import { rankingItem } from "@/lib/animation-variants";
 
 interface RankingEntry {
-  readonly userId: string;
+  readonly participantId?: string;
+  readonly userId: string | null;
   readonly userName?: string;
+  /** 🆕 2026-09-23：伺服器算好的顯示名（真名 > 信箱前綴 > 訪客暱稱） */
+  readonly displayName?: string;
+  readonly completed?: boolean;
   readonly score: number;
   readonly rank: number;
   readonly relaySegment?: number | null;
@@ -19,6 +23,9 @@ interface LiveRankingProps {
   readonly ranking: readonly RankingEntry[];
   readonly currentUserId?: string;
   readonly showRelay?: boolean;
+  /** 🆕 2026-09-23：遊戲關閉計分 → 不顯示分數（名次依完成先後） */
+  readonly showScore?: boolean;
+  readonly title?: string;
 }
 
 function getRankIcon(rank: number) {
@@ -39,13 +46,15 @@ function getRelayStatusBadge(status: string | null | undefined) {
   }
 }
 
-export default memo(function LiveRanking({ ranking, currentUserId, showRelay }: LiveRankingProps) {
+export default memo(function LiveRanking({
+  ranking, currentUserId, showRelay, showScore = true, title = "即時排名",
+}: LiveRankingProps) {
   return (
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Trophy className="h-4 w-4" />
-          即時排名
+          {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -56,10 +65,11 @@ export default memo(function LiveRanking({ ranking, currentUserId, showRelay }: 
         ) : (
           <AnimatePresence mode="popLayout">
             {ranking.map((entry) => {
-              const isCurrentUser = entry.userId === currentUserId;
+              const isCurrentUser = !!entry.userId && entry.userId === currentUserId;
+              const name = entry.displayName ?? entry.userName ?? entry.userId?.slice(0, 8) ?? "玩家";
               return (
                 <motion.div
-                  key={entry.userId}
+                  key={entry.participantId ?? entry.userId ?? entry.rank}
                   layout
                   variants={rankingItem}
                   initial="initial"
@@ -73,15 +83,18 @@ export default memo(function LiveRanking({ ranking, currentUserId, showRelay }: 
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span className={`text-sm truncate ${isCurrentUser ? "font-bold" : ""}`}>
-                      {entry.userName ?? entry.userId.slice(0, 8)}
+                      {name}
                       {isCurrentUser && " (你)"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {showRelay && getRelayStatusBadge(entry.relayStatus)}
-                    <span className="font-mono text-sm font-bold">
-                      {entry.score}
-                    </span>
+                    {!showRelay && entry.completed && <Badge variant="secondary">完成</Badge>}
+                    {showScore && (
+                      <span className="font-mono text-sm font-bold">
+                        {entry.score}
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               );

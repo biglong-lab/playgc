@@ -42,11 +42,15 @@ import PwaChrome from "@/components/shared/PwaChrome";
 
 // 玩家端 — lazy import
 const GamePlay = lazy(() => import("@/pages/GamePlay"));
+// 🏁 2026-09-23：帶 ?match= 才介入（競賽 / 接力的等待畫面、賽事看板、接力頁碼），其餘直接放行
+const MatchPlayGate = lazy(() => import("@/pages/match-play/MatchPlayGate"));
 // 🎟️ 2026-09-22：先擋桌機、再建立訪客身分（桌機被擋的人不該產生訪客帳號）
 const GamePlayGated = () => (
   <DeviceGate>
     <GuestGate>
-      <GamePlay />
+      <MatchPlayGate>
+        <GamePlay />
+      </MatchPlayGate>
     </GuestGate>
   </DeviceGate>
 );

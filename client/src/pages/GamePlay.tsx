@@ -27,6 +27,8 @@ import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 import { useSessionManager } from "./hooks/useSessionManager";
 import { useQrEntryFlag, useResumeNoticeToast } from "./hooks/useGameEntryUx";
 import { useTeamPlaySync } from "./hooks/useTeamPlaySync";
+import { useMatchPlay } from "./match-play/MatchPlayContext";
+import { slicePagesForLeg } from "./match-play/play-phase";
 import { WsConnectionBadge } from "@/components/shared/WsConnectionBadge";
 import { primeVoices } from "@/lib/voice-notification";
 import LeaderDecideDialog from "@/components/team/LeaderDecideDialog";
@@ -98,13 +100,16 @@ export default function GamePlay() {
     enabled: isChapterMode && !!gameId && !!chapterId,
   });
 
-  // 章節模式下使用章節頁面，否則使用全部頁面
+  // 🏁 2026-09-23 競賽 / 接力（MatchPlayGate 提供；一般遊戲 = null）
+  const matchPlay = useMatchPlay();
+
+  // 章節模式下使用章節頁面，否則使用全部頁面；接力只玩自己那一棒的頁碼
   const activePages: Page[] = useMemo(() => {
-    if (isChapterMode && chapterData?.pages) {
-      return [...chapterData.pages].sort((a, b) => a.pageOrder - b.pageOrder);
-    }
-    return game?.pages ?? [];
-  }, [isChapterMode, chapterData?.pages, game?.pages]);
+    const pages = isChapterMode && chapterData?.pages
+      ? [...chapterData.pages].sort((a, b) => a.pageOrder - b.pageOrder)
+      : game?.pages ?? [];
+    return slicePagesForLeg(pages, matchPlay?.pageRange ?? null);
+  }, [isChapterMode, chapterData?.pages, game?.pages, matchPlay?.pageRange]);
 
   const {
     sessionId, score, inventory, variables,
@@ -119,12 +124,14 @@ export default function GamePlay() {
     isReplayMode,
     activePages,
     userName: user?.firstName || "玩家",
-    sharedSessionId, // 🆕 隊伍共用 session（?session=）
+    sharedSessionId: sharedSessionId ?? matchPlay?.sessionId ?? undefined, // 隊伍共用 / 賽事已綁定的場次
     // 🌐 只有地點鎖遊戲才要 GPS（undefined = 遊戲設定載入中，先不建場次）
     requireLocation: game
       ? !!(game.locationLockEnabled && game.lockLatitude && game.lockLongitude)
       : undefined,
     autoRestartCompleted: isQrEntry,
+    matchId: matchPlay?.matchId,
+    startFresh: !!matchPlay && !matchPlay.sessionId,
   });
 
   // 🆕 2026-09-22 開局減法：有進度 → 直接接續 + 可反悔提示（取代整頁「繼續 / 重新開始」框）

@@ -161,7 +161,8 @@ describe("useMatchWebSocket", () => {
     expect(result.current.countdown).toBe(2);
   });
 
-  it("倒數到 0 發送 match_countdown_complete", async () => {
+  // 🏁 2026-09-23：開賽改由伺服器計時（match-lifecycle），前端倒數只是畫面、不再回報後端
+  it("倒數到 0 → 畫面歸零，但不送 match_countdown_complete", async () => {
     const { result } = renderHook(() => useMatchWebSocket("match-1"));
     await act(async () => {
       await vi.advanceTimersByTimeAsync(10);
@@ -180,7 +181,7 @@ describe("useMatchWebSocket", () => {
     const completeMsg = ws.sentMessages.find(
       (m) => JSON.parse(m).type === "match_countdown_complete",
     );
-    expect(completeMsg).toBeDefined();
+    expect(completeMsg).toBeUndefined();
   });
 
   it("match_started 設 matchStatus=playing", async () => {

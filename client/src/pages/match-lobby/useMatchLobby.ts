@@ -1,141 +1,150 @@
 // 對戰大廳邏輯 Hook
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useParams, useLocation } from "wouter";
+//
+// 🏁 2026-09-23 P1 重寫（業主：「好，你看怎處理把功能完整」）
+//   - 賽事 ID 進網址（?m=）：重整 / 回到大廳找得回自己的賽事；沒帶就查「我進行中的賽事」
+//   - 分享連結帶 ?code=：朋友點開自動加入
+//   - 開賽 / 倒數 / 結算由伺服器控制；大廳輪詢 + WS 事件加速更新
+//   - 開賽後參賽者自動導到遊戲頁（/game/:id?match=）
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useLocation, useParams, useSearch } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { useFieldLink } from "@/hooks/useFieldLink";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useMatchWebSocket } from "@/hooks/use-match-websocket";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { parseInviteCode } from "@/lib/invite-code";
+import type { MatchDetail, WaitingMatchSummary } from "@/lib/match-types";
 import type { Game } from "@shared/schema";
+import { isParticipantOf, resolveLobbyView } from "./lobby-status";
+import { useMatchActions } from "./useMatchActions";
 
-export type MatchLobbyView = "loading" | "browse" | "waiting" | "countdown" | "playing" | "finished";
+export type { MatchLobbyView } from "./lobby-status";
+
+const ENDED = new Set(["finished", "cancelled"]);
+
+/** 目前這場賽事：網址 ?m= 優先；沒有就找「我進行中的賽事」並寫回網址 */
+function useCurrentMatchId(gameId: string | undefined, userId: string | undefined) {
+  const search = useSearch();
+  const urlMatchId = useMemo(() => new URLSearchParams(search).get("m"), [search]);
+  const inviteCode = useMemo(() => parseInviteCode(search), [search]);
+  const mine = useQuery<{ id: string; status: string } | null>({
+    queryKey: ["/api/games", gameId, "matches", "mine"],
+    enabled: !!gameId && !!userId && !urlMatchId,
+  });
+  return { urlMatchId, inviteCode, matchId: urlMatchId ?? mine.data?.id ?? null, isResolving: !urlMatchId && mine.isLoading };
+}
+
+function useMatchDetail(matchId: string | null, lastEvent: unknown) {
+  const detail = useQuery<MatchDetail>({
+    queryKey: ["/api/matches", matchId],
+    enabled: !!matchId,
+    refetchInterval: (q) => (q.state.data && ENDED.has(q.state.data.status) ? false : 3000),
+  });
+  // WS 有事件（加入 / 倒數 / 開賽 / 排名 / 結算）→ 立刻重抓，不用等輪詢
+  useEffect(() => {
+    if (matchId && lastEvent) queryClient.invalidateQueries({ queryKey: ["/api/matches", matchId] });
+  }, [matchId, lastEvent]);
+  // isFresh：這次進大廳後重新抓過（導向遊戲只信這份，不信別頁留下的舊快取）
+  return { data: detail.data, isFresh: detail.isFetchedAfterMount };
+}
 
 export function useMatchLobby() {
   const { gameId } = useParams<{ gameId: string }>();
   const [, setLocation] = useLocation();
-  const link = useFieldLink();   // 🔧 場域感知 link builder
+  const link = useFieldLink();
   const { user, firebaseUser, isLoading: authLoading } = useAuth();
-  const { toast } = useToast();
-  const [currentMatchId, setCurrentMatchId] = useState<string | null>(null);
+  const currentUserId = firebaseUser?.uid ?? user?.id;
+  const lobbyPath = link(`/match/${gameId}`);
 
-  // WebSocket 連線
-  const ws = useMatchWebSocket(currentMatchId);
+  const { urlMatchId, inviteCode, matchId, isResolving } = useCurrentMatchId(gameId, currentUserId);
+  const ws = useMatchWebSocket(matchId);
+  const { data: currentMatch, isFresh } = useMatchDetail(matchId, ws.lastEvent);
 
-  // 載入遊戲資訊
-  const { data: game, isLoading: gameLoading } = useQuery<Game>({
-    queryKey: ["/api/games", gameId],
-  });
-
-  // 載入對戰列表
-  const { data: matches } = useQuery({
+  const { data: game, isLoading: gameLoading } = useQuery<Game>({ queryKey: ["/api/games", gameId] });
+  const { data: matches } = useQuery<WaitingMatchSummary[]>({
     queryKey: ["/api/games", gameId, "matches"],
-    queryFn: () => apiRequest("GET", `/api/games/${gameId}/matches`).then((r) => r.json()),
-    enabled: !!gameId,
-  });
-
-  // 載入當前對戰詳情
-  const { data: currentMatch } = useQuery({
-    queryKey: ["/api/matches", currentMatchId],
-    queryFn: () => apiRequest("GET", `/api/matches/${currentMatchId}`).then((r) => r.json()),
-    enabled: !!currentMatchId,
+    enabled: !!gameId && !matchId,
     refetchInterval: 5000,
   });
 
-  // 建立對戰
-  const createMatchMutation = useMutation({
-    mutationFn: async (body: Record<string, unknown>) => {
-      const res = await apiRequest("POST", `/api/games/${gameId}/matches`, body);
-      return res.json();
-    },
-    onSuccess: (data) => {
-      setCurrentMatchId(data.id);
-      queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "matches"] });
-      toast({ title: "對戰已建立", description: `存取碼：${data.accessCode}` });
-    },
-    onError: () => {
-      toast({ title: "建立失敗", variant: "destructive" });
-    },
+  const enterMatch = useCallback(
+    (id: string) => setLocation(`${lobbyPath}?m=${id}`, { replace: true }),
+    [lobbyPath, setLocation],
+  );
+  const backToList = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "matches", "mine"] });
+    setLocation(lobbyPath, { replace: true });
+  }, [gameId, lobbyPath, setLocation]);
+
+  const actions = useMatchActions({
+    gameId, matchId, isGuest: !!firebaseUser?.isAnonymous, onEnterMatch: enterMatch, onLeftMatch: backToList,
   });
 
-  // 加入對戰
-  const joinMatchMutation = useMutation({
-    mutationFn: async (matchId: string) => {
-      const res = await apiRequest("POST", `/api/matches/${matchId}/join`);
-      return res.json();
-    },
-    onSuccess: (_data, matchId) => {
-      setCurrentMatchId(matchId);
-      toast({ title: "已加入對戰" });
-    },
-    onError: () => {
-      toast({ title: "加入失敗", variant: "destructive" });
-    },
+  useSyncMatchIdToUrl(urlMatchId, matchId, enterMatch);
+  useAutoJoinByCode(inviteCode, currentUserId, urlMatchId, actions.joinByCode.mutate);
+
+  const currentView = resolveLobbyView({
+    isLoading: authLoading || gameLoading || isResolving,
+    matchId,
+    detail: currentMatch,
+    wsStatus: ws.matchStatus,
   });
-
-  // 開始對戰
-  const startMatchMutation = useMutation({
-    mutationFn: async () => {
-      if (!currentMatchId) throw new Error("無對戰 ID");
-      const res = await apiRequest("POST", `/api/matches/${currentMatchId}/start`);
-      return res.json();
-    },
-    onSuccess: () => {
-      toast({ title: "對戰開始！" });
-    },
-  });
-
-  // 計算當前視圖
-  const determineView = useCallback((): MatchLobbyView => {
-    if (authLoading || gameLoading) return "loading";
-    if (!currentMatchId) return "browse";
-    if (ws.matchStatus === "countdown") return "countdown";
-    if (ws.matchStatus === "playing") return "playing";
-    if (ws.matchStatus === "finished") return "finished";
-    if (currentMatch?.status === "playing") return "playing";
-    if (currentMatch?.status === "finished") return "finished";
-    return "waiting";
-  }, [authLoading, gameLoading, currentMatchId, ws.matchStatus, currentMatch]);
-
-  const currentView = determineView();
-
-  // 🐛 開賽後導向遊戲頁：之前 playing 只顯示排名（PlayingView）、從不導向 /game/:id
-  //   → 競賽／接力玩家看不到任何關卡。對照組隊模式（useTeamLobby 倒數完 setLocation 遊戲頁）。
-  //   WS match_started 或輪詢到 status=playing 都會觸發；ref 防重複導向。
-  const redirectedMatchRef = useRef<string | null>(null);
-  useEffect(() => {
-    if (currentView !== "playing" || !currentMatchId || !gameId) return;
-    if (redirectedMatchRef.current === currentMatchId) return;
-    redirectedMatchRef.current = currentMatchId;
-    setLocation(link(`/game/${gameId}`));
-  }, [currentView, currentMatchId, gameId, setLocation, link]);
-
-  const handleGoBack = useCallback(() => {
-    // 🔧 場域感知 — 後浦玩家按返回大廳不會跑到賈村
-    setLocation(link("/home"));
-  }, [setLocation, link]);
-
-  // 使用 firebaseUser.uid 作為 userId 識別
-  const currentUserId = firebaseUser?.uid ?? user?.id;
+  const isParticipant = isParticipantOf(currentMatch, currentUserId);
+  useRedirectToGame(currentView === "playing" && isParticipant && isFresh, matchId, gameId, link, setLocation);
 
   return {
-    gameId,
-    game,
-    user,
+    gameId, game, user, lobbyPath,
     matches: matches ?? [],
-    currentMatch,
-    currentMatchId,
-    currentView,
-    ws,
+    currentMatch, currentMatchId: matchId, currentView, ws,
     isLoading: authLoading || gameLoading,
-    isCreator: currentMatch?.creatorId === currentUserId,
-    currentUserId,
-    createMatch: createMatchMutation.mutate,
-    joinMatch: joinMatchMutation.mutate,
-    startMatch: startMatchMutation.mutate,
-    isCreating: createMatchMutation.isPending,
-    isJoining: joinMatchMutation.isPending,
-    isStarting: startMatchMutation.isPending,
-    handleGoBack,
+    isCreator: !!currentMatch && currentMatch.creatorId === currentUserId,
+    isParticipant, currentUserId,
+    createMatch: () => actions.create.mutate(),
+    joinMatch: actions.join.mutate,
+    joinByCode: actions.joinByCode.mutate,
+    startMatch: () => actions.start.mutate(),
+    finishMatch: () => actions.finish.mutate(),
+    leaveMatch: () => actions.leave.mutate(),
+    playAnother: backToList,
+    isCreating: actions.create.isPending,
+    isJoining: actions.join.isPending || actions.joinByCode.isPending,
+    isStarting: actions.start.isPending,
+    isLeaving: actions.leave.isPending,
+    handleGoBack: () => setLocation(link("/home")),
   };
+}
+
+/** 從「我進行中的賽事」找到的 ID 寫回網址（之後重整、分享都穩定） */
+function useSyncMatchIdToUrl(urlMatchId: string | null, matchId: string | null, enterMatch: (id: string) => void) {
+  useEffect(() => {
+    if (!urlMatchId && matchId) enterMatch(matchId);
+  }, [urlMatchId, matchId, enterMatch]);
+}
+
+/** 分享連結 ?code= → 自動加入一次（已經在某場賽事就不動） */
+function useAutoJoinByCode(
+  code: string, userId: string | undefined, urlMatchId: string | null, joinByCode: (code: string) => void,
+) {
+  const triedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!code || !userId || urlMatchId || triedRef.current === code) return;
+    triedRef.current = code;
+    joinByCode(code);
+  }, [code, userId, urlMatchId, joinByCode]);
+}
+
+/**
+ * 🐛 開賽後導向遊戲頁：之前 playing 只顯示排名、從不導向 → 競賽／接力玩家看不到任何關卡
+ *   只導參賽者（旁觀者留在大廳看排名）；ref 防重複導向
+ */
+function useRedirectToGame(
+  shouldRedirect: boolean, matchId: string | null, gameId: string | undefined,
+  link: (path: string) => string, setLocation: (to: string, opts?: { replace?: boolean }) => void,
+) {
+  const redirectedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!shouldRedirect || !matchId || !gameId || redirectedRef.current === matchId) return;
+    redirectedRef.current = matchId;
+    setLocation(link(`/game/${gameId}?match=${matchId}`));
+  }, [shouldRedirect, matchId, gameId, link, setLocation]);
 }
