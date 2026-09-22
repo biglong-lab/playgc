@@ -6,6 +6,7 @@ import { logAppLaunch } from "@/lib/pwa-analytics";
 import { initWebVitals } from "@/lib/web-vitals-report";
 import { initSentry } from "@/lib/sentry";
 import { rehydrateImportantKeys } from "@/lib/safe-storage";
+import { isPlayFlowPath } from "@/lib/play-routes";
 
 // 🐛 Phase 1 (2026-05-10)：Sentry 錯誤監控（VITE_SENTRY_DSN 留空就 disabled）
 //   必須在 createRoot 之前 init、確保 React component error 被 capture
@@ -182,6 +183,9 @@ const checkVersion = async () => {
       sessionStorage.removeItem("chito_version_recover"); // 版本一致 → 重置恢復計數
       return;
     }
+    // 🆕 2026-09-22：遊玩中（掃碼→開局→結算）不自動重整，避免關卡中途被刷掉；
+    //   離開遊戲頁後的下一輪檢查（60 秒 / 切回 app）再更新。進度已存 server、不會遺失。
+    if (isPlayFlowPath(window.location.pathname)) return;
     console.warn(
       `[version-check] 🔄 版本不符 (${CLIENT_COMMIT} → ${serverCommit})，自動清快取 reload`,
     );

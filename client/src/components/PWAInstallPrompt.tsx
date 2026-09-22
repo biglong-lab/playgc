@@ -7,6 +7,8 @@
 //      → 一次性訪客不打擾，回訪 ≥ 3 次代表有意圖才提示
 //   4. 主動入口：使用者可在「我的」頁面手動點擊安裝
 import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
+import { GAME_COMPLETED_EVENT, isPlayFlowPath } from "@/lib/play-routes";
 import { Button } from "@/components/ui/button";
 import { Download, X } from "lucide-react";
 
@@ -92,6 +94,15 @@ export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
   const [iosVisible, setIosVisible] = useState(false);
+  // 🆕 2026-09-22：遊玩流程中只在「通關畫面」顯示（剛玩完最有意願、也不擋開局）
+  const [location] = useLocation();
+  const [completedHere, setCompletedHere] = useState(false);
+  useEffect(() => {
+    const onCompleted = () => setCompletedHere(true);
+    window.addEventListener(GAME_COMPLETED_EVENT, onCompleted);
+    return () => window.removeEventListener(GAME_COMPLETED_EVENT, onCompleted);
+  }, []);
+  useEffect(() => setCompletedHere(false), [location]); // 換頁 → 回到一般規則
 
   useEffect(() => {
     // 已是 standalone 模式 → 已安裝，無需提示
@@ -131,6 +142,8 @@ export default function PWAInstallPrompt() {
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
+
+  if (isPlayFlowPath(location) && !completedHere) return null;
 
   // 🆕 iOS Safari 專屬提示卡（手動加到主畫面）
   if (iosVisible) {

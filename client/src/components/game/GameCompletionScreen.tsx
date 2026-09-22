@@ -13,6 +13,7 @@ import { useFieldLink } from "@/hooks/useFieldLink";
 import { apiRequest } from "@/lib/queryClient";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useQuery } from "@tanstack/react-query";
+import { announceGameCompleted } from "@/lib/play-routes";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -117,6 +118,11 @@ export default function GameCompletionScreen({
   useEffect(() => {
     haptic.custom([60, 80, 60, 80, 120]);
   }, [haptic]);
+
+  // 🆕 2026-09-22：通知全站提示（加到主畫面）改在此刻出現，不在開局前打擾
+  useEffect(() => {
+    announceGameCompleted();
+  }, []);
 
   // 🆕 v2: 查本次 session 有無照片 — 有才顯示「看本場相簿」按鈕
   const { data: albumData } = useQuery<{ photos?: unknown[] }>({

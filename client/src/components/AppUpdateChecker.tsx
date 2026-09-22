@@ -13,6 +13,8 @@
 //   3. retry 上限：同一個 server commit 連續超過 3 次都還跳 → 強制清 SW + caches reload
 //
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "wouter";
+import { isPlayFlowPath } from "@/lib/play-routes";
 import { Button } from "@/components/ui/button";
 import { Loader2, RotateCw, X } from "lucide-react";
 
@@ -103,11 +105,14 @@ export default function AppUpdateChecker() {
   const [dismissed, setDismissed] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const updatingRef = useRef(false);
+  const [location] = useLocation();
 
   useEffect(() => {
     if (CLIENT_COMMIT === "unknown") return; // dev / build 沒注入 commit → 不檢查
 
     const check = async () => {
+      // 🆕 2026-09-22：遊玩流程中不打擾（也不累計次數、不強制重整）→ 離開遊戲頁後下一輪再檢查
+      if (isPlayFlowPath(window.location.pathname)) return;
       try {
         const res = await fetch("/api/version", { cache: "no-store", credentials: "omit" });
         if (!res.ok) return;
@@ -151,6 +156,7 @@ export default function AppUpdateChecker() {
   }, []);
 
   if (!updateAvailable || dismissed) return null;
+  if (isPlayFlowPath(location)) return null;
 
   const handleUpdate = async () => {
     if (updatingRef.current) return;

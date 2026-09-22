@@ -6,26 +6,10 @@
 // 掛上會遮住按鈕或造成雙捲軸 → 一律不顯示。
 import { useLocation } from "wouter";
 import LegalFooter from "@/components/LegalFooter";
+import { isImmersivePath } from "@/lib/play-routes";
 
-/** 不掛 footer 的沉浸式路徑 */
-const IMMERSIVE_PATTERNS: RegExp[] = [
-  /^\/game\/[^/]+$/,                 // 遊玩中（legacy 路徑）
-  /^\/f\/[^/]+\/game\/[^/]+$/,       // 遊玩中（場域路徑）
-  /^\/map\//,                        // GPS 地圖導航
-  /^\/f\/[^/]+\/map\//,
-  /^\/host\//,                       // 活動大螢幕
-  /^\/play\//,                       // 活動玩家端互動
-  /^\/liff\/play\//,
-  /^\/pos\/scan/,                    // POS 掃碼（相機全螢幕）
-  /^\/g\//,                          // QR 短連結轉址頁
-  /^\/j\//,
-  /^\/b\//,
-];
-
-/** 該路徑是否為沉浸式頁面（不掛 footer）— 導出供測試驗證 */
-export function isImmersivePath(path: string): boolean {
-  return IMMERSIVE_PATTERNS.some((re) => re.test(path));
-}
+// 沉浸式路徑清單已集中到 lib/play-routes（2026-09-22）；re-export 保持既有測試與引用不變
+export { isImmersivePath };
 
 export default function GlobalLegalFooter() {
   const [location] = useLocation();
