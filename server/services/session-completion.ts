@@ -14,7 +14,6 @@ import { storage } from "../storage";
 import { isScoringEnabled } from "@shared/lib/scoring";
 import { leaderboard } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import { db } from "../db";
 
 async function writeLeaderboard(session: GameSession, userId: string | undefined): Promise<void> {
   const { getPlayerDisplayName, isAnonymousPlayer } = await import("@shared/lib/playerDisplay");
@@ -95,6 +94,8 @@ export async function recordSessionCompletion(
 const BACKFILL_LIMIT = 50;
 
 async function hasLeaderboardEntry(sessionId: string): Promise<boolean> {
+  // 用到才載入 db：本模組被場次路由引用，靜態載入會讓無 DB 的單元測試環境整個失敗
+  const { db } = await import("../db");
   const rows = await db.select({ id: leaderboard.id }).from(leaderboard).where(eq(leaderboard.sessionId, sessionId)).limit(1);
   return rows.length > 0;
 }
