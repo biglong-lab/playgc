@@ -101,3 +101,29 @@ describe("PLAYABLE_PAGE_TYPES", () => {
     expect(isPlayablePageType("")).toBe(false);
   });
 });
+
+describe("checkGamePublishable — 接力分段（2026-09-23）", () => {
+  const page = (order: number) => ({ id: `p${order}`, pageOrder: order, pageType: "text_card", config: { title: "t", content: "c" } });
+  const pages = [page(1), page(2), page(3), page(4)];
+
+  it("接力遊戲沒設分段 → 擋發佈", () => {
+    const r = checkGamePublishable({ title: "接力", gameMode: "relay", matchConfig: null }, pages);
+    expect(r.ok).toBe(false);
+    expect(r.errors.some((e) => e.message.includes("至少要設定 1 棒"))).toBe(true);
+  });
+
+  it("接力分段超出頁數 → 擋發佈", () => {
+    const r = checkGamePublishable(
+      { title: "接力", gameMode: "relay", matchConfig: { relaySegments: [{ fromPage: 1, toPage: 2 }, { fromPage: 3, toPage: 9 }] } },
+      pages,
+    );
+    expect(r.ok).toBe(false);
+    expect(r.errors[0].message).toContain("第 2 棒的頁碼超出範圍");
+  });
+
+  it("接力分段合法 → 可發佈；非接力遊戲不看分段", () => {
+    const relay = { title: "接力", gameMode: "relay", matchConfig: { relaySegments: [{ fromPage: 1, toPage: 2 }, { fromPage: 3, toPage: 4 }] } };
+    expect(checkGamePublishable(relay, pages).ok).toBe(true);
+    expect(checkGamePublishable({ title: "競賽", gameMode: "competitive" }, pages).ok).toBe(true);
+  });
+});

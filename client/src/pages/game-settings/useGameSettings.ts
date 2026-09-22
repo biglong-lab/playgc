@@ -4,10 +4,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useGamePermissions } from "@/hooks/useGamePermissions";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Game, User } from "@shared/schema";
+import type { Game, GameMatchConfig, User } from "@shared/schema";
+import { matchConfigSaveError } from "@shared/lib/match-rules";
 
 // 遊戲模式型別
-export type GameMode = "individual" | "team";
+export type GameMode = "individual" | "team" | "competitive" | "relay";
 export type TeamScoreMode = "shared" | "individual" | "hybrid";
 export type GameStructure = "linear" | "chapters";
 export type ChapterUnlockMode = "sequential" | "manual" | "all_open";
@@ -95,6 +96,11 @@ export interface GameSettingsReturn {
   setScoringEnabled: (v: boolean) => void;
   setShowCompletionStars: (v: boolean) => void;
   setShowCompletionScore: (v: boolean) => void;
+  // 🏁 2026-09-23 競賽 / 接力規則（games.match_config）
+  matchConfig: GameMatchConfig;
+  setMatchConfig: (v: GameMatchConfig) => void;
+  /** 遊戲頁數（接力分段用） */
+  pageCount: number;
   // 操作
   handleSave: () => void;
   isSaving: boolean;
@@ -145,6 +151,7 @@ export function useGameSettings(): GameSettingsReturn {
   const [showCompletionStars, setShowCompletionStars] = useState(true);
   const [showCompletionScore, setShowCompletionScore] = useState(true);
   const [scoringEnabled, setScoringEnabled] = useState(true);
+  const [matchConfig, setMatchConfig] = useState<GameMatchConfig>({});
 
   // 資料查詢
   const { data: user } = useQuery<User>({
@@ -189,7 +196,9 @@ export function useGameSettings(): GameSettingsReturn {
       (game as { showCompletionScore?: boolean }).showCompletionScore !== false,
     );
     setScoringEnabled((game as { scoringEnabled?: boolean | null }).scoringEnabled !== false);
+    setMatchConfig((game.matchConfig as GameMatchConfig | null) ?? {});
   }, [game]);
+  const pageCount = (game as { pages?: unknown[] } | undefined)?.pages?.length ?? 0;
 
   // 儲存 mutation
   const updateMutation = useMutation({
@@ -213,6 +222,12 @@ export function useGameSettings(): GameSettingsReturn {
   const handleSave = () => {
     if (!canEdit) {
       toast({ title: "您沒有權限修改此遊戲", variant: "destructive" });
+      return;
+    }
+    // 🏁 競賽 / 接力規則有問題先擋（例如接力分段超出頁數），避免存了開不了賽
+    const matchProblem = matchConfigSaveError(gameMode, matchConfig, pageCount);
+    if (matchProblem) {
+      toast({ title: "競賽 / 接力規則需要修正", description: matchProblem, variant: "destructive" });
       return;
     }
     updateMutation.mutate({
@@ -239,6 +254,7 @@ export function useGameSettings(): GameSettingsReturn {
       showCompletionStars,
       showCompletionScore,
       scoringEnabled,
+      matchConfig,
     });
   };
 
@@ -324,6 +340,9 @@ export function useGameSettings(): GameSettingsReturn {
     setScoringEnabled,
     setShowCompletionStars,
     setShowCompletionScore,
+    matchConfig,
+    setMatchConfig,
+    pageCount,
     handleSave,
     isSaving: updateMutation.isPending,
   };

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ChevronLeft, Save, Lock } from "lucide-react";
 import { useGameSettings } from "./game-settings/useGameSettings";
 import { LocationLockCard, ChapterCard, TeamModeCard, PricingCard, PlayerDisplayCard } from "./game-settings/SettingsCards";
+import { MatchConfigCard } from "./game-settings/MatchConfigCard";
 
 export default function GameSettings() {
   const [, setLocation] = useLocation();
@@ -99,6 +100,16 @@ export default function GameSettings() {
           onLocationChange={settings.setEnableTeamLocation}
           onScoreModeChange={settings.setTeamScoreMode}
         />
+
+        {(settings.teamMode.gameMode === "competitive" || settings.teamMode.gameMode === "relay") && (
+          <MatchConfigCard
+            mode={settings.teamMode.gameMode}
+            config={settings.matchConfig}
+            pageCount={settings.pageCount}
+            canEdit={canEdit}
+            onChange={settings.setMatchConfig}
+          />
+        )}
 
         <PlayerDisplayCard
           showProgress={settings.playerDisplay.showProgress}

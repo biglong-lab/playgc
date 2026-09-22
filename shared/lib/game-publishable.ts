@@ -10,6 +10,7 @@
 //   4. 沿用編輯器既有的頁面必要欄位 + 跨頁流程檢查（只有 error 等級會擋，warning 不擋）
 import { validateAllPages, formatIssue, type PageLike } from "./page-config-validation";
 import { isPlayablePageType } from "./page-types";
+import { validateRelaySegments, type RelaySegmentLike } from "./match-rules";
 
 /** 遊戲狀態白名單 */
 export const GAME_STATUSES = ["draft", "published", "archived"] as const;
@@ -32,6 +33,18 @@ export interface PublishCheckResult {
 
 interface GameLike {
   title?: string | null;
+  /** 🏁 2026-09-23：接力遊戲要有合法分段才能發佈 */
+  gameMode?: string | null;
+  matchConfig?: unknown;
+}
+
+/** 接力：分段必須存在且頁碼在範圍內（重疊 / 漏頁只是提醒，不擋發佈） */
+function checkRelayConfig(game: GameLike | null | undefined, pageCount: number): PublishCheckError[] {
+  if (game?.gameMode !== "relay") return [];
+  const segments = (game.matchConfig as { relaySegments?: RelaySegmentLike[] } | null | undefined)?.relaySegments;
+  return validateRelaySegments(segments, pageCount).errors.map((message) => ({
+    message: `接力設定：${message}（到「遊戲設定 → 遊戲模式」調整）`,
+  }));
 }
 
 function checkPageTypes(pages: readonly PageLike[]): PublishCheckError[] {
@@ -53,7 +66,7 @@ function checkPageConfigs(pages: readonly PageLike[]): PublishCheckError[] {
 
 /**
  * 檢查遊戲是否可以發佈
- * @param game 遊戲（只看 title）
+ * @param game 遊戲（看 title；接力遊戲另看分段設定）
  * @param pages 遊戲的所有頁面（null / undefined 視為 0 頁）
  */
 export function checkGamePublishable(
@@ -69,7 +82,7 @@ export function checkGamePublishable(
   if (list.length === 0) {
     errors.push({ message: "遊戲至少需要 1 個頁面才能發佈" });
   }
-  errors.push(...checkPageTypes(list), ...checkPageConfigs(list));
+  errors.push(...checkPageTypes(list), ...checkPageConfigs(list), ...checkRelayConfig(game, list.length));
 
   return { ok: errors.length === 0, errors };
 }

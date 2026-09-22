@@ -240,6 +240,13 @@ interface TeamModeCardProps {
   onScoreModeChange: (v: TeamScoreMode) => void;
 }
 
+const GAME_MODE_HINT: Record<GameMode, string> = {
+  individual: "玩家獨立進行遊戲，各自計分",
+  team: "玩家組隊進行遊戲，共享進度與分數",
+  competitive: "玩家開一場賽事一起比，各自玩、看即時排名（規則在下方「競賽規則」）",
+  relay: "一隊輪流玩，每人負責一段頁面、自動交棒（分段在下方「接力規則」）",
+};
+
 export function TeamModeCard({
   state, canEdit,
   onModeChange, onMinPlayersChange, onMaxPlayersChange,
@@ -264,11 +271,11 @@ export function TeamModeCard({
             <SelectContent>
               <SelectItem value="individual">單人模式</SelectItem>
               <SelectItem value="team">團隊模式</SelectItem>
+              <SelectItem value="competitive">競賽模式</SelectItem>
+              <SelectItem value="relay">接力模式</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-xs text-muted-foreground">
-            {gameMode === "individual" ? "玩家獨立進行遊戲，各自計分" : "玩家組隊進行遊戲，共享進度與分數"}
-          </p>
+          <p className="text-xs text-muted-foreground">{GAME_MODE_HINT[gameMode]}</p>
         </div>
 
         {gameMode === "team" && (
