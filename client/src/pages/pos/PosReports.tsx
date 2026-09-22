@@ -1,6 +1,7 @@
 // 📊 POS 報表 + 每日結帳（2026-06-13）
 // 路徑：/admin/pos-reports
 // 每日銷售報表（分類/付款/品項/客製）+ 狀態總覽（預約/退款）+ 每日結帳→推群組
+// 區間統計（本週/本月/上個月/自訂起訖）→ PosRangeReport（2026-09-22）
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,14 +12,9 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-
-const money = (c: number) => `NT$${(c / 100).toLocaleString()}`;
-function taipeiToday() {
-  const p = Object.fromEntries(
-    new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Taipei", year: "numeric", month: "2-digit", day: "2-digit" })
-      .formatToParts(new Date()).map((x) => [x.type, x.value]));
-  return `${p.year}-${p.month}-${p.day}`;
-}
+import PosRangeReport from "./PosRangeReport";
+import { ReportRow as Row, money } from "./pos-report-ui";
+import { taipeiToday } from "./pos-report-ranges";
 
 interface Daily {
   date: string;
@@ -33,18 +29,6 @@ interface Daily {
   byProduct: Array<{ name: string; qty: number; cents: number }>;
   byModifier: Array<{ name: string; qty: number }>;
   byHour: Array<{ hour: number; cents: number; count: number }>;
-}
-interface RangeRep {
-  fromDate: string;
-  toDate: string;
-  totalCents: number;
-  refundsCents: number;
-  netCents: number;
-  txnCount: number;
-  daily: Array<{ day: string; cents: number }>;
-  byMethod?: Array<{ label: string; cents: number; count: number }>;
-  byCategory?: Array<{ label: string; cents: number; qty: number }>;
-  byProduct?: Array<{ name: string; qty: number; cents: number }>;
 }
 interface CashSummary {
   date: string;
@@ -66,19 +50,12 @@ export default function PosReports() {
   const qc = useQueryClient();
   const { hasPermission } = useAdminAuth({ redirectTo: "" });
   const canCashAdmin = hasPermission("pos_cash_admin");
-  const [date, setDate] = useState(taipeiToday());
-  const [range, setRange] = useState<{ from: string; to: string; label: string } | null>(null);
+  const [date, setDate] = useState(() => taipeiToday());
 
   const { data: cash } = useQuery<CashSummary>({
     queryKey: ["pos-cash-summary", date],
     queryFn: () => fetchWithAdminAuth(`/api/pos/cash/summary?date=${date}`),
     enabled: canCashAdmin,
-  });
-
-  const { data: rangeRep } = useQuery<RangeRep>({
-    queryKey: ["pos-range-report", range?.from, range?.to],
-    queryFn: () => fetchWithAdminAuth(`/api/admin/pos/reports/range?from=${range!.from}&to=${range!.to}`),
-    enabled: !!range,
   });
 
   const { data: daily } = useQuery<Daily>({
@@ -98,13 +75,6 @@ export default function PosReports() {
     },
     onError: (e) => toast({ title: "結帳失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
   });
-
-  const Row = ({ label, value }: { label: string; value: string }) => (
-    <div className="flex justify-between text-sm py-1 border-b last:border-0">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium">{value}</span>
-    </div>
-  );
 
   if (!canCashAdmin) {
     return (
@@ -151,55 +121,8 @@ export default function PosReports() {
           </Card>
         )}
 
-        {/* 🆕 週/月 區間 */}
-        <Card>
-          <CardHeader className="py-3"><CardTitle className="text-base">區間統計</CardTitle></CardHeader>
-          <CardContent className="py-2 px-3 space-y-2">
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => {
-                const now = new Date();
-                const day = (now.getDay() + 6) % 7; // 週一為起點
-                const mon = new Date(now); mon.setDate(now.getDate() - day);
-                const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-                setRange({ from: fmt(mon), to: taipeiToday(), label: "本週" });
-              }} data-testid="range-week">本週</Button>
-              <Button size="sm" variant="outline" onClick={() => {
-                const now = new Date();
-                const first = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-01`;
-                setRange({ from: first, to: taipeiToday(), label: "本月" });
-              }} data-testid="range-month">本月</Button>
-              {range && <Button size="sm" variant="ghost" onClick={() => setRange(null)}>清除</Button>}
-            </div>
-            {range && rangeRep && (
-              <div className="text-sm space-y-1">
-                <div className="font-medium">{range.label}（{rangeRep.fromDate} ~ {rangeRep.toDate}）</div>
-                <Row label="淨收款" value={money(rangeRep.netCents)} />
-                <Row label="總收 / 退款" value={`${money(rangeRep.totalCents)} / ${money(rangeRep.refundsCents)}`} />
-                <Row label="交易筆數" value={`${rangeRep.txnCount} 筆`} />
-                <div className="pt-1 text-xs text-muted-foreground">每日：{rangeRep.daily.map((d) => `${d.day.slice(5)} ${money(d.cents)}`).join("　")}</div>
-                {/* drill-down：區間分類 / 付款 / 熱銷 */}
-                {rangeRep.byCategory && rangeRep.byCategory.length > 0 && (
-                  <div className="pt-2 mt-1 border-t">
-                    <div className="text-xs font-semibold text-muted-foreground mb-1">區間分類</div>
-                    {rangeRep.byCategory.map((c) => <Row key={c.label} label={`${c.label}（${c.qty} 件）`} value={money(c.cents)} />)}
-                  </div>
-                )}
-                {rangeRep.byMethod && rangeRep.byMethod.length > 0 && (
-                  <div className="pt-2 mt-1 border-t">
-                    <div className="text-xs font-semibold text-muted-foreground mb-1">區間付款方式</div>
-                    {rangeRep.byMethod.map((m) => <Row key={m.label} label={`${m.label}（${m.count} 筆）`} value={money(m.cents)} />)}
-                  </div>
-                )}
-                {rangeRep.byProduct && rangeRep.byProduct.length > 0 && (
-                  <div className="pt-2 mt-1 border-t">
-                    <div className="text-xs font-semibold text-muted-foreground mb-1">區間熱銷 TOP10</div>
-                    {rangeRep.byProduct.slice(0, 10).map((p) => <Row key={p.name} label={`${p.name} ×${p.qty}`} value={money(p.cents)} />)}
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* 區間統計：本週 / 本月 / 上個月 / 自訂起訖 */}
+        <PosRangeReport />
 
         {/* 時段分析 */}
         {daily?.byHour && daily.byHour.length > 0 && (
