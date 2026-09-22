@@ -54,6 +54,12 @@ const Leaderboard = lazy(() => import("@/pages/Leaderboard"));
 const TeamLobby = lazy(() => import("@/pages/TeamLobby"));
 const ChapterSelect = lazy(() => import("@/pages/ChapterSelect"));
 const GameBySlug = lazy(() => import("@/pages/GameBySlug"));
+// 📱 QR 過場頁先擋桌機（原本組完隊進遊戲才被擋、隊友都進去了）
+const GameBySlugGated = () => (
+  <DeviceGate>
+    <GameBySlug />
+  </DeviceGate>
+);
 const MatchLobby = lazy(() => import("@/pages/MatchLobby"));
 // 🎟️ 遊玩類頁面：未登入自動建立訪客身分（取代登入牆）
 const HomeGated = withGuestGate(Home);
@@ -568,7 +574,7 @@ function Router() {
         <Route path="/admin-staff/tickets">{() => <Redirect to="/admin/tickets" />}</Route>
 
         {/* 玩家透過 QR Code / slug 進入遊戲 */}
-        <Route path="/g/:slug" component={GameBySlug} />
+        <Route path="/g/:slug" component={GameBySlugGated} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

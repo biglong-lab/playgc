@@ -18,3 +18,26 @@ export function getGameEntryPath(game: GameEntrySource): string {
 export function isDirectPlayGame(game: GameEntrySource): boolean {
   return getGameEntryPath(game) === `/game/${game.id}`;
 }
+
+export interface QrEntryGame extends GameEntrySource {
+  field?: { code?: string | null } | null;
+}
+
+/** QR 進場標記：遊戲頁據此「已通關就直接開新局」（見 useSessionManager autoRestartCompleted） */
+export const QR_ENTRY_PARAM = "entry";
+export const QR_ENTRY_VALUE = "qr";
+
+/**
+ * 掃 QR（/g/:slug）後的直達路徑
+ * - 套遊戲所屬場域前綴 /f/{code}（原本取「上次造訪場域」→ 新手機會落到錯的場域）
+ * - 保留原網址參數（例如組隊邀請 ?code=）
+ * - 單人遊戲加 entry=qr
+ */
+export function buildQrEntryTarget(game: QrEntryGame, search = ""): string {
+  const code = game.field?.code?.trim();
+  const prefix = code ? `/f/${code.toUpperCase()}` : "";
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  if (isDirectPlayGame(game)) params.set(QR_ENTRY_PARAM, QR_ENTRY_VALUE);
+  const qs = params.toString();
+  return `${prefix}${getGameEntryPath(game)}${qs ? `?${qs}` : ""}`;
+}
