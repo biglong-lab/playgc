@@ -55,6 +55,7 @@ import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { fetchWithAdminAuth } from "./admin-staff/types";
 import type { FieldSettings } from "@shared/schema";
 import { daysUntilDate, formatRemainingDays } from "@/lib/date-utils";
+import { canCreateField } from "@shared/lib/field-permissions";
 
 interface AdminInfo {
   systemRole: string;
@@ -396,6 +397,8 @@ export default function AdminStaffFields() {
   };
 
   const isSuperAdmin = adminInfo?.systemRole === "super_admin";
+  // 建立新場域是平台級操作：與後端 POST /api/admin/fields 同一份規則（場域管理員會被 403）
+  const canCreate = canCreateField(adminInfo?.systemRole);
 
   return (
     <UnifiedAdminLayout title="場域管理">
@@ -406,12 +409,14 @@ export default function AdminStaffFields() {
           </div>
           
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button data-testid="button-add-field">
-                <Plus className="w-4 h-4 mr-2" />
-                新增場域
-              </Button>
-            </DialogTrigger>
+            {canCreate && (
+              <DialogTrigger asChild>
+                <Button data-testid="button-add-field">
+                  <Plus className="w-4 h-4 mr-2" />
+                  新增場域
+                </Button>
+              </DialogTrigger>
+            )}
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>{editingField ? "編輯場域" : "新增場域"}</DialogTitle>
@@ -808,13 +813,12 @@ export default function AdminStaffFields() {
               <EmptyState
                 icon={Building2}
                 title="尚無場域資料"
-                description="點擊右上角「新增場域」開始建立第一個場域"
-                actions={[
-                  {
-                    label: "新增場域",
-                    onClick: () => setIsDialogOpen(true),
-                  },
-                ]}
+                description={
+                  canCreate
+                    ? "點擊右上角「新增場域」開始建立第一個場域"
+                    : "目前沒有可管理的場域；建立新場域需由平台管理員處理"
+                }
+                actions={canCreate ? [{ label: "新增場域", onClick: () => setIsDialogOpen(true) }] : []}
               />
             )}
           </CardContent>

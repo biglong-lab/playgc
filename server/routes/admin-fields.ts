@@ -8,6 +8,7 @@ import { db } from "../db";
 import { fields, parseFieldSettings, games, roles, rolePermissions, permissions, adminAccounts } from "@shared/schema";
 import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
+import { canCreateField } from "@shared/lib/field-permissions";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
 import { eq, desc, inArray } from "drizzle-orm";
@@ -282,10 +283,8 @@ export function registerAdminFieldRoutes(app: Express) {
 
       // 🔒 Critical #10 修：建立新場域是平台級操作，只允許 super_admin / platform_admin
       // 防止 field-manager 無限增生場域 + 自動取得管理權（DoS DB / 攻擊面）
-      if (
-        req.admin.systemRole !== "super_admin" &&
-        req.admin.systemRole !== "platform_admin"
-      ) {
+      // 規則與前端「新增場域」按鈕共用（shared/lib/field-permissions）
+      if (!canCreateField(req.admin.systemRole)) {
         return res.status(403).json({
           message: "只有平台管理員可建立新場域，請聯繫平台管理員",
         });

@@ -193,6 +193,17 @@ describe("admin-fields 路由", () => {
       expect(res.status).toBe(400);
       expect(res.body.message).toContain("Invalid");
     });
+
+    it("場域管理員（field_director）建立場域 → 403 且不寫入（前端也不顯示按鈕）", async () => {
+      const app = createApp();
+      const res = await request(app)
+        .post("/api/admin/fields")
+        .set({ "x-admin-id": "director-1", "x-field-id": "field-1", "x-system-role": "field_director" })
+        .send({ name: "偷建場域", code: "HACK" });
+      expect(res.status).toBe(403);
+      expect(res.body.message).toContain("平台管理員");
+      expect(mockDb.insert).not.toHaveBeenCalled();
+    });
   });
 
   describe("PATCH /api/admin/fields/:id", () => {
