@@ -43,6 +43,9 @@ function readInviteCodeFromUrl(): string {
   return parseInviteCode(window.location.search);
 }
 
+/** 隊長按開始後全員倒數秒數（2026-09-22：5→3，縮短開局等待） */
+export const TEAM_START_COUNTDOWN_SECONDS = 3;
+
 // 🆕 Phase 1.5：localStorage 記憶上次隊伍（80% 不彈 Dialog 設計）
 const LAST_SQUAD_KEY = "chito:lastSquadId";
 
@@ -344,14 +347,14 @@ export function useTeamLobby(): TeamLobbyReturn {
     onReadyUpdate: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/games", gameId, "my-team"] });
     },
-    // 🆕 隊長按開始 → 全員（含隊長）進入 5 秒倒數緩衝畫面，
+    // 🆕 隊長按開始 → 全員（含隊長）進入倒數緩衝畫面（TEAM_START_COUNTDOWN_SECONDS），
     //   讓所有玩家確認上線、對講機就緒，再一起進遊戲
     onGameStarted: (sessionId, _gameId) => {
       // 防重複：mutation 與 ws 兩個都會觸發，只取第一個
       if (startSessionIdRef.current) return;
       startSessionIdRef.current = sessionId;
       setStartingMode("starting");
-      setStartingCountdown(5);
+      setStartingCountdown(TEAM_START_COUNTDOWN_SECONDS);
     },
   });
 
@@ -395,7 +398,8 @@ export function useTeamLobby(): TeamLobbyReturn {
     if (startingCountdown <= 0) {
       const sid = startSessionIdRef.current;
       if (sid) {
-        setLocation(`/game/${gameId}?session=${sid}`);
+        // 🐛 2026-09-22：補場域前綴（原本進 /game/:id 脫離 /f/:code，返回大廳可能跑錯場域）
+        setLocation(link(`/game/${gameId}?session=${sid}`));
       }
       setStartingCountdown(null);
       setStartingMode(null);
@@ -406,7 +410,7 @@ export function useTeamLobby(): TeamLobbyReturn {
       setStartingCountdown((prev) => (prev === null ? null : prev - 1));
     }, 1000);
     return () => clearTimeout(timer);
-  }, [startingCountdown, gameId, setLocation]);
+  }, [startingCountdown, gameId, setLocation, link]);
 
   // Mutations
   const createTeamMutation = useMutation({
@@ -522,13 +526,13 @@ export function useTeamLobby(): TeamLobbyReturn {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({ title: "遊戲即將開始！" });
+      // 🆕 2026-09-22：移除「遊戲即將開始！」toast（與倒數畫面重複）
       // 🆕 改成觸發倒數（跟 onGameStarted ws callback 同樣效果，防 ws 漏接）
       //   防重複：ref 已有值 → 不再觸發
       if (!startSessionIdRef.current) {
         startSessionIdRef.current = data.sessionId;
         setStartingMode("starting");
-        setStartingCountdown(5);
+        setStartingCountdown(TEAM_START_COUNTDOWN_SECONDS);
       }
     },
     onError: (error: unknown) => {

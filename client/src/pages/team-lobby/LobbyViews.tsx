@@ -388,7 +388,7 @@ export function TeamLobbyView({
 
         <LobbyActions
           myMembership={myMembership}
-          hasLeader={!!team.leaderId}
+          isLeader={isLeader}
           hasEnoughPlayers={hasEnoughPlayers}
           allReady={allReady}
           onToggleReady={onToggleReady}
@@ -721,12 +721,13 @@ function MemberRow({ member }: { member: TeamMember & { user: User } }) {
 }
 
 function LobbyActions({
-  myMembership, hasLeader, hasEnoughPlayers, allReady,
+  myMembership, isLeader, hasEnoughPlayers, allReady,
   onToggleReady, onStartGame, onLeaveTeam,
   readyPending, startPending, leavePending,
 }: {
   myMembership: (TeamMember & { user: User }) | undefined;
-  hasLeader: boolean;
+  /** 只有隊長能開始（伺服器 /start 也只允許隊長，原本全員都看得到按鈕、按了 403） */
+  isLeader: boolean;
   hasEnoughPlayers: boolean;
   allReady: boolean;
   onToggleReady: () => void;
@@ -755,7 +756,7 @@ function LobbyActions({
         {isReady ? "取消準備" : "準備完成"}
       </Button>
 
-      {hasLeader && (
+      {isLeader ? (
         <Button
           className="w-full gap-2"
           onClick={onStartGame}
@@ -765,6 +766,10 @@ function LobbyActions({
           {startPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
           開始遊戲
         </Button>
+      ) : (
+        <p className="text-center text-sm text-muted-foreground" data-testid="text-wait-leader-start">
+          全員準備完成後，由隊長開始遊戲
+        </p>
       )}
 
       <Button
