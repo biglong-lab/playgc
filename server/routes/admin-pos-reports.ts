@@ -2,6 +2,7 @@
 //
 // Endpoints（requireAdminAuth + game:view，場域隔離）：
 //   GET  /api/admin/pos/reports/daily?date=YYYY-MM-DD   當日銷售報表（聚合）
+//   GET  /api/admin/pos/reports/range?from=&to=         區間報表（最長 366 天）
 //   GET  /api/admin/pos/reports/status                  狀態總覽（預約 today/本月/未來 + 來源 + 退款）
 //   POST /api/pos/shift/close                           每日結帳 → 寫 shift_closes + 推 Telegram 群組
 //   GET  /api/admin/pos/shift/closes                    歷史結帳清單
@@ -13,6 +14,7 @@ import { and, eq, sql, desc, inArray, gte } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { taipeiBusinessDate, taipeiLocalTime } from "../lib/revenue-facts";
 import { sendToFieldGroup } from "../lib/internal-notifier";
+import { resolvePosReportRange } from "../lib/pos-report-range";
 
 /**
  * 排除「幽靈退款」：退款後來源 POS 交易又被軟刪除（deleted_at 有值）。
@@ -262,12 +264,15 @@ export function registerAdminPosReportRoutes(app: Express) {
     }
   });
 
-  // 區間報表（週/月）
+  // 區間報表（週/月/上個月/自訂）— from/to 驗證：YYYY-MM-DD、from<=to、最長 366 天
   app.get("/api/admin/pos/reports/range", requireAdminAuth, requirePermission("pos_cash_admin"), async (req, res) => {
     try {
-      const to = (req.query.to as string) || taipeiToday();
-      const from = (req.query.from as string) || to;
-      const report = await aggregateRange(req.admin!.fieldId, from, to);
+      const range = resolvePosReportRange(req.query, taipeiToday());
+      if (!range.ok) {
+        res.status(400).json({ error: "invalid_range", message: range.message });
+        return;
+      }
+      const report = await aggregateRange(req.admin!.fieldId, range.from, range.to);
       res.json(report);
     } catch (e) {
       fail(res, e);
