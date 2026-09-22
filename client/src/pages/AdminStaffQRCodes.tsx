@@ -19,6 +19,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -48,6 +58,42 @@ interface Game {
   createdAt: string;
 }
 
+/** POST /api/admin/games/:id/qrcode 回傳格式（server/routes/admin-games.ts） */
+interface QRCodeResponse {
+  slug: string;
+  qrCodeUrl: string;
+  gameUrl: string;
+}
+
+interface RegenerateConfirmDialogProps {
+  readonly open: boolean;
+  readonly gameTitle: string;
+  readonly onOpenChange: (open: boolean) => void;
+  readonly onConfirm: () => void;
+}
+
+/** 重新產生短連結確認框 — 舊連結與已印出的 QR Code 會失效，必須明確確認 */
+function RegenerateConfirmDialog({ open, gameTitle, onOpenChange, onConfirm }: RegenerateConfirmDialogProps) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>確定重新產生「{gameTitle}」的短連結？</AlertDialogTitle>
+          <AlertDialogDescription>
+            重新產生後，舊連結與已印出、已張貼的 QR Code 將全部失效，玩家掃描會找不到遊戲。此動作無法復原。
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel data-testid="button-cancel-regenerate">取消</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm} data-testid="button-confirm-regenerate">
+            確定重新產生
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 const STATUS_LABELS: Record<string, string> = {
   draft: "草稿",
   published: "已發布",
@@ -68,6 +114,7 @@ export default function AdminStaffQRCodes() {
   const { inputRef: searchInputRef, handleEscape } = useSearchShortcut<HTMLInputElement>({ disableCmdK: true });
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [confirmRegenerateOpen, setConfirmRegenerateOpen] = useState(false);
 
   const { data: games = [], isLoading } = useQuery<Game[]>({
     queryKey: ["/api/admin/games"],
@@ -75,7 +122,7 @@ export default function AdminStaffQRCodes() {
   });
 
   const generateQRMutation = useMutation({
-    mutationFn: async (gameId: string) => {
+    mutationFn: async (gameId: string): Promise<QRCodeResponse> => {
       const res = await apiRequest("POST", `/api/admin/games/${gameId}/qrcode`, {});
       return res.json();
     },
@@ -87,7 +134,8 @@ export default function AdminStaffQRCodes() {
       });
       const game = games.find(g => g.id === gameId);
       if (game) {
-        setSelectedGame({ ...game, qrCodeUrl: data.qrCodeUrl, publicSlug: data.publicSlug || game.publicSlug });
+        // 🐛 API 回傳欄位是 slug（不是 publicSlug）
+        setSelectedGame({ ...game, qrCodeUrl: data.qrCodeUrl, publicSlug: data.slug || game.publicSlug });
       }
     },
     onError: (error: Error) => {
@@ -99,9 +147,11 @@ export default function AdminStaffQRCodes() {
     },
   });
 
+  // 🐛 之前呼叫不存在的 /regenerate-slug 路由（404）；改用既有 QR API 帶 regenerateSlug
+  //   （同一支 API 已有 requireAdminAuth + qr:generate 權限 + 場域隔離 + 稽核紀錄）
   const regenerateQRMutation = useMutation({
-    mutationFn: async (gameId: string) => {
-      const res = await apiRequest("POST", `/api/admin/games/${gameId}/regenerate-slug`, {});
+    mutationFn: async (gameId: string): Promise<QRCodeResponse> => {
+      const res = await apiRequest("POST", `/api/admin/games/${gameId}/qrcode`, { regenerateSlug: true });
       return res.json();
     },
     onSuccess: (data, gameId) => {
@@ -112,7 +162,7 @@ export default function AdminStaffQRCodes() {
       });
       const game = games.find(g => g.id === gameId);
       if (game) {
-        setSelectedGame({ ...game, qrCodeUrl: data.qrCodeUrl, publicSlug: data.publicSlug });
+        setSelectedGame({ ...game, qrCodeUrl: data.qrCodeUrl, publicSlug: data.slug });
       }
     },
     onError: (error: Error) => {
@@ -368,7 +418,7 @@ export default function AdminStaffQRCodes() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => regenerateQRMutation.mutate(selectedGame.id)}
+                    onClick={() => setConfirmRegenerateOpen(true)}
                     disabled={regenerateQRMutation.isPending}
                     data-testid="button-regenerate-qr"
                   >
@@ -380,6 +430,16 @@ export default function AdminStaffQRCodes() {
             )}
           </DialogContent>
         </Dialog>
+
+        <RegenerateConfirmDialog
+          open={confirmRegenerateOpen && !!selectedGame}
+          gameTitle={selectedGame?.title ?? ""}
+          onOpenChange={setConfirmRegenerateOpen}
+          onConfirm={() => {
+            if (selectedGame) regenerateQRMutation.mutate(selectedGame.id);
+            setConfirmRegenerateOpen(false);
+          }}
+        />
       </div>
     </UnifiedAdminLayout>
   );
