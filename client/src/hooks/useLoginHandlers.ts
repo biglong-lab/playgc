@@ -32,6 +32,20 @@ function readFieldCodeFromContext(): string | null {
   return null;
 }
 
+/**
+ * LINE 登入（整頁跳轉）回來的落點
+ * 🐛 2026-09-22 審查：原本一律回場域大廳、無視 redirectTo
+ *   - redirectTo === null（留在原頁，例如結算頁「保存紀錄」）→ 回到目前頁面
+ *   - redirectTo 為字串 → 回到該頁
+ *   - 未指定 → 場域大廳 / 場域列表（既有行為）
+ */
+function resolveLineReturnTo(redirectTo: string | null | undefined): string {
+  if (redirectTo === null) return window.location.pathname + window.location.search;
+  if (typeof redirectTo === "string" && redirectTo.length > 0) return redirectTo;
+  const code = readFieldCodeFromContext() || getLastVisitedField();
+  return code ? `/f/${code}/home` : "/f";
+}
+
 /** 登入方法類型 */
 export type LoginMethod = "google" | "apple" | "guest" | "email" | "line" | null;
 
@@ -112,9 +126,7 @@ export function useLoginHandlers(
     setIsLoggingIn(true);
     setLoginMethod("line");
     try {
-      const code = readFieldCodeFromContext() || getLastVisitedField();
-      const returnTo = code ? `/f/${code}/home` : "/f";
-      startLineLogin(returnTo);
+      startLineLogin(resolveLineReturnTo(options?.redirectTo));
     } catch (error) {
       handleLoginError(error);
     }
