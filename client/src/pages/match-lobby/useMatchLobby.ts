@@ -39,6 +39,9 @@ function useMatchDetail(matchId: string | null, lastEvent: unknown) {
     queryKey: ["/api/matches", matchId],
     enabled: !!matchId,
     refetchInterval: (q) => (q.state.data && ENDED.has(q.state.data.status) ? false : 3000),
+    // 🐛 結算數字曾停在中途：賽事一結束就停止輪詢，若進畫面時拿到的是別頁留下的舊快取就再也不更新
+    //   → 每次進大廳一定重抓一次（結算分數是最後才寫的）
+    refetchOnMount: "always",
   });
   // WS 有事件（加入 / 倒數 / 開賽 / 排名 / 結算）→ 立刻重抓，不用等輪詢
   useEffect(() => {
@@ -99,12 +102,13 @@ export function useMatchLobby() {
     isLoading: authLoading || gameLoading,
     isCreator: !!currentMatch && currentMatch.creatorId === currentUserId,
     isParticipant, currentUserId,
-    createMatch: () => actions.create.mutate(),
+    createMatch: (isPrivate = false) => actions.create.mutate(isPrivate),
     joinMatch: actions.join.mutate,
     joinByCode: actions.joinByCode.mutate,
     startMatch: () => actions.start.mutate(),
     finishMatch: () => actions.finish.mutate(),
     leaveMatch: () => actions.leave.mutate(),
+    kickPlayer: (userId: string) => actions.kick.mutate(userId),
     playAnother: backToList,
     isCreating: actions.create.isPending,
     isJoining: actions.join.isPending || actions.joinByCode.isPending,

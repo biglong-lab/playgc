@@ -23,7 +23,10 @@ export interface MatchDetail {
   gameId: string;
   matchMode: "competitive" | "relay";
   status: MatchStatus;
+  /** 只有房主 / 參賽者拿得到；旁觀者為 null */
   accessCode: string | null;
+  /** 私人房：不出現在公開列表 */
+  isPrivate: boolean;
   creatorId: string | null;
   startedAt: string | null;
   finishedAt: string | null;
@@ -36,9 +39,9 @@ export interface MatchDetail {
   teamTotal: number | null;
 }
 
+/** 公開列表不含邀請碼（安全審查 M1）：要加入就按「加入」或用朋友給的邀請碼 */
 export interface WaitingMatchSummary {
   id: string;
-  accessCode: string | null;
   maxTeams: number | null;
   participantCount: number;
   createdAt: string;

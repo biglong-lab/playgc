@@ -29,8 +29,8 @@ export function useMatchActions({ gameId, matchId, isGuest, onEnterMatch, onLeft
   const playerName = () => guestNameForServer(isGuest);
 
   const create = useMutation({
-    mutationFn: async () =>
-      (await apiRequest("POST", `/api/games/${gameId}/matches`, { playerName: playerName() })).json(),
+    mutationFn: async (isPrivate: boolean) =>
+      (await apiRequest("POST", `/api/games/${gameId}/matches`, { playerName: playerName(), isPrivate })).json(),
     onSuccess: (m: { id: string }) => { refreshLists(); onEnterMatch(m.id); },
     onError: fail("建立失敗"),
   });
@@ -61,11 +61,18 @@ export function useMatchActions({ gameId, matchId, isGuest, onEnterMatch, onLeft
     onError: fail("結束失敗"),
   });
 
+  // 🔒 房主把陌生人請出等待中的賽事
+  const kick = useMutation({
+    mutationFn: async (userId: string) => (await apiRequest("POST", `/api/matches/${matchId}/kick`, { userId })).json(),
+    onSuccess: refreshLists,
+    onError: fail("移除失敗"),
+  });
+
   const leave = useMutation({
     mutationFn: async () => (await apiRequest("POST", `/api/matches/${matchId}/leave`)).json(),
     onSuccess: () => { refreshLists(); onLeftMatch(); },
     onError: fail("退出失敗"),
   });
 
-  return { create, join, joinByCode, start, finish, leave };
+  return { create, join, joinByCode, start, finish, kick, leave };
 }

@@ -48,6 +48,7 @@ function renderView(lobby: ReturnType<typeof useMatchLobby>) {
           isStarting={lobby.isStarting}
           onLeave={lobby.leaveMatch}
           isLeaving={lobby.isLeaving}
+          onKick={lobby.kickPlayer}
         />
       );
     case "countdown":

@@ -44,7 +44,7 @@ function wrapper() {
 
 function detail(status: string, userIds: string[] = ["user-1"]) {
   return {
-    id: "match-9", gameId: "game-123", matchMode: "competitive", status, accessCode: "ABCD23", creatorId: "user-1",
+    id: "match-9", gameId: "game-123", matchMode: "competitive", status, accessCode: "ABCD23", isPrivate: false, creatorId: "user-1",
     minParticipants: 2, maxParticipants: 10, countdownSeconds: 3, timeLimitSeconds: null, relayLegs: [], teamTotal: null,
     ranking: userIds.map((u, i) => ({ participantId: `p${i}`, userId: u, displayName: u, score: 0, rank: i + 1, completed: false })),
   };
@@ -104,7 +104,7 @@ describe("useMatchLobby", () => {
     await waitFor(() => expect(result.current.currentView).toBe("browse"));
     act(() => result.current.createMatch());
     await waitFor(() =>
-      expect(mockApiRequest).toHaveBeenCalledWith("POST", "/api/games/game-123/matches", { playerName: "探險家1234" }),
+      expect(mockApiRequest).toHaveBeenCalledWith("POST", "/api/games/game-123/matches", { playerName: "探險家1234", isPrivate: false }),
     );
     await waitFor(() => expect(mockSetLocation).toHaveBeenCalledWith("/f/HPSPACE/match/game-123?m=match-new", { replace: true }));
   });

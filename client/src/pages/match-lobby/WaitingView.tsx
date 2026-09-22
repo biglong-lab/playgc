@@ -1,6 +1,6 @@
 // 🏁 賽事大廳：等待開賽（邀請碼 / 參賽者 / 開賽條件 / 退出），2026-09-23 P1
 import { useState } from "react";
-import { Check, Clock, Copy, Crown, Loader2, LogOut, Play, Share2, Users } from "lucide-react";
+import { Check, Clock, Copy, Crown, Loader2, LogOut, Play, Share2, UserMinus, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,8 @@ interface WaitingViewProps {
   readonly isStarting: boolean;
   readonly onLeave: () => void;
   readonly isLeaving: boolean;
+  /** 房主把人請出（只有等待中可用） */
+  readonly onKick: (userId: string) => void;
 }
 
 /** 開賽條件（跟伺服器同一套規則 shared/lib/match-rules；伺服器仍會再擋一次） */
@@ -56,8 +58,8 @@ export function WaitingView(props: WaitingViewProps) {
           <p className="text-xs text-muted-foreground">{ruleSummary(match)}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <InviteBlock accessCode={match.accessCode ?? ""} inviteUrl={props.inviteUrl} />
-          <ParticipantList match={match} userId={userId} />
+          <InviteBlock accessCode={match.accessCode ?? ""} inviteUrl={props.inviteUrl} isPrivate={match.isPrivate} />
+          <ParticipantList match={match} userId={userId} onKick={isCreator ? props.onKick : undefined} />
           {isCreator ? (
             <div className="space-y-1">
               <Button className="w-full" size="lg" onClick={onStart} disabled={isStarting || !!blocker} data-testid="button-start-match">
@@ -76,7 +78,7 @@ export function WaitingView(props: WaitingViewProps) {
   );
 }
 
-function InviteBlock({ accessCode, inviteUrl }: { accessCode: string; inviteUrl: string }) {
+function InviteBlock({ accessCode, inviteUrl, isPrivate }: { accessCode: string; inviteUrl: string; isPrivate: boolean }) {
   const [copied, setCopied] = useState(false);
   const flash = () => {
     setCopied(true);
@@ -117,12 +119,16 @@ function InviteBlock({ accessCode, inviteUrl }: { accessCode: string; inviteUrl:
           <Share2 className="h-4 w-4" />
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground text-center">朋友點分享連結會直接加入這場</p>
+      <p className="text-xs text-muted-foreground text-center">
+        朋友點分享連結會直接加入這場{isPrivate ? "；這是私人房，不會出現在公開列表" : ""}
+      </p>
     </div>
   );
 }
 
-function ParticipantList({ match, userId }: { match: MatchDetail; userId?: string }) {
+function ParticipantList({
+  match, userId, onKick,
+}: { match: MatchDetail; userId?: string; onKick?: (userId: string) => void }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
@@ -140,9 +146,21 @@ function ParticipantList({ match, userId }: { match: MatchDetail; userId?: strin
             }`}
           >
             <Users className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="truncate">{p.displayName}</span>
+            <span className="truncate flex-1">{p.displayName}</span>
             {p.userId === userId && <Badge variant="outline" className="text-[10px]">我</Badge>}
             {p.userId === match.creatorId && <Crown className="h-3.5 w-3.5 text-yellow-500" aria-label="房主" />}
+            {onKick && p.userId && p.userId !== match.creatorId && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-muted-foreground"
+                aria-label={`移除 ${p.displayName}`}
+                data-testid={`button-kick-${p.userId}`}
+                onClick={() => onKick(p.userId as string)}
+              >
+                <UserMinus className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         ))}
       </div>

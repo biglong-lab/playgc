@@ -38,7 +38,7 @@ function game(overrides: Partial<Game> = {}): Game {
 
 function match(overrides: Partial<MatchDetail> = {}): MatchDetail {
   return {
-    id: "m1", gameId: "g1", matchMode: "competitive", status: "waiting", accessCode: "ABCD23", creatorId: "u1",
+    id: "m1", gameId: "g1", matchMode: "competitive", status: "waiting", accessCode: "ABCD23", isPrivate: false, creatorId: "u1",
     startedAt: null, finishedAt: null, minParticipants: 2, maxParticipants: 10, countdownSeconds: 3,
     timeLimitSeconds: null, relayLegs: [], teamTotal: null,
     ranking: [{ participantId: "p1", userId: "u1", displayName: "小明", score: 0, rank: 1, completed: false, relaySegment: null, relayStatus: null }],
@@ -56,7 +56,7 @@ describe("BrowseMatchesView", () => {
     const onCode = vi.fn();
     render(<BrowseMatchesView {...base} game={game()} onCreateMatch={onCreate} onJoinByCode={onCode} />);
     fireEvent.click(screen.getByTestId("button-create-match"));
-    expect(onCreate).toHaveBeenCalled();
+    expect(onCreate).toHaveBeenCalledWith(false);
     fireEvent.change(screen.getByTestId("input-match-code"), { target: { value: "abcd23" } });
     fireEvent.click(screen.getByTestId("button-join-by-code"));
     expect(onCode).toHaveBeenCalledWith("ABCD23");
@@ -66,11 +66,24 @@ describe("BrowseMatchesView", () => {
     const onJoin = vi.fn();
     render(
       <BrowseMatchesView {...base} game={game()} onJoinMatch={onJoin}
-        matches={[{ id: "m9", accessCode: "XYZ789", maxTeams: 8, participantCount: 3, createdAt: "" }]} />,
+        matches={[{ id: "m9", maxTeams: 8, participantCount: 3, createdAt: "" }]} />,
     );
     expect(screen.getByText("3/8 人")).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("button-join-match-m9"));
     expect(onJoin).toHaveBeenCalledWith("m9");
+  });
+
+  // 🔒 安全審查 M1：公開列表不再顯示邀請碼；可建立私人房
+  it("列表不顯示邀請碼；勾選私人房後建立會帶 isPrivate", () => {
+    const onCreate = vi.fn();
+    render(
+      <BrowseMatchesView {...base} game={game()} onCreateMatch={onCreate}
+        matches={[{ id: "m9", maxTeams: 8, participantCount: 3, createdAt: "" }]} />,
+    );
+    expect(screen.queryByText("XYZ789")).toBeNull();
+    fireEvent.click(screen.getByTestId("checkbox-private-match"));
+    fireEvent.click(screen.getByTestId("button-create-match"));
+    expect(onCreate).toHaveBeenCalledWith(true);
   });
 
   it("接力遊戲沒設分段 → 提示且不能建立", () => {
@@ -81,7 +94,7 @@ describe("BrowseMatchesView", () => {
 });
 
 describe("WaitingView", () => {
-  const base = { userId: "u1", inviteUrl: "https://x/match/g1?code=ABCD23", onStart: noop, isStarting: false, onLeave: noop, isLeaving: false };
+  const base = { userId: "u1", inviteUrl: "https://x/match/g1?code=ABCD23", onStart: noop, isStarting: false, onLeave: noop, isLeaving: false, onKick: noop };
 
   it("房主人數不足 → 開始鈕停用並說明還差幾人", () => {
     render(<WaitingView {...base} match={match()} isCreator />);
@@ -111,6 +124,24 @@ describe("WaitingView", () => {
     render(<WaitingView {...base} match={two} isCreator={false} userId="u2" />);
     expect(screen.queryByTestId("button-start-match")).toBeNull();
     expect(screen.getByText("等待房主開始賽事…")).toBeInTheDocument();
+  });
+
+  // 🔒 安全審查 M1：房主可把陌生人請出（不必取消整場）
+  it("房主看得到移除按鈕、按了會帶該玩家 ID；非房主看不到", () => {
+    const onKick = vi.fn();
+    const two = match({
+      ranking: [
+        ...match().ranking,
+        { participantId: "p2", userId: "u2", displayName: "路人", score: 0, rank: 2, completed: false, relaySegment: null, relayStatus: null },
+      ],
+    });
+    const { unmount } = render(<WaitingView {...base} match={two} isCreator onKick={onKick} />);
+    expect(screen.queryByTestId("button-kick-u1")).toBeNull(); // 不能踢自己（房主）
+    fireEvent.click(screen.getByTestId("button-kick-u2"));
+    expect(onKick).toHaveBeenCalledWith("u2");
+    unmount();
+    render(<WaitingView {...base} match={two} isCreator={false} userId="u2" onKick={onKick} />);
+    expect(screen.queryByTestId("button-kick-u2")).toBeNull();
   });
 
   it("房主取消賽事要先確認；一般參賽者直接退出", () => {

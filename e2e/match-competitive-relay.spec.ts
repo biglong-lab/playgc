@@ -13,7 +13,7 @@
 import { test, expect, type Browser, type Page } from "@playwright/test";
 
 /** 本機跑很多容器時伺服器回應可能到數秒（開局 / 完成 / 輪詢），單步驟寬限放寬 */
-const STEP_TIMEOUT = 45_000;
+const STEP_TIMEOUT = 60_000;
 
 async function newPhone(browser: Browser, baseURL: string | undefined, contextOptions: object): Promise<Page> {
   const ctx = await browser.newContext({ ...contextOptions, baseURL });
@@ -51,6 +51,7 @@ test.describe("競賽 / 接力：兩位訪客免登入", () => {
   const cleanup: string[] = [];
 
   test.afterAll(async ({ request }) => {
+    if (process.env.KEEP_E2E_DATA === "1") return;
     for (const id of cleanup) await request.post(`/api/_test/cleanup/${id}`);
   });
 

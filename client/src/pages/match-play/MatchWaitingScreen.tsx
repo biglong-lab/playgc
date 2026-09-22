@@ -36,6 +36,7 @@ export default function MatchWaitingScreen({ me, userId, showScore }: MatchWaiti
   const { data: detail } = useQuery<MatchDetail>({
     queryKey: ["/api/matches", me.matchId],
     refetchInterval: 3000,
+    refetchOnMount: "always",
   });
   const info = headline(me);
   const Icon = info.icon;

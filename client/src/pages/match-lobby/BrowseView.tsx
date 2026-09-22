@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, Swords, Users, KeyRound, AlertTriangle } from "luci
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { resolveMatchConfig, type Game, type GameMatchConfig } from "@shared/schema";
 import type { WaitingMatchSummary } from "@/lib/match-types";
@@ -11,7 +12,7 @@ import type { WaitingMatchSummary } from "@/lib/match-types";
 interface BrowseMatchesViewProps {
   readonly game: Game | undefined;
   readonly matches: readonly WaitingMatchSummary[];
-  readonly onCreateMatch: () => void;
+  readonly onCreateMatch: (isPrivate: boolean) => void;
   readonly onJoinMatch: (matchId: string) => void;
   readonly onJoinByCode: (code: string) => void;
   readonly onGoBack: () => void;
@@ -59,15 +60,7 @@ export function BrowseMatchesView(props: BrowseMatchesViewProps) {
         </Card>
       )}
 
-      <Card className="mb-4">
-        <CardContent className="pt-6 space-y-2">
-          <Button className="w-full" onClick={onCreateMatch} disabled={isCreating || info.blocked} data-testid="button-create-match">
-            {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Swords className="h-4 w-4 mr-2" />}
-            建立新賽事
-          </Button>
-          <p className="text-xs text-muted-foreground text-center">建立後把邀請碼或連結分享給朋友</p>
-        </CardContent>
-      </Card>
+      <CreateMatchCard onCreateMatch={onCreateMatch} isCreating={isCreating} blocked={info.blocked} />
 
       <JoinByCodeCard onJoinByCode={props.onJoinByCode} isJoining={isJoining} />
 
@@ -81,11 +74,11 @@ export function BrowseMatchesView(props: BrowseMatchesViewProps) {
         </Card>
       ) : (
         <div className="space-y-3">
-          {matches.map((m) => (
+          {matches.map((m, i) => (
             <Card key={m.id} className="hover:border-primary/50 transition-colors">
               <CardContent className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="font-mono">{m.accessCode}</Badge>
+                  <Badge variant="outline">賽事 {i + 1}</Badge>
                   <span className="text-sm text-muted-foreground">{m.participantCount}/{m.maxTeams ?? "?"} 人</span>
                 </div>
                 <Button size="sm" onClick={() => onJoinMatch(m.id)} disabled={isJoining} data-testid={`button-join-match-${m.id}`}>
@@ -97,6 +90,28 @@ export function BrowseMatchesView(props: BrowseMatchesViewProps) {
         </div>
       )}
     </div>
+  );
+}
+
+/** 建立賽事：可選「只讓有邀請碼的人加入」（不出現在列表） */
+function CreateMatchCard({
+  onCreateMatch, isCreating, blocked,
+}: { onCreateMatch: (isPrivate: boolean) => void; isCreating: boolean; blocked: boolean }) {
+  const [isPrivate, setIsPrivate] = useState(false);
+  return (
+    <Card className="mb-4">
+      <CardContent className="pt-6 space-y-3">
+        <Button className="w-full" onClick={() => onCreateMatch(isPrivate)} disabled={isCreating || blocked} data-testid="button-create-match">
+          {isCreating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Swords className="h-4 w-4 mr-2" />}
+          建立新賽事
+        </Button>
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <Checkbox checked={isPrivate} onCheckedChange={(v) => setIsPrivate(v === true)} data-testid="checkbox-private-match" />
+          只讓有邀請碼的人加入（不出現在下方列表）
+        </label>
+        <p className="text-xs text-muted-foreground">建立後把邀請碼或連結分享給朋友</p>
+      </CardContent>
+    </Card>
   );
 }
 
