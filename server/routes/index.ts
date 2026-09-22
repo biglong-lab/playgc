@@ -111,6 +111,7 @@ import { registerAdminEngagementRoutes } from "./admin-engagement";
 import { registerAdminAbExperimentsRoutes } from "./admin-ab-experiments";
 import { registerTeamRaceRoutes, ensureTeamRaceSchema } from "./team-race";
 import { ensureGameColumns } from "../services/game-columns";
+import { ensurePermissionCatalog } from "../services/ensure-permissions";
 import { registerTeamPhotoGatherRoutes, ensureTeamPhotoGatherSchema } from "./team-photo-gather";
 import { registerTeamShootingRoutes, ensureTeamShootingSchema } from "./team-shooting";
 import { registerTeamLockCoopRoutes, ensureTeamLockCoopSchema } from "./team-lock-coop";
@@ -122,6 +123,8 @@ export async function registerRoutes(
 ): Promise<Server> {
   // 🆕 2026-09-22：games 冪等補欄位（scoring_enabled / match_config）— 必須早於任何 games 查詢
   await ensureGameColumns();
+  // 🔑 2026-09-23 P2：權限鍵目錄同步（只加不刪；新鍵補發給既有角色，換檢查時不會有人掉權限）
+  await ensurePermissionCatalog().catch((err) => console.error("[permissions] 同步失敗:", err));
 
   // Webhook 路由必須在 adminAuthMiddleware 之前（外部服務呼叫，用自己的簽名驗證）
   registerRecurWebhookRoutes(app);
