@@ -14,7 +14,8 @@ export interface AchievementCardParams {
   fieldName: string;
   gameTitle: string;
   playerName?: string;
-  score: number;
+  /** null = 不計分遊戲（2026-09-22）→ 大字區改畫「完成！」 */
+  score: number | null;
   subtitle?: string; // 如「章節完成」「任務完成」
   primaryColor?: string; // 預設 CHITO 橘
 }
@@ -89,13 +90,15 @@ export async function createAchievementCard(
   const scoreY = lines.length > 1 ? 620 : 580;
   ctx.font = "bold 36px -apple-system, sans-serif";
   ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-  ctx.fillText("獲得分數", W / 2, scoreY);
+  ctx.fillText(score === null ? "挑戰成功" : "獲得分數", W / 2, scoreY);
 
-  ctx.font = "bold 180px -apple-system, 'SF Pro Display', sans-serif";
+  ctx.font = score === null
+    ? "bold 140px -apple-system, 'Noto Sans TC', sans-serif"
+    : "bold 180px -apple-system, 'SF Pro Display', sans-serif";
   ctx.fillStyle = "white";
   ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
   ctx.shadowBlur = 20;
-  ctx.fillText(String(score), W / 2, scoreY + 140);
+  ctx.fillText(score === null ? "完成！" : String(score), W / 2, scoreY + 140);
   ctx.shadowBlur = 0;
 
   // ═══ 底部：場域名 + 玩家名 + 時間 ═══

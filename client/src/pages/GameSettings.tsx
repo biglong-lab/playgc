@@ -108,6 +108,8 @@ export default function GameSettings() {
           onShowCompletionStarsChange={settings.setShowCompletionStars}
           showCompletionScore={settings.playerDisplay.showCompletionScore}
           onShowCompletionScoreChange={settings.setShowCompletionScore}
+          scoringEnabled={settings.playerDisplay.scoringEnabled}
+          onScoringEnabledChange={settings.setScoringEnabled}
         />
 
         <Card>

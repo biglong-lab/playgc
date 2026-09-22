@@ -1,5 +1,6 @@
 // 章節選擇頁面 - 顯示遊戲的所有章節及玩家解鎖狀態
 import { useParams, useLocation } from "wouter";
+import { isScoringEnabled } from "@shared/lib/scoring";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -248,7 +249,7 @@ export default function ChapterSelect() {
                           <span>{chapter.estimatedTime} 分鐘</span>
                         </div>
                       )}
-                      {chapter.bestScore > 0 && (
+                      {isScoringEnabled(game) && chapter.bestScore > 0 && (
                         <div className="flex items-center gap-1">
                           <Star className="w-3 h-3" />
                           <span>最佳 {chapter.bestScore} 分</span>

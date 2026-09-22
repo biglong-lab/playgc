@@ -17,6 +17,8 @@ interface GameHeaderProps {
   onMap?: () => void;
   onInventory?: () => void;
   inventoryCount?: number;
+  /** 🆕 2026-09-22 計分開關：false → 不顯示分數徽章 */
+  showScore?: boolean;
 }
 
 export default function GameHeader({
@@ -27,6 +29,7 @@ export default function GameHeader({
   onMap,
   onInventory,
   inventoryCount = 0,
+  showScore = true,
 }: GameHeaderProps) {
   const [scoreChange, setScoreChange] = useState<number | null>(null);
   const prevScoreRef = useRef(score);
@@ -67,6 +70,7 @@ export default function GameHeader({
         </div>
 
         <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+          {showScore && (
           <div className="relative">
             <Badge variant="outline" className="gap-1 font-number">
               <Star className="w-3 h-3 text-primary" />
@@ -82,6 +86,7 @@ export default function GameHeader({
               </span>
             )}
           </div>
+          )}
 
           {onInventory && (
             <Button 

@@ -10,6 +10,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { queueProgressUpdate } from "@/lib/offlineStorage";
 import { resolveFlowRouter } from "@/lib/flow-router";
 import { computeCompletionReward } from "@/lib/completion-reward";
+import { isScoringEnabled } from "@shared/lib/scoring";
+import { ScoringProvider } from "@/contexts/ScoringContext";
 import type { GameWithPages, Page, GameChapterWithPages } from "@shared/schema";
 
 import GameHeader from "@/components/shared/GameHeader";
@@ -87,6 +89,8 @@ export default function GamePlay() {
   const { data: game, isLoading: gameLoading, error: gameError } = useQuery<GameWithPages>({
     queryKey: ["/api/games", gameId],
   });
+  // 🎯 2026-09-22 計分開關：關閉 → 不加分、不顯示分數、結算不顯示星星/分數/排行榜
+  const scoringEnabled = isScoringEnabled(game);
 
   // 章節模式：載入章節頁面
   const { data: chapterData } = useQuery<GameChapterWithPages>({
@@ -263,20 +267,14 @@ export default function GamePlay() {
   const handleCompletion = useCallback((finalScore: number) => {
     const sid = stateRef.current.sessionId;
     if (!sid) return;
+    // 🆕 2026-09-22：移除「恭喜通關 / 章節完成 + 得分」toast — 結算畫面本身就在慶祝，toast 還蓋住獎盃
+    const markCompleted = () => setState(prev => ({ ...prev, isCompleted: true }));
     if (isChapterMode) {
-      apiRequest("PATCH", `/api/sessions/${sid}/chapter-complete`, { score: finalScore })
-        .then(() => {
-          setState(prev => ({ ...prev, isCompleted: true }));
-          toast({ title: "章節完成!", description: `得分: ${finalScore} 分` });
-        });
+      apiRequest("PATCH", `/api/sessions/${sid}/chapter-complete`, { score: finalScore }).then(markCompleted);
     } else {
-      apiRequest("PATCH", `/api/sessions/${sid}`, { status: "completed", score: finalScore })
-        .then(() => {
-          setState(prev => ({ ...prev, isCompleted: true }));
-          toast({ title: "恭喜通關!", description: `最終得分: ${finalScore} 分` });
-        });
+      apiRequest("PATCH", `/api/sessions/${sid}`, { status: "completed", score: finalScore }).then(markCompleted);
     }
-  }, [isChapterMode, toast, stateRef, setState]);
+  }, [isChapterMode, stateRef, setState]);
 
   // === 頁面完成 → 更新分數/道具/變數 → 導航 ===
   // 防線：若子元件仍漏網雙觸發，GamePlay 用 ref 做 window-based 節流（150ms）
@@ -311,6 +309,7 @@ export default function GamePlay() {
       score: currentState.score,
       inventory: currentState.inventory,
       variables: currentState.variables,
+      scoringEnabled,
     });
     const newScore = rewarded.score;
     const newInventory = rewarded.inventory;
@@ -420,7 +419,7 @@ export default function GamePlay() {
       handleCompletion(newScore);
       return { ...prev, score: newScore, inventory: newInventory, variables: newVariables, completedPageIds: newCompletedIds };
     });
-  }, [stateRef, activePagesRef, setState, handleCompletion, itemIdToInfo]);
+  }, [stateRef, activePagesRef, setState, handleCompletion, itemIdToInfo, scoringEnabled]);
 
   // 🆕 2026-05-16 #7：預覽模式強制過關事件監聽
   // PreviewNavBar 按「強制過關」→ dispatch CustomEvent → 此 useEffect 呼叫 handlePageComplete
@@ -482,8 +481,9 @@ export default function GamePlay() {
         onPlayAgain={resetAndCreateNew}
         onNavigate={setLocation}
         /* 🆕 2026-07-08 CHITO #93c7a2ca：依遊戲設定控制星星/分數顯示 */
-        showStars={(game as { showCompletionStars?: boolean | null }).showCompletionStars ?? true}
-        showScore={(game as { showCompletionScore?: boolean | null }).showCompletionScore ?? true}
+        showStars={scoringEnabled && ((game as { showCompletionStars?: boolean | null }).showCompletionStars ?? true)}
+        showScore={scoringEnabled && ((game as { showCompletionScore?: boolean | null }).showCompletionScore ?? true)}
+        scoringEnabled={scoringEnabled}
       />
     );
   }
@@ -508,10 +508,12 @@ export default function GamePlay() {
   }
 
   return (
+    <ScoringProvider value={scoringEnabled}>
     <div className="gameplay-immersive min-h-screen-dynamic bg-background flex flex-col overflow-x-hidden">
       <GameHeader
         title={isChapterMode && chapterData?.title ? `${game.title} - ${chapterData.title}` : game.title}
         score={score}
+        showScore={scoringEnabled}
         onBack={() => {
           // 🆕 F1: 玩家按返回時不直接離開，先彈 Dialog 確認（避免誤觸 + 說明進度會保留）
           // 遊戲已完成時（isCompleted）照常走 GameCompletionScreen 流程，不會到這
@@ -550,8 +552,8 @@ export default function GamePlay() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {myTeam?.id
-                ? "你會脫離隊伍。已獲得的分數 / 道具會保留，但隊伍進行中時不會被自動拉回。"
-                : "你的進度和已獲得的分數 / 道具都會保留。從大廳的「進行中」就能接著玩。"}
+                ? `你會脫離隊伍。已獲得的${scoringEnabled ? "分數 / " : ""}道具會保留，但隊伍進行中時不會被自動拉回。`
+                : `你的進度和已獲得的${scoringEnabled ? "分數 / " : ""}道具都會保留。從大廳的「進行中」就能接著玩。`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -777,5 +779,6 @@ export default function GamePlay() {
         onCancel={() => setPendingDecisionTarget(null)}
       />
     </div>
+    </ScoringProvider>
   );
 }

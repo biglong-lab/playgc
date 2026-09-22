@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { GameSession, Page } from "@shared/schema";
 
@@ -96,7 +95,6 @@ export function useSessionManager({
   autoRestartCompleted = false,
 }: UseSessionManagerParams) {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
 
   const [state, setState] = useState<SessionState>({
     sessionId: null,
@@ -336,7 +334,7 @@ export function useSessionManager({
         completedPageIds: activePages.map((p) => p.id),
       });
       setHasRestoredProgress(true);
-      toast({ title: "遊戲已完成", description: `最終得分: ${newScore} 分` });
+      // 🆕 2026-09-22：移除「遊戲已完成 / 最終得分」toast（結算畫面本身已顯示，且不計分遊戲不該提分數）
       return;
     }
 

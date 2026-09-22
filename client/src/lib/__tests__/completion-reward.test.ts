@@ -82,4 +82,32 @@ describe("computeCompletionReward — 防重複刷分（CHITO #2）", () => {
     expect(inv).toEqual(["item-a"]); // 原陣列未被改
     expect(vars).toEqual({ flag: true });
   });
+
+  describe("🎯 計分開關關閉（scoringEnabled=false）", () => {
+    it("元件給分與 add_score 都不加分，道具照發", () => {
+      const result = computeCompletionReward({
+        reward: { points: 30, items: ["item-b"] },
+        page: { id: "p9", config: { onCompleteActions: [{ type: "add_score", points: 50 }] } },
+        completedPageIds: [],
+        score: 0,
+        inventory: [],
+        variables: {},
+        scoringEnabled: false,
+      });
+      expect(result.score).toBe(0);
+      expect(result.inventory).toEqual(["item-b"]);
+    });
+
+    it("未指定 = 開啟（既有遊戲行為不變）", () => {
+      const result = computeCompletionReward({
+        reward: { points: 30 },
+        page: { id: "p9", config: {} },
+        completedPageIds: [],
+        score: 0,
+        inventory: [],
+        variables: {},
+      });
+      expect(result.score).toBe(30);
+    });
+  });
 });

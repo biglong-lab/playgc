@@ -314,6 +314,8 @@ export function registerAdminGameRoutes(app: Express) {
     bgmUrl: z.string().nullable().optional(),
     // 🤖 P6-4: AI 實測時戳（admin 點「已完成 AI 實測」按鈕時帶當前時間）
     lastLiveTestedAt: z.coerce.date().nullable().optional(),
+    // 🆕 2026-09-22：計分開關
+    scoringEnabled: z.boolean().optional(),
   }).strict(); // strict() 拒絕未定義的欄位
 
   app.patch("/api/admin/games/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {

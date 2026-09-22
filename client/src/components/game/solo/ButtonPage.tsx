@@ -7,6 +7,7 @@ import { Clock, AlertTriangle, ChevronRight } from "lucide-react";
 //   改用精選 ICON_CATALOG 的 getIconByName（admin IconPicker 本就只從此 catalog 選）
 import { getIconByName } from "@/components/shared/IconPicker";
 import type { ButtonConfig } from "@shared/schema";
+import { useScoringEnabled } from "@/contexts/ScoringContext";
 
 interface ButtonPageProps {
   config: ButtonConfig;
@@ -17,6 +18,8 @@ interface ButtonPageProps {
 }
 
 export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
+  // 🎯 2026-09-22：不計分遊戲不顯示選項的「±N 分」標籤（道具標籤照常）
+  const scoringEnabled = useScoringEnabled();
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -185,7 +188,7 @@ export default function ButtonPage({ config, onComplete }: ButtonPageProps) {
                   （避免玩家以分數高低選答案、破壞劇情沉浸感）；預設 true 維持既有行為 */}
               {config.showOptionRewards !== false && (
               <div className="flex items-center gap-2">
-                {button.rewardPoints != null && button.rewardPoints !== 0 && (
+                {scoringEnabled && button.rewardPoints != null && button.rewardPoints !== 0 && (
                   <span className={`text-sm opacity-70 px-2 py-0.5 rounded tabular-nums ${
                     button.rewardPoints > 0 ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
                   }`}>

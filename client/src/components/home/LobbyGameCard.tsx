@@ -1,6 +1,7 @@
 // 🎮 大廳遊戲卡（2026-09-22 自 Home.tsx 拆出 — Home 原 1123 行超過上限）
 // 行為不變：未完成的卡整張可點進遊戲；已完成的卡只有「再玩一次」按鈕可點。
 import type { Game } from "@shared/schema";
+import { isScoringEnabled } from "@shared/lib/scoring";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -142,7 +143,9 @@ function CardCta({ game, status, onReplay }: Pick<LobbyGameCardProps, "game" | "
       <div className="w-full space-y-2">
         <div className="flex items-center justify-center gap-2 text-success py-2">
           <CheckCircle2 className="w-4 h-4" />
-          <span className="text-sm font-medium">遊戲已完成 - {status.score} 分</span>
+          <span className="text-sm font-medium">
+            遊戲已完成{isScoringEnabled(game) ? ` - ${status.score} 分` : ""}
+          </span>
         </div>
         <Button
           variant="outline"

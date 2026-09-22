@@ -88,8 +88,11 @@ export interface GameSettingsReturn {
     /** 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面顯示控制 */
     showCompletionStars: boolean;
     showCompletionScore: boolean;
+    /** 🆕 2026-09-22：計分開關（關閉 = 不顯示分數、不加分、不上排行榜） */
+    scoringEnabled: boolean;
   };
   setShowProgress: (v: boolean) => void;
+  setScoringEnabled: (v: boolean) => void;
   setShowCompletionStars: (v: boolean) => void;
   setShowCompletionScore: (v: boolean) => void;
   // 操作
@@ -141,6 +144,7 @@ export function useGameSettings(): GameSettingsReturn {
   // 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面星星/分數顯示（預設開）
   const [showCompletionStars, setShowCompletionStars] = useState(true);
   const [showCompletionScore, setShowCompletionScore] = useState(true);
+  const [scoringEnabled, setScoringEnabled] = useState(true);
 
   // 資料查詢
   const { data: user } = useQuery<User>({
@@ -184,6 +188,7 @@ export function useGameSettings(): GameSettingsReturn {
     setShowCompletionScore(
       (game as { showCompletionScore?: boolean }).showCompletionScore !== false,
     );
+    setScoringEnabled((game as { scoringEnabled?: boolean | null }).scoringEnabled !== false);
   }, [game]);
 
   // 儲存 mutation
@@ -233,6 +238,7 @@ export function useGameSettings(): GameSettingsReturn {
       showProgress,
       showCompletionStars,
       showCompletionScore,
+      scoringEnabled,
     });
   };
 
@@ -312,8 +318,10 @@ export function useGameSettings(): GameSettingsReturn {
       showProgress,
       showCompletionStars,
       showCompletionScore,
+      scoringEnabled,
     },
     setShowProgress,
+    setScoringEnabled,
     setShowCompletionStars,
     setShowCompletionScore,
     handleSave,

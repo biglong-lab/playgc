@@ -16,6 +16,8 @@ export interface CompletionRewardInput {
   inventory: string[];
   /** 目前變數 */
   variables: Record<string, unknown>;
+  /** 🆕 2026-09-22 計分開關：false → 忽略元件給分與加減分動作（分數維持不變） */
+  scoringEnabled?: boolean;
 }
 
 export interface CompletionRewardResult {
@@ -40,6 +42,7 @@ export function computeCompletionReward(
   input: CompletionRewardInput,
 ): CompletionRewardResult {
   const { reward, page, completedPageIds, score, inventory, variables } = input;
+  const scoring = input.scoringEnabled !== false;
 
   const alreadyScored = !!page && completedPageIds.includes(page.id);
   if (alreadyScored) {
@@ -55,8 +58,8 @@ export function computeCompletionReward(
   let newInventory = [...inventory];
   let newVariables = { ...variables };
 
-  // 1. 即時 reward
-  if (reward?.points) newScore += reward.points;
+  // 1. 即時 reward（不計分遊戲不加分，道具照發）
+  if (scoring && reward?.points) newScore += reward.points;
   if (reward?.items) newInventory = [...newInventory, ...reward.items];
 
   // 2. onCompleteActions（通用變數/道具/分數操作）
@@ -66,7 +69,7 @@ export function computeCompletionReward(
       const result = processOnCompleteActions(actions, newVariables, newInventory, newScore);
       newVariables = result.variables;
       newInventory = result.inventory;
-      newScore = result.score;
+      if (scoring) newScore = result.score;
     }
   }
 

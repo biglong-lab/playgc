@@ -1,5 +1,6 @@
 // 🏆 排行榜頁 — 顯示玩家頭像、暱稱、匿名標記
 import { useState, useMemo, useCallback } from "react";
+import { isScoringEnabled } from "@shared/lib/scoring";
 import { Link } from "wouter";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -165,7 +166,8 @@ export default function Leaderboard() {
               >
                 全部遊戲
               </Button>
-              {games.map((g) => (
+              {/* 🎯 2026-09-22：不計分遊戲沒有排名，不列入篩選 */}
+              {games.filter((g) => isScoringEnabled(g)).map((g) => (
                 <Button
                   key={g.id}
                   variant={selectedGame === g.id ? "default" : "outline"}

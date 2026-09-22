@@ -20,7 +20,8 @@ import {
   Users,
   Compass,
 } from "lucide-react";
-import type { Location, LocationVisit, Page } from "@shared/schema";
+import type { Location, LocationVisit, Page, Game } from "@shared/schema";
+import { isScoringEnabled } from "@shared/lib/scoring";
 
 // 使用 npm 套件 leaflet（已裝），避免 CDN 載入時序問題
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- leaflet 沒裝 @types，用 any 取代
@@ -60,6 +61,9 @@ export default function MapView() {
   const [tilesLoaded, setTilesLoaded] = useState(0);  // 已載入的 tile 數（給使用者確認地圖有在動）
 
   // === 資料查詢 ===
+  // 🎯 2026-09-22 計分開關：不計分遊戲的地點不顯示「獎勵 +N 分」（與 GamePlay 共用快取）
+  const { data: game } = useQuery<Game>({ queryKey: ["/api/games", gameId], enabled: !!gameId });
+  const scoringEnabled = isScoringEnabled(game);
   const { data: locations = [], isLoading: locationsLoading } = useQuery<Location[]>({
     queryKey: [`/api/games/${gameId}/locations`],
     enabled: !!gameId,
@@ -284,7 +288,7 @@ export default function MapView() {
           <strong class="text-lg">${location.name}</strong>
           ${location.description ? `<p class="text-sm text-muted-foreground mt-1">${location.description}</p>` : ''}
           <div class="flex items-center gap-2 mt-2">
-            <span class="text-sm">獎勵: +${location.points || 0} 分</span>
+            ${scoringEnabled ? `<span class="text-sm">獎勵: +${location.points || 0} 分</span>` : ''}
             ${isVisited ? '<span class="text-success text-sm">✓ 已完成</span>' : ''}
           </div>
         </div>
@@ -302,7 +306,7 @@ export default function MapView() {
       }
       locationMarkersRef.current.set(location.id, marker);
     });
-  }, [locations, visits]);
+  }, [locations, visits, scoringEnabled]);
 
   // === 頁面地點標記 ===
   useEffect(() => {

@@ -90,6 +90,10 @@ export const games = pgTable("games", {
   //   劇情體驗/導覽/教育走讀型遊戲不以分數為核心 → 可關閉星星評等與總分區塊
   showCompletionStars: boolean("show_completion_stars").default(true),
   showCompletionScore: boolean("show_completion_score").default(true),
+  // 🆕 2026-09-22 計分開關（業主：有些遊戲完全不需要積分、加減分）
+  //   false → 玩家端不顯示分數 / 不加分、不寫排行榜；完成遊戲仍記錄成就與隊伍戰績
+  //   欄位由 server 啟動時 ensureGameScoringSchema() 冪等補上（ADD COLUMN IF NOT EXISTS）
+  scoringEnabled: boolean("scoring_enabled").default(true),
   // 🆕 2026-07-05：訪客 demo 沙盒 — 免登入體驗建立的臨時遊戲
   //   isDemo=true 者不計入正式統計/配額；demoExpiresAt 到期由 cron 自動清理
   isDemo: boolean("is_demo").notNull().default(false),

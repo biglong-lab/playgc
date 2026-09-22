@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Gift, MapPin } from "lucide-react";
 import ItemRewardPicker from "@/components/ItemRewardPicker";
+import ScoringDisabledHint from "./ScoringDisabledHint";
 import { lazy, Suspense } from "react";
 
 // 編輯器即時預覽地圖（lazy 載入，避免 admin 頁面 chunk 過大）
@@ -53,6 +54,7 @@ export function RewardsSection({ config, updateField, gameId }: SharedSectionPro
             max={1000}
             data-testid="config-reward-points"
           />
+          <ScoringDisabledHint gameId={gameId} />
         </div>
         <ItemRewardPicker
           gameId={gameId}

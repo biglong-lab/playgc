@@ -172,6 +172,7 @@ ssh root@172.233.67.87 "docker exec -i gamehomicc-db-1 psql -U postgres gameplat
 | 日期 | 變更 | 生產同步 SQL |
 |------|------|--------------|
 | 2026-07-08 | `games` 加通關畫面顯示控制（CHITO #93c7a2ca） | `ALTER TABLE games ADD COLUMN IF NOT EXISTS show_completion_stars boolean DEFAULT true; ALTER TABLE games ADD COLUMN IF NOT EXISTS show_completion_score boolean DEFAULT true;` |
+| 2026-09-22 | `games` 加計分開關 `scoring_enabled`（玩家動線優化） | **自動**：server 啟動時 `ensureGameScoringSchema()` 執行 `ALTER TABLE games ADD COLUMN IF NOT EXISTS scoring_enabled BOOLEAN DEFAULT TRUE`（冪等、只加不刪；部署不需手動跑）。手動補跑亦可用同一句。 |
 
 ---
 

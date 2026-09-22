@@ -31,6 +31,8 @@ interface GameCompletionScreenProps {
   /** 🆕 2026-07-08 CHITO #93c7a2ca：通關畫面顯示控制（undefined = 預設顯示） */
   readonly showStars?: boolean;
   readonly showScore?: boolean;
+  /** 🆕 2026-09-22 計分開關：false → 不顯示排行榜按鈕、分享 / 紀念卡不帶分數 */
+  readonly scoringEnabled?: boolean;
 }
 
 // 依分數決定星數（1-3 顆）— 提供視覺化的「表現評等」
@@ -106,7 +108,10 @@ export default function GameCompletionScreen({
   onNavigate,
   showStars = true,
   showScore = true,
+  scoringEnabled = true,
 }: GameCompletionScreenProps) {
+  // 分享 / 紀念卡文案：不計分遊戲不提分數
+  const scoreSuffix = scoringEnabled ? `，得 ${score} 分！` : "！";
   const animatedScore = useCountUp(score);
   const starCount = starsByScore(score);
   const { toast } = useToast();
@@ -163,7 +168,7 @@ export default function GameCompletionScreen({
         fieldName,
         gameTitle: gameTitleResolved,
         playerName: "挑戰者",
-        score,
+        score: scoringEnabled ? score : null,
         subtitle: subtitleResolved,
         primaryColor,
       });
@@ -261,7 +266,7 @@ export default function GameCompletionScreen({
       url: cardUrl,
       filename: "chito-achievement",
       title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
-      text: `${gameTitle} — 得 ${score} 分！`,
+      text: `${gameTitle}${scoreSuffix}`,
     });
     const msg = getSaveToastMessage(result);
     if (msg.title) toast(msg);
@@ -284,7 +289,7 @@ export default function GameCompletionScreen({
       url: cardUrl,
       filename: "chito-achievement",
       title: `我在 ${currentField?.name || "CHITO"} 的紀念卡`,
-      text: `${gameTitle} — 得 ${score} 分！`,
+      text: `${gameTitle}${scoreSuffix}`,
       forceMethod: "share",
     });
     const msg = getSaveToastMessage(result);
@@ -317,7 +322,7 @@ export default function GameCompletionScreen({
         : `https://game.homi.cc/`;
     })();
     const title = isChapterMode ? `我在 ${fieldName} 完成了章節「${chapterTitle}」` : `我在 ${fieldName} 完成了「${gameTitle}」`;
-    const text = `${title}，得 ${score} 分！來看我的紀念照：`;
+    const text = `${title}${scoreSuffix}來看我的紀念照：`;
 
     const shareData: ShareData = {
       title,
@@ -544,14 +549,16 @@ export default function GameCompletionScreen({
                 <Home className="w-4 h-4" />
                 返回大廳
               </Button>
-              <Button
-                onClick={() => onNavigate(link("/leaderboard"))}
-                className="gap-2"
-                data-testid="button-view-leaderboard"
-              >
-                <Trophy className="w-4 h-4" />
-                排行榜
-              </Button>
+              {scoringEnabled && (
+                <Button
+                  onClick={() => onNavigate(link("/leaderboard"))}
+                  className="gap-2"
+                  data-testid="button-view-leaderboard"
+                >
+                  <Trophy className="w-4 h-4" />
+                  排行榜
+                </Button>
+              )}
             </>
           )}
         </motion.div>

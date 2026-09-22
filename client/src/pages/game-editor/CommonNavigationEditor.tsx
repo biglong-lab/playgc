@@ -2,6 +2,7 @@
 // 為所有 pageType 提供統一的「下一頁」和「獎勵分數」設定
 // 排除自身已有分支邏輯的 pageType（flow_router / button / vote / conditional_verify）
 import { Input } from "@/components/ui/input";
+import ScoringDisabledHint from "./ScoringDisabledHint";
 import { ChevronRight, Award, Navigation } from "lucide-react";
 import type { Page } from "@shared/schema";
 import type { EditorProps } from "./page-config-shared";
@@ -100,6 +101,7 @@ export default function CommonNavigationEditor({
           <p className="text-xs text-muted-foreground mt-1">
             玩家完成本頁後獲得的分數。可填 0 表示無獎勵。
           </p>
+          <ScoringDisabledHint />
         </div>
       )}
     </div>

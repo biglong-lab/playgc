@@ -490,6 +490,9 @@ interface PlayerDisplayCardProps {
   onShowCompletionStarsChange: (checked: boolean) => void;
   showCompletionScore: boolean;
   onShowCompletionScoreChange: (checked: boolean) => void;
+  /** 🆕 2026-09-22：計分主開關 */
+  scoringEnabled: boolean;
+  onScoringEnabledChange: (checked: boolean) => void;
 }
 
 export function PlayerDisplayCard({
@@ -500,6 +503,8 @@ export function PlayerDisplayCard({
   onShowCompletionStarsChange,
   showCompletionScore,
   onShowCompletionScoreChange,
+  scoringEnabled,
+  onScoringEnabledChange,
 }: PlayerDisplayCardProps) {
   return (
     <Card>
@@ -511,6 +516,22 @@ export function PlayerDisplayCard({
         <CardDescription>控制玩家遊玩時看到的 UI 元素</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* 🆕 2026-09-22：計分主開關 */}
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="space-y-0.5">
+            <Label>啟用計分</Label>
+            <p className="text-xs text-muted-foreground">
+              關閉後玩家看不到任何分數、不會加減分、不上排行榜（成就與隊伍戰績照常記錄）。
+              適合劇情、導覽、教育走讀等不需要積分的遊戲。
+            </p>
+          </div>
+          <Switch
+            checked={scoringEnabled}
+            onCheckedChange={onScoringEnabledChange}
+            disabled={!canEdit}
+            data-testid="switch-scoring-enabled"
+          />
+        </div>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <Label>顯示進度條</Label>
@@ -535,9 +556,9 @@ export function PlayerDisplayCard({
             </p>
           </div>
           <Switch
-            checked={showCompletionStars}
+            checked={scoringEnabled && showCompletionStars}
             onCheckedChange={onShowCompletionStarsChange}
-            disabled={!canEdit}
+            disabled={!canEdit || !scoringEnabled}
             data-testid="switch-show-completion-stars"
           />
         </div>
@@ -549,9 +570,9 @@ export function PlayerDisplayCard({
             </p>
           </div>
           <Switch
-            checked={showCompletionScore}
+            checked={scoringEnabled && showCompletionScore}
             onCheckedChange={onShowCompletionScoreChange}
-            disabled={!canEdit}
+            disabled={!canEdit || !scoringEnabled}
             data-testid="switch-show-completion-score"
           />
         </div>

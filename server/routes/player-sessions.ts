@@ -283,74 +283,10 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
           return res.status(404).json({ message: "Session not found" });
         }
 
-        if (data.status === "completed" && session.score) {
-          // 🆕 排行榜 snapshot：載入 user 資料 + 判斷匿名狀態
-          const { getPlayerDisplayName, isAnonymousPlayer } = await import(
-            "@shared/lib/playerDisplay"
-          );
-          const userId = (req as AuthenticatedRequest).user?.claims?.sub;
-          const user = userId ? await storage.getUser(userId) : null;
-          const displaySource = {
-            playerName: session.playerName,
-            firstName: user?.firstName,
-            lastName: user?.lastName,
-            email: user?.email,
-          };
-          const displayName = getPlayerDisplayName(displaySource);
-          const isAnon = isAnonymousPlayer(displaySource);
-
-          await storage.createLeaderboardEntry({
-            gameId: session.gameId,
-            sessionId: session.id,
-            teamName: session.teamName,
-            playerName: displayName,
-            isAnonymous: isAnon ? 1 : 0,
-            totalScore: session.score,
-            completionTimeSeconds:
-              session.completedAt && session.startedAt
-                ? Math.floor(
-                    (new Date(session.completedAt).getTime() -
-                      new Date(session.startedAt).getTime()) /
-                      1000,
-                  )
-                : undefined,
-          });
-
-          // 🏆 成就自動解鎖（本次完成遊戲時檢查所有 condition）
-          try {
-            const { checkAndUnlockAchievements } = await import(
-              "../services/achievement-unlock"
-            );
-            const userId = (req as AuthenticatedRequest).user?.claims?.sub;
-            if (userId) {
-              // 撈 player_progress 拿 inventory
-              const progressList = await storage.getPlayerProgress(session.id);
-              const userProgress = progressList.find((p) => p.userId === userId);
-              if (session.gameId) {
-                await checkAndUnlockAchievements({
-                  userId,
-                  gameId: session.gameId,
-                  sessionId: session.id,
-                  score: session.score ?? 0,
-                  inventory: (userProgress?.inventory as string[]) || [],
-                  gameCompleted: true,
-                });
-              }
-            }
-          } catch (err) {
-            console.error("[achievement] 解鎖檢查失敗:", err);
-          }
-
-          // 🆕 Phase 4.3：寫入 squad_match_records（如果 session 有隊伍）
-          // 這個 hook 是 fire-and-forget，不影響原本回應
-          try {
-            const { writeSquadRecordFromSession } = await import(
-              "../services/squad-record-writer"
-            );
-            await writeSquadRecordFromSession(session);
-          } catch (err) {
-            console.error("[squad-record] 寫入失敗（不影響 session）:", err);
-          }
+        // 🏁 完成後寫排行榜 / 成就 / 隊伍戰績（2026-09-22 抽出＋依計分開關）
+        if (data.status === "completed") {
+          const { recordSessionCompletion } = await import("../services/session-completion");
+          await recordSessionCompletion(session, (req as AuthenticatedRequest).user?.claims?.sub);
         }
 
         // 🆕 若分數被伺服器修正，告知 client
