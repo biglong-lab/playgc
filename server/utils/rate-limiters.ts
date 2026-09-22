@@ -100,15 +100,20 @@ export const sessionCreateLimiter = rateLimit({
 /**
  * 🆕 2026-09-22 建立場次 per-IP 上限（免登入遊玩的防刷第二道）
  * 訪客身分是自動建立的，換一個匿名 uid 就能繞過 per-user 的 sessionCreateLimiter。
- * 場域現場常共用同一個 Wi-Fi（NAT 同 IP），上限要寬：每 IP 每 10 分鐘 200 場。
+ * 場域現場常共用同一個 Wi-Fi / 電信 CGNAT（大量玩家同 IP），上限要寬：預設每 IP 每 10 分鐘 200 場。
+ * 大型活動可用環境變數 SESSION_CREATE_IP_MAX 調高；觸發時記 warn log 方便事後調整。
  */
+const SESSION_CREATE_IP_MAX = Number(process.env.SESSION_CREATE_IP_MAX) || 200;
 export const sessionCreateIpLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 200,
+  max: SESSION_CREATE_IP_MAX,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => `sess:ip:${safeIp(req)}`,
-  message: { message: "此網路建立場次過於頻繁，請稍後再試" },
+  handler: (req, res, _next, options) => {
+    console.warn(`[rate-limit] 建立場次 per-IP 上限觸發（${SESSION_CREATE_IP_MAX}/10 分）ip=${safeIp(req)}`);
+    res.status(options.statusCode).json({ message: "此網路建立場次過於頻繁，請稍後再試" });
+  },
 });
 
 /**

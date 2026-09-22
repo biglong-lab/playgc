@@ -227,6 +227,13 @@ export async function signInAnonymously() {
     if (code === "auth/operation-not-allowed") {
       throw new Error("匿名登入未啟用。請在 Firebase Console 啟用。");
     }
+    // 🆕 2026-09-22：大型活動同一網路大量訪客 → Firebase 匿名註冊配額（per-IP）
+    if (code === "auth/too-many-requests" || code === "auth/quota-exceeded") {
+      throw new Error("目前進場人數較多，請稍候再試，或改用帳號登入");
+    }
+    if (code === "auth/network-request-failed") {
+      throw new Error("網路連線失敗，請檢查網路後重試");
+    }
 
     throw new Error("訪客登入失敗，請重試");
   }

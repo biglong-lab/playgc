@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 
 const { ensure, claim } = vi.hoisted(() => ({
   ensure: { value: { status: "ready", error: null as string | null, retry: vi.fn() } },
@@ -8,6 +8,10 @@ const { ensure, claim } = vi.hoisted(() => ({
 
 vi.mock("@/hooks/useEnsurePlayer", () => ({ useEnsurePlayer: () => ensure.value }));
 vi.mock("@/hooks/useGuestClaimFinalizer", () => ({ useGuestClaimFinalizer: () => claim.value }));
+vi.mock("@/hooks/useLoginHandlers", () => ({ useLoginHandlers: () => ({}) }));
+vi.mock("@/components/landing/LoginDialog", () => ({
+  LoginDialog: ({ open }: { open: boolean }) => (open ? <div data-testid="login-dialog" /> : null),
+}));
 
 import GuestGate from "../GuestGate";
 
@@ -31,10 +35,12 @@ describe("GuestGate", () => {
     expect(screen.getByTestId("page")).toBeInTheDocument();
   });
 
-  it("建立失敗 → 顯示重試", () => {
-    ensure.value = { ...ensure.value, status: "error", error: "匿名登入未啟用" };
+  it("建立失敗 → 顯示重試，並可改用帳號登入（大型活動撞配額時的出路）", () => {
+    ensure.value = { ...ensure.value, status: "error", error: "目前進場人數較多，請稍候再試，或改用帳號登入" };
     render(<GuestGate><Page /></GuestGate>);
     expect(screen.getByTestId("btn-guest-retry")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("btn-guest-login-instead"));
+    expect(screen.getByTestId("login-dialog")).toBeInTheDocument();
   });
 
   it("跳頁登入回來有待認領 → 先保存紀錄、完成後才進頁面（避免先開新局）", () => {
