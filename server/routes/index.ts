@@ -112,6 +112,7 @@ import { registerAdminAbExperimentsRoutes } from "./admin-ab-experiments";
 import { registerTeamRaceRoutes, ensureTeamRaceSchema } from "./team-race";
 import { ensureGameColumns } from "../services/game-columns";
 import { ensurePermissionCatalog } from "../services/ensure-permissions";
+import { moduleGuard } from "../middleware/require-module";
 import { registerTeamPhotoGatherRoutes, ensureTeamPhotoGatherSchema } from "./team-photo-gather";
 import { registerTeamShootingRoutes, ensureTeamShootingSchema } from "./team-shooting";
 import { registerTeamLockCoopRoutes, ensureTeamLockCoopSchema } from "./team-lock-coop";
@@ -141,6 +142,10 @@ export async function registerRoutes(
   // 🔍 全域變更稽核（2026-06-13）— 所有 admin/POS mutating 請求自動寫 audit_log
   // 必須在 adminAuthMiddleware 之後（req.admin 已就緒）
   app.use(auditMutationMiddleware);
+
+  // 🧩 2026-09-23 P2：模組開關 —— 關掉的模組連 API 都擋（不只是藏選單）
+  //   依 shared/lib/module-registry 的路徑前綴自動對應；判斷不出場域就放行
+  app.use("/api", moduleGuard);
 
   // WebSocket 設定
   const ctx = setupWebSocket(httpServer);

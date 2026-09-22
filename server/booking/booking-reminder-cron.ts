@@ -18,6 +18,7 @@ import { db } from "../db";
 import { bookings, bookingConfigs, activitySchedules } from "@shared/schema";
 import { eq, and, gte, lte, isNull, sql } from "drizzle-orm";
 import { notifyBookingReminder } from "./booking-notifier";
+import { isFieldCronEnabled } from "../lib/field-modules";
 
 const CRON_INTERVAL_MS = 60_000; // 1 分鐘
 const MAX_PER_TICK = 50; // 一次處理上限、避免單次推太多
@@ -73,6 +74,11 @@ async function runOnce(): Promise<void> {
       const reminderStart = new Date(c.booking.slotStart.getTime() - reminderMins * 60_000);
       // 進入提醒時刻才發（避免太早）
       if (now < reminderStart) {
+        skipped++;
+        continue;
+      }
+      // 🧩 2026-09-23 P2：場域關掉預約模組 → 這個場域的提醒就不發
+      if (!(await isFieldCronEnabled(c.booking.fieldId, "booking-reminder"))) {
         skipped++;
         continue;
       }

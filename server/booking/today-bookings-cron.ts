@@ -10,6 +10,7 @@ import { db } from "../db";
 import { bookings, activities, fields } from "@shared/schema";
 import { eq, and, sql, inArray, or } from "drizzle-orm";
 import { notifyTodayBookings } from "../lib/internal-notifier";
+import { isFieldCronEnabled } from "../lib/field-modules";
 
 const CHECK_INTERVAL_MS = 60_000; // 每分鐘檢查是否到點
 const TARGET_HOUR = 8; // 08:00 Taipei
@@ -50,6 +51,8 @@ async function runOnce(dateStr: string): Promise<void> {
   // 🐛 2026-06-24 修復：bookings.field_id 歷史上混存 UUID 或 code → 須同時比對兩者
   //   （與 resolveFieldScope 同慣例），否則只用 UUID 過濾會漏掉存 code 的預約。
   const [field] = await db.select({ id: fields.id, code: fields.code }).from(fields).where(or(eq(fields.id, fieldId), eq(fields.code, fieldId))).limit(1);
+  // 🧩 2026-09-23 P2：場域關掉預約模組 → 不推今日預約
+  if (field?.id && !(await isFieldCronEnabled(field.id, "today-bookings"))) return;
   const identifiers = Array.from(new Set([fieldId, field?.id, field?.code].filter(Boolean) as string[]));
 
   // 今日（Taipei）confirmed/pending 預約，依時間排序

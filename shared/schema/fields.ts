@@ -146,6 +146,12 @@ export interface FieldSettings {
   autoEndIdleSession?: boolean;       // 自動結束閒置場次
   sessionIdleTimeout?: number;        // 閒置超時時間（分鐘）
 
+  /**
+   * 🧩 2026-09-23 P2：模組開關（key 見 shared/lib/module-registry）
+   * 沒設定的模組 → 沿用舊的 enableXxx 開關 → 再沒有就用登錄表預設值
+   */
+  modules?: Record<string, boolean>;
+
   // 🆕 Phase 4.4 多人遊戲斷線寬限期（單位：秒）
   //   未設值 → server 用環境變數 / 預設（30s 寬限 + 120s auto leave）
   //   2026-09-23：websocket 斷線時讀取（30 秒快取，不必重啟）；範圍見 shared/lib/disconnect-grace

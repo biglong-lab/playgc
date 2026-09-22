@@ -10,6 +10,8 @@ import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
 import { canCreateField } from "@shared/lib/field-permissions";
 import { checkDisconnectGraceSettings } from "@shared/lib/disconnect-grace";
+import { MODULE_REGISTRY, getModule, resolveFieldModules } from "@shared/lib/module-registry";
+import { invalidateFieldModules } from "../lib/field-modules";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
 import { eq, desc, inArray } from "drizzle-orm";
@@ -443,6 +445,61 @@ export function registerAdminFieldRoutes(app: Express) {
   });
 
   // PATCH /api/admin/fields/:id/settings — 更新場域設定
+  // 🧩 2026-09-23 P2：場域模組開關（關掉 = 選單藏 + API 擋 + 排程跳過）
+  app.get("/api/admin/fields/:id/modules", requireAdminAuth, requirePermission("field:manage"), async (req, res) => {
+    try {
+      if (!req.admin) return res.status(401).json({ message: "未認證" });
+      if (req.admin.systemRole !== "super_admin" && req.params.id !== req.admin.fieldId) {
+        return res.status(403).json({ message: "無權檢視此場域設定" });
+      }
+      const field = await db.query.fields.findFirst({ where: eq(fields.id, req.params.id), columns: { settings: true } });
+      if (!field) return res.status(404).json({ message: "場域不存在" });
+      res.json({
+        modules: resolveFieldModules(field.settings as Record<string, unknown> | null),
+        registry: MODULE_REGISTRY.map((m) => ({
+          key: m.key, label: m.label, description: m.description, required: !!m.required, dependsOn: m.dependsOn ?? [],
+        })),
+      });
+    } catch (error) {
+      res.status(500).json({ message: "取得模組設定失敗" });
+    }
+  });
+
+  app.patch("/api/admin/fields/:id/modules", requireAdminAuth, requirePermission("field:manage"), async (req, res) => {
+    try {
+      if (!req.admin) return res.status(401).json({ message: "未認證" });
+      if (req.admin.systemRole !== "super_admin" && req.params.id !== req.admin.fieldId) {
+        return res.status(403).json({ message: "無權修改此場域設定" });
+      }
+      const parsed = z.object({ key: z.string().min(1), enabled: z.boolean() }).safeParse(req.body ?? {});
+      if (!parsed.success) return res.status(400).json({ message: "參數錯誤（需要 key 與 enabled）" });
+      const def = getModule(parsed.data.key);
+      if (!def) return res.status(400).json({ message: "沒有這個模組" });
+      if (def.required) return res.status(400).json({ message: `「${def.label}」是核心功能，不能關閉` });
+
+      const field = await db.query.fields.findFirst({ where: eq(fields.id, req.params.id), columns: { settings: true } });
+      if (!field) return res.status(404).json({ message: "場域不存在" });
+      const current = parseFieldSettings(field.settings);
+      const modules = { ...(current.modules ?? {}), [def.key]: parsed.data.enabled };
+      await db.update(fields).set({ settings: { ...current, modules }, updatedAt: new Date() }).where(eq(fields.id, req.params.id));
+      invalidateFieldModules(req.params.id);
+
+      await logAuditAction({
+        actorAdminId: req.admin.id,
+        action: parsed.data.enabled ? "field:module_enable" : "field:module_disable",
+        targetType: "field",
+        targetId: req.params.id,
+        fieldId: req.params.id,
+        metadata: { module: def.key, label: def.label, enabled: parsed.data.enabled },
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      });
+      res.json({ modules: resolveFieldModules({ ...current, modules }) });
+    } catch (error) {
+      res.status(500).json({ message: "更新模組設定失敗" });
+    }
+  });
+
   app.patch("/api/admin/fields/:id/settings", requireAdminAuth, requirePermission("field:manage"), async (req, res) => {
     try {
       if (!req.admin) return res.status(401).json({ message: "未認證" });
