@@ -19,35 +19,71 @@ import {
   squadStats,
   teams,
   teamSessions,
+  playerProgress,
 } from "@shared/schema";
-import { eq, and, sql, desc, gte } from "drizzle-orm";
+import { eq, and, sql, desc, gte, asc, isNotNull } from "drizzle-orm";
 import type { GameSession } from "@shared/schema";
 import { calcRewards, deriveTier } from "./squad-rating-calc";
 
 /**
- * 找出 session 對應的 team 的真正 squadId（PR4 之後）
+ * 找出 session 對應的 team（PR4 之後）
  *
  * 流程：
- *   sessions.id → team_sessions.sessionId → teams.id → teams.squadId
+ *   sessions.id → team_sessions.sessionId → teams.id → teams.squadId / teams.leaderId
  *
  * 回傳：
- *   - 真正的 squads.id（玩家以隊伍身份開場）
- *   - null（純臨時組隊，無關聯 squad）
+ *   - squadId：真正的 squads.id（玩家以隊伍身份開場）；null = 純臨時組隊
+ *   - leaderId：本局隊長（隊長離隊時 team-lifecycle 會轉移 leaderId）
+ *   - null：無 team_sessions（單人局）
  */
-async function findRealSquadIdFromSession(
+async function findSessionTeam(
   sessionId: string,
-): Promise<string | null> {
+): Promise<{ squadId: string | null; leaderId: string | null } | null> {
   try {
     const [row] = await db
-      .select({ squadId: teams.squadId })
+      .select({ squadId: teams.squadId, leaderId: teams.leaderId })
       .from(teamSessions)
       .innerJoin(teams, eq(teams.id, teamSessions.teamId))
       .where(eq(teamSessions.sessionId, sessionId))
       .limit(1);
-    return row?.squadId ?? null;
+    return row ?? null;
   } catch {
     return null;
   }
+}
+
+/**
+ * 找出本局玩家 userId（player_progress 中最早有進度的玩家）
+ *
+ * 單人局（teamName 為「xxx's Team」、無 team_sessions）只有一筆 → 就是玩家本人
+ */
+async function findSessionPlayerId(sessionId: string): Promise<string | undefined> {
+  try {
+    const [row] = await db
+      .select({ userId: playerProgress.userId })
+      .from(playerProgress)
+      .where(and(eq(playerProgress.sessionId, sessionId), isNotNull(playerProgress.userId)))
+      .orderBy(asc(playerProgress.updatedAt))
+      .limit(1);
+    return row?.userId ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * 獎勵發放對象（reward target=leader 的平台券 / 外部券都靠它）
+ *
+ * 🐛 修：之前呼叫 reward engine 沒帶 userId → 隊長平台券 issuedToUserId=null、
+ *   外部券因無 userId 直接跳過 → 玩家在 /api/me/rewards（依 userId 查）看不到。
+ *   優先序：隊伍局 teams.leaderId → 本局玩家（player_progress）
+ */
+async function resolveRewardUserId(
+  sessionId: string,
+  sessionTeam: { leaderId: string | null } | null,
+): Promise<string | undefined> {
+  if (sessionTeam?.leaderId) return sessionTeam.leaderId;
+  return findSessionPlayerId(sessionId);
 }
 
 /**
@@ -83,7 +119,8 @@ export async function writeSquadRecordFromSession(
   // 🆕 PR5：優先查 team.squadId（玩家以永久隊伍開場）
   //   找到 → 寫入真正的 squad，戰績匯入永久隊伍
   //   沒有 → 沿用 teamName-based 臨時 ID（純臨時組隊）
-  const realSquadId = await findRealSquadIdFromSession(session.id);
+  const sessionTeam = await findSessionTeam(session.id);
+  const realSquadId = sessionTeam?.squadId ?? null;
   const squadId = realSquadId ?? `team:${session.gameId}:${teamName}`;
   const squadType = realSquadId ? "squad" : "team";
 
@@ -222,12 +259,13 @@ export async function writeSquadRecordFromSession(
       })
       .where(eq(squadStats.squadId, squadId));
 
-    // 🆕 Phase 6.5：觸發獎勵規則引擎
+    // 🆕 Phase 6.5：觸發獎勵規則引擎（帶 userId → 隊長／本局玩家拿得到獎勵）
     await triggerRewardEngine({
       eventType: "game_complete",
       sourceId: session.id,
       sourceType: "squad_match_record",
       squadId,
+      userId: await resolveRewardUserId(session.id, sessionTeam),
       fieldId,
       context: {
         gameType,
