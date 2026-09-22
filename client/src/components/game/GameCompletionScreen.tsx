@@ -465,7 +465,7 @@ export default function GameCompletionScreen({
         )}
 
         {/* 🆕 2026-09-22：訪客「保存這次紀錄」（不強迫，可收起） */}
-        <SaveRecordCard />
+        <SaveRecordCard scoringEnabled={scoringEnabled} />
 
         {/* 🆕 F3: 分享戰績（獨立列，主要 CTA，金色 gradient 很顯眼） */}
         <motion.div

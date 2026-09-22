@@ -65,7 +65,14 @@ function useSaveRecordState(): SaveRecordState {
   return { wasGuest, state, failure, retry };
 }
 
-export default function SaveRecordCard() {
+/** 🆕 2026-09-22 身份規則：訪客的成績 / 成就 / 獎勵要登入後才歸屬 → 文案說清楚 */
+function saveHint(scoringEnabled: boolean): string {
+  return scoringEnabled
+    ? "登入後成績才會登上排行榜，成就、獎勵和相簿也會保存到你的帳號。"
+    : "登入後，成就、獎勵和相簿會保存到你的帳號，換手機也看得到。";
+}
+
+export default function SaveRecordCard({ scoringEnabled = true }: { scoringEnabled?: boolean }) {
   const { toast } = useToast();
   const { wasGuest, state, failure, retry } = useSaveRecordState();
   const [dismissed, setDismissed] = useState(false);
@@ -95,6 +102,7 @@ export default function SaveRecordCard() {
         onSave={handleSaveClick}
         onRetry={retry}
         onDismiss={() => setDismissed(true)}
+        hint={saveHint(scoringEnabled)}
       />
       <LoginDialog
         open={dialogOpen}
@@ -114,8 +122,9 @@ export default function SaveRecordCard() {
 }
 
 function SaveRecordBody({
-  state, failure, preparing, onSave, onRetry, onDismiss,
+  state, failure, preparing, onSave, onRetry, onDismiss, hint,
 }: {
+  hint: string;
   state: CardState;
   failure: SaveRecordState["failure"];
   preparing: boolean;
@@ -158,9 +167,7 @@ function SaveRecordBody({
         <Save className="w-4 h-4 text-primary" />
         保存這次紀錄
       </p>
-      <p className="text-sm text-muted-foreground mt-1">
-        登入後，成績、成就和相簿會存到你的帳號，換手機也看得到。
-      </p>
+      <p className="text-sm text-muted-foreground mt-1">{hint}</p>
       <div className="flex gap-2 mt-3">
         <Button className="flex-1 gap-2" onClick={onSave} disabled={preparing} data-testid="button-save-record">
           {preparing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

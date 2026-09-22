@@ -3,13 +3,17 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import express from "express";
 import request from "supertest";
 
-const { mockStorage, mockClaim } = vi.hoisted(() => ({
+const { mockStorage, mockClaim, mockBackfill } = vi.hoisted(() => ({
   mockStorage: { getUser: vi.fn() },
   mockClaim: vi.fn(),
+  mockBackfill: vi.fn(),
 }));
 
 vi.mock("../storage", () => ({ storage: mockStorage }));
 vi.mock("../db", () => ({ db: {} })); // 搬移已 mock，路由測試不連 DB
+vi.mock("../services/session-completion", () => ({
+  backfillClaimedCompletions: (...a: unknown[]) => mockBackfill(...a),
+}));
 vi.mock("../utils/rate-limiters", () => ({
   guestClaimLimiter: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
@@ -47,7 +51,8 @@ describe("訪客紀錄認領 API", () => {
     process.env.SESSION_SECRET ||= "test-session-secret";
     mockStorage.getUser.mockReset();
     mockClaim.mockReset();
-    mockClaim.mockResolvedValue({ player_progress: 2 });
+    mockClaim.mockResolvedValue({ moved: { player_progress: 2 }, sessionIds: ["s-1"] });
+    mockBackfill.mockReset().mockResolvedValue(1);
   });
 
   it("訪客可取得認領憑證", async () => {
@@ -74,8 +79,10 @@ describe("訪客紀錄認領 API", () => {
       .set("Authorization", "Bearer google-token")
       .send({ ticket: createClaimTicket("anon-1") });
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ success: true, moved: { player_progress: 2 } });
+    expect(res.body).toEqual({ success: true, moved: { player_progress: 2 }, backfilled: 1 });
     expect(mockClaim).toHaveBeenCalledWith("anon-1", "real-1");
+    // 身份規則：認領後以正式帳號補寫排行榜 / 成就 / 獎勵
+    expect(mockBackfill).toHaveBeenCalledWith(["s-1"], "real-1");
   });
 
   it("LINE 帳號（custom token、可能無 email）也能認領", async () => {

@@ -20,10 +20,13 @@ import {
   teams,
   teamSessions,
   playerProgress,
+  rewardConversionEvents,
+  users,
 } from "@shared/schema";
 import { eq, and, sql, desc, gte, asc, isNotNull } from "drizzle-orm";
 import type { GameSession } from "@shared/schema";
 import { calcRewards, deriveTier } from "./squad-rating-calc";
+import { isGuestAccount } from "@shared/lib/guest-account";
 
 /**
  * 找出 session 對應的 team（PR4 之後）
@@ -260,12 +263,16 @@ export async function writeSquadRecordFromSession(
       .where(eq(squadStats.squadId, squadId));
 
     // 🆕 Phase 6.5：觸發獎勵規則引擎（帶 userId → 隊長／本局玩家拿得到獎勵）
+    // 🆕 2026-09-22 身份規則（業主：有需要身份的當然都要有身份才可以）：
+    //   領獎人是訪客 → 先不發；訪客登入保存紀錄時由 triggerDeferredSessionRewards 補發
+    const rewardUserId = await resolveRewardUserId(session.id, sessionTeam);
+    if (rewardUserId && (await isGuestUserId(rewardUserId))) return;
     await triggerRewardEngine({
       eventType: "game_complete",
       sourceId: session.id,
       sourceType: "squad_match_record",
       squadId,
-      userId: await resolveRewardUserId(session.id, sessionTeam),
+      userId: rewardUserId,
       fieldId,
       context: {
         gameType,
@@ -403,6 +410,53 @@ export async function writeSquadRecordFromBattle(opts: {
   } catch (err) {
     console.error("[squad-record-writer] writeSquadRecordFromBattle 失敗:", err);
   }
+}
+
+async function isGuestUserId(userId: string): Promise<boolean> {
+  const [user] = await db
+    .select({ id: users.id, email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return isGuestAccount(user);
+}
+
+/**
+ * 訪客登入認領後補發該場獎勵（2026-09-22 身份規則）
+ * - 必須已有戰績紀錄（沿用 <60 秒 / 每日上限等防作弊門檻：沒達標本來就不發）
+ * - 此場尚未評估過獎勵（正式帳號隊友已觸發過 → 不重複發）
+ * @returns 是否有補觸發
+ */
+export async function triggerDeferredSessionRewards(sessionId: string, userId: string): Promise<boolean> {
+  const [record] = await db
+    .select()
+    .from(squadMatchRecords)
+    .where(eq(squadMatchRecords.sessionId, sessionId))
+    .limit(1);
+  if (!record) return false;
+
+  const [evaluated] = await db
+    .select({ id: rewardConversionEvents.id })
+    .from(rewardConversionEvents)
+    .where(and(eq(rewardConversionEvents.sourceId, sessionId), eq(rewardConversionEvents.sourceType, "squad_match_record")))
+    .limit(1);
+  if (evaluated) return false;
+
+  await triggerRewardEngine({
+    eventType: "game_complete",
+    sourceId: sessionId,
+    sourceType: "squad_match_record",
+    squadId: record.squadId,
+    userId,
+    fieldId: record.fieldId ?? undefined,
+    context: {
+      gameType: record.gameType,
+      result: record.result,
+      completionRate: 1.0,
+      durationSec: record.durationSec,
+    },
+  });
+  return true;
 }
 
 /**

@@ -62,8 +62,17 @@ export function registerGuestClaimRoutes(app: Express) {
         if (!guest?.email?.endsWith("@firebase.local")) {
           return res.status(400).json({ error: "invalid_ticket", message: "保存連結已失效，請重新操作" });
         }
-        const moved = await claimGuestRecords(anonUid, realUid);
-        res.json({ success: true, moved });
+        const { moved, sessionIds } = await claimGuestRecords(anonUid, realUid);
+        // 🆕 2026-09-22 身份規則：訪客期間延後的排行榜 / 成就 / 獎勵，現在以正式帳號補寫
+        //   補寫失敗不影響認領結果（紀錄已搬到正式帳號）
+        let backfilled = 0;
+        try {
+          const { backfillClaimedCompletions } = await import("../services/session-completion");
+          backfilled = await backfillClaimedCompletions(sessionIds, realUid);
+        } catch (err) {
+          console.error("[guest-claim] 補寫排行榜 / 成就 / 獎勵失敗:", err);
+        }
+        res.json({ success: true, moved, backfilled });
       } catch (err) {
         console.error("[guest-claim] 認領失敗:", err);
         res.status(500).json({ error: "claim_failed", message: "保存紀錄失敗，請稍後再試" });

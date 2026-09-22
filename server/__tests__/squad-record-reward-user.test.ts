@@ -21,21 +21,26 @@ const GAME = "__sqrwd_game__";
 const LEADER = "__sqrwd_leader__";
 const MEMBER = "__sqrwd_member__";
 const SOLO = "__sqrwd_solo__";
+const GUEST = "__sqrwd_guest__";      // 🆕 訪客（假信箱、非 line: uid）
+const CLAIMER = "__sqrwd_claimer__";  // 🆕 訪客登入後的正式帳號
 const TEAM = "__sqrwd_team__";
 const SESSION_TEAM = "__sqrwd_session_team__";
 const SESSION_SOLO = "__sqrwd_session_solo__";
+const SESSION_GUEST = "__sqrwd_session_guest__";
+const GUEST_TEAM_NAME = "探險家1234's Team";
 const TPL = "__sqrwd_tpl__";
 const RULE = "__sqrwd_rule__";
 const PROVIDER = "__sqrwd_provider__";
 const TEAM_NAME = "獎勵測試隊";
 const SOLO_TEAM_NAME = "小明's Team";
-const SESSIONS = [SESSION_TEAM, SESSION_SOLO];
-const SQUAD_IDS = [`team:${GAME}:${TEAM_NAME}`, `team:${GAME}:${SOLO_TEAM_NAME}`];
+const SESSIONS = [SESSION_TEAM, SESSION_SOLO, SESSION_GUEST];
+const SQUAD_IDS = [`team:${GAME}:${TEAM_NAME}`, `team:${GAME}:${SOLO_TEAM_NAME}`, `team:${GAME}:${GUEST_TEAM_NAME}`];
 
 type PgPool = import("pg").Pool;
 let pool: PgPool;
 let closePool: () => Promise<void>;
 let writeSquadRecordFromSession: (typeof import("../services/squad-record-writer"))["writeSquadRecordFromSession"];
+let triggerDeferredSessionRewards: (typeof import("../services/squad-record-writer"))["triggerDeferredSessionRewards"];
 let storage: (typeof import("../storage"))["storage"];
 
 async function cleanup(): Promise<void> {
@@ -53,15 +58,15 @@ async function cleanup(): Promise<void> {
   await pool.query(`DELETE FROM teams WHERE id = $1`, [TEAM]);
   await pool.query(`DELETE FROM game_sessions WHERE id = ANY($1)`, [SESSIONS]);
   await pool.query(`DELETE FROM games WHERE id = $1`, [GAME]);
-  await pool.query(`DELETE FROM users WHERE id = ANY($1)`, [[LEADER, MEMBER, SOLO]]);
+  await pool.query(`DELETE FROM users WHERE id = ANY($1)`, [[LEADER, MEMBER, SOLO, GUEST, CLAIMER]]);
   await pool.query(`DELETE FROM fields WHERE id = $1`, [FIELD]);
 }
 
 async function seedBase(): Promise<void> {
   await pool.query(`INSERT INTO fields (id, name, code) VALUES ($1,'獎勵測試場域','SQRWDTEST')`, [FIELD]);
   await pool.query(
-    `INSERT INTO users (id, email) VALUES ($1,'l@sqrwd.test'),($2,'m@sqrwd.test'),($3,'s@sqrwd.test')`,
-    [LEADER, MEMBER, SOLO],
+    `INSERT INTO users (id, email) VALUES ($1,'l@sqrwd.test'),($2,'m@sqrwd.test'),($3,'s@sqrwd.test'),($4,$5),($6,'c@sqrwd.test')`,
+    [LEADER, MEMBER, SOLO, GUEST, `user-${GUEST}@firebase.local`, CLAIMER],
   );
   await pool.query(
     `INSERT INTO games (id, title, field_id, status, game_mode) VALUES ($1,'獎勵測試遊戲',$2,'published','team')`,
@@ -147,13 +152,15 @@ describe.skipIf(!HAS_DB)("戰績寫入 → 獎勵發給正確玩家（userId）"
     const dbMod = await import("../db");
     pool = dbMod.pool;
     closePool = dbMod.closePool;
-    ({ writeSquadRecordFromSession } = await import("../services/squad-record-writer"));
+    ({ writeSquadRecordFromSession, triggerDeferredSessionRewards } = await import("../services/squad-record-writer"));
     ({ storage } = await import("../storage"));
     await cleanup();
     await seedBase();
     await seedTeamSession();
     await seedSession(SESSION_SOLO, SOLO_TEAM_NAME);
     await seedProgress(SESSION_SOLO, SOLO, new Date());
+    await seedSession(SESSION_GUEST, GUEST_TEAM_NAME);
+    await seedProgress(SESSION_GUEST, GUEST, new Date());
   });
 
   afterAll(async () => {
@@ -177,5 +184,29 @@ describe.skipIf(!HAS_DB)("戰績寫入 → 獎勵發給正確玩家（userId）"
     await completeSession(SESSION_SOLO);
     expect(await couponOwners(SESSION_SOLO)).toEqual([SOLO]);
     expect(await externalOwners(SESSION_SOLO)).toEqual([SOLO]);
+  });
+
+  // 🆕 2026-09-22 身份規則：獎勵只發正式帳號；訪客登入認領後補發
+  it("訪客單人局：戰績照寫，但不發券給訪客", async () => {
+    await completeSession(SESSION_GUEST);
+    const { rows } = await pool.query(`SELECT 1 FROM squad_match_records WHERE session_id = $1`, [SESSION_GUEST]);
+    expect(rows).toHaveLength(1);
+    expect(await couponOwners(SESSION_GUEST)).toEqual([]);
+    expect(await externalOwners(SESSION_GUEST)).toEqual([]);
+  });
+
+  it("訪客登入認領 → 補發給正式帳號；重複補發不會多發", async () => {
+    await completeSession(SESSION_GUEST);
+    const first = await triggerDeferredSessionRewards(SESSION_GUEST, CLAIMER);
+    const again = await triggerDeferredSessionRewards(SESSION_GUEST, CLAIMER);
+    expect(first || again).toBe(true); // retry 安全：其中一次一定是補發的那次
+    expect(await couponOwners(SESSION_GUEST)).toEqual([CLAIMER]);
+    expect(await externalOwners(SESSION_GUEST)).toEqual([CLAIMER]);
+  });
+
+  it("已由正式帳號觸發過獎勵的場次 → 不再補發（避免重複發券）", async () => {
+    await completeSession(SESSION_SOLO);
+    expect(await triggerDeferredSessionRewards(SESSION_SOLO, CLAIMER)).toBe(false);
+    expect(await couponOwners(SESSION_SOLO)).toEqual([SOLO]);
   });
 });

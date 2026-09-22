@@ -6,9 +6,15 @@
 //   - 成就 / 隊伍戰績：
 //       計分遊戲 → 維持既有規則（分數 > 0 才寫）
 //       不計分遊戲 → 完成就寫（否則分數恆 0 會連成就、戰績、獎勵都拿不到）
+//   - 🆕 2026-09-22 身份規則（業主：訪客要紀錄就要登入或註冊來歸屬）：
+//       訪客完成 → 不寫排行榜 / 成就（獎勵由戰績寫入端依領獎人身份判斷）；隊伍戰績照寫
+//       訪客登入認領 → backfillClaimedCompletions 補寫排行榜、成就、獎勵
 import type { GameSession } from "@shared/schema";
 import { storage } from "../storage";
 import { isScoringEnabled } from "@shared/lib/scoring";
+import { leaderboard } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { db } from "../db";
 
 async function writeLeaderboard(session: GameSession, userId: string | undefined): Promise<void> {
   const { getPlayerDisplayName, isAnonymousPlayer } = await import("@shared/lib/playerDisplay");
@@ -61,18 +67,56 @@ async function writeSquadRecord(session: GameSession): Promise<void> {
   }
 }
 
+/** 依計分規則，這場完成是否該留下紀錄（計分遊戲 0 分維持既有規則：不寫） */
+async function completionRules(session: GameSession) {
+  const game = session.gameId ? await storage.getGame(session.gameId) : undefined;
+  const scoring = isScoringEnabled(game);
+  const hasScore = !!session.score;
+  return { onLeaderboard: scoring && hasScore, recordable: !scoring || hasScore };
+}
+
 /** 場次標記完成後呼叫（失敗不影響回應；排行榜寫入失敗才會往外拋，與既有行為一致） */
 export async function recordSessionCompletion(
   session: GameSession,
   userId: string | undefined,
+  opts: { isGuest?: boolean } = {},
 ): Promise<void> {
-  const game = session.gameId ? await storage.getGame(session.gameId) : undefined;
-  const scoring = isScoringEnabled(game);
-  const hasScore = !!session.score;
+  const { onLeaderboard, recordable } = await completionRules(session);
+  if (!recordable) return;
 
-  if (scoring && hasScore) await writeLeaderboard(session, userId);
-  if (scoring && !hasScore) return;
-
-  await unlockAchievements(session, userId);
+  if (!opts.isGuest) {
+    if (onLeaderboard) await writeLeaderboard(session, userId);
+    await unlockAchievements(session, userId);
+  }
   await writeSquadRecord(session);
+}
+
+/** 單次認領最多補寫幾場（訪客通常只有剛玩完的一兩場；上限避免長交易） */
+const BACKFILL_LIMIT = 50;
+
+async function hasLeaderboardEntry(sessionId: string): Promise<boolean> {
+  const rows = await db.select({ id: leaderboard.id }).from(leaderboard).where(eq(leaderboard.sessionId, sessionId)).limit(1);
+  return rows.length > 0;
+}
+
+/**
+ * 訪客登入認領後，補寫當初延後的紀錄（2026-09-22 身份規則）
+ * - 排行榜：計分遊戲有分數、且這場還沒有排行榜紀錄（隊友已寫過就不重複）
+ * - 成就：補跑解鎖（已解鎖的會略過）
+ * - 獎勵：有戰績紀錄且尚未評估過才補發
+ */
+export async function backfillClaimedCompletions(sessionIds: string[], realUid: string): Promise<number> {
+  const { triggerDeferredSessionRewards } = await import("./squad-record-writer");
+  let count = 0;
+  for (const sessionId of sessionIds.slice(0, BACKFILL_LIMIT)) {
+    const session = await storage.getSession(sessionId);
+    if (!session || session.status !== "completed") continue;
+    const { onLeaderboard, recordable } = await completionRules(session);
+    if (!recordable) continue;
+    if (onLeaderboard && !(await hasLeaderboardEntry(sessionId))) await writeLeaderboard(session, realUid);
+    await unlockAchievements(session, realUid);
+    await triggerDeferredSessionRewards(sessionId, realUid);
+    count++;
+  }
+  return count;
 }

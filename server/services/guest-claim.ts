@@ -152,15 +152,27 @@ export async function moveClaimTarget(tx: ExecTx, target: ClaimTarget, anonUid: 
   }
 }
 
+export interface ClaimOutcome {
+  /** 每張表搬了幾筆 */
+  moved: ClaimSummary;
+  /** 訪客名下的場次（給認領後補寫排行榜 / 成就 / 獎勵用） */
+  sessionIds: string[];
+}
+
 /** 把訪客名下紀錄搬到正式帳號（單一 transaction；每表 savepoint；非唯一鍵錯誤全部回滾） */
-export async function claimGuestRecords(anonUid: string, realUid: string): Promise<ClaimSummary> {
-  if (!anonUid || !realUid || anonUid === realUid) return {};
+export async function claimGuestRecords(anonUid: string, realUid: string): Promise<ClaimOutcome> {
+  if (!anonUid || !realUid || anonUid === realUid) return { moved: {}, sessionIds: [] };
   return db.transaction(async (tx) => {
-    const summary: ClaimSummary = {};
+    // 搬移前先記下訪客的場次（搬完就查不到是誰的了）
+    const owned = await tx.execute(sql`SELECT DISTINCT session_id FROM player_progress WHERE user_id = ${anonUid}`);
+    const rows = (owned as unknown as { rows?: Array<{ session_id: string }> }).rows ?? [];
+    const sessionIds = rows.map((r) => r.session_id);
+
+    const moved: ClaimSummary = {};
     for (const target of CLAIM_TARGETS) {
-      const moved = await moveClaimTarget(tx as unknown as ExecTx, target, anonUid, realUid);
-      if (moved > 0) summary[target.table] = moved;
+      const n = await moveClaimTarget(tx as unknown as ExecTx, target, anonUid, realUid);
+      if (n > 0) moved[target.table] = n;
     }
-    return summary;
+    return { moved, sessionIds };
   });
 }

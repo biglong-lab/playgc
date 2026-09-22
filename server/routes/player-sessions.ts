@@ -293,7 +293,10 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
         // 🏁 完成後寫排行榜 / 成就 / 隊伍戰績（2026-09-22 抽出＋依計分開關）
         if (data.status === "completed") {
           const { recordSessionCompletion } = await import("../services/session-completion");
-          await recordSessionCompletion(session, (req as AuthenticatedRequest).user?.claims?.sub);
+          const claims = (req as AuthenticatedRequest).user?.claims;
+          await recordSessionCompletion(session, claims?.sub, {
+            isGuest: claims?.signInProvider === "anonymous",
+          });
         }
 
         // 🆕 若分數被伺服器修正，告知 client

@@ -137,15 +137,16 @@ describe.skipIf(!HAS_DB)("claimGuestRecords（真實 DB）", () => {
     await closePool();
   });
 
-  it("訪客的遊戲紀錄搬到正式帳號", async () => {
-    const moved = await claimGuestRecords(ANON, REAL);
+  it("訪客的遊戲紀錄搬到正式帳號，並回報訪客的場次（供補寫）", async () => {
+    const { moved, sessionIds } = await claimGuestRecords(ANON, REAL);
     expect(moved.player_progress).toBe(1);
+    expect(sessionIds).toEqual([SESSION]);
     const { rows } = await pool.query(`SELECT user_id FROM player_progress WHERE session_id = $1`, [SESSION]);
     expect(rows[0].user_id).toBe(REAL);
   });
 
   it("唯一鍵衝突（同場域會員）→ 保留正式帳號那筆、不報錯、不刪訪客那筆", async () => {
-    const moved = await claimGuestRecords(ANON, REAL);
+    const { moved } = await claimGuestRecords(ANON, REAL);
     expect(moved.field_memberships).toBeUndefined();
     const { rows } = await pool.query(
       `SELECT user_id FROM field_memberships WHERE field_id = $1 ORDER BY user_id`,
@@ -157,11 +158,11 @@ describe.skipIf(!HAS_DB)("claimGuestRecords（真實 DB）", () => {
   it("冪等：重複認領只會搬 0 筆", async () => {
     await claimGuestRecords(ANON, REAL);
     const again = await claimGuestRecords(ANON, REAL);
-    expect(again).toEqual({});
+    expect(again).toEqual({ moved: {}, sessionIds: [] });
   });
 
   it("同一個 uid 或空值 → 不動作", async () => {
-    expect(await claimGuestRecords(ANON, ANON)).toEqual({});
-    expect(await claimGuestRecords("", REAL)).toEqual({});
+    expect(await claimGuestRecords(ANON, ANON)).toEqual({ moved: {}, sessionIds: [] });
+    expect(await claimGuestRecords("", REAL)).toEqual({ moved: {}, sessionIds: [] });
   });
 });
