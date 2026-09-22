@@ -15,6 +15,8 @@
 //   PATCH  /api/admin/pos/modifier-options/:id       改選項
 //   DELETE /api/admin/pos/modifier-options/:id       刪選項
 //   GET    /api/pos/menu                             POS 結帳用：active 品項(依類別) + 客製
+//   GET    /api/admin/pos/trash                      垃圾桶：已軟刪除的品項 / 客製群組 / 交易 / 現金支出
+//   POST   /api/admin/pos/restore                    從垃圾桶還原（type: product | modifierGroup | transaction | expense）
 
 import type { Express } from "express";
 import { z } from "zod";
@@ -29,6 +31,7 @@ import {
 } from "@shared/schema";
 import { eq, and, inArray, asc, isNull, desc, sql } from "drizzle-orm";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
+import { listDeletedExpenses, restoreDeletedExpense } from "./pos-expense-trash";
 
 function err(res: import("express").Response, e: unknown) {
   console.error("[admin-pos-products]", e);
@@ -345,7 +348,8 @@ export function registerAdminPosProductRoutes(app: Express) {
         .where(and(eq(posTransactions.fieldId, fieldId), sql`${posTransactions.deletedAt} IS NOT NULL`))
         .orderBy(desc(posTransactions.deletedAt))
         .limit(200);
-      res.json({ products: delProducts, modifierGroups: delGroups, transactions: delTxns });
+      const delExpenses = await listDeletedExpenses(req);
+      res.json({ products: delProducts, modifierGroups: delGroups, transactions: delTxns, expenses: delExpenses });
     } catch (e) {
       err(res, e);
     }
@@ -355,7 +359,12 @@ export function registerAdminPosProductRoutes(app: Express) {
   app.post("/api/admin/pos/restore", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
     try {
       const { type, id } = req.body ?? {};
-      if (!type || !id) return res.status(400).json({ error: "validation" });
+      if (!type || typeof id !== "string" || !id) return res.status(400).json({ error: "validation" });
+      // 現金支出：場域以 id / code 雙識別、需檢查該日是否已交班鎖帳 → 另行處理
+      if (type === "expense") {
+        const result = await restoreDeletedExpense(req, id);
+        return res.status(result.status).json(result.body);
+      }
       const clear = { deletedAt: null, deletedBy: null, deleteReason: null };
       if (type === "product") {
         await db.update(posProducts).set({ ...clear, updatedAt: new Date() }).where(and(eq(posProducts.id, id), eq(posProducts.fieldId, req.admin!.fieldId)));
