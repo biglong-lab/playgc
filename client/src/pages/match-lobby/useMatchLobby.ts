@@ -1,5 +1,5 @@
 // 對戰大廳邏輯 Hook
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useFieldLink } from "@/hooks/useFieldLink";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -97,6 +97,19 @@ export function useMatchLobby() {
     return "waiting";
   }, [authLoading, gameLoading, currentMatchId, ws.matchStatus, currentMatch]);
 
+  const currentView = determineView();
+
+  // 🐛 開賽後導向遊戲頁：之前 playing 只顯示排名（PlayingView）、從不導向 /game/:id
+  //   → 競賽／接力玩家看不到任何關卡。對照組隊模式（useTeamLobby 倒數完 setLocation 遊戲頁）。
+  //   WS match_started 或輪詢到 status=playing 都會觸發；ref 防重複導向。
+  const redirectedMatchRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (currentView !== "playing" || !currentMatchId || !gameId) return;
+    if (redirectedMatchRef.current === currentMatchId) return;
+    redirectedMatchRef.current = currentMatchId;
+    setLocation(link(`/game/${gameId}`));
+  }, [currentView, currentMatchId, gameId, setLocation, link]);
+
   const handleGoBack = useCallback(() => {
     // 🔧 場域感知 — 後浦玩家按返回大廳不會跑到賈村
     setLocation(link("/home"));
@@ -112,7 +125,7 @@ export function useMatchLobby() {
     matches: matches ?? [],
     currentMatch,
     currentMatchId,
-    currentView: determineView(),
+    currentView,
     ws,
     isLoading: authLoading || gameLoading,
     isCreator: currentMatch?.creatorId === currentUserId,
