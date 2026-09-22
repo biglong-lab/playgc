@@ -1,5 +1,5 @@
 // 遊戲 session 管理 — 恢復/新建/replay 邏輯
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,20 @@ interface UseSessionManagerParams {
   userName: string;
   /** 🆕 2026-07-03 多人同步：隊伍開賽時 lobby 帶 ?session=<共用id>、全隊採用同一 session */
   sharedSessionId?: string;
+  /**
+   * 🆕 2026-09-22：遊戲是否有地點鎖（需 GPS 才能開局）。
+   * undefined = 遊戲設定還沒載入 → 先不建場次（避免沒必要地跳 GPS 權限）
+   */
+  requireLocation?: boolean;
+  /** 🆕 2026-09-22：掃 QR 進場（entry=qr）→ 上一場已通關就直接開新局，不停在結算畫面 */
+  autoRestartCompleted?: boolean;
+}
+
+/** 接續進度提示（GamePlay 顯示「已從第 N 關繼續〔重新開始〕」） */
+export interface ResumeNotice {
+  pageNumber: number;
+  /** 隊伍共用場次不能單方面重新開始 */
+  canRestart: boolean;
 }
 
 interface SessionState {
@@ -78,6 +92,8 @@ export function useSessionManager({
   activePages,
   userName,
   sharedSessionId,
+  requireLocation,
+  autoRestartCompleted = false,
 }: UseSessionManagerParams) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -94,11 +110,16 @@ export function useSessionManager({
 
   const [forceNewSession, setForceNewSession] = useState(isReplayMode);
   const [hasRestoredProgress, setHasRestoredProgress] = useState(false);
-  // 🆕 2026-05-12 #5: existingSession 偵測到後、等玩家決定（繼續 / 重新開始）才動作
-  //   pendingDecision = true → 顯示 ResumeDialog 在遊戲頁前、不 restore 也不建新
-  const [pendingDecision, setPendingDecision] = useState(false);
-  const [userDecided, setUserDecided] = useState(false);
+  // 🆕 2026-09-22 開局減法：原本有進度時整頁蓋「繼續 / 重新開始」框等玩家選 →
+  //   改為直接接續 + 可反悔提示（resumeNotice），重新開始才需要確認
+  const [resumeNotice, setResumeNotice] = useState<ResumeNotice | null>(null);
+  const clearResumeNotice = useCallback(() => setResumeNotice(null), []);
+  // 🐛 2026-09-22：建立失敗（多為不在指定地點）→ 停下來顯示錯誤、由玩家按重試
+  //   原本 onError 把 ref 設回 false → effect 立刻再建 → 無限重試、每 8 秒重抓 GPS + 紅色 toast
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const sessionCreationAttemptedRef = useRef(false);
+  const requireLocationRef = useRef(requireLocation);
+  useEffect(() => { requireLocationRef.current = requireLocation; }, [requireLocation]);
 
   // Refs 避免 stale closure
   const stateRef = useRef(state);
@@ -171,9 +192,9 @@ export function useSessionManager({
         if (stored && stored.trim()) playerName = stored.trim();
       } catch { /* ignore */ }
 
-      // 🌐 location_lock：先試取 GPS（後端會檢查是否在指定地點）
-      // 不阻塞：取不到也送出，後端會回 400 並提示玩家
-      const coords = await getCurrentGpsCoords();
+      // 🌐 location_lock：只有地點鎖遊戲才取 GPS（2026-09-22：原本每局都跳定位權限、最多卡 8 秒）
+      // 取不到也送出，後端會回 400 並提示玩家
+      const coords = requireLocationRef.current ? await getCurrentGpsCoords() : null;
 
       const response = await apiRequest("POST", "/api/sessions", {
         gameId,
@@ -204,21 +225,13 @@ export function useSessionManager({
       // 🐛 2026-05-22 業主 docx #13：移除「遊戲開始祝你好運」橫幅、太遮擋且顯示太久
       //   玩家本來就知道自己按了開始遊戲、不需要通知
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       setForceNewSession(false);
-      // 🐛 2026-07-08：建立失敗 → 允許之後重試（ref 已被 resetAndCreateNew 設 true）
-      sessionCreationAttemptedRef.current = false;
+      // ref 維持 true（不自動重試）— 由 GamePlay 顯示錯誤 + 重試按鈕（retryCreateSession）
       // 🌐 location_lock 錯誤訊息（後端回 400/403 + requireLocation: true）
-      const errMsg = err?.message ?? err?.response?.data?.message ?? "";
-      if (errMsg.includes("地點") || errMsg.includes("GPS")) {
-        toast({
-          title: "需在指定地點才能開始",
-          description: errMsg,
-          variant: "destructive",
-        });
-      } else {
-        toast({ title: "錯誤", description: "無法開始遊戲，請重試", variant: "destructive" });
-      }
+      const errMsg = err instanceof Error ? err.message : "";
+      const isLocationError = errMsg.includes("地點") || errMsg.includes("GPS");
+      setSessionError(isLocationError ? errMsg : "無法開始遊戲，請檢查網路後重試");
     },
   });
 
@@ -259,6 +272,9 @@ export function useSessionManager({
       return;
     }
 
+    // 遊戲設定還沒載入 → 還不知道要不要 GPS，先不建場次
+    if (requireLocation === undefined) return;
+
     // replay 模式：強制建新 session
     // 🐛 2026-07-08 CHITO #f095652b「再玩一次進第2頁跳回第1頁」根因：
     //   resetAndCreateNew 已直接 mutate()，但原本把 ref 重設 false →
@@ -267,14 +283,11 @@ export function useSessionManager({
     //   修法：branch 加 ref 檢查；resetAndCreateNew 設 ref=true（失敗才放行重試）。
     if (
       forceNewSession &&
-      !state.sessionId &&
       !createSessionMutation.isPending &&
       !sessionCreationAttemptedRef.current
     ) {
       if (isReplayMode) {
-        // 🐛 2026-07-03 修：原本寫死跳 `/game/:id`、把場域路徑（/f/:code/game/:id）玩家
-        //   踢出場域 context → 路由改變 → GamePlay 重掛 → replay 進度被 refetch 蓋掉。
-        //   改保留當前 pathname、只去掉 ?replay query。
+        // 🐛 2026-07-03 修：保留當前 pathname（場域路徑）、只去掉 ?replay query
         setLocation(window.location.pathname, { replace: true });
       }
       sessionCreationAttemptedRef.current = true;
@@ -284,48 +297,26 @@ export function useSessionManager({
 
     if (forceNewSession || createSessionMutation.isPending) return;
 
-    // 🆕 2026-05-12 #5 / 2026-05-22 業主 docx #14: existingSession + 未決定 → 顯示 dialog
-    //   業主回報 runtime 中又彈進度提示：根因是 query refetch 又把 existingSession 帶回來
-    //   防護：只在還沒有 sessionId（= 真正第一次進場）才考慮 setPendingDecision
-    //   已 restore / 已建新 / 已決定 → 一律不再彈
-    if (
-      existingSession?.session &&
-      !hasRestoredProgress &&
-      !userDecided &&
-      !pendingDecision &&
-      !state.sessionId &&
-      activePages.length > 0
-    ) {
-      const progressedPages = existingSession.progress?.currentPageId
-        ? activePages.findIndex((p) => p.id === existingSession.progress?.currentPageId)
-        : -1;
-      const sessionInProgress = existingSession.session.status !== "completed" && progressedPages > 0;
-      if (sessionInProgress) {
-        // 等玩家決定（繼續 / 重新開始）
-        setPendingDecision(true);
+    // 有舊場次 → 直接接續（2026-09-22：不再整頁蓋「繼續 / 重新開始」框）
+    //   QR 進場且上一場已通關 → 直接開新局（掃碼就是想玩，不停在結算畫面）
+    if (existingSession?.session && !hasRestoredProgress) {
+      if (activePages.length === 0) return; // 等頁面載入完才能換算頁碼
+      if (autoRestartCompleted && existingSession.session.status === "completed") {
+        resetAndCreateNew();
         return;
       }
-      // 沒實質進度 → 直接 restore（completed session 走 completed 路徑、無進度 session 視為新場）
-      restoreSession(existingSession);
-      return;
-    }
-
-    // 等玩家決定中 → 不動作
-    if (pendingDecision) return;
-
-    // 玩家已決定繼續 → restore
-    if (userDecided && existingSession?.session && !hasRestoredProgress && activePages.length > 0) {
       restoreSession(existingSession);
       return;
     }
 
     // 無現有 session，建新的
-    if (existingSession === null && !state.sessionId && !forceNewSession && !createSessionMutation.isPending && !sessionCreationAttemptedRef.current) {
+    if (existingSession === null && !sessionCreationAttemptedRef.current) {
       sessionCreationAttemptedRef.current = true;
       createSessionMutation.mutate();
     }
     // state.sessionId 已在條件式內 reference、無需重複加 deps
-  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, pendingDecision, userDecided, sharedSessionId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, gameId, existingSession, activePages, state.sessionId, hasRestoredProgress, forceNewSession, isReplayMode, createSessionMutation.isPending, sharedSessionId, requireLocation, autoRestartCompleted]);
 
   function restoreSession(data: ExistingSessionData) {
     const newScore = data.progress?.score || data.session.score || 0;
@@ -371,7 +362,10 @@ export function useSessionManager({
       completedPageIds: completedIds,
     });
     setHasRestoredProgress(true);
-    toast({ title: "繼續遊戲", description: "從上次進度繼續" });
+    // 真的有前進過才提示（第 1 頁接續 = 等同新開局，不打擾）
+    if (pageIndex > 0) {
+      setResumeNotice({ pageNumber: pageIndex + 1, canRestart: !sharedSessionId });
+    }
   }
 
   // 重新開始遊戲
@@ -402,18 +396,19 @@ export function useSessionManager({
       completedPageIds: [],
     });
     setHasRestoredProgress(false);
-    setPendingDecision(false);
-    setUserDecided(false);
+    setResumeNotice(null);
+    setSessionError(null);
     // 清快取 + 移除 query、避免 refetch 後又拿到舊 completed session
     queryClient.setQueryData(["/api/sessions/active", gameId], null);
     queryClient.removeQueries({ queryKey: ["/api/sessions/active", gameId] });
     createSessionMutation.mutate();
   }
 
-  // 🆕 2026-05-12 #5: 玩家在 ResumeDialog 選「繼續」
-  function confirmContinue() {
-    setUserDecided(true);
-    setPendingDecision(false);
+  // 🐛 2026-09-22：建立失敗後由玩家手動重試（不再自動無限重試）
+  function retryCreateSession() {
+    setSessionError(null);
+    sessionCreationAttemptedRef.current = true;
+    createSessionMutation.mutate();
   }
 
   return {
@@ -423,17 +418,11 @@ export function useSessionManager({
     setState,
     createSessionMutation,
     resetAndCreateNew,
-    // 🆕 2026-05-07：暴露 hasRestoredProgress 給 GamePlay 顯示 ResumeDialog
     hasRestoredProgress,
-    // 🆕 2026-05-12 #5: 玩家未決定狀態（GamePlay 用來蓋遊戲頁面）
-    pendingDecision,
-    confirmContinue,
-    /** 給 dialog 顯示用：上次玩到第幾頁、目前分數 */
-    existingProgressInfo: existingSession?.session && existingSession.progress
-      ? {
-          currentPageId: existingSession.progress.currentPageId ?? null,
-          score: existingSession.progress.score ?? existingSession.session.score ?? 0,
-        }
-      : null,
+    /** 接續提示（GamePlay 顯示後呼叫 clearResumeNotice） */
+    resumeNotice,
+    clearResumeNotice,
+    sessionError,
+    retryCreateSession,
   };
 }

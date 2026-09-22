@@ -18,10 +18,12 @@ import InventoryPanel from "@/components/shared/InventoryPanel";
 import GamePageRenderer from "@/components/game/GamePageRenderer";
 import GamePageErrorBoundary from "@/components/game/GamePageErrorBoundary";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
-import ResumeDialog from "@/components/game/ResumeDialog";
+import RestartConfirmDialog from "@/components/game/RestartConfirmDialog";
 import { FullscreenSpinner } from "@/components/shared/GuestGate";
+import SessionErrorScreen from "@/components/game/SessionErrorScreen";
 import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 import { useSessionManager } from "./hooks/useSessionManager";
+import { useQrEntryFlag, useResumeNoticeToast } from "./hooks/useGameEntryUx";
 import { useTeamPlaySync } from "./hooks/useTeamPlaySync";
 import { WsConnectionBadge } from "@/components/shared/WsConnectionBadge";
 import { primeVoices } from "@/lib/voice-notification";
@@ -73,7 +75,11 @@ export default function GamePlay() {
     return params.get("session") || undefined;
   }, [searchString]);
 
+  // 🆕 2026-09-22：QR 進場（上一場已通關 → 直接開新局）
+  const isQrEntry = useQrEntryFlag(searchString);
+
   const [showChat, setShowChat] = useState(false);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
   // 🆕 F1: 離開遊戲確認 Dialog
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
@@ -101,10 +107,8 @@ export default function GamePlay() {
     currentPageIndex, isCompleted, completedPageIds,
     stateRef, activePagesRef,
     setState, resetAndCreateNew,
-    hasRestoredProgress,
-    pendingDecision,
-    confirmContinue,
-    existingProgressInfo,
+    resumeNotice, clearResumeNotice,
+    sessionError, retryCreateSession,
   } = useSessionManager({
     gameId,
     userId: user?.id,
@@ -112,16 +116,16 @@ export default function GamePlay() {
     activePages,
     userName: user?.firstName || "玩家",
     sharedSessionId, // 🆕 隊伍共用 session（?session=）
+    // 🌐 只有地點鎖遊戲才要 GPS（undefined = 遊戲設定載入中，先不建場次）
+    requireLocation: game
+      ? !!(game.locationLockEnabled && game.lockLatitude && game.lockLongitude)
+      : undefined,
+    autoRestartCompleted: isQrEntry,
   });
 
-  // 🆕 2026-05-12 #5: pendingDecision = true → 顯示 ResumeDialog 在遊戲頁面之前
-  //   useSessionManager 偵測有實質進度的 existingSession 時 setPendingDecision(true)
-  //   玩家選「繼續」→ confirmContinue() / 選「重新開始」→ resetAndCreateNew()
-  //   兩種選擇後 dialog 自動關閉、進遊戲流程
-  const showResumeDialog = pendingDecision && !isReplayMode;
-  const pendingProgressIndex = existingProgressInfo?.currentPageId
-    ? activePages.findIndex((p) => p.id === existingProgressInfo.currentPageId)
-    : -1;
+  // 🆕 2026-09-22 開局減法：有進度 → 直接接續 + 可反悔提示（取代整頁「繼續 / 重新開始」框）
+  const requestRestart = useCallback(() => setShowRestartConfirm(true), []);
+  useResumeNoticeToast(resumeNotice, clearResumeNotice, requestRestart);
 
   const currentPage = activePages[currentPageIndex];
   const totalPages = activePages.length;
@@ -439,23 +443,6 @@ export default function GamePlay() {
     setLocation(`/map/${gameId}?session=${sessionId}`);
   }, [gameId, sessionId, setLocation]);
 
-  // 🆕 2026-05-12 #5: pendingDecision 時、整頁顯示 ResumeDialog（蓋遊戲頁面、玩家先選）
-  //   避免 dialog 在遊戲頁面渲染後才彈、玩家先看到第一個 page 才選
-  if (pendingDecision && !isReplayMode) {
-    return (
-      <div className="min-h-screen-dynamic bg-background flex items-center justify-center p-4">
-        <ResumeDialog
-          open={true}
-          onContinue={() => confirmContinue()}
-          onReset={() => resetAndCreateNew()}
-          currentPageIndex={pendingProgressIndex >= 0 ? pendingProgressIndex : 0}
-          totalPages={totalPages}
-          score={existingProgressInfo?.score ?? 0}
-        />
-      </div>
-    );
-  }
-
   // === 載入中/錯誤/完成 狀態 ===
   if (authLoading || gameLoading) {
     return <FullscreenSpinner label="載入任務中..." />;
@@ -506,6 +493,17 @@ export default function GamePlay() {
   //   傳 sessionId="" 給多人 race 元件 → 元件 effect early-return、連 8 秒重試計時器都不啟動 → 永久死轉。
   //   改為 session ready 前顯示「準備連線中」，ready 後才掛載遊戲內容（單人同理：沒 session 不該開始）。
   if (!sessionId) {
+    // 🐛 2026-09-22：建立失敗（多為不在指定地點）→ 顯示原因 + 重試，不再無限自動重試
+    if (sessionError) {
+      return (
+        <SessionErrorScreen
+          message={sessionError}
+          lockLocationName={game.lockLocationName}
+          onRetry={retryCreateSession}
+          onBack={() => setLocation(link("/home"))}
+        />
+      );
+    }
     return <FullscreenSpinner label="準備連線中..." />;
   }
 
@@ -760,6 +758,15 @@ export default function GamePlay() {
           onClose={() => setShowInventory(false)}
         />
       )}
+
+      <RestartConfirmDialog
+        open={showRestartConfirm}
+        onOpenChange={setShowRestartConfirm}
+        onConfirm={() => {
+          setShowRestartConfirm(false);
+          resetAndCreateNew();
+        }}
+      />
 
       {/* 🆕 Phase 2c+ leader-decide dialog（多人遊戲中隊長介入） */}
       <LeaderDecideDialog
