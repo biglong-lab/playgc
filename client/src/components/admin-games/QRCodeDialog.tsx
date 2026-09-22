@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { QrCode, Download, Copy, Check, RefreshCw, ExternalLink, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import RegenerateQrConfirmDialog from "@/components/shared/RegenerateQrConfirmDialog";
 
 interface QRCodeDialogProps {
   open: boolean;
@@ -34,6 +35,8 @@ export default function QRCodeDialog({
 }: QRCodeDialogProps) {
   const { toast } = useToast();
   const [copiedUrl, setCopiedUrl] = useState(false);
+  // 重新產生會讓已印出的 QR 失效 → 先確認
+  const [confirmRegenerateOpen, setConfirmRegenerateOpen] = useState(false);
   // 🔧 2026-05-25：對話框開啟時若沒有 cached QR Code 自動觸發即時生成
   //   避免拿到 DB cached PNG（舊 BASE_URL 編碼進去的）
   //   server 端列表已不回傳 qrCodeUrl，所以這裡幾乎一定會 null → 觸發
@@ -125,9 +128,11 @@ export default function QRCodeDialog({
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => onGenerate(game.id, true)}
+                    onClick={() => setConfirmRegenerateOpen(true)}
                     disabled={isPending}
                     data-testid="button-regenerate-qr"
+                    aria-label="重新產生 QR Code"
+                    title="重新產生 QR Code（已印出的 QR 會失效）"
                   >
                     <RefreshCw className="h-4 w-4" />
                   </Button>
@@ -158,6 +163,15 @@ export default function QRCodeDialog({
           </div>
         )}
       </DialogContent>
+      <RegenerateQrConfirmDialog
+        open={confirmRegenerateOpen && !!game}
+        gameTitle={game?.title ?? ""}
+        onOpenChange={setConfirmRegenerateOpen}
+        onConfirm={() => {
+          if (game) onGenerate(game.id, true);
+          setConfirmRegenerateOpen(false);
+        }}
+      />
     </Dialog>
   );
 }

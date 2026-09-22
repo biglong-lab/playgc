@@ -18,16 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import RegenerateConfirmDialog from "@/components/shared/RegenerateQrConfirmDialog";
 import {
   Table,
   TableBody,
@@ -63,35 +54,6 @@ interface QRCodeResponse {
   slug: string;
   qrCodeUrl: string;
   gameUrl: string;
-}
-
-interface RegenerateConfirmDialogProps {
-  readonly open: boolean;
-  readonly gameTitle: string;
-  readonly onOpenChange: (open: boolean) => void;
-  readonly onConfirm: () => void;
-}
-
-/** 重新產生短連結確認框 — 舊連結與已印出的 QR Code 會失效，必須明確確認 */
-function RegenerateConfirmDialog({ open, gameTitle, onOpenChange, onConfirm }: RegenerateConfirmDialogProps) {
-  return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>確定重新產生「{gameTitle}」的短連結？</AlertDialogTitle>
-          <AlertDialogDescription>
-            重新產生後，舊連結與已印出、已張貼的 QR Code 將全部失效，玩家掃描會找不到遊戲。此動作無法復原。
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel data-testid="button-cancel-regenerate">取消</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} data-testid="button-confirm-regenerate">
-            確定重新產生
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
 }
 
 const STATUS_LABELS: Record<string, string> = {
