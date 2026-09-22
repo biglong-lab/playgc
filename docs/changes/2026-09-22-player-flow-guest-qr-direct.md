@@ -1,7 +1,7 @@
 # 玩家動線通盤優化：免登入 + QR 直達 + 開局減法 + 結束引導保存 — 2026-09-22
 
 > 範圍：Phase 1–4 + 附帶 3 bug + 計分開關（業主 2026-09-22 確認）
-> 狀態：🟢 完成、已 push（未部署，等業主口令）
+> 狀態：🟢 已部署 `1e2237bc`（bundle `index-71Q3ADXy.js`，2026-09-22）
 > 範圍 commit：`61030538`..`HEAD`（main）
 
 ---
@@ -118,6 +118,17 @@ QR 介紹卡 → 登入牆（文案「需登入組隊」但單人也擋）→ �
 - 不計分遊戲實測：每關設 20 分獎勵 → header 無分數、結算無星星/分數/排行榜、DB 完成分數 0、排行榜 0 筆 ✅
 - 回歸 e2e（footer / 黃金路徑 A、B / landing / auth / 組隊 / 瀏覽 / 場域隔離）：123 passed；
   `golden-path-b` 的 `/play/:sessionId` `networkidle` 等待不穩（重跑失敗點會換一條、`/play` 相關檔案本批未改）→ 判定既有 flaky
+
+## 生產部署與驗證（2026-09-22）
+
+- 部署前：pg_dump 備份 `/root/db-backups/pre-deploy-player-flow-20260922-224455.sql.gz`；security-reviewer 判定可部署（無 CRITICAL / HIGH）
+- `npm run deploy` 六步驗證全過；`/api/version`=`1e2237bc`；`/api/health` 200
+- `games.scoring_enabled` 啟動時自動補上（boolean、預設 true、既有 45 款遊戲全為預設）
+- 資料筆數與部署前一致：遊戲 45 / 場次 1229 / 進度 1297 / 玩家 392 / 排行榜 157
+- 6 項安全標頭齊全、X-Powered-By 已隱藏；部署後 10 分鐘 log 無 5xx
+- 手機真瀏覽器：未登入掃 `/g/32fj9hy0` → 直達 `/f/HPSPACE/game/…` 第一關（無登入牆 / 繼續框）
+- ⚠️ 發現（既有、未改）：`game.homi.cc` nginx 未 include `snippets/cloudflare-realip.conf`
+  → Express 拿到的是 Cloudflare 節點 IP；不可偽造，但所有 per-IP 限流實際以 CF 節點為單位計數
 
 ## 部署注意
 

@@ -21,11 +21,11 @@ CHITO 是一個實境遊戲 SaaS 平台，結合 QR Code 掃描、GPS 定位、�
 
 ## 目前狀態
 
-**最後更新**: 2026-09-22 — 🎟️ 玩家動線通盤優化完成（已 push、未部署）
+**最後更新**: 2026-09-22 — 🎟️ 玩家動線通盤優化已部署 `1e2237bc`
 **分支**: main
-**Git 狀態**: 與 origin/main 同步；生產尚未部署本批（等業主說「部署」）
+**Git 狀態**: 與 origin/main 同步；生產已部署 `1e2237bc`（bundle `index-71Q3ADXy.js`）
 
-### 🎟️ 2026-09-22 玩家動線通盤優化（已 push、未部署）
+### 🎟️ 2026-09-22 玩家動線通盤優化（已部署 `1e2237bc`）
 
 完整紀錄 → [docs/changes/2026-09-22-player-flow-guest-qr-direct.md](docs/changes/2026-09-22-player-flow-guest-qr-direct.md)
 
