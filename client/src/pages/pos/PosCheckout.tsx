@@ -6,6 +6,7 @@
 // 流程：填金額 → 選付款方式 → 確認 → POST /api/pos/checkout → 成功頁
 
 import { useState, useEffect } from "react";
+import { computeCheckoutTotals } from "./pos-checkout-math";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import PosLayout from "./PosLayout";
@@ -217,8 +218,8 @@ export default function PosCheckout() {
   const amountCents = Math.round(Number(amountDollars) * 100) || 0;
   const validAmount = amountCents > 0;
   const tenderedCents = Math.round(Number(tenderedDollars) * 100) || 0;
-  const changeCents = tenderedCents > 0 ? tenderedCents - amountCents : 0;
-  const isLargeAmount = amountCents >= 200000; // NT$2000 以上要確認
+  // 🐛 2026-09-23：找零 / 大金額確認 / 按鈕金額一律用「折扣後應收」（原本用折扣前 → 少找錢）
+  const { dueCents, changeCents, isLargeAmount } = computeCheckoutTotals({ amountCents, discountCents, tenderedCents });
 
   const triggerCheckout = () => {
     if (isLargeAmount && !showConfirm) {
@@ -351,7 +352,7 @@ export default function PosCheckout() {
                     {v}
                   </Button>
                 ))}
-                <Button size="sm" variant="outline" onClick={() => setTenderedDollars(String(amountCents / 100))}>
+                <Button size="sm" variant="outline" onClick={() => setTenderedDollars(String(dueCents / 100))}>
                   剛好
                 </Button>
               </div>
@@ -466,7 +467,7 @@ export default function PosCheckout() {
             </div>
             {discountCents > 0 && (
               <div className="text-sm text-right">
-                折抵 NT${(discountCents / 100).toLocaleString()} → 應收 <span className="font-bold text-amber-600">NT${(Math.max(0, amountCents - discountCents) / 100).toLocaleString()}</span>
+                折抵 NT${(discountCents / 100).toLocaleString()} → 應收 <span className="font-bold text-amber-600">NT${(dueCents / 100).toLocaleString()}</span>
               </div>
             )}
           </CardContent>
@@ -483,7 +484,7 @@ export default function PosCheckout() {
           ) : (
             <DollarSign className="w-5 h-5 mr-1" />
           )}
-          確認收款 NT${(amountCents / 100).toLocaleString()}
+          確認收款 NT${(dueCents / 100).toLocaleString()}
         </Button>
 
         {/* 大金額確認對話框 */}
@@ -499,7 +500,7 @@ export default function PosCheckout() {
               <p className="text-sm">您將收取以下金額、請再次確認：</p>
               <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-300 rounded-lg p-4 text-center">
                 <p className="text-3xl font-bold text-amber-700 dark:text-amber-200">
-                  NT${(amountCents / 100).toLocaleString()}
+                  NT${(dueCents / 100).toLocaleString()}
                 </p>
                 {customerName && <p className="text-sm mt-1">{customerName}</p>}
                 {booking && <p className="text-xs text-muted-foreground mt-1">預約碼 {booking.bookingCode}</p>}
