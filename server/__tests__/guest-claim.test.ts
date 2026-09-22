@@ -49,6 +49,45 @@ describe("認領憑證（createClaimTicket / verifyClaimTicket）", () => {
   });
 });
 
+describe("moveClaimTarget（savepoint + 唯一鍵衝突重試）", () => {
+  let svc: typeof import("../services/guest-claim");
+  beforeAll(async () => {
+    svc = await import("../services/guest-claim");
+  });
+
+  function fakeTx(results: Array<{ rowCount: number } | Error>) {
+    const calls = { n: 0 };
+    const tx = {
+      execute: async () => {
+        const r = results[calls.n++];
+        if (r instanceof Error) throw r;
+        return r;
+      },
+      transaction: async <T,>(fn: (sp: typeof tx) => Promise<T>) => fn(tx),
+    };
+    return { tx, calls };
+  }
+  const target = { table: "field_memberships", column: "user_id", uniqueWith: ["field_id"] };
+  const unique = Object.assign(new Error("duplicate key"), { code: "23505" });
+
+  it("🐛 審查 HIGH：並行寫入撞唯一鍵 → 只重試該表一次，不讓整筆認領回滾", async () => {
+    const { tx, calls } = fakeTx([unique, { rowCount: 2 }]);
+    expect(await svc.moveClaimTarget(tx as never, target, "a", "r")).toBe(2);
+    expect(calls.n).toBe(2);
+  });
+
+  it("drizzle 包裝過的唯一鍵錯誤（cause.code）也能辨識", async () => {
+    const wrapped = Object.assign(new Error("query failed"), { cause: { code: "23505" } });
+    const { tx } = fakeTx([wrapped, { rowCount: 0 }]);
+    expect(await svc.moveClaimTarget(tx as never, target, "a", "r")).toBe(0);
+  });
+
+  it("其他錯誤 / 連續兩次衝突 → 往外拋（整筆交易回滾）", async () => {
+    await expect(svc.moveClaimTarget(fakeTx([new Error("boom")]).tx as never, target, "a", "r")).rejects.toThrow("boom");
+    await expect(svc.moveClaimTarget(fakeTx([unique, unique]).tx as never, target, "a", "r")).rejects.toThrow();
+  });
+});
+
 const FIELD = "__gclaim_field__";
 const GAME = "__gclaim_game__";
 const ANON = "__gclaim_anon__";

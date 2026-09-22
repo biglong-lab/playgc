@@ -3,9 +3,9 @@
 // 業主需求：「遊戲結束，有需要紀錄，再引導使用者註冊，建立身份或者登入既有的身份」
 // - 只給訪客看；不強迫（可按「先不用」收起）
 // - 登入方式沿用 LoginDialog（LINE / Google / Apple / Email），隱藏「訪客」按鈕
-// - 登入後由 GuestGate 自動認領，這張卡顯示結果
+// - 登入後由 GuestGate / 根層 GuestClaimFinalizer 自動認領，這張卡顯示結果
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, Loader2, Save } from "lucide-react";
+import { CheckCircle2, Loader2, RotateCcw, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -15,52 +15,63 @@ import { isEmbeddedBrowser } from "@/components/landing/EmbeddedBrowserWarning";
 import {
   GUEST_CLAIMED_EVENT,
   armGuestClaim,
+  disarmGuestClaim,
+  finalizeGuestClaim,
   prefetchGuestClaimTicket,
   type ClaimResult,
 } from "@/lib/guest-claim";
 
 type CardState = "idle" | "saving" | "saved" | "failed";
 
-function useClaimResult(onResult: (r: ClaimResult) => void) {
-  useEffect(() => {
-    const handler = (e: Event) => onResult((e as CustomEvent<ClaimResult>).detail);
-    window.addEventListener(GUEST_CLAIMED_EVENT, handler);
-    return () => window.removeEventListener(GUEST_CLAIMED_EVENT, handler);
-  }, [onResult]);
+interface SaveRecordState {
+  wasGuest: boolean;
+  state: CardState;
+  failure: { message: string; retryable: boolean } | null;
+  retry: () => void;
 }
 
-export default function SaveRecordCard() {
+/** 卡片狀態：掛載時是訪客才啟用；登入後轉「保存中」；收到認領結果轉成功 / 失敗 */
+function useSaveRecordState(): SaveRecordState {
   const { firebaseUser } = useAuth();
-  const { toast } = useToast();
-  // 掛載當下是訪客才顯示（登入後仍保留這張卡顯示保存結果）
   const [wasGuest] = useState(() => !!firebaseUser?.isAnonymous);
   const [state, setState] = useState<CardState>("idle");
-  const [failMessage, setFailMessage] = useState("");
-  const [dismissed, setDismissed] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [preparing, setPreparing] = useState(false);
-  const handlers = useLoginHandlers(() => setDialogOpen(false), { redirectTo: null });
+  const [failure, setFailure] = useState<SaveRecordState["failure"]>(null);
 
   // 先拿好認領憑證 → 按登入時可同步開 Google popup（不被瀏覽器擋）
   useEffect(() => {
     if (wasGuest) void prefetchGuestClaimTicket();
   }, [wasGuest]);
 
-  // 登入成功（不再是訪客）→ 顯示保存中，等 GuestGate 認領完成
   const isRealUser = !!firebaseUser && !firebaseUser.isAnonymous;
   useEffect(() => {
     if (wasGuest && isRealUser) setState((s) => (s === "idle" ? "saving" : s));
   }, [wasGuest, isRealUser]);
 
-  const onClaimResult = useCallback((result: ClaimResult) => {
-    if (result.ok) {
-      setState("saved");
-    } else {
-      setState("failed");
-      setFailMessage(result.message);
-    }
+  const onResult = useCallback((result: ClaimResult) => {
+    setState(result.ok ? "saved" : "failed");
+    setFailure(result.ok ? null : { message: result.message, retryable: result.retryable });
   }, []);
-  useClaimResult(onClaimResult);
+  useEffect(() => {
+    const handler = (e: Event) => onResult((e as CustomEvent<ClaimResult>).detail);
+    window.addEventListener(GUEST_CLAIMED_EVENT, handler);
+    return () => window.removeEventListener(GUEST_CLAIMED_EVENT, handler);
+  }, [onResult]);
+
+  const retry = useCallback(() => {
+    setState("saving");
+    void finalizeGuestClaim();
+  }, []);
+
+  return { wasGuest, state, failure, retry };
+}
+
+export default function SaveRecordCard() {
+  const { toast } = useToast();
+  const { wasGuest, state, failure, retry } = useSaveRecordState();
+  const [dismissed, setDismissed] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [preparing, setPreparing] = useState(false);
+  const handlers = useLoginHandlers(() => setDialogOpen(false), { redirectTo: null });
 
   const handleSaveClick = async () => {
     setPreparing(true);
@@ -79,14 +90,19 @@ export default function SaveRecordCard() {
     <div className="mb-4 rounded-xl border border-primary/40 bg-primary/5 p-4 text-left" data-testid="save-record-card">
       <SaveRecordBody
         state={state}
-        failMessage={failMessage}
+        failure={failure}
         preparing={preparing}
         onSave={handleSaveClick}
+        onRetry={retry}
         onDismiss={() => setDismissed(true)}
       />
       <LoginDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          // 玩家自己關掉登入框（沒登入）→ 解除保存標記；登入成功走 onSuccess 關閉、不經過這裡
+          if (!open) disarmGuestClaim();
+        }}
         isEmbeddedBrowser={isEmbeddedBrowser()}
         handlers={handlers}
         title="登入保存紀錄"
@@ -98,12 +114,13 @@ export default function SaveRecordCard() {
 }
 
 function SaveRecordBody({
-  state, failMessage, preparing, onSave, onDismiss,
+  state, failure, preparing, onSave, onRetry, onDismiss,
 }: {
   state: CardState;
-  failMessage: string;
+  failure: SaveRecordState["failure"];
   preparing: boolean;
   onSave: () => void;
+  onRetry: () => void;
   onDismiss: () => void;
 }) {
   if (state === "saved") {
@@ -123,7 +140,17 @@ function SaveRecordBody({
     );
   }
   if (state === "failed") {
-    return <p className="text-sm text-destructive">這次紀錄沒有保存成功：{failMessage}</p>;
+    return (
+      <div className="space-y-2">
+        <p className="text-sm text-destructive">這次紀錄沒有保存成功：{failure?.message}</p>
+        {failure?.retryable && (
+          <Button variant="outline" size="sm" className="gap-2" onClick={onRetry} data-testid="button-save-record-retry">
+            <RotateCcw className="w-4 h-4" />
+            重試保存
+          </Button>
+        )}
+      </div>
+    );
   }
   return (
     <>

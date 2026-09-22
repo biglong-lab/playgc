@@ -5,10 +5,18 @@ const { mockApiRequest, mockInvalidate } = vi.hoisted(() => ({
   mockInvalidate: vi.fn(),
 }));
 
-vi.mock("@/lib/queryClient", () => ({
-  apiRequest: (...args: unknown[]) => mockApiRequest(...args),
-  queryClient: { invalidateQueries: mockInvalidate },
-}));
+vi.mock("@/lib/queryClient", () => {
+  class ApiError extends Error {
+    constructor(message: string, readonly status: number, readonly body: Record<string, unknown> | null) {
+      super(message);
+    }
+  }
+  return {
+    apiRequest: (...args: unknown[]) => mockApiRequest(...args),
+    queryClient: { invalidateQueries: mockInvalidate },
+    ApiError,
+  };
+});
 
 import {
   GUEST_CLAIMED_EVENT,
@@ -16,7 +24,9 @@ import {
   armGuestClaim,
   hasArmedGuestClaim,
   finalizeGuestClaim,
+  disarmGuestClaim,
 } from "../guest-claim";
+import { ApiError } from "@/lib/queryClient";
 
 function jsonRes(body: unknown) {
   return { json: async () => body };
@@ -56,14 +66,38 @@ describe("訪客紀錄認領（前端）", () => {
     expect(mockInvalidate).toHaveBeenCalledWith({ queryKey: ["/api/sessions"] });
   });
 
-  it("認領失敗 → 清除憑證、回報原因（不會無限重打）", async () => {
+  it("憑證失效（400）→ 清除、不可重試", async () => {
     mockApiRequest.mockResolvedValueOnce(jsonRes({ ticket: "t.sig" }));
     await prefetchGuestClaimTicket();
     armGuestClaim();
-    mockApiRequest.mockRejectedValueOnce(new Error("保存連結已失效，請重新操作"));
+    mockApiRequest.mockRejectedValueOnce(new ApiError("保存連結已失效，請重新操作", 400, { error: "invalid_ticket" }));
 
     const result = await finalizeGuestClaim();
-    expect(result).toEqual({ ok: false, message: "保存連結已失效，請重新操作" });
+    expect(result).toEqual({ ok: false, message: "保存連結已失效，請重新操作", retryable: false });
+    expect(hasArmedGuestClaim()).toBe(false);
+  });
+
+  it("🐛 審查 HIGH：網路 / 5xx 失敗 → 保留憑證、可重試（紀錄不變孤兒）", async () => {
+    mockApiRequest.mockResolvedValueOnce(jsonRes({ ticket: "t.sig" }));
+    await prefetchGuestClaimTicket();
+    armGuestClaim();
+    mockApiRequest.mockRejectedValueOnce(new ApiError("保存紀錄失敗，請稍後再試", 500, null));
+
+    const first = await finalizeGuestClaim();
+    expect(first).toMatchObject({ ok: false, retryable: true });
+    expect(hasArmedGuestClaim()).toBe(true);
+
+    mockApiRequest.mockResolvedValueOnce(jsonRes({ success: true, moved: { player_progress: 1 } }));
+    const second = await finalizeGuestClaim();
+    expect(second.ok).toBe(true);
+    expect(hasArmedGuestClaim()).toBe(false);
+  });
+
+  it("取消登入 → 解除保存標記", async () => {
+    mockApiRequest.mockResolvedValueOnce(jsonRes({ ticket: "t.sig" }));
+    await prefetchGuestClaimTicket();
+    armGuestClaim();
+    disarmGuestClaim();
     expect(hasArmedGuestClaim()).toBe(false);
   });
 

@@ -7,7 +7,7 @@
 //    以正式帳號帶憑證認領 → 訪客紀錄搬到正式帳號
 //
 // 只有「玩家按過保存」的憑證才會被認領（armed），避免同一台手機之後有人登入就把紀錄帶走。
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, ApiError } from "@/lib/queryClient";
 
 const STORAGE_KEY = "chito_guest_claim";
 /** 比後端 30 分鐘略短，留時間差 */
@@ -63,12 +63,21 @@ export function armGuestClaim(): boolean {
   return true;
 }
 
+/** 玩家取消登入 → 解除保存標記（避免同分頁之後換別人登入把紀錄帶走） */
+export function disarmGuestClaim(): void {
+  const claim = read();
+  if (claim?.armed) write({ ...claim, armed: false });
+}
+
 /** 有待認領（玩家按過保存、憑證未過期） */
 export function hasArmedGuestClaim(): boolean {
   return read()?.armed === true;
 }
 
-export type ClaimResult = { ok: true; moved: Record<string, number> } | { ok: false; message: string };
+export type ClaimResult =
+  | { ok: true; moved: Record<string, number> }
+  /** retryable = 憑證仍保留（網路 / 429 / 5xx），可再試；false = 憑證已失效、已清除 */
+  | { ok: false; message: string; retryable: boolean };
 
 let inflight: Promise<ClaimResult> | null = null;
 
@@ -76,7 +85,7 @@ let inflight: Promise<ClaimResult> | null = null;
 export function finalizeGuestClaim(): Promise<ClaimResult> {
   if (inflight) return inflight;
   const claim = read();
-  if (!claim?.armed) return Promise.resolve({ ok: false, message: "沒有待保存的紀錄" });
+  if (!claim?.armed) return Promise.resolve({ ok: false, message: "沒有待保存的紀錄", retryable: false });
 
   inflight = (async (): Promise<ClaimResult> => {
     try {
@@ -91,9 +100,12 @@ export function finalizeGuestClaim(): Promise<ClaimResult> {
       window.dispatchEvent(new CustomEvent(GUEST_CLAIMED_EVENT, { detail: result }));
       return result;
     } catch (err) {
-      write(null);
-      const message = err instanceof Error ? err.message.replace(/^\d+:\s*/, "") : "保存紀錄失敗";
-      const result: ClaimResult = { ok: false, message };
+      // 🐛 2026-09-22 審查 HIGH：只有 400（憑證失效 / 身分不符）才清除；
+      //   網路、429、5xx 保留憑證 → 可重試，不讓訪客紀錄因一時失敗變孤兒
+      const definitive = err instanceof ApiError && err.status === 400;
+      if (definitive) write(null);
+      const message = err instanceof Error && err.message ? err.message : "保存紀錄失敗";
+      const result: ClaimResult = { ok: false, message, retryable: !definitive };
       window.dispatchEvent(new CustomEvent(GUEST_CLAIMED_EVENT, { detail: result }));
       return result;
     }

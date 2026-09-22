@@ -1,10 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act, fireEvent, waitFor } from "@testing-library/react";
 
-const { authState, mockPrefetch, mockArm } = vi.hoisted(() => ({
+const { authState, mockPrefetch, mockArm, mockFinalize } = vi.hoisted(() => ({
   authState: { firebaseUser: null as { isAnonymous: boolean; uid: string } | null },
   mockPrefetch: vi.fn(),
   mockArm: vi.fn(),
+  mockFinalize: vi.fn(),
 }));
 
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => authState }));
@@ -19,6 +20,8 @@ vi.mock("@/lib/guest-claim", () => ({
   GUEST_CLAIMED_EVENT: "chito:guest-claimed",
   prefetchGuestClaimTicket: (...a: unknown[]) => mockPrefetch(...a),
   armGuestClaim: (...a: unknown[]) => mockArm(...a),
+  disarmGuestClaim: vi.fn(),
+  finalizeGuestClaim: (...a: unknown[]) => mockFinalize(...a),
 }));
 
 import SaveRecordCard from "../SaveRecordCard";
@@ -28,6 +31,7 @@ describe("SaveRecordCard 結算頁保存紀錄", () => {
     authState.firebaseUser = { isAnonymous: true, uid: "anon-1" };
     mockPrefetch.mockReset().mockResolvedValue(true);
     mockArm.mockReset().mockReturnValue(true);
+    mockFinalize.mockReset().mockResolvedValue({ ok: true, moved: {} });
   });
 
   it("正式帳號玩家不顯示", () => {
@@ -63,11 +67,25 @@ describe("SaveRecordCard 結算頁保存紀錄", () => {
     await waitFor(() => expect(screen.getByTestId("save-record-done")).toBeInTheDocument());
   });
 
-  it("認領失敗事件 → 誠實顯示沒有保存成功", async () => {
+  it("認領失敗（憑證失效）→ 誠實顯示沒有保存成功、不給重試", async () => {
     render(<SaveRecordCard />);
     act(() => {
-      window.dispatchEvent(new CustomEvent("chito:guest-claimed", { detail: { ok: false, message: "保存連結已失效" } }));
+      window.dispatchEvent(new CustomEvent("chito:guest-claimed", {
+        detail: { ok: false, message: "保存連結已失效", retryable: false },
+      }));
     });
     expect(await screen.findByText(/沒有保存成功：保存連結已失效/)).toBeInTheDocument();
+    expect(screen.queryByTestId("button-save-record-retry")).not.toBeInTheDocument();
+  });
+
+  it("暫時失敗（可重試）→ 顯示「重試保存」並重新認領", async () => {
+    render(<SaveRecordCard />);
+    act(() => {
+      window.dispatchEvent(new CustomEvent("chito:guest-claimed", {
+        detail: { ok: false, message: "保存紀錄失敗，請稍後再試", retryable: true },
+      }));
+    });
+    fireEvent.click(await screen.findByTestId("button-save-record-retry"));
+    expect(mockFinalize).toHaveBeenCalled();
   });
 });

@@ -23,6 +23,7 @@ import FloatingFontScale from "@/components/shared/FloatingFontScale";
 import FloatingBgmMute from "@/components/shared/FloatingBgmMute";
 import AppUpdateChecker from "@/components/AppUpdateChecker";
 import WelcomeSquadsTrigger from "@/components/WelcomeSquadsTrigger";
+import GuestClaimFinalizer from "@/components/shared/GuestClaimFinalizer";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { useAuth } from "@/hooks/useAuth";
 import { useErrorReport } from "@/hooks/useErrorReport";
@@ -614,6 +615,8 @@ function App() {
                 <PWAInstallPrompt />
                 <AppUpdateChecker />
                 <WelcomeSquadsTrigger />
+                {/* 🎟️ 訪客登入正式帳號後自動保存紀錄（任何頁面都生效）＋結果提示 */}
+                <GuestClaimFinalizer />
               </TooltipProvider>
               </BgmPlayerProvider>
             </I18nProvider>

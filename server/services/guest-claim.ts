@@ -74,7 +74,7 @@ export function verifyClaimTicket(ticket: string, now = Date.now()): string | nu
   }
 }
 
-interface ClaimTarget {
+export interface ClaimTarget {
   table: string;
   column: string;
   /** 與這些欄位組合後，正式帳號已有同一筆 → 不搬（保留正式帳號那筆） */
@@ -127,14 +127,38 @@ function buildMoveStatement(target: ClaimTarget, anonUid: string, realUid: strin
 
 export type ClaimSummary = Record<string, number>;
 
-/** 把訪客名下紀錄搬到正式帳號（單一 transaction，任一步失敗全部回滾） */
+type ExecTx = { execute: (q: ReturnType<typeof sql>) => Promise<unknown>; transaction: <T>(fn: (sp: ExecTx) => Promise<T>) => Promise<T> };
+
+function isUniqueViolation(err: unknown): boolean {
+  const e = err as { code?: string; cause?: { code?: string } } | null;
+  return e?.code === "23505" || e?.cause?.code === "23505";
+}
+
+/**
+ * 搬一張表（包在 SAVEPOINT 內）
+ * 🐛 2026-09-22 審查 HIGH：NOT EXISTS 在 READ COMMITTED 下擋不住並行寫入
+ *   （例如新帳號首次登入時其他請求同時 ensureMembership）→ 撞唯一鍵 23505 會讓整筆交易回滾。
+ *   改為每張表一個 savepoint，23505 只回滾該表並重試一次（此時衝突列已存在，NOT EXISTS 會排除）。
+ */
+export async function moveClaimTarget(tx: ExecTx, target: ClaimTarget, anonUid: string, realUid: string): Promise<number> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const result = await tx.transaction((sp) => sp.execute(buildMoveStatement(target, anonUid, realUid)));
+      return Number((result as { rowCount?: number | null }).rowCount ?? 0);
+    } catch (err) {
+      if (attempt === 0 && isUniqueViolation(err)) continue;
+      throw err;
+    }
+  }
+}
+
+/** 把訪客名下紀錄搬到正式帳號（單一 transaction；每表 savepoint；非唯一鍵錯誤全部回滾） */
 export async function claimGuestRecords(anonUid: string, realUid: string): Promise<ClaimSummary> {
   if (!anonUid || !realUid || anonUid === realUid) return {};
   return db.transaction(async (tx) => {
     const summary: ClaimSummary = {};
     for (const target of CLAIM_TARGETS) {
-      const result = await tx.execute(buildMoveStatement(target, anonUid, realUid));
-      const moved = Number((result as { rowCount?: number | null }).rowCount ?? 0);
+      const moved = await moveClaimTarget(tx as unknown as ExecTx, target, anonUid, realUid);
       if (moved > 0) summary[target.table] = moved;
     }
     return summary;
