@@ -150,7 +150,7 @@ export function useLoginHandlers(
       if (user) {
         toast({
           title: "歡迎訪客！",
-          description: "您可以稍後在設定中綁定正式帳號",
+          description: "遊戲結束時可登入，把紀錄保存到正式帳號",
         });
         handleLoginSuccess();
       }

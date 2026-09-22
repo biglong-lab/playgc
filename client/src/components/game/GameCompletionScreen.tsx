@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { savePhotoToAlbum, getSaveToastMessage } from "@/lib/photo-save";
 import { useQuery } from "@tanstack/react-query";
 import { announceGameCompleted } from "@/lib/play-routes";
+import SaveRecordCard from "@/components/game/SaveRecordCard";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -457,6 +458,9 @@ export default function GameCompletionScreen({
         ) : (
           <div className="mb-8" />
         )}
+
+        {/* 🆕 2026-09-22：訪客「保存這次紀錄」（不強迫，可收起） */}
+        <SaveRecordCard />
 
         {/* 🆕 F3: 分享戰績（獨立列，主要 CTA，金色 gradient 很顯眼） */}
         <motion.div

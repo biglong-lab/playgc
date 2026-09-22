@@ -65,10 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         unsubscribe = onAuthStateChanged(auth, (user) => {
           authStateReceived = true;
           clearTimeout(timeout);
-          // 使用者狀態變更時（登入/登出）強制 refetch
-          const wasSignedIn = !!prevUserRef.current;
-          const isNowSignedIn = !!user;
-          if (wasSignedIn !== isNowSignedIn) {
+          // 使用者狀態變更時（登入/登出/換帳號）強制 refetch
+          // 🐛 2026-09-22：訪客 → 正式帳號（兩邊都算已登入）原本不會 refetch，
+          //   畫面會沿用訪客的 dbUser（id 錯）→ 改為 uid 變了就重抓
+          if (prevUserRef.current?.uid !== user?.uid) {
             queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
           }
           prevUserRef.current = user;

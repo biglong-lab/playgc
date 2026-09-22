@@ -20,6 +20,10 @@ interface LoginDialogProps {
   /** 是否在嵌入式瀏覽器中（影響社群登入按鈕啟用狀態） */
   isEmbeddedBrowser: boolean;
   handlers: LoginHandlers;
+  /** 🆕 2026-09-22 結算頁「保存紀錄」重用：自訂標題 / 說明、隱藏訪客按鈕 */
+  title?: string;
+  description?: string;
+  hideGuest?: boolean;
 }
 
 /** 登入對話框：訪客、Google、Apple、Email 登入/註冊 */
@@ -28,6 +32,9 @@ export function LoginDialog({
   onOpenChange,
   isEmbeddedBrowser,
   handlers,
+  title = "登入遊戲",
+  description = "選擇您喜歡的登入方式",
+  hideGuest = false,
 }: LoginDialogProps) {
   const {
     isLoggingIn,
@@ -53,31 +60,35 @@ export function LoginDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center font-display text-2xl">
-            登入遊戲
+            {title}
           </DialogTitle>
           <DialogDescription className="text-center">
-            選擇您喜歡的登入方式
+            {description}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 pt-4">
           {/* 訪客快速登入 */}
-          <Button
-            variant="outline"
-            className="w-full h-12 gap-3 text-base"
-            onClick={handleGuestLogin}
-            disabled={isLoggingIn}
-            data-testid="button-guest-login"
-          >
-            {isLoggingIn && loginMethod === "guest" ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <User className="w-5 h-5" />
-            )}
-            訪客快速體驗
-          </Button>
+          {!hideGuest && (
+            <>
+              <Button
+                variant="outline"
+                className="w-full h-12 gap-3 text-base"
+                onClick={handleGuestLogin}
+                disabled={isLoggingIn}
+                data-testid="button-guest-login"
+              >
+                {isLoggingIn && loginMethod === "guest" ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
+                訪客快速體驗
+              </Button>
 
-          <Divider text="或使用帳號登入" />
+              <Divider text="或使用帳號登入" />
+            </>
+          )}
 
           {/* LINE 登入（綠色主視覺、優先顯示） */}
           {visibility.showLine && (
