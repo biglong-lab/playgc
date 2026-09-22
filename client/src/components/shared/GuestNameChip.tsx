@@ -10,7 +10,8 @@ import { GUEST_NAME_KEY, ensureGuestName } from "@/lib/guest-identity";
 
 export default function GuestNameChip({ className = "" }: { className?: string }) {
   const { firebaseUser } = useAuth();
-  const [name, setName] = useState(() => ensureGuestName());
+  // 只有訪客才產生暱稱（正式帳號不寫 localStorage，避免之後被當成暱稱送出）
+  const [name, setName] = useState(() => (firebaseUser?.isAnonymous ? ensureGuestName() : ""));
   const [open, setOpen] = useState(false);
 
   if (!firebaseUser?.isAnonymous) return null;

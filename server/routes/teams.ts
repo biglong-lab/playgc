@@ -9,7 +9,6 @@ import {
   gameSessions,
   squads,
   squadMembers,
-  users,
 } from "@shared/schema";
 import { eq, and, isNull, desc, sql } from "drizzle-orm"; // desc 用於 activeSessionId 查詢
 import { z } from "zod";
@@ -18,6 +17,7 @@ import { registerTeamVoteRoutes } from "./team-votes";
 import { registerTeamScoreRoutes } from "./team-scores";
 import { registerTeamLifecycleRoutes } from "./team-lifecycle";
 import { teamActionLimiter } from "../utils/rate-limiters";
+import { persistGuestDisplayName } from "../services/guest-display-name";
 
 /** 建立隊伍的請求驗證
  * 🛡️ 2026-05-04: name 接受空字串（轉 undefined）— 用既有 Squad 出戰時不必輸入名字、由 server fallback 用 squad name
@@ -40,22 +40,6 @@ const joinTeamBodySchema = z.object({
   // 🆕 CHITO #7：訪客遊戲暱稱
   displayName: z.string().max(50).optional(),
 });
-
-/**
- * 🐛 修 bug（ProPlan CHITO #7）：訪客暱稱只存 localStorage / gameSessions.playerName，
- *   沒進 users 表 → 多人隊伍成員列表（讀 users.firstName）顯示 user-xxx@firebase.local。
- *   修法：訪客建立/加入隊伍時把暱稱寫進自己的 users.firstName。
- *   僅限匿名訪客（email 為 *@firebase.local）才覆寫，避免蓋掉 Google 帳號真名。
- */
-async function persistGuestDisplayName(userId: string, rawName?: string): Promise<void> {
-  const name = rawName?.trim();
-  if (!name) return;
-  const user = await storage.getUser(userId);
-  if (!user || !user.email?.endsWith("@firebase.local")) return;
-  const clean = name.slice(0, 50);
-  if (user.firstName === clean) return;
-  await db.update(users).set({ firstName: clean, updatedAt: new Date() }).where(eq(users.id, userId));
-}
 
 function generateAccessCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -137,7 +121,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         const body = createTeamBodySchema.parse(req.body);
 
         // 🆕 CHITO #7：訪客暱稱寫進 users.firstName（在 fullTeam 查詢前、成員列表才顯示得到）
-        await persistGuestDisplayName(userId, body.displayName);
+        await persistGuestDisplayName(userId, body.displayName, req.user?.claims?.signInProvider);
 
         // 🆕 PR4：若帶 squadId，驗證該玩家是該 Squad active 成員，並把 team 名稱用 squad 名稱
         let squadId: string | null = null;
@@ -225,7 +209,7 @@ export function registerTeamRoutes(app: Express, ctx: RouteContext) {
         }
 
         // 🆕 CHITO #7：訪客暱稱寫進 users.firstName，加入後成員列表才顯示得到
-        await persistGuestDisplayName(userId, body.displayName);
+        await persistGuestDisplayName(userId, body.displayName, req.user?.claims?.signInProvider);
 
         const team = await db.query.teams.findFirst({
           where: eq(teams.accessCode, body.accessCode.toUpperCase()),

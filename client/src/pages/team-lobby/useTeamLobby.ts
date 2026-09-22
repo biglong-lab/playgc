@@ -28,8 +28,12 @@ export function parseInviteCode(search: string): string {
   }
 }
 
-/** 讀取訪客在大廳輸入的遊戲暱稱（localStorage）；無則 undefined */
-function getGuestDisplayName(): string | undefined {
+/**
+ * 讀取訪客的遊戲暱稱（localStorage）；無則 undefined
+ * 🐛 2026-09-22：只有訪客身分才送（正式帳號用自己的名字，不被舊的訪客暱稱蓋掉）
+ */
+function getGuestDisplayName(isGuest: boolean): string | undefined {
+  if (!isGuest) return undefined;
   try {
     const v = localStorage.getItem("anonymous_player_name")?.trim();
     return v || undefined;
@@ -163,7 +167,7 @@ export function useTeamLobby(): TeamLobbyReturn {
   const [, setLocation] = useLocation();
   const link = useFieldLink();   // 🔧 場域感知 link builder
   const { toast } = useToast();
-  const { user: dbUser } = useAuth();
+  const { user: dbUser, firebaseUser } = useAuth();
 
   // 🔗 從 URL ?code= 預填邀請碼（朋友點連結時自動帶入）
   const initialInviteCode = readInviteCodeFromUrl();
@@ -416,7 +420,7 @@ export function useTeamLobby(): TeamLobbyReturn {
   const createTeamMutation = useMutation({
     mutationFn: async (data: { name?: string; squadId?: string }) => {
       // 🆕 CHITO #7：帶上訪客在大廳輸入的暱稱、後端寫進 users.firstName（成員列表才顯示得到）
-      const displayName = getGuestDisplayName();
+      const displayName = getGuestDisplayName(!!firebaseUser?.isAnonymous);
       const response = await apiRequest("POST", `/api/games/${gameId}/teams`, {
         ...data,
         ...(displayName ? { displayName } : {}),
@@ -438,7 +442,7 @@ export function useTeamLobby(): TeamLobbyReturn {
   const joinTeamMutation = useMutation({
     mutationFn: async (data: { accessCode: string }) => {
       // 🆕 CHITO #7：帶上訪客暱稱、後端寫進 users.firstName
-      const displayName = getGuestDisplayName();
+      const displayName = getGuestDisplayName(!!firebaseUser?.isAnonymous);
       const response = await apiRequest("POST", "/api/teams/join", {
         ...data,
         ...(displayName ? { displayName } : {}),

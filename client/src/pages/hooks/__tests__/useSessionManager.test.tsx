@@ -16,7 +16,10 @@ const { mockApiRequest, mockToast } = vi.hoisted(() => ({
 
 vi.mock("wouter", () => ({ useLocation: () => ["/game/g1", vi.fn()] }));
 vi.mock("@/hooks/use-toast", () => ({ useToast: () => ({ toast: mockToast }) }));
-vi.mock("@/lib/firebase", () => ({ getIdToken: vi.fn().mockResolvedValue("token") }));
+vi.mock("@/lib/firebase", () => ({
+  getIdToken: vi.fn().mockResolvedValue("token"),
+  isAnonymousUser: () => true,
+}));
 vi.mock("@/lib/queryClient", async () => {
   const { QueryClient } = await vi.importActual<typeof import("@tanstack/react-query")>("@tanstack/react-query");
   class ApiError extends Error {

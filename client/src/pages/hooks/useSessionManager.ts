@@ -193,10 +193,12 @@ export function useSessionManager({
   // 建立新 session
   const createSessionMutation = useMutation({
     mutationFn: async () => {
-      // 🆕 匿名玩家在 Home 填的暱稱帶進來；無則 undefined（後端 schema 不會寫入）
+      // 🆕 訪客暱稱帶進來；無則 undefined（後端 schema 不會寫入）
+      // 🐛 2026-09-22：只有訪客身分才帶（正式帳號不沿用舊的訪客暱稱）
       let playerName: string | undefined;
       try {
-        const stored = localStorage.getItem("anonymous_player_name");
+        const { isAnonymousUser } = await import("@/lib/firebase");
+        const stored = isAnonymousUser() ? localStorage.getItem("anonymous_player_name") : null;
         if (stored && stored.trim()) playerName = stored.trim();
       } catch { /* ignore */ }
 
