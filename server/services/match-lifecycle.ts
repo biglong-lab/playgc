@@ -67,10 +67,10 @@ export async function loadMatchRankingRows(matchId: string): Promise<MatchRankin
     participantId: p.id,
     userId: p.userId,
     sessionId: p.sessionId,
+    // 🔒 2026-09-23 安全審查 M2：不傳 email → 顯示名不會退化成信箱前綴（排名是公開端點）
     displayName: getPlayerDisplayName({
       firstName: p.source.firstName,
       lastName: p.source.lastName,
-      email: p.source.email,
       playerName: p.source.playerName,
     }),
     score: p.currentScore,
@@ -217,13 +217,23 @@ export async function linkMatchSession(matchId: string, userId: string, sessionI
   return linked.length > 0;
 }
 
-/** 遊戲進度更新 → 同步賽事分數（只增不減、不超過單場硬上限）並廣播排名 */
+/**
+ * 遊戲進度更新 → 同步賽事分數（只增不減）並廣播排名
+ * 🔒 2026-09-23 安全審查 H2：進度分數要跑場次既有的分數驗證（硬上限 + 射擊紀錄比對 + 可疑紀錄），
+ *   否則玩家直接 PATCH 進度灌 10000 分、時間到就以灌的分數結算。
+ *   只有「這個場次真的在某場進行中的賽事裡」才驗，一般單人 / 組隊場次不增加額外查詢。
+ */
 export async function syncMatchScoreFromSession(
   sessionId: string, userId: string, score: number, broadcast: MatchBroadcast,
 ): Promise<void> {
   const row = await findPlayingParticipant(sessionId, userId);
-  const capped = Math.min(score, MAX_SESSION_SCORE);
-  if (!row || capped <= row.p.currentScore) return;
+  if (!row) return;
+  // 接力：不是自己那一棒的時段不收分（防非當棒玩家先偷跑刷分）
+  if (row.matchMode === "relay" && row.p.relayStatus !== "active") return;
+  const { validateSessionScore } = await import("../lib/scoreValidation");
+  const { safeScore } = await validateSessionScore({ sessionId, userId, clientScore: score, source: "session-progress" });
+  const capped = Math.min(safeScore, MAX_SESSION_SCORE);
+  if (capped <= row.p.currentScore) return;
   await db.update(matchParticipants).set({ currentScore: capped }).where(eq(matchParticipants.id, row.p.id));
   await broadcastRanking(row.p.matchId, broadcast);
 }
@@ -237,6 +247,8 @@ export async function completeMatchParticipant(
 ): Promise<void> {
   const row = await findPlayingParticipant(sessionId, userId);
   if (!row || row.p.completedAt) return;
+  // 接力：只有當棒的人完成才算（防還沒輪到的人先把整場跑完觸發交棒）
+  if (row.matchMode === "relay" && row.p.relayStatus !== "active") return;
   await db
     .update(matchParticipants)
     .set({ currentScore: Math.max(0, Math.min(finalScore, MAX_SESSION_SCORE)), completedAt: new Date() })

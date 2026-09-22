@@ -47,7 +47,7 @@ export async function validateSessionScore(opts: {
   sessionId: string;
   userId: string | null;
   clientScore: number;
-  source: "chapter-complete" | "session-complete";
+  source: "chapter-complete" | "session-complete" | "session-progress";
 }): Promise<ScoreValidationResult> {
   const { sessionId, userId, clientScore, source } = opts;
 

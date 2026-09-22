@@ -41,9 +41,17 @@ function userIdOf(req: AuthenticatedRequest, res: Response): string | null {
   return userId ?? null;
 }
 
-/** 訪客帶來的暱稱寫進 users（排名顯示用；正式帳號不覆寫） */
+/**
+ * 訪客帶來的暱稱寫進 users（排名顯示用；正式帳號不覆寫）
+ * 🔒 2026-09-23 安全審查 L1：跟場次一樣跑 validatePlayerName（長度 + 禁特殊字元），
+ *   這個名字會出現在公開排名與 Telegram 通報
+ */
 async function rememberGuestName(req: AuthenticatedRequest, userId: string, name: string | undefined) {
-  await persistGuestDisplayName(userId, name, req.user?.claims?.signInProvider);
+  if (!name) return;
+  const { validatePlayerName } = await import("@shared/lib/playerDisplay");
+  const result = validatePlayerName(name);
+  if (!result.valid) return;
+  await persistGuestDisplayName(userId, result.value, req.user?.claims?.signInProvider);
 }
 
 export function registerMatchRoutes(app: Express, ctx: RouteContext) {
@@ -191,7 +199,7 @@ function registerHostRoutes(app: Express, ctx: RouteContext) {
   });
 
   // 倒數卡住（伺服器重啟時計時器遺失）→ 參賽者可請求補做；巡檢 5 秒內也會自己補
-  app.post("/api/matches/:matchId/recover", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/matches/:matchId/recover", isAuthenticated, matchActionLimiter, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = userIdOf(req, res);
       if (!userId) return;

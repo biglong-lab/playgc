@@ -85,6 +85,13 @@ vi.mock("../services/achievement-unlock", () => ({
   checkAndUnlockAchievements: vi.fn().mockResolvedValue([]),
 }));
 
+// 🔒 2026-09-23 安全審查 H1：完成場次一律跑分數驗證
+const { mockValidateScore } = vi.hoisted(() => ({ mockValidateScore: vi.fn() }));
+vi.mock("../lib/scoreValidation", () => ({
+  validateSessionScore: mockValidateScore,
+  MAX_SESSION_SCORE: 10000,
+}));
+
 // 🏁 2026-09-23 競賽 / 接力掛勾（預設不是賽事場次；個別測試調整）
 const { mockMatchHooks } = vi.hoisted(() => ({
   mockMatchHooks: {
@@ -116,6 +123,11 @@ describe("Player Sessions 路由", () => {
     mockMatchHooks.linkSessionToMatch.mockResolvedValue(false);
     mockMatchHooks.isRelayLeg.mockResolvedValue(false);
     mockMatchHooks.completeMatchForSession.mockResolvedValue(undefined);
+    mockValidateScore.mockImplementation(async ({ clientScore }: { clientScore: number }) => ({
+      safeScore: Math.min(clientScore, 500), // 測試用：把超過 500 的分數修正掉
+      adjusted: clientScore > 500,
+      clientScore,
+    }));
     app = createApp();
   });
 
@@ -454,6 +466,32 @@ describe("Player Sessions 路由", () => {
       expect(res.status).toBe(200);
       expect(mockStorage.createLeaderboardEntry).not.toHaveBeenCalled();
       expect(mockMatchHooks.completeMatchForSession).toHaveBeenCalledWith("s-1", "user-1", 30, undefined);
+    });
+  });
+
+  // =====================================================
+  // 🔒 2026-09-23 安全審查修正
+  // =====================================================
+  describe("分數偽造防線", () => {
+    it("建立場次不接受 client 自帶 score / status（白名單以外欄位被丟掉）", async () => {
+      mockStorage.createSession.mockResolvedValue({ id: "s-x", gameId: "g-1" });
+      mockStorage.getUser.mockResolvedValue({ id: "user-1" });
+      mockStorage.createPlayerProgress.mockResolvedValue({ id: 1 });
+      await request(app).post("/api/sessions").set(AUTH_HEADER)
+        .send({ gameId: "g-1", score: 9999, status: "completed", hostMode: true });
+      const created = mockStorage.createSession.mock.calls[0][0];
+      expect(created).not.toHaveProperty("score");
+      expect(created).not.toHaveProperty("status");
+      expect(created).not.toHaveProperty("hostMode");
+    });
+
+    it("完成場次沒帶 score → 仍用 DB 現值跑驗證並寫回安全分數", async () => {
+      mockStorage.getSession.mockResolvedValue({ id: "s-1", gameId: "g-1", score: 9999, status: "playing" });
+      mockStorage.updateSession.mockResolvedValue({ id: "s-1", gameId: "g-1", status: "completed", score: 500 });
+      const res = await request(app).patch("/api/sessions/s-1").set(AUTH_HEADER).send({ status: "completed" });
+      expect(res.status).toBe(200);
+      expect(mockValidateScore).toHaveBeenCalledWith(expect.objectContaining({ clientScore: 9999, source: "session-complete" }));
+      expect(mockStorage.updateSession).toHaveBeenCalledWith("s-1", expect.objectContaining({ score: 500 }));
     });
   });
 });

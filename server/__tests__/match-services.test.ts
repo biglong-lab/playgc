@@ -16,6 +16,12 @@ import { rankParticipants } from "../services/match-lifecycle";
 import { relayLegsOf } from "../services/relay-lifecycle";
 
 describe("buildMatchSettings（遊戲設定 → 賽事快照）", () => {
+  it("🔒 接力沒設分段 → 人數上限至少 1，不會變成 0（0 會讓加入檢查失效）", () => {
+    const { settings, maxTeams } = buildMatchSettings({ relaySegments: [] }, "relay");
+    expect(settings.maxParticipants).toBe(1);
+    expect(maxTeams).toBe(1);
+  });
+
   it("競賽：分鐘換秒、人數沿用設定；0 分鐘 = 不限時", () => {
     const { settings, maxTeams } = buildMatchSettings({ timeLimitMinutes: 10, minParticipants: 3, maxParticipants: 8 }, "competitive");
     expect(settings).toMatchObject({ timeLimit: 600, minParticipants: 3, maxParticipants: 8, countdownSeconds: 3 });

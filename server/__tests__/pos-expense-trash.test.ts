@@ -45,9 +45,12 @@ vi.mock("../db", () => ({ db: mockDb }));
 vi.mock("../routes/pos", () => ({ resolveFieldScope: mockScope }));
 vi.mock("../routes/pos-cash", () => ({ getSettlement: mockGetSettlement }));
 
+// 🔒 2026-09-23 安全審查 M7：現金支出還原要財務權限（pos_cash_admin），個別測試可改這個變數
+let mockAdminPermissions: string[] = ["game:edit", "pos_cash_admin"];
+
 vi.mock("../adminAuth", () => ({
   requireAdminAuth: vi.fn((req: any, _res: any, next: any) => {
-    req.admin = { id: "admin-1", fieldId: "field-uuid", systemRole: "field_director", permissions: ["game:edit"] };
+    req.admin = { id: "admin-1", fieldId: "field-uuid", systemRole: "field_director", permissions: mockAdminPermissions };
     return next();
   }),
   requirePermission: vi.fn(() => (_req: any, _res: any, next: any) => next()),
@@ -128,5 +131,17 @@ describe("POS 垃圾桶 — 現金支出", () => {
   it("未知 type → 仍回 400", async () => {
     const res = await request(createApp()).post("/api/admin/pos/restore").send({ type: "weird", id: "x" });
     expect(res.status).toBe(400);
+  });
+
+  // 🔒 2026-09-23 安全審查 M7
+  it("只有內容編輯權、沒有現金管理權 → 403 不還原（現金支出影響當日對帳）", async () => {
+    mockAdminPermissions = ["game:edit"];
+    try {
+      const res = await request(createApp()).post("/api/admin/pos/restore").send({ type: "expense", id: "exp-1" });
+      expect(res.status).toBe(403);
+      expect(res.body.message).toContain("現金管理權限");
+    } finally {
+      mockAdminPermissions = ["game:edit", "pos_cash_admin"];
+    }
   });
 });

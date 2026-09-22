@@ -42,6 +42,16 @@ async function notifyFieldGameStart(sessionId: string, userId: string): Promise<
 
 // 🔐 2026-07-09 M3（全站優化盤點）：熱路徑輸入驗證 —
 //   PATCH /progress 原本 req.body 直取（score 可送負數/超大值/任意型別）
+// 🔒 2026-09-23 安全審查 H1：建立場次只收這幾個欄位。
+//   原本用 insertGameSessionSchema（只 omit id/startedAt/completedAt）→ client 可自帶
+//   score / status / hostMode / hostToken 開局就是 10000 分、或直接建成已完成。
+const createSessionSchema = insertGameSessionSchema.pick({
+  gameId: true,
+  teamName: true,
+  playerName: true,
+  playerCount: true,
+});
+
 const progressPatchSchema = z.object({
   pageId: z.string().max(200).optional(),
   score: z.number().int().min(0).max(1_000_000).optional(),
@@ -132,7 +142,7 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
     sessionCreateIpLimiter, // 🔐 2026-09-22：per-IP 上限（訪客換 uid 繞不過）
     async (req: AuthenticatedRequest, res) => {
       try {
-        const data = insertGameSessionSchema.parse(req.body);
+        const data = createSessionSchema.parse(req.body);
 
         // 🆕 驗證 playerName（匿名玩家自訂暱稱）
         if (data.playerName) {
@@ -280,16 +290,21 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
           data.playerName = result.value;
         }
 
-        // 🛡️ 若 client 帶 status=completed + score，先做 server-side 分數驗證
-        //   防 Shooting 作弊 / devtools 改 state
+        // 🛡️ status=completed 一律做 server-side 分數驗證（防 Shooting 作弊 / devtools 改 state）
+        //   🔒 2026-09-23 安全審查 H1：原本只有「client 有帶 score」才驗 →
+        //   先用別的方式把場次分數灌高、完成時只送 status 就能整段跳過驗證。
+        //   現在沒帶 score 就拿 DB 現值來驗，驗完的安全分數一律寫回。
         let scoreValidationResult: { adjusted: boolean; safeScore: number } | null = null;
-        if (data.status === "completed" && typeof data.score === "number") {
+        if (data.status === "completed") {
           const { validateSessionScore } = await import("../lib/scoreValidation");
           const userIdForValidation = (req as AuthenticatedRequest).user?.claims?.sub || null;
+          const clientScore = typeof data.score === "number"
+            ? data.score
+            : (await storage.getSession(req.params.id))?.score ?? 0;
           scoreValidationResult = await validateSessionScore({
             sessionId: req.params.id,
             userId: userIdForValidation,
-            clientScore: data.score,
+            clientScore,
             source: "session-complete",
           });
           // 用驗證過的安全分數覆蓋

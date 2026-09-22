@@ -362,6 +362,11 @@ export function registerAdminPosProductRoutes(app: Express) {
       if (!type || typeof id !== "string" || !id) return res.status(400).json({ error: "validation" });
       // 現金支出：場域以 id / code 雙識別、需檢查該日是否已交班鎖帳 → 另行處理
       if (type === "expense") {
+        // 🔒 2026-09-23 安全審查 M7：現金支出影響當日對帳 → 要財務權限，不能只有內容編輯權
+        const canCash = req.admin!.systemRole === "super_admin" || req.admin!.permissions.includes("pos_cash_admin");
+        if (!canCash) {
+          return res.status(403).json({ error: "forbidden", message: "還原現金支出需要現金管理權限" });
+        }
         const result = await restoreDeletedExpense(req, id);
         return res.status(result.status).json(result.body);
       }

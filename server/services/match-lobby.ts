@@ -42,7 +42,8 @@ export function buildMatchSettings(
     countdownSeconds: cfg.countdownSeconds,
     timeLimit: cfg.timeLimitMinutes > 0 ? cfg.timeLimitMinutes * 60 : undefined,
     minParticipants: isRelay ? legs.length : cfg.minParticipants,
-    maxParticipants: isRelay ? legs.length : cfg.maxParticipants,
+    // 🔒 2026-09-23 安全審查 M6：接力沒設分段時人數上限會變 0 → join 檢查被當 falsy 跳過（可無限加入）
+    maxParticipants: isRelay ? Math.max(1, legs.length) : cfg.maxParticipants,
     ...(isRelay ? { relaySegments: legs } : {}),
   };
   return { settings, maxTeams: settings.maxParticipants ?? cfg.maxParticipants };
@@ -188,7 +189,8 @@ export async function joinMatch(matchId: string, userId: string): Promise<JoinRe
     const mine = rows.find((p) => p.userId === userId);
     if (mine) return { ok: true, participant: mine, alreadyJoined: true, participantCount: rows.length };
     if (match.status !== "waiting") return { ok: false, status: 409, message: "賽事已經開始或結束了" };
-    if (match.maxTeams && rows.length >= match.maxTeams) return { ok: false, status: 409, message: "這場賽事人數已滿" };
+    const capacity = Math.max(1, match.maxTeams ?? 0);
+    if (rows.length >= capacity) return { ok: false, status: 409, message: "這場賽事人數已滿" };
     const [participant] = await tx.insert(matchParticipants).values({ matchId, userId, currentScore: 0 }).returning();
     return { ok: true, participant, alreadyJoined: false, participantCount: rows.length + 1 };
   });
