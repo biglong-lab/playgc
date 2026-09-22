@@ -166,11 +166,11 @@ export default function PosCash() {
     mutationFn: (v: { varianceReason?: string }) =>
       fetchWithAdminAuth("/api/pos/cash/settle", { method: "POST", body: JSON.stringify(v) }),
     onSuccess: () => {
-      toast({ title: "✅ 今日已結帳並鎖定" });
+      toast({ title: "✅ 已交班鎖帳（當日帳務已鎖定）" });
       qc.invalidateQueries({ queryKey: ["pos-cash-today"] });
       qc.invalidateQueries({ queryKey: ["pos-cash-history"] });
     },
-    onError: (e: Error) => toast({ variant: "destructive", title: "結帳失敗", description: e.message }),
+    onError: (e: Error) => toast({ variant: "destructive", title: "交班鎖帳失敗", description: e.message }),
   });
 
   const adjustMut = useMutation({
@@ -201,6 +201,7 @@ export default function PosCash() {
   const stage = today?.stage ?? "not_started";
   // 補記軌跡與一般調整軌跡分開呈現（補記另有專區）
   const allAdjustments = adjData?.adjustments ?? [];
+  // ⚠️ 「結帳後補記」是後端寫入 reason 的資料前綴（既有資料沿用），畫面文字已改稱「鎖帳後補記」
   const postSettleEntries = allAdjustments.filter((a) => a.reason?.startsWith("結帳後補記"));
   const otherAdjustments = allAdjustments.filter((a) => !a.reason?.startsWith("結帳後補記"));
   const STEP = { not_started: 1, open: 2, closing_done: 3, settled: 4 }[stage] ?? 1;
@@ -226,7 +227,7 @@ export default function PosCash() {
             { n: 1, label: "開帳" },
             { n: 2, label: "記帳" },
             { n: 3, label: "收班" },
-            { n: 4, label: "結帳" },
+            { n: 4, label: "鎖帳" },
           ].map((s, i) => (
             <div key={s.n} className="flex items-center gap-1 flex-1">
               <button
@@ -272,9 +273,9 @@ export default function PosCash() {
           )}
           {stage === "closing_done" && (
             <>
-              <div className="font-semibold text-sm mb-1">🧾 最後一步：結帳鎖定</div>
-              <p className="text-xs text-muted-foreground mb-2">確認今日帳務無誤後結帳，數字成隔日對帳基礎。</p>
-              <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={() => goStep(4)} data-testid="cash-action-tosettle">前往結帳</Button>
+              <div className="font-semibold text-sm mb-1">🧾 最後一步：交班鎖帳</div>
+              <p className="text-xs text-muted-foreground mb-2">確認今日帳務無誤後交班鎖帳，數字成隔日對帳基礎。</p>
+              <Button className="w-full bg-emerald-600 hover:bg-emerald-700" onClick={() => goStep(4)} data-testid="cash-action-tosettle">前往交班鎖帳</Button>
             </>
           )}
         </div>
@@ -285,7 +286,7 @@ export default function PosCash() {
         <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3 text-sm space-y-1">
           <div className="font-semibold text-base mb-1 flex items-center justify-between">
             <span>📅 {today.date}</span>
-            {locked && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded-full">🔒 已結帳鎖定</span>}
+            {locked && <span className="text-xs bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 rounded-full">🔒 已交班鎖帳</span>}
           </div>
           <Row label="開班清點" value={today.opening ? NT(today.opening.adjustmentCents ?? today.opening.countedCents) : "—"} />
           <Row label="現金收款" value={NT(today.cashSalesCents)} />
@@ -296,12 +297,12 @@ export default function PosCash() {
         </div>
       )}
 
-      {/* 已結帳：摘要 + (管理員)調整 */}
+      {/* 已鎖帳：摘要 + (管理員)調整 */}
       {locked && today?.settlement && (
         <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3 text-sm space-y-1">
-          <div className="font-semibold text-base mb-1">🧾 結帳摘要</div>
+          <div className="font-semibold text-base mb-1">🧾 鎖帳摘要</div>
           <div className="text-xs bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-lg px-2 py-1.5 mb-1">
-            ✅ 本日已結帳鎖定。<b>明日上班打卡（開帳）</b>才開始新一天的帳，今天不會再重複開帳。
+            ✅ 本日已交班鎖帳。<b>明日上班打卡（開帳）</b>才開始新一天的帳，今天不會再重複開帳。
           </div>
           <Row label="銷售總額" value={`${NT(today.settlement.salesTotalCents)}（${today.settlement.txnCount} 筆）`} />
           {today.settlement.expensesCents > 0 && <Row label="現金支出" value={`−${NT(today.settlement.expensesCents)}`} />}
@@ -310,7 +311,7 @@ export default function PosCash() {
             <Row label="差異" value={`${today.settlement.varianceCents > 0 ? "溢" : "短"}${NT(Math.abs(today.settlement.varianceCents))}（${today.settlement.varianceReason ?? ""}）`} highlight />
           )}
           <Row label="櫃檯實際現金（隔日基礎）" value={NT(today.settlement.actualCashCents)} bold />
-          <div className="text-xs text-muted-foreground">結帳人：{today.settlement.settledByName ?? "—"}</div>
+          <div className="text-xs text-muted-foreground">鎖帳人：{today.settlement.settledByName ?? "—"}</div>
           {today.canCashAdmin && (
             <button
               onClick={() => {
@@ -332,9 +333,9 @@ export default function PosCash() {
       {/* 🕐 結帳後補記：已結帳後仍發生的現金收支 → 計入真實現金、更新隔日基礎、推播＋留痕（可多次）*/}
       {locked && today?.settlement && (
         <div className="rounded-xl border bg-white dark:bg-slate-900 p-3 mb-3">
-          <div className="font-semibold text-sm mb-1">🕐 結帳後補記</div>
+          <div className="font-semibold text-sm mb-1">🕐 鎖帳後補記</div>
           <p className="text-xs text-muted-foreground mb-2">
-            本日已結帳。若之後仍有現金收支，補記會<b>計入實際現金</b>、更新隔日開帳基礎，並自動推播＋留痕。
+            本日已交班鎖帳。若之後仍有現金收支，補記會<b>計入實際現金</b>、更新隔日開帳基礎，並自動推播＋留痕。
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Button
@@ -456,10 +457,10 @@ export default function PosCash() {
       </div>
       )}
 
-      {/* 結帳（收班完成、未結帳）— 閉環收尾 */}
+      {/* 交班鎖帳（收班完成、未鎖帳）— 閉環收尾 */}
       {!locked && today?.closing && (
         <div id="cash-settle-card" className="rounded-xl border-2 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/20 p-3 mb-3">
-          <div className="font-semibold text-sm mb-1">🧾 今日結帳</div>
+          <div className="font-semibold text-sm mb-1">🧾 交班鎖帳</div>
           <p className="text-xs text-muted-foreground mb-2">
             確認後送出當日帳務並鎖定，數字成為隔日對帳基礎。鎖定後僅管理員可調整（保留軌跡）。
           </p>
@@ -471,14 +472,14 @@ export default function PosCash() {
                 vr = today.closing!.varianceReason ?? prompt(`現金有差異 ${variance > 0 ? "溢" : "短"}${NT(Math.abs(variance))}，請填原因`) ?? undefined;
                 if (!vr) return;
               }
-              if (!confirm(`確定結帳 ${today.date}？結帳後當日鎖定。`)) return;
+              if (!confirm(`確定交班鎖帳 ${today.date}？鎖帳後當日帳務鎖定，僅管理員可調整（保留軌跡）。`)) return;
               settleMut.mutate({ varianceReason: vr });
             }}
             disabled={settleMut.isPending}
             className="w-full bg-emerald-600 hover:bg-emerald-700"
             data-testid="cash-settle"
           >
-            {settleMut.isPending ? "結帳中…" : "✅ 確認結帳並鎖定"}
+            {settleMut.isPending ? "鎖帳中…" : "✅ 確認交班鎖帳"}
           </Button>
         </div>
       )}
@@ -589,7 +590,7 @@ export default function PosCash() {
               {otherAdjustments.slice(0, 20).map((a) => (
                 <div key={a.id} className="border-b pb-1.5 last:border-b-0">
                   <div className="flex justify-between gap-2">
-                    <span className="text-muted-foreground shrink-0">{a.businessDate} {a.targetType === "count" ? "清點" : "結帳"}</span>
+                    <span className="text-muted-foreground shrink-0">{a.businessDate} {a.targetType === "count" ? "清點" : "鎖帳"}</span>
                     <span className="text-right tabular-nums">{NT(a.oldCents ?? 0)} → <span className="font-semibold">{NT(a.newCents ?? 0)}</span></span>
                   </div>
                   <div className="text-muted-foreground text-xs">{a.adjustedByName ?? "—"}・{a.reason}</div>

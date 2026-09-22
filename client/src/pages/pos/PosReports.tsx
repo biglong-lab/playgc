@@ -1,6 +1,7 @@
-// 📊 POS 報表 + 每日結帳（2026-06-13）
+// 📊 POS 報表 + 推送日報（2026-06-13）
 // 路徑：/admin/pos-reports
-// 每日銷售報表（分類/付款/品項/客製）+ 狀態總覽（預約/退款）+ 每日結帳→推群組
+// 每日銷售報表（分類/付款/品項/客製）+ 狀態總覽（預約/退款）+ 推送日報到群組
+// ⚠️ 推送日報只彙整銷售推群組、不鎖帳；鎖帳是櫃檯現金頁的「交班鎖帳」
 // 區間統計（本週/本月/上個月/自訂起訖）→ PosRangeReport（2026-09-22）
 
 import { useState } from "react";
@@ -70,10 +71,10 @@ export default function PosReports() {
   const closeShift = useMutation({
     mutationFn: () => fetchWithAdminAuth("/api/pos/shift/close", { method: "POST", body: JSON.stringify({}) }),
     onSuccess: (r: { report?: Daily }) => {
-      toast({ title: "✅ 已結帳並推送群組", description: `總收款 ${money(r.report?.totalCents ?? 0)}` });
+      toast({ title: "✅ 已推送日報到群組", description: `總收款 ${money(r.report?.totalCents ?? 0)}` });
       qc.invalidateQueries({ queryKey: ["pos-daily-report"] });
     },
-    onError: (e) => toast({ title: "結帳失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
+    onError: (e) => toast({ title: "推送日報失敗", description: e instanceof Error ? e.message : "", variant: "destructive" }),
   });
 
   if (!canCashAdmin) {
@@ -190,14 +191,14 @@ export default function PosReports() {
           </CardContent>
         </Card>
 
-        {/* 每日結帳 */}
+        {/* 推送日報（不鎖帳）*/}
         <Button
           className="w-full h-14 text-lg bg-emerald-600 hover:bg-emerald-700"
-          onClick={() => confirm(`確定結帳 ${taipeiToday()}？將推送結帳報表到群組`) && closeShift.mutate()}
+          onClick={() => confirm(`確定推送日報 ${taipeiToday()}？將彙整今日銷售推送到群組（不會鎖帳）`) && closeShift.mutate()}
           disabled={closeShift.isPending}
           data-testid="btn-shift-close"
         >
-          {closeShift.isPending ? "結帳中…" : "🧾 今日結帳並推送群組"}
+          {closeShift.isPending ? "推送中…" : "📊 推送日報"}
         </Button>
       </div>
     </PosLayout>

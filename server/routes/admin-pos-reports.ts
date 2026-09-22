@@ -1,10 +1,10 @@
-// 📊 POS 銷售報表 + 每日結帳（2026-06-13）
+// 📊 POS 銷售報表 + 推送日報（2026-06-13）
 //
 // Endpoints（requireAdminAuth + game:view，場域隔離）：
 //   GET  /api/admin/pos/reports/daily?date=YYYY-MM-DD   當日銷售報表（聚合）
 //   GET  /api/admin/pos/reports/range?from=&to=         區間報表（最長 366 天）
 //   GET  /api/admin/pos/reports/status                  狀態總覽（預約 today/本月/未來 + 來源 + 退款）
-//   POST /api/pos/shift/close                           每日結帳 → 寫 shift_closes + 推 Telegram 群組
+//   POST /api/pos/shift/close                           推送日報 → 寫 shift_closes + 推 Telegram 群組（不鎖帳；鎖帳見 pos-cash 交班鎖帳）
 //   GET  /api/admin/pos/shift/closes                    歷史結帳清單
 
 import type { Express } from "express";
@@ -309,7 +309,7 @@ export function registerAdminPosReportRoutes(app: Express) {
     }
   });
 
-  // 每日結帳
+  // 推送日報（彙整今日銷售推群組；不鎖帳）
   app.post("/api/pos/shift/close", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
@@ -354,7 +354,7 @@ export function registerAdminPosReportRoutes(app: Express) {
 
       // 推 Telegram 群組
       const lines = [
-        `🧾 *每日結帳 · ${date}*`,
+        `📊 *日報 · ${date}*`,
         `總收款：NT$${(report.totalCents / 100).toLocaleString()}（${report.txnCount} 筆）`,
       ];
       if (report.byCategory.length) {
@@ -370,7 +370,7 @@ export function registerAdminPosReportRoutes(app: Express) {
         report.byProduct.slice(0, 5).forEach((p, i) => lines.push(`${i + 1}. ${p.name} ×${p.qty}`));
       }
 
-      // 💰 櫃檯現金 / 清帳 納入結帳傳送
+      // 💰 櫃檯現金 / 清帳 納入日報傳送
       const cashCounts = await db
         .select()
         .from(posCashCounts)

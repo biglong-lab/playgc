@@ -5,6 +5,7 @@ import { customRender as render } from "@/test/test-utils";
 import type { ReactNode } from "react";
 
 const mockFetch = vi.fn();
+const mockToast = vi.fn();
 
 vi.mock("@/pages/admin-staff/types", () => ({
   fetchWithAdminAuth: (...args: unknown[]) => mockFetch(...args),
@@ -15,7 +16,7 @@ vi.mock("@/hooks/useAdminAuth", () => ({
 }));
 
 vi.mock("@/hooks/use-toast", () => ({
-  useToast: () => ({ toast: vi.fn() }),
+  useToast: () => ({ toast: mockToast }),
 }));
 
 vi.mock("../PosLayout", () => ({
@@ -134,5 +135,41 @@ describe("PosReports — 區間統計", () => {
     render(<PosReports />);
     fireEvent.click(screen.getByTestId("range-last-month"));
     expect(await screen.findByText(/查詢區間最長 366 天/)).toBeInTheDocument();
+  });
+});
+
+describe("PosReports — 推送日報（與櫃檯現金「交班鎖帳」區分）", () => {
+  let confirmSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    mockFetch.mockReset();
+    mockToast.mockReset();
+    mockApi();
+    confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    confirmSpy.mockRestore();
+  });
+
+  it("按鈕叫「推送日報」，畫面不再出現「今日結帳」", () => {
+    render(<PosReports />);
+    expect(screen.getByTestId("btn-shift-close")).toHaveTextContent("推送日報");
+    expect(screen.queryByText(/今日結帳/)).not.toBeInTheDocument();
+  });
+
+  it("確認框與成功提示用「推送日報」字樣、不說成結帳", async () => {
+    render(<PosReports />);
+    fireEvent.click(screen.getByTestId("btn-shift-close"));
+    expect(confirmSpy).toHaveBeenCalledWith(expect.stringContaining("推送日報"));
+    expect(confirmSpy).not.toHaveBeenCalledWith(expect.stringContaining("結帳"));
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith("/api/pos/shift/close", expect.objectContaining({ method: "POST" }));
+    });
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: expect.stringContaining("日報") }));
+    });
+    const titles = mockToast.mock.calls.map(([arg]) => String(arg?.title ?? ""));
+    expect(titles.some((t) => t.includes("結帳"))).toBe(false);
   });
 });

@@ -268,8 +268,8 @@ export function registerPosCashRoutes(app: Express) {
           error: "already_settled",
           message:
             countType === "opening"
-              ? "本日已結帳，請明日上班打卡再開帳"
-              : "本日已結帳鎖定，如需更正請由管理員調整",
+              ? "本日已交班鎖帳，請明日上班打卡再開帳"
+              : "本日已交班鎖帳，如需更正請由管理員調整",
         });
       }
       // 🔒 收班後不可再開帳（精準擋「收班/結帳後誤按又變開帳」＝18 日情況；符合「隔天上班才能再開帳」）。
@@ -411,7 +411,7 @@ export function registerPosCashRoutes(app: Express) {
         }
         const { date } = getTodayRange();
         const settledDd = await getSettlement(scope.identifiers, date);
-        if (settledDd) return res.status(409).json({ error: "locked", message: "當日已結帳鎖定" });
+        if (settledDd) return res.status(409).json({ error: "locked", message: "當日已交班鎖帳" });
         const [row] = await db
           .insert(posCashDrawdowns)
           .values({
@@ -516,7 +516,7 @@ export function registerPosCashRoutes(app: Express) {
     }
   });
 
-  // ── POST 每日結帳（閉環：開帳+記帳+收班 → 鎖定當日）─
+  // ── POST 交班鎖帳（閉環：開帳+記帳+收班 → 鎖定當日）─
   // 現場可直接結帳完成（requireAdminAuth）。結帳後即鎖；數字成隔日對帳基礎。
   app.post("/api/pos/cash/settle", requireAdminAuth, async (req, res) => {
     try {
@@ -524,11 +524,11 @@ export function registerPosCashRoutes(app: Express) {
       if (!scope) return res.status(400).json({ error: "no_field" });
       const { date } = getTodayRange();
       const existed = await getSettlement(scope.identifiers, date);
-      if (existed) return res.status(409).json({ error: "already_settled", message: "當日已結帳" });
+      if (existed) return res.status(409).json({ error: "already_settled", message: "當日已交班鎖帳" });
 
       const opening = await getCount(scope.identifiers, date, "opening");
       const closing = await getCount(scope.identifiers, date, "closing");
-      if (!closing) return res.status(400).json({ error: "no_closing", message: "請先完成下班結算清點再結帳" });
+      if (!closing) return res.status(400).json({ error: "no_closing", message: "請先完成下班結算清點再交班鎖帳" });
 
       const openingCents = opening ? opening.adjustmentCents ?? opening.countedCents : 0;
       const countedCashCents = closing.adjustmentCents ?? closing.countedCents;
@@ -547,7 +547,7 @@ export function registerPosCashRoutes(app: Express) {
       const actualCashCents = Math.max(0, countedCashCents - drawdownCents);
       const reason = typeof req.body?.varianceReason === "string" ? req.body.varianceReason : null;
       if (varianceCents !== 0 && !reason) {
-        return res.status(400).json({ error: "need_reason", message: "現金有差異，請填寫差異原因再結帳" });
+        return res.status(400).json({ error: "need_reason", message: "現金有差異，請填寫差異原因再交班鎖帳" });
       }
       // 銷售總額（所有付款方式）
       const [salesAgg] = await db
@@ -595,7 +595,7 @@ export function registerPosCashRoutes(app: Express) {
 
       sendToFieldGroup(
         [
-          `✅ *每日結帳 · ${date} ${nowHM()}*`,
+          `✅ *交班鎖帳 · ${date} ${nowHM()}*`,
           `銷售總額：${NT(row.salesTotalCents)}（${row.txnCount} 筆）`,
           ``,
           `*櫃檯現金*`,
@@ -605,7 +605,7 @@ export function registerPosCashRoutes(app: Express) {
           `· 預期：${NT(expectedCashCents)}　實點：${NT(countedCashCents)}`,
           varianceCents !== 0 ? `· ⚠️ 差異：${varianceCents > 0 ? "溢" : "短"}${NT(Math.abs(varianceCents))}（${reason}）` : `· 差異：無`,
           `· 櫃檯實際現金：${NT(actualCashCents)}（隔日開帳基礎）`,
-          `結帳人：${row.settledByName ?? "—"}`,
+          `鎖帳人：${row.settledByName ?? "—"}`,
         ].join("\n"),
       );
 
@@ -740,7 +740,7 @@ export function registerPosCashRoutes(app: Express) {
       const { date } = getTodayRange();
       // 已結帳鎖定 → 不可再記當日支出（避免影響已鎖帳）
       const settled = await getSettlement(scope.identifiers, date);
-      if (settled) return res.status(409).json({ error: "locked", message: "當日已結帳鎖定，無法再記支出" });
+      if (settled) return res.status(409).json({ error: "locked", message: "當日已交班鎖帳，無法再記支出" });
       const [row] = await db
         .insert(posExpenses)
         .values({
@@ -805,7 +805,7 @@ export function registerPosCashRoutes(app: Express) {
       const settled = await getSettlement(scope.identifiers, date);
       const [target] = await db.select().from(posExpenses).where(eq(posExpenses.id, req.params.id)).limit(1);
       if (settled && target && target.businessDate === date) {
-        return res.status(409).json({ error: "locked", message: "當日已結帳鎖定，無法刪除支出" });
+        return res.status(409).json({ error: "locked", message: "當日已交班鎖帳，無法刪除支出" });
       }
       const [updated] = await db
         .update(posExpenses)

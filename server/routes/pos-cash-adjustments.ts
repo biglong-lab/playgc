@@ -44,7 +44,7 @@ export function registerPosCashAdjustmentRoutes(app: Express) {
       const { date } = getTodayRange();
       const settlement = await getSettlement(scope.identifiers, date);
       if (!settlement) {
-        return res.status(409).json({ error: "not_settled", message: "本日尚未結帳，請走一般收款/支出流程" });
+        return res.status(409).json({ error: "not_settled", message: "本日尚未交班鎖帳，請走一般收款/支出流程" });
       }
       const noteText = typeof note === "string" ? note.slice(0, 200).trim() : "";
 
