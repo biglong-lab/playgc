@@ -1,5 +1,5 @@
 // 遊戲編輯器主入口
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -19,11 +19,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { GameWithDetails, Page } from "@shared/schema";
 import {
   ChevronLeft, Save, Upload, FileText,
-  Eye, Settings, Package, Trophy, MapPin, Ticket,
-  CheckCircle2,
+  Eye, CheckCircle2,
 } from "lucide-react";
-import { Link } from "wouter";
 import ItemsEditor from "@/components/ItemsEditor";
+import { useUnsavedChangesGuard } from "@/hooks/useUnsavedWarning";
+import UnsavedChangesDialog from "@/components/shared/UnsavedChangesDialog";
 import { PAGE_TEMPLATES, getPageTypeInfo } from "./constants";
 import { getDefaultConfig } from "./getDefaultConfig";
 import PageConfigEditor from "./PageConfigEditor";
@@ -33,11 +33,16 @@ import { syncPages } from "./lib/page-sync";
 import { validateAllPages, formatIssue } from "./lib/validate-page-config";
 import ToolboxSidebar from "./components/ToolboxSidebar";
 import PageListSidebar from "./components/PageListSidebar";
+import EditorResourceBar from "./components/EditorResourceBar";
 import AdminCopilotPanel from "@/components/admin/AdminCopilotPanel";
+import {
+  EMPTY_EDITOR_DRAFT, buildSavePayload, draftFromGame, serializeEditorDraft,
+  type EditorDraft,
+} from "./lib/editor-draft";
 
 export default function GameEditor() {
   const { gameId } = useParams<{ gameId: string }>();
-  const [location, setLocation] = useLocation();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const isNew = gameId === "new";
 
@@ -46,16 +51,33 @@ export default function GameEditor() {
   const apiPagesPath = "/api/pages";
   const apiEventsPath = "/api/events";
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [difficulty, setDifficulty] = useState("medium");
-  const [estimatedTime, setEstimatedTime] = useState(30);
-  const [maxPlayers, setMaxPlayers] = useState(6);
+  const [title, setTitle] = useState(EMPTY_EDITOR_DRAFT.title);
+  const [description, setDescription] = useState(EMPTY_EDITOR_DRAFT.description);
+  const [difficulty, setDifficulty] = useState(EMPTY_EDITOR_DRAFT.difficulty);
+  const [estimatedTime, setEstimatedTime] = useState(EMPTY_EDITOR_DRAFT.estimatedTime);
+  const [maxPlayers, setMaxPlayers] = useState(EMPTY_EDITOR_DRAFT.maxPlayers);
   // 🆕 2026-05-12 #11: 整場 BGM + 音量
-  const [bgmUrl, setBgmUrl] = useState<string>("");
-  const [bgmVolume, setBgmVolume] = useState<number>(50);
+  const [bgmUrl, setBgmUrl] = useState<string>(EMPTY_EDITOR_DRAFT.bgmUrl);
+  const [bgmVolume, setBgmVolume] = useState<number>(EMPTY_EDITOR_DRAFT.bgmVolume);
   const [selectedPage, setSelectedPage] = useState<Page | null>(null);
-  const [pages, setPages] = useState<Page[]>([]);
+  const [pages, setPages] = useState<Page[]>(EMPTY_EDITOR_DRAFT.pages);
+
+  // 🛡️ 未存變更偵測：目前內容 vs 上次載入 / 儲存的內容
+  const currentDraft = useMemo<EditorDraft>(
+    () => ({ title, description, difficulty, estimatedTime, maxPlayers, bgmUrl, bgmVolume, pages }),
+    [title, description, difficulty, estimatedTime, maxPlayers, bgmUrl, bgmVolume, pages],
+  );
+  const [savedSnapshot, setSavedSnapshot] = useState(() => serializeEditorDraft(EMPTY_EDITOR_DRAFT));
+  const isDirty = useMemo(
+    () => serializeEditorDraft(currentDraft) !== savedSnapshot,
+    [currentDraft, savedSnapshot],
+  );
+  const isDirtyRef = useRef(false);
+  useEffect(() => {
+    isDirtyRef.current = isDirty;
+  }, [isDirty]);
+  // 送出儲存當下的內容（存檔成功後拿來當新的比對基準）
+  const savingDraftRef = useRef<EditorDraft>(EMPTY_EDITOR_DRAFT);
   const [isDraggingFromToolbox, setIsDraggingFromToolbox] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -147,16 +169,19 @@ export default function GameEditor() {
   });
 
   useEffect(() => {
-    if (game) {
-      setTitle(game.title);
-      setDescription(game.description || "");
-      setDifficulty(game.difficulty || "medium");
-      setEstimatedTime(game.estimatedTime || 30);
-      setMaxPlayers(game.maxPlayers || 6);
-      setBgmUrl((game as { bgmUrl?: string }).bgmUrl ?? "");
-      setBgmVolume((game as { bgmVolume?: number }).bgmVolume ?? 50);
-      setPages(game.pages || []);
-    }
+    if (!game) return;
+    // 🛡️ 有未存變更時不拿伺服器資料覆蓋（例如按「標記已實測」觸發重新抓取），避免編輯內容被默默洗掉
+    if (isDirtyRef.current) return;
+    const draft = draftFromGame(game);
+    setTitle(draft.title);
+    setDescription(draft.description);
+    setDifficulty(draft.difficulty);
+    setEstimatedTime(draft.estimatedTime);
+    setMaxPlayers(draft.maxPlayers);
+    setBgmUrl(draft.bgmUrl);
+    setBgmVolume(draft.bgmVolume);
+    setPages(draft.pages);
+    setSavedSnapshot(serializeEditorDraft(draft));
   }, [game]);
 
   const saveGameMutation = useMutation({
@@ -188,6 +213,9 @@ export default function GameEditor() {
     },
     onSuccess: (result) => {
       toast({ title: "已儲存", description: "遊戲已成功儲存" });
+      // 比對基準改成剛存進去的內容（頁面用伺服器回傳的真實 ID 版本）
+      const savedDraft = savingDraftRef.current;
+      setSavedSnapshot(serializeEditorDraft({ ...savedDraft, pages: result?.pages ?? savedDraft.pages }));
       queryClient.invalidateQueries({ queryKey: [apiGamesPath] });
 
       if (result?.pages) {
@@ -259,26 +287,34 @@ export default function GameEditor() {
     return true;
   };
 
+  /** 送出儲存；成功回傳 true（失敗時 onError 已顯示錯誤 toast） */
+  const saveDraft = async (extra: Record<string, unknown> = {}): Promise<boolean> => {
+    savingDraftRef.current = currentDraft;
+    try {
+      // 儲存不強制改 status（保留當前狀態，避免已發布遊戲意外降級為 draft）；新建遊戲才預設 draft
+      await saveGameMutation.mutateAsync({ ...buildSavePayload(currentDraft, isNew), ...extra });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleSave = () => {
-    // 儲存不強制改 status（保留當前狀態，避免已發布遊戲意外降級為 draft）
-    // 新建遊戲時才預設為 draft
     if (!runValidation(false)) return;
-    const payload: Record<string, unknown> = {
-      title, description, difficulty, estimatedTime, maxPlayers,
-      bgmUrl: bgmUrl || null, bgmVolume,
-    };
-    if (isNew) payload.status = "draft";
-    saveGameMutation.mutate(payload);
+    void saveDraft();
   };
 
   const handlePublish = () => {
     // 發布時嚴格驗證，有任何 error 等級問題就擋下來
     if (!runValidation(true)) return;
-    saveGameMutation.mutate({
-      title, description, difficulty, estimatedTime, maxPlayers,
-      bgmUrl: bgmUrl || null, bgmVolume, status: "published",
-    });
+    void saveDraft({ status: "published" });
   };
+
+  // 🛡️ 未存離開攔截：返回 / AI 產生器 / 資源連結 → 先問「儲存後離開 / 不存離開 / 取消」
+  const leaveGuard = useUnsavedChangesGuard({
+    isDirty,
+    onSave: async () => runValidation(false) && saveDraft(),
+  });
 
   // 🤖 P6-4: 標記「已完成 AI 實測」(發布前提醒用)
   const markTestedMutation = useMutation({
@@ -420,7 +456,7 @@ export default function GameEditor() {
       <header className="shrink-0 bg-background/95 backdrop-blur border-b border-border">
         <div className="px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => setLocation(basePath)} data-testid="button-back">
+            <Button variant="ghost" size="icon" onClick={() => leaveGuard.guardNavigate(basePath)} data-testid="button-back">
               <ChevronLeft className="w-5 h-5" />
             </Button>
             <Input
@@ -440,7 +476,7 @@ export default function GameEditor() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => setLocation(`/admin/game-generator?gameId=${gameId}`)}
+              onClick={() => leaveGuard.guardNavigate(`/admin/game-generator?gameId=${gameId}`)}
               disabled={isNew}
               className="gap-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 hover:from-purple-100 hover:to-pink-100 border-purple-200"
               data-testid="button-ai-generator"
@@ -472,27 +508,10 @@ export default function GameEditor() {
           </div>
         </div>
 
-        {!isNew && (
-          <div className="px-4 py-2 border-t border-border/50 flex items-center gap-2 bg-muted/30">
-            <span className="text-xs text-muted-foreground mr-2">資源管理:</span>
-            <Link href={`${basePath}/${gameId}/items`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-items"><Package className="w-3.5 h-3.5" /> 道具</Button>
-            </Link>
-            <Link href={`${basePath}/${gameId}/achievements`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-achievements"><Trophy className="w-3.5 h-3.5" /> 成就</Button>
-            </Link>
-            <Link href={`${basePath}/${gameId}/locations`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-locations"><MapPin className="w-3.5 h-3.5" /> 地點</Button>
-            </Link>
-            <Link href={`${basePath}/${gameId}/tickets`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-tickets"><Ticket className="w-3.5 h-3.5" /> 票券</Button>
-            </Link>
-            <Link href={`${basePath}/${gameId}/settings`}>
-              <Button variant="ghost" size="sm" className="gap-2 h-7" data-testid="link-settings"><Settings className="w-3.5 h-3.5" /> 設定</Button>
-            </Link>
-          </div>
-        )}
+        {!isNew && gameId && <EditorResourceBar basePath={basePath} gameId={gameId} />}
       </header>
+
+      <UnsavedChangesDialog guard={leaveGuard} />
 
       {/* 🔧 min-h-0 / overflow-hidden — 關鍵：讓 flex-1 的子元素 overflow-auto 能生效 */}
       <div className="flex-1 flex min-h-0 overflow-hidden">

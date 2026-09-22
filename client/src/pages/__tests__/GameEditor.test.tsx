@@ -83,6 +83,39 @@ vi.mock("@/components/ItemsEditor", () => ({
 }));
 
 import GameEditor from "../game-editor/index";
+import { syncPages } from "../game-editor/lib/page-sync";
+import { QueryClient } from "@tanstack/react-query";
+
+// 已存在的遊戲（非 new）：預先塞進 query cache，模擬編輯器載入完成
+const MOCK_GAME = {
+  id: "game-123",
+  title: "原標題",
+  description: "",
+  difficulty: "medium",
+  estimatedTime: 30,
+  maxPlayers: 6,
+  status: "draft",
+  pages: [],
+};
+
+function renderExistingGame() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false, staleTime: Infinity, queryFn: async () => MOCK_GAME },
+      mutations: { retry: false },
+    },
+  });
+  queryClient.setQueryData(["/api/games", "game-123"], MOCK_GAME);
+  return customRender(<GameEditor />, { queryClient });
+}
+
+/** 載入既有遊戲後把標題改掉 → 形成未存變更 */
+async function renderWithUnsavedTitle() {
+  renderExistingGame();
+  const titleInput = await screen.findByDisplayValue("原標題");
+  await userEvent.type(titleInput, "改");
+  expect((titleInput as HTMLInputElement).value).toBe("原標題改");
+}
 
 describe("GameEditor", () => {
   beforeEach(() => {
@@ -203,5 +236,77 @@ describe("GameEditor", () => {
     const chaptersTab = screen.getByTestId("tab-chapters");
     await userEvent.click(chaptersTab);
     expect(screen.getByText("請先儲存遊戲後再管理章節")).toBeTruthy();
+  });
+});
+
+describe("GameEditor 未存變更攔截", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mockGameId = "game-123";
+    mockLocationPath = "/admin/games/game-123";
+    mockApiRequest.mockResolvedValue({ ok: true, json: () => Promise.resolve([]) });
+    vi.mocked(syncPages).mockResolvedValue([]);
+  });
+
+  it("沒改任何東西 → 返回直接回列表、不跳對話框", async () => {
+    renderExistingGame();
+    await screen.findByDisplayValue("原標題");
+    await userEvent.click(screen.getByTestId("button-back"));
+    expect(mockSetLocation).toHaveBeenCalledWith("/admin/games");
+    expect(screen.queryByText("有未儲存的變更")).toBeNull();
+  });
+
+  it("改了標題 → 返回先跳對話框、不換頁", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("button-back"));
+    expect(screen.getByText("有未儲存的變更")).toBeInTheDocument();
+    expect(mockSetLocation).not.toHaveBeenCalled();
+  });
+
+  it("改了標題 → 選「不存離開」→ 回列表、不存檔", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("button-back"));
+    await userEvent.click(screen.getByTestId("button-leave-without-saving"));
+    expect(mockSetLocation).toHaveBeenCalledWith("/admin/games");
+    expect(mockApiRequest).not.toHaveBeenCalledWith("PATCH", expect.anything(), expect.anything());
+  });
+
+  it("改了標題 → 選「儲存後離開」→ 先 PATCH 再回列表", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("button-back"));
+    await userEvent.click(screen.getByTestId("button-save-and-leave"));
+    await waitFor(() => expect(mockSetLocation).toHaveBeenCalledWith("/admin/games"));
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "PATCH",
+      "/api/games/game-123",
+      expect.objectContaining({ title: "原標題改" }),
+    );
+  });
+
+  it("改了標題 → 點資源連結（道具）→ 被攔下跳對話框", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("link-items"));
+    expect(await screen.findByText("有未儲存的變更")).toBeInTheDocument();
+    await userEvent.click(screen.getByTestId("button-leave-without-saving"));
+    expect(mockSetLocation).toHaveBeenCalledWith("/admin/games/game-123/items");
+  });
+
+  it("改了標題 → 點 AI 產生器 → 先跳對話框", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("button-ai-generator"));
+    expect(screen.getByText("有未儲存的變更")).toBeInTheDocument();
+    expect(mockSetLocation).not.toHaveBeenCalled();
+  });
+
+  it("按「儲存」成功後 → 不再算未存，返回直接離開", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("button-save"));
+    await waitFor(() =>
+      expect(mockApiRequest).toHaveBeenCalledWith("PATCH", "/api/games/game-123", expect.anything()),
+    );
+    await waitFor(() => expect(screen.getByTestId("button-save")).not.toBeDisabled());
+    await userEvent.click(screen.getByTestId("button-back"));
+    expect(mockSetLocation).toHaveBeenCalledWith("/admin/games");
+    expect(screen.queryByText("有未儲存的變更")).toBeNull();
   });
 });
