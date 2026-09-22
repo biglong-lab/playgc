@@ -9,32 +9,126 @@
 // 公開 endpoint 給 GamePageRenderer 用：判斷某元件是否啟用
 // 自動降級：cron / endpoint 撈 component_runs 算失敗率
 
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { z } from "zod";
 import { db } from "../db";
 import { featureFlags } from "@shared/schema";
-import { eq, sql, and, desc } from "drizzle-orm";
-import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
+import { eq, sql, and, or, isNull, desc, type SQL } from "drizzle-orm";
+import { requireAdminAuth, requirePermission, logAuditAction, type AdminPrincipal } from "../adminAuth";
 
+// 🔒 2026-09-23 P0-B：以前場域管理員能新增 / 切換「全域」開關（等於關掉所有場域的元件）
+//   現在：非 super_admin 只能新增 / 修改「自己場域」的覆寫；碰全域或別場域 → 403
+//   super_admin 行為不變（沒帶 scope 仍預設 global）
 const upsertSchema = z.object({
-  scope: z.enum(["global", "field"]).default("global"),
-  fieldId: z.string().nullable().optional(),
+  scope: z.enum(["global", "field"]).optional(),
+  fieldId: z.string().min(1).max(100).nullable().optional(),
   moduleKey: z.string().min(1).max(100),
   enabled: z.boolean(),
   disabledReason: z.string().max(50).nullable().optional(),
 });
 
+const patchSchema = z.object({
+  enabled: z.boolean(),
+  disabledReason: z.string().max(50).nullable().optional(),
+});
+
+type FlagScope = "global" | "field";
+interface FlagTarget { scope: FlagScope; fieldId: string | null }
+type FlagRow = typeof featureFlags.$inferSelect;
+
+const GLOBAL_FORBIDDEN = "全域開關會影響所有場域，只有平台管理員可以設定";
+const OTHER_FIELD_FORBIDDEN = "只能設定自己場域的元件開關";
+
+function isSuperAdmin(admin: AdminPrincipal): boolean {
+  return admin.systemRole === "super_admin";
+}
+
+/** 決定寫入範圍；非 super_admin 碰全域 / 別場域回傳 forbidden 訊息 */
+function resolveTarget(
+  admin: AdminPrincipal,
+  body: z.infer<typeof upsertSchema>,
+): FlagTarget | { forbidden: string } {
+  const superAdmin = isSuperAdmin(admin);
+  const scope: FlagScope = body.scope ?? (superAdmin ? "global" : "field");
+  if (scope === "global") {
+    return superAdmin ? { scope, fieldId: null } : { forbidden: GLOBAL_FORBIDDEN };
+  }
+  const fieldId = body.fieldId ?? admin.fieldId;
+  if (!superAdmin && fieldId !== admin.fieldId) return { forbidden: OTHER_FIELD_FORBIDDEN };
+  return { scope, fieldId };
+}
+
+/** 非 super_admin 只能改自己場域的覆寫 */
+function forbiddenReason(admin: AdminPrincipal, row: FlagRow): string | null {
+  if (isSuperAdmin(admin)) return null;
+  if (row.scope !== "field") return GLOBAL_FORBIDDEN;
+  return row.fieldId === admin.fieldId ? null : OTHER_FIELD_FORBIDDEN;
+}
+
+/** 列表篩選：非 super_admin 只看全域（唯讀參考）+ 自己場域 */
+function listFilter(admin: AdminPrincipal): SQL | undefined {
+  if (isSuperAdmin(admin)) return undefined;
+  return or(
+    eq(featureFlags.scope, "global"),
+    and(eq(featureFlags.scope, "field"), eq(featureFlags.fieldId, admin.fieldId)),
+  );
+}
+
+function flagState(enabled: boolean, reason: string | null | undefined, userId: string, now: Date) {
+  return {
+    enabled,
+    disabledReason: enabled ? null : (reason ?? "manual"),
+    disabledAt: enabled ? null : now,
+    disabledBy: enabled ? null : userId,
+  };
+}
+
+/**
+ * 同 scope + fieldId + moduleKey 有就更新、沒有就新增。
+ * 不用 ON CONFLICT：DB 唯一索引是 (scope, COALESCE(field_id,''), module_key) 表達式索引，
+ * ON CONFLICT (scope, field_id, module_key) 推論不到 → Postgres 直接報錯（以前 POST 一律 500）。
+ */
+async function upsertFlag(target: FlagTarget, moduleKey: string, state: ReturnType<typeof flagState>, now: Date) {
+  const fieldCond = target.fieldId === null
+    ? isNull(featureFlags.fieldId)
+    : eq(featureFlags.fieldId, target.fieldId);
+  const [existing] = await db
+    .select()
+    .from(featureFlags)
+    .where(and(eq(featureFlags.scope, target.scope), fieldCond, eq(featureFlags.moduleKey, moduleKey)))
+    .limit(1);
+  if (existing) {
+    const [row] = await db
+      .update(featureFlags)
+      .set({ ...state, updatedAt: now })
+      .where(eq(featureFlags.id, existing.id))
+      .returning();
+    return row;
+  }
+  const [row] = await db
+    .insert(featureFlags)
+    .values({ scope: target.scope, fieldId: target.fieldId, moduleKey, ...state })
+    .returning();
+  return row;
+}
+
+function auditMeta(req: Request) {
+  return { ipAddress: req.ip, userAgent: req.headers["user-agent"] };
+}
+
 export function registerAdminFeatureFlagsRoutes(app: Express) {
-  // ── 列表（admin）
+  // ── 列表（admin；非 super_admin 只看全域 + 自己場域）
   app.get(
     "/api/admin/feature-flags",
     requireAdminAuth,
     requirePermission("game:view"),
-    async (_req, res) => {
+    async (req, res) => {
       try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
         const rows = await db
           .select()
           .from(featureFlags)
+          .where(listFilter(req.admin))
           .orderBy(desc(featureFlags.updatedAt));
         res.json({ flags: rows });
       } catch (err) {
@@ -51,53 +145,28 @@ export function registerAdminFeatureFlagsRoutes(app: Express) {
     requirePermission("game:edit"),
     async (req, res) => {
       try {
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
         const parsed = upsertSchema.safeParse(req.body);
         if (!parsed.success) {
           return res.status(400).json({ error: "請求格式錯誤" });
         }
-        const userId =
-          (req as { admin?: { id?: string } }).admin?.id ?? "admin";
-        const now = new Date();
-        const [row] = await db
-          .insert(featureFlags)
-          .values({
-            scope: parsed.data.scope,
-            fieldId: parsed.data.fieldId ?? null,
-            moduleKey: parsed.data.moduleKey,
-            enabled: parsed.data.enabled,
-            disabledReason: parsed.data.enabled ? null : (parsed.data.disabledReason ?? "manual"),
-            disabledAt: parsed.data.enabled ? null : now,
-            disabledBy: parsed.data.enabled ? null : userId,
-          })
-          .onConflictDoUpdate({
-            target: [featureFlags.scope, featureFlags.fieldId, featureFlags.moduleKey],
-            set: {
-              enabled: parsed.data.enabled,
-              disabledReason: parsed.data.enabled ? null : (parsed.data.disabledReason ?? "manual"),
-              disabledAt: parsed.data.enabled ? null : now,
-              disabledBy: parsed.data.enabled ? null : userId,
-              updatedAt: now,
-            },
-          })
-          .returning();
-
-        if (req.admin) {
-          logAuditAction({
-            actorAdminId: req.admin.id,
-            action: "feature_flag:upsert",
-            targetType: "feature_flag",
-            targetId: row.id,
-            fieldId: parsed.data.fieldId ?? undefined,
-            metadata: {
-              moduleKey: parsed.data.moduleKey,
-              scope: parsed.data.scope,
-              enabled: parsed.data.enabled,
-              disabledReason: parsed.data.disabledReason ?? null,
-            },
-            ipAddress: req.ip,
-            userAgent: req.headers["user-agent"],
-          });
+        const target = resolveTarget(req.admin, parsed.data);
+        if ("forbidden" in target) {
+          return res.status(403).json({ error: "forbidden", message: target.forbidden });
         }
+        const { moduleKey, enabled, disabledReason } = parsed.data;
+        const now = new Date();
+        const row = await upsertFlag(target, moduleKey, flagState(enabled, disabledReason, req.admin.id, now), now);
+
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: "feature_flag:upsert",
+          targetType: "feature_flag",
+          targetId: row.id,
+          fieldId: target.fieldId ?? undefined,
+          metadata: { moduleKey, scope: target.scope, enabled, disabledReason: disabledReason ?? null },
+          ...auditMeta(req),
+        });
 
         res.json({ flag: row });
       } catch (err) {
@@ -107,46 +176,49 @@ export function registerAdminFeatureFlagsRoutes(app: Express) {
     },
   );
 
-  // ── 切換 enabled（admin、快速 toggle）
+  // ── 切換 enabled（admin、快速 toggle；非 super_admin 只能切自己場域的覆寫）
   app.patch(
     "/api/admin/feature-flags/:id",
     requireAdminAuth,
     requirePermission("game:edit"),
     async (req, res) => {
       try {
-        const enabled = Boolean(req.body.enabled);
-        const userId =
-          (req as { admin?: { id?: string } }).admin?.id ?? "admin";
+        if (!req.admin) return res.status(401).json({ error: "未認證" });
+        const parsed = patchSchema.safeParse(req.body);
+        if (!parsed.success) {
+          return res.status(400).json({ error: "請求格式錯誤" });
+        }
+        const [existing] = await db
+          .select()
+          .from(featureFlags)
+          .where(eq(featureFlags.id, req.params.id))
+          .limit(1);
+        if (!existing) return res.status(404).json({ error: "flag 不存在" });
+
+        const forbidden = forbiddenReason(req.admin, existing);
+        if (forbidden) return res.status(403).json({ error: "forbidden", message: forbidden });
+
+        const { enabled, disabledReason } = parsed.data;
         const now = new Date();
         const [row] = await db
           .update(featureFlags)
-          .set({
-            enabled,
-            disabledReason: enabled ? null : (req.body.disabledReason ?? "manual"),
-            disabledAt: enabled ? null : now,
-            disabledBy: enabled ? null : userId,
-            updatedAt: now,
-          })
-          .where(eq(featureFlags.id, req.params.id))
+          .set({ ...flagState(enabled, disabledReason, req.admin.id, now), updatedAt: now })
+          .where(eq(featureFlags.id, existing.id))
           .returning();
-        if (!row) return res.status(404).json({ error: "flag 不存在" });
 
-        if (req.admin) {
-          logAuditAction({
-            actorAdminId: req.admin.id,
-            action: enabled ? "feature_flag:enable" : "feature_flag:disable",
-            targetType: "feature_flag",
-            targetId: row.id,
-            fieldId: row.fieldId ?? undefined,
-            metadata: {
-              moduleKey: row.moduleKey,
-              scope: row.scope,
-              disabledReason: enabled ? null : (req.body.disabledReason ?? "manual"),
-            },
-            ipAddress: req.ip,
-            userAgent: req.headers["user-agent"],
-          });
-        }
+        logAuditAction({
+          actorAdminId: req.admin.id,
+          action: enabled ? "feature_flag:enable" : "feature_flag:disable",
+          targetType: "feature_flag",
+          targetId: row.id,
+          fieldId: row.fieldId ?? undefined,
+          metadata: {
+            moduleKey: row.moduleKey,
+            scope: row.scope,
+            disabledReason: enabled ? null : (disabledReason ?? "manual"),
+          },
+          ...auditMeta(req),
+        });
 
         res.json({ flag: row });
       } catch (err) {
