@@ -310,6 +310,16 @@ export default function GameEditor() {
     void saveDraft({ status: "published" });
   };
 
+  // 🎬 預覽讀的是伺服器資料 → 有未存變更就先自動儲存，存好才開（存失敗留在編輯器、錯誤 toast 已顯示）
+  const handlePreview = async () => {
+    if (isDirty) {
+      if (!runValidation(false)) return;
+      const saved = await saveDraft();
+      if (!saved) return;
+    }
+    setLocation(`${basePath}/${gameId}/preview`);
+  };
+
   // 🛡️ 未存離開攔截：返回 / AI 產生器 / 資源連結 → 先問「儲存後離開 / 不存離開 / 取消」
   const leaveGuard = useUnsavedChangesGuard({
     isDirty,
@@ -468,7 +478,14 @@ export default function GameEditor() {
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => setLocation(`/admin/games/${gameId}/preview`)} className="gap-2" disabled={isNew} data-testid="button-preview">
+            <Button
+              variant="outline"
+              onClick={() => void handlePreview()}
+              className="gap-2"
+              disabled={isNew || saveGameMutation.isPending}
+              data-testid="button-preview"
+              title={isDirty ? "有未儲存的變更，會先自動儲存再開預覽" : undefined}
+            >
               <Eye className="w-4 h-4" /> 預覽
             </Button>
             <Button variant="outline" onClick={handleSave} disabled={saveGameMutation.isPending} className="gap-2" data-testid="button-save">

@@ -298,6 +298,39 @@ describe("GameEditor 未存變更攔截", () => {
     expect(mockSetLocation).not.toHaveBeenCalled();
   });
 
+  it("沒改任何東西 → 預覽直接開、不額外存檔", async () => {
+    renderExistingGame();
+    await screen.findByDisplayValue("原標題");
+    await userEvent.click(screen.getByTestId("button-preview"));
+    expect(mockSetLocation).toHaveBeenCalledWith("/admin/games/game-123/preview");
+    expect(mockApiRequest).not.toHaveBeenCalledWith("PATCH", expect.anything(), expect.anything());
+  });
+
+  it("有未存變更 → 預覽前先自動儲存，存好才開預覽（預覽看到剛編輯的內容）", async () => {
+    await renderWithUnsavedTitle();
+    await userEvent.click(screen.getByTestId("button-preview"));
+    await waitFor(() =>
+      expect(mockSetLocation).toHaveBeenCalledWith("/admin/games/game-123/preview"),
+    );
+    expect(mockApiRequest).toHaveBeenCalledWith(
+      "PATCH",
+      "/api/games/game-123",
+      expect.objectContaining({ title: "原標題改" }),
+    );
+    const patchOrder = mockApiRequest.mock.invocationCallOrder[0];
+    const navOrder = mockSetLocation.mock.invocationCallOrder[0];
+    expect(patchOrder).toBeLessThan(navOrder);
+  });
+
+  it("有未存變更但自動儲存失敗 → 不開預覽（避免看到舊內容）", async () => {
+    await renderWithUnsavedTitle();
+    mockApiRequest.mockRejectedValue(new Error("500: 伺服器錯誤"));
+    await userEvent.click(screen.getByTestId("button-preview"));
+    await waitFor(() => expect(mockApiRequest).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByTestId("button-preview")).not.toBeDisabled());
+    expect(mockSetLocation).not.toHaveBeenCalled();
+  });
+
   it("按「儲存」成功後 → 不再算未存，返回直接離開", async () => {
     await renderWithUnsavedTitle();
     await userEvent.click(screen.getByTestId("button-save"));

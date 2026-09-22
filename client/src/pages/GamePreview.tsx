@@ -73,6 +73,10 @@ export default function GamePreview({ gameId }: GamePreviewProps) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
     },
+    // 🐛 預覽必須是「剛存進去的內容」：全域 staleTime 5 分鐘會讓第二次預覽吃到舊快取
+    //   （編輯器存檔只 invalidate /api/games，不會清到這個 key）→ 每次進入都重讀、離開即丟快取
+    staleTime: 0,
+    gcTime: 0,
   });
 
   // 計算 totalPages（hook 區塊內，不能放 if early return 後面）
