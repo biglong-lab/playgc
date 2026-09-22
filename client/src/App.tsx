@@ -36,13 +36,17 @@ import NotFound from "@/pages/not-found";
 import FieldEntry from "@/pages/FieldEntry";
 import PlatformHome from "@/pages/PlatformHome";
 import DeviceGate from "@/components/shared/DeviceGate";
+import GuestGate, { withGuestGate } from "@/components/shared/GuestGate";
 import PwaChrome from "@/components/shared/PwaChrome";
 
 // 玩家端 — lazy import
 const GamePlay = lazy(() => import("@/pages/GamePlay"));
+// 🎟️ 2026-09-22：先擋桌機、再建立訪客身分（桌機被擋的人不該產生訪客帳號）
 const GamePlayGated = () => (
   <DeviceGate>
-    <GamePlay />
+    <GuestGate>
+      <GamePlay />
+    </GuestGate>
   </DeviceGate>
 );
 const MapView = lazy(() => import("@/pages/MapView"));
@@ -51,6 +55,12 @@ const TeamLobby = lazy(() => import("@/pages/TeamLobby"));
 const ChapterSelect = lazy(() => import("@/pages/ChapterSelect"));
 const GameBySlug = lazy(() => import("@/pages/GameBySlug"));
 const MatchLobby = lazy(() => import("@/pages/MatchLobby"));
+// 🎟️ 遊玩類頁面：未登入自動建立訪客身分（取代登入牆）
+const HomeGated = withGuestGate(Home);
+const ChapterSelectGated = withGuestGate(ChapterSelect);
+const TeamLobbyGated = withGuestGate(TeamLobby);
+const MatchLobbyGated = withGuestGate(MatchLobby);
+const MapViewGated = withGuestGate(MapView);
 const PurchaseGate = lazy(() => import("@/pages/PurchaseGate"));
 const PurchaseSuccess = lazy(() => import("@/pages/PurchaseSuccess"));
 const MyPurchases = lazy(() => import("@/pages/MyPurchases"));
@@ -299,14 +309,14 @@ function Router() {
         {/* 🏢 場域專屬路由 /f/:fieldCode/* — 明確場域路徑，方便分享 */}
         <Route path="/f" component={FieldEntry} />
         <Route path="/f/:fieldCode" component={Landing} />
-        <Route path="/f/:fieldCode/home" component={Home} />
+        <Route path="/f/:fieldCode/home" component={HomeGated} />
         <Route path="/f/:fieldCode/leaderboard" component={Leaderboard} />
         <Route path="/f/:fieldCode/game/:gameId/chapters/:chapterId" component={GamePlayGated} />
-        <Route path="/f/:fieldCode/game/:gameId/chapters" component={ChapterSelect} />
+        <Route path="/f/:fieldCode/game/:gameId/chapters" component={ChapterSelectGated} />
         <Route path="/f/:fieldCode/game/:gameId" component={GamePlayGated} />
-        <Route path="/f/:fieldCode/team/:gameId" component={TeamLobby} />
-        <Route path="/f/:fieldCode/match/:gameId" component={MatchLobby} />
-        <Route path="/f/:fieldCode/map/:gameId" component={MapView} />
+        <Route path="/f/:fieldCode/team/:gameId" component={TeamLobbyGated} />
+        <Route path="/f/:fieldCode/match/:gameId" component={MatchLobbyGated} />
+        <Route path="/f/:fieldCode/map/:gameId" component={MapViewGated} />
         <Route path="/f/:fieldCode/purchase/gate/:gameId" component={PurchaseGate} />
         <Route path="/f/:fieldCode/purchase/success" component={PurchaseSuccess} />
         <Route path="/f/:fieldCode/purchases" component={MyPurchases} />
@@ -391,11 +401,11 @@ function Router() {
 
         {/* 遊戲深連結 — 暫保留相容（Home/Team/Match 內部有 useCurrentField 兜底）*/}
         <Route path="/game/:gameId/chapters/:chapterId" component={GamePlayGated} />
-        <Route path="/game/:gameId/chapters" component={ChapterSelect} />
+        <Route path="/game/:gameId/chapters" component={ChapterSelectGated} />
         <Route path="/game/:gameId" component={GamePlayGated} />
-        <Route path="/team/:gameId" component={TeamLobby} />
-        <Route path="/match/:gameId" component={MatchLobby} />
-        <Route path="/map/:gameId" component={MapView} />
+        <Route path="/team/:gameId" component={TeamLobbyGated} />
+        <Route path="/match/:gameId" component={MatchLobbyGated} />
+        <Route path="/map/:gameId" component={MapViewGated} />
         <Route path="/game/:gameId/purchase" component={PurchaseGate} />
         <Route path="/purchase/gate/:gameId" component={PurchaseGate} />
         <Route path="/purchase/success" component={PurchaseSuccess} />

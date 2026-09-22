@@ -19,6 +19,7 @@ import GamePageRenderer from "@/components/game/GamePageRenderer";
 import GamePageErrorBoundary from "@/components/game/GamePageErrorBoundary";
 import GameCompletionScreen from "@/components/game/GameCompletionScreen";
 import ResumeDialog from "@/components/game/ResumeDialog";
+import { FullscreenSpinner } from "@/components/shared/GuestGate";
 import { useBgmPlayer } from "@/hooks/useBgmPlayer";
 import { useSessionManager } from "./hooks/useSessionManager";
 import { useTeamPlaySync } from "./hooks/useTeamPlaySync";
@@ -457,43 +458,13 @@ export default function GamePlay() {
 
   // === 載入中/錯誤/完成 狀態 ===
   if (authLoading || gameLoading) {
-    return (
-      <div className="min-h-screen-dynamic bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">載入任務中...</p>
-        </div>
-      </div>
-    );
+    return <FullscreenSpinner label="載入任務中..." />;
   }
 
+  // 🎟️ 2026-09-22：登入牆移除 — 路由層 GuestGate 已確保有身分（未登入自動建立訪客）
+  //   這裡只剩 useAuth 衍生 user 的瞬間空窗，顯示載入即可
   if (!user) {
-    // 🔧 2026-07-05 UX：原本 render 內無聲 setLocation("/") 硬踢回首頁、無回跳。
-    //   改為明確「需登入」畫面：存 returnTo（登入後回到此遊戲）+ 前往登入按鈕 + 返回。
-    const returnPath = window.location.pathname + window.location.search;
-    return (
-      <div className="min-h-screen-dynamic bg-background flex items-center justify-center p-6">
-        <div className="text-center max-w-sm space-y-4">
-          <div className="text-4xl">🔑</div>
-          <h2 className="text-xl font-bold">此遊戲需登入組隊</h2>
-          <p className="text-sm text-muted-foreground">
-            多人遊戲需要登入才能與隊友同步。登入後會自動回到這個遊戲。
-          </p>
-          <div className="flex flex-col gap-2">
-            <Button
-              onClick={() => {
-                try { sessionStorage.setItem("postLoginReturn", returnPath); } catch { /* ignore */ }
-                setLocation("/");
-              }}
-              data-testid="btn-goto-login"
-            >
-              前往登入
-            </Button>
-            <Button variant="ghost" onClick={() => setLocation("/")}>返回首頁</Button>
-          </div>
-        </div>
-      </div>
-    );
+    return <FullscreenSpinner label="準備遊戲中..." />;
   }
 
   if (gameError || !game) {
@@ -535,14 +506,7 @@ export default function GamePlay() {
   //   傳 sessionId="" 給多人 race 元件 → 元件 effect early-return、連 8 秒重試計時器都不啟動 → 永久死轉。
   //   改為 session ready 前顯示「準備連線中」，ready 後才掛載遊戲內容（單人同理：沒 session 不該開始）。
   if (!sessionId) {
-    return (
-      <div className="min-h-screen-dynamic bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">準備連線中...</p>
-        </div>
-      </div>
-    );
+    return <FullscreenSpinner label="準備連線中..." />;
   }
 
   return (
