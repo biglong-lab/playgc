@@ -7,9 +7,9 @@
 //   - 分數來源：玩家的遊戲場次進度（PATCH /api/sessions/:id/progress）自動同步，
 //     沿用場次既有的分數驗證，不另開前端可任意呼叫的計分入口
 //   - 巡檢：每 5 秒掃進行中的賽事（重啟後也能補做到期的狀態轉換；單 worker 架構）
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, lt } from "drizzle-orm";
 import { db } from "../db";
-import { gameMatches, gameSessions, matchParticipants, users, type GameMatch, type MatchSettings } from "@shared/schema";
+import { gameMatches, gameSessions, matchParticipants, pages, users, type GameMatch, type MatchSettings } from "@shared/schema";
 import { getPlayerDisplayName } from "@shared/lib/playerDisplay";
 import { MAX_SESSION_SCORE } from "../lib/scoreValidation";
 
@@ -163,15 +163,34 @@ function isDue(match: GameMatch, now: number): "start" | "finish" | null {
   return now >= startedAt + limitMs ? "finish" : null;
 }
 
-/** 巡檢：到期的倒數開賽、到期的賽事結算 */
+/** 一次巡檢最多處理幾場（🔒 安全審查 M4：原本沒有上限，堆出幾千場會變成持續性 DB 負載） */
+const SWEEP_BATCH = 200;
+/** 開了卻沒人開賽的房間，超過這個時間自動取消（避免等待中賽事無限累積） */
+const STALE_WAITING_MS = 6 * 60 * 60 * 1000;
+
+/** 巡檢：到期的倒數開賽、到期的賽事結算、過期沒開賽的房間取消 */
 export async function advanceDueMatches(broadcast: MatchBroadcast): Promise<void> {
-  const active = await db.select().from(gameMatches).where(inArray(gameMatches.status, ["countdown", "playing"]));
+  const active = await db
+    .select()
+    .from(gameMatches)
+    .where(inArray(gameMatches.status, ["countdown", "playing"]))
+    .orderBy(asc(gameMatches.updatedAt))
+    .limit(SWEEP_BATCH);
   const now = Date.now();
   for (const m of active) {
     const due = isDue(m, now);
     if (due === "start") await promoteToPlaying(m.id, broadcast);
     if (due === "finish") await finishMatch(m.id, broadcast, "time_up");
   }
+  await cancelStaleWaitingMatches(new Date(now - STALE_WAITING_MS));
+}
+
+/** 太久沒開賽的等待中賽事 → 取消（只改狀態，不刪資料） */
+async function cancelStaleWaitingMatches(before: Date): Promise<void> {
+  await db
+    .update(gameMatches)
+    .set({ status: "cancelled", updatedAt: new Date() })
+    .where(and(eq(gameMatches.status, "waiting"), lt(gameMatches.updatedAt, before)));
 }
 
 let sweeper: ReturnType<typeof setInterval> | null = null;
@@ -199,6 +218,20 @@ async function findPlayingParticipant(sessionId: string, userId: string) {
   return row && row.status === "playing" ? row : null;
 }
 
+/**
+ * 接力：這一頁是不是自己那一棒負責的頁碼（沒帶 pageId 視為通過 — 進度更新不一定帶頁）
+ * 🔒 2026-09-23 安全審查 M5：伺服器自己查頁碼，不信前端只送自己那段
+ */
+async function isPageInMyLeg(matchId: string, segment: number | null, pageId?: string): Promise<boolean> {
+  if (!pageId || !segment) return !pageId;
+  const [match] = await db.select({ settings: gameMatches.settings }).from(gameMatches).where(eq(gameMatches.id, matchId));
+  const leg = (match?.settings as MatchSettings | null)?.relaySegments?.[segment - 1];
+  if (!leg) return false;
+  const [page] = await db.select({ pageOrder: pages.pageOrder }).from(pages).where(eq(pages.id, pageId));
+  if (!page) return false;
+  return page.pageOrder >= leg.fromPage && page.pageOrder <= leg.toPage;
+}
+
 /** 這個場次是不是進行中接力賽的一棒（只玩部分頁面 → 不寫個人排行榜 / 成就） */
 export async function isRelayLegSession(sessionId: string, userId: string): Promise<boolean> {
   const row = await findPlayingParticipant(sessionId, userId);
@@ -224,12 +257,14 @@ export async function linkMatchSession(matchId: string, userId: string, sessionI
  *   只有「這個場次真的在某場進行中的賽事裡」才驗，一般單人 / 組隊場次不增加額外查詢。
  */
 export async function syncMatchScoreFromSession(
-  sessionId: string, userId: string, score: number, broadcast: MatchBroadcast,
+  sessionId: string, userId: string, score: number, broadcast: MatchBroadcast, pageId?: string,
 ): Promise<void> {
   const row = await findPlayingParticipant(sessionId, userId);
   if (!row) return;
   // 接力：不是自己那一棒的時段不收分（防非當棒玩家先偷跑刷分）
   if (row.matchMode === "relay" && row.p.relayStatus !== "active") return;
+  // 接力：分數只收自己那一段的頁面（🔒 安全審查 M5：原本只有前端自律）
+  if (row.matchMode === "relay" && !(await isPageInMyLeg(row.p.matchId, row.p.relaySegment, pageId))) return;
   const { validateSessionScore } = await import("../lib/scoreValidation");
   const { safeScore } = await validateSessionScore({ sessionId, userId, clientScore: score, source: "session-progress" });
   const capped = Math.min(safeScore, MAX_SESSION_SCORE);

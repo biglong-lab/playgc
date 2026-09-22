@@ -6,10 +6,10 @@
 //   - 分數由遊戲進度自動同步（PATCH /api/sessions/:id/progress），不再收前端任意送的分數
 import type { Express, Response } from "express";
 import { z } from "zod";
-import { isAuthenticated } from "../firebaseAuth";
+import { isAuthenticated, optionalAuth } from "../firebaseAuth";
 import { storage } from "../storage";
 import type { RouteContext, AuthenticatedRequest } from "./types";
-import { matchActionLimiter } from "../utils/rate-limiters";
+import { matchActionLimiter, matchCreateIpLimiter, matchReadLimiter } from "../utils/rate-limiters";
 import { validateId } from "./utils";
 import { registerRelayRoutes } from "./relay";
 import { persistGuestDisplayName } from "../services/guest-display-name";
@@ -22,6 +22,7 @@ import {
   getMatch,
   isMatchParticipant,
   joinMatch,
+  kickParticipant,
   leaveMatch,
   listWaitingMatches,
   matchModeOf,
@@ -30,6 +31,8 @@ import { getMatchDetail, getMyMatchState } from "../services/match-view";
 import { beginCountdown, finishMatch, loadMatchRanking, promoteToPlaying } from "../services/match-lifecycle";
 
 const playerNameBodySchema = z.object({ playerName: z.string().max(50).optional() }).passthrough();
+const createMatchBodySchema = playerNameBodySchema.extend({ isPrivate: z.boolean().optional() });
+const kickBodySchema = z.object({ userId: z.string().min(1).max(128) });
 const joinByCodeBodySchema = z.object({
   code: z.string().trim().min(4).max(10),
   playerName: z.string().max(50).optional(),
@@ -63,24 +66,28 @@ export function registerMatchRoutes(app: Express, ctx: RouteContext) {
 
 /** 大廳：建立 / 列表 / 我的賽事 / 加入 / 邀請碼加入 / 離開 */
 function registerLobbyRoutes(app: Express, ctx: RouteContext) {
-  app.post("/api/games/:gameId/matches", isAuthenticated, matchActionLimiter, async (req: AuthenticatedRequest, res) => {
+  app.post("/api/games/:gameId/matches", isAuthenticated, matchActionLimiter, matchCreateIpLimiter, async (req: AuthenticatedRequest, res) => {
     try {
       const userId = userIdOf(req, res);
       if (!userId) return;
-      const game = await storage.getGame(req.params.gameId);
+      const gameId = validateId(req.params.gameId, res);
+      if (!gameId) return;
+      const game = await storage.getGame(gameId);
       if (!game) return res.status(404).json({ error: "遊戲不存在" });
       const mode = matchModeOf(game);
       if (!mode) return res.status(400).json({ error: "這款遊戲不是競賽或接力模式" });
-      const body = playerNameBodySchema.safeParse(req.body ?? {});
+      // 🔒 2026-09-23 安全審查 L2：草稿 / 下架的遊戲不能開賽事
+      if (game.status !== "published") return res.status(400).json({ error: "這款遊戲還沒發布，不能開賽事" });
+      const body = createMatchBodySchema.safeParse(req.body ?? {});
       await rememberGuestName(req, userId, body.success ? body.data.playerName : undefined);
-      const match = await createMatch(game, mode, userId);
+      const match = await createMatch(game, mode, userId, body.success && body.data.isPrivate === true);
       return res.status(201).json(match);
     } catch (error) {
       return res.status(500).json({ error: "建立對戰失敗" });
     }
   });
 
-  app.get("/api/games/:gameId/matches", async (req, res) => {
+  app.get("/api/games/:gameId/matches", matchReadLimiter, async (req, res) => {
     try {
       const gameId = validateId(req.params.gameId, res);
       if (!gameId) return;
@@ -126,6 +133,30 @@ function registerLobbyRoutes(app: Express, ctx: RouteContext) {
       return respondJoin(res, ctx, matchId, userId);
     } catch (error) {
       return res.status(500).json({ error: "加入對戰失敗" });
+    }
+  });
+
+  // 🔒 2026-09-23 安全審查 M1：房主把陌生人請出等待中的賽事（原本只能取消整場重開）
+  app.post("/api/matches/:matchId/kick", isAuthenticated, matchActionLimiter, async (req: AuthenticatedRequest, res) => {
+    try {
+      const userId = userIdOf(req, res);
+      if (!userId) return;
+      const body = kickBodySchema.safeParse(req.body ?? {});
+      if (!body.success) return res.status(400).json({ error: "缺少要移除的玩家" });
+      const match = await getMatch(req.params.matchId);
+      if (!match) return res.status(404).json({ error: "對戰不存在" });
+      if (match.creatorId !== userId) return res.status(403).json({ error: "forbidden", message: "只有房主可以移除參賽者" });
+      if (match.status !== "waiting") return res.status(409).json({ error: "賽事已開始，不能移除參賽者" });
+      const kicked = await kickParticipant(match, body.data.userId);
+      if (!kicked) return res.status(400).json({ error: "這位玩家不在賽事中（房主無法移除自己，請改用取消賽事）" });
+      ctx.broadcastToMatch(match.id, {
+        type: "match_participant_left",
+        ranking: await loadMatchRanking(match.id),
+        timestamp: new Date().toISOString(),
+      });
+      return res.json({ success: true });
+    } catch (error) {
+      return res.status(500).json({ error: "移除參賽者失敗" });
     }
   });
 
@@ -226,19 +257,19 @@ function registerHostRoutes(app: Express, ctx: RouteContext) {
 
 /** 讀取：詳情 / 排名 / 我的狀態 */
 function registerReadRoutes(app: Express) {
-  app.get("/api/matches/:matchId", async (req, res) => {
+  app.get("/api/matches/:matchId", matchReadLimiter, optionalAuth, async (req: AuthenticatedRequest, res) => {
     try {
       const matchId = validateId(req.params.matchId, res);
       if (!matchId) return;
       const match = await getMatch(matchId);
       if (!match) return res.status(404).json({ error: "對戰不存在" });
-      return res.json(await getMatchDetail(match));
+      return res.json(await getMatchDetail(match, req.user?.claims?.sub));
     } catch (error) {
       return res.status(500).json({ error: "取得對戰詳情失敗" });
     }
   });
 
-  app.get("/api/matches/:matchId/ranking", async (req, res) => {
+  app.get("/api/matches/:matchId/ranking", matchReadLimiter, async (req, res) => {
     try {
       const matchId = validateId(req.params.matchId, res);
       if (!matchId) return;

@@ -32,6 +32,7 @@ export function matchModeOf(game: Pick<Game, "gameMode">): MatchMode | null {
 export function buildMatchSettings(
   raw: GameMatchConfig | null | undefined,
   mode: MatchMode,
+  isPrivate = false,
 ): { settings: MatchSettings; maxTeams: number } {
   const cfg = resolveMatchConfig(raw);
   const isRelay = mode === "relay";
@@ -45,6 +46,7 @@ export function buildMatchSettings(
     // 🔒 2026-09-23 安全審查 M6：接力沒設分段時人數上限會變 0 → join 檢查被當 falsy 跳過（可無限加入）
     maxParticipants: isRelay ? Math.max(1, legs.length) : cfg.maxParticipants,
     ...(isRelay ? { relaySegments: legs } : {}),
+    ...(isPrivate ? { isPrivate: true } : {}),
   };
   return { settings, maxTeams: settings.maxParticipants ?? cfg.maxParticipants };
 }
@@ -79,8 +81,8 @@ async function generateAccessCode(): Promise<string> {
 }
 
 /** 建立賽事，建立者自動成為第一位參賽者 */
-export async function createMatch(game: Game, mode: MatchMode, userId: string): Promise<GameMatch> {
-  const { settings, maxTeams } = buildMatchSettings(game.matchConfig as GameMatchConfig | null, mode);
+export async function createMatch(game: Game, mode: MatchMode, userId: string, isPrivate = false): Promise<GameMatch> {
+  const { settings, maxTeams } = buildMatchSettings(game.matchConfig as GameMatchConfig | null, mode, isPrivate);
   const accessCode = await generateAccessCode();
   return db.transaction(async (tx) => {
     const [match] = await tx
@@ -118,9 +120,13 @@ export async function countParticipants(matchId: string): Promise<number> {
   return row?.n ?? 0;
 }
 
+/**
+ * 🔒 2026-09-23 安全審查 M1：列表不再回傳邀請碼
+ *   原本任何未登入的人都能撈出所有等待中賽事的邀請碼 → 邀請碼形同虛設。
+ *   邀請碼只回給房主 / 已加入的人（見 match-view.getMatchDetail）。
+ */
 export interface WaitingMatchSummary {
   id: string;
-  accessCode: string | null;
   maxTeams: number | null;
   participantCount: number;
   createdAt: Date;
@@ -132,14 +138,19 @@ export async function listWaitingMatches(gameId: string): Promise<WaitingMatchSu
   return db
     .select({
       id: gameMatches.id,
-      accessCode: gameMatches.accessCode,
       maxTeams: gameMatches.maxTeams,
       createdAt: gameMatches.createdAt,
       participantCount: sql<number>`count(${matchParticipants.id})::int`,
     })
     .from(gameMatches)
     .leftJoin(matchParticipants, eq(matchParticipants.matchId, gameMatches.id))
-    .where(and(eq(gameMatches.gameId, gameId), eq(gameMatches.status, "waiting"), gt(gameMatches.createdAt, since)))
+    .where(and(
+      eq(gameMatches.gameId, gameId),
+      eq(gameMatches.status, "waiting"),
+      gt(gameMatches.createdAt, since),
+      // 私人房不出現在列表（只有拿到邀請碼的人能加入）
+      sql`coalesce((${gameMatches.settings} ->> 'isPrivate')::boolean, false) = false`,
+    ))
     .groupBy(gameMatches.id)
     .orderBy(desc(gameMatches.createdAt))
     .limit(20);
@@ -194,6 +205,19 @@ export async function joinMatch(matchId: string, userId: string): Promise<JoinRe
     const [participant] = await tx.insert(matchParticipants).values({ matchId, userId, currentScore: 0 }).returning();
     return { ok: true, participant, alreadyJoined: false, participantCount: rows.length + 1 };
   });
+}
+
+/**
+ * 房主把人請出等待中的賽事（🔒 2026-09-23 安全審查 M1：原本只能取消整場重開）
+ * 回傳是否真的踢掉（對方已不在 / 賽事已開始 → false）
+ */
+export async function kickParticipant(match: GameMatch, targetUserId: string): Promise<boolean> {
+  if (match.status !== "waiting" || targetUserId === match.creatorId) return false;
+  const removed = await db
+    .delete(matchParticipants)
+    .where(and(eq(matchParticipants.matchId, match.id), eq(matchParticipants.userId, targetUserId)))
+    .returning({ id: matchParticipants.id });
+  return removed.length > 0;
 }
 
 /** 離開等待中的賽事：房主離開 = 取消整場；其他人 = 退出 */

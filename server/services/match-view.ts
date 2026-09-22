@@ -27,6 +27,8 @@ export interface MatchDetailView extends MatchConfigView {
   matchMode: string;
   status: string;
   accessCode: string | null;
+  /** 私人房：不出現在公開列表 */
+  isPrivate: boolean;
   creatorId: string | null;
   startedAt: Date | null;
   finishedAt: Date | null;
@@ -36,15 +38,22 @@ export interface MatchDetailView extends MatchConfigView {
   teamTotal: number | null;
 }
 
-export async function getMatchDetail(match: GameMatch): Promise<MatchDetailView> {
+/**
+ * 賽事詳情
+ * 🔒 2026-09-23 安全審查 M1：accessCode 只回給房主 / 已加入的人（viewerId）；
+ *   其他人（含未登入）看得到賽況與排名，但拿不到邀請碼
+ */
+export async function getMatchDetail(match: GameMatch, viewerId?: string): Promise<MatchDetailView> {
   const ranking = await loadMatchRanking(match.id);
   const isRelay = match.matchMode === "relay";
+  const canSeeCode = !!viewerId && (viewerId === match.creatorId || ranking.some((r) => r.userId === viewerId));
   return {
     id: match.id,
     gameId: match.gameId,
     matchMode: match.matchMode,
     status: match.status,
-    accessCode: match.accessCode,
+    accessCode: canSeeCode ? match.accessCode : null,
+    isPrivate: !!(match.settings as MatchSettings | null)?.isPrivate,
     creatorId: match.creatorId,
     startedAt: match.startedAt,
     finishedAt: match.finishedAt,

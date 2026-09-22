@@ -456,7 +456,8 @@ describe("Player Sessions 路由", () => {
       mockStorage.getPlayerProgressByUser.mockResolvedValue({ id: 1, sessionId: "s-1", userId: "user-1" });
       mockStorage.updatePlayerProgress.mockResolvedValue({ id: 1, score: 120 });
       await request(app).patch("/api/sessions/s-1/progress").set(AUTH_HEADER).send({ pageId: "p-2", score: 120 });
-      expect(mockMatchHooks.syncMatchScore).toHaveBeenCalledWith("s-1", "user-1", 120, undefined);
+      // 🔒 安全審查 M5：接力要靠 pageId 確認是自己那一段的頁面
+      expect(mockMatchHooks.syncMatchScore).toHaveBeenCalledWith("s-1", "user-1", 120, undefined, "p-2");
     });
 
     it("接力的一棒完成 → 不寫個人排行榜，但交給賽事處理交棒", async () => {

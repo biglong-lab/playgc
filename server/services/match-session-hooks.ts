@@ -28,13 +28,14 @@ export async function linkSessionToMatch(rawMatchId: unknown, userId: string, se
   }
 }
 
-/** 進度分數同步（不等待，失敗只記錄） */
+/** 進度分數同步（不等待，失敗只記錄）；pageId 給接力用來確認是自己那一段的頁面 */
 export function syncMatchScore(
   sessionId: string, userId: string, score: number | undefined, broadcast: MatchBroadcast | undefined,
+  pageId?: string,
 ): void {
   if (typeof score !== "number" || !broadcast) return;
   import("./match-lifecycle")
-    .then(({ syncMatchScoreFromSession }) => syncMatchScoreFromSession(sessionId, userId, score, broadcast))
+    .then(({ syncMatchScoreFromSession }) => syncMatchScoreFromSession(sessionId, userId, score, broadcast, pageId))
     .catch((err) => console.error("[match] 同步賽事分數失敗:", err));
 }
 

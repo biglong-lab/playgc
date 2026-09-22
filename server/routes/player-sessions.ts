@@ -422,7 +422,7 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
           updateData,
         );
         // 🏁 2026-09-23：競賽 / 接力 → 同步賽事分數、廣播即時排名（非賽事場次查無關聯即略過）
-        syncMatchScore(sessionId, userId, req.body.score, ctx?.broadcastToMatch);
+        syncMatchScore(sessionId, userId, req.body.score, ctx?.broadcastToMatch, req.body.pageId);
 
         // 🏆 即時成就檢查 — 當 inventory 或 score 更新時檢查是否有新成就解鎖
         // 避免 breaking client：只在 body 實際變更這些欄位時跑（跟章節完成的 end-of-game 檢查互不衝突，靠 unique constraint 去重）

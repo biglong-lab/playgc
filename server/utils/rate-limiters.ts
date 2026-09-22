@@ -96,6 +96,32 @@ export const matchActionLimiter = rateLimit({
 });
 
 /**
+ * 🔒 2026-09-23 安全審查 M3：賽事公開讀取（列表 / 詳情 / 排名 / 接力進度）
+ * 每 IP 每分鐘 300 次 — 正常玩家輪詢約每 3 秒一次，足夠；擋掉低成本放大查詢
+ */
+export const matchReadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `matchread:ip:${safeIp(req)}`,
+  message: { message: "查詢過於頻繁，請稍後再試" },
+});
+
+/**
+ * 🔒 2026-09-23 安全審查 M4：建立賽事 per-IP 上限
+ * 訪客可無限換匿名帳號 → per-user 限流擋不住（同 sessionCreateIpLimiter 的理由）
+ */
+export const matchCreateIpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `matchcreate:ip:${safeIp(req)}`,
+  message: { message: "此網路建立賽事過於頻繁，請稍後再試" },
+});
+
+/**
  * 🔐 2026-07-09 S3：建立遊戲場次
  * 每 10 分鐘 30 次 — 正常重玩/測試綽綽有餘，防誤觸/腳本灌 session
  *（配合同日 CHITO #f095652b 的「建新自動放棄舊 playing」雙保險）

@@ -16,6 +16,7 @@ const { lobby, view, life, mockStorage, mockGuestName } = vi.hoisted(() => ({
     getMatch: vi.fn(),
     isMatchParticipant: vi.fn(),
     joinMatch: vi.fn(),
+    kickParticipant: vi.fn(),
     leaveMatch: vi.fn(),
     listWaitingMatches: vi.fn(),
     matchModeOf: vi.fn(),
@@ -39,6 +40,13 @@ vi.mock("../firebaseAuth", () => ({
       return next();
     }
     return res.status(401).json({ message: "Unauthorized" });
+  }),
+  // 可選認證：有帶 token 就附上身分（賽事詳情用來決定要不要回邀請碼）
+  optionalAuth: vi.fn((req: any, _res: any, next: any) => {
+    if (req.headers.authorization === "Bearer valid-token") {
+      req.user = { claims: { sub: "user-1", signInProvider: "anonymous" } };
+    }
+    return next();
   }),
 }));
 
@@ -75,20 +83,62 @@ describe("建立賽事 POST /api/games/:gameId/matches", () => {
     const { app } = createApp();
     mockStorage.getGame.mockResolvedValueOnce(undefined);
     expect((await request(app).post(`/api/games/${GAME_ID}/matches`).set(AUTH)).status).toBe(404);
-    mockStorage.getGame.mockResolvedValueOnce({ id: GAME_ID, gameMode: "individual" });
+    mockStorage.getGame.mockResolvedValueOnce({ id: GAME_ID, gameMode: "individual", status: "published" });
     lobby.matchModeOf.mockReturnValueOnce(null);
     expect((await request(app).post(`/api/games/${GAME_ID}/matches`).set(AUTH)).status).toBe(400);
   });
 
   it("成功 → 以遊戲模式建賽、房主自動參賽、訪客暱稱寫入", async () => {
-    const game = { id: GAME_ID, gameMode: "competitive" };
+    const game = { id: GAME_ID, gameMode: "competitive", status: "published" };
     mockStorage.getGame.mockResolvedValue(game);
     lobby.matchModeOf.mockReturnValue("competitive");
     lobby.createMatch.mockResolvedValue(match());
     const res = await request(createApp().app).post(`/api/games/${GAME_ID}/matches`).set(AUTH).send({ playerName: "探險家1234" });
     expect(res.status).toBe(201);
-    expect(lobby.createMatch).toHaveBeenCalledWith(game, "competitive", "user-1");
+    expect(lobby.createMatch).toHaveBeenCalledWith(game, "competitive", "user-1", false);
     expect(mockGuestName).toHaveBeenCalledWith("user-1", "探險家1234", "anonymous");
+  });
+});
+
+describe("🔒 安全審查修正（2026-09-23）", () => {
+  it("草稿 / 下架的遊戲不能開賽事", async () => {
+    mockStorage.getGame.mockResolvedValue({ id: GAME_ID, gameMode: "competitive", status: "draft" });
+    lobby.matchModeOf.mockReturnValue("competitive");
+    const res = await request(createApp().app).post(`/api/games/${GAME_ID}/matches`).set(AUTH).send({});
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain("還沒發布");
+    expect(lobby.createMatch).not.toHaveBeenCalled();
+  });
+
+  it("私人房：建賽帶 isPrivate 會傳給服務層", async () => {
+    const game = { id: GAME_ID, gameMode: "competitive", status: "published" };
+    mockStorage.getGame.mockResolvedValue(game);
+    lobby.matchModeOf.mockReturnValue("competitive");
+    lobby.createMatch.mockResolvedValue(match());
+    await request(createApp().app).post(`/api/games/${GAME_ID}/matches`).set(AUTH).send({ isPrivate: true });
+    expect(lobby.createMatch).toHaveBeenCalledWith(game, "competitive", "user-1", true);
+  });
+
+  it("踢人：非房主 403；已開賽 409；成功移除並廣播", async () => {
+    const { app, ctx } = createApp();
+    lobby.getMatch.mockResolvedValueOnce(match({ creatorId: "other" }));
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/kick`).set(AUTH).send({ userId: "u2" })).status).toBe(403);
+    lobby.getMatch.mockResolvedValueOnce(match({ status: "playing" }));
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/kick`).set(AUTH).send({ userId: "u2" })).status).toBe(409);
+    lobby.getMatch.mockResolvedValue(match());
+    lobby.kickParticipant.mockResolvedValueOnce(false);
+    expect((await request(app).post(`/api/matches/${MATCH_ID}/kick`).set(AUTH).send({ userId: "u2" })).status).toBe(400);
+    lobby.kickParticipant.mockResolvedValueOnce(true);
+    const ok = await request(app).post(`/api/matches/${MATCH_ID}/kick`).set(AUTH).send({ userId: "u2" });
+    expect(ok.status).toBe(200);
+    expect(ctx.broadcastToMatch).toHaveBeenCalledWith(MATCH_ID, expect.objectContaining({ type: "match_participant_left" }));
+  });
+
+  it("詳情：有登入 → 把 viewerId 交給服務層（決定要不要回邀請碼）", async () => {
+    lobby.getMatch.mockResolvedValue(match());
+    view.getMatchDetail.mockResolvedValue({ id: MATCH_ID, ranking: [] });
+    await request(createApp().app).get(`/api/matches/${MATCH_ID}`).set(AUTH);
+    expect(view.getMatchDetail).toHaveBeenLastCalledWith(expect.anything(), "user-1");
   });
 });
 
@@ -116,6 +166,8 @@ describe("大廳讀取", () => {
     lobby.getMatch.mockResolvedValueOnce(match());
     view.getMatchDetail.mockResolvedValue({ id: MATCH_ID, ranking: [] });
     expect((await request(app).get(`/api/matches/${MATCH_ID}`)).body).toEqual({ id: MATCH_ID, ranking: [] });
+    // 未登入 → 不帶 viewerId（服務層據此不回邀請碼）
+    expect(view.getMatchDetail).toHaveBeenLastCalledWith(expect.anything(), undefined);
   });
 
   it("我的狀態：要登入；回傳 getMyMatchState 結果", async () => {

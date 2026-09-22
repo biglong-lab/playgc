@@ -40,6 +40,8 @@ export interface MatchSettings {
   readonly minParticipants?: number;
   /** 🆕 2026-09-23：接力分段快照（每一棒負責的頁碼區間，1-based 含頭尾） */
   readonly relaySegments?: ReadonlyArray<{ readonly fromPage: number; readonly toPage: number }>;
+  /** 🔒 2026-09-23：私人房 — 不出現在公開列表，只有拿到邀請碼的人能加入 */
+  readonly isPrivate?: boolean;
 }
 
 // 接力設定介面

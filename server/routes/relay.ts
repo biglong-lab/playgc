@@ -8,12 +8,13 @@ import type { Express, RequestHandler } from "express";
 import { isAuthenticated } from "../firebaseAuth";
 import type { RouteContext, AuthenticatedRequest } from "./types";
 import { validateId } from "./utils";
+import { matchReadLimiter } from "../utils/rate-limiters";
 import { getMatch } from "../services/match-lobby";
 import { loadMatchRanking } from "../services/match-lifecycle";
 import { getMyRelayLeg, relayLegsOf } from "../services/relay-lifecycle";
 
 export function registerRelayRoutes(app: Express, _ctx: RouteContext) {
-  app.get("/api/matches/:matchId/relay/status", async (req, res) => {
+  app.get("/api/matches/:matchId/relay/status", matchReadLimiter, async (req, res) => {
     try {
       const matchId = validateId(req.params.matchId, res);
       if (!matchId) return;
