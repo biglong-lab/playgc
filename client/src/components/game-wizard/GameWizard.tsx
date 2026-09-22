@@ -148,17 +148,13 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
     }
   };
 
-  // 測試遊戲
+  // 測試遊戲：開管理員預覽（另開分頁）
+  //   原本開 /play/:slug 是大螢幕互動玩家端（吃 sessionId），不是這個遊戲；
+  //   /g/:slug 也不適用：剛建立的遊戲是草稿（會顯示「遊戲尚未開放」），且桌機會被 DeviceGate 擋下
+  //   預覽頁草稿可玩、不建 session、不寫任何紀錄
   const handleTestGame = () => {
-    if (createdGame?.publicSlug) {
-      window.open(`/play/${createdGame.publicSlug}`, "_blank");
-    } else {
-      toast({
-        title: "尚無公開連結",
-        description: "請先產生 QR Code 後再測試",
-        variant: "destructive",
-      });
-    }
+    if (!createdGame) return;
+    window.open(`/admin/games/${createdGame.id}/preview`, "_blank");
   };
 
   // 步驟指示器（依 editorMode 決定是否含 select_game_mode）
