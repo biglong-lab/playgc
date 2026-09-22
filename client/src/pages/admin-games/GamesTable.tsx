@@ -15,6 +15,8 @@ import {
   STATUS_LABELS, STATUS_COLORS,
   DIFFICULTY_LABELS, normalizeStatus,
 } from "@/components/admin-games";
+import { usePublishPrecheck } from "./usePublishPrecheck";
+import { PublishBlockedDialog } from "./PublishBlockedDialog";
 
 // 共用操作 props（表格和行共用）
 interface GameActionProps {
@@ -43,13 +45,23 @@ export function GamesTable({
   onPublish, onToggleHomeVisible, onGenerateQR, onViewQR, onCoverUpload, onMoveField,
   publishPending, homeVisiblePending, generateQRPending,
 }: GamesTableProps) {
+  // 🚦 2026-09-23 P0-B：發布前先跑共用檢查（不合格列出問題、不送出）
+  const precheck = usePublishPrecheck(onPublish);
   const actionProps = {
-    onNavigate, onEdit, onDelete, onPublish, onToggleHomeVisible, onGenerateQR,
-    onViewQR, onCoverUpload, onMoveField, publishPending, homeVisiblePending, generateQRPending,
+    onNavigate, onEdit, onDelete, onToggleHomeVisible, onGenerateQR,
+    onViewQR, onCoverUpload, onMoveField, homeVisiblePending, generateQRPending,
+    onPublish: precheck.requestPublish,
+    publishPending: publishPending || precheck.checking,
+  };
+  const openEditor = (gameId: string) => {
+    precheck.dismiss();
+    onNavigate(`/admin/games/${gameId}`);
   };
 
   return (
     <>
+      <PublishBlockedDialog blocked={precheck.blocked} onClose={precheck.dismiss} onOpenEditor={openEditor} />
+
       {/* 手機：Card 版本 */}
       <div className="space-y-3 md:hidden">
         {games.map((game) => (
