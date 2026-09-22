@@ -40,6 +40,7 @@ import { z } from "zod";
 import { eq, desc, count, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { syncGamesMeter } from "../services/billing";
+import { checkGamePublishable, isGameStatus, GAME_STATUSES } from "@shared/lib/game-publishable";
 import { storage } from "../storage";
 import { sanitizeDevice } from "./utils";
 
@@ -424,10 +425,22 @@ export function registerAdminGameRoutes(app: Express) {
         return res.status(401).json({ message: "未認證" });
       }
 
-      const { status } = req.body;
+      // 🔒 2026-09-23 P0-B：status 白名單（以前收到什麼字串就寫進 DB）
+      const status: unknown = req.body?.status;
+      if (!isGameStatus(status)) {
+        return res.status(400).json({
+          error: "invalid_status",
+          message: `狀態只能是 ${GAME_STATUSES.join(" / ")}`,
+        });
+      }
 
       const existingGame = await db.query.games.findFirst({
         where: eq(games.id, req.params.id),
+        with: {
+          pages: {
+            orderBy: (pages, { asc }) => [asc(pages.pageOrder)],
+          },
+        },
       });
 
       if (!existingGame) {
@@ -436,6 +449,18 @@ export function registerAdminGameRoutes(app: Express) {
 
       if (req.admin.systemRole !== "super_admin" && existingGame.fieldId !== req.admin.fieldId) {
         return res.status(403).json({ message: "無權限修改此遊戲狀態" });
+      }
+
+      // 🔒 改成 published 前跑前後端共用的檢查（0 頁 / 類型不合法 / 必要欄位缺）
+      if (status === "published") {
+        const check = checkGamePublishable(existingGame, existingGame.pages);
+        if (!check.ok) {
+          return res.status(400).json({
+            error: "not_publishable",
+            message: `遊戲尚未符合發佈條件（${check.errors.length} 個問題），請先到編輯器修正`,
+            errors: check.errors,
+          });
+        }
       }
 
       const [updatedGame] = await db.update(games)

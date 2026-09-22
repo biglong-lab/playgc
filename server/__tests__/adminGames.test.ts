@@ -131,6 +131,12 @@ const superAdminHeaders = {
   "x-system-role": "super_admin",
 };
 
+// 合格的頁面（text_card 有標題 + 內容）
+const validPage = {
+  id: "p1", pageOrder: 1, pageType: "text_card",
+  config: { title: "開場", content: "歡迎" },
+};
+
 describe("Admin Games 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -418,10 +424,11 @@ describe("Admin Games 路由", () => {
       expect(res.status).toBe(404);
     });
 
-    it("成功發布遊戲", async () => {
+    it("成功發布遊戲（內容合格）", async () => {
       const app = createApp();
       mockDb.query.games.findFirst.mockResolvedValueOnce({
         id: "g1", fieldId: "field-1", title: "遊戲",
+        pages: [validPage],
       });
       mockDb._chain.returning.mockResolvedValueOnce([{
         id: "g1", status: "published", title: "遊戲",
@@ -434,6 +441,118 @@ describe("Admin Games 路由", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("published");
+    });
+
+    // 🆕 2026-09-23 P0-B：status 白名單 + 發佈前共用檢查
+    it("status 不在白名單（draft/published/archived）→ 400、不寫 DB", async () => {
+      const app = createApp();
+
+      const res = await request(app)
+        .post("/api/admin/games/g1/publish")
+        .set(adminHeaders)
+        .send({ status: "hacked" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("invalid_status");
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+
+    it("沒帶 status → 400", async () => {
+      const app = createApp();
+
+      const res = await request(app)
+        .post("/api/admin/games/g1/publish")
+        .set(adminHeaders)
+        .send({});
+
+      expect(res.status).toBe(400);
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+
+    it("0 頁的遊戲發佈 → 400 not_publishable、附錯誤清單、不寫 DB", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", fieldId: "field-1", title: "遊戲", pages: [],
+      });
+
+      const res = await request(app)
+        .post("/api/admin/games/g1/publish")
+        .set(adminHeaders)
+        .send({ status: "published" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toBe("not_publishable");
+      expect(typeof res.body.message).toBe("string");
+      expect(Array.isArray(res.body.errors)).toBe(true);
+      expect(res.body.errors.length).toBeGreaterThan(0);
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+
+    it("頁面缺必要欄位 / 類型不合法 → 400，errors 指出頁面", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", fieldId: "field-1", title: "遊戲",
+        pages: [
+          { id: "p1", pageOrder: 1, pageType: "text_card", config: {} },
+          { id: "p2", pageOrder: 2, pageType: "no_such_type", config: {} },
+        ],
+      });
+
+      const res = await request(app)
+        .post("/api/admin/games/g1/publish")
+        .set(adminHeaders)
+        .send({ status: "published" });
+
+      expect(res.status).toBe(400);
+      const pageIds = res.body.errors.map((e: { pageId?: string }) => e.pageId);
+      expect(pageIds).toContain("p1");
+      expect(pageIds).toContain("p2");
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+
+    it("取消發佈（draft）不跑內容檢查：0 頁也可以", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", fieldId: "field-1", title: "遊戲", pages: [],
+      });
+      mockDb._chain.returning.mockResolvedValueOnce([{ id: "g1", status: "draft" }]);
+
+      const res = await request(app)
+        .post("/api/admin/games/g1/publish")
+        .set(adminHeaders)
+        .send({ status: "draft" });
+
+      expect(res.status).toBe(200);
+      expect(mockDb._chain.set).toHaveBeenCalledWith(expect.objectContaining({ status: "draft" }));
+    });
+
+    it("封存（archived）可直接寫入", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", fieldId: "field-1", title: "遊戲", pages: [],
+      });
+      mockDb._chain.returning.mockResolvedValueOnce([{ id: "g1", status: "archived" }]);
+
+      const res = await request(app)
+        .post("/api/admin/games/g1/publish")
+        .set(adminHeaders)
+        .send({ status: "archived" });
+
+      expect(res.status).toBe(200);
+    });
+
+    it("非同場域 → 403（檢查順序：權限先於內容）", async () => {
+      const app = createApp();
+      mockDb.query.games.findFirst.mockResolvedValueOnce({
+        id: "g1", fieldId: "other-field", title: "遊戲", pages: [],
+      });
+
+      const res = await request(app)
+        .post("/api/admin/games/g1/publish")
+        .set(adminHeaders)
+        .send({ status: "published" });
+
+      expect(res.status).toBe(403);
     });
   });
 
