@@ -2,23 +2,12 @@ import { type ReactNode, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useRequireAdminAuth } from "@/hooks/useAdminAuth";
 import ForbiddenPage from "./ForbiddenPage";
+import { FIELD_STAFF_ROLE, isFieldStaffAllowedPath } from "@/lib/pos-access";
 
 interface ProtectedAdminRouteProps {
   children: ReactNode;
   /** 可選：需要的權限，未授權顯示 403 */
   requiredPermission?: string;
-}
-
-/**
- * 場域執行者（field_executor）= 純現場人員：登入直接進現場模式、不看後台設定。
- * 只允許停留在現場相關頁面，其餘 /admin 一律導回 /pos。
- */
-function isFieldStaffAllowed(loc: string): boolean {
-  return (
-    loc.startsWith("/pos") ||
-    loc.startsWith("/admin/troubleshoot") ||
-    loc.startsWith("/admin/scenario-qr-print")
-  );
 }
 
 export default function ProtectedAdminRoute({
@@ -28,8 +17,9 @@ export default function ProtectedAdminRoute({
   const { isLoading, isAuthenticated, hasPermission, admin } = useRequireAdminAuth();
   const [location, navigate] = useLocation();
 
-  const isFieldStaff = admin?.systemRole === "field_executor";
-  const blockedForFieldStaff = isFieldStaff && !isFieldStaffAllowed(location);
+  // 場域執行者（field_executor）= 純現場人員：只允許停留在現場相關頁面（規則見 lib/pos-access）
+  const isFieldStaff = admin?.systemRole === FIELD_STAFF_ROLE;
+  const blockedForFieldStaff = isFieldStaff && !isFieldStaffAllowedPath(location);
 
   // 場域執行者進到非現場頁面 → 導回現場模式
   useEffect(() => {

@@ -4,7 +4,7 @@
 // 給現場工作人員看「今天狀況」
 //   - 大字數字：今日預約 N 組 / 已到 M 組 / 已收款 NT$XXX
 //   - 下個 30 分鐘要到的預約
-//   - 大按鈕：掃描 QR / 收款 / 券核銷
+//   - 大按鈕：掃描 QR / 收款 / 券核銷（後台頁按鈕依權限顯示）
 
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "wouter";
@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScanLine, DollarSign, Ticket, ListChecks, Clock, CheckCircle2, AlertCircle, TrendingUp, LifeBuoy, Package, BarChart3, Trash2, Wallet } from "lucide-react";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { canOpenPage, POS_ADMIN_PAGE_PERMISSIONS } from "@/lib/pos-access";
 
 interface PosDashboard {
   date: string;
@@ -37,8 +39,35 @@ interface PosDashboard {
   }>;
 }
 
+interface PosAction {
+  href: string;
+  icon: typeof ScanLine;
+  label: string;
+  color: string;
+  /** 該頁主要動作需要的權限（沒有 = 現場人員都能用） */
+  permission?: string;
+}
+
+// 主要動作大按鈕；後台頁的權限對照與路由守門同源（lib/pos-access）
+const POS_ACTIONS: PosAction[] = [
+  { href: "/pos/scan", icon: ScanLine, label: "掃描 QR", color: "bg-primary" },
+  { href: "/pos/checkout", icon: DollarSign, label: "收支（收款/支出）", color: "bg-amber-600" },
+  { href: "/pos/cash", icon: Wallet, label: "櫃檯現金", color: "bg-orange-600" },
+  { href: "/pos/bookings/today", icon: ListChecks, label: "今日預約", color: "bg-blue-600" },
+  { href: "/pos/voucher", icon: Ticket, label: "券核銷", color: "bg-purple-600" },
+  { href: "/pos/summary", icon: TrendingUp, label: "今日小結", color: "bg-emerald-600" },
+  { href: "/admin/troubleshoot", icon: LifeBuoy, label: "排除障礙", color: "bg-red-600", permission: POS_ADMIN_PAGE_PERMISSIONS["/admin/troubleshoot"] },
+  { href: "/admin/pos-products", icon: Package, label: "品項設定", color: "bg-slate-600", permission: POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-products"] },
+  { href: "/admin/pos-reports", icon: BarChart3, label: "銷售報表", color: "bg-indigo-600", permission: POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-reports"] },
+  { href: "/admin/pos-trash", icon: Trash2, label: "垃圾桶", color: "bg-zinc-600", permission: POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-trash"] },
+];
+
 export default function PosDashboard() {
   const [, navigate] = useLocation();
+  // 看不到就打不到：只顯示這個帳號點得進去的按鈕（現場人員點後台頁會被導回 /pos）
+  const { admin, hasPermission } = useAdminAuth({ redirectTo: "" });
+  const access = { systemRole: admin?.systemRole, hasPermission };
+  const actions = POS_ACTIONS.filter((a) => canOpenPage(a.href, access, a.permission));
   const { data, isLoading, error } = useQuery<PosDashboard>({
     queryKey: ["pos-dashboard"],
     queryFn: async () => await fetchWithAdminAuth("/api/pos/dashboard"),
@@ -98,16 +127,9 @@ export default function PosDashboard() {
 
       {/* 主要動作大按鈕 */}
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <BigActionButton href="/pos/scan" icon={ScanLine} label="掃描 QR" color="bg-primary" />
-        <BigActionButton href="/pos/checkout" icon={DollarSign} label="收支（收款/支出）" color="bg-amber-600" />
-        <BigActionButton href="/pos/cash" icon={Wallet} label="櫃檯現金" color="bg-orange-600" />
-        <BigActionButton href="/pos/bookings/today" icon={ListChecks} label="今日預約" color="bg-blue-600" />
-        <BigActionButton href="/pos/voucher" icon={Ticket} label="券核銷" color="bg-purple-600" />
-        <BigActionButton href="/pos/summary" icon={TrendingUp} label="今日小結" color="bg-emerald-600" />
-        <BigActionButton href="/admin/troubleshoot" icon={LifeBuoy} label="排除障礙" color="bg-red-600" />
-        <BigActionButton href="/admin/pos-products" icon={Package} label="品項設定" color="bg-slate-600" />
-        <BigActionButton href="/admin/pos-reports" icon={BarChart3} label="銷售報表" color="bg-indigo-600" />
-        <BigActionButton href="/admin/pos-trash" icon={Trash2} label="垃圾桶" color="bg-zinc-600" />
+        {actions.map((a) => (
+          <BigActionButton key={a.href} href={a.href} icon={a.icon} label={a.label} color={a.color} />
+        ))}
       </div>
 
       {/* 下個時段 */}
