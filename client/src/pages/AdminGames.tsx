@@ -66,7 +66,8 @@ export default function AdminGames() {
         title: "✅ 示範遊戲已建立",
         description: `${data.game.title} · ${data.pagesCreated} 頁 · ${data.playerUrl}`,
       });
-      navigate(`/admin/games/${data.game.id}/edit`);
+      // 編輯器路由是 /admin/games/:gameId（App.tsx）；原本導到不存在的 /edit 會 404
+      navigate(`/admin/games/${data.game.id}`);
     },
     onError: (err) => {
       toast({
