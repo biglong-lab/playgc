@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import StepSelectTemplate from "./StepSelectTemplate";
 import StepGameInfo from "./StepGameInfo";
 import StepComplete from "./StepComplete";
+import { describePublishError, publishGame, type PublishErrorInfo } from "./publish-game";
 import type { GameTemplate } from "./templates";
 import type { Game } from "@shared/schema";
 
@@ -43,6 +44,7 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
   const [selectedTemplate, setSelectedTemplate] = useState<GameTemplate | null>(null);
   const [gameName, setGameName] = useState("");
   const [createdGame, setCreatedGame] = useState<Game | null>(null);
+  const [publishError, setPublishError] = useState<PublishErrorInfo | null>(null);
 
   // 建立遊戲 mutation
   const createMutation = useMutation({
@@ -82,6 +84,21 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
     },
   });
 
+  // 發布遊戲 mutation（完成步驟「發布遊戲」）— 後端把關不通過時顯示原因清單
+  const publishMutation = useMutation({
+    mutationFn: (gameId: string) => publishGame(gameId),
+    onSuccess: (game) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/games"] });
+      toast({ title: "遊戲已發布", description: `「${game.title}」玩家現在可以開始玩了` });
+      handleClose();
+    },
+    onError: (error: unknown) => {
+      const info = describePublishError(error);
+      setPublishError(info);
+      toast({ title: "發布失敗", description: info.message, variant: "destructive" });
+    },
+  });
+
   // 重置精靈狀態
   const resetWizard = () => {
     setStep(initialStep);
@@ -89,6 +106,7 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
     setSelectedTemplate(null);
     setGameName("");
     setCreatedGame(null);
+    setPublishError(null);
   };
 
   // 🆕 選擇 game mode（個人 / 多人）→ 推進到 select_template
@@ -146,6 +164,13 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
       handleClose();
       navigate(`/admin/games/${createdGame.id}`);
     }
+  };
+
+  // 發布遊戲：原本這顆按鈕只關視窗（沒發布）→ 改為真的呼叫發布 API
+  const handlePublish = () => {
+    if (!createdGame || publishMutation.isPending) return;
+    setPublishError(null);
+    publishMutation.mutate(createdGame.id);
   };
 
   // 測試遊戲：開管理員預覽（另開分頁）
@@ -310,6 +335,9 @@ export default function GameWizard({ open, onOpenChange, editorMode = "game" }: 
               onGoToList={handleGoToList}
               onGoToEditor={handleGoToEditor}
               onTestGame={handleTestGame}
+              onPublish={handlePublish}
+              isPublishing={publishMutation.isPending}
+              publishError={publishError}
             />
           )}
         </div>

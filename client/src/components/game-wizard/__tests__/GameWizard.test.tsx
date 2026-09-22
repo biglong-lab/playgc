@@ -69,3 +69,80 @@ describe("GameWizard 完成步驟", () => {
     expect(openedUrls.some((url) => url.startsWith("/play/"))).toBe(false);
   });
 });
+
+describe("GameWizard 發布遊戲", () => {
+  let fetchSpy: ReturnType<typeof vi.spyOn>;
+  let publishResponse: () => Promise<Response>;
+
+  beforeEach(() => {
+    mockNavigate.mockReset();
+    mockToast.mockReset();
+    publishResponse = async () => jsonResponse({ ...CREATED_GAME, status: "published" });
+    fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+      const url = String(input);
+      if (url === "/api/admin/games") return jsonResponse(CREATED_GAME);
+      if (url === "/api/admin/games/g-new/publish") return publishResponse();
+      throw new Error(`未預期的請求：${url}`);
+    });
+  });
+
+  afterEach(() => {
+    fetchSpy.mockRestore();
+  });
+
+  function publishCalls() {
+    return fetchSpy.mock.calls.filter(([input]) => String(input) === "/api/admin/games/g-new/publish");
+  }
+
+  it("按「發布遊戲」→ 真的呼叫發布 API（status=published）", async () => {
+    await createGameThroughWizard();
+    await userEvent.click(screen.getByTestId("button-publish-game"));
+
+    await vi.waitFor(() => expect(publishCalls()).toHaveLength(1));
+    const [, init] = publishCalls()[0];
+    expect(init?.method).toBe("POST");
+    expect(JSON.parse(String(init?.body))).toEqual({ status: "published" });
+  });
+
+  it("發布成功 → 提示已發布並關閉精靈回到遊戲列表", async () => {
+    const { onOpenChange } = await createGameThroughWizard();
+    await userEvent.click(screen.getByTestId("button-publish-game"));
+
+    await vi.waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(mockToast).toHaveBeenCalledWith(expect.objectContaining({ title: "遊戲已發布" }));
+  });
+
+  it("發布失敗（後端把關 400 + 錯誤清單）→ 顯示原因與每一項問題、精靈不關", async () => {
+    publishResponse = async () =>
+      jsonResponse(
+        {
+          message: "遊戲尚未符合發布條件",
+          errors: ["至少要有 1 個頁面", { message: "第 2 頁缺少題目" }],
+        },
+        400,
+      );
+    const { onOpenChange } = await createGameThroughWizard();
+    await userEvent.click(screen.getByTestId("button-publish-game"));
+
+    const alert = await screen.findByTestId("publish-error");
+    expect(alert).toHaveTextContent("遊戲尚未符合發布條件");
+    expect(alert).toHaveTextContent("至少要有 1 個頁面");
+    expect(alert).toHaveTextContent("第 2 頁缺少題目");
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(mockToast).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "發布失敗", variant: "destructive" }),
+    );
+  });
+
+  it("發布中 → 按鈕顯示進度並停用（防重複送出）", async () => {
+    let resolvePublish: (res: Response) => void = () => undefined;
+    publishResponse = () => new Promise<Response>((resolve) => { resolvePublish = resolve; });
+    await createGameThroughWizard();
+    await userEvent.click(screen.getByTestId("button-publish-game"));
+
+    const button = await screen.findByTestId("button-publish-game");
+    await vi.waitFor(() => expect(button).toBeDisabled());
+    expect(button).toHaveTextContent("發布中");
+    resolvePublish(jsonResponse({ ...CREATED_GAME, status: "published" }));
+  });
+});

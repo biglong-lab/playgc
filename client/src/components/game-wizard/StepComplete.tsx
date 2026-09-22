@@ -1,13 +1,43 @@
 // 步驟 3：完成
-import { CheckCircle, Play, Pencil, Rocket } from "lucide-react";
+import { CheckCircle, Play, Pencil, Rocket, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Game } from "@shared/schema";
+import type { PublishErrorInfo } from "./publish-game";
 
 interface StepCompleteProps {
   game: Game;
   onGoToList: () => void;
   onGoToEditor: () => void;
   onTestGame: () => void;
+  /** 發布遊戲（呼叫發布 API；成功由精靈關閉視窗） */
+  onPublish: () => void;
+  isPublishing: boolean;
+  /** 發布失敗原因（後端把關不通過時含問題清單） */
+  publishError: PublishErrorInfo | null;
+}
+
+/** 發布失敗提示：主訊息 + 逐條列出不合格項目 */
+function PublishErrorAlert({ error }: { error: PublishErrorInfo }) {
+  return (
+    <div
+      role="alert"
+      className="flex gap-2 p-3 rounded-lg border border-destructive/40 bg-destructive/10 text-left text-sm"
+      data-testid="publish-error"
+    >
+      <AlertCircle className="w-4 h-4 mt-0.5 shrink-0 text-destructive" />
+      <div className="space-y-1">
+        <p className="font-medium text-destructive">{error.message}</p>
+        {error.details.length > 0 && (
+          <ul className="list-disc pl-4 text-muted-foreground space-y-0.5">
+            {error.details.map((detail, index) => (
+              <li key={`${index}-${detail}`}>{detail}</li>
+            ))}
+          </ul>
+        )}
+        <p className="text-xs text-muted-foreground">可先「編輯內容」補齊後，再到遊戲列表發布。</p>
+      </div>
+    </div>
+  );
 }
 
 export default function StepComplete({
@@ -15,6 +45,9 @@ export default function StepComplete({
   onGoToList,
   onGoToEditor,
   onTestGame,
+  onPublish,
+  isPublishing,
+  publishError,
 }: StepCompleteProps) {
   return (
     <div className="space-y-6 text-center">
@@ -73,18 +106,25 @@ export default function StepComplete({
 
         <button
           type="button"
-          onClick={onGoToList}
-          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
-          data-testid="button-go-to-list"
+          onClick={onPublish}
+          disabled={isPublishing}
+          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left disabled:opacity-60 disabled:cursor-not-allowed"
+          data-testid="button-publish-game"
         >
           <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <Rocket className="w-5 h-5 text-green-600 dark:text-green-400" />
+            {isPublishing ? (
+              <Loader2 className="w-5 h-5 text-green-600 dark:text-green-400 animate-spin" />
+            ) : (
+              <Rocket className="w-5 h-5 text-green-600 dark:text-green-400" />
+            )}
           </div>
           <div>
-            <div className="font-medium text-foreground">發布遊戲</div>
+            <div className="font-medium text-foreground">{isPublishing ? "發布中…" : "發布遊戲"}</div>
             <div className="text-sm text-muted-foreground">讓玩家可以開始玩</div>
           </div>
         </button>
+
+        {publishError && <PublishErrorAlert error={publishError} />}
       </div>
 
       {/* 底部按鈕 */}
