@@ -50,6 +50,8 @@ export interface AuthenticatedRequest extends Request {
   user?: {
     claims: {
       sub: string;
+      /** Firebase 登入方式：anonymous / google.com / password / custom（LINE）…（2026-09-22 訪客認領用） */
+      signInProvider?: string;
     };
     dbUser: User;
   };

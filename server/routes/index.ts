@@ -29,6 +29,7 @@ import { registerPlayerGameRoutes } from "./player-games";
 import { registerDeviceRoutes } from "./devices";
 import { registerLeaderboardRoutes } from "./leaderboard";
 import { registerMediaRoutes } from "./media";
+import { registerGuestClaimRoutes } from "./guest-claim";
 import { registerLocationRoutes } from "./locations";
 import { registerTeamRoutes } from "./teams";
 import { registerPlayerChapterRoutes } from "./player-chapters";
@@ -168,6 +169,7 @@ export async function registerRoutes(
   registerDeviceRoutes(app, ctx);
   registerLeaderboardRoutes(app);
   registerMediaRoutes(app);
+  registerGuestClaimRoutes(app); // 🆕 2026-09-22 訪客紀錄認領
   registerLocationRoutes(app, ctx);
   registerTeamRoutes(app, ctx);
   // 🆕 2026-05-05: 多人搶答 server-side 持久化（state + answers）

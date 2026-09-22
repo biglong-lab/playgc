@@ -112,6 +112,18 @@ export const sessionCreateIpLimiter = rateLimit({
 });
 
 /**
+ * 🆕 2026-09-22 訪客紀錄認領（簽發憑證 / 認領）per-user 上限
+ */
+export const guestClaimLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => `claim:${getUserKey(req)}`,
+  message: { message: "操作過於頻繁，請稍後再試" },
+});
+
+/**
  * 公開寫入端點（無 auth、寫 DB）
  * 每 IP 每小時 10 次 — 防 spam（如 /api/apply 場域申請、防 abuse 灌假申請）
  */

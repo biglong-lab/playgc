@@ -128,6 +128,8 @@ export async function isAuthenticated(
     req.user = {
       claims: {
         sub: userId,
+        // 🆕 2026-09-22：訪客認領需分辨匿名 vs 正式帳號（LINE custom token 也可能沒 email，不能只看假信箱）
+        signInProvider: decodedToken.firebase?.sign_in_provider,
       },
       dbUser: user,
     };
