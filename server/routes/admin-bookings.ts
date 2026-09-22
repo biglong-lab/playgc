@@ -5,7 +5,7 @@
 //   PUT    /api/admin/bookings/:fieldId/config         — 更新場域預約設定（schedule_template、付費、取消政策）
 //   POST   /api/admin/bookings/:fieldId/init           — 初始化場域預約（首次啟用、可帶 JIACUN_DEFAULT 等預設）
 //   GET    /api/admin/bookings/:fieldId/list           — 列預約（含 filter）
-//   POST   /api/admin/bookings/:bookingCode/cancel     — admin 強制取消
+//   POST   /api/admin/bookings/:bookingCode/cancel     — admin 強制取消（原因必填 ≥5 字）
 //   GET    /api/admin/bookings/:fieldId/blackouts      — 列黑名單時段
 //   POST   /api/admin/bookings/:fieldId/blackouts      — 新增黑名單時段
 //   DELETE /api/admin/bookings/:fieldId/blackouts/:id  — 刪黑名單時段
@@ -29,6 +29,7 @@ import {
 import { eq, and } from "drizzle-orm";
 import { requireAdminAuth, requirePermission, logAuditAction } from "../adminAuth";
 import { validateAndStampClosures, ClosureValidationError } from "../booking/closure-service";
+import { checkCancelReason } from "@shared/lib/booking-cancel-reason";
 import {
   cancelBooking,
   listBookings,
@@ -427,17 +428,21 @@ export function registerAdminBookingRoutes(app: Express) {
     },
   );
 
-  // POST cancel（admin 強制）
+  // POST cancel（admin 強制）— 原因必填 ≥5 字（玩家會在 LINE 看到；規則與前端共用）
   app.post(
     "/api/admin/bookings/:bookingCode/cancel",
     requireAdminAuth,
     requirePermission("game:edit"),
     async (req, res) => {
       try {
+        const checked = checkCancelReason(req.body?.reason);
+        if (!checked.ok) {
+          return res.status(400).json({ error: "reason_required", message: checked.message });
+        }
         const result = await cancelBooking({
           bookingCode: req.params.bookingCode,
           cancelBy: { type: "admin" },
-          reason: req.body?.reason,
+          reason: checked.reason,
         });
         if (req.admin) {
           logAuditAction({
@@ -446,7 +451,7 @@ export function registerAdminBookingRoutes(app: Express) {
             targetType: "booking",
             targetId: req.params.bookingCode,
             fieldId: result?.fieldId,
-            metadata: { reason: req.body?.reason ?? null },
+            metadata: { reason: checked.reason },
             ipAddress: req.ip,
             userAgent: req.headers["user-agent"],
           });

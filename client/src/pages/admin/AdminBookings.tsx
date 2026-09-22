@@ -45,6 +45,7 @@ import {
   Download,
 } from "lucide-react";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
+import CancelBookingDialog from "./booking/CancelBookingDialog";
 
 // 🆕 2026-05-17：fallback 改成 "JIACHUN"（與 fields.code + booking_configs.field_id 一致）
 // 真正生效的 fieldId 從 useCurrentField()?.code 拿、見 AdminBookings 主元件
@@ -195,6 +196,8 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
     },
   });
 
+  // 取消預約：對話框填原因（≥5 字）+ 確認，不用原生 prompt
+  const [cancelTarget, setCancelTarget] = useState<BookingRow | null>(null);
   const cancelMutation = useMutation({
     mutationFn: async ({ code, reason }: { code: string; reason: string }) => {
       return await fetchWithAdminAuth(`/api/admin/bookings/${code}/cancel`, {
@@ -204,6 +207,7 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
     },
     onSuccess: () => {
       toast({ title: "已取消、玩家已收到 LINE 通知" });
+      setCancelTarget(null);
       queryClient.invalidateQueries({ queryKey });
     },
     onError: (err) => {
@@ -634,12 +638,7 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
                               size="sm"
                               variant="ghost"
                               title="取消預約（推 LINE 通知）"
-                              onClick={() => {
-                                const reason = window.prompt(`取消原因（玩家會看到）`);
-                                if (reason !== null) {
-                                  cancelMutation.mutate({ code: b.bookingCode, reason });
-                                }
-                              }}
+                              onClick={() => setCancelTarget(b)}
                               data-testid={`button-cancel-${b.bookingCode}`}
                             >
                               <Trash2 className="w-3 h-3 text-destructive" />
@@ -657,6 +656,13 @@ function BookingListPanel({ fieldId }: { fieldId: string }) {
         <p className="text-xs text-muted-foreground mt-2">
           總計 {data?.length ?? 0} 筆
         </p>
+        <CancelBookingDialog
+          open={!!cancelTarget}
+          booking={cancelTarget}
+          isPending={cancelMutation.isPending}
+          onOpenChange={(o) => !o && setCancelTarget(null)}
+          onConfirm={(reason) => cancelTarget && cancelMutation.mutate({ code: cancelTarget.bookingCode, reason })}
+        />
       </CardContent>
     </Card>
   );
