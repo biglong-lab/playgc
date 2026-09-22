@@ -9,7 +9,7 @@ import {
 import { ObjectPermission } from "../objectAcl";
 import { insertGameSessionSchema } from "@shared/schema";
 import { z } from "zod";
-import { hotPathLimiter, chatLimiter, sessionCreateLimiter } from "../utils/rate-limiters";
+import { hotPathLimiter, chatLimiter, sessionCreateLimiter, sessionCreateIpLimiter } from "../utils/rate-limiters";
 import { notifyFieldGamePlay } from "../lib/internal-notifier";
 
 /**
@@ -123,6 +123,7 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
     "/api/sessions",
     isAuthenticated,
     sessionCreateLimiter, // 🔐 2026-07-09 S3：per-user 防刷（雙保險：建新自動放棄舊 playing）
+    sessionCreateIpLimiter, // 🔐 2026-09-22：per-IP 上限（訪客換 uid 繞不過）
     async (req: AuthenticatedRequest, res) => {
       try {
         const data = insertGameSessionSchema.parse(req.body);

@@ -1,6 +1,7 @@
 // 隊伍大廳 View 元件
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import GuestNameChip from "@/components/shared/GuestNameChip";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -237,6 +238,10 @@ export function JoinOrCreateView({
         onBack={onBack}
       />
       <main className="container mx-auto max-w-md py-8 space-y-6">
+        {/* 🆕 2026-09-22：訪客就地改暱稱（隊友會看到這個名字） */}
+        <div className="text-center">
+          <GuestNameChip />
+        </div>
         {/* 🆕 2026-07-08 CHITO #ec3f612b：退出後可重新加入原隊伍 */}
         {rejoinableTeam && (
           <Card className="border-primary/50" data-testid="rejoinable-team-card">

@@ -135,7 +135,8 @@ export default function Landing() {
         <LanguageSwitcher />
       </div>
 
-      <EmbeddedBrowserWarning />
+      {/* 🆕 2026-09-22：免登入即可玩 → 「無法使用 Google 登入」警告只在打開登入框時顯示 */}
+      {showLoginDialog && <EmbeddedBrowserWarning />}
 
       {/* 🆕 場域公告 banner — 玩家可關當次 session (info)/不可關 (urgent) */}
       <AnnouncementBanner
@@ -247,7 +248,7 @@ export default function Landing() {
           <p className="text-muted-foreground mb-8 font-chinese max-w-xl mx-auto">
             {isSignedIn
               ? "前往遊戲大廳挑選任務，開始你的冒險"
-              : "登入開始你的戰術體驗之旅"}
+              : "不用註冊，馬上開始你的冒險"}
           </p>
           {/* 🆕 未登入顯示「開始冒險」，已登入顯示「前往大廳」 — 不要讓已登入玩家看到空 CTA */}
           {isSignedIn ? (
@@ -262,15 +263,16 @@ export default function Landing() {
               </Button>
             </Link>
           ) : (
-            <Button
-              size="lg"
-              className="gap-2"
-              data-testid="button-start-adventure"
-              onClick={() => setShowLoginDialog(true)}
-            >
-              <Zap className="w-5 h-5" />
-              開始冒險
-            </Button>
+            <Link href={link("/home")}>
+              <Button
+                size="lg"
+                className="gap-2"
+                data-testid="button-start-adventure"
+              >
+                <Zap className="w-5 h-5" />
+                開始冒險
+              </Button>
+            </Link>
           )}
         </div>
       </section>
@@ -341,26 +343,27 @@ function HeroButtons({
         </Button>
       ) : (
         <>
-          {isSignedIn ? (
-            <Link href={link("/home")}>
-              <Button
-                size="lg"
-                className="min-w-[200px] gap-2"
-                data-testid="button-enter-game"
-              >
-                <Gamepad2 className="w-5 h-5" />
-                {t("nav.games")}
-              </Button>
-            </Link>
-          ) : (
+          {/* 🆕 2026-09-22 免登入：一律直接進大廳（未登入自動建立訪客身分），登入降為次要 */}
+          <Link href={link("/home")}>
             <Button
               size="lg"
+              className="min-w-[200px] gap-2"
+              data-testid="button-enter-game"
+            >
+              <Gamepad2 className="w-5 h-5" />
+              {t("nav.games")}
+            </Button>
+          </Link>
+          {!isSignedIn && (
+            <Button
+              size="lg"
+              variant="ghost"
               className="min-w-[200px] gap-2"
               data-testid="button-login"
               onClick={onLoginClick}
             >
               <Zap className="w-5 h-5" />
-              {t("nav.login")}
+              已有帳號？{t("nav.login")}
             </Button>
           )}
         </>

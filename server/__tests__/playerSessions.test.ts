@@ -67,6 +67,7 @@ vi.mock("../utils/rate-limiters", () => ({
   chatLimiter: vi.fn((_req: any, _res: any, next: any) => next()),
   // 🔐 2026-07-09 S3
   sessionCreateLimiter: vi.fn((_req: any, _res: any, next: any) => next()),
+  sessionCreateIpLimiter: vi.fn((_req: any, _res: any, next: any) => next()),
 }));
 
 // Mock 動態 import 的 services
