@@ -14,6 +14,7 @@ export * from "./mqtt-broker-config";
 export * from "./locations";
 export * from "./leaderboard";
 export * from "./chapters";
+export * from "./match-config";
 export * from "./relations";
 export * from "./extended-types";
 export * from "./game-templates";

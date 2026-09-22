@@ -110,7 +110,7 @@ import { registerAdminRewardsRoutes } from "./admin-rewards";
 import { registerAdminEngagementRoutes } from "./admin-engagement";
 import { registerAdminAbExperimentsRoutes } from "./admin-ab-experiments";
 import { registerTeamRaceRoutes, ensureTeamRaceSchema } from "./team-race";
-import { ensureGameScoringSchema } from "../services/game-scoring";
+import { ensureGameColumns } from "../services/game-columns";
 import { registerTeamPhotoGatherRoutes, ensureTeamPhotoGatherSchema } from "./team-photo-gather";
 import { registerTeamShootingRoutes, ensureTeamShootingSchema } from "./team-shooting";
 import { registerTeamLockCoopRoutes, ensureTeamLockCoopSchema } from "./team-lock-coop";
@@ -120,8 +120,8 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // 🆕 2026-09-22：games.scoring_enabled 冪等補欄位（計分開關）— 必須早於任何 games 查詢
-  await ensureGameScoringSchema();
+  // 🆕 2026-09-22：games 冪等補欄位（scoring_enabled / match_config）— 必須早於任何 games 查詢
+  await ensureGameColumns();
 
   // Webhook 路由必須在 adminAuthMiddleware 之前（外部服務呼叫，用自己的簽名驗證）
   registerRecurWebhookRoutes(app);

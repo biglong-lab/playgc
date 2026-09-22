@@ -17,6 +17,7 @@ import { z } from "zod";
 import { users } from "./users";
 import { fields } from "./fields";
 import { gameChapters } from "./chapters";
+import { gameMatchConfigSchema, type GameMatchConfig } from "./match-config";
 
 // Game mode enum
 export const gameModeEnum = ["individual", "team", "competitive", "relay"] as const;
@@ -94,6 +95,9 @@ export const games = pgTable("games", {
   //   false → 玩家端不顯示分數 / 不加分、不寫排行榜；完成遊戲仍記錄成就與隊伍戰績
   //   欄位由 server 啟動時 ensureGameScoringSchema() 冪等補上（ADD COLUMN IF NOT EXISTS）
   scoringEnabled: boolean("scoring_enabled").default(true),
+  // 🆕 2026-09-23 競賽 / 接力設定（時間限制、倒數、人數、接力分段）；NULL = 系統預設
+  //   欄位由 server 啟動時 ensureGameColumns() 冪等補上
+  matchConfig: jsonb("match_config").$type<GameMatchConfig>(),
   // 🆕 2026-07-05：訪客 demo 沙盒 — 免登入體驗建立的臨時遊戲
   //   isDemo=true 者不計入正式統計/配額；demoExpiresAt 到期由 cron 自動清理
   isDemo: boolean("is_demo").notNull().default(false),
@@ -1010,7 +1014,10 @@ export type PageConfig =
   | FlowRouterConfig;
 
 // Game schemas
-export const insertGameSchema = createInsertSchema(games).omit({
+export const insertGameSchema = createInsertSchema(games, {
+  // 🆕 2026-09-23：jsonb 欄位給明確驗證（否則推斷成 unknown）
+  matchConfig: gameMatchConfigSchema.nullable().optional(),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
