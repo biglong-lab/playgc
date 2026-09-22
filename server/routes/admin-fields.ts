@@ -9,6 +9,7 @@ import { fields, parseFieldSettings, games, roles, rolePermissions, permissions,
 import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
 import { canCreateField } from "@shared/lib/field-permissions";
+import { checkDisconnectGraceSettings } from "@shared/lib/disconnect-grace";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
 import { eq, desc, inArray } from "drizzle-orm";
@@ -521,6 +522,11 @@ export function registerAdminFieldRoutes(app: Express) {
         }
         updatedSettings.highlights = parsed.data;
       }
+
+      // ⏱️ 多人遊戲斷線寬限期（秒）— websocket 斷線時讀取（30 秒快取），不必重啟
+      const grace = checkDisconnectGraceSettings(body);
+      if (!grace.ok) return res.status(400).json({ message: grace.message });
+      Object.assign(updatedSettings, grace.values);
 
       // 數值
       if (typeof body.maxGames === "number") updatedSettings.maxGames = Math.max(0, Math.round(body.maxGames));

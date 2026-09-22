@@ -14,25 +14,13 @@ import type { WebSocketClient, RouteContext, WsBroadcastMessage } from "./types"
 import { logWsEvent } from "../lib/ws-event-logger";
 // 🗳️ 2026-07-08 CHITO #8687281e：成員離開後重算投票完成（避免投票永久卡住）
 import { reevaluateTeamVotes } from "../lib/team-vote-eval";
+// ⏱️ 2026-09-23：斷線寬限期改為每次斷線時讀場域設定（30 秒快取），不必重啟
+import { getTeamGraceConfig, type GraceConfig } from "../lib/disconnect-grace-config";
 
-// 🆕 Phase 2c：寬限期常數（單位 ms）
-//   30s = 短斷線寬限期（換頁/網路抖）
-//   120s = 寬限期過後到自動 leave 的 buffer（給隊長決定的時間）
-//
-// 🔧 Phase 4.4：支援環境變數覆寫（admin UI 完成前的過渡方案）
-//   - DISCONNECT_GRACE_MS：寬限期毫秒（10000-300000 合理範圍）
-//   - AUTO_LEAVE_AFTER_GRACE_MS：寬限期過後到 auto leave 的毫秒
-//   未設或無效值 → 用預設
-function parseEnvMs(v: string | undefined, fallback: number): number {
-  const n = Number(v);
-  if (!Number.isFinite(n) || n < 1000 || n > 600_000) return fallback;
-  return n;
-}
-const GRACE_PERIOD_MS = parseEnvMs(process.env.DISCONNECT_GRACE_MS, 30_000);
-const AUTO_LEAVE_AFTER_GRACE_MS = parseEnvMs(
-  process.env.AUTO_LEAVE_AFTER_GRACE_MS,
-  120_000,
-);
+// 🆕 Phase 2c：寬限期（預設 30s 短斷線寬限 + 120s 寬限後到自動 leave 的 buffer）
+//   2026-09-23 起每次斷線時讀場域設定（fields.settings.disconnectGracePeriodSec / autoLeaveAfterGraceSec），
+//   30 秒快取；場域沒設 → 環境變數 DISCONNECT_GRACE_MS / AUTO_LEAVE_AFTER_GRACE_MS → 內建預設
+//   見 server/lib/disconnect-grace-config.ts
 
 // 🔭 匿名/已認證連線計數（觀察階段、in-memory、重啟歸零）
 const wsConnStats = { authed: 0, anonymous: 0 };
@@ -225,7 +213,8 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     );
   }
 
-  function startGraceTimer(teamId: string, userId: string, userName: string) {
+  function startGraceTimer(teamId: string, userId: string, userName: string, grace: GraceConfig) {
+    const { graceMs, autoLeaveMs } = grace;
     cancelDisconnectTimer(teamId, userId); // 先 clear 殘留
     // 🔭 Phase 0.2：log grace_start
     logWsEvent({
@@ -235,7 +224,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
       sessionId: teamSid(teamId),
       userId,
       userName,
-      reason: `grace=${GRACE_PERIOD_MS}ms`,
+      reason: `grace=${graceMs}ms`,
     });
     const key = timerKey(teamId, userId);
     const timer = setTimeout(() => {
@@ -251,14 +240,14 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         sessionId: teamSid(teamId),
         userId,
         userName,
-        reason: `auto_leave_in=${AUTO_LEAVE_AFTER_GRACE_MS}ms`,
+        reason: `auto_leave_in=${autoLeaveMs}ms`,
       });
 
       broadcastToTeam(teamId, {
         type: "team_member_grace_expired",
         userId,
         userName,
-        autoLeaveInMs: AUTO_LEAVE_AFTER_GRACE_MS,
+        autoLeaveInMs: autoLeaveMs,
         timestamp: new Date().toISOString(),
       });
 
@@ -302,9 +291,9 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         } catch {
           // DB 寫入失敗不阻塞，下次再試（玩家手動回來也能處理）
         }
-      }, AUTO_LEAVE_AFTER_GRACE_MS);
+      }, autoLeaveMs);
       autoLeaveTimers.set(key, autoLeaveTimer);
-    }, GRACE_PERIOD_MS);
+    }, graceMs);
     disconnectTimers.set(key, timer);
   }
 
@@ -1010,18 +999,24 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           const key = timerKey(teamId, userId);
           // 清掉舊的（罕見：connection close 二次觸發）
           cancelPendingDisconnectBroadcast(teamId, userId);
+          // 先讀場域寬限期設定（30 秒快取、失敗回預設不丟錯），5s 到時直接用
+          const gracePromise = getTeamGraceConfig(teamId);
           const t = setTimeout(() => {
-            pendingDisconnectBroadcast.delete(key);
-            // 5s 到再確認一次：仍未重連才廣播
-            if (isUserStillConnected(teamId, userId)) return;
-            broadcastToTeam(teamId, {
-              type: "team_member_disconnected",
-              userId,
-              userName,
-              graceInMs: GRACE_PERIOD_MS,
-              timestamp: new Date().toISOString(),
+            void gracePromise.then((grace) => {
+              // 等設定期間已重連 / 被取消 → 不廣播（與重連分支的 hadPending 判斷一致）
+              if (pendingDisconnectBroadcast.get(key) !== t) return;
+              pendingDisconnectBroadcast.delete(key);
+              // 5s 到再確認一次：仍未重連才廣播
+              if (isUserStillConnected(teamId, userId)) return;
+              broadcastToTeam(teamId, {
+                type: "team_member_disconnected",
+                userId,
+                userName,
+                graceInMs: grace.graceMs,
+                timestamp: new Date().toISOString(),
+              });
+              startGraceTimer(teamId, userId, userName, grace);
             });
-            startGraceTimer(teamId, userId, userName);
           }, DISCONNECT_BROADCAST_DELAY_MS);
           pendingDisconnectBroadcast.set(key, t);
         }

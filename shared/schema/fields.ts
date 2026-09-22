@@ -148,7 +148,7 @@ export interface FieldSettings {
 
   // 🆕 Phase 4.4 多人遊戲斷線寬限期（單位：秒）
   //   未設值 → server 用環境變數 / 預設（30s 寬限 + 120s auto leave）
-  //   admin 後台 UI 預備中（目前需 ops 改 server 環境變數 DISCONNECT_GRACE_MS / AUTO_LEAVE_AFTER_GRACE_MS）
+  //   2026-09-23：websocket 斷線時讀取（30 秒快取，不必重啟）；範圍見 shared/lib/disconnect-grace
   disconnectGracePeriodSec?: number;     // 預設 30，玩家斷線後寬限期（秒）
   autoLeaveAfterGraceSec?: number;       // 預設 120，寬限期過後到自動 leave 的秒數
   /** 暫停策略：always_pause（一律暫停）/ never_pause（不暫停）/ leader_decide（隊長決定，預設）*/

@@ -21,6 +21,7 @@ import { encodePreviewTheme, PREVIEW_QUERY_KEY } from "@/providers/FieldThemePro
 import { useUnsavedWarning } from "@/hooks/useUnsavedWarning";
 import { useTabQueryParam } from "@/hooks/useTabQueryParam";
 import { formatCountdown } from "@/lib/date-utils";
+import DisconnectGraceSection from "./field-settings/DisconnectGraceSection";
 
 interface FieldSettingsResponse {
   enableAI?: boolean;
@@ -519,8 +520,9 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
       queryClient.invalidateQueries({ queryKey: ["/api/fields"] });
       toast({ title: "已儲存功能設定" });
     },
-    onError: () => {
-      toast({ title: "儲存失敗", variant: "destructive" });
+    // 顯示後端驗證訊息（例：斷線寬限期超出範圍）
+    onError: (err) => {
+      toast({ title: "儲存失敗", description: err instanceof Error ? err.message : undefined, variant: "destructive" });
     },
   });
 
@@ -632,69 +634,15 @@ function FeaturesTab({ fieldId, settings }: { fieldId: string; settings?: FieldS
           />
         </div>
 
-        {/* 🆕 多人遊戲斷線寬限期設定（Phase 4.4） */}
-        <div className="space-y-4">
-          <div>
-            <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-              多人遊戲行為（斷線寬限期）
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              控制玩家在多人遊戲中斷線時的處理流程。預設值適合多數場域，特殊活動再調整。
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium">寬限期（秒）</label>
-              <input
-                type="number"
-                min={5}
-                max={600}
-                value={disconnectGracePeriodSec}
-                onChange={(e) => setDisconnectGracePeriodSec(Number(e.target.value) || 30)}
-                className="mt-1 w-full px-3 py-2 rounded-lg border bg-background"
-                data-testid="input-disconnect-grace"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                玩家斷線後幾秒內不影響（預設 30 秒）
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium">超時自動離開（秒）</label>
-              <input
-                type="number"
-                min={30}
-                max={600}
-                value={autoLeaveAfterGraceSec}
-                onChange={(e) => setAutoLeaveAfterGraceSec(Number(e.target.value) || 120)}
-                className="mt-1 w-full px-3 py-2 rounded-lg border bg-background"
-                data-testid="input-auto-leave-grace"
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                寬限期過後再多久 server 自動標離開（預設 120 秒）
-              </p>
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium">暫停策略</label>
-            <select
-              value={pauseStrategy}
-              onChange={(e) =>
-                setPauseStrategy(e.target.value as typeof pauseStrategy)
-              }
-              className="mt-1 w-full px-3 py-2 rounded-lg border bg-background"
-              data-testid="select-pause-strategy"
-            >
-              <option value="leader_decide">隊長決定（預設）— 寬限期過顯示 dialog</option>
-              <option value="never_pause">不暫停 — 自動處理，不打擾玩家</option>
-              <option value="always_pause">永遠暫停 — 等斷線玩家手動回來</option>
-            </select>
-          </div>
-          <p className="text-xs text-muted-foreground italic">
-            💡 注意：此設定目前需 server 重啟才生效（admin 改後設定 server 環境變數
-            DISCONNECT_GRACE_MS / AUTO_LEAVE_AFTER_GRACE_MS 為過渡方案）。
-            完整熱載運行時讀取規劃在後續 Phase。
-          </p>
-        </div>
+        {/* 🆕 多人遊戲斷線寬限期設定（Phase 4.4；2026-09-23 起執行時讀取、不必重啟） */}
+        <DisconnectGraceSection
+          graceSec={disconnectGracePeriodSec}
+          autoLeaveSec={autoLeaveAfterGraceSec}
+          pauseStrategy={pauseStrategy}
+          onGraceSecChange={setDisconnectGracePeriodSec}
+          onAutoLeaveSecChange={setAutoLeaveAfterGraceSec}
+          onPauseStrategyChange={setPauseStrategy}
+        />
 
         {/* 配額 */}
         <div className="space-y-4">

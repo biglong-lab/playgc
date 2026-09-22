@@ -336,6 +336,33 @@ describe("admin-fields 路由", () => {
     });
   });
 
+  // ⏱️ 斷線寬限期：過去設定 API 沒存這兩個欄位 → 場域設定頁「存了無作用」
+  describe("PATCH /api/admin/fields/:id/settings — 斷線寬限期", () => {
+    const savedSettings = () => (mockDb._chain.set.mock.calls.at(-1)?.[0] as { settings: Record<string, unknown> }).settings;
+
+    it("寬限期 / 超時自動離開 會被存進場域設定", async () => {
+      mockDb.query.fields.findFirst.mockResolvedValue({ id: "field-1", settings: { enableTeamMode: true } });
+      mockDb._chain.where.mockResolvedValue(undefined);
+      const res = await request(createApp())
+        .patch("/api/admin/fields/field-1/settings")
+        .set(adminHeaders)
+        .send({ disconnectGracePeriodSec: 45, autoLeaveAfterGraceSec: 300 });
+      expect(res.status).toBe(200);
+      expect(savedSettings()).toMatchObject({ enableTeamMode: true, disconnectGracePeriodSec: 45, autoLeaveAfterGraceSec: 300 });
+    });
+
+    it("超出範圍 → 400 繁中說明、不寫入", async () => {
+      mockDb.query.fields.findFirst.mockResolvedValue({ id: "field-1", settings: {} });
+      const res = await request(createApp())
+        .patch("/api/admin/fields/field-1/settings")
+        .set(adminHeaders)
+        .send({ disconnectGracePeriodSec: 1 });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe("斷線寬限期需介於 5～600 秒");
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+  });
+
   // ══════════════════════════════════════════════════════════
   // 🆕 TRACK B1: seed-default-roles 路由邊界測試
   // 完整 seed + auto-assign 行為由 B4/B5 E2E 覆蓋（避免 mock db 鏈過度複雜）
