@@ -250,6 +250,13 @@ export function registerPlayerSessionRoutes(app: Express, ctx?: RouteContext) {
     isAuthenticated,
     async (req, res) => {
       try {
+        // 🔐 2026-09-22：只有本場參賽者能更新（原本任何登入者都能改別人的場次）
+        const callerId = (req as AuthenticatedRequest).user?.claims?.sub;
+        const { isSessionParticipant } = await import("../services/session-access");
+        if (!callerId || !(await isSessionParticipant(req.params.id, callerId))) {
+          return res.status(403).json({ error: "forbidden", message: "你不是這場遊戲的參賽者" });
+        }
+
         const data = insertGameSessionSchema.partial().parse(req.body);
 
         // 🆕 驗證 playerName（若有更新）

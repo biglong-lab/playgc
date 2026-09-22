@@ -61,9 +61,16 @@ import {
   AUTH_HEADER,
 } from "./helpers/playerChapterSetup";
 
+// 🔐 2026-09-22：章節完成需為本場參賽者（預設是；個別測試改 false 驗 403）
+const { mockIsParticipant } = vi.hoisted(() => ({ mockIsParticipant: vi.fn() }));
+vi.mock("../services/session-access", () => ({
+  isSessionParticipant: (...a: unknown[]) => mockIsParticipant(...a),
+}));
+
 describe("玩家章節路由（動作）", () => {
   beforeEach(() => {
     resetStorageMocks();
+    mockIsParticipant.mockReset().mockResolvedValue(true);
   });
 
   // ======================================================================
@@ -186,6 +193,17 @@ describe("玩家章節路由（動作）", () => {
   // PATCH /api/sessions/:id/chapter-complete（完成章節）
   // ======================================================================
   describe("PATCH /api/sessions/:id/chapter-complete", () => {
+    it("🔐 非本場參賽者回傳 403", async () => {
+      mockStorage.getSession.mockResolvedValue({ id: "sess-x", currentChapterId: "ch-1" });
+      mockIsParticipant.mockResolvedValueOnce(false);
+      const app = createTestApp();
+      const res = await request(app)
+        .patch("/api/sessions/sess-x/chapter-complete")
+        .set(AUTH_HEADER)
+        .send({ score: 10 });
+      expect(res.status).toBe(403);
+    });
+
     it("未認證回傳 401", async () => {
       const app = createTestApp();
       const res = await request(app).patch(

@@ -350,6 +350,11 @@ export function registerPlayerChapterRoutes(app: Express) {
         if (!session) {
           return res.status(404).json({ message: "場次不存在" });
         }
+        // 🔐 2026-09-22：只有本場參賽者能完成章節
+        const { isSessionParticipant } = await import("../services/session-access");
+        if (!(await isSessionParticipant(sessionId, userId))) {
+          return res.status(403).json({ error: "forbidden", message: "你不是這場遊戲的參賽者" });
+        }
 
         const chapterId = session.currentChapterId;
         if (!chapterId) {

@@ -30,6 +30,12 @@ vi.mock("../storage", () => ({
   storage: mockStorage,
 }));
 
+// 🔐 2026-09-22：場次參賽者檢查（預設是參賽者；個別測試改為 false 驗 403）
+const { mockIsParticipant } = vi.hoisted(() => ({ mockIsParticipant: vi.fn() }));
+vi.mock("../services/session-access", () => ({
+  isSessionParticipant: (...a: unknown[]) => mockIsParticipant(...a),
+}));
+
 vi.mock("../firebaseAuth", () => ({
   isAuthenticated: vi.fn((req: any, res: any, next: any) => {
     if (req.headers.authorization === "Bearer valid-token") {
@@ -95,6 +101,7 @@ describe("Player Sessions 路由", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockIsParticipant.mockResolvedValue(true);
     app = createApp();
   });
 
@@ -248,6 +255,17 @@ describe("Player Sessions 路由", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("paused");
+    });
+
+    it("🔐 非本場參賽者 → 403，不更新場次", async () => {
+      mockIsParticipant.mockResolvedValueOnce(false);
+      const res = await request(app)
+        .patch("/api/sessions/s-other")
+        .set(AUTH_HEADER)
+        .send({ status: "completed", score: 999 });
+      expect(res.status).toBe(403);
+      expect(mockStorage.updateSession).not.toHaveBeenCalled();
+      expect(mockIsParticipant).toHaveBeenCalledWith("s-other", "user-1");
     });
 
     it("完成場次應建立排行榜記錄", async () => {
