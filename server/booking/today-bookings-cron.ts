@@ -76,6 +76,7 @@ async function runOnce(dateStr: string): Promise<void> {
 
   notifyTodayBookings({
     dateLabel: dateStr,
+    fieldId: field?.id ?? null,
     bookings: rows.map((r) => ({
       timeStr: new Date(r.slotStart).toLocaleString("zh-TW", {
         timeZone: "Asia/Taipei",

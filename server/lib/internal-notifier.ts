@@ -13,6 +13,7 @@
 //   - rate limit：同一事件 30 秒內冷卻（防同類事件爆量）
 
 import { sendMessage, isTelegramEnabled, getFieldGroupChatIds } from "./telegram-bot";
+import { resolveFieldChatIds } from "./field-telegram";
 
 // ============================================================================
 // 顧客向「場域群組」通知（2026-06-13）
@@ -21,12 +22,19 @@ import { sendMessage, isTelegramEnabled, getFieldGroupChatIds } from "./telegram
 // ============================================================================
 
 /** 發送到所有場域群組 chat_id（沒設則 no-op） */
-export function sendToFieldGroup(text: string, silent = false): void {
-  const groups = getFieldGroupChatIds();
-  if (groups.length === 0) return;
-  for (const chatId of groups) {
-    fireForget(sendMessage({ chatId, text, parseMode: "Markdown", silent }));
-  }
+/**
+ * 送到場域群組
+ * 🆕 2026-09-23 P2：帶 fieldId 就送那個場域自己設定的群組；沒帶 / 沒設 → 沿用環境變數
+ *   （後浦的預約不該通報到賈村的群組）
+ */
+export function sendToFieldGroup(text: string, silent = false, fieldId?: string | null): void {
+  fireForget(
+    resolveFieldChatIds(fieldId).then((groups) => {
+      for (const chatId of groups) {
+        fireForget(sendMessage({ chatId, text, parseMode: "Markdown", silent }));
+      }
+    }),
+  );
 }
 
 const recentEvents = new Map<string, number>();
@@ -187,8 +195,8 @@ export function notifyBookingCreated(opts: {
   }
   const text = lines.join("\n");
   fireForget(sendMessage({ text, parseMode: "Markdown" }));
-  // 🆕 2026-06-13 也通報到場域群組（賈村群組等）
-  sendToFieldGroup(text);
+  // 🆕 2026-06-13 也通報到場域群組（賈村群組等）；2026-09-23 起送該場域自己的群組
+  sendToFieldGroup(text, false, opts.fieldId);
 }
 
 // ============================================================================
@@ -200,9 +208,10 @@ export function notifyFieldGamePlay(opts: {
   gameTitle: string;
   playerName?: string;
   startedAt?: Date;
+  /** 🆕 2026-09-23：送這個場域自己的群組（沒帶就沿用環境變數設定的群組） */
+  fieldId?: string | null;
 }): void {
-  const groups = getFieldGroupChatIds();
-  if (groups.length === 0) return;
+  if (!isTelegramEnabled()) return;
   const timeStr = (opts.startedAt ?? new Date()).toLocaleString("zh-TW", {
     timeZone: "Asia/Taipei",
     month: "numeric",
@@ -215,7 +224,7 @@ export function notifyFieldGamePlay(opts: {
     `時間：${timeStr}\n` +
     `遊戲：${opts.gameTitle}\n` +
     `帳號：${opts.playerName || "(匿名)"}`;
-  sendToFieldGroup(text, true);
+  sendToFieldGroup(text, true, opts.fieldId);
 }
 
 // ============================================================================
@@ -225,11 +234,12 @@ export function notifyFieldGamePlay(opts: {
 export function notifyTodayBookings(opts: {
   dateLabel: string;
   bookings: Array<{ timeStr: string; displayName: string; partySize: number; activityName?: string }>;
+  /** 🆕 2026-09-23：送這個場域自己的群組 */
+  fieldId?: string | null;
 }): void {
-  const groups = getFieldGroupChatIds();
-  if (groups.length === 0) return;
+  if (!isTelegramEnabled()) return;
   if (opts.bookings.length === 0) {
-    sendToFieldGroup(`☀️ *今日預約 · ${opts.dateLabel}*\n\n今天目前沒有預約`, true);
+    sendToFieldGroup(`☀️ *今日預約 · ${opts.dateLabel}*\n\n今天目前沒有預約`, true, opts.fieldId);
     return;
   }
   const totalGroups = opts.bookings.length;
@@ -256,7 +266,7 @@ export function notifyTodayBookings(opts: {
       lines.push(`· ${name}：${s.groups} 組 / ${s.people} 人`);
     }
   }
-  sendToFieldGroup(lines.join("\n"));
+  sendToFieldGroup(lines.join("\n"), false, opts.fieldId);
 }
 
 export function notifyBookingCancelled(opts: {

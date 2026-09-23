@@ -14,6 +14,7 @@ import { MODULE_REGISTRY, getModule, resolveFieldModules } from "@shared/lib/mod
 import { invalidateFieldModules } from "../lib/field-modules";
 import { provisionField, seedDefaultRoles } from "../services/provision-field";
 import { fieldHasFeature } from "../lib/field-plan";
+import { invalidateFieldTelegram, sanitizeFieldTelegram } from "../lib/field-telegram";
 import { featureUpgradeMessage } from "@shared/lib/plan-features";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
@@ -486,6 +487,17 @@ export function registerAdminFieldRoutes(app: Express) {
         } else {
           updatedSettings.geminiApiKey = undefined;
         }
+      }
+
+      // 📣 2026-09-23 P2：場域自己的 Telegram 群組（沒設就沿用平台環境變數設定的群組）
+      if (body.telegram && typeof body.telegram === "object") {
+        const cfg = sanitizeFieldTelegram(body.telegram);
+        const rawIds = (body.telegram as { chatIds?: unknown }).chatIds;
+        if (Array.isArray(rawIds) && rawIds.length > 0 && cfg.chatIds?.length === 0) {
+          return res.status(400).json({ message: "群組 ID 格式不正確（Telegram 群組 ID 是數字，通常為負數）" });
+        }
+        updatedSettings.telegram = cfg;
+        invalidateFieldTelegram(req.params.id);
       }
 
       // 布林開關

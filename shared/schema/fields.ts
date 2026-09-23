@@ -147,6 +147,12 @@ export interface FieldSettings {
   sessionIdleTimeout?: number;        // 閒置超時時間（分鐘）
 
   /**
+   * 📣 2026-09-23 P2：場域自己的 Telegram 通知群組
+   * 沒設定 → 沿用平台環境變數（TELEGRAM_FIELD_GROUP_CHAT_IDS），行為與以前相同
+   */
+  telegram?: { chatIds?: string[]; enabled?: boolean };
+
+  /**
    * 🧩 2026-09-23 P2：模組開關（key 見 shared/lib/module-registry）
    * 沒設定的模組 → 沿用舊的 enableXxx 開關 → 再沒有就用登錄表預設值
    */

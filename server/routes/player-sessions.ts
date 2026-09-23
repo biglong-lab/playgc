@@ -34,7 +34,7 @@ async function notifyFieldGameStart(sessionId: string, userId: string): Promise<
     const name = user
       ? [user.firstName, user.lastName].filter(Boolean).join("") || undefined
       : undefined;
-    notifyFieldGamePlay({ gameTitle: game.title, playerName: name });
+    notifyFieldGamePlay({ gameTitle: game.title, playerName: name, fieldId: game.fieldId });
   } catch (err) {
     console.error("[player-sessions] 賈村遊戲通報失敗:", err);
   }
