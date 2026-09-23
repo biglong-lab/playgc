@@ -12,6 +12,7 @@ import { canCreateField } from "@shared/lib/field-permissions";
 import { checkDisconnectGraceSettings } from "@shared/lib/disconnect-grace";
 import { MODULE_REGISTRY, getModule, resolveFieldModules } from "@shared/lib/module-registry";
 import { invalidateFieldModules } from "../lib/field-modules";
+import { provisionField, seedDefaultRoles } from "../services/provision-field";
 import { fieldHasFeature } from "../lib/field-plan";
 import { featureUpgradeMessage } from "@shared/lib/plan-features";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
@@ -28,71 +29,12 @@ function isAnnouncementActive(settings: { announcement?: string; announcementSta
 }
 
 /**
- * 🆕 為新場域 seed 一組預設角色，避免第一次授權管理員時卡住沒 role 可選
- * - 場域管理員：所有系統權限（給場域初始管理員用）
- * - 活動執行者：受限於當場運營（可看遊戲、管 session、QR 現場查驗）
- * 可同時補舊場域（若場域 roles=0 呼叫此函式）。
+ * 🆕 為既有場域補一組預設角色（角色定義與開通流程共用同一支 seedDefaultRoles）
+ * 🏗️ 2026-09-23 P2：原本這裡有一份自己的實作，與開通流程重複 → 改成呼叫服務層 + 記稽核
  */
 async function seedDefaultRolesForField(fieldId: string, actorAdminId: string | null) {
-  // 拉全部 permission keys
-  const allPermissions = await db.select({ id: permissions.id, key: permissions.key }).from(permissions);
-  if (allPermissions.length === 0) {
-    // 系統連 permission 都沒有 — 安全起見直接跳出（避免建立空 role 混淆）
-    return;
-  }
-
-  const permByKey = new Map(allPermissions.map((p) => [p.key, p.id]));
-  const resolveIds = (keys: string[]) =>
-    keys.map((k) => permByKey.get(k)).filter((id): id is string => !!id);
-
-  // 1) 場域管理員 — 給全部權限（第一個被授權的人通常是 owner）
-  const [adminRole] = await db.insert(roles).values({
-    name: "場域管理員",
-    description: "場域最高管理權限，可管理所有功能（建立場域時自動生成）",
-    systemRole: "field_director",
-    fieldId,
-    isCustom: false,
-    isDefault: true,
-  }).returning();
-
-  await db.insert(rolePermissions).values(
-    allPermissions.map((p) => ({
-      roleId: adminRole.id,
-      permissionId: p.id,
-      allow: true,
-    })),
-  );
-
-  // 2) 活動執行者 — 只給現場營運權限
-  const executorPermIds = resolveIds([
-    "game:view",
-    "session:manage",
-    "qr:scan_check",
-    "qr:view",
-    "leaderboard:view",
-    "user:view",
-  ]);
-
-  if (executorPermIds.length > 0) {
-    const [executorRole] = await db.insert(roles).values({
-      name: "活動執行者",
-      description: "現場活動執行權限（檢視遊戲、管理場次、QR 查驗）",
-      systemRole: "field_executor",
-      fieldId,
-      isCustom: false,
-      isDefault: true,
-    }).returning();
-
-    await db.insert(rolePermissions).values(
-      executorPermIds.map((permissionId) => ({
-        roleId: executorRole.id,
-        permissionId,
-        allow: true,
-      })),
-    );
-  }
-
-  // 記 audit log（只在有 actor 時）
+  const directorRoleId = await seedDefaultRoles(fieldId);
+  if (!directorRoleId) return;
   if (actorAdminId) {
     await logAuditAction({
       actorAdminId,
@@ -296,10 +238,22 @@ export function registerAdminFieldRoutes(app: Express) {
       }
 
       const data = insertFieldSchema.parse(req.body);
-      const [field] = await db.insert(fields).values({
-        ...data,
-        code: data.code.toUpperCase(),
-      }).returning();
+      // 🏗️ 2026-09-23 P2：建場域走共用的開通流程（與平台審核申請同一條路）
+      //   含預設角色與訂閱；建立者指派為場域管理員仍走下面既有流程
+      const provisioned = await provisionField({
+        code: data.code,
+        name: data.name,
+        description: data.description ?? null,
+        contactEmail: data.contactEmail ?? null,
+        contactPhone: data.contactPhone ?? null,
+        address: data.address ?? null,
+        actorAdminId: req.admin.id,
+        source: "admin_create",
+      });
+      if (!provisioned.ok) {
+        return res.status(provisioned.status).json({ message: provisioned.message });
+      }
+      const field = provisioned.field;
 
       await logAuditAction({
         actorAdminId: req.admin.id,
@@ -311,14 +265,6 @@ export function registerAdminFieldRoutes(app: Express) {
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"],
       });
-
-      // 🆕 自動 seed 預設角色（場域管理員 + 活動執行者），避免初次授權卡住
-      // 失敗不回滾場域建立，只記 log — 後續可用 /api/admin/fields/:id/seed-roles 手動補
-      try {
-        await seedDefaultRolesForField(field.id, req.admin.id);
-      } catch (seedErr) {
-        console.error(`[admin-fields] seedDefaultRolesForField failed for field ${field.id}:`, seedErr);
-      }
 
       // 🆕 自動指派建立者為新場域的場域管理員
       // 若建立者有 email / firebaseUserId，建一個 admin_account 綁到新場域的「場域管理員」role

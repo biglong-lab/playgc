@@ -12,6 +12,7 @@ import { requirePlatformAdmin } from "../platformAuth";
 import { publicWriteLimiter } from "../utils/rate-limiters";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
+import { provisionField } from "../services/provision-field";
 
 export function registerApplicationRoutes(app: Express): void {
   // ============================================================================
@@ -158,50 +159,28 @@ export function registerApplicationRoutes(app: Express): void {
         return res.status(409).json({ error: "此申請已通過" });
       }
 
-      // 確認場域代碼可用
-      const existing = await db.query.fields.findFirst({
-        where: eq(fields.code, parsed.data.fieldCode),
-      });
-      if (existing) {
-        return res.status(409).json({ error: "場域代碼已被使用" });
-      }
-
-      // 找方案
-      const plan = await db.query.platformPlans.findFirst({
-        where: eq(platformPlans.code, parsed.data.planCode),
-      });
-      if (!plan) {
-        return res.status(400).json({ error: "方案不存在" });
-      }
-
       try {
-        // 1. 建立場域
-        const [newField] = await db
-          .insert(fields)
-          .values({
-            code: parsed.data.fieldCode,
-            name: parsed.data.fieldName,
-            description: application.message ?? null,
-            contactEmail: application.contactEmail,
-            contactPhone: application.contactPhone,
-            address: application.address,
-            status: "active",
-          })
-          .returning();
-
-        // 2. 建立訂閱（含試用期）
-        const trialEnd =
-          parsed.data.trialDays > 0
-            ? new Date(Date.now() + parsed.data.trialDays * 24 * 60 * 60 * 1000)
-            : null;
-        await db.insert(fieldSubscriptions).values({
-          fieldId: newField.id,
-          planId: plan.id,
-          status: trialEnd ? "trial" : "active",
-          billingCycle: "monthly",
-          trialEndsAt: trialEnd,
+        // 🏗️ 2026-09-23 P2：改走共用的開通流程
+        //   （原本只建場域 + 訂閱 → 申請人沒有角色也沒有帳號，收到通知卻登不進去）
+        const provisioned = await provisionField({
+          code: parsed.data.fieldCode,
+          name: parsed.data.fieldName,
+          description: application.message ?? null,
+          contactEmail: application.contactEmail,
+          contactPhone: application.contactPhone,
+          address: application.address,
+          planCode: parsed.data.planCode,
+          trialDays: parsed.data.trialDays,
+          owner: { email: application.contactEmail, displayName: application.contactName ?? null },
+          actorAdminId: req.platform?.adminAccountId ?? null,
+          source: "platform_approval",
           notes: `自動開通自申請 ${application.id}`,
         });
+        if (!provisioned.ok) {
+          return res.status(provisioned.status).json({ error: provisioned.message });
+        }
+        const newField = provisioned.field;
+        const trialEnd = provisioned.trialEndsAt;
 
         // 3. 更新申請狀態
         await db
@@ -220,6 +199,7 @@ export function registerApplicationRoutes(app: Express): void {
           success: true,
           field: newField,
           trialEndsAt: trialEnd,
+          ownerAccountId: provisioned.ownerAccountId,
         });
       } catch (err) {
         console.error("[approve]", err);

@@ -42,6 +42,13 @@ const { mockDb } = vi.hoisted(() => {
 
 vi.mock("../db", () => ({ db: mockDb }));
 
+// 🏗️ 開通場域服務（P2）：路由測試只驗轉呼叫，服務本身有自己的測試
+const { mockProvision } = vi.hoisted(() => ({ mockProvision: vi.fn() }));
+vi.mock("../services/provision-field", () => ({
+  provisionField: mockProvision,
+  seedDefaultRoles: vi.fn(async () => "role-director"),
+}));
+
 // 💳 方案功能（P2）：預設方案包含所有功能，個別測試改成沒有
 const { mockHasFeature } = vi.hoisted(() => ({ mockHasFeature: vi.fn() }));
 vi.mock("../lib/field-plan", () => ({ fieldHasFeature: mockHasFeature, invalidateFieldPlan: vi.fn() }));
@@ -108,6 +115,14 @@ describe("admin-fields 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockHasFeature.mockResolvedValue(true);
+    mockProvision.mockResolvedValue({
+      ok: true,
+      field: { id: "field-new", name: "新場域", code: "NEWF" },
+      directorRoleId: "role-director",
+      ownerAccountId: null,
+      trialEndsAt: null,
+      planCode: "free",
+    });
     // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
     mockDb.query.fields.findMany.mockReset();
     mockDb.query.fields.findFirst.mockReset();
@@ -173,9 +188,7 @@ describe("admin-fields 路由", () => {
   });
 
   describe("POST /api/admin/fields", () => {
-    it("成功建立場域", async () => {
-      const newField = { id: "field-new", name: "新場域", code: "NEWF" };
-      mockDb._chain.returning.mockResolvedValue([newField]);
+    it("成功建立場域（走共用開通流程）", async () => {
       const app = createApp();
       const res = await request(app)
         .post("/api/admin/fields")
@@ -183,6 +196,18 @@ describe("admin-fields 路由", () => {
         .send({ name: "新場域", code: "newf" });
       expect(res.status).toBe(201);
       expect(res.body.name).toBe("新場域");
+      // 🏗️ P2：建場域與平台審核走同一條開通流程（含預設角色與訂閱）
+      expect(mockProvision).toHaveBeenCalledWith(expect.objectContaining({ code: "newf", source: "admin_create" }));
+    });
+
+    it("場域代碼重複 → 回開通流程給的 409", async () => {
+      mockProvision.mockResolvedValue({ ok: false, status: 409, message: "場域代碼已被使用" });
+      const res = await request(createApp())
+        .post("/api/admin/fields")
+        .set(superAdminHeaders)
+        .send({ name: "新場域", code: "dup" });
+      expect(res.status).toBe(409);
+      expect(res.body.message).toBe("場域代碼已被使用");
     });
 
     it("Zod 驗證失敗回傳 400", async () => {
