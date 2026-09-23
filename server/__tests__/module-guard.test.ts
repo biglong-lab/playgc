@@ -10,7 +10,11 @@ vi.mock("../lib/field-modules", async (importOriginal) => {
 });
 vi.mock("../db", () => ({ db: {} }));
 
-import { moduleGuard } from "../middleware/require-module";
+// 💳 方案功能：預設「方案包含所有功能」，個別測試改
+const { mockHasFeature } = vi.hoisted(() => ({ mockHasFeature: vi.fn() }));
+vi.mock("../lib/field-plan", () => ({ fieldHasFeature: mockHasFeature }));
+
+import { moduleGuard, requireFeature } from "../middleware/require-module";
 
 /** admin 身分由外層中介層注入；這裡直接模擬 */
 function createApp(admin?: { fieldId?: string | null; systemRole?: string }) {
@@ -24,13 +28,17 @@ function createApp(admin?: { fieldId?: string | null; systemRole?: string }) {
   app.get("/api/admin/pos/products", (_req, res) => res.json({ ok: true }));
   app.get("/api/admin/games", (_req, res) => res.json({ ok: true }));
   app.get("/api/matches/m1", (_req, res) => res.json({ ok: true }));
+  app.get("/api/battle/slots", (_req, res) => res.json({ ok: true }));
   app.get("/api/unrelated", (_req, res) => res.json({ ok: true }));
+  app.use("/api/v1", requireFeature("api_access"));
+  app.get("/api/v1/scenarios", (_req, res) => res.json({ ok: true }));
   return app;
 }
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockLoad.mockResolvedValue({ pos: true, match: true, games: true });
+  mockLoad.mockResolvedValue({ pos: true, match: true, games: true, battle: true });
+  mockHasFeature.mockResolvedValue(true);
 });
 
 describe("moduleGuard", () => {
@@ -74,5 +82,21 @@ describe("moduleGuard", () => {
   it("讀取設定失敗 → 放行（不能因為設定讀不到就把場域鎖死）", async () => {
     mockLoad.mockRejectedValue(new Error("db down"));
     expect((await request(createApp({ fieldId: "f1" })).get("/api/admin/pos/products")).status).toBe(200);
+  });
+
+  // 💳 方案功能（P2）
+  it("模組開著但方案沒包含（例：免費版沒水彈）→ 403 plan_upgrade_required", async () => {
+    mockHasFeature.mockResolvedValue(false);
+    const res = await request(createApp({ fieldId: "f1" })).get("/api/battle/slots");
+    expect(res.status).toBe(403);
+    expect(res.body).toMatchObject({ error: "plan_upgrade_required", feature: "battle_system" });
+    expect(res.body.message).toContain("水彈對戰");
+  });
+
+  it("requireFeature：方案沒有外部 API → 403；有就通過", async () => {
+    mockHasFeature.mockResolvedValue(false);
+    expect((await request(createApp({ fieldId: "f1" })).get("/api/v1/scenarios")).status).toBe(403);
+    mockHasFeature.mockResolvedValue(true);
+    expect((await request(createApp({ fieldId: "f1" })).get("/api/v1/scenarios")).status).toBe(200);
   });
 });

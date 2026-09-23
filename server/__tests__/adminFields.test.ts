@@ -42,6 +42,10 @@ const { mockDb } = vi.hoisted(() => {
 
 vi.mock("../db", () => ({ db: mockDb }));
 
+// 💳 方案功能（P2）：預設方案包含所有功能，個別測試改成沒有
+const { mockHasFeature } = vi.hoisted(() => ({ mockHasFeature: vi.fn() }));
+vi.mock("../lib/field-plan", () => ({ fieldHasFeature: mockHasFeature, invalidateFieldPlan: vi.fn() }));
+
 vi.mock("../adminAuth", () => ({
   requireAdminAuth: vi.fn((req: any, _res: any, next: any) => {
     if (req.headers["x-admin-id"]) {
@@ -103,6 +107,7 @@ const superAdminHeaders = {
 describe("admin-fields 路由", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockHasFeature.mockResolvedValue(true);
     // 清空 mockResolvedValueOnce 佇列，保留 middleware 實作
     mockDb.query.fields.findMany.mockReset();
     mockDb.query.fields.findFirst.mockReset();
@@ -408,6 +413,44 @@ describe("admin-fields 路由", () => {
       const res = await request(app)
         .post("/api/admin/fields/field-1/seed-default-roles");
       expect(res.status).toBe(401);
+    });
+  });
+
+  // 💳 2026-09-23 P2：方案功能執行時檢查
+  describe("PATCH /settings — 方案沒包含的功能要擋", () => {
+    it("方案沒有「自帶 AI 金鑰」→ 403 plan_upgrade_required，且不寫入", async () => {
+      mockHasFeature.mockResolvedValue(false);
+      mockDb.query.fields.findFirst.mockResolvedValue({ id: "field-1", settings: {} });
+      mockDb._chain.where.mockResolvedValue(undefined);
+      const res = await request(createApp())
+        .patch("/api/admin/fields/field-1/settings")
+        .set(adminHeaders)
+        .send({ geminiApiKey: "AIza-test-key" });
+      expect(res.status).toBe(403);
+      expect(res.body).toMatchObject({ error: "plan_upgrade_required", feature: "ai_key_byo" });
+      expect(mockDb.update).not.toHaveBeenCalled();
+    });
+
+    it("方案沒有「品牌外觀」→ 改主題被擋", async () => {
+      mockHasFeature.mockResolvedValue(false);
+      mockDb.query.fields.findFirst.mockResolvedValue({ id: "field-1", settings: { theme: {} } });
+      mockDb._chain.where.mockResolvedValue(undefined);
+      const res = await request(createApp())
+        .patch("/api/admin/fields/field-1/settings")
+        .set(adminHeaders)
+        .send({ theme: { primaryColor: "#123456" } });
+      expect(res.status).toBe(403);
+      expect(res.body.feature).toBe("custom_brand");
+    });
+
+    it("方案有這些功能 → 照常儲存（清空金鑰也不受限）", async () => {
+      mockDb.query.fields.findFirst.mockResolvedValue({ id: "field-1", settings: {} });
+      mockDb._chain.where.mockResolvedValue(undefined);
+      const res = await request(createApp())
+        .patch("/api/admin/fields/field-1/settings")
+        .set(adminHeaders)
+        .send({ geminiApiKey: "" });
+      expect(res.status).toBe(200);
     });
   });
 });

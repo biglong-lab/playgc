@@ -12,6 +12,8 @@ import { canCreateField } from "@shared/lib/field-permissions";
 import { checkDisconnectGraceSettings } from "@shared/lib/disconnect-grace";
 import { MODULE_REGISTRY, getModule, resolveFieldModules } from "@shared/lib/module-registry";
 import { invalidateFieldModules } from "../lib/field-modules";
+import { fieldHasFeature } from "../lib/field-plan";
+import { featureUpgradeMessage } from "@shared/lib/plan-features";
 import { encryptApiKey, decryptApiKey } from "../lib/crypto";
 import { z } from "zod";
 import { eq, desc, inArray } from "drizzle-orm";
@@ -520,6 +522,16 @@ export function registerAdminFieldRoutes(app: Express) {
 
       // 合併設定（不可變模式）
       const updatedSettings: FieldSettings = { ...currentSettings };
+
+      // 💳 2026-09-23 P2：方案功能檢查（自帶 AI 金鑰 / 品牌外觀）
+      //   只有「要改這個設定」時才擋，不影響其他設定的儲存
+      const wantsOwnAiKey = typeof body.geminiApiKey === "string" && body.geminiApiKey.trim().length > 0;
+      if (wantsOwnAiKey && !(await fieldHasFeature(req.params.id, "ai_key_byo"))) {
+        return res.status(403).json({ error: "plan_upgrade_required", feature: "ai_key_byo", message: featureUpgradeMessage("ai_key_byo") });
+      }
+      if (body.theme && typeof body.theme === "object" && !(await fieldHasFeature(req.params.id, "custom_brand"))) {
+        return res.status(403).json({ error: "plan_upgrade_required", feature: "custom_brand", message: featureUpgradeMessage("custom_brand") });
+      }
 
       // AI Key 處理：新值 → 加密存儲；空字串 → 清除
       if (typeof body.geminiApiKey === "string") {

@@ -11,6 +11,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { isModuleOn, moduleForApiPath } from "@shared/lib/module-registry";
 import { loadFieldModules, moduleOffMessage } from "../lib/field-modules";
+import { fieldHasFeature } from "../lib/field-plan";
+import { featureForModule, featureUpgradeMessage } from "@shared/lib/plan-features";
 
 function resolveFieldId(req: Request): string | null {
   const admin = (req as Request & { admin?: { fieldId?: string | null; systemRole?: string | null } }).admin;
@@ -35,12 +37,36 @@ export async function moduleGuard(req: Request, res: Response, next: NextFunctio
   if (!fieldId) return next();
   try {
     const modules = await loadFieldModules(fieldId);
-    if (isModuleOn(modules, def.key)) return next();
-    res.status(403).json({ error: "module_disabled", module: def.key, message: moduleOffMessage(def) });
+    if (!isModuleOn(modules, def.key)) {
+      res.status(403).json({ error: "module_disabled", module: def.key, message: moduleOffMessage(def) });
+      return;
+    }
+    // 💳 模組開著，但方案沒包含這個功能 → 一樣擋（例：免費版沒有水彈）
+    const feature = featureForModule(def.key);
+    if (feature && !(await fieldHasFeature(fieldId, feature.key))) {
+      res.status(403).json({ error: "plan_upgrade_required", feature: feature.key, message: featureUpgradeMessage(feature.key) });
+      return;
+    }
+    next();
   } catch (err) {
     console.error("[module-guard] 判斷模組開關失敗（放行）:", err);
     next();
   }
+}
+
+/** 方案功能守門（沒有對應模組的功能用這個，例：外部 API） */
+export function requireFeature(featureKey: string) {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const fieldId = resolveFieldId(req) ?? (req as Request & { apiKey?: { fieldId?: string } }).apiKey?.fieldId ?? null;
+    if (!fieldId) return next();
+    try {
+      if (await fieldHasFeature(fieldId, featureKey)) return next();
+      res.status(403).json({ error: "plan_upgrade_required", feature: featureKey, message: featureUpgradeMessage(featureKey) });
+    } catch (err) {
+      console.error("[require-feature] 判斷方案功能失敗（放行）:", err);
+      next();
+    }
+  };
 }
 
 /** 單一模組版本（要明確擋某段路由時用） */

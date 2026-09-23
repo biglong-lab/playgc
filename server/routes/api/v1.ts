@@ -20,6 +20,7 @@ import type { Express } from "express";
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { requireApiKey } from "../../middleware/api-key";
+import { requireFeature } from "../../middleware/require-module";
 import { rateLimit } from "../../middleware/rate-limit";
 import { idempotency } from "../../middleware/idempotency";
 import {
@@ -43,6 +44,10 @@ function generateHostToken(): string {
 // 既有 getFieldIdForApiKey() 移除、邏輯內聯到 handler
 
 export function registerPublicApiV1Routes(app: Express) {
+  // 💳 2026-09-23 P2：外部 API 屬於方案功能（api_access）——
+  //   金鑰對應的場域方案沒有這個功能就擋；判斷不出場域 / 方案照常放行
+  app.use("/api/v1", requireFeature("api_access"));
+
   /**
    * GET /api/v1/health
    * 公開健康檢查（不需 API key）
