@@ -366,7 +366,8 @@ export function registerAdminActivitiesRoutes(app: Express) {
           userAgent: req.headers["user-agent"],
         });
 
-        res.json({ coverUrl: result.secure_url, activity: updated });
+        // url：與場域 / 遊戲封面端點同名，前端只要認一個欄位就好（2026-09-24）
+        res.json({ url: result.secure_url, coverUrl: result.secure_url, activity: updated });
       } catch (err) {
         console.error("[admin-activities cover]", err);
         res.status(500).json({ error: "upload_failed", message: err instanceof Error ? err.message : "未知錯誤" });

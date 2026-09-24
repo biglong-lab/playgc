@@ -110,10 +110,12 @@ export function UploadImageButton({
       const res = await fetchWithAdminAuth(endpoint, {
         method: "POST",
         body: JSON.stringify({ imageData: base64 }),
-      }) as { url?: string; coverImageUrl?: string };
+      }) as { url?: string; coverImageUrl?: string; coverUrl?: string; secure_url?: string };
 
-      // 兼容兩種 response 格式（/cloudinary-cover 回 coverImageUrl，場域 endpoint 回 url）
-      const uploadedUrl = res.url || res.coverImageUrl;
+      // 🐛 2026-09-24：後端各端點的欄位名不一致 —— 場域回 url、遊戲回 coverImageUrl、
+      //   活動回 coverUrl。原本只認前兩種 → 活動封面上傳明明成功卻顯示「上傳失敗」，
+      //   使用者接著按儲存，表單裡的空封面又把剛存好的圖蓋掉（等於永遠傳不上去）。
+      const uploadedUrl = res.url || res.coverImageUrl || res.coverUrl || res.secure_url;
       if (!uploadedUrl) throw new Error("伺服器沒有回傳 URL");
 
       // 🆕 等 Cloudinary CDN 同步完成才通知 UI（最多 20 秒）
