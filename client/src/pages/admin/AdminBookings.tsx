@@ -46,6 +46,11 @@ import {
 } from "lucide-react";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 import CancelBookingDialog from "./booking/CancelBookingDialog";
+import {
+  useActiveActivities,
+  LegacyConfigBanner,
+  OverriddenByActivity,
+} from "./booking/legacy-config-notice";
 
 // 🆕 2026-05-17：fallback 改成 "JIACHUN"（與 fields.code + booking_configs.field_id 一致）
 // 真正生效的 fieldId 從 useCurrentField()?.code 拿、見 AdminBookings 主元件
@@ -688,6 +693,9 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showInit, setShowInit] = useState(false);
+  // 有活動 → 這頁多數設定已被活動接管，預設把舊版場次規則收起來（避免誤改）
+  const { activities, hasActivities } = useActiveActivities();
+  const [showLegacySchedule, setShowLegacySchedule] = useState(false);
 
   const queryKey = ["admin-booking-config", fieldId];
   const { data, isLoading, error } = useQuery({
@@ -766,13 +774,20 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>場域設定</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          場域設定
+          {hasActivities && <Badge variant="outline">舊版單一時間表</Badge>}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <LegacyConfigBanner activities={activities} />
+
         <div className="flex items-center justify-between">
           <div>
             <Label>啟用預約</Label>
-            <p className="text-xs text-muted-foreground">關閉後玩家無法新預約</p>
+            <p className="text-xs text-muted-foreground">
+              關閉後玩家無法新預約{hasActivities ? "（含所有活動，這是唯一仍全場生效的開關）" : ""}
+            </p>
           </div>
           <Switch
             checked={data.isEnabled}
@@ -785,6 +800,7 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
           <div>
             <Label>需付費</Label>
             <p className="text-xs text-muted-foreground">啟用後預約需先付款（status=pending）</p>
+            {hasActivities && <OverriddenByActivity what="收費方式" />}
           </div>
           <Switch
             checked={data.isPaid}
@@ -815,6 +831,7 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
           <div>
             <Label>可取消</Label>
             <p className="text-xs text-muted-foreground">關閉後玩家不能自助取消</p>
+            {hasActivities && <OverriddenByActivity what="取消規則" />}
           </div>
           <Switch
             checked={data.cancellable}
@@ -834,6 +851,7 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
             data-testid="input-cancel-before"
           />
           <p className="text-xs text-muted-foreground mt-1">0 = 隨時可取消</p>
+          {hasActivities && <OverriddenByActivity what="時限" />}
         </div>
 
         <div>
@@ -848,6 +866,7 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
             data-testid="input-reminder-before"
           />
           <p className="text-xs text-muted-foreground mt-1">0 = 不發提醒（省 quota）</p>
+          {hasActivities && <OverriddenByActivity what="提醒時間" />}
         </div>
 
         <div>
@@ -861,14 +880,39 @@ function ConfigPanel({ fieldId }: { fieldId: string }) {
         </div>
 
         <div className="border-t pt-4">
-          <h3 className="font-semibold mb-3 flex items-center gap-2">
+          <h3 className="font-semibold mb-1 flex items-center gap-2">
             📅 場次規則編輯器
+            {hasActivities && <Badge variant="outline">舊版・不影響活動</Badge>}
           </h3>
-          <ScheduleEditor
-            template={data.scheduleTemplate as ScheduleTemplate}
-            onChange={(t) => updateMutation.mutate({ scheduleTemplate: t as unknown as ConfigRow["scheduleTemplate"] })}
-            isSaving={updateMutation.isPending}
-          />
+          {hasActivities ? (
+            <>
+              <p className="text-xs text-muted-foreground mb-3">
+                活動的時段請到「活動管理 → 編輯時段」設定。這張表只有「未綁活動的舊預約」還會用到。
+              </p>
+              {!showLegacySchedule ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowLegacySchedule(true)}
+                  data-testid="button-show-legacy-schedule"
+                >
+                  仍要編輯舊版時間表
+                </Button>
+              ) : (
+                <ScheduleEditor
+                  template={data.scheduleTemplate as ScheduleTemplate}
+                  onChange={(t) => updateMutation.mutate({ scheduleTemplate: t as unknown as ConfigRow["scheduleTemplate"] })}
+                  isSaving={updateMutation.isPending}
+                />
+              )}
+            </>
+          ) : (
+            <ScheduleEditor
+              template={data.scheduleTemplate as ScheduleTemplate}
+              onChange={(t) => updateMutation.mutate({ scheduleTemplate: t as unknown as ConfigRow["scheduleTemplate"] })}
+              isSaving={updateMutation.isPending}
+            />
+          )}
         </div>
       </CardContent>
     </Card>
