@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAdminAuth } from "@/pages/admin-staff/types";
+import { formatPriceRange, formatNT, type PriceRange } from "@shared/lib/booking-price";
 import ScheduleEditor, { type ScheduleTemplate } from "./booking/ScheduleEditor";
 import { UploadImageButton } from "@/components/shared/UploadImageButton";
 
@@ -67,6 +68,8 @@ interface Activity extends ActivityField {
   isActive: boolean;
   sortOrder: number;
   bookingCount?: number;
+  /** 💰 依時段規則算出的價格區間（日間 249 / 夜間 349）*/
+  priceRange?: PriceRange;
 }
 
 interface ActivityForm {
@@ -349,7 +352,9 @@ export default function AdminActivities() {
                 <p className="text-xs text-muted-foreground line-clamp-2">{a.shortDesc}</p>
               )}
               <div className="flex flex-wrap gap-2 text-xs">
-                <Badge variant="secondary">NT${(a.priceCents / 100).toFixed(0)}</Badge>
+                <Badge variant="secondary" data-testid={`price-${a.slug}`}>
+                  {a.priceRange ? formatPriceRange(a.priceRange) : formatNT(a.priceCents)}
+                </Badge>
                 <Badge variant="secondary">{a.durationMinutes} 分</Badge>
                 <Badge variant="secondary">{a.capacityPerSlot} 人/梯</Badge>
                 <Badge variant="outline">

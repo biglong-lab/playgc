@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const { state, mockDb } = vi.hoisted(() => {
   const state = {
     field: { id: "field-uuid", code: "JIACHUN" } as unknown,
-    config: { isEnabled: true, scheduleTemplate: { rules: [{ id: "field-rule" }] } } as unknown,
+    config: { isEnabled: true, pricePerSlotCents: 30000, scheduleTemplate: { rules: [{ id: "field-rule" }] } } as unknown,
     activity: undefined as unknown,
     activitySchedule: undefined as unknown,
     calls: [] as string[],
@@ -37,7 +37,7 @@ vi.mock("@shared/schema", () => ({
   fields: { _name: "fields", id: "id", code: "code" },
   bookingConfigs: { _name: "bookingConfigs", fieldId: "field_id" },
   bookings: { _name: "bookings", activityId: "activity_id", fieldId: "field_id", slotStart: "slot_start", status: "status", partySize: "party_size" },
-  activities: { _name: "activities", id: "id", capacityPerSlot: "capacity_per_slot" },
+  activities: { _name: "activities", id: "id", capacityPerSlot: "capacity_per_slot", priceCents: "price_cents" },
   activitySchedules: { _name: "activitySchedules", activityId: "activity_id", scheduleTemplate: "schedule_template" },
 }));
 vi.mock("drizzle-orm", () => ({
@@ -53,15 +53,21 @@ beforeEach(() => {
   vi.clearAllMocks();
   state.calls = [];
   state.field = { id: "field-uuid", code: "JIACHUN" };
-  state.config = { isEnabled: true, scheduleTemplate: { rules: [{ id: "field-rule" }] } };
-  state.activity = { capacity: 12 };
+  state.config = { isEnabled: true, pricePerSlotCents: 30000, scheduleTemplate: { rules: [{ id: "field-rule" }] } };
+  state.activity = { capacity: 12, priceCents: 24900 };
   state.activitySchedule = { template: ACTIVITY_TEMPLATE };
 });
 
 describe("resolveScheduleContext（顯示時段與建立預約共用）", () => {
-  it("活動有自己的排程 → 用活動排程 + 活動每梯人數", async () => {
+  it("活動有自己的排程 → 用活動排程 + 活動每梯人數 + 活動基價", async () => {
     const ctx = await resolveScheduleContext("field-uuid", "act-1");
-    expect(ctx).toMatchObject({ ok: true, template: ACTIVITY_TEMPLATE, capacityOverride: 12 });
+    expect(ctx).toMatchObject({
+      ok: true,
+      template: ACTIVITY_TEMPLATE,
+      capacityOverride: 12,
+      // 💰 2026-09-24：時段規則沒設價時，要拿活動基價來算（不能是 undefined / 0）
+      basePriceCents: 24900,
+    });
   });
 
   it("🐛 回歸：場域預設排程是空的，活動照樣能預約（這就是預約失敗的根因）", async () => {
@@ -80,7 +86,11 @@ describe("resolveScheduleContext（顯示時段與建立預約共用）", () => 
 
   it("沒掛活動的預約（舊資料 / 單一時間表場域）→ 才用場域預設", async () => {
     const ctx = await resolveScheduleContext("field-uuid");
-    expect(ctx).toMatchObject({ ok: true, template: { rules: [{ id: "field-rule" }] } });
+    expect(ctx).toMatchObject({
+      ok: true,
+      template: { rules: [{ id: "field-rule" }] },
+      basePriceCents: 30000,
+    });
     expect((ctx as { capacityOverride?: number }).capacityOverride).toBeUndefined();
     expect(state.calls).not.toContain("activities");
   });

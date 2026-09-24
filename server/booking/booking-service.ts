@@ -134,6 +134,11 @@ export interface AvailableSlot {
   available: number;
   /** 是否仍可預約（available > 0 且未過期）*/
   bookable: boolean;
+  /**
+   * 🐛 2026-09-24：此梯次的單人費用
+   * 時段規則可各自設價（日間 249 / 夜間 349），沒設的才用活動基價。
+   */
+  priceCents: number;
 }
 
 /**
@@ -148,7 +153,13 @@ export interface AvailableSlot {
  *   活動沒設時段 → 就是還不能預約，不會偷用場域的時間表。
  */
 export type ScheduleContext =
-  | { ok: true; template: BookingScheduleTemplate; capacityOverride?: number }
+  | {
+      ok: true;
+      template: BookingScheduleTemplate;
+      capacityOverride?: number;
+      /** 沒有時段規則覆寫時的單人費用（活動基價 / 場域預設）*/
+      basePriceCents: number;
+    }
   | { ok: false; reason: "booking_disabled" | "activity_no_schedule" };
 
 export async function resolveScheduleContext(
@@ -162,7 +173,7 @@ export async function resolveScheduleContext(
   if (activityId) {
     const { activities, activitySchedules } = await import("@shared/schema");
     const [act] = await db
-      .select({ capacity: activities.capacityPerSlot })
+      .select({ capacity: activities.capacityPerSlot, priceCents: activities.priceCents })
       .from(activities)
       .where(eq(activities.id, activityId))
       .limit(1);
@@ -176,10 +187,15 @@ export async function resolveScheduleContext(
       ok: true,
       template: sched.template as BookingScheduleTemplate,
       capacityOverride: act?.capacity ?? undefined,
+      basePriceCents: act?.priceCents ?? config.pricePerSlotCents,
     };
   }
 
-  return { ok: true, template: config.scheduleTemplate as BookingScheduleTemplate };
+  return {
+    ok: true,
+    template: config.scheduleTemplate as BookingScheduleTemplate,
+    basePriceCents: config.pricePerSlotCents,
+  };
 }
 
 export async function getAvailability(
@@ -190,7 +206,7 @@ export async function getAvailability(
 ): Promise<AvailableSlot[]> {
   const context = await resolveScheduleContext(fieldId, activityId);
   if (!context.ok) return [];
-  const { template, capacityOverride } = context;
+  const { template, capacityOverride, basePriceCents } = context;
 
   const dailyResult = getSlotsInRange(template, fromDate, toDate);
 
@@ -243,6 +259,7 @@ export async function getAvailability(
         booked,
         available,
         bookable,
+        priceCents: s.priceCents ?? basePriceCents,
       });
     }
   }
@@ -387,6 +404,14 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
     }
   }
 
+  // 🐛 2026-09-24：時段規則的價格才是這一梯真正要收的錢
+  //   業主把夜間設 NT$349、日間 NT$249，但這裡只讀活動基價 → 夜間每人少收 100。
+  //   規則有設價就以規則為準（這也是後台規則列表顯示的價格）。
+  if (typeof matchedSlot.priceCents === "number") {
+    priceCents = matchedSlot.priceCents;
+    isPaid = priceCents > 0;
+  }
+
   // 🆕 2026-05-18 業主決定：線上金流尚未開通、暫時強制 fallback 為 onsite
   // 業主可在 admin/activities 切換、但 online/both 選項已 disabled
   // 既有 activity 設了 online → 後端自動轉 onsite、避免玩家卡關
@@ -457,6 +482,26 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
 // 標 admin_note。仍會產 bookingCode + qrToken（可在 POS 掃描報到）。
 // ============================================================================
 
+/**
+ * 這個時間點該收多少錢
+ *
+ * 時段規則可以各自設價（日間 249 / 夜間 349）。人工登記允許填任意時間，
+ * 所以先找完全相同的梯次，找不到再找「涵蓋這個時刻」的梯次，都沒有才用基價。
+ */
+export async function resolveSlotPriceCents(
+  fieldId: string,
+  activityId: string | undefined | null,
+  slotStart: Date,
+  basePriceCents: number,
+): Promise<number> {
+  const context = await resolveScheduleContext(fieldId, activityId ?? undefined);
+  if (!context.ok) return basePriceCents;
+  const slots = getDailySlots(context.template, slotStart);
+  const exact = slots.find((s) => s.startAt.getTime() === slotStart.getTime());
+  const covering = exact ?? slots.find((s) => s.startAt <= slotStart && slotStart < s.endAt);
+  return covering?.priceCents ?? basePriceCents;
+}
+
 export interface ManualBookingInput {
   fieldId: string;
   displayName: string;
@@ -491,6 +536,15 @@ export async function createManualBooking(input: ManualBookingInput): Promise<Cr
       .limit(1);
     if (activity) priceCents = activity.priceCents;
     else activityId = null;
+  }
+  // 🐛 2026-09-24：電話登記夜間場也要收夜間價（原本一律算活動基價、每人少收）
+  if (activityId) {
+    priceCents = await resolveSlotPriceCents(
+      input.fieldId,
+      activityId,
+      input.slotStart,
+      priceCents,
+    );
   }
 
   // unique code

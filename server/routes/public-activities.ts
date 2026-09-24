@@ -7,6 +7,7 @@ import type { Express } from "express";
 import { db } from "../db";
 import { activities, fields } from "@shared/schema";
 import { eq, and, asc, sql } from "drizzle-orm";
+import { attachPriceRanges, attachPriceRange } from "../booking/activity-price-range";
 
 export function registerPublicActivitiesRoutes(app: Express) {
   // 場域內啟用中活動列表
@@ -45,10 +46,12 @@ export function registerPublicActivitiesRoutes(app: Express) {
         if (c.activityId) countMap.set(c.activityId, c.count);
       }
       const withCounts = list.map((a) => ({ ...a, recentBookingCount: countMap.get(a.id) ?? 0 }));
+      // 💰 卡片要顯示價格區間（日間 249 / 夜間 349），不能只給基價
+      const withPrices = await attachPriceRanges(withCounts);
 
       res.json({
         field: { id: field.id, code: field.code, name: field.name },
-        activities: withCounts,
+        activities: withPrices,
       });
     } catch (err) {
       console.error("[public-activities GET list]", err);
@@ -82,7 +85,7 @@ export function registerPublicActivitiesRoutes(app: Express) {
 
       res.json({
         field: { id: field.id, code: field.code, name: field.name },
-        activity,
+        activity: await attachPriceRange(activity),
       });
     } catch (err) {
       console.error("[public-activities GET single]", err);

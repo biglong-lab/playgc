@@ -112,7 +112,9 @@ export function registerAdminActivitiesRoutes(app: Express) {
           if (c.activityId) countMap.set(c.activityId, c.count);
         }
         const withCounts = list.map((a) => ({ ...a, bookingCount: countMap.get(a.id) ?? 0 }));
-        res.json({ activities: withCounts });
+        // 💰 卡片顯示價格區間（時段規則可各自設價）
+        const { attachPriceRanges } = await import("../booking/activity-price-range");
+        res.json({ activities: await attachPriceRanges(withCounts) });
       } catch (err) {
         console.error("[admin-activities GET]", err);
         res.status(500).json({ error: "internal_error" });

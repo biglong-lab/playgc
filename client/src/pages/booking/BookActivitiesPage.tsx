@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, Users, MapPin, Activity as ActivityIcon, AlertCircle, Flame } from "lucide-react";
+import { formatPriceRange, formatNT, type PriceRange } from "@shared/lib/booking-price";
 
 interface Activity {
   id: string;
@@ -22,6 +23,8 @@ interface Activity {
   capacityPerSlot: number;
   paymentMode: "online" | "onsite" | "both";
   recentBookingCount?: number;
+  /** 💰 依時段規則算出的價格區間（日間 249 / 夜間 349）*/
+  priceRange?: PriceRange;
 }
 
 interface FieldInfo {
@@ -158,9 +161,13 @@ export default function BookActivitiesPage() {
               </div>
               <div className="flex items-center justify-between pt-2">
                 <div>
-                  <span className="text-lg font-bold text-primary">
-                    NT${(a.priceCents / 100).toFixed(0)}
+                  <span className="text-lg font-bold text-primary" data-testid={`price-${a.slug}`}>
+                    {a.priceRange ? formatPriceRange(a.priceRange) : formatNT(a.priceCents)}
                   </span>
+                  {/* 💰 不同時段不同價（例：夜間加價）→ 講明白，避免客人以為全天同價 */}
+                  {a.priceRange?.hasRange && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">依時段不同價</p>
+                  )}
                   {a.priceCents > 0 && (
                     <p className="text-[10px] text-muted-foreground mt-0.5">📱 現場付款</p>
                   )}

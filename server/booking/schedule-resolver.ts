@@ -135,12 +135,18 @@ export interface ExpandedSlot {
   startAt: Date;     // 此梯次開始時間
   endAt: Date;       // 此梯次結束時間
   capacity: number;  // 此梯次容量
+  /**
+   * 此梯次的單人費用（來自規則的 pricePerSlotCentsOverride）
+   * undefined = 沒有覆寫，用活動基價 / 場域預設
+   */
+  priceCents?: number;
 }
 
 export function expandSlotWindow(
   date: Date,
   window: BookingSlotWindow,
   capacityOverride?: number,
+  priceOverride?: number,
 ): ExpandedSlot[] {
   const result: ExpandedSlot[] = [];
   const baseY = date.getFullYear();
@@ -162,6 +168,7 @@ export function expandSlotWindow(
       startAt: new Date(cursor),
       endAt: slotEnd,
       capacity: capacityOverride ?? window.capacity,
+      priceCents: priceOverride,
     });
 
     cursor = new Date(cursor.getTime() + window.intervalMinutes * 60_000);
@@ -226,7 +233,9 @@ export function getDailySlots(
 
   // 同一天的規則取聯集（日間 + 夜間都要出現），再依開始時間排序
   const merged = rules.flatMap((rule) =>
-    rule.slots.flatMap((window) => expandSlotWindow(date, window, rule.capacityOverride)),
+    rule.slots.flatMap((window) =>
+      expandSlotWindow(date, window, rule.capacityOverride, rule.pricePerSlotCentsOverride),
+    ),
   );
   const slots = dedupeSlots(merged);
   // 過濾與 time_range closure 重疊的梯次

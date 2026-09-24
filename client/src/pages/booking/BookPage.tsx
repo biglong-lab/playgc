@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { initLiff } from "@/lib/liff";
 import { useToast } from "@/hooks/use-toast";
+import { formatNT } from "@shared/lib/booking-price";
 
 interface AvailableSlot {
   date: string;
@@ -33,6 +34,8 @@ interface AvailableSlot {
   booked: number;
   available: number;
   bookable: boolean;
+  /** 💰 此梯次單人費用（夜間場可能比日間貴）*/
+  priceCents?: number;
 }
 
 interface BookingConfigPublic {
@@ -192,9 +195,6 @@ export default function BookPage() {
   });
   const activity = activityData?.activity;
 
-  /** 活動模式時、覆寫 config 的價格（顯示用）*/
-  const effectivePriceCents = activity?.priceCents ?? config?.pricePerSlotCents ?? 0;
-
   // 整理日期 → slot list
   const slotsByDate = useMemo(() => {
     const m = new Map<string, AvailableSlot[]>();
@@ -212,6 +212,14 @@ export default function BookPage() {
 
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
+
+  /**
+   * 活動模式時、覆寫 config 的價格（顯示用）
+   * 🐛 2026-09-24：選定時段後改用「該梯次的價格」——
+   *   時段規則可各自設價（日間 249 / 夜間 349），顯示必須跟後端實收一致。
+   */
+  const basePriceCents = activity?.priceCents ?? config?.pricePerSlotCents ?? 0;
+  const effectivePriceCents = selectedSlot?.priceCents ?? basePriceCents;
   const [partySize, setPartySize] = useState(1);
   const [phone, setPhone] = useState("");
   const [customerNote, setCustomerNote] = useState("");
@@ -226,6 +234,8 @@ export default function BookPage() {
   }, [availableDates, slotsByDate, selectedDate]);
 
   const slotsToday = selectedDate ? (slotsByDate.get(selectedDate) ?? []) : [];
+  /** 這天有沒有不同價格的梯次（有 → 每格標價，客人選之前就知道）*/
+  const hasMixedPrices = new Set(slotsToday.map((s) => s.priceCents ?? basePriceCents)).size > 1;
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -521,6 +531,12 @@ export default function BookPage() {
                       : s.available <= 5 ? `僅剩 ${s.available} 位`
                       : "可預約"}
                   </div>
+                  {/* 💰 同一天有不同價格時（例：夜間加價）才標價，避免每格都重複 */}
+                  {hasMixedPrices && typeof s.priceCents === "number" && (
+                    <div className="text-[10px] text-primary font-semibold">
+                      {formatNT(s.priceCents)}
+                    </div>
+                  )}
                 </button>
               );
             })}
