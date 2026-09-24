@@ -7,6 +7,23 @@
 
 ## 2026-09-24
 
+### 🔑 角色權限拆分 + 📅 舊版時間表標示（P2 底座收尾）
+
+**部署**：`db45e303`（bundle `index-DlykFFSp.js`）；部署前備份 `/opt/backups/db-gamehomicc-predeploy-20260924-1104.sql.gz`
+
+- **POS / 預約 / 報表 / 營收的後台 API 全部掛在 `game:edit` / `game:view`** →
+  想開一個「只做 POS 的店員」帳號，就得連遊戲編輯權一起給。
+  改成各自的鍵（`pos:manage` / `pos:view` / `pos:operate` / `booking:manage` /
+  `report:view` / `revenue:view`），前端選單與 POS 權限表同步換鍵（不留死按鈕）。
+  舊角色由啟動時的權限補發保住：生產補齊權限鍵 6 個、補發給角色 52 筆，
+  查核「有 game:edit 卻沒拿到 booking:manage」的角色 = 0
+- **後台「場域設定」仍擺著時段 / 價格 / 取消 / 提醒，改了卻不會生效**（活動已各自帶設定）→
+  場域有啟用中的活動時，標題掛「舊版單一時間表」、頂部橫幅說明哪一套在生效、
+  被接管的欄位逐項標註，場次規則編輯器預設收起（要按「仍要編輯舊版時間表」才展開）。
+  沒有活動的場域畫面不變
+- 生產驗證：version `db45e303`、`/api/health` ok、5xx = 0；
+  前台時段照常（定點射擊 14:30 起 / 夜間定點射擊 19:00 起）
+
 ### 🖼️ 活動封面上傳 + 📅 活動預約解耦（hotfix）
 
 **部署**：`8a8dc6ba`（bundle `index-DOpj8Pd2.js`）；部署前備份 `/opt/backups/db-gamehomicc-predeploy-20260924-103107.sql.gz`
