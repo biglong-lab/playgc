@@ -82,33 +82,46 @@ export function matchesApplyRange(date: Date, applyTo: BookingApplyRange): boole
 }
 
 /**
- * 解析給定日期的有效規則
+ * 解析給定日期要套用的所有規則
  *
- * @param template schedule template
- * @param date 目標日期
- * @returns 套用的規則（null = 此日不開放）
+ * 🐛 2026-09-24 業主回報「後台設了日間 14:30-17:30 與夜間 19:00-20:00，前台只顯示夜間」：
+ *   原本同一天**只挑一條**規則（同 priority 取最後一條），第二條時段就整個消失。
+ *   業主的用法是「一天可以有好幾段開放時間」→ 同層級的規則要合併，不是互相覆蓋。
+ *
+ * 規則：
+ *   - priority 仍是覆蓋機制：只取「最高 priority」那一層（例如假日特例蓋掉平常設定）
+ *   - 同 priority 的多條規則 → 全部套用、時段取聯集（見 getDailySlots）
  */
-export function resolveRuleForDate(
+export function resolveRulesForDate(
   template: BookingScheduleTemplate,
   date: Date,
-): BookingRule | null {
+): BookingRule[] {
   const ymd = formatYMD(date);
 
   // 1. blackoutDates 直接關閉
-  if (template.blackoutDates?.includes(ymd)) return null;
+  if (template.blackoutDates?.includes(ymd)) return [];
 
   // 2. 過濾 enabled + match applyTo 的 rules
   const matched = template.rules.filter(
     (rule) => rule.enabled && matchesApplyRange(date, rule.applyTo),
   );
-  if (matched.length === 0) return null;
+  if (matched.length === 0) return [];
 
-  // 3. priority 最高者（同 priority 取陣列尾、視為「後加蓋舊」）
-  const sorted = [...matched].sort((a, b) => {
-    if (a.priority !== b.priority) return b.priority - a.priority;
-    return template.rules.indexOf(b) - template.rules.indexOf(a);
-  });
-  return sorted[0] ?? null;
+  // 3. 只留最高 priority 那一層（同層全要）
+  const maxPriority = Math.max(...matched.map((r) => r.priority ?? 0));
+  return matched.filter((r) => (r.priority ?? 0) === maxPriority);
+}
+
+/**
+ * 解析給定日期的有效規則（單條；保留給只需要代表規則的呼叫端）
+ * 多段時段請用 resolveRulesForDate
+ */
+export function resolveRuleForDate(
+  template: BookingScheduleTemplate,
+  date: Date,
+): BookingRule | null {
+  const rules = resolveRulesForDate(template, date);
+  return rules[rules.length - 1] ?? null;
 }
 
 /**
@@ -205,17 +218,34 @@ export function getDailySlots(
   date: Date,
 ): ExpandedSlot[] {
   const ymd = formatYMD(date);
-  const rule = resolveRuleForDate(template, date);
-  if (!rule || rule.slots.length === 0) return [];
+  const rules = resolveRulesForDate(template, date);
+  if (rules.length === 0) return [];
 
-  // 整日關閉（full_day closure；blackoutDates 已在 resolveRuleForDate 擋掉）
+  // 整日關閉（full_day closure；blackoutDates 已在 resolveRulesForDate 擋掉）
   if (hasFullDayClosure(template, ymd)) return [];
 
-  const slots = rule.slots.flatMap((window) =>
-    expandSlotWindow(date, window, rule.capacityOverride),
+  // 同一天的規則取聯集（日間 + 夜間都要出現），再依開始時間排序
+  const merged = rules.flatMap((rule) =>
+    rule.slots.flatMap((window) => expandSlotWindow(date, window, rule.capacityOverride)),
   );
+  const slots = dedupeSlots(merged);
   // 過濾與 time_range closure 重疊的梯次
   return slots.filter((s) => !isSlotClosed(template, ymd, s));
+}
+
+/**
+ * 兩條規則產生同一個梯次（開始 + 結束都相同）→ 只留一個，人數取大的
+ * 例：「假日 13:00-18:00」與「一般 15:00-18:00」重疊的那幾梯不該出現兩次
+ */
+function dedupeSlots(slots: ExpandedSlot[]): ExpandedSlot[] {
+  const byKey = new Map<string, ExpandedSlot>();
+  for (const slot of slots) {
+    const key = `${slot.startAt.getTime()}-${slot.endAt.getTime()}`;
+    const existing = byKey.get(key);
+    if (!existing) byKey.set(key, slot);
+    else if (slot.capacity > existing.capacity) byKey.set(key, slot);
+  }
+  return Array.from(byKey.values()).sort((a, b) => a.startAt.getTime() - b.startAt.getTime());
 }
 
 /**
