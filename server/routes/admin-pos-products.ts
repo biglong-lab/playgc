@@ -65,7 +65,7 @@ const optionSchema = z.object({
 
 export function registerAdminPosProductRoutes(app: Express) {
   // ── 品項 ──────────────────────────────────
-  app.get("/api/admin/pos/products", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/admin/pos/products", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const products = await db
@@ -84,7 +84,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.post("/api/admin/pos/products", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.post("/api/admin/pos/products", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const p = productSchema.safeParse(req.body);
       if (!p.success) return res.status(400).json({ error: "validation", message: p.error.errors[0]?.message });
@@ -98,7 +98,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/admin/pos/products/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.patch("/api/admin/pos/products/:id", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const p = productSchema.partial().safeParse(req.body);
       if (!p.success) return res.status(400).json({ error: "validation", message: p.error.errors[0]?.message });
@@ -114,7 +114,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/admin/pos/products/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.delete("/api/admin/pos/products/:id", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
       if (reason.length < 2) return res.status(400).json({ error: "reason_required", message: "請填刪除原因" });
@@ -131,7 +131,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.post("/api/admin/pos/products/:id/photo", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.post("/api/admin/pos/products/:id/photo", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const imageData = req.body?.imageData;
       if (typeof imageData !== "string" || !imageData.startsWith("data:")) {
@@ -154,7 +154,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.put("/api/admin/pos/products/:id/modifiers", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.put("/api/admin/pos/products/:id/modifiers", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const groupIds = z.array(z.string()).safeParse(req.body?.groupIds);
       if (!groupIds.success) return res.status(400).json({ error: "validation" });
@@ -171,7 +171,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── 客製群組 + 選項 ──────────────────────────
-  app.get("/api/admin/pos/modifier-groups", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/admin/pos/modifier-groups", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const groups = await db
@@ -191,7 +191,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.post("/api/admin/pos/modifier-groups", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.post("/api/admin/pos/modifier-groups", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const p = groupSchema.safeParse(req.body);
       if (!p.success) return res.status(400).json({ error: "validation", message: p.error.errors[0]?.message });
@@ -202,7 +202,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/admin/pos/modifier-groups/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.patch("/api/admin/pos/modifier-groups/:id", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const p = groupSchema.partial().safeParse(req.body);
       if (!p.success) return res.status(400).json({ error: "validation" });
@@ -218,7 +218,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/admin/pos/modifier-groups/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.delete("/api/admin/pos/modifier-groups/:id", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
       if (reason.length < 2) return res.status(400).json({ error: "reason_required", message: "請填刪除原因" });
@@ -234,7 +234,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.post("/api/admin/pos/modifier-groups/:id/options", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.post("/api/admin/pos/modifier-groups/:id/options", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const p = optionSchema.safeParse(req.body);
       if (!p.success) return res.status(400).json({ error: "validation", message: p.error.errors[0]?.message });
@@ -245,7 +245,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.patch("/api/admin/pos/modifier-options/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.patch("/api/admin/pos/modifier-options/:id", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const p = optionSchema.partial().safeParse(req.body);
       if (!p.success) return res.status(400).json({ error: "validation" });
@@ -257,7 +257,7 @@ export function registerAdminPosProductRoutes(app: Express) {
     }
   });
 
-  app.delete("/api/admin/pos/modifier-options/:id", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.delete("/api/admin/pos/modifier-options/:id", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       // 選項刪除為小操作、原因選填（群組/品項/帳務刪除才強制）
       const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
@@ -272,7 +272,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── 一鍵建立預設客製（糖度 / 冰塊）──────────────
-  app.post("/api/admin/pos/seed-default-modifiers", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.post("/api/admin/pos/seed-default-modifiers", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const existing = await db.select().from(posModifierGroups).where(eq(posModifierGroups.fieldId, fieldId));
@@ -300,7 +300,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── POS 結帳用菜單（active 品項 + 客製）──────────
-  app.get("/api/pos/menu", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/pos/menu", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const products = await db
@@ -329,7 +329,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── 垃圾桶：列已軟刪除的 POS 資料 ──────────────
-  app.get("/api/admin/pos/trash", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.get("/api/admin/pos/trash", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const delProducts = await db
@@ -356,7 +356,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── 還原（從垃圾桶取回）──────────────────────
-  app.post("/api/admin/pos/restore", requireAdminAuth, requirePermission("game:edit"), async (req, res) => {
+  app.post("/api/admin/pos/restore", requireAdminAuth, requirePermission("pos:manage"), async (req, res) => {
     try {
       const { type, id } = req.body ?? {};
       if (!type || typeof id !== "string" || !id) return res.status(400).json({ error: "validation" });

@@ -29,7 +29,7 @@ export function registerRevenueRoutes(app: Express): void {
   app.get(
     "/api/revenue/overview",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
@@ -129,7 +129,7 @@ export function registerRevenueRoutes(app: Express): void {
   app.get(
     "/api/revenue/products",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
@@ -211,7 +211,7 @@ export function registerRevenueRoutes(app: Express): void {
   app.get(
     "/api/revenue/codes",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });
@@ -246,7 +246,7 @@ export function registerRevenueRoutes(app: Express): void {
   app.get(
     "/api/revenue/transactions",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         if (!req.admin) return res.status(401).json({ message: "未認證" });

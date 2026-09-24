@@ -310,7 +310,7 @@ export function registerAdminPosReportRoutes(app: Express) {
   });
 
   // 推送日報（彙整今日銷售推群組；不鎖帳）
-  app.post("/api/pos/shift/close", requireAdminAuth, requirePermission("game:view"), async (req, res) => {
+  app.post("/api/pos/shift/close", requireAdminAuth, requirePermission("report:view"), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const date = taipeiToday();

@@ -238,7 +238,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.get(
     "/api/admin/bookings/:fieldId/config",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const rows = await db
@@ -260,7 +260,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.put(
     "/api/admin/bookings/:fieldId/config",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const parsed = updateConfigSchema.safeParse(req.body);
@@ -322,7 +322,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.post(
     "/api/admin/bookings/:fieldId/init",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const fieldId = req.params.fieldId;
@@ -362,7 +362,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.get(
     "/api/admin/bookings/:fieldId/list",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const fieldId = req.params.fieldId;
@@ -390,7 +390,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.post(
     "/api/admin/bookings/:fieldId/manual",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const parsed = manualBookingSchema.safeParse(req.body);
@@ -432,7 +432,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.post(
     "/api/admin/bookings/:bookingCode/cancel",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const checked = checkCancelReason(req.body?.reason);
@@ -467,7 +467,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.post(
     "/api/admin/bookings/:bookingCode/mark-completed",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const result = await markBookingCompleted({
@@ -498,7 +498,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.post(
     "/api/admin/bookings/:bookingCode/mark-no-show",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const result = await markBookingNoShow(req.params.bookingCode);
@@ -524,7 +524,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.get(
     "/api/admin/bookings/:fieldId/blackouts",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const list = await db
@@ -542,7 +542,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.post(
     "/api/admin/bookings/:fieldId/blackouts",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const parsed = blackoutSchema.safeParse(req.body);
@@ -583,7 +583,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.delete(
     "/api/admin/bookings/:fieldId/blackouts/:id",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const id = parseInt(req.params.id, 10);
@@ -618,7 +618,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.get(
     "/api/admin/bookings/:fieldId/templates",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const list = await db
@@ -636,7 +636,7 @@ export function registerAdminBookingRoutes(app: Express) {
   app.put(
     "/api/admin/bookings/:fieldId/templates/:key",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         const key = req.params.key;

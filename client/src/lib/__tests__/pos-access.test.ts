@@ -41,7 +41,7 @@ describe("canOpenPage — 依角色 + 頁面實際要求權限判斷", () => {
   });
 
   it("具備權限的管理員 → 能開", () => {
-    const access = { systemRole: "field_director", hasPermission: only("game:edit", "pos_cash_admin") };
+    const access = { systemRole: "field_director", hasPermission: only("pos:manage", "pos_cash_admin") };
     expect(canOpenPage("/admin/pos-reports", access, POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-reports"])).toBe(true);
     expect(canOpenPage("/admin/pos-trash", access, POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-trash"])).toBe(true);
   });
@@ -50,9 +50,9 @@ describe("canOpenPage — 依角色 + 頁面實際要求權限判斷", () => {
     expect(canOpenPage("/pos/scan", { systemRole: "field_executor", hasPermission: deny })).toBe(true);
   });
 
-  it("權限對照與後端一致：報表 = pos_cash_admin、品項 / 垃圾桶 = game:edit", () => {
+  it("權限對照與後端一致：報表 = pos_cash_admin、品項 / 垃圾桶 = pos:manage", () => {
     expect(POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-reports"]).toBe("pos_cash_admin");
-    expect(POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-products"]).toBe("game:edit");
-    expect(POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-trash"]).toBe("game:edit");
+    expect(POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-products"]).toBe("pos:manage");
+    expect(POS_ADMIN_PAGE_PERMISSIONS["/admin/pos-trash"]).toBe("pos:manage");
   });
 });

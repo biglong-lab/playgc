@@ -48,7 +48,7 @@ describe("PosDashboard — 按鈕依權限顯示", () => {
   });
 
   it("現場人員（field_executor）→ 看不到品項 / 報表 / 垃圾桶，但保留現場按鈕與排除障礙", async () => {
-    asRole("field_executor", ["game:view", "game:edit", "pos_cash_admin"]);
+    asRole("field_executor", ["game:view", "pos:manage", "pos_cash_admin"]);
     render(<PosDashboard />);
     expect(await screen.findByRole("button", { name: "掃描 QR" })).toBeInTheDocument();
     for (const label of CORE) expect(btn(label)).toBeInTheDocument();
@@ -63,8 +63,8 @@ describe("PosDashboard — 按鈕依權限顯示", () => {
     for (const label of ADMIN_ONLY) expect(btn(label)).not.toBeInTheDocument();
   });
 
-  it("有 game:edit 無 pos_cash_admin → 看得到品項 / 垃圾桶、看不到銷售報表", async () => {
-    asRole("field_director", ["game:view", "game:edit"]);
+  it("有 pos:manage 無 pos_cash_admin → 看得到品項 / 垃圾桶、看不到銷售報表", async () => {
+    asRole("field_director", ["game:view", "pos:manage"]);
     render(<PosDashboard />);
     expect(await screen.findByText("品項設定")).toBeInTheDocument();
     expect(btn("垃圾桶")).toBeInTheDocument();

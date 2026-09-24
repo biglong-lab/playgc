@@ -11,13 +11,14 @@ const FIELD_STAFF_ALLOWED_PREFIXES = ["/pos", "/admin/troubleshoot", "/admin/sce
 
 /**
  * POS 首頁連到的後台頁 → 該頁主要動作的後端權限
- * （對照 server/routes：品項寫入 / 垃圾桶還原 = game:edit；報表 API = pos_cash_admin；排解中心 = game:view）
+ * 🔑 2026-09-24 P2：改用 POS 專屬權限鍵（品項 / 垃圾桶 = pos:manage、報表 = pos_cash_admin）
+ *   → 可以建「只做 POS」的角色：進得去 POS，打遊戲 API 會被擋
  */
 export const POS_ADMIN_PAGE_PERMISSIONS = {
   "/admin/troubleshoot": "game:view",
-  "/admin/pos-products": "game:edit",
+  "/admin/pos-products": "pos:manage",
   "/admin/pos-reports": "pos_cash_admin",
-  "/admin/pos-trash": "game:edit",
+  "/admin/pos-trash": "pos:manage",
 } as const;
 
 export interface AdminAccess {

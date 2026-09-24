@@ -79,7 +79,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
   app.get(
     "/api/admin/activities",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) {
@@ -124,7 +124,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
   app.get(
     "/api/admin/activities/:id",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });
@@ -151,7 +151,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
   app.post(
     "/api/admin/activities",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });
@@ -195,7 +195,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
   app.patch(
     "/api/admin/activities/:id",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });
@@ -243,7 +243,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
   app.delete(
     "/api/admin/activities/:id",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });
@@ -326,7 +326,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
   app.post(
     "/api/admin/activities/:id/cover",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });
@@ -379,7 +379,7 @@ export function registerAdminActivitiesRoutes(app: Express) {
   app.patch(
     "/api/admin/activities/:id/schedule",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("booking:manage"),
     async (req, res) => {
       try {
         if (!req.admin?.fieldId) return res.status(400).json({ error: "no_field" });

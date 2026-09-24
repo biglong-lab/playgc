@@ -22,7 +22,7 @@ export function registerAdminReportsRoutes(app: Express) {
   app.get(
     "/api/admin/reports",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("report:view"),
     async (req, res) => {
       try {
         const limit = Math.min(200, Math.max(1, parseInt((req.query.limit as string) ?? "50", 10)));
@@ -48,7 +48,7 @@ export function registerAdminReportsRoutes(app: Express) {
   app.get(
     "/api/admin/reports/:sessionId",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("report:view"),
     async (req, res) => {
       try {
         const { sessionId } = req.params;
@@ -73,7 +73,7 @@ export function registerAdminReportsRoutes(app: Express) {
   app.post(
     "/api/admin/reports/:sessionId/generate",
     requireAdminAuth,
-    requirePermission("game:edit"),
+    requirePermission("report:view"),
     async (req, res) => {
       try {
         const { sessionId } = req.params;

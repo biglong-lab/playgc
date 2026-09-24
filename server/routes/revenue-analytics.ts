@@ -106,7 +106,7 @@ export function registerRevenueAnalyticsRoutes(app: Express): void {
   app.get(
     "/api/revenue/analytics/summary",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         const ctx = prepare(req, res);
@@ -161,7 +161,7 @@ export function registerRevenueAnalyticsRoutes(app: Express): void {
   app.get(
     "/api/revenue/analytics/timeseries",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         const ctx = prepare(req, res);
@@ -202,7 +202,7 @@ export function registerRevenueAnalyticsRoutes(app: Express): void {
   app.get(
     "/api/revenue/analytics/breakdown",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         const ctx = prepare(req, res);
@@ -236,7 +236,7 @@ export function registerRevenueAnalyticsRoutes(app: Express): void {
   app.get(
     "/api/revenue/analytics/heatmap",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         const ctx = prepare(req, res);
@@ -264,7 +264,7 @@ export function registerRevenueAnalyticsRoutes(app: Express): void {
   app.get(
     "/api/revenue/analytics/transactions",
     requireAdminAuth,
-    requirePermission("game:view"),
+    requirePermission("revenue:view"),
     async (req, res) => {
       try {
         const ctx = prepare(req, res);
