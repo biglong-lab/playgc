@@ -15,7 +15,7 @@
 // 啟動位置：server/index.ts startup
 
 import { db } from "../db";
-import { bookings, bookingConfigs } from "@shared/schema";
+import { bookings, bookingConfigs, activitySchedules } from "@shared/schema";
 import { eq, and, gte, lte, isNull, sql } from "drizzle-orm";
 import { notifyBookingReminder } from "./booking-notifier";
 
@@ -26,17 +26,23 @@ let timer: NodeJS.Timeout | null = null;
 
 async function runOnce(): Promise<void> {
   try {
-    // 1. 撈出各 fieldId 的 reminderMinutesBefore（用 join）
-    //    我們需要 booking 跟其場域的 reminder 分鐘
+    // 1. 撈出提醒時機
+    //    🐛 2026-09-24：活動的預約看活動自己的提醒設定（原本一律用場域設定，
+    //    活動上設的「開始前幾分鐘提醒」等於沒作用）；沒掛活動才用場域設定
     const candidates = await db
       .select({
         booking: bookings,
         reminderMins: bookingConfigs.reminderMinutesBefore,
+        activityReminderMins: activitySchedules.reminderMinutesBefore,
       })
       .from(bookings)
       .leftJoin(
         bookingConfigs,
         eq(bookingConfigs.fieldId, bookings.fieldId),
+      )
+      .leftJoin(
+        activitySchedules,
+        eq(activitySchedules.activityId, bookings.activityId),
       )
       .where(
         and(
@@ -59,7 +65,7 @@ async function runOnce(): Promise<void> {
     let skipped = 0;
     for (const c of candidates) {
       if (sent >= MAX_PER_TICK) break;
-      const reminderMins = c.reminderMins ?? 30;
+      const reminderMins = c.activityReminderMins ?? c.reminderMins ?? 30;
       if (reminderMins <= 0) {
         skipped++;
         continue;

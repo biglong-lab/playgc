@@ -20,7 +20,7 @@ import {
   type Booking,
   type BookingScheduleTemplate,
 } from "@shared/schema";
-import { eq, and, gte, lte, sql, ne, inArray } from "drizzle-orm";
+import { eq, and, gte, lte, sql, ne, inArray, isNull } from "drizzle-orm";
 import {
   getDailySlots,
   getSlotsInRange,
@@ -50,6 +50,46 @@ function generateBookingCode(): string {
     code += CODE_CHARSET[bytes[i] % CODE_CHARSET.length];
   }
   return code;
+}
+
+/**
+ * 名額範圍：有帶活動就只算該活動的預約，沒帶就只算沒掛活動的（場域層預約）
+ * 🐛 2026-09-24：原本同一時段所有活動的人數加在一起 → 不同活動互相佔名額
+ */
+function activityScope(activityId?: string | null) {
+  return activityId ? eq(bookings.activityId, activityId) : isNull(bookings.activityId);
+}
+
+/**
+ * 取消政策：活動的預約看活動自己的設定，沒掛活動才看場域設定
+ * 🐛 2026-09-24：原本一律看場域 → 活動上設的「可否取消 / 幾分鐘前」形同虛設
+ */
+export async function resolveCancelPolicy(
+  fieldId: string,
+  activityId?: string | null,
+): Promise<{ cancellable: boolean; cancelBeforeMinutes: number }> {
+  if (activityId) {
+    const { activitySchedules } = await import("@shared/schema");
+    const [sched] = await db
+      .select({
+        cancellable: activitySchedules.cancellable,
+        cancelBeforeMinutes: activitySchedules.cancelBeforeMinutes,
+      })
+      .from(activitySchedules)
+      .where(eq(activitySchedules.activityId, activityId))
+      .limit(1);
+    if (sched) {
+      return {
+        cancellable: sched.cancellable !== false,
+        cancelBeforeMinutes: sched.cancelBeforeMinutes ?? 0,
+      };
+    }
+  }
+  const config = await getBookingConfig(fieldId);
+  return {
+    cancellable: !!config?.cancellable,
+    cancelBeforeMinutes: config?.cancelBeforeMinutes ?? 0,
+  };
 }
 
 /** 取場域預約設定 */
@@ -96,16 +136,28 @@ export interface AvailableSlot {
   bookable: boolean;
 }
 
-export async function getAvailability(
+/**
+ * 排程來源解析（顯示時段、建立預約、改期共用同一套）
+ *
+ * 🐛 2026-09-24 業主回報「該時段不在開放時段內」根因：
+ *   玩家看到的時段來自「活動排程」，建立預約卻去驗「場域預設排程」→ 來源分岔、必定失敗。
+ *
+ * 業主定調（2026-09-24）：**活動的預約只看活動自己的時段，不跟場域預設耦合**。
+ *   場域預設（booking_configs.scheduleTemplate）是活動功能出現前的舊設計，
+ *   現在只服務「沒有掛活動的場域層預約」（舊資料 / 單一時間表的場域）。
+ *   活動沒設時段 → 就是還不能預約，不會偷用場域的時間表。
+ */
+export type ScheduleContext =
+  | { ok: true; template: BookingScheduleTemplate; capacityOverride?: number }
+  | { ok: false; reason: "booking_disabled" | "activity_no_schedule" };
+
+export async function resolveScheduleContext(
   fieldId: string,
-  fromDate: Date,
-  toDate: Date,
   activityId?: string,
-): Promise<AvailableSlot[]> {
-  // 🆕 2026-05-18：activity 模式 — 優先用 activity_schedules.scheduleTemplate
-  // 沒設活動時段 → fallback booking_configs（向下相容）
-  let template: BookingScheduleTemplate | null = null;
-  let capacityOverride: number | undefined;
+): Promise<ScheduleContext> {
+  const config = await getBookingConfig(fieldId);
+  // 場域層總開關：整個場域關掉預約時，活動也一起關（這是唯一保留的關聯）
+  if (!config || !config.isEnabled) return { ok: false, reason: "booking_disabled" };
 
   if (activityId) {
     const { activities, activitySchedules } = await import("@shared/schema");
@@ -114,24 +166,31 @@ export async function getAvailability(
       .from(activities)
       .where(eq(activities.id, activityId))
       .limit(1);
-    if (act) capacityOverride = act.capacity;
-
     const [sched] = await db
       .select({ template: activitySchedules.scheduleTemplate })
       .from(activitySchedules)
       .where(eq(activitySchedules.activityId, activityId))
       .limit(1);
-    if (sched?.template) {
-      template = sched.template as BookingScheduleTemplate;
-    }
+    if (!sched?.template) return { ok: false, reason: "activity_no_schedule" };
+    return {
+      ok: true,
+      template: sched.template as BookingScheduleTemplate,
+      capacityOverride: act?.capacity ?? undefined,
+    };
   }
 
-  // fallback booking_configs
-  if (!template) {
-    const config = await getBookingConfig(fieldId);
-    if (!config || !config.isEnabled) return [];
-    template = config.scheduleTemplate as BookingScheduleTemplate;
-  }
+  return { ok: true, template: config.scheduleTemplate as BookingScheduleTemplate };
+}
+
+export async function getAvailability(
+  fieldId: string,
+  fromDate: Date,
+  toDate: Date,
+  activityId?: string,
+): Promise<AvailableSlot[]> {
+  const context = await resolveScheduleContext(fieldId, activityId);
+  if (!context.ok) return [];
+  const { template, capacityOverride } = context;
 
   const dailyResult = getSlotsInRange(template, fromDate, toDate);
 
@@ -153,6 +212,9 @@ export async function getAvailability(
         ne(bookings.status, "cancelled"),
         gte(bookings.slotStart, startBound),
         lte(bookings.slotStart, endBound),
+        // 🐛 2026-09-24：名額要分活動算。原本同一時段不分活動一起加總 →
+        //   「夜間水彈」的預約會吃掉「夜間射擊」同時段的名額。
+        activityScope(activityId),
       ),
     );
 
@@ -218,22 +280,28 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
   if (!config) {
     throw new BookingError("config_not_found", "場域尚未開通預約", 404);
   }
-  if (!config.isEnabled) {
-    throw new BookingError("disabled", "場域目前未開放預約", 400);
-  }
   if (input.partySize < 1) {
     throw new BookingError("invalid_party_size", "人數必須 ≥ 1", 400);
   }
 
-  // 計算 slotEnd 與容量（從 schedule template 解析）
-  const template = config.scheduleTemplate as BookingScheduleTemplate;
-  const slotsThatDay = getDailySlots(template, input.slotStart);
+  // 計算 slotEnd 與容量
+  // 🐛 2026-09-24：改用與「顯示時段」同一套解析 —— 活動預約只看活動自己的時段。
+  //   原本只看場域預設排程 → 玩家看得到的活動時段一律被判「不在開放時段內」。
+  const context = await resolveScheduleContext(input.fieldId, input.activityId);
+  if (!context.ok) {
+    throw context.reason === "activity_no_schedule"
+      ? new BookingError("activity_no_schedule", "這個活動還沒有設定可預約時段，請洽場域工作人員", 400)
+      : new BookingError("disabled", "場域目前未開放預約", 400);
+  }
+  const slotsThatDay = getDailySlots(context.template, input.slotStart);
   const matchedSlot = slotsThatDay.find(
     (s) => s.startAt.getTime() === input.slotStart.getTime(),
   );
   if (!matchedSlot) {
     throw new BookingError("slot_not_open", "該時段不在開放時段內", 400);
   }
+  // 活動的每梯人數優先（活動設 12 人/梯就以 12 為準）
+  const slotCapacity = context.capacityOverride ?? matchedSlot.capacity;
 
   // 不能預約已過期的 slot
   if (matchedSlot.startAt <= new Date()) {
@@ -251,13 +319,14 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         eq(bookings.fieldId, input.fieldId),
         eq(bookings.slotStart, input.slotStart),
         ne(bookings.status, "cancelled"),
+        activityScope(input.activityId),
       ),
     );
   const currentBooked = Number(sumResult[0]?.total ?? 0);
-  if (currentBooked + input.partySize > matchedSlot.capacity) {
+  if (currentBooked + input.partySize > slotCapacity) {
     throw new BookingError(
       "slot_full",
-      `此時段剩餘 ${matchedSlot.capacity - currentBooked} 位、無法容納 ${input.partySize} 位`,
+      `此時段剩餘 ${slotCapacity - currentBooked} 位、無法容納 ${input.partySize} 位`,
       409,
     );
   }
@@ -272,6 +341,8 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
         eq(bookings.slotStart, input.slotStart),
         eq(bookings.lineUserId, input.lineUserId),
         ne(bookings.status, "cancelled"),
+        // 不同活動可以同時段各預約一次（例如陪同家人玩不同項目）
+        activityScope(input.activityId),
       ),
     )
     .limit(1);
@@ -588,18 +659,19 @@ export async function cancelBooking(input: CancelBookingInput): Promise<Booking>
 
   // 自助取消需檢查取消政策
   if (input.cancelBy.type === "self") {
-    const config = await getBookingConfig(booking.fieldId);
-    if (!config?.cancellable) {
-      throw new BookingError("not_cancellable", "此場域不開放自助取消", 403);
+    // 🐛 2026-09-24：活動的預約看活動自己的取消政策（原本一律看場域設定）
+    const policy = await resolveCancelPolicy(booking.fieldId, booking.activityId);
+    if (!policy.cancellable) {
+      throw new BookingError("not_cancellable", "此活動不開放自助取消", 403);
     }
-    if (config.cancelBeforeMinutes > 0) {
+    if (policy.cancelBeforeMinutes > 0) {
       const cutoff = new Date(
-        booking.slotStart.getTime() - config.cancelBeforeMinutes * 60_000,
+        booking.slotStart.getTime() - policy.cancelBeforeMinutes * 60_000,
       );
       if (new Date() > cutoff) {
         throw new BookingError(
           "cancel_too_late",
-          `必須在開始前 ${config.cancelBeforeMinutes} 分鐘前取消`,
+          `必須在開始前 ${policy.cancelBeforeMinutes} 分鐘前取消`,
           400,
         );
       }
