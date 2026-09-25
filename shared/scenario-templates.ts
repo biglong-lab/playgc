@@ -2,19 +2,19 @@
 //
 // 設計依據：docs/changes/2026-05-02-multiplayer-component-platform.md B2
 //
+// 📺 2026-09-25：大螢幕互動（host 軸）已整條移交 PhotoGo，社交 / 熱場類情境
+//   （婚禮、生日、同學會、園遊會主舞台、破冰、頒獎）請到 PhotoGo；本檔只留場域遊戲情境。
+//   計畫：docs/changes/2026-09-25-host-removal-photogo-migration.md（R2）
+//
 // 與 GAME_TEMPLATES（shared/schema/game-templates.ts）的差異：
 //   - GAME_TEMPLATES 是單一 game session 的「玩家闖關流程」（solo / multi 元件）
-//   - SCENARIO_TEMPLATES 是「情境包」，可能含多個 host session + game session
+//   - SCENARIO_TEMPLATES 是「情境包」，可能含多個 game session
 //     用途是讓使用者一眼看到「這個場景要怎麼組合」，而不是建立單一遊戲
 //
-// 12 情境（5 大市場）：
+// 7 情境（3 大市場）：
 //   公部門：street-walk / district-checkin
 //   私部門：corporate-training / company-trip
-//   活動：carnival-stage / icebreaker / awards-ceremony
-//   空間：venue-storyline / scenic-spot
-//   交誼：wedding / birthday / reunion
-
-import type { PlayerMode } from "./multiplayer-component-types";
+//   空間：kids-adventure / venue-storyline / shooting-arena
 
 /** 模板中的單一元件 */
 export interface ScenarioComponent {
@@ -24,8 +24,8 @@ export interface ScenarioComponent {
   label: string;
   /** 元件作用 */
   role: string;
-  /** 軸線 */
-  axis: PlayerMode | "shared";
+  /** 軸線（host 軸已移交 PhotoGo、2026-09-25 起不再出現）*/
+  axis: "multi" | "solo" | "shared";
   /** demo 連結（ShowcaseHub demoMode）*/
   demoMode?: string;
   /**
@@ -37,13 +37,13 @@ export interface ScenarioComponent {
   config?: Record<string, unknown>;
 }
 
-/** 情境分類 */
+/** 情境分類（event / social 兩類情境已移交 PhotoGo，型別保留避免既有引用炸掉）*/
 export type ScenarioCategory =
   | "public"      // 公部門（街區、景點、空間活化）
   | "corporate"   // 私部門（企業內訓、員工旅遊）
-  | "event"       // 活動（園遊會、破冰、結業典禮）
+  | "event"       // 活動（園遊會、破冰、結業典禮）— 已移交 PhotoGo、目前無情境
   | "venue"       // 空間（特定場域故事）
-  | "social";     // 交誼（婚禮、生日、聚會）
+  | "social";     // 交誼（婚禮、生日、聚會）— 已移交 PhotoGo、目前無情境
 
 export interface ScenarioTemplate {
   id: string;
@@ -73,399 +73,13 @@ export interface ScenarioTemplate {
 
 export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   // ════════════════════════════════════════════
-  // 交誼類（婚禮、生日、聚會）
-  // ════════════════════════════════════════════
-  {
-    id: "wedding",
-    name: "婚禮派對情境包",
-    tagline: "拍立得紀念牆 + 數位簽名簿 + 情緒池",
-    description:
-      "婚禮現場的數位互動完整方案。來賓掃 QR 進入後可以留下祝福、貼拍立得、按 emoji 為新人應援。\n大螢幕同步呈現所有來賓的祝福，賓客離場後仍是新人珍藏的紀念。",
-    useCases: ["婚宴主桌投影", "二進場前儀式", "戶外證婚台", "迎賓區牆面"],
-    category: "social",
-    icon: "Heart",
-    gradient: "from-rose-500/20 to-pink-500/20",
-    estimatedPlayers: "30-300 人",
-    estimatedDuration: "2-4 小時",
-    components: [
-      {
-        pageType: "host_polaroid_collage",
-        label: "拍立得紀念牆",
-        role: "大螢幕主視覺、來賓貼祝福",
-        axis: "host",
-        demoMode: "polaroid-host",
-      },
-      {
-        pageType: "host_guestbook_digital",
-        label: "數位簽名簿",
-        role: "保留電子留言、手寫感字體",
-        axis: "host",
-        demoMode: "guestbook-host",
-      },
-      {
-        pageType: "host_blessing_wall",
-        label: "新人祝福牆",
-        role: "賓客掃 QR 匿名送祝福、大螢幕即時長出祝福卡（免登入）",
-        axis: "host",
-        config: {
-          theme: "wedding",
-          title: "💕 新人祝福牆",
-          subtitle: "寫下你對新人的祝福",
-          emojis: ["💕", "💍", "🥂", "🎉", "✨", "💐"],
-          maxLength: 40,
-        },
-      },
-      {
-        pageType: "host_emoji_react",
-        label: "情緒池應援",
-        role: "高潮時刻按 emoji（如戒指交換）",
-        axis: "host",
-        demoMode: "emoji-host",
-      },
-      {
-        pageType: "host_word_cloud",
-        label: "祝福詞雲",
-        role: "賓客一人一詞，大螢幕即時匯成祝福文字雲（免登入）",
-        axis: "host",
-        config: {
-          title: "💕 祝福詞雲",
-          subtitle: "用一個詞形容你眼中的新人",
-          maxWordsPerUser: 3,
-          maxLength: 8,
-        },
-      },
-    ],
-    valueProposition:
-      "替代傳統紙本簽名簿、提供拍照分享素材、活動結束後新人可下載完整紀錄。一場婚禮 NT$ 8,000-15,000 服務費。",
-    status: "live",
-  },
-  {
-    id: "birthday",
-    name: "生日派對情境包",
-    tagline: "回憶相簿 + 祝福瀑布 + 全場情緒池",
-    description:
-      "壽星專屬的數位互動派對。賓客掃 QR 後可上傳與壽星的合照、留下祝福、為現場活動應援。\n大螢幕全程呈現氛圍，派對結束後壽星可保留所有紀錄。",
-    useCases: ["壽宴主桌投影", "親友聚餐", "公司同事慶生", "兒童生日派對"],
-    category: "social",
-    icon: "Cake",
-    gradient: "from-amber-500/20 to-orange-500/20",
-    estimatedPlayers: "10-80 人",
-    estimatedDuration: "1-3 小時",
-    components: [
-      {
-        pageType: "host_polaroid_collage",
-        label: "回憶相簿牆",
-        role: "賓客上傳合照與祝福",
-        axis: "host",
-      },
-      {
-        pageType: "host_guestbook_digital",
-        label: "生日留言簿",
-        role: "電子簽名 + 文字祝福",
-        axis: "host",
-      },
-      {
-        pageType: "host_blessing_wall",
-        label: "壽星祝福牆",
-        role: "賓客掃 QR 匿名送祝福給壽星、大螢幕即時呈現（免登入）",
-        axis: "host",
-        config: {
-          theme: "birthday",
-          title: "🎂 壽星祝福牆",
-          subtitle: "寫下你對壽星的生日祝福",
-          emojis: ["🎂", "🎉", "🎈", "🎁", "✨", "🥳"],
-          maxLength: 40,
-        },
-      },
-      {
-        pageType: "host_emoji_react",
-        label: "派對情緒池",
-        role: "切蛋糕、吹蠟燭時全場應援",
-        axis: "host",
-      },
-    ],
-    valueProposition: "輕量版婚禮模板，適合中小型私人場合。NT$ 3,000-6,000 服務費。",
-    status: "live",
-  },
-  {
-    id: "reunion",
-    name: "同學會 / 聚會情境包",
-    tagline: "重逢搶答 + 許願牆 + 數位簽名簿",
-    description:
-      "重逢主題的破冰互動。透過搶答 ice-breaker、許願牆、電子簽名簿，讓久未相見的朋友快速重新熟悉。",
-    useCases: ["畢業 N 週年同學會", "工作老同事聚會", "社團校友會"],
-    category: "social",
-    icon: "Users",
-    gradient: "from-purple-500/20 to-indigo-500/20",
-    estimatedPlayers: "10-60 人",
-    estimatedDuration: "2-3 小時",
-    components: [
-      {
-        pageType: "host_trivia_showdown",
-        label: "重逢搶答",
-        role: "「誰最快結婚？」、「誰是當年校隊隊長？」",
-        axis: "host",
-        demoMode: "trivia-host",
-        config: {
-          title: "🎓 重逢搶答",
-          questions: [
-            {
-              id: "q1",
-              prompt: "我們是哪一年畢業的？（請主辦改成你們的年份）",
-              options: ["2008", "2012", "2016", "2020"],
-              correctIdx: 1,
-              timeLimitSec: 15,
-            },
-            {
-              id: "q2",
-              prompt: "當年最常一起去的地方是？",
-              options: ["福利社", "操場", "圖書館", "校門口飲料店"],
-              correctIdx: 3,
-              timeLimitSec: 15,
-            },
-          ],
-        },
-      },
-      {
-        pageType: "host_guestbook_digital",
-        label: "回憶簽名簿",
-        role: "近況留言、聯絡方式更新",
-        axis: "host",
-      },
-      {
-        pageType: "host_polaroid_collage",
-        label: "重逢拍立得",
-        role: "現場合照即時上牆",
-        axis: "host",
-      },
-      {
-        pageType: "host_blessing_wall",
-        label: "許願牆",
-        role: "離別前每人匿名留下一句話或祝福、大螢幕呈現，作為聚會的溫暖結尾（免登入）",
-        axis: "host",
-        config: {
-          theme: "reunion",
-          title: "🎓 同學會許願牆",
-          subtitle: "離別前，留下一句想對大家說的話",
-          emojis: ["🎓", "🤝", "✨", "💬", "🍻", "📸"],
-          maxLength: 50,
-        },
-      },
-      {
-        pageType: "host_poll_live",
-        label: "重逢即時投票",
-        role: "「誰先當爸媽？」等趣味題、賓客手機匿名投票、大螢幕即時開票（免登入）",
-        axis: "host",
-        config: {
-          title: "🎓 重逢投票",
-          question: "我們之中，誰最有當年的樣子？",
-          options: [
-            { id: "a", label: "班長" },
-            { id: "b", label: "風雲人物" },
-            { id: "c", label: "最低調的同學" },
-            { id: "d", label: "老師最疼的那個" },
-          ],
-        },
-      },
-    ],
-    valueProposition: "輕量、不複雜，主辦方一人就能搞定。NT$ 2,000-5,000。",
-    status: "live",
-  },
-
-  // ════════════════════════════════════════════
-  // 活動類（園遊會、破冰、典禮）
-  // ════════════════════════════════════════════
-  {
-    id: "carnival-stage",
-    name: "園遊會主舞台",
-    tagline: "搶答秀 + 即時排行 + 全場應援",
-    description:
-      "園遊會主舞台的觀眾互動方案。觀眾可參與搶答、為攤位應援、看即時排行。\n配合主持人腳本可串成完整 30 分鐘節目。",
-    useCases: ["大學校慶園遊會", "商場開幕活動", "社區嘉年華", "夏日祭"],
-    category: "event",
-    icon: "PartyPopper",
-    gradient: "from-orange-500/20 to-red-500/20",
-    estimatedPlayers: "50-500 人",
-    estimatedDuration: "20-60 分鐘",
-    components: [
-      {
-        pageType: "host_trivia_showdown",
-        label: "知識搶答",
-        role: "在地知識題、品牌冷知識",
-        axis: "host",
-        demoMode: "trivia-host",
-        config: {
-          title: "🎪 園遊會搶答",
-          questions: [
-            {
-              id: "q1",
-              prompt: "今天園遊會總共有幾個攤位？（請主辦改成實際數字）",
-              options: ["10", "20", "30", "40"],
-              correctIdx: 2,
-              timeLimitSec: 15,
-            },
-            {
-              id: "q2",
-              prompt: "本次活動的主辦單位是？",
-              options: ["社區發展協會", "學校家長會", "在地商圈", "以上皆是"],
-              correctIdx: 3,
-              timeLimitSec: 15,
-            },
-          ],
-        },
-      },
-      {
-        pageType: "host_live_leaderboard",
-        label: "即時排行",
-        role: "金銀銅排行榜投影",
-        axis: "host",
-        demoMode: "leaderboard-host",
-      },
-      {
-        pageType: "host_wave_response",
-        label: "全場應援",
-        role: "節目高潮時的人浪",
-        axis: "host",
-        demoMode: "wave-host",
-      },
-      {
-        pageType: "host_poll_live",
-        label: "最佳攤位票選",
-        role: "現場掃 QR 匿名投票、大螢幕即時開票（免登入）",
-        axis: "host",
-        config: {
-          title: "🎪 最佳攤位票選",
-          question: "今天最讚的攤位是哪一個？",
-          options: [
-            { id: "a", label: "美食區" },
-            { id: "b", label: "遊戲區" },
-            { id: "c", label: "手作體驗區" },
-            { id: "d", label: "舞台表演" },
-          ],
-        },
-      },
-      {
-        pageType: "host_scoreboard_announcement",
-        label: "跑馬燈播報",
-        role: "得分插播、活動公告",
-        axis: "host",
-        demoMode: "scoreboard-host",
-      },
-    ],
-    valueProposition: "搭配主持人腳本就是一場 30 分鐘節目。場次包套 NT$ 15,000-30,000。",
-    status: "live",
-  },
-  {
-    id: "icebreaker",
-    name: "破冰熱場情境包",
-    tagline: "聚眾簽到 + 拼圖協作 + emoji 池",
-    description:
-      "新團體破冰場合的快速熱場方案。從報到開始就用簽到 banner，玩兩輪拼圖協作，最後 emoji 池讓全場互相認識。",
-    useCases: ["新進員工訓練", "夏令營報到", "讀書會首次聚會", "社團迎新"],
-    category: "event",
-    icon: "Sparkles",
-    gradient: "from-cyan-500/20 to-blue-500/20",
-    estimatedPlayers: "10-80 人",
-    estimatedDuration: "30-60 分鐘",
-    components: [
-      {
-        pageType: "host_crowd_gather",
-        label: "聚眾簽到",
-        role: "報到熱場、達標 banner",
-        axis: "host",
-        demoMode: "crowd-host",
-      },
-      {
-        pageType: "host_word_cloud",
-        label: "破冰詞雲",
-        role: "一人一詞「用三個字形容現在的心情」、大螢幕即時長出字雲（免登入）",
-        axis: "host",
-        config: {
-          title: "🧊 破冰詞雲",
-          subtitle: "用三個字形容你現在的心情",
-          maxWordsPerUser: 3,
-          maxLength: 6,
-        },
-      },
-      {
-        pageType: "host_emoji_react",
-        label: "情緒池",
-        role: "結尾全場互動",
-        axis: "host",
-        demoMode: "emoji-host",
-      },
-    ],
-    valueProposition: "顧問入場前 30 分鐘暖身。NT$ 5,000-12,000 一場。",
-    status: "live",
-  },
-  {
-    id: "awards-ceremony",
-    name: "頒獎典禮情境包",
-    tagline: "即時投票 + 跑馬燈 + 全場掌聲",
-    description: "頒獎典禮的觀眾參與方案。觀眾可投票最佳組別、看跑馬燈得獎名單、用 emoji 為得主鼓掌。",
-    useCases: ["公司年會頒獎", "競賽結果公佈", "校園金鼎獎"],
-    category: "event",
-    icon: "Trophy",
-    gradient: "from-yellow-500/20 to-amber-500/20",
-    estimatedPlayers: "50-500 人",
-    estimatedDuration: "30-90 分鐘",
-    components: [
-      {
-        pageType: "host_poll_live",
-        label: "即時投票",
-        role: "「人氣獎」由觀眾票選",
-        axis: "host",
-        demoMode: "poll-host",
-        config: {
-          title: "🏆 人氣獎票選",
-          question: "你心目中的最佳表現獎是？",
-          options: [
-            { id: "a", label: "1 號入圍者" },
-            { id: "b", label: "2 號入圍者" },
-            { id: "c", label: "3 號入圍者" },
-            { id: "d", label: "4 號入圍者" },
-          ],
-        },
-      },
-      {
-        pageType: "host_scoreboard_announcement",
-        label: "跑馬燈得獎",
-        role: "輪播得獎名單",
-        axis: "host",
-        demoMode: "scoreboard-host",
-      },
-      {
-        pageType: "host_emoji_react",
-        label: "全場應援",
-        role: "得獎時的 emoji 雨",
-        axis: "host",
-        demoMode: "emoji-host",
-      },
-      {
-        pageType: "host_word_cloud",
-        label: "活動文字雲",
-        role: "典禮結束前每人匿名送 1-3 個詞描述感受、大螢幕匯成字雲，溫馨收場（免登入）",
-        axis: "host",
-        config: {
-          title: "🏆 今日感受",
-          subtitle: "用一個詞形容今天的典禮",
-          maxWordsPerUser: 2,
-          maxLength: 8,
-        },
-      },
-    ],
-    valueProposition: "頒獎場合的觀眾參與機制。NT$ 8,000-20,000。",
-    status: "live",
-  },
-
-  // ════════════════════════════════════════════
   // 公部門（街區、景點、空間活化）
   // ════════════════════════════════════════════
   {
     id: "street-walk",
     name: "街區走讀情境包",
-    tagline: "GPS 連鎖點 + 場域全景 + 簽到牆",
-    description: "讓觀光客 / 居民邊走邊探索街區故事。每到一站解鎖下一站，最後在大螢幕看到自己走過的軌跡。",
+    tagline: "GPS 連鎖點解鎖・邊走邊探索街區故事",
+    description: "讓觀光客 / 居民邊走邊探索街區故事。每到一站解鎖下一站，走完全程即完成整條走讀路線。",
     useCases: ["金門後浦老街", "台南神農街", "迪化街文創導覽", "校園歷史散步"],
     category: "public",
     icon: "MapPin",
@@ -489,20 +103,6 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
           ],
         },
       },
-      {
-        pageType: "host_knowledge_map",
-        label: "場域全景地圖",
-        role: "大螢幕呈現所有人軌跡",
-        axis: "host",
-        demoMode: "knowledgemap-host",
-      },
-      {
-        pageType: "host_crowd_gather",
-        label: "簽到熱場",
-        role: "起點集合、達標解鎖",
-        axis: "host",
-        demoMode: "crowd-host",
-      },
     ],
     valueProposition: "公部門委辦案、觀光局街區活化。NT$ 80,000-200,000 / 季。",
     status: "live",
@@ -510,8 +110,8 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   {
     id: "district-checkin",
     name: "商圈打卡情境包",
-    tagline: "尋寶任務 + 場域全景 + 排行榜",
-    description: "讓客人為商圈集點、打卡、累積回饋。多家商家串聯，全程在大螢幕看到熱度。",
+    tagline: "商圈尋寶集點・店家線索拼密碼",
+    description: "讓客人為商圈集點、打卡、累積回饋。多家商家串聯，線索藏在店裡、走完才能拼出密碼。",
     useCases: ["夜市導覽", "商圈集章", "美食街尋寶", "市集 X 活動"],
     category: "public",
     icon: "ShoppingBag",
@@ -535,20 +135,6 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
           ],
         },
       },
-      {
-        pageType: "host_knowledge_map",
-        label: "商圈全景",
-        role: "店家熱度視覺化",
-        axis: "host",
-        demoMode: "knowledgemap-host",
-      },
-      {
-        pageType: "host_live_leaderboard",
-        label: "尋寶排行",
-        role: "前 10 名上榜",
-        axis: "host",
-        demoMode: "leaderboard-host",
-      },
     ],
     valueProposition: "商圈聯合活動。NT$ 30,000-100,000 / 場。",
     status: "preview",
@@ -560,8 +146,8 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   {
     id: "corporate-training",
     name: "企業內訓情境包",
-    tagline: "搶答 + 即時投票 + 角色分派 + 任務清單",
-    description: "企業內訓的互動模組。搶答測驗、決策投票、模擬情境角色扮演、任務清單驗收 — 講師輕鬆、學員投入。",
+    tagline: "角色分派 + 點點投票 + 六頂思考帽 + 議題排序",
+    description: "企業內訓的互動模組。情境角色扮演、點子與議題投票、六頂思考帽、課後量表與優先排序 — 講師輕鬆、學員投入。",
     useCases: ["新進員工訓練", "中階主管培訓", "業務技能訓練", "顧問講座"],
     category: "corporate",
     icon: "Briefcase",
@@ -569,42 +155,6 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
     estimatedPlayers: "10-50 人",
     estimatedDuration: "2-4 小時",
     components: [
-      {
-        pageType: "host_trivia_showdown",
-        label: "螢幕知識搶答",
-        role: "搭配大螢幕的競賽搶答",
-        axis: "host",
-        demoMode: "trivia-host",
-        config: {
-          title: "🏢 內訓搶答",
-          questions: [
-            {
-              id: "q1",
-              prompt: "範例題：本次課程的核心目標是？（請講師替換成課程題目）",
-              options: ["提升效率", "強化溝通", "風險管理", "以上皆是"],
-              correctIdx: 3,
-              timeLimitSec: 20,
-            },
-          ],
-        },
-      },
-      {
-        pageType: "host_poll_live",
-        label: "即時投票",
-        role: "決策模擬、議題討論",
-        axis: "host",
-        demoMode: "poll-host",
-        config: {
-          title: "🏢 議題即時投票",
-          question: "面對這個情境，你會優先選擇？",
-          options: [
-            { id: "a", label: "立即行動" },
-            { id: "b", label: "先蒐集更多資訊" },
-            { id: "c", label: "尋求主管核可" },
-            { id: "d", label: "交給團隊討論" },
-          ],
-        },
-      },
       {
         pageType: "role_assign",
         label: "角色分派",
@@ -681,8 +231,8 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   {
     id: "company-trip",
     name: "員工旅遊情境包",
-    tagline: "團體合影 + GPS 任務 + 聚會留念",
-    description: "員工旅遊現場的數位互動。分組合影、GPS 拓荒任務、最後簽名簿留念。HR 一人就能搞定。",
+    tagline: "集合簽到 + 團體合影 + GPS 任務 + 旅途二選一",
+    description: "員工旅遊現場的數位互動。集合簽到、分組合影、GPS 拓荒任務、車上二選一暖場。HR 一人就能搞定。",
     useCases: ["年度員工旅遊", "部門團建", "Off-site Workshop"],
     category: "corporate",
     icon: "Plane",
@@ -729,12 +279,6 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
           showVoterNames: true,
         },
       },
-      {
-        pageType: "host_guestbook_digital",
-        label: "團隊簽名簿",
-        role: "活動結束時的留念",
-        axis: "host",
-      },
     ],
     valueProposition: "HR 一人就能搞定整天活動。NT$ 10,000-30,000 / 場。",
     status: "preview",
@@ -746,9 +290,9 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   {
     id: "kids-adventure",
     name: "親子冒險情境包",
-    tagline: "尋寶任務 + 拼圖協作 + 應援池",
+    tagline: "尋寶任務 + 拼圖協作",
     description:
-      "為孩子量身打造的親子冒險體驗。家長帶孩子完成尋寶、拼圖協作；終點集合時用 emoji 池一起慶祝。\n適合假日商場、親子館、主題樂園、暑期營隊。",
+      "為孩子量身打造的親子冒險體驗。家長帶孩子一起找線索、解謎，再合力完成拼圖。\n適合假日商場、親子館、主題樂園、暑期營隊。",
     useCases: [
       "百貨親子節活動",
       "親子館主題日",
@@ -792,13 +336,6 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
           prompts: ["可愛動物", "彩虹", "太陽", "小花"],
         },
       },
-      {
-        pageType: "host_emoji_react",
-        label: "終點應援池",
-        role: "完賽時全場 emoji 慶祝",
-        axis: "host",
-        demoMode: "emoji-host",
-      },
     ],
     valueProposition:
       "親子市場高黏著度活動。可日常常駐主題館使用 + 節慶包裝活動。NT$ 8,000-25,000 / 場 + 月訂閱。",
@@ -807,8 +344,8 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
   {
     id: "venue-storyline",
     name: "場域故事情境包",
-    tagline: "NPC 對話 + 任務鏈 + 紀念牆",
-    description: "為特定空間（民宿、咖啡廳、博物館）打造的玩家故事。客人邊吃邊玩、留下影像紀念。",
+    tagline: "NPC 對話 + 任務鏈",
+    description: "為特定空間（民宿、咖啡廳、博物館）打造的玩家故事。客人邊吃邊玩、解鎖場域的隱藏故事。",
     useCases: ["主題民宿", "故事咖啡廳", "小型博物館", "AR 互動展"],
     category: "venue",
     icon: "Home",
@@ -844,27 +381,20 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
           ],
         },
       },
-      {
-        pageType: "host_polaroid_collage",
-        label: "紀念牆",
-        role: "客人離開前留念",
-        axis: "host",
-        demoMode: "polaroid-host",
-      },
     ],
     valueProposition: "民宿 / 餐廳長期訂閱。月費 NT$ 800-2,500 + 活動分潤。",
     status: "live",
   },
 
   // ════════════════════════════════════════════
-  // W22 新增 — 用 BingoBoard + BlessingWall
+  // 空間（實體硬體）— W22 新增
   // ════════════════════════════════════════════
   {
     id: "shooting-arena",
     name: "實體打擊競技場",
-    tagline: "實體靶機 + 即時計分 + 現場應援",
+    tagline: "實體靶機 + 個人挑戰 + 隊伍即時計分",
     description:
-      "把場域的實體打擊靶接進遊戲：玩家擊中靶面，成績即時進系統、隊伍分數同步累計，現場觀眾用 emoji 應援。\n需搭配 ESP32 打擊靶（見 docs/hardware-integration-spec.md），適合市集攤位、園區體驗區、運動主題空間。",
+      "把場域的實體打擊靶接進遊戲：玩家擊中靶面，成績即時進系統、隊伍分數同步累計。\n需搭配 ESP32 打擊靶（見 docs/hardware-integration-spec.md），適合市集攤位、園區體驗區、運動主題空間。",
     useCases: [
       "市集趣味打擊攤位",
       "園區實體體驗關卡",
@@ -899,13 +429,6 @@ export const SCENARIO_TEMPLATES: ScenarioTemplate[] = [
           title: "🏆 隊伍打擊賽",
         },
       },
-      {
-        pageType: "host_emoji_react",
-        label: "現場應援池",
-        role: "觀眾用 emoji 為上場選手加油",
-        axis: "host",
-        demoMode: "emoji-host",
-      },
     ],
     valueProposition:
       "實體硬體帶來的體感差異化是純手機遊戲做不到的。可作市集攤位收費體驗（NT$ 50-150 / 人次），或園區常駐設施搭配月租維運。",
@@ -934,6 +457,7 @@ export function getScenariosForPageType(pageType: string): ScenarioTemplate[] {
   );
 }
 
+// event / social 兩類目前沒有情境（已移交 PhotoGo），label 保留給既有 API / 篩選器使用
 export const SCENARIO_CATEGORY_LABELS: Record<ScenarioCategory, string> = {
   public: "🏛 公部門｜空間活化",
   corporate: "💼 私部門｜企業內訓",

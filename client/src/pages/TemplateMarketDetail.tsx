@@ -9,35 +9,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, CheckCircle, Tv, Smartphone, Zap, Copy, ExternalLink, Loader2, Printer, Wand2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Smartphone, Zap, Copy, ExternalLink, Loader2, Printer, Wand2 } from "lucide-react";
 import { getScenarioById, type ScenarioComponent } from "@shared/scenario-templates";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { toast } from "@/hooks/use-toast";
 
+// 📺 2026-09-25：大螢幕互動（host 軸）已移交 PhotoGo，建場結果只剩 gameUrl 入口
 interface ScenarioInstance {
-  axis: "host" | "multi" | "solo" | "shared";
+  axis: "multi" | "solo" | "shared";
   gameId: string;
   pageType: string;
   label: string;
   role: string;
-  // host 才有
-  sessionId?: string;
-  hostUrl?: string;
-  playUrl?: string;
-  hostToken?: string;
-  // multi/solo/shared 才有
-  gameUrl?: string;
-  publicSlug?: string;
+  gameUrl: string;
+  publicSlug: string;
 }
 
 interface InstantiateResponse {
   scenario: { id: string; name: string; tagline: string };
   displayName: string;
-  expiresAt: string;
   instances: ScenarioInstance[];
   totalCreated: number;
-  breakdown: { host: number; multi: number; other: number };
+  breakdown: { multi: number; other: number };
 }
 
 interface AiPreviewResponse {
@@ -156,32 +150,6 @@ export default function TemplateMarketDetail() {
     }
   };
 
-  // 🆕 2026-07-05：訪客免登入體驗（demo 沙盒）— 僅全 host 情境
-  const allHost = !!scenario && scenario.components.every((c) => c.axis === "host");
-  const [demoLaunching, setDemoLaunching] = useState(false);
-  const handleDemo = async () => {
-    if (!scenarioId) return;
-    setDemoLaunching(true);
-    try {
-      const res = await apiRequest("POST", `/api/scenarios/${scenarioId}/demo`, {});
-      const data: { hostUrl?: string | null; playUrl?: string | null } = await res.json();
-      const target = data.hostUrl || data.playUrl;
-      if (target) {
-        toast({ title: "🎮 體驗已建立", description: "正在進入大螢幕，可用另一支手機掃畫面上的 QR 加入" });
-        window.location.href = target;
-      } else {
-        throw new Error("未取得體驗連結");
-      }
-    } catch (err) {
-      toast({
-        title: "❌ 體驗建立失敗",
-        description: err instanceof Error ? err.message : "請稍後再試",
-        variant: "destructive",
-      });
-      setDemoLaunching(false);
-    }
-  };
-
   if (!scenario) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -243,19 +211,13 @@ export default function TemplateMarketDetail() {
                     ? "👀 預覽"
                     : "🚧 規劃中"}
               </Badge>
-              {/* 🔑 登入需求標示：全 host = 免登入掃碼即玩；含 multi = 部分需組隊登入 */}
+              {/* 🔑 登入需求標示 — 📺 2026-09-25：host 軸移交 PhotoGo 後所有情境統一為組隊登入 */}
               <Badge
                 variant="secondary"
                 data-testid="badge-login-mode"
-                className={
-                  scenario.components.every((c) => c.axis === "host")
-                    ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
-                    : "bg-amber-500/20 text-amber-800 dark:text-amber-300"
-                }
+                className="bg-amber-500/20 text-amber-800 dark:text-amber-300"
               >
-                {scenario.components.every((c) => c.axis === "host")
-                  ? "🟢 全程免登入（掃 QR 即玩）"
-                  : "🔑 含需登入組隊元件"}
+                🔑 組隊登入即玩
               </Badge>
             </div>
           </CardContent>
@@ -429,40 +391,8 @@ export default function TemplateMarketDetail() {
                   </>
                 )}
               </Button>
-            ) : allHost ? (
-              // 🆕 2026-07-05：全 host 情境 → 訪客免登入一鍵體驗（demo 沙盒）
-              <div className="space-y-2">
-                <Button
-                  size="lg"
-                  onClick={handleDemo}
-                  disabled={demoLaunching}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                  data-testid="btn-demo-scenario"
-                >
-                  {demoLaunching ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                      建立體驗中...
-                    </>
-                  ) : (
-                    <>
-                      🎮 立即體驗（免登入）
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-muted-foreground">
-                  免登入直接玩 · 進大螢幕後可用另一支手機掃 QR 加入 · 體驗場 2 小時後自動清除
-                </p>
-                <div className="pt-1">
-                  <Link href="/admin/login">
-                    <Button variant="ghost" size="sm" className="text-xs" data-testid="btn-go-admin-login">
-                      我是管理員，前往登入建正式場
-                    </Button>
-                  </Link>
-                </div>
-              </div>
             ) : (
-              // 含 multi/shared 元件 → 需登入組隊、不支援匿名體驗
+              // 未登入 → 需 admin 登入後建場（📺 2026-09-25：免登入 demo 沙盒隨 host 軸移交 PhotoGo）
               <div className="space-y-2">
                 <Button size="lg" disabled className="bg-amber-600">
                   <Zap className="w-4 h-4 mr-1" />
@@ -509,13 +439,14 @@ export default function TemplateMarketDetail() {
                 先試玩元件
               </Button>
             </Link>
-            <Link href="/admin/host-sessions">
-              <Button data-testid="btn-create-host-session">
-                <Tv className="w-4 h-4 mr-1" />
-                手動建大螢幕場次
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </Link>
+            {admin && (
+              <Link href="/admin/games">
+                <Button data-testid="btn-go-admin-games">
+                  到遊戲管理後台
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </Link>
+            )}
           </div>
         </section>
       </main>
@@ -536,18 +467,12 @@ export default function TemplateMarketDetail() {
                   建立了 <span className="font-bold text-foreground">{launchResult.totalCreated}</span> 個元件實例
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  {launchResult.breakdown.host > 0 && (
-                    <Badge variant="outline">📺 大螢幕 × {launchResult.breakdown.host}</Badge>
-                  )}
                   {launchResult.breakdown.multi > 0 && (
                     <Badge variant="outline">👥 隊伍 × {launchResult.breakdown.multi}</Badge>
                   )}
                   {launchResult.breakdown.other > 0 && (
                     <Badge variant="outline">👤 其他 × {launchResult.breakdown.other}</Badge>
                   )}
-                </div>
-                <div className="text-xs">
-                  hostToken {new Date(launchResult.expiresAt).toLocaleString("zh-TW")} 前有效
                 </div>
               </div>
               {/* 🆕 2026-07-05 UX：佔位字提醒（用 component.config 直接建場、非 AI 客製時）*/}
@@ -564,7 +489,7 @@ export default function TemplateMarketDetail() {
               )}
               <div className="space-y-2">
                 {launchResult.instances.map((inst) => (
-                  <InstanceRow key={inst.sessionId} instance={inst} />
+                  <InstanceRow key={inst.gameId} instance={inst} />
                 ))}
               </div>
               <div className="flex justify-between pt-4 border-t flex-wrap gap-2">
@@ -581,10 +506,10 @@ export default function TemplateMarketDetail() {
                     列印 QR
                   </Button>
                   <Button
-                    onClick={() => navigate("/admin/host-sessions")}
-                    data-testid="btn-go-host-sessions"
+                    onClick={() => navigate("/admin/games")}
+                    data-testid="btn-go-admin-games-dialog"
                   >
-                    到管理後台 <ArrowRight className="w-4 h-4 ml-1" />
+                    到遊戲管理後台 <ArrowRight className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
               </div>
@@ -599,14 +524,11 @@ export default function TemplateMarketDetail() {
 function openPrintPage(result: InstantiateResponse) {
   const printData = {
     displayName: result.displayName,
-    expiresAt: result.expiresAt,
     instances: result.instances.map((i) => ({
       axis: i.axis,
       label: i.label,
       pageType: i.pageType,
       role: i.role,
-      hostUrl: i.hostUrl,
-      playUrl: i.playUrl,
       gameUrl: i.gameUrl,
     })),
   };
@@ -657,7 +579,6 @@ function InstanceRow({ instance }: { instance: ScenarioInstance }) {
   };
 
   const axisLabel = {
-    host: { emoji: "📺", label: "大螢幕主控", color: "bg-blue-500/10 text-blue-700 dark:text-blue-400" },
     multi: { emoji: "👥", label: "隊伍協作", color: "bg-purple-500/10 text-purple-700 dark:text-purple-400" },
     solo: { emoji: "👤", label: "個人闖關", color: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" },
     shared: { emoji: "🧩", label: "通用元件", color: "bg-zinc-500/10 text-zinc-700 dark:text-zinc-400" },
@@ -673,15 +594,7 @@ function InstanceRow({ instance }: { instance: ScenarioInstance }) {
         </div>
       </div>
       <div className="space-y-1.5">
-        {instance.axis === "host" && instance.hostUrl && instance.playUrl && (
-          <>
-            <UrlRow label="大螢幕" url={instance.hostUrl} onCopy={(u) => handleCopy(u, "大螢幕")} />
-            <UrlRow label="玩家" url={instance.playUrl} onCopy={(u) => handleCopy(u, "玩家")} />
-          </>
-        )}
-        {instance.axis !== "host" && instance.gameUrl && (
-          <UrlRow label="玩家入口" url={instance.gameUrl} onCopy={(u) => handleCopy(u, "玩家")} />
-        )}
+        <UrlRow label="玩家入口" url={instance.gameUrl} onCopy={(u) => handleCopy(u, "玩家")} />
       </div>
     </div>
   );
@@ -723,7 +636,6 @@ function ComponentRow({
   isLast: boolean;
 }) {
   const axisStyle = {
-    host: { bg: "bg-blue-500/10", text: "text-blue-700 dark:text-blue-400", label: "📺 大螢幕" },
     multi: { bg: "bg-purple-500/10", text: "text-purple-700 dark:text-purple-400", label: "👥 多人" },
     solo: { bg: "bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-400", label: "👤 個人" },
     shared: { bg: "bg-zinc-500/10", text: "text-zinc-700 dark:text-zinc-400", label: "🧩 通用" },
@@ -745,16 +657,6 @@ function ComponentRow({
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm flex items-center gap-1.5 flex-wrap">
           {component.label}
-          {/* host 軸線可匿名（掃 QR 即玩）；其他軸線需登入組隊 */}
-          {component.axis === "host" ? (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-700 dark:text-emerald-400">
-              免登入
-            </span>
-          ) : (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-700 dark:text-amber-400">
-              需登入組隊
-            </span>
-          )}
         </div>
         <div className="text-xs text-muted-foreground mt-0.5">{component.role}</div>
       </div>

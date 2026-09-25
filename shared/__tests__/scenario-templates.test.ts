@@ -1,3 +1,6 @@
+// 📺 2026-09-25：大螢幕互動（host 軸）已整條移交 PhotoGo，
+//   6 個純 host 情境（wedding / birthday / reunion / carnival-stage / icebreaker / awards-ceremony）
+//   已從模板移除、7 個混合情境拔掉 host 元件；本測試守護「模板裡不再有 host 軸」。
 import { describe, it, expect } from "vitest";
 import {
   SCENARIO_TEMPLATES,
@@ -7,18 +10,53 @@ import {
   getScenariosForPageType,
 } from "../scenario-templates";
 
+const REMOVED_HOST_SCENARIOS = [
+  "wedding",
+  "birthday",
+  "reunion",
+  "carnival-stage",
+  "icebreaker",
+  "awards-ceremony",
+];
+
 describe("SCENARIO_TEMPLATES 常數", () => {
-  it("12 個情境（W7 D1 補位完成）", () => {
-    expect(SCENARIO_TEMPLATES.length).toBeGreaterThanOrEqual(12);
+  it("恰好 7 個場域遊戲情境（host 軸移交 PhotoGo 後）", () => {
+    expect(SCENARIO_TEMPLATES.length).toBe(7);
+    expect(SCENARIO_TEMPLATES.map((s) => s.id).sort()).toEqual(
+      [
+        "street-walk",
+        "district-checkin",
+        "corporate-training",
+        "company-trip",
+        "kids-adventure",
+        "venue-storyline",
+        "shooting-arena",
+      ].sort(),
+    );
   });
 
-  it("親子冒險情境（W7 D1 新）必含 TreasureHunt + JigsawPuzzle + EmojiReact", () => {
+  it("6 個純 host 情境已移除（移交 PhotoGo）", () => {
+    for (const id of REMOVED_HOST_SCENARIOS) {
+      expect(getScenarioById(id), id).toBeUndefined();
+    }
+  });
+
+  it("守護：所有情境的元件都不是 host 軸、pageType 不以 host_ 開頭", () => {
+    for (const s of SCENARIO_TEMPLATES) {
+      for (const c of s.components) {
+        expect(c.axis as string, `${s.id}/${c.pageType} axis`).not.toBe("host");
+        expect(c.pageType.startsWith("host_"), `${s.id}/${c.pageType}`).toBe(false);
+      }
+    }
+  });
+
+  it("親子冒險情境（W7 D1 新）必含 TreasureHunt + JigsawPuzzle", () => {
     const kids = getScenarioById("kids-adventure");
     expect(kids).toBeDefined();
     const pageTypes = kids!.components.map((c) => c.pageType);
     expect(pageTypes).toContain("treasure_hunt");
     expect(pageTypes).toContain("jigsaw_puzzle");
-    expect(pageTypes).toContain("host_emoji_react");
+    expect(pageTypes).toHaveLength(2);
   });
 
   it("ID 不重複", () => {
@@ -55,8 +93,8 @@ describe("SCENARIO_TEMPLATES 常數", () => {
     }
   });
 
-  it("元件 axis 必須合法", () => {
-    const allowed = ["host", "multi", "solo", "shared"];
+  it("元件 axis 必須合法（multi / solo / shared）", () => {
+    const allowed = ["multi", "solo", "shared"];
     for (const s of SCENARIO_TEMPLATES) {
       for (const c of s.components) {
         expect(allowed).toContain(c.axis);
@@ -64,7 +102,7 @@ describe("SCENARIO_TEMPLATES 常數", () => {
     }
   });
 
-  it("5 大分類都有對應 label", () => {
+  it("5 大分類都有對應 label（event / social 型別保留、目前無情境）", () => {
     expect(SCENARIO_CATEGORY_LABELS.public).toBeTruthy();
     expect(SCENARIO_CATEGORY_LABELS.corporate).toBeTruthy();
     expect(SCENARIO_CATEGORY_LABELS.event).toBeTruthy();
@@ -72,36 +110,45 @@ describe("SCENARIO_TEMPLATES 常數", () => {
     expect(SCENARIO_CATEGORY_LABELS.social).toBeTruthy();
   });
 
-  it("婚禮模板必須含 PolaroidCollage / GuestbookDigital / EmojiReact", () => {
-    const wedding = getScenarioById("wedding");
-    expect(wedding).toBeDefined();
-    const pageTypes = wedding!.components.map((c) => c.pageType);
-    expect(pageTypes).toContain("host_polaroid_collage");
-    expect(pageTypes).toContain("host_guestbook_digital");
-    expect(pageTypes).toContain("host_emoji_react");
+  it("文案不再提到大螢幕 / 投影 / 免登入（host 賣點已移交 PhotoGo）", () => {
+    const RE = /大螢幕|投影|免登入/;
+    for (const s of SCENARIO_TEMPLATES) {
+      const text = [s.tagline, s.description, ...s.components.map((c) => c.role)].join("\n");
+      expect(RE.test(text), `${s.id} 文案仍含 host 賣點`).toBe(false);
+    }
   });
 
-  it("園遊會主舞台必須含 TriviaShowdown / LiveLeaderboard", () => {
-    const carnival = getScenarioById("carnival-stage");
-    expect(carnival).toBeDefined();
-    const pageTypes = carnival!.components.map((c) => c.pageType);
-    expect(pageTypes).toContain("host_trivia_showdown");
-    expect(pageTypes).toContain("host_live_leaderboard");
-  });
-
-  it("街區走讀必須含 GpsCascade + KnowledgeMap", () => {
+  it("街區走讀只剩 GpsCascade", () => {
     const street = getScenarioById("street-walk");
     expect(street).toBeDefined();
-    const pageTypes = street!.components.map((c) => c.pageType);
-    expect(pageTypes).toContain("gps_cascade");
-    expect(pageTypes).toContain("host_knowledge_map");
+    expect(street!.components.map((c) => c.pageType)).toEqual(["gps_cascade"]);
+  });
+
+  it("商圈打卡只剩 TreasureHunt", () => {
+    const district = getScenarioById("district-checkin");
+    expect(district).toBeDefined();
+    expect(district!.components.map((c) => c.pageType)).toEqual(["treasure_hunt"]);
+  });
+
+  it("企業內訓 8 個元件（拔掉搶答 / 即時投票）", () => {
+    const corp = getScenarioById("corporate-training");
+    expect(corp).toBeDefined();
+    expect(corp!.components).toHaveLength(8);
+    expect(corp!.components.map((c) => c.pageType)).toContain("role_assign");
+    expect(corp!.components.map((c) => c.pageType)).toContain("rank_choice");
+  });
+
+  it("員工旅遊 4 / 場域故事 2 / 實體打擊 2 個元件", () => {
+    expect(getScenarioById("company-trip")!.components).toHaveLength(4);
+    expect(getScenarioById("venue-storyline")!.components).toHaveLength(2);
+    expect(getScenarioById("shooting-arena")!.components).toHaveLength(2);
   });
 });
 
 describe("getScenarioById", () => {
   it("找到對應情境", () => {
-    const wedding = getScenarioById("wedding");
-    expect(wedding?.name).toBe("婚禮派對情境包");
+    const street = getScenarioById("street-walk");
+    expect(street?.name).toBe("街區走讀情境包");
   });
 
   it("找不到回傳 undefined", () => {
@@ -110,22 +157,17 @@ describe("getScenarioById", () => {
 });
 
 describe("getScenariosForPageType（W7 D2 反向索引）", () => {
-  it("host_emoji_react 至少出現在 3 個情境（婚禮 / 生日 / 親子）", () => {
-    const scenarios = getScenariosForPageType("host_emoji_react");
-    expect(scenarios.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it("host_polaroid_collage 出現在婚禮 + 生日", () => {
-    const scenarios = getScenariosForPageType("host_polaroid_collage");
-    const ids = scenarios.map((s) => s.id);
-    expect(ids).toContain("wedding");
-    expect(ids).toContain("birthday");
-  });
-
   it("treasure_hunt 出現在親子冒險 + 商圈打卡 + 場域故事", () => {
-    const scenarios = getScenariosForPageType("treasure_hunt");
-    const ids = scenarios.map((s) => s.id);
+    const ids = getScenariosForPageType("treasure_hunt").map((s) => s.id);
     expect(ids).toContain("kids-adventure");
+    expect(ids).toContain("district-checkin");
+    expect(ids).toContain("venue-storyline");
+  });
+
+  it("host_* pageType 一律回傳空陣列（已移交 PhotoGo）", () => {
+    expect(getScenariosForPageType("host_emoji_react")).toEqual([]);
+    expect(getScenariosForPageType("host_polaroid_collage")).toEqual([]);
+    expect(getScenariosForPageType("host_poll_live")).toEqual([]);
   });
 
   it("不存在的 pageType 回傳空陣列", () => {
@@ -134,13 +176,14 @@ describe("getScenariosForPageType（W7 D2 反向索引）", () => {
 });
 
 describe("getScenariosByCategory", () => {
-  it("交誼類至少 3 個（婚禮 / 生日 / 同學會）", () => {
-    const social = getScenariosByCategory("social");
-    expect(social.length).toBeGreaterThanOrEqual(3);
+  it("公部門 2 / 私部門 2 / 空間 3", () => {
+    expect(getScenariosByCategory("public")).toHaveLength(2);
+    expect(getScenariosByCategory("corporate")).toHaveLength(2);
+    expect(getScenariosByCategory("venue")).toHaveLength(3);
   });
 
-  it("活動類至少 2 個", () => {
-    const events = getScenariosByCategory("event");
-    expect(events.length).toBeGreaterThanOrEqual(2);
+  it("交誼類 / 活動類已無情境（移交 PhotoGo）", () => {
+    expect(getScenariosByCategory("social")).toEqual([]);
+    expect(getScenariosByCategory("event")).toEqual([]);
   });
 });

@@ -4,12 +4,11 @@
 //   POST /api/admin/scenarios/:scenarioId/instantiate
 //     一鍵建立情境實例
 //
-// W6 D2：支援 pure-host 情境
-// W6 D3：擴充支援含 multi/solo 元件的混合情境
+// 📺 2026-09-25：大螢幕互動（host 軸）已整條移交 PhotoGo，本檔不再建 host 場次、
+//   也移除了訪客 demo 沙盒端點（只服務全 host 情境）。
+//   計畫：docs/changes/2026-09-25-host-removal-photogo-migration.md（R2）
 //
 // 邏輯：
-//   - host 元件 → 建 game + page + host_session（hostMode=true，hostToken 12h）
-//     → 玩家透過 /play/:sessionId 進入、大螢幕透過 /host/:sessionId?token=xxx
 //   - multi 元件 → 建 game (gameMode=team) + page + publicSlug
 //     → 玩家透過 /g/:slug 進入（隊伍流程）
 //   - solo 元件 → 建 game (gameMode=individual) + page + publicSlug
@@ -18,16 +17,11 @@
 //
 // 為什麼要分開建多個 game？
 //   - 每個元件都是一個獨立場次/任務，可分時段啟用
-//   - 街區走讀：先 GpsCascade（multi）解鎖點，再 KnowledgeMap（host）總覽
 
 import type { Express } from "express";
-import { loadFieldModules } from "../lib/field-modules";
-import { isModuleOn } from "@shared/lib/module-registry";
 import { db } from "../db";
-import { games, pages, gameSessions, fields, parseFieldSettings } from "@shared/schema";
+import { games, pages, fields, parseFieldSettings } from "@shared/schema";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
-import { publicWriteLimiter } from "../utils/rate-limiters";
-import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import {
   getScenarioById,
@@ -42,93 +36,9 @@ import {
   pushActivityEnded,
 } from "../lib/line-pusher";
 
-const HOST_TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 小時
-
-function generateHostToken(): string {
-  return randomBytes(16).toString("hex");
-}
-
 /** 為每個元件提供預設 page config（最小可玩內容）— W16 D1 export 給 LINE instantiator 複用 */
 export function getDefaultConfigForPageType(pageType: string, scenarioName: string): Record<string, unknown> {
   switch (pageType) {
-    // ─── host 軸線 ───
-    case "host_polaroid_collage":
-      return { title: `${scenarioName} 紀念牆`, subtitle: "請來賓留下祝福" };
-    case "host_guestbook_digital":
-      return { title: `${scenarioName} 簽名簿`, subtitle: "歡迎留言" };
-    case "host_emoji_react":
-      return { title: `${scenarioName} 情緒池` };
-    case "host_blessing_wall":
-      return { title: `${scenarioName} 祝福牆`, subtitle: "掃 QR 匿名留下祝福", maxLength: 30 };
-    case "host_trivia_showdown":
-      return {
-        title: `${scenarioName} 搶答`,
-        questions: [
-          {
-            id: "q1",
-            prompt: "範例題目：1+1=?",
-            options: ["1", "2", "3", "4"],
-            correctIdx: 1,
-            timeLimitSec: 15,
-          },
-        ],
-      };
-    case "host_live_leaderboard":
-      return { title: `${scenarioName} 排行榜`, topN: 10 };
-    case "host_wave_response":
-      return { title: `${scenarioName} 應援` };
-    case "host_crowd_gather":
-      return { title: `${scenarioName} 簽到`, targetCount: 30 };
-    case "host_scoreboard_announcement":
-      return { title: `${scenarioName} 即時播報` };
-    case "host_knowledge_map":
-      return { title: `${scenarioName} 場域地圖` };
-    case "host_poll_live":
-      return {
-        title: `${scenarioName} 即時投票`,
-        question: "範例：你最想看哪個橋段？",
-        options: [
-          { id: "a", label: "選項 A" },
-          { id: "b", label: "選項 B" },
-          { id: "c", label: "選項 C" },
-        ],
-      };
-    case "host_lottery_wheel":
-      return {
-        title: `${scenarioName} 抽獎`,
-        subtitle: "報名加入轉盤、等大螢幕轉",
-        items: [], // 預設空、玩家報名
-        spinDurationMs: 5000,
-        allowJoin: true,
-      };
-    case "host_progress_quest":
-      return {
-        title: `${scenarioName} 全場進度`,
-        subtitle: "一起完成 100 個任務、達標慶祝",
-        totalTasks: 100,
-        milestones: [25, 50, 75, 100],
-        celebrationLevel: "auto",
-      };
-    case "host_word_cloud":
-      return {
-        title: `${scenarioName} 字雲`,
-        subtitle: "一人一詞、字雲即時長出來",
-        maxWordsPerUser: 3,
-        maxLength: 10,
-      };
-    case "host_team_battle_score":
-      return {
-        title: `${scenarioName} 紅藍對抗`,
-        subtitle: "雙隊即時計分、先達標獲勝",
-        teams: [
-          { id: "red", name: "紅隊", color: "#ef4444", emoji: "🔴" },
-          { id: "blue", name: "藍隊", color: "#3b82f6", emoji: "🔵" },
-        ],
-        targetScore: 50,
-        mode: "first_to_target",
-        showRecentEvents: true,
-        acceptPlayerPulse: false,
-      };
     case "quest_chain":
       return {
         title: `${scenarioName} 任務鏈`,
@@ -3180,7 +3090,7 @@ export function registerScenarioRoutes(app: Express) {
    * POST /api/admin/scenarios/:scenarioId/instantiate
    * Body: { displayName?: string }
    *
-   * 為情境的每個 host_* component 建立一個獨立 game + page + host_session
+   * 為情境的每個 component 建立一個獨立 game + page（publicSlug 入口）
    * 回傳所有建立的實例 + URLs
    */
   app.post(
@@ -3202,7 +3112,6 @@ export function registerScenarioRoutes(app: Express) {
         }
 
         const displayName = (req.body?.displayName || scenario.name).slice(0, 100);
-        const expiresAt = new Date(Date.now() + HOST_TOKEN_TTL_MS);
 
         // W9 D2: 接受 AI 預覽過的客製 configs（可選）
         // 結構：{ "<pageType>": { ...config } }
@@ -3216,15 +3125,13 @@ export function registerScenarioRoutes(app: Express) {
             scenarioDisplayName: displayName,
             component,
             fieldId: fieldId ?? null,
-            expiresAt,
             collector: instances,
             aiConfig: aiConfigs?.[component.pageType] ?? null,
           });
         }
 
-        const hostCount = instances.filter((i) => i.axis === "host").length;
         const multiCount = instances.filter((i) => i.axis === "multi").length;
-        const otherCount = instances.length - hostCount - multiCount;
+        const otherCount = instances.length - multiCount;
 
         res.status(201).json({
           scenario: {
@@ -3233,10 +3140,9 @@ export function registerScenarioRoutes(app: Express) {
             tagline: scenario.tagline,
           },
           displayName,
-          expiresAt: expiresAt.toISOString(),
           instances,
           totalCreated: instances.length,
-          breakdown: { host: hostCount, multi: multiCount, other: otherCount },
+          breakdown: { multi: multiCount, other: otherCount },
         });
       } catch (err) {
         console.error("[scenarios] instantiate 失敗:", err);
@@ -3244,90 +3150,17 @@ export function registerScenarioRoutes(app: Express) {
       }
     },
   );
-
-  /**
-   * 🆕 2026-07-05：訪客 demo 沙盒 — 免登入一鍵體驗
-   * POST /api/scenarios/:scenarioId/demo（公開、無 admin）
-   *
-   * 只開放「全 host 情境」（host 元件免登入即玩）；建臨時 demo 遊戲（isDemo + 2h TTL）、
-   * fieldId=null（不綁場域、不污染統計），導訪客到大螢幕端 hostUrl 體驗。
-   * 防濫用：publicWriteLimiter（每 IP 每小時 10 次）。過期由 demo-cleanup-cron 清理。
-   */
-  app.post(
-    "/api/scenarios/:scenarioId/demo",
-    publicWriteLimiter,
-    async (req, res) => {
-      try {
-        const scenario = getScenarioById(req.params.scenarioId);
-        if (!scenario) {
-          return res.status(404).json({ error: "情境不存在" });
-        }
-        // 只允許全 host 情境（免登入即玩）；含 multi/shared 需登入組隊
-        const allHost = scenario.components.every((c) => c.axis === "host");
-        if (!allHost) {
-          return res.status(400).json({
-            error: "not_demoable",
-            message: "此情境含需登入組隊的元件，不支援免登入體驗，請登入後於後台建場",
-          });
-        }
-
-        const displayName = `[體驗] ${scenario.name}`.slice(0, 100);
-        const now = Date.now();
-        const DEMO_TTL_MS = 2 * 60 * 60 * 1000; // 2 小時
-        const demoExpiresAt = new Date(now + DEMO_TTL_MS);
-        // host session 的 token 效期與 demo 一致（2h），確保體驗期間可用
-        const expiresAt = demoExpiresAt;
-
-        const instances: ScenarioInstance[] = [];
-        for (const component of scenario.components) {
-          await instantiateComponent({
-            scenarioId: scenario.id,
-            scenarioDisplayName: displayName,
-            component,
-            fieldId: null, // demo 不綁場域
-            expiresAt,
-            collector: instances,
-            isDemo: true,
-            demoExpiresAt,
-          });
-        }
-
-        const first = instances[0];
-        res.status(201).json({
-          scenario: { id: scenario.id, name: scenario.name, tagline: scenario.tagline },
-          displayName,
-          expiresAt: demoExpiresAt.toISOString(),
-          instances,
-          totalCreated: instances.length,
-          // 訪客導向：第一個 host 元件的大螢幕（含常駐加入 QR）
-          hostUrl: first?.hostUrl ?? null,
-          playUrl: first?.playUrl ?? null,
-        });
-      } catch (err) {
-        console.error("[scenarios] demo 建立失敗:", err);
-        res.status(500).json({ error: "建立體驗失敗" });
-      }
-    },
-  );
 }
 
 interface ScenarioInstance {
-  axis: "host" | "multi" | "solo" | "shared";
+  axis: "multi" | "solo" | "shared";
   gameId: string;
   pageType: string;
   label: string;
-  /** host 模式才有：大螢幕端 URL（含 token） */
-  hostUrl?: string;
-  /** host 模式才有：玩家手機端 URL（用 sessionId） */
-  playUrl?: string;
-  /** host 模式才有：12h 有效 token */
-  hostToken?: string;
-  /** host 模式才有：session id */
-  sessionId?: string;
-  /** multi/solo/shared：玩家入口 URL（用 publicSlug） */
-  gameUrl?: string;
-  /** multi/solo/shared：public slug */
-  publicSlug?: string;
+  /** 玩家入口 URL（用 publicSlug） */
+  gameUrl: string;
+  /** public slug */
+  publicSlug: string;
   /** 元件作用描述 */
   role: string;
 }
@@ -3337,27 +3170,16 @@ interface InstantiateComponentParams {
   scenarioDisplayName: string;
   component: ScenarioComponent;
   fieldId: string | null;
-  expiresAt: Date;
   collector: ScenarioInstance[];
   /** W9 D2: 若有 AI 生成的客製 config，優先使用 */
   aiConfig?: Record<string, unknown> | null;
-  /** 🆕 2026-07-05：訪客 demo 沙盒（免登入臨時遊戲、到期自動清理）*/
-  isDemo?: boolean;
-  /** demo 遊戲到期時間（isDemo=true 時設）*/
-  demoExpiresAt?: Date | null;
 }
 
 async function instantiateComponent(params: InstantiateComponentParams): Promise<void> {
-  const { scenarioId, scenarioDisplayName, component, fieldId, expiresAt, collector, aiConfig } = params;
-  const isDemo = params.isDemo ?? false;
-  const demoExpiresAt = params.demoExpiresAt ?? null;
+  const { scenarioId, scenarioDisplayName, component, fieldId, collector, aiConfig } = params;
 
-  const isHost = component.axis === "host";
   const gameMode = getGameModeForComponent(component);
-  const slug = isHost ? null : generateSlug();
-  // 🆕 軟分流階段 1：依 axis 自動推導 editorMode
-  // host 軸 → 活動現場（不登入）/ 其他 → 遊戲（要登入）
-  const editorMode = isHost ? "activity" : "game";
+  const slug = generateSlug();
 
   // config 優先序（2026-06-13）：
   //   1. AI 生成（aiConfig）— admin 用 AI 客製
@@ -3375,10 +3197,8 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
       maxPlayers: 100,
       status: "published",
       gameMode,
-      editorMode,
+      editorMode: "game",
       publicSlug: slug,
-      isDemo,
-      demoExpiresAt,
     })
     .returning();
 
@@ -3392,49 +3212,13 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
     config,
   });
 
-  if (isHost) {
-    // 📺 2026-09-25：場域沒開「活動現場大螢幕」模組就不建 host 場次（預設關，改由 PhotoGo 提供）
-    //   沒有 fieldId（LINE / 未綁場域的舊流程）判斷不出來 → 放行，維持相容
-    if (fieldId) {
-      const modules = await loadFieldModules(fieldId);
-      if (!isModuleOn(modules, "host")) {
-        throw new Error("此場域未啟用「活動現場大螢幕」模組：大螢幕互動已改由 PhotoGo 提供，請改用 PhotoGo 建立互動場次");
-      }
-    }
-    const hostToken = generateHostToken();
-    const [session] = await db
-      .insert(gameSessions)
-      .values({
-        gameId: game.id,
-        status: "playing",
-        hostMode: true,
-        hostToken,
-        hostTokenExpiresAt: expiresAt,
-      })
-      .returning();
-
-    if (!session) throw new Error("建立 host session 失敗");
-
-    collector.push({
-      axis: "host",
-      sessionId: session.id,
-      gameId: game.id,
-      pageType: component.pageType,
-      label: component.label,
-      hostUrl: `/host/${session.id}?token=${hostToken}`,
-      playUrl: `/play/${session.id}`,
-      hostToken,
-      role: component.role,
-    });
-  } else {
-    collector.push({
-      axis: component.axis === "shared" ? "shared" : (component.axis as "multi" | "solo"),
-      gameId: game.id,
-      pageType: component.pageType,
-      label: component.label,
-      gameUrl: `/g/${slug}`,
-      publicSlug: slug ?? undefined,
-      role: component.role,
-    });
-  }
+  collector.push({
+    axis: component.axis,
+    gameId: game.id,
+    pageType: component.pageType,
+    label: component.label,
+    gameUrl: `/g/${slug}`,
+    publicSlug: slug,
+    role: component.role,
+  });
 }

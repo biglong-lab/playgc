@@ -74,19 +74,15 @@ const PUBLIC_PAGES = [
   "/roi", // W17 D3
 ];
 
+// 📺 2026-09-25：大螢幕熱場情境（婚禮 / 生日 / 同學會 / 園遊會 / 破冰 / 頒獎）已移交 PhotoGo
 const SCENARIO_IDS = [
-  "wedding",
-  "birthday",
-  "reunion",
   "kids-adventure",
-  "carnival-stage",
-  "icebreaker",
-  "awards-ceremony",
   "street-walk",
   "district-checkin",
   "corporate-training",
   "company-trip",
   "venue-storyline",
+  "shooting-arena",
 ];
 
 async function runSmokeTest() {
@@ -141,7 +137,7 @@ async function runSmokeTest() {
 
   // 4b. POST ai-preview 認證守衛（W9 D1 新增）
   console.log(`${COLOR.bold}── Section 4b: POST ai-preview 認證守衛 ──${COLOR.reset}`);
-  for (const id of ["wedding"]) {
+  for (const id of ["street-walk"]) {
     await check(`POST /api/admin/scenarios/${id}/ai-preview (401)`, 401, async () => {
       const { res } = await fetchUrl(
         `${BASE_URL}/api/admin/scenarios/${id}/ai-preview`,
@@ -278,7 +274,7 @@ async function runSmokeTest() {
     const { res } = await fetchUrl(`${BASE_URL}/api/v1/instances`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ scenarioId: "wedding" }),
+      body: JSON.stringify({ scenarioId: "street-walk" }),
     });
     if (res.status !== 401) return { ok: false, error: `expected 401, got ${res.status}` };
     return { ok: true };
@@ -336,8 +332,10 @@ async function runSmokeTest() {
     }
     return { ok: true };
   });
-  await check("POST /api/cron/check-expiring-sessions（無 token → 401 或 503）", 401, async () => {
-    const { res } = await fetchUrl(`${BASE_URL}/api/cron/check-expiring-sessions`, {
+  // 📺 2026-09-25：check-expiring-sessions（host token 到期提醒）已隨大螢幕移交 PhotoGo 移除，
+  //   cron 認證守門改用 generate-session-reports 驗
+  await check("POST /api/cron/generate-session-reports（無 token → 401 或 503）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/cron/generate-session-reports`, {
       method: "POST",
     });
     if (res.status !== 401 && res.status !== 503) {
@@ -345,8 +343,8 @@ async function runSmokeTest() {
     }
     return { ok: true };
   });
-  await check("POST /api/cron/check-expiring-sessions（錯誤 token → 401 或 503）", 401, async () => {
-    const { res } = await fetchUrl(`${BASE_URL}/api/cron/check-expiring-sessions`, {
+  await check("POST /api/cron/generate-session-reports（錯誤 token → 401 或 503）", 401, async () => {
+    const { res } = await fetchUrl(`${BASE_URL}/api/cron/generate-session-reports`, {
       method: "POST",
       headers: { Authorization: "Bearer wrong-secret" },
     });

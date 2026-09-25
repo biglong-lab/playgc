@@ -1,7 +1,7 @@
 // 🧹 Demo Cleanup Cron（2026-07-05）
 //
 // 每 30 分鐘清理過期的訪客 demo 遊戲（isDemo=true 且 demoExpiresAt < now）。
-// 訪客在 template-market 一鍵免登入體驗（POST /api/scenarios/:id/demo）建的臨時遊戲，
+// 舊版訪客免登入體驗（demo 端點已於 2026-09-25 隨大螢幕互動移交 PhotoGo 而移除）建的臨時遊戲，
 // 2 小時 TTL、到期即清，避免污染 DB。
 //
 // 刪除順序（外鍵）：

@@ -90,7 +90,7 @@ describe("GAME_STATUSES / isGameStatus", () => {
 
 describe("PLAYABLE_PAGE_TYPES", () => {
   it("常用元件都在清單內、沒有重複", () => {
-    for (const t of ["text_card", "dialogue", "gps_mission", "qr_scan", "lock", "host_poll_live"]) {
+    for (const t of ["text_card", "dialogue", "gps_mission", "qr_scan", "lock"]) {
       expect(isPlayablePageType(t)).toBe(true);
     }
     expect(new Set(PLAYABLE_PAGE_TYPES).size).toBe(PLAYABLE_PAGE_TYPES.length);

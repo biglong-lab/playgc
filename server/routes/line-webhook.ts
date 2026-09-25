@@ -30,11 +30,10 @@ import {
   instantiateScenarioForLine,
   type LineInstantiateResult,
 } from "../lib/scenario-instantiator-line";
-import {
-  listActiveSessionsForLineAdmin,
-  endSessionForLineAdmin,
-  type ActiveSessionSummary,
-} from "../lib/admin-line-actions";
+
+/** 📺 2026-09-25：大螢幕場次管理（我的活動 / 結束場次）已移交 PhotoGo，LINE 端統一回這句 */
+const HOST_MOVED_TO_PHOTOGO_TEXT =
+  "📺 此功能已移至 PhotoGo\n\n大螢幕互動場次（建立 / 查看 / 結束）請改用 PhotoGo 操作；CHITO 的 @chito 指令只保留場域遊戲建場。";
 
 /**
  * W16 D2/D3: Quick Reply 工廠 — admin 常用指令快速按鈕
@@ -42,15 +41,12 @@ import {
  * LINE 客戶端在訊息底部顯示按鈕列、點擊送對應文字訊息
  * 最多 13 個 items（LINE 限制）
  *
- * W16 D3 加入「📋 我的活動」管理按鈕
+ * 📺 2026-09-25：「我的活動」與社交情境（婚禮 / 生日 / 破冰 / 同學會）已移交 PhotoGo，
+ *   按鈕改為場域遊戲情境
  */
 function adminQuickReply(): LineQuickReply {
   return {
     items: [
-      {
-        type: "action",
-        action: { type: "message", label: "📋 我的活動", text: "@chito 我的活動" },
-      },
       {
         type: "action",
         action: { type: "message", label: "📖 用法", text: "@chito help" },
@@ -61,89 +57,11 @@ function adminQuickReply(): LineQuickReply {
       },
       {
         type: "action",
-        action: { type: "message", label: "💒 婚禮", text: "@chito 婚禮" },
+        action: { type: "message", label: "🚶 街區走讀", text: "@chito 街區走讀" },
       },
       {
         type: "action",
-        action: { type: "message", label: "🎂 生日", text: "@chito 生日派對" },
-      },
-      {
-        type: "action",
-        action: { type: "message", label: "❄️ 破冰", text: "@chito 破冰活動" },
-      },
-      {
-        type: "action",
-        action: { type: "message", label: "🎓 同學會", text: "@chito 同學會" },
-      },
-    ],
-  };
-}
-
-/**
- * W16 D3: active sessions 列表的 reply 訊息
- *
- * 訊息結構：
- *   📋 您的 active 活動（N 個）
- *   1. <gameTitle>
- *      🆔 <sessionId>（前 8 字元）
- *      ⏰ 剩餘 X 小時
- *      🖥 hostUrl
- *   2. ...
- *   💡 結束某場：「@chito 結束 <sessionId>」
- *
- * 場次多時 truncate 至 5 個
- */
-function formatActiveSessionsReply(
-  sessions: ActiveSessionSummary[],
-  baseUrl: string,
-): string {
-  if (sessions.length === 0) {
-    return `📋 您目前沒有 active 活動\n\n💡 試試「@chito 婚禮」建立一個吧！`;
-  }
-
-  const lines: string[] = [`📋 您的 active 活動（${sessions.length} 個）`, ``];
-  const showCount = Math.min(sessions.length, 5);
-
-  for (let i = 0; i < showCount; i++) {
-    const s = sessions[i];
-    const remainHours = s.expiresAt
-      ? Math.max(0, Math.round((new Date(s.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60)))
-      : 0;
-    lines.push(`${i + 1}. ${s.gameTitle}`);
-    lines.push(`   🆔 ${s.sessionId.slice(0, 8)}`);
-    lines.push(`   ⏰ 剩餘 ${remainHours} 小時`);
-    lines.push(`   🖥 ${baseUrl}${s.hostUrl}`);
-    lines.push(``);
-  }
-
-  if (sessions.length > showCount) {
-    lines.push(`...（還有 ${sessions.length - showCount} 個，請至 admin 後台查看）`);
-    lines.push(``);
-  }
-
-  lines.push(`💡 結束某場：「@chito 結束 <sessionId>」`);
-  lines.push(`   sessionId 取訊息中前 8 字元即可`);
-
-  return lines.join("\n");
-}
-
-/**
- * W16 D3: end_session 的 quick reply（成功後讓 admin 容易繼續操作）
- */
-function postEndQuickReply(): LineQuickReply {
-  return {
-    items: [
-      {
-        type: "action",
-        action: { type: "message", label: "📋 看剩餘活動", text: "@chito 我的活動" },
-      },
-      {
-        type: "action",
-        action: { type: "message", label: "💒 再開一場", text: "@chito 婚禮" },
-      },
-      {
-        type: "action",
-        action: { type: "message", label: "📖 用法", text: "@chito help" },
+        action: { type: "message", label: "🏢 企業內訓", text: "@chito 企業內訓" },
       },
     ],
   };
@@ -170,9 +88,8 @@ function celebrationSticker(): LineMessage {
  *
  * 訊息結構：
  *   ✅ 建場成功！
- *   📦 情境 / 📝 名稱 / ⏰ 有效期
- *   🖥 主大螢幕（host 第一個）
- *   📱 主玩家網址（host 第一個）
+ *   📦 情境 / 📝 名稱
+ *   🎯 主玩家入口（第一個元件的 gameUrl）
  *   📋 元件清單（最多顯示 5 個，超過 truncate）
  *
  * LINE text message 上限 5000 字、多元件 truncate 至 5 個避免超限
@@ -183,21 +100,10 @@ function formatInstantiateReply(result: LineInstantiateResult, baseUrl: string):
     ``,
     `📦 情境：${result.scenarioName}`,
     `📝 名稱：${result.displayName}`,
-    `⏰ 有效期：12 小時`,
     `🎮 元件數：${result.instances.length}`,
     ``,
   ];
 
-  if (result.primaryHostUrl) {
-    lines.push(`🖥 大螢幕網址（請投影）：`);
-    lines.push(`${baseUrl}${result.primaryHostUrl}`);
-    lines.push(``);
-  }
-  if (result.primaryPlayUrl) {
-    lines.push(`📱 玩家網址（QR 給來賓掃）：`);
-    lines.push(`${baseUrl}${result.primaryPlayUrl}`);
-    lines.push(``);
-  }
   if (result.primaryGameUrl) {
     lines.push(`🎯 主玩家入口：`);
     lines.push(`${baseUrl}${result.primaryGameUrl}`);
@@ -210,11 +116,9 @@ function formatInstantiateReply(result: LineInstantiateResult, baseUrl: string):
     lines.push(`📋 元件清單：`);
     for (let i = 0; i < showCount; i++) {
       const inst = result.instances[i];
-      const url = inst.hostUrl || inst.gameUrl || "";
-      const axisIcon =
-        inst.axis === "host" ? "🖥" : inst.axis === "multi" ? "👥" : inst.axis === "solo" ? "🎮" : "🔗";
+      const axisIcon = inst.axis === "multi" ? "👥" : inst.axis === "solo" ? "🎮" : "🔗";
       lines.push(`${axisIcon} ${inst.label}`);
-      if (url) lines.push(`   ${baseUrl}${url}`);
+      lines.push(`   ${baseUrl}${inst.gameUrl}`);
     }
     if (result.instances.length > showCount) {
       lines.push(`...（還有 ${result.instances.length - showCount} 個元件，請至 admin 後台查看）`);
@@ -603,78 +507,17 @@ async function handleEvent(event: LineWebhookEvent): Promise<void> {
       return;
     }
 
-    // W16 D3: list_active → 列出 admin 場域 active sessions
-    if (cmd.intent === "list_active") {
-      const result = await listActiveSessionsForLineAdmin(lineUserId);
-      if (!result.ok) {
-        await replyMessage({
-          accessToken: ACCESS_TOKEN,
-          replyToken,
-          messages: [
-            {
-              type: "text",
-              text: `❌ ${result.error}（請先聯繫平台管理員加入 admin 白名單）`,
-            },
-          ],
-        });
-        return;
-      }
+    // 📺 2026-09-25：list_active / end_session（大螢幕場次管理）已移交 PhotoGo
+    //   NLU 仍可能解析出這兩個 intent（舊習慣指令），統一回「已移至 PhotoGo」
+    if (cmd.intent === "list_active" || cmd.intent === "end_session") {
       await replyMessage({
         accessToken: ACCESS_TOKEN,
         replyToken,
         messages: [
           {
             type: "text",
-            text: formatActiveSessionsReply(result.sessions, APP_BASE_URL),
+            text: HOST_MOVED_TO_PHOTOGO_TEXT,
             quickReply: adminQuickReply(),
-          },
-        ],
-      });
-      return;
-    }
-
-    // W16 D3: end_session → 結束指定 session
-    if (cmd.intent === "end_session" && cmd.sessionId) {
-      // 支援前 8 字元 → 從 active list 找完整 sessionId
-      let fullSessionId = cmd.sessionId;
-      if (cmd.sessionId.length < 30) {
-        const list = await listActiveSessionsForLineAdmin(lineUserId);
-        if (list.ok) {
-          const matched = list.sessions.find((s) =>
-            s.sessionId.startsWith(cmd.sessionId!),
-          );
-          if (matched) fullSessionId = matched.sessionId;
-        }
-      }
-      const result = await endSessionForLineAdmin({
-        lineUserId,
-        sessionId: fullSessionId,
-      });
-      if (!result.ok) {
-        await replyMessage({
-          accessToken: ACCESS_TOKEN,
-          replyToken,
-          messages: [
-            {
-              type: "text",
-              text: `❌ 結束失敗：${result.error}`,
-              quickReply: adminQuickReply(),
-            },
-          ],
-        });
-        return;
-      }
-      await replyMessage({
-        accessToken: ACCESS_TOKEN,
-        replyToken,
-        messages: [
-          {
-            type: "text",
-            text:
-              `✅ session 已結束\n\n` +
-              `🆔 ${fullSessionId.slice(0, 8)}\n` +
-              `📊 webhook 已派發 instance.expired（如有設定）`,
-            quickReply: postEndQuickReply(),
           },
         ],
       });

@@ -1,7 +1,9 @@
 // 🤖 Scenario Content Generator — AI 為情境生成客製化內容（W9 D1）
 //
-// 用途：admin 一鍵建場前，可以先輸入 context（如「Hung 與 Anita 的婚禮」）
-//      AI 為每個 host_* 元件生成客製化 config，取代 generic default
+// 用途：admin 一鍵建場前，可以先輸入 context（如「後浦老街走讀 10/5」）
+//      AI 為情境的每個元件（multi / solo / shared）生成客製化 config，取代 generic default
+//
+// 📺 2026-09-25：大螢幕互動（host 軸）已移交 PhotoGo，提示詞裡的 host_* config 規格已移除
 //
 // 設計：
 //   - 用 OpenRouter（DeepSeek V3.2）— 與既有 variant-generator 一致
@@ -36,10 +38,10 @@ export interface GeneratedContent {
  * @example
  *   const result = await generateScenarioContent({
  *     apiKey,
- *     scenarioName: "婚禮派對",
- *     context: "Hung 與 Anita 的婚禮，5/15 晶華酒店",
+ *     scenarioName: "街區走讀",
+ *     context: "金門後浦老街走讀，10/5 上午，親子團 30 人",
  *     components: [
- *       { pageType: "host_polaroid_collage", label: "拍立得紀念牆", role: "...", axis: "host" },
+ *       { pageType: "gps_cascade", label: "連鎖點解鎖", role: "...", axis: "multi" },
  *     ],
  *   });
  */
@@ -61,30 +63,6 @@ export async function generateScenarioContent(
 ${componentDescriptions}
 
 請為每個元件回傳 config 物件。各 pageType 的 config 結構：
-
-- "host_polaroid_collage": { title, subtitle?, emojis?: string[] }
-  emojis 是 6-10 個適合此活動的 emoji 字元
-
-- "host_guestbook_digital": { title, subtitle? }
-
-- "host_emoji_react": { title, emojis?: string[] }
-  emojis 是 6-12 個適合應援的 emoji
-
-- "host_trivia_showdown": { title, questions: [{ id, prompt, options: [...4 個], correctIdx: 0-3, timeLimitSec: 15 }] }
-  questions 至少 3 題、適合活動主題的知識題或趣味題
-
-- "host_live_leaderboard": { title, topN: 5-10 }
-
-- "host_wave_response": { title }
-
-- "host_crowd_gather": { title, targetCount: 10-100（依活動規模）}
-
-- "host_scoreboard_announcement": { title, subtitle? }
-
-- "host_knowledge_map": { title, subtitle? }
-
-- "host_poll_live": { title, question, options: [{ id, label }, ...] }
-  question 是適合此活動的開放問題
 
 - "treasure_hunt": { title, finalReward, clues: [{ id, prompt, answer }, ...] }
   clues 至少 3 條、與活動相關

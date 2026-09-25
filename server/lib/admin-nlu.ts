@@ -1,6 +1,6 @@
 // 🧠 Admin NLU — DeepSeek 解析 admin 自然語言指令（W15 D3）
 //
-// 用途：admin 在 LINE 對 Bot 說「@chito 婚禮 Hung & Anita 5/15」
+// 用途：admin 在 LINE 對 Bot 說「@chito 街區走讀 金城老街 5/15」
 //      DeepSeek 解析 → 結構化指令 → 後續觸發 instantiate
 //
 // 支援指令：
@@ -41,9 +41,9 @@ export interface AdminCommand {
  * @example
  *   const cmd = await parseAdminCommand({
  *     apiKey: process.env.OPENROUTER_API_KEY!,
- *     text: "@chito 婚禮 Hung & Anita 5/15"
+ *     text: "@chito 街區走讀 金城老街 5/15"
  *   });
- *   // → { intent: "create_scenario", scenarioId: "wedding", displayName: "Hung & Anita 5/15 婚禮" }
+ *   // → { intent: "create_scenario", scenarioId: "street-walk", displayName: "金城老街 5/15 街區走讀" }
  */
 export async function parseAdminCommand(input: {
   apiKey: string;
@@ -103,9 +103,10 @@ ${scenarioList}
 }
 
 規則：
-1. 如果輸入提到「婚禮 / wedding」→ scenarioId="wedding"
-2. 如果輸入提到「破冰 / icebreaker」→ scenarioId="icebreaker"
-3. 如果輸入提到「同學會 / reunion」→ scenarioId="reunion"
+1. 如果輸入提到「街區 / 走讀 / street-walk」→ scenarioId="street-walk"
+2. 如果輸入提到「商圈 / 打卡 / district-checkin」→ scenarioId="district-checkin"
+3. 如果輸入提到「內訓 / 企業 / corporate-training」→ scenarioId="corporate-training"；「員工旅遊 / company-trip」→ scenarioId="company-trip"；「親子 / kids-adventure」→ scenarioId="kids-adventure"；「場域故事 / venue-storyline」→ scenarioId="venue-storyline"；「射擊 / 打擊 / shooting-arena」→ scenarioId="shooting-arena"
+   （婚禮 / 生日 / 同學會 / 園遊會 / 破冰 / 頒獎 這類大螢幕熱場活動已移交 PhotoGo，回覆使用者「請用 PhotoGo」，不要猜 scenarioId）
 4. 如果輸入提到「街區 / 走讀」→ scenarioId="street-walk"
 5. 如果輸入提到「企業內訓 / training」→ scenarioId="corporate-training"
 6. 抽取人名 / 日期組合 displayName（如「Hung & Anita 5/15」→ displayName="Hung & Anita 5/15 婚禮"）
@@ -144,12 +145,12 @@ export function formatCommandReply(cmd: AdminCommand): string {
       return (
         `📖 CHITO admin 指令說明\n\n` +
         `常用指令：\n` +
-        `  @chito 婚禮 Hung & Anita 5/15\n` +
-        `  @chito 破冰 公司新人訓\n` +
+        `  @chito 街區走讀 金城老街 5/15\n` +
+        `  @chito 企業內訓 新人訓\n` +
         `  @chito list（看所有情境）\n` +
         `  @chito 我的活動（看 active sessions）\n` +
         `  @chito 結束 <sessionId>（結束某活動）\n\n` +
-        `12 情境：婚禮 / 生日 / 同學會 / 親子 / 園遊會 / 破冰 / 頒獎 / 街區 / 商圈 / 內訓 / 旅遊 / 場域`
+        `7 情境：街區走讀 / 商圈打卡 / 企業內訓 / 員工旅遊 / 親子冒險 / 場域故事 / 打擊競技場（婚禮 / 生日 / 同學會等熱場活動請用 PhotoGo）`
       );
 
     case "list_scenarios": {

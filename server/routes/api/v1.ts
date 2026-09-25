@@ -17,7 +17,6 @@
 //   GET /api/v1/usage
 
 import type { Express } from "express";
-import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { requireApiKey } from "../../middleware/api-key";
 import { requireFeature } from "../../middleware/require-module";
@@ -30,15 +29,13 @@ import {
   type ScenarioComponent,
 } from "@shared/scenario-templates";
 import { db } from "../../db";
-import { games, pages, gameSessions, fields } from "@shared/schema";
+import { games, pages, fields } from "@shared/schema";
 import { generateSlug } from "../../qrCodeService";
 import { dispatchWebhook } from "../../lib/webhook-dispatcher";
 
-const HOST_TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
-
-function generateHostToken(): string {
-  return randomBytes(16).toString("hex");
-}
+// 建場結果的 expiresAt（維持 v1 契約既有欄位；遊戲入口本身不會自動失效）
+// 📺 2026-09-25：大螢幕互動（host 軸）已移交 PhotoGo，v1 不再建 host 場次
+const INSTANCE_TTL_MS = 12 * 60 * 60 * 1000;
 
 // W12 D1: fieldId 改從 req.apiKey.fieldId 直接取（store metadata 已含）
 // 既有 getFieldIdForApiKey() 移除、邏輯內聯到 handler
@@ -216,7 +213,7 @@ export function registerPublicApiV1Routes(app: Express) {
    * Body: { scenarioId: string, displayName?: string, customerEmail?: string }
    * Header: Idempotency-Key（可選、24h 內防重發）
    *
-   * 代理商一鍵建場 — 為情境的所有元件建立 game + page + host_session
+   * 代理商一鍵建場 — 為情境的所有元件建立 game + page（publicSlug 入口）
    */
   app.post(
     "/api/v1/instances",
@@ -265,17 +262,9 @@ export function registerPublicApiV1Routes(app: Express) {
         }
 
         const finalDisplayName = String(displayName || scenario.name).slice(0, 100);
-        const expiresAt = new Date(Date.now() + HOST_TOKEN_TTL_MS);
+        const expiresAt = new Date(Date.now() + INSTANCE_TTL_MS);
 
-        const instances: Array<{
-          axis: string;
-          gameId: string;
-          pageType: string;
-          label: string;
-          hostUrl?: string;
-          playUrl?: string;
-          gameUrl?: string;
-        }> = [];
+        const instances: ApiInstance[] = [];
 
         for (const component of scenario.components) {
           await instantiateForApi({
@@ -283,15 +272,13 @@ export function registerPublicApiV1Routes(app: Express) {
             scenarioDisplayName: finalDisplayName,
             component,
             fieldId,
-            expiresAt,
             collector: instances,
           });
         }
 
         const breakdown = {
-          host: instances.filter((i) => i.axis === "host").length,
           multi: instances.filter((i) => i.axis === "multi").length,
-          other: instances.filter((i) => i.axis !== "host" && i.axis !== "multi").length,
+          other: instances.filter((i) => i.axis !== "multi").length,
         };
 
         const responseBody = {
@@ -377,8 +364,8 @@ function buildOpenApiSpec(baseUrl: string): Record<string, unknown> {
         ScenarioListItem: {
           type: "object",
           properties: {
-            id: { type: "string", example: "wedding" },
-            name: { type: "string", example: "婚禮派對情境包" },
+            id: { type: "string", example: "street-walk" },
+            name: { type: "string", example: "街區走讀情境包" },
             tagline: { type: "string" },
             category: { type: "string", enum: ["social", "event", "public", "corporate", "venue"] },
             estimatedPlayers: { type: "string" },
@@ -404,7 +391,6 @@ function buildOpenApiSpec(baseUrl: string): Record<string, unknown> {
             breakdown: {
               type: "object",
               properties: {
-                host: { type: "integer" },
                 multi: { type: "integer" },
                 other: { type: "integer" },
               },
@@ -415,13 +401,11 @@ function buildOpenApiSpec(baseUrl: string): Record<string, unknown> {
         InstanceComponent: {
           type: "object",
           properties: {
-            axis: { type: "string", enum: ["host", "multi", "solo", "shared"] },
+            axis: { type: "string", enum: ["multi", "solo", "shared"] },
             gameId: { type: "string" },
             pageType: { type: "string" },
             label: { type: "string" },
-            hostUrl: { type: "string", nullable: true, description: "host 元件才有" },
-            playUrl: { type: "string", nullable: true, description: "host 元件才有" },
-            gameUrl: { type: "string", nullable: true, description: "multi/solo 元件才有" },
+            gameUrl: { type: "string", description: "玩家入口（/g/:slug）" },
           },
         },
       },
@@ -590,8 +574,8 @@ function buildOpenApiSpec(baseUrl: string): Record<string, unknown> {
                   type: "object",
                   required: ["scenarioId"],
                   properties: {
-                    scenarioId: { type: "string", example: "wedding" },
-                    displayName: { type: "string", example: "Hung & Anita 5/15 婚禮" },
+                    scenarioId: { type: "string", example: "street-walk" },
+                    displayName: { type: "string", example: "後浦老街走讀 10/5" },
                     customerEmail: { type: "string", format: "email" },
                   },
                 },
@@ -621,28 +605,27 @@ function buildOpenApiSpec(baseUrl: string): Record<string, unknown> {
 // 內部 helper：API instantiate 元件（與 admin scenarios.ts 邏輯類似）
 // ════════════════════════════════════════════════════════════════════
 
+interface ApiInstance {
+  axis: ScenarioComponent["axis"];
+  gameId: string;
+  pageType: string;
+  label: string;
+  /** 玩家入口（/g/:slug）*/
+  gameUrl: string;
+}
+
 interface InstantiateForApiParams {
   scenarioId: string;
   scenarioDisplayName: string;
   component: ScenarioComponent;
   fieldId: string;
-  expiresAt: Date;
-  collector: Array<{
-    axis: string;
-    gameId: string;
-    pageType: string;
-    label: string;
-    hostUrl?: string;
-    playUrl?: string;
-    gameUrl?: string;
-  }>;
+  collector: ApiInstance[];
 }
 
 async function instantiateForApi(params: InstantiateForApiParams): Promise<void> {
-  const { scenarioId, scenarioDisplayName, component, fieldId, expiresAt, collector } = params;
-  const isHost = component.axis === "host";
+  const { scenarioId, scenarioDisplayName, component, fieldId, collector } = params;
   const gameMode = component.axis === "multi" ? "team" : "individual";
-  const slug = isHost ? null : generateSlug();
+  const slug = generateSlug();
 
   // 預設 config（簡化版、admin scenarios.ts 有完整 default config helper）
   const config = { title: `${scenarioDisplayName} - ${component.label}` };
@@ -670,35 +653,11 @@ async function instantiateForApi(params: InstantiateForApiParams): Promise<void>
     config,
   });
 
-  if (isHost) {
-    const hostToken = generateHostToken();
-    const [session] = await db
-      .insert(gameSessions)
-      .values({
-        gameId: game.id,
-        status: "playing",
-        hostMode: true,
-        hostToken,
-        hostTokenExpiresAt: expiresAt,
-      })
-      .returning();
-    if (!session) throw new Error("建立 host session 失敗");
-
-    collector.push({
-      axis: "host",
-      gameId: game.id,
-      pageType: component.pageType,
-      label: component.label,
-      hostUrl: `/host/${session.id}?token=${hostToken}`,
-      playUrl: `/play/${session.id}`,
-    });
-  } else {
-    collector.push({
-      axis: component.axis,
-      gameId: game.id,
-      pageType: component.pageType,
-      label: component.label,
-      gameUrl: `/g/${slug}`,
-    });
-  }
+  collector.push({
+    axis: component.axis,
+    gameId: game.id,
+    pageType: component.pageType,
+    label: component.label,
+    gameUrl: `/g/${slug}`,
+  });
 }

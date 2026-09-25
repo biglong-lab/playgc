@@ -25,7 +25,7 @@ import {
   Calculator,
 } from "lucide-react";
 
-type ActivityType = "wedding" | "reunion" | "corporate" | "district" | "icebreaker";
+type ActivityType = "venue" | "kids" | "corporate" | "district" | "edu";
 
 interface ActivityProfile {
   label: string;
@@ -43,18 +43,18 @@ interface ActivityProfile {
 }
 
 const ACTIVITY_PROFILES: Record<ActivityType, ActivityProfile> = {
-  wedding: {
-    label: "婚禮",
-    emoji: "💒",
+  venue: {
+    label: "民宿 / 場域經營（回頭客）",
+    emoji: "🏡",
     manualHours: 8,
     platformHours: 1,
     baselineEngagement: 35,
     platformEngagement: 80,
     perGuestValue: 150,
   },
-  reunion: {
-    label: "同學會 / 聚會",
-    emoji: "🎓",
+  kids: {
+    label: "親子活動 / 冒險",
+    emoji: "🧒",
     manualHours: 5,
     platformHours: 1,
     baselineEngagement: 40,
@@ -79,9 +79,9 @@ const ACTIVITY_PROFILES: Record<ActivityType, ActivityProfile> = {
     platformEngagement: 65,
     perGuestValue: 80,
   },
-  icebreaker: {
-    label: "破冰 / 熱場",
-    emoji: "❄️",
+  edu: {
+    label: "校外教學 / 班際競賽",
+    emoji: "🎒",
     manualHours: 4,
     platformHours: 0.5,
     baselineEngagement: 45,
@@ -93,7 +93,7 @@ const ACTIVITY_PROFILES: Record<ActivityType, ActivityProfile> = {
 const HOURLY_RATE = 500; // 籌備時薪估值
 
 export default function RoiCalculator() {
-  const [activityType, setActivityType] = useState<ActivityType>("wedding");
+  const [activityType, setActivityType] = useState<ActivityType>("district");
   const [guestCount, setGuestCount] = useState(50);
   const [budget, setBudget] = useState(8000);
 

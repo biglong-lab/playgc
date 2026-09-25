@@ -45,7 +45,7 @@ export interface CheckoutSession {
  *     currency: "twd",
  *     successUrl: "https://game.homi.cc/pricing/success",
  *     cancelUrl: "https://game.homi.cc/pricing",
- *     metadata: { scenarioId: "wedding", adminId: "abc123" },
+ *     metadata: { scenarioId: "street-walk", adminId: "abc123" },
  *   });
  *   res.json({ checkoutUrl: session.url });
  */

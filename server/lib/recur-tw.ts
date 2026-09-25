@@ -49,7 +49,7 @@ export interface RecurCheckoutSession {
  *     successUrl: "https://game.homi.cc/pricing/success?session_id={CHECKOUT_SESSION_ID}",
  *     cancelUrl: "https://game.homi.cc/pricing?canceled=1",
  *     customerEmail: "user@example.com",
- *     metadata: { scenarioId: "wedding", adminId: "abc" },
+ *     metadata: { scenarioId: "street-walk", adminId: "abc" },
  *   });
  */
 export async function createRecurCheckoutSession(

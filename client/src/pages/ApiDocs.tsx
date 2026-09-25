@@ -18,13 +18,13 @@ const CURL_EXAMPLES = {
   listScenarios: `curl -H "Authorization: Bearer ck_test_xxx" \\
   ${BASE_URL}/api/v1/scenarios?status=live`,
   scenarioDetail: `curl -H "Authorization: Bearer ck_test_xxx" \\
-  ${BASE_URL}/api/v1/scenarios/wedding`,
+  ${BASE_URL}/api/v1/scenarios/street-walk`,
   createInstance: `curl -X POST ${BASE_URL}/api/v1/instances \\
   -H "Authorization: Bearer ck_test_xxx" \\
   -H "Idempotency-Key: agency-order-001" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "scenarioId": "wedding",
+    "scenarioId": "street-walk",
     "displayName": "Hung & Anita 5/15 婚禮",
     "customerEmail": "couple@example.com"
   }'`,
@@ -229,7 +229,7 @@ const { data } = await chito.scenarios.list({ status: "live" });
 
 // 一鍵建場
 const instance = await chito.instances.create({
-  scenarioId: "wedding",
+  scenarioId: "street-walk",
   displayName: "Hung & Anita 5/15 婚禮",
   idempotencyKey: \`order-\${orderId}\`,
 });
