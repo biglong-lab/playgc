@@ -121,6 +121,24 @@
 
 CHITO 這邊 B-0 之後**不再對 host/ 投入任何開發**；留著程式碼是為了既有情境模板與資料相容，不刪（表只加不刪原則）。
 
+### B-0 實作紀錄（2026-09-25，本地 commit `e69ce81a`，未部署）
+
+| 項目 | 做法 |
+|---|---|
+| 模組 | `module-registry` 加 `host`（預設關、依賴 games；API 前綴 `/api/admin/host-sessions` `/api/host-sessions` `/api/trivia`；選單 `/admin/host-sessions`） |
+| 後台 | 選單「主控大螢幕」→「活動現場大螢幕」掛 `requiresModule: "host"`；theme API 的 `modules` 加 `host` |
+| 編輯器 | 場域沒開 host → 工具箱不列 `host_screen` 分類（modules 未載入前先全顯示，同選單規則） |
+| 建場 | 情境模板一鍵建場遇 host 元件且場域未開 → 明確錯誤「已改由 PhotoGo 提供」；沒有 fieldId 的舊流程（LINE）放行 |
+| 相容 | 公開 `/api/host-sessions/:id`、`/api/trivia/*` 判斷不出場域 → 放行；既有活動的連結不斷 |
+| 展示 | `/showcase` 置頂告示 + PhotoGo 連結（demo 保留、註明舊版）；模板市集全 host 情境加註 |
+| 單場域開通 | super_admin：`PATCH /api/admin/fields/:id/modules` body `{ "host": true }`（P4 設定中心才有 UI） |
+| 測試 | 3 支新測試 14 項；全套 3791 通過、型別 0 錯誤 |
+
+與原計畫的差異：
+- **沒改「清理超時場次」排除 hostMode** — 模組關掉後不會再有新 host 場次，改了反而讓卡住的舊場次永遠清不掉。
+- 08-06 卡在 playing 的那場（`d749d947`）：部署時用既有「清理超時場次」處理，不另寫程式。
+- 部署後要做：對賈村之外的場域不用動（預設關）；若賈村活動當天仍需要舊版大螢幕，用上面的 PATCH 對 JIACHUN 單獨開。
+
 ## 六、對「CHITO 專注場域管理、預約、遊戲」的影響
 
 - CHITO 減掉的：一條從沒穩定過、沒人用、觀測不到的軸；17 個 host 元件的維護；「主控大螢幕」這個會讓業務踩雷的入口。
