@@ -1,6 +1,10 @@
 # 大螢幕互動工具的歸屬：CHITO（game.homi.cc）vs PhotoGo（photogo.aihomi.cc）— 分析報告 2026-09-25
 
-> 類型：分析與建議／狀態：**待業主決定**／部署：無
+> ⚠️ **結論已被取代**：業主補充驅動力是「穩定度」而非定位，並提供使用者反饋「HostScreen 無法順利使用」。
+> 以穩定度為準的完整評估見 [2026-09-25-hostscreen-stability-evaluation.md](2026-09-25-hostscreen-stability-evaluation.md)，
+> 其結論改為「CHITO 退出大螢幕互動、PhotoGo 接手（先補到現場等級）」。本文保留作為現況對照與定位論述。
+>
+> 類型：分析與建議／狀態：**已被取代（2026-09-25 同日）**／部署：無
 > 業主提問：「`/showcase` 這個大螢幕遊戲互動工具，要不要拆到 PhotoGo（廣告機、拍照機）服務？讓 CHITO 更精準，還是整合在一起不影響、或對銷售有幫助？」
 > 依據：兩個專案的程式碼實查（2026-09-25）；PhotoGo 在 `/Users/hung-macmini/projects/互動`
 
