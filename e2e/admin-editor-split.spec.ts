@@ -3,8 +3,11 @@
  *
  * 範圍：
  *   - games 表 editor_mode 欄位寫入正確
- *   - SCENARIO instantiate 依 axis 自動設 mode（host → activity / 其他 → game）
- *   - host session 建立流程依 mode 處理
+ *   - /api/scenarios/health 統計與 SCENARIO_TEMPLATES 一致
+ *   - 常規 multi 元件建場 → 普通 session（不再有 hostMode=true 的場次）
+ *
+ * 2026-09-25：大螢幕（host_*）軸線整條移交 PhotoGo（ADR-0029），原「host_* → activity」
+ *   的建場案例已移除；activity 模式現在只剩敘事 + 活動互動元件。
  *
  * 不在此測（卡 admin auth）：
  *   - admin UI 互動（兩個按鈕點擊 / filter tab 切換）→ 改實機驗證
@@ -18,7 +21,7 @@ import { SCENARIO_TEMPLATES } from "../shared/scenario-templates";
 async function isTestEndpointEnabled(request: import("@playwright/test").APIRequestContext): Promise<boolean> {
   try {
     const probe = await request.post("/api/_test/seed-multi-game-with-page", {
-      data: { pageType: "host_emoji_react", config: { title: "probe" } },
+      data: { pageType: "lock_coop", config: { title: "probe" } },
     });
     if (!probe.ok()) return false;
     const ctype = probe.headers()["content-type"] ?? "";
@@ -40,42 +43,6 @@ test.describe("🎯 軟分流階段 1 — editor mode 分流", () => {
     if (!enabled) {
       test.skip(true, "_test endpoints 未啟用（需設 ENABLE_E2E_HELPERS=true）");
     }
-  });
-
-  test.describe("DB schema：editor_mode 欄位", () => {
-    let gameId: string;
-
-    test.afterAll(async ({ request }) => {
-      if (gameId) {
-        await request.post(`/api/_test/cleanup/${gameId}`);
-      }
-    });
-
-    test("seed-multi-game-with-page (host_*) → game.editorMode 應為 'activity'", async ({
-      request,
-    }) => {
-      const seedRes = await request.post("/api/_test/seed-multi-game-with-page", {
-        data: {
-          pageType: "host_emoji_react",
-          config: { title: "e2e activity test" },
-        },
-      });
-      expect(seedRes.ok()).toBeTruthy();
-      const seed = await seedRes.json();
-      gameId = seed.gameId;
-
-      const verifyRes = await request.get(`/api/_test/games/${gameId}`);
-      expect(verifyRes.ok()).toBeTruthy();
-      const data = await verifyRes.json();
-
-      expect(data.game).toBeTruthy();
-      // host_ 軸 → editorMode 'activity'（test-only.ts seed 端點 isHostAxis 邏輯）
-      // 既有實作：host_* pageType → gameMode='individual' + hostMode=true
-      // 但 editor_mode 欄位是新加的、test-only.ts seed 沒明確設 → 走 DB default 'game'
-      // 這個 test 確認新加的欄位有寫入（值是 'game' default 也算過、表示欄位存在）
-      expect(data.game.editorMode).toBeDefined();
-      expect(["game", "activity"]).toContain(data.game.editorMode);
-    });
   });
 
   test.describe("SCENARIO instantiate（API-level）", () => {
@@ -130,8 +97,10 @@ test.describe("🎯 軟分流階段 1 — editor mode 分流", () => {
       expect(data.game).toBeTruthy();
       expect(data.game.gameMode).toBe("team"); // lock_coop = multi 軸
       expect(data.game.editorMode).toBeDefined();
+      expect(["game", "activity"]).toContain(data.game.editorMode);
       expect(data.sessions).toHaveLength(1);
-      expect(data.sessions[0].hostMode).toBe(false);
+      // hostMode 欄位依「schema 只加不刪」保留在表上，但不會再有 true 的場次
+      expect(data.sessions[0].hostMode).not.toBe(true);
     });
   });
 });

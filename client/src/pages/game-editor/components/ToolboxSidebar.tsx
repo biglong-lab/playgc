@@ -1,6 +1,5 @@
 // 元件工具箱側邊欄 - 拖曳頁面類型到編輯器
 import { useMemo, useState } from "react";
-import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,8 @@ import {
   filterPageTypesByEditorMode,
   groupPageTypesByCategory,
   type EditorMode,
-  type PageCategory, getPageCategory } from "../constants";
+  type PageCategory,
+} from "../constants";
 import { isComponentAllowedForGameMode } from "@shared/multiplayer-component-types";
 
 interface ToolboxSidebarProps {
@@ -25,7 +25,7 @@ interface ToolboxSidebarProps {
   /**
    * 🆕 軟分流階段 1：當前 game 的 editorMode（'game' / 'activity'）
    * - 'game'     → 顯示 narrative + mission + photo + multi_coop（路線 I）
-   * - 'activity' → 顯示 narrative + host_screen + interactive（路線 II/III）
+   * - 'activity' → 顯示 narrative + interactive（路線 II/III；大螢幕元件已移交 PhotoGo）
    * - 未指定（既有舊 game / 建立中）→ 全部顯示
    */
   readonly editorMode?: EditorMode | null;
@@ -38,30 +38,21 @@ export default function ToolboxSidebar({
   gameMode,
   editorMode,
 }: ToolboxSidebarProps) {
-  // 📺 2026-09-25：活動現場大螢幕（host 模組）預設關 —— 大螢幕互動改由 PhotoGo 提供。
-  //   場域沒開這個模組就不列 host_* 元件，避免建了場次卻連不上（HostScreen 穩定度評估）。
-  //   modules 還沒載入時先全顯示（與後台選單同一套「未載入不閃爍」規則）。
-  const currentField = useCurrentField();
-  const hostModuleOn = currentField?.modules ? currentField.modules.host === true : true;
   // 依 gameMode 過濾元件清單
   // - individual → 隱藏 multi 元件
   // - team / competitive / relay → 全部顯示（不對稱規則 v1.2）
   // - 未指定（建立新遊戲時）→ 全部顯示，server 約束會擋下不合規組合
   const visiblePageTypes = useMemo(() => {
     // 🆕 軟分流階段 1：先依 editorMode 過濾（最高優先）
-    let filtered: typeof PAGE_TYPES | (typeof PAGE_TYPES)[number][] = PAGE_TYPES;
-    if (editorMode) {
-      filtered = filterPageTypesByEditorMode(PAGE_TYPES, editorMode);
-    }
-    if (!hostModuleOn) {
-      filtered = filtered.filter((type) => getPageCategory(type.value) !== "host_screen");
-    }
+    const filtered: typeof PAGE_TYPES | (typeof PAGE_TYPES)[number][] = editorMode
+      ? filterPageTypesByEditorMode(PAGE_TYPES, editorMode)
+      : PAGE_TYPES;
     // 再依 gameMode 過濾（既有 multi 元件邏輯）
     if (!gameMode) return filtered;
     return filtered.filter((type) =>
       isComponentAllowedForGameMode(type.value, gameMode),
     );
-  }, [editorMode, gameMode, hostModuleOn]);
+  }, [editorMode, gameMode]);
 
   // 🆕 D3 (2026-05-07)：搜尋 + 按 category 分組
   const [searchQuery, setSearchQuery] = useState("");

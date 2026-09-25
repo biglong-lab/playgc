@@ -3,11 +3,11 @@
 // 背景：這批元件在編輯器全部掉進 default 分支 = 唯讀 JSON 傾印
 //   （管理員看到的是 {"title": "活動筆記", "prompt": "…"} 而不是輸入框）。
 //   欄位定義照各元件實際讀取的 config 介面（client/src/components/game/multi/*.tsx），
-//   由 HostComponentEditor 的通用表單產生器渲染，版面與大螢幕元件一致。
+//   由 SchemaConfigEditor 的通用表單產生器渲染。
 //
 // 維護規則：元件新增可設定欄位時，同步在這裡加一行；欄位 key 必須與
 //   元件 extractConfig 讀的 key 完全相同，否則設了也不會生效。
-import type { FieldDef } from "./HostComponentEditor";
+import type { FieldDef } from "./SchemaConfigEditor";
 
 /** 共用：標題 + 引導語（多數互動元件只有這兩個欄位）*/
 const titleAndPrompt = (promptLabel = "引導語", promptHint?: string): FieldDef[] => [

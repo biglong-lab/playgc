@@ -88,36 +88,8 @@ export const MULTI_ONLY_COMPONENTS = [
   "role_assign",        // 角色分派引擎
 ] as const;
 
-/**
- * 主控大螢幕元件 — 第三軸線（HostScreen）
- *
- * 設計依據：docs/decisions/0004-host-screen-axis.md
- *
- * 判斷標準：一對多單向廣播（大螢幕對玩家群眾），無隊伍概念，無重連狀態恢復
- *
- * 路徑模型：
- *   - /host/:sessionId 大螢幕端（無登入、唯讀、自動全螢幕）
- *   - /play/:sessionId 玩家手機端（可匿名、互動）
- *
- * WebSocket 事件：host_screen_register / host_screen_pulse / host_screen_state
- *
- * 命名規則：所有 host 元件 pageType 必須以 `host_` 開頭
- */
-export const HOST_ONLY_COMPONENTS = [
-  // Phase 1 規劃（W2-W3）
-  "host_poll_live",              // 即時民調（Phase 1 W2 首發）
-  "host_emoji_react",            // 全場 emoji 雨
-  "host_wave_response",          // 全場按鈕熱力圖
-  "host_trivia_showdown",        // 搶答秀（園遊會主舞台）
-  "host_live_leaderboard",       // 即時排行榜
-  "host_crowd_gather",           // 簽到熱場
-  "host_scoreboard_announcement", // 跑馬燈宣告
-  "host_knowledge_map",          // 場域全景地圖
-
-  // Phase 2 規劃（W5+ 紀念類）
-  "host_polaroid_collage",       // 拍立得紀念牆（婚禮王牌）
-  "host_guestbook_digital",      // 數位簽名簿（婚禮配套、退休歡送）
-] as const;
+// 📺 原第三軸線「主控大螢幕元件」（HOST_ONLY_COMPONENTS / host_* pageType）已於 2026-09-25
+//    整條移交 PhotoGo（ADR-0029 取代 ADR-0004），本檔只剩 solo / multi 兩軸。
 
 // ============================================================================
 // 型別輔助
@@ -126,18 +98,16 @@ export const HOST_ONLY_COMPONENTS = [
 export type SharedComponent = (typeof SHARED_COMPONENTS)[number];
 export type SoloOnlyComponent = (typeof SOLO_ONLY_COMPONENTS)[number];
 export type MultiOnlyComponent = (typeof MULTI_ONLY_COMPONENTS)[number];
-export type HostOnlyComponent = (typeof HOST_ONLY_COMPONENTS)[number];
 
 /**
- * 玩家模式（v2 — 加入 host 軸線）
+ * 玩家模式
  *
  * - "solo"  個人遊戲
  * - "multi" 隊伍協作遊戲
- * - "host"  主控大螢幕模式（無隊伍、單向廣播）
  *
- * @see docs/decisions/0004-host-screen-axis.md
+ * 2026-09-25：原 "host"（主控大螢幕模式）已隨大螢幕互動移交 PhotoGo（ADR-0029）。
  */
-export type PlayerMode = "solo" | "multi" | "host";
+export type PlayerMode = "solo" | "multi";
 
 /**
  * 從現有 gameMode 推導 playerMode
@@ -156,16 +126,14 @@ export type PlayerMode = "solo" | "multi" | "host";
  */
 export function derivePlayerModeFromGameMode(gameMode: string): PlayerMode {
   if (gameMode === "individual") return "solo";
-  if (gameMode === "host") return "host"; // 🆕 ADR-0004：主控大螢幕模式
   return "multi";
 }
 
-/** 所有已知 pageType（包括規劃中尚未實作的多人元件 + host 元件） */
+/** 所有已知 pageType（包括規劃中尚未實作的多人元件） */
 export type KnownPageType =
   | SharedComponent
   | SoloOnlyComponent
-  | MultiOnlyComponent
-  | HostOnlyComponent;
+  | MultiOnlyComponent;
 
 // ============================================================================
 // 純函式 helpers（無副作用，可在 client/server 共用）
@@ -193,15 +161,6 @@ export function isMultiOnlyComponent(pageType: string): pageType is MultiOnlyCom
 }
 
 /**
- * 是否為主控大螢幕元件（HostScreen 軸線）
- *
- * @see docs/decisions/0004-host-screen-axis.md
- */
-export function isHostOnlyComponent(pageType: string): pageType is HostOnlyComponent {
-  return (HOST_ONLY_COMPONENTS as readonly string[]).includes(pageType);
-}
-
-/**
  * 給定 pageType 推導必需的 playerMode（若無限制則回 null）
  *
  * @returns "solo" / "multi" / null（通用元件）
@@ -214,7 +173,6 @@ export function getRequiredPlayerMode(pageType: string): PlayerMode | null {
   if (isSharedComponent(pageType)) return null;
   if (isSoloOnlyComponent(pageType)) return "solo";
   if (isMultiOnlyComponent(pageType)) return "multi";
-  if (isHostOnlyComponent(pageType)) return "host";
   // 未知 pageType：保守回 null（讓上層自行決定）
   return null;
 }
@@ -247,17 +205,14 @@ export function isComponentAllowedForPlayerMode(
   pageType: string,
   gamePlayerMode: PlayerMode,
 ): boolean {
-  // 通用元件：solo / multi 模式都允許；host 模式不允許（host 全自己管）
-  if (isSharedComponent(pageType)) return gamePlayerMode !== "host";
+  // 通用元件：solo / multi 模式都允許
+  if (isSharedComponent(pageType)) return true;
 
-  // 個人專用元件：solo / multi 都允許（v1.2 不對稱約束）；host 不允許
-  if (isSoloOnlyComponent(pageType)) return gamePlayerMode !== "host";
+  // 個人專用元件：solo / multi 都允許（v1.2 不對稱約束）
+  if (isSoloOnlyComponent(pageType)) return true;
 
   // 多人專用元件：只允許 multi（嚴格）
   if (isMultiOnlyComponent(pageType)) return gamePlayerMode === "multi";
-
-  // 主控大螢幕元件：只允許 host（嚴格，ADR-0004）
-  if (isHostOnlyComponent(pageType)) return gamePlayerMode === "host";
 
   // 未知 pageType：保守允許
   return true;
@@ -305,11 +260,7 @@ export function getAllowedComponentsForPlayerMode(
   if (playerMode === "solo") {
     return [...SHARED_COMPONENTS, ...SOLO_ONLY_COMPONENTS];
   }
-  if (playerMode === "multi") {
-    return [...SHARED_COMPONENTS, ...SOLO_ONLY_COMPONENTS, ...MULTI_ONLY_COMPONENTS];
-  }
-  // host 模式只允許 host 元件（ADR-0004：契約獨立）
-  return [...HOST_ONLY_COMPONENTS];
+  return [...SHARED_COMPONENTS, ...SOLO_ONLY_COMPONENTS, ...MULTI_ONLY_COMPONENTS];
 }
 
 /**
@@ -319,7 +270,6 @@ export const COMPONENT_CATEGORY_LABELS = {
   shared: "通用元件",
   solo: "個人專用元件",
   multi: "多人專用元件",
-  host: "主控大螢幕元件",
   unknown: "未分類元件",
 } as const;
 
@@ -330,10 +280,9 @@ export const COMPONENT_CATEGORY_LABELS = {
  */
 export function getComponentCategory(
   pageType: string,
-): "shared" | "solo" | "multi" | "host" | "unknown" {
+): "shared" | "solo" | "multi" | "unknown" {
   if (isSharedComponent(pageType)) return "shared";
   if (isSoloOnlyComponent(pageType)) return "solo";
   if (isMultiOnlyComponent(pageType)) return "multi";
-  if (isHostOnlyComponent(pageType)) return "host";
   return "unknown";
 }

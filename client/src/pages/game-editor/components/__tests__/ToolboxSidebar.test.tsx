@@ -70,3 +70,24 @@ describe("ToolboxSidebar — gameMode 過濾", () => {
     expect(screen.getByTestId("toolbox-vote_team")).toBeInTheDocument();
   });
 });
+
+describe("ToolboxSidebar — 大螢幕元件已移交 PhotoGo（ADR-0029）", () => {
+  it("editorMode='activity' 不再顯示任何 📺 host_* 元件，但活動互動元件照常", () => {
+    const { container } = render(<ToolboxSidebar {...baseProps} editorMode="activity" />);
+
+    expect(container.querySelectorAll('[data-testid^="toolbox-host_"]')).toHaveLength(0);
+    const categoryLabels = [...container.querySelectorAll('[data-testid^="category-toggle-"]')].map(
+      (el) => el.textContent ?? "",
+    );
+    expect(categoryLabels.filter((label) => label.includes("📺"))).toEqual([]);
+
+    // 敘事 + 活動互動仍在
+    expect(screen.getByTestId("toolbox-text_card")).toBeInTheDocument();
+    expect(screen.getByTestId("toolbox-spot_vote")).toBeInTheDocument();
+  });
+
+  it("未指定 editorMode（全部顯示）也沒有任何 host_* 元件", () => {
+    const { container } = render(<ToolboxSidebar {...baseProps} />);
+    expect(container.querySelectorAll('[data-testid^="toolbox-host_"]')).toHaveLength(0);
+  });
+});

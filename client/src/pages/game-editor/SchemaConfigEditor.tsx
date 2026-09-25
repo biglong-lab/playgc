@@ -1,13 +1,15 @@
-// 🎪 活動元件（host_*）設定編輯器 — Schema 驅動（2026-08-06, CHITO c609d0c3）
+// 🧩 Schema 驅動的元件設定編輯器（2026-08-06, CHITO c609d0c3；2026-09-25 改名）
 //
-// 背景：17 個活動元件在 PageConfigEditor 全部掉進 default 分支 =
-// 唯讀 JSON 傾印，管理員無法設定任何題目/選項/獎項（「活動元件設定
-// 都處於半成品」的實體）。
+// 背景：互動模組庫的元件在 PageConfigEditor 原本全部掉進 default 分支 =
+// 唯讀 JSON 傾印，管理員無法設定任何題目/選項。
 //
-// 設計：不寫 17 個手刻編輯器，改一份「每型別欄位定義表」＋通用表單
-// 產生器。之後新增活動元件只要在 HOST_FIELD_SCHEMAS 加一段定義。
+// 設計：不逐一手刻編輯器，改一份「每型別欄位定義表」（eventModuleSchemas.ts）
+// ＋這裡的通用表單產生器。之後新增可設定元件只要在 EVENT_MODULE_SCHEMAS 加一段定義。
 // 欄位種類：text / textarea / number / boolean / string-list / object-list
-// （object-list 支援 toRow/fromRow 讓底層形狀與表格欄位互轉，如搶答題）。
+// （object-list 支援 toRow/fromRow 讓底層形狀與表格欄位互轉）。
+//
+// 沿革：原本同時承載 17 個大螢幕（📺）元件的 schema；大螢幕互動已整條移交
+// PhotoGo（ADR-0029），那批 schema 一併移除、檔案改為中性命名。
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,156 +50,6 @@ export type FieldDef =
       hint?: string;
     };
 
-// ── 搶答題：底層 {id,prompt,options[4],correctIdx,timeLimitSec} ↔ 表格列 ──
-const triviaToRow = (q: Record<string, unknown>) => {
-  const opts = Array.isArray(q.options) ? (q.options as string[]) : [];
-  return {
-    prompt: q.prompt ?? "",
-    opt1: opts[0] ?? "", opt2: opts[1] ?? "", opt3: opts[2] ?? "", opt4: opts[3] ?? "",
-    correct: typeof q.correctIdx === "number" ? q.correctIdx + 1 : 1,
-    timeLimitSec: q.timeLimitSec ?? 15,
-  };
-};
-const triviaFromRow = (r: Record<string, unknown>, idx: number) => ({
-  id: `q${idx + 1}`,
-  prompt: String(r.prompt ?? ""),
-  options: [r.opt1, r.opt2, r.opt3, r.opt4].map((o) => String(o ?? "")),
-  correctIdx: Math.min(3, Math.max(0, Number(r.correct ?? 1) - 1)),
-  timeLimitSec: Math.max(5, Number(r.timeLimitSec ?? 15)),
-});
-
-// ── 每型別欄位定義（來源：getDefaultConfig + 各元件 config 介面）──
-export const HOST_FIELD_SCHEMAS: Record<string, FieldDef[]> = {
-  host_word_cloud: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "text", key: "subtitle", label: "副標（顯示在標題下）" },
-    { kind: "text", key: "prompt", label: "輸入框提示文字" },
-    { kind: "number", key: "maxWordsPerUser", label: "每人可送詞數", min: 1, max: 20 },
-    { kind: "number", key: "maxLength", label: "單詞字數上限", min: 1, max: 30 },
-  ],
-  host_poll_live: [
-    { kind: "text", key: "question", label: "投票題目" },
-    {
-      kind: "object-list", key: "options", label: "選項", itemLabel: "選項",
-      columns: [{ key: "label", label: "選項文字", type: "text" }],
-      newRow: (i) => ({ id: `opt-${i + 1}`, label: `選項 ${i + 1}` }),
-    },
-  ],
-  host_emoji_react: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "text", key: "subtitle", label: "副標" },
-    { kind: "string-list", key: "emojis", label: "可用 Emoji", itemLabel: "emoji" },
-    { kind: "number", key: "maxFlyingOnScreen", label: "螢幕同時飛行上限", min: 10, max: 200 },
-  ],
-  host_wave_response: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "text", key: "buttonLabel", label: "按鈕文字" },
-  ],
-  host_crowd_gather: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "number", key: "targetCount", label: "目標人數", min: 1 },
-    { kind: "text", key: "celebrationText", label: "達標慶祝文字" },
-  ],
-  host_trivia_showdown: [
-    { kind: "text", key: "title", label: "標題" },
-    {
-      kind: "object-list", key: "questions", label: "題庫", itemLabel: "題目",
-      columns: [
-        { key: "prompt", label: "題目", type: "text", width: "flex-[2]" },
-        { key: "opt1", label: "選項1", type: "text" },
-        { key: "opt2", label: "選項2", type: "text" },
-        { key: "opt3", label: "選項3", type: "text" },
-        { key: "opt4", label: "選項4", type: "text" },
-        { key: "correct", label: "正解(1-4)", type: "number", width: "w-20" },
-        { key: "timeLimitSec", label: "秒數", type: "number", width: "w-20" },
-      ],
-      toRow: triviaToRow,
-      fromRow: triviaFromRow,
-      newRow: (i) => ({
-        prompt: "", opt1: "", opt2: "", opt3: "", opt4: "", correct: 1, timeLimitSec: 15,
-        _idx: i,
-      }),
-      hint: "正解填 1-4（對應選項1-4）",
-    },
-  ],
-  host_live_leaderboard: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "number", key: "topN", label: "顯示前 N 名", min: 3, max: 50 },
-  ],
-  host_team_battle_score: [
-    { kind: "text", key: "title", label: "標題" },
-    {
-      kind: "object-list", key: "teams", label: "隊伍", itemLabel: "隊伍",
-      columns: [
-        { key: "name", label: "隊名", type: "text" },
-        { key: "score", label: "初始分數", type: "number", width: "w-24" },
-      ],
-      newRow: (i) => ({ id: `team-${i + 1}`, name: `隊伍 ${i + 1}`, score: 0 }),
-    },
-  ],
-  host_progress_quest: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "number", key: "totalTasks", label: "任務總數", min: 1 },
-  ],
-  host_polaroid_collage: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "number", key: "maxOnScreen", label: "牆上同時顯示上限", min: 10, max: 200 },
-    { kind: "string-list", key: "emojis", label: "裝飾 Emoji", itemLabel: "emoji" },
-  ],
-  host_guestbook_digital: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "number", key: "maxEntries", label: "簽名上限", min: 10, max: 1000 },
-  ],
-  host_blessing_wall: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "text", key: "subtitle", label: "副標" },
-    { kind: "number", key: "maxLength", label: "祝福字數上限", min: 10, max: 200 },
-    { kind: "string-list", key: "emojis", label: "裝飾 Emoji", itemLabel: "emoji" },
-  ],
-  host_knowledge_map: [
-    { kind: "text", key: "title", label: "標題" },
-    {
-      kind: "object-list", key: "points", label: "地點", itemLabel: "地點",
-      columns: [
-        { key: "name", label: "地點名", type: "text" },
-        { key: "hint", label: "提示", type: "text", width: "flex-[2]" },
-      ],
-      newRow: (i) => ({ id: `p${i + 1}`, name: "", hint: "" }),
-    },
-    { kind: "boolean", key: "allowMessage", label: "允許玩家留言" },
-  ],
-  host_scoreboard_announcement: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "number", key: "displayDurationMs", label: "單則顯示毫秒", min: 2000, max: 30000 },
-  ],
-  host_lottery_wheel: [
-    { kind: "text", key: "title", label: "標題" },
-    {
-      kind: "object-list", key: "items", label: "獎項", itemLabel: "獎項",
-      columns: [{ key: "label", label: "獎項名稱", type: "text" }],
-      newRow: (i) => ({ id: `item-${i + 1}`, label: "" }),
-    },
-    { kind: "number", key: "spinDurationMs", label: "轉盤動畫毫秒", min: 1000, max: 15000 },
-    { kind: "boolean", key: "allowJoin", label: "允許玩家掃碼加入抽獎池" },
-  ],
-  host_bingo_board: [
-    { kind: "text", key: "title", label: "標題" },
-    {
-      kind: "object-list", key: "tasks", label: "格子任務（5×5=25 格、第 13 格建議設為自由格）",
-      itemLabel: "格子",
-      columns: [{ key: "label", label: "任務文字", type: "text" }],
-      newRow: (i) => ({ id: `task-${i + 1}`, label: "" }),
-    },
-  ],
-  host_micro_qa: [
-    { kind: "text", key: "title", label: "標題" },
-    { kind: "number", key: "maxLength", label: "提問字數上限", min: 20, max: 500 },
-    { kind: "boolean", key: "allowAnonymous", label: "允許匿名提問" },
-  ],
-  // 🎉 互動模組庫 21 個活動互動元件（CHITO 0541db39）— 定義另放一檔
-  ...EVENT_MODULE_SCHEMAS,
-};
-
 // ── 通用渲染 ─────────────────────────────────────
 interface Props {
   pageType: string;
@@ -206,17 +58,19 @@ interface Props {
   updateField: (key: string, value: unknown) => void;
 }
 
-export default function HostComponentEditor({ pageType, config, updateField }: Props) {
-  const schema = HOST_FIELD_SCHEMAS[pageType];
-  const isEventModule = pageType in EVENT_MODULE_SCHEMAS;
+/** 此 pageType 是否有 schema 驅動的設定表單（沒有就交給呼叫端顯示 JSON） */
+export function hasSchemaConfigEditor(pageType: string): boolean {
+  return pageType in EVENT_MODULE_SCHEMAS;
+}
+
+export default function SchemaConfigEditor({ pageType, config, updateField }: Props) {
+  const schema = EVENT_MODULE_SCHEMAS[pageType];
   if (!schema) return null;
 
   return (
-    <div className="space-y-4" data-testid={`host-editor-${pageType}`}>
+    <div className="space-y-4" data-testid={`schema-editor-${pageType}`}>
       <p className="text-xs text-muted-foreground">
-        {isEventModule
-          ? "👥 互動元件設定 — 存檔後玩家端即用新設定；欄位留空會顯示內建預設文字"
-          : "📺 活動元件設定 — 存檔後大螢幕與玩家端即用新設定開場"}
+        👥 互動元件設定 — 存檔後玩家端即用新設定；欄位留空會顯示內建預設文字
       </p>
       {schema.map((field) => (
         <FieldRenderer key={field.key} field={field} config={config} updateField={updateField} />
@@ -239,7 +93,7 @@ function FieldRenderer({
             value={String(value ?? "")}
             placeholder={field.placeholder}
             onChange={(e) => updateField(field.key, e.target.value)}
-            data-testid={`host-field-${field.key}`}
+            data-testid={`schema-field-${field.key}`}
           />
         </div>
       );
@@ -251,7 +105,7 @@ function FieldRenderer({
             value={String(value ?? "")}
             placeholder={field.placeholder}
             onChange={(e) => updateField(field.key, e.target.value)}
-            data-testid={`host-field-${field.key}`}
+            data-testid={`schema-field-${field.key}`}
           />
         </div>
       );
@@ -268,7 +122,7 @@ function FieldRenderer({
               const n = e.target.value === "" ? undefined : Number(e.target.value);
               updateField(field.key, n);
             }}
-            data-testid={`host-field-${field.key}`}
+            data-testid={`schema-field-${field.key}`}
           />
           {field.hint && <p className="text-[10px] text-muted-foreground">{field.hint}</p>}
         </div>
@@ -280,7 +134,7 @@ function FieldRenderer({
           <Switch
             checked={Boolean(value)}
             onCheckedChange={(v) => updateField(field.key, v)}
-            data-testid={`host-field-${field.key}`}
+            data-testid={`schema-field-${field.key}`}
           />
         </div>
       );
@@ -300,7 +154,7 @@ function FieldRenderer({
                     next[i] = e.target.value;
                     updateField(field.key, next);
                   }}
-                  data-testid={`host-field-${field.key}-${i}`}
+                  data-testid={`schema-field-${field.key}-${i}`}
                 />
                 <Button
                   variant="ghost" size="icon" className="h-7 w-7"
@@ -314,7 +168,7 @@ function FieldRenderer({
             <Button
               variant="outline" size="sm"
               onClick={() => updateField(field.key, [...list, ""])}
-              data-testid={`host-field-${field.key}-add`}
+              data-testid={`schema-field-${field.key}-add`}
             >
               <Plus className="w-3 h-3 mr-1" />新增{field.itemLabel}
             </Button>
@@ -360,7 +214,7 @@ function FieldRenderer({
                         );
                         commit(next);
                       }}
-                      data-testid={`host-field-${field.key}-${i}-${col.key}`}
+                      data-testid={`schema-field-${field.key}-${i}-${col.key}`}
                     />
                   </div>
                 ))}
@@ -395,7 +249,7 @@ function FieldRenderer({
           <Button
             variant="outline" size="sm"
             onClick={() => commit([...rows, field.newRow(rows.length)])}
-            data-testid={`host-field-${field.key}-add`}
+            data-testid={`schema-field-${field.key}-add`}
           >
             <Plus className="w-3 h-3 mr-1" />新增{field.itemLabel}
           </Button>

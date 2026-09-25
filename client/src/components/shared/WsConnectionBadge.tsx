@@ -12,7 +12,7 @@ import { Wifi, WifiOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface WsConnectionBadgeProps {
-  /** 是否已連線（從 useTeamWebSocket / useHostScreenSync 等 hook 取得） */
+  /** 是否已連線（從 useTeamWebSocket 等 hook 取得） */
   isConnected: boolean;
   /** 是否正在嘗試連線（剛掛載 / 重連中） */
   isReconnecting?: boolean;

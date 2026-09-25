@@ -76,26 +76,9 @@ const BirthdayCandlePage = lazy(() => import("@/components/game/multi/BirthdayCa
 const AwardCeremonyPage = lazy(() => import("@/components/game/multi/AwardCeremonyPage"));
 const DinnerTablePage = lazy(() => import("@/components/game/multi/DinnerTablePage"));
 
-// 📺 ADR-0004 HostScreen 軸線（W2 D2 註冊首發 PollLive）
-const PollLivePage = lazy(() => import("@/components/game/host/PollLivePage"));
-const EmojiReactPage = lazy(() => import("@/components/game/host/EmojiReactPage"));
-const LotteryWheelPage = lazy(() => import("@/components/game/host/LotteryWheelPage"));
-const ProgressQuestPage = lazy(() => import("@/components/game/host/ProgressQuestPage"));
-const WordCloudPage = lazy(() => import("@/components/game/host/WordCloudPage"));
+// 大螢幕互動（📺 host 軸線）已移交 PhotoGo（ADR-0029），此處不再載入任何 host 元件
 const QuestChainPage = lazy(() => import("@/components/game/multi/QuestChainPage"));
 const MemoryMatchPage = lazy(() => import("@/components/game/solo/MemoryMatchPage"));
-const WaveResponsePage = lazy(() => import("@/components/game/host/WaveResponsePage"));
-const CrowdGatherPage = lazy(() => import("@/components/game/host/CrowdGatherPage"));
-const LiveLeaderboardPage = lazy(() => import("@/components/game/host/LiveLeaderboardPage"));
-const PolaroidCollagePage = lazy(() => import("@/components/game/host/PolaroidCollagePage"));
-const GuestbookDigitalPage = lazy(() => import("@/components/game/host/GuestbookDigitalPage"));
-const TriviaShowdownPage = lazy(() => import("@/components/game/host/TriviaShowdownPage"));
-const ScoreboardAnnouncementPage = lazy(() => import("@/components/game/host/ScoreboardAnnouncementPage"));
-const KnowledgeMapPage = lazy(() => import("@/components/game/host/KnowledgeMapPage"));
-const TeamBattleScorePage = lazy(() => import("@/components/game/host/TeamBattleScorePage"));
-const BingoBoardPage = lazy(() => import("@/components/game/host/BingoBoardPage"));
-const BlessingWallPage = lazy(() => import("@/components/game/host/BlessingWallPage"));
-const MicroQaPage = lazy(() => import("@/components/game/host/MicroQaPage"));
 
 // 個人元件（暫留根目錄，Phase 1.6 第二批會搬到 solo/）
 const ButtonPage = lazy(() => import("@/components/game/solo/ButtonPage"));
@@ -341,17 +324,6 @@ export default function GamePageRenderer({
         return <CollectiveScorePage {...commonProps} page={page} pageId={page.id} />;
       case "role_assign":
         return <RoleAssignPage {...commonProps} page={page} pageId={page.id} />;
-      // 📺 HostScreen 軸線（ADR-0004）
-      case "host_poll_live":
-        return <PollLivePage page={page} />;
-      case "host_emoji_react":
-        return <EmojiReactPage page={page} />;
-      case "host_lottery_wheel":
-        return <LotteryWheelPage page={page} />;
-      case "host_progress_quest":
-        return <ProgressQuestPage page={page} />;
-      case "host_word_cloud":
-        return <WordCloudPage page={page} />;
       case "quest_chain":
         return <QuestChainPage {...commonProps} page={page} pageId={page.id} />;
       case "check_in":
@@ -446,30 +418,6 @@ export default function GamePageRenderer({
         return <DinnerTablePage {...commonProps} pageId={page.id} config={page.config as Record<string, unknown>} />;
       case "memory_match":
         return <MemoryMatchPage {...commonProps} />;
-      case "host_wave_response":
-        return <WaveResponsePage page={page} />;
-      case "host_crowd_gather":
-        return <CrowdGatherPage page={page} />;
-      case "host_live_leaderboard":
-        return <LiveLeaderboardPage page={page} />;
-      case "host_polaroid_collage":
-        return <PolaroidCollagePage page={page} />;
-      case "host_guestbook_digital":
-        return <GuestbookDigitalPage page={page} />;
-      case "host_trivia_showdown":
-        return <TriviaShowdownPage page={page} />;
-      case "host_scoreboard_announcement":
-        return <ScoreboardAnnouncementPage page={page} />;
-      case "host_knowledge_map":
-        return <KnowledgeMapPage page={page} />;
-      case "host_team_battle_score":
-        return <TeamBattleScorePage page={page} />;
-      case "host_bingo_board":
-        return <BingoBoardPage page={page} />;
-      case "host_blessing_wall":
-        return <BlessingWallPage page={page} />;
-      case "host_micro_qa":
-        return <MicroQaPage page={page} />;
       case "photo_ocr":
         return <PhotoOcrFlow {...commonProps} />;
       case "gps_mission":

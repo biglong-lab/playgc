@@ -1,12 +1,29 @@
 // 遊戲編輯器常數 - 單元測試
 import { describe, it, expect } from "vitest";
-import { PAGE_TYPES, PAGE_TEMPLATES, EVENT_TYPES, REWARD_TYPES, getPageTypeInfo } from "./constants";
+import {
+  PAGE_TYPES,
+  PAGE_TEMPLATES,
+  EVENT_TYPES,
+  REWARD_TYPES,
+  CATEGORY_INFO,
+  EDITOR_MODE_VISIBLE_CATEGORIES,
+  filterPageTypesByEditorMode,
+  getPageTypeInfo,
+} from "./constants";
 
 describe("PAGE_TYPES", () => {
   it("至少涵蓋 81 種基準頁面類型（30 既有 + 21 階段A + 30 階段B）", () => {
-    // ⚠️ 不寫死總數：元件庫持續擴充（2026-07 已達 98），寫死精確數字每次新增元件就會壞。
+    // ⚠️ 不寫死總數：元件庫持續擴充，寫死精確數字每次新增元件就會壞。
     // 只驗證「不低於歷史基準 81」防止元件被誤刪；唯一性由下方「value 不重複」測試把關。
+    // 2026-09-25：17 個 host_* 移交 PhotoGo 後為 81（原 98），剛好落在基準線上。
     expect(PAGE_TYPES.length).toBeGreaterThanOrEqual(81);
+  });
+
+  it("不含任何大螢幕（host_*）元件 — 已整條移交 PhotoGo（ADR-0029）", () => {
+    const hostTypes = PAGE_TYPES.map((pt) => pt.value as string).filter((v) => v.startsWith("host_"));
+    expect(hostTypes).toEqual([]);
+    const hostLabels = PAGE_TYPES.filter((pt) => pt.label.includes("📺")).map((pt) => pt.value);
+    expect(hostLabels).toEqual([]);
   });
 
   it("包含 8 個多人核心工具元件（Phase 2 + 3.1 + 3.2 + 3.3 + 4）", () => {
@@ -40,7 +57,7 @@ describe("PAGE_TYPES", () => {
     }
   });
 
-  it("包含階段 B 的 30 個工作坊／回顧／投票工具", () => {
+  it("包含階段 B 的 29 個工作坊／回顧／投票工具（原 30，文字雲 📺 已移交 PhotoGo）", () => {
     const values = PAGE_TYPES.map((pt) => pt.value);
     const phaseB = [
       "jigsaw_puzzle", "treasure_hunt", "gps_cascade", "collective_score", "role_assign",
@@ -50,7 +67,7 @@ describe("PAGE_TYPES", () => {
       "safety_check", "energy_map",
       "wish_wall", "idea_wall", "story_wall", "brain_dump",
       "dot_vote", "rank_choice", "multi_vote", "scaled_feedback",
-      "thinking_hats", "host_word_cloud", "mad_libs", "quest_chain",
+      "thinking_hats", "mad_libs", "quest_chain",
     ];
     for (const v of phaseB) {
       expect(values).toContain(v);
@@ -81,6 +98,25 @@ describe("PAGE_TYPES", () => {
     for (const v of expected) {
       expect(values).toContain(v);
     }
+  });
+});
+
+describe("元件分類與 editorMode 分流（大螢幕分類已移除）", () => {
+  it("CATEGORY_INFO 只剩 5 個分類（📺 大螢幕主控分類已移除）", () => {
+    expect(Object.keys(CATEGORY_INFO)).toEqual(["narrative", "mission", "photo", "multi_coop", "interactive"]);
+    expect(Object.values(CATEGORY_INFO).filter((c) => c.emoji === "📺")).toEqual([]);
+  });
+
+  it("activity 模式只看得到敘事 + 活動互動，且沒有任何 📺 元件", () => {
+    expect(EDITOR_MODE_VISIBLE_CATEGORIES.activity).toEqual(["narrative", "interactive"]);
+    const visible = filterPageTypesByEditorMode(PAGE_TYPES, "activity");
+    expect(visible.length).toBeGreaterThan(0);
+    expect(visible.filter((t) => (t.value as string).startsWith("host_"))).toEqual([]);
+    expect(visible.filter((t) => t.label.includes("📺"))).toEqual([]);
+  });
+
+  it("game 模式維持 narrative + mission + photo + multi_coop", () => {
+    expect(EDITOR_MODE_VISIBLE_CATEGORIES.game).toEqual(["narrative", "mission", "photo", "multi_coop"]);
   });
 });
 

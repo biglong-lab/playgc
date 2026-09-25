@@ -8,7 +8,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { EVENT_MODULE_SCHEMAS } from "../eventModuleSchemas";
-import { HOST_FIELD_SCHEMAS } from "../HostComponentEditor";
+import { hasSchemaConfigEditor } from "../SchemaConfigEditor";
 import { getDefaultConfig } from "../getDefaultConfig";
 
 /** pageType → 玩家端元件實作檔（client/src/components/game/multi/*.tsx）*/
@@ -56,7 +56,7 @@ function configKeysOf(component: string): Set<string> {
 
 describe("互動模組庫編輯器 schema", () => {
   it("21 個元件全部有設定表單", () => {
-    const missing = Object.keys(IMPL).filter((t) => !HOST_FIELD_SCHEMAS[t]);
+    const missing = Object.keys(IMPL).filter((t) => !hasSchemaConfigEditor(t));
     expect(missing, `沒有編輯器 schema（會退回唯讀 JSON）：${missing.join(", ")}`).toEqual([]);
     expect(Object.keys(EVENT_MODULE_SCHEMAS).sort()).toEqual(Object.keys(IMPL).sort());
   });

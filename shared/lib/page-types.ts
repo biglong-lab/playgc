@@ -1,6 +1,7 @@
 // 🧩 可發佈的頁面類型（2026-09-23，前後端共用）
 //
-// = 玩家端渲染器（GamePageRenderer + HostPageRenderer）實際支援的元件。
+// = 玩家端渲染器（GamePageRenderer）實際支援的元件。
+// 2026-09-25：大螢幕（host_*）元件已整條移交 PhotoGo（ADR-0029），不再是可發佈類型。
 // 不在清單內的 pageType 玩家會看到「未知頁面類型」→ 發佈前擋下。
 // 守護測試 client/src/components/game/__tests__/playable-page-types.guard.test.ts
 // 會比對渲染器 switch case：新增元件時要同步加在這裡，否則 CI 紅。
@@ -31,12 +32,6 @@ export const PLAYABLE_PAGE_TYPES = [
   "micro_commit", "closing_thought", "activity_memo", "gratitude_tree",
   // 活動 / 典禮
   "wedding_vow", "birthday_candle", "award_ceremony",
-  // 主控大螢幕（host）
-  "host_poll_live", "host_emoji_react", "host_wave_response", "host_crowd_gather",
-  "host_live_leaderboard", "host_polaroid_collage", "host_guestbook_digital",
-  "host_trivia_showdown", "host_scoreboard_announcement", "host_knowledge_map",
-  "host_lottery_wheel", "host_progress_quest", "host_word_cloud", "host_team_battle_score",
-  "host_bingo_board", "host_blessing_wall", "host_micro_qa",
 ] as const;
 
 export type PlayablePageType = (typeof PLAYABLE_PAGE_TYPES)[number];
