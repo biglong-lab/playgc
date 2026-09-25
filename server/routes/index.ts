@@ -17,7 +17,6 @@ import { registerAdminSystemHealthRoutes } from "./admin-system-health";
 import { registerAdminChangelogRoutes } from "./admin-changelog";
 import { registerAdminMultiSessionsRoutes } from "./admin-multi-sessions";
 import { registerAdminSessionReplayRoutes } from "./admin-session-replay";
-import { registerAdminTriviaRoutes } from "./admin-trivia";
 import { registerAdminReportsRoutes } from "./admin-reports";
 import { registerComponentTelemetryRoutes } from "./component-telemetry";
 import { registerAdminFeatureFlagsRoutes } from "./admin-feature-flags";
@@ -74,7 +73,6 @@ import { registerClientLogsRoutes, startClientLogsCleanup } from "./client-logs"
 import { registerSitemapRoute } from "./sitemap";
 import { registerErrorLogRoutes } from "./error-log";
 import { registerSquadsCoreRoutes } from "./squads-core";
-import { registerHostSessionRoutes } from "./host-sessions";
 import { registerScenarioRoutes } from "./scenarios";
 import { registerScenarioHealthRoutes } from "./scenario-health";
 import { registerPaymentsRoutes } from "./payments";
@@ -168,7 +166,6 @@ export async function registerRoutes(
   registerAdminChangelogRoutes(app);
   registerAdminMultiSessionsRoutes(app);
   registerAdminSessionReplayRoutes(app);
-  registerAdminTriviaRoutes(app, ctx);
   registerAdminWsHealthRoutes(app, ctx);
   registerAdminReportsRoutes(app);
   registerComponentTelemetryRoutes(app);
@@ -233,7 +230,6 @@ export async function registerRoutes(
   registerBattleRankingRoutes(app);
   registerBattleClanRoutes(app);
   registerSquadsCoreRoutes(app);
-  registerHostSessionRoutes(app);
   registerScenarioRoutes(app);
   registerScenarioHealthRoutes(app);
   registerPaymentsRoutes(app);

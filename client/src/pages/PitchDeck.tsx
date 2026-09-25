@@ -12,11 +12,7 @@ import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowLeft, ArrowRight, Sparkles, Zap, Heart, PartyPopper,
-  Building2, Briefcase, Home, CheckCircle, X, Tv, Users,
-  Smartphone, Trophy, MapPin, Camera,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Zap, Heart, PartyPopper, Building2, Briefcase, Home, CheckCircle, X, Users, Smartphone, Trophy, MapPin, Camera } from "lucide-react";
 import { SCENARIO_TEMPLATES, SCENARIO_CATEGORY_LABELS, type ScenarioCategory } from "@shared/scenario-templates";
 
 const CATEGORY_ICONS: Record<ScenarioCategory, typeof Heart> = {
@@ -30,7 +26,7 @@ const CATEGORY_ICONS: Record<ScenarioCategory, typeof Heart> = {
 export default function PitchDeck() {
   const stats = {
     scenarios: SCENARIO_TEMPLATES.length,
-    components: 25, // 約略：HostScreen 10 + Multi 13 + 2 通用代表
+    components: 27, // 約略：Multi 13 + Solo 10 + 通用 4（大螢幕互動已移交 PhotoGo）
     liveScenarios: SCENARIO_TEMPLATES.filter((s) => s.status === "live").length,
   };
 
@@ -89,9 +85,9 @@ export default function PitchDeck() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FeatureCard
-              icon={Tv}
-              title="📺 大螢幕主控"
-              desc="投影機接上、玩家手機掃 QR、全場互動實時更新 — 投票、emoji、應援、排行"
+              icon={MapPin}
+              title="📍 場域任務"
+              desc="GPS 打卡、QR 掃描、拍照 AI 驗證、密碼解鎖 — 把實體場域變成可以玩的關卡"
               accent="from-blue-500/20 to-cyan-500/20"
             />
             <FeatureCard

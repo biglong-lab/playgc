@@ -5,8 +5,10 @@
 //
 // 設計依據：docs/changes/2026-05-02-multiplayer-component-platform.md B1
 //
+// 📺 2026-09-25：大螢幕互動（HostScreen）已整條移交 PhotoGo，本頁只展示場域遊戲（solo / multi / shared）
+//   詳見 docs/changes/2026-09-25-host-removal-photogo-migration.md
+//
 // 後續迭代：
-//   - W2: 加 PollLive demo 試玩
 //   - Phase 2: 12 情境模板入口
 //   - Phase 3: 30 秒 demo 影片整合
 
@@ -16,29 +18,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import W22DemoSection from "@/components/showcase/W22DemoSection";
-import InteractiveDemo, { INTERACTIVE_DEMOS } from "@/components/showcase/InteractiveDemo";
 import CoopDemo, { COOP_DEMOS } from "@/components/showcase/CoopDemo";
-import PollLive from "@/components/game/host/PollLive";
-import EmojiReact from "@/components/game/host/EmojiReact";
-import WaveResponse from "@/components/game/host/WaveResponse";
-import CrowdGather from "@/components/game/host/CrowdGather";
-import LiveLeaderboard from "@/components/game/host/LiveLeaderboard";
-import PolaroidCollage from "@/components/game/host/PolaroidCollage";
-import GuestbookDigital from "@/components/game/host/GuestbookDigital";
-import TriviaShowdown from "@/components/game/host/TriviaShowdown";
-import ScoreboardAnnouncement from "@/components/game/host/ScoreboardAnnouncement";
-import KnowledgeMap from "@/components/game/host/KnowledgeMap";
 import JigsawPuzzle from "@/components/game/multi/JigsawPuzzle";
 import TreasureHunt from "@/components/game/multi/TreasureHunt";
 import GpsCascade from "@/components/game/multi/GpsCascade";
 import CollectiveScore from "@/components/game/multi/CollectiveScore";
 import RoleAssign from "@/components/game/multi/RoleAssign";
 import {
-  ArrowLeft, Tv, Users, User as UserIcon, Sparkles,
-  Vote, Camera, MapPin, Trophy, Flame, Lock,
-  Smartphone, Image as ImageIcon, Award, Briefcase, Heart,
-  GraduationCap, Building2, PartyPopper, ArrowRight,
+  ArrowLeft, Users, User as UserIcon, Sparkles,
+  Briefcase, Heart, GraduationCap, Building2, PartyPopper,
 } from "lucide-react";
 import { getScenariosForPageType } from "@shared/scenario-templates";
 
@@ -51,23 +39,11 @@ interface ComponentItem {
   zhName: string;
   desc: string;
   status: "live" | "planned" | "scaffold";
-  axis: "shared" | "solo" | "multi" | "host";
+  axis: "shared" | "solo" | "multi";
 }
 
 const COMPONENTS: ComponentItem[] = [
-  // 第三軸線 host（規劃 8 個）
-  { name: "PollLive", zhName: "即時民調", desc: "全場投票，大螢幕長條圖動態", status: "live", axis: "host" },
-  { name: "EmojiReact", zhName: "情緒池", desc: "全場 emoji 雨，演講即時回饋", status: "live", axis: "host" },
-  { name: "WaveResponse", zhName: "人浪應援", desc: "連點按鈕觸發場域熱力", status: "live", axis: "host" },
-  { name: "TriviaShowdown", zhName: "搶答秀", desc: "園遊會主舞台、多回合排行", status: "live", axis: "host" },
-  { name: "LiveLeaderboard", zhName: "即時排行", desc: "活動全程動態排行投影", status: "live", axis: "host" },
-  { name: "CrowdGather", zhName: "聚眾任務", desc: "簽到打卡達標解鎖", status: "live", axis: "host" },
-  { name: "ScoreboardAnnouncement", zhName: "跑馬燈宣告", desc: "比賽插播得分", status: "live", axis: "host" },
-  { name: "KnowledgeMap", zhName: "知識地圖", desc: "場域全景 + 進度視覺化", status: "live", axis: "host" },
-  { name: "PolaroidCollage", zhName: "拍立得紀念牆", desc: "婚禮王牌 + 旋轉拍立得", status: "live", axis: "host" },
-  { name: "GuestbookDigital", zhName: "數位簽名簿", desc: "婚禮配套 + 退休歡送", status: "live", axis: "host" },
-
-  // 第二軸線 multi（已 8 個 + 規劃 5 個）
+  // 第二軸線 multi（已 13 個）
   { name: "PhotoTeam", zhName: "團體合影", desc: "九宮格自動合成", status: "live", axis: "multi" },
   { name: "VoteTeam", zhName: "隊伍投票", desc: "majority/unanimous/display", status: "live", axis: "multi" },
   { name: "ShootingTeam", zhName: "隊伍射擊", desc: "MQTT 硬體靶機累計分", status: "live", axis: "multi" },
@@ -121,7 +97,7 @@ const SCENARIOS: Scenario[] = [
     title: "公部門｜街區商圈活化",
     market: "景點串聯、空間故事化",
     desc: "靜態景點 → 玩家來互動、留紀念、自動分享",
-    components: ["GpsCascade", "TreasureHunt", "PhotoStorytelling", "KnowledgeMap"],
+    components: ["GpsCascade", "TreasureHunt", "PhotoStorytelling", "QrScan"],
     icon: Building2,
     color: "from-emerald-500/20 to-teal-500/20",
   },
@@ -130,16 +106,16 @@ const SCENARIOS: Scenario[] = [
     title: "私部門｜企業團建",
     market: "內訓、員工旅遊、團隊互動",
     desc: "破冰、競賽、角色扮演、活動報告",
-    components: ["TriviaShowdown", "RoleAssign", "JigsawPuzzle", "CompanyReport"],
+    components: ["ChoiceVerifyRace", "RoleAssign", "JigsawPuzzle", "CompanyReport"],
     icon: Briefcase,
     color: "from-blue-500/20 to-indigo-500/20",
   },
   {
     id: "event",
     title: "活動｜園遊會 / 破冰 / 熱場",
-    market: "群體互動、即時氛圍、大螢幕投影",
-    desc: "全場投票答題、emoji 池、即時排行，場域氣氛瞬間引爆",
-    components: ["PollLive", "TriviaShowdown", "EmojiReact", "LiveLeaderboard"],
+    market: "群體互動、即時氛圍、分隊競賽",
+    desc: "分隊搶答、合作達標、地盤爭奪，場域氣氛瞬間引爆",
+    components: ["ChoiceVerifyRace", "CollectiveScore", "TerritoryCapture", "RelayMission"],
     icon: PartyPopper,
     color: "from-orange-500/20 to-red-500/20",
   },
@@ -148,7 +124,7 @@ const SCENARIOS: Scenario[] = [
     title: "交誼｜婚禮 / 派對 / 聚會",
     market: "紀念製造、情感連結",
     desc: "破冰、合照、自動剪 highlight 影片",
-    components: ["EmojiReact", "PolaroidCollage", "GuestbookDigital", "VideoMontage"],
+    components: ["PhotoTeam", "PhotoArSticker", "VoteTeam", "VideoMontage"],
     icon: Heart,
     color: "from-rose-500/20 to-pink-500/20",
   },
@@ -178,7 +154,6 @@ function getStatusBadge(status: ComponentItem["status"]) {
 
 function getAxisIcon(axis: ComponentItem["axis"]) {
   switch (axis) {
-    case "host": return Tv;
     case "multi": return Users;
     case "solo": return UserIcon;
     case "shared": return Sparkles;
@@ -187,63 +162,22 @@ function getAxisIcon(axis: ComponentItem["axis"]) {
 
 function getAxisLabel(axis: ComponentItem["axis"]) {
   switch (axis) {
-    case "host": return "📺 主控大螢幕";
     case "multi": return "👥 隊伍協作";
     case "solo": return "🎯 個人挑戰";
     case "shared": return "✨ 通用";
   }
 }
 
-// PollLive demo 模擬資料（給 ShowcaseHub 預覽用，無 WS）
-const POLLLIVE_DEMO_CONFIG = {
-  question: "你最喜歡金門哪個古蹟？",
-  subtitle: "（PollLive 即時民調 — Demo 模式）",
-  options: [
-    { id: "a", label: "後浦老街" },
-    { id: "b", label: "賈村牌坊" },
-    { id: "c", label: "古寧頭戰史館" },
-    { id: "d", label: "莒光樓" },
-  ],
-};
-
-const POLLLIVE_DEMO_HOST_STATE = {
-  question: POLLLIVE_DEMO_CONFIG.question,
-  options: POLLLIVE_DEMO_CONFIG.options,
-  votes: { a: 47, b: 32, c: 51, d: 18 },
-  totalVotes: 148,
-  status: "open" as const,
-  revealResults: false,
-};
-
-const POLLLIVE_DEMO_PLAYER_STATE = {
-  question: POLLLIVE_DEMO_CONFIG.question,
-  options: POLLLIVE_DEMO_CONFIG.options,
-  votes: { a: 47, b: 32, c: 51, d: 18 },
-  totalVotes: 148,
-  status: "revealed" as const,
-  revealResults: true,
-};
-
-// host 元件 + multi 元件 demo 預覽配置
-type HostDemo =
-  | "poll-host" | "poll-player"
-  | "emoji-host" | "emoji-player"
-  | "wave-host" | "wave-player"
-  | "crowd-host" | "crowd-player"
-  | "leaderboard-host" | "leaderboard-player"
-  | "polaroid-host" | "polaroid-player"
-  | "guestbook-host" | "guestbook-player"
-  | "trivia-host" | "trivia-player"
-  | "scoreboard-host" | "scoreboard-player"
-  | "knowledgemap-host" | "knowledgemap-player"
+// multi 元件 demo 預覽配置（單人玩家版型 + 雙人協作 coop:）
+type DemoMode =
   | "jigsaw" | "treasure" | "gps-cascade" | "collective" | "role-assign"
-  | `interactive:${string}`
   | `coop:${string}`;
 
 export default function ShowcaseHub() {
   const liveCount = COMPONENTS.filter((c) => c.status === "live").length;
   const plannedCount = COMPONENTS.filter((c) => c.status === "planned").length;
-  const [demoMode, setDemoMode] = useState<HostDemo | null>(null);
+  const [demoMode, setDemoMode] = useState<DemoMode | null>(null);
+  const isCoopDemo = demoMode?.startsWith("coop:") ?? false;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -269,96 +203,30 @@ export default function ShowcaseHub() {
         {/* Hero */}
         <section className="text-center space-y-4 py-8">
           <h2 className="text-3xl md:text-5xl font-display font-bold">
-            讓每一個場域，都變成<span className="text-primary">遊樂場</span>
+            解鎖場域的<span className="text-primary">每一種玩法</span>
           </h2>
           <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
-            從個人闖關到大螢幕主控，從隊伍協作到全場互動 — 一個平台、無限想像
+            從個人闖關到隊伍協作，從 GPS 探索到拍照任務 — 一個平台、無限想像
           </p>
         </section>
 
-        {/* 📺 2026-09-25：大螢幕互動改由 PhotoGo 提供（HostScreen 穩定度評估）— 以下 host 展示為舊版、僅供參考 */}
+        {/* 📺 2026-09-25：大螢幕互動改由 PhotoGo 提供（HostScreen 穩定度評估、整條移交）*/}
         <section
           className="rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center space-y-3 dark:border-amber-700 dark:bg-amber-950"
           data-testid="banner-host-moved-photogo"
         >
           <h2 className="text-lg font-display font-bold text-amber-900 dark:text-amber-100">
-            📺 大螢幕互動已移至 PhotoGo
+            📺 大螢幕互動由 PhotoGo 提供
           </h2>
           <p className="text-sm text-amber-900/80 dark:text-amber-100/80">
             投票、詞雲、搶答、抽獎、祝福牆等「大螢幕 + 手機」互動，現在由 PhotoGo 提供（狀態存在伺服器、手機免安裝免登入）。
-            CHITO 專注在場域的預約、遊戲與經營；下方 HostScreen 展示為舊版，僅供參考。
+            CHITO 專注在場域的預約、遊戲與經營。
           </p>
           <a href="https://photogo.aihomi.cc/" target="_blank" rel="noopener noreferrer">
             <Button className="bg-amber-600 hover:bg-amber-700" data-testid="link-photogo">
               前往 PhotoGo 看互動大螢幕
             </Button>
           </a>
-        </section>
-
-        {/* ✨ Phase 6 W22 新增 2 元件（最新、置頂呈現）*/}
-        <W22DemoSection />
-
-        {/* 🎬 5 個 host 元件即時試玩（W3 D5 擴充）*/}
-        <section className="space-y-4">
-          <div className="text-center space-y-2">
-            <h2 className="text-xl font-display font-bold">📺 立即看 — HostScreen 5 元件</h2>
-            <p className="text-sm text-muted-foreground">
-              主控大螢幕投影 + 玩家手機互動 — 適合園遊會、企業內訓、課堂互動、開幕熱場、競賽結算
-            </p>
-          </div>
-
-          {/* 5 個元件對照卡片 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { id: "poll", title: "📊 即時民調", desc: "PollLive — 全場投票 + 長條圖", host: "poll-host", player: "poll-player", pageType: "host_poll_live" },
-              { id: "emoji", title: "🎉 情緒池", desc: "EmojiReact — emoji 雨 + 計數", host: "emoji-host", player: "emoji-player", pageType: "host_emoji_react" },
-              { id: "wave", title: "📣 人浪應援", desc: "WaveResponse — 強度脈動", host: "wave-host", player: "wave-player", pageType: "host_wave_response" },
-              { id: "crowd", title: "👥 聚眾達標", desc: "CrowdGather — 簽到熱場", host: "crowd-host", player: "crowd-player", pageType: "host_crowd_gather" },
-              { id: "leaderboard", title: "🏆 即時排行", desc: "LiveLeaderboard — Top 10 競賽榜", host: "leaderboard-host", player: "leaderboard-player", pageType: "host_live_leaderboard" },
-            ].map((item) => (
-              <DemoCard
-                key={item.id}
-                item={item}
-                onDemoOpen={(demo) => setDemoMode(demo as HostDemo)}
-                hasBoth
-              />
-            ))}
-          </div>
-
-          <p className="text-xs text-center text-muted-foreground">
-            （Demo 模式靜態預覽 — 真實活動由 admin 建 host session 後產生網址、玩家投票會即時更新）
-          </p>
-        </section>
-
-        {/* 🎬 W5 紀念類 + 競賽類 5 元件即時試玩（W5 D5 擴充）*/}
-        <section className="space-y-4">
-          <div className="text-center space-y-2">
-            <h2 className="text-xl font-display font-bold">📺 立即看 — Phase 2 W5 紀念與競賽 5 元件</h2>
-            <p className="text-sm text-muted-foreground">
-              拍立得牆、簽名簿、搶答、跑馬燈、場域地圖 — 適合婚禮、退休歡送、園遊會主舞台、街區商圈
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { id: "polaroid", title: "📸 拍立得紀念牆", desc: "PolaroidCollage — 婚禮王牌", host: "polaroid-host", player: "polaroid-player", pageType: "host_polaroid_collage" },
-              { id: "guestbook", title: "✍️ 數位簽名簿", desc: "GuestbookDigital — 婚禮 / 退休", host: "guestbook-host", player: "guestbook-player", pageType: "host_guestbook_digital" },
-              { id: "trivia", title: "🎯 搶答秀", desc: "TriviaShowdown — 園遊會主舞台", host: "trivia-host", player: "trivia-player", pageType: "host_trivia_showdown" },
-              { id: "scoreboard", title: "📣 跑馬燈宣告", desc: "ScoreboardAnnouncement — 賽事播報", host: "scoreboard-host", player: "scoreboard-player", pageType: "host_scoreboard_announcement" },
-              { id: "knowledgemap", title: "🗺️ 場域全景地圖", desc: "KnowledgeMap — 街區商圈打卡", host: "knowledgemap-host", player: "knowledgemap-player", pageType: "host_knowledge_map" },
-            ].map((item) => (
-              <DemoCard
-                key={item.id}
-                item={item}
-                onDemoOpen={(demo) => setDemoMode(demo as HostDemo)}
-                hasBoth
-              />
-            ))}
-          </div>
-
-          <p className="text-xs text-center text-muted-foreground">
-            （HostScreen 軸線 10/10 元件全部就位 — Phase 2 W5 收尾、進入 W6 情境模板）
-          </p>
         </section>
 
         {/* 🎬 5 個 multi 元件 demo（W4 D4 新增）*/}
@@ -380,9 +248,8 @@ export default function ShowcaseHub() {
             ].map((item) => (
               <DemoCard
                 key={item.id}
-                item={{ ...item, host: item.demo, player: item.demo }}
-                onDemoOpen={(demo) => setDemoMode(demo as HostDemo)}
-                hasBoth={false}
+                item={item}
+                onDemoOpen={(demo) => setDemoMode(demo as DemoMode)}
               />
             ))}
           </div>
@@ -396,130 +263,19 @@ export default function ShowcaseHub() {
         <Dialog open={demoMode !== null} onOpenChange={(open) => !open && setDemoMode(null)}>
           <DialogContent
             className={
-              demoMode?.startsWith("interactive:") || demoMode?.startsWith("coop:")
+              isCoopDemo
                 ? "max-w-5xl h-[90vh] md:h-[85vh] p-0 bg-zinc-900 overflow-hidden"
-                : demoMode?.endsWith("-host")
-                ? "max-w-5xl h-[80vh] p-0 bg-black overflow-hidden"
                 : "max-w-md p-0 max-h-[80vh] overflow-y-auto"
             }
           >
-            <DialogHeader
-              className={
-                demoMode?.startsWith("interactive:") || demoMode?.startsWith("coop:") || demoMode?.endsWith("-host")
-                  ? "px-6 py-3 bg-zinc-900 text-white"
-                  : "p-4"
-              }
-            >
+            <DialogHeader className={isCoopDemo ? "px-6 py-3 bg-zinc-900 text-white" : "p-4"}>
               <DialogTitle>
-                {demoMode?.startsWith("interactive:")
-                  ? "🎮 互動試玩 — 大螢幕 + 手機（點手機看大螢幕反應）"
-                  : demoMode?.startsWith("coop:")
-                  ? "🤝 雙人協作試玩 — 兩位玩家共享進度"
-                  : demoMode?.endsWith("-host")
-                  ? "📺 大螢幕版型 (Demo)"
-                  : "📱 玩家手機版型 (Demo)"}
+                {isCoopDemo ? "🤝 雙人協作試玩 — 兩位玩家共享進度" : "📱 玩家手機版型 (Demo)"}
               </DialogTitle>
             </DialogHeader>
-            <div
-              className={
-                demoMode?.startsWith("interactive:") || demoMode?.startsWith("coop:")
-                  ? "flex-1 overflow-y-auto"
-                  : demoMode?.endsWith("-host")
-                  ? "flex-1 overflow-y-auto"
-                  : "overflow-y-auto"
-              }
-            >
-              {demoMode?.startsWith("interactive:") && (
-                <InteractiveDemo demo={demoMode.slice("interactive:".length)} />
-              )}
+            <div className={isCoopDemo ? "flex-1 overflow-y-auto" : "overflow-y-auto"}>
               {demoMode?.startsWith("coop:") && (
                 <CoopDemo demo={demoMode.slice("coop:".length)} />
-              )}
-              {demoMode === "poll-host" && (
-                <PollLive config={POLLLIVE_DEMO_CONFIG} hostMode={true} state={POLLLIVE_DEMO_HOST_STATE} />
-              )}
-              {demoMode === "poll-player" && (
-                <PollLive config={POLLLIVE_DEMO_CONFIG} hostMode={false} state={POLLLIVE_DEMO_PLAYER_STATE} />
-              )}
-              {demoMode === "emoji-host" && (
-                <EmojiReact
-                  config={{ title: "演講互動", subtitle: "點 emoji 表達感受" }}
-                  hostMode={true}
-                  state={{
-                    counts: { "❤️": 47, "👍": 89, "🎉": 31, "🔥": 22, "😍": 18, "👏": 65, "😂": 14, "🙌": 9 },
-                    totalReacts: 295,
-                    recentFlying: [],
-                  }}
-                />
-              )}
-              {demoMode === "emoji-player" && <EmojiReact config={{}} hostMode={false} />}
-              {demoMode === "wave-host" && (
-                <WaveResponse
-                  config={{ title: "全場應援", subtitle: "GO! GO! GO!" }}
-                  hostMode={true}
-                  state={{ totalTaps: 1248, bucketBySec: { [Math.floor(Date.now() / 1000)]: 12 } }}
-                />
-              )}
-              {demoMode === "wave-player" && (
-                <WaveResponse
-                  config={{ title: "為主隊加油！", buttonLabel: "GO!" }}
-                  hostMode={false}
-                />
-              )}
-              {demoMode === "crowd-host" && (
-                <CrowdGather
-                  config={{ title: "歡迎加入活動", targetCount: 30, celebrationText: "🎉 全員到齊！" }}
-                  hostMode={true}
-                  state={{
-                    registered: [
-                      { name: "阿鬨", ts: Date.now() - 5000 },
-                      { name: "Alice", ts: Date.now() - 4000 },
-                      { name: "Bob", ts: Date.now() - 3000 },
-                      { name: "小明", ts: Date.now() - 2000 },
-                    ],
-                    totalCount: 18,
-                    isReached: false,
-                  }}
-                />
-              )}
-              {demoMode === "crowd-player" && (
-                <CrowdGather
-                  config={{ title: "我來了！", targetCount: 30 }}
-                  hostMode={false}
-                  state={{ registered: [], totalCount: 18, isReached: false }}
-                />
-              )}
-              {demoMode === "leaderboard-host" && (
-                <LiveLeaderboard
-                  config={{ title: "🏆 競賽排行榜", subtitle: "本場結算" }}
-                  hostMode={true}
-                  state={{
-                    entries: [
-                      { id: "1", name: "後浦小隊", score: 1280 },
-                      { id: "2", name: "賈村英雄", score: 1145 },
-                      { id: "3", name: "古寧連線", score: 980 },
-                      { id: "4", name: "莒光戰隊", score: 875 },
-                      { id: "5", name: "金門勇者", score: 720 },
-                    ],
-                    lastUpdated: Date.now(),
-                  }}
-                />
-              )}
-              {demoMode === "leaderboard-player" && (
-                <LiveLeaderboard
-                  config={{ topN: 10 }}
-                  hostMode={false}
-                  myId="2"
-                  state={{
-                    entries: [
-                      { id: "1", name: "後浦小隊", score: 1280 },
-                      { id: "2", name: "賈村英雄", score: 1145 },
-                      { id: "3", name: "古寧連線", score: 980 },
-                      { id: "4", name: "莒光戰隊", score: 875 },
-                      { id: "5", name: "金門勇者", score: 720 },
-                    ],
-                  }}
-                />
               )}
 
               {/* Multi 元件 demos */}
@@ -623,151 +379,6 @@ export default function ShowcaseHub() {
                   onAssign={() => {}}
                 />
               )}
-
-              {/* W5 紀念類 + 競賽類 5 元件 demo */}
-              {demoMode === "polaroid-host" && (
-                <PolaroidCollage
-                  config={{ title: "Hung & Anita 婚禮", subtitle: "請來賓留下祝福" }}
-                  hostMode={true}
-                  state={{
-                    polaroids: [
-                      { id: "1", author: "Alice", message: "新婚快樂、白頭偕老 💖", emoji: "💖", color: "#fef3c7", ts: Date.now() - 60000 },
-                      { id: "2", author: "Bob", message: "祝福你們！", emoji: "🎉", color: "#fce7f3", ts: Date.now() - 40000 },
-                      { id: "3", author: "Carol", message: "百年好合", emoji: "🥂", color: "#dbeafe", ts: Date.now() - 20000 },
-                      { id: "4", author: "Dave", message: "永浴愛河", emoji: "💍", color: "#dcfce7", ts: Date.now() - 5000 },
-                    ],
-                  }}
-                />
-              )}
-              {demoMode === "polaroid-player" && (
-                <PolaroidCollage
-                  config={{ title: "Hung & Anita 婚禮" }}
-                  hostMode={false}
-                  myUserName="我"
-                  state={{ polaroids: [] }}
-                />
-              )}
-              {demoMode === "guestbook-host" && (
-                <GuestbookDigital
-                  config={{ title: "婚宴簽名簿" }}
-                  hostMode={true}
-                  state={{
-                    entries: [
-                      { id: "1", name: "Alice", message: "新婚快樂！", ts: Date.now() - 60000 },
-                      { id: "2", name: "Bob", message: "祝百年好合 🥂", ts: Date.now() - 30000 },
-                      { id: "3", name: "Carol", message: "永浴愛河 💕", ts: Date.now() - 10000 },
-                    ],
-                  }}
-                />
-              )}
-              {demoMode === "guestbook-player" && (
-                <GuestbookDigital config={{}} hostMode={false} myUserName="我" />
-              )}
-              {demoMode === "trivia-host" && (
-                <TriviaShowdown
-                  config={{
-                    title: "金門知識搶答",
-                    questions: [
-                      { id: "q1", prompt: "金門最大紀念日？", options: ["823 砲戰", "古寧頭戰役", "登島紀念日", "光復節"], correctIdx: 0, timeLimitSec: 15 },
-                      { id: "q2", prompt: "金門特產飲品？", options: ["啤酒", "高粱酒", "葡萄酒", "梅酒"], correctIdx: 1, timeLimitSec: 15 },
-                    ],
-                  }}
-                  hostMode={true}
-                  state={{
-                    currentQuestionIdx: 0,
-                    status: "answering",
-                    answered: { Alice: { choice: 0, ts: Date.now() }, Bob: { choice: 1, ts: Date.now() } },
-                    scores: { Alice: 100, Bob: 75 },
-                    questionStartedAt: Date.now() - 5000,
-                  }}
-                />
-              )}
-              {demoMode === "trivia-player" && (
-                <TriviaShowdown
-                  config={{
-                    title: "金門知識搶答",
-                    questions: [
-                      { id: "q1", prompt: "金門最大紀念日？", options: ["823 砲戰", "古寧頭戰役", "登島紀念日", "光復節"], correctIdx: 0, timeLimitSec: 15 },
-                    ],
-                  }}
-                  hostMode={false}
-                  myUserName="我"
-                  state={{
-                    currentQuestionIdx: 0,
-                    status: "answering",
-                    answered: {},
-                    scores: {},
-                    questionStartedAt: Date.now(),
-                  }}
-                />
-              )}
-              {demoMode === "scoreboard-host" && (
-                <ScoreboardAnnouncement
-                  config={{ title: "📣 賽事即時播報", subtitle: "後浦盃聯賽" }}
-                  hostMode={true}
-                  state={{
-                    announcements: [
-                      { id: "1", text: "後浦小隊 +50 分", type: "score", ts: Date.now() - 30000 },
-                      { id: "2", text: "下半場開始", type: "info", ts: Date.now() - 15000 },
-                      { id: "3", text: "Alice 突破 1000 分！🎉", type: "celebrate", ts: Date.now() - 3000 },
-                    ],
-                  }}
-                />
-              )}
-              {demoMode === "scoreboard-player" && (
-                <ScoreboardAnnouncement
-                  config={{ title: "📣 賽事公告" }}
-                  hostMode={false}
-                  state={{
-                    announcements: [
-                      { id: "1", text: "後浦小隊 +50 分", type: "score", ts: Date.now() - 30000 },
-                      { id: "2", text: "下半場開始", type: "info", ts: Date.now() - 15000 },
-                      { id: "3", text: "Alice 突破 1000 分！🎉", type: "celebrate", ts: Date.now() - 3000 },
-                    ],
-                  }}
-                />
-              )}
-              {demoMode === "knowledgemap-host" && (
-                <KnowledgeMap
-                  config={{
-                    title: "金門全景地圖",
-                    subtitle: "5 個地標、邀來賓打卡足跡",
-                    points: [
-                      { id: "p1", name: "後浦老街", x: 25, y: 35, emoji: "🏛️", description: "歷史巷弄" },
-                      { id: "p2", name: "莒光樓", x: 60, y: 25, emoji: "🏯", description: "戰地地標" },
-                      { id: "p3", name: "翟山坑道", x: 75, y: 60, emoji: "🪖", description: "地下軍事" },
-                      { id: "p4", name: "金門酒廠", x: 40, y: 70, emoji: "🍶", description: "高粱故鄉" },
-                      { id: "p5", name: "水頭聚落", x: 15, y: 75, emoji: "🏘️", description: "古厝群" },
-                    ],
-                  }}
-                  hostMode={true}
-                  state={{
-                    visits: [
-                      { id: "v1", pointId: "p1", name: "Alice", message: "好棒的老街", ts: Date.now() - 60000 },
-                      { id: "v2", pointId: "p1", name: "Bob", ts: Date.now() - 50000 },
-                      { id: "v3", pointId: "p1", name: "Carol", message: "古色古香", ts: Date.now() - 40000 },
-                      { id: "v4", pointId: "p2", name: "Dave", message: "風景超美", ts: Date.now() - 30000 },
-                      { id: "v5", pointId: "p2", name: "Eve", ts: Date.now() - 20000 },
-                      { id: "v6", pointId: "p4", name: "Frank", message: "高粱真香", ts: Date.now() - 10000 },
-                    ],
-                  }}
-                />
-              )}
-              {demoMode === "knowledgemap-player" && (
-                <KnowledgeMap
-                  config={{
-                    title: "金門全景地圖",
-                    points: [
-                      { id: "p1", name: "後浦老街", x: 25, y: 35, emoji: "🏛️", description: "歷史巷弄" },
-                      { id: "p2", name: "莒光樓", x: 60, y: 25, emoji: "🏯" },
-                      { id: "p3", name: "翟山坑道", x: 75, y: 60, emoji: "🪖" },
-                    ],
-                  }}
-                  hostMode={false}
-                  myUserName="我"
-                  state={{ visits: [] }}
-                />
-              )}
             </div>
           </DialogContent>
         </Dialog>
@@ -831,7 +442,7 @@ export default function ShowcaseHub() {
         </section>
 
         {/* 元件武器庫（依軸線分類）*/}
-        {(["host", "multi", "solo", "shared"] as const).map((axis) => {
+        {(["multi", "solo", "shared"] as const).map((axis) => {
           const items = COMPONENTS.filter((c) => c.axis === axis);
           if (items.length === 0) return null;
           const Icon = getAxisIcon(axis);
@@ -879,7 +490,7 @@ export default function ShowcaseHub() {
                 <Badge>Phase 1（W1-4）</Badge>
                 <h3 className="font-semibold">基礎拓寬</h3>
                 <p className="text-xs text-muted-foreground">
-                  HostScreen 軸線首發 + 公私部門補強，13 個元件上線
+                  隊伍協作軸線擴充 + 公私部門補強，多個元件上線
                 </p>
               </CardContent>
             </Card>
@@ -926,7 +537,7 @@ export default function ShowcaseHub() {
       </main>
 
       <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-        ADR-0004 · HostScreen 第三軸線 · 文件機制 v1.0
+        場域遊戲元件平台（solo / multi / shared）· 文件機制 v1.0
       </footer>
     </div>
   );
@@ -941,18 +552,15 @@ interface DemoCardItem {
   title: string;
   desc: string;
   pageType: string;
-  host: string;
-  player: string;
+  demo: string;
 }
 
 function DemoCard({
   item,
   onDemoOpen,
-  hasBoth,
 }: {
   item: DemoCardItem;
   onDemoOpen: (demo: string) => void;
-  hasBoth: boolean;
 }) {
   const scenarios = getScenariosForPageType(item.pageType);
   return (
@@ -986,18 +594,6 @@ function DemoCard({
           </div>
         )}
 
-        {/* 🎮 互動試玩：一次開大螢幕+手機，點手機看大螢幕即時反應（2026-06-16）*/}
-        {INTERACTIVE_DEMOS.includes(item.id) && (
-          <Button
-            onClick={() => onDemoOpen(`interactive:${item.id}`)}
-            size="sm"
-            className="w-full bg-emerald-600 hover:bg-emerald-700"
-            data-testid={`btn-demo-${item.id}-interactive`}
-          >
-            🎮 互動試玩（雙邊同開）
-          </Button>
-        )}
-
         {/* 🤝 雙人協作試玩：並排兩玩家共享進度（multi 元件，2026-06-16）*/}
         {COOP_DEMOS.includes(item.id) && (
           <Button
@@ -1010,38 +606,14 @@ function DemoCard({
           </Button>
         )}
 
-        <div className="flex gap-2">
-          {hasBoth ? (
-            <>
-              <Button
-                onClick={() => onDemoOpen(item.host)}
-                size="sm"
-                className="flex-1"
-                data-testid={`btn-demo-${item.id}-host`}
-              >
-                📺 大螢幕
-              </Button>
-              <Button
-                onClick={() => onDemoOpen(item.player)}
-                size="sm"
-                variant="outline"
-                className="flex-1"
-                data-testid={`btn-demo-${item.id}-player`}
-              >
-                📱 玩家
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={() => onDemoOpen(item.host)}
-              size="sm"
-              className="w-full"
-              data-testid={`btn-demo-${item.id}`}
-            >
-              📱 看玩家版型
-            </Button>
-          )}
-        </div>
+        <Button
+          onClick={() => onDemoOpen(item.demo)}
+          size="sm"
+          className="w-full"
+          data-testid={`btn-demo-${item.id}`}
+        >
+          📱 看玩家版型
+        </Button>
       </CardContent>
     </Card>
   );

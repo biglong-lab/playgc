@@ -75,7 +75,6 @@ export const ADMIN_MENU_GROUPS: AdminMenuGroup[] = [
       { title: "預約管理", icon: Calendar, path: "/admin/bookings", permission: "booking:manage" },
       { title: "進行中場次", icon: Activity, path: "/admin/sessions", permission: "game:view" },
       { title: "即時連線監控", icon: Activity, path: "/admin/multi-sessions", permission: "game:view" },
-      { title: "活動現場大螢幕", icon: Cpu, path: "/admin/host-sessions", permission: "game:create", requiresModule: "host" },
       { title: "活動結束報告", icon: BarChart3, path: "/admin/reports", permission: "report:view" },
       { title: "元件健康度", icon: BarChart3, path: "/admin/component-health", permission: "game:view" },
       { title: "元件開關", icon: Sliders, path: "/admin/feature-flags", permission: "game:edit" },

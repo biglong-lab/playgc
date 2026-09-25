@@ -24,8 +24,8 @@ const FAQ_ITEMS: FaqItem[] = [
     category: "活動規模",
     question: "最低活動人數是多少？",
     answer:
-      "建議 ≥ 10 人才有趣。host_polaroid_collage / host_emoji_react 等元件都需要群眾感。" +
-      "10 人以下建議用 single 軸線元件（如 trivia_showdown 個人答題、jigsaw_puzzle 個人解謎）。",
+      "建議 ≥ 4 人組隊最有趣（拼圖協作、尋寶、GPS 隊伍任務）；1 人也能玩個人任務（拍照驗證、GPS 打卡、密碼解鎖）。" +
+      "大螢幕熱場類活動（投票、搶答、祝福牆）請用 PhotoGo。",
   },
   {
     category: "活動規模",
@@ -56,7 +56,7 @@ const FAQ_ITEMS: FaqItem[] = [
     category: "資料保留",
     question: "活動結束後資料會保留多久？",
     answer:
-      "host session 12 小時 token 過期、但活動內容（玩家照片 / 留言 / 簽名）會視方案保留：\n" +
+      "活動內容（玩家照片 / 進度 / 成績）會視方案保留：\n" +
       "• 一次性方案：活動結束後寄打包檔給客戶（保留 7 天）\n" +
       "• 訂閱方案：永久雲端保存、隨時可下載\n" +
       "• 委辦方案：含完整數位資產交付",
@@ -75,7 +75,7 @@ const FAQ_ITEMS: FaqItem[] = [
     question: "活動中有玩家連不上怎麼辦？",
     answer:
       "1. 確認 wifi / 4G 訊號（多數情況）\n" +
-      "2. 玩家手機重新掃 QR（hostToken 12h 內都有效）\n" +
+      "2. 玩家手機重新掃 QR 進入場域頁\n" +
       "3. admin 用 LINE「@chito 我的活動」確認 session 還 active\n" +
       "4. 仍無法 → 業務 / 工程立即遠端 join 排查",
   },
@@ -85,7 +85,6 @@ const FAQ_ITEMS: FaqItem[] = [
     answer:
       "可以。設計時已考慮：\n" +
       "• 玩家端用 4G / 5G 也能玩（每場流量約 10MB）\n" +
-      "• 大螢幕端如連不上、回 hostUrl 重新整理即可\n" +
       "• WebSocket 斷線會自動重連（最多 3 次重試）",
   },
 
@@ -104,8 +103,7 @@ const FAQ_ITEMS: FaqItem[] = [
     question: "可以新增自己的題目 / 內容嗎？",
     answer:
       "可以。admin 後台可編輯：\n" +
-      "• 投票題目（host_poll_live）\n" +
-      "• 搶答題庫（host_trivia_showdown）\n" +
+      "• 選擇題 / 文字題（choice_verify、text_verify）\n" +
       "• 拼圖內容（jigsaw_puzzle）\n" +
       "• 角色設定（role_assign）\n" +
       "等所有內容欄位。也可用 AI（DeepSeek）一鍵生成符合主題的內容。",
@@ -116,7 +114,7 @@ const FAQ_ITEMS: FaqItem[] = [
     category: "收費",
     question: "三方案有什麼不同？",
     answer:
-      "• 一次性 NT$3K-30K：單次活動、12h hostToken、適合婚禮 / 同學會\n" +
+      "• 一次性 NT$3K-30K：單次活動，適合企業團建 / 親子活動\n" +
       "• 訂閱 NT$1.5K-5K/月：無限建場、含客服、適合月活動 ≥ 3 場\n" +
       "• 委辦 NT$80K-200K：業務全包 + 設計 + 拍攝、適合大型活動 / 客製化需求",
   },

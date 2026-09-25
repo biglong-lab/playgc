@@ -50,7 +50,7 @@ import {
   TrendingUp,
   Cloud, HardDrive, ImageIcon, Zap as ZapIcon,
   ScanText, AlertTriangle,
-  Sparkles, Tv, Compass, Presentation,
+  Sparkles, Compass, Presentation,
 } from "lucide-react";
 import {
   LineChart,
@@ -320,15 +320,6 @@ export default function AdminDashboard() {
               <h4 className="font-semibold text-sm">情境模板市集</h4>
               <p className="text-xs text-muted-foreground mt-1">
                 12 個預組情境一鍵建場
-              </p>
-            </div>
-          </Link>
-          <Link href="/admin/host-sessions" className="block">
-            <div className="rounded-lg border bg-card hover:border-primary/40 hover:shadow-md transition-all p-4 h-full" data-testid="dashboard-link-host-sessions">
-              <Tv className="w-5 h-5 text-blue-600 mb-2" />
-              <h4 className="font-semibold text-sm">主控場次</h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                進行中大螢幕 + QR 列印
               </p>
             </div>
           </Link>

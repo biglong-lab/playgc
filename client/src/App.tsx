@@ -220,9 +220,6 @@ const SquadLeaderboards = lazy(() => import("@/pages/SquadLeaderboards"));
 const SquadCreate = lazy(() => import("@/pages/SquadCreate"));
 const MySquads = lazy(() => import("@/pages/MySquads"));
 
-// 📺 ADR-0004: HostScreen 主控大螢幕模式（W1 D3 骨架）
-const HostScreen = lazy(() => import("@/pages/HostScreen"));
-const HostPlay = lazy(() => import("@/pages/HostPlay"));
 
 // 🎬 ShowcaseHub 元件展示館（W1 D5 MVP）
 const ShowcaseHub = lazy(() => import("@/pages/ShowcaseHub"));
@@ -247,15 +244,11 @@ const BookEntryPage = lazy(() => import("@/pages/booking/BookEntryPage"));
 const BookDonePage = lazy(() => import("@/pages/booking/BookDonePage"));
 const MyBookingsPage = lazy(() => import("@/pages/booking/MyBookingsPage"));
 const BindBookingPage = lazy(() => import("@/pages/booking/BindBookingPage"));
-// 📱 PlayLiff LINE LIFF 玩家入口（W14 D1）
-const PlayLiff = lazy(() => import("@/pages/PlayLiff"));
 // ❓ Faq 公開常見問題頁（W17 D2）
 const Faq = lazy(() => import("@/pages/Faq"));
 // 💰 RoiCalculator 公開 ROI 試算頁（W17 D3）
 const RoiCalculator = lazy(() => import("@/pages/RoiCalculator"));
 
-// 📺 Admin Host Session 管理（W2 D5）
-const AdminHostSessions = lazy(() => import("@/pages/admin/AdminHostSessions"));
 
 // 📡 Admin Multi-Sessions 即時連線監控（Phase 0.1 / 2026-05-08）
 const AdminMultiSessions = lazy(() => import("@/pages/admin/AdminMultiSessions"));
@@ -343,9 +336,6 @@ function Router() {
         <Route path="/me/rewards" component={MyRewards} />
         <Route path="/f/:fieldCode/me/inbox" component={MyInbox} />
         <Route path="/me/inbox" component={MyInbox} />
-        {/* 📺 ADR-0004 HostScreen 軸線 — 大螢幕端與玩家端（無需 Firebase auth）*/}
-        <Route path="/host/:sessionId" component={HostScreen} />
-        <Route path="/play/:sessionId" component={HostPlay} />
 
         {/* 📅 預約系統 Phase δ W1 (2026-05-07) — 公開頁、LIFF 內運作 */}
         <Route path="/book/:fieldCode/done/:bookingCode" component={BookDonePage} />
@@ -389,7 +379,6 @@ function Router() {
         <Route path="/api-docs" component={ApiDocs} />
 
         {/* 📱 LINE LIFF 玩家入口（W14 D1）*/}
-        <Route path="/liff/play/:sessionId" component={PlayLiff} />
 
         <Route path="/squad/create" component={SquadCreate} />
         <Route path="/squad/:squadId/settings" component={SquadSettings} />
@@ -508,7 +497,6 @@ function Router() {
         <Route path="/admin/rewards/analytics">{() => <ProtectedAdminRoute><AdminRewardsAnalytics /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/invites/cohort">{() => <ProtectedAdminRoute><AdminInvitesCohort /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/pwa-analytics">{() => <ProtectedAdminRoute><PwaUsageAnalytics /></ProtectedAdminRoute>}</Route>
-        <Route path="/admin/host-sessions">{() => <ProtectedAdminRoute><AdminHostSessions /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/multi-sessions">{() => <ProtectedAdminRoute><AdminMultiSessions /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/sessions/:sessionId/replay">{() => <ProtectedAdminRoute><AdminSessionReplay /></ProtectedAdminRoute>}</Route>
         <Route path="/admin/reports">{() => <ProtectedAdminRoute><AdminReports /></ProtectedAdminRoute>}</Route>
