@@ -5,6 +5,20 @@
 
 ---
 
+## 2026-09-25
+
+### 📺 活動現場大螢幕預設關閉 + 🚦 活動未設時段防呆（B-0 止血）
+
+**部署**：`5571da9f`（bundle `index-C4rChsuy.js`）；部署前備份 `/opt/backups/db-gamehomicc-predeploy-20260925-2311.sql.gz`
+
+- **大螢幕互動（HostScreen）改由 PhotoGo 提供**：依 [changes/2026-09-25-hostscreen-stability-evaluation.md](changes/2026-09-25-hostscreen-stability-evaluation.md)
+  （狀態只在大螢幕瀏覽器、失敗全不顯示、限流靜默丟包、Trivia 已壞 4 個月；生產 18 場全內部測試、6 月起全部 abandoned）。
+  `host` 模組預設關：後台建場 API 403、選單藏、編輯器不列 host_* 元件、情境一鍵建場遇 host 回明確錯誤；
+  既有公開連結放行。`/showcase` 置頂告示指向 PhotoGo。**下一步：CHITO 完整清除 host 程式碼、PhotoGo 補齊功能**（業主 09-25 決定）
+- **活動沒設時段 → 後台卡片警告「未設時段，客人無法預約」、前台按鈕改「尚未開放」不可點**
+  （09-24 一次建了 7 個沒時段的活動，客人按了只看到錯誤）
+- 生產驗證：version `5571da9f`、health ok、`modules.host=false`、5xx = 0；清掉 08-06 卡在 playing 的 host 場次（現為 0 場進行中）
+
 ## 2026-09-24
 
 ### 💰 時段價格真的收到 + 卡片價格區間（hotfix）
