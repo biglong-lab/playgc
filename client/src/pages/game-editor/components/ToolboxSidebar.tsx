@@ -1,5 +1,6 @@
 // 元件工具箱側邊欄 - 拖曳頁面類型到編輯器
 import { useMemo, useState } from "react";
+import { useCurrentField } from "@/providers/FieldThemeProvider";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -12,8 +13,7 @@ import {
   filterPageTypesByEditorMode,
   groupPageTypesByCategory,
   type EditorMode,
-  type PageCategory,
-} from "../constants";
+  type PageCategory, getPageCategory } from "../constants";
 import { isComponentAllowedForGameMode } from "@shared/multiplayer-component-types";
 
 interface ToolboxSidebarProps {
@@ -38,6 +38,11 @@ export default function ToolboxSidebar({
   gameMode,
   editorMode,
 }: ToolboxSidebarProps) {
+  // 📺 2026-09-25：活動現場大螢幕（host 模組）預設關 —— 大螢幕互動改由 PhotoGo 提供。
+  //   場域沒開這個模組就不列 host_* 元件，避免建了場次卻連不上（HostScreen 穩定度評估）。
+  //   modules 還沒載入時先全顯示（與後台選單同一套「未載入不閃爍」規則）。
+  const currentField = useCurrentField();
+  const hostModuleOn = currentField?.modules ? currentField.modules.host === true : true;
   // 依 gameMode 過濾元件清單
   // - individual → 隱藏 multi 元件
   // - team / competitive / relay → 全部顯示（不對稱規則 v1.2）
@@ -48,12 +53,15 @@ export default function ToolboxSidebar({
     if (editorMode) {
       filtered = filterPageTypesByEditorMode(PAGE_TYPES, editorMode);
     }
+    if (!hostModuleOn) {
+      filtered = filtered.filter((type) => getPageCategory(type.value) !== "host_screen");
+    }
     // 再依 gameMode 過濾（既有 multi 元件邏輯）
     if (!gameMode) return filtered;
     return filtered.filter((type) =>
       isComponentAllowedForGameMode(type.value, gameMode),
     );
-  }, [editorMode, gameMode]);
+  }, [editorMode, gameMode, hostModuleOn]);
 
   // 🆕 D3 (2026-05-07)：搜尋 + 按 category 分組
   const [searchQuery, setSearchQuery] = useState("");

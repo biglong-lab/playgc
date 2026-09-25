@@ -21,6 +21,8 @@
 //   - 街區走讀：先 GpsCascade（multi）解鎖點，再 KnowledgeMap（host）總覽
 
 import type { Express } from "express";
+import { loadFieldModules } from "../lib/field-modules";
+import { isModuleOn } from "@shared/lib/module-registry";
 import { db } from "../db";
 import { games, pages, gameSessions, fields, parseFieldSettings } from "@shared/schema";
 import { requireAdminAuth, requirePermission } from "../adminAuth";
@@ -3391,6 +3393,14 @@ async function instantiateComponent(params: InstantiateComponentParams): Promise
   });
 
   if (isHost) {
+    // 📺 2026-09-25：場域沒開「活動現場大螢幕」模組就不建 host 場次（預設關，改由 PhotoGo 提供）
+    //   沒有 fieldId（LINE / 未綁場域的舊流程）判斷不出來 → 放行，維持相容
+    if (fieldId) {
+      const modules = await loadFieldModules(fieldId);
+      if (!isModuleOn(modules, "host")) {
+        throw new Error("此場域未啟用「活動現場大螢幕」模組：大螢幕互動已改由 PhotoGo 提供，請改用 PhotoGo 建立互動場次");
+      }
+    }
     const hostToken = generateHostToken();
     const [session] = await db
       .insert(gameSessions)

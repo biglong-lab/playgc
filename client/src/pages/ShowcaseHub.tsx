@@ -276,6 +276,25 @@ export default function ShowcaseHub() {
           </p>
         </section>
 
+        {/* 📺 2026-09-25：大螢幕互動改由 PhotoGo 提供（HostScreen 穩定度評估）— 以下 host 展示為舊版、僅供參考 */}
+        <section
+          className="rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center space-y-3 dark:border-amber-700 dark:bg-amber-950"
+          data-testid="banner-host-moved-photogo"
+        >
+          <h2 className="text-lg font-display font-bold text-amber-900 dark:text-amber-100">
+            📺 大螢幕互動已移至 PhotoGo
+          </h2>
+          <p className="text-sm text-amber-900/80 dark:text-amber-100/80">
+            投票、詞雲、搶答、抽獎、祝福牆等「大螢幕 + 手機」互動，現在由 PhotoGo 提供（狀態存在伺服器、手機免安裝免登入）。
+            CHITO 專注在場域的預約、遊戲與經營；下方 HostScreen 展示為舊版，僅供參考。
+          </p>
+          <a href="https://photogo.aihomi.cc/" target="_blank" rel="noopener noreferrer">
+            <Button className="bg-amber-600 hover:bg-amber-700" data-testid="link-photogo">
+              前往 PhotoGo 看互動大螢幕
+            </Button>
+          </a>
+        </section>
+
         {/* ✨ Phase 6 W22 新增 2 元件（最新、置頂呈現）*/}
         <W22DemoSection />
 

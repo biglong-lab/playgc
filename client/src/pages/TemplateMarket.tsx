@@ -204,6 +204,12 @@ function ScenarioCard({ scenario, onClick }: ScenarioCardProps) {
         >
           {isAllHost(scenario) ? "🟢 免登入・掃 QR 即玩" : "🔑 需組隊登入"}
         </Badge>
+        {/* 📺 2026-09-25：大螢幕互動改由 PhotoGo 提供，全 host 情境在 CHITO 只留相容 */}
+        {isAllHost(scenario) && (
+          <p className="text-xs text-amber-700 dark:text-amber-400" data-testid={`note-host-moved-${scenario.id}`}>
+            📺 大螢幕互動已移至 PhotoGo；此情境需場域啟用「活動現場大螢幕」模組才能建場
+          </p>
+        )}
 
         <div className="text-xs text-muted-foreground space-y-0.5">
           <div>👥 {scenario.estimatedPlayers}</div>

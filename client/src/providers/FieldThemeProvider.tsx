@@ -27,6 +27,8 @@ export interface FieldModules {
   competitive: boolean;
   /** 🆕 付費功能（enablePayment）— 控制財務中心菜單顯示 */
   payment: boolean;
+  /** 🆕 2026-09-25 活動現場大螢幕（HostScreen）— 預設關，大螢幕互動改由 PhotoGo 提供 */
+  host?: boolean;
 }
 
 export interface FieldThemePayload {
