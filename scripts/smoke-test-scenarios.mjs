@@ -111,7 +111,7 @@ async function runSmokeTest() {
     if (res.status !== 200) return { ok: false, error: `status ${res.status}` };
     const data = await res.json();
     if (data.status !== "ok") return { ok: false, error: "status field != ok" };
-    if (data.total < 12) return { ok: false, error: `total ${data.total} < 12` };
+    if (data.total < 7) return { ok: false, error: `total ${data.total} < 7` }; // 📺 2026-09-25 大螢幕情境移交 PhotoGo 後為 7
     if (data.byStatus.live < 9) return { ok: false, error: `live ${data.byStatus.live} < 9` };
     return { ok: true };
   });
