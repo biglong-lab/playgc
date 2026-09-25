@@ -10,7 +10,7 @@ import type { FieldSettings, FieldTheme } from "@shared/schema";
 import { insertFieldSchema } from "@shared/schema";
 import { canCreateField } from "@shared/lib/field-permissions";
 import { checkDisconnectGraceSettings } from "@shared/lib/disconnect-grace";
-import { MODULE_REGISTRY, getModule, resolveFieldModules, isModuleOn } from "@shared/lib/module-registry";
+import { MODULE_REGISTRY, getModule, resolveFieldModules } from "@shared/lib/module-registry";
 import { invalidateFieldModules } from "../lib/field-modules";
 import { provisionField, seedDefaultRoles } from "../services/provision-field";
 import { fieldHasFeature } from "../lib/field-plan";
@@ -679,8 +679,6 @@ export function registerAdminFieldRoutes(app: Express) {
             gps: !!settings.enableGpsMission,
             team: settings.enableTeamMode !== false, // 預設 true
             competitive: settings.enableCompetitiveMode !== false, // 預設 true
-            // 🆕 2026-09-25 活動現場大螢幕：由 module-registry 決定（預設關）
-            host: isModuleOn(resolveFieldModules(settings as Record<string, unknown>), "host"),
             payment: !!settings.enablePayment, // 🆕 財務中心菜單控制
           },
         };
@@ -745,8 +743,6 @@ export function registerAdminFieldRoutes(app: Express) {
           gps: !!settings.enableGpsMission,
           team: settings.enableTeamMode !== false,
           competitive: settings.enableCompetitiveMode !== false,
-          // 🆕 2026-09-25 活動現場大螢幕：由 module-registry 決定（預設關）
-          host: isModuleOn(resolveFieldModules(settings as Record<string, unknown>), "host"),
           payment: !!settings.enablePayment,
         },
         theme: {

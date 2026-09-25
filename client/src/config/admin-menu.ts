@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 
 /** 場域模組 key（對應 FieldSettings 的 enableXxx 開關） */
-export type MenuModuleKey = "battle" | "shooting" | "chapters" | "photo" | "gps" | "payment" | "host";
+export type MenuModuleKey = "battle" | "shooting" | "chapters" | "photo" | "gps" | "payment";
 
 export interface AdminMenuItem {
   title: string;

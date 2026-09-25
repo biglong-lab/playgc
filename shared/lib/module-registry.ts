@@ -101,16 +101,6 @@ export const MODULE_REGISTRY: readonly ModuleDef[] = [
     menuPaths: ["/admin/devices"],
     defaultEnabled: false,
   },
-  {
-    key: "host",
-    label: "活動現場大螢幕",
-    description:
-      "主持人大螢幕 + 玩家手機互動（投票、詞雲、搶答…）。2026-09-25 起預設關閉：大螢幕互動改由 PhotoGo 提供，此模組只留給既有活動相容（super_admin 可對單一場域開）",
-    apiPrefixes: ["/api/admin/host-sessions", "/api/host-sessions", "/api/trivia"],
-    menuPaths: ["/admin/host-sessions"],
-    dependsOn: ["games"],
-    defaultEnabled: false,
-  },
 ];
 
 /**

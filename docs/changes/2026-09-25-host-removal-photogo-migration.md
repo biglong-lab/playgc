@@ -29,6 +29,10 @@
 
 預估 3–4 天。R1–R5 完成後一次部署（等口令）；部署後驗：`/host/任意` 404、模板市集 7 情境可建場、既有玩家動線不變。
 
+部署時必做（R4 發現）：
+- 生產主機 crontab 有 `0 * * * * curl … /api/cron/check-expiring-sessions`（host token 到期提醒，端點已移除）→ 部署時**刪掉這行**，否則每小時 404
+- `scripts/smoke-test-scenarios.mjs` 已改打 `generate-session-reports`，部署後跑一次 smoke
+
 ## PhotoGo 補齊（在 `/projects/互動`；另開工作串）
 
 ### 現場等級（必做，5–7 天）
