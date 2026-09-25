@@ -7,12 +7,18 @@ import { db } from "../db";
 import { activitySchedules } from "@shared/schema";
 import type { BookingScheduleTemplate } from "@shared/schema";
 import { getPriceRange, type PriceRange } from "@shared/lib/booking-price";
+import { isScheduleReady } from "@shared/lib/activity-readiness";
 
 export interface WithPriceRange {
   priceRange: PriceRange;
+  /**
+   * 🚦 現在開放預約嗎（false = 沒設時段規則，客人按了只會看到「還沒設定時段」）
+   * 後台用來標警告、前台用來停用按鈕。
+   */
+  scheduleReady: boolean;
 }
 
-/** 一次補上多個活動的價格區間（沒有排程的活動 → 就是基價） */
+/** 一次補上多個活動的價格區間與可預約狀態（沒有排程的活動 → 就是基價、不可預約） */
 export async function attachPriceRanges<T extends { id: string; priceCents: number }>(
   rows: T[],
 ): Promise<(T & WithPriceRange)[]> {
@@ -29,13 +35,17 @@ export async function attachPriceRanges<T extends { id: string; priceCents: numb
   for (const s of schedules) {
     byActivity.set(s.activityId, s.template as BookingScheduleTemplate);
   }
-  return rows.map((row) => ({
-    ...row,
-    priceRange: getPriceRange(byActivity.get(row.id), row.priceCents),
-  }));
+  return rows.map((row) => {
+    const template = byActivity.get(row.id);
+    return {
+      ...row,
+      priceRange: getPriceRange(template, row.priceCents),
+      scheduleReady: isScheduleReady(template),
+    };
+  });
 }
 
-/** 單一活動的價格區間 */
+/** 單一活動的價格區間與可預約狀態 */
 export async function attachPriceRange<T extends { id: string; priceCents: number }>(
   row: T,
 ): Promise<T & WithPriceRange> {

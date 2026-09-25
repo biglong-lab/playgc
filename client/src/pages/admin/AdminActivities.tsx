@@ -70,6 +70,8 @@ interface Activity extends ActivityField {
   bookingCount?: number;
   /** 💰 依時段規則算出的價格區間（日間 249 / 夜間 349）*/
   priceRange?: PriceRange;
+  /** 🚦 有沒有可用的時段規則（false = 客人按了預約只會看到「還沒設定時段」）*/
+  scheduleReady?: boolean;
 }
 
 interface ActivityForm {
@@ -348,6 +350,15 @@ export default function AdminActivities() {
               <CardDescription className="text-xs">/{a.slug}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2 pt-0">
+              {/* 🚦 啟用了卻沒設時段 → 客人看得到、按了卻預約不了，這裡要先喊 */}
+              {a.isActive && a.scheduleReady === false && (
+                <div
+                  className="rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-900 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100"
+                  data-testid={`no-schedule-${a.slug}`}
+                >
+                  ⚠️ 未設時段，客人無法預約 —— 請按下方「時段」設定開放時間
+                </div>
+              )}
               {a.shortDesc && (
                 <p className="text-xs text-muted-foreground line-clamp-2">{a.shortDesc}</p>
               )}

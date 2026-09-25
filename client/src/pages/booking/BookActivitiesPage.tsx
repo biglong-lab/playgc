@@ -25,6 +25,8 @@ interface Activity {
   recentBookingCount?: number;
   /** 💰 依時段規則算出的價格區間（日間 249 / 夜間 349）*/
   priceRange?: PriceRange;
+  /** 🚦 有沒有可用時段（false = 還沒開放，按了也預約不了）*/
+  scheduleReady?: boolean;
 }
 
 interface FieldInfo {
@@ -113,8 +115,14 @@ export default function BookActivitiesPage() {
         {data?.activities?.map((a) => (
           <Card
             key={a.id}
-            className="overflow-hidden cursor-pointer hover-elevate active-elevate-2 transition-shadow"
-            onClick={() => navigate(`/book/${fieldCode}/activity/${a.slug}`)}
+            className={`overflow-hidden transition-shadow ${
+              a.scheduleReady === false
+                ? "opacity-60"
+                : "cursor-pointer hover-elevate active-elevate-2"
+            }`}
+            onClick={() =>
+              a.scheduleReady !== false && navigate(`/book/${fieldCode}/activity/${a.slug}`)
+            }
             data-testid={`card-activity-${a.slug}`}
           >
             <div className="relative">
@@ -172,7 +180,14 @@ export default function BookActivitiesPage() {
                     <p className="text-[10px] text-muted-foreground mt-0.5">📱 現場付款</p>
                   )}
                 </div>
-                <Button size="sm">立即預約</Button>
+                {/* 🚦 還沒設時段的活動：不要讓客人白按（2026-09-24 事故） */}
+                {a.scheduleReady === false ? (
+                  <Button size="sm" variant="outline" disabled data-testid={`soon-${a.slug}`}>
+                    尚未開放
+                  </Button>
+                ) : (
+                  <Button size="sm">立即預約</Button>
+                )}
               </div>
             </CardContent>
           </Card>

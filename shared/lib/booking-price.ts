@@ -6,6 +6,7 @@
 // 時段規則本來就能各自設價（BookingRule.pricePerSlotCentsOverride），
 // 這支把「這個活動實際會收多少」算出來，給卡片顯示用（後端計價見 booking-service）。
 import type { BookingScheduleTemplate } from "@shared/schema";
+import { bookableRules } from "./activity-readiness";
 
 export interface PriceRange {
   minCents: number;
@@ -24,9 +25,7 @@ export function getPriceRange(
   template: BookingScheduleTemplate | null | undefined,
   basePriceCents: number,
 ): PriceRange {
-  const rules = (template?.rules ?? []).filter(
-    (r) => r.enabled && Array.isArray(r.slots) && r.slots.length > 0,
-  );
+  const rules = bookableRules(template);
   if (rules.length === 0) {
     return { minCents: basePriceCents, maxCents: basePriceCents, hasRange: false };
   }
