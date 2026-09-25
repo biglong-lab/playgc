@@ -33,6 +33,23 @@
 - 生產主機 crontab 有 `0 * * * * curl … /api/cron/check-expiring-sessions`（host token 到期提醒，端點已移除）→ 部署時**刪掉這行**，否則每小時 404
 - `scripts/smoke-test-scenarios.mjs` 已改打 `generate-session-reports`，部署後跑一次 smoke
 
+### CHITO 清除實作紀錄（2026-09-25 完成，**未部署**）
+
+| 段 | commit | 摘要 |
+|---|---|---|
+| R1 | `4d9bc6b5` | 路由 / 後台頁 / 選單 / 儀表板 / Pitch / FAQ / ShowcaseHub（1048 → 620 行）；9 個專屬檔刪除 |
+| 文件 | `20e4fbf7` | ADR-0029、ADR-0004 標 Superseded、host 領域文件歸檔 |
+| R2 | `229d38d4` | 情境 13 → 7；建場 / LINE / v1 API / AI 生成 / 模板市集 / QR 列印；NLU、ROI、API 文件、smoke 對照更新 |
+| R3 | `9e6569e9` | 刪 58 檔（host 元件 + 測試 + hook）；渲染器、編輯器 PAGE_TYPES 98 → 81；HostComponentEditor → SchemaConfigEditor |
+| R4 | `23bc1a9a` | websocket.ts −170 行；到期檢查整檔刪；schema 欄位保留加停用註解；伺服器端守護 |
+| R5 | `2777c0be` | 撤 B-0 過渡模組；`host-axis-removed.guard.test.ts` |
+| smoke | 後續 commit | 情境數門檻 12 → 7、live 9 → 4 |
+
+合計 124 檔、+671 / −11,625 行。
+
+驗證：`npx tsc --noEmit` 0 錯誤；vitest 全套 3639 項通過（0 失敗）；守護測試（shared + server）通過；smoke 全過；
+Playwright 真瀏覽器：訪客 QR 直達、組隊、競賽、接力、Squad 共 36 項通過 / 0 失敗（`ENABLE_E2E_HELPERS=true` 本機 server）。
+
 ## PhotoGo 補齊（在 `/projects/互動`；另開工作串）
 
 ### 現場等級（必做，5–7 天）
