@@ -8,7 +8,7 @@
 //   - W20 觀測週會包成完整儀表板 UI
 //
 // 範圍：
-//   - 過去 30 天 host sessions（active / completed）
+//   - 過去 30 天遊戲場次（active / completed；2026-09-25 起不再限 host 場次）
 //   - distinct scenarios used / fields used
 //   - 平台服務 configuration status（LINE / NLU / cron / webhook）
 //   - 不暴露 secrets
@@ -41,16 +41,15 @@ export function registerAdminPilotHealthRoutes(app: Express) {
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const now = new Date();
 
-        // 1. Active host sessions（status='playing' + token 未過期）
+        // 1. Active sessions（status='playing' + 30 天內開局，避免把久遠未收尾的場次算進來）
         const activeRows = await db
           .select({ session: gameSessions, game: games })
           .from(gameSessions)
           .innerJoin(games, eq(games.id, gameSessions.gameId))
           .where(
             and(
-              eq(gameSessions.hostMode, true),
               eq(gameSessions.status, "playing"),
-              gte(gameSessions.hostTokenExpiresAt, now),
+              gte(gameSessions.startedAt, thirtyDaysAgo),
             ),
           );
         const activeSessions = isSuperAdmin
@@ -64,7 +63,6 @@ export function registerAdminPilotHealthRoutes(app: Express) {
           .innerJoin(games, eq(games.id, gameSessions.gameId))
           .where(
             and(
-              eq(gameSessions.hostMode, true),
               eq(gameSessions.status, "completed"),
               gte(gameSessions.completedAt, thirtyDaysAgo),
             ),

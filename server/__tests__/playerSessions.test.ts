@@ -479,11 +479,11 @@ describe("Player Sessions 路由", () => {
       mockStorage.getUser.mockResolvedValue({ id: "user-1" });
       mockStorage.createPlayerProgress.mockResolvedValue({ id: 1 });
       await request(app).post("/api/sessions").set(AUTH_HEADER)
-        .send({ gameId: "g-1", score: 9999, status: "completed", hostMode: true });
+        .send({ gameId: "g-1", score: 9999, status: "completed", resetCount: 99 });
       const created = mockStorage.createSession.mock.calls[0][0];
       expect(created).not.toHaveProperty("score");
       expect(created).not.toHaveProperty("status");
-      expect(created).not.toHaveProperty("hostMode");
+      expect(created).not.toHaveProperty("resetCount");
     });
 
     it("完成場次沒帶 score → 仍用 DB 現值跑驗證並寫回安全分數", async () => {

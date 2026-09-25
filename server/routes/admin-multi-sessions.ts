@@ -50,7 +50,6 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
             gameId: gameSessions.gameId,
             startedAt: gameSessions.startedAt,
             status: gameSessions.status,
-            hostMode: gameSessions.hostMode,
             gameTitle: games.title,
             fieldId: games.fieldId,
           })
@@ -251,7 +250,6 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
             gameTitle: s.gameTitle ?? "(未命名)",
             fieldId: s.fieldId,
             startedAt: s.startedAt,
-            hostMode: s.hostMode,
             teamCount: sessionTeams.length,
             totalMembers,
             onlineMembers,
@@ -570,7 +568,6 @@ export function registerAdminMultiSessionsRoutes(app: Express) {
             sessionId: s.id,
             startedAt: s.startedAt,
             status: s.status,
-            hostMode: s.hostMode,
             teamCount: teamsData.length,
             teams: teamsData,
             // 🆕 P1-8 時間軸

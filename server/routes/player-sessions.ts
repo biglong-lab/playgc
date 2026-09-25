@@ -44,7 +44,7 @@ async function notifyFieldGameStart(sessionId: string, userId: string): Promise<
 //   PATCH /progress 原本 req.body 直取（score 可送負數/超大值/任意型別）
 // 🔒 2026-09-23 安全審查 H1：建立場次只收這幾個欄位。
 //   原本用 insertGameSessionSchema（只 omit id/startedAt/completedAt）→ client 可自帶
-//   score / status / hostMode / hostToken 開局就是 10000 分、或直接建成已完成。
+//   score / status / resetCount 等欄位，開局就是 10000 分、或直接建成已完成。
 const createSessionSchema = insertGameSessionSchema.pick({
   gameId: true,
   teamName: true,

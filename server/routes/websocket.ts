@@ -1,6 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
 import type { Server, IncomingMessage } from "http";
-import { storage } from "../storage";
 import { mqttService } from "../mqttService";
 import { setHitBroadcaster as setMqttV1HitBroadcaster } from "../mqtt";
 import { verifyFirebaseToken } from "../firebaseAuth";
@@ -70,19 +69,6 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   const matchClients: Map<string, Set<WebSocketClient>> = new Map();
   const battleSlotClients: Map<string, Set<WebSocketClient>> = new Map();
 
-  // 🆕 ADR-0004 (2026-05-02)：HostScreen 主控大螢幕模式
-  //   每個 host session 維護兩組 client：
-  //     hostScreenClients[sessionId]：大螢幕端（無登入，唯讀觀看 state 廣播）
-  //     hostPlayerClients[sessionId]：玩家手機端（送 pulse、收 state 廣播）
-  //   廣播時 broadcastToHostSession 會送給兩組所有 client
-  //
-  //   注意：與既有 broadcastToSession 不衝突（hostScreen sessions 也是 game_sessions
-  //   只是 host_mode=true，但 WS 訊息 type prefix 為 host_screen_* 區分契約）
-  const hostScreenClients: Map<string, Set<WebSocketClient>> = new Map();
-  const hostPlayerClients: Map<string, Set<WebSocketClient>> = new Map();
-  // server-side last state cache（給後加入的玩家拿目前狀態）
-  const hostSessionStateCache: Map<string, Record<string, unknown>> = new Map();
-
   // 🆕 Phase 2a：記錄每個 team 曾經連過的 userId（用來區分「初次加入」vs「重連」）
   //   close 後 history 仍保留，再次 team_join 時 → reconnected 而非 joined。
   //   server 重啟會清空（接受限制 — 重啟後第一次連會被當「joined」廣播）。
@@ -133,14 +119,13 @@ export function setupWebSocket(httpServer: Server): RouteContext {
   }
 
   // 🧹 2026-07-09 M1（全站優化盤點）：閒置隊伍快取回收 —
-  //   teamStateCache / teamMemberHistory / teamSessionIdCache / hostSessionStateCache
-  //   原本只 set 不 delete → 每個玩過的 team/host 永久佔記憶體（單 worker 常駐、
+  //   teamStateCache / teamMemberHistory / teamSessionIdCache
+  //   原本只 set 不 delete → 每個玩過的 team 永久佔記憶體（單 worker 常駐、
   //   重啟才釋放）。不能在 socket 全斷瞬間清（全隊換頁/短斷線會需要重連快照），
   //   改為：無任何連線持續 30 分鐘 → 回收（遊戲場次不會中斷半小時還回得來）。
   const CACHE_SWEEP_INTERVAL_MS = 10 * 60 * 1000;
   const CACHE_EVICT_AFTER_MS = 30 * 60 * 1000;
   const teamEmptySince: Map<string, number> = new Map();
-  const hostEmptySince: Map<string, number> = new Map();
 
   function sweepIdleCaches(): void {
     const now = Date.now();
@@ -165,22 +150,6 @@ export function setupWebSocket(httpServer: Server): RouteContext {
         teamMemberHistory.delete(teamId);
         teamSessionIdCache.delete(teamId);
         teamEmptySince.delete(teamId);
-      }
-    });
-    // --- host 大螢幕快取 ---
-    hostSessionStateCache.forEach((_v, sessionId) => {
-      if (hostScreenClients.has(sessionId) || hostPlayerClients.has(sessionId)) {
-        hostEmptySince.delete(sessionId);
-        return;
-      }
-      const since = hostEmptySince.get(sessionId);
-      if (since === undefined) {
-        hostEmptySince.set(sessionId, now);
-        return;
-      }
-      if (now - since >= CACHE_EVICT_AFTER_MS) {
-        hostSessionStateCache.delete(sessionId);
-        hostEmptySince.delete(sessionId);
       }
     });
   }
@@ -342,7 +311,7 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
 
     // 🔭 2026-07-10 觀察階段：統計匿名連線占比、供決策是否切強制 token
-    // （host 大螢幕 role=player 是刻意匿名、切強制前必須先看這裡的數據）
+    // （切強制前必須先看這裡的數據；2026-09-25 大螢幕匿名連線已隨 HostScreen 移除）
     wsConnStats[authenticatedUserId ? "authed" : "anonymous"]++;
     const totalConns = wsConnStats.authed + wsConnStats.anonymous;
     if (totalConns % 100 === 0) {
@@ -717,101 +686,6 @@ export function setupWebSocket(httpServer: Server): RouteContext {
             }
             break;
 
-          // ════════════════════════════════════════════════════════════
-          // 🆕 ADR-0004 HostScreen 主控大螢幕事件（2026-05-02）
-          // ════════════════════════════════════════════════════════════
-          case "host_screen_register": {
-            // 大螢幕端註冊頻道（含 hostToken 驗證）
-            // 訊息：{ type, sessionId, hostToken, role: 'host' | 'player' }
-            const hostSessionId = message.sessionId;
-            if (!hostSessionId) break;
-
-            // 驗 hostToken 是 hostScreen 模式的關鍵安全點
-            // role='host' 的訊息必須帶有效 token；role='player' 不需 token
-            if (message.role === "host") {
-              const session = await storage.getSession(hostSessionId).catch(() => null);
-              if (!session?.hostMode || session.hostToken !== message.hostToken) {
-                ws.send(JSON.stringify({
-                  type: "host_screen_error",
-                  message: "host token 無效或已過期",
-                }));
-                break;
-              }
-              if (session.hostTokenExpiresAt && new Date(session.hostTokenExpiresAt) < new Date()) {
-                ws.send(JSON.stringify({
-                  type: "host_screen_error",
-                  message: "host token 已過期，請重新從 admin 取得網址",
-                }));
-                break;
-              }
-              // 加入大螢幕群
-              ws.hostSessionId = hostSessionId;
-              ws.hostRole = "host";
-              if (!hostScreenClients.has(hostSessionId)) {
-                hostScreenClients.set(hostSessionId, new Set());
-              }
-              hostScreenClients.get(hostSessionId)!.add(ws);
-            } else {
-              // 玩家端：不需 token，只要 session 存在 + host_mode=true
-              const session = await storage.getSession(hostSessionId).catch(() => null);
-              if (!session?.hostMode) {
-                ws.send(JSON.stringify({
-                  type: "host_screen_error",
-                  message: "此 session 不是 HostScreen 模式",
-                }));
-                break;
-              }
-              ws.hostSessionId = hostSessionId;
-              ws.hostRole = "player";
-              if (!hostPlayerClients.has(hostSessionId)) {
-                hostPlayerClients.set(hostSessionId, new Set());
-              }
-              hostPlayerClients.get(hostSessionId)!.add(ws);
-            }
-
-            // 註冊成功 → 送目前 state cache 給新連線（snapshot）
-            const cached = hostSessionStateCache.get(hostSessionId);
-            if (cached) {
-              ws.send(JSON.stringify({
-                type: "host_screen_state",
-                sessionId: hostSessionId,
-                state: cached,
-                cached: true,
-              }));
-            }
-            break;
-          }
-
-          case "host_screen_pulse": {
-            // 玩家端送訊號（投票、emoji、按鈕觸發）→ 廣播給大螢幕端
-            // 訊息：{ type, sessionId, pulseType, payload }
-            if (!ws.hostSessionId || ws.hostRole !== "player") break;
-            broadcastToHostSession(ws.hostSessionId, {
-              type: "host_screen_pulse",
-              sessionId: ws.hostSessionId,
-              pulseType: message.pulseType,
-              payload: message.payload,
-              fromUserId: ws.userId,  // 可選 — 玩家有登入才有
-            }, /* hostOnly */ true);  // pulse 只送大螢幕端，不擾其他玩家
-            break;
-          }
-
-          case "host_screen_state": {
-            // 大螢幕端廣播當前狀態 → 所有玩家 + 大螢幕端共用看到
-            // 訊息：{ type, sessionId, state }
-            if (!ws.hostSessionId || ws.hostRole !== "host") break;
-            // 寫進 cache（給後加入的玩家用）
-            hostSessionStateCache.set(ws.hostSessionId, message.state ?? {});
-            // 廣播給兩組
-            broadcastToHostSession(ws.hostSessionId, {
-              type: "host_screen_state",
-              sessionId: ws.hostSessionId,
-              state: message.state,
-            });
-            break;
-          }
-          // ════════════════════════════════════════════════════════════
-
           // 對戰系統事件
           // 🔒 2026-09-23：只有已登入的參賽者能進賽事房間（原本任何連線都能進、還能冒名廣播「某人加入」）
           //   加入 / 分數 / 交棒 / 開賽 / 結算的廣播一律由伺服器（REST + match-lifecycle）發出
@@ -968,21 +842,6 @@ export function setupWebSocket(httpServer: Server): RouteContext {
           userId: ws.authenticatedUserId ?? null,
           timestamp: new Date().toISOString(),
         });
-      }
-
-      // 🆕 ADR-0004：清理 HostScreen 客戶端
-      if (ws.hostSessionId) {
-        if (ws.hostRole === "host") {
-          hostScreenClients.get(ws.hostSessionId)?.delete(ws);
-          if (hostScreenClients.get(ws.hostSessionId)?.size === 0) {
-            hostScreenClients.delete(ws.hostSessionId);
-          }
-        } else if (ws.hostRole === "player") {
-          hostPlayerClients.get(ws.hostSessionId)?.delete(ws);
-          if (hostPlayerClients.get(ws.hostSessionId)?.size === 0) {
-            hostPlayerClients.delete(ws.hostSessionId);
-          }
-        }
       }
     });
   });
@@ -1170,35 +1029,11 @@ export function setupWebSocket(httpServer: Server): RouteContext {
     }
   }
 
-  /**
-   * 🆕 ADR-0004：HostScreen 廣播
-   *
-   * @param sessionId host session id
-   * @param message WS 訊息
-   * @param hostOnly 是否只送大螢幕端（true: pulse 用；false: state 廣播給雙方）
-   */
-  function broadcastToHostSession(
-    sessionId: string,
-    message: WsBroadcastMessage,
-    hostOnly = false,
-  ) {
-    const payload = JSON.stringify(message);
-    const send = (set: Set<WebSocketClient> | undefined) => {
-      if (!set) return;
-      set.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) client.send(payload);
-      });
-    };
-    send(hostScreenClients.get(sessionId));
-    if (!hostOnly) send(hostPlayerClients.get(sessionId));
-  }
-
   return {
     broadcastToSession,
     broadcastToTeam,
     broadcastToMatch,
     broadcastToBattleSlot,
-    broadcastToHostSession,
     cancelDisconnectTimer,
     kickUserFromTeam,
     // 🆕 2026-07-08 CHITO #0e0f5f17：leader-decide「先繼續」前檢查目標玩家是否已重連

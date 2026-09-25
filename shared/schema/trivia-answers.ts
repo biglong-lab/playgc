@@ -12,7 +12,9 @@
 //   - 玩家答題：POST /api/trivia/:sessionId/answer
 //   - server 寫 DB + 計算 rank（同 question 之前答對的人數）+ 算 score
 //   - 同 user 同 question 只能答 1 次（unique constraint）
-//   - server broadcast host_screen_state 給大螢幕端
+//
+// 📺 2026-09-25 已停用：大螢幕互動（TriviaShowdown）移交 PhotoGo，
+//   表保留給歷史資料（表只加不刪紅線），程式不再寫入。
 
 import { sql } from "drizzle-orm";
 import {

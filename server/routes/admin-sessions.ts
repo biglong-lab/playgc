@@ -371,7 +371,7 @@ export function registerAdminSessionRoutes(app: Express) {
         const newHistory = [...currentHistory, resetEntry];
 
         // 重置場次：狀態 → playing、分數 → 0、currentChapterId → null、completedAt → null
-        // 注意：teamName / gameId / hostMode / startedAt 保留
+        // 注意：teamName / gameId / startedAt 保留
         await db
           .update(gameSessions)
           .set({

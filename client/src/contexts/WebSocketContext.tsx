@@ -4,7 +4,7 @@
 //
 // 設計：
 //   - 整個 app 全域只有 1 條 ws connection（同一 user）
-//   - 多個 hook（useTeamWebSocket / useHostScreenSync / useTeamShootingSync / ChatPanel）
+//   - 多個 hook（useTeamWebSocket / useTeamShootingSync / ChatPanel）
 //     都透過 useWebSocket() 從 Provider 拿同一條 connection
 //   - 元件 mount/unmount 不會 close ws（Provider 一直保留）
 //   - acquire(config) 提供 teamId/userId/userName，Provider 確保 ws 連到該 user
@@ -87,7 +87,7 @@ interface WebSocketContextValue {
    */
   acquire: (config: AcquireConfig) => () => void;
   /**
-   * 🆕 Phase 2：確保 ws 已連線（不附 user info，給 ChatPanel / HostScreen 等用）
+   * 🆕 Phase 2：確保 ws 已連線（不附 user info，給 ChatPanel / useTeamShootingSync 等用）
    * 回傳 release fn（ref counting 概念、未來可改成最後一個 release 才關 ws）
    */
   ensureConnected: () => () => void;
@@ -163,8 +163,8 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
   const connect = useCallback(() => {
     if (intentionalCloseRef.current) return;
     const config = configRef.current;
-    // 🐛 2026-06-16 修復:host-screen 模式(ensureConnected,無 config)永遠連不上 →
-    //   大螢幕↔手機互動全失效。改為:有 config(team) 或 有 ensureConnected 引用者(host-screen)就連。
+    // 🐛 2026-06-16 修復:只靠 ensureConnected（無 team config）的使用者永遠連不上。
+    //   改為:有 config(team) 或 有 ensureConnected 引用者（ChatPanel / 射擊同步）就連。
     //   原本 `if (!config) return` 讓 ensureConnected 呼叫的 connect() 立即 return、ws 從不建立。
     if (!config && connectionRefCountRef.current === 0) return;
     // 已 OPEN 不重連

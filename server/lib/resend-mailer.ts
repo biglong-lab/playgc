@@ -100,7 +100,7 @@ export interface PaymentSuccessEmailInput {
   customerEmail: string;
   scenarioName: string;
   amount: number;
-  instances: Array<{ label: string; hostUrl?: string; playUrl?: string; gameUrl?: string }>;
+  instances: Array<{ label: string; playUrl?: string; gameUrl?: string }>;
 }
 
 /**
@@ -115,8 +115,7 @@ export function buildPaymentSuccessEmail(input: PaymentSuccessEmailInput): {
   const instancesHtml = instances
     .map((i) => {
       const urls = [
-        i.hostUrl && `📺 大螢幕 <code>${escapeHtml(i.hostUrl)}</code>`,
-        i.playUrl && `📱 玩家 <code>${escapeHtml(i.playUrl)}</code>`,
+        i.playUrl &&`📱 玩家 <code>${escapeHtml(i.playUrl)}</code>`,
         i.gameUrl && `🎮 玩家入口 <code>${escapeHtml(i.gameUrl)}</code>`,
       ]
         .filter(Boolean)
@@ -138,8 +137,7 @@ export function buildPaymentSuccessEmail(input: PaymentSuccessEmailInput): {
   <h2>您的活動連結</h2>
   <ul style="line-height: 1.8;">${instancesHtml}</ul>
   <p style="color: #6b7280; font-size: 14px;">
-    💡 大螢幕網址含 hostToken 12 小時有效，請勿公開展示。<br>
-    玩家手機端 QR 可貼在現場。<br>
+    💡 玩家手機端 QR 可貼在現場。<br>
     活動當天有問題請 LINE 聯絡客服。
   </p>
   <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 20px 0;">

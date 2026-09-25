@@ -100,7 +100,6 @@ interface SessionListItem {
   gameTitle: string;
   fieldId: string | null;
   startedAt: string | null;
-  hostMode: boolean | null;
   teamCount: number;
   totalMembers: number;
   onlineMembers: number;
@@ -164,7 +163,6 @@ interface SessionDetailResponse {
     sessionId: string;
     startedAt: string | null;
     status: string | null;
-    hostMode: boolean | null;
     teamCount: number;
     teams: SessionDetailTeam[];
     timelineEvents: TimelineEvent[];
@@ -514,9 +512,6 @@ function SessionCard({
           <div className="min-w-0 flex-1">
             <CardTitle className="text-base flex items-center gap-2 truncate">
               {session.gameTitle}
-              {session.hostMode && (
-                <Badge variant="secondary" className="text-[10px] shrink-0">主控</Badge>
-              )}
               {health === "critical" && (
                 <Badge variant="destructive" className="text-[10px] shrink-0">
                   <ShieldAlert className="w-3 h-3 mr-0.5" />

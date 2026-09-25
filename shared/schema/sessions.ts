@@ -37,10 +37,9 @@ export const gameSessions = pgTable(
     currentChapterId: varchar("current_chapter_id").references(() => gameChapters.id, { onDelete: "set null" }),
     startedAt: timestamp("started_at").defaultNow(),
     completedAt: timestamp("completed_at"),
-    // 🆕 ADR-0004 (2026-05-02)：HostScreen 主控大螢幕模式
-    //   host_mode = true：此 session 是 HostScreen 模式，需 hostToken 才能進大螢幕
-    //   host_token：admin 簽發的 12 小時有效 token，給 /host/:sessionId?token=xxx 驗證
-    //   host_token_expires_at：token 過期時間（過期需 admin 重新簽發）
+    // 📺 2026-09-25 已停用：大螢幕互動移交 PhotoGo，欄位保留給歷史資料，程式不再寫入
+    //   （原 ADR-0004 HostScreen 模式：host_mode / host_token / host_token_expires_at；
+    //   表只加不刪紅線，見 docs/changes/2026-09-25-host-removal-photogo-migration.md）
     hostMode: boolean("host_mode").default(false).notNull(),
     hostToken: varchar("host_token"),
     hostTokenExpiresAt: timestamp("host_token_expires_at"),

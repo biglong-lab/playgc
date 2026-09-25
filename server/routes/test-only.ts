@@ -177,10 +177,8 @@ export function registerTestOnlyRoutes(app: Express) {
 
       const finalConfig = { ...(defaultConfig ?? {}), ...(customConfig ?? {}) };
 
-      // host_ 開頭的 pageType 走 ADR-0004 host 軸線（gameMode=individual、玩家匿名）
-      // 其他走 multi 軸（gameMode=team、要登入要組隊）
-      const isHostAxis = pageType.startsWith("host_");
-
+      // 一律走 multi 軸（gameMode=team、要登入要組隊）
+      // 📺 2026-09-25：host_ 軸線（大螢幕互動）已移交 PhotoGo、不再建 host 場次
       const [game] = await db.insert(games).values({
         title: `E2E ${pageType} 測試`,
         description: `Playwright e2e — ${pageType}`,
@@ -188,9 +186,9 @@ export function registerTestOnlyRoutes(app: Express) {
         estimatedTime: 5,
         maxPlayers: 6,
         status: "published",
-        gameMode: isHostAxis ? "individual" : "team",
-        minTeamPlayers: isHostAxis ? null : 2,
-        maxTeamPlayers: isHostAxis ? null : 4,
+        gameMode: "team",
+        minTeamPlayers: 2,
+        maxTeamPlayers: 4,
         publicSlug: `e2e-${pageType}-${Date.now()}`,
       }).returning();
 
@@ -201,13 +199,11 @@ export function registerTestOnlyRoutes(app: Express) {
         config: finalConfig,
       }).returning();
 
-      // host 軸 session 加 hostMode=true（ADR-0004：HostScreen 模式）
       const [session] = await db.insert(gameSessions).values({
         gameId: game.id,
-        teamName: isHostAxis ? null : `e2e-${pageType}`,
-        playerCount: isHostAxis ? 0 : 2,
+        teamName: `e2e-${pageType}`,
+        playerCount: 2,
         status: "playing",
-        hostMode: isHostAxis,
       }).returning();
 
       res.json({
