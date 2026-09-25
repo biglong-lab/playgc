@@ -208,7 +208,7 @@ export function WebSocketProvider({ children }: PropsWithChildren) {
           }
         }
 
-        // 🆕 Phase 2：所有 onConnect handlers（ChatPanel / HostScreen 等發自己的 join）
+        // 🆕 Phase 2：所有 onConnect handlers（ChatPanel / useTeamShootingSync 等發自己的 join）
         onConnectHandlersRef.current.forEach((handler) => {
           try {
             handler(ws);
