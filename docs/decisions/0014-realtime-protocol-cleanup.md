@@ -113,4 +113,4 @@ broadcastToMatch(matchId, { type: "match_xxx" });
 - [ADR-0004 host-screen-axis](0004-host-screen-axis.md) — host 軸線設計
 - [ADR-0013 W18 元件擴充](0013-w18-component-expansion.md) — host 元件批次
 - [docs/changes/2026-05-03-codex-realtime-cleanup.md] — 本次 7 輪 Codex 審查的詳細變動紀錄
-- [host-screen-components.md](../domains/host-screen-components.md) — 14 個 host 元件對照
+- [host-screen-components.md](../archive/host-screen-components.md) — 14 個 host 元件對照

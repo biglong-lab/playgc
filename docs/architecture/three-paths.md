@@ -137,7 +137,7 @@
 
 - [ADR-0004 HostScreen 第三軸線](../decisions/0004-host-screen-axis.md)
 - [ADR-0017 Loop 護欄](../decisions/0017-loop-mode-safeguards.md)
-- [host + multi 配對 spec](../domains/host-multi-pairing.md)
+- [host + multi 配對 spec（已歸檔，host 軸 2026-09-25 移交 PhotoGo，見 ADR-0029）](../archive/host-multi-pairing.md)
 - [Phase 1 D3 元件分類](../changes/2026-05-07-phase-1-complete.md)
 - [A2 L3 驗證紀錄](../changes/2026-05-07-a2-l3-validation.md)
 - [本次補接 host 元件](../changes/2026-05-07-host-component-admin-integration.md)

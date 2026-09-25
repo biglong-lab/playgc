@@ -1,7 +1,7 @@
 # ADR-0004: HostScreen 獨立為第三軸線（不歸入 multi/）
 
 > 日期：2026-05-02
-> 狀態：✅ 採用中
+> 狀態：⛔ Superseded by [ADR-0029](0029-host-screen-moved-to-photogo.md)（2026-09-25：大螢幕互動整條移交 PhotoGo，CHITO 已移除 host 軸）
 > 影響：客戶端目錄結構、WebSocket 事件設計、認證模型、多人遊戲元件分類
 
 ---
