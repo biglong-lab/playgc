@@ -85,4 +85,8 @@ export const PERMISSION_BACKFILL: readonly { when: string; grant: readonly strin
   { when: "pos:scan", grant: ["pos:operate"] },
   // 原本能管角色的，也能管使用者
   { when: "user:manage_roles", grant: ["user:manage"] },
+  // 🐛 2026-09-26 現場停擺：品項 / 菜單的讀取改掛 pos:view，但既有角色只有 pos:manage / pos:operate
+  //   → 讀不到品項、收支頁顯示「尚無品項」。能操作或能設定 POS 的，一定要能看 POS。
+  { when: "pos:manage", grant: ["pos:view"] },
+  { when: "pos:operate", grant: ["pos:view"] },
 ];

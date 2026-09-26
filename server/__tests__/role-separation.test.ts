@@ -15,7 +15,7 @@ vi.hoisted(() => {
 vi.mock("../db", () => ({ db: {} }));
 
 import { requirePermission } from "../adminAuth";
-import { PERMISSION_KEYS } from "@shared/lib/permission-catalog";
+import { PERMISSION_KEYS, PERMISSION_BACKFILL } from "@shared/lib/permission-catalog";
 
 /** 用真的 requirePermission，只把「登入後的角色」換成測試角色 */
 function appWithRole(permissions: string[], systemRole = "custom") {
@@ -28,6 +28,8 @@ function appWithRole(permissions: string[], systemRole = "custom") {
   });
   const ok = (_req: express.Request, res: express.Response) => res.json({ ok: true });
   app.get("/pos-products", requirePermission("pos:manage"), ok);
+  // 讀取品項 / 菜單（與 admin-pos-products.ts 的 POS_READ 同一組）
+  app.get("/pos-menu", requirePermission("pos:view", "pos:operate", "pos:manage"), ok);
   app.get("/pos-reports", requirePermission("pos_cash_admin"), ok);
   app.get("/games-edit", requirePermission("game:edit"), ok);
   app.get("/games-view", requirePermission("game:view"), ok);
@@ -76,6 +78,18 @@ describe("角色分離（權限鍵拆分後）", () => {
     expect(await status(app, "/pos-products")).toBe(403);
     expect(await status(app, "/bookings")).toBe(403);
     expect(await status(app, "/revenue")).toBe(403);
+  });
+
+  it("🐛 2026-09-26 回歸：只有 pos:manage 或只有 pos:operate 的角色也讀得到品項（現場停擺事故）", async () => {
+    expect(await status(appWithRole(["pos:manage"]), "/pos-menu")).toBe(200);
+    expect(await status(appWithRole(["pos:operate"]), "/pos-menu")).toBe(200);
+    expect(await status(appWithRole(["report:view"]), "/pos-menu")).toBe(403);
+  });
+
+  it("補發規則：有 pos:manage / pos:operate 的角色一定會拿到 pos:view", () => {
+    const grants = (key: string) => PERMISSION_BACKFILL.filter((r) => r.when === key).flatMap((r) => r.grant);
+    expect(grants("pos:manage")).toContain("pos:view");
+    expect(grants("pos:operate")).toContain("pos:view");
   });
 
   it("平台管理員（super_admin）不受限", async () => {

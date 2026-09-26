@@ -41,7 +41,7 @@ export default function PosItemPicker({
 }: {
   onChange: (lines: CartLine[], totalCents: number) => void;
 }) {
-  const { data } = useQuery<{ products: MenuProduct[] }>({
+  const { data, isError, error, refetch } = useQuery<{ products: MenuProduct[] }>({
     queryKey: ["pos-menu"],
     queryFn: () => fetchWithAdminAuth("/api/pos/menu"),
   });
@@ -118,7 +118,14 @@ export default function PosItemPicker({
       {/* 菜單 */}
       <Card>
         <CardContent className="py-3 px-3">
-          {cats.length === 0 ? (
+          {/* 🐛 2026-09-26：讀取失敗（例如權限 403）不能顯示成「尚無品項」—— 現場會以為資料不見 */}
+          {isError ? (
+            <div className="text-sm text-destructive text-center py-3 space-y-2" data-testid="pos-menu-error">
+              <p>品項讀取失敗：{error instanceof Error ? error.message : "請稍後再試"}</p>
+              <p className="text-xs text-muted-foreground">資料沒有遺失；若持續發生請截圖給管理員</p>
+              <button type="button" className="underline text-xs" onClick={() => refetch()}>重新載入</button>
+            </div>
+          ) : cats.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-3">
               尚無品項，請先到「品項設定」建立
             </p>

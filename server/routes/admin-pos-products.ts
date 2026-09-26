@@ -63,9 +63,16 @@ const optionSchema = z.object({
   sortOrder: z.number().int().optional(),
 });
 
+/**
+ * 讀取品項 / 菜單 / 客製 / 垃圾桶：能看、能現場操作、能設定 POS 的都要能讀
+ * 🐛 2026-09-26：只認 pos:view 時，只有 pos:manage / pos:operate 的角色被 403 →
+ *   收支頁「尚無品項」、品項設定頁空白，現場停擺。requirePermission 是 ANY 語意。
+ */
+const POS_READ = ["pos:view", "pos:operate", "pos:manage"] as const;
+
 export function registerAdminPosProductRoutes(app: Express) {
   // ── 品項 ──────────────────────────────────
-  app.get("/api/admin/pos/products", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
+  app.get("/api/admin/pos/products", requireAdminAuth, requirePermission(...POS_READ), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const products = await db
@@ -171,7 +178,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── 客製群組 + 選項 ──────────────────────────
-  app.get("/api/admin/pos/modifier-groups", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
+  app.get("/api/admin/pos/modifier-groups", requireAdminAuth, requirePermission(...POS_READ), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const groups = await db
@@ -300,7 +307,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── POS 結帳用菜單（active 品項 + 客製）──────────
-  app.get("/api/pos/menu", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
+  app.get("/api/pos/menu", requireAdminAuth, requirePermission(...POS_READ), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const products = await db
@@ -329,7 +336,7 @@ export function registerAdminPosProductRoutes(app: Express) {
   });
 
   // ── 垃圾桶：列已軟刪除的 POS 資料 ──────────────
-  app.get("/api/admin/pos/trash", requireAdminAuth, requirePermission("pos:view"), async (req, res) => {
+  app.get("/api/admin/pos/trash", requireAdminAuth, requirePermission(...POS_READ), async (req, res) => {
     try {
       const fieldId = req.admin!.fieldId;
       const delProducts = await db

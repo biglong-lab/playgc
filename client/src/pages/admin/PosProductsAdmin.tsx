@@ -43,7 +43,7 @@ export default function PosProductsAdmin() {
   const qc = useQueryClient();
   const [cat, setCat] = useState<string>("food");
 
-  const { data: prodData } = useQuery<{ products: Product[] }>({
+  const { data: prodData, isError: prodError, error: prodErr } = useQuery<{ products: Product[] }>({
     queryKey: ["pos-products"],
     queryFn: () => fetchWithAdminAuth("/api/admin/pos/products"),
   });
@@ -206,7 +206,12 @@ export default function PosProductsAdmin() {
                         </div>
                       </div>
                     ))}
-                    {products.filter((p) => p.category === c.key).length === 0 && (
+                    {/* 🐛 2026-09-26：讀取失敗不能顯示成「尚無品項」 */}
+                    {prodError ? (
+                      <p className="text-sm text-destructive col-span-full py-6 text-center" data-testid="pos-products-error">
+                        品項讀取失敗：{prodErr instanceof Error ? prodErr.message : "請稍後再試"}（資料沒有遺失）
+                      </p>
+                    ) : products.filter((p) => p.category === c.key).length === 0 && (
                       <p className="text-sm text-muted-foreground col-span-full py-6 text-center">尚無品項，點右上「新增品項」</p>
                     )}
                   </div>
