@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-09-26
+
+### 📺 CHITO 完整移除大螢幕互動（移交 PhotoGo）+ 🐛 POS 品項 403 事故修正
+
+**部署**：`5a650344`（bundle `index-HZqWPHrY.js`）；部署前備份 `/opt/backups/db-gamehomicc-predeploy-20260926-1947.sql.gz`
+
+- **POS 現場停擺（19:35）**：09-24 權限拆分把品項 / 菜單讀取改掛 `pos:view` 但沒補發 → 全角色 403，前端顯示成「尚無品項」（資料 38 筆完好）。
+  19:40 生產先補發 pos:view 給 12 個角色止血；本版根治：補發規則、讀取端點接受 view/operate/manage、讀取失敗顯示錯誤不冒充空目錄
+- 硬體裝置模組沿用射擊任務開關（賈村裝置管理頁不再被擋；玩家射擊本來不受影響）
+- **大螢幕互動（HostScreen）整條移除**（[ADR-0029](decisions/0029-host-screen-moved-to-photogo.md)、[changes](changes/2026-09-25-host-removal-photogo-migration.md)）：
+  124 檔 −11,625 行；情境 13 → 7；編輯器元件 98 → 81；WS host 訊息、到期檢查移除；資料表欄位保留；守護測試鎖不得長回來
+- 驗證：version / health ok、5xx = 0、`/api/host-sessions/x` → JSON 404、情境 7、缺 pos:view 角色 = 0；舊 `check-expiring-sessions` 排程查無（主機 cron / Actions 皆無，不需刪）
+
 ## 2026-09-25
 
 ### 📺 活動現場大螢幕預設關閉 + 🚦 活動未設時段防呆（B-0 止血）
