@@ -99,6 +99,9 @@ export const MODULE_REGISTRY: readonly ModuleDef[] = [
     description: "現場感應裝置、MQTT 連線",
     apiPrefixes: ["/api/devices", "/api/admin/mqtt"],
     menuPaths: ["/admin/devices"],
+    // 🐛 2026-09-26：沒對應舊開關 → 已開射擊（有靶機）的場域，裝置管理 API 全被 403。
+    //   照「現在在用就開」原則，沿用射擊任務開關（後台選單也是看這個）。
+    legacySettingKey: "enableShootingMission",
     defaultEnabled: false,
   },
 ];

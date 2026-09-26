@@ -66,4 +66,10 @@ describe("API 路徑 / 選單 / 排程對應", () => {
     expect(isCronOn({ booking: true }, "booking-reminder")).toBe(true);
     expect(isCronOn({ booking: false }, "other-cron")).toBe(true);
   });
+
+  it("🐛 2026-09-26 回歸：已開射擊任務的場域，硬體裝置模組視為開（不能擋靶機管理）", () => {
+    expect(isModuleOn(resolveFieldModules({ enableShootingMission: true }), "devices")).toBe(true);
+    expect(isModuleOn(resolveFieldModules({}), "devices")).toBe(false);
+    expect(isModuleOn(resolveFieldModules({ enableShootingMission: true, modules: { devices: false } }), "devices")).toBe(false);
+  });
 });
